@@ -4,12 +4,16 @@ name: test
 
 jobs:
   check:
-    name: Foundry project
+    name: Foundry Tests packages/contracts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+
+      - name: Installing dependencies
+        working-directory: ./packages/contracts
+        run: yarn install
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
