@@ -56,7 +56,7 @@ func NewMessage(origin uint32, sender common.Hash, nonce uint32, destination uin
 func DecodeMessage(message []byte) (Message, error) {
 	dec := gob.NewDecoder(bytes.NewReader(message))
 
-	var msg MessageImpl
+	var msg MessageEncoder
 	err := dec.Decode(&msg)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode message: %w", err)
@@ -96,17 +96,22 @@ func (m messageImpl) Recipient() common.Hash {
 // DestinationAndNonce gets the destination and nonce encoded in a single field
 // TODO: statically assert 32 bit fields here.
 func (m messageImpl) DestinationAndNonce() uint64 {
-	dest := uint64(m.destination)
-	return ((dest) << 32) | uint64(m.nonce)
+	return CombineDestinationAndNonce(m.destination, m.nonce)
+}
+
+// CombineDestinationAndNonce combines a destination and nonce.
+func CombineDestinationAndNonce(destination, nonce uint32) uint64 {
+	dest := uint64(destination)
+	return ((dest) << 32) | uint64(nonce)
 }
 
 func (m messageImpl) Body() []byte {
 	return m.body
 }
 
-// MessageImpl is used for message marshaling/unmarshalling. It is exported
+// MessageEncoder is used for message marshaling/unmarshalling. It is exported
 // for encoding only.
-type MessageImpl struct {
+type MessageEncoder struct {
 	Origin      uint32
 	Sender      common.Hash
 	Nonce       uint32
@@ -118,7 +123,7 @@ type MessageImpl struct {
 // Encode encodes the message to a bytes
 // TODO: this should use a helper message once contract abis are ready.
 func (m messageImpl) Encode() ([]byte, error) {
-	newMessage := MessageImpl{
+	newMessage := MessageEncoder{
 		Origin:      m.origin,
 		Sender:      m.sender,
 		Nonce:       m.nonce,
@@ -158,6 +163,8 @@ type CommittedMessage interface {
 	Message() []byte
 	// Leaf gets a leaf
 	Leaf() [32]byte
+	// Encode encodes a message
+	Encode() ([]byte, error)
 }
 
 // NewCommittedMessage creates a new committed message.
@@ -169,11 +176,55 @@ func NewCommittedMessage(leafIndex uint32, committedRoot common.Hash, message []
 	}
 }
 
-// commitedMessageImpl.
+// commitedMessageImpl contains the implementation of a committed message.
 type committedMessageImpl struct {
 	leafIndex     uint32
 	committedRoot common.Hash
 	message       []byte
+}
+
+// CommittedMessageEncoder is used to export fields for struct encoding.
+type CommittedMessageEncoder struct {
+	LeafIndex     uint32
+	CommittedRoot common.Hash
+	Message       []byte
+}
+
+// DecodeCommittedMessage decodes a committed message into a struct.
+func DecodeCommittedMessage(rawMessage []byte) (CommittedMessage, error) {
+	dec := gob.NewDecoder(bytes.NewReader(rawMessage))
+
+	var msg CommittedMessageEncoder
+	err := dec.Decode(&msg)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode message: %w", err)
+	}
+
+	decoded := committedMessageImpl{
+		leafIndex:     msg.LeafIndex,
+		committedRoot: msg.CommittedRoot,
+		message:       msg.Message,
+	}
+
+	return decoded, nil
+}
+
+// Encode encodes a committed message.
+func (c committedMessageImpl) Encode() ([]byte, error) {
+	newCommittedMessage := CommittedMessageEncoder{
+		LeafIndex:     c.leafIndex,
+		CommittedRoot: c.committedRoot,
+		Message:       c.message,
+	}
+
+	var res bytes.Buffer
+	enc := gob.NewEncoder(&res)
+
+	err := enc.Encode(newCommittedMessage)
+	if err != nil {
+		return nil, fmt.Errorf("could not encode %T: %w", newCommittedMessage, err)
+	}
+	return res.Bytes(), nil
 }
 
 // Leaf gets the leaf.

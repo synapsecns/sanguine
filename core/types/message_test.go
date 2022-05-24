@@ -39,7 +39,7 @@ func TestNewMessageEncodeDecode(t *testing.T) {
 	Equal(t, newMessage.Body(), decodedMessage.Body())
 }
 
-func TestNewCommittedMessage(t *testing.T) {
+func TestNewCommittedMessageEncodeDecode(t *testing.T) {
 	leafIndex := gofakeit.Uint32()
 	committedRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	message := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
@@ -49,4 +49,15 @@ func TestNewCommittedMessage(t *testing.T) {
 	Equal(t, leafIndex, committedMessage.LeafIndex())
 	Equal(t, committedRoot, committedMessage.CommitedRoot())
 	Equal(t, message, committedMessage.Message())
+
+	encodedMessage, err := committedMessage.Encode()
+	Nil(t, err)
+
+	decodedMessage, err := types.DecodeCommittedMessage(encodedMessage)
+	Nil(t, err)
+
+	Equal(t, decodedMessage.Message(), committedMessage.Message())
+	Equal(t, decodedMessage.CommitedRoot(), committedMessage.CommitedRoot())
+	Equal(t, decodedMessage.Leaf(), committedMessage.Leaf())
+	Equal(t, decodedMessage.LeafIndex(), committedMessage.LeafIndex())
 }
