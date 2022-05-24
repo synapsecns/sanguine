@@ -7,6 +7,10 @@ on:
 
 jobs:
   lint:
+    defaults:
+      run:
+        working-directory: validator
+
     name: Lint
     runs-on: ubuntu-latest
     steps:
