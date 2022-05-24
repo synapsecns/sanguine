@@ -7,10 +7,6 @@ on:
 
 jobs:
   lint:
-    defaults:
-      run:
-        working-directory: validator
-
     name: Lint
     runs-on: ubuntu-latest
     steps:
@@ -30,7 +26,6 @@ jobs:
           version: v1.46.2
           # Path to your GolangCI-Lint config within the repo (optional)
           config: validator/.golangci.yml
-          args: --concurrency 1
         env:
           # GitHub token for annotations (optional)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
