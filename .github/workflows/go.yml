@@ -67,7 +67,7 @@ jobs:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.46.2
           # Path to your GolangCI-Lint config within the repo (optional)
-          config: validator/.golangci.yml
+          config: core/.golangci.yml
           # see: https://github.com/golangci/golangci-lint/issues/2654
           args: -- $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
         env:
