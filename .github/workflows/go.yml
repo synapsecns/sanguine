@@ -1,5 +1,6 @@
 name: Go Workflows
 on:
+  pull_request:
   push:
     branches-ignore:
       - 'gh-pages'
