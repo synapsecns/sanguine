@@ -26,6 +26,7 @@ jobs:
           version: v1.46.2
           # Path to your GolangCI-Lint config within the repo (optional)
           config: validator/.golangci.yml
+          # see: https://github.com/golangci/golangci-lint/issues/2654
           args: -- $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
         env:
           # GitHub token for annotations (optional)
