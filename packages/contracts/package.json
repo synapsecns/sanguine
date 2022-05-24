@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript",
+    "build:go": "sol-merger \"./contracts/**.sol\" ./build --export-plugin SPDXLicenseRemovePlugin",
     "build:contracts": "forge build",
     "build:typescript": "typechain --target ethers-v5 'artifacts/**/*json'",
     "test": "forge test",
@@ -22,6 +23,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.6.0",
-    "@openzeppelin/contracts-upgradeable": "^4.6.0"
+    "@openzeppelin/contracts-upgradeable": "^4.6.0",
+    "sol-merger": "^4.1.1"
   }
 }
