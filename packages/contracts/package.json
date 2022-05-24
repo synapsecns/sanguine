@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "yarn sol-merger contracts/*.sol"
   },
   "license": "MIT",
   "devDependencies": {
@@ -11,6 +12,9 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.6.0",
-    "@openzeppelin/contracts-upgradeable": "^4.6.0"
+    "@openzeppelin/contracts-upgradeable": "^4.6.0",
+    "dotenv": "^16.0.1",
+    "@typechain/hardhat": "^2.0.1",
+    "sol-merger": "^4.1.1"
   }
 }
