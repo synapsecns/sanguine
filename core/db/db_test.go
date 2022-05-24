@@ -12,10 +12,10 @@ import (
 
 // StoresAndRetrievesMessages tests storage/retreival.
 func (d *DBSuite) TestStoresAndRetrievesMessages() {
-	newDB, err := db.NewDB(filet.TmpDir(d.T(), ""))
+	newDB, err := db.NewDB(filet.TmpDir(d.T(), ""), "home1")
 	Nil(d.T(), err)
 
-	realMessage := types.NewMessage(10, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), []byte(gofakeit.Sentence(10)))
+	realMessage := types.NewMessage(10, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32(), gofakeit.Uint32(), []byte(gofakeit.Sentence(10)), common.BigToHash(big.NewInt(gofakeit.Int64())))
 
 	encoded, err := realMessage.Encode()
 	Nil(d.T(), err)
@@ -25,7 +25,8 @@ func (d *DBSuite) TestStoresAndRetrievesMessages() {
 	realLeaf, err := realMessage.ToLeaf()
 	Nil(d.T(), err)
 
-	_ = newDB
-
 	Equal(d.T(), realLeaf, committedMessage.Leaf())
+
+	err = newDB.StoreCommittedMessage(committedMessage)
+	Nil(d.T(), err)
 }

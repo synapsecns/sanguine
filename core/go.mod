@@ -7,6 +7,7 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/cockroachdb/pebble v0.0.0-20220523221036-bb2c1501ac23
 	github.com/ethereum/go-ethereum v1.10.11
+	github.com/ipfs/go-log v1.0.5
 	github.com/stretchr/testify v1.7.0
 	github.com/synapsecns/synapse-node v0.242.0
 )
@@ -38,7 +39,6 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/gosimple/slug v1.1.1 // indirect
 	github.com/grafana-tools/sdk v0.0.0-20210921191058-888ef9d18611 // indirect
-	github.com/ipfs/go-log v1.0.5 // indirect
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/kr/pretty v0.3.0 // indirect

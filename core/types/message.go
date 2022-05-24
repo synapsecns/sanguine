@@ -17,13 +17,17 @@ type Message interface {
 	// Nonce is the count of all previous messages to the destination
 	Nonce() uint32
 	// Destination is the slip-44 id of the destination
-	Destination() common.Hash
+	Destination() uint32
+	// Recipient is the address of the recipient
+	Recipient() common.Hash
 	// Body is the message contents
 	Body() []byte
 	// Encode encodes a message
 	Encode() ([]byte, error)
 	// ToLeaf converts a leaf to a keccac256
 	ToLeaf() (leaf [32]byte, err error)
+	// DestinationAndNonce gets the destination and nonce encoded into a single field
+	DestinationAndNonce() uint64
 }
 
 // messageImpl implements a message. It is used for testing. Real messages are emitted by the contract.
@@ -31,19 +35,42 @@ type messageImpl struct {
 	origin      uint32
 	sender      common.Hash
 	nonce       uint32
-	destination common.Hash
+	destination uint32
+	recipient   common.Hash
 	body        []byte
 }
 
 // NewMessage creates a new message from fields passed in.
-func NewMessage(origin uint32, sender common.Hash, nonce uint32, destination common.Hash, body []byte) Message {
+func NewMessage(origin uint32, sender common.Hash, nonce uint32, destination uint32, body []byte, recipient common.Hash) Message {
 	return &messageImpl{
 		origin:      origin,
 		sender:      sender,
 		nonce:       nonce,
 		body:        body,
 		destination: destination,
+		recipient:   recipient,
 	}
+}
+
+// DecodeMessage decodes a message from a byte slice.
+func DecodeMessage(message []byte) (Message, error) {
+	dec := gob.NewDecoder(bytes.NewReader(message))
+
+	var msg MessageImpl
+	err := dec.Decode(&msg)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode message: %w", err)
+	}
+
+	decoded := messageImpl{
+		origin:      msg.Origin,
+		sender:      msg.Sender,
+		nonce:       msg.Nonce,
+		destination: msg.Destination,
+		body:        msg.Body,
+	}
+
+	return decoded, nil
 }
 
 func (m messageImpl) Origin() uint32 {
@@ -58,26 +85,40 @@ func (m messageImpl) Nonce() uint32 {
 	return m.nonce
 }
 
-func (m messageImpl) Destination() common.Hash {
+func (m messageImpl) Destination() uint32 {
 	return m.destination
+}
+
+func (m messageImpl) Recipient() common.Hash {
+	return m.recipient
+}
+
+// DestinationAndNonce gets the destination and nonce encoded in a single field
+// TODO: statically assert 32 bit fields here.
+func (m messageImpl) DestinationAndNonce() uint64 {
+	dest := uint64(m.destination)
+	return ((dest) << 32) | uint64(m.nonce)
 }
 
 func (m messageImpl) Body() []byte {
 	return m.body
 }
 
+// MessageImpl is used for message marshaling/unmarshalling. It is exported
+// for encoding only.
+type MessageImpl struct {
+	Origin      uint32
+	Sender      common.Hash
+	Nonce       uint32
+	Destination uint32
+	Body        []byte
+	Recipient   common.Hash
+}
+
 // Encode encodes the message to a bytes
 // TODO: this should use a helper message once contract abis are ready.
 func (m messageImpl) Encode() ([]byte, error) {
-	type NewMssageImpl struct {
-		Origin      uint32
-		Sender      common.Hash
-		Nonce       uint32
-		Destination common.Hash
-		Body        []byte
-	}
-
-	newMessage := NewMssageImpl{
+	newMessage := MessageImpl{
 		Origin:      m.origin,
 		Sender:      m.sender,
 		Nonce:       m.nonce,
