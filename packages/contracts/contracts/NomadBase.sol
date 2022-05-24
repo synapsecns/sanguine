@@ -100,11 +100,7 @@ abstract contract NomadBase is Initializable, OwnableUpgradeable {
      * @notice Hash of Home domain concatenated with "NOMAD"
      * @param _homeDomain the Home domain to hash
      */
-    function _homeDomainHash(uint32 _homeDomain)
-        internal
-        pure
-        returns (bytes32)
-    {
+    function _homeDomainHash(uint32 _homeDomain) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(_homeDomain, "NOMAD"));
     }
 
@@ -130,9 +126,7 @@ abstract contract NomadBase is Initializable, OwnableUpgradeable {
         bytes32 _newRoot,
         bytes memory _signature
     ) internal view returns (bool) {
-        bytes32 _digest = keccak256(
-            abi.encodePacked(homeDomainHash(), _oldRoot, _newRoot)
-        );
+        bytes32 _digest = keccak256(abi.encodePacked(homeDomainHash(), _oldRoot, _newRoot));
         _digest = ECDSA.toEthSignedMessageHash(_digest);
         return (ECDSA.recover(_digest, _signature) == updater);
     }

@@ -78,19 +78,14 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
     event ImproperUpdate(bytes32 oldRoot, bytes32 newRoot, bytes signature);
 
     /**
-    * @notice Emitted when proof of a double update is submitted,
+     * @notice Emitted when proof of a double update is submitted,
      * which sets the contract to FAILED state
      * @param oldRoot Old root shared between two conflicting updates
      * @param newRoot Array containing two conflicting new roots
      * @param signature Signature on `oldRoot` and `newRoot`[0]
      * @param signature2 Signature on `oldRoot` and `newRoot`[1]
      */
-    event DoubleUpdate(
-        bytes32 oldRoot,
-        bytes32[2] newRoot,
-        bytes signature,
-        bytes signature2
-    );
+    event DoubleUpdate(bytes32 oldRoot, bytes32[2] newRoot, bytes signature, bytes signature2);
 
     /**
      * @notice Emitted when the Updater is slashed
@@ -130,7 +125,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
     }
 
     /**
-    * @notice Ensures that contract state != FAILED when the function is called
+     * @notice Ensures that contract state != FAILED when the function is called
      */
     modifier notFailed() {
         require(state != States.Failed, "failed state");
@@ -243,11 +238,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
      * @return _committedRoot Latest root signed by the Updater
      * @return _new Latest enqueued Merkle root
      */
-    function suggestUpdate()
-        external
-        view
-        returns (bytes32 _committedRoot, bytes32 _new)
-    {
+    function suggestUpdate() external view returns (bytes32 _committedRoot, bytes32 _new) {
         if (queue.length() != 0) {
             _committedRoot = committedRoot;
             _new = queue.lastItem();
@@ -255,7 +246,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
     }
 
     /**
-    * @notice Called by external agent. Checks that signatures on two sets of
+     * @notice Called by external agent. Checks that signatures on two sets of
      * roots are valid and that the new roots conflict with each other. If both
      * cases hold true, the contract is failed and a `DoubleUpdate` event is
      * emitted.
@@ -322,10 +313,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
         bytes32 _newRoot,
         bytes memory _signature
     ) public notFailed returns (bool) {
-        require(
-            _isUpdaterSignature(_oldRoot, _newRoot, _signature),
-            "!updater sig"
-        );
+        require(_isUpdaterSignature(_oldRoot, _newRoot, _signature), "!updater sig");
         require(_oldRoot == committedRoot, "not a current update");
         // if the _newRoot is not currently contained in the queue,
         // slash the Updater and set the contract to FAILED state
@@ -346,10 +334,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
      * @param _updaterManager Address of the UpdaterManager
      */
     function _setUpdaterManager(IUpdaterManager _updaterManager) internal {
-        require(
-            Address.isContract(address(_updaterManager)),
-            "!contract updaterManager"
-        );
+        require(Address.isContract(address(_updaterManager)), "!contract updaterManager");
         updaterManager = IUpdaterManager(_updaterManager);
         emit NewUpdaterManager(address(_updaterManager));
     }

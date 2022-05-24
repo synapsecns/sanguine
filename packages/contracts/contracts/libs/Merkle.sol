@@ -75,11 +75,7 @@ library MerkleLib {
 
     /// @notice Returns array of TREE_DEPTH zero hashes
     /// @return _zeroes Array of TREE_DEPTH zero hashes
-    function zeroHashes()
-        internal
-        pure
-        returns (bytes32[TREE_DEPTH] memory _zeroes)
-    {
+    function zeroHashes() internal pure returns (bytes32[TREE_DEPTH] memory _zeroes) {
         _zeroes[0] = Z_0;
         _zeroes[1] = Z_1;
         _zeroes[2] = Z_2;

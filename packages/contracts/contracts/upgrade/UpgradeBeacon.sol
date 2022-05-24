@@ -87,10 +87,7 @@ contract UpgradeBeacon {
         // Require that the new implementation is different from the current one
         require(implementation != _newImplementation, "!upgrade");
         // Require that the new implementation is a contract
-        require(
-            Address.isContract(_newImplementation),
-            "implementation !contract"
-        );
+        require(Address.isContract(_newImplementation), "implementation !contract");
         // set the new implementation
         implementation = _newImplementation;
         emit Upgrade(_newImplementation);

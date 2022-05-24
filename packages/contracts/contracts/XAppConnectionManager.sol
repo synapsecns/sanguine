@@ -50,11 +50,7 @@ contract XAppConnectionManager is Ownable {
      * @param watcher the address of the Watcher
      * @param access TRUE if the Watcher was given permissions, FALSE if permissions were removed
      */
-    event WatcherPermissionSet(
-        uint32 indexed domain,
-        address watcher,
-        bool access
-    );
+    event WatcherPermissionSet(uint32 indexed domain, address watcher, bool access);
 
     // ============ Constructor ============
 
@@ -112,10 +108,7 @@ contract XAppConnectionManager is Ownable {
      * @param _replica the address of the Replica
      * @param _domain the remote domain of the Home contract for the Replica
      */
-    function ownerEnrollReplica(address _replica, uint32 _domain)
-        external
-        onlyOwner
-    {
+    function ownerEnrollReplica(address _replica, uint32 _domain) external onlyOwner {
         // un-enroll any existing replica
         _unenrollReplica(_replica);
         // add replica and domain to two-way mapping
@@ -161,11 +154,7 @@ contract XAppConnectionManager is Ownable {
      * @param _domain the domain to check for watcher permissions
      * @return TRUE iff _watcher has permission to un-enroll replicas on _domain
      */
-    function watcherPermission(address _watcher, uint32 _domain)
-        external
-        view
-        returns (bool)
-    {
+    function watcherPermission(address _watcher, uint32 _domain) external view returns (bool) {
         return watcherPermissions[_watcher][_domain];
     }
 
@@ -203,17 +192,14 @@ contract XAppConnectionManager is Ownable {
         bytes32 _updater,
         bytes memory _signature
     ) internal view returns (address) {
-        bytes32 _homeDomainHash = Replica(TypeCasts.bytes32ToAddress(_replica))
-            .homeDomainHash();
-        bytes32 _digest = keccak256(
-            abi.encodePacked(_homeDomainHash, _domain, _updater)
-        );
+        bytes32 _homeDomainHash = Replica(TypeCasts.bytes32ToAddress(_replica)).homeDomainHash();
+        bytes32 _digest = keccak256(abi.encodePacked(_homeDomainHash, _domain, _updater));
         _digest = ECDSA.toEthSignedMessageHash(_digest);
         return ECDSA.recover(_digest, _signature);
     }
 
     /**
-    * @dev should be impossible to renounce ownership;
+     * @dev should be impossible to renounce ownership;
      * we override OpenZeppelin Ownable implementation
      * of renounceOwnership to make it a no-op
      */
