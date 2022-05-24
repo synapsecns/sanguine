@@ -25,4 +25,5 @@ jobs:
         run: forge test -vvv
 
       - name: Run snapshot
+        working-directory: ./packages/contracts
         run: forge snapshot >> $GITHUB_STEP_SUMMARY

@@ -39,3 +39,5 @@ cache
 coverage.out
 
 .idea/
+
+.gas-snapshot
