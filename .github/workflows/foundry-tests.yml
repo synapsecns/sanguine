@@ -1,0 +1,29 @@
+on: [push]
+
+name: Foundry Tests
+
+jobs:
+  check:
+    name: Packages/contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Installing dependencies
+        working-directory: ./packages/contracts
+        run: yarn install
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Run tests
+        working-directory: ./packages/contracts
+        run: forge test -vvv
+
+      - name: Run snapshot
+        working-directory: ./packages/contracts
+        run: forge snapshot >> $GITHUB_STEP_SUMMARY
