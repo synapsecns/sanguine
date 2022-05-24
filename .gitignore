@@ -110,4 +110,6 @@ coverage.out
 .idea/
 
 .gas-snapshot
+
 profile.cov
+types
