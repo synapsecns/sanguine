@@ -9,7 +9,7 @@ task("merge", "Prints the list of accounts", async (_, hre) => {
   const entries = fsWalk.walkSync(hre.config.paths.sources, new fsWalk.Settings());
   for (const entry of entries){
       let res = await hre.run("flatten", {
-          files: [entry],
+          files: [entry.path],
       })
 
       console.log(res)
