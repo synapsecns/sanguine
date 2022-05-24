@@ -2,11 +2,11 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
-import {IUpdaterManager} from "../interfaces/IUpdaterManager.sol";
-import {Home} from "./Home.sol";
+import { IUpdaterManager } from "../interfaces/IUpdaterManager.sol";
+import { Home } from "./Home.sol";
 // ============ External Imports ============
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
  * @title UpdaterManager
@@ -86,11 +86,7 @@ contract UpdaterManager is IUpdaterManager, Ownable {
      * when updater bonding and rotation are also implemented
      * @param _reporter The address of the entity that reported the updater fraud
      */
-    function slashUpdater(address payable _reporter)
-        external
-        override
-        onlyHome
-    {
+    function slashUpdater(address payable _reporter) external override onlyHome {
         emit FakeSlashed(_reporter);
     }
 

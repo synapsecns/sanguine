@@ -3,15 +3,15 @@ pragma solidity 0.8.13;
 pragma experimental ABIEncoderV2;
 
 // ============ Internal Imports ============
-import {Home} from "../Home.sol";
-import {Version0} from "../Version0.sol";
-import {XAppConnectionManager, TypeCasts} from "../XAppConnectionManager.sol";
-import {IMessageRecipient} from "../../interfaces/IMessageRecipient.sol";
-import {GovernanceMessage} from "./GovernanceMessage.sol";
+import { Home } from "../Home.sol";
+import { Version0 } from "../Version0.sol";
+import { XAppConnectionManager, TypeCasts } from "../XAppConnectionManager.sol";
+import { IMessageRecipient } from "../../interfaces/IMessageRecipient.sol";
+import { GovernanceMessage } from "./GovernanceMessage.sol";
 // ============ External Imports ============
-import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import {TypedMemView} from "../../libs/TypedMemView.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { TypedMemView } from "../../libs/TypedMemView.sol";
 
 contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
     // ============ Libraries ============
@@ -68,11 +68,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
      * @param previousRouter the previously registered router; 0 if router is being added
      * @param newRouter the new registered router; 0 if router is being removed
      */
-    event SetRouter(
-        uint32 indexed domain,
-        bytes32 previousRouter,
-        bytes32 newRouter
-    );
+    event SetRouter(uint32 indexed domain, bytes32 previousRouter, bytes32 newRouter);
 
     /**
      * @notice Emitted when the Governor role is transferred
@@ -104,10 +100,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
      * initiated the transition
      * @param recoveryActiveAt the block at which recovery state will be active
      */
-    event InitiateRecovery(
-        address indexed recoveryManager,
-        uint256 recoveryActiveAt
-    );
+    event InitiateRecovery(address indexed recoveryManager, uint256 recoveryActiveAt);
 
     /**
      * @notice Emitted when recovery state is exited by the RecoveryManager
@@ -148,10 +141,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
     }
 
     modifier onlyGovernor() {
-        require(
-            msg.sender == governor || msg.sender == address(this),
-            "! called by governor"
-        );
+        require(msg.sender == governor || msg.sender == address(this), "! called by governor");
         _;
     }
 
@@ -172,10 +162,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
 
     modifier onlyGovernorOrRecoveryManager() {
         if (!inRecovery()) {
-            require(
-                msg.sender == governor || msg.sender == address(this),
-                "! called by governor"
-            );
+            require(msg.sender == governor || msg.sender == address(this), "! called by governor");
         } else {
             require(
                 msg.sender == recoveryManager || msg.sender == address(this),
@@ -194,10 +181,10 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
 
     // ============ Initializer ============
 
-    function initialize(
-        address _xAppConnectionManager,
-        address _recoveryManager
-    ) public initializer {
+    function initialize(address _xAppConnectionManager, address _recoveryManager)
+        public
+        initializer
+    {
         // initialize governor
         address _governorAddr = msg.sender;
         bool _isLocalGovernor = true;
@@ -261,15 +248,9 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
         uint32[] calldata _domains,
         GovernanceMessage.Call[][] calldata _remoteCalls
     ) external onlyGovernorOrRecoveryManager {
-        require(
-            _domains.length == _remoteCalls.length,
-            "!domains length matches calls length"
-        );
+        require(_domains.length == _remoteCalls.length, "!domains length matches calls length");
         // remote calls are disallowed while in recovery
-        require(
-            _remoteCalls.length == 0 || !inRecovery(),
-            "!remote calls in recovery mode"
-        );
+        require(_remoteCalls.length == 0 || !inRecovery(), "!remote calls in recovery mode");
         // _localCall loop
         for (uint256 i = 0; i < _localCalls.length; i++) {
             _callLocal(_localCalls[i]);
@@ -286,20 +267,17 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
      * @param _destination The domain of the remote chain
      * @param _calls The calls
      */
-    function _callRemote(
-        uint32 _destination,
-        GovernanceMessage.Call[] calldata _calls
-    ) internal onlyGovernor onlyNotInRecovery {
+    function _callRemote(uint32 _destination, GovernanceMessage.Call[] calldata _calls)
+        internal
+        onlyGovernor
+        onlyNotInRecovery
+    {
         // ensure that destination chain has enrolled router
         bytes32 _router = _mustHaveRouter(_destination);
         // format batch message
         bytes memory _msg = GovernanceMessage.formatBatch(_calls);
         // dispatch call message using Nomad
-        Home(xAppConnectionManager.home()).dispatch(
-            _destination,
-            _router,
-            _msg
-        );
+        Home(xAppConnectionManager.home()).dispatch(_destination, _router, _msg);
     }
 
     /**
@@ -321,11 +299,10 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
             return;
         }
         // format transfer governor message
-        bytes memory _transferGovernorMessage = GovernanceMessage
-            .formatTransferGovernor(
-                _newDomain,
-                TypeCasts.addressToBytes32(_newGovernor)
-            );
+        bytes memory _transferGovernorMessage = GovernanceMessage.formatTransferGovernor(
+            _newDomain,
+            TypeCasts.addressToBytes32(_newGovernor)
+        );
         // send transfer governor message to all remote routers
         // note: this assumes that the Router is on the global GovernorDomain;
         // this causes a process error when relinquishing governorship
@@ -338,10 +315,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
      * @dev callable by the recoveryManager at any time to transfer the role
      * @param _newRecoveryManager The address of the new recovery manager
      */
-    function transferRecoveryManager(address _newRecoveryManager)
-        external
-        onlyRecoveryManager
-    {
+    function transferRecoveryManager(address _newRecoveryManager) external onlyRecoveryManager {
         emit TransferRecoveryManager(recoveryManager, _newRecoveryManager);
         recoveryManager = _newRecoveryManager;
     }
@@ -366,9 +340,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
         // Because each domain's governance router may be different, we cannot
         // serialize the `Call` once and then reuse it. We have to re-serialize
         // the call, adjusting its `to` value on each step of the loop.
-        GovernanceMessage.Call[] memory _calls = new GovernanceMessage.Call[](
-            1
-        );
+        GovernanceMessage.Call[] memory _calls = new GovernanceMessage.Call[](1);
         _calls[0].data = abi.encodeWithSignature(
             "setRouterLocal(uint32,bytes32)",
             _domain,
@@ -418,11 +390,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
      * @notice Initiate the recovery timelock
      * @dev callable by the recovery manager
      */
-    function initiateRecoveryTimelock()
-        external
-        onlyNotInRecovery
-        onlyRecoveryManager
-    {
+    function initiateRecoveryTimelock() external onlyNotInRecovery onlyRecoveryManager {
         require(recoveryActiveAt == 0, "recovery already initiated");
         // set the time that recovery will be active
         recoveryActiveAt = block.timestamp.add(recoveryTimelock);
@@ -462,10 +430,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
      *      As a result, we simply set it to pending.
      * @param _msg The message
      */
-    function _handleBatch(bytes29 _msg)
-        internal
-        typeAssert(_msg, GovernanceMessage.Types.Batch)
-    {
+    function _handleBatch(bytes29 _msg) internal typeAssert(_msg, GovernanceMessage.Types.Batch) {
         bytes32 _batchHash = _msg.batchHash();
         // prevent accidental SSTORE and extra event if already pending
         if (inboundCallBatches[_batchHash] == BatchStatus.Pending) return;
@@ -476,14 +441,9 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
     /**
      * @notice execute a pending batch of messages
      */
-    function executeCallBatch(GovernanceMessage.Call[] calldata _calls)
-        external
-    {
+    function executeCallBatch(GovernanceMessage.Call[] calldata _calls) external {
         bytes32 _batchHash = GovernanceMessage.getBatchHash(_calls);
-        require(
-            inboundCallBatches[_batchHash] == BatchStatus.Pending,
-            "!batch pending"
-        );
+        require(inboundCallBatches[_batchHash] == BatchStatus.Pending, "!batch pending");
         inboundCallBatches[_batchHash] = BatchStatus.Complete;
         for (uint256 i = 0; i < _calls.length; i++) {
             _callLocal(_calls[i]);
@@ -524,10 +484,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
      * @param _call The call
      * @return _ret
      */
-    function _callLocal(GovernanceMessage.Call memory _call)
-        internal
-        returns (bytes memory _ret)
-    {
+    function _callLocal(GovernanceMessage.Call memory _call) internal returns (bytes memory _ret) {
         address _toContract = TypeCasts.bytes32ToAddress(_call.to);
         // attempt to dispatch using low-level call
         bool _success;
@@ -618,11 +575,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
      * @return _ret True if the given domain/address is the
      * Governor Router.
      */
-    function _isGovernorRouter(uint32 _domain, bytes32 _address)
-        internal
-        view
-        returns (bool)
-    {
+    function _isGovernorRouter(uint32 _domain, bytes32 _address) internal view returns (bool) {
         return _domain == governorDomain && _address == routers[_domain];
     }
 
@@ -640,11 +593,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
      * @param _domain The domain
      * @return _router - The domain's router
      */
-    function _mustHaveRouter(uint32 _domain)
-        internal
-        view
-        returns (bytes32 _router)
-    {
+    function _mustHaveRouter(uint32 _domain) internal view returns (bytes32 _router) {
         _router = routers[_domain];
         require(_router != bytes32(0), "!router");
     }
