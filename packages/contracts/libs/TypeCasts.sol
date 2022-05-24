@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import "@summa-tx/memview-sol/contracts/TypedMemView.sol";
+import "./TypedMemView.sol";
 
 library TypeCasts {
     using TypedMemView for bytes;
