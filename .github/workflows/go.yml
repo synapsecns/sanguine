@@ -44,6 +44,7 @@ jobs:
         # go build all workspaces
         run:  go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
 
+  #note: right now this is not run against all work dirs
   lint:
     name: Lint
     runs-on: ubuntu-latest
