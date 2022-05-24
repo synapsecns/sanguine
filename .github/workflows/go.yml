@@ -33,7 +33,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Build
-        run: go build ./...
+        # go build all workspaces
+        run:  go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
 
   lint:
     name: Lint
