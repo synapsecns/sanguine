@@ -4,7 +4,7 @@ pragma solidity 0.8.13;
 // ============ Internal Imports ============
 import { Home } from "./Home.sol";
 import { Replica } from "./Replica.sol";
-import { TypeCasts } from "../libs/TypeCasts.sol";
+import { TypeCasts } from "./libs/TypeCasts.sol";
 // ============ External Imports ============
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -51,13 +51,6 @@ contract XAppConnectionManager is Ownable {
      * @param access TRUE if the Watcher was given permissions, FALSE if permissions were removed
      */
     event WatcherPermissionSet(uint32 indexed domain, address watcher, bool access);
-
-    // ============ Modifiers ============
-
-    modifier onlyReplica() {
-        require(isReplica(msg.sender), "!replica");
-        _;
-    }
 
     // ============ Constructor ============
 
@@ -203,5 +196,14 @@ contract XAppConnectionManager is Ownable {
         bytes32 _digest = keccak256(abi.encodePacked(_homeDomainHash, _domain, _updater));
         _digest = ECDSA.toEthSignedMessageHash(_digest);
         return ECDSA.recover(_digest, _signature);
+    }
+
+    /**
+     * @dev should be impossible to renounce ownership;
+     * we override OpenZeppelin Ownable implementation
+     * of renounceOwnership to make it a no-op
+     */
+    function renounceOwnership() public override onlyOwner {
+        // do nothing
     }
 }
