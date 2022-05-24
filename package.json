@@ -1,0 +1,17 @@
+{
+  "name": "sanguine",
+  "version": "1.0.0",
+  "description": "Implementation of the Sanguine messaging standard",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/synapsecns/sanguine/issues"
+  },
+  "homepage": "https://github.com/synapsecns/sanguine#readme"
+}
