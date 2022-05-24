@@ -1,10 +1,10 @@
 on: [push]
 
-name: test
+name: Foundry Tests
 
 jobs:
   check:
-    name: Foundry Tests packages/contracts
+    name: Packages/contracts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
