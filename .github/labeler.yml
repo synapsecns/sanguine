@@ -1,0 +1,15 @@
+---
+2-reviewers:
+  - 'packages/contracts/**/*'
+
+M-ci:
+  - any: ['.github/**/*', '.circleci/**/*']
+
+M-integration:
+  - any: ['integration-tests/**/*']
+
+M-contracts:
+  - any: ['packages/contracts/**/*']
+
+C-Protocol-Critical:
+  - 'packages/contracts/**/*.sol'
