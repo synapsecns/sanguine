@@ -14,5 +14,5 @@ M-contracts:
 C-Protocol-Critical:
   - 'packages/contracts/**/*.sol'
 
-Go:
+go:
   - 'validator/**/*'
