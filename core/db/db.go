@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"github.com/cockroachdb/pebble"
+	"github.com/synapsecns/sanguine/core/types"
 )
 
 // DB contains the synapse db.
@@ -22,4 +23,9 @@ func NewDB(dbPath string) (DB, error) {
 	}
 
 	return pebbleDB{DB: db}, nil
+}
+
+// StoreCommittedMessage stores a committed message.
+func (d *pebbleDB) StoreCommittedMessage(message types.CommittedMessage) {
+
 }
