@@ -1,7 +1,7 @@
 {
+    "editor.formatOnSave": true,
     "[typescript]": {
       "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-      "editor.formatOnSave": true,
     },
     "eslint.workingDirectories": [
       {"directory": "packages/contracts", "changeProcessCWD": true }
@@ -10,5 +10,8 @@
     "eslint.format.enable": true,
     "editorconfig.generateAuto": false,
     "files.trimTrailingWhitespace": true,
-    "solidity.defaultCompiler": "remote",
+    "solidity.packageDefaultDependenciesContractsDirectory": "contracts",
+    "solidity.packageDefaultDependenciesDirectory": "lib",
+    "solidity.compileUsingRemoteVersion": "v0.8.13",
+    "solidity.formatter": "prettier"
   }

@@ -2,7 +2,7 @@
 pragma solidity 0.8.13;
 
 // ============ External Imports ============
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
  * @title UpgradeBeacon
@@ -87,10 +87,7 @@ contract UpgradeBeacon {
         // Require that the new implementation is different from the current one
         require(implementation != _newImplementation, "!upgrade");
         // Require that the new implementation is a contract
-        require(
-            Address.isContract(_newImplementation),
-            "implementation !contract"
-        );
+        require(Address.isContract(_newImplementation), "implementation !contract");
         // set the new implementation
         implementation = _newImplementation;
         emit Upgrade(_newImplementation);
