@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 pragma experimental ABIEncoderV2;
 
 // ============ External Imports ============
-import {TypedMemView} from "../../libs/TypedMemView.sol";
+import { TypedMemView } from "../../libs/TypedMemView.sol";
 
 library GovernanceMessage {
     using TypedMemView for bytes;
@@ -80,31 +80,18 @@ library GovernanceMessage {
      */
 
     // create a Batch message from a list of calls
-    function formatBatch(Call[] memory _calls)
-        internal
-        view
-        returns (bytes memory)
-    {
+    function formatBatch(Call[] memory _calls) internal view returns (bytes memory) {
         return abi.encodePacked(Types.Batch, getBatchHash(_calls));
     }
 
     // serialize a call to memory and return a reference
     function serializeCall(Call memory _call) internal pure returns (bytes29) {
-        return
-            abi
-                .encodePacked(_call.to, uint32(_call.data.length), _call.data)
-                .ref(0);
+        return abi.encodePacked(_call.to, uint32(_call.data.length), _call.data).ref(0);
     }
 
-    function getBatchHash(Call[] memory _calls)
-        internal
-        view
-        returns (bytes32)
-    {
+    function getBatchHash(Call[] memory _calls) internal view returns (bytes32) {
         // length prefix + 1 entry for each
-        bytes29[] memory _encodedCalls = new bytes29[](
-            _calls.length + CALLS_PREFIX_ITEMS
-        );
+        bytes29[] memory _encodedCalls = new bytes29[](_calls.length + CALLS_PREFIX_ITEMS);
         _encodedCalls[0] = abi.encodePacked(uint8(_calls.length)).ref(0);
         for (uint256 i = 0; i < _calls.length; i++) {
             _encodedCalls[i + CALLS_PREFIX_ITEMS] = serializeCall(_calls[i]);
@@ -113,9 +100,7 @@ library GovernanceMessage {
     }
 
     function isValidBatch(bytes29 _view) internal pure returns (bool) {
-        return
-            identifier(_view) == uint8(Types.Batch) &&
-            _view.len() == BATCH_MESSAGE_LEN;
+        return identifier(_view) == uint8(Types.Batch) && _view.len() == BATCH_MESSAGE_LEN;
     }
 
     function isBatch(bytes29 _view) internal pure returns (bool) {
@@ -154,45 +139,29 @@ library GovernanceMessage {
     {
         _msg = TypedMemView.clone(
             mustBeTransferGovernor(
-                abi
-                    .encodePacked(Types.TransferGovernor, _domain, _governor)
-                    .ref(0)
+                abi.encodePacked(Types.TransferGovernor, _domain, _governor).ref(0)
             )
         );
     }
 
-    function isValidTransferGovernor(bytes29 _view)
-        internal
-        pure
-        returns (bool)
-    {
+    function isValidTransferGovernor(bytes29 _view) internal pure returns (bool) {
         return
             identifier(_view) == uint8(Types.TransferGovernor) &&
             _view.len() == TRANSFER_GOV_MESSAGE_LEN;
     }
 
     function isTransferGovernor(bytes29 _view) internal pure returns (bool) {
-        return
-            isValidTransferGovernor(_view) &&
-            messageType(_view) == Types.TransferGovernor;
+        return isValidTransferGovernor(_view) && messageType(_view) == Types.TransferGovernor;
     }
 
-    function tryAsTransferGovernor(bytes29 _view)
-        internal
-        pure
-        returns (bytes29)
-    {
+    function tryAsTransferGovernor(bytes29 _view) internal pure returns (bytes29) {
         if (isValidTransferGovernor(_view)) {
             return _view.castTo(uint40(Types.TransferGovernor));
         }
         return TypedMemView.nullView();
     }
 
-    function mustBeTransferGovernor(bytes29 _view)
-        internal
-        pure
-        returns (bytes29)
-    {
+    function mustBeTransferGovernor(bytes29 _view) internal pure returns (bytes29) {
         return tryAsTransferGovernor(_view).assertValid();
     }
 
