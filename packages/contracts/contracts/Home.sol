@@ -2,16 +2,16 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
-import {Version0} from "./Version0.sol";
-import {NomadBase} from "./NomadBase.sol";
-import {QueueLib} from "../libs/Queue.sol";
-import {MerkleLib} from "../libs/Merkle.sol";
-import {Message} from "../libs/Message.sol";
-import {MerkleTreeManager} from "./Merkle.sol";
-import {QueueManager} from "./Queue.sol";
-import {IUpdaterManager} from "../interfaces/IUpdaterManager.sol";
+import { Version0 } from "./Version0.sol";
+import { NomadBase } from "./NomadBase.sol";
+import { QueueLib } from "../libs/Queue.sol";
+import { MerkleLib } from "../libs/Merkle.sol";
+import { Message } from "../libs/Message.sol";
+import { MerkleTreeManager } from "./Merkle.sol";
+import { QueueManager } from "./Queue.sol";
+import { IUpdaterManager } from "../interfaces/IUpdaterManager.sol";
 // ============ External Imports ============
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
  * @title Home
@@ -214,11 +214,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
      * @return _committedRoot Latest root signed by the Updater
      * @return _new Latest enqueued Merkle root
      */
-    function suggestUpdate()
-        external
-        view
-        returns (bytes32 _committedRoot, bytes32 _new)
-    {
+    function suggestUpdate() external view returns (bytes32 _committedRoot, bytes32 _new) {
         if (queue.length() != 0) {
             _committedRoot = committedRoot;
             _new = queue.lastItem();
@@ -266,10 +262,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
         bytes32 _newRoot,
         bytes memory _signature
     ) public notFailed returns (bool) {
-        require(
-            _isUpdaterSignature(_oldRoot, _newRoot, _signature),
-            "!updater sig"
-        );
+        require(_isUpdaterSignature(_oldRoot, _newRoot, _signature), "!updater sig");
         require(_oldRoot == committedRoot, "not a current update");
         // if the _newRoot is not currently contained in the queue,
         // slash the Updater and set the contract to FAILED state
@@ -290,10 +283,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
      * @param _updaterManager Address of the UpdaterManager
      */
     function _setUpdaterManager(IUpdaterManager _updaterManager) internal {
-        require(
-            Address.isContract(address(_updaterManager)),
-            "!contract updaterManager"
-        );
+        require(Address.isContract(address(_updaterManager)), "!contract updaterManager");
         updaterManager = IUpdaterManager(_updaterManager);
         emit NewUpdaterManager(address(_updaterManager));
     }

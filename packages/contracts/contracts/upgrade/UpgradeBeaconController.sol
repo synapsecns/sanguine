@@ -2,10 +2,10 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
-import {UpgradeBeacon} from "./UpgradeBeacon.sol";
+import { UpgradeBeacon } from "./UpgradeBeacon.sol";
 // ============ External Imports ============
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
  * @title UpgradeBeaconController
@@ -28,10 +28,7 @@ contract UpgradeBeaconController is Ownable {
      * @param _beacon Address of the UpgradeBeacon which will be updated
      * @param _implementation Address of the Implementation contract to upgrade the Beacon to
      */
-    function upgrade(address _beacon, address _implementation)
-        external
-        onlyOwner
-    {
+    function upgrade(address _beacon, address _implementation) external onlyOwner {
         // Require that the beacon is a contract
         require(Address.isContract(_beacon), "beacon !contract");
         // Call into beacon and supply address of new implementation to update it.
