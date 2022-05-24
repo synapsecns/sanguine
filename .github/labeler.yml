@@ -15,4 +15,4 @@ C-Protocol-Critical:
   - 'packages/contracts/**/*.sol'
 
 Go:
-  - 'validator/**/*'
+  - '**/*.go'
