@@ -29,7 +29,7 @@ jobs:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.46.2
           # Path to your GolangCI-Lint config within the repo (optional)
-          config: .golangci.yml
+          config: validator/.golangci.yml
           args: --concurrency 1
         env:
           # GitHub token for annotations (optional)
