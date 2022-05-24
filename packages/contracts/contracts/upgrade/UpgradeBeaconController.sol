@@ -28,7 +28,10 @@ contract UpgradeBeaconController is Ownable {
      * @param _beacon Address of the UpgradeBeacon which will be updated
      * @param _implementation Address of the Implementation contract to upgrade the Beacon to
      */
-    function upgrade(address _beacon, address _implementation) external onlyOwner {
+    function upgrade(address _beacon, address _implementation)
+        external
+        onlyOwner
+    {
         // Require that the beacon is a contract
         require(Address.isContract(_beacon), "beacon !contract");
         // Call into beacon and supply address of new implementation to update it.

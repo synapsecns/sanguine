@@ -119,6 +119,14 @@ library Message {
     }
 
     function leaf(bytes29 _message) internal view returns (bytes32) {
-        return messageHash(origin(_message), sender(_message), nonce(_message), destination(_message), recipient(_message), TypedMemView.clone(body(_message)));
+        return
+            messageHash(
+                origin(_message),
+                sender(_message),
+                nonce(_message),
+                destination(_message),
+                recipient(_message),
+                TypedMemView.clone(body(_message))
+            );
     }
 }

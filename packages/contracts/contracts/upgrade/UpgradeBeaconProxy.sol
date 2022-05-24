@@ -37,14 +37,19 @@ contract UpgradeBeaconProxy {
      * @param _upgradeBeacon Address of the Upgrade Beacon to be stored immutably in the contract
      * @param _initializationCalldata Calldata supplied when calling the initialization function
      */
-    constructor(address _upgradeBeacon, bytes memory _initializationCalldata) payable {
+    constructor(address _upgradeBeacon, bytes memory _initializationCalldata)
+        payable
+    {
         // Validate the Upgrade Beacon is a contract
         require(Address.isContract(_upgradeBeacon), "beacon !contract");
         // set the Upgrade Beacon
         upgradeBeacon = _upgradeBeacon;
         // Validate the implementation is a contract
         address _implementation = _getImplementation(_upgradeBeacon);
-        require(Address.isContract(_implementation), "beacon implementation !contract");
+        require(
+            Address.isContract(_implementation),
+            "beacon implementation !contract"
+        );
         // Call the initialization function on the implementation
         if (_initializationCalldata.length > 0) {
             _initialize(_implementation, _initializationCalldata);
@@ -77,7 +82,10 @@ contract UpgradeBeaconProxy {
      * @param _implementation - Contract to which the initalization is delegated
      * @param _initializationCalldata - Calldata supplied when calling the initialization function
      */
-    function _initialize(address _implementation, bytes memory _initializationCalldata) private {
+    function _initialize(
+        address _implementation,
+        bytes memory _initializationCalldata
+    ) private {
         // Delegatecall into the implementation, supplying initialization calldata.
         (bool _ok, ) = _implementation.delegatecall(_initializationCalldata);
         // Revert and include revert data if delegatecall to implementation reverts.
@@ -112,7 +120,14 @@ contract UpgradeBeaconProxy {
             calldatacopy(0, 0, calldatasize())
             // Delegatecall to the implementation, supplying calldata and gas.
             // Out and outsize are set to zero - instead, use the return buffer.
-            let result := delegatecall(gas(), _implementation, 0, calldatasize(), 0, 0)
+            let result := delegatecall(
+                gas(),
+                _implementation,
+                0,
+                calldatasize(),
+                0,
+                0
+            )
             // Copy the returned data from the return buffer.
             returndatacopy(0, 0, returndatasize())
             switch result
@@ -130,7 +145,11 @@ contract UpgradeBeaconProxy {
      * @notice Call the Upgrade Beacon to get the current implementation contract address
      * @return _implementation Address of the current implementation.
      */
-    function _getImplementation() private view returns (address _implementation) {
+    function _getImplementation()
+        private
+        view
+        returns (address _implementation)
+    {
         _implementation = _getImplementation(upgradeBeacon);
     }
 

@@ -2,7 +2,7 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
-import { MerkleLib } from "../libs/Merkle.sol";
+import { MerkleLib } from "./libs/Merkle.sol";
 
 /**
  * @title MerkleTreeManager

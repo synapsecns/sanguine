@@ -41,7 +41,7 @@ contract UpgradeBeacon {
      * @param _initialImplementation Address of the initial implementation contract
      * @param _controller Address of the controller who can upgrade the implementation
      */
-    constructor(address _initialImplementation, address _controller) payable {
+    constructor(address _initialImplementation, address _controller) {
         _setImplementation(_initialImplementation);
         controller = _controller;
     }
@@ -87,7 +87,10 @@ contract UpgradeBeacon {
         // Require that the new implementation is different from the current one
         require(implementation != _newImplementation, "!upgrade");
         // Require that the new implementation is a contract
-        require(Address.isContract(_newImplementation), "implementation !contract");
+        require(
+            Address.isContract(_newImplementation),
+            "implementation !contract"
+        );
         // set the new implementation
         implementation = _newImplementation;
         emit Upgrade(_newImplementation);

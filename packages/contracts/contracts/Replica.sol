@@ -4,10 +4,10 @@ pragma solidity 0.8.13;
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
 import { NomadBase } from "./NomadBase.sol";
-import { MerkleLib } from "../libs/Merkle.sol";
-import { Message } from "../libs/Message.sol";
+import { MerkleLib } from "./libs/Merkle.sol";
+import { Message } from "./libs/Message.sol";
 // ============ External Imports ============
-import { TypedMemView } from "../libs/TypedMemView.sol";
+import { TypedMemView } from "./libs/TypedMemView.sol";
 
 /**
  * @title Replica
@@ -64,11 +64,16 @@ contract Replica is Version0, NomadBase {
 
     /**
      * @notice Emitted when message is processed
-     * @param messageHash Hash of message that failed to process
-     * @param success TRUE if the call was executed successfully, FALSE if the call reverted
+     * @param messageHash The keccak256 hash of the message that was processed
+     * @param success TRUE if the call was executed successfully,
+     * FALSE if the call reverted or threw
      * @param returnData the return data from the external call
      */
-    event Process(bytes32 indexed messageHash, bool indexed success, bytes indexed returnData);
+    event Process(
+        bytes32 indexed messageHash,
+        bool indexed success,
+        bytes indexed returnData
+    );
 
     /**
      * @notice Emitted when the value for optimisticTimeout is set
@@ -82,11 +87,14 @@ contract Replica is Version0, NomadBase {
      * @param previousConfirmAt The previous value of confirmAt
      * @param newConfirmAt The new value of confirmAt
      */
-    event SetConfirmation(bytes32 indexed root, uint256 previousConfirmAt, uint256 newConfirmAt);
+    event SetConfirmation(
+        bytes32 indexed root,
+        uint256 previousConfirmAt,
+        uint256 newConfirmAt
+    );
 
     // ============ Constructor ============
 
-    // solhint-disable-next-line no-empty-blocks
     constructor(
         uint32 _localDomain,
         uint256 _processGas,
@@ -100,6 +108,19 @@ contract Replica is Version0, NomadBase {
 
     // ============ Initializer ============
 
+    /**
+     * @notice Initialize the replica
+     * @dev Performs the following action:
+     *      - initializes inherited contracts
+     *      - initializes re-entrancy guard
+     *      - sets remote domain
+     *      - sets a trusted root, and pre-approves messages under it
+     *      - sets the optimistic timer
+     * @param _remoteDomain The domain of the Home contract this follows
+     * @param _updater The EVM id of the updater
+     * @param _committedRoot A trusted root from which to start the Replica
+     * @param _optimisticSeconds The time a new root must wait to be confirmed
+     */
     function initialize(
         uint32 _remoteDomain,
         address _updater,
@@ -111,6 +132,7 @@ contract Replica is Version0, NomadBase {
         entered = 1;
         remoteDomain = _remoteDomain;
         committedRoot = _committedRoot;
+        // pre-approve the committed root.
         confirmAt[_committedRoot] = 1;
         optimisticSeconds = _optimisticSeconds;
         emit SetOptimisticTimeout(_optimisticSeconds);
@@ -131,11 +153,14 @@ contract Replica is Version0, NomadBase {
         bytes32 _oldRoot,
         bytes32 _newRoot,
         bytes memory _signature
-    ) external notFailed {
+    ) external {
         // ensure that update is building off the last submitted root
         require(_oldRoot == committedRoot, "not current update");
         // validate updater signature
-        require(_isUpdaterSignature(_oldRoot, _newRoot, _signature), "!updater sig");
+        require(
+            _isUpdaterSignature(_oldRoot, _newRoot, _signature),
+            "!updater sig"
+        );
         // Hook for future use
         _beforeUpdate();
         // set the new root's confirmation timer
@@ -245,7 +270,10 @@ contract Replica is Version0, NomadBase {
      * @dev Only callable by owner (Governance)
      * @param _optimisticSeconds New optimistic timeout period
      */
-    function setOptimisticTimeout(uint256 _optimisticSeconds) external onlyOwner {
+    function setOptimisticTimeout(uint256 _optimisticSeconds)
+        external
+        onlyOwner
+    {
         optimisticSeconds = _optimisticSeconds;
         emit SetOptimisticTimeout(_optimisticSeconds);
     }
@@ -267,7 +295,10 @@ contract Replica is Version0, NomadBase {
      * @param _root The root for which to modify confirm time
      * @param _confirmAt The new confirmation time. Set to 0 to "delete" a root.
      */
-    function setConfirmation(bytes32 _root, uint256 _confirmAt) external onlyOwner {
+    function setConfirmation(bytes32 _root, uint256 _confirmAt)
+        external
+        onlyOwner
+    {
         uint256 _previousConfirmAt = confirmAt[_root];
         confirmAt[_root] = _confirmAt;
         emit SetConfirmation(_root, _previousConfirmAt, _confirmAt);
@@ -327,14 +358,6 @@ contract Replica is Version0, NomadBase {
     }
 
     // ============ Internal Functions ============
-
-    /**
-     * @notice Moves the contract into failed state
-     * @dev Called when a Double Update is submitted
-     */
-    function _fail() internal override {
-        _setFailed();
-    }
 
     /// @notice Hook for potential future use
     // solhint-disable-next-line no-empty-blocks

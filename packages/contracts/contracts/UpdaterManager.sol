@@ -2,7 +2,7 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
-import { IUpdaterManager } from "../interfaces/IUpdaterManager.sol";
+import { IUpdaterManager } from "./interfaces/IUpdaterManager.sol";
 import { Home } from "./Home.sol";
 // ============ External Imports ============
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -86,7 +86,11 @@ contract UpdaterManager is IUpdaterManager, Ownable {
      * when updater bonding and rotation are also implemented
      * @param _reporter The address of the entity that reported the updater fraud
      */
-    function slashUpdater(address payable _reporter) external override onlyHome {
+    function slashUpdater(address payable _reporter)
+        external
+        override
+        onlyHome
+    {
         emit FakeSlashed(_reporter);
     }
 
@@ -96,5 +100,14 @@ contract UpdaterManager is IUpdaterManager, Ownable {
      */
     function updater() external view override returns (address) {
         return _updater;
+    }
+
+    /**
+    * @dev should be impossible to renounce ownership;
+     * we override OpenZeppelin Ownable implementation
+     * of renounceOwnership to make it a no-op
+     */
+    function renounceOwnership() public override onlyOwner {
+        // do nothing
     }
 }
