@@ -41,3 +41,5 @@ coverage.out
 .idea/
 
 .gas-snapshot
+
+types
