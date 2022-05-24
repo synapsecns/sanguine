@@ -1,24 +1,25 @@
 package db
 
 import (
+	"fmt"
 	"github.com/cockroachdb/pebble"
-	_ "github.com/cockroachdb/pebble"
-	_ "github.com/synapsecns/synapse-node/config"
 )
 
-type DB interface {
-}
+// DB contains the synapse db.
+type DB interface{}
 
-// pebbleDB contains a rocksdb used to store merkle trees
+// pebbleDB contains a rocksdb used to store merkle trees.
 type pebbleDB struct {
 	*pebble.DB
 }
 
-// NewDB creates a new db
+// NewDB creates a new db.
 func NewDB(dbPath string) (DB, error) {
 	db, err := pebble.Open(dbPath, &pebble.Options{})
-	_ = db
-	_ = err
 
-	return nil, nil
+	if err != nil {
+		return nil, fmt.Errorf("could not create db: %w", err)
+	}
+
+	return pebbleDB{DB: db}, nil
 }

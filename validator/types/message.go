@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -20,7 +21,7 @@ type Message interface {
 	Body() []byte
 }
 
-// messageImpl implements a message. It is used for testing. Real messages are emitted by teh contract
+// messageImpl implements a message. It is used for testing. Real messages are emitted by the contract.
 type messageImpl struct {
 	origin      uint32
 	sender      common.Hash
@@ -29,7 +30,7 @@ type messageImpl struct {
 	body        []byte
 }
 
-// NewMessage creates a new message from fields passed in
+// NewMessage creates a new message from fields passed in.
 func NewMessage(origin uint32, sender common.Hash, nonce uint32, destination common.Hash, body []byte) Message {
 	return &messageImpl{
 		origin:      origin,
@@ -61,14 +62,14 @@ func (m messageImpl) Body() []byte {
 }
 
 // Encode encodes the message to a bytes
-// TODO: this should use a helper message once contract abis are ready
+// TODO: this should use a helper message once contract abis are ready.
 func (m messageImpl) Encode() ([]byte, error) {
 	var res bytes.Buffer
 	enc := gob.NewEncoder(&res)
 
 	err := enc.Encode(m)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not encode %T: %w", m, err)
 	}
 	return res.Bytes(), nil
 }
@@ -77,8 +78,8 @@ func (m messageImpl) Encode() ([]byte, error) {
 type CommittedMessage interface {
 	// LeafIndex is the index at which the message is committed
 	LeafIndex() uint32
-	// CommitedRoot is the current root when the message was commited.
+	// CommitedRoot is the current root when the message was committed.
 	CommitedRoot() common.Hash
-	// Message is the fully detailed message that was commited
+	// Message is the fully detailed message that was committed
 	Message() []byte
 }

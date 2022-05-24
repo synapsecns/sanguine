@@ -1,0 +1,35 @@
+name: Go Workflows
+on:
+  push:
+    branches-ignore:
+      - 'gh-pages'
+
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: authenticate with github for private go modules
+        uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+          version: v1.46.2
+          # Path to your GolangCI-Lint config within the repo (optional)
+          config: .golangci.yml
+          args: --concurrency 1
+        env:
+          # GitHub token for annotations (optional)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # see: https://github.com/golangci/golangci-lint/issues/337#issuecomment-510136513
+          GOGC: 20
+          GOPRIVATE: "GOPRIVATE=github.com/synapsecns/synapse-node"
