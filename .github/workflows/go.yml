@@ -84,7 +84,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Test
-        run:  go test -coverprofile=profile.cov ./... -parallel=1
+        run:  go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
 
       - name: Send coverage
         uses: shogo82148/actions-goveralls@v1
