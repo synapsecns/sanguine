@@ -24,6 +24,10 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
+      - name: authenticate with github for private go modules
+        uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
       - name: Go modules cache
         uses: actions/cache@v2
         with:
