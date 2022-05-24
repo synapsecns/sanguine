@@ -5,5 +5,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "hardhat": "^2.9.6"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.6.0",
+    "@openzeppelin/contracts-upgradeable": "^4.6.0"
+  }
 }

@@ -10,4 +10,5 @@
     "eslint.format.enable": true,
     "editorconfig.generateAuto": false,
     "files.trimTrailingWhitespace": true,
+    "solidity.defaultCompiler": "remote",
   }

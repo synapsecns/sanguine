@@ -13,5 +13,11 @@
   "bugs": {
     "url": "https://github.com/synapsecns/sanguine/issues"
   },
-  "homepage": "https://github.com/synapsecns/sanguine#readme"
+  "homepage": "https://github.com/synapsecns/sanguine#readme",
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  },
+  "dependencies": {
+    "@changesets/cli": "^2.22.0"
+  }
 }
