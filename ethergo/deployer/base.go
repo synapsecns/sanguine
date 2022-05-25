@@ -34,7 +34,7 @@ func (n BaseDeployer) Deploy(ctx context.Context) (backends.DeployedContract, er
 	panic("deploy not implemented in base deployer")
 }
 
-// Backend gets the backend of the current deployer instance
+// Backend gets the backend of the current deployer instance.
 func (n BaseDeployer) Backend() backends.SimulatedTestBackend {
 	return n.backend
 }
