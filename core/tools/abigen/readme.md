@@ -114,3 +114,7 @@ func init() {
 3. Test Cases:
    - Mock out an etherscan api & test that
    - Test several different versions of solc
+
+4. Building in Golangci support: Right now `go fmt` is run programatically on the output of the program. This does miss some things that are automatically fixed by `golangci-lint run --config [config file]`. This could be run programatically in the same way go fmt is now.
+
+5. Golang native `sol-merger`. Currently, this package relies on [`sol-merger`](https://github.com/RyuuGan/sol-merger). This package handles C3 linearization (removing duplicate abstracts, etc) and dependency resolution in the way that go native solidity flatteners (e.g. [flattener](https://github.com/DaveAppleton/SolidityFlattery/blob/master/flat.go)) don't yet. It'd be nice to be able to  do this in `abigen` so we could skip the merge step.
