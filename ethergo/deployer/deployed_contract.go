@@ -1,0 +1,75 @@
+package deployer
+
+import (
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/core/vm"
+	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/synapse-node/testutils/backends"
+	"math/big"
+	"testing"
+)
+
+// DeployedContract represents a deployed contract. It is returned by a deployer after a successful deployment.
+type DeployedContract struct {
+	// address is the address where the contract has been deployed
+	address common.Address
+	// contractHandle is the actual handle returned by deploying the contract
+	// this must be castt o be useful
+	contractHandle interface{}
+	// owner of the contract
+	owner common.Address
+	// deployTx is the transaction where the contract was created
+	deployTx *types.Transaction
+	// chainID is the chain id where the contract is deployed
+	chainID *big.Int
+}
+
+// NewDeployedContract creates a new deployed contract. We take some shortcuts by making some assumptions:
+// namely, that tx sender is owner.
+func NewDeployedContract(tb testing.TB, handle vm.ContractRef, deployTx *types.Transaction) DeployedContract {
+	tb.Helper()
+	// TODO: eip-2930 signer?
+	msg, err := deployTx.AsMessage(types.LatestSignerForChainID(deployTx.ChainId()), nil)
+	assert.Nil(tb, err)
+
+	return DeployedContract{
+		address:        handle.Address(),
+		contractHandle: handle,
+		owner:          msg.From(),
+		deployTx:       deployTx,
+		chainID:        deployTx.ChainId(),
+	}
+}
+
+// Address gets the address of the deployed contract.
+func (d DeployedContract) Address() common.Address {
+	return d.address
+}
+
+// ContractHandle is the contract handle of the deployed ocontract.
+func (d DeployedContract) ContractHandle() interface{} {
+	return d.contractHandle
+}
+
+// Owner gets the contract owner.
+func (d DeployedContract) Owner() common.Address {
+	return d.owner
+}
+
+// OwnerPtr returns a pointer to the owner (useful for GetTxContext() operations).
+func (d DeployedContract) OwnerPtr() *common.Address {
+	return &d.owner
+}
+
+// DeployTx gets the deploy transaction.
+func (d DeployedContract) DeployTx() *types.Transaction {
+	return d.deployTx
+}
+
+// ChainID is the chain id of the deployed contract.
+func (d DeployedContract) ChainID() *big.Int {
+	return d.chainID
+}
+
+var _ backends.DeployedContract = DeployedContract{}
