@@ -1,5 +1,6 @@
 default: help
 
+# TODO tag a version
 golangci-install:
 	@#Travis (has sudo)
 	@if [ "$(shell which golangci-lint)" = "" ] && [ $(TRAVIS) ]; then curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b && sudo cp ./bin/golangci-lint $(go env GOPATH)/bin/; fi;
