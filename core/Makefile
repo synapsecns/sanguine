@@ -26,7 +26,7 @@ help: ## This help dialog.
 lint: golangci-install ## Run golangci-lint and go fmt ./...
 	go mod tidy
 	go fmt ./...
-	@golangci-lint run --fix
+	@golangci-lint run --fix --config=../.golangci.yml
 
 dep: ## make dep
 	# make sure submodules are present
