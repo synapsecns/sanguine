@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
-import { NomadBase } from "./NomadBase.sol";
+import { SynapseBase } from "./SynapseBase.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
 // ============ External Imports ============
@@ -15,7 +15,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract Replica is Version0, NomadBase {
+contract Replica is Version0, SynapseBase {
     // ============ Libraries ============
 
     using MerkleLib for MerkleLib.Tree;
@@ -91,7 +91,7 @@ contract Replica is Version0, NomadBase {
         uint32 _localDomain,
         uint256 _processGas,
         uint256 _reserveGas
-    ) NomadBase(_localDomain) {
+    ) SynapseBase(_localDomain) {
         require(_processGas >= 850_000, "!process gas");
         require(_reserveGas >= 15_000, "!reserve gas");
         PROCESS_GAS = _processGas;
@@ -119,7 +119,7 @@ contract Replica is Version0, NomadBase {
         bytes32 _committedRoot,
         uint256 _optimisticSeconds
     ) public initializer {
-        __NomadBase_initialize(_updater);
+        __SynapseBase_initialize(_updater);
         // set storage variables
         entered = 1;
         remoteDomain = _remoteDomain;
@@ -164,7 +164,7 @@ contract Replica is Version0, NomadBase {
      * `message`. If the message is successfully proven, then tries to process
      * message.
      * @dev Reverts if `prove` call returns false
-     * @param _message Formatted message (refer to NomadBase.sol Message library)
+     * @param _message Formatted message (refer to SynapseBase.sol Message library)
      * @param _proof Merkle proof of inclusion for message's leaf
      * @param _index Index of leaf in home's merkle tree
      */
@@ -334,7 +334,7 @@ contract Replica is Version0, NomadBase {
     }
 
     /**
-     * @notice Hash of Home domain concatenated with "NOMAD"
+     * @notice Hash of Home domain concatenated with "SYN"
      */
     function homeDomainHash() public view override returns (bytes32) {
         return _homeDomainHash(remoteDomain);
