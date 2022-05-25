@@ -100,7 +100,7 @@ jobs:
     strategy:
       matrix:
         package:
-          - services
+          - core
     steps:
       - uses: actions/setup-go@v3
         with:

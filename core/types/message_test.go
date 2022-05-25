@@ -4,7 +4,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/services/types"
+	"github.com/synapsecns/sanguine/core/types"
 	"math/big"
 	"testing"
 )
