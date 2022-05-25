@@ -2,7 +2,7 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
-import { QueueLib } from "../libs/Queue.sol";
+import { QueueLib } from "./libs/Queue.sol";
 // ============ External Imports ============
 import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 

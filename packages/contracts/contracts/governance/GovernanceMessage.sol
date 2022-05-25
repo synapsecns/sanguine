@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
-pragma experimental ABIEncoderV2;
 
 // ============ External Imports ============
-import { TypedMemView } from "../../libs/TypedMemView.sol";
+import { TypedMemView } from "../libs/TypedMemView.sol";
 
 library GovernanceMessage {
     using TypedMemView for bytes;
@@ -43,11 +42,6 @@ library GovernanceMessage {
         Invalid, // 0
         Batch, // 1 - A Batch message
         TransferGovernor // 2 - A TransferGovernor message
-    }
-
-    modifier typeAssert(bytes29 _view, Types _t) {
-        _view.assertType(uint40(_t));
-        _;
     }
 
     // Read the type of a message

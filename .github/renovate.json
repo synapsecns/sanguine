@@ -1,0 +1,23 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "assignees": [],
+  "enabledManagers": ["gomod"],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "excludePackagePrefixes": [],
+      "matchManagers": ["gomod"],
+      "automerge": true,
+      "postUpdateOptions": [
+        "gomodTidy"
+      ]
+    }
+  ],
+  "branchConcurrentLimit": 10,
+  "prConcurrentLimit": 10,
+  "git-submodules": {
+    "enabled": true
+  }
+}
