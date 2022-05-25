@@ -1,3 +1,7 @@
 go 1.17
 
 use ./core
+
+use ./tools
+
+use ./ethergo

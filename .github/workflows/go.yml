@@ -97,6 +97,12 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          - core
+          - tools
+          - ethergo
     steps:
       - uses: actions/setup-go@v3
         with:
@@ -112,14 +118,19 @@ jobs:
         with:
           credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
 
+
+      # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
+      - name: Setup cache key
+        run: cp ${{matrix.package}}/go.mod go.mod -v
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
-          working-directory: core/
+          working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.46.2
           # Path to your GolangCI-Lint config within the repo (optional)
-          config: .golangci.yml
+          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yml
           # see: https://github.com/golangci/golangci-lint/issues/2654
         env:
           # GitHub token for annotations (optional)

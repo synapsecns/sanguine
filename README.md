@@ -15,7 +15,8 @@ Then check out our list of [good first issues](https://github.com/ethereum-optim
 root
 ├── <a href="./packages">packages</a>
 │   ├── <a href="./packages/contracts">contracts</a>: Contracts used for synapse
-
+├── <a href="./tools">tools</a>
+│   ├── <a href="./tools/abigen">abigen</a>: Used to generate abigen bindings for go
 ├── <a href="./core">core</a>: Core service contains the code used by different agents
 </pre>
 
