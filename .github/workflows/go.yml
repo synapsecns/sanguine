@@ -121,7 +121,7 @@ jobs:
 
       # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
       - name: Setup cache key
-        run: cp ${{matrix.package}}/go.mod go.mod
+        run: cp ${{matrix.package}}/go.mod go.mod -v
 
 
       - name: golangci-lint
