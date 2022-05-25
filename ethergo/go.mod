@@ -6,7 +6,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.11
 	github.com/ipfs/go-log v1.0.5
 	github.com/neverlee/keymutex v0.0.0-20171121013845-f593aa834bf9
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/synapsecns/synapse-node v0.242.0
 )
 
