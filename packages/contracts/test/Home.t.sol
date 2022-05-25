@@ -10,7 +10,8 @@ import "../contracts/UpdaterManager.sol";
 pragma solidity 0.8.13;
 
 contract HomeTest is Test {
-    address[] users = createUsers(10);
+    Utilities utils = new Utilities();
+    address[] users = utils.createUsers(10);
     Home home;
     address signer;
     address fakeSigner;
