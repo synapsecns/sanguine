@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
-import { NomadBase } from "./NomadBase.sol";
+import { SynapseBase } from "./SynapseBase.sol";
 import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
@@ -23,7 +23,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Accepts submissions of fraudulent signatures
  * by the Updater and slashes the Updater in this case.
  */
-contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
+contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
     // ============ Libraries ============
 
     using QueueLib for QueueLib.Queue;
@@ -103,7 +103,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
 
     // ============ Constructor ============
 
-    constructor(uint32 _localDomain) NomadBase(_localDomain) {} // solhint-disable-line no-empty-blocks
+    constructor(uint32 _localDomain) SynapseBase(_localDomain) {} // solhint-disable-line no-empty-blocks
 
     // ============ Initializer ============
 
@@ -111,7 +111,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
         // initialize queue, set Updater Manager, and initialize
         __QueueManager_initialize();
         _setUpdaterManager(_updaterManager);
-        __NomadBase_initialize(updaterManager.updater());
+        __SynapseBase_initialize(updaterManager.updater());
     }
 
     // ============ Modifiers ============
@@ -263,8 +263,8 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
         bytes calldata _signature2
     ) external notFailed {
         if (
-            NomadBase._isUpdaterSignature(_oldRoot, _newRoot[0], _signature) &&
-            NomadBase._isUpdaterSignature(_oldRoot, _newRoot[1], _signature2) &&
+            SynapseBase._isUpdaterSignature(_oldRoot, _newRoot[0], _signature) &&
+            SynapseBase._isUpdaterSignature(_oldRoot, _newRoot[1], _signature2) &&
             _newRoot[0] != _newRoot[1]
         ) {
             _fail();
@@ -275,7 +275,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, NomadBase {
     // ============ Public Functions  ============
 
     /**
-     * @notice Hash of Home domain concatenated with "NOMAD"
+     * @notice Hash of Home domain concatenated with "SYN"
      */
     function homeDomainHash() public view override returns (bytes32) {
         return _homeDomainHash(localDomain);
