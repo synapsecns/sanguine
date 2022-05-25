@@ -11,11 +11,11 @@ import {
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
- * @title NomadBase
+ * @title SynapseBase
  * @author Illusory Systems Inc.
  * @notice Shared utilities between Home and Replica.
  */
-abstract contract NomadBase is Initializable, OwnableUpgradeable {
+abstract contract SynapseBase is Initializable, OwnableUpgradeable {
     // ============ Enums ============
 
     // States:
@@ -81,7 +81,7 @@ abstract contract NomadBase is Initializable, OwnableUpgradeable {
 
     // ============ Initializer ============
 
-    function __NomadBase_initialize(address _updater) internal initializer {
+    function __SynapseBase_initialize(address _updater) internal onlyInitializing {
         __Ownable_init();
         _setUpdater(_updater);
         state = States.Active;
@@ -90,18 +90,18 @@ abstract contract NomadBase is Initializable, OwnableUpgradeable {
     // ============ Public Functions ============
 
     /**
-     * @notice Hash of Home domain concatenated with "NOMAD"
+     * @notice Hash of Home domain concatenated with "SYN"
      */
     function homeDomainHash() public view virtual returns (bytes32);
 
     // ============ Internal Functions ============
 
     /**
-     * @notice Hash of Home domain concatenated with "NOMAD"
+     * @notice Hash of Home domain concatenated with "SYN"
      * @param _homeDomain the Home domain to hash
      */
     function _homeDomainHash(uint32 _homeDomain) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_homeDomain, "NOMAD"));
+        return keccak256(abi.encodePacked(_homeDomain, "SYN"));
     }
 
     /**
