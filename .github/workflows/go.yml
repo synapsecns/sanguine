@@ -100,9 +100,6 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Set env
-        run: echo ::set-env name=workspace::$GITHUB_WORKSPACE
-
       - uses: actions/setup-go@v3
         with:
           go-version: 1.18
