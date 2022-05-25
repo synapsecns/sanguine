@@ -85,6 +85,7 @@ linters:
     - gomoddirectives
     # no need to disallow returning interfaces
     - ireturn
+    - nonamedreturns
   fast: false
 
 issues:

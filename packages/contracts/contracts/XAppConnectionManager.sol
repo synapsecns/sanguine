@@ -13,7 +13,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
  * @title XAppConnectionManager
  * @author Illusory Systems Inc.
  * @notice Manages a registry of local Replica contracts
- * for remote Home domains. Accepts Watcher signatures
+ * for remote Home domains. Acepts Watcher signatures
  * to un-enroll Replicas attached to fraudulent remote Homes
  */
 contract XAppConnectionManager is Ownable {
