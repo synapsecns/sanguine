@@ -17,6 +17,10 @@ type DB interface {
 	MessageByLeaf(leaf common.Hash) (types.CommittedMessage, error)
 	// MessageByLeafIndex fetches a message by leaf the index of it's leaf
 	MessageByLeafIndex(leafIndex uint32) (types.CommittedMessage, error)
+	// StoreProof stores a proof of the lead index
+	StoreProof(leafIndex uint32, proof types.Proof) error
+	// ProofByLeafIndex gets a proof by it's leaf index
+	ProofByLeafIndex(leafIndex uint32) (types.Proof, error)
 }
 
 // pebbleDB contains a rocksdb used to store merkle trees.
@@ -147,6 +151,33 @@ func (d *pebbleDB) MessageByLeafIndex(leafIndex uint32) (types.CommittedMessage,
 	}
 
 	return d.MessageByLeaf(leaf)
+}
+
+func (d *pebbleDB) StoreProof(leafIndex uint32, proof types.Proof) error {
+	encodedProof, err := proof.Encode()
+	if err != nil {
+		return fmt.Errorf("could not encode proof: %w", err)
+	}
+
+	err = d.StoreKeyedEncodable(PROOF, []byte(fmt.Sprintf("%d", leafIndex)), encodedProof)
+	if err != nil {
+		return fmt.Errorf("could not store proof: %w", err)
+	}
+	return nil
+}
+
+func (d *pebbleDB) ProofByLeafIndex(leafIndex uint32) (types.Proof, error) {
+	dbProof, _, err := d.DB.Get(d.FullKey(PROOF, []byte(fmt.Sprintf("%d", leafIndex))))
+	if err != nil {
+		return nil, fmt.Errorf("could not get db proof: %w", err)
+	}
+
+	decodedProof, err := types.DecodeProof(dbProof)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode proof: %w", err)
+	}
+
+	return decodedProof, nil
 }
 
 // FullKey gets the full key.

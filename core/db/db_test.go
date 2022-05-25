@@ -54,3 +54,24 @@ func (d *DBSuite) TestStoresAndRetrievesMessages() {
 
 	Equal(d.T(), byLeafIndex.Message(), byNonce.Message())
 }
+
+func (d *DBSuite) TestStoresAndRetreivesProofs() {
+	newDB, err := db.NewDB(filet.TmpDir(d.T(), ""), "home1")
+	Nil(d.T(), err)
+
+	leaf := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	index := gofakeit.Uint32()
+	path := common.Hash{}
+
+	proof := types.NewProof(leaf, index, path)
+
+	err = newDB.StoreProof(13, proof)
+	Nil(d.T(), err)
+
+	byIndex, err := newDB.ProofByLeafIndex(13)
+	Nil(d.T(), err)
+
+	Equal(d.T(), byIndex.Index(), index)
+	Equal(d.T(), byIndex.Path(), path)
+	Equal(d.T(), byIndex.Leaf(), leaf)
+}
