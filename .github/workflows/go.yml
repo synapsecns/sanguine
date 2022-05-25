@@ -118,6 +118,12 @@ jobs:
         with:
           credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
 
+
+      # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
+      - name: Setup cache key
+        run: cp ${{matrix.package}}/go.mod go.mod
+
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
