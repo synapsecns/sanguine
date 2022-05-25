@@ -9,7 +9,8 @@
     ],
     "nohoist": [
       "**/typechain",
-      "**/@typechain/*"
+      "**/@typechain/*",
+      "**/@openzeppelin/*"
     ]
   },
   "private": "true",
