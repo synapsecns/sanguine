@@ -100,4 +100,10 @@ issues:
       linters:
         - revive
       text: "and that stutters; consider calling this"
+    - path: ethergo/example/*
+      linters:
+        - wrapcheck
+    - path: testutil/*
+      linters:
+        - wrapcheck
   exclude-use-default: false

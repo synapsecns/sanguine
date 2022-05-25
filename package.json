@@ -9,7 +9,9 @@
     ],
     "nohoist": [
       "**/typechain",
-      "**/@typechain/*"
+      "**/@typechain/*",
+      "**/@openzeppelin/contracts-upgradeable",
+      "**/@openzeppelin/contracts"
     ]
   },
   "private": "true",

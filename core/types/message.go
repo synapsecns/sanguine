@@ -30,7 +30,7 @@ type Message interface {
 	DestinationAndNonce() uint64
 }
 
-// messageImpl implements a message. It is used for testing. Real messages are emitted by the contract.
+// messageImpl implements a message. It is used for testutils. Real messages are emitted by the contract.
 type messageImpl struct {
 	origin      uint32
 	sender      common.Hash
