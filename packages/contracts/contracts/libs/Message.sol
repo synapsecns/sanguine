@@ -3,9 +3,7 @@ pragma solidity 0.8.13;
 
 import "./TypedMemView.sol";
 
-import {
-    TypeCasts
-} from "./TypeCasts.sol";
+import { TypeCasts } from "./TypeCasts.sol";
 
 /**
  * @title Message Library
@@ -66,17 +64,7 @@ library Message {
         bytes32 _recipient,
         bytes memory _body
     ) internal pure returns (bytes32) {
-        return
-            keccak256(
-                formatMessage(
-                    _origin,
-                    _sender,
-                    _nonce,
-                    _destination,
-                    _recipient,
-                    _body
-                )
-            );
+        return keccak256(formatMessage(_origin, _sender, _nonce, _destination, _recipient, _body));
     }
 
     /// @notice Returns message's origin field
@@ -105,11 +93,7 @@ library Message {
     }
 
     /// @notice Returns message's recipient field as an address
-    function recipientAddress(bytes29 _message)
-        internal
-        pure
-        returns (address)
-    {
+    function recipientAddress(bytes29 _message) internal pure returns (address) {
         return TypeCasts.bytes32ToAddress(recipient(_message));
     }
 
@@ -119,6 +103,14 @@ library Message {
     }
 
     function leaf(bytes29 _message) internal view returns (bytes32) {
-        return messageHash(origin(_message), sender(_message), nonce(_message), destination(_message), recipient(_message), TypedMemView.clone(body(_message)));
+        return
+            messageHash(
+                origin(_message),
+                sender(_message),
+                nonce(_message),
+                destination(_message),
+                recipient(_message),
+                TypedMemView.clone(body(_message))
+            );
     }
 }

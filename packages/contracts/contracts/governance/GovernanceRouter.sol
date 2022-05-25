@@ -6,12 +6,12 @@ pragma experimental ABIEncoderV2;
 import { Home } from "../Home.sol";
 import { Version0 } from "../Version0.sol";
 import { XAppConnectionManager, TypeCasts } from "../XAppConnectionManager.sol";
-import { IMessageRecipient } from "../../interfaces/IMessageRecipient.sol";
+import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
 import { GovernanceMessage } from "./GovernanceMessage.sol";
 // ============ External Imports ============
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { TypedMemView } from "../../libs/TypedMemView.sol";
+import { TypedMemView } from "../libs/TypedMemView.sol";
 
 contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
     // ============ Libraries ============
@@ -147,11 +147,6 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
 
     modifier onlyRecoveryManager() {
         require(msg.sender == recoveryManager, "! called by recovery manager");
-        _;
-    }
-
-    modifier onlyInRecovery() {
-        require(inRecovery(), "! in recovery");
         _;
     }
 
@@ -504,6 +499,8 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
         address _newGovernor,
         bool _isLocalGovernor
     ) internal {
+        // require that the new governor is not the zero address
+        require(_newGovernor != address(0), "cannot renounce governor");
         // require that the governor domain has a valid router
         if (!_isLocalGovernor) {
             _mustHaveRouter(_newDomain);
