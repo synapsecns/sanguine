@@ -101,6 +101,7 @@ jobs:
       matrix:
         package:
           - core
+          - tools
     steps:
       - uses: actions/setup-go@v3
         with:

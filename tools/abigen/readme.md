@@ -26,7 +26,7 @@ Using abigen this way can occasionally cause you to run into the following error
 To do this, create a package called `internal/dev`. This should not be imported from anywhere. Add the following string to it for each missing import:
 
 ```go
-// Package dev contains dev dependencies required for running developer tasks (coverage testing, etc)
+// Package dev contains dev dependencies required for running developer tasks (coverage testutils, etc)
 // that are not required by the project itself. In order to enforce this constraint, this module panics upon
 // being imported. Dependencies here are not included in produced binaries and won't affect the dev build
 package dev
