@@ -16,7 +16,7 @@ root
 ├── <a href="./packages">packages</a>
 │   ├── <a href="./packages/contracts">contracts</a>: Contracts used for synapse
 
-├── <a href="./core">core</a>: Core service contains the code used by different agents
+├── <a href="./services">core</a>: Core service contains the code used by different agents
 </pre>
 
 

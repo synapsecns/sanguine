@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/cockroachdb/pebble"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/core/types"
+	"github.com/synapsecns/sanguine/services/types"
 )
 
 // DB contains the synapse db.

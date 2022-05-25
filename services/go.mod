@@ -1,4 +1,4 @@
-module github.com/synapsecns/sanguine/core
+module github.com/synapsecns/sanguine/services
 
 go 1.17
 

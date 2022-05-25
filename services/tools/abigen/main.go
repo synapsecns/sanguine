@@ -4,7 +4,7 @@ package main
 import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gen2brain/beeep"
-	"github.com/synapsecns/sanguine/core/tools/abigen/internal"
+	"github.com/synapsecns/sanguine/services/tools/abigen/internal"
 	"github.com/synapsecns/synapse-node/config"
 	"github.com/urfave/cli/v2"
 	"os"
