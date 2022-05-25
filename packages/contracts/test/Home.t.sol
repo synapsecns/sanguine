@@ -2,17 +2,17 @@
 pragma solidity 0.8.13;
 
 import "forge-std/console2.sol";
-import { Home } from "../contracts/Home.sol";
+import { HomeHarness } from "./harnesses/HomeHarness.sol";
 import { Message } from "../contracts/libs/Message.sol";
 import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
 import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
 
 contract HomeTest is SynapseTestWithUpdaterManager {
-    Home home;
+    HomeHarness home;
 
     function setUp() public override {
         super.setUp();
-        home = new Home(localDomain);
+        home = new HomeHarness(localDomain);
         home.initialize(IUpdaterManager(updaterManager));
         updaterManager.setHome(address(home));
     }
@@ -62,6 +62,12 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         home.setUpdaterManager(address(1337));
     }
 
+    function test_haltsOnFail() public {
+        home.setFailed();
+        vm.expectRevert("failed state");
+        home.dispatch(remoteDomain, addressToBytes32(address(1337)), bytes(""));
+    }
+
     // TODO: testHashDomain against Go generated domains
     // function test_homeDomainHash() public {}
 
@@ -69,6 +75,8 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes32 emptyRoot;
         assertEq(home.committedRoot(), emptyRoot);
     }
+
+    // ============ DISPATCHING MESSAGING ============
 
     event Dispatch(
         bytes32 indexed messageHash,
@@ -95,7 +103,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         vm.expectEmit(true, true, true, true);
         emit Dispatch(
             messageHash,
-            0,
+            home.count(),
             (uint64(remoteDomain) << 32) | nonce,
             home.committedRoot(),
             message
@@ -123,6 +131,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         home.dispatch(remoteDomain, recipient, messageBody);
     }
 
+    // ============ UPDATING MESSAGES ============
     event ImproperUpdate(bytes32 oldRoot, bytes32 newRoot, bytes signature);
 
     function test_improperUpdateAndFailedState() public {
@@ -161,5 +170,17 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes memory sig = signHomeUpdate(fakeUpdaterPK, comittedRoot, newRoot);
         vm.expectRevert("!updater sig");
         home.update(comittedRoot, newRoot, sig);
+    }
+
+    function test_suggestUpdate() public {
+        test_dispatch();
+        test_dispatch();
+        test_dispatch();
+        test_dispatch();
+        assertEq(home.queueLength(), 4);
+        (bytes32 _committedRoot, bytes32 _new) = home.suggestUpdate();
+        bytes memory sig = signHomeUpdate(updaterPK, _committedRoot, _new);
+        home.update(_committedRoot, _new, sig);
+        assertEq(home.queueLength(), 0);
     }
 }
