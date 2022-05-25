@@ -10,17 +10,17 @@ import (
 	"github.com/synapsecns/synapse-node/testutils/backends"
 )
 
-// HomeDeployer deploys the home contract
+// HomeDeployer deploys the home contract.
 type HomeDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewHomeDeployer deploys the home contract
+// NewHomeDeployer deploys the home contract.
 func NewHomeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return HomeDeployer{deployer.NewSimpleDeployer(registry, backend, HomeType)}
 }
 
-// Deploy deploys the home contract
+// Deploy deploys the home contract.
 func (d HomeDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return home.DeployHome(transactOps, backend, uint32(d.Backend().GetChainID()))

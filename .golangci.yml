@@ -103,4 +103,7 @@ issues:
     - path: ethergo/example/*
       linters:
         - wrapcheck
+    - path: testutil/*
+      linters:
+        - wrapcheck
   exclude-use-default: false

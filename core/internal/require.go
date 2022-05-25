@@ -3,8 +3,12 @@
 // being imported. Dependencies here are not included in produced binaries and won't affect the dev build
 package internal
 
-import _ "github.com/ugorji/go/codec"
+import (
+	"github.com/ugorji/go/codec"
+)
 
 func init() {
 	panic("could not import dev package: this package is meant to define dependencies, not be imported.")
 }
+
+var _ = codec.Decoder{}
