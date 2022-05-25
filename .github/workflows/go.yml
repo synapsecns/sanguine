@@ -123,7 +123,6 @@ jobs:
       - name: Setup cache key
         run: cp ${{matrix.package}}/go.mod go.mod -v
 
-
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
