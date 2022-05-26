@@ -16,7 +16,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
  * for remote Home domains. Acepts Watcher signatures
  * to un-enroll Replicas attached to fraudulent remote Homes
  */
-contract XAppConnectionManager is Ownable {
+contract XAppConfig is Ownable {
     // ============ Public Storage ============
 
     // Home contract

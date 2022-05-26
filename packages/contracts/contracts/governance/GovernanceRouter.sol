@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 // ============ Internal Imports ============
 import { Home } from "../Home.sol";
 import { Version0 } from "../Version0.sol";
-import { XAppConnectionManager, TypeCasts } from "../XAppConnectionManager.sol";
+import {XAppConfig, TypeCasts } from "../XAppConfig.sol";
 import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
 import { GovernanceMessage } from "./GovernanceMessage.sol";
 // ============ External Imports ============
@@ -47,7 +47,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
     // domain of Governor chain -- for accepting incoming messages from Governor
     uint32 public governorDomain;
     // xAppConnectionManager contract which stores Replica addresses
-    XAppConnectionManager public xAppConnectionManager;
+    XAppConfig public xAppConnectionManager;
     // domain -> remote GovernanceRouter contract address
     mapping(uint32 => bytes32) public routers;
     // array of all domains with registered GovernanceRouter
@@ -378,7 +378,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
         public
         onlyGovernorOrRecoveryManager
     {
-        xAppConnectionManager = XAppConnectionManager(_xAppConnectionManager);
+        xAppConnectionManager = XAppConfig(_xAppConnectionManager);
     }
 
     /**
