@@ -86,6 +86,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes message
     );
 
+    // Tests sending a message and adding it to queue
     function test_dispatch() public {
         bytes32 recipient = addressToBytes32(vm.addr(1337));
         address sender = vm.addr(1555);
@@ -113,6 +114,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         assert(home.queueContains(home.root()));
     }
 
+    // Rejects messages over a set size
     function test_dispatchRejectBigMessage() public {
         bytes32 recipient = addressToBytes32(vm.addr(1337));
         address sender = vm.addr(1555);
@@ -134,6 +136,8 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     // ============ UPDATING MESSAGES ============
     event ImproperUpdate(bytes32 oldRoot, bytes32 newRoot, bytes signature);
 
+    // Updater fraudulently signs a message that was not dispatched
+    // Results in Home Status becoming Failure
     function test_improperUpdateAndFailedState() public {
         assertEq(uint256(home.state()), 1);
         bytes32 newRoot = "new root";
@@ -147,6 +151,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         home.dispatch(0, bytes32(0), bytes(""));
     }
 
+    // Tests signing new roots of queue, becoming committed root
     function test_update() public {
         // Send message first, which will add a new root to merkle
         test_dispatch();
@@ -161,6 +166,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         assertEq(home.queueLength(), 0);
     }
 
+    // Only updater can sign new roots
     function test_cannotUpdateAsFakeUpdater() public {
         // Send message first, which will add a new root to merkle
         test_dispatch();
@@ -172,6 +178,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         home.update(comittedRoot, newRoot, sig);
     }
 
+    // Dispatches 4 messages, and then Updater signs latest new roots
     function test_suggestUpdate() public {
         test_dispatch();
         test_dispatch();
