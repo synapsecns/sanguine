@@ -35,6 +35,14 @@ contract Replica is Version0, SynapseBase {
         Processed
     }
 
+    struct ReplicaStatus {
+        // The latest root that has been signed by the Updater for this given Replica
+        bytes32 committedRoot;
+        // Maps remote domain => optimistic seconds per remote domain  (E.g specifies optimistic seconds on a remote domain basis to wait)
+        uint256 optimisticSeconds;
+        // Maps Status of Replica for the Home remote domain
+        States state;
+    }
     // ============ Immutables ============
 
     // Minimum gas for message processing
@@ -46,14 +54,16 @@ contract Replica is Version0, SynapseBase {
 
     // Domain of home chain
     uint32 public remoteDomain;
-    // Number of seconds to wait before root becomes confirmable
-    uint256 public optimisticSeconds;
     // re-entrancy guard
     uint8 private entered;
-    // Mapping of roots to allowable confirmation times
-    mapping(bytes32 => uint256) public confirmAt;
-    // Mapping of message leaves to MessageStatus
-    mapping(bytes32 => MessageStatus) public messages;
+    // Maps remote domains => ReplicaStatus
+    //TODO: Maybe rename?
+    mapping(uint32 => ReplicaStatus) public remoteReplicaStatus;
+
+    // Maps a remote domain => mapping of roots to confirmAts
+    mapping(uint32 => mapping(bytes32 => uint256)) public confirmAt;
+    // Mapping of remote domain => mapping of message leaves to MessageStatus
+    mapping(uint32 => mapping(bytes32 => MessageStatus)) public messages;
 
     // ============ Upgrade Gap ============
 
@@ -122,11 +132,17 @@ contract Replica is Version0, SynapseBase {
         __SynapseBase_initialize(_updater);
         // set storage variables
         entered = 1;
-        remoteDomain = _remoteDomain;
-        committedRoot = _committedRoot;
+        ReplicaStatus memory newReplica = ReplicaStatus({
+            committedRoot: _committedRoot,
+            optimisticSeconds: _optimisticSeconds,
+            state: States.Active
+        });
+        remoteReplicaStatus[_remoteDomain] = newReplica;
         // pre-approve the committed root.
-        confirmAt[_committedRoot] = 1;
-        optimisticSeconds = _optimisticSeconds;
+        confirmAt[_remoteDomain][_committedRoot] = 1;
+
+        remoteDomain = _remoteDomain;
+        //TODO: adjust to include remote ID info
         emit SetOptimisticTimeout(_optimisticSeconds);
     }
 
@@ -142,21 +158,25 @@ contract Replica is Version0, SynapseBase {
      * @param _signature Updater's signature on `_oldRoot` and `_newRoot`
      */
     function update(
+        uint32 _remoteDomain,
         bytes32 _oldRoot,
         bytes32 _newRoot,
         bytes memory _signature
     ) external {
+        ReplicaStatus memory replicaStatus = remoteReplicaStatus[_remoteDomain];
         // ensure that update is building off the last submitted root
-        require(_oldRoot == committedRoot, "not current update");
+        require(_oldRoot == replicaStatus.committedRoot, "not current update");
         // validate updater signature
         require(_isUpdaterSignature(_oldRoot, _newRoot, _signature), "!updater sig");
         // Hook for future use
         _beforeUpdate();
         // set the new root's confirmation timer
-        confirmAt[_newRoot] = block.timestamp + optimisticSeconds;
+        confirmAt[_remoteDomain][_newRoot] = block.timestamp + replicaStatus.optimisticSeconds;
         // update committedRoot
-        committedRoot = _newRoot;
-        emit Update(remoteDomain, _oldRoot, _newRoot, _signature);
+        replicaStatus.committedRoot = _newRoot;
+        remoteReplicaStatus[_remoteDomain] = replicaStatus;
+
+        emit Update(_remoteDomain, _oldRoot, _newRoot, _signature);
     }
 
     /**
@@ -169,11 +189,12 @@ contract Replica is Version0, SynapseBase {
      * @param _index Index of leaf in home's merkle tree
      */
     function proveAndProcess(
+        uint32 _remoteDomain,
         bytes memory _message,
         bytes32[32] calldata _proof,
         uint256 _index
     ) external {
-        require(prove(keccak256(_message), _proof, _index), "!prove");
+        require(prove(_remoteDomain, keccak256(_message), _proof, _index), "!prove");
         process(_message);
     }
 
@@ -189,16 +210,17 @@ contract Replica is Version0, SynapseBase {
      */
     function process(bytes memory _message) public returns (bool _success) {
         bytes29 _m = _message.ref(0);
+        uint32 _remoteDomain = _m.origin();
         // ensure message was meant for this domain
         require(_m.destination() == localDomain, "!destination");
         // ensure message has been proven
         bytes32 _messageHash = _m.keccak();
-        require(messages[_messageHash] == MessageStatus.Proven, "!proven");
+        require(messages[_remoteDomain][_messageHash] == MessageStatus.Proven, "!proven");
         // check re-entrancy guard
         require(entered == 1, "!reentrant");
         entered = 0;
         // update message status as processed
-        messages[_messageHash] = MessageStatus.Processed;
+        messages[_remoteDomain][_messageHash] = MessageStatus.Processed;
         // A call running out of gas TYPICALLY errors the whole tx. We want to
         // a) ensure the call has a sufficient amount of gas to make a
         //    meaningful state change.
@@ -259,8 +281,14 @@ contract Replica is Version0, SynapseBase {
      * @dev Only callable by owner (Governance)
      * @param _optimisticSeconds New optimistic timeout period
      */
-    function setOptimisticTimeout(uint256 _optimisticSeconds) external onlyOwner {
-        optimisticSeconds = _optimisticSeconds;
+    function setOptimisticTimeout(uint32 _remoteDomain, uint256 _optimisticSeconds)
+        external
+        onlyOwner
+    {
+        ReplicaStatus memory replicaStatus = remoteReplicaStatus[_remoteDomain];
+        replicaStatus.optimisticSeconds = _optimisticSeconds;
+        remoteReplicaStatus[_remoteDomain] = replicaStatus;
+        //TODO: Fix setting optimistic timeout event based on remote domain
         emit SetOptimisticTimeout(_optimisticSeconds);
     }
 
@@ -281,9 +309,14 @@ contract Replica is Version0, SynapseBase {
      * @param _root The root for which to modify confirm time
      * @param _confirmAt The new confirmation time. Set to 0 to "delete" a root.
      */
-    function setConfirmation(bytes32 _root, uint256 _confirmAt) external onlyOwner {
-        uint256 _previousConfirmAt = confirmAt[_root];
-        confirmAt[_root] = _confirmAt;
+    function setConfirmation(
+        uint32 _remoteDomain,
+        bytes32 _root,
+        uint256 _confirmAt
+    ) external onlyOwner {
+        uint256 _previousConfirmAt = confirmAt[_remoteDomain][_root];
+        confirmAt[_remoteDomain][_root] = _confirmAt;
+        //TODO: Fix event
         emit SetConfirmation(_root, _previousConfirmAt, _confirmAt);
     }
 
@@ -296,8 +329,8 @@ contract Replica is Version0, SynapseBase {
      * @param _root the Merkle root, submitted in an update, to check
      * @return TRUE iff root has been submitted & timeout has expired
      */
-    function acceptableRoot(bytes32 _root) public view returns (bool) {
-        uint256 _time = confirmAt[_root];
+    function acceptableRoot(uint32 _remoteDomain, bytes32 _root) public view returns (bool) {
+        uint256 _time = confirmAt[_remoteDomain][_root];
         if (_time == 0) {
             return false;
         }
@@ -317,17 +350,18 @@ contract Replica is Version0, SynapseBase {
      * @return Returns true if proof was valid and `prove` call succeeded
      **/
     function prove(
+        uint32 _remoteDomain,
         bytes32 _leaf,
         bytes32[32] calldata _proof,
         uint256 _index
     ) public returns (bool) {
         // ensure that message has not been proven or processed
-        require(messages[_leaf] == MessageStatus.None, "!MessageStatus.None");
+        require(messages[_remoteDomain][_leaf] == MessageStatus.None, "!MessageStatus.None");
         // calculate the expected root based on the proof
         bytes32 _calculatedRoot = MerkleLib.branchRoot(_leaf, _proof, _index);
         // if the root is valid, change status to Proven
-        if (acceptableRoot(_calculatedRoot)) {
-            messages[_leaf] = MessageStatus.Proven;
+        if (acceptableRoot(_remoteDomain, _calculatedRoot)) {
+            messages[_remoteDomain][_leaf] = MessageStatus.Proven;
             return true;
         }
         return false;
