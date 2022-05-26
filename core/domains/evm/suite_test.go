@@ -2,10 +2,12 @@ package evm_test
 
 import (
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/synapse-node/testutils"
 	"github.com/synapsecns/synapse-node/testutils/backends"
 	"github.com/synapsecns/synapse-node/testutils/backends/preset"
 	"testing"
+	"time"
 )
 
 // EVMSuite defines the basic chain suite.
@@ -21,6 +23,10 @@ func NewEVMSuite(tb testing.TB) *EVMSuite {
 }
 
 func (e *EVMSuite) SetupTest() {
+	evm.SetMinBackoff(time.Duration(0))
+	evm.SetMaxBackoff(time.Duration(0))
+
+	e.TestSuite.SetupTest()
 	e.testBackend = preset.GetRinkeby().Geth(e.GetTestContext(), e.T())
 }
 

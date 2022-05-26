@@ -8,3 +8,6 @@ const MESSAGE = "message_"
 
 // PROOF is the prefix of the proof message in the db.
 const PROOF = "PROOF_"
+
+// HEIGHT is the height of the index.
+const HEIGHT = "HEIGHT_"

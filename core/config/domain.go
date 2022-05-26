@@ -44,6 +44,7 @@ type DomainConfig struct {
 	XAppConfigAddress string `toml:"XAppConfigAddress"`
 	// RPCUrl to use for the chain
 	RPCUrl string `toml:"RPCURL"`
+	// TODO: add domain specific updates
 }
 
 // IsValid validates the domain config.

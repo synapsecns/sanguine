@@ -5,6 +5,7 @@ import (
 	"github.com/cockroachdb/pebble"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/types"
+	"strconv"
 )
 
 // DB contains the synapse db.
@@ -21,6 +22,11 @@ type DB interface {
 	StoreProof(leafIndex uint32, proof types.Proof) error
 	// ProofByLeafIndex gets a proof by it's leaf index
 	ProofByLeafIndex(leafIndex uint32) (types.Proof, error)
+
+	// StoreIndexedHeight stores the indexed height
+	StoreIndexedHeight(domain string, height uint32) error
+	// GetIndexedHeight gets the indexed height for a domain
+	GetIndexedHeight(domain string) (uint32, error)
 }
 
 // pebbleDB contains a rocksdb used to store merkle trees.
@@ -38,6 +44,30 @@ func NewDB(dbPath, entity string) (DB, error) {
 	}
 
 	return &pebbleDB{DB: db, entity: entity}, nil
+}
+
+// GetIndexedHeight gets the indexed height.
+func (d *pebbleDB) GetIndexedHeight(domain string) (uint32, error) {
+	rawHeight, _, err := d.Get(d.FullKey(HEIGHT, []byte(domain)))
+	if err != nil {
+		return 0, fmt.Errorf("could not get height: %w", err)
+	}
+
+	height, err := strconv.Atoi(string(rawHeight))
+	if err != nil {
+		return 0, fmt.Errorf("could not get indexed height: %w", err)
+	}
+
+	return uint32(height), nil
+}
+
+// StoreIndexedHeight stores the most recent indexed height.
+func (d *pebbleDB) StoreIndexedHeight(domain string, height uint32) error {
+	err := d.StoreKeyedEncodable(HEIGHT, []byte(domain), []byte(fmt.Sprintf("%d", height)))
+	if err != nil {
+		return fmt.Errorf("could not store height: %w", err)
+	}
+	return nil
 }
 
 // StoreCommittedMessage stores a committed message.
