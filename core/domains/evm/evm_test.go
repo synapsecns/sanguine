@@ -2,13 +2,18 @@ package evm_test
 
 import (
 	"errors"
+	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/domains/evm"
+	"github.com/synapsecns/sanguine/core/testutil"
 	"github.com/synapsecns/synapse-node/pkg/common"
 	"github.com/synapsecns/synapse-node/pkg/evm/client/mocks"
 	"github.com/synapsecns/synapse-node/testutils/utils"
+	"golang.org/x/sync/errgroup"
 	"math/big"
 	"time"
 )
@@ -52,11 +57,77 @@ func (e *EVMSuite) TestFilterLogsMaxAttempts() {
 	mockFilterer.AssertNumberOfCalls(e.T(), "FilterLogs", evm.MaxAttempts)
 }
 
+type Dispatch struct {
+	destinationDomain uint32
+	recipientAddress  [32]byte
+	messageBody       []byte
+}
+
+// GenerateDispatch generates a mock dispatch for testing.
+func GenerateDispatch() Dispatch {
+	newAddress := utils.NewMockAddress().Bytes()
+	var recipient [32]byte
+
+	copy(recipient[:], newAddress)
+
+	return Dispatch{
+		destinationDomain: gofakeit.Uint32(),
+		recipientAddress:  recipient,
+		messageBody:       []byte(gofakeit.Paragraph(3, 2, 1, " ")),
+	}
+}
+
+// GenerateDispatches generates a slice of dispatches.
+func GenerateDispatches(dispatchCount int) (arr []Dispatch) {
+	for i := 0; i < dispatchCount; i++ {
+		arr = append(arr, GenerateDispatch())
+	}
+	return arr
+}
+
 func (e *EVMSuite) TestFilterer() {
-	e.T().Skip("cannot filter")
-	// deployHelper := testutil.NewDeployManager(e.T())
+	deployHelper := testutil.NewDeployManager(e.T())
 
-	// deployedContract, _ := deployHelper.GetXAppConfig(e.GetTestContext(), e.testBackend)
+	deployedContract, handle := deployHelper.GetHome(e.GetTestContext(), e.testBackend)
 
-	// rangeFilter := evm.NewRangeFilter(deployedContract.Address(), )
+	dispatches := GenerateDispatches(10)
+
+	var lastTx *types.Transaction
+	for _, dispatch := range dispatches {
+		auth := e.testBackend.GetTxContext(e.GetTestContext(), nil)
+
+		addedDispatch, err := handle.Dispatch(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.messageBody)
+		Nil(e.T(), err)
+
+		e.testBackend.WaitForConfirmation(e.GetTestContext(), addedDispatch)
+		lastTx = addedDispatch
+	}
+
+	receipt, err := e.testBackend.TransactionReceipt(e.GetTestContext(), lastTx.Hash())
+	Nil(e.T(), err)
+
+	rangeFilter := evm.NewRangeFilter(deployedContract.Address(), e.testBackend, big.NewInt(0), receipt.BlockNumber, 1, true)
+
+	g, ctx := errgroup.WithContext(e.GetTestContext())
+	g.Go(func() error {
+		//nolint: wrapcheck
+		return rangeFilter.Start(e.GetTestContext())
+	})
+
+	_ = ctx
+
+	g.Go(func() error {
+		logChan := rangeFilter.GetLogChan()
+
+		for log := range logChan {
+			// TODO: assert log
+			fmt.Println(log)
+			if rangeFilter.Done() {
+				return nil
+			}
+		}
+		return nil
+	})
+
+	Nil(e.T(), g.Wait())
 }
