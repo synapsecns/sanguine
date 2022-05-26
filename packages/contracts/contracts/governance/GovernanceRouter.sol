@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 // ============ Internal Imports ============
 import { Home } from "../Home.sol";
 import { Version0 } from "../Version0.sol";
-import {XAppConfig, TypeCasts } from "../XAppConfig.sol";
+import { XAppConfig, TypeCasts } from "../XAppConfig.sol";
 import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
 import { GovernanceMessage } from "./GovernanceMessage.sol";
 // ============ External Imports ============
@@ -188,10 +188,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
         recoveryManager = _recoveryManager;
         // initialize XAppConnectionManager
         setXAppConnectionManager(_xAppConnectionManager);
-        require(
-            xAppConfig.localDomain() == localDomain,
-            "XAppConnectionManager bad domain"
-        );
+        require(xAppConfig.localDomain() == localDomain, "XAppConnectionManager bad domain");
     }
 
     // ============ External Functions ============
