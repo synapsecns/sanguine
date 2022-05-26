@@ -8,7 +8,6 @@ import (
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/synapse-node/pkg/common"
 	"github.com/synapsecns/synapse-node/pkg/evm/client/mocks"
-	"github.com/synapsecns/synapse-node/pkg/teller/backfiller"
 	"github.com/synapsecns/synapse-node/testutils/utils"
 	"math/big"
 	"time"
@@ -35,7 +34,7 @@ func (e *EVMSuite) TestFilterLogsMaxAttempts() {
 	contractAddress := utils.NewMockAddress()
 
 	// create a range filterer so we can test the filter logs method
-	rangeFilter := backfiller.NewRangeFilter(contractAddress, mockFilterer, big.NewInt(1), big.NewInt(10), 1, true)
+	rangeFilter := evm.NewRangeFilter(contractAddress, mockFilterer, big.NewInt(1), big.NewInt(10), 1, true)
 
 	mockFilterer.
 		// on a filter logs call
@@ -51,4 +50,13 @@ func (e *EVMSuite) TestFilterLogsMaxAttempts() {
 	Nil(e.T(), logInfo)
 	NotNil(e.T(), err)
 	mockFilterer.AssertNumberOfCalls(e.T(), "FilterLogs", evm.MaxAttempts)
+}
+
+func (e *EVMSuite) TestFilterer() {
+	e.T().Skip("cannot filter")
+	// deployHelper := testutil.NewDeployManager(e.T())
+
+	// deployedContract, _ := deployHelper.GetXAppConfig(e.GetTestContext(), e.testBackend)
+
+	// rangeFilter := evm.NewRangeFilter(deployedContract.Address(), )
 }
