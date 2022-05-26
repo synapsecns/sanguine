@@ -60,10 +60,14 @@ contract ReplicaTest is SynapseTest {
         replica.setOptimisticTimeout(_optimisticSeconds);
     }
 
+    event SetOptimisticTimeout(uint256 timeout);
+
     function test_setOptimistic(uint256 _optimisticSeconds) public {
         vm.assume(_optimisticSeconds != replica.optimisticSeconds());
         assertFalse(replica.optimisticSeconds() == _optimisticSeconds);
-        vm.prank(replica.owner());
+        vm.startPrank(replica.owner());
+        vm.expectEmit(false, false, false, true);
+        emit SetOptimisticTimeout(_optimisticSeconds);
         replica.setOptimisticTimeout(_optimisticSeconds);
         assertEq(replica.optimisticSeconds(), _optimisticSeconds);
     }
@@ -89,8 +93,12 @@ contract ReplicaTest is SynapseTest {
         replica.setConfirmation(committedRoot, 0);
     }
 
+    event SetConfirmation(bytes32 indexed root, uint256 previousConfirmAt, uint256 newConfirmAt);
+
     function test_setConfirmation(uint256 _confirmAt) public {
         assertEq(replica.confirmAt(committedRoot), 1);
+        vm.expectEmit(true, false, false, true);
+        emit SetConfirmation(committedRoot, 1, _confirmAt);
         replica.setConfirmation(committedRoot, _confirmAt);
         assertEq(replica.confirmAt(committedRoot), _confirmAt);
     }
@@ -129,5 +137,19 @@ contract ReplicaTest is SynapseTest {
         bytes memory sig = signRemoteUpdate(fakeUpdaterPK, committedRoot, newRoot);
         vm.expectRevert("!updater sig");
         replica.update(committedRoot, newRoot, sig);
+    }
+
+    function test_acceptableRoot() public {
+        bytes32 newRoot = "new root";
+        test_update();
+        vm.warp(block.timestamp + optimisticSeconds + 1);
+        assertTrue(replica.acceptableRoot(newRoot));
+    }
+
+    function test_cannotAcceptableRoot() public {
+        bytes32 newRoot = "new root";
+        test_update();
+        vm.warp(block.timestamp + optimisticSeconds - 1);
+        assertFalse(replica.acceptableRoot(newRoot));
     }
 }
