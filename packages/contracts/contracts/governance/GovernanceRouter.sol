@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 // ============ Internal Imports ============
 import { Home } from "../Home.sol";
 import { Version0 } from "../Version0.sol";
-import { XAppConnectionManager, TypeCasts } from "../XAppConnectionManager.sol";
+import {XAppConfig, TypeCasts } from "../XAppConfig.sol";
 import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
 import { GovernanceMessage } from "./GovernanceMessage.sol";
 // ============ External Imports ============
@@ -47,7 +47,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
     // domain of Governor chain -- for accepting incoming messages from Governor
     uint32 public governorDomain;
     // xAppConnectionManager contract which stores Replica addresses
-    XAppConnectionManager public xAppConnectionManager;
+    XAppConfig public xAppConfig;
     // domain -> remote GovernanceRouter contract address
     mapping(uint32 => bytes32) public routers;
     // array of all domains with registered GovernanceRouter
@@ -131,7 +131,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
     // ============ Modifiers ============
 
     modifier onlyReplica() {
-        require(xAppConnectionManager.isReplica(msg.sender), "!replica");
+        require(xAppConfig.isReplica(msg.sender), "!replica");
         _;
     }
 
@@ -189,7 +189,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
         // initialize XAppConnectionManager
         setXAppConnectionManager(_xAppConnectionManager);
         require(
-            xAppConnectionManager.localDomain() == localDomain,
+            xAppConfig.localDomain() == localDomain,
             "XAppConnectionManager bad domain"
         );
     }
@@ -272,7 +272,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
         // format batch message
         bytes memory _msg = GovernanceMessage.formatBatch(_calls);
         // dispatch call message using Nomad
-        Home(xAppConnectionManager.home()).dispatch(_destination, _router, _msg);
+        Home(xAppConfig.home()).dispatch(_destination, _router, _msg);
     }
 
     /**
@@ -330,7 +330,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
     }
 
     function _setRouterGlobal(uint32 _domain, bytes32 _router) internal {
-        Home _home = Home(xAppConnectionManager.home());
+        Home _home = Home(xAppConfig.home());
         // Set up the call for use in the loop.
         // Because each domain's governance router may be different, we cannot
         // serialize the `Call` once and then reuse it. We have to re-serialize
@@ -378,7 +378,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
         public
         onlyGovernorOrRecoveryManager
     {
-        xAppConnectionManager = XAppConnectionManager(_xAppConnectionManager);
+        xAppConfig = XAppConfig(_xAppConnectionManager);
     }
 
     /**
@@ -465,7 +465,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
      * @param _msg The message
      */
     function _sendToAllRemoteRouters(bytes memory _msg) internal {
-        Home _home = Home(xAppConnectionManager.home());
+        Home _home = Home(xAppConfig.home());
 
         for (uint256 i = 0; i < domains.length; i++) {
             if (domains[i] != uint32(0)) {
