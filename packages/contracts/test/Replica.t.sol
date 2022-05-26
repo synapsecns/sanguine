@@ -94,4 +94,40 @@ contract ReplicaTest is SynapseTest {
         replica.setConfirmation(committedRoot, _confirmAt);
         assertEq(replica.confirmAt(committedRoot), _confirmAt);
     }
+
+    event Update(
+        uint32 indexed homeDomain,
+        bytes32 indexed oldRoot,
+        bytes32 indexed newRoot,
+        bytes signature
+    );
+
+    // Relayer relays a new root signed by updater on Home chain
+    function test_update() public {
+        bytes32 newRoot = "new root";
+        assertEq(replica.updater(), vm.addr(updaterPK));
+        bytes memory sig = signRemoteUpdate(updaterPK, committedRoot, newRoot);
+        // Root doesn't exist yet
+        assertEq(replica.confirmAt(newRoot), 0);
+        // Relayer sends over a root signed by the updater on the Home chain
+        vm.expectEmit(true, true, true, true);
+        emit Update(remoteDomain, committedRoot, newRoot, sig);
+        replica.update(committedRoot, newRoot, sig);
+        // Root set with optimistic latency allowing it to be processed at T+10
+        assertEq(replica.confirmAt(newRoot), block.timestamp + 10);
+        assertEq(replica.committedRoot(), newRoot);
+    }
+
+    function test_updateWithIncorrectRoot() public {
+        bytes32 newRoot = "new root";
+        vm.expectRevert("not current update");
+        replica.update(newRoot, newRoot, bytes(""));
+    }
+
+    function test_updateWithIncorrectSig() public {
+        bytes32 newRoot = "new root";
+        bytes memory sig = signRemoteUpdate(fakeUpdaterPK, committedRoot, newRoot);
+        vm.expectRevert("!updater sig");
+        replica.update(committedRoot, newRoot, sig);
+    }
 }
