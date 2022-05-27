@@ -66,15 +66,15 @@ contract ReplicaTest is SynapseTest {
         replica.setOptimisticTimeout(remoteDomain, _optimisticSeconds);
     }
 
-    event SetOptimisticTimeout(uint256 timeout);
+    event SetOptimisticTimeout(uint32 indexed remoteDomain, uint256 timeout);
 
     function test_setOptimistic(uint256 _optimisticSeconds) public {
         (, uint256 initialOptimisticSeconds, ) = replica.remoteReplicaStatus(remoteDomain);
         vm.assume(_optimisticSeconds != initialOptimisticSeconds);
         assertFalse(_optimisticSeconds == initialOptimisticSeconds);
         vm.startPrank(replica.owner());
-        vm.expectEmit(false, false, false, true);
-        emit SetOptimisticTimeout(_optimisticSeconds);
+        vm.expectEmit(true, false, false, true);
+        emit SetOptimisticTimeout(remoteDomain, _optimisticSeconds);
         replica.setOptimisticTimeout(remoteDomain, _optimisticSeconds);
         (, uint256 changedOptimisticSeconds, ) = replica.remoteReplicaStatus(remoteDomain);
         assertEq(changedOptimisticSeconds, _optimisticSeconds);
@@ -101,12 +101,17 @@ contract ReplicaTest is SynapseTest {
         replica.setConfirmation(remoteDomain, committedRoot, 0);
     }
 
-    event SetConfirmation(bytes32 indexed root, uint256 previousConfirmAt, uint256 newConfirmAt);
+    event SetConfirmation(
+        uint32 indexed remoteDomain,
+        bytes32 indexed root,
+        uint256 previousConfirmAt,
+        uint256 newConfirmAt
+    );
 
     function test_setConfirmation(uint256 _confirmAt) public {
         assertEq(replica.confirmAt(remoteDomain, committedRoot), 1);
-        vm.expectEmit(true, false, false, true);
-        emit SetConfirmation(committedRoot, 1, _confirmAt);
+        vm.expectEmit(true, true, false, true);
+        emit SetConfirmation(remoteDomain, committedRoot, 1, _confirmAt);
         replica.setConfirmation(remoteDomain, committedRoot, _confirmAt);
         assertEq(replica.confirmAt(remoteDomain, committedRoot), _confirmAt);
     }

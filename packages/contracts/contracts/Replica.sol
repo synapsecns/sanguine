@@ -79,13 +79,19 @@ contract Replica is Version0, SynapseBase {
      * FALSE if the call reverted or threw
      * @param returnData the return data from the external call
      */
-    event Process(bytes32 indexed messageHash, bool indexed success, bytes indexed returnData);
+    // TODO: Which event emit to not index?
+    event Process(
+        uint32 indexed remoteDomain,
+        bytes32 indexed messageHash,
+        bool indexed success,
+        bytes returnData
+    );
 
     /**
      * @notice Emitted when the value for optimisticTimeout is set
      * @param timeout The new value for optimistic timeout
      */
-    event SetOptimisticTimeout(uint256 timeout);
+    event SetOptimisticTimeout(uint32 indexed remoteDomain, uint256 timeout);
 
     /**
      * @notice Emitted when a root's confirmation is modified by governance
@@ -93,7 +99,12 @@ contract Replica is Version0, SynapseBase {
      * @param previousConfirmAt The previous value of confirmAt
      * @param newConfirmAt The new value of confirmAt
      */
-    event SetConfirmation(bytes32 indexed root, uint256 previousConfirmAt, uint256 newConfirmAt);
+    event SetConfirmation(
+        uint32 indexed remoteDomain,
+        bytes32 indexed root,
+        uint256 previousConfirmAt,
+        uint256 newConfirmAt
+    );
 
     // ============ Constructor ============
 
@@ -142,8 +153,7 @@ contract Replica is Version0, SynapseBase {
         confirmAt[_remoteDomain][_committedRoot] = 1;
 
         remoteDomain = _remoteDomain;
-        //TODO: adjust to include remote ID info
-        emit SetOptimisticTimeout(_optimisticSeconds);
+        emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
     }
 
     // ============ External Functions ============
@@ -269,7 +279,7 @@ contract Replica is Version0, SynapseBase {
             returndatacopy(add(_returnData, 0x20), 0, _toCopy)
         }
         // emit process results
-        emit Process(_messageHash, _success, _returnData);
+        emit Process(_remoteDomain, _messageHash, _success, _returnData);
         // reset re-entrancy guard
         entered = 1;
     }
@@ -288,8 +298,7 @@ contract Replica is Version0, SynapseBase {
         ReplicaStatus memory replicaStatus = remoteReplicaStatus[_remoteDomain];
         replicaStatus.optimisticSeconds = _optimisticSeconds;
         remoteReplicaStatus[_remoteDomain] = replicaStatus;
-        //TODO: Fix setting optimistic timeout event based on remote domain
-        emit SetOptimisticTimeout(_optimisticSeconds);
+        emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
     }
 
     /**
@@ -316,8 +325,7 @@ contract Replica is Version0, SynapseBase {
     ) external onlyOwner {
         uint256 _previousConfirmAt = confirmAt[_remoteDomain][_root];
         confirmAt[_remoteDomain][_root] = _confirmAt;
-        //TODO: Fix event
-        emit SetConfirmation(_root, _previousConfirmAt, _confirmAt);
+        emit SetConfirmation(_remoteDomain, _root, _previousConfirmAt, _confirmAt);
     }
 
     // ============ Public Functions ============
