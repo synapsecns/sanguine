@@ -13,7 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/synapse-node/pkg/evm"
-	"github.com/synapsecns/synapse-node/pkg/teller/backfiller"
+	"golang.org/x/sync/errgroup"
 	"math/big"
 )
 
@@ -84,11 +84,29 @@ func (e evmClient) FetchStoredUpdates(ctx context.Context, from uint32, to uint3
 		return fmt.Errorf("could not set current height: %w", err)
 	}
 
-	rangeFilter := backfiller.NewRangeFilter(homeAddress, e.client, big.NewInt(int64(from)), new(big.Int).SetUint64(currentHeight), 1200, true)
+	rangeFilter := NewRangeFilter(homeAddress, e.client, big.NewInt(int64(from)), new(big.Int).SetUint64(currentHeight), 1200, true)
 
-	err = rangeFilter.Start(ctx)
-	if err != nil {
-		return fmt.Errorf("could not filter ranges: %w", err)
-	}
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		err = rangeFilter.Start(ctx)
+		if err != nil {
+			return fmt.Errorf("could not filter ranges: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("context cancellation: %w", ctx.Err())
+			case log := <-rangeFilter.GetLogChan():
+				_ = log
+				return nil
+			}
+		}
+	})
+
 	return nil
 }
