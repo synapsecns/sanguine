@@ -8,7 +8,9 @@ import (
 	"github.com/cockroachdb/pebble"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
@@ -97,16 +99,36 @@ func (e evmClient) FetchStoredUpdates(ctx context.Context, from uint32, to uint3
 	})
 
 	g.Go(func() error {
+		parser, err := home.NewParser(homeAddress)
+		if err != nil {
+			return fmt.Errorf("could not get parser: %w", err)
+		}
+
 		for {
 			select {
 			case <-ctx.Done():
 				return fmt.Errorf("context cancellation: %w", ctx.Err())
 			case log := <-rangeFilter.GetLogChan():
-				_ = log
+				e.parseUpdater(parser, log.logs)
+
 				return nil
 			}
 		}
 	})
 
 	return nil
+}
+
+func (e evmClient) parseUpdater(parser home.Parser, logs []types.Log) {
+	for _, log := range logs {
+		logType, ok := parser.EventType(log)
+		if !ok {
+			continue
+		}
+
+		//nolint: staticcheck
+		if logType == home.DispatchEvent {
+
+		}
+	}
 }

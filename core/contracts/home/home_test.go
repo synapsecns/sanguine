@@ -44,3 +44,7 @@ func (h HomeSuite) TestDispatchTopic() {
 		break
 	}
 }
+
+func (h HomeSuite) TestUpdateTopic() {
+	h.T().Skip("TODO: test this. Mocker should be able to mock this out")
+}

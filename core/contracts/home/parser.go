@@ -48,6 +48,8 @@ type EventType uint
 const (
 	// DispatchEvent is a dispatch event.
 	DispatchEvent EventType = 0
+	// UpdateEvent is dispatched when an attested updates is signed.
+	UpdateEvent EventType = iota
 )
 
 // Int gets the int for an event type.

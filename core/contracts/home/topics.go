@@ -17,16 +17,22 @@ func init() {
 	}
 
 	DispatchTopic = parsedHome.Events["Dispatch"].ID
+
+	UpdateTopic = parsedHome.Events["Update"].ID
 }
 
 // DispatchTopic is the topic that gets emitted when the dispatch event is called.
 var DispatchTopic common.Hash
+
+// UpdateTopic sets.
+var UpdateTopic common.Hash
 
 // topicMap maps events to topics.
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
 		DispatchEvent: DispatchTopic,
+		UpdateEvent:   UpdateTopic,
 	}
 }
 
