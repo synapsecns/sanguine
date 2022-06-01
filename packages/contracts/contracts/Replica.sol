@@ -3,13 +3,16 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
-import { SynapseBase } from "./SynapseBase.sol";
+import { ReplicaStorage } from "./ReplicaStorage.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
-import { ReplicaStorage } from "./ReplicaStorage.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {
+    OwnableUpgradeable
+} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  * @title Replica
@@ -17,7 +20,7 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract Replica is Version0, SynapseBase {
+contract Replica is Version0, Initializable, OwnableUpgradeable {
     // ============ Libraries ============
 
     using MerkleLib for MerkleLib.Tree;
@@ -26,6 +29,9 @@ contract Replica is Version0, SynapseBase {
     using Message for bytes29;
 
     // ============ Immutables ============
+
+    // Domain of chain on which the contract is deployed
+    uint32 public immutable localDomain;
 
     // Minimum gas for message processing
     uint256 public immutable PROCESS_GAS;
@@ -41,6 +47,9 @@ contract Replica is Version0, SynapseBase {
 
     //TODO: Handle fail-over replicas and modify activeReplicas
     mapping(uint32 => ReplicaStorage) public archivedReplicas;
+
+    // Address of bonded Updater
+    address public updater;
 
     // ============ Upgrade Gap ============
 
@@ -83,13 +92,36 @@ contract Replica is Version0, SynapseBase {
         uint256 newConfirmAt
     );
 
+    /**
+     * @notice Emitted when update is made on Home
+     * or unconfirmed update root is submitted on Replica
+     * @param homeDomain Domain of home contract
+     * @param oldRoot Old merkle root
+     * @param newRoot New merkle root
+     * @param signature Updater's signature on `oldRoot` and `newRoot`
+     */
+    event Update(
+        uint32 indexed homeDomain,
+        bytes32 indexed oldRoot,
+        bytes32 indexed newRoot,
+        bytes signature
+    );
+
+    /**
+     * @notice Emitted when Updater is rotated
+     * @param oldUpdater The address of the old updater
+     * @param newUpdater The address of the new updater
+     */
+    event NewUpdater(address oldUpdater, address newUpdater);
+
     // ============ Constructor ============
 
     constructor(
         uint32 _localDomain,
         uint256 _processGas,
         uint256 _reserveGas
-    ) SynapseBase(_localDomain) {
+    ) {
+        localDomain = _localDomain;
         require(_processGas >= 850_000, "!process gas");
         require(_reserveGas >= 15_000, "!reserve gas");
         PROCESS_GAS = _processGas;
@@ -117,7 +149,8 @@ contract Replica is Version0, SynapseBase {
         bytes32 _committedRoot,
         uint256 _optimisticSeconds
     ) public initializer {
-        __SynapseBase_initialize(_updater);
+        __Ownable_init();
+        _setUpdater(_updater);
         // set storage variables
         entered = 1;
         ReplicaStorage newReplica = new ReplicaStorage(_remoteDomain, _optimisticSeconds);
@@ -364,12 +397,29 @@ contract Replica is Version0, SynapseBase {
     /**
      * @notice Hash of Home domain concatenated with "SYN"
      */
-    function homeDomainHash() public view override returns (bytes32) {
+    function homeDomainHash() public view returns (bytes32) {
         //TODO: SUPER BROKEN
         return _homeDomainHash(100);
     }
 
     // ============ Internal Functions ============
+    /**
+     * @notice Hash of Home domain concatenated with "SYN"
+     * @param _homeDomain the Home domain to hash
+     */
+    function _homeDomainHash(uint32 _homeDomain) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_homeDomain, "SYN"));
+    }
+
+    /**
+     * @notice Set the Updater
+     * @param _newUpdater Address of the new Updater
+     */
+    function _setUpdater(address _newUpdater) internal {
+        address _oldUpdater = updater;
+        updater = _newUpdater;
+        emit NewUpdater(_oldUpdater, _newUpdater);
+    }
 
     /// @notice Hook for potential future use
     // solhint-disable-next-line no-empty-blocks

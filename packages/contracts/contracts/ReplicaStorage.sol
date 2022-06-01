@@ -46,6 +46,7 @@ contract ReplicaStorage {
         optimisticSeconds = _optimisticSeconds;
         committedRoot = bytes32("");
         confirmAt[bytes32("")] = 0;
+        status = ReplicaStatus.Active;
     }
 
     function setCommittedRoot(bytes32 _committedRoot) public {
