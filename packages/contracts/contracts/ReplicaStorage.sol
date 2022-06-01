@@ -3,6 +3,7 @@
 pragma solidity 0.8.13;
 
 contract ReplicaStorage {
+    address replica;
     // ============ Enums ============
     // Status of Message:
     //   0 - None - message has not been proven or processed
@@ -41,7 +42,12 @@ contract ReplicaStorage {
     // Mapping of message leaves to MessageStatus
     mapping(bytes32 => MessageStatus) public messages;
 
-    constructor(uint32 _remoteDomain, uint256 _optimisticSeconds) {
+    constructor(
+        address _replica,
+        uint32 _remoteDomain,
+        uint256 _optimisticSeconds
+    ) {
+        replica = _replica;
         remoteDomain = _remoteDomain;
         optimisticSeconds = _optimisticSeconds;
         committedRoot = bytes32("");
@@ -49,23 +55,28 @@ contract ReplicaStorage {
         status = ReplicaStatus.Active;
     }
 
-    function setCommittedRoot(bytes32 _committedRoot) public {
+    modifier onlyReplica() {
+        require(msg.sender == address(replica), "!replica");
+        _;
+    }
+
+    function setCommittedRoot(bytes32 _committedRoot) public onlyReplica {
         committedRoot = _committedRoot;
     }
 
-    function setConfirmAt(bytes32 _root, uint256 _confirmAt) public {
+    function setConfirmAt(bytes32 _root, uint256 _confirmAt) public onlyReplica {
         confirmAt[_root] = _confirmAt;
     }
 
-    function setMessageStatus(bytes32 _messageHash, MessageStatus _status) public {
+    function setMessageStatus(bytes32 _messageHash, MessageStatus _status) public onlyReplica {
         messages[_messageHash] = _status;
     }
 
-    function setOptimisticTimeout(uint256 _optimisticSeconds) public {
+    function setOptimisticTimeout(uint256 _optimisticSeconds) public onlyReplica {
         optimisticSeconds = _optimisticSeconds;
     }
 
-    function setStatus(ReplicaStatus _status) public {
+    function setStatus(ReplicaStatus _status) public onlyReplica {
         status = _status;
     }
 }

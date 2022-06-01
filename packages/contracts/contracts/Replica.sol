@@ -153,7 +153,11 @@ contract Replica is Version0, Initializable, OwnableUpgradeable {
         _setUpdater(_updater);
         // set storage variables
         entered = 1;
-        ReplicaStorage newReplica = new ReplicaStorage(_remoteDomain, _optimisticSeconds);
+        ReplicaStorage newReplica = new ReplicaStorage(
+            address(this),
+            _remoteDomain,
+            _optimisticSeconds
+        );
         activeReplicas[_remoteDomain] = newReplica;
         emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
     }
