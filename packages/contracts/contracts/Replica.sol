@@ -8,6 +8,8 @@ import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
+import { ReplicaStorage } from "./ReplicaStorage.sol";
+import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /**
  * @title Replica
@@ -23,26 +25,6 @@ contract Replica is Version0, SynapseBase {
     using TypedMemView for bytes29;
     using Message for bytes29;
 
-    // ============ Enums ============
-
-    // Status of Message:
-    //   0 - None - message has not been proven or processed
-    //   1 - Proven - message inclusion proof has been validated
-    //   2 - Processed - message has been dispatched to recipient
-    enum MessageStatus {
-        None,
-        Proven,
-        Processed
-    }
-
-    struct ReplicaStatus {
-        // The latest root that has been signed by the Updater for this given Replica
-        bytes32 committedRoot;
-        // Maps remote domain => optimistic seconds per remote domain  (E.g specifies optimistic seconds on a remote domain basis to wait)
-        uint256 optimisticSeconds;
-        // Maps Status of Replica for the Home remote domain
-        States state;
-    }
     // ============ Immutables ============
 
     // Minimum gas for message processing
@@ -52,23 +34,18 @@ contract Replica is Version0, SynapseBase {
 
     // ============ Public Storage ============
 
-    // Domain of home chain
-    uint32 public remoteDomain;
     // re-entrancy guard
     uint8 private entered;
-    // Maps remote domains => ReplicaStatus
-    //TODO: Maybe rename?
-    mapping(uint32 => ReplicaStatus) public remoteReplicaStatus;
 
-    // Maps a remote domain => mapping of roots to confirmAts
-    mapping(uint32 => mapping(bytes32 => uint256)) public confirmAt;
-    // Mapping of remote domain => mapping of message leaves to MessageStatus
-    mapping(uint32 => mapping(bytes32 => MessageStatus)) public messages;
+    mapping(uint32 => ReplicaStorage) public activeReplicas;
+
+    //TODO: Handle fail-over replicas and modify activeReplicas
+    mapping(uint32 => ReplicaStorage) public archivedReplicas;
 
     // ============ Upgrade Gap ============
 
     // gap for upgrade safety
-    uint256[45] private __GAP;
+    uint256[46] private __GAP;
 
     // ============ Events ============
 
@@ -143,16 +120,8 @@ contract Replica is Version0, SynapseBase {
         __SynapseBase_initialize(_updater);
         // set storage variables
         entered = 1;
-        ReplicaStatus memory newReplica = ReplicaStatus({
-            committedRoot: _committedRoot,
-            optimisticSeconds: _optimisticSeconds,
-            state: States.Active
-        });
-        remoteReplicaStatus[_remoteDomain] = newReplica;
-        // pre-approve the committed root.
-        confirmAt[_remoteDomain][_committedRoot] = 1;
-
-        remoteDomain = _remoteDomain;
+        ReplicaStorage newReplica = new ReplicaStorage(_remoteDomain, _optimisticSeconds);
+        activeReplicas[_remoteDomain] = newReplica;
         emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
     }
 
@@ -173,20 +142,31 @@ contract Replica is Version0, SynapseBase {
         bytes32 _newRoot,
         bytes memory _signature
     ) external {
-        ReplicaStatus memory replicaStatus = remoteReplicaStatus[_remoteDomain];
+        ReplicaStorage replica = activeReplicas[_remoteDomain];
         // ensure that update is building off the last submitted root
-        require(_oldRoot == replicaStatus.committedRoot, "not current update");
+        require(_oldRoot == replica.committedRoot(), "not current update");
         // validate updater signature
-        require(_isUpdaterSignature(_oldRoot, _newRoot, _signature), "!updater sig");
+        require(_isUpdaterSignature(_remoteDomain, _oldRoot, _newRoot, _signature), "!updater sig");
         // Hook for future use
         _beforeUpdate();
         // set the new root's confirmation timer
-        confirmAt[_remoteDomain][_newRoot] = block.timestamp + replicaStatus.optimisticSeconds;
+        replica.setConfirmAt(_newRoot, block.timestamp + replica.optimisticSeconds());
         // update committedRoot
-        replicaStatus.committedRoot = _newRoot;
-        remoteReplicaStatus[_remoteDomain] = replicaStatus;
-
+        replica.setCommittedRoot(_newRoot);
         emit Update(_remoteDomain, _oldRoot, _newRoot, _signature);
+    }
+
+    function _isUpdaterSignature(
+        uint32 _remoteDomain,
+        bytes32 _oldRoot,
+        bytes32 _newRoot,
+        bytes memory _signature
+    ) internal view returns (bool) {
+        bytes32 _digest = keccak256(
+            abi.encodePacked(_homeDomainHash(_remoteDomain), _oldRoot, _newRoot)
+        );
+        _digest = ECDSA.toEthSignedMessageHash(_digest);
+        return (ECDSA.recover(_digest, _signature) == updater);
     }
 
     /**
@@ -221,16 +201,17 @@ contract Replica is Version0, SynapseBase {
     function process(bytes memory _message) public returns (bool _success) {
         bytes29 _m = _message.ref(0);
         uint32 _remoteDomain = _m.origin();
+        ReplicaStorage replica = activeReplicas[_remoteDomain];
         // ensure message was meant for this domain
         require(_m.destination() == localDomain, "!destination");
         // ensure message has been proven
         bytes32 _messageHash = _m.keccak();
-        require(messages[_remoteDomain][_messageHash] == MessageStatus.Proven, "!proven");
+        require(replica.messages(_messageHash) == ReplicaStorage.MessageStatus.Proven, "!proven");
         // check re-entrancy guard
         require(entered == 1, "!reentrant");
         entered = 0;
         // update message status as processed
-        messages[_remoteDomain][_messageHash] = MessageStatus.Processed;
+        replica.setMessageStatus(_messageHash, ReplicaStorage.MessageStatus.Processed);
         // A call running out of gas TYPICALLY errors the whole tx. We want to
         // a) ensure the call has a sufficient amount of gas to make a
         //    meaningful state change.
@@ -295,9 +276,8 @@ contract Replica is Version0, SynapseBase {
         external
         onlyOwner
     {
-        ReplicaStatus memory replicaStatus = remoteReplicaStatus[_remoteDomain];
-        replicaStatus.optimisticSeconds = _optimisticSeconds;
-        remoteReplicaStatus[_remoteDomain] = replicaStatus;
+        ReplicaStorage replica = activeReplicas[_remoteDomain];
+        replica.setOptimisticTimeout(_optimisticSeconds);
         emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
     }
 
@@ -323,8 +303,9 @@ contract Replica is Version0, SynapseBase {
         bytes32 _root,
         uint256 _confirmAt
     ) external onlyOwner {
-        uint256 _previousConfirmAt = confirmAt[_remoteDomain][_root];
-        confirmAt[_remoteDomain][_root] = _confirmAt;
+        ReplicaStorage replica = activeReplicas[_remoteDomain];
+        uint256 _previousConfirmAt = replica.confirmAt(_root);
+        replica.setConfirmAt(_root, _confirmAt);
         emit SetConfirmation(_remoteDomain, _root, _previousConfirmAt, _confirmAt);
     }
 
@@ -338,7 +319,8 @@ contract Replica is Version0, SynapseBase {
      * @return TRUE iff root has been submitted & timeout has expired
      */
     function acceptableRoot(uint32 _remoteDomain, bytes32 _root) public view returns (bool) {
-        uint256 _time = confirmAt[_remoteDomain][_root];
+        ReplicaStorage replica = activeReplicas[_remoteDomain];
+        uint256 _time = replica.confirmAt(_root);
         if (_time == 0) {
             return false;
         }
@@ -363,13 +345,17 @@ contract Replica is Version0, SynapseBase {
         bytes32[32] calldata _proof,
         uint256 _index
     ) public returns (bool) {
+        ReplicaStorage replica = activeReplicas[_remoteDomain];
         // ensure that message has not been proven or processed
-        require(messages[_remoteDomain][_leaf] == MessageStatus.None, "!MessageStatus.None");
+        require(
+            replica.messages(_leaf) == ReplicaStorage.MessageStatus.None,
+            "!MessageStatus.None"
+        );
         // calculate the expected root based on the proof
         bytes32 _calculatedRoot = MerkleLib.branchRoot(_leaf, _proof, _index);
         // if the root is valid, change status to Proven
         if (acceptableRoot(_remoteDomain, _calculatedRoot)) {
-            messages[_remoteDomain][_leaf] = MessageStatus.Proven;
+            replica.setMessageStatus(_leaf, ReplicaStorage.MessageStatus.Processed);
             return true;
         }
         return false;
@@ -379,7 +365,8 @@ contract Replica is Version0, SynapseBase {
      * @notice Hash of Home domain concatenated with "SYN"
      */
     function homeDomainHash() public view override returns (bytes32) {
-        return _homeDomainHash(remoteDomain);
+        //TODO: SUPER BROKEN
+        return _homeDomainHash(100);
     }
 
     // ============ Internal Functions ============
