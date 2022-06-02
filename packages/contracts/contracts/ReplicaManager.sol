@@ -15,8 +15,7 @@ import {
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
- * @title Replica
- * @author Illusory Systems Inc.
+ * @title ReplicaManager
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
