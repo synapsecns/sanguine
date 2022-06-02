@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.13;
 
-import { Replica } from "../../contracts/Replica.sol";
+import { Replica } from "../../contracts/ReplicaManager.sol";
 
 contract ReplicaHarness is Replica {
     constructor(
