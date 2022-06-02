@@ -65,8 +65,8 @@ func (e evmClient) Config() config.DomainConfig {
 	return e.config
 }
 
-// FetchStoredUpdates fetches stored updates.
-func (e evmClient) FetchStoredUpdates(ctx context.Context, from uint32, to uint32) error {
+// FetchSortedUpdates fetches stored updates.
+func (e evmClient) FetchSortedUpdates(ctx context.Context, from uint32, to uint32) error {
 	indexedHeight, err := e.db.GetIndexedHeight(fmt.Sprintf("%d", e.config.DomainID))
 	if errors.Is(err, pebble.ErrNotFound) {
 		// Get deployed height of contract
