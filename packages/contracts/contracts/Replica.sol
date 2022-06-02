@@ -32,8 +32,7 @@ contract ReplicaStorage is Ownable {
     // The latest root that has been signed by the Updater for this given Replica
     bytes32 public committedRoot; // 256 bits
     // Domain of home chain
-    //TODO: Could/should be immutable
-    uint32 public remoteDomain;
+    uint32 public immutable remoteDomain;
     // Optimistic seconds per remote domain  (E.g specifies optimistic seconds on a remote domain basis to wait)
     uint256 public optimisticSeconds;
     // Status of Replica based on the Home remote domain
