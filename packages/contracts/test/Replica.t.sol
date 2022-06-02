@@ -7,7 +7,7 @@ import "forge-std/Test.sol";
 import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
-import { ReplicaStorage } from "../contracts/ReplicaStorage.sol";
+import { ReplicaStorage } from "../contracts/Replica.sol";
 
 import { ReplicaHarness } from "./harnesses/ReplicaHarness.sol";
 

@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { Home } from "./Home.sol";
-import { Replica } from "./Replica.sol";
+import { Replica } from "./ReplicaManager.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
 // ============ External Imports ============
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
