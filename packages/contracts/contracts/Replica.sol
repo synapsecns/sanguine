@@ -2,8 +2,10 @@
 
 pragma solidity 0.8.13;
 
-contract ReplicaStorage {
-    address replica;
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+
+contract ReplicaStorage is Ownable {
+    address replicaManager;
     // ============ Enums ============
     // Status of Message:
     //   0 - None - message has not been proven or processed
@@ -43,11 +45,11 @@ contract ReplicaStorage {
     mapping(bytes32 => MessageStatus) public messages;
 
     constructor(
-        address _replica,
+        address _replicaManager,
         uint32 _remoteDomain,
         uint256 _optimisticSeconds
     ) {
-        replica = _replica;
+        replicaManager = _replicaManager;
         remoteDomain = _remoteDomain;
         optimisticSeconds = _optimisticSeconds;
         committedRoot = bytes32("");
@@ -55,28 +57,35 @@ contract ReplicaStorage {
         status = ReplicaStatus.Active;
     }
 
-    modifier onlyReplica() {
-        require(msg.sender == address(replica), "!replica");
+    modifier onlyReplicaManager() {
+        require(msg.sender == address(replicaManager), "!replica");
         _;
     }
 
-    function setCommittedRoot(bytes32 _committedRoot) public onlyReplica {
+    function setCommittedRoot(bytes32 _committedRoot) public onlyReplicaManager {
         committedRoot = _committedRoot;
     }
 
-    function setConfirmAt(bytes32 _root, uint256 _confirmAt) public onlyReplica {
+    function setConfirmAt(bytes32 _root, uint256 _confirmAt) public onlyReplicaManager {
         confirmAt[_root] = _confirmAt;
     }
 
-    function setMessageStatus(bytes32 _messageHash, MessageStatus _status) public onlyReplica {
+    function setMessageStatus(bytes32 _messageHash, MessageStatus _status)
+        public
+        onlyReplicaManager
+    {
         messages[_messageHash] = _status;
     }
 
-    function setOptimisticTimeout(uint256 _optimisticSeconds) public onlyReplica {
+    function setOptimisticTimeout(uint256 _optimisticSeconds) public onlyReplicaManager {
         optimisticSeconds = _optimisticSeconds;
     }
 
-    function setStatus(ReplicaStatus _status) public onlyReplica {
+    function setStatus(ReplicaStatus _status) public onlyReplicaManager {
         status = _status;
+    }
+
+    function setReplica(address _newReplicaManager) public onlyOwner {
+        replicaManager = _newReplicaManager;
     }
 }
