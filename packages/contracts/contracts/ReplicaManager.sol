@@ -20,7 +20,7 @@ import {
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract Replica is Version0, Initializable, OwnableUpgradeable {
+contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     // ============ Libraries ============
 
     using MerkleLib for MerkleLib.Tree;
