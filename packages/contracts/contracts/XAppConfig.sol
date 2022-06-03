@@ -12,7 +12,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 /**
  * @title XAppConnectionManager
  * @author Illusory Systems Inc.
- * @notice Manages a registry of local ReplicaStorage contracts
+ * @notice Manages a registry of local Replica contracts
  * for remote Home domains. Acepts Watcher signatures
  * to un-enroll Replicas attached to fraudulent remote Homes
  */
@@ -21,9 +21,9 @@ contract XAppConfig is Ownable {
 
     // Home contract
     Home public home;
-    // local ReplicaStorage address => remote Home domain
+    // local Replica address => remote Home domain
     mapping(address => uint32) public replicaToDomain;
-    // remote Home domain => local ReplicaStorage address
+    // remote Home domain => local Replica address
     mapping(uint32 => address) public domainToReplica;
     // watcher address => replica remote domain => has/doesn't have permission
     mapping(address => mapping(uint32 => bool)) private watcherPermissions;
@@ -31,22 +31,22 @@ contract XAppConfig is Ownable {
     // ============ Events ============
 
     /**
-     * @notice Emitted when a new ReplicaStorage is enrolled / added
-     * @param domain the remote domain of the Home contract for the ReplicaStorage
-     * @param replica the address of the ReplicaStorage
+     * @notice Emitted when a new Replica is enrolled / added
+     * @param domain the remote domain of the Home contract for the Replica
+     * @param replica the address of the Replica
      */
     event ReplicaEnrolled(uint32 indexed domain, address replica);
 
     /**
-     * @notice Emitted when a new ReplicaStorage is un-enrolled / removed
-     * @param domain the remote domain of the Home contract for the ReplicaStorage
-     * @param replica the address of the ReplicaStorage
+     * @notice Emitted when a new Replica is un-enrolled / removed
+     * @param domain the remote domain of the Home contract for the Replica
+     * @param replica the address of the Replica
      */
     event ReplicaUnenrolled(uint32 indexed domain, address replica);
 
     /**
      * @notice Emitted when Watcher permissions are changed
-     * @param domain the remote domain of the Home contract for the ReplicaStorage
+     * @param domain the remote domain of the Home contract for the Replica
      * @param watcher the address of the Watcher
      * @param access TRUE if the Watcher was given permissions, FALSE if permissions were removed
      */
@@ -65,8 +65,8 @@ contract XAppConfig is Ownable {
      * @dev in the future, if fraud occurs on the Home contract,
      * the Watcher will submit their signature directly to the Home
      * and it can be relayed to all remote chains to un-enroll the Replicas
-     * @param _domain the remote domain of the Home contract for the ReplicaStorage
-     * @param _updater the address of the Updater for the Home contract (also stored on ReplicaStorage)
+     * @param _domain the remote domain of the Home contract for the Replica
+     * @param _updater the address of the Updater for the Home contract (also stored on Replica)
      * @param _signature signature of watcher on (domain, replica address, updater address)
      */
     function unenrollReplica(
@@ -104,9 +104,9 @@ contract XAppConfig is Ownable {
     }
 
     /**
-     * @notice Allow Owner to enroll ReplicaStorage contract
-     * @param _replica the address of the ReplicaStorage
-     * @param _domain the remote domain of the Home contract for the ReplicaStorage
+     * @notice Allow Owner to enroll Replica contract
+     * @param _replica the address of the Replica
+     * @param _domain the remote domain of the Home contract for the Replica
      */
     function ownerEnrollReplica(address _replica, uint32 _domain) external onlyOwner {
         // un-enroll any existing replica
@@ -118,17 +118,17 @@ contract XAppConfig is Ownable {
     }
 
     /**
-     * @notice Allow Owner to un-enroll ReplicaStorage contract
-     * @param _replica the address of the ReplicaStorage
+     * @notice Allow Owner to un-enroll Replica contract
+     * @param _replica the address of the Replica
      */
     function ownerUnenrollReplica(address _replica) external onlyOwner {
         _unenrollReplica(_replica);
     }
 
     /**
-     * @notice Allow Owner to set Watcher permissions for a ReplicaStorage
+     * @notice Allow Owner to set Watcher permissions for a Replica
      * @param _watcher the address of the Watcher
-     * @param _domain the remote domain of the Home contract for the ReplicaStorage
+     * @param _domain the remote domain of the Home contract for the Replica
      * @param _access TRUE to give the Watcher permissions, FALSE to remove permissions
      */
     function setWatcherPermission(
