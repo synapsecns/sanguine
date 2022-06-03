@@ -20,15 +20,29 @@ import (
 
 func (e *RPCSuite) TestGetters() {
 	name := "hi"
+
+	_, xAppContract := e.deployManager.GetXAppConfig(e.GetTestContext(), e.testBackend)
+
 	testCfg := config.DomainConfig{
-		DomainID: 1,
-		RPCUrl:   e.testBackend.RPCAddress(),
+		DomainID:          1,
+		RPCUrl:            e.testBackend.RPCAddress(),
+		XAppConfigAddress: xAppContract.Address().String(),
 	}
 
 	testEvm, err := evm.NewEVM(e.GetTestContext(), name, testCfg)
 	Nil(e.T(), err)
 	Equal(e.T(), testEvm.Config(), testCfg)
 	Equal(e.T(), testEvm.Name(), name)
+
+	// get latest block from rpc
+	latestBlock, err := e.testBackend.BlockNumber(e.GetTestContext())
+	Nil(e.T(), err)
+
+	// make sure it's equal to the client backend
+	domainBlock, err := testEvm.BlockNumber(e.GetTestContext())
+	Nil(e.T(), err)
+
+	Equal(e.T(), latestBlock, uint64(domainBlock))
 }
 
 func (e *RPCSuite) TestFilterLogsMaxAttempts() {

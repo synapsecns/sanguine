@@ -15,6 +15,10 @@ type DomainClient interface {
 	Name() string
 	// Config gets the config that was used to create the client.
 	Config() config.DomainConfig
+	// BlockNumber gets the latest block
+	BlockNumber(ctx context.Context) (uint32, error)
+	// Home retreives a handle for the home contract
+	Home() HomeContract
 }
 
 // HomeContract represents the home contract on a particular chain.

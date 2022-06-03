@@ -4,6 +4,7 @@ package evm
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
@@ -20,6 +21,8 @@ type evmClient struct {
 	client evm.Chain
 	// xAppConfig is the xAppConfig handle
 	xAppConfig *xappconfig.XAppConfigRef
+	// home contains the home contract
+	home domains.HomeContract
 }
 
 var _ domains.DomainClient = &evmClient{}
@@ -36,11 +39,22 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		return nil, fmt.Errorf("could not create xappconfig handle: %w", err)
 	}
 
+	homeAddress, err := xAppConfig.Home(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return nil, fmt.Errorf("could not get home contract: %w", err)
+	}
+
+	boundHome, err := NewHomeContract(underlyingClient, homeAddress)
+	if err != nil {
+		return nil, fmt.Errorf("could not bind home contract: %w", err)
+	}
+
 	return evmClient{
 		name:       name,
 		config:     domain,
 		client:     underlyingClient,
 		xAppConfig: xAppConfig,
+		home:       boundHome,
 	}, nil
 }
 
@@ -52,4 +66,19 @@ func (e evmClient) Name() string {
 // Config gets the config the evm client was initiated with.
 func (e evmClient) Config() config.DomainConfig {
 	return e.config
+}
+
+// BlockNumber gets the latest block number.
+func (e evmClient) BlockNumber(ctx context.Context) (uint32, error) {
+	blockNumber, err := e.client.BlockNumber(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("could not get block number: %w", err)
+	}
+
+	return uint32(blockNumber), nil
+}
+
+// Home returns the bound home contract.
+func (e evmClient) Home() domains.HomeContract {
+	return e.home
 }

@@ -16,7 +16,8 @@ import (
 // RPCSuite defines a suite where we need live rpc endpoints (as opposed to a simulated backend) to test.
 type RPCSuite struct {
 	*testutils.TestSuite
-	testBackend backends.TestBackend
+	testBackend   backends.TestBackend
+	deployManager *testutil.DeployManager
 }
 
 // NewRPCSuite creates a new chain testing suite.
@@ -31,6 +32,7 @@ func (e *RPCSuite) SetupTest() {
 
 	e.TestSuite.SetupTest()
 	e.testBackend = preset.GetRinkeby().Geth(e.GetTestContext(), e.T())
+	e.deployManager = testutil.NewDeployManager(e.T())
 }
 
 func TestEVMSuite(t *testing.T) {
