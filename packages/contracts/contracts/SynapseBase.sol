@@ -13,7 +13,7 @@ import {
 /**
  * @title SynapseBase
  * @author Illusory Systems Inc.
- * @notice Shared utilities between Home and ReplicaStorage.
+ * @notice Shared utilities between Home and Replica.
  */
 abstract contract SynapseBase is Initializable, OwnableUpgradeable {
     // ============ Enums ============
@@ -53,7 +53,7 @@ abstract contract SynapseBase is Initializable, OwnableUpgradeable {
 
     /**
      * @notice Emitted when update is made on Home
-     * or unconfirmed update root is submitted on ReplicaStorage
+     * or unconfirmed update root is submitted on Replica
      * @param homeDomain Domain of home contract
      * @param oldRoot Old merkle root
      * @param newRoot New merkle root

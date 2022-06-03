@@ -204,7 +204,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
     /**
      * @notice Submit a signature from the Updater "notarizing" a root,
      * which updates the Home contract's `committedRoot`,
-     * and publishes the signature which will be relayed to ReplicaStorage contracts
+     * and publishes the signature which will be relayed to Replica contracts
      * @dev emits Update event
      * @dev If _newRoot is not contained in the queue,
      * the Update is a fraudulent Improper Update, so
@@ -290,14 +290,14 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
      * This would mean that message(s) that were not truly
      * dispatched on Home were falsely included in the signed root.
      *
-     * An Improper Update will only be accepted as valid by the ReplicaStorage
+     * An Improper Update will only be accepted as valid by the Replica
      * If an Improper Update is attempted on Home,
      * the Updater will be slashed immediately.
-     * If an Improper Update is submitted to the ReplicaStorage,
+     * If an Improper Update is submitted to the Replica,
      * it should be relayed to the Home contract using this function
      * in order to slash the Updater with an Improper Update.
      *
-     * An Improper Update submitted to the ReplicaStorage is only valid
+     * An Improper Update submitted to the Replica is only valid
      * while the `_oldRoot` is still equal to the `committedRoot` on Home;
      * if the `committedRoot` on Home has already been updated with a valid Update,
      * then the Updater should be slashed with a Double Update.
