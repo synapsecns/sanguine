@@ -1,11 +1,11 @@
-package indexer_test
+package evm_test
 
 import (
 	"bytes"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/core/indexer"
+	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/synapse-node/testutils/utils"
 )
 
@@ -28,7 +28,7 @@ func NewTestDispatch() TestDispatch {
 }
 
 // Call calls dispatch and returns the block number.
-func (d TestDispatch) Call(i IndexerSuite) (blockNumber uint32) {
+func (d TestDispatch) Call(i ContractSuite) (blockNumber uint32) {
 	auth := i.testBackend.GetTxContext(i.GetTestContext(), nil)
 
 	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.message)
@@ -42,7 +42,7 @@ func (d TestDispatch) Call(i IndexerSuite) (blockNumber uint32) {
 	return uint32(txReceipt.BlockNumber.Uint64())
 }
 
-func (i IndexerSuite) NewTestDispatches(dispatchCount int) (testDispatches []TestDispatch, lastBlock uint32) {
+func (i ContractSuite) NewTestDispatches(dispatchCount int) (testDispatches []TestDispatch, lastBlock uint32) {
 	for iter := 0; iter < dispatchCount; iter++ {
 		testDispatch := NewTestDispatch()
 		lastBlock = testDispatch.Call(i)
@@ -53,10 +53,11 @@ func (i IndexerSuite) NewTestDispatches(dispatchCount int) (testDispatches []Tes
 	return testDispatches, lastBlock
 }
 
-func (i IndexerSuite) TestFetchSortedHomeUpdates() {
+func (i ContractSuite) TestFetchSortedHomeUpdates() {
 	testDispatches, filterTo := i.NewTestDispatches(33)
 
-	homeIndexer := indexer.NewHomeIndexer(i.testBackend, i.homeContract.Address())
+	homeIndexer, err := evm.NewHomeContract(i.testBackend, i.homeContract.Address())
+	Nil(i.T(), err)
 
 	messages, err := homeIndexer.FetchSortedMessages(i.GetTestContext(), 0, filterTo)
 	Nil(i.T(), err)

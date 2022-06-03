@@ -1,6 +1,10 @@
 package domains
 
-import "github.com/synapsecns/sanguine/core/config"
+import (
+	"context"
+	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/types"
+)
 
 // DomainClient represents a client used for interacting
 // with contracts in a particular domain. The goal of a domain is that
@@ -11,4 +15,10 @@ type DomainClient interface {
 	Name() string
 	// Config gets the config that was used to create the client.
 	Config() config.DomainConfig
+}
+
+// HomeContract represents the home contract on a particular chain.
+type HomeContract interface {
+	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
+	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
 }

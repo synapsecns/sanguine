@@ -18,20 +18,20 @@ import (
 	"time"
 )
 
-func (e *EVMSuite) TestGetters() {
+func (e *RPCSuite) TestGetters() {
 	name := "hi"
 	testCfg := config.DomainConfig{
 		DomainID: 1,
 		RPCUrl:   e.testBackend.RPCAddress(),
 	}
 
-	testEvm, err := evm.NewEVM(e.GetTestContext(), name, testCfg, nil)
+	testEvm, err := evm.NewEVM(e.GetTestContext(), name, testCfg)
 	Nil(e.T(), err)
 	Equal(e.T(), testEvm.Config(), testCfg)
 	Equal(e.T(), testEvm.Name(), name)
 }
 
-func (e *EVMSuite) TestFilterLogsMaxAttempts() {
+func (e *RPCSuite) TestFilterLogsMaxAttempts() {
 	evm.SetMaxBackoff(time.Duration(0))
 	evm.SetMinBackoff(time.Duration(0))
 
@@ -85,7 +85,7 @@ func GenerateDispatches(dispatchCount int) (arr []Dispatch) {
 	return arr
 }
 
-func (e *EVMSuite) TestFilterer() {
+func (e *RPCSuite) TestFilterer() {
 	deployHelper := testutil.NewDeployManager(e.T())
 
 	deployedContract, handle := deployHelper.GetHome(e.GetTestContext(), e.testBackend)

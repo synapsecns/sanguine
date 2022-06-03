@@ -3,20 +3,12 @@ package evm
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/cockroachdb/pebble"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/config"
-	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
-	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/synapse-node/pkg/evm"
-	"golang.org/x/sync/errgroup"
-	"math/big"
 )
 
 type evmClient struct {
@@ -26,8 +18,6 @@ type evmClient struct {
 	config config.DomainConfig
 	// client uses the old synapse client for now
 	client evm.Chain
-	// db stores the db handle
-	db db.DB
 	// xAppConfig is the xAppConfig handle
 	xAppConfig *xappconfig.XAppConfigRef
 }
@@ -35,7 +25,7 @@ type evmClient struct {
 var _ domains.DomainClient = &evmClient{}
 
 // NewEVM creates a new evm client.
-func NewEVM(ctx context.Context, name string, domain config.DomainConfig, db db.DB) (domains.DomainClient, error) {
+func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domains.DomainClient, error) {
 	underlyingClient, err := evm.NewFromURL(ctx, domain.RPCUrl)
 	if err != nil {
 		return nil, fmt.Errorf("could not get evm: %w", err)
@@ -50,7 +40,6 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig, db db.
 		name:       name,
 		config:     domain,
 		client:     underlyingClient,
-		db:         db,
 		xAppConfig: xAppConfig,
 	}, nil
 }
@@ -63,72 +52,4 @@ func (e evmClient) Name() string {
 // Config gets the config the evm client was initiated with.
 func (e evmClient) Config() config.DomainConfig {
 	return e.config
-}
-
-// FetchSortedUpdates fetches stored updates.
-func (e evmClient) FetchSortedUpdates(ctx context.Context, from uint32, to uint32) error {
-	indexedHeight, err := e.db.GetIndexedHeight(fmt.Sprintf("%d", e.config.DomainID))
-	if errors.Is(err, pebble.ErrNotFound) {
-		// Get deployed height of contract
-		indexedHeight = 0
-	} else if err != nil {
-		return fmt.Errorf("could not get indexed height: %w", err)
-	}
-	_ = indexedHeight
-
-	homeAddress, err := e.xAppConfig.Home(&bind.CallOpts{Context: ctx})
-	if err != nil {
-		return fmt.Errorf("could not add home address: %w", err)
-	}
-
-	currentHeight, err := e.client.BlockNumber(ctx)
-	if err != nil {
-		return fmt.Errorf("could not set current height: %w", err)
-	}
-
-	rangeFilter := NewRangeFilter(homeAddress, e.client, big.NewInt(int64(from)), new(big.Int).SetUint64(currentHeight), 1200, true)
-
-	g, ctx := errgroup.WithContext(ctx)
-
-	g.Go(func() error {
-		err = rangeFilter.Start(ctx)
-		if err != nil {
-			return fmt.Errorf("could not filter ranges: %w", err)
-		}
-		return nil
-	})
-
-	g.Go(func() error {
-		parser, err := home.NewParser(homeAddress)
-		if err != nil {
-			return fmt.Errorf("could not get parser: %w", err)
-		}
-
-		for {
-			select {
-			case <-ctx.Done():
-				return fmt.Errorf("context cancellation: %w", ctx.Err())
-			case log := <-rangeFilter.GetLogChan():
-				e.parseUpdater(parser, log.logs)
-
-				return nil
-			}
-		}
-	})
-
-	return nil
-}
-
-func (e evmClient) parseUpdater(parser home.Parser, logs []types.Log) {
-	for _, log := range logs {
-		logType, ok := parser.EventType(log)
-		if !ok {
-			continue
-		}
-
-		//nolint: staticcheck
-		if logType == home.DispatchEvent {
-
-		}
-	}
 }

@@ -1,6 +1,7 @@
 package home
 
 import (
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -11,11 +12,17 @@ import (
 type HomeRef struct {
 	*Home
 	address common.Address
+	parser  Parser
 }
 
 // Address is the contract address.
 func (s HomeRef) Address() common.Address {
 	return s.address
+}
+
+// Parser returns the home parser.
+func (s HomeRef) Parser() Parser {
+	return s.parser
 }
 
 // NewHomeRef creates a new home contract with a contract ref.
@@ -24,9 +31,16 @@ func NewHomeRef(address common.Address, backend bind.ContractBackend) (*HomeRef,
 	if err != nil {
 		return nil, err
 	}
+
+	parser, err := NewParser(address)
+	if err != nil {
+		return nil, fmt.Errorf("could not create parser: %w", err)
+	}
+
 	return &HomeRef{
 		Home:    homeContract,
 		address: address,
+		parser:  parser,
 	}, nil
 }
 

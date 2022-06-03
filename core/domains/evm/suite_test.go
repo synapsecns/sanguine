@@ -2,27 +2,30 @@ package evm_test
 
 import (
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/domains/evm"
+	"github.com/synapsecns/sanguine/core/testutil"
 	"github.com/synapsecns/synapse-node/testutils"
 	"github.com/synapsecns/synapse-node/testutils/backends"
 	"github.com/synapsecns/synapse-node/testutils/backends/preset"
+	"github.com/synapsecns/synapse-node/testutils/backends/simulated"
 	"testing"
 	"time"
 )
 
-// EVMSuite defines the basic chain suite.
-type EVMSuite struct {
+// RPCSuite defines a suite where we need live rpc endpoints (as opposed to a simulated backend) to test.
+type RPCSuite struct {
 	*testutils.TestSuite
 	testBackend backends.TestBackend
 }
 
-// NewEVMSuite creates a new chain testing suite.
-func NewEVMSuite(tb testing.TB) *EVMSuite {
+// NewRPCSuite creates a new chain testing suite.
+func NewRPCSuite(tb testing.TB) *RPCSuite {
 	tb.Helper()
-	return &EVMSuite{TestSuite: testutils.NewTestSuite(tb)}
+	return &RPCSuite{TestSuite: testutils.NewTestSuite(tb)}
 }
 
-func (e *EVMSuite) SetupTest() {
+func (e *RPCSuite) SetupTest() {
 	evm.SetMinBackoff(time.Duration(0))
 	evm.SetMaxBackoff(time.Duration(0))
 
@@ -31,5 +34,32 @@ func (e *EVMSuite) SetupTest() {
 }
 
 func TestEVMSuite(t *testing.T) {
-	suite.Run(t, NewEVMSuite(t))
+	suite.Run(t, NewRPCSuite(t))
+}
+
+// ContractSuite defines a suite for testing contracts. This uses the simulated backend.
+type ContractSuite struct {
+	*testutils.TestSuite
+	homeContract *home.HomeRef
+	testBackend  backends.SimulatedTestBackend
+}
+
+func NewContractSuite(tb testing.TB) *ContractSuite {
+	tb.Helper()
+	return &ContractSuite{
+		TestSuite: testutils.NewTestSuite(tb),
+	}
+}
+
+func (i *ContractSuite) SetupTest() {
+	i.TestSuite.SetupTest()
+
+	deployManager := testutil.NewDeployManager(i.T())
+	i.testBackend = simulated.NewSimulatedBackend(i.GetTestContext(), i.T())
+
+	_, i.homeContract = deployManager.GetHome(i.GetTestContext(), i.testBackend)
+}
+
+func TestIndexerSuite(t *testing.T) {
+	suite.Run(t, NewContractSuite(t))
 }
