@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/synapse-node/pkg/types"
+	"github.com/synapsecns/sanguine/core/types"
+	legacyTypes "github.com/synapsecns/synapse-node/pkg/types"
 )
 
 // Parser parses events from the home contract.
 type Parser interface {
 	// EventType determines if an event was initiated by the bridge or the user.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
+	// ParseDispatch parses a dispatch event
+	ParseDispatch(log ethTypes.Log) (_ types.CommittedMessage, ok bool)
 }
 
 type parserImpl struct {
@@ -38,7 +41,23 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 		return *eventType, true
 	}
 	// return an unknown event to avoid cases where user failed to check the event type
-	return EventType(len(types.AllEventTypes()) + 2), false
+	return EventType(len(legacyTypes.AllEventTypes()) + 2), false
+}
+
+// ParseDispatch parses an update event.
+func (p parserImpl) ParseDispatch(log ethTypes.Log) (_ types.CommittedMessage, ok bool) {
+	dispatch, err := p.filterer.ParseDispatch(log)
+	if err != nil {
+		return nil, false
+	}
+
+	leafIndex := uint32(dispatch.LeafIndex.Int64())
+
+	var commitedRoot common.Hash = dispatch.CommittedRoot
+
+	commitedMessage := types.NewCommittedMessage(leafIndex, commitedRoot, dispatch.Message)
+
+	return commitedMessage, true
 }
 
 // EventType is the type of the home event
