@@ -44,10 +44,17 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     // re-entrancy guard
     uint8 private entered;
 
-    mapping(uint32 => ReplicaLib.Replica) public activeReplicas;
+    uint256 internal replicaCount;
+
+    // all Replicas: both active and archived
+    mapping(uint256 => ReplicaLib.Replica) internal allReplicas;
+
+    // (domain => replica index): index of the active replica in allReplicas
+    mapping(uint32 => uint256) internal activeReplicas;
 
     //TODO: Handle fail-over replicas and modify activeReplicas
-    mapping(uint32 => ReplicaLib.Replica) public archivedReplicas;
+    // (domain => [replica indexes]): array of indexes of archived replicas in allReplicas
+    mapping(uint32 => uint256[]) internal archivedReplicas;
 
     // Address of bonded Updater
     address public updater;
@@ -55,7 +62,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     // ============ Upgrade Gap ============
 
     // gap for upgrade safety
-    uint256[46] private __GAP;
+    uint256[44] private __GAP;
 
     // ============ Events ============
 
@@ -154,15 +161,15 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         _setUpdater(_updater);
         // set storage variables
         entered = 1;
-        activeReplicas[_remoteDomain].setupReplica(_remoteDomain, _optimisticSeconds);
+        activeReplicas[_remoteDomain] = _createReplica(_remoteDomain, _optimisticSeconds);
         emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
     }
 
     // ============ Active Replica Views ============
 
+    // TODO: more getters for active replicas, getters for archived replicas
     function activeReplicaCommittedRoot(uint32 _remoteDomain) external view returns (bytes32) {
-        // TODO: this is also accessible via ReplicaManager.activeReplicas(_remoteDomain)
-        return activeReplicas[_remoteDomain].committedRoot;
+        return allReplicas[activeReplicas[_remoteDomain]].committedRoot;
     }
 
     function activeReplicaConfirmedAt(uint32 _remoteDomain, bytes32 _root)
@@ -170,7 +177,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         view
         returns (uint256)
     {
-        return activeReplicas[_remoteDomain].confirmAt[_root];
+        return allReplicas[activeReplicas[_remoteDomain]].confirmAt[_root];
     }
 
     function activeReplicaMessageStatus(uint32 _remoteDomain, bytes32 _messageId)
@@ -178,7 +185,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         view
         returns (ReplicaLib.MessageStatus)
     {
-        return activeReplicas[_remoteDomain].messages[_messageId];
+        return allReplicas[activeReplicas[_remoteDomain]].messages[_messageId];
     }
 
     // ============ External Functions ============
@@ -198,7 +205,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         bytes32 _newRoot,
         bytes memory _signature
     ) external {
-        ReplicaLib.Replica storage replica = activeReplicas[_remoteDomain];
+        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         // ensure that update is building off the last submitted root
         require(_oldRoot == replica.committedRoot, "not current update");
         // validate updater signature
@@ -257,7 +264,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     function process(bytes memory _message) public returns (bool _success) {
         bytes29 _m = _message.ref(0);
         uint32 _remoteDomain = _m.origin();
-        ReplicaLib.Replica storage replica = activeReplicas[_remoteDomain];
+        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         // ensure message was meant for this domain
         require(_m.destination() == localDomain, "!destination");
         // ensure message has been proven
@@ -332,7 +339,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         external
         onlyOwner
     {
-        activeReplicas[_remoteDomain].setOptimisticTimeout(_optimisticSeconds);
+        allReplicas[activeReplicas[_remoteDomain]].setOptimisticTimeout(_optimisticSeconds);
         emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
     }
 
@@ -358,7 +365,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         bytes32 _root,
         uint256 _confirmAt
     ) external onlyOwner {
-        ReplicaLib.Replica storage replica = activeReplicas[_remoteDomain];
+        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         uint256 _previousConfirmAt = replica.confirmAt[_root];
         replica.setConfirmAt(_root, _confirmAt);
         emit SetConfirmation(_remoteDomain, _root, _previousConfirmAt, _confirmAt);
@@ -374,7 +381,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
      * @return TRUE iff root has been submitted & timeout has expired
      */
     function acceptableRoot(uint32 _remoteDomain, bytes32 _root) public view returns (bool) {
-        uint256 _time = activeReplicas[_remoteDomain].confirmAt[_root];
+        uint256 _time = allReplicas[activeReplicas[_remoteDomain]].confirmAt[_root];
         if (_time == 0) {
             return false;
         }
@@ -399,7 +406,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         bytes32[32] calldata _proof,
         uint256 _index
     ) public returns (bool) {
-        ReplicaLib.Replica storage replica = activeReplicas[_remoteDomain];
+        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         // ensure that message has not been proven or processed
         require(replica.messages[_leaf] == ReplicaLib.MessageStatus.None, "!MessageStatus.None");
         // calculate the expected root based on the proof
@@ -421,6 +428,18 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     }
 
     // ============ Internal Functions ============
+
+    function _createReplica(uint32 _remoteDomain, uint256 _optimisticSeconds)
+        internal
+        returns (uint256 replicaIndex)
+    {
+        replicaIndex = replicaCount;
+        allReplicas[replicaIndex].setupReplica(_remoteDomain, _optimisticSeconds);
+        unchecked {
+            replicaCount = replicaIndex + 1;
+        }
+    }
+
     /**
      * @notice Hash of Home domain concatenated with "SYN"
      * @param _homeDomain the Home domain to hash
