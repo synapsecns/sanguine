@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
-import { ReplicaStorage } from "./Replica.sol";
+import { Replica } from "./Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
 // ============ External Imports ============
@@ -15,8 +15,7 @@ import {
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
- * @title Replica
- * @author Illusory Systems Inc.
+ * @title ReplicaManager
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
@@ -43,10 +42,10 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     // re-entrancy guard
     uint8 private entered;
 
-    mapping(uint32 => ReplicaStorage) public activeReplicas;
+    mapping(uint32 => Replica) public activeReplicas;
 
     //TODO: Handle fail-over replicas and modify activeReplicas
-    mapping(uint32 => ReplicaStorage) public archivedReplicas;
+    mapping(uint32 => Replica) public archivedReplicas;
 
     // Address of bonded Updater
     address public updater;
@@ -153,11 +152,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         _setUpdater(_updater);
         // set storage variables
         entered = 1;
-        ReplicaStorage newReplica = new ReplicaStorage(
-            address(this),
-            _remoteDomain,
-            _optimisticSeconds
-        );
+        Replica newReplica = new Replica(address(this), _remoteDomain, _optimisticSeconds);
         activeReplicas[_remoteDomain] = newReplica;
         emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
     }
@@ -179,7 +174,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         bytes32 _newRoot,
         bytes memory _signature
     ) external {
-        ReplicaStorage replica = activeReplicas[_remoteDomain];
+        Replica replica = activeReplicas[_remoteDomain];
         // ensure that update is building off the last submitted root
         require(_oldRoot == replica.committedRoot(), "not current update");
         // validate updater signature
@@ -238,17 +233,17 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     function process(bytes memory _message) public returns (bool _success) {
         bytes29 _m = _message.ref(0);
         uint32 _remoteDomain = _m.origin();
-        ReplicaStorage replica = activeReplicas[_remoteDomain];
+        Replica replica = activeReplicas[_remoteDomain];
         // ensure message was meant for this domain
         require(_m.destination() == localDomain, "!destination");
         // ensure message has been proven
         bytes32 _messageHash = _m.keccak();
-        require(replica.messages(_messageHash) == ReplicaStorage.MessageStatus.Proven, "!proven");
+        require(replica.messages(_messageHash) == Replica.MessageStatus.Proven, "!proven");
         // check re-entrancy guard
         require(entered == 1, "!reentrant");
         entered = 0;
         // update message status as processed
-        replica.setMessageStatus(_messageHash, ReplicaStorage.MessageStatus.Processed);
+        replica.setMessageStatus(_messageHash, Replica.MessageStatus.Processed);
         // A call running out of gas TYPICALLY errors the whole tx. We want to
         // a) ensure the call has a sufficient amount of gas to make a
         //    meaningful state change.
@@ -313,7 +308,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         external
         onlyOwner
     {
-        ReplicaStorage replica = activeReplicas[_remoteDomain];
+        Replica replica = activeReplicas[_remoteDomain];
         replica.setOptimisticTimeout(_optimisticSeconds);
         emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
     }
@@ -340,7 +335,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         bytes32 _root,
         uint256 _confirmAt
     ) external onlyOwner {
-        ReplicaStorage replica = activeReplicas[_remoteDomain];
+        Replica replica = activeReplicas[_remoteDomain];
         uint256 _previousConfirmAt = replica.confirmAt(_root);
         replica.setConfirmAt(_root, _confirmAt);
         emit SetConfirmation(_remoteDomain, _root, _previousConfirmAt, _confirmAt);
@@ -356,7 +351,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
      * @return TRUE iff root has been submitted & timeout has expired
      */
     function acceptableRoot(uint32 _remoteDomain, bytes32 _root) public view returns (bool) {
-        ReplicaStorage replica = activeReplicas[_remoteDomain];
+        Replica replica = activeReplicas[_remoteDomain];
         uint256 _time = replica.confirmAt(_root);
         if (_time == 0) {
             return false;
@@ -382,17 +377,14 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         bytes32[32] calldata _proof,
         uint256 _index
     ) public returns (bool) {
-        ReplicaStorage replica = activeReplicas[_remoteDomain];
+        Replica replica = activeReplicas[_remoteDomain];
         // ensure that message has not been proven or processed
-        require(
-            replica.messages(_leaf) == ReplicaStorage.MessageStatus.None,
-            "!MessageStatus.None"
-        );
+        require(replica.messages(_leaf) == Replica.MessageStatus.None, "!MessageStatus.None");
         // calculate the expected root based on the proof
         bytes32 _calculatedRoot = MerkleLib.branchRoot(_leaf, _proof, _index);
         // if the root is valid, change status to Proven
         if (acceptableRoot(_remoteDomain, _calculatedRoot)) {
-            replica.setMessageStatus(_leaf, ReplicaStorage.MessageStatus.Processed);
+            replica.setMessageStatus(_leaf, Replica.MessageStatus.Processed);
             return true;
         }
         return false;
