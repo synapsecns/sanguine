@@ -5,7 +5,7 @@ pragma solidity 0.8.13;
  * @title QueueLib
  * @author Illusory Systems Inc.
  * @notice Library containing queue struct and operations for queue used by
- * Home and Replica.
+ * Home and ReplicaStorage.
  **/
 library QueueLib {
     /**
