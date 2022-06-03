@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { Home } from "./Home.sol";
-import { Replica } from "./Replica.sol";
+import { ReplicaManager } from "./ReplicaManager.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
 // ============ External Imports ============
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -79,7 +79,7 @@ contract XAppConfig is Ownable {
         require(_replica != address(0), "!replica exists");
         // ensure that the signature is on the proper updater
         require(
-            Replica(_replica).updater() == TypeCasts.bytes32ToAddress(_updater),
+            ReplicaManager(_replica).updater() == TypeCasts.bytes32ToAddress(_updater),
             "!current updater"
         );
         // get the watcher address from the signature
@@ -192,7 +192,8 @@ contract XAppConfig is Ownable {
         bytes32 _updater,
         bytes memory _signature
     ) internal view returns (address) {
-        bytes32 _homeDomainHash = Replica(TypeCasts.bytes32ToAddress(_replica)).homeDomainHash();
+        bytes32 _homeDomainHash = ReplicaManager(TypeCasts.bytes32ToAddress(_replica))
+            .homeDomainHash();
         bytes32 _digest = keccak256(abi.encodePacked(_homeDomainHash, _domain, _updater));
         _digest = ECDSA.toEthSignedMessageHash(_digest);
         return ECDSA.recover(_digest, _signature);
