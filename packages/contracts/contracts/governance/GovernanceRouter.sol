@@ -46,7 +46,7 @@ contract GovernanceRouter is Version0, Initializable, IMessageRecipient {
     address public governor;
     // domain of Governor chain -- for accepting incoming messages from Governor
     uint32 public governorDomain;
-    // xAppConnectionManager contract which stores Replica addresses
+    // xAppConnectionManager contract which stores ReplicaStorage addresses
     XAppConfig public xAppConfig;
     // domain -> remote GovernanceRouter contract address
     mapping(uint32 => bytes32) public routers;
