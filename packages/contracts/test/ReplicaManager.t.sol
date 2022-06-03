@@ -7,7 +7,7 @@ import "forge-std/Test.sol";
 import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
-import { Replica } from "../contracts/Replica.sol";
+import { ReplicaLib } from "../contracts/libs/Replica.sol";
 
 import { ReplicaManagerHarness } from "./harnesses/ReplicaManagerHarness.sol";
 
@@ -114,15 +114,17 @@ contract ReplicaManagerTest is SynapseTest {
         assertEq(replicaManager.updater(), vm.addr(updaterPK));
         bytes memory sig = signRemoteUpdate(updaterPK, committedRoot, newRoot);
         // Root doesn't exist yet
-        Replica replica = replicaManager.activeReplicas(remoteDomain);
-        assertEq(replica.confirmAt(newRoot), 0);
+        assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, newRoot), 0);
         // Relayer sends over a root signed by the updater on the Home chain
         vm.expectEmit(true, true, true, true);
         emit Update(remoteDomain, committedRoot, newRoot, sig);
         replicaManager.update(remoteDomain, committedRoot, newRoot, sig);
         // Root set with optimistic latency allowing it to be processed at T+10
-        assertEq(replica.confirmAt(newRoot), block.timestamp + 10);
-        assertEq(replica.committedRoot(), newRoot);
+        assertEq(
+            replicaManager.activeReplicaConfirmedAt(remoteDomain, newRoot),
+            block.timestamp + 10
+        );
+        assertEq(replicaManager.activeReplicaCommittedRoot(remoteDomain), newRoot);
     }
 
     function test_updateWithIncorrectRoot() public {
