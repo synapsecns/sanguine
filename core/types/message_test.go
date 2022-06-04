@@ -30,8 +30,9 @@ func TestMessageEncodeParity(t *testing.T) {
 	destination := gofakeit.Uint32()
 	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
+	optimisticSeconds := gofakeit.Uint32()
 
-	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, body)
+	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, body)
 	Nil(t, err)
 
 	decodedMessage, err := types.DecodeMessage(formattedMessage)

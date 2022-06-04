@@ -17,13 +17,16 @@ type TestDispatch struct {
 	recipientAddress common.Hash
 	// raw message
 	message []byte
+	// optimisticSeconds is the seconds count to use
+	optimisticSeconds uint32
 }
 
 func NewTestDispatch() TestDispatch {
 	return TestDispatch{
-		domain:           gofakeit.Uint32(),
-		recipientAddress: common.BytesToHash(utils.NewMockAddress().Bytes()),
-		message:          []byte(gofakeit.Paragraph(4, 1, 4, " ")),
+		domain:            gofakeit.Uint32(),
+		recipientAddress:  common.BytesToHash(utils.NewMockAddress().Bytes()),
+		message:           []byte(gofakeit.Paragraph(4, 1, 4, " ")),
+		optimisticSeconds: gofakeit.Uint32(),
 	}
 }
 
@@ -31,7 +34,7 @@ func NewTestDispatch() TestDispatch {
 func (d TestDispatch) Call(i ContractSuite) (blockNumber uint32) {
 	auth := i.testBackend.GetTxContext(i.GetTestContext(), nil)
 
-	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.message)
+	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, d.message)
 	Nil(i.T(), err)
 
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
