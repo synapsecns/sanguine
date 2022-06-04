@@ -3,7 +3,6 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
-// import { Replica } from "./Replica.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
@@ -148,13 +147,11 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
      *      - sets the optimistic timer
      * @param _remoteDomain The domain of the Home contract this follows
      * @param _updater The EVM id of the updater
-     * @param _committedRoot A trusted root from which to start the Replica
      * @param _optimisticSeconds The time a new root must wait to be confirmed
      */
     function initialize(
         uint32 _remoteDomain,
         address _updater,
-        bytes32 _committedRoot,
         uint256 _optimisticSeconds
     ) public initializer {
         __Ownable_init();
