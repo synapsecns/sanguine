@@ -3,9 +3,12 @@
 pragma solidity 0.8.13;
 
 import { Message } from "../../contracts/libs/Message.sol";
+import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 
 contract MessageHarness {
     using Message for bytes29;
+    using TypedMemView for bytes;
+    using TypedMemView for bytes29;
 
     function formatMessage(
         uint32 _originDomain,
@@ -47,42 +50,35 @@ contract MessageHarness {
         return Message.messageHash(_origin, _sender, _nonce, _destination, _recipient, _body);
     }
 
-    /// @notice Returns message's origin field
-    function origin(bytes29 _message) public pure returns (uint32) {
-        return _message.origin();
+    function body(bytes memory _message) external view returns (bytes memory) {
+        return _message.ref(0).body().clone();
     }
 
-    /// @notice Returns message's sender field
-    function sender(bytes29 _message) public pure returns (bytes32) {
-        return _message.sender();
+    function origin(bytes memory _message) external pure returns (uint32) {
+        return _message.ref(0).origin();
     }
 
-    /// @notice Returns message's nonce field
-    function nonce(bytes29 _message) public pure returns (uint32) {
-        return _message.nonce();
+    function sender(bytes memory _message) external pure returns (bytes32) {
+        return _message.ref(0).sender();
     }
 
-    /// @notice Returns message's destination field
-    function destination(bytes29 _message) public pure returns (uint32) {
-        return _message.destination();
+    function nonce(bytes memory _message) external pure returns (uint32) {
+        return _message.ref(0).nonce();
     }
 
-    /// @notice Returns message's recipient field as bytes32
-    function recipient(bytes29 _message) public pure returns (bytes32) {
-        return _message.recipient();
+    function destination(bytes memory _message) external pure returns (uint32) {
+        return _message.ref(0).destination();
     }
 
-    /// @notice Returns message's recipient field as an address
-    function recipientAddress(bytes29 _message) public pure returns (address) {
-        return _message.recipientAddress();
+    function recipient(bytes memory _message) external pure returns (bytes32) {
+        return _message.ref(0).recipient();
     }
 
-    /// @notice Returns message's body field as bytes29 (refer to TypedMemView library for details on bytes29 type)
-    function body(bytes29 _message) public pure returns (bytes29) {
-        return _message.body();
+    function recipientAddress(bytes memory _message) external pure returns (address) {
+        return _message.ref(0).recipientAddress();
     }
 
-    function leaf(bytes29 _message) public view returns (bytes32) {
-        return _message.leaf();
+    function leaf(bytes memory _message) external view returns (bytes32) {
+        return _message.ref(0).leaf();
     }
 }
