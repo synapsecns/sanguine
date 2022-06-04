@@ -3,7 +3,9 @@ package indexer
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/cockroachdb/pebble"
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
 )
@@ -17,14 +19,17 @@ type domainIndexer struct {
 }
 
 // NewDomainIndexer creates a new domain indexer.
-func newDomainIndexer(domains domains.DomainClient) error {
-	return nil
+func newDomainIndexer(db db.DB, domain domains.DomainClient) domainIndexer {
+	return domainIndexer{
+		db:     db,
+		domain: domain,
+	}
 }
 
-func (d domainIndexer) SyncUpdates(ctx context.Context) error {
+func (d domainIndexer) SyncMessages(ctx context.Context) error {
 	// get the latest indexed height for the dmoain. Note: this can differ based on contract, we'll need to switch this to a per contaact setting
-	indexedHeight, err := d.db.GetIndexedHeight(d.domain.Name())
-	if err != nil {
+	indexedHeight, err := d.db.GetMessageLatestBlockEnd()
+	if err != nil && !errors.Is(err, pebble.ErrNotFound) {
 		return fmt.Errorf("could not get indexed height: %w", err)
 	}
 
@@ -36,7 +41,7 @@ func (d domainIndexer) SyncUpdates(ctx context.Context) error {
 			return nil
 		default:
 			// TODO: this needs some sort of backoff
-			_, err := d.syncUpdates(ctx, startHeight)
+			_, err := d.checkAndStoreMessages(ctx, startHeight)
 			if err != nil {
 				logger.Warn(err)
 				continue
@@ -47,8 +52,8 @@ func (d domainIndexer) SyncUpdates(ctx context.Context) error {
 	return nil
 }
 
-// syncUpdates is the sync update loop.
-func (d domainIndexer) syncUpdates(ctx context.Context, startHeight uint32) (ok bool, err error) {
+// checkAndStoreMessages is the sync update loop.
+func (d domainIndexer) checkAndStoreMessages(ctx context.Context, startHeight uint32) (ok bool, err error) {
 	tip, err := d.domain.BlockNumber(ctx)
 	if err != nil {
 		return false, fmt.Errorf("could not get latest block number: %w", err)
@@ -59,20 +64,27 @@ func (d domainIndexer) syncUpdates(ctx context.Context, startHeight uint32) (ok 
 	}
 
 	// TODO: handle required confs
-	sortedUpdates, err := d.domain.Home().FetchSortedMessages(ctx, startHeight, tip)
+	sortedMessages, err := d.domain.Home().FetchSortedMessages(ctx, startHeight, tip)
 	if err != nil {
 		return false, fmt.Errorf("could not sync updates: %w", err)
 	}
 
-	if len(sortedUpdates) == 0 {
-		err := d.db.StoreIndexedHeight(d.domain.Name(), tip)
+	if len(sortedMessages) == 0 {
+		err := d.db.StoreMessageLatestBlockEnd(tip)
 		if err != nil {
-			return false, fmt.Errorf("could not store height %d on domain %s: %w", d.domain.Name(), tip, err)
+			return false, fmt.Errorf("could not store height %d on domain %s: %w", tip, d.domain.Name(), err)
 		}
 
-		panic("")
+		return true, nil
 	}
-	panic("")
+
+	for _, message := range sortedMessages {
+		err = d.db.StoreLatestMessage(message)
+		if err != nil {
+			return false, fmt.Errorf("could not get latest message: %w", err)
+		}
+	}
+	return true, nil
 }
 
 // maxUint32 gets the maximum uint32 value out of two

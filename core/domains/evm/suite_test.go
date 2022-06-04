@@ -62,6 +62,6 @@ func (i *ContractSuite) SetupTest() {
 	_, i.homeContract = deployManager.GetHome(i.GetTestContext(), i.testBackend)
 }
 
-func TestIndexerSuite(t *testing.T) {
+func TestContractSuite(t *testing.T) {
 	suite.Run(t, NewContractSuite(t))
 }

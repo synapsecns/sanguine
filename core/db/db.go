@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"github.com/cockroachdb/pebble"
 	"github.com/ethereum/go-ethereum/common"
@@ -12,6 +13,8 @@ import (
 type DB interface {
 	// StoreCommittedMessage stores a committed message.
 	StoreCommittedMessage(committedMessage types.CommittedMessage) error
+	// StoreLatestMessage stores a raw committed message building off the leaf index
+	StoreLatestMessage(committedMessage types.CommittedMessage) error
 	// MessageByNonce retreives a raw committed message by its leaf hash.
 	MessageByNonce(destination, nonce uint32) (types.CommittedMessage, error)
 	// MessageByLeaf fetches a message by leaf
@@ -27,6 +30,12 @@ type DB interface {
 	StoreIndexedHeight(domain string, height uint32) error
 	// GetIndexedHeight gets the indexed height for a domain
 	GetIndexedHeight(domain string) (uint32, error)
+	// UpdateLatestLeafIndex sets the latest leaf
+	UpdateLatestLeafIndex(leafIndex uint32) error
+	// StoreMessageLatestBlockEnd stores the latest block end
+	StoreMessageLatestBlockEnd(blockNumber uint32) error
+	// GetMessageLatestBlockEnd gets the message latest block
+	GetMessageLatestBlockEnd() (height uint32, err error)
 }
 
 // pebbleDB contains a rocksdb used to store merkle trees.
@@ -68,6 +77,56 @@ func (d *pebbleDB) StoreIndexedHeight(domain string, height uint32) error {
 		return fmt.Errorf("could not store height: %w", err)
 	}
 	return nil
+}
+
+// StoreLatestMessage stores the latest committed message.
+func (d *pebbleDB) StoreLatestMessage(committedMessage types.CommittedMessage) error {
+	// If there is no latest root, or if this update is on the latest root
+	// update latest root
+	latestLeaf, err := d.RetrieveLatestLeafIndex()
+	if err == nil {
+		if latestLeaf == committedMessage.LeafIndex()-1 {
+			err = d.UpdateLatestLeafIndex(committedMessage.LeafIndex())
+			if err != nil {
+				return fmt.Errorf("could not store latest leaf index: %w", err)
+			}
+		} else {
+			logger.Debugf("Attempted to store message not building off latest leaf index. Latest leaf index: %d. Attempted leaf index: %d.", latestLeaf, committedMessage.LeafIndex())
+		}
+	}
+	if errors.Is(err, pebble.ErrNotFound) {
+		err = d.UpdateLatestLeafIndex(committedMessage.LeafIndex())
+		if err != nil {
+			return fmt.Errorf("could not store latest leaf index: %w", err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("could not store message: %w", err)
+	}
+
+	return d.StoreCommittedMessage(committedMessage)
+}
+
+func (d *pebbleDB) UpdateLatestLeafIndex(leafIndex uint32) error {
+	err := d.StoreKeyedEncodable("", []byte(LATEST_LEAF_INDEX), []byte(strconv.Itoa(int(leafIndex))))
+	if err != nil {
+		return fmt.Errorf("could not store latest leaf: %w", err)
+	}
+	return nil
+}
+
+// RetrieveLatestLeafIndex gets the latest leaf index.
+func (d *pebbleDB) RetrieveLatestLeafIndex() (uint32, error) {
+	value, _, err := d.DB.Get(d.FullKey("", []byte(LATEST_LEAF_INDEX)))
+	if err != nil {
+		return 0, fmt.Errorf("could not retrieve key: %w", err)
+	}
+
+	index, err := strconv.Atoi(string(value))
+	if err != nil {
+		return 0, fmt.Errorf("could not retrieve leaf index: %w", err)
+	}
+
+	return uint32(index), nil
 }
 
 // StoreCommittedMessage stores a committed message.
@@ -220,6 +279,29 @@ func (d *pebbleDB) StoreKeyedEncodable(prefix string, key, value []byte) error {
 	err := d.DB.Set(d.FullKey(prefix, key), value, &pebble.WriteOptions{Sync: true})
 	if err != nil {
 		return fmt.Errorf("could not store key encodable: %w", err)
+	}
+	return nil
+}
+
+func (d *pebbleDB) GetMessageLatestBlockEnd() (height uint32, err error) {
+	rawHeight, _, err := d.Get(d.FullKey(MESSAGES_LAST_BLOCK_END, []byte("")))
+	if err != nil {
+		return 0, fmt.Errorf("could not get height: %w", err)
+	}
+
+	uncastHeight, err := strconv.Atoi(string(rawHeight))
+	if err != nil {
+		return 0, fmt.Errorf("could not get indexed height: %w", err)
+	}
+
+	return uint32(uncastHeight), nil
+}
+
+// StoreMessageLatestBlockEnd stores the latest message block.
+func (d *pebbleDB) StoreMessageLatestBlockEnd(height uint32) error {
+	err := d.StoreKeyedEncodable("", []byte(MESSAGES_LAST_BLOCK_END), []byte(fmt.Sprintf("%d", height)))
+	if err != nil {
+		return fmt.Errorf("could not store height: %w", err)
 	}
 	return nil
 }
