@@ -101,6 +101,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
             nonce,
             remoteDomain,
             recipient,
+            optimisticSeconds,
             messageBody
         );
         bytes32 messageHash = keccak256(abi.encodePacked(message, optimisticSeconds));
@@ -130,6 +131,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
             nonce,
             remoteDomain,
             recipient,
+            optimisticSeconds,
             messageBody
         );
         vm.prank(sender);
