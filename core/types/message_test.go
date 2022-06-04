@@ -1,13 +1,48 @@
 package types_test
 
 import (
+	"context"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/testutil"
 	"github.com/synapsecns/sanguine/core/types"
+	"github.com/synapsecns/synapse-node/testutils/backends/simulated"
 	"math/big"
 	"testing"
+	"time"
 )
+
+func TestMessageEncodeParity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+	_, messageContract := deployManager.GetMessageHarness(ctx, testBackend)
+
+	// generate some fake data
+
+	origin := gofakeit.Uint32()
+	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	nonce := gofakeit.Uint32()
+	destination := gofakeit.Uint32()
+	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
+
+	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, body)
+	Nil(t, err)
+
+	decodedMessage, err := types.DecodeMessage(formattedMessage)
+	Nil(t, err)
+
+	Equal(t, decodedMessage.Origin(), origin)
+	Equal(t, decodedMessage.Sender(), sender)
+	Equal(t, decodedMessage.Nonce(), nonce)
+	Equal(t, decodedMessage.Destination(), destination)
+	Equal(t, decodedMessage.Body(), body)
+}
 
 func TestNewMessageEncodeDecode(t *testing.T) {
 	origin := gofakeit.Uint32()

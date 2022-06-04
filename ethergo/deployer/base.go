@@ -39,6 +39,11 @@ func (n BaseDeployer) Backend() backends.SimulatedTestBackend {
 	return n.backend
 }
 
+// Registry gets the registry.
+func (n BaseDeployer) Registry() GetOnlyContractRegistry {
+	return n.registry
+}
+
 // ContractType returns the contract type.
 func (n BaseDeployer) ContractType() ContractType {
 	return n.contractType
