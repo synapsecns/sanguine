@@ -150,17 +150,17 @@ contract ReplicaManagerTest is SynapseTest {
         replicaManager.update(remoteDomain, committedRoot, newRoot, sig);
     }
 
-    function test_acceptableRoot() public {
-        bytes32 newRoot = "new root";
-        test_successfulUpdate();
-        vm.warp(block.timestamp + optimisticSeconds + 1);
-        assertTrue(replicaManager.acceptableRoot(remoteDomain, newRoot));
-    }
+    // function test_acceptableRoot() public {
+    //     bytes32 newRoot = "new root";
+    //     test_successfulUpdate();
+    //     vm.warp(block.timestamp + optimisticSeconds + 1);
+    //     assertTrue(replicaManager.acceptableRoot(remoteDomain, newRoot));
+    // }
 
-    function test_cannotAcceptableRoot() public {
-        bytes32 newRoot = "new root";
-        test_successfulUpdate();
-        vm.warp(block.timestamp + optimisticSeconds - 1);
-        assertFalse(replicaManager.acceptableRoot(remoteDomain, newRoot));
-    }
+    // function test_cannotAcceptableRoot() public {
+    //     bytes32 newRoot = "new root";
+    //     test_successfulUpdate();
+    //     vm.warp(block.timestamp + optimisticSeconds - 1);
+    //     assertFalse(replicaManager.acceptableRoot(remoteDomain, newRoot));
+    // }
 }
