@@ -19,7 +19,7 @@ contract ReplicaTest is SynapseTest {
         replica.setupReplica(remoteDomain, optimisticSeconds);
     }
 
-    function test_constructor() public {
+    function test_setup() public {
         assertEq(replica.committedRoot, bytes32(""));
         assertEq(replica.remoteDomain, remoteDomain);
         assertEq(replica.optimisticSeconds, optimisticSeconds);
