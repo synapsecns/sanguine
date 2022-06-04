@@ -120,7 +120,8 @@ contract ReplicaManagerTest is SynapseTest {
 
     // Relayer relays a new root signed by updater on Home chain
     function test_successfulUpdate() public {
-        bytes32 newRoot = "new root";
+        bytes memory newMessage = "new root";
+        bytes32 newRoot = keccak256(abi.encodePacked(newMessage, optimisticSeconds));
         assertEq(replicaManager.updater(), vm.addr(updaterPK));
         bytes memory sig = signRemoteUpdate(updaterPK, committedRoot, newRoot);
         // Root doesn't exist yet
@@ -129,38 +130,38 @@ contract ReplicaManagerTest is SynapseTest {
         vm.expectEmit(true, true, true, true);
         emit Update(remoteDomain, committedRoot, newRoot, sig);
         replicaManager.update(remoteDomain, committedRoot, newRoot, sig);
-        // Root set with optimistic latency allowing it to be processed at T+10
-        assertEq(
-            replicaManager.activeReplicaConfirmedAt(remoteDomain, newRoot),
-            block.timestamp + 10
-        );
+        // Time at which root was confirmed is set, optimistic timeout starts now
+        assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, newRoot), block.timestamp);
         assertEq(replicaManager.activeReplicaCommittedRoot(remoteDomain), newRoot);
     }
 
     function test_updateWithIncorrectRoot() public {
+        bytes memory newMessage = "new root";
         bytes32 newRoot = "new root";
         vm.expectRevert("not current update");
         replicaManager.update(remoteDomain, newRoot, newRoot, bytes(""));
     }
 
     function test_updateWithIncorrectSig() public {
-        bytes32 newRoot = "new root";
+        bytes memory newMessage = "new root";
+        bytes32 newRoot = keccak256(abi.encodePacked(newMessage, optimisticSeconds));
         bytes memory sig = signRemoteUpdate(fakeUpdaterPK, committedRoot, newRoot);
         vm.expectRevert("!updater sig");
         replicaManager.update(remoteDomain, committedRoot, newRoot, sig);
     }
 
     function test_acceptableRoot() public {
-        bytes32 newRoot = "new root";
+        bytes memory newMessage = "new root";
+        bytes32 newRoot = keccak256(abi.encodePacked(newMessage, optimisticSeconds));
         test_successfulUpdate();
         vm.warp(block.timestamp + optimisticSeconds + 1);
-        assertTrue(replicaManager.acceptableRoot(remoteDomain, newRoot));
+        assertTrue(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, newRoot));
     }
 
     function test_cannotAcceptableRoot() public {
         bytes32 newRoot = "new root";
         test_successfulUpdate();
         vm.warp(block.timestamp + optimisticSeconds - 1);
-        assertFalse(replicaManager.acceptableRoot(remoteDomain, newRoot));
+        assertFalse(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, newRoot));
     }
 }
