@@ -82,7 +82,7 @@ func (i IndexerSuite) TestSyncMessages() {
 	domainIndexer := indexer.NewDomainIndexer(testDB, domainClient)
 
 	go func() {
-		ctx, cancel := context.WithTimeout(i.GetTestContext(), time.Second*900000)
+		ctx, cancel := context.WithTimeout(i.GetTestContext(), time.Second*20)
 		defer cancel()
 
 		// this will error because of context cancellation
