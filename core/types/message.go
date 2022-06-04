@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -59,8 +60,36 @@ func DecodeMessage(message []byte) (Message, error) {
 	var msg MessageEncoder
 	err := dec.Decode(&msg)
 	if err != nil {
-		return nil, fmt.Errorf("could not decode message: %w", err)
+		// return nil, fmt.Errorf("could not decode message: %w", err)
 	}
+
+	uint32Ty, _ := abi.NewType("uint32", "", nil)
+	bytes32Ty, _ := abi.NewType("bytes32", "", nil)
+	bytesTy, _ := abi.NewType("bytes", "", nil)
+
+	arguments := abi.Arguments{
+		{
+			Type: uint32Ty,
+		},
+		{
+			Type: bytes32Ty,
+		},
+		{
+			Type: uint32Ty,
+		},
+		{
+			Type: uint32Ty,
+		},
+		{
+			Type: bytes32Ty,
+		},
+		{
+			Type: bytesTy,
+		},
+	}
+
+	res, err := arguments.Unpack(message)
+	fmt.Println(res)
 
 	decoded := messageImpl{
 		origin:      msg.Origin,

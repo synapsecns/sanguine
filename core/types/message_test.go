@@ -3,6 +3,7 @@ package types_test
 import (
 	"context"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/testutil"
@@ -19,9 +20,24 @@ func TestMessageEncodeParity(t *testing.T) {
 
 	testBackend := simulated.NewSimulatedBackend(ctx, t)
 	deployManager := testutil.NewDeployManager(t)
+	_, messageContract := deployManager.GetMessageHarness(ctx, testBackend)
 
-	_, homeContract := deployManager.GetHome(ctx, testBackend)
-	_ = homeContract
+	// generate some fake data
+
+	origin := gofakeit.Uint32()
+	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	nonce := gofakeit.Uint32()
+	destination := gofakeit.Uint32()
+	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
+
+	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, body)
+	Nil(t, err)
+
+	decodedMessage, err := types.DecodeMessage(formattedMessage)
+	Nil(t, err)
+
+	Equal(t, decodedMessage, formattedMessage)
 }
 
 func TestNewMessageEncodeDecode(t *testing.T) {
