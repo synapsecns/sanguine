@@ -72,7 +72,6 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
      * FALSE if the call reverted or threw
      * @param returnData the return data from the external call
      */
-    // TODO: Which event emit to not index?
     event Process(
         uint32 indexed remoteDomain,
         bytes32 indexed messageHash,
@@ -418,10 +417,10 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
 
     /**
      * @notice Hash of Home domain concatenated with "SYN"
+     * @param _homeDomain the Home domain to hash
      */
-    function homeDomainHash() public view returns (bytes32) {
-        //TODO: SUPER BROKEN
-        return _homeDomainHash(100);
+    function homeDomainHash(uint32 _homeDomain) public pure returns (bytes32) {
+        return _homeDomainHash(_homeDomain);
     }
 
     // ============ Internal Functions ============
