@@ -16,10 +16,10 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * selection and rotation
  */
 contract UpdaterManager is IUpdaterManager, Ownable {
-    // ============ Internal Storage ============
+    // ============ Public Storage ============
 
     // address of home contract
-    address internal home;
+    address public home;
 
     // ============ Private Storage ============
 
@@ -33,6 +33,12 @@ contract UpdaterManager is IUpdaterManager, Ownable {
      * @param home The address of the new home contract
      */
     event NewHome(address home);
+
+    /**
+     * @notice Emitted when a new updater is set
+     * @param updater The address of the new updater
+     */
+    event NewUpdater(address updater);
 
     /**
      * @notice Emitted when slashUpdater is called
@@ -78,6 +84,7 @@ contract UpdaterManager is IUpdaterManager, Ownable {
     function setUpdater(address _updaterAddress) external onlyOwner {
         _updater = _updaterAddress;
         Home(home).setUpdater(_updaterAddress);
+        emit NewUpdater(_updaterAddress);
     }
 
     /**
