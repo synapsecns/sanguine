@@ -83,7 +83,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
      * @notice Emitted when the value for optimisticTimeout is set
      * @param timeout The new value for optimistic timeout
      */
-    event SetOptimisticTimeout(uint32 indexed remoteDomain, uint256 timeout);
+    event SetOptimisticTimeout(uint32 indexed remoteDomain, uint32 timeout);
 
     /**
      * @notice Emitted when a root's confirmation is modified by governance
@@ -163,9 +163,12 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
 
     // ============ Active Replica Views ============
 
-    // TODO: more getters for active replicas, getters for archived replicas
     function activeReplicaCommittedRoot(uint32 _remoteDomain) external view returns (bytes32) {
         return allReplicas[activeReplicas[_remoteDomain]].committedRoot;
+    }
+
+    function activeReplicaOptimisticSeconds(uint32 _remoteDomain) external view returns (uint32) {
+        return allReplicas[activeReplicas[_remoteDomain]].optimisticSeconds;
     }
 
     function activeReplicaConfirmedAt(uint32 _remoteDomain, bytes32 _root)
@@ -183,6 +186,10 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     {
         return allReplicas[activeReplicas[_remoteDomain]].messages[_messageId];
     }
+
+    // ============ Archived Replica Views ============
+
+    // TODO: getters for archived replicas
 
     // ============ External Functions ============
 

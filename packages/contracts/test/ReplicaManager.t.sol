@@ -66,12 +66,30 @@ contract ReplicaManagerTest is SynapseTest {
         assertEq(replicaManager.updater(), _updater);
     }
 
-    // function test_cannotSetConfirmationAsNotOwner(address _notOwner) public {
-    //     vm.assume(_notOwner != replicaManager.owner());
-    //     vm.prank(_notOwner);
-    //     vm.expectRevert("Ownable: caller is not the owner");
-    //     replicaManager.setConfirmation(committedRoot, 0);
-    // }
+    function test_cannotSetOptimisticTimeoutAsNotOwner(address _notOwner) public {
+        vm.assume(_notOwner != replicaManager.owner());
+        vm.prank(_notOwner);
+        vm.expectRevert("Ownable: caller is not the owner");
+        replicaManager.setOptimisticTimeout(remoteDomain, 10);
+    }
+
+    event SetOptimisticTimeout(uint32 indexed remoteDomain, uint32 timeout);
+
+    function test_setOptimisticTimeout(uint32 _optimisticSeconds) public {
+        vm.startPrank(replicaManager.owner());
+        assertEq(replicaManager.activeReplicaOptimisticSeconds(remoteDomain), 10);
+        vm.expectEmit(true, false, false, true);
+        emit SetOptimisticTimeout(remoteDomain, _optimisticSeconds);
+        replicaManager.setOptimisticTimeout(remoteDomain, _optimisticSeconds);
+        assertEq(replicaManager.activeReplicaOptimisticSeconds(remoteDomain), _optimisticSeconds);
+    }
+
+    function test_cannotSetConfirmationAsNotOwner(address _notOwner) public {
+        vm.assume(_notOwner != replicaManager.owner());
+        vm.prank(_notOwner);
+        vm.expectRevert("Ownable: caller is not the owner");
+        replicaManager.setConfirmation(remoteDomain, committedRoot, 0);
+    }
 
     event SetConfirmation(
         uint32 indexed remoteDomain,
@@ -81,6 +99,7 @@ contract ReplicaManagerTest is SynapseTest {
     );
 
     function test_setConfirmation(uint256 _confirmAt) public {
+        vm.startPrank(replicaManager.owner());
         bytes32 activeCommittedRoot = replicaManager.activeReplicaCommittedRoot(remoteDomain);
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, activeCommittedRoot), 0);
         vm.expectEmit(true, true, false, true);
