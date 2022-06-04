@@ -1,6 +1,7 @@
 package indexer_test
 
 import (
+	"context"
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -13,6 +14,7 @@ import (
 	"github.com/synapsecns/synapse-node/testutils/utils"
 	"math"
 	"testing"
+	"time"
 )
 
 // TestDispatch is a test dispatch call.
@@ -60,8 +62,7 @@ func (i IndexerSuite) NewTestDispatches(dispatchCount int) (testDispatches []Tes
 }
 
 func (i IndexerSuite) TestSyncMessages() {
-	i.T().Skip("skip sync")
-	i.NewTestDispatches(25)
+	_, lastBlock := i.NewTestDispatches(25)
 
 	testDB, err := db.NewDB(filet.TmpDir(i.T(), ""), "")
 	Nil(i.T(), err)
@@ -80,7 +81,22 @@ func (i IndexerSuite) TestSyncMessages() {
 
 	domainIndexer := indexer.NewDomainIndexer(testDB, domainClient)
 
-	Nil(i.T(), domainIndexer.SyncMessages(i.GetTestContext()))
+	go func() {
+		ctx, cancel := context.WithTimeout(i.GetTestContext(), time.Second*900000)
+		defer cancel()
+
+		// this will error because of context cancellation
+		_ = domainIndexer.SyncMessages(ctx)
+	}()
+
+	// wait until all blocks are indexed
+	i.Eventually(func() bool {
+		time.Sleep(time.Second * 4)
+
+		testHeight, _ := testDB.GetMessageLatestBlockEnd()
+
+		return testHeight > lastBlock
+	})
 }
 
 func TestUint32Max(t *testing.T) {

@@ -3,6 +3,7 @@ package db_test
 import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/cockroachdb/pebble"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/db"
@@ -74,4 +75,22 @@ func (d *DBSuite) TestStoresAndRetreivesProofs() {
 	Equal(d.T(), byIndex.Index(), index)
 	Equal(d.T(), byIndex.Path(), path)
 	Equal(d.T(), byIndex.Leaf(), leaf)
+}
+
+func (d *DBSuite) TestStoreGetMessageLatestBlcokEnd() {
+	newDB, err := db.NewDB(filet.TmpDir(d.T(), ""), "home1")
+	Nil(d.T(), err)
+
+	_, err = newDB.GetMessageLatestBlockEnd()
+	Error(d.T(), err, pebble.ErrNotFound)
+
+	fakeBlock := gofakeit.Uint32()
+
+	err = newDB.StoreMessageLatestBlockEnd(fakeBlock)
+	Nil(d.T(), err)
+
+	latestHeight, err := newDB.GetMessageLatestBlockEnd()
+	Nil(d.T(), err)
+
+	Equal(d.T(), latestHeight, fakeBlock)
 }

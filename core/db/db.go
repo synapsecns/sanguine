@@ -299,7 +299,7 @@ func (d *pebbleDB) GetMessageLatestBlockEnd() (height uint32, err error) {
 
 // StoreMessageLatestBlockEnd stores the latest message block.
 func (d *pebbleDB) StoreMessageLatestBlockEnd(height uint32) error {
-	err := d.StoreKeyedEncodable("", []byte(MessagesLastBlockEnd), []byte(fmt.Sprintf("%d", height)))
+	err := d.StoreKeyedEncodable(MessagesLastBlockEnd, []byte(""), []byte(fmt.Sprintf("%d", height)))
 	if err != nil {
 		return fmt.Errorf("could not store height: %w", err)
 	}
