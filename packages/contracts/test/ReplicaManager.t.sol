@@ -121,7 +121,7 @@ contract ReplicaManagerTest is SynapseTest {
     // Relayer relays a new root signed by updater on Home chain
     function test_successfulUpdate() public {
         bytes memory newMessage = "new root";
-        bytes32 newRoot = keccak256(abi.encodePacked(newMessage, optimisticSeconds));
+        bytes32 newRoot = keccak256(newMessage);
         assertEq(replicaManager.updater(), vm.addr(updaterPK));
         bytes memory sig = signRemoteUpdate(updaterPK, committedRoot, newRoot);
         // Root doesn't exist yet
@@ -144,7 +144,7 @@ contract ReplicaManagerTest is SynapseTest {
 
     function test_updateWithIncorrectSig() public {
         bytes memory newMessage = "new root";
-        bytes32 newRoot = keccak256(abi.encodePacked(newMessage, optimisticSeconds));
+        bytes32 newRoot = keccak256(newMessage);
         bytes memory sig = signRemoteUpdate(fakeUpdaterPK, committedRoot, newRoot);
         vm.expectRevert("!updater sig");
         replicaManager.update(remoteDomain, committedRoot, newRoot, sig);
@@ -152,7 +152,7 @@ contract ReplicaManagerTest is SynapseTest {
 
     function test_acceptableRoot() public {
         bytes memory newMessage = "new root";
-        bytes32 newRoot = keccak256(abi.encodePacked(newMessage, optimisticSeconds));
+        bytes32 newRoot = keccak256(newMessage);
         test_successfulUpdate();
         vm.warp(block.timestamp + optimisticSeconds + 1);
         assertTrue(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, newRoot));

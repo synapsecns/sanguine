@@ -85,7 +85,6 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
         bytes32 committedRoot,
-        uint32 optimisticSeconds,
         bytes message
     );
 
@@ -104,14 +103,13 @@ contract HomeTest is SynapseTestWithUpdaterManager {
             optimisticSeconds,
             messageBody
         );
-        bytes32 messageHash = keccak256(abi.encodePacked(message, optimisticSeconds));
+        bytes32 messageHash = keccak256(message);
         vm.expectEmit(true, true, true, true);
         emit Dispatch(
             messageHash,
             home.count(),
             (uint64(remoteDomain) << 32) | nonce,
             home.committedRoot(),
-            optimisticSeconds,
             message
         );
         vm.prank(sender);
