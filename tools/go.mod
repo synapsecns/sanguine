@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/ethereum/go-ethereum v1.10.11
-	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
+	github.com/gen2brain/beeep d7852edf42fc
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/urfave/cli/v2 v2.3.0
 )
