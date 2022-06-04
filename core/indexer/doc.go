@@ -48,8 +48,6 @@ func (d domainIndexer) SyncMessages(ctx context.Context) error {
 			}
 		}
 	}
-
-	return nil
 }
 
 // checkAndStoreMessages is the sync update loop.

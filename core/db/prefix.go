@@ -12,8 +12,8 @@ const PROOF = "PROOF_"
 // HEIGHT is the height of the index.
 const HEIGHT = "HEIGHT_"
 
-// LATEST_LEAF_INDEX is the latest leaf index.
-const LATEST_LEAF_INDEX = "latest_known_leaf_index_"
+// LatestLeafIndex is the latest leaf index.
+const LatestLeafIndex = "latest_known_leaf_index_"
 
-// MESSAGES_LAST_BLOCK_END is the db key for the latest block for messages.
-const MESSAGES_LAST_BLOCK_END = "messages_last_block"
+// MessagesLastBlockEnd is the db key for the latest block for messages.
+const MessagesLastBlockEnd = "messages_last_block"

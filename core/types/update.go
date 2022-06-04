@@ -88,6 +88,7 @@ type update struct {
 	newRoot common.Hash
 }
 
+// NewUpdate creates a new update type.
 func NewUpdate(homeDomain uint32, previousRoot, newRoot common.Hash) Update {
 	return update{
 		homeDomain:   homeDomain,
@@ -121,6 +122,7 @@ type UpdateMeta interface {
 	Timestamp() *uint64
 }
 
+// Signature creates a new signature.
 type Signature interface {
 	// V gets the v value of the signature
 	V() *big.Int

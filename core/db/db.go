@@ -107,7 +107,7 @@ func (d *pebbleDB) StoreLatestMessage(committedMessage types.CommittedMessage) e
 }
 
 func (d *pebbleDB) UpdateLatestLeafIndex(leafIndex uint32) error {
-	err := d.StoreKeyedEncodable("", []byte(LATEST_LEAF_INDEX), []byte(strconv.Itoa(int(leafIndex))))
+	err := d.StoreKeyedEncodable("", []byte(LatestLeafIndex), []byte(strconv.Itoa(int(leafIndex))))
 	if err != nil {
 		return fmt.Errorf("could not store latest leaf: %w", err)
 	}
@@ -116,7 +116,7 @@ func (d *pebbleDB) UpdateLatestLeafIndex(leafIndex uint32) error {
 
 // RetrieveLatestLeafIndex gets the latest leaf index.
 func (d *pebbleDB) RetrieveLatestLeafIndex() (uint32, error) {
-	value, _, err := d.DB.Get(d.FullKey("", []byte(LATEST_LEAF_INDEX)))
+	value, _, err := d.DB.Get(d.FullKey("", []byte(LatestLeafIndex)))
 	if err != nil {
 		return 0, fmt.Errorf("could not retrieve key: %w", err)
 	}
@@ -284,7 +284,7 @@ func (d *pebbleDB) StoreKeyedEncodable(prefix string, key, value []byte) error {
 }
 
 func (d *pebbleDB) GetMessageLatestBlockEnd() (height uint32, err error) {
-	rawHeight, _, err := d.Get(d.FullKey(MESSAGES_LAST_BLOCK_END, []byte("")))
+	rawHeight, _, err := d.Get(d.FullKey(MessagesLastBlockEnd, []byte("")))
 	if err != nil {
 		return 0, fmt.Errorf("could not get height: %w", err)
 	}
@@ -299,7 +299,7 @@ func (d *pebbleDB) GetMessageLatestBlockEnd() (height uint32, err error) {
 
 // StoreMessageLatestBlockEnd stores the latest message block.
 func (d *pebbleDB) StoreMessageLatestBlockEnd(height uint32) error {
-	err := d.StoreKeyedEncodable("", []byte(MESSAGES_LAST_BLOCK_END), []byte(fmt.Sprintf("%d", height)))
+	err := d.StoreKeyedEncodable("", []byte(MessagesLastBlockEnd), []byte(fmt.Sprintf("%d", height)))
 	if err != nil {
 		return fmt.Errorf("could not store height: %w", err)
 	}

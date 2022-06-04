@@ -91,6 +91,7 @@ func NewMessageHarnessDeployer(registry deployer.GetOnlyContractRegistry, backen
 	return MessageHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, MessageHarnessType)}
 }
 
+// Deploy deploys the message harness deployer.
 func (d MessageHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return messageharness.DeployMessageHarness(transactOps, backend)

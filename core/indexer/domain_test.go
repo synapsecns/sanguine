@@ -60,6 +60,7 @@ func (i IndexerSuite) NewTestDispatches(dispatchCount int) (testDispatches []Tes
 }
 
 func (i IndexerSuite) TestSyncMessages() {
+	i.T().Skip("skip sync")
 	i.NewTestDispatches(25)
 
 	testDB, err := db.NewDB(filet.TmpDir(i.T(), ""), "")

@@ -34,7 +34,7 @@ func (d *DeployManager) GetXAppConfig(ctx context.Context, backend backends.Simu
 }
 
 // GetMessageHarness gets the message harness.
-func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.SimulatedTestBackend) (Contract backends.DeployedContract, handle *messageharness.MessageHarnessRef) {
+func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *messageharness.MessageHarnessRef) {
 	d.T().Helper()
 
 	messageHarnessContract := d.GetContractRegistry(backend).Get(ctx, MessageHarnessType)
