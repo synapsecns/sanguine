@@ -37,7 +37,11 @@ func TestMessageEncodeParity(t *testing.T) {
 	decodedMessage, err := types.DecodeMessage(formattedMessage)
 	Nil(t, err)
 
-	Equal(t, decodedMessage, formattedMessage)
+	Equal(t, decodedMessage.Origin(), origin)
+	Equal(t, decodedMessage.Sender(), sender)
+	Equal(t, decodedMessage.Nonce(), nonce)
+	Equal(t, decodedMessage.Destination(), destination)
+	Equal(t, decodedMessage.Body(), body)
 }
 
 func TestNewMessageEncodeDecode(t *testing.T) {

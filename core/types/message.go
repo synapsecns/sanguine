@@ -2,9 +2,9 @@ package types
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/gob"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -55,48 +55,33 @@ func NewMessage(origin uint32, sender common.Hash, nonce uint32, destination uin
 
 // DecodeMessage decodes a message from a byte slice.
 func DecodeMessage(message []byte) (Message, error) {
-	dec := gob.NewDecoder(bytes.NewReader(message))
+	reader := bytes.NewReader(message)
 
-	var msg MessageEncoder
-	err := dec.Decode(&msg)
+	var encoded messageEncoder
+	dataSize := binary.Size(encoded)
+
+	// make sure we can get the body of the message
+	if dataSize > len(message) {
+		return nil, fmt.Errorf("message too small, expected at least %d, got %d", dataSize, len(message))
+	}
+
+	err := binary.Read(reader, binary.BigEndian, &encoded)
 	if err != nil {
-		// return nil, fmt.Errorf("could not decode message: %w", err)
+		return nil, fmt.Errorf("could not parse encoded: %w", err)
 	}
 
-	uint32Ty, _ := abi.NewType("uint32", "", nil)
-	bytes32Ty, _ := abi.NewType("bytes32", "", nil)
-	bytesTy, _ := abi.NewType("bytes", "", nil)
+	body := message[dataSize:]
 
-	arguments := abi.Arguments{
-		{
-			Type: uint32Ty,
-		},
-		{
-			Type: bytes32Ty,
-		},
-		{
-			Type: uint32Ty,
-		},
-		{
-			Type: uint32Ty,
-		},
-		{
-			Type: bytes32Ty,
-		},
-		{
-			Type: bytesTy,
-		},
+	if err != nil {
+		return nil, fmt.Errorf("could not decode message: %w", err)
 	}
-
-	res, err := arguments.Unpack(message)
-	fmt.Println(res)
 
 	decoded := messageImpl{
-		origin:      msg.Origin,
-		sender:      msg.Sender,
-		nonce:       msg.Nonce,
-		destination: msg.Destination,
-		body:        msg.Body,
+		origin:      encoded.Origin,
+		sender:      encoded.Sender,
+		nonce:       encoded.Nonce,
+		destination: encoded.Destination,
+		body:        body,
 	}
 
 	return decoded, nil
@@ -138,36 +123,35 @@ func (m messageImpl) Body() []byte {
 	return m.body
 }
 
-// MessageEncoder is used for message marshaling/unmarshalling. It is exported
-// for encoding only.
-type MessageEncoder struct {
+// messageEncoder contains the binary structore of the message.
+type messageEncoder struct {
 	Origin      uint32
-	Sender      common.Hash
+	Sender      [32]byte
 	Nonce       uint32
 	Destination uint32
-	Body        []byte
-	Recipient   common.Hash
+	Recipient   [32]byte
 }
 
 // Encode encodes the message to a bytes
 // TODO: this should use a helper message once contract abis are ready.
 func (m messageImpl) Encode() ([]byte, error) {
-	newMessage := MessageEncoder{
+	newMessage := messageEncoder{
 		Origin:      m.origin,
 		Sender:      m.sender,
 		Nonce:       m.nonce,
 		Destination: m.destination,
-		Body:        m.body,
 	}
 
-	var res bytes.Buffer
-	enc := gob.NewEncoder(&res)
+	buf := new(bytes.Buffer)
 
-	err := enc.Encode(newMessage)
+	err := binary.Write(buf, binary.BigEndian, newMessage)
 	if err != nil {
-		return nil, fmt.Errorf("could not encode %T: %w", m, err)
+		return nil, fmt.Errorf("could not write binary: %w", err)
 	}
-	return res.Bytes(), nil
+
+	buf.Write(m.body)
+
+	return buf.Bytes(), nil
 }
 
 // ToLeaf converts a message to an encoded leaf.
