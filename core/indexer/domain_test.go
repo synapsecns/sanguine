@@ -97,6 +97,8 @@ func (i IndexerSuite) TestSyncMessages() {
 
 		return testHeight > lastBlock
 	})
+
+	// TODO: something w/ dispatches
 }
 
 func TestUint32Max(t *testing.T) {
