@@ -26,22 +26,6 @@ contract ReplicaTest is SynapseTest {
         assertEq(uint256(replica.status), 1);
     }
 
-    // function test_onlyReplicaManager(address notReplicaManager) public {
-    //     vm.assume(notReplicaManager != replica.replicaManager());
-    //     vm.expectRevert("!replica");
-    //     replica.setCommittedRoot(bytes32(""));
-    //     vm.expectRevert("!replica");
-    //     replica.setConfirmAt(bytes32(""), 0);
-    //     vm.expectRevert("!replica");
-    //     replica.setConfirmAt(bytes32(""), 0);
-    //     vm.expectRevert("!replica");
-    //     replica.setMessageStatus(bytes32(""), ReplicaLib.MessageStatus.Processed);
-    //     vm.expectRevert("!replica");
-    //     replica.setOptimisticTimeout(10);
-    //     vm.expectRevert("!replica");
-    //     replica.setStatus(ReplicaLib.ReplicaStatus.Failed);
-    // }
-
     function test_setCommittedRoot(bytes32 _committedRoot) public {
         replica.setCommittedRoot(_committedRoot);
         assertEq(replica.committedRoot, _committedRoot);
@@ -66,16 +50,4 @@ contract ReplicaTest is SynapseTest {
         replica.setStatus(ReplicaLib.ReplicaStatus.Failed);
         assertEq(uint256(replica.status), 2);
     }
-
-    // function test_setReplicaManagerOnlyOwner() public {
-    //     replica.setReplicaManager(address(9999));
-    //     assertEq(replica.replicaManager(), address(9999));
-    // }
-
-    // function test_cannotSetReplicaManager(address _notOwner) public {
-    //     vm.assume(_notOwner != replica.owner());
-    //     vm.startPrank(_notOwner);
-    //     vm.expectRevert("Ownable: caller is not the owner");
-    //     replica.setReplicaManager(address(9999));
-    // }
 }
