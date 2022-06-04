@@ -193,7 +193,7 @@ contract XAppConfig is Ownable {
         bytes memory _signature
     ) internal view returns (address) {
         bytes32 _homeDomainHash = ReplicaManager(TypeCasts.bytes32ToAddress(_replica))
-            .homeDomainHash();
+            .homeDomainHash(_domain);
         bytes32 _digest = keccak256(abi.encodePacked(_homeDomainHash, _domain, _updater));
         _digest = ECDSA.toEthSignedMessageHash(_digest);
         return ECDSA.recover(_digest, _signature);
