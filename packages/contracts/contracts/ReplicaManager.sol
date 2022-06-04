@@ -199,22 +199,19 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
      * @dev Reverts if update doesn't build off latest committedRoot
      * or if signature is invalid.
      * @param _oldRoot Old merkle root
-     * @param _message Formatted message
-     * @param _optimisticSeconds Latency period requested by app on Home, included in part of Merkle proof
-     * @param _signature Updater's signature on `_oldRoot` and keccak256(message, optimisticSeconds) (which forms a root)
+     * @param _newRoot New merkle root
+     * @param _signature Updater's signature on `_oldRoot` and `_newRoot` = `keccak256(message, optimisticSeconds)`
      */
     function update(
         uint32 _remoteDomain,
         bytes32 _oldRoot,
-        bytes memory _message,
-        uint32 _optimisticSeconds,
+        bytes32 _newRoot,
         bytes memory _signature
     ) external {
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         // ensure that update is building off the last submitted root
         require(_oldRoot == replica.committedRoot, "not current update");
         // validate updater signature
-        bytes32 _newRoot = keccak256(abi.encodePacked(_message, _optimisticSeconds));
         require(_isUpdaterSignature(_remoteDomain, _oldRoot, _newRoot, _signature), "!updater sig");
         // Hook for future use
         _beforeUpdate();
