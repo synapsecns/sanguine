@@ -1,13 +1,27 @@
 package types_test
 
 import (
+	"context"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/testutil"
 	"github.com/synapsecns/sanguine/core/types"
+	"github.com/synapsecns/synapse-node/testutils/backends/simulated"
 	"math/big"
 	"testing"
+	"time"
 )
+
+func TestMessageEncodeParity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+
+	deployManager.GetHome(ctx, testBackend)
+}
 
 func TestNewMessageEncodeDecode(t *testing.T) {
 	origin := gofakeit.Uint32()
