@@ -7,7 +7,7 @@ import "forge-std/Test.sol";
 import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
-import { Replica } from "../contracts/Replica.sol";
+import { ReplicaLib } from "../contracts/libs/Replica.sol";
 
 import { ReplicaManagerHarness } from "./harnesses/ReplicaManagerHarness.sol";
 
@@ -16,7 +16,7 @@ import { SynapseTest } from "./utils/SynapseTest.sol";
 contract ReplicaManagerTest is SynapseTest {
     ReplicaManagerHarness replicaManager;
 
-    uint256 optimisticSeconds;
+    uint32 optimisticSeconds;
     bytes32 committedRoot;
     uint256 processGas;
     uint256 reserveGas;
@@ -32,7 +32,7 @@ contract ReplicaManagerTest is SynapseTest {
         processGas = 850_000;
         reserveGas = 15_000;
         replicaManager = new ReplicaManagerHarness(localDomain, processGas, reserveGas);
-        replicaManager.initialize(remoteDomain, updater, committedRoot, optimisticSeconds);
+        replicaManager.initialize(remoteDomain, updater, optimisticSeconds);
     }
 
     // ============ INITIAL STATE ============
@@ -47,28 +47,10 @@ contract ReplicaManagerTest is SynapseTest {
 
     function test_cannotInitializeTwice() public {
         vm.expectRevert("Initializable: contract is already initialized");
-        replicaManager.initialize(remoteDomain, updater, committedRoot, optimisticSeconds);
+        replicaManager.initialize(remoteDomain, updater, optimisticSeconds);
     }
 
     // ============ STATE & PERMISSIONING ============
-    // function test_setOptimisticNotOwner(address _notOwner, uint256 _optimisticSeconds) public {
-    //     vm.assume(_notOwner != replicaManager.owner());
-    //     vm.prank(_notOwner);
-    //     vm.expectRevert("Ownable: caller is not the owner");
-    //     replicaManager.setOptimisticTimeout(_optimisticSeconds);
-    // }
-
-    // event SetOptimisticTimeout(uint256 timeout);
-
-    // function test_setOptimistic(uint256 _optimisticSeconds) public {
-    //     vm.assume(_optimisticSeconds != replicaManager.optimisticSeconds());
-    //     assertFalse(replicaManager.optimisticSeconds() == _optimisticSeconds);
-    //     vm.startPrank(replicaManager.owner());
-    //     vm.expectEmit(false, false, false, true);
-    //     emit SetOptimisticTimeout(_optimisticSeconds);
-    //     replicaManager.setOptimisticTimeout(_optimisticSeconds);
-    //     assertEq(replicaManager.optimisticSeconds(), _optimisticSeconds);
-    // }
 
     function test_cannotSetUpdaterAsNotOwner(address _notOwner, address _updater) public {
         vm.assume(_notOwner != replicaManager.owner());
@@ -84,22 +66,50 @@ contract ReplicaManagerTest is SynapseTest {
         assertEq(replicaManager.updater(), _updater);
     }
 
-    // function test_cannotSetConfirmationAsNotOwner(address _notOwner) public {
-    //     vm.assume(_notOwner != replicaManager.owner());
-    //     vm.prank(_notOwner);
-    //     vm.expectRevert("Ownable: caller is not the owner");
-    //     replicaManager.setConfirmation(committedRoot, 0);
-    // }
+    function test_cannotSetOptimisticTimeoutAsNotOwner(address _notOwner) public {
+        vm.assume(_notOwner != replicaManager.owner());
+        vm.prank(_notOwner);
+        vm.expectRevert("Ownable: caller is not the owner");
+        replicaManager.setOptimisticTimeout(remoteDomain, 10);
+    }
 
-    // event SetConfirmation(bytes32 indexed root, uint256 previousConfirmAt, uint256 newConfirmAt);
+    event SetOptimisticTimeout(uint32 indexed remoteDomain, uint32 timeout);
 
-    // function test_setConfirmation(uint256 _confirmAt) public {
-    //     assertEq(replicaManager.confirmAt(committedRoot), 1);
-    //     vm.expectEmit(true, false, false, true);
-    //     emit SetConfirmation(committedRoot, 1, _confirmAt);
-    //     replicaManager.setConfirmation(committedRoot, _confirmAt);
-    //     assertEq(replicaManager.confirmAt(committedRoot), _confirmAt);
-    // }
+    function test_setOptimisticTimeout(uint32 _optimisticSeconds) public {
+        vm.startPrank(replicaManager.owner());
+        assertEq(replicaManager.activeReplicaOptimisticSeconds(remoteDomain), 10);
+        vm.expectEmit(true, false, false, true);
+        emit SetOptimisticTimeout(remoteDomain, _optimisticSeconds);
+        replicaManager.setOptimisticTimeout(remoteDomain, _optimisticSeconds);
+        assertEq(replicaManager.activeReplicaOptimisticSeconds(remoteDomain), _optimisticSeconds);
+    }
+
+    function test_cannotSetConfirmationAsNotOwner(address _notOwner) public {
+        vm.assume(_notOwner != replicaManager.owner());
+        vm.prank(_notOwner);
+        vm.expectRevert("Ownable: caller is not the owner");
+        replicaManager.setConfirmation(remoteDomain, committedRoot, 0);
+    }
+
+    event SetConfirmation(
+        uint32 indexed remoteDomain,
+        bytes32 indexed root,
+        uint256 previousConfirmAt,
+        uint256 newConfirmAt
+    );
+
+    function test_setConfirmation(uint256 _confirmAt) public {
+        vm.startPrank(replicaManager.owner());
+        bytes32 activeCommittedRoot = replicaManager.activeReplicaCommittedRoot(remoteDomain);
+        assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, activeCommittedRoot), 0);
+        vm.expectEmit(true, true, false, true);
+        emit SetConfirmation(remoteDomain, committedRoot, 0, _confirmAt);
+        replicaManager.setConfirmation(remoteDomain, activeCommittedRoot, _confirmAt);
+        assertEq(
+            replicaManager.activeReplicaConfirmedAt(remoteDomain, activeCommittedRoot),
+            _confirmAt
+        );
+    }
 
     event Update(
         uint32 indexed homeDomain,
@@ -114,15 +124,17 @@ contract ReplicaManagerTest is SynapseTest {
         assertEq(replicaManager.updater(), vm.addr(updaterPK));
         bytes memory sig = signRemoteUpdate(updaterPK, committedRoot, newRoot);
         // Root doesn't exist yet
-        Replica replica = replicaManager.activeReplicas(remoteDomain);
-        assertEq(replica.confirmAt(newRoot), 0);
+        assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, newRoot), 0);
         // Relayer sends over a root signed by the updater on the Home chain
         vm.expectEmit(true, true, true, true);
         emit Update(remoteDomain, committedRoot, newRoot, sig);
         replicaManager.update(remoteDomain, committedRoot, newRoot, sig);
         // Root set with optimistic latency allowing it to be processed at T+10
-        assertEq(replica.confirmAt(newRoot), block.timestamp + 10);
-        assertEq(replica.committedRoot(), newRoot);
+        assertEq(
+            replicaManager.activeReplicaConfirmedAt(remoteDomain, newRoot),
+            block.timestamp + 10
+        );
+        assertEq(replicaManager.activeReplicaCommittedRoot(remoteDomain), newRoot);
     }
 
     function test_updateWithIncorrectRoot() public {
