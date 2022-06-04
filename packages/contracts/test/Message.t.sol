@@ -17,6 +17,7 @@ contract MessageTest is Test {
     bytes32 sender;
     uint32 nonce;
     uint32 destinationDomain;
+    uint32 optimisticSeconds;
     bytes32 recipient;
     bytes messageBody;
 
@@ -26,6 +27,7 @@ contract MessageTest is Test {
         sender = bytes32("AAAA THE SENDOOOOOR");
         nonce = 0;
         destinationDomain = 2000;
+        optimisticSeconds = 4;
         recipient = bytes32("AAAA THE RECEIVOOOR");
         messageBody = bytes("Messagoooor");
     }
@@ -37,6 +39,7 @@ contract MessageTest is Test {
             nonce,
             destinationDomain,
             recipient,
+            optimisticSeconds,
             messageBody
         );
 
@@ -46,6 +49,7 @@ contract MessageTest is Test {
         assertEq(messageHarness.nonce(message), nonce);
         assertEq(messageHarness.destination(message), destinationDomain);
         assertEq(messageHarness.recipient(message), recipient);
+        assertEq(messageHarness.optimisticSeconds(message), optimisticSeconds);
         assertEq(messageHarness.body(message), (messageBody));
         assertEq(messageHarness.leaf(message), keccak256(message));
     }
@@ -57,6 +61,7 @@ contract MessageTest is Test {
             nonce,
             destinationDomain,
             recipient,
+            optimisticSeconds,
             messageBody
         );
 
@@ -66,6 +71,7 @@ contract MessageTest is Test {
             nonce,
             destinationDomain,
             recipient,
+            optimisticSeconds,
             messageBody
         );
 

@@ -247,11 +247,10 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     function proveAndProcess(
         uint32 _remoteDomain,
         bytes memory _message,
-        uint32 _optimisticSeconds,
         bytes32[32] calldata _proof,
         uint256 _index
     ) external {
-        require(prove(_remoteDomain, _message, _optimisticSeconds, _proof, _index), "!prove");
+        require(prove(_remoteDomain, _message, _proof, _index), "!prove");
         process(_message);
     }
 
@@ -404,7 +403,6 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
      * @dev For convenience, we allow proving against any previous root.
      * This means that witnesses never need to be updated for the new root
      * @param _message Formatted message
-     * @param _optimisticSeconds Latency period requested by app on Home, included in part of Merkle proof
      * @param _proof Merkle proof of inclusion for leaf
      * @param _index Index of leaf in home's merkle tree
      * @return Returns true if proof was valid and `prove` call succeeded
@@ -412,18 +410,18 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     function prove(
         uint32 _remoteDomain,
         bytes memory _message,
-        uint32 _optimisticSeconds,
         bytes32[32] calldata _proof,
         uint256 _index
     ) public returns (bool) {
-        bytes32 _leaf = keccak256(abi.encodePacked(_message, _optimisticSeconds));
+        uint32 optimisticSeconds = _message.ref(0).optimisticSeconds();
+        bytes32 _leaf = keccak256(_message);
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         // ensure that message has not been proven or processed
         require(replica.messages[_leaf] == ReplicaLib.MessageStatus.None, "!MessageStatus.None");
         // calculate the expected root based on the proof
         bytes32 _calculatedRoot = MerkleLib.branchRoot(_leaf, _proof, _index);
         // if the root is valid, change status to Proven
-        if (acceptableRoot(_remoteDomain, _optimisticSeconds, _calculatedRoot)) {
+        if (acceptableRoot(_remoteDomain, optimisticSeconds, _calculatedRoot)) {
             replica.setMessageStatus(_leaf, ReplicaLib.MessageStatus.Processed);
             return true;
         }

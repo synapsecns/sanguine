@@ -65,7 +65,6 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
         bytes32 committedRoot,
-        uint32 optimisticSeconds,
         bytes message
     );
 
@@ -185,10 +184,11 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
             _nonce,
             _destinationDomain,
             _recipientAddress,
+            _optimisticSeconds,
             _messageBody
         );
         // insert the hashed message into the Merkle tree
-        bytes32 _messageHash = keccak256(abi.encodePacked(_message, _optimisticSeconds));
+        bytes32 _messageHash = keccak256(_message);
         tree.insert(_messageHash);
         // enqueue the new Merkle root after inserting the message
         queue.enqueue(root());
@@ -199,7 +199,6 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
             count() - 1,
             _destinationAndNonce(_destinationDomain, _nonce),
             committedRoot,
-            _optimisticSeconds,
             _message
         );
     }
