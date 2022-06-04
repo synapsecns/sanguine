@@ -8,3 +8,12 @@ const MESSAGE = "message_"
 
 // PROOF is the prefix of the proof message in the db.
 const PROOF = "PROOF_"
+
+// HEIGHT is the height of the index.
+const HEIGHT = "HEIGHT_"
+
+// LatestLeafIndex is the latest leaf index.
+const LatestLeafIndex = "latest_known_leaf_index_"
+
+// MessagesLastBlockEnd is the db key for the latest block for messages.
+const MessagesLastBlockEnd = "messages_last_block"

@@ -3,6 +3,8 @@ package testutil
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
+	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 )
 
@@ -35,7 +37,11 @@ type contractTypeImpl int
 
 const (
 	// HomeType is the type of the home.
-	HomeType contractTypeImpl = 0 // HomeType
+	HomeType contractTypeImpl = 0 // Home
+	// XAppConfigType is the xAppConfig contract type.
+	XAppConfigType contractTypeImpl = iota // XAppConfig
+	// MessageHarnessType is the type of the message harness contract.
+	MessageHarnessType contractTypeImpl = iota // MessageHarness
 )
 
 // ID gets the contract type as an id.
@@ -58,6 +64,10 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case HomeType:
 		return home.Contracts["solidity/Home.sol:Home"]
+	case XAppConfigType:
+		return xappconfig.Contracts["solidity/XAppConfig.sol:XAppConfig"]
+	case MessageHarnessType:
+		return messageharness.Contracts["solidity/MessageHarness.sol:MessageHarness"]
 	default:
 		panic("not yet implemented")
 	}

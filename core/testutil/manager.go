@@ -6,11 +6,11 @@ import (
 )
 
 // NewDeployManager creates a deploy manager.
-func NewDeployManager(t *testing.T) DeployManager {
+func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	parentManager := manager.NewDeployerManager(t, NewHomeDeployer)
-	return DeployManager{parentManager}
+	parentManager := manager.NewDeployerManager(t, NewHomeDeployer, NewXAppConfigDeployer, NewMessageHarnessDeployer)
+	return &DeployManager{parentManager}
 }
 
 // DeployManager wraps DeployManager and allows typed contract handles to be returned.
