@@ -152,7 +152,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     function initialize(
         uint32 _remoteDomain,
         address _updater,
-        uint256 _optimisticSeconds
+        uint32 _optimisticSeconds
     ) public initializer {
         __Ownable_init();
         _setUpdater(_updater);
@@ -332,7 +332,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
      * @dev Only callable by owner (Governance)
      * @param _optimisticSeconds New optimistic timeout period
      */
-    function setOptimisticTimeout(uint32 _remoteDomain, uint256 _optimisticSeconds)
+    function setOptimisticTimeout(uint32 _remoteDomain, uint32 _optimisticSeconds)
         external
         onlyOwner
     {
@@ -426,7 +426,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
 
     // ============ Internal Functions ============
 
-    function _createReplica(uint32 _remoteDomain, uint256 _optimisticSeconds)
+    function _createReplica(uint32 _remoteDomain, uint32 _optimisticSeconds)
         internal
         returns (uint256 replicaIndex)
     {

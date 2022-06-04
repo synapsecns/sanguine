@@ -16,7 +16,7 @@ import { SynapseTest } from "./utils/SynapseTest.sol";
 contract ReplicaManagerTest is SynapseTest {
     ReplicaManagerHarness replicaManager;
 
-    uint256 optimisticSeconds;
+    uint32 optimisticSeconds;
     bytes32 committedRoot;
     uint256 processGas;
     uint256 reserveGas;

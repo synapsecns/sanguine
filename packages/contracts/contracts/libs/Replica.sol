@@ -30,11 +30,11 @@ library ReplicaLib {
         // The latest root that has been signed by the Updater for this given Replica
         bytes32 committedRoot; // 256 bits
         // Domain of home chain
-        uint256 optimisticSeconds;
+        uint32 optimisticSeconds; // 32 bits
         // Status of Replica based on the Home remote domain
-        uint32 remoteDomain;
+        uint32 remoteDomain; // 32 bits
         // Optimistic seconds per remote domain  (E.g specifies optimistic seconds on a remote domain basis to wait)
-        ReplicaStatus status;
+        ReplicaStatus status; // 8 bits
         // Mapping of roots to allowable confirmation times
         // TODO: confirmAt doesn't need to be uint256 necessarily
         mapping(bytes32 => uint256) confirmAt;
@@ -45,7 +45,7 @@ library ReplicaLib {
     function setupReplica(
         Replica storage replica,
         uint32 _remoteDomain,
-        uint256 _optimisticSeconds
+        uint32 _optimisticSeconds
     ) internal {
         replica.remoteDomain = _remoteDomain;
         replica.optimisticSeconds = _optimisticSeconds;
@@ -72,7 +72,7 @@ library ReplicaLib {
         replica.messages[_messageHash] = _status;
     }
 
-    function setOptimisticTimeout(Replica storage replica, uint256 _optimisticSeconds) internal {
+    function setOptimisticTimeout(Replica storage replica, uint32 _optimisticSeconds) internal {
         replica.optimisticSeconds = _optimisticSeconds;
     }
 

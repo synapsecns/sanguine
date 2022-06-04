@@ -11,7 +11,7 @@ contract ReplicaTest is SynapseTest {
     using ReplicaLib for ReplicaLib.Replica;
 
     ReplicaLib.Replica replica;
-    uint256 optimisticSeconds;
+    uint32 optimisticSeconds;
 
     function setUp() public override {
         super.setUp();
@@ -41,7 +41,7 @@ contract ReplicaTest is SynapseTest {
         assertEq(uint256(replica.messages[_messageHash]), 2);
     }
 
-    function test_setOptimisticTimeout(uint256 _optimisticSeconds) public {
+    function test_setOptimisticTimeout(uint32 _optimisticSeconds) public {
         replica.setOptimisticTimeout(_optimisticSeconds);
         assertEq(replica.optimisticSeconds, _optimisticSeconds);
     }
