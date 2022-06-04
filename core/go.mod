@@ -16,7 +16,7 @@ require (
 	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/ugorji/go/codec v1.1.7
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sync 0de741cfad7f
 )
 
 require (
