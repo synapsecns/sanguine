@@ -185,6 +185,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
             _nonce,
             _destinationDomain,
             _recipientAddress,
+            _optimisticSeconds,
             _messageBody
         );
         // insert the hashed message into the Merkle tree
