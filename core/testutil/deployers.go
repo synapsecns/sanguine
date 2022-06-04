@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/synapse-node/testutils/backends"
@@ -78,4 +79,22 @@ func (d XAppConfigDeployer) Deploy(ctx context.Context) (backends.DeployedContra
 // Dependencies gets dependencies of the xappconfig contract.
 func (d XAppConfigDeployer) Dependencies() []deployer.ContractType {
 	return d.RecursiveDependencies([]deployer.ContractType{HomeType})
+}
+
+// MessageHarnessDeployer deploys the message harness for testing.
+type MessageHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewMessageHarnessDeployer creates a message harness deployer.
+func NewMessageHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return MessageHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, MessageHarnessType)}
+}
+
+func (d MessageHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return messageharness.DeployMessageHarness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return messageharness.NewMessageHarnessRef(address, backend)
+	})
 }

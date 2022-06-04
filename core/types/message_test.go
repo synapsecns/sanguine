@@ -20,7 +20,8 @@ func TestMessageEncodeParity(t *testing.T) {
 	testBackend := simulated.NewSimulatedBackend(ctx, t)
 	deployManager := testutil.NewDeployManager(t)
 
-	deployManager.GetHome(ctx, testBackend)
+	_, homeContract := deployManager.GetHome(ctx, testBackend)
+	_ = homeContract
 }
 
 func TestNewMessageEncodeDecode(t *testing.T) {

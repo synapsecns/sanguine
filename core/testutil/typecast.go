@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/synapse-node/testutils/backends"
 )
@@ -30,4 +31,16 @@ func (d *DeployManager) GetXAppConfig(ctx context.Context, backend backends.Simu
 	assert.True(d.T(), ok)
 
 	return xAppContract, xAppConfig
+}
+
+// GetMessageHarness gets the message harness.
+func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.SimulatedTestBackend) (Contract backends.DeployedContract, handle *messageharness.MessageHarnessRef) {
+	d.T().Helper()
+
+	messageHarnessContract := d.GetContractRegistry(backend).Get(ctx, MessageHarnessType)
+
+	messageHarness, ok := messageHarnessContract.ContractHandle().(*messageharness.MessageHarnessRef)
+	assert.True(d.T(), ok)
+
+	return messageHarnessContract, messageHarness
 }

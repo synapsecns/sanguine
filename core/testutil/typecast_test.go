@@ -15,3 +15,10 @@ func (s SimulatedSuite) TestTypecastXappConfig() {
 		NotNil(s.T(), xappHandle)
 	})
 }
+
+func (s SimulatedSuite) TestTypecastMessageHarness() {
+	NotPanics(s.T(), func() {
+		_, messageHarness := s.deployManager.GetMessageHarness(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), messageHarness)
+	})
+}
