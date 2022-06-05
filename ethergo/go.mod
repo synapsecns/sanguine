@@ -3,11 +3,15 @@ module github.com/synapsecns/sanguine/ethergo
 go 1.17
 
 require (
+	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
+	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/ethereum/go-ethereum v1.10.11
 	github.com/ipfs/go-log v1.0.5
+	github.com/miguelmota/go-ethereum-hdwallet v0.1.1
 	github.com/neverlee/keymutex v0.0.0-20171121013845-f593aa834bf9
 	github.com/stretchr/testify v1.7.1
 	github.com/synapsecns/synapse-node v0.242.0
+	github.com/tyler-smith/go-bip39 v1.1.0
 )
 
 require (
@@ -17,7 +21,6 @@ require (
 	github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d // indirect
 	github.com/CosmWasm/wasmvm v0.16.3 // indirect
 	github.com/DataDog/zstd v1.4.5 // indirect
-	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088 // indirect
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
 	github.com/VictoriaMetrics/fastcache v1.6.0 // indirect
@@ -31,7 +34,6 @@ require (
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/binance-chain/tss-lib v1.3.3 // indirect
 	github.com/briandowns/spinner v1.6.1 // indirect
-	github.com/brianvoe/gofakeit/v6 v6.9.0 // indirect
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
 	github.com/celo-org/celo-blockchain v0.0.0-20210222234634-f8c8f6744526 // indirect
@@ -259,6 +261,7 @@ require (
 	go.etcd.io/bbolt v1.3.6 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/goleak v1.1.12 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.19.1 // indirect
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect

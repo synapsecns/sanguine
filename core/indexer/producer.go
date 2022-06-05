@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 // UpdateProducer updates a producer.
@@ -18,6 +19,8 @@ type UpdateProducer struct {
 	db db.DB
 	// intervalSeconds adds an interval
 	intervalSeconds uint64
+	// signer is the signer
+	signer signer.Signer
 }
 
 // FindLatestRoot finds the latest root.
@@ -68,6 +71,7 @@ func (u UpdateProducer) Start(ctx context.Context) error {
 			}
 
 			// sign the update
+			// u.signer.SignMessage(ctx, suggestedUpdate)
 		}
 	}
 }

@@ -101,6 +101,9 @@ func (d MessageHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedCo
 	})
 }
 
+// HomeHarnessDomain is the domain used for the home harness.
+const HomeHarnessDomain = 1
+
 // HomeHarnessDeployer deploys the home harness for testing.
 type HomeHarnessDeployer struct {
 	*deployer.BaseDeployer
@@ -108,13 +111,13 @@ type HomeHarnessDeployer struct {
 
 // NewHomeHarnessDeployer deploys the new home harness.
 func NewHomeHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return HomeDeployer{deployer.NewSimpleDeployer(registry, backend, HomeHarnessType)}
+	return HomeHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, HomeHarnessType)}
 }
 
 // Deploy deploys the home harness.
 func (h HomeHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return homeharness.DeployHomeHarness(transactOps, backend, 1)
+		return homeharness.DeployHomeHarness(transactOps, backend, HomeHarnessDomain)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return homeharness.NewHomeHarnessRef(address, backend)
 	})
