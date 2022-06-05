@@ -2,6 +2,7 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
+import { SynapseBase } from "./SynapseBase.sol";
 import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
@@ -19,7 +20,7 @@ import {
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
+contract ReplicaManager is Version0, SynapseBase {
     // ============ Libraries ============
 
     using ReplicaLib for ReplicaLib.Replica;
@@ -29,9 +30,6 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     using Message for bytes29;
 
     // ============ Immutables ============
-
-    // Domain of chain on which the contract is deployed
-    uint32 public immutable localDomain;
 
     // Minimum gas for message processing
     uint256 public immutable PROCESS_GAS;
@@ -55,13 +53,10 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     // (domain => [replica indexes]): array of indexes of archived replicas in allReplicas
     mapping(uint32 => uint256[]) internal archivedReplicas;
 
-    // Address of bonded Updater
-    address public updater;
-
     // ============ Upgrade Gap ============
 
     // gap for upgrade safety
-    uint256[44] private __GAP;
+    uint256[45] private __GAP;
 
     // ============ Events ============
 
@@ -98,36 +93,13 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         uint256 newConfirmAt
     );
 
-    /**
-     * @notice Emitted when update is made on Home
-     * or unconfirmed update root is submitted on Replica
-     * @param homeDomain Domain of home contract
-     * @param oldRoot Old merkle root
-     * @param newRoot New merkle root
-     * @param signature Updater's signature on `oldRoot` and `newRoot`
-     */
-    event Update(
-        uint32 indexed homeDomain,
-        bytes32 indexed oldRoot,
-        bytes32 indexed newRoot,
-        bytes signature
-    );
-
-    /**
-     * @notice Emitted when Updater is rotated
-     * @param oldUpdater The address of the old updater
-     * @param newUpdater The address of the new updater
-     */
-    event NewUpdater(address oldUpdater, address newUpdater);
-
     // ============ Constructor ============
 
     constructor(
         uint32 _localDomain,
         uint256 _processGas,
         uint256 _reserveGas
-    ) {
-        localDomain = _localDomain;
+    ) SynapseBase(_localDomain) {
         require(_processGas >= 850_000, "!process gas");
         require(_reserveGas >= 15_000, "!reserve gas");
         PROCESS_GAS = _processGas;
@@ -153,8 +125,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         address _updater,
         uint32 _optimisticSeconds
     ) public initializer {
-        __Ownable_init();
-        _setUpdater(_updater);
+        __SynapseBase_initialize(_updater);
         // set storage variables
         entered = 1;
         activeReplicas[_remoteDomain] = _createReplica(_remoteDomain, _optimisticSeconds);
@@ -220,19 +191,6 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         // update committedRoot
         replica.setCommittedRoot(_newRoot);
         emit Update(_remoteDomain, _oldRoot, _newRoot, _signature);
-    }
-
-    function _isUpdaterSignature(
-        uint32 _remoteDomain,
-        bytes32 _oldRoot,
-        bytes32 _newRoot,
-        bytes memory _signature
-    ) internal view returns (bool) {
-        bytes32 _digest = keccak256(
-            abi.encodePacked(_homeDomainHash(_remoteDomain), _oldRoot, _newRoot)
-        );
-        _digest = ECDSA.toEthSignedMessageHash(_digest);
-        return (ECDSA.recover(_digest, _signature) == updater);
     }
 
     /**
@@ -331,6 +289,14 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         entered = 1;
     }
 
+    /**
+     * @notice Hash of Home domain concatenated with "SYN"
+     * @param _homeDomain the Home domain to hash
+     */
+    function homeDomainHash(uint32 _homeDomain) external pure returns (bytes32) {
+        return _domainHash(_homeDomain);
+    }
+
     // ============ External Owner Functions ============
 
     /**
@@ -422,14 +388,6 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         return false;
     }
 
-    /**
-     * @notice Hash of Home domain concatenated with "SYN"
-     * @param _homeDomain the Home domain to hash
-     */
-    function homeDomainHash(uint32 _homeDomain) public pure returns (bytes32) {
-        return _homeDomainHash(_homeDomain);
-    }
-
     // ============ Internal Functions ============
 
     function _createReplica(uint32 _remoteDomain, uint32 _optimisticSeconds)
@@ -441,24 +399,6 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         unchecked {
             replicaCount = replicaIndex + 1;
         }
-    }
-
-    /**
-     * @notice Hash of Home domain concatenated with "SYN"
-     * @param _homeDomain the Home domain to hash
-     */
-    function _homeDomainHash(uint32 _homeDomain) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_homeDomain, "SYN"));
-    }
-
-    /**
-     * @notice Set the Updater
-     * @param _newUpdater Address of the new Updater
-     */
-    function _setUpdater(address _newUpdater) internal {
-        address _oldUpdater = updater;
-        updater = _newUpdater;
-        emit NewUpdater(_oldUpdater, _newUpdater);
     }
 
     /// @notice Hook for potential future use
