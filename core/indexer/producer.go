@@ -53,6 +53,21 @@ func (u UpdateProducer) Start(ctx context.Context) error {
 				logger.Debugf("Local root not equal to chain root. Skipping update")
 				continue
 			}
+
+			// Ensure we have not already signed a conflicting update.
+			// Ignore suggested if we have.
+			existing, err := u.db.RetrieveProducedUpdate(suggestedUpdate.PreviousRoot())
+			if err != nil && !errors.Is(err, pebble.ErrNotFound) {
+				return fmt.Errorf("could not get update: %w", err)
+				// existing was found
+			} else if err == nil {
+				if existing.Update().NewRoot() != suggestedUpdate.NewRoot() {
+					logger.Infof("Updater ignoring conflicting suggested update. Indicates chain awaiting already produced update. Existing update: %s. Suggested conflicting update: %s", existing.Update().NewRoot(), suggestedUpdate.NewRoot())
+				}
+				continue
+			}
+
+			// sign the update
 		}
 	}
 }

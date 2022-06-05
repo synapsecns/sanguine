@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
@@ -97,5 +98,24 @@ func (d MessageHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedCo
 		return messageharness.DeployMessageHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return messageharness.NewMessageHarnessRef(address, backend)
+	})
+}
+
+// HomeHarnessDeployer deploys the home harness for testing.
+type HomeHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewHomeHarnessDeployer deploys the new home harness.
+func NewHomeHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return HomeDeployer{deployer.NewSimpleDeployer(registry, backend, HomeHarnessType)}
+}
+
+// Deploy deploys the home harness.
+func (h HomeHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return homeharness.DeployHomeHarness(transactOps, backend, 1)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return homeharness.NewHomeHarnessRef(address, backend)
 	})
 }

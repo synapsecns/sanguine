@@ -11,11 +11,12 @@ func _() {
 	_ = x[HomeType-0]
 	_ = x[XAppConfigType-1]
 	_ = x[MessageHarnessType-2]
+	_ = x[HomeHarnessType-3]
 }
 
-const _contractTypeImpl_name = "HomeXAppConfigMessageHarness"
+const _contractTypeImpl_name = "HomeXAppConfigMessageHarnessHomeHarness"
 
-var _contractTypeImpl_index = [...]uint8{0, 4, 14, 28}
+var _contractTypeImpl_index = [...]uint8{0, 4, 14, 28, 39}
 
 func (i contractTypeImpl) String() string {
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {
