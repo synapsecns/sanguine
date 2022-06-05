@@ -1,13 +1,17 @@
 package indexer
 
 import (
+	"bytes"
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"github.com/cockroachdb/pebble"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
+	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
@@ -33,6 +37,26 @@ func (u UpdateProducer) FindLatestRoot() (common.Hash, error) {
 	}
 
 	return latestRoot, nil
+}
+
+// StoreProducedUpdate stores a pending update in the DB for potential submission.
+//
+// This does not produce update meta or update the latest update db value.
+// It is used by update production and submission.
+func (u UpdateProducer) StoreProducedUpdate(update types.SignedUpdate) error {
+	existingOpt, err := u.db.RetrieveProducedUpdate(update.Update().PreviousRoot())
+	if err != nil && !errors.Is(err, pebble.ErrNotFound) {
+		return fmt.Errorf("could not retrieve produced update: %w", err)
+	}
+
+	if errors.Is(err, pebble.ErrNotFound) {
+		return u.db.StoreProducedUpdate(update.Update().PreviousRoot(), update)
+	} else {
+		if existingOpt.Update().NewRoot() != update.Update().NewRoot() {
+			return fmt.Errorf("updater attempted to store conflicting update. Existing update: %s. New conflicting update: %S.\"", update.Update().NewRoot(), update.Update().NewRoot())
+		}
+	}
+	return nil
 }
 
 // Start starts the update producer.
@@ -70,8 +94,50 @@ func (u UpdateProducer) Start(ctx context.Context) error {
 				continue
 			}
 
-			// sign the update
-			// u.signer.SignMessage(ctx, suggestedUpdate)
+			// get the update to sign
+			hashedUpdate, err := hashUpdate(suggestedUpdate)
+			if err != nil {
+				return fmt.Errorf("could not hash update: %w", err)
+			}
+			signature, err := u.signer.SignMessage(ctx, db.ToSlice(hashedUpdate))
+			if err != nil {
+				return fmt.Errorf("could not sign message: %w", err)
+			}
+
+			signedUpdate := types.NewSignedUpdate(suggestedUpdate, signature)
+			err = u.StoreProducedUpdate(signedUpdate)
+			if err != nil {
+				return err
+			}
 		}
 	}
+}
+
+func hashUpdate(update types.Update) ([32]byte, error) {
+	buf := new(bytes.Buffer)
+
+	type DigestEncoder struct {
+		HomeDomainHash, OldRoot, NewRoot [32]byte
+	}
+
+	homeHash, err := types.HomeDomainHash(update.HomeDomain())
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("could not get home domain hash: %w", err)
+	}
+
+	rawDigest := DigestEncoder{
+		HomeDomainHash: homeHash,
+		OldRoot:        update.PreviousRoot(),
+		NewRoot:        update.NewRoot(),
+	}
+
+	err = binary.Write(buf, binary.BigEndian, rawDigest)
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("could not write digest: %w", err)
+	}
+
+	hashedDigest := crypto.Keccak256Hash(buf.Bytes())
+
+	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
+	return signedHash, nil
 }
