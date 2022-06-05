@@ -147,3 +147,7 @@ func (e *RPCSuite) TestFilterer() {
 
 	Nil(e.T(), g.Wait())
 }
+
+func (e *RPCSuite) TestProduceUpdate() {
+	e.T().Skip("TODO: add produce update test")
+}

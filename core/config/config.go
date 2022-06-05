@@ -7,7 +7,9 @@ import (
 // Config is used for configuring the application. It stores the configurations defined in each module.
 type Config struct {
 	// Domains stores all domains
-	Domains DomainConfig `toml:"Domains"`
+	Domains DomainConfigs `toml:"Domains"`
+
+	DBPath string `toml:"DBPath"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

@@ -36,6 +36,16 @@ type DB interface {
 	StoreMessageLatestBlockEnd(blockNumber uint32) error
 	// GetMessageLatestBlockEnd gets the message latest block
 	GetMessageLatestBlockEnd() (height uint32, err error)
+
+	// RetrieveLatestRoot retreives latest root
+	RetrieveLatestRoot() (common.Hash, error)
+	// StoreLatestRoot stores the latest root
+	StoreLatestRoot(latestRoot common.Hash) error
+
+	// RetrieveProducedUpdate retrieves a produced update for a root
+	RetrieveProducedUpdate(root common.Hash) (types.SignedUpdate, error)
+	// StoreProducedUpdate stores a produced update
+	StoreProducedUpdate(previousRoot common.Hash, update types.SignedUpdate) error
 }
 
 // pebbleDB contains a rocksdb used to store merkle trees.
@@ -53,6 +63,53 @@ func NewDB(dbPath, entity string) (DB, error) {
 	}
 
 	return &pebbleDB{DB: db, entity: entity}, nil
+}
+
+func (d *pebbleDB) RetrieveProducedUpdate(root common.Hash) (types.SignedUpdate, error) {
+	rawUpdate, _, err := d.Get(d.FullKey(UpdaterProducedUpdate, root.Bytes()))
+	if err != nil {
+		return nil, fmt.Errorf("could not get latest height: %w", err)
+	}
+
+	decodedUpdate, err := types.DecodeSignedUpdate(rawUpdate)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode signed update: %w", err)
+	}
+
+	return decodedUpdate, nil
+}
+
+func (d *pebbleDB) StoreProducedUpdate(previousRoot common.Hash, update types.SignedUpdate) error {
+	signedUpdate, err := types.EncodeSignedUpdate(update)
+	if err != nil {
+		return fmt.Errorf("could not encode signed update: %w", err)
+	}
+
+	err = d.StoreKeyedEncodable(UpdaterProducedUpdate, previousRoot.Bytes(), signedUpdate)
+	if err != nil {
+		return fmt.Errorf("could not store produced update: %w", err)
+	}
+
+	return nil
+}
+
+// RetrieveLatestRoot gets the latest root.
+func (d *pebbleDB) RetrieveLatestRoot() (common.Hash, error) {
+	rawRoot, _, err := d.Get(d.FullKey(LatestRoot, []byte("")))
+	if err != nil {
+		return common.Hash{}, fmt.Errorf("could not get latest height: %w", err)
+	}
+
+	return common.BytesToHash(rawRoot), nil
+}
+
+// StoreLatestRoot stores the latest root.
+func (d *pebbleDB) StoreLatestRoot(latestRoot common.Hash) error {
+	err := d.StoreKeyedEncodable(LatestRoot, []byte(""), latestRoot.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not store latest root: %w", err)
+	}
+	return nil
 }
 
 // GetIndexedHeight gets the indexed height.

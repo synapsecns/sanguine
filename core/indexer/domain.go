@@ -17,8 +17,13 @@ type domainIndexer struct {
 	domain domains.DomainClient
 }
 
+// DomainIndexer indexes a domain.
+type DomainIndexer interface {
+	SyncMessages(ctx context.Context) error
+}
+
 // NewDomainIndexer creates a new domain indexer.
-func newDomainIndexer(db db.DB, domain domains.DomainClient) domainIndexer {
+func NewDomainIndexer(db db.DB, domain domains.DomainClient) domainIndexer {
 	return domainIndexer{
 		db:     db,
 		domain: domain,

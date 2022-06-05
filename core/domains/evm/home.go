@@ -3,6 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/domains"
@@ -65,6 +66,23 @@ func (h homeContract) FetchSortedMessages(ctx context.Context, from uint32, to u
 	}
 
 	return messages, nil
+}
+
+func (h homeContract) ProduceUpdate(ctx context.Context) (types.Update, error) {
+	suggestedUpdate, err := h.contract.SuggestUpdate(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return nil, fmt.Errorf("could not suggest update: %w", err)
+	}
+
+	// TODO, this can be cached
+	localDomain, err := h.contract.LocalDomain(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return nil, fmt.Errorf("could not get local domain: %w", err)
+	}
+
+	update := types.NewUpdate(localDomain, suggestedUpdate.CommittedRoot, suggestedUpdate.New)
+
+	return update, nil
 }
 
 var _ domains.HomeContract = &homeContract{}

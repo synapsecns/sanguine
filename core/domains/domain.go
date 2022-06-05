@@ -25,4 +25,6 @@ type DomainClient interface {
 type HomeContract interface {
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
 	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
+	// ProduceUpdate suggests an update from the home contract
+	ProduceUpdate(ctx context.Context) (types.Update, error)
 }

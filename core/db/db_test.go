@@ -77,7 +77,7 @@ func (d *DBSuite) TestStoresAndRetreivesProofs() {
 	Equal(d.T(), byIndex.Leaf(), leaf)
 }
 
-func (d *DBSuite) TestStoreGetMessageLatestBlcokEnd() {
+func (d *DBSuite) TestStoreGetMessageLatestBlockEnd() {
 	newDB, err := db.NewDB(filet.TmpDir(d.T(), ""), "home1")
 	Nil(d.T(), err)
 
@@ -93,4 +93,26 @@ func (d *DBSuite) TestStoreGetMessageLatestBlcokEnd() {
 	Nil(d.T(), err)
 
 	Equal(d.T(), latestHeight, fakeBlock)
+}
+
+func (d *DBSuite) TestStoreAndRetrieveLatestRoot() {
+	newDB, err := db.NewDB(filet.TmpDir(d.T(), ""), "home1")
+	Nil(d.T(), err)
+
+	_, err = newDB.RetrieveLatestRoot()
+	Error(d.T(), err, pebble.ErrNotFound)
+
+	latestRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
+
+	err = newDB.StoreLatestRoot(latestRoot)
+	Nil(d.T(), err)
+
+	retreivedRoot, err := newDB.RetrieveLatestRoot()
+	Nil(d.T(), err)
+
+	Equal(d.T(), retreivedRoot, latestRoot)
+}
+
+func (d *DBSuite) TestStoreGetProducedUpdate() {
+	d.T().Skip("TODO:  teststore/retrieve produced update")
 }
