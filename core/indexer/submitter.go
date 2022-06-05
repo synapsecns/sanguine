@@ -1,6 +1,7 @@
 package indexer
 
 import (
+	"context"
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -19,3 +20,15 @@ type UpdateSubmitter struct {
 
 // todo: next up you need to borrow the tx loop from synapse-node and test well
 // myabe in ethergo? Should be agnostic and utilize nonce manager
+
+func (u UpdateSubmitter) Run(ctx context.Context) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			//u.db.RetrieveProducedUpdate()
+			//u.domain.Home().
+		}
+	}
+}

@@ -170,8 +170,6 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 
-	fmt.Println(cmd.String())
-
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("solc: %w\n%s", err, stderr.Bytes())
 	}

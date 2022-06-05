@@ -2,6 +2,7 @@ package domains
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/types"
 )
@@ -27,4 +28,6 @@ type HomeContract interface {
 	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
 	// ProduceUpdate suggests an update from the home contract
 	ProduceUpdate(ctx context.Context) (types.Update, error)
+	// CommittedRoot gets the committed root
+	CommittedRoot(ctx context.Context) (common.Hash, error)
 }

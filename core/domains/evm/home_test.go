@@ -73,3 +73,7 @@ func (i ContractSuite) TestFetchSortedHomeUpdates() {
 		Equal(i.T(), message.LeafIndex(), uint32(iter))
 	}
 }
+
+func (i ContractSuite) TestCommittedRoot() {
+
+}

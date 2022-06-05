@@ -85,4 +85,13 @@ func (h homeContract) ProduceUpdate(ctx context.Context) (types.Update, error) {
 	return update, nil
 }
 
+func (h homeContract) CommittedRoot(ctx context.Context) (common.Hash, error) {
+	root, err := h.contract.CommittedRoot(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return common.Hash{}, fmt.Errorf("could not get committed root: %w", err)
+	}
+
+	return root, nil
+}
+
 var _ domains.HomeContract = &homeContract{}
