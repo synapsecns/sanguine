@@ -21,21 +21,20 @@ type UpdateSubmitter struct {
 	signer signer.Signer
 }
 
+// Run runs the update submitter
 // todo: next up you need to borrow the tx loop from synapse-node and test well
-// myabe in ethergo? Should be agnostic and utilize nonce manager
-
+// myabe in ethergo? Should be agnostic and utilize nonce manager.
 func (u UpdateSubmitter) Run(ctx context.Context) error {
+	committedRoot, err := u.domain.Home().CommittedRoot(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get committed root: %v", err)
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		default:
-			committedRoot, err := u.domain.Home().CommittedRoot(ctx)
-			if err != nil {
-				logger.Errorf("could not get committed root: %v", err)
-				continue
-			}
-
 			signed, err := u.db.RetrieveProducedUpdate(committedRoot)
 			if errors.Is(err, pebble.ErrNotFound) {
 				logger.Infof("No produced update to submit for committed_root: %s", committedRoot)
@@ -44,7 +43,12 @@ func (u UpdateSubmitter) Run(ctx context.Context) error {
 				return fmt.Errorf("could not retrieve produced update: %w", err)
 			}
 
-			_ = signed
+			err = u.domain.Home().Update(ctx, u.signer, signed)
+			if err != nil {
+				return fmt.Errorf("could not produce update: %w", err)
+			}
+
+			committedRoot = signed.Update().NewRoot()
 		}
 	}
 }

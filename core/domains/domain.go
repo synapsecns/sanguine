@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/types"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 // DomainClient represents a client used for interacting
@@ -30,4 +31,6 @@ type HomeContract interface {
 	ProduceUpdate(ctx context.Context) (types.Update, error)
 	// CommittedRoot gets the committed root
 	CommittedRoot(ctx context.Context) (common.Hash, error)
+	// Update updates the home contract
+	Update(ctx context.Context, signer signer.Signer, update types.SignedUpdate) error
 }

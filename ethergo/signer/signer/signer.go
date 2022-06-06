@@ -3,6 +3,8 @@ package signer
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/synapse-node/pkg/common"
 	"math/big"
 )
@@ -11,6 +13,8 @@ import (
 type Signer interface {
 	// SignMessage signs a message
 	SignMessage(_ context.Context, message []byte) (Signature, error)
+	// GetTransactor gets the transactor for a tx manager.
+	GetTransactor() (*bind.TransactOpts, error)
 }
 
 // Signature is an ecdsa signature interface.
@@ -33,16 +37,27 @@ type signatureImpl struct {
 	v, r, s *big.Int
 }
 
-func (s signatureImpl) V() *big.Int {
-	return common.CopyBigInt(s.v)
+func (sg signatureImpl) V() *big.Int {
+	return common.CopyBigInt(sg.v)
 }
 
-func (s signatureImpl) R() *big.Int {
-	return common.CopyBigInt(s.r)
+func (sg signatureImpl) R() *big.Int {
+	return common.CopyBigInt(sg.r)
 }
 
-func (s signatureImpl) S() *big.Int {
-	return common.CopyBigInt(s.s)
+func (sg signatureImpl) S() *big.Int {
+	return common.CopyBigInt(sg.s)
+}
+
+// Encode encodes a signature
+func Encode(sg Signature) []byte {
+	r, s := sg.R().Bytes(), sg.S().Bytes()
+	sig := make([]byte, crypto.SignatureLength)
+	copy(sig[32-len(r):32], r)
+	copy(sig[64-len(s):64], s)
+	sig[64] = byte(sg.V().Uint64())
+
+	return sig
 }
 
 var _ Signature = signatureImpl{}

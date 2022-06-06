@@ -8,20 +8,25 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/core/types"
+	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/synapse-node/pkg/evm"
 	"math/big"
 )
 
 // NewHomeContract returns a new bound home contract.
-func NewHomeContract(client evm.Chain, homeAddress common.Address) (domains.HomeContract, error) {
+func NewHomeContract(ctx context.Context, client evm.Chain, homeAddress common.Address) (domains.HomeContract, error) {
 	boundContract, err := home.NewHomeRef(homeAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &home.HomeRef{}, err)
 	}
 
+	nonceManager := nonce.NewNonceManager(ctx, client, client.GetBigChainID())
+
 	return homeContract{
-		contract: boundContract,
-		client:   client,
+		contract:     boundContract,
+		client:       client,
+		nonceManager: nonceManager,
 	}, nil
 }
 
@@ -32,6 +37,8 @@ type homeContract struct {
 	contract *home.HomeRef
 	// client is the client
 	client evm.Chain
+	// nonceManager is the nonce manager used for transacting
+	nonceManager nonce.Manager
 }
 
 func (h homeContract) FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error) {
@@ -92,6 +99,32 @@ func (h homeContract) CommittedRoot(ctx context.Context) (common.Hash, error) {
 	}
 
 	return root, nil
+}
+
+func (h homeContract) Update(ctx context.Context, signer signer.Signer, update types.SignedUpdate) error {
+	encodedSignature, err := types.EncodeSignature(update.Signature())
+	if err != nil {
+		return fmt.Errorf("could not encode signature: %w", err)
+	}
+
+	transactor, err := signer.GetTransactor()
+	if err != nil {
+		return fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := h.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+	// TODO, check confirmation, etc
+	_, err = h.contract.Update(transactOpts, update.Update().PreviousRoot(), update.Update().NewRoot(), encodedSignature)
+	if err != nil {
+		return fmt.Errorf("could not update contract: %w", err)
+	}
+
+	return nil
 }
 
 var _ domains.HomeContract = &homeContract{}
