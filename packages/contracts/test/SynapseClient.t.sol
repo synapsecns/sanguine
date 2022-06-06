@@ -132,6 +132,18 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         client.handle(remoteDomain, 0, _notSender, bytes(""));
     }
 
+    function test_handleFakeDomainAndSender(uint32 _notRemote) public {
+        vm.assume(_notRemote != remoteDomain);
+
+        test_setTrustedSender();
+
+        vm.prank(replicaManager);
+        vm.expectRevert("!trustedSender");
+        // trustedSender for unknown remote is bytes32(0),
+        // but this still has to revert
+        client.handle(_notRemote, 0, bytes32(0), bytes(""));
+    }
+
     event Dispatch(
         bytes32 indexed messageHash,
         uint256 indexed leafIndex,

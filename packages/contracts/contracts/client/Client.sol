@@ -39,7 +39,7 @@ abstract contract Client is IMessageRecipient {
         bytes memory _message
     ) external {
         require(msg.sender == replicaManager, "!replica");
-        require(_sender == trustedSender(_origin), "!trustedSender");
+        require(_sender == trustedSender(_origin) && _sender != bytes32(0), "!trustedSender");
         _handle(_origin, _nonce, _sender, _message);
     }
 
