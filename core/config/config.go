@@ -8,7 +8,7 @@ import (
 type Config struct {
 	// Domains stores all domains
 	Domains DomainConfigs `toml:"Domains"`
-
+	// DBPath is the db path
 	DBPath string `toml:"DBPath"`
 }
 

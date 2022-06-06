@@ -2,6 +2,9 @@ package indexer
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"github.com/cockroachdb/pebble"
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -27,8 +30,21 @@ func (u UpdateSubmitter) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		default:
-			//u.db.RetrieveProducedUpdate()
-			//u.domain.Home().
+			committedRoot, err := u.domain.Home().CommittedRoot(ctx)
+			if err != nil {
+				logger.Errorf("could not get committed root: %v", err)
+				continue
+			}
+
+			signed, err := u.db.RetrieveProducedUpdate(committedRoot)
+			if errors.Is(err, pebble.ErrNotFound) {
+				logger.Infof("No produced update to submit for committed_root: %s", committedRoot)
+				continue
+			} else if err != nil {
+				return fmt.Errorf("could not retrieve produced update: %w", err)
+			}
+
+			_ = signed
 		}
 	}
 }
