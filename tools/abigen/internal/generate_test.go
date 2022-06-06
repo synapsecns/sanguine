@@ -22,8 +22,6 @@ func TestCreateRunFile(t *testing.T) {
 }
 
 func (a *AbiSuite) TestCompileSolidity() {
-	a.T().Skip("could not compile solidity")
-
 	vals, err := internal.CompileSolidity("0.8.4", a.exampleFilePath, 1)
 	Nil(a.T(), err)
 
