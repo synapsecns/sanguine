@@ -2,8 +2,11 @@ package internal_test
 
 import (
 	"github.com/Flaque/filet"
+	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/synapse-node/testutils"
+	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -25,6 +28,18 @@ func (a *AbiSuite) SetupTest() {
 	a.TestSuite.SetupTest()
 
 	a.exampleFilePath = filet.TmpFile(a.T(), "", testFileContents).Name()
+
+	tempFile, err := ioutil.TempFile("", "")
+	Nil(a.T(), err)
+
+	_, err = tempFile.WriteString(testFileContents)
+	Nil(a.T(), err)
+
+	_ = tempFile.Close()
+
+	a.DeferAfterTest(func() {
+		_ = os.Remove(tempFile.Name())
+	})
 }
 
 func TestAbiSuite(t *testing.T) {
