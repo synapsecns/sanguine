@@ -28,7 +28,6 @@ func (a *AbiSuite) SetupTest() {
 
 	_ = tempFile.Close()
 	a.exampleFilePath = tempFile.Name()
-
 }
 
 func TestAbiSuite(t *testing.T) {
