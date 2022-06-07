@@ -25,8 +25,10 @@ library QueueLib {
      * directly. Use the functions provided below instead. Modifying the struct manually may violate assumptions and
      * lead to unexpected behavior.
      *
-     * Indices are in the range [begin, end) which means the first item is at data[begin] and the last item is at
-     * data[end - 1].
+     * Indices are in the range (begin, end] which means the first item is at data[begin + 1] and the last item is at
+     * data[end].
+     *
+     * This also means that indices are always greater than zero.
      */
     struct Queue {
         uint128 _begin;
@@ -39,11 +41,13 @@ library QueueLib {
      *      OZ analog: pushBack
      */
     function enqueue(Queue storage queue, bytes32 value) internal {
-        uint128 backIndex = queue._end;
-        queue._data[backIndex] = value;
+        uint128 backIndex;
         unchecked {
-            queue._end = backIndex + 1;
+            // (begin; end] -> last item is queue._end (insert after that)
+            backIndex = queue._end + 1;
         }
+        queue._data[backIndex] = value;
+        queue._end = backIndex;
     }
 
     /**
@@ -53,12 +57,14 @@ library QueueLib {
      */
     function dequeue(Queue storage queue) internal returns (bytes32 value) {
         if (isEmpty(queue)) revert Empty();
-        uint128 frontIndex = queue._begin;
+        uint128 frontIndex;
+        unchecked {
+            // (begin; end] -> first item is queue._begin + 1
+            frontIndex = queue._begin + 1;
+        }
         value = queue._data[frontIndex];
         delete queue._data[frontIndex];
-        unchecked {
-            queue._begin = frontIndex + 1;
-        }
+        queue._begin = frontIndex;
     }
 
     /**
@@ -69,12 +75,16 @@ library QueueLib {
         uint128 backIndex = queue._end;
         uint256 len = values.length;
         for (uint256 i = 0; i < len; ) {
-            queue._data[backIndex] = values[i];
+            // (begin; end] -> last item is backIndex (insert after that)
             unchecked {
                 ++backIndex;
+            }
+            queue._data[backIndex] = values[i];
+            unchecked {
                 ++i;
             }
         }
+        // backIndex is now pointing to the last inserted item
         queue._end = backIndex;
     }
 
@@ -94,13 +104,17 @@ library QueueLib {
         }
         values = new bytes32[](number);
         for (uint256 i = 0; i < number; ) {
+            // (begin; end] -> first item is frontIndex + 1
+            unchecked {
+                ++frontIndex;
+            }
             values[i] = queue._data[frontIndex];
             delete queue._data[frontIndex];
             unchecked {
-                ++frontIndex;
                 ++i;
             }
         }
+        // firstIndex is now pointing to the last deleted item
         queue._begin = frontIndex;
     }
 
@@ -108,15 +122,15 @@ library QueueLib {
         // Most of the time we'll be checking a merkle root that has been recently added,
         // so checking from back to front is likely to find it faster.
         uint128 backIndex = queue._end;
-        if (backIndex == 0) return false;
         uint128 frontIndex = queue._begin;
+        // elements are stored at (begin, end] range,
+        // so we need to start from queue._end
+        // and finish at queue._begin + 1
         for (; backIndex > frontIndex; ) {
-            // elements are stored at [begin, end) range,
-            // so we need to start from queue._end - 1
+            if (queue._data[backIndex] == item) return true;
             unchecked {
                 --backIndex;
             }
-            if (queue._data[backIndex] == item) return true;
         }
         return false;
     }
@@ -124,23 +138,23 @@ library QueueLib {
     /// @notice Returns last item in queue
     /// @dev Returns bytes32(0) if queue is empty
     function lastItem(Queue storage queue) internal view returns (bytes32 item) {
-        uint128 backIndex = queue._end;
-        if (backIndex != 0) {
-            unchecked {
-                item = queue._data[backIndex - 1];
-            }
-        }
+        // (begin; end] -> last item is queue._end
+        return queue._data[queue._end];
     }
 
     /// @notice Returns element at front of queue without removing element
     /// @dev Reverts if queue is empty
     function peek(Queue storage queue) internal view returns (bytes32 item) {
         if (isEmpty(queue)) revert Empty();
-        item = queue._data[queue._begin];
+        unchecked {
+            // (begin; end] -> first item is queue._begin + 1
+            item = queue._data[queue._begin + 1];
+        }
     }
 
     /// @notice Returns true if queue is empty and false if otherwise
     function isEmpty(Queue storage queue) internal view returns (bool) {
+        // (begin; end] -> (end <= begin) is empty queue
         return queue._end <= queue._begin;
     }
 
