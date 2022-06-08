@@ -61,6 +61,20 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
         assertEq(home.queueLength(), _newLength);
     }
 
+    function test_contains() public {
+        uint256 amount = 15;
+        bytes32[] memory roots = new bytes32[](amount);
+        for (uint256 i = 0; i < amount; ++i) {
+            roots[i] = _dispatch();
+        }
+        for (uint256 i = 0; i < amount; ++i) {
+            assertTrue(home.queueContains(roots[i]));
+        }
+        _dispatch();
+        _update(roots[0], amount);
+        assertFalse(home.queueContains(roots[0]));
+    }
+
     function test_D15_U15_D15_U15() public {
         bytes32 root1;
         for (uint256 i = 0; i < 15; ++i) {
