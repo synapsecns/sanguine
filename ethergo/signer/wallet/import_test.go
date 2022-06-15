@@ -49,6 +49,20 @@ func (s WalletSuite) TestFromKeyFile() {
 	}
 }
 
+func (s WalletSuite) TestFromRandom() {
+	newWallet, err := wallet.FromRandom()
+	Nil(s.T(), err)
+
+	NotPanics(s.T(), func() {
+		newWallet.Address()
+		newWallet.PrivateKey()
+		newWallet.PublicKey()
+		newWallet.PrivateKeyBytes()
+		newWallet.PublicKeyHex()
+		newWallet.PublicKeyBytes()
+	})
+}
+
 func (s WalletSuite) makeTestFile(contents []byte, fuzz bool) (fileName string) {
 	if fuzz {
 		contents = fuzzContents(contents)

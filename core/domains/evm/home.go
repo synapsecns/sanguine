@@ -107,7 +107,7 @@ func (h homeContract) Update(ctx context.Context, signer signer.Signer, update t
 		return fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	transactor, err := signer.GetTransactor()
+	transactor, err := signer.GetTransactor(h.client.GetBigChainID())
 	if err != nil {
 		return fmt.Errorf("could not sign tx: %w", err)
 	}

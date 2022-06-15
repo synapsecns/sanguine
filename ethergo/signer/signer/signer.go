@@ -14,7 +14,7 @@ type Signer interface {
 	// SignMessage signs a message
 	SignMessage(_ context.Context, message []byte) (Signature, error)
 	// GetTransactor gets the transactor for a tx manager.
-	GetTransactor() (*bind.TransactOpts, error)
+	GetTransactor(chainID *big.Int) (*bind.TransactOpts, error)
 }
 
 // Signature is an ecdsa signature interface.

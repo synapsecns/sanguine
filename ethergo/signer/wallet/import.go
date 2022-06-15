@@ -81,3 +81,28 @@ func FromSeedPhrase(seedPhrase string, derivationPath accounts.DerivationPath) (
 	}
 	return FromPrivateKey(privKey)
 }
+
+// FromRandom generates a new private key. Note: this should be used for testing only and has not been audited yet
+func FromRandom() (Wallet, error) {
+	newSeed, err := hdwallet.NewSeed()
+	if err != nil {
+		return nil, fmt.Errorf("could not generate seed: %w", err)
+	}
+
+	newWallet, err := hdwallet.NewFromSeed(newSeed)
+	if err != nil {
+		return nil, fmt.Errorf("could not use seed: %w", err)
+	}
+
+	account, err := newWallet.Derive(accounts.DefaultBaseDerivationPath, true)
+	if err != nil {
+		return nil, fmt.Errorf("could not use derive account at %s: %w", accounts.DefaultBaseDerivationPath, err)
+	}
+
+	privKey, err := newWallet.PrivateKey(account)
+	if err != nil {
+		return nil, fmt.Errorf("could not get private key: %w", err)
+	}
+
+	return FromPrivateKey(privKey)
+}

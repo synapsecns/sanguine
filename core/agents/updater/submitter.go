@@ -1,4 +1,4 @@
-package indexer
+package updater
 
 import (
 	"context"
@@ -10,15 +10,23 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
+// UpdateSubmitter submits updates continuously.
 type UpdateSubmitter struct {
 	// domain allows access to the home contract
 	domain domains.DomainClient
 	// db contains the db object
 	db db.DB
-	// intervalSeconds adds an interval
-	intervalSeconds uint64
 	// signer is the signer
 	signer signer.Signer
+}
+
+// NewUpdateSubmitter creates an update producer.
+func NewUpdateSubmitter(domain domains.DomainClient, db db.DB, signer signer.Signer) UpdateSubmitter {
+	return UpdateSubmitter{
+		domain: domain,
+		db:     db,
+		signer: signer,
+	}
 }
 
 // Run runs the update submitter

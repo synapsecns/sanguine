@@ -1,4 +1,4 @@
-package indexer
+package updater
 
 import (
 	"bytes"
@@ -21,10 +21,17 @@ type UpdateProducer struct {
 	domain domains.DomainClient
 	// db contains the db object
 	db db.DB
-	// intervalSeconds adds an interval
-	intervalSeconds uint64
 	// signer is the signer
 	signer signer.Signer
+}
+
+// NewUpdateProducer creates an update producer.
+func NewUpdateProducer(domain domains.DomainClient, db db.DB, signer signer.Signer) UpdateProducer {
+	return UpdateProducer{
+		domain: domain,
+		db:     db,
+		signer: signer,
+	}
 }
 
 // FindLatestRoot finds the latest root.
