@@ -6,6 +6,7 @@ import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
+import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -166,9 +167,9 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     function activeReplicaMessageStatus(uint32 _remoteDomain, bytes32 _messageId)
         external
         view
-        returns (ReplicaLib.MessageStatus)
+        returns (bytes32)
     {
-        return allReplicas[activeReplicas[_remoteDomain]].messages[_messageId];
+        return allReplicas[activeReplicas[_remoteDomain]].messageStatus[_messageId];
     }
 
     // ============ Archived Replica Views ============
@@ -256,12 +257,14 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         require(_m.destination() == localDomain, "!destination");
         // ensure message has been proven
         bytes32 _messageHash = _m.keccak();
-        require(replica.messages[_messageHash] == ReplicaLib.MessageStatus.Proven, "!proven");
+        bytes32 _root = replica.messageStatus[_messageHash];
+        require(ReplicaLib.isPotentialRoot(_root), "!exists || processed");
+        require(acceptableRoot(_remoteDomain, _m.optimisticSeconds(), _root), "!optimisticSeconds");
         // check re-entrancy guard
         require(entered == 1, "!reentrant");
         entered = 0;
         // update message status as processed
-        replica.setMessageStatus(_messageHash, ReplicaLib.MessageStatus.Processed);
+        replica.setMessageStatus(_messageHash, ReplicaLib.MESSAGE_STATUS_PROCESSED);
         // A call running out of gas TYPICALLY errors the whole tx. We want to
         // a) ensure the call has a sufficient amount of gas to make a
         //    meaningful state change.
@@ -270,6 +273,14 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         // To do this, we require that we have enough gas to process
         // and still return. We then delegate only the minimum processing gas.
         require(gasleft() >= PROCESS_GAS + RESERVE_GAS, "!gas");
+        bytes memory _calldata = abi.encodeWithSelector(
+            IMessageRecipient.handle.selector,
+            _remoteDomain,
+            _m.nonce(),
+            _m.sender(),
+            replica.confirmAt[_root],
+            _m.body().clone()
+        );
         // get the message recipient
         address _recipient = _m.recipientAddress();
         // set up for assembly call
@@ -278,14 +289,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         uint256 _gas = PROCESS_GAS;
         // allocate memory for returndata
         bytes memory _returnData = new bytes(_maxCopy);
-        bytes memory _calldata = abi.encodeWithSignature(
-            "handle(uint32,uint32,bytes32,bytes)",
-            _m.origin(),
-            _m.nonce(),
-            _m.sender(),
-            _m.optimisticSeconds(),
-            _m.body().clone()
-        );
+
         // dispatch message to recipient
         // by assembly calling "handle" function
         // we call via assembly to avoid memcopying a very large returndata
@@ -385,16 +389,18 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         bytes32[32] calldata _proof,
         uint256 _index
     ) public returns (bool) {
-        uint32 optimisticSeconds = _message.ref(0).optimisticSeconds();
         bytes32 _leaf = keccak256(_message);
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         // ensure that message has not been proven or processed
-        require(replica.messages[_leaf] == ReplicaLib.MessageStatus.None, "!MessageStatus.None");
+        require(
+            replica.messageStatus[_leaf] == ReplicaLib.MESSAGE_STATUS_NONE,
+            "!MessageStatus.None"
+        );
         // calculate the expected root based on the proof
         bytes32 _calculatedRoot = MerkleLib.branchRoot(_leaf, _proof, _index);
-        // if the root is valid, change status to Proven
-        if (acceptableRoot(_remoteDomain, optimisticSeconds, _calculatedRoot)) {
-            replica.setMessageStatus(_leaf, ReplicaLib.MessageStatus.Proven);
+        // if the root is valid, save it for later optimistic period checking
+        if (replica.confirmAt[_calculatedRoot] != 0) {
+            replica.setMessageStatus(_leaf, _calculatedRoot);
             return true;
         }
         return false;

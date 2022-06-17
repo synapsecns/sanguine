@@ -6,7 +6,7 @@ interface IMessageRecipient {
         uint32 _origin,
         uint32 _nonce,
         bytes32 _sender,
-        uint32 _optimisticSeconds,
+        uint256 _rootTimestamp,
         bytes memory _message
     ) external;
 }

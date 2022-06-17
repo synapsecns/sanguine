@@ -33,9 +33,9 @@ contract ReplicaTest is SynapseTest {
         assertEq(replica.confirmAt[_committedRoot], _confirmAt);
     }
 
-    function test_setMessageStatus(bytes32 _messageHash) public {
-        replica.setMessageStatus(_messageHash, ReplicaLib.MessageStatus.Processed);
-        assertEq(uint256(replica.messages[_messageHash]), 2);
+    function test_setMessageStatus(bytes32 _messageHash, bytes32 _status) public {
+        replica.setMessageStatus(_messageHash, _status);
+        assertEq(replica.messageStatus[_messageHash], _status);
     }
 
     function test_setStatus() public {

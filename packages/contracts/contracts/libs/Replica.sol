@@ -25,6 +25,12 @@ library ReplicaLib {
         Failed
     }
 
+    // ============ Constants ============
+    /// @dev Should not be possible to have 0x0 or 0x1 as valid Merkle root,
+    /// so it's safe to use those values as NONE/PROCESSED
+    bytes32 public constant MESSAGE_STATUS_NONE = bytes32(0);
+    bytes32 public constant MESSAGE_STATUS_PROCESSED = bytes32(uint256(1));
+
     // TODO: optimize read/writes by further packing?
     struct Replica {
         // The latest root that has been signed by the Updater for this given Replica
@@ -36,8 +42,11 @@ library ReplicaLib {
         // Mapping of roots to time at which Relayer submitted on-chain. Latency period begins here.
         // TODO: confirmAt doesn't need to be uint256 necessarily
         mapping(bytes32 => uint256) confirmAt;
-        // Mapping of message leaves to MessageStatus
-        mapping(bytes32 => MessageStatus) messages;
+        // Mapping of message leaves to status:
+        // - NONE: message not yet submitted
+        // - PROCESSED: message was proven and processed
+        // bytes32 root: message was proven against `root`, but not yet processed
+        mapping(bytes32 => bytes32) messageStatus;
     }
 
     function setupReplica(Replica storage replica, uint32 _remoteDomain) internal {
@@ -60,12 +69,16 @@ library ReplicaLib {
     function setMessageStatus(
         Replica storage replica,
         bytes32 _messageHash,
-        MessageStatus _status
+        bytes32 _status
     ) internal {
-        replica.messages[_messageHash] = _status;
+        replica.messageStatus[_messageHash] = _status;
     }
 
     function setStatus(Replica storage replica, ReplicaStatus _status) internal {
         replica.status = _status;
+    }
+
+    function isPotentialRoot(bytes32 messageStatus) internal pure returns (bool) {
+        return messageStatus != MESSAGE_STATUS_NONE && messageStatus != MESSAGE_STATUS_PROCESSED;
     }
 }
