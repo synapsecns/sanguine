@@ -29,8 +29,6 @@ library ReplicaLib {
     struct Replica {
         // The latest root that has been signed by the Updater for this given Replica
         bytes32 committedRoot; // 256 bits
-        // Optimistic seconds per remote domain  (E.g specifies optimistic seconds on a remote domain basis to wait)
-        uint32 optimisticSeconds; // 32 bits
         // Domain of home chain
         uint32 remoteDomain; // 32 bits
         // Status of Replica based on the Home remote domain
@@ -42,13 +40,8 @@ library ReplicaLib {
         mapping(bytes32 => MessageStatus) messages;
     }
 
-    function setupReplica(
-        Replica storage replica,
-        uint32 _remoteDomain,
-        uint32 _optimisticSeconds
-    ) internal {
+    function setupReplica(Replica storage replica, uint32 _remoteDomain) internal {
         replica.remoteDomain = _remoteDomain;
-        replica.optimisticSeconds = _optimisticSeconds;
         replica.status = ReplicaStatus.Active;
     }
 
@@ -70,10 +63,6 @@ library ReplicaLib {
         MessageStatus _status
     ) internal {
         replica.messages[_messageHash] = _status;
-    }
-
-    function setOptimisticTimeout(Replica storage replica, uint32 _optimisticSeconds) internal {
-        replica.optimisticSeconds = _optimisticSeconds;
     }
 
     function setStatus(Replica storage replica, ReplicaStatus _status) internal {

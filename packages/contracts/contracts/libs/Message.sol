@@ -67,7 +67,18 @@ library Message {
         uint32 _optimisticSeconds,
         bytes memory _body
     ) internal pure returns (bytes32) {
-        return keccak256(formatMessage(_origin, _sender, _nonce, _destination, _recipient, _optimisticSeconds, _body));
+        return
+            keccak256(
+                formatMessage(
+                    _origin,
+                    _sender,
+                    _nonce,
+                    _destination,
+                    _recipient,
+                    _optimisticSeconds,
+                    _body
+                )
+            );
     }
 
     /// @notice Returns message's origin field
@@ -96,7 +107,7 @@ library Message {
     }
 
     /// @notice Returns the optimistic seconds from the message
-    function optimisticSeconds(bytes29 _message) internal pure returns (uint32){
+    function optimisticSeconds(bytes29 _message) internal pure returns (uint32) {
         return uint32(_message.indexUint(76, 4));
     }
 

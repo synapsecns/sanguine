@@ -80,12 +80,6 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     );
 
     /**
-     * @notice Emitted when the value for optimisticTimeout is set
-     * @param timeout The new value for optimistic timeout
-     */
-    event SetOptimisticTimeout(uint32 indexed remoteDomain, uint32 timeout);
-
-    /**
      * @notice Emitted when a root's confirmation is modified by governance
      * @param root The root for which confirmAt has been set
      * @param previousConfirmAt The previous value of confirmAt
@@ -146,29 +140,19 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
      *      - sets the optimistic timer
      * @param _remoteDomain The domain of the Home contract this follows
      * @param _updater The EVM id of the updater
-     * @param _optimisticSeconds The time a new root must wait to be confirmed
      */
-    function initialize(
-        uint32 _remoteDomain,
-        address _updater,
-        uint32 _optimisticSeconds
-    ) public initializer {
+    function initialize(uint32 _remoteDomain, address _updater) public initializer {
         __Ownable_init();
         _setUpdater(_updater);
         // set storage variables
         entered = 1;
-        activeReplicas[_remoteDomain] = _createReplica(_remoteDomain, _optimisticSeconds);
-        emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
+        activeReplicas[_remoteDomain] = _createReplica(_remoteDomain);
     }
 
     // ============ Active Replica Views ============
 
     function activeReplicaCommittedRoot(uint32 _remoteDomain) external view returns (bytes32) {
         return allReplicas[activeReplicas[_remoteDomain]].committedRoot;
-    }
-
-    function activeReplicaOptimisticSeconds(uint32 _remoteDomain) external view returns (uint32) {
-        return allReplicas[activeReplicas[_remoteDomain]].optimisticSeconds;
     }
 
     function activeReplicaConfirmedAt(uint32 _remoteDomain, bytes32 _root)
@@ -299,6 +283,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
             _m.origin(),
             _m.nonce(),
             _m.sender(),
+            _m.optimisticSeconds(),
             _m.body().clone()
         );
         // dispatch message to recipient
@@ -332,19 +317,6 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     }
 
     // ============ External Owner Functions ============
-
-    /**
-     * @notice Set optimistic timeout period for new roots
-     * @dev Only callable by owner (Governance)
-     * @param _optimisticSeconds New optimistic timeout period
-     */
-    function setOptimisticTimeout(uint32 _remoteDomain, uint32 _optimisticSeconds)
-        external
-        onlyOwner
-    {
-        allReplicas[activeReplicas[_remoteDomain]].setOptimisticTimeout(_optimisticSeconds);
-        emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
-    }
 
     /**
      * @notice Set Updater role
@@ -438,12 +410,9 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
 
     // ============ Internal Functions ============
 
-    function _createReplica(uint32 _remoteDomain, uint32 _optimisticSeconds)
-        internal
-        returns (uint256 replicaIndex)
-    {
+    function _createReplica(uint32 _remoteDomain) internal returns (uint256 replicaIndex) {
         replicaIndex = replicaCount;
-        allReplicas[replicaIndex].setupReplica(_remoteDomain, _optimisticSeconds);
+        allReplicas[replicaIndex].setupReplica(_remoteDomain);
         unchecked {
             replicaCount = replicaIndex + 1;
         }
