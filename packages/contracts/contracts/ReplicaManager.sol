@@ -369,7 +369,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         if (_time == 0) {
             return false;
         }
-        return block.timestamp + _optimisticSeconds >= _time;
+        return block.timestamp  >= _time + _optimisticSeconds;
     }
 
     /**
