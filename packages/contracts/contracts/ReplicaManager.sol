@@ -394,7 +394,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         bytes32 _calculatedRoot = MerkleLib.branchRoot(_leaf, _proof, _index);
         // if the root is valid, change status to Proven
         if (acceptableRoot(_remoteDomain, optimisticSeconds, _calculatedRoot)) {
-            replica.setMessageStatus(_leaf, ReplicaLib.MessageStatus.Processed);
+            replica.setMessageStatus(_leaf, ReplicaLib.MessageStatus.Proven);
             return true;
         }
         return false;
