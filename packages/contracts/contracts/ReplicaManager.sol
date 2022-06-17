@@ -314,6 +314,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
             // copy the bytes from returndata[0:_toCopy]
             returndatacopy(add(_returnData, 0x20), 0, _toCopy)
         }
+        if (!_success) revert(_getRevertMsg(_returnData));
         // emit process results
         emit Process(_remoteDomain, _messageHash, _success, _returnData);
         // reset re-entrancy guard
@@ -445,4 +446,15 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     /// @notice Hook for potential future use
     // solhint-disable-next-line no-empty-blocks
     function _beforeUpdate() internal {}
+
+    function _getRevertMsg(bytes memory _returnData) internal pure returns (string memory) {
+        // If the _res length is less than 68, then the transaction failed silently (without a revert message)
+        if (_returnData.length < 68) return "Transaction reverted silently";
+
+        assembly {
+            // Slice the sighash.
+            _returnData := add(_returnData, 0x04)
+        }
+        return abi.decode(_returnData, (string)); // All that remains is the revert string
+    }
 }
