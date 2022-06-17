@@ -29,11 +29,11 @@ library ReplicaLib {
     struct Replica {
         // The latest root that has been signed by the Updater for this given Replica
         bytes32 committedRoot; // 256 bits
-        // Domain of home chain
-        uint32 optimisticSeconds; // 32 bits
-        // Status of Replica based on the Home remote domain
-        uint32 remoteDomain; // 32 bits
         // Optimistic seconds per remote domain  (E.g specifies optimistic seconds on a remote domain basis to wait)
+        uint32 optimisticSeconds; // 32 bits
+        // Domain of home chain
+        uint32 remoteDomain; // 32 bits
+        // Status of Replica based on the Home remote domain
         ReplicaStatus status; // 8 bits
         // Mapping of roots to time at which Relayer submitted on-chain. Latency period begins here.
         // TODO: confirmAt doesn't need to be uint256 necessarily
