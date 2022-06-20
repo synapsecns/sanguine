@@ -6,6 +6,7 @@ import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
+import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -80,12 +81,6 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     );
 
     /**
-     * @notice Emitted when the value for optimisticTimeout is set
-     * @param timeout The new value for optimistic timeout
-     */
-    event SetOptimisticTimeout(uint32 indexed remoteDomain, uint32 timeout);
-
-    /**
      * @notice Emitted when a root's confirmation is modified by governance
      * @param root The root for which confirmAt has been set
      * @param previousConfirmAt The previous value of confirmAt
@@ -146,29 +141,19 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
      *      - sets the optimistic timer
      * @param _remoteDomain The domain of the Home contract this follows
      * @param _updater The EVM id of the updater
-     * @param _optimisticSeconds The time a new root must wait to be confirmed
      */
-    function initialize(
-        uint32 _remoteDomain,
-        address _updater,
-        uint32 _optimisticSeconds
-    ) public initializer {
+    function initialize(uint32 _remoteDomain, address _updater) public initializer {
         __Ownable_init();
         _setUpdater(_updater);
         // set storage variables
         entered = 1;
-        activeReplicas[_remoteDomain] = _createReplica(_remoteDomain, _optimisticSeconds);
-        emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
+        activeReplicas[_remoteDomain] = _createReplica(_remoteDomain);
     }
 
     // ============ Active Replica Views ============
 
     function activeReplicaCommittedRoot(uint32 _remoteDomain) external view returns (bytes32) {
         return allReplicas[activeReplicas[_remoteDomain]].committedRoot;
-    }
-
-    function activeReplicaOptimisticSeconds(uint32 _remoteDomain) external view returns (uint32) {
-        return allReplicas[activeReplicas[_remoteDomain]].optimisticSeconds;
     }
 
     function activeReplicaConfirmedAt(uint32 _remoteDomain, bytes32 _root)
@@ -182,9 +167,9 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     function activeReplicaMessageStatus(uint32 _remoteDomain, bytes32 _messageId)
         external
         view
-        returns (ReplicaLib.MessageStatus)
+        returns (bytes32)
     {
-        return allReplicas[activeReplicas[_remoteDomain]].messages[_messageId];
+        return allReplicas[activeReplicas[_remoteDomain]].messageStatus[_messageId];
     }
 
     // ============ Archived Replica Views ============
@@ -272,12 +257,14 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         require(_m.destination() == localDomain, "!destination");
         // ensure message has been proven
         bytes32 _messageHash = _m.keccak();
-        require(replica.messages[_messageHash] == ReplicaLib.MessageStatus.Proven, "!proven");
+        bytes32 _root = replica.messageStatus[_messageHash];
+        require(ReplicaLib.isPotentialRoot(_root), "!exists || processed");
+        require(acceptableRoot(_remoteDomain, _m.optimisticSeconds(), _root), "!optimisticSeconds");
         // check re-entrancy guard
         require(entered == 1, "!reentrant");
         entered = 0;
         // update message status as processed
-        replica.setMessageStatus(_messageHash, ReplicaLib.MessageStatus.Processed);
+        replica.setMessageStatus(_messageHash, ReplicaLib.MESSAGE_STATUS_PROCESSED);
         // A call running out of gas TYPICALLY errors the whole tx. We want to
         // a) ensure the call has a sufficient amount of gas to make a
         //    meaningful state change.
@@ -286,6 +273,14 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         // To do this, we require that we have enough gas to process
         // and still return. We then delegate only the minimum processing gas.
         require(gasleft() >= PROCESS_GAS + RESERVE_GAS, "!gas");
+        bytes memory _calldata = abi.encodeWithSelector(
+            IMessageRecipient.handle.selector,
+            _remoteDomain,
+            _m.nonce(),
+            _m.sender(),
+            replica.confirmAt[_root],
+            _m.body().clone()
+        );
         // get the message recipient
         address _recipient = _m.recipientAddress();
         // set up for assembly call
@@ -294,13 +289,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         uint256 _gas = PROCESS_GAS;
         // allocate memory for returndata
         bytes memory _returnData = new bytes(_maxCopy);
-        bytes memory _calldata = abi.encodeWithSignature(
-            "handle(uint32,uint32,bytes32,bytes)",
-            _m.origin(),
-            _m.nonce(),
-            _m.sender(),
-            _m.body().clone()
-        );
+
         // dispatch message to recipient
         // by assembly calling "handle" function
         // we call via assembly to avoid memcopying a very large returndata
@@ -325,6 +314,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
             // copy the bytes from returndata[0:_toCopy]
             returndatacopy(add(_returnData, 0x20), 0, _toCopy)
         }
+        if (!_success) revert(_getRevertMsg(_returnData));
         // emit process results
         emit Process(_remoteDomain, _messageHash, _success, _returnData);
         // reset re-entrancy guard
@@ -332,19 +322,6 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     }
 
     // ============ External Owner Functions ============
-
-    /**
-     * @notice Set optimistic timeout period for new roots
-     * @dev Only callable by owner (Governance)
-     * @param _optimisticSeconds New optimistic timeout period
-     */
-    function setOptimisticTimeout(uint32 _remoteDomain, uint32 _optimisticSeconds)
-        external
-        onlyOwner
-    {
-        allReplicas[activeReplicas[_remoteDomain]].setOptimisticTimeout(_optimisticSeconds);
-        emit SetOptimisticTimeout(_remoteDomain, _optimisticSeconds);
-    }
 
     /**
      * @notice Set Updater role
@@ -392,7 +369,7 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         if (_time == 0) {
             return false;
         }
-        return block.timestamp + _optimisticSeconds >= _time;
+        return block.timestamp  >= _time + _optimisticSeconds;
     }
 
     /**
@@ -413,16 +390,18 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
         bytes32[32] calldata _proof,
         uint256 _index
     ) public returns (bool) {
-        uint32 optimisticSeconds = _message.ref(0).optimisticSeconds();
         bytes32 _leaf = keccak256(_message);
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         // ensure that message has not been proven or processed
-        require(replica.messages[_leaf] == ReplicaLib.MessageStatus.None, "!MessageStatus.None");
+        require(
+            replica.messageStatus[_leaf] == ReplicaLib.MESSAGE_STATUS_NONE,
+            "!MessageStatus.None"
+        );
         // calculate the expected root based on the proof
         bytes32 _calculatedRoot = MerkleLib.branchRoot(_leaf, _proof, _index);
-        // if the root is valid, change status to Proven
-        if (acceptableRoot(_remoteDomain, optimisticSeconds, _calculatedRoot)) {
-            replica.setMessageStatus(_leaf, ReplicaLib.MessageStatus.Processed);
+        // if the root is valid, save it for later optimistic period checking
+        if (replica.confirmAt[_calculatedRoot] != 0) {
+            replica.setMessageStatus(_leaf, _calculatedRoot);
             return true;
         }
         return false;
@@ -438,12 +417,9 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
 
     // ============ Internal Functions ============
 
-    function _createReplica(uint32 _remoteDomain, uint32 _optimisticSeconds)
-        internal
-        returns (uint256 replicaIndex)
-    {
+    function _createReplica(uint32 _remoteDomain) internal returns (uint256 replicaIndex) {
         replicaIndex = replicaCount;
-        allReplicas[replicaIndex].setupReplica(_remoteDomain, _optimisticSeconds);
+        allReplicas[replicaIndex].setupReplica(_remoteDomain);
         unchecked {
             replicaCount = replicaIndex + 1;
         }
@@ -470,4 +446,15 @@ contract ReplicaManager is Version0, Initializable, OwnableUpgradeable {
     /// @notice Hook for potential future use
     // solhint-disable-next-line no-empty-blocks
     function _beforeUpdate() internal {}
+
+    function _getRevertMsg(bytes memory _returnData) internal pure returns (string memory) {
+        // If the _res length is less than 68, then the transaction failed silently (without a revert message)
+        if (_returnData.length < 68) return "Transaction reverted silently";
+
+        assembly {
+            // Slice the sighash.
+            _returnData := add(_returnData, 0x04)
+        }
+        return abi.decode(_returnData, (string)); // All that remains is the revert string
+    }
 }
