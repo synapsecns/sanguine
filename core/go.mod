@@ -6,7 +6,7 @@ require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/cockroachdb/pebble v0.0.0-20220523221036-bb2c1501ac23
-	github.com/coinbase/rosetta-sdk-go v0.7.0
+	github.com/coinbase/rosetta-sdk-go v0.7.10
 	github.com/ethereum/go-ethereum v1.10.11
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
