@@ -137,5 +137,5 @@ jobs:
           # GitHub token for annotations (optional)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # see: https://github.com/golangci/golangci-lint/issues/337#issuecomment-510136513
-          GOGC: 20
+          GOGC: 100
           GOPRIVATE: "GOPRIVATE=github.com/synapsecns/synapse-node"
