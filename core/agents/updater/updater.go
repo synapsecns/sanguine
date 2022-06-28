@@ -39,7 +39,7 @@ func NewUpdater(ctx context.Context, cfg config.Config) (Updater, error) {
 // Start starts the updater.{.
 func (u Updater) Start(ctx context.Context) {
 	// returnDBPath, name)
-	//if err != nil
+	// if err != nil
 	//	name := name
 	//go func() {
 	//	_ = updater.indexers[name].SyncMessages(ctx)
