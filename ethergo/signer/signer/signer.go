@@ -9,11 +9,12 @@ import (
 	"math/big"
 )
 
-// Signer provides a common interface for signing/transactnig.
+// Signer provides a common interface for signing/transacting.
 type Signer interface {
 	// SignMessage signs a message
 	SignMessage(_ context.Context, message []byte) (Signature, error)
 	// GetTransactor gets the transactor for a tx manager.
+	// TODO: this doesn't support pre-london txes yet
 	GetTransactor(chainID *big.Int) (*bind.TransactOpts, error)
 }
 
@@ -49,7 +50,7 @@ func (sg signatureImpl) S() *big.Int {
 	return common.CopyBigInt(sg.s)
 }
 
-// Encode encodes a signature
+// Encode encodes a signature.
 func Encode(sg Signature) []byte {
 	r, s := sg.R().Bytes(), sg.S().Bytes()
 	sig := make([]byte, crypto.SignatureLength)

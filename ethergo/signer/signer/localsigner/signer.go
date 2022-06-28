@@ -22,7 +22,7 @@ func NewSigner(key *ecdsa.PrivateKey) *Signer {
 	}
 }
 
-// GetTransactor gets the transcator
+// GetTransactor gets the transcator.
 func (s *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpts, error) {
 	realSigner, err := bind.NewKeyedTransactorWithChainID(s.privateKey, chainID)
 	if err != nil {

@@ -41,6 +41,7 @@ type nonceManagerImp struct {
 	// chain is the chain to use for the nonce
 	chain ChainQuery
 	// ctx is the context used while fetching data
+	//nolint: containedctx
 	ctx context.Context
 	// chainID is the chain id of the nonce manager.
 	chainID *big.Int
@@ -58,6 +59,7 @@ type nonceManagerImp struct {
 // NewNonceManager generates a new nonce manager. This should be called once, as nonce storage is not global.
 func NewNonceManager(ctx context.Context, chain ChainQuery, chainID *big.Int) Manager {
 	return &nonceManagerImp{
+		//nolint: containedctx
 		ctx:          ctx,
 		chain:        chain,
 		chainID:      synapseCommon.CopyBigInt(chainID),
@@ -114,7 +116,6 @@ func (n *nonceManagerImp) NewKeyedTransactorFromKey(key *ecdsa.PrivateKey) (*bin
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
 	return n.NewKeyedTransactor(realSigner)
-
 }
 
 // NewKeyedTransactor wraps keyed transactor in a nonce manager.

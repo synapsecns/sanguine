@@ -82,7 +82,7 @@ func FromSeedPhrase(seedPhrase string, derivationPath accounts.DerivationPath) (
 	return FromPrivateKey(privKey)
 }
 
-// FromRandom generates a new private key. Note: this should be used for testing only and has not been audited yet
+// FromRandom generates a new private key. Note: this should be used for testing only and has not been audited yet.
 func FromRandom() (Wallet, error) {
 	newSeed, err := hdwallet.NewSeed()
 	if err != nil {
