@@ -15,7 +15,7 @@ library Message {
     using TypedMemView for bytes29;
 
     // Number of bytes in formatted message before `body` field
-    uint256 internal constant PREFIX_LENGTH = 76;
+    uint256 internal constant PREFIX_LENGTH = 80;
 
     /**
      * @notice Returns formatted (packed) message with provided fields
@@ -33,6 +33,7 @@ library Message {
         uint32 _nonce,
         uint32 _destinationDomain,
         bytes32 _recipient,
+        uint32 _optimisticSeconds,
         bytes memory _messageBody
     ) internal pure returns (bytes memory) {
         return
@@ -42,6 +43,7 @@ library Message {
                 _nonce,
                 _destinationDomain,
                 _recipient,
+                _optimisticSeconds,
                 _messageBody
             );
     }
@@ -62,9 +64,21 @@ library Message {
         uint32 _nonce,
         uint32 _destination,
         bytes32 _recipient,
+        uint32 _optimisticSeconds,
         bytes memory _body
     ) internal pure returns (bytes32) {
-        return keccak256(formatMessage(_origin, _sender, _nonce, _destination, _recipient, _body));
+        return
+            keccak256(
+                formatMessage(
+                    _origin,
+                    _sender,
+                    _nonce,
+                    _destination,
+                    _recipient,
+                    _optimisticSeconds,
+                    _body
+                )
+            );
     }
 
     /// @notice Returns message's origin field
@@ -92,6 +106,11 @@ library Message {
         return _message.index(44, 32);
     }
 
+    /// @notice Returns the optimistic seconds from the message
+    function optimisticSeconds(bytes29 _message) internal pure returns (uint32) {
+        return uint32(_message.indexUint(76, 4));
+    }
+
     /// @notice Returns message's recipient field as an address
     function recipientAddress(bytes29 _message) internal pure returns (address) {
         return TypeCasts.bytes32ToAddress(recipient(_message));
@@ -110,6 +129,7 @@ library Message {
                 nonce(_message),
                 destination(_message),
                 recipient(_message),
+                optimisticSeconds(_message),
                 TypedMemView.clone(body(_message))
             );
     }

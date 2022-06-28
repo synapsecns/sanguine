@@ -16,6 +16,7 @@ contract MessageHarness {
         uint32 _nonce,
         uint32 _destinationDomain,
         bytes32 _recipient,
+        uint32 _optimisticSeconds,
         bytes memory _messageBody
     ) public pure returns (bytes memory) {
         return
@@ -25,6 +26,7 @@ contract MessageHarness {
                 _nonce,
                 _destinationDomain,
                 _recipient,
+                _optimisticSeconds,
                 _messageBody
             );
     }
@@ -45,9 +47,10 @@ contract MessageHarness {
         uint32 _nonce,
         uint32 _destination,
         bytes32 _recipient,
+        uint32 _optimisticSeconds,
         bytes memory _body
     ) public pure returns (bytes32) {
-        return Message.messageHash(_origin, _sender, _nonce, _destination, _recipient, _body);
+        return Message.messageHash(_origin, _sender, _nonce, _destination, _recipient, _optimisticSeconds, _body);
     }
 
     function body(bytes memory _message) external view returns (bytes memory) {
@@ -76,6 +79,10 @@ contract MessageHarness {
 
     function recipientAddress(bytes memory _message) external pure returns (address) {
         return _message.ref(0).recipientAddress();
+    }
+
+    function optimisticSeconds(bytes memory _message) external pure returns (uint32) {
+        return _message.ref(0).optimisticSeconds();
     }
 
     function leaf(bytes memory _message) external view returns (bytes32) {

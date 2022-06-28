@@ -189,6 +189,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
     function dispatch(
         uint32 _destinationDomain,
         bytes32 _recipientAddress,
+        uint32 _optimisticSeconds,
         bytes memory _messageBody
     ) external notFailed {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
@@ -202,6 +203,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
             _nonce,
             _destinationDomain,
             _recipientAddress,
+            _optimisticSeconds,
             _messageBody
         );
         // insert the hashed message into the Merkle tree
