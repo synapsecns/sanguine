@@ -1,4 +1,4 @@
-// Code copied from github.com/nsmithuk/local-kms/src:/init.go for testing by synapse gethexport DO NOT EDIT."
+// Code copied from github.com/nsmithuk/local-kms/src:/init.go for testing by synapse modulecopier DO NOT EDIT."
 
 package internal
 
