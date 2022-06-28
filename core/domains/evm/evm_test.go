@@ -110,7 +110,7 @@ func (e *RPCSuite) TestFilterer() {
 	for _, dispatch := range dispatches {
 		auth := e.testBackend.GetTxContext(e.GetTestContext(), nil)
 
-		addedDispatch, err := handle.Dispatch(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.messageBody)
+		addedDispatch, err := handle.Dispatch(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, 1, dispatch.messageBody)
 		Nil(e.T(), err)
 
 		e.testBackend.WaitForConfirmation(e.GetTestContext(), addedDispatch)
