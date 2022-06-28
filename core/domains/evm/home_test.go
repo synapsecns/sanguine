@@ -13,6 +13,8 @@ import (
 type TestDispatch struct {
 	// domain we're sending to
 	domain uint32
+	// optimisticSeconds is the latency period for the message on the destination chain
+	optimsticSeconds uint32
 	// recipient address on the other chain
 	recipientAddress common.Hash
 	// raw message
@@ -31,7 +33,7 @@ func NewTestDispatch() TestDispatch {
 func (d TestDispatch) Call(i ContractSuite) (blockNumber uint32) {
 	auth := i.testBackend.GetTxContext(i.GetTestContext(), nil)
 
-	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.message)
+	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimsticSeconds, d.message)
 	Nil(i.T(), err)
 
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)

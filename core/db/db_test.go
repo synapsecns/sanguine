@@ -15,7 +15,7 @@ func (d *DBSuite) TestStoresAndRetrievesMessages() {
 	newDB, err := db.NewDB(filet.TmpDir(d.T(), ""), "home1")
 	Nil(d.T(), err)
 
-	realMessage := types.NewMessage(10, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32(), gofakeit.Uint32(), []byte(gofakeit.Sentence(10)), common.BigToHash(big.NewInt(gofakeit.Int64())))
+	realMessage := types.NewMessage(10, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), []byte(gofakeit.Sentence(10)))
 
 	encoded, err := realMessage.Encode()
 	Nil(d.T(), err)

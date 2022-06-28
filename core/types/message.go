@@ -21,6 +21,8 @@ type Message interface {
 	Destination() uint32
 	// Recipient is the address of the recipient
 	Recipient() common.Hash
+	// OptimisticSeconds returns the latency period of the message in seconds
+	OptimisticSeconds() uint32
 	// Body is the message contents
 	Body() []byte
 	// Encode encodes a message
@@ -33,23 +35,25 @@ type Message interface {
 
 // messageImpl implements a message. It is used for testutils. Real messages are emitted by the contract.
 type messageImpl struct {
-	origin      uint32
-	sender      common.Hash
-	nonce       uint32
-	destination uint32
-	recipient   common.Hash
-	body        []byte
+	origin            uint32
+	sender            common.Hash
+	nonce             uint32
+	destination       uint32
+	recipient         common.Hash
+	optimisticSeconds uint32
+	body              []byte
 }
 
 // NewMessage creates a new message from fields passed in.
-func NewMessage(origin uint32, sender common.Hash, nonce uint32, destination uint32, body []byte, recipient common.Hash) Message {
+func NewMessage(origin uint32, sender common.Hash, nonce uint32, destination, optimisticSeconds uint32, recipient common.Hash, body []byte) Message {
 	return &messageImpl{
-		origin:      origin,
-		sender:      sender,
-		nonce:       nonce,
-		body:        body,
-		destination: destination,
-		recipient:   recipient,
+		origin:            origin,
+		sender:            sender,
+		nonce:             nonce,
+		body:              body,
+		optimisticSeconds: optimisticSeconds,
+		destination:       destination,
+		recipient:         recipient,
 	}
 }
 
@@ -77,11 +81,12 @@ func DecodeMessage(message []byte) (Message, error) {
 	}
 
 	decoded := messageImpl{
-		origin:      encoded.Origin,
-		sender:      encoded.Sender,
-		nonce:       encoded.Nonce,
-		destination: encoded.Destination,
-		body:        body,
+		origin:            encoded.Origin,
+		sender:            encoded.Sender,
+		nonce:             encoded.Nonce,
+		destination:       encoded.Destination,
+		optimisticSeconds: encoded.OptimisticSeconds,
+		body:              body,
 	}
 
 	return decoded, nil
@@ -107,6 +112,10 @@ func (m messageImpl) Recipient() common.Hash {
 	return m.recipient
 }
 
+func (m messageImpl) OptimisticSeconds() uint32 {
+	return m.optimisticSeconds
+}
+
 // DestinationAndNonce gets the destination and nonce encoded in a single field
 // TODO: statically assert 32 bit fields here.
 func (m messageImpl) DestinationAndNonce() uint64 {
@@ -125,21 +134,23 @@ func (m messageImpl) Body() []byte {
 
 // messageEncoder contains the binary structore of the message.
 type messageEncoder struct {
-	Origin      uint32
-	Sender      [32]byte
-	Nonce       uint32
-	Destination uint32
-	Recipient   [32]byte
+	Origin            uint32
+	Sender            [32]byte
+	Nonce             uint32
+	Destination       uint32
+	Recipient         [32]byte
+	OptimisticSeconds uint32
 }
 
 // Encode encodes the message to a bytes
 // TODO: this should use a helper message once contract abis are ready.
 func (m messageImpl) Encode() ([]byte, error) {
 	newMessage := messageEncoder{
-		Origin:      m.origin,
-		Sender:      m.sender,
-		Nonce:       m.nonce,
-		Destination: m.destination,
+		Origin:            m.origin,
+		Sender:            m.sender,
+		Nonce:             m.nonce,
+		Destination:       m.destination,
+		OptimisticSeconds: m.optimisticSeconds,
 	}
 
 	buf := new(bytes.Buffer)

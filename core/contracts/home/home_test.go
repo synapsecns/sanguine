@@ -18,7 +18,7 @@ func (h HomeSuite) TestDispatchTopic() {
 	sub, err := h.homeContract.WatchDispatch(&bind.WatchOpts{Context: h.GetTestContext()}, dispatchSink, [][32]byte{}, []*big.Int{}, []uint64{})
 	Nil(h.T(), err)
 
-	tx, err := h.homeContract.Dispatch(txContext.TransactOpts, 1, [32]byte{}, nil)
+	tx, err := h.homeContract.Dispatch(txContext.TransactOpts, 1, [32]byte{}, 1, nil)
 	Nil(h.T(), err)
 
 	h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)

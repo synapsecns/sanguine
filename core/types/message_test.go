@@ -30,8 +30,9 @@ func TestMessageEncodeParity(t *testing.T) {
 	destination := gofakeit.Uint32()
 	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
+	optimisticSeconds := gofakeit.Uint32()
 
-	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, body)
+	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, body)
 	Nil(t, err)
 
 	decodedMessage, err := types.DecodeMessage(formattedMessage)
@@ -42,6 +43,7 @@ func TestMessageEncodeParity(t *testing.T) {
 	Equal(t, decodedMessage.Nonce(), nonce)
 	Equal(t, decodedMessage.Destination(), destination)
 	Equal(t, decodedMessage.Body(), body)
+	Equal(t, decodedMessage.OptimisticSeconds(), optimisticSeconds)
 }
 
 func TestNewMessageEncodeDecode(t *testing.T) {
@@ -51,14 +53,16 @@ func TestNewMessageEncodeDecode(t *testing.T) {
 	destination := gofakeit.Uint32()
 	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
 	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	optimisticSeconds := gofakeit.Uint32()
 
-	newMessage := types.NewMessage(origin, sender, nonce, destination, body, recipient)
+	newMessage := types.NewMessage(origin, sender, nonce, destination, optimisticSeconds, recipient, body)
 
 	Equal(t, newMessage.Origin(), origin)
 	Equal(t, newMessage.Sender(), sender)
 	Equal(t, newMessage.Nonce(), nonce)
 	Equal(t, newMessage.Destination(), destination)
 	Equal(t, newMessage.Body(), body)
+	Equal(t, newMessage.OptimisticSeconds(), optimisticSeconds)
 
 	encodedMessage, err := newMessage.Encode()
 	Nil(t, err)
@@ -72,6 +76,7 @@ func TestNewMessageEncodeDecode(t *testing.T) {
 	Equal(t, newMessage.Nonce(), decodedMessage.Nonce())
 	Equal(t, newMessage.Destination(), decodedMessage.Destination())
 	Equal(t, newMessage.Body(), decodedMessage.Body())
+	Equal(t, newMessage.OptimisticSeconds(), decodedMessage.OptimisticSeconds())
 }
 
 func TestNewCommittedMessageEncodeDecode(t *testing.T) {

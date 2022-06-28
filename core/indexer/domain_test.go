@@ -37,7 +37,7 @@ func NewTestDispatch() TestDispatch {
 func (d TestDispatch) Call(i IndexerSuite) (blockNumber uint32) {
 	auth := i.testBackend.GetTxContext(i.GetTestContext(), nil)
 
-	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.message)
+	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, 1, d.message)
 	Nil(i.T(), err)
 
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
