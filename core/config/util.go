@@ -26,5 +26,3 @@ var ErrInvalidDomainID = errors.New("domain ID invalid")
 
 // ErrRequiredField indicates a required field was left blank.
 var ErrRequiredField = errors.New("field is required")
-
-var ErrDoesNotExist = errors.New("does not exist")
