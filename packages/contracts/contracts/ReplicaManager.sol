@@ -2,7 +2,7 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
-import { SynapseBase } from "./SynapseBase.sol";
+import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
@@ -16,7 +16,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract ReplicaManager is Version0, SynapseBase {
+contract ReplicaManager is Version0, UpdaterStorage {
     // ============ Libraries ============
 
     using ReplicaLib for ReplicaLib.Replica;
@@ -89,7 +89,7 @@ contract ReplicaManager is Version0, SynapseBase {
         uint32 _localDomain,
         uint256 _processGas,
         uint256 _reserveGas
-    ) SynapseBase(_localDomain) {
+    ) UpdaterStorage(_localDomain) {
         require(_processGas >= 850_000, "!process gas");
         require(_reserveGas >= 15_000, "!reserve gas");
         PROCESS_GAS = _processGas;
@@ -178,7 +178,7 @@ contract ReplicaManager is Version0, SynapseBase {
      * `message`. If the message is successfully proven, then tries to process
      * message.
      * @dev Reverts if `prove` call returns false
-     * @param _message Formatted message (refer to SynapseBase.sol Message library)
+     * @param _message Formatted message (refer to UpdaterStorage.sol Message library)
      * @param _proof Merkle proof of inclusion for message's leaf
      * @param _index Index of leaf in home's merkle tree
      */

@@ -11,11 +11,11 @@ import {
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
- * @title SynapseBase
+ * @title UpdaterStorage
  * @author Illusory Systems Inc.
  * @notice Shared utilities between Home and Replica.
  */
-abstract contract SynapseBase is Initializable, OwnableUpgradeable {
+abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
     // ============ Immutable Variables ============
 
     // Domain of chain on which the contract is deployed

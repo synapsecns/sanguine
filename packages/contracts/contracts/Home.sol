@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
-import { SynapseBase } from "./SynapseBase.sol";
+import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
@@ -23,7 +23,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Accepts submissions of fraudulent signatures
  * by the Updater and slashes the Updater in this case.
  */
-contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
+contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
     // ============ Libraries ============
 
     using QueueLib for QueueLib.Queue;
@@ -121,7 +121,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
 
     // ============ Constructor ============
 
-    constructor(uint32 _localDomain) SynapseBase(_localDomain) {} // solhint-disable-line no-empty-blocks
+    constructor(uint32 _localDomain) UpdaterStorage(_localDomain) {} // solhint-disable-line no-empty-blocks
 
     // ============ Initializer ============
 
