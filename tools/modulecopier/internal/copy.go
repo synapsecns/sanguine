@@ -56,6 +56,7 @@ func copyGoFile(filePath, packageName, dest string, info fs.FileInfo) error {
 	}
 
 	newFile := fmt.Sprintf("%s/%s", dest, getFileName(info.Name()))
+	//nolint: gosec
 	f, err := os.Create(newFile)
 	if err != nil {
 		return fmt.Errorf("could not open file")

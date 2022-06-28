@@ -7,7 +7,6 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/ethereum/go-ethereum v1.10.11
 	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
-	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/markbates/pkger v0.17.1
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.1

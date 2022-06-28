@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"github.com/integralist/go-findroot/find"
 	"github.com/markbates/pkger"
 	"github.com/pkg/errors"
 	"golang.org/x/mod/modfile"
@@ -90,18 +89,43 @@ func hasUnsupportedDirective(modFile *modfile.File, dependencyName string) (ok b
 	return false, nil
 }
 
-// getModFile gets the module file from the root of the repo. It returns an error if the module cannot be found.
-func getModfile() (*modfile.File, error) {
-	root, err := find.Repo()
+// findModPath recursively searches parent directories for the module path.
+// Throws an error if it hits a breakpoint (either due to permissions or getting to repo root).
+func findModPath() (string, error) {
+	currentPath, err := os.Getwd()
 	if err != nil {
-		return nil, fmt.Errorf("could not find root of git repo: %w", err)
+		return "", fmt.Errorf("could not get current path: %w", err)
 	}
 
-	// get the modfile
-	modFile := filepath.Join(root.Path, modFileName)
-	// throw an error if it's not there
-	if _, err := os.Stat(modFile); os.IsNotExist(err) {
-		return nil, fmt.Errorf("could not find go modfile at: %s: %w", modFile, err)
+	for {
+		exists := true
+
+		prospectiveFile := filepath.Join(currentPath, modFileName)
+
+		if _, err := os.Stat(prospectiveFile); os.IsNotExist(err) {
+			exists = false
+		}
+
+		if !exists {
+			lastPath := currentPath
+			currentPath = filepath.Dir(currentPath)
+
+			if lastPath == currentPath {
+				return "", errors.New("could not find go.mod file")
+			}
+
+			continue
+		}
+
+		return prospectiveFile, nil
+	}
+}
+
+// getModFile gets the module file from the root of the repo. It returns an error if the module cannot be found.
+func getModfile() (*modfile.File, error) {
+	modFile, err := findModPath()
+	if err != nil {
+		return nil, fmt.Errorf("could not get modfile: %w", err)
 	}
 
 	// read the file

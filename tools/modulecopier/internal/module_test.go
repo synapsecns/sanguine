@@ -5,6 +5,8 @@ import (
 	"github.com/synapsecns/sanguine/tools/modulecopier/internal"
 	"os"
 	"path"
+	// required for copy test.
+	_ "github.com/ethereum/go-ethereum/common"
 )
 
 // fileCheck is the file to check for. We check for .mailmap in ethereum because
