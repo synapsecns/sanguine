@@ -6,6 +6,7 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/utils"
 	"github.com/richardwilkes/toolbox/collection"
 	"github.com/synapsecns/synapse-node/pkg/common"
+	"github.com/tendermint/tendermint/libs/os"
 )
 
 // DomainConfigs contains a map of name->domain config.
@@ -46,6 +47,8 @@ type DomainConfig struct {
 	RPCUrl string `toml:"RPCURL"`
 	// Minimum start height
 	StartHeight uint32 `toml:"StartHeight"`
+	// KeyFile is the file which contains the keys
+	KeyFile string `toml:"KeyFile"`
 }
 
 // IsValid validates the domain config.
@@ -66,6 +69,10 @@ func (d DomainConfig) IsValid(_ context.Context) (ok bool, err error) {
 
 	if d.RPCUrl == "" {
 		return false, fmt.Errorf("field RPCURL: %w", ErrRequiredField)
+	}
+
+	if !os.FileExists(d.KeyFile) {
+		return false, fmt.Errorf("file %s %w", d.KeyFile, ErrDoesNotExist)
 	}
 
 	return true, nil
