@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
-import { SynapseBase } from "./SynapseBase.sol";
+import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
@@ -23,11 +23,25 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Accepts submissions of fraudulent signatures
  * by the Updater and slashes the Updater in this case.
  */
-contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
+contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
     // ============ Libraries ============
 
     using QueueLib for QueueLib.Queue;
     using MerkleLib for MerkleLib.Tree;
+
+    // ============ Enums ============
+
+    // States:
+    //   0 - UnInitialized - before initialize function is called
+    //   note: the contract is initialized at deploy time, so it should never be in this state
+    //   1 - Active - as long as the contract has not become fraudulent
+    //   2 - Failed - after a valid fraud proof has been submitted;
+    //   contract will no longer accept updates or new messages
+    enum States {
+        UnInitialized,
+        Active,
+        Failed
+    }
 
     // ============ Constants ============
 
@@ -41,11 +55,15 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
     mapping(uint32 => uint32) public nonces;
     // contract responsible for Updater bonding, slashing and rotation
     IUpdaterManager public updaterManager;
+    // Current state of contract
+    States public state;
+    // The latest root that has been signed by the Updater
+    bytes32 public committedRoot;
 
     // ============ Upgrade Gap ============
 
     // gap for upgrade safety
-    uint256[48] private __GAP;
+    uint256[46] private __GAP;
 
     // ============ Events ============
 
@@ -103,7 +121,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
 
     // ============ Constructor ============
 
-    constructor(uint32 _localDomain) SynapseBase(_localDomain) {} // solhint-disable-line no-empty-blocks
+    constructor(uint32 _localDomain) UpdaterStorage(_localDomain) {} // solhint-disable-line no-empty-blocks
 
     // ============ Initializer ============
 
@@ -112,6 +130,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
         __QueueManager_initialize();
         _setUpdaterManager(_updaterManager);
         __SynapseBase_initialize(updaterManager.updater());
+        state = States.Active;
     }
 
     // ============ Modifiers ============
@@ -265,8 +284,8 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
         bytes calldata _signature2
     ) external notFailed {
         if (
-            SynapseBase._isUpdaterSignature(_oldRoot, _newRoot[0], _signature) &&
-            SynapseBase._isUpdaterSignature(_oldRoot, _newRoot[1], _signature2) &&
+            _isUpdaterSignature(_oldRoot, _newRoot[0], _signature) &&
+            _isUpdaterSignature(_oldRoot, _newRoot[1], _signature2) &&
             _newRoot[0] != _newRoot[1]
         ) {
             _fail();
@@ -274,14 +293,14 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
         }
     }
 
-    // ============ Public Functions  ============
-
     /**
      * @notice Hash of Home domain concatenated with "SYN"
      */
-    function homeDomainHash() public view override returns (bytes32) {
-        return _homeDomainHash(localDomain);
+    function homeDomainHash() external view returns (bytes32) {
+        return _domainHash(localDomain);
     }
+
+    // ============ Public Functions  ============
 
     /**
      * @notice Check if an Update is an Improper Update;
@@ -330,6 +349,21 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
     }
 
     // ============ Internal Functions  ============
+
+    /**
+     * @notice Checks that signature was signed by Updater on the local chain
+     * @param _oldRoot Old merkle root
+     * @param _newRoot New merkle root
+     * @param _signature Signature on `_oldRoot` and `_newRoot`
+     * @return TRUE if signature is valid signed by updater
+     **/
+    function _isUpdaterSignature(
+        bytes32 _oldRoot,
+        bytes32 _newRoot,
+        bytes memory _signature
+    ) internal view returns (bool) {
+        return _isUpdaterSignature(localDomain, _oldRoot, _newRoot, _signature);
+    }
 
     /**
      * @notice Set the UpdaterManager
