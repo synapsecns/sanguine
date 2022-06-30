@@ -25,9 +25,7 @@ contract QueueManager is Initializable {
 
     // ============ Initializer ============
 
-    function __QueueManager_initialize() internal onlyInitializing {
-        queue.initialize();
-    }
+    function __QueueManager_initialize() internal onlyInitializing {}
 
     // ============ Public Functions ============
 
