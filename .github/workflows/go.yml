@@ -65,7 +65,7 @@ jobs:
           MYSQL_PASSWORD: password
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: password
-        options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=2s --health-retries=30
+        options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
 
     steps:
       - uses: actions/checkout@v2
