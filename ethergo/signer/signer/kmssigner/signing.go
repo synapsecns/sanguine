@@ -24,12 +24,6 @@ var (
 	secp256k1HalfN = new(big.Int).Div(secp256k1N, big.NewInt(2))
 )
 
-// maxAttempts to get a signature. Occasionally aws will return
-// "could not unmarshall asn: invalid signature length". This appears
-// to be an aws issue and does not persist on subsequent requests.
-// this is a workaround to fix this issue, particularly for tests
-const maxAttempts = 12
-
 // GetTransactor creates a kms transactor.
 func (signingHandler *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpts, error) {
 	pubKeyBytes := secp256k1.S256().Marshal(signingHandler.pubKeyData.ecdsaKey.X, signingHandler.pubKeyData.ecdsaKey.Y)
