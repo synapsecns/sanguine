@@ -10,13 +10,13 @@ import (
 	"math/big"
 )
 
-// addressPtr converts an address to a pointer
+// addressPtr converts an address to a pointer.
 func addressPtr(address common.Address) *common.Address {
 	return &address
 }
 
 // testTxes is a list of txes to test inserting different tx types
-// because we are not testing a raw tx
+// because we are not testing a raw tx.
 var testTxes = []*types.Transaction{
 	types.NewTx(&types.LegacyTx{
 		Nonce:    gofakeit.Uint64(),
@@ -65,8 +65,7 @@ func (t *TxQueueSuite) TestTxInsertion() {
 			err := testDB.StoreRawTx(t.GetTestContext(), testTx, testTx.ChainId())
 			Nil(t.T(), err)
 
-			// TODO: retreive index
+			// TODO: retrieve index
 		}
-
 	})
 }

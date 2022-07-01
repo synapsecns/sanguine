@@ -24,6 +24,12 @@ var (
 	secp256k1HalfN = new(big.Int).Div(secp256k1N, big.NewInt(2))
 )
 
+// maxAttempts to get a signature. Occasionally aws will return
+// "could not unmarshall asn: invalid signature length". This appears
+// to be an aws issue and does not persist on subsequent requests.
+// this is a workaround to fix this issue, particularly for tests
+const maxAttempts = 12
+
 // GetTransactor creates a kms transactor.
 func (signingHandler *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpts, error) {
 	pubKeyBytes := secp256k1.S256().Marshal(signingHandler.pubKeyData.ecdsaKey.X, signingHandler.pubKeyData.ecdsaKey.Y)
@@ -63,8 +69,9 @@ func (signingHandler *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpt
 	}, nil
 }
 
-// getSignatureFromKMS fetches the signature from kms.
-func (signingHandler *Signer) getSignatureFromKMS(ctx context.Context, txHashBytes []byte) ([]byte, []byte, error) {
+func (signingHandler *Signer) getSignatureFromKMS(
+	ctx context.Context, txHashBytes []byte,
+) ([]byte, []byte, error) {
 	signInput := &kms.SignInput{
 		KeyId:            aws.String(signingHandler.keyID),
 		SigningAlgorithm: kmsTypes.SigningAlgorithmSpecEcdsaSha256,
@@ -74,19 +81,16 @@ func (signingHandler *Signer) getSignatureFromKMS(ctx context.Context, txHashByt
 
 	signOutput, err := signingHandler.client.Sign(ctx, signInput)
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not get signature form kms: %w", err)
+		return nil, nil, err
 	}
 
 	var sigAsn1 asn1EcSig
 	_, err = asn1.Unmarshal(signOutput.Signature, &sigAsn1)
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not unmarshall asn: %w", err)
+		return nil, nil, err
 	}
 
-	rBytes := bytes.Trim(sigAsn1.R.Bytes, "\x00")
-	sBytes := bytes.Trim(sigAsn1.S.Bytes, "\x00")
-
-	return rBytes, sBytes, nil
+	return sigAsn1.R.Bytes, sigAsn1.S.Bytes, nil
 }
 
 // SignMessage signs a hashed message.
@@ -120,20 +124,19 @@ func decodeSignature(sig []byte) signer.Signature {
 }
 
 func (signingHandler *Signer) getEthereumSignature(expectedPublicKeyBytes []byte, txHash []byte, r []byte, s []byte) ([]byte, error) {
-	rsSignature := append(r, s...)
+	rsSignature := append(adjustSignatureLength(r), adjustSignatureLength(s)...)
 	signature := append(rsSignature, []byte{0}...)
 
 	recoveredPublicKeyBytes, err := crypto.Ecrecover(txHash, signature)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshall asn: %w", err)
+		return nil, err
 	}
 
 	if hex.EncodeToString(recoveredPublicKeyBytes) != hex.EncodeToString(expectedPublicKeyBytes) {
-		//nolint: gocritic
 		signature = append(rsSignature, []byte{1}...)
 		recoveredPublicKeyBytes, err = crypto.Ecrecover(txHash, signature)
 		if err != nil {
-			return nil, fmt.Errorf("could not get key: %w", err)
+			return nil, err
 		}
 
 		if hex.EncodeToString(recoveredPublicKeyBytes) != hex.EncodeToString(expectedPublicKeyBytes) {
@@ -142,6 +145,15 @@ func (signingHandler *Signer) getEthereumSignature(expectedPublicKeyBytes []byte
 	}
 
 	return signature, nil
+}
+
+func adjustSignatureLength(buffer []byte) []byte {
+	buffer = bytes.TrimLeft(buffer, "\x00")
+	for len(buffer) < 32 {
+		zeroBuf := []byte{0}
+		buffer = append(zeroBuf, buffer...)
+	}
+	return buffer
 }
 
 // asn1EcSig is the asn1 signature for a digest.
