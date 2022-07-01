@@ -12,7 +12,7 @@ import (
 // domainIndexer indexes a single domain and stores event data in the database.
 type domainIndexer struct {
 	// db contains the db
-	db db.DB
+	db db.MessageDB
 	// domain contains the domain clinet
 	domain domains.DomainClient
 }
@@ -23,7 +23,7 @@ type DomainIndexer interface {
 }
 
 // NewDomainIndexer creates a new domain indexer.
-func NewDomainIndexer(db db.DB, domain domains.DomainClient) domainIndexer {
+func NewDomainIndexer(db db.MessageDB, domain domains.DomainClient) domainIndexer {
 	return domainIndexer{
 		db:     db,
 		domain: domain,

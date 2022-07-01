@@ -4,6 +4,7 @@ package signer
 import (
 	"context"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/synapse-node/pkg/common"
 	"math/big"
@@ -16,6 +17,8 @@ type Signer interface {
 	// GetTransactor gets the transactor for a tx manager.
 	// TODO: this doesn't support pre-london txes yet
 	GetTransactor(chainID *big.Int) (*bind.TransactOpts, error)
+	// Address gets the address of the address of the signer
+	Address() ethCommon.Address
 }
 
 // Signature is an ecdsa signature interface.

@@ -4,7 +4,7 @@ import (
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/agents/updater"
-	"github.com/synapsecns/sanguine/core/db"
+	"github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
@@ -12,7 +12,7 @@ import (
 func (u UpdaterSuite) TestUpdateProducer() {
 	u.T().Skip("todo: test update producer alone")
 
-	testDb, err := db.NewDB(filet.TmpDir(u.T(), ""), "home1")
+	testDb, err := pebble.NewMessageDB(filet.TmpDir(u.T(), ""), "home1")
 	Nil(u.T(), err)
 
 	testWallet, err := wallet.FromRandom()

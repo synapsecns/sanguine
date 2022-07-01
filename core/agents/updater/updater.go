@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/config"
-	"github.com/synapsecns/sanguine/core/db"
+	"github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/indexer"
 )
@@ -25,7 +25,7 @@ func NewUpdater(ctx context.Context, cfg config.Config) (Updater, error) {
 			return Updater{}, fmt.Errorf("could not create updater for: %w", err)
 		}
 
-		dbHandle, err := db.NewDB(cfg.DBPath, name)
+		dbHandle, err := pebble.NewMessageDB(cfg.DBPath, name)
 		if err != nil {
 			return Updater{}, fmt.Errorf("can not create db: %w", err)
 		}
@@ -41,7 +41,7 @@ func (u Updater) Start(ctx context.Context) {
 	// returnDBPath, name)
 	// if err != nil
 	//	name := name
-	//go func() {
+	// go func() {
 	//	_ = updater.indexers[name].SyncMessages(ctx)
-	//}()
+	// }()
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/config"
-	"github.com/synapsecns/sanguine/core/db"
+	"github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/indexer"
 	"github.com/synapsecns/sanguine/core/types"
@@ -67,7 +67,7 @@ func (i IndexerSuite) NewTestDispatches(dispatchCount int) (testDispatches []Tes
 func (i IndexerSuite) TestSyncMessages() {
 	_, lastBlock := i.NewTestDispatches(25)
 
-	testDB, err := db.NewDB(filet.TmpDir(i.T(), ""), "")
+	testDB, err := pebble.NewMessageDB(filet.TmpDir(i.T(), ""), "")
 	Nil(i.T(), err)
 
 	_, xAppConfig := i.deployManager.GetXAppConfig(i.GetTestContext(), i.testBackend)

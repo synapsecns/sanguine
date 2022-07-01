@@ -1,4 +1,4 @@
-package db
+package pebble
 
 // LEAF is a the prefix of the laf in the db.
 const LEAF = "leaf_"

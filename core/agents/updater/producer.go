@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core/db"
+	pebble2 "github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -20,13 +21,13 @@ type UpdateProducer struct {
 	// domain allows access to the home contract
 	domain domains.DomainClient
 	// db contains the db object
-	db db.DB
+	db db.MessageDB
 	// signer is the signer
 	signer signer.Signer
 }
 
 // NewUpdateProducer creates an update producer.
-func NewUpdateProducer(domain domains.DomainClient, db db.DB, signer signer.Signer) UpdateProducer {
+func NewUpdateProducer(domain domains.DomainClient, db db.MessageDB, signer signer.Signer) UpdateProducer {
 	return UpdateProducer{
 		domain: domain,
 		db:     db,
@@ -46,7 +47,7 @@ func (u UpdateProducer) FindLatestRoot() (common.Hash, error) {
 	return latestRoot, nil
 }
 
-// StoreProducedUpdate stores a pending update in the DB for potential submission.
+// StoreProducedUpdate stores a pending update in the MessageDB for potential submission.
 //
 // This does not produce update meta or update the latest update db value.
 // It is used by update production and submission.
@@ -106,7 +107,7 @@ func (u UpdateProducer) Start(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("could not hash update: %w", err)
 			}
-			signature, err := u.signer.SignMessage(ctx, db.ToSlice(hashedUpdate))
+			signature, err := u.signer.SignMessage(ctx, pebble2.ToSlice(hashedUpdate))
 			if err != nil {
 				return fmt.Errorf("could not sign message: %w", err)
 			}

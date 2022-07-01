@@ -15,13 +15,13 @@ type UpdateSubmitter struct {
 	// domain allows access to the home contract
 	domain domains.DomainClient
 	// db contains the db object
-	db db.DB
+	db db.MessageDB
 	// signer is the signer
 	signer signer.Signer
 }
 
 // NewUpdateSubmitter creates an update producer.
-func NewUpdateSubmitter(domain domains.DomainClient, db db.DB, signer signer.Signer) UpdateSubmitter {
+func NewUpdateSubmitter(domain domains.DomainClient, db db.MessageDB, signer signer.Signer) UpdateSubmitter {
 	return UpdateSubmitter{
 		domain: domain,
 		db:     db,

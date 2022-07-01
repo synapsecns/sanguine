@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"math/big"
@@ -39,6 +40,11 @@ func (s *Signer) SignMessage(_ context.Context, message []byte) (signer.Signatur
 	}
 
 	return decodeSignature(sig), nil
+}
+
+// Address gets the address of the signer
+func (s *Signer) Address() common.Address {
+	return crypto.PubkeyToAddress(s.privateKey.PublicKey)
 }
 
 func decodeSignature(sig []byte) signer.Signature {
