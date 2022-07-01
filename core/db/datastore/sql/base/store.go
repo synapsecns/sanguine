@@ -1,8 +1,11 @@
 package base
 
 import (
+	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/core/types"
 	"gorm.io/gorm"
+	"math/big"
 )
 
 // Store is the sqlite store. It extends the base store for sqlite specific queries.
@@ -27,9 +30,55 @@ func GetAllModels() (allModels []interface{}) {
 	return allModels
 }
 
-func (s Store) StoreRawTx(tx *types.Transaction) error {
-	// TODO implement me
-	panic("implement me")
+// StoreRawTx stores a raw transaction.
+
+func (s Store) StoreRawTx(ctx context.Context, tx *types.Transaction, chainID *big.Int) error {
+	toAddress := ""
+	if tx != nil {
+		toAddress = tx.To().String()
+	}
+
+	// sanity check for making sure transaction marshaled chainid matches derived chain id (if present)
+	hasID, newId := getChainID(tx)
+	if hasID {
+		if newId.Cmp(chainID) != 0 {
+			return fmt.Errorf("chainid mismatch, expected %d, got %d", chainID, newId)
+		}
+	}
+
+	marshalledTx, err := tx.MarshalBinary()
+	if err != nil {
+		return fmt.Errorf("could not marshall tx to binary: %w", err)
+	}
+
+	dbTx := s.DB().WithContext(ctx).Create(&RawEVMTX{
+		To:      toAddress,
+		ChainID: chainID.Uint64(),
+		Nonce:   tx.Nonce(),
+		RawTx:   marshalledTx,
+	})
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not create raw tx: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// getChainID gets the chain id from non-legacy transaction types
+// it is used to check chainids against the chainid passed in the raw id.
+func getChainID(tx *types.Transaction) (hasType bool, chainID *big.Int) {
+	switch tx.Type() {
+	case types.LegacyTxType:
+		return false, nil
+	default:
+		chainID = tx.ChainId()
+		if chainID == nil || chainID.Cmp(big.NewInt(0)) == 0 {
+			return false, nil
+		}
+
+		return true, tx.ChainId()
+	}
 }
 
 func (s Store) StoreProcessedTx(tx *types.Transaction) {

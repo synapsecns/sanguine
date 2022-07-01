@@ -1,15 +1,17 @@
 package db
 
 import (
+	"context"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/types"
+	"math/big"
 )
 
 // TxQueueDB contains an interface for storing transactions currently being processed.
 type TxQueueDB interface {
 	// StoreRawTx stores a raw transaction
-	StoreRawTx(tx *ethTypes.Transaction) error
+	StoreRawTx(ctx context.Context, tx *ethTypes.Transaction, chainID *big.Int) error
 	// StoreProcessedTx stores a tx that has already been processed
 	StoreProcessedTx(tx *ethTypes.Transaction)
 }
