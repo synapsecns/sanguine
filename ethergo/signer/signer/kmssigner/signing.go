@@ -38,7 +38,7 @@ func (signingHandler *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpt
 
 		rBytes, sBytes, err := signingHandler.getSignatureFromKMS(context.Background(), txHashBytes)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not get signature: %w", err)
 		}
 
 		// Adjust S value from signature according to Ethereum standard
@@ -50,7 +50,7 @@ func (signingHandler *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpt
 
 		signature, err := signingHandler.getEthereumSignature(pubKeyBytes, txHashBytes, rBytes, sBytes)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not derive signature: %w", err)
 		}
 
 		//nolint: wrapcheck
@@ -75,13 +75,13 @@ func (signingHandler *Signer) getSignatureFromKMS(
 
 	signOutput, err := signingHandler.client.Sign(ctx, signInput)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("could not get signature from kms: %w", err)
 	}
 
 	var sigAsn1 asn1EcSig
 	_, err = asn1.Unmarshal(signOutput.Signature, &sigAsn1)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("could not unmarshall asn: %w", err)
 	}
 
 	return sigAsn1.R.Bytes, sigAsn1.S.Bytes, nil
@@ -123,14 +123,14 @@ func (signingHandler *Signer) getEthereumSignature(expectedPublicKeyBytes []byte
 
 	recoveredPublicKeyBytes, err := crypto.Ecrecover(txHash, signature)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get key: %w", err)
 	}
 
 	if hex.EncodeToString(recoveredPublicKeyBytes) != hex.EncodeToString(expectedPublicKeyBytes) {
 		signature = append(rsSignature, []byte{1}...)
 		recoveredPublicKeyBytes, err = crypto.Ecrecover(txHash, signature)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not recover signature: %w", err)
 		}
 
 		if hex.EncodeToString(recoveredPublicKeyBytes) != hex.EncodeToString(expectedPublicKeyBytes) {
