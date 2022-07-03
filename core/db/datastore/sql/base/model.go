@@ -14,9 +14,9 @@ func init() {
 // NonceFieldName is the field name of the nonce.
 var NonceFieldName string
 
-// RawEVMTX contains a raw evm transaction that is unsigned
+// RawEthTX contains a raw evm transaction that is unsigned
 // note: idx_id contains a composite index of (chain_id,nonce)
-type RawEVMTX struct {
+type RawEthTX struct {
 	gorm.Model
 	// From is the sender of the transaction
 	From string `gorm:"from"`
@@ -28,9 +28,4 @@ type RawEVMTX struct {
 	Nonce uint64 `gorm:"column:nonce;uniqueIndex:idx_id"`
 	// RawTx is the raw serialized transaction
 	RawTx []byte `gorm:"column:raw_tx"`
-}
-
-// TableName gets the raw evm txes.
-func (r RawEVMTX) TableName() string {
-	return "raw_evm_txes"
 }

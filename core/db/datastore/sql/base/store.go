@@ -29,7 +29,7 @@ func (s Store) DB() *gorm.DB {
 //see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels,
-		&RawEVMTX{})
+		&RawEthTX{})
 	return allModels
 }
 
@@ -53,7 +53,7 @@ func (s Store) StoreRawTx(ctx context.Context, tx *types.Transaction, chainID *b
 		return fmt.Errorf("could not marshall tx to binary: %w", err)
 	}
 
-	dbTx := s.DB().WithContext(ctx).Create(&RawEVMTX{
+	dbTx := s.DB().WithContext(ctx).Create(&RawEthTX{
 		From:    from.String(),
 		To:      toAddress,
 		ChainID: chainID.Uint64(),
@@ -94,7 +94,7 @@ func (s Store) GetNonceForChainID(ctx context.Context, fromAddress common.Addres
 
 	selectMaxNonce := fmt.Sprintf("max(`%s`)", NonceFieldName)
 
-	dbTx := s.DB().WithContext(ctx).Model(&RawEVMTX{}).Select(selectMaxNonce).Where(RawEVMTX{
+	dbTx := s.DB().WithContext(ctx).Model(&RawEthTX{}).Select(selectMaxNonce).Where(RawEthTX{
 		From:    fromAddress.String(),
 		ChainID: chainID.Uint64(),
 	}).Scan(&newNonce)
@@ -107,9 +107,9 @@ func (s Store) GetNonceForChainID(ctx context.Context, fromAddress common.Addres
 	if newNonce.Int64 == 0 {
 		// we need to check if any nonces exist first
 		var count int64
-		dbTx = s.DB().WithContext(ctx).Model(&RawEVMTX{}).Where(RawEVMTX{ChainID: chainID.Uint64(), From: fromAddress.String()}).Count(&count)
+		dbTx = s.DB().WithContext(ctx).Model(&RawEthTX{}).Where(RawEthTX{ChainID: chainID.Uint64(), From: fromAddress.String()}).Count(&count)
 		if dbTx.Error != nil {
-			return 0, fmt.Errorf("error getting count on %T: %w", &RawEVMTX{}, dbTx.Error)
+			return 0, fmt.Errorf("error getting count on %T: %w", &RawEthTX{}, dbTx.Error)
 		}
 
 		if count == 0 {
