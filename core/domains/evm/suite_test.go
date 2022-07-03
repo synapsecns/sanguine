@@ -65,3 +65,21 @@ func (i *ContractSuite) SetupTest() {
 func TestContractSuite(t *testing.T) {
 	suite.Run(t, NewContractSuite(t))
 }
+
+// TxQueueSuite tests out the transaction queue.
+type TxQueueSuite struct {
+	*testutils.TestSuite
+}
+
+// NewQueueSuite creates the queue.
+func NewQueueSuite(tb testing.TB) *TxQueueSuite {
+	tb.Helper()
+
+	return &TxQueueSuite{
+		TestSuite: testutils.NewTestSuite(tb),
+	}
+}
+
+func TestQueueSuite(t *testing.T) {
+	suite.Run(t, NewQueueSuite(t))
+}

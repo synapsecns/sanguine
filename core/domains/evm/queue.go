@@ -36,17 +36,17 @@ type TxQueueTransactor struct {
 }
 
 // NewTxQueue creates a new transaction submission queue.
-func NewTxQueue(ctx context.Context) *TxQueueTransactor {
-	return &TxQueueTransactor{}
+// TODO: we still need the transactor loop.
+func NewTxQueue(signer signer.Signer, db db.TxQueueDB, chain evm.Chain) *TxQueueTransactor {
+	return &TxQueueTransactor{
+		db:     db,
+		chain:  chain,
+		signer: signer,
+	}
 }
 
-// GetTransactor gets the transactor used for.
+// GetTransactor gets the transactor used for transacting.
 func (t *TxQueueTransactor) GetTransactor(ctx context.Context, chainID *big.Int) (*bind.TransactOpts, error) {
-	latestSigner := types.LatestSignerForChainID(chainID)
-
-	_ = latestSigner
-
-	// TODO
 	signerFn := func(address common.Address, tx *types.Transaction) (*types.Transaction, error) {
 		err := t.db.StoreRawTx(ctx, tx, chainID, address)
 		if err != nil {
@@ -65,7 +65,7 @@ func (t *TxQueueTransactor) GetTransactor(ctx context.Context, chainID *big.Int)
 
 		err = t.db.StoreProcessedTx(ctx, signedTx)
 
-		return nil, nil
+		return signedTx, nil
 	}
 
 	return &bind.TransactOpts{
