@@ -3,6 +3,7 @@ package base
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -29,7 +30,7 @@ func (s Store) DB() *gorm.DB {
 //see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels,
-		&RawEthTX{})
+		&RawEthTX{}, &ProcessedEthTx{})
 	return allModels
 }
 
@@ -68,6 +69,56 @@ func (s Store) StoreRawTx(ctx context.Context, tx *types.Transaction, chainID *b
 	return nil
 }
 
+// getRawTXIDByParams by nonce/chain id gets the raw transaction id by a combination of the nonce and chain id
+// this is used for storing processed txes.
+func (s Store) getRawTXIDByParams(ctx context.Context, nonce uint64, chainID *big.Int, sender common.Address) (id uint, err error) {
+	var res RawEthTX
+	dbTx := s.DB().Select(IDFieldName).WithContext(ctx).Model(&RawEthTX{}).Where(RawEthTX{
+		ChainID: chainID.Uint64(),
+		Nonce:   nonce,
+		From:    sender.String(),
+	}).Find(&res)
+
+	if dbTx.Error != nil {
+		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
+			return 0, db.ErrNotFound
+		}
+
+		return 0, fmt.Errorf("could not get %T by chainID: %d and nonce: %d. error: %w", &RawEthTX{}, chainID.Uint64(), nonce, err)
+	}
+
+	return res.ID, nil
+}
+
+func (s Store) StoreProcessedTx(ctx context.Context, tx *types.Transaction) error {
+	marshalledTx, err := tx.MarshalBinary()
+	if err != nil {
+		return fmt.Errorf("could not marshall tx to binary: %w", err)
+	}
+
+	signer := types.LatestSignerForChainID(tx.ChainId())
+	sender, err := types.Sender(signer, tx)
+	if err != nil {
+		return fmt.Errorf("could not get sender for tx: %s: %w", tx.Hash(), err)
+	}
+
+	parentID, err := s.getRawTXIDByParams(ctx, tx.Nonce(), tx.ChainId(), sender)
+	if err != nil {
+		return fmt.Errorf("could not get parent tx: %w", err)
+	}
+
+	dbTx := s.DB().WithContext(ctx).Create(&ProcessedEthTx{
+		RawEthTx: parentID,
+		RawTx:    marshalledTx,
+	})
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not create raw tx: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
 // getChainID gets the chain id from non-legacy transaction types
 // it is used to check chainids against the chainid passed in the raw id.
 func getChainID(tx *types.Transaction) (hasType bool, chainID *big.Int) {
@@ -82,11 +133,6 @@ func getChainID(tx *types.Transaction) (hasType bool, chainID *big.Int) {
 
 		return true, tx.ChainId()
 	}
-}
-
-func (s Store) StoreProcessedTx(tx *types.Transaction) {
-	// TODO implement me
-	panic("implement me")
 }
 
 func (s Store) GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error) {

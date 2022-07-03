@@ -7,6 +7,8 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/db"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"math/big"
 )
 
@@ -60,12 +62,27 @@ var testTxes = []*types.Transaction{
 }
 
 func (t *TxQueueSuite) TestTxInsertion() {
+	testWallet, err := wallet.FromRandom()
+	Nil(t.T(), err)
+
+	signer := localsigner.NewSigner(testWallet.PrivateKey())
+
 	t.RunOnAllDBs(func(testDB db.TxQueueDB) {
 		for _, testTx := range testTxes {
 			err := testDB.StoreRawTx(t.GetTestContext(), testTx, testTx.ChainId(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())))
 			Nil(t.T(), err)
 
-			// TODO: retrieve index
+			// TODO: retrieve raw tx
+
+			transactor, err := signer.GetTransactor(testTx.ChainId())
+			Nil(t.T(), err)
+
+			signedTx, err := transactor.Signer(signer.Address(), testTx)
+			Nil(t.T(), err)
+
+			err = testDB.StoreProcessedTx(t.GetTestContext(), signedTx)
+
+			// TODO: retrieve the processed tx
 		}
 	})
 }

@@ -53,6 +53,18 @@ func (t *TxQueueTransactor) GetTransactor(ctx context.Context, chainID *big.Int)
 			return nil, fmt.Errorf("could not store tx: %w", err)
 		}
 
+		parentTransactor, err := t.signer.GetTransactor(chainID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get transactor: %w", err)
+		}
+
+		signedTx, err := parentTransactor.Signer(address, tx)
+		if err != nil {
+			return nil, fmt.Errorf("could not get signed tx: %w", err)
+		}
+
+		err = t.db.StoreProcessedTx(ctx, signedTx)
+
 		return nil, nil
 	}
 
@@ -62,9 +74,11 @@ func (t *TxQueueTransactor) GetTransactor(ctx context.Context, chainID *big.Int)
 	}, nil
 }
 
-// getNonce uses the greatest of the database nonce or the on-chain nonce for the next transaction.
-func (t TxQueueTransactor) getNonce(parentCtx context.Context) {
+// GetNonce uses the greatest of the database nonce or the on-chain nonce for the next transaction.
+func (t TxQueueTransactor) GetNonce(parentCtx context.Context) (nonce uint64, err error) {
 	g, ctx := errgroup.WithContext(parentCtx)
+	// onChainNonce is the latest nonce from eth_transactionCount. DB nonce is latest nonce from db + 1
+	// locks are not built into this method or the insertion level of the db
 	var onChainNonce, dbNonce uint64
 
 	g.Go(func() (err error) {
@@ -77,14 +91,24 @@ func (t TxQueueTransactor) getNonce(parentCtx context.Context) {
 	})
 
 	g.Go(func() (err error) {
-		// dbNonce, err = t.db.StoreRawTx()
+		dbNonce, err = t.db.GetNonceForChainID(ctx, t.signer.Address(), t.chain.GetBigChainID())
 		if err != nil {
 			return fmt.Errorf("could not get on chain nonce: %w", err)
 		}
 
+		dbNonce++
+
 		return nil
 	})
 
-	_ = onChainNonce
-	_ = dbNonce
+	err = g.Wait()
+	if err != nil {
+		return 0, fmt.Errorf("could not get nonce: %w", err)
+	}
+
+	if onChainNonce > dbNonce {
+		return onChainNonce, nil
+	}
+
+	return dbNonce, nil
 }

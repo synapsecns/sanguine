@@ -13,7 +13,7 @@ type TxQueueDB interface {
 	// StoreRawTx stores a raw transaction
 	StoreRawTx(ctx context.Context, tx *ethTypes.Transaction, chainID *big.Int, from common.Address) error
 	// StoreProcessedTx stores a tx that has already been processed
-	StoreProcessedTx(tx *ethTypes.Transaction)
+	StoreProcessedTx(ctx context.Context, tx *ethTypes.Transaction) error
 	// GetNonceForChainID gets the latest nonce for a sender
 	GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error)
 }
