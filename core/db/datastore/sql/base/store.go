@@ -2,8 +2,11 @@ package base
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core/db"
 	"gorm.io/gorm"
 	"math/big"
 )
@@ -31,8 +34,7 @@ func GetAllModels() (allModels []interface{}) {
 }
 
 // StoreRawTx stores a raw transaction.
-
-func (s Store) StoreRawTx(ctx context.Context, tx *types.Transaction, chainID *big.Int) error {
+func (s Store) StoreRawTx(ctx context.Context, tx *types.Transaction, chainID *big.Int, from common.Address) error {
 	toAddress := ""
 	if tx != nil {
 		toAddress = tx.To().String()
@@ -52,6 +54,7 @@ func (s Store) StoreRawTx(ctx context.Context, tx *types.Transaction, chainID *b
 	}
 
 	dbTx := s.DB().WithContext(ctx).Create(&RawEVMTX{
+		From:    from.String(),
 		To:      toAddress,
 		ChainID: chainID.Uint64(),
 		Nonce:   tx.Nonce(),
@@ -84,4 +87,35 @@ func getChainID(tx *types.Transaction) (hasType bool, chainID *big.Int) {
 func (s Store) StoreProcessedTx(tx *types.Transaction) {
 	// TODO implement me
 	panic("implement me")
+}
+
+func (s Store) GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error) {
+	var newNonce sql.NullInt64
+
+	selectMaxNonce := fmt.Sprintf("max(`%s`)", NonceFieldName)
+
+	dbTx := s.DB().WithContext(ctx).Model(&RawEVMTX{}).Select(selectMaxNonce).Where(RawEVMTX{
+		From:    fromAddress.String(),
+		ChainID: chainID.Uint64(),
+	}).Scan(&newNonce)
+
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("could not get nonce for chain id: %w", dbTx.Error)
+	}
+
+	// if no nonces, return the corresponding error.
+	if newNonce.Int64 == 0 {
+		// we need to check if any nonces exist first
+		var count int64
+		dbTx = s.DB().WithContext(ctx).Model(&RawEVMTX{}).Where(RawEVMTX{ChainID: chainID.Uint64(), From: fromAddress.String()}).Count(&count)
+		if dbTx.Error != nil {
+			return 0, fmt.Errorf("error getting count on %T: %w", &RawEVMTX{}, dbTx.Error)
+		}
+
+		if count == 0 {
+			return 0, db.ErrNoNonceForChain
+		}
+	}
+
+	return uint64(newNonce.Int64), nil
 }

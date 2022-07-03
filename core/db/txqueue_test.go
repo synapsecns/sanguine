@@ -62,10 +62,34 @@ var testTxes = []*types.Transaction{
 func (t *TxQueueSuite) TestTxInsertion() {
 	t.RunOnAllDBs(func(testDB db.TxQueueDB) {
 		for _, testTx := range testTxes {
-			err := testDB.StoreRawTx(t.GetTestContext(), testTx, testTx.ChainId())
+			err := testDB.StoreRawTx(t.GetTestContext(), testTx, testTx.ChainId(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())))
 			Nil(t.T(), err)
 
 			// TODO: retrieve index
 		}
+	})
+}
+
+/// make sure tx doesn't conflcit on both chains.
+func (t *TxQueueSuite) TestTxNonceQueryMultiChain() {
+	fakeTx := testTxes[0]
+	fakeTx2 := testTxes[1]
+
+	t.RunOnAllDBs(func(testDB db.TxQueueDB) {
+		from := common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64()))
+
+		err := testDB.StoreRawTx(t.GetTestContext(), fakeTx, fakeTx.ChainId(), from)
+		Nil(t.T(), err)
+
+		err = testDB.StoreRawTx(t.GetTestContext(), fakeTx2, fakeTx2.ChainId(), from)
+		Nil(t.T(), err)
+
+		nonce1, err := testDB.GetNonceForChainID(t.GetTestContext(), from, fakeTx.ChainId())
+		Nil(t.T(), err)
+		Equal(t.T(), nonce1, fakeTx.Nonce())
+
+		nonce2, err := testDB.GetNonceForChainID(t.GetTestContext(), from, fakeTx2.ChainId())
+		Nil(t.T(), err)
+		Equal(t.T(), nonce2, fakeTx2.Nonce())
 	})
 }
