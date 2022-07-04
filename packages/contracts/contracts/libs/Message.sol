@@ -14,6 +14,15 @@ library Message {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
+    uint40 internal constant MESSAGE_TYPE = 1;
+    uint40 internal constant HEADER_TYPE = 2;
+    uint40 internal constant BODY_TYPE = 3;
+
+    modifier onlyMessage(bytes29 _view) {
+        _view.assertType(MESSAGE_TYPE);
+        _;
+    }
+
     /**
      * @dev Message memory layout
      * [000 .. 002): header.length  uint16  2 bytes
@@ -88,24 +97,28 @@ library Message {
             );
     }
 
+    function messageView(bytes memory _message) internal pure returns (bytes29) {
+        return _message.ref(MESSAGE_TYPE);
+    }
+
     /// @notice Returns message's header field length
-    function headerLength(bytes29 _message) internal pure returns (uint16) {
+    function headerLength(bytes29 _message) internal pure onlyMessage(_message) returns (uint16) {
         return uint16(_message.indexUint(0, 2));
     }
 
     /// @notice Returns message's header field as bytes29 (refer to TypedMemView library for details on bytes29 type)
-    function header(bytes29 _message) internal pure returns (bytes29) {
-        return _message.slice(OFFSET_HEADER, headerLength(_message), 0);
+    function header(bytes29 _message) internal pure onlyMessage(_message) returns (bytes29) {
+        return _message.slice(OFFSET_HEADER, headerLength(_message), HEADER_TYPE);
     }
 
     /// @notice Returns message's body field as bytes29 (refer to TypedMemView library for details on bytes29 type)
-    function body(bytes29 _message) internal pure returns (bytes29) {
+    function body(bytes29 _message) internal pure onlyMessage(_message) returns (bytes29) {
         uint256 bodyLength = _message.len() - (OFFSET_HEADER + headerLength(_message));
-        return _message.postfix(bodyLength, 0);
+        return _message.postfix(bodyLength, BODY_TYPE);
     }
 
     /// @notice Returns leaf of the formatted message.
-    function leaf(bytes29 _message) internal pure returns (bytes32) {
+    function leaf(bytes29 _message) internal pure onlyMessage(_message) returns (bytes32) {
         // TODO: do we actually need this?
         return _message.keccak();
     }

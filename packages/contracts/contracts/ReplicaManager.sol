@@ -22,7 +22,7 @@ contract ReplicaManager is Version0, UpdaterStorage {
 
     using ReplicaLib for ReplicaLib.Replica;
     using MerkleLib for MerkleLib.Tree;
-    using TypedMemView for bytes;
+    using Message for bytes;
     using TypedMemView for bytes29;
     using Message for bytes29;
     using Header for bytes29;
@@ -205,7 +205,7 @@ contract ReplicaManager is Version0, UpdaterStorage {
      * @return _success TRUE iff dispatch transaction succeeded
      */
     function process(bytes memory _message) public returns (bool _success) {
-        bytes29 _m = _message.ref(0);
+        bytes29 _m = _message.messageView();
         bytes29 _header = _m.header();
         uint32 _remoteDomain = _header.origin();
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];

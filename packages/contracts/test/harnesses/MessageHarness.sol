@@ -7,9 +7,9 @@ import { Header } from "../../contracts/libs/Header.sol";
 import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 
 contract MessageHarness {
+    using Message for bytes;
     using Message for bytes29;
     using Header for bytes29;
-    using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
     function formatMessage(
@@ -65,38 +65,38 @@ contract MessageHarness {
     }
 
     function body(bytes memory _message) external view returns (bytes memory) {
-        return _message.ref(0).body().clone();
+        return _message.messageView().body().clone();
     }
 
     function origin(bytes memory _message) external pure returns (uint32) {
-        return _message.ref(0).header().origin();
+        return _message.messageView().header().origin();
     }
 
     function sender(bytes memory _message) external pure returns (bytes32) {
-        return _message.ref(0).header().sender();
+        return _message.messageView().header().sender();
     }
 
     function nonce(bytes memory _message) external pure returns (uint32) {
-        return _message.ref(0).header().nonce();
+        return _message.messageView().header().nonce();
     }
 
     function destination(bytes memory _message) external pure returns (uint32) {
-        return _message.ref(0).header().destination();
+        return _message.messageView().header().destination();
     }
 
     function recipient(bytes memory _message) external pure returns (bytes32) {
-        return _message.ref(0).header().recipient();
+        return _message.messageView().header().recipient();
     }
 
     function recipientAddress(bytes memory _message) external pure returns (address) {
-        return _message.ref(0).header().recipientAddress();
+        return _message.messageView().header().recipientAddress();
     }
 
     function optimisticSeconds(bytes memory _message) external pure returns (uint32) {
-        return _message.ref(0).header().optimisticSeconds();
+        return _message.messageView().header().optimisticSeconds();
     }
 
     function leaf(bytes memory _message) external pure returns (bytes32) {
-        return _message.ref(0).leaf();
+        return _message.messageView().leaf();
     }
 }
