@@ -82,6 +82,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
      *        nonce combined in single field ((destination << 32) & nonce)
      * @param committedRoot the latest notarized root submitted in the last
      *        signed Update
+     * @param tips Tips paid for the remote off-chain agents
      * @param message Raw bytes of message
      */
     event Dispatch(
@@ -89,6 +90,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
         bytes32 committedRoot,
+        bytes tips,
         bytes message
     );
 
@@ -226,6 +228,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
             count() - 1,
             _destinationAndNonce(_destinationDomain, _nonce),
             committedRoot,
+            _tips,
             _message
         );
     }
