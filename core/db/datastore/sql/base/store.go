@@ -73,7 +73,7 @@ func (s Store) StoreRawTx(ctx context.Context, tx *types.Transaction, chainID *b
 // this is used for storing processed txes.
 func (s Store) getRawTXIDByParams(ctx context.Context, nonce uint64, chainID *big.Int, sender common.Address) (id uint, err error) {
 	var res RawEthTX
-	dbTx := s.DB().Select(IDFieldName).WithContext(ctx).Model(&RawEthTX{}).Where(RawEthTX{
+	dbTx := s.DB().Select("ID").WithContext(ctx).Model(&RawEthTX{}).Where(RawEthTX{
 		ChainID: chainID.Uint64(),
 		Nonce:   nonce,
 		From:    sender.String(),
@@ -84,7 +84,7 @@ func (s Store) getRawTXIDByParams(ctx context.Context, nonce uint64, chainID *bi
 			return 0, db.ErrNotFound
 		}
 
-		return 0, fmt.Errorf("could not get %T by chainID: %d and nonce: %d. error: %w", &RawEthTX{}, chainID.Uint64(), nonce, err)
+		return 0, fmt.Errorf("could not get %T by chainID: %d and nonce: %d. error: %w", &RawEthTX{}, chainID.Uint64(), nonce, dbTx.Error)
 	}
 
 	return res.ID, nil
@@ -108,8 +108,11 @@ func (s Store) StoreProcessedTx(ctx context.Context, tx *types.Transaction) erro
 	}
 
 	dbTx := s.DB().WithContext(ctx).Create(&ProcessedEthTx{
-		RawEthTx: parentID,
-		RawTx:    marshalledTx,
+		TxHash:    tx.Hash().String(),
+		RawTx:     marshalledTx,
+		RawEthTx:  parentID,
+		GasFeeCap: tx.GasFeeCap().Uint64(),
+		GasTipCap: tx.GasTipCap().Uint64(),
 	})
 
 	if dbTx.Error != nil {

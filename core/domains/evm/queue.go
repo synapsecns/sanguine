@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"github.com/synapsecns/synapse-node/pkg/evm"
 	"golang.org/x/sync/errgroup"
 	"math/big"
 )
@@ -26,7 +25,7 @@ type TxQueueTransactor struct {
 	// uses1559 indicates whether eip-1559 is enabled on this chain
 	uses1559 bool
 	// chain contains the client for interacting with the chain
-	chain evm.Chain
+	chain ChainTransactor
 	// intervalSeconds is how often to bump gas/resubmit on a given chain
 	intervalSeconds uint32
 	// signer is the signer to use for signing/submission
@@ -35,9 +34,17 @@ type TxQueueTransactor struct {
 	db db.TxQueueDB
 }
 
+// ChainTransactor is the location of the chain.
+type ChainTransactor interface {
+	// GetBigChainID gets the chain id as a big int.
+	GetBigChainID() *big.Int
+	// NonceAt gets the nonce of a chain transactor
+	NonceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (uint64, error)
+}
+
 // NewTxQueue creates a new transaction submission queue.
 // TODO: we still need the transactor loop.
-func NewTxQueue(signer signer.Signer, db db.TxQueueDB, chain evm.Chain) *TxQueueTransactor {
+func NewTxQueue(signer signer.Signer, db db.TxQueueDB, chain ChainTransactor) *TxQueueTransactor {
 	return &TxQueueTransactor{
 		db:     db,
 		chain:  chain,
@@ -64,6 +71,9 @@ func (t *TxQueueTransactor) GetTransactor(ctx context.Context, chainID *big.Int)
 		}
 
 		err = t.db.StoreProcessedTx(ctx, signedTx)
+		if err != nil {
+			return nil, fmt.Errorf("could not get signed tx: %w", err)
+		}
 
 		return signedTx, nil
 	}

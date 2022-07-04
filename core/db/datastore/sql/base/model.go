@@ -9,14 +9,11 @@ import (
 // This is cheap because it's only done at startup.
 func init() {
 	NonceFieldName = getConsistentName("Nonce")
-	IDFieldName = getConsistentName("ID")
 }
 
 var (
 	// NonceFieldName is the field name of the nonce.
 	NonceFieldName string
-	// IDFieldName is the field name of the id field.
-	IDFieldName string
 )
 
 // RawEthTX contains a raw evm transaction that is unsigned
