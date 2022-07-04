@@ -34,31 +34,15 @@ library Message {
 
     /**
      * @notice Returns formatted (packed) message with provided fields
-     * @param _originDomain Domain of home chain
-     * @param _sender Address of sender as bytes32
-     * @param _nonce Destination-specific nonce
-     * @param _destinationDomain Domain of destination chain
-     * @param _recipient Address of recipient on destination chain as bytes32
+     * @param _header Formatted header
      * @param _messageBody Raw bytes of message body
      * @return Formatted message
      **/
-    function formatMessage(
-        uint32 _originDomain,
-        bytes32 _sender,
-        uint32 _nonce,
-        uint32 _destinationDomain,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _messageBody
-    ) internal pure returns (bytes memory) {
-        bytes memory _header = Header.formatHeader(
-            _originDomain,
-            _sender,
-            _nonce,
-            _destinationDomain,
-            _recipient,
-            _optimisticSeconds
-        );
+    function formatMessage(bytes memory _header, bytes memory _messageBody)
+        internal
+        pure
+        returns (bytes memory)
+    {
         // Header is always supposed to fit in 65535 bytes
         uint16 length = uint16(_header.length);
         return abi.encodePacked(length, _header, _messageBody);
@@ -66,35 +50,16 @@ library Message {
 
     /**
      * @notice Returns leaf of formatted message with provided fields.
-     * @param _origin Domain of home chain
-     * @param _sender Address of sender as bytes32
-     * @param _nonce Destination-specific nonce number
-     * @param _destination Domain of destination chain
-     * @param _recipient Address of recipient on destination chain as bytes32
-     * @param _body Raw bytes of message body
+     * @param _header Formatted header
+     * @param _messageBody Raw bytes of message body
      * @return Leaf (hash) of formatted message
      **/
-    function messageHash(
-        uint32 _origin,
-        bytes32 _sender,
-        uint32 _nonce,
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _body
-    ) internal pure returns (bytes32) {
-        return
-            keccak256(
-                formatMessage(
-                    _origin,
-                    _sender,
-                    _nonce,
-                    _destination,
-                    _recipient,
-                    _optimisticSeconds,
-                    _body
-                )
-            );
+    function messageHash(bytes memory _header, bytes memory _messageBody)
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(formatMessage(_header, _messageBody));
     }
 
     function messageView(bytes memory _message) internal pure returns (bytes29) {

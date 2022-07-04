@@ -6,10 +6,12 @@ import { Version0 } from "./Version0.sol";
 import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
+import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { MerkleTreeManager } from "./Merkle.sol";
 import { QueueManager } from "./Queue.sol";
 import { IUpdaterManager } from "./interfaces/IUpdaterManager.sol";
+import { TypeCasts } from "./libs/TypeCasts.sol";
 // ============ External Imports ============
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
@@ -196,16 +198,16 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
         // get the next nonce for the destination domain, then increment it
         uint32 _nonce = nonces[_destinationDomain];
         nonces[_destinationDomain] = _nonce + 1;
-        // format the message into packed bytes
-        bytes memory _message = Message.formatMessage(
+        bytes memory _header = Header.formatHeader(
             localDomain,
-            bytes32(uint256(uint160(msg.sender))),
+            TypeCasts.addressToBytes32(msg.sender),
             _nonce,
             _destinationDomain,
             _recipientAddress,
-            _optimisticSeconds,
-            _messageBody
+            _optimisticSeconds
         );
+        // format the message into packed bytes
+        bytes memory _message = Message.formatMessage(_header, _messageBody);
         // insert the hashed message into the Merkle tree
         bytes32 _messageHash = keccak256(_message);
         tree.insert(_messageHash);
