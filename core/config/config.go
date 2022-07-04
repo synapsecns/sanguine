@@ -10,6 +10,8 @@ type Config struct {
 	Domains DomainConfigs `toml:"Domains"`
 	// DBPath is the db path
 	DBPath string `toml:"DBPath"`
+	// Signer contains the signer config for core
+	Signer SignerConfig
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

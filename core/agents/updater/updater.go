@@ -7,17 +7,20 @@ import (
 	"github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/indexer"
+	"golang.org/x/sync/errgroup"
 )
 
 // Updater updates the updater.
 type Updater struct {
-	indexers map[string]indexer.DomainIndexer
+	indexers  map[string]indexer.DomainIndexer
+	producers map[string]UpdateProducer
 }
 
 // NewUpdater creates a new updater.
 func NewUpdater(ctx context.Context, cfg config.Config) (Updater, error) {
 	updater := Updater{
-		indexers: make(map[string]indexer.DomainIndexer),
+		indexers:  make(map[string]indexer.DomainIndexer),
+		producers: make(map[string]UpdateProducer),
 	}
 	for name, domain := range cfg.Domains {
 		domainClient, err := evm.NewEVM(ctx, name, domain)
@@ -31,17 +34,20 @@ func NewUpdater(ctx context.Context, cfg config.Config) (Updater, error) {
 		}
 
 		updater.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient)
+		// updater.producers[name] = NewUpdateProducer(domainClient, dbHandle, )
 	}
 
 	return updater, nil
 }
 
 // Start starts the updater.{.
-func (u Updater) Start(ctx context.Context) {
-	// returnDBPath, name)
-	// if err != nil
-	//	name := name
-	// go func() {
-	//	_ = updater.indexers[name].SyncMessages(ctx)
-	// }()
+func (u Updater) Start(ctx context.Context) error {
+	g, ctx := errgroup.WithContext(ctx)
+	for _, domainIndexer := range u.indexers {
+		g.Go(func() error {
+			return domainIndexer.SyncMessages(ctx)
+		})
+	}
+
+	return nil
 }

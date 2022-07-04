@@ -17,6 +17,7 @@ import (
 )
 
 // UpdateProducer updates a producer.
+// TODO: this needs to become an interface.
 type UpdateProducer struct {
 	// domain allows access to the home contract
 	domain domains.DomainClient

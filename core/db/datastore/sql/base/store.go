@@ -138,6 +138,7 @@ func getChainID(tx *types.Transaction) (hasType bool, chainID *big.Int) {
 	}
 }
 
+// GetNonceForChainID gets a nonce for a chainid.
 func (s Store) GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error) {
 	var newNonce sql.NullInt64
 
