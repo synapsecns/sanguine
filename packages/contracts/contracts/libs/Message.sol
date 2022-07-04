@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import "./TypedMemView.sol";
+import { TypedMemView } from "./TypedMemView.sol";
 
-import { TypeCasts } from "./TypeCasts.sol";
+import { Header } from "./Header.sol";
 
 /**
  * @title Message Library
@@ -14,8 +14,14 @@ library Message {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
-    // Number of bytes in formatted message before `body` field
-    uint256 internal constant PREFIX_LENGTH = 80;
+    /**
+     * @dev Message memory layout
+     * [000 .. 002): header.length  uint16  2 bytes
+     * [002 .. AAA): header         bytes   ? bytes
+     * [AAA .. BBB): body           bytes   ? bytes
+     */
+
+    uint256 internal constant OFFSET_HEADER = 2;
 
     /**
      * @notice Returns formatted (packed) message with provided fields
@@ -36,16 +42,17 @@ library Message {
         uint32 _optimisticSeconds,
         bytes memory _messageBody
     ) internal pure returns (bytes memory) {
-        return
-            abi.encodePacked(
-                _originDomain,
-                _sender,
-                _nonce,
-                _destinationDomain,
-                _recipient,
-                _optimisticSeconds,
-                _messageBody
-            );
+        bytes memory _header = Header.formatHeader(
+            _originDomain,
+            _sender,
+            _nonce,
+            _destinationDomain,
+            _recipient,
+            _optimisticSeconds
+        );
+        // Header is always supposed to fit in 65535 bytes
+        uint16 length = uint16(_header.length);
+        return abi.encodePacked(length, _header, _messageBody);
     }
 
     /**
@@ -81,56 +88,25 @@ library Message {
             );
     }
 
-    /// @notice Returns message's origin field
-    function origin(bytes29 _message) internal pure returns (uint32) {
-        return uint32(_message.indexUint(0, 4));
+    /// @notice Returns message's header field length
+    function headerLength(bytes29 _message) internal pure returns (uint16) {
+        return uint16(_message.indexUint(0, 2));
     }
 
-    /// @notice Returns message's sender field
-    function sender(bytes29 _message) internal pure returns (bytes32) {
-        return _message.index(4, 32);
-    }
-
-    /// @notice Returns message's nonce field
-    function nonce(bytes29 _message) internal pure returns (uint32) {
-        return uint32(_message.indexUint(36, 4));
-    }
-
-    /// @notice Returns message's destination field
-    function destination(bytes29 _message) internal pure returns (uint32) {
-        return uint32(_message.indexUint(40, 4));
-    }
-
-    /// @notice Returns message's recipient field as bytes32
-    function recipient(bytes29 _message) internal pure returns (bytes32) {
-        return _message.index(44, 32);
-    }
-
-    /// @notice Returns the optimistic seconds from the message
-    function optimisticSeconds(bytes29 _message) internal pure returns (uint32) {
-        return uint32(_message.indexUint(76, 4));
-    }
-
-    /// @notice Returns message's recipient field as an address
-    function recipientAddress(bytes29 _message) internal pure returns (address) {
-        return TypeCasts.bytes32ToAddress(recipient(_message));
+    /// @notice Returns message's header field as bytes29 (refer to TypedMemView library for details on bytes29 type)
+    function header(bytes29 _message) internal pure returns (bytes29) {
+        return _message.slice(OFFSET_HEADER, headerLength(_message), 0);
     }
 
     /// @notice Returns message's body field as bytes29 (refer to TypedMemView library for details on bytes29 type)
     function body(bytes29 _message) internal pure returns (bytes29) {
-        return _message.slice(PREFIX_LENGTH, _message.len() - PREFIX_LENGTH, 0);
+        uint256 bodyLength = _message.len() - (OFFSET_HEADER + headerLength(_message));
+        return _message.postfix(bodyLength, 0);
     }
 
-    function leaf(bytes29 _message) internal view returns (bytes32) {
-        return
-            messageHash(
-                origin(_message),
-                sender(_message),
-                nonce(_message),
-                destination(_message),
-                recipient(_message),
-                optimisticSeconds(_message),
-                TypedMemView.clone(body(_message))
-            );
+    /// @notice Returns leaf of the formatted message.
+    function leaf(bytes29 _message) internal pure returns (bytes32) {
+        // TODO: do we actually need this?
+        return _message.keccak();
     }
 }

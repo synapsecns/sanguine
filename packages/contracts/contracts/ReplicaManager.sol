@@ -7,6 +7,7 @@ import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
+import { Header } from "./libs/Header.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
@@ -24,6 +25,7 @@ contract ReplicaManager is Version0, UpdaterStorage {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
     using Message for bytes29;
+    using Header for bytes29;
 
     // ============ Immutables ============
 
@@ -204,15 +206,19 @@ contract ReplicaManager is Version0, UpdaterStorage {
      */
     function process(bytes memory _message) public returns (bool _success) {
         bytes29 _m = _message.ref(0);
-        uint32 _remoteDomain = _m.origin();
+        bytes29 _header = _m.header();
+        uint32 _remoteDomain = _header.origin();
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         // ensure message was meant for this domain
-        require(_m.destination() == localDomain, "!destination");
+        require(_header.destination() == localDomain, "!destination");
         // ensure message has been proven
         bytes32 _messageHash = _m.keccak();
         bytes32 _root = replica.messageStatus[_messageHash];
         require(ReplicaLib.isPotentialRoot(_root), "!exists || processed");
-        require(acceptableRoot(_remoteDomain, _m.optimisticSeconds(), _root), "!optimisticSeconds");
+        require(
+            acceptableRoot(_remoteDomain, _header.optimisticSeconds(), _root),
+            "!optimisticSeconds"
+        );
         // check re-entrancy guard
         require(entered == 1, "!reentrant");
         entered = 0;
@@ -229,13 +235,13 @@ contract ReplicaManager is Version0, UpdaterStorage {
         bytes memory _calldata = abi.encodeWithSelector(
             IMessageRecipient.handle.selector,
             _remoteDomain,
-            _m.nonce(),
-            _m.sender(),
+            _header.nonce(),
+            _header.sender(),
             replica.confirmAt[_root],
             _m.body().clone()
         );
         // get the message recipient
-        address _recipient = _m.recipientAddress();
+        address _recipient = _header.recipientAddress();
         // set up for assembly call
         uint256 _toCopy;
         uint256 _maxCopy = 256;
