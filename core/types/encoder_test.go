@@ -14,7 +14,7 @@ func TestEncodeSignedUpdate(t *testing.T) {
 	previousRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	nextRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
 
-	fakeV := new(big.Int).SetUint64(gofakeit.Uint64())
+	fakeV := new(big.Int).SetUint64(uint64(gofakeit.Uint8()))
 	fakeR := new(big.Int).SetUint64(gofakeit.Uint64())
 	fakeS := new(big.Int).SetUint64(gofakeit.Uint64())
 
@@ -39,7 +39,7 @@ func TestEncodeSignedUpdate(t *testing.T) {
 }
 
 func TestEncodeDecodeSignature(t *testing.T) {
-	fakeV := big.NewInt(gofakeit.Int64())
+	fakeV := new(big.Int).SetUint64(uint64(gofakeit.Uint8()))
 	fakeR := big.NewInt(gofakeit.Int64())
 	fakeS := big.NewInt(gofakeit.Int64())
 

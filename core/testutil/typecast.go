@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
+	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/synapse-node/testutils/backends"
 )
@@ -56,4 +57,15 @@ func (d *DeployManager) GetHomeHarness(ctx context.Context, backend backends.Sim
 	assert.True(d.T(), ok)
 
 	return homeHarnessContract, messageHarness
+}
+
+// GetUpdaterManager gets the update manager.
+func (d *DeployManager) GetUpdaterManager(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *updatermanager.UpdaterManagerRef) {
+	d.T().Helper()
+
+	updaterManagerContract := d.GetContractRegistry(backend).Get(ctx, UpdaterManagerType)
+	updaterManager, ok := updaterManagerContract.ContractHandle().(*updatermanager.UpdaterManagerRef)
+	assert.True(d.T(), ok)
+
+	return updaterManagerContract, updaterManager
 }

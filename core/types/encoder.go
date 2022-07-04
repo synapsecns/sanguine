@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"math/big"
+	"github.com/ethereum/go-ethereum/crypto/secp256k1"
+	"github.com/libs4go/crypto/ecdsa"
 )
 
 // EncodeSignedUpdate encodes a signed update in binary.
@@ -91,47 +92,17 @@ func DecodeUpdate(toDecode []byte) (Update, error) {
 	}, nil
 }
 
-// signatureEncoder encodes a signature.
-type signatureEncoder struct {
-	V, R, S [64]byte
-}
-
 // EncodeSignature encodes a signature.
 func EncodeSignature(sig Signature) ([]byte, error) {
-	buf := new(bytes.Buffer)
-
-	var encodedSignature signatureEncoder
-	sig.V().FillBytes(encodedSignature.V[:])
-	sig.R().FillBytes(encodedSignature.R[:])
-	sig.S().FillBytes(encodedSignature.S[:])
-
-	err := binary.Write(buf, binary.BigEndian, encodedSignature)
-	if err != nil {
-		return nil, fmt.Errorf("could not write binary: %w", err)
-	}
-
-	return buf.Bytes(), nil
+	return ecdsa.Sig2Bytes(secp256k1.S256(), sig.R(), sig.S(), sig.V()), nil
 }
 
 // DecodeSignature decodes a signature.
 func DecodeSignature(toDecode []byte) (sig Signature, err error) {
-	reader := bytes.NewReader(toDecode)
-
-	var encodedSignature signatureEncoder
-	dataSize := binary.Size(encodedSignature)
-
-	if dataSize > len(toDecode) {
-		return nil, fmt.Errorf("message too small, expected at least %d, got %d", dataSize, len(toDecode))
-	}
-
-	err = binary.Read(reader, binary.BigEndian, &encodedSignature)
+	r, s, v, err := ecdsa.Bytes2Sig(secp256k1.S256(), toDecode)
 	if err != nil {
-		return nil, fmt.Errorf("could not read: %w", err)
+		return nil, fmt.Errorf("could not decode signature: %w", err)
 	}
 
-	return signature{
-		v: new(big.Int).SetBytes(encodedSignature.V[:]),
-		r: new(big.Int).SetBytes(encodedSignature.R[:]),
-		s: new(big.Int).SetBytes(encodedSignature.S[:]),
-	}, nil
+	return NewSignature(v, r, s), nil
 }

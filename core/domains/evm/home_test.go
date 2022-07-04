@@ -5,7 +5,10 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/agents/updater"
+	pebble2 "github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/core/domains/evm"
+	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/synapse-node/testutils/utils"
 )
 
@@ -72,4 +75,25 @@ func (i ContractSuite) TestFetchSortedHomeUpdates() {
 		True(i.T(), bytes.Contains(message.Message(), testDispatch.message))
 		Equal(i.T(), message.LeafIndex(), uint32(iter))
 	}
+}
+
+func (i ContractSuite) TestUpdateHomeContract() {
+	i.T().Skip("TODO: updater home contract")
+	i.NewTestDispatches(1)
+
+	homeIndexer, err := evm.NewHomeContract(i.GetTestContext(), i.testBackend, i.homeContract.Address())
+	Nil(i.T(), err)
+
+	producedUpdate, err := homeIndexer.ProduceUpdate(i.GetTestContext())
+	Nil(i.T(), err)
+
+	hashedUpdate, err := updater.HashUpdate(producedUpdate)
+	Nil(i.T(), err)
+
+	sig, err := i.signer.SignMessage(i.GetTestContext(), pebble2.ToSlice(hashedUpdate))
+	Nil(i.T(), err)
+
+	signedUpdate := types.NewSignedUpdate(producedUpdate, sig)
+	err = homeIndexer.Update(i.GetTestContext(), i.signer, signedUpdate)
+	Nil(i.T(), err)
 }

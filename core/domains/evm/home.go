@@ -118,7 +118,7 @@ func (h homeContract) Update(ctx context.Context, signer signer.Signer, update t
 	}
 
 	transactOpts.Context = ctx
-	// TODO, check confirmation, etc
+
 	_, err = h.contract.Update(transactOpts, update.Update().PreviousRoot(), update.Update().NewRoot(), encodedSignature)
 	if err != nil {
 		return fmt.Errorf("could not update contract: %w", err)

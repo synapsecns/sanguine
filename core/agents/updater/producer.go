@@ -104,7 +104,7 @@ func (u UpdateProducer) Start(ctx context.Context) error {
 			}
 
 			// get the update to sign
-			hashedUpdate, err := hashUpdate(suggestedUpdate)
+			hashedUpdate, err := HashUpdate(suggestedUpdate)
 			if err != nil {
 				return fmt.Errorf("could not hash update: %w", err)
 			}
@@ -122,7 +122,8 @@ func (u UpdateProducer) Start(ctx context.Context) error {
 	}
 }
 
-func hashUpdate(update types.Update) ([32]byte, error) {
+// HashUpdate is exported for testing in agents.
+func HashUpdate(update types.Update) ([32]byte, error) {
 	buf := new(bytes.Buffer)
 
 	type DigestEncoder struct {
