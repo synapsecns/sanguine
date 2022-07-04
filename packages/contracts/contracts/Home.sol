@@ -8,6 +8,7 @@ import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
+import { Tips } from "./libs/Tips.sol";
 import { MerkleTreeManager } from "./Merkle.sol";
 import { QueueManager } from "./Queue.sol";
 import { IUpdaterManager } from "./interfaces/IUpdaterManager.sol";
@@ -30,6 +31,9 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
 
     using QueueLib for QueueLib.Queue;
     using MerkleLib for MerkleLib.Tree;
+
+    using Tips for bytes;
+    using Tips for bytes29;
 
     // ============ Enums ============
 
@@ -192,9 +196,11 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
         uint32 _destinationDomain,
         bytes32 _recipientAddress,
         uint32 _optimisticSeconds,
+        bytes memory _tips,
         bytes memory _messageBody
-    ) external notFailed {
+    ) external payable notFailed {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
+        require(_tips.tipsView().totalTips() == msg.value, "!tips");
         // get the next nonce for the destination domain, then increment it
         uint32 _nonce = nonces[_destinationDomain];
         nonces[_destinationDomain] = _nonce + 1;
@@ -207,7 +213,7 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
             _optimisticSeconds
         );
         // format the message into packed bytes
-        bytes memory _message = Message.formatMessage(_header, _messageBody);
+        bytes memory _message = Message.formatMessage(_header, _tips, _messageBody);
         // insert the hashed message into the Merkle tree
         bytes32 _messageHash = keccak256(_message);
         tree.insert(_messageHash);

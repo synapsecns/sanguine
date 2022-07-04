@@ -8,6 +8,7 @@ import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
 import { Header } from "./libs/Header.sol";
+import { Tips } from "./libs/Tips.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
@@ -222,6 +223,7 @@ contract ReplicaManager is Version0, UpdaterStorage {
         // check re-entrancy guard
         require(entered == 1, "!reentrant");
         entered = 0;
+        _storeTips(_m.tips());
         // update message status as processed
         replica.setMessageStatus(_messageHash, ReplicaLib.MESSAGE_STATUS_PROCESSED);
         // A call running out of gas TYPICALLY errors the whole tx. We want to
@@ -397,5 +399,9 @@ contract ReplicaManager is Version0, UpdaterStorage {
             _returnData := add(_returnData, 0x04)
         }
         return abi.decode(_returnData, (string)); // All that remains is the revert string
+    }
+
+    function _storeTips(bytes29 _tips) internal virtual {
+        // TODO: implement storing & claiming logic
     }
 }

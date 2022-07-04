@@ -50,6 +50,14 @@ library Tips {
         return abi.encodePacked(TIPS_VERSION, _updaterTip, _relayerTip, _proverTip, _processorTip);
     }
 
+    /**
+     * @notice Returns formatted empty tips
+     * @return Formatted tips
+     **/
+    function emptyTips() internal pure returns (bytes memory) {
+        return formatTips(0, 0, 0, 0);
+    }
+
     /// @notice Returns view for the formatted tips
     /// @dev Providing anything other than formatted tips will lead to unexpected behavior
     function tipsView(bytes memory _tips) internal pure returns (bytes29) {
@@ -79,5 +87,9 @@ library Tips {
     /// @notice Returns processorTip field
     function processorTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
         return uint32(_tips.indexUint(OFFSET_PROCESSOR, 12));
+    }
+
+    function totalTips(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
+        return updaterTip(_tips) + relayerTip(_tips) + proverTip(_tips) + processorTip(_tips);
     }
 }
