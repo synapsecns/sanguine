@@ -68,7 +68,13 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     function test_haltsOnFail() public {
         home.setFailed();
         vm.expectRevert("failed state");
-        home.dispatch(remoteDomain, addressToBytes32(address(1337)), optimisticSeconds, bytes(""));
+        home.dispatch(
+            remoteDomain,
+            addressToBytes32(address(1337)),
+            optimisticSeconds,
+            getEmptyTips(),
+            bytes("")
+        );
     }
 
     // TODO: testHashDomain against Go generated domains
@@ -103,7 +109,8 @@ contract HomeTest is SynapseTestWithUpdaterManager {
             recipient,
             optimisticSeconds
         );
-        bytes memory message = Message.formatMessage(_header, messageBody);
+        bytes memory _tips = getDefaultTips();
+        bytes memory message = Message.formatMessage(_header, _tips, messageBody);
         bytes32 messageHash = keccak256(message);
         vm.expectEmit(true, true, true, true);
         emit Dispatch(
@@ -113,8 +120,14 @@ contract HomeTest is SynapseTestWithUpdaterManager {
             home.committedRoot(),
             message
         );
-        vm.prank(sender);
-        home.dispatch(remoteDomain, recipient, optimisticSeconds, messageBody);
+        hoax(sender);
+        home.dispatch{ value: TOTAL_TIPS }(
+            remoteDomain,
+            recipient,
+            optimisticSeconds,
+            _tips,
+            messageBody
+        );
         assert(home.queueContains(home.root()));
     }
 
@@ -125,7 +138,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes memory messageBody = new bytes(2 * 2**10 + 1);
         vm.prank(sender);
         vm.expectRevert("msg too long");
-        home.dispatch(remoteDomain, recipient, optimisticSeconds, messageBody);
+        home.dispatch(remoteDomain, recipient, optimisticSeconds, getEmptyTips(), messageBody);
     }
 
     // ============ UPDATING MESSAGES ============
@@ -143,7 +156,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         home.improperUpdate(oldRoot, newRoot, sig);
         assertEq(uint256(home.state()), 2);
         vm.expectRevert("failed state");
-        home.dispatch(0, bytes32(0), optimisticSeconds, bytes(""));
+        home.dispatch(0, bytes32(0), optimisticSeconds, getEmptyTips(), bytes(""));
     }
 
     // Tests signing new roots of queue, becoming committed root

@@ -19,6 +19,7 @@ contract MessageHarness {
         uint32 _destinationDomain,
         bytes32 _recipient,
         uint32 _optimisticSeconds,
+        bytes memory _tips,
         bytes memory _messageBody
     ) public pure returns (bytes memory) {
         bytes memory _header = Header.formatHeader(
@@ -29,7 +30,7 @@ contract MessageHarness {
             _recipient,
             _optimisticSeconds
         );
-        return Message.formatMessage(_header, _messageBody);
+        return Message.formatMessage(_header, _tips, _messageBody);
     }
 
     /**
@@ -49,6 +50,7 @@ contract MessageHarness {
         uint32 _destination,
         bytes32 _recipient,
         uint32 _optimisticSeconds,
+        bytes memory _tips,
         bytes memory _body
     ) public pure returns (bytes32) {
         bytes memory _header = Header.formatHeader(
@@ -59,7 +61,11 @@ contract MessageHarness {
             _recipient,
             _optimisticSeconds
         );
-        return Message.messageHash(_header, _body);
+        return Message.messageHash(_header, _tips, _body);
+    }
+
+    function tips(bytes memory _message) external view returns (bytes memory) {
+        return _message.messageView().tips().clone();
     }
 
     function body(bytes memory _message) external view returns (bytes memory) {

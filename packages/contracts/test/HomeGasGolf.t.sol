@@ -39,7 +39,8 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
             recipient,
             0
         );
-        bytes memory message = Message.formatMessage(_header, messageBody);
+        bytes memory _tips = getDefaultTips();
+        bytes memory message = Message.formatMessage(_header, _tips, messageBody);
         bytes32 messageHash = keccak256(message);
         vm.expectEmit(true, true, true, true);
         emit Dispatch(
@@ -49,8 +50,8 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
             home.committedRoot(),
             message
         );
-        vm.prank(sender);
-        home.dispatch(remoteDomain, recipient, 0, messageBody);
+        hoax(sender);
+        home.dispatch{ value: TOTAL_TIPS }(remoteDomain, recipient, 0, _tips, messageBody);
         newRoot = home.root();
     }
 

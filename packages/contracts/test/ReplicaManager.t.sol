@@ -202,7 +202,7 @@ contract ReplicaManagerTest is SynapseTest {
             optimisticPeriod
         );
 
-        message = Message.formatMessage(_header, messageBody);
+        message = Message.formatMessage(_header, getDefaultTips(), messageBody);
         bytes32 messageHash = keccak256(message);
         // Let's imagine message was proved against current root
         replicaManager.setMessageStatus(remoteDomain, messageHash, root);

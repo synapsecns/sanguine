@@ -17,6 +17,7 @@ contract TipsTest is Test {
     uint96 internal constant RELAYER_TIP = 3456;
     uint96 internal constant PROVER_TIP = 5678;
     uint96 internal constant PROCESSOR_TIP = 7890;
+    uint96 internal constant TOTAL_TIPS = UPDATER_TIP + RELAYER_TIP + PROVER_TIP + PROCESSOR_TIP;
 
     uint40 internal constant WRONG_TYPE = 1337;
 
@@ -27,6 +28,8 @@ contract TipsTest is Test {
         assertEq(tipsView.relayerTip(), RELAYER_TIP);
         assertEq(tipsView.proverTip(), PROVER_TIP);
         assertEq(tipsView.processorTip(), PROCESSOR_TIP);
+
+        assertEq(tipsView.totalTips(), TOTAL_TIPS);
     }
 
     function test_incorrectType_updaterTip() public {
