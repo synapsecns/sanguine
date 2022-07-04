@@ -11,25 +11,11 @@ import {
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
- * @title SynapseBase
+ * @title UpdaterStorage
  * @author Illusory Systems Inc.
  * @notice Shared utilities between Home and Replica.
  */
-abstract contract SynapseBase is Initializable, OwnableUpgradeable {
-    // ============ Enums ============
-
-    // States:
-    //   0 - UnInitialized - before initialize function is called
-    //   note: the contract is initialized at deploy time, so it should never be in this state
-    //   1 - Active - as long as the contract has not become fraudulent
-    //   2 - Failed - after a valid fraud proof has been submitted;
-    //   contract will no longer accept updates or new messages
-    enum States {
-        UnInitialized,
-        Active,
-        Failed
-    }
-
+abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
     // ============ Immutable Variables ============
 
     // Domain of chain on which the contract is deployed
@@ -39,15 +25,11 @@ abstract contract SynapseBase is Initializable, OwnableUpgradeable {
 
     // Address of bonded Updater
     address public updater;
-    // Current state of contract
-    States public state;
-    // The latest root that has been signed by the Updater
-    bytes32 public committedRoot;
 
     // ============ Upgrade Gap ============
 
     // gap for upgrade safety
-    uint256[47] private __GAP;
+    uint256[49] private __GAP;
 
     // ============ Events ============
 
@@ -84,24 +66,16 @@ abstract contract SynapseBase is Initializable, OwnableUpgradeable {
     function __SynapseBase_initialize(address _updater) internal onlyInitializing {
         __Ownable_init();
         _setUpdater(_updater);
-        state = States.Active;
     }
-
-    // ============ Public Functions ============
-
-    /**
-     * @notice Hash of Home domain concatenated with "SYN"
-     */
-    function homeDomainHash() public view virtual returns (bytes32);
 
     // ============ Internal Functions ============
 
     /**
-     * @notice Hash of Home domain concatenated with "SYN"
-     * @param _homeDomain the Home domain to hash
+     * @notice Hash of domain concatenated with "SYN"
+     * @param _domain The domain to hash
      */
-    function _homeDomainHash(uint32 _homeDomain) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_homeDomain, "SYN"));
+    function _domainHash(uint32 _domain) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_domain, "SYN"));
     }
 
     /**
@@ -116,17 +90,19 @@ abstract contract SynapseBase is Initializable, OwnableUpgradeable {
 
     /**
      * @notice Checks that signature was signed by Updater
+     * @param _homeDomain Domain of Home contract where the signing was done
      * @param _oldRoot Old merkle root
      * @param _newRoot New merkle root
      * @param _signature Signature on `_oldRoot` and `_newRoot`
-     * @return TRUE iff signature is valid signed by updater
+     * @return TRUE if signature is valid signed by updater
      **/
     function _isUpdaterSignature(
+        uint32 _homeDomain,
         bytes32 _oldRoot,
         bytes32 _newRoot,
         bytes memory _signature
     ) internal view returns (bool) {
-        bytes32 _digest = keccak256(abi.encodePacked(homeDomainHash(), _oldRoot, _newRoot));
+        bytes32 _digest = keccak256(abi.encodePacked(_domainHash(_homeDomain), _oldRoot, _newRoot));
         _digest = ECDSA.toEthSignedMessageHash(_digest);
         return (ECDSA.recover(_digest, _signature) == updater);
     }

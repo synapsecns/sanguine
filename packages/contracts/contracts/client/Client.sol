@@ -36,10 +36,19 @@ abstract contract Client is IMessageRecipient {
         uint32 _origin,
         uint32 _nonce,
         bytes32 _sender,
+        uint256 _rootTimestamp,
         bytes memory _message
     ) external {
-        require(msg.sender == replicaManager, "!replica");
-        require(_sender == trustedSender(_origin) && _sender != bytes32(0), "!trustedSender");
+        require(msg.sender == replicaManager, "Client: !replica");
+        require(
+            _sender == trustedSender(_origin) && _sender != bytes32(0),
+            "Client: !trustedSender"
+        );
+        // solhint-disable-next-line do-not-rely-on-time
+        require(
+            block.timestamp >= _rootTimestamp + optimisticSeconds(),
+            "Client: !optimisticSeconds"
+        );
         _handle(_origin, _nonce, _sender, _message);
     }
 
@@ -60,9 +69,13 @@ abstract contract Client is IMessageRecipient {
      */
     function _send(uint32 _destination, bytes memory _message) internal {
         bytes32 recipient = trustedSender(_destination);
-        require(recipient != bytes32(0), "!recipient");
-        Home(home).dispatch(_destination, recipient, _message);
+        require(recipient != bytes32(0), "Client: !recipient");
+        Home(home).dispatch(_destination, recipient, optimisticSeconds(), _message);
     }
+
+    /// @dev Period of time since the root was submitted to Replica. Once this period is over,
+    /// root can be used for proving and executing a message though this Client.
+    function optimisticSeconds() public view virtual returns (uint32);
 
     /**
      * @dev Address of the trusted sender on the destination chain.
