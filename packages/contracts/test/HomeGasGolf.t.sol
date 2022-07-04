@@ -36,6 +36,7 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
             nonce,
             remoteDomain,
             recipient,
+            0,
             messageBody
         );
         bytes32 messageHash = keccak256(message);
@@ -48,7 +49,7 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
             message
         );
         vm.prank(sender);
-        home.dispatch(remoteDomain, recipient, messageBody);
+        home.dispatch(remoteDomain, recipient, 0, messageBody);
         newRoot = home.root();
     }
 

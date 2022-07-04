@@ -20,6 +20,10 @@ contract SynapseClientUpgradeableHarness is SynapseClientUpgradeable {
         bytes memory
     ) internal override {}
 
+    function optimisticSeconds() public pure override returns (uint32) {
+        return 0;
+    }
+
     function send(uint32 _destination, bytes memory _message) external {
         _send(_destination, _message);
     }

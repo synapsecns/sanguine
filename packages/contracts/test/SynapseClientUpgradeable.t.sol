@@ -120,7 +120,7 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         test_setTrustedSender();
 
         vm.prank(replicaManager);
-        client.handle(remoteDomain, 0, trustedSender, bytes(""));
+        client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
 
     function test_handleNotReplica(address _notReplica) public {
@@ -128,18 +128,28 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         test_setTrustedSender();
 
         vm.prank(_notReplica);
-        vm.expectRevert("!replica");
-        client.handle(remoteDomain, 0, trustedSender, bytes(""));
+        vm.expectRevert("Client: !replica");
+        client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
 
-    function test_handleWrongDomain(uint32 _notRemote) public {
+    function test_handleFakeDomain(uint32 _notRemote) public {
         vm.assume(_notRemote != remoteDomain);
 
         test_setTrustedSender();
 
         vm.prank(replicaManager);
-        vm.expectRevert("!trustedSender");
-        client.handle(_notRemote, 0, trustedSender, bytes(""));
+        vm.expectRevert("Client: !trustedSender");
+        client.handle(_notRemote, 0, trustedSender, block.timestamp, bytes(""));
+    }
+
+    function test_handleFakeSender(bytes32 _notSender) public {
+        vm.assume(_notSender != trustedSender);
+
+        test_setTrustedSender();
+
+        vm.prank(replicaManager);
+        vm.expectRevert("Client: !trustedSender");
+        client.handle(remoteDomain, 0, _notSender, block.timestamp, bytes(""));
     }
 
     function test_handleFakeDomainAndSender(uint32 _notRemote) public {
@@ -148,20 +158,18 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         test_setTrustedSender();
 
         vm.prank(replicaManager);
-        vm.expectRevert("!trustedSender");
+        vm.expectRevert("Client: !trustedSender");
         // trustedSender for unknown remote is bytes32(0),
         // but this still has to revert
-        client.handle(_notRemote, 0, bytes32(0), bytes(""));
+        client.handle(_notRemote, 0, bytes32(0), block.timestamp, bytes(""));
     }
 
-    function test_handleWrongSender(bytes32 _notSender) public {
-        vm.assume(_notSender != trustedSender);
-
+    function test_handleOptimisticSecondsNotPassed() public {
         test_setTrustedSender();
 
         vm.prank(replicaManager);
-        vm.expectRevert("!trustedSender");
-        client.handle(remoteDomain, 0, _notSender, bytes(""));
+        vm.expectRevert("Client: !optimisticSeconds");
+        client.handle(remoteDomain, 0, trustedSender, block.timestamp + 1, bytes(""));
     }
 
     event Dispatch(
@@ -181,6 +189,7 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
             0,
             remoteDomain,
             trustedSender,
+            0,
             messageBody
         );
         vm.expectEmit(true, true, true, true);
@@ -190,7 +199,7 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
 
     function test_sendNoRecipient() public {
         bytes memory messageBody = hex"01030307";
-        vm.expectRevert("!recipient");
+        vm.expectRevert("Client: !recipient");
         client.send(remoteDomain, messageBody);
     }
 }
