@@ -10,6 +10,7 @@ import { HomeHarness } from "./harnesses/HomeHarness.sol";
 import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
 
 import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
+import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
 contract SynapseClientTest is SynapseTestWithUpdaterManager {
@@ -163,15 +164,15 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
     function test_send() public {
         test_setTrustedSender();
         bytes memory messageBody = hex"01030307";
-        bytes memory message = Message.formatMessage(
+        bytes memory _header = Header.formatHeader(
             localDomain,
             bytes32(uint256(uint160(address(client)))),
             0,
             remoteDomain,
             trustedSender,
-            0,
-            messageBody
+            0
         );
+        bytes memory message = Message.formatMessage(_header, messageBody);
         vm.expectEmit(true, true, true, true);
         emit Dispatch(keccak256(message), 0, uint64(remoteDomain) << 32, bytes32(0), message);
         client.send(remoteDomain, messageBody);

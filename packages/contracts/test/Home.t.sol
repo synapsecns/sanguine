@@ -3,6 +3,7 @@ pragma solidity 0.8.13;
 
 import "forge-std/console2.sol";
 import { HomeHarness } from "./harnesses/HomeHarness.sol";
+import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
 import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
@@ -94,15 +95,15 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         address sender = vm.addr(1555);
         bytes memory messageBody = bytes("message");
         uint32 nonce = home.nonces(remoteDomain);
-        bytes memory message = Message.formatMessage(
+        bytes memory _header = Header.formatHeader(
             localDomain,
             addressToBytes32(sender),
             nonce,
             remoteDomain,
             recipient,
-            optimisticSeconds,
-            messageBody
+            optimisticSeconds
         );
+        bytes memory message = Message.formatMessage(_header, messageBody);
         bytes32 messageHash = keccak256(message);
         vm.expectEmit(true, true, true, true);
         emit Dispatch(
@@ -122,16 +123,6 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes32 recipient = addressToBytes32(vm.addr(1337));
         address sender = vm.addr(1555);
         bytes memory messageBody = new bytes(2 * 2**10 + 1);
-        uint32 nonce = home.nonces(remoteDomain);
-        bytes memory message = Message.formatMessage(
-            localDomain,
-            addressToBytes32(sender),
-            nonce,
-            remoteDomain,
-            recipient,
-            optimisticSeconds,
-            messageBody
-        );
         vm.prank(sender);
         vm.expectRevert("msg too long");
         home.dispatch(remoteDomain, recipient, optimisticSeconds, messageBody);

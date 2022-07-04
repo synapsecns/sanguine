@@ -21,16 +21,15 @@ contract MessageHarness {
         uint32 _optimisticSeconds,
         bytes memory _messageBody
     ) public pure returns (bytes memory) {
-        return
-            Message.formatMessage(
-                _originDomain,
-                _sender,
-                _nonce,
-                _destinationDomain,
-                _recipient,
-                _optimisticSeconds,
-                _messageBody
-            );
+        bytes memory _header = Header.formatHeader(
+            _originDomain,
+            _sender,
+            _nonce,
+            _destinationDomain,
+            _recipient,
+            _optimisticSeconds
+        );
+        return Message.formatMessage(_header, _messageBody);
     }
 
     /**
@@ -52,16 +51,15 @@ contract MessageHarness {
         uint32 _optimisticSeconds,
         bytes memory _body
     ) public pure returns (bytes32) {
-        return
-            Message.messageHash(
-                _origin,
-                _sender,
-                _nonce,
-                _destination,
-                _recipient,
-                _optimisticSeconds,
-                _body
-            );
+        bytes memory _header = Header.formatHeader(
+            _origin,
+            _sender,
+            _nonce,
+            _destination,
+            _recipient,
+            _optimisticSeconds
+        );
+        return Message.messageHash(_header, _body);
     }
 
     function body(bytes memory _message) external view returns (bytes memory) {
