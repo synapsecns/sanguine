@@ -8,10 +8,10 @@ import (
 type Config struct {
 	// Domains stores all domains
 	Domains DomainConfigs `toml:"Domains"`
-	// DBPath is the db path
-	DBPath string `toml:"DBPath"`
 	// Signer contains the signer config for core
-	Signer SignerConfig
+	Signer SignerConfig `toml:"Signer"`
+	// DbConfig is the database config
+	Database DBConfig `toml:"Database"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

@@ -5,36 +5,58 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/db/datastore/pebble"
+	"github.com/synapsecns/sanguine/core/db/datastore/sql"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/indexer"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"golang.org/x/sync/errgroup"
 )
 
 // Updater updates the updater.
 type Updater struct {
-	indexers  map[string]indexer.DomainIndexer
-	producers map[string]UpdateProducer
+	indexers   map[string]indexer.DomainIndexer
+	producers  map[string]UpdateProducer
+	submitters map[string]UpdateSubmitter
+	signer     signer.Signer
 }
 
 // NewUpdater creates a new updater.
-func NewUpdater(ctx context.Context, cfg config.Config) (Updater, error) {
+func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
 	updater := Updater{
-		indexers:  make(map[string]indexer.DomainIndexer),
-		producers: make(map[string]UpdateProducer),
+		indexers:   make(map[string]indexer.DomainIndexer),
+		producers:  make(map[string]UpdateProducer),
+		submitters: make(map[string]UpdateSubmitter),
 	}
+
+	updater.signer, err = config.SignerFromConfig(cfg.Signer)
+	if err != nil {
+		return Updater{}, fmt.Errorf("could not create updater: %w", err)
+	}
+
+	dbType, err := sql.DBTypeFromString(cfg.Database.Type)
+	if err != nil {
+		return Updater{}, fmt.Errorf("could not get db type: %w", err)
+	}
+
+	txQueueDB, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString)
+	if err != nil {
+		return Updater{}, fmt.Errorf("could not connect to db: %w", err)
+	}
+
 	for name, domain := range cfg.Domains {
 		domainClient, err := evm.NewEVM(ctx, name, domain)
 		if err != nil {
 			return Updater{}, fmt.Errorf("could not create updater for: %w", err)
 		}
 
-		dbHandle, err := pebble.NewMessageDB(cfg.DBPath, name)
+		dbHandle, err := pebble.NewMessageDB(cfg.Database.DBPath, name)
 		if err != nil {
-			return Updater{}, fmt.Errorf("can not create db: %w", err)
+			return Updater{}, fmt.Errorf("can not create messageDB: %w", err)
 		}
 
 		updater.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient)
-		// updater.producers[name] = NewUpdateProducer(domainClient, dbHandle, )
+		updater.producers[name] = NewUpdateProducer(domainClient, dbHandle, updater.signer)
+		updater.submitters[name] = NewUpdateSubmitter(domainClient, dbHandle, txQueueDB, updater.signer)
 	}
 
 	return updater, nil
@@ -47,6 +69,23 @@ func (u Updater) Start(ctx context.Context) error {
 		g.Go(func() error {
 			return domainIndexer.SyncMessages(ctx)
 		})
+	}
+
+	for _, domainProducers := range u.producers {
+		g.Go(func() error {
+			return domainProducers.Start(ctx)
+		})
+	}
+
+	for _, domainSubmitters := range u.submitters {
+		g.Go(func() error {
+			return domainSubmitters.Run(ctx)
+		})
+	}
+
+	err := g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not start the updater: %w", err)
 	}
 
 	return nil

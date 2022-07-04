@@ -21,7 +21,7 @@ func (c ConfigSuite) TestInvalidType() {
 
 	ok, err := testConfig.IsValid(c.GetTestContext())
 	False(c.T(), ok)
-	ErrorIs(c.T(), err, config.UnsupportedSignerType)
+	ErrorIs(c.T(), err, config.ErrUnsupportedSignerType)
 }
 
 func (c ConfigSuite) TestInvalidFile() {

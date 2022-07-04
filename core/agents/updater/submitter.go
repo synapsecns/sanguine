@@ -14,18 +14,21 @@ import (
 type UpdateSubmitter struct {
 	// domain allows access to the home contract
 	domain domains.DomainClient
-	// db contains the db object
-	db db.MessageDB
+	// messageDB contains the messageDB object
+	messageDB db.MessageDB
+	// txQueueDB contains the transaction queue db
+	txQueueDB db.TxQueueDB
 	// signer is the signer
 	signer signer.Signer
 }
 
 // NewUpdateSubmitter creates an update producer.
-func NewUpdateSubmitter(domain domains.DomainClient, db db.MessageDB, signer signer.Signer) UpdateSubmitter {
+func NewUpdateSubmitter(domain domains.DomainClient, messageDB db.MessageDB, txDB db.TxQueueDB, signer signer.Signer) UpdateSubmitter {
 	return UpdateSubmitter{
-		domain: domain,
-		db:     db,
-		signer: signer,
+		domain:    domain,
+		messageDB: messageDB,
+		txQueueDB: txDB,
+		signer:    signer,
 	}
 }
 
@@ -43,7 +46,7 @@ func (u UpdateSubmitter) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		default:
-			signed, err := u.db.RetrieveProducedUpdate(committedRoot)
+			signed, err := u.messageDB.RetrieveProducedUpdate(committedRoot)
 			if errors.Is(err, pebble.ErrNotFound) {
 				logger.Infof("No produced update to submit for committed_root: %s", committedRoot)
 				continue

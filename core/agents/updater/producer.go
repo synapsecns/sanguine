@@ -50,7 +50,7 @@ func (u UpdateProducer) FindLatestRoot() (common.Hash, error) {
 
 // StoreProducedUpdate stores a pending update in the MessageDB for potential submission.
 //
-// This does not produce update meta or update the latest update db value.
+// This does not produce update meta or update the latest update messageDB value.
 // It is used by update production and submission.
 func (u UpdateProducer) StoreProducedUpdate(update types.SignedUpdate) error {
 	existingOpt, err := u.db.RetrieveProducedUpdate(update.Update().PreviousRoot())

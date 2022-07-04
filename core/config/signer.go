@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"strings"
 )
@@ -21,7 +23,7 @@ type SignerConfig struct {
 // IsValid determines if the config is valid.
 func (s SignerConfig) IsValid(_ context.Context) (ok bool, err error) {
 	if !strings.EqualFold(s.Type, FileType.String()) {
-		return false, fmt.Errorf("%w: %s. must be one of: %s", UnsupportedSignerType, s.Type, allSignerTypesList())
+		return false, fmt.Errorf("%w: %s. must be one of: %s", ErrUnsupportedSignerType, s.Type, allSignerTypesList())
 	}
 
 	// TODO: we'll need to switch validity here based on type once we have more then one supported configuration type
@@ -34,8 +36,8 @@ func (s SignerConfig) IsValid(_ context.Context) (ok bool, err error) {
 	return true, nil
 }
 
-// UnsupportedSignerType indicates the signer type being used is unsupported.
-var UnsupportedSignerType = errors.New("unsupported signer type")
+// ErrUnsupportedSignerType indicates the signer type being used is unsupported.
+var ErrUnsupportedSignerType = errors.New("unsupported signer type")
 
 //go:generate go run golang.org/x/tools/cmd/stringer -type=SignerType -linecomment
 type SignerType int
@@ -68,4 +70,23 @@ func allSignerTypesList() string {
 	}
 
 	return strings.Join(res, ",")
+}
+
+// SignerFromConfig creates a new signer from a signer config.
+// TODO: this needs to be moved to some kind of common package.
+// in the old code configs were split into responsible packages. Maybe something like that works here?
+func SignerFromConfig(config SignerConfig) (signer.Signer, error) {
+	switch config.Type {
+	case FileType.String():
+		wall, err := wallet.FromKeyFile(config.File)
+		if err != nil {
+			return nil, fmt.Errorf("could not add signer: %w", err)
+		}
+
+		res := localsigner.NewSigner(wall.PrivateKey())
+
+		return res, nil
+	default:
+		return nil, fmt.Errorf("could not create signer: %w", ErrUnsupportedSignerType)
+	}
 }

@@ -5,16 +5,28 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/agents/updater"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/db/datastore/sql"
 )
 
-func (u UpdaterSuite) TestUpdater() {
-	u.T().Skip("could not update")
+func (u UpdaterSuite) TestUpdaterE2E() {
+	u.T().Skip()
 	testConfig := config.Config{
 		Domains: map[string]config.DomainConfig{
 			"test": u.domainClient.Config(),
 		},
-		DBPath: filet.TmpDir(u.T(), ""),
+		Signer: config.SignerConfig{
+			Type: config.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.wallet.PrivateKeyHex()).Name(),
+		},
+		Database: config.DBConfig{
+			Type:       sql.Sqlite.String(),
+			DBPath:     filet.TmpDir(u.T(), ""),
+			ConnString: filet.TmpDir(u.T(), ""),
+		},
 	}
-	_, err := updater.NewUpdater(u.GetTestContext(), testConfig)
+	ud, err := updater.NewUpdater(u.GetTestContext(), testConfig)
+	Nil(u.T(), err)
+
+	err = ud.Start(u.GetTestContext())
 	Nil(u.T(), err)
 }
