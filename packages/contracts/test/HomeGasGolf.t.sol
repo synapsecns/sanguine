@@ -23,6 +23,7 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
         bytes32 committedRoot,
+        bytes tips,
         bytes message
     );
 
@@ -48,6 +49,7 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
             home.count(),
             (uint64(remoteDomain) << 32) | nonce,
             home.committedRoot(),
+            _tips,
             message
         );
         hoax(sender);

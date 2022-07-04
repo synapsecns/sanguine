@@ -178,6 +178,7 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
         bytes32 committedRoot,
+        bytes tips,
         bytes message
     );
 
@@ -195,7 +196,14 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         bytes memory _tips = getDefaultTips();
         bytes memory message = Message.formatMessage(_header, _tips, messageBody);
         vm.expectEmit(true, true, true, true);
-        emit Dispatch(keccak256(message), 0, uint64(remoteDomain) << 32, bytes32(0), message);
+        emit Dispatch(
+            keccak256(message),
+            0,
+            uint64(remoteDomain) << 32,
+            bytes32(0),
+            _tips,
+            message
+        );
         deal(address(this), TOTAL_TIPS);
         client.send{ value: TOTAL_TIPS }(remoteDomain, _tips, messageBody);
     }
