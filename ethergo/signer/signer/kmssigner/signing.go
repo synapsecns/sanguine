@@ -88,14 +88,17 @@ func (signingHandler *Signer) getSignatureFromKMS(
 }
 
 // SignMessage signs a hashed message.
-func (signingHandler *Signer) SignMessage(ctx context.Context, message []byte) (signer.Signature, error) {
-	hashedMessage := crypto.Keccak256(message)
-	rBytes, sBytes, err := signingHandler.getSignatureFromKMS(ctx, hashedMessage)
+func (signingHandler *Signer) SignMessage(ctx context.Context, message []byte, hash bool) (signer.Signature, error) {
+	if hash {
+		message = crypto.Keccak256(message)
+	}
+
+	rBytes, sBytes, err := signingHandler.getSignatureFromKMS(ctx, message)
 	if err != nil {
 		return nil, fmt.Errorf("could not sign: %w", err)
 	}
 
-	sigBytes, err := signingHandler.getEthereumSignature(signingHandler.pubKeyData.rawPubKey, hashedMessage, rBytes, sBytes)
+	sigBytes, err := signingHandler.getEthereumSignature(signingHandler.pubKeyData.rawPubKey, message, rBytes, sBytes)
 	if err != nil {
 		return nil, fmt.Errorf("could not derive ethereum signature: %w", err)
 	}

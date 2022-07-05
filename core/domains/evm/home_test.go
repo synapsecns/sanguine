@@ -78,7 +78,6 @@ func (i ContractSuite) TestFetchSortedHomeUpdates() {
 }
 
 func (i ContractSuite) TestUpdateHomeContract() {
-	i.T().Skip("TODO: updater home contract")
 	i.NewTestDispatches(1)
 
 	homeIndexer, err := evm.NewHomeContract(i.GetTestContext(), i.testBackend, i.homeContract.Address())
@@ -90,7 +89,7 @@ func (i ContractSuite) TestUpdateHomeContract() {
 	hashedUpdate, err := updater.HashUpdate(producedUpdate)
 	Nil(i.T(), err)
 
-	sig, err := i.signer.SignMessage(i.GetTestContext(), pebble2.ToSlice(hashedUpdate))
+	sig, err := i.signer.SignMessage(i.GetTestContext(), pebble2.ToSlice(hashedUpdate), false)
 	Nil(i.T(), err)
 
 	signedUpdate := types.NewSignedUpdate(producedUpdate, sig)

@@ -108,7 +108,7 @@ func (u UpdateProducer) Start(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("could not hash update: %w", err)
 			}
-			signature, err := u.signer.SignMessage(ctx, pebble2.ToSlice(hashedUpdate))
+			signature, err := u.signer.SignMessage(ctx, pebble2.ToSlice(hashedUpdate), false)
 			if err != nil {
 				return fmt.Errorf("could not sign message: %w", err)
 			}

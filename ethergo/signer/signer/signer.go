@@ -14,7 +14,7 @@ import (
 //go:generate go run github.com/vektra/mockery/v2 --name Signer --output ./mocks --case=underscore
 type Signer interface {
 	// SignMessage signs a message
-	SignMessage(ctx context.Context, message []byte) (Signature, error)
+	SignMessage(ctx context.Context, message []byte, hash bool) (Signature, error)
 	// GetTransactor gets the transactor for a tx manager.
 	// TODO: this doesn't support pre-london txes yet
 	GetTransactor(chainID *big.Int) (*bind.TransactOpts, error)

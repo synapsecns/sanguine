@@ -59,13 +59,13 @@ func (_m *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpts, error) {
 	return r0, r1
 }
 
-// SignMessage provides a mock function with given fields: ctx, message
-func (_m *Signer) SignMessage(ctx context.Context, message []byte) (signer.Signature, error) {
-	ret := _m.Called(ctx, message)
+// SignMessage provides a mock function with given fields: ctx, message, hash
+func (_m *Signer) SignMessage(ctx context.Context, message []byte, hash bool) (signer.Signature, error) {
+	ret := _m.Called(ctx, message, hash)
 
 	var r0 signer.Signature
-	if rf, ok := ret.Get(0).(func(context.Context, []byte) signer.Signature); ok {
-		r0 = rf(ctx, message)
+	if rf, ok := ret.Get(0).(func(context.Context, []byte, bool) signer.Signature); ok {
+		r0 = rf(ctx, message, hash)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(signer.Signature)
@@ -73,8 +73,8 @@ func (_m *Signer) SignMessage(ctx context.Context, message []byte) (signer.Signa
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, []byte) error); ok {
-		r1 = rf(ctx, message)
+	if rf, ok := ret.Get(1).(func(context.Context, []byte, bool) error); ok {
+		r1 = rf(ctx, message, hash)
 	} else {
 		r1 = ret.Error(1)
 	}
