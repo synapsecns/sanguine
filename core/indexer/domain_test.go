@@ -82,7 +82,7 @@ func (i IndexerSuite) TestSyncMessages() {
 	})
 	Nil(i.T(), err)
 
-	domainIndexer := indexer.NewDomainIndexer(testDB, domainClient)
+	domainIndexer := indexer.NewDomainIndexer(testDB, domainClient, 0)
 
 	go func() {
 		ctx, cancel := context.WithTimeout(i.GetTestContext(), time.Second*20)
