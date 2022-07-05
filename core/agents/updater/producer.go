@@ -26,17 +26,17 @@ type UpdateProducer struct {
 	db db.MessageDB
 	// signer is the signer
 	signer signer.Signer
-	// intervalSeconds waits for an interval
-	intervalSeconds time.Duration
+	// interval waits for an interval
+	interval time.Duration
 }
 
 // NewUpdateProducer creates an update producer.
 func NewUpdateProducer(domain domains.DomainClient, db db.MessageDB, signer signer.Signer, intervalSeconds uint) UpdateProducer {
 	return UpdateProducer{
-		domain:          domain,
-		db:              db,
-		signer:          signer,
-		intervalSeconds: time.Duration(intervalSeconds) * time.Second,
+		domain:   domain,
+		db:       db,
+		signer:   signer,
+		interval: time.Duration(intervalSeconds) * time.Second,
 	}
 }
 
@@ -78,7 +78,7 @@ func (u UpdateProducer) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(u.intervalSeconds * time.Second):
+		case <-time.After(u.interval): // TODO: u.interval
 			latestRoot, err := u.FindLatestRoot()
 			if err != nil {
 				return fmt.Errorf("could not find latest root: %w", err)
@@ -89,7 +89,6 @@ func (u UpdateProducer) Start(ctx context.Context) error {
 				// no update produced this time
 				continue
 			}
-
 			if err != nil {
 				return fmt.Errorf("could not suggest update: %w", err)
 			}

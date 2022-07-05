@@ -20,7 +20,7 @@ type Updater struct {
 	signer     signer.Signer
 }
 
-var RefreshInterval uint = 4
+var RefreshInterval uint = 1
 
 // NewUpdater creates a new updater.
 func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
@@ -56,7 +56,7 @@ func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
 			return Updater{}, fmt.Errorf("can not create messageDB: %w", err)
 		}
 
-		updater.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient)
+		updater.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient, RefreshInterval)
 		updater.producers[name] = NewUpdateProducer(domainClient, dbHandle, updater.signer, RefreshInterval)
 		updater.submitters[name] = NewUpdateSubmitter(domainClient, dbHandle, txQueueDB, updater.signer, RefreshInterval)
 	}

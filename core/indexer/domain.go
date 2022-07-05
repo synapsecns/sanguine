@@ -7,6 +7,7 @@ import (
 	"github.com/cockroachdb/pebble"
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
+	"time"
 )
 
 // domainIndexer indexes a single domain and stores event data in the database.
@@ -15,6 +16,8 @@ type domainIndexer struct {
 	db db.MessageDB
 	// domain contains the domain clinet
 	domain domains.DomainClient
+	// intervalSeconds is the number of seconds
+	intervalSeconds time.Duration
 }
 
 // DomainIndexer indexes a domain.
@@ -23,10 +26,11 @@ type DomainIndexer interface {
 }
 
 // NewDomainIndexer creates a new domain indexer.
-func NewDomainIndexer(db db.MessageDB, domain domains.DomainClient) domainIndexer {
+func NewDomainIndexer(db db.MessageDB, domain domains.DomainClient, intervalSeconds uint) domainIndexer {
 	return domainIndexer{
-		db:     db,
-		domain: domain,
+		db:              db,
+		domain:          domain,
+		intervalSeconds: time.Duration(intervalSeconds) * time.Second,
 	}
 }
 
@@ -43,7 +47,7 @@ func (d domainIndexer) SyncMessages(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		default:
+		case <-time.After(d.intervalSeconds):
 			// TODO: this needs some sort of backoff
 			ok, endHeight, err := d.checkAndStoreMessages(ctx, startHeight)
 			if err != nil {

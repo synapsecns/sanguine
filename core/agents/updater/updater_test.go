@@ -9,7 +9,7 @@ import (
 )
 
 func (u UpdaterSuite) TestUpdaterE2E() {
-	u.T().Skip()
+	u.T().Skip("could not update")
 
 	testConfig := config.Config{
 		Domains: map[string]config.DomainConfig{
@@ -28,6 +28,8 @@ func (u UpdaterSuite) TestUpdaterE2E() {
 	ud, err := updater.NewUpdater(u.GetTestContext(), testConfig)
 	Nil(u.T(), err)
 
-	err = ud.Start(u.GetTestContext())
-	Nil(u.T(), err)
+	go func() {
+		err = ud.Start(u.GetTestContext())
+		Nil(u.T(), err)
+	}()
 }
