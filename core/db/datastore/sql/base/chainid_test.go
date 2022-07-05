@@ -26,7 +26,7 @@ func TestGetChainID(t *testing.T) {
 	Equal(t, chainID.Uint64(), testDynamicTx.ChainId().Uint64())
 
 	// dynamic tx with no chain id
-	testDynamicTxNoId := types.NewTx(&types.DynamicFeeTx{})
-	hasType, _ = base.GetChainID(testDynamicTxNoId)
+	testDynamicTxNoID := types.NewTx(&types.DynamicFeeTx{})
+	hasType, _ = base.GetChainID(testDynamicTxNoID)
 	False(t, hasType)
 }

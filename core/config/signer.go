@@ -39,6 +39,7 @@ func (s SignerConfig) IsValid(_ context.Context) (ok bool, err error) {
 // ErrUnsupportedSignerType indicates the signer type being used is unsupported.
 var ErrUnsupportedSignerType = errors.New("unsupported signer type")
 
+// SignerType is the signer type
 //go:generate go run golang.org/x/tools/cmd/stringer -type=SignerType -linecomment
 type SignerType int
 

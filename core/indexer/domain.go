@@ -16,8 +16,8 @@ type domainIndexer struct {
 	db db.MessageDB
 	// domain contains the domain clinet
 	domain domains.DomainClient
-	// intervalSeconds is the number of seconds
-	intervalSeconds time.Duration
+	// interval is the number of seconds
+	interval time.Duration
 }
 
 // DomainIndexer indexes a domain.
@@ -26,11 +26,12 @@ type DomainIndexer interface {
 }
 
 // NewDomainIndexer creates a new domain indexer.
-func NewDomainIndexer(db db.MessageDB, domain domains.DomainClient, intervalSeconds uint) domainIndexer {
+//nolint: golint,revive
+func NewDomainIndexer(db db.MessageDB, domain domains.DomainClient, interval time.Duration) domainIndexer {
 	return domainIndexer{
-		db:              db,
-		domain:          domain,
-		intervalSeconds: time.Duration(intervalSeconds) * time.Second,
+		db:       db,
+		domain:   domain,
+		interval: interval,
 	}
 }
 
@@ -47,7 +48,7 @@ func (d domainIndexer) SyncMessages(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(d.intervalSeconds):
+		case <-time.After(d.interval):
 			// TODO: this needs some sort of backoff
 			ok, endHeight, err := d.checkAndStoreMessages(ctx, startHeight)
 			if err != nil {

@@ -22,6 +22,7 @@ func NewStore(db *gorm.DB) *Store {
 	return &Store{db: db}
 }
 
+// DB gets the database.
 func (s Store) DB() *gorm.DB {
 	return s.db
 }
@@ -42,10 +43,10 @@ func (s Store) StoreRawTx(ctx context.Context, tx *types.Transaction, chainID *b
 	}
 
 	// sanity check for making sure transaction marshaled chainid matches derived chain id (if present)
-	hasID, newId := getChainID(tx)
+	hasID, newID := getChainID(tx)
 	if hasID {
-		if newId.Cmp(chainID) != 0 {
-			return fmt.Errorf("chainid mismatch, expected %d, got %d", chainID, newId)
+		if newID.Cmp(chainID) != 0 {
+			return fmt.Errorf("chainid mismatch, expected %d, got %d", chainID, newID)
 		}
 	}
 
@@ -90,6 +91,7 @@ func (s Store) getRawTXIDByParams(ctx context.Context, nonce uint64, chainID *bi
 	return res.ID, nil
 }
 
+// StoreProcessedTx stores a processed text.
 func (s Store) StoreProcessedTx(ctx context.Context, tx *types.Transaction) error {
 	marshalledTx, err := tx.MarshalBinary()
 	if err != nil {

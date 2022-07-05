@@ -10,8 +10,6 @@ import (
 	"time"
 )
 
-var logger = log.Logger("synapse-sql-base")
-
 // GetGormLogger gets a gorm logger at the correct level
 // TODO investigate https://github.com/moul/zapgorm, we want to use the same write group.
 func GetGormLogger(zapLogger *log.ZapEventLogger) gormLogger.Interface {

@@ -48,10 +48,10 @@ func (t *TxQueueSuite) TestGetTransactor() {
 	Nil(t.T(), err)
 
 	msigner := localsigner.NewSigner(wllt.PrivateKey())
-	testDb, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""))
+	testDB, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""))
 	Nil(t.T(), err)
 
-	testQueue := evm.NewTxQueue(msigner, testDb, chn)
+	testQueue := evm.NewTxQueue(msigner, testDB, chn)
 
 	testTransactor, err := testQueue.GetTransactor(t.GetTestContext(), chn.GetBigChainID())
 	Nil(t.T(), err)

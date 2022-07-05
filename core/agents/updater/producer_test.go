@@ -7,12 +7,13 @@ import (
 	"github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	"time"
 )
 
 func (u UpdaterSuite) TestUpdateProducer() {
 	u.T().Skip("todo: test update producer alone")
 
-	testDb, err := pebble.NewMessageDB(filet.TmpDir(u.T(), ""), "home1")
+	testDB, err := pebble.NewMessageDB(filet.TmpDir(u.T(), ""), "home1")
 	Nil(u.T(), err)
 
 	testWallet, err := wallet.FromRandom()
@@ -20,7 +21,7 @@ func (u UpdaterSuite) TestUpdateProducer() {
 
 	signer := localsigner.NewSigner(testWallet.PrivateKey())
 
-	updateProducer := updater.NewUpdateProducer(u.domainClient, testDb, signer, 1)
+	updateProducer := updater.NewUpdateProducer(u.domainClient, testDB, signer, 1*time.Second)
 	_ = updateProducer
 
 	go func() {

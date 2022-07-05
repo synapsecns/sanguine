@@ -21,18 +21,18 @@ type UpdateSubmitter struct {
 	txQueueDB db.TxQueueDB
 	// signer is the signer
 	signer signer.Signer
-	// intervalSeconds is count in seconds
-	intervalSeconds time.Duration
+	// interval is count in seconds
+	interval time.Duration
 }
 
 // NewUpdateSubmitter creates an update producer.
-func NewUpdateSubmitter(domain domains.DomainClient, messageDB db.MessageDB, txDB db.TxQueueDB, signer signer.Signer, intervalSeconds uint) UpdateSubmitter {
+func NewUpdateSubmitter(domain domains.DomainClient, messageDB db.MessageDB, txDB db.TxQueueDB, signer signer.Signer, interval time.Duration) UpdateSubmitter {
 	return UpdateSubmitter{
-		domain:          domain,
-		messageDB:       messageDB,
-		txQueueDB:       txDB,
-		signer:          signer,
-		intervalSeconds: time.Duration(intervalSeconds) * time.Second,
+		domain:    domain,
+		messageDB: messageDB,
+		txQueueDB: txDB,
+		signer:    signer,
+		interval:  interval,
 	}
 }
 
@@ -42,14 +42,14 @@ func NewUpdateSubmitter(domain domains.DomainClient, messageDB db.MessageDB, txD
 func (u UpdateSubmitter) Start(ctx context.Context) error {
 	committedRoot, err := u.domain.Home().CommittedRoot(ctx)
 	if err != nil {
-		return fmt.Errorf("could not get committed root: %v", err)
+		return fmt.Errorf("could not get committed root: %w", err)
 	}
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(u.intervalSeconds):
+		case <-time.After(u.interval):
 			signed, err := u.messageDB.RetrieveProducedUpdate(committedRoot)
 			if errors.Is(err, pebble.ErrNotFound) {
 				logger.Infof("No produced update to submit for committed_root: %s", committedRoot)

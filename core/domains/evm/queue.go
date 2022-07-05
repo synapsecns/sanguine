@@ -21,12 +21,15 @@ import (
 //   as a result every call to the transactor is treated as unique. Nonce's passed into the transactor are overridden
 type TxQueueTransactor struct {
 	// maxGasPrice is the max gas price to bid for a transactiosn inclusion on a particular chain
+	//nolint: structcheck,unused // TODO
 	maxGasPrice *big.Int
 	// uses1559 indicates whether eip-1559 is enabled on this chain
+	//nolint: structcheck,unused // TODO
 	uses1559 bool
 	// chain contains the client for interacting with the chain
 	chain ChainTransactor
 	// intervalSeconds is how often to bump gas/resubmit on a given chain
+	//nolint: structcheck,unused  // TODO
 	intervalSeconds uint32
 	// signer is the signer to use for signing/submission
 	signer signer.Signer

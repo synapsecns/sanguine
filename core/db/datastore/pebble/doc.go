@@ -1,2 +1,2 @@
-// Package db stores messages.
+// Package pebble stores messages.
 package pebble

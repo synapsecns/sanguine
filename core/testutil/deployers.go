@@ -33,6 +33,9 @@ func (d HomeDeployer) Deploy(ctx context.Context) (backends.DeployedContract, er
 		// deploy the home contract
 		var rawHandle *home.Home
 		address, tx, rawHandle, err = home.DeployHome(transactOps, backend, uint32(d.Backend().GetChainID()))
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy home: %w", err)
+		}
 
 		// initialize the home contract
 		initializationTx, err := rawHandle.Initialize(transactOps, updateManagerContract.Address())
@@ -62,6 +65,7 @@ func (d HomeDeployer) Deploy(ctx context.Context) (backends.DeployedContract, er
 	})
 }
 
+// Dependencies gets a list of dependencies used to deploy the home contract.
 func (d HomeDeployer) Dependencies() []deployer.ContractType {
 	return []deployer.ContractType{UpdaterManagerType}
 }

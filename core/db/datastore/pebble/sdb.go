@@ -19,13 +19,13 @@ type pebbleDB struct {
 
 // NewMessageDB creates a new db.
 func NewMessageDB(dbPath, entity string) (db.MessageDB, error) {
-	messageDb, err := pebble.Open(dbPath, &pebble.Options{})
+	messageDB, err := pebble.Open(dbPath, &pebble.Options{})
 
 	if err != nil {
-		return nil, fmt.Errorf("could not create messageDb: %w", err)
+		return nil, fmt.Errorf("could not create messageDB: %w", err)
 	}
 
-	return &pebbleDB{DB: messageDb, entity: entity}, nil
+	return &pebbleDB{DB: messageDB, entity: entity}, nil
 }
 
 func (d *pebbleDB) RetrieveProducedUpdate(root common.Hash) (types.SignedUpdate, error) {

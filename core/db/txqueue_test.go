@@ -81,7 +81,7 @@ func (t *TxQueueSuite) TestTxInsertion() {
 			Nil(t.T(), err)
 
 			err = testDB.StoreProcessedTx(t.GetTestContext(), signedTx)
-
+			Nil(t.T(), err)
 			// TODO: retrieve the processed tx
 		}
 	})

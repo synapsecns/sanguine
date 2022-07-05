@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/core/indexer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"golang.org/x/sync/errgroup"
+	"time"
 )
 
 // Updater updates the updater.
@@ -20,7 +21,9 @@ type Updater struct {
 	signer     signer.Signer
 }
 
-var RefreshInterval uint = 1
+// RefreshInterval is how long to wait before refreshing.
+//TODO: This should be done in config.
+var RefreshInterval = 1 * time.Second
 
 // NewUpdater creates a new updater.
 func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
@@ -67,21 +70,27 @@ func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
 // Start starts the updater.{.
 func (u Updater) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
-	for _, domainIndexer := range u.indexers {
+	for i := range u.indexers {
+		i := i // capture func literal
 		g.Go(func() error {
-			return domainIndexer.SyncMessages(ctx)
+			//nolint: wrapcheck
+			return u.indexers[i].SyncMessages(ctx)
 		})
 	}
 
-	for _, domainProducers := range u.producers {
+	for i := range u.producers {
+		i := i // capture func literal
 		g.Go(func() error {
-			return domainProducers.Start(ctx)
+			//nolint: wrapcheck
+			return u.producers[i].Start(ctx)
 		})
 	}
 
-	for _, domainSubmitters := range u.submitters {
+	for i := range u.submitters {
+		i := i // capture func literal
 		g.Go(func() error {
-			return domainSubmitters.Start(ctx)
+			//nolint: wrapcheck
+			return u.submitters[i].Start(ctx)
 		})
 	}
 

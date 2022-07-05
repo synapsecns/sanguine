@@ -12,7 +12,8 @@ type DBConfig struct {
 	ConnString string `toml:"ConnString"`
 }
 
-func (d *DBConfig) IsValid(ctx context.Context) (ok bool, err error) {
+// IsValid asserts the database connection is valid.
+func (d *DBConfig) IsValid(_ context.Context) (ok bool, err error) {
 	// TODO: there's no sense implementing this until we have a way to
 	//  discriminate between networked and non-networked checks
 

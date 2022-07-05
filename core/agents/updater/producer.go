@@ -31,12 +31,12 @@ type UpdateProducer struct {
 }
 
 // NewUpdateProducer creates an update producer.
-func NewUpdateProducer(domain domains.DomainClient, db db.MessageDB, signer signer.Signer, intervalSeconds uint) UpdateProducer {
+func NewUpdateProducer(domain domains.DomainClient, db db.MessageDB, signer signer.Signer, interval time.Duration) UpdateProducer {
 	return UpdateProducer{
 		domain:   domain,
 		db:       db,
 		signer:   signer,
-		interval: time.Duration(intervalSeconds) * time.Second,
+		interval: interval,
 	}
 }
 
@@ -63,16 +63,16 @@ func (u UpdateProducer) StoreProducedUpdate(update types.SignedUpdate) error {
 	}
 
 	if errors.Is(err, pebble.ErrNotFound) {
+		//nolint: wrapcheck
 		return u.db.StoreProducedUpdate(update.Update().PreviousRoot(), update)
-	} else {
-		if existingOpt.Update().NewRoot() != update.Update().NewRoot() {
-			return fmt.Errorf("updater attempted to store conflicting update. Existing update: %s. New conflicting update: %S.\"", update.Update().NewRoot(), update.Update().NewRoot())
-		}
+	} else if existingOpt.Update().NewRoot() != update.Update().NewRoot() {
+		return fmt.Errorf("updater attempted to store conflicting update. Existing update: %s. New conflicting update: %S.\"", update.Update().NewRoot(), update.Update().NewRoot())
 	}
 	return nil
 }
 
 // Start starts the update producer.
+//nolint: gocognit, cyclop
 func (u UpdateProducer) Start(ctx context.Context) error {
 	for {
 		select {

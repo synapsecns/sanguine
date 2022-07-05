@@ -11,6 +11,7 @@ import (
 )
 
 // NewStoreFromConfig creates a new datastore from a config file.
+//nolint: wrapcheck
 func NewStoreFromConfig(ctx context.Context, dbType DBType, connString string) (db.TxQueueDB, error) {
 	switch dbType {
 	case Mysql:
@@ -22,6 +23,7 @@ func NewStoreFromConfig(ctx context.Context, dbType DBType, connString string) (
 	}
 }
 
+// DBType is the database driver to use.
 //go:generate go run golang.org/x/tools/cmd/stringer -type=DBType -linecomment
 type DBType int
 
@@ -32,6 +34,7 @@ const (
 	Sqlite DBType = iota // sqlite
 )
 
+// DBTypeFromString parses a database type from a string.
 func DBTypeFromString(str string) (DBType, error) {
 	switch strings.ToLower(str) {
 	case Mysql.String():
@@ -71,4 +74,5 @@ func allDBTypesList() string {
 	return strings.Join(res, ",")
 }
 
+// ErrNoSuchDriver indicates the driver does not exist.
 var ErrNoSuchDriver = errors.New("no such db driver")
