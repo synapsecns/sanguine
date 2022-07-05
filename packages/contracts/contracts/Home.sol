@@ -157,21 +157,6 @@ contract Home is Version0, QueueManager, MerkleTreeManager, SynapseBase {
         _setUpdaterManager(IUpdaterManager(_updaterManager));
     }
 
-    /**
-    * @notice gets the updater digest
-    * @param _oldRoot is the original root
-    * @param _newRoot is the new root
-    */
-    function getUpdaterDigest(
-        bytes32 _oldRoot,
-        bytes32 _newRoot
-    ) public view returns (bytes32) {
-        bytes32 _digest = keccak256(abi.encodePacked(homeDomainHash(), _oldRoot, _newRoot));
-        _digest = ECDSA.toEthSignedMessageHash(_digest);
-
-        return _digest;
-    }
-
     // ============ External Functions  ============
 
     /**
