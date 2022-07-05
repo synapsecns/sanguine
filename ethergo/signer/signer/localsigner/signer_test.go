@@ -14,7 +14,7 @@ func TestSigner(t *testing.T) {
 	Nil(t, err)
 
 	newSigner := localsigner.NewSigner(testWallet.PrivateKey())
-	signature, err := newSigner.SignMessage(context.Background(), []byte("his"))
+	signature, err := newSigner.SignMessage(context.Background(), []byte("his"), true)
 	Nil(t, err)
 	NotNil(t, signature)
 }
