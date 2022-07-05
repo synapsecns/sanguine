@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"time"
 )
 
 // UpdateProducer updates a producer.
@@ -25,14 +26,17 @@ type UpdateProducer struct {
 	db db.MessageDB
 	// signer is the signer
 	signer signer.Signer
+	// intervalSeconds waits for an interval
+	intervalSeconds time.Duration
 }
 
 // NewUpdateProducer creates an update producer.
-func NewUpdateProducer(domain domains.DomainClient, db db.MessageDB, signer signer.Signer) UpdateProducer {
+func NewUpdateProducer(domain domains.DomainClient, db db.MessageDB, signer signer.Signer, intervalSeconds uint) UpdateProducer {
 	return UpdateProducer{
-		domain: domain,
-		db:     db,
-		signer: signer,
+		domain:          domain,
+		db:              db,
+		signer:          signer,
+		intervalSeconds: time.Duration(intervalSeconds) * time.Second,
 	}
 }
 
@@ -74,13 +78,18 @@ func (u UpdateProducer) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		default:
+		case <-time.After(u.intervalSeconds * time.Second):
 			latestRoot, err := u.FindLatestRoot()
 			if err != nil {
 				return fmt.Errorf("could not find latest root: %w", err)
 			}
 
 			suggestedUpdate, err := u.domain.Home().ProduceUpdate(ctx)
+			if errors.Is(err, domains.ErrNoUpdate) {
+				// no update produced this time
+				continue
+			}
+
 			if err != nil {
 				return fmt.Errorf("could not suggest update: %w", err)
 			}

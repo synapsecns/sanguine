@@ -2,6 +2,7 @@ package domains
 
 import (
 	"context"
+	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/types"
@@ -34,3 +35,6 @@ type HomeContract interface {
 	// Update updates the home contract
 	Update(ctx context.Context, signer signer.Signer, update types.SignedUpdate) error
 }
+
+// ErrNoUpdate indicates no update has been produced
+var ErrNoUpdate = errors.New("no update produced")

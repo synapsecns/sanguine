@@ -10,6 +10,7 @@ import (
 
 func (u UpdaterSuite) TestUpdaterE2E() {
 	u.T().Skip()
+
 	testConfig := config.Config{
 		Domains: map[string]config.DomainConfig{
 			"test": u.domainClient.Config(),

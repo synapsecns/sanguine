@@ -1,6 +1,7 @@
 package updater_test
 
 import (
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -13,11 +14,13 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	"github.com/synapsecns/synapse-node/pkg/chainwatcher"
 	"github.com/synapsecns/synapse-node/testutils"
 	"github.com/synapsecns/synapse-node/testutils/backends"
 	"github.com/synapsecns/synapse-node/testutils/backends/preset"
 	"math/big"
 	"testing"
+	"time"
 )
 
 // UpdaterSuite tests the updater agent.
@@ -42,6 +45,8 @@ func NewUpdaterSuite(tb testing.TB) *UpdaterSuite {
 }
 
 func (u *UpdaterSuite) SetupTest() {
+	chainwatcher.PollInterval = time.Second
+
 	u.TestSuite.SetupTest()
 
 	u.testBackend = preset.GetRinkeby().Geth(u.GetTestContext(), u.T())
@@ -61,8 +66,20 @@ func (u *UpdaterSuite) SetupTest() {
 	Nil(u.T(), err)
 
 	// fund the signer
+	_, updaterManager := u.deployManager.GetUpdaterManager(u.GetTestContext(), u.testBackend)
+	owner, err := updaterManager.Owner(&bind.CallOpts{Context: u.GetTestContext()})
+	Nil(u.T(), err)
+
 	u.signer = localsigner.NewSigner(u.wallet.PrivateKey())
 	u.testBackend.FundAccount(u.GetTestContext(), u.signer.Address(), *big.NewInt(params.Ether))
+
+	transactOpts := u.testBackend.GetTxContext(u.GetTestContext(), &owner)
+
+	// set the updater
+	tx, err := updaterManager.SetUpdater(transactOpts.TransactOpts, u.signer.Address())
+	Nil(u.T(), err)
+
+	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
 }
 
 func TestUpdaterSuite(t *testing.T) {

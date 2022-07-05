@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"time"
 )
 
 // UpdateSubmitter submits updates continuously.
@@ -20,22 +21,25 @@ type UpdateSubmitter struct {
 	txQueueDB db.TxQueueDB
 	// signer is the signer
 	signer signer.Signer
+	// intervalSeconds is count in seconds
+	intervalSeconds time.Duration
 }
 
 // NewUpdateSubmitter creates an update producer.
-func NewUpdateSubmitter(domain domains.DomainClient, messageDB db.MessageDB, txDB db.TxQueueDB, signer signer.Signer) UpdateSubmitter {
+func NewUpdateSubmitter(domain domains.DomainClient, messageDB db.MessageDB, txDB db.TxQueueDB, signer signer.Signer, intervalSeconds uint) UpdateSubmitter {
 	return UpdateSubmitter{
-		domain:    domain,
-		messageDB: messageDB,
-		txQueueDB: txDB,
-		signer:    signer,
+		domain:          domain,
+		messageDB:       messageDB,
+		txQueueDB:       txDB,
+		signer:          signer,
+		intervalSeconds: time.Duration(intervalSeconds) * time.Second,
 	}
 }
 
-// Run runs the update submitter
+// Start runs the update submitter
 // todo: next up you need to borrow the tx loop from synapse-node and test well
 // myabe in ethergo? Should be agnostic and utilize nonce manager.
-func (u UpdateSubmitter) Run(ctx context.Context) error {
+func (u UpdateSubmitter) Start(ctx context.Context) error {
 	committedRoot, err := u.domain.Home().CommittedRoot(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get committed root: %v", err)
@@ -45,7 +49,7 @@ func (u UpdateSubmitter) Run(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		default:
+		case <-time.After(u.intervalSeconds):
 			signed, err := u.messageDB.RetrieveProducedUpdate(committedRoot)
 			if errors.Is(err, pebble.ErrNotFound) {
 				logger.Infof("No produced update to submit for committed_root: %s", committedRoot)

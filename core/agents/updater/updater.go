@@ -20,6 +20,8 @@ type Updater struct {
 	signer     signer.Signer
 }
 
+var RefreshInterval uint = 4
+
 // NewUpdater creates a new updater.
 func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
 	updater := Updater{
@@ -55,8 +57,8 @@ func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
 		}
 
 		updater.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient)
-		updater.producers[name] = NewUpdateProducer(domainClient, dbHandle, updater.signer)
-		updater.submitters[name] = NewUpdateSubmitter(domainClient, dbHandle, txQueueDB, updater.signer)
+		updater.producers[name] = NewUpdateProducer(domainClient, dbHandle, updater.signer, RefreshInterval)
+		updater.submitters[name] = NewUpdateSubmitter(domainClient, dbHandle, txQueueDB, updater.signer, RefreshInterval)
 	}
 
 	return updater, nil
@@ -79,7 +81,7 @@ func (u Updater) Start(ctx context.Context) error {
 
 	for _, domainSubmitters := range u.submitters {
 		g.Go(func() error {
-			return domainSubmitters.Run(ctx)
+			return domainSubmitters.Start(ctx)
 		})
 	}
 

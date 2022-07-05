@@ -45,3 +45,12 @@ func NewHomeRef(address common.Address, backend bind.ContractBackend) (*HomeRef,
 }
 
 var _ vm.ContractRef = HomeRef{}
+
+// IHome wraps the generated home interface code.
+type IHome interface {
+	IHomeCaller
+	IHomeFilterer
+	IHomeTransactor
+	vm.ContractRef
+	Parser() Parser
+}

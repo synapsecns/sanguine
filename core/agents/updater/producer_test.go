@@ -20,7 +20,7 @@ func (u UpdaterSuite) TestUpdateProducer() {
 
 	signer := localsigner.NewSigner(testWallet.PrivateKey())
 
-	updateProducer := updater.NewUpdateProducer(u.domainClient, testDb, signer)
+	updateProducer := updater.NewUpdateProducer(u.domainClient, testDb, signer, 1)
 	_ = updateProducer
 
 	go func() {

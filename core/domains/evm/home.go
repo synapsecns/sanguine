@@ -34,7 +34,7 @@ func NewHomeContract(ctx context.Context, client evm.Chain, homeAddress common.A
 // domains.HomeContract.
 type homeContract struct {
 	// contract contains the contract handle
-	contract *home.HomeRef
+	contract home.IHome
 	// client is the client
 	client evm.Chain
 	// nonceManager is the nonce manager used for transacting
@@ -79,6 +79,10 @@ func (h homeContract) ProduceUpdate(ctx context.Context) (types.Update, error) {
 	suggestedUpdate, err := h.contract.SuggestUpdate(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, fmt.Errorf("could not suggest update: %w", err)
+	}
+
+	if suggestedUpdate.New == [32]byte{} {
+		return nil, domains.ErrNoUpdate
 	}
 
 	// TODO, this can be cached
