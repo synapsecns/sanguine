@@ -11,6 +11,8 @@
 *.abigen.go linguist-vendored
 # ignore multicopier files
 *_gen.go linguist-vendored
+# ignore ifacemaker files
+_generated.go linguist-vendored
 
 # svg should be treated as a binary https://git.io/JE2VK
 *.svg    binary
