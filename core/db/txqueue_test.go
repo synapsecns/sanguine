@@ -69,7 +69,7 @@ func (t *TxQueueSuite) TestTxInsertion() {
 
 	t.RunOnAllDBs(func(testDB db.TxQueueDB) {
 		for _, testTx := range testTxes {
-			err := testDB.StoreRawTx(t.GetTestContext(), testTx, testTx.ChainId(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())))
+			err := testDB.StoreRawTx(t.GetTestContext(), testTx, testTx.ChainId(), signer.Address())
 			Nil(t.T(), err)
 
 			// TODO: retrieve raw tx

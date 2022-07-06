@@ -34,7 +34,7 @@ type RawEthTX struct {
 
 // ProcessedEthTx contains a processed ethereum transaction.
 type ProcessedEthTx struct {
-	TxHash string `gorm:"txhash;uniqueIndex:idx_txhash"`
+	TxHash string `gorm:"txhash;uniqueIndex:idx_txhash;size:66"`
 	// RawTx is the raw serialized transaction
 	RawTx []byte `gorm:"column:raw_tx"`
 	// RawEthTx is the txid that caused the event

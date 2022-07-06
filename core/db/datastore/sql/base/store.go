@@ -3,7 +3,6 @@ package base
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -80,11 +79,11 @@ func (s Store) getRawTXIDByParams(ctx context.Context, nonce uint64, chainID *bi
 		From:    sender.String(),
 	}).Find(&res)
 
-	if dbTx.Error != nil {
-		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return 0, db.ErrNotFound
-		}
+	if dbTx.RowsAffected == 0 {
+		return 0, db.ErrNotFound
+	}
 
+	if dbTx.Error != nil {
 		return 0, fmt.Errorf("could not get %T by chainID: %d and nonce: %d. error: %w", &RawEthTX{}, chainID.Uint64(), nonce, dbTx.Error)
 	}
 
