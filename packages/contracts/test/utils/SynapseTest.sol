@@ -66,6 +66,18 @@ contract SynapseTest is Test {
 
     function signRemoteUpdate(
         uint256 privKey,
+        uint32 nonce,
+        bytes32 root
+    ) public returns (bytes memory update, bytes memory signature) {
+        update = HomeUpdate.formatHomeUpdate(remoteDomain, nonce, root);
+        bytes32 digest = keccak256(update);
+        digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", digest));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
+        signature = abi.encodePacked(r, s, v);
+    }
+
+    function signRemoteUpdate(
+        uint256 privKey,
         bytes32 oldRoot,
         bytes32 newRoot
     ) public returns (bytes memory) {

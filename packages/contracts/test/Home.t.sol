@@ -119,7 +119,15 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     // ============ UPDATING MESSAGES ============
     event ImproperUpdate(uint32 nonce, bytes32 root, bytes signature);
 
-    function test_improperUpdate_InvalidNonce() public {
+    function test_improperUpdate_wrongDomain() public {
+        uint32 nonce = 42;
+        bytes32 root = "very real much wow";
+        (bytes memory update, bytes memory sig) = signRemoteUpdate(updaterPK, nonce, root);
+        vm.expectRevert("Wrong domain");
+        home.improperUpdate(updater, update, sig);
+    }
+
+    function test_improperUpdate_fraud_invalidNonce() public {
         test_dispatch();
         uint32 nonce = 1;
         // the correct nonce is 0 for this root
@@ -127,7 +135,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         _testImproperUpdate(nonce, root);
     }
 
-    function test_improperUpdate_CorrectRootWrongNonce() public {
+    function test_improperUpdate_fraud_correctRootWrongNonce() public {
         test_dispatch();
         test_dispatch();
         uint32 nonce = 0;
@@ -136,7 +144,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         _testImproperUpdate(nonce, root);
     }
 
-    function test_improperUpdate_ValidNonceWrongRoot() public {
+    function test_improperUpdate_fraud_validNonceWrongRoot() public {
         test_dispatch();
         uint32 nonce = 0;
         bytes32 root = "this is clearly fraud";

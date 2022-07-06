@@ -317,13 +317,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         return (uint64(_destination) << 32) | _nonce;
     }
 
-    function _isUpdater(uint32 _homeDomain, address _updater)
-        internal
-        view
-        override
-        returns (bool)
-    {
-        return _homeDomain == localDomain && _updater == updater;
+    function _isUpdater(uint32, address _updater) internal view override returns (bool) {
+        return _updater == updater;
     }
 
     function _isWatchtower(address) internal pure override returns (bool) {
