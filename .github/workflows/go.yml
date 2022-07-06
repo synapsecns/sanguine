@@ -104,18 +104,6 @@ jobs:
           sleep 1
           done
 
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-        env:
-          ENABLE_MYSQL_TEST: true
-          MYSQL_HOST: 0.0.0.0
-          MYSQL_USER: user
-          MYSQL_PASSWORD: password
-          MYSQL_DATABASE: test
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
-          GOMAXPROCS: 18
-
       - name: Test
         run:  go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
         env:
