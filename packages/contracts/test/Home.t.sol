@@ -73,18 +73,12 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     // TODO: testHashDomain against Go generated domains
     // function test_homeDomainHash() public {}
 
-    function test_committedRoot() public {
-        bytes32 emptyRoot;
-        assertEq(home.committedRoot(), emptyRoot);
-    }
-
     // ============ DISPATCHING MESSAGING ============
 
     event Dispatch(
         bytes32 indexed messageHash,
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
-        bytes32 committedRoot,
         bytes message
     );
 
@@ -104,17 +98,12 @@ contract HomeTest is SynapseTestWithUpdaterManager {
             messageBody
         );
         bytes32 messageHash = keccak256(message);
+        uint256 count = home.count();
         vm.expectEmit(true, true, true, true);
-        emit Dispatch(
-            messageHash,
-            home.count(),
-            (uint64(remoteDomain) << 32) | nonce,
-            home.committedRoot(),
-            message
-        );
+        emit Dispatch(messageHash, count, (uint64(remoteDomain) << 32) | nonce, message);
         vm.prank(sender);
         home.dispatch(remoteDomain, recipient, optimisticSeconds, messageBody);
-        assert(home.queueContains(home.root()));
+        assert(home.historicalRoots(count) == home.root());
     }
 
     // Rejects messages over a set size
@@ -122,64 +111,44 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes32 recipient = addressToBytes32(vm.addr(1337));
         address sender = vm.addr(1555);
         bytes memory messageBody = new bytes(2 * 2**10 + 1);
-        uint32 nonce = home.nonces(remoteDomain);
-        bytes memory message = Message.formatMessage(
-            localDomain,
-            addressToBytes32(sender),
-            nonce,
-            remoteDomain,
-            recipient,
-            optimisticSeconds,
-            messageBody
-        );
         vm.prank(sender);
         vm.expectRevert("msg too long");
         home.dispatch(remoteDomain, recipient, optimisticSeconds, messageBody);
     }
 
     // ============ UPDATING MESSAGES ============
-    event ImproperUpdate(bytes32 oldRoot, bytes32 newRoot, bytes signature);
+    event ImproperUpdate(uint32 nonce, bytes32 root, bytes signature);
 
-    // Updater fraudulently signs a message that was not dispatched
-    // Results in Home Status becoming Failure
-    function test_improperUpdateAndFailedState() public {
-        assertEq(uint256(home.state()), 1);
-        bytes32 newRoot = "new root";
-        bytes32 oldRoot = home.committedRoot();
-        bytes memory sig = signHomeUpdate(updaterPK, oldRoot, newRoot);
-        vm.expectEmit(false, false, false, true);
-        emit ImproperUpdate(oldRoot, newRoot, sig);
-        home.improperUpdate(oldRoot, newRoot, sig);
+    function test_improperUpdate_InvalidNonce() public {
+        test_dispatch();
+        uint32 nonce = 1;
+        // the correct nonce is 0 for this root
+        bytes32 root = home.root();
+        _testImproperUpdate(nonce, root);
+    }
+
+    function test_improperUpdate_CorrectRootWrongNonce() public {
+        test_dispatch();
+        test_dispatch();
+        uint32 nonce = 0;
+        // the correct nonce is 1 for this root
+        bytes32 root = home.root();
+        _testImproperUpdate(nonce, root);
+    }
+
+    function test_improperUpdate_ValidNonceWrongRoot() public {
+        test_dispatch();
+        uint32 nonce = 0;
+        bytes32 root = "this is clearly fraud";
+        _testImproperUpdate(nonce, root);
+    }
+
+    function _testImproperUpdate(uint32 nonce, bytes32 root) internal {
+        (bytes memory update, bytes memory sig) = signHomeUpdate(updaterPK, nonce, root);
+        vm.expectEmit(true, true, true, true);
+        emit ImproperUpdate(nonce, root, sig);
+        assertTrue(home.improperUpdate(updater, update, sig));
         assertEq(uint256(home.state()), 2);
-        vm.expectRevert("failed state");
-        home.dispatch(0, bytes32(0), optimisticSeconds, bytes(""));
-    }
-
-    // Tests signing new roots of queue, becoming committed root
-    function test_update() public {
-        // Send message first, which will add a new root to merkle
-        test_dispatch();
-        bytes32 newRoot = home.queueEnd();
-        // sign latest update for new root
-        bytes memory sig = signHomeUpdate(updaterPK, home.committedRoot(), newRoot);
-        home.update(home.committedRoot(), home.queueEnd(), sig);
-        // Updater signs latest root
-        assertEq(home.committedRoot(), newRoot);
-        // Queue is cleared, no messages left to sign
-        assert(!home.queueContains(newRoot));
-        assertEq(home.queueLength(), 0);
-    }
-
-    // Only updater can sign new roots
-    function test_cannotUpdateAsFakeUpdater() public {
-        // Send message first, which will add a new root to merkle
-        test_dispatch();
-        bytes32 newRoot = home.queueEnd();
-        bytes32 comittedRoot = home.committedRoot();
-        // fake updater sign new root
-        bytes memory sig = signHomeUpdate(fakeUpdaterPK, comittedRoot, newRoot);
-        vm.expectRevert("!updater sig");
-        home.update(comittedRoot, newRoot, sig);
     }
 
     // Dispatches 4 messages, and then Updater signs latest new roots
@@ -188,10 +157,13 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         test_dispatch();
         test_dispatch();
         test_dispatch();
-        assertEq(home.queueLength(), 4);
-        (bytes32 _committedRoot, bytes32 _new) = home.suggestUpdate();
-        bytes memory sig = signHomeUpdate(updaterPK, _committedRoot, _new);
-        home.update(_committedRoot, _new, sig);
-        assertEq(home.queueLength(), 0);
+        (uint32 nonce, bytes32 root) = home.suggestUpdate();
+        // sanity checks
+        assertEq(nonce, 3);
+        assertEq(root, home.historicalRoots(nonce));
+        (bytes memory update, bytes memory sig) = signHomeUpdate(updaterPK, nonce, root);
+        // Should not be an improper update
+        assertFalse(home.improperUpdate(updater, update, sig));
+        assertEq(uint256(home.state()), 1);
     }
 }

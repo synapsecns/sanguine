@@ -5,8 +5,11 @@ pragma solidity 0.8.13;
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 import "../../contracts/UpdaterManager.sol";
+import { HomeUpdate } from "../../contracts/libs/HomeUpdate.sol";
 
 contract SynapseTest is Test {
+    using HomeUpdate for bytes;
+
     uint256 updaterPK = 1;
     uint256 fakeUpdaterPK = 2;
     address updater = vm.addr(updaterPK);
@@ -35,6 +38,18 @@ contract SynapseTest is Test {
             newRoot
         );
         return message;
+    }
+
+    function signHomeUpdate(
+        uint256 privKey,
+        uint32 nonce,
+        bytes32 root
+    ) public returns (bytes memory update, bytes memory signature) {
+        update = HomeUpdate.formatHomeUpdate(localDomain, nonce, root);
+        bytes32 digest = keccak256(update);
+        digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", digest));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
+        signature = abi.encodePacked(r, s, v);
     }
 
     function signHomeUpdate(

@@ -50,7 +50,16 @@ contract MessageHarness {
         uint32 _optimisticSeconds,
         bytes memory _body
     ) public pure returns (bytes32) {
-        return Message.messageHash(_origin, _sender, _nonce, _destination, _recipient, _optimisticSeconds, _body);
+        return
+            Message.messageHash(
+                _origin,
+                _sender,
+                _nonce,
+                _destination,
+                _recipient,
+                _optimisticSeconds,
+                _body
+            );
     }
 
     function body(bytes memory _message) external view returns (bytes memory) {
