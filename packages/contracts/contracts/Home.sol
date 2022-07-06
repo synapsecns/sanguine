@@ -8,7 +8,6 @@ import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
 import { MerkleTreeManager } from "./Merkle.sol";
-import { QueueManager } from "./Queue.sol";
 import { IUpdaterManager } from "./interfaces/IUpdaterManager.sol";
 // ============ External Imports ============
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
@@ -23,10 +22,9 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Accepts submissions of fraudulent signatures
  * by the Updater and slashes the Updater in this case.
  */
-contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
+contract Home is Version0, MerkleTreeManager, UpdaterStorage {
     // ============ Libraries ============
 
-    using QueueLib for QueueLib.Queue;
     using MerkleLib for MerkleLib.Tree;
 
     // ============ Enums ============
@@ -127,7 +125,6 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
 
     function initialize(IUpdaterManager _updaterManager) public initializer {
         // initialize queue, set Updater Manager, and initialize
-        __QueueManager_initialize();
         _setUpdaterManager(_updaterManager);
         __SynapseBase_initialize(updaterManager.updater());
         state = States.Active;
@@ -208,9 +205,8 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
         );
         // insert the hashed message into the Merkle tree
         bytes32 _messageHash = keccak256(_message);
-        tree.insert(_messageHash);
-        // enqueue the new Merkle root after inserting the message
-        queue.enqueue(root());
+        // new root is added to the historical roots
+        _insertHash(_messageHash);
         // Emit Dispatch event with message information
         // note: leafIndex is count() - 1 since new leaf has already been inserted
         emit Dispatch(
@@ -239,14 +235,12 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
         bytes32 _newRoot,
         bytes memory _signature
     ) external notFailed {
+        // TODO: get rid of update()
+
         // check that the update is not fraudulent;
         // if fraud is detected, Updater is slashed & Home is set to FAILED state
         if (improperUpdate(_committedRoot, _newRoot, _signature)) return;
         // clear all of the intermediate roots contained in this update from the queue
-        while (true) {
-            bytes32 _next = queue.dequeue();
-            if (_next == _newRoot) break;
-        }
         // update the Home state with the latest signed root & emit event
         committedRoot = _newRoot;
         emit Update(localDomain, _committedRoot, _newRoot, _signature);
@@ -260,9 +254,14 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
      * @return _new Latest enqueued Merkle root
      */
     function suggestUpdate() external view returns (bytes32 _committedRoot, bytes32 _new) {
-        if (queue.length() != 0) {
-            _committedRoot = committedRoot;
-            _new = queue.lastItem();
+        // TODO: rework for the new update scheme
+        uint256 length = historicalRoots.length;
+        if (length != 0) {
+            bytes32 lastRoot = historicalRoots[length - 1];
+            if (lastRoot != committedRoot) {
+                _committedRoot = committedRoot;
+                _new = lastRoot;
+            }
         }
     }
 
@@ -334,15 +333,12 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
         bytes32 _newRoot,
         bytes memory _signature
     ) public notFailed returns (bool) {
+        // TODO: implement checking updates with the new scheme
+
         require(_isUpdaterSignature(_oldRoot, _newRoot, _signature), "!updater sig");
         require(_oldRoot == committedRoot, "not a current update");
         // if the _newRoot is not currently contained in the queue,
         // slash the Updater and set the contract to FAILED state
-        if (!queue.contains(_newRoot)) {
-            _fail();
-            emit ImproperUpdate(_oldRoot, _newRoot, _signature);
-            return true;
-        }
         // if the _newRoot is contained in the queue,
         // this is not an improper update
         return false;
