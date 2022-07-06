@@ -73,6 +73,9 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
       - name: Go modules cache
         uses: actions/cache@v2
         with:
