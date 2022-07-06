@@ -701,6 +701,22 @@ func (_m *IHome) ParseUpdaterSlashed(log types.Log) (*home.HomeUpdaterSlashed, e
 	return r0, r1
 }
 
+// Parser provides a mock function with given fields:
+func (_m *IHome) Parser() home.Parser {
+	ret := _m.Called()
+
+	var r0 home.Parser
+	if rf, ok := ret.Get(0).(func() home.Parser); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(home.Parser)
+		}
+	}
+
+	return r0
+}
+
 // QueueContains provides a mock function with given fields: opts, _item
 func (_m *IHome) QueueContains(opts *bind.CallOpts, _item [32]byte) (bool, error) {
 	ret := _m.Called(opts, _item)

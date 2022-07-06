@@ -5,18 +5,24 @@ pragma solidity 0.8.13;
 import "forge-std/Test.sol";
 
 import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
+import { TypeCasts } from "../contracts/libs/TypeCasts.sol";
+
 import { Message } from "../contracts/libs/Message.sol";
 
 import { ReplicaLib } from "../contracts/libs/Replica.sol";
 
 import { ReplicaManagerHarness } from "./harnesses/ReplicaManagerHarness.sol";
 
+import { AppHarness } from "./harnesses/AppHarness.sol";
+
 import { SynapseTest } from "./utils/SynapseTest.sol";
 
 contract ReplicaManagerTest is SynapseTest {
     ReplicaManagerHarness replicaManager;
+    AppHarness dApp;
 
-    uint32 optimisticSeconds;
+    uint32 internal constant OPTIMISTIC_PERIOD = 10;
+
     bytes32 committedRoot;
     uint256 processGas;
     uint256 reserveGas;
@@ -27,12 +33,12 @@ contract ReplicaManagerTest is SynapseTest {
 
     function setUp() public override {
         super.setUp();
-        optimisticSeconds = 10;
         committedRoot = "";
         processGas = 850_000;
         reserveGas = 15_000;
         replicaManager = new ReplicaManagerHarness(localDomain, processGas, reserveGas);
-        replicaManager.initialize(remoteDomain, updater, optimisticSeconds);
+        replicaManager.initialize(remoteDomain, updater);
+        dApp = new AppHarness(OPTIMISTIC_PERIOD);
     }
 
     // ============ INITIAL STATE ============
@@ -47,7 +53,7 @@ contract ReplicaManagerTest is SynapseTest {
 
     function test_cannotInitializeTwice() public {
         vm.expectRevert("Initializable: contract is already initialized");
-        replicaManager.initialize(remoteDomain, updater, optimisticSeconds);
+        replicaManager.initialize(remoteDomain, updater);
     }
 
     // ============ STATE & PERMISSIONING ============
@@ -64,24 +70,6 @@ contract ReplicaManagerTest is SynapseTest {
         vm.prank(replicaManager.owner());
         replicaManager.setUpdater(_updater);
         assertEq(replicaManager.updater(), _updater);
-    }
-
-    function test_cannotSetOptimisticTimeoutAsNotOwner(address _notOwner) public {
-        vm.assume(_notOwner != replicaManager.owner());
-        vm.prank(_notOwner);
-        vm.expectRevert("Ownable: caller is not the owner");
-        replicaManager.setOptimisticTimeout(remoteDomain, 10);
-    }
-
-    event SetOptimisticTimeout(uint32 indexed remoteDomain, uint32 timeout);
-
-    function test_setOptimisticTimeout(uint32 _optimisticSeconds) public {
-        vm.startPrank(replicaManager.owner());
-        assertEq(replicaManager.activeReplicaOptimisticSeconds(remoteDomain), 10);
-        vm.expectEmit(true, false, false, true);
-        emit SetOptimisticTimeout(remoteDomain, _optimisticSeconds);
-        replicaManager.setOptimisticTimeout(remoteDomain, _optimisticSeconds);
-        assertEq(replicaManager.activeReplicaOptimisticSeconds(remoteDomain), _optimisticSeconds);
     }
 
     function test_cannotSetConfirmationAsNotOwner(address _notOwner) public {
@@ -136,7 +124,6 @@ contract ReplicaManagerTest is SynapseTest {
     }
 
     function test_updateWithIncorrectRoot() public {
-        bytes memory newMessage = "new root";
         bytes32 newRoot = "new root";
         vm.expectRevert("not current update");
         replicaManager.update(remoteDomain, newRoot, newRoot, bytes(""));
@@ -153,15 +140,69 @@ contract ReplicaManagerTest is SynapseTest {
     function test_acceptableRoot() public {
         bytes memory newMessage = "new root";
         bytes32 newRoot = keccak256(newMessage);
+        uint32 optimisticSeconds = 69;
         test_successfulUpdate();
-        vm.warp(block.timestamp + optimisticSeconds + 1);
+        vm.warp(block.timestamp + optimisticSeconds);
         assertTrue(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, newRoot));
     }
 
     function test_cannotAcceptableRoot() public {
         bytes32 newRoot = "new root";
         test_successfulUpdate();
+        uint32 optimisticSeconds = 69;
         vm.warp(block.timestamp + optimisticSeconds - 1);
         assertFalse(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, newRoot));
+    }
+
+    function test_process() public {
+        bytes memory message = _prepareProcessTest(OPTIMISTIC_PERIOD);
+        vm.warp(block.timestamp + OPTIMISTIC_PERIOD);
+        replicaManager.process(message);
+    }
+
+    function test_processPeriodNotPassed() public {
+        bytes memory message = _prepareProcessTest(OPTIMISTIC_PERIOD);
+        vm.warp(block.timestamp + OPTIMISTIC_PERIOD - 1);
+        vm.expectRevert("!optimisticSeconds");
+        replicaManager.process(message);
+    }
+
+    function test_processForgedPeriodReduced() public {
+        bytes memory message = _prepareProcessTest(OPTIMISTIC_PERIOD - 1);
+        vm.warp(block.timestamp + OPTIMISTIC_PERIOD - 1);
+        vm.expectRevert("app: !optimisticSeconds");
+        replicaManager.process(message);
+    }
+
+    function test_processForgePeriodZero() public {
+        bytes memory message = _prepareProcessTest(0);
+        vm.expectRevert("app: !optimisticSeconds");
+        replicaManager.process(message);
+    }
+
+    function _prepareProcessTest(uint32 optimisticPeriod) internal returns (bytes memory message) {
+        test_successfulUpdate();
+
+        bytes32 root = replicaManager.activeReplicaCommittedRoot(remoteDomain);
+        assert(root != bytes32(0));
+
+        uint32 nonce = 1234;
+        bytes32 sender = "sender";
+        bytes memory messageBody = "message body";
+        dApp.prepare(remoteDomain, nonce, sender, messageBody);
+        bytes32 recipient = TypeCasts.addressToBytes32(address(dApp));
+
+        message = Message.formatMessage(
+            remoteDomain,
+            sender,
+            nonce,
+            localDomain,
+            recipient,
+            optimisticPeriod,
+            messageBody
+        );
+        bytes32 messageHash = keccak256(message);
+        // Let's imagine message was proved against current root
+        replicaManager.setMessageStatus(remoteDomain, messageHash, root);
     }
 }
