@@ -190,7 +190,7 @@ func createRunFile(version string) (runFile *os.File, err error) {
 	}
 
 	// create a bash file that runs solidity with args passed to the run file
-	_, err = runFile.WriteString(fmt.Sprintf("#!/bin/bash -e \n/usr/local/bin/docker run -v $(pwd):/solidity ethereum/solc:%s \"$@\"", version))
+	_, err = runFile.WriteString(fmt.Sprintf("#!/bin/bash -e \n$(which docker) run -v $(pwd):/solidity ethereum/solc:%s \"$@\"", version))
 	if err != nil {
 		return nil, fmt.Errorf("could not create temp file: %w", err)
 	}
