@@ -22,9 +22,9 @@ func TestCreateRunFile(t *testing.T) {
 }
 
 func (a *AbiSuite) TestCompileSolidity() {
-	if os.Getenv("CI") != "" {
-		a.T().Skip("doesn't work on ci")
-	}
+	//if os.Getenv("CI") != "" {
+	//	a.T().Skip("doesn't work on ci")
+	//}
 
 	vals, err := internal.CompileSolidity("0.8.4", a.exampleFilePath, 1)
 	Nil(a.T(), err)
