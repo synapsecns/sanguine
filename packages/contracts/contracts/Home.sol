@@ -4,6 +4,8 @@ pragma solidity 0.8.13;
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
 import { UpdaterStorage } from "./UpdaterStorage.sol";
+import { AuthManager } from "./auth/AuthManager.sol";
+import { HomeUpdate } from "./libs/HomeUpdate.sol";
 import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
@@ -22,9 +24,10 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Accepts submissions of fraudulent signatures
  * by the Updater and slashes the Updater in this case.
  */
-contract Home is Version0, MerkleTreeManager, UpdaterStorage {
+contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     // ============ Libraries ============
 
+    using HomeUpdate for bytes29;
     using MerkleLib for MerkleLib.Tree;
 
     // ============ Enums ============
@@ -55,13 +58,11 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage {
     IUpdaterManager public updaterManager;
     // Current state of contract
     States public state;
-    // The latest root that has been signed by the Updater
-    bytes32 public committedRoot;
 
     // ============ Upgrade Gap ============
 
     // gap for upgrade safety
-    uint256[46] private __GAP;
+    uint256[47] private __GAP;
 
     // ============ Events ============
 
@@ -72,36 +73,23 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage {
      * @param leafIndex Index of message's leaf in merkle tree
      * @param destinationAndNonce Destination and destination-specific
      *        nonce combined in single field ((destination << 32) & nonce)
-     * @param committedRoot the latest notarized root submitted in the last
-     *        signed Update
      * @param message Raw bytes of message
      */
     event Dispatch(
         bytes32 indexed messageHash,
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
-        bytes32 committedRoot,
         bytes message
     );
 
     /**
      * @notice Emitted when proof of an improper update is submitted,
      * which sets the contract to FAILED state
-     * @param oldRoot Old root of the improper update
-     * @param newRoot New root of the improper update
-     * @param signature Signature on `oldRoot` and `newRoot
+     * @param nonce Nonce of the improper update
+     * @param root Root of the improper update
+     * @param signature Signature on `nonce` and `root`
      */
-    event ImproperUpdate(bytes32 oldRoot, bytes32 newRoot, bytes signature);
-
-    /**
-     * @notice Emitted when proof of a double update is submitted,
-     * which sets the contract to FAILED state
-     * @param oldRoot Old root shared between two conflicting updates
-     * @param newRoot Array containing two conflicting new roots
-     * @param signature Signature on `oldRoot` and `newRoot`[0]
-     * @param signature2 Signature on `oldRoot` and `newRoot`[1]
-     */
-    event DoubleUpdate(bytes32 oldRoot, bytes32[2] newRoot, bytes signature, bytes signature2);
+    event ImproperUpdate(uint32 nonce, bytes32 root, bytes signature);
 
     /**
      * @notice Emitted when the Updater is slashed
@@ -213,82 +201,22 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage {
             _messageHash,
             count() - 1,
             _destinationAndNonce(_destinationDomain, _nonce),
-            committedRoot,
             _message
         );
     }
 
     /**
-     * @notice Submit a signature from the Updater "notarizing" a root,
-     * which updates the Home contract's `committedRoot`,
-     * and publishes the signature which will be relayed to Replica contracts
-     * @dev emits Update event
-     * @dev If _newRoot is not contained in the queue,
-     * the Update is a fraudulent Improper Update, so
-     * the Updater is slashed & Home is set to FAILED state
-     * @param _committedRoot Current updated merkle root which the update is building off of
-     * @param _newRoot New merkle root to update the contract state to
-     * @param _signature Updater signature on `_committedRoot` and `_newRoot`
-     */
-    function update(
-        bytes32 _committedRoot,
-        bytes32 _newRoot,
-        bytes memory _signature
-    ) external notFailed {
-        // TODO: get rid of update()
-
-        // check that the update is not fraudulent;
-        // if fraud is detected, Updater is slashed & Home is set to FAILED state
-        if (improperUpdate(_committedRoot, _newRoot, _signature)) return;
-        // clear all of the intermediate roots contained in this update from the queue
-        // update the Home state with the latest signed root & emit event
-        committedRoot = _newRoot;
-        emit Update(localDomain, _committedRoot, _newRoot, _signature);
-    }
-
-    /**
      * @notice Suggest an update for the Updater to sign and submit.
-     * @dev If queue is empty, null bytes returned for both
-     * (No update is necessary because no messages have been dispatched since the last update)
-     * @return _committedRoot Latest root signed by the Updater
-     * @return _new Latest enqueued Merkle root
+     * @dev If no messages have been sent, null bytes returned for both
+     * @return _nonce Current nonce
+     * @return _root Current merkle root
      */
-    function suggestUpdate() external view returns (bytes32 _committedRoot, bytes32 _new) {
+    function suggestUpdate() external view returns (uint32 _nonce, bytes32 _root) {
         // TODO: rework for the new update scheme
         uint256 length = historicalRoots.length;
         if (length != 0) {
-            bytes32 lastRoot = historicalRoots[length - 1];
-            if (lastRoot != committedRoot) {
-                _committedRoot = committedRoot;
-                _new = lastRoot;
-            }
-        }
-    }
-
-    /**
-     * @notice Called by external agent. Checks that signatures on two sets of
-     * roots are valid and that the new roots conflict with each other. If both
-     * cases hold true, the contract is failed and a `DoubleUpdate` event is
-     * emitted.
-     * @dev When `fail()` is called on Home, updater is slashed.
-     * @param _oldRoot Old root shared between two conflicting updates
-     * @param _newRoot Array containing two conflicting new roots
-     * @param _signature Signature on `_oldRoot` and `_newRoot`[0]
-     * @param _signature2 Signature on `_oldRoot` and `_newRoot`[1]
-     */
-    function doubleUpdate(
-        bytes32 _oldRoot,
-        bytes32[2] calldata _newRoot,
-        bytes calldata _signature,
-        bytes calldata _signature2
-    ) external notFailed {
-        if (
-            _isUpdaterSignature(_oldRoot, _newRoot[0], _signature) &&
-            _isUpdaterSignature(_oldRoot, _newRoot[1], _signature2) &&
-            _newRoot[0] != _newRoot[1]
-        ) {
-            _fail();
-            emit DoubleUpdate(_oldRoot, _newRoot, _signature, _signature2);
+            _nonce = uint32(length - 1);
+            _root = historicalRoots[_nonce];
         }
     }
 
@@ -305,8 +233,10 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage {
      * @notice Check if an Update is an Improper Update;
      * if so, slash the Updater and set the contract to FAILED state.
      *
-     * An Improper Update is an update building off of the Home's `committedRoot`
-     * for which the `_newRoot` does not currently exist in the Home's queue.
+     * An Improper Update is a (_nonce, _root) update that doesn't correspond with
+     * the historical state of Home contract. Either of those needs to be true:
+     * - _nonce is higher than current nonce (no root exists for this nonce)
+     * - _root is not equal to the historical root of _nonce
      * This would mean that message(s) that were not truly
      * dispatched on Home were falsely included in the signed root.
      *
@@ -317,49 +247,37 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage {
      * it should be relayed to the Home contract using this function
      * in order to slash the Updater with an Improper Update.
      *
-     * An Improper Update submitted to the Replica is only valid
-     * while the `_oldRoot` is still equal to the `committedRoot` on Home;
-     * if the `committedRoot` on Home has already been updated with a valid Update,
-     * then the Updater should be slashed with a Double Update.
      * @dev Reverts (and doesn't slash updater) if signature is invalid or
      * update not current
-     * @param _oldRoot Old merkle tree root (should equal home's committedRoot)
-     * @param _newRoot New merkle tree root
-     * @param _signature Updater signature on `_oldRoot` and `_newRoot`
+     * @param _updater      Updater who signed the update
+     * @param _update       Update message
+     * @param _signature    Updater signature on `_update`
      * @return TRUE if update was an Improper Update (implying Updater was slashed)
      */
     function improperUpdate(
-        bytes32 _oldRoot,
-        bytes32 _newRoot,
+        address _updater,
+        bytes memory _update,
         bytes memory _signature
     ) public notFailed returns (bool) {
-        // TODO: implement checking updates with the new scheme
-
-        require(_isUpdaterSignature(_oldRoot, _newRoot, _signature), "!updater sig");
-        require(_oldRoot == committedRoot, "not a current update");
-        // if the _newRoot is not currently contained in the queue,
-        // slash the Updater and set the contract to FAILED state
-        // if the _newRoot is contained in the queue,
-        // this is not an improper update
-        return false;
+        // This will revert if signature is not valid
+        bytes29 homeUpdate = _checkUpdaterAuth(_updater, _update, _signature);
+        require(homeUpdate.homeDomain() == localDomain, "Wrong domain");
+        uint32 _nonce = homeUpdate.nonce();
+        bytes32 _root = homeUpdate.root();
+        // Check if nonce is valid, if not => update is fraud
+        if (_nonce < historicalRoots.length) {
+            if (_root == historicalRoots[_nonce]) {
+                // Signed (nonce, root) update is valid
+                return false;
+            }
+            // Signed root is not the same as the historical one => update is fraud
+        }
+        _fail();
+        emit ImproperUpdate(_nonce, _root, _signature);
+        return true;
     }
 
     // ============ Internal Functions  ============
-
-    /**
-     * @notice Checks that signature was signed by Updater on the local chain
-     * @param _oldRoot Old merkle root
-     * @param _newRoot New merkle root
-     * @param _signature Signature on `_oldRoot` and `_newRoot`
-     * @return TRUE if signature is valid signed by updater
-     **/
-    function _isUpdaterSignature(
-        bytes32 _oldRoot,
-        bytes32 _newRoot,
-        bytes memory _signature
-    ) internal view returns (bool) {
-        return _isUpdaterSignature(localDomain, _oldRoot, _newRoot, _signature);
-    }
 
     /**
      * @notice Set the UpdaterManager
@@ -397,5 +315,18 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage {
         returns (uint64)
     {
         return (uint64(_destination) << 32) | _nonce;
+    }
+
+    function _isUpdater(uint32 _homeDomain, address _updater)
+        internal
+        view
+        override
+        returns (bool)
+    {
+        return _homeDomain == localDomain && _updater == updater;
+    }
+
+    function _isWatchtower(address) internal pure override returns (bool) {
+        return false;
     }
 }
