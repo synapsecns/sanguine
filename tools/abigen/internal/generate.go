@@ -154,6 +154,8 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 		return nil, fmt.Errorf("could not write to sol tmp file at %s: %w", solFile.Name(), err)
 	}
 
+	_ = solFile.Close()
+
 	defer func() {
 		if err == nil {
 			err = os.Remove(solFile.Name())
