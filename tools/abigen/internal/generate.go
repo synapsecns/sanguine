@@ -134,6 +134,8 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 		return nil, err
 	}
 
+	_ = runFile.Close()
+
 	wd, err := os.Getwd()
 	if err != nil {
 		return nil, fmt.Errorf("could not determine working dir: %w", err)
@@ -153,8 +155,6 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 	if err != nil {
 		return nil, fmt.Errorf("could not write to sol tmp file at %s: %w", solFile.Name(), err)
 	}
-
-	_ = solFile.Close()
 
 	defer func() {
 		if err == nil {
