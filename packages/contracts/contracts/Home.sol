@@ -212,7 +212,6 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      * @return _root Current merkle root
      */
     function suggestUpdate() external view returns (uint32 _nonce, bytes32 _root) {
-        // TODO: rework for the new update scheme
         uint256 length = historicalRoots.length;
         if (length != 0) {
             _nonce = uint32(length - 1);
@@ -261,7 +260,6 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     ) public notFailed returns (bool) {
         // This will revert if signature is not valid
         bytes29 homeUpdate = _checkUpdaterAuth(_updater, _update, _signature);
-        require(homeUpdate.homeDomain() == localDomain, "Wrong domain");
         uint32 _nonce = homeUpdate.nonce();
         bytes32 _root = homeUpdate.root();
         // Check if nonce is valid, if not => update is fraud
@@ -317,7 +315,13 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         return (uint64(_destination) << 32) | _nonce;
     }
 
-    function _isUpdater(uint32, address _updater) internal view override returns (bool) {
+    function _isUpdater(uint32 _homeDomain, address _updater)
+        internal
+        view
+        override
+        returns (bool)
+    {
+        require(_homeDomain == localDomain, "Wrong domain");
         return _updater == updater;
     }
 
