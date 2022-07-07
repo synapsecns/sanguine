@@ -3,6 +3,8 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { UpdaterStorage } from "./UpdaterStorage.sol";
+import { AuthManager } from "./auth/AuthManager.sol";
+import { HomeUpdate } from "./libs/HomeUpdate.sol";
 import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
@@ -16,13 +18,14 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract ReplicaManager is Version0, UpdaterStorage {
+contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     // ============ Libraries ============
 
     using ReplicaLib for ReplicaLib.Replica;
     using MerkleLib for MerkleLib.Tree;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
+    using HomeUpdate for bytes29;
     using Message for bytes29;
 
     // ============ Immutables ============
@@ -118,8 +121,8 @@ contract ReplicaManager is Version0, UpdaterStorage {
 
     // ============ Active Replica Views ============
 
-    function activeReplicaCommittedRoot(uint32 _remoteDomain) external view returns (bytes32) {
-        return allReplicas[activeReplicas[_remoteDomain]].committedRoot;
+    function activeReplicaNonce(uint32 _remoteDomain) external view returns (uint32) {
+        return allReplicas[activeReplicas[_remoteDomain]].nonce;
     }
 
     function activeReplicaConfirmedAt(uint32 _remoteDomain, bytes32 _root)
@@ -149,28 +152,27 @@ contract ReplicaManager is Version0, UpdaterStorage {
      * marks root's allowable confirmation time, and emits an `Update` event.
      * @dev Reverts if update doesn't build off latest committedRoot
      * or if signature is invalid.
-     * @param _oldRoot Old merkle root
-     * @param _newRoot New merkle root
-     * @param _signature Updater's signature on `_oldRoot` and `_newRoot` = `keccak256(message, optimisticSeconds)`
+     * @param _updater      Updater who signer the update
+     * @param _update       Message with update details
+     * @param _signature    Updater's signature on `_update`
      */
     function update(
-        uint32 _remoteDomain,
-        bytes32 _oldRoot,
-        bytes32 _newRoot,
+        address _updater,
+        bytes memory _update,
         bytes memory _signature
     ) external {
-        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
-        // ensure that update is building off the last submitted root
-        require(_oldRoot == replica.committedRoot, "not current update");
-        // validate updater signature
-        require(_isUpdaterSignature(_remoteDomain, _oldRoot, _newRoot, _signature), "!updater sig");
+        bytes29 homeUpdate = _checkUpdaterAuth(_updater, _update, _signature);
+        uint32 remoteDomain = homeUpdate.updateDomain();
+        uint32 nonce = homeUpdate.updateNonce();
+        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[remoteDomain]];
+        require(nonce > replica.nonce, "Update older than current state");
         // Hook for future use
         _beforeUpdate();
-        // set the new root's confirmation timer
-        replica.setConfirmAt(_newRoot, block.timestamp);
-        // update committedRoot
-        replica.setCommittedRoot(_newRoot);
-        emit Update(_remoteDomain, _oldRoot, _newRoot, _signature);
+        bytes32 newRoot = homeUpdate.updateRoot();
+        replica.setConfirmAt(newRoot, block.timestamp);
+        // update nonce
+        replica.setNonce(nonce);
+        emit Update(remoteDomain, nonce, newRoot, _signature);
     }
 
     /**
@@ -391,5 +393,13 @@ contract ReplicaManager is Version0, UpdaterStorage {
             _returnData := add(_returnData, 0x04)
         }
         return abi.decode(_returnData, (string)); // All that remains is the revert string
+    }
+
+    function _isUpdater(uint32, address _updater) internal view override returns (bool) {
+        return _updater == updater;
+    }
+
+    function _isWatchtower(address) internal pure override returns (bool) {
+        return false;
     }
 }

@@ -37,14 +37,15 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
      * @notice Emitted when update is made on Home
      * or unconfirmed update root is submitted on Replica
      * @param homeDomain Domain of home contract
-     * @param oldRoot Old merkle root
-     * @param newRoot New merkle root
-     * @param signature Updater's signature on `oldRoot` and `newRoot`
+     * @param nonce Nonce of new merkle root
+     * @param root New merkle root
+     * @param signature Updater's signature on `homeDomain`, `nonce` and `root`
      */
+    // TODO: emit abi encoded update instead?
     event Update(
         uint32 indexed homeDomain,
-        bytes32 indexed oldRoot,
-        bytes32 indexed newRoot,
+        uint32 indexed nonce,
+        bytes32 indexed root,
         bytes signature
     );
 
