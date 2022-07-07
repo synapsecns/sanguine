@@ -18,14 +18,14 @@ contract ReplicaTest is SynapseTest {
     }
 
     function test_setup() public {
-        assertEq(replica.committedRoot, bytes32(""));
+        assertEq(replica.nonce, 0);
         assertEq(replica.remoteDomain, remoteDomain);
         assertEq(uint256(replica.status), 1);
     }
 
-    function test_setCommittedRoot(bytes32 _committedRoot) public {
-        replica.setCommittedRoot(_committedRoot);
-        assertEq(replica.committedRoot, _committedRoot);
+    function test_setNonce(uint32 _nonce) public {
+        replica.setNonce(_nonce);
+        assertEq(replica.nonce, _nonce);
     }
 
     function test_setConfirmAt(bytes32 _committedRoot, uint256 _confirmAt) public {

@@ -23,7 +23,8 @@ contract ReplicaManagerTest is SynapseTest {
 
     uint32 internal constant OPTIMISTIC_PERIOD = 10;
 
-    bytes32 committedRoot;
+    bytes32 internal constant ROOT = keccak256("test root");
+
     uint256 processGas;
     uint256 reserveGas;
 
@@ -33,7 +34,6 @@ contract ReplicaManagerTest is SynapseTest {
 
     function setUp() public override {
         super.setUp();
-        committedRoot = "";
         processGas = 850_000;
         reserveGas = 15_000;
         replicaManager = new ReplicaManagerHarness(localDomain, processGas, reserveGas);
@@ -76,7 +76,7 @@ contract ReplicaManagerTest is SynapseTest {
         vm.assume(_notOwner != replicaManager.owner());
         vm.prank(_notOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        replicaManager.setConfirmation(remoteDomain, committedRoot, 0);
+        replicaManager.setConfirmation(remoteDomain, ROOT, 0);
     }
 
     event SetConfirmation(
@@ -88,70 +88,61 @@ contract ReplicaManagerTest is SynapseTest {
 
     function test_setConfirmation(uint256 _confirmAt) public {
         vm.startPrank(replicaManager.owner());
-        bytes32 activeCommittedRoot = replicaManager.activeReplicaCommittedRoot(remoteDomain);
-        assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, activeCommittedRoot), 0);
-        vm.expectEmit(true, true, false, true);
-        emit SetConfirmation(remoteDomain, committedRoot, 0, _confirmAt);
-        replicaManager.setConfirmation(remoteDomain, activeCommittedRoot, _confirmAt);
-        assertEq(
-            replicaManager.activeReplicaConfirmedAt(remoteDomain, activeCommittedRoot),
-            _confirmAt
-        );
+        assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), 0);
+        vm.expectEmit(true, true, true, true);
+        emit SetConfirmation(remoteDomain, ROOT, 0, _confirmAt);
+        replicaManager.setConfirmation(remoteDomain, ROOT, _confirmAt);
+        assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), _confirmAt);
     }
 
     event Update(
         uint32 indexed homeDomain,
-        bytes32 indexed oldRoot,
-        bytes32 indexed newRoot,
+        uint32 indexed nonce,
+        bytes32 indexed root,
         bytes signature
     );
 
     // Relayer relays a new root signed by updater on Home chain
     function test_successfulUpdate() public {
-        bytes memory newMessage = "new root";
-        bytes32 newRoot = keccak256(newMessage);
+        uint32 nonce = 42;
         assertEq(replicaManager.updater(), vm.addr(updaterPK));
-        bytes memory sig = signRemoteUpdate(updaterPK, committedRoot, newRoot);
+        (bytes memory update, bytes memory sig) = signRemoteUpdate(updaterPK, nonce, ROOT);
         // Root doesn't exist yet
-        assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, newRoot), 0);
+        assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), 0);
         // Relayer sends over a root signed by the updater on the Home chain
         vm.expectEmit(true, true, true, true);
-        emit Update(remoteDomain, committedRoot, newRoot, sig);
-        replicaManager.update(remoteDomain, committedRoot, newRoot, sig);
+        emit Update(remoteDomain, nonce, ROOT, sig);
+        replicaManager.update(updater, update, sig);
         // Time at which root was confirmed is set, optimistic timeout starts now
-        assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, newRoot), block.timestamp);
-        assertEq(replicaManager.activeReplicaCommittedRoot(remoteDomain), newRoot);
+        assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), block.timestamp);
     }
 
-    function test_updateWithIncorrectRoot() public {
-        bytes32 newRoot = "new root";
-        vm.expectRevert("not current update");
-        replicaManager.update(remoteDomain, newRoot, newRoot, bytes(""));
+    function test_updateWithFakeSigner() public {
+        uint32 nonce = 42;
+        (bytes memory update, bytes memory sig) = signRemoteUpdate(fakeUpdaterPK, nonce, ROOT);
+        vm.expectRevert("Signer is not an updater");
+        replicaManager.update(fakeUpdater, update, sig);
     }
 
-    function test_updateWithIncorrectSig() public {
-        bytes memory newMessage = "new root";
-        bytes32 newRoot = keccak256(newMessage);
-        bytes memory sig = signRemoteUpdate(fakeUpdaterPK, committedRoot, newRoot);
-        vm.expectRevert("!updater sig");
-        replicaManager.update(remoteDomain, committedRoot, newRoot, sig);
+    function test_updateWithInvalidSignature() public {
+        uint32 nonce = 42;
+        (bytes memory update, bytes memory sig) = signRemoteUpdate(fakeUpdaterPK, nonce, ROOT);
+        vm.expectRevert("Invalid signature");
+        replicaManager.update(updater, update, sig);
     }
 
     function test_acceptableRoot() public {
-        bytes memory newMessage = "new root";
-        bytes32 newRoot = keccak256(newMessage);
         uint32 optimisticSeconds = 69;
         test_successfulUpdate();
         vm.warp(block.timestamp + optimisticSeconds);
-        assertTrue(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, newRoot));
+        assertTrue(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
     }
 
     function test_cannotAcceptableRoot() public {
-        bytes32 newRoot = "new root";
         test_successfulUpdate();
         uint32 optimisticSeconds = 69;
         vm.warp(block.timestamp + optimisticSeconds - 1);
-        assertFalse(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, newRoot));
+        assertFalse(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
     }
 
     function test_process() public {
@@ -183,9 +174,6 @@ contract ReplicaManagerTest is SynapseTest {
     function _prepareProcessTest(uint32 optimisticPeriod) internal returns (bytes memory message) {
         test_successfulUpdate();
 
-        bytes32 root = replicaManager.activeReplicaCommittedRoot(remoteDomain);
-        assert(root != bytes32(0));
-
         uint32 nonce = 1234;
         bytes32 sender = "sender";
         bytes memory messageBody = "message body";
@@ -203,6 +191,6 @@ contract ReplicaManagerTest is SynapseTest {
         );
         bytes32 messageHash = keccak256(message);
         // Let's imagine message was proved against current root
-        replicaManager.setMessageStatus(remoteDomain, messageHash, root);
+        replicaManager.setMessageStatus(remoteDomain, messageHash, ROOT);
     }
 }
