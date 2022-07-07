@@ -44,21 +44,21 @@ library HomeUpdate {
     /**
      * @notice Returns domain of chain where the Home contract is deployed
      */
-    function homeDomain(bytes29 _homeUpdate) internal pure returns (uint32) {
+    function updateDomain(bytes29 _homeUpdate) internal pure returns (uint32) {
         return uint32(_homeUpdate.indexUint(OFFSET_HOME_DOMAIN, 4));
     }
 
     /**
      * @notice Returns nonce of Home contract at the time, when `root` was the Merkle root.
      */
-    function nonce(bytes29 _homeUpdate) internal pure returns (uint32) {
+    function updateNonce(bytes29 _homeUpdate) internal pure returns (uint32) {
         return uint32(_homeUpdate.indexUint(OFFSET_NONCE, 4));
     }
 
     /**
      * @notice Returns a historical Merkle root from the Home contract
      */
-    function root(bytes29 _homeUpdate) internal pure returns (bytes32) {
+    function updateRoot(bytes29 _homeUpdate) internal pure returns (bytes32) {
         return _homeUpdate.index(OFFSET_ROOT, 32);
     }
 }

@@ -37,7 +37,7 @@ abstract contract AuthManager {
         // This will revert if signature is invalid
         _view = Auth.checkSignature(_updater, _payload, _signature);
         require(_view.isValidUpdate(), "Message is not a valid update");
-        require(_isUpdater(_view.homeDomain(), _updater), "Signer is not an updater");
+        require(_isUpdater(_view.updateDomain(), _updater), "Signer is not an updater");
     }
 
     function _checkWatchtowerAuth(

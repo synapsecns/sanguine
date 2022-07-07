@@ -260,8 +260,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     ) public notFailed returns (bool) {
         // This will revert if signature is not valid
         bytes29 homeUpdate = _checkUpdaterAuth(_updater, _update, _signature);
-        uint32 _nonce = homeUpdate.nonce();
-        bytes32 _root = homeUpdate.root();
+        uint32 _nonce = homeUpdate.updateNonce();
+        bytes32 _root = homeUpdate.updateRoot();
         // Check if nonce is valid, if not => update is fraud
         if (_nonce < historicalRoots.length) {
             if (_root == historicalRoots[_nonce]) {
