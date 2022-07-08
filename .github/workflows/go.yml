@@ -121,6 +121,8 @@ jobs:
         run: |
           export IGNORED=$(find . \( -name "*_generated.go" -o -name "*.abigen.go"  \) -print0 | xargs -0 ls |  tr '\n' ',' |  sed 's/,*\r*$//')
           echo "::set-env name=IGNORED::$IGNORED"
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
       # We customize the build step because by default
       # We can not use ** because goveralls uses filepath.Match
