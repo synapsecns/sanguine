@@ -10,8 +10,8 @@ library HomeUpdate {
     /**
      * @dev HomeUpdate memory layout
      * [000 .. 004): homeDomain     uint32   4 bytes
-     * [004 .. 008): nonce           uint32   4 bytes
-     * [008 .. 040): root          bytes32 32 bytes
+     * [004 .. 008): nonce          uint32   4 bytes
+     * [008 .. 040): root           bytes32 32 bytes
      */
 
     uint256 internal constant OFFSET_HOME_DOMAIN = 0;
