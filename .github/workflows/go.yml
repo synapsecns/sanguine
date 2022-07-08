@@ -119,7 +119,7 @@ jobs:
       - name: Generate ignore list
         # generate a list of files to ignore on goveralls
         run: |
-          echo "IGNORED=$(find . \( -name "*_generated.go" -o -name "*.abigen.go"  \) -print0 | xargs -0 ls | sed 's/.\/*//' | tr '\n' ',' |  sed 's/,*\r*$//')" >> $GITHUB_ENV
+          echo "IGNORED=$(find . \( -name "*_generated.go" -o -name "*.abigen.go"  -o -name "*_string.go"   \) -print0 | xargs -0 ls | sed 's/.\/*//' | tr '\n' ',' |  sed 's/,*\r*$//')" >> $GITHUB_ENV
 
       # We customize the build step because by default
       # We can not use ** because goveralls uses filepath.Match
