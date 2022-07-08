@@ -131,6 +131,13 @@ contract ReplicaManagerTest is SynapseTest {
         replicaManager.update(updater, update, sig);
     }
 
+    function test_updateWithLocalDomain() public {
+        uint32 nonce = 42;
+        (bytes memory update, bytes memory sig) = signHomeUpdate(updaterPK, nonce, ROOT);
+        vm.expectRevert("Update refers to local chain");
+        replicaManager.update(updater, update, sig);
+    }
+
     function test_acceptableRoot() public {
         uint32 optimisticSeconds = 69;
         test_successfulUpdate();
