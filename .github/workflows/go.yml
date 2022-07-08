@@ -121,6 +121,7 @@ jobs:
         with:
           github-token: ${{ secrets.github_token }}
           path-to-profile: profile.cov
+          ignore: "*_generated.go"
 
   #note: right now this is not run against all work dirs
   lint:
