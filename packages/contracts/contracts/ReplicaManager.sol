@@ -163,6 +163,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     ) external {
         bytes29 homeUpdate = _checkUpdaterAuth(_updater, _update, _signature);
         uint32 remoteDomain = homeUpdate.updateDomain();
+        require(remoteDomain != localDomain, "Update refers to local chain");
         uint32 nonce = homeUpdate.updateNonce();
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[remoteDomain]];
         require(nonce > replica.nonce, "Update older than current state");
