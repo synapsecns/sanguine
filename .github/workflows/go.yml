@@ -104,8 +104,14 @@ jobs:
           sleep 1
           done
 
+      - name: Install go-acc
+        shell: bash
+        run: go get -u github.com/ory/go-acc
+        env:
+          GO111MODULE: "on"
+
       - name: Test
-        run:  go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
+        run:  go-acc -o profile.cov $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
         env:
           ENABLE_MYSQL_TEST: true
           MYSQL_HOST: 0.0.0.0
