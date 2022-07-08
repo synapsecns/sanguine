@@ -116,12 +116,21 @@ jobs:
           MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
           GOMAXPROCS: 18
 
+      - name: Generate ignore list
+        # generate a list of files to ignore on goveralls
+        run: |
+          export IGNORED=$(find . \( -name "*_generated.go" -o -name "*.abigen.go"  \) -print0 | xargs -0 ls |  tr '\n' ',' |  sed 's/,*\r*$//')
+          echo "::set-env name=IGNORED::$IGNORED"
+
+      # We customize the build step because by default
+      # We can not use ** because goveralls uses filepath.Match
+      # to match ignore files and it does not support it.
       - name: Send coverage
         uses: shogo82148/actions-goveralls@v1
         with:
           github-token: ${{ secrets.github_token }}
           path-to-profile: profile.cov
-          ignore: "**/*_generated.go,**/*.abigen.go"
+          ignore: ${{ env.IGNORED }}
 
   #note: right now this is not run against all work dirs
   lint:
