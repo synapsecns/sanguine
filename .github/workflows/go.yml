@@ -121,7 +121,7 @@ jobs:
         with:
           github-token: ${{ secrets.github_token }}
           path-to-profile: profile.cov
-          ignore: "**/*_generated.go,**/*.abigen.go,core/contracts/home/home.abigen.go"
+          ignore: "**/*_generated.go,**/*.abigen.go"
 
   #note: right now this is not run against all work dirs
   lint:
