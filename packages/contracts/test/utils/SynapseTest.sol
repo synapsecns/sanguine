@@ -27,41 +27,13 @@ contract SynapseTest is Test {
         vm.label(fakeSigner, "fake signer");
     }
 
-    function getMessage(
-        bytes32 oldRoot,
-        bytes32 newRoot,
-        uint32 domain
-    ) public pure returns (bytes memory) {
-        bytes memory message = abi.encodePacked(
-            keccak256(abi.encodePacked(domain, "SYN")),
-            oldRoot,
-            newRoot
-        );
-        return message;
-    }
-
     function signHomeUpdate(
         uint256 privKey,
         uint32 nonce,
         bytes32 root
     ) public returns (bytes memory update, bytes memory signature) {
         update = HomeUpdate.formatHomeUpdate(localDomain, nonce, root);
-        bytes32 digest = keccak256(update);
-        digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", digest));
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
-        signature = abi.encodePacked(r, s, v);
-    }
-
-    function signHomeUpdate(
-        uint256 privKey,
-        bytes32 oldRoot,
-        bytes32 newRoot
-    ) public returns (bytes memory) {
-        bytes32 digest = keccak256(getMessage(oldRoot, newRoot, localDomain));
-        digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", digest));
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
-        bytes memory signature = abi.encodePacked(r, s, v);
-        return signature;
+        signature = signMessage(privKey, update);
     }
 
     function signRemoteUpdate(
@@ -70,22 +42,17 @@ contract SynapseTest is Test {
         bytes32 root
     ) public returns (bytes memory update, bytes memory signature) {
         update = HomeUpdate.formatHomeUpdate(remoteDomain, nonce, root);
-        bytes32 digest = keccak256(update);
+        signature = signMessage(privKey, update);
+    }
+
+    function signMessage(uint256 privKey, bytes memory message)
+        public
+        returns (bytes memory signature)
+    {
+        bytes32 digest = keccak256(message);
         digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", digest));
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
         signature = abi.encodePacked(r, s, v);
-    }
-
-    function signRemoteUpdate(
-        uint256 privKey,
-        bytes32 oldRoot,
-        bytes32 newRoot
-    ) public returns (bytes memory) {
-        bytes32 digest = keccak256(getMessage(oldRoot, newRoot, remoteDomain));
-        digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", digest));
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
-        bytes memory signature = abi.encodePacked(r, s, v);
-        return signature;
     }
 
     function stringToBytes32(string memory source) public pure returns (bytes32 result) {
