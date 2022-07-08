@@ -122,6 +122,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     function test_improperUpdate_wrongDomain() public {
         uint32 nonce = 42;
         bytes32 root = "very real much wow";
+        // Any signed update from another chain should be rejected
         (bytes memory update, bytes memory sig) = signRemoteUpdate(updaterPK, nonce, root);
         vm.expectRevert("Wrong domain");
         home.improperUpdate(updater, update, sig);
@@ -130,32 +131,38 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     function test_improperUpdate_fraud_invalidNonce() public {
         test_dispatch();
         uint32 nonce = 1;
-        // the correct nonce is 0 for this root
         bytes32 root = home.root();
-        _testImproperUpdate(nonce, root);
+        // This root exists, but with nonce = 0
+        // Nonce = 1 doesn't exists yet
+        _checkImproperUpdate(nonce, root);
     }
 
     function test_improperUpdate_fraud_correctRootWrongNonce() public {
         test_dispatch();
         test_dispatch();
         uint32 nonce = 0;
-        // the correct nonce is 1 for this root
         bytes32 root = home.root();
-        _testImproperUpdate(nonce, root);
+        // This root exists, but with nonce = 1
+        // nonce = 0 exists, with a different Merkle root
+        _checkImproperUpdate(nonce, root);
     }
 
     function test_improperUpdate_fraud_validNonceWrongRoot() public {
         test_dispatch();
         uint32 nonce = 0;
         bytes32 root = "this is clearly fraud";
-        _testImproperUpdate(nonce, root);
+        // nonce = 0 exists, with a different Merkle root
+        _checkImproperUpdate(nonce, root);
     }
 
-    function _testImproperUpdate(uint32 nonce, bytes32 root) internal {
+    /// @dev Signs improper (nonce, root) update and presents it to Home.
+    function _checkImproperUpdate(uint32 nonce, bytes32 root) internal {
         (bytes memory update, bytes memory sig) = signHomeUpdate(updaterPK, nonce, root);
         vm.expectEmit(true, true, true, true);
         emit ImproperUpdate(nonce, root, sig);
+        // Home should recognize this as improper update
         assertTrue(home.improperUpdate(updater, update, sig));
+        // Home should be in Failed state
         assertEq(uint256(home.state()), 2);
     }
 

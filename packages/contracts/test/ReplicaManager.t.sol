@@ -47,8 +47,6 @@ contract ReplicaManagerTest is SynapseTest {
         assertEq(uint256(replicaManager.RESERVE_GAS()), reserveGas);
         assertEq(uint256(replicaManager.localDomain()), uint256(localDomain));
         assertEq(replicaManager.updater(), updater);
-        // replicaManager set to active
-        // assertEq(uint256(replicaManager.state()), 1);
     }
 
     function test_cannotInitializeTwice() public {
@@ -121,20 +119,31 @@ contract ReplicaManagerTest is SynapseTest {
         uint32 nonce = 42;
         (bytes memory update, bytes memory sig) = signRemoteUpdate(fakeUpdaterPK, nonce, ROOT);
         vm.expectRevert("Signer is not an updater");
+        // Update signed by fakeUpdater should be rejected
         replicaManager.update(fakeUpdater, update, sig);
     }
 
-    function test_updateWithInvalidSignature() public {
+    function test_updateWithFakeSignerInvalidSignature() public {
         uint32 nonce = 42;
         (bytes memory update, bytes memory sig) = signRemoteUpdate(fakeUpdaterPK, nonce, ROOT);
         vm.expectRevert("Invalid signature");
+        // Signer (updater) and the signature (fakeUpdater) don't match
         replicaManager.update(updater, update, sig);
+    }
+
+    function test_updateWithGoodSignerInvalidSignature() public {
+        uint32 nonce = 42;
+        (bytes memory update, bytes memory sig) = signRemoteUpdate(updaterPK, nonce, ROOT);
+        vm.expectRevert("Invalid signature");
+        // Signer (fakeUpdater) and the signature (updater) don't match
+        replicaManager.update(fakeUpdater, update, sig);
     }
 
     function test_updateWithLocalDomain() public {
         uint32 nonce = 42;
         (bytes memory update, bytes memory sig) = signHomeUpdate(updaterPK, nonce, ROOT);
         vm.expectRevert("Update refers to local chain");
+        // Replica should reject updates from the chain it's deployed on
         replicaManager.update(updater, update, sig);
     }
 
