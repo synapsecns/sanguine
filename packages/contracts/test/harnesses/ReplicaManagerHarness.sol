@@ -9,11 +9,17 @@ import { ReplicaLib } from "../../contracts/libs/Replica.sol";
 contract ReplicaManagerHarness is ReplicaManager {
     using ReplicaLib for ReplicaLib.Replica;
 
+    uint256 public sensitiveValue;
+
     constructor(
         uint32 _localDomain,
         uint256 _processGas,
         uint256 _reserveGas
     ) ReplicaManager(_localDomain, _processGas, _reserveGas) {}
+
+    function setSensitiveValue(uint256 _newValue) external onlySystemMessenger {
+        sensitiveValue = _newValue;
+    }
 
     function setMessageStatus(
         uint32 _remoteDomain,
