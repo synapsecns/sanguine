@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 import "forge-std/console2.sol";
 import { HomeHarness } from "./harnesses/HomeHarness.sol";
 import { Message } from "../contracts/libs/Message.sol";
+import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
 import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
 import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
 
@@ -11,12 +12,16 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     HomeHarness home;
     uint32 optimisticSeconds;
 
+    ISystemMessenger internal systemMessenger;
+
     function setUp() public override {
         super.setUp();
         optimisticSeconds = 10;
         home = new HomeHarness(localDomain);
         home.initialize(IUpdaterManager(updaterManager));
         updaterManager.setHome(address(home));
+        systemMessenger = ISystemMessenger(address(1234567890));
+        home.setSystemMessenger(systemMessenger);
     }
 
     // ============ STATE AND PERMISSIONING ============
@@ -193,5 +198,16 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes memory sig = signHomeUpdate(updaterPK, _committedRoot, _new);
         home.update(_committedRoot, _new, sig);
         assertEq(home.queueLength(), 0);
+    }
+
+    function test_onlySystemMessenger() public {
+        vm.prank(address(systemMessenger));
+        home.setSensitiveValue(1337);
+        assertEq(home.sensitiveValue(), 1337);
+    }
+
+    function test_onlySystemMessenger_rejectOthers() public {
+        vm.expectRevert("!systemMessenger");
+        home.setSensitiveValue(1337);
     }
 }
