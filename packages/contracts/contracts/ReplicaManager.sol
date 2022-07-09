@@ -7,6 +7,8 @@ import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
+import { TypeCasts } from "./libs/TypeCasts.sol";
+import { SystemMessage } from "./system/SystemMessage.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
@@ -237,7 +239,7 @@ contract ReplicaManager is Version0, UpdaterStorage {
             _m.body().clone()
         );
         // get the message recipient
-        address _recipient = _m.recipientAddress();
+        address _recipient = _checkForSystemMessage(_m.recipient());
         // set up for assembly call
         uint256 _toCopy;
         uint256 _maxCopy = 256;
@@ -396,5 +398,20 @@ contract ReplicaManager is Version0, UpdaterStorage {
             _returnData := add(_returnData, 0x04)
         }
         return abi.decode(_returnData, (string)); // All that remains is the revert string
+    }
+
+    function _checkForSystemMessage(bytes32 _recipient) internal view returns (address recipient) {
+        // Check if SYSTEM_SENDER was specified as message recipient
+        if (_recipient == SystemMessage.SYSTEM_SENDER) {
+            /**
+             * @dev Route message to SystemMessenger.
+             *      Note: Only SystemMessenger contract on origin chain
+             *      can send such a message (enforced in Home.sol).
+             */
+            recipient = address(systemMessenger);
+        } else {
+            // Cast bytes32 to address otherwise
+            recipient = TypeCasts.bytes32ToAddress(_recipient);
+        }
     }
 }

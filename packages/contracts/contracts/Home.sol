@@ -7,6 +7,8 @@ import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
+import { TypeCasts } from "./libs/TypeCasts.sol";
+import { SystemMessage } from "./system/SystemMessage.sol";
 import { MerkleTreeManager } from "./Merkle.sol";
 import { QueueManager } from "./Queue.sol";
 import { IUpdaterManager } from "./interfaces/IUpdaterManager.sol";
@@ -196,10 +198,11 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
         // get the next nonce for the destination domain, then increment it
         uint32 _nonce = nonces[_destinationDomain];
         nonces[_destinationDomain] = _nonce + 1;
+        bytes32 _sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
         bytes memory _message = Message.formatMessage(
             localDomain,
-            bytes32(uint256(uint160(msg.sender))),
+            _sender,
             _nonce,
             _destinationDomain,
             _recipientAddress,
@@ -401,5 +404,32 @@ contract Home is Version0, QueueManager, MerkleTreeManager, UpdaterStorage {
         returns (uint64)
     {
         return (uint64(_destination) << 32) | _nonce;
+    }
+
+    /**
+     * @notice  Returns "adjusted" sender address.
+     * @dev     By default, "sender address" is msg.sender.
+     *          However, if SystemMessenger sends a message, specifying SYSTEM_SENDER as the recipient,
+     *          SYSTEM_SENDER is used as "sender address" on origin chain.
+     *          Note that transaction will revert if anyone but SystemMessenger uses SYSTEM_SENDER as the recipient.
+     */
+    function _checkForSystemMessage(bytes32 _recipientAddress)
+        internal
+        view
+        returns (bytes32 sender)
+    {
+        if (_recipientAddress != SystemMessage.SYSTEM_SENDER) {
+            sender = TypeCasts.addressToBytes32(msg.sender);
+            /**
+             * @dev Note: SYSTEM_SENDER has highest 12 bytes set,
+             *      whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
+             *      Thus, in this branch: sender != SystemMessage.SYSTEM_SENDER
+             */
+        } else {
+            // Check that SystemMessenger specified SYSTEM_SENDER as recipient, revert otherwise.
+            _assertSystemMessenger();
+            // Adjust "sender address" for correct processing on remote chain.
+            sender = SystemMessage.SYSTEM_SENDER;
+        }
     }
 }
