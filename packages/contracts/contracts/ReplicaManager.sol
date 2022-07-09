@@ -160,6 +160,8 @@ contract ReplicaManager is Version0, UpdaterStorage {
         bytes memory _signature
     ) external {
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
+        // ensure that replica is active
+        require(replica.status == ReplicaLib.ReplicaStatus.Active, "Replica not active");
         // ensure that update is building off the last submitted root
         require(_oldRoot == replica.committedRoot, "not current update");
         // validate updater signature
@@ -353,6 +355,8 @@ contract ReplicaManager is Version0, UpdaterStorage {
     ) public returns (bool) {
         bytes32 _leaf = keccak256(_message);
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
+        // ensure that replica is active
+        require(replica.status == ReplicaLib.ReplicaStatus.Active, "Replica not active");
         // ensure that message has not been proven or processed
         require(
             replica.messageStatus[_leaf] == ReplicaLib.MESSAGE_STATUS_NONE,
@@ -371,11 +375,12 @@ contract ReplicaManager is Version0, UpdaterStorage {
     // ============ Internal Functions ============
 
     function _createReplica(uint32 _remoteDomain) internal returns (uint256 replicaIndex) {
-        replicaIndex = replicaCount;
-        allReplicas[replicaIndex].setupReplica(_remoteDomain);
+        // Start indexing from 1, so default replica (allReplicas[0]) will be forever inactive
         unchecked {
-            replicaCount = replicaIndex + 1;
+            replicaIndex = replicaCount + 1;
         }
+        allReplicas[replicaIndex].setupReplica(_remoteDomain);
+        replicaCount = replicaIndex;
     }
 
     /// @notice Hook for potential future use
