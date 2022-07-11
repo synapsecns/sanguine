@@ -6,6 +6,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/core/domains/evm"
@@ -29,6 +30,7 @@ type UpdaterSuite struct {
 	testBackend   backends.TestBackend
 	deployManager *testutil.DeployManager
 	xappConfig    *xappconfig.XAppConfigRef
+	homeContract  *home.HomeRef
 	domainClient  domains.DomainClient
 	// wallet is the wallet used for the signer
 	wallet wallet.Wallet
@@ -52,6 +54,7 @@ func (u *UpdaterSuite) SetupTest() {
 	u.testBackend = preset.GetRinkeby().Geth(u.GetTestContext(), u.T())
 	u.deployManager = testutil.NewDeployManager(u.T())
 	_, u.xappConfig = u.deployManager.GetXAppConfig(u.GetTestContext(), u.testBackend)
+	_, u.homeContract = u.deployManager.GetHome(u.GetTestContext(), u.testBackend)
 
 	var err error
 	u.domainClient, err = evm.NewEVM(u.GetTestContext(), "updater", config.DomainConfig{

@@ -72,62 +72,71 @@ func (u UpdateProducer) StoreProducedUpdate(update types.SignedUpdate) error {
 }
 
 // Start starts the update producer.
-//nolint: gocognit, cyclop
 func (u UpdateProducer) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		case <-time.After(u.interval): // TODO: u.interval
-			latestRoot, err := u.FindLatestRoot()
-			if err != nil {
-				return fmt.Errorf("could not find latest root: %w", err)
-			}
-
-			suggestedUpdate, err := u.domain.Home().ProduceUpdate(ctx)
-			if errors.Is(err, domains.ErrNoUpdate) {
-				// no update produced this time
-				continue
-			}
-			if err != nil {
-				return fmt.Errorf("could not suggest update: %w", err)
-			}
-
-			if suggestedUpdate.PreviousRoot() != latestRoot {
-				logger.Debugf("Local root not equal to chain root. Skipping update")
-				continue
-			}
-
-			// Ensure we have not already signed a conflicting update.
-			// Ignore suggested if we have.
-			existing, err := u.db.RetrieveProducedUpdate(suggestedUpdate.PreviousRoot())
-			if err != nil && !errors.Is(err, pebble.ErrNotFound) {
-				return fmt.Errorf("could not get update: %w", err)
-				// existing was found
-			} else if err == nil {
-				if existing.Update().NewRoot() != suggestedUpdate.NewRoot() {
-					logger.Infof("Updater ignoring conflicting suggested update. Indicates chain awaiting already produced update. Existing update: %s. Suggested conflicting update: %s", existing.Update().NewRoot(), suggestedUpdate.NewRoot())
-				}
-				continue
-			}
-
-			// get the update to sign
-			hashedUpdate, err := HashUpdate(suggestedUpdate)
-			if err != nil {
-				return fmt.Errorf("could not hash update: %w", err)
-			}
-			signature, err := u.signer.SignMessage(ctx, pebble2.ToSlice(hashedUpdate), false)
-			if err != nil {
-				return fmt.Errorf("could not sign message: %w", err)
-			}
-
-			signedUpdate := types.NewSignedUpdate(suggestedUpdate, signature)
-			err = u.StoreProducedUpdate(signedUpdate)
+			err := u.update(ctx)
 			if err != nil {
 				return err
 			}
 		}
 	}
+}
+
+// update runs the update producer to produce an update.
+//nolint: cyclop
+func (u UpdateProducer) update(ctx context.Context) error {
+	latestRoot, err := u.FindLatestRoot()
+	if err != nil {
+		return fmt.Errorf("could not find latest root: %w", err)
+	}
+
+	suggestedUpdate, err := u.domain.Home().ProduceUpdate(ctx)
+	if errors.Is(err, domains.ErrNoUpdate) {
+		// no update produced this time
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("could not suggest update: %w", err)
+	}
+
+	if suggestedUpdate.PreviousRoot() != latestRoot {
+		logger.Debugf("Local root not equal to chain root. Skipping update")
+		return nil
+	}
+
+	// Ensure we have not already signed a conflicting update.
+	// Ignore suggested if we have.
+	existing, err := u.db.RetrieveProducedUpdate(suggestedUpdate.PreviousRoot())
+	if err != nil && !errors.Is(err, pebble.ErrNotFound) {
+		return fmt.Errorf("could not get update: %w", err)
+		// existing was found
+	} else if err == nil {
+		if existing.Update().NewRoot() != suggestedUpdate.NewRoot() {
+			logger.Infof("Updater ignoring conflicting suggested update. Indicates chain awaiting already produced update. Existing update: %s. Suggested conflicting update: %s", existing.Update().NewRoot(), suggestedUpdate.NewRoot())
+		}
+		return nil
+	}
+
+	// get the update to sign
+	hashedUpdate, err := HashUpdate(suggestedUpdate)
+	if err != nil {
+		return fmt.Errorf("could not hash update: %w", err)
+	}
+	signature, err := u.signer.SignMessage(ctx, pebble2.ToSlice(hashedUpdate), false)
+	if err != nil {
+		return fmt.Errorf("could not sign message: %w", err)
+	}
+
+	signedUpdate := types.NewSignedUpdate(suggestedUpdate, signature)
+	err = u.StoreProducedUpdate(signedUpdate)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // HashUpdate is exported for testing in agents.

@@ -2,6 +2,8 @@ package updater_test
 
 import (
 	"github.com/Flaque/filet"
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/agents/updater"
 	"github.com/synapsecns/sanguine/core/db/datastore/pebble"
@@ -11,8 +13,6 @@ import (
 )
 
 func (u UpdaterSuite) TestUpdateProducer() {
-	u.T().Skip("todo: test update producer alone")
-
 	testDB, err := pebble.NewMessageDB(filet.TmpDir(u.T(), ""), "home1")
 	Nil(u.T(), err)
 
@@ -21,13 +21,20 @@ func (u UpdaterSuite) TestUpdateProducer() {
 
 	signer := localsigner.NewSigner(testWallet.PrivateKey())
 
+	// dispatch a random update
+	auth := u.testBackend.GetTxContext(u.GetTestContext(), nil)
+	tx, err := u.homeContract.Dispatch(auth.TransactOpts, gofakeit.Uint32(), [32]byte{}, gofakeit.Uint32(), []byte(gofakeit.Paragraph(3, 2, 1, " ")))
+	Nil(u.T(), err)
+	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
+
+	// call the update producing function
 	updateProducer := updater.NewUpdateProducer(u.domainClient, testDB, signer, 1*time.Second)
-	_ = updateProducer
 
-	go func() {
-		Nil(u.T(), updateProducer.Start(u.GetTestContext()))
-	}()
+	err = updateProducer.Update(u.GetTestContext())
+	Nil(u.T(), err)
 
-	_, home := u.deployManager.GetHome(u.GetTestContext(), u.testBackend)
-	_ = home
+	// make sure an update has been produced
+	producedUpdate, err := testDB.RetrieveProducedUpdate(common.Hash{})
+	Nil(u.T(), err)
+	Equal(u.T(), producedUpdate.Update().PreviousRoot(), common.Hash{})
 }
