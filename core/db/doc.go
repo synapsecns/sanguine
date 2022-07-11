@@ -1,2 +1,2 @@
-// Package db stores messages.
+// Package db implements the data store
 package db
