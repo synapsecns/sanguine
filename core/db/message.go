@@ -20,6 +20,7 @@ type TxQueueDB interface {
 }
 
 // MessageDB contains the synapse db.
+//go:generate go run github.com/vektra/mockery/v2 --name MessageDB --output ./mocks --case=underscore
 type MessageDB interface {
 	// StoreCommittedMessage stores a committed message.
 	StoreCommittedMessage(committedMessage types.CommittedMessage) error

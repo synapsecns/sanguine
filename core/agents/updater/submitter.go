@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cockroachdb/pebble"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -50,20 +51,28 @@ func (u UpdateSubmitter) Start(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case <-time.After(u.interval):
-			signed, err := u.messageDB.RetrieveProducedUpdate(committedRoot)
-			if errors.Is(err, pebble.ErrNotFound) {
-				logger.Infof("No produced update to submit for committed_root: %s", committedRoot)
-				continue
-			} else if err != nil {
-				return fmt.Errorf("could not retrieve produced update: %w", err)
-			}
-
-			err = u.domain.Home().Update(ctx, u.signer, signed)
+			committedRoot, err = u.update(ctx, committedRoot)
 			if err != nil {
-				return fmt.Errorf("could not produce update: %w", err)
+				return err
 			}
-
-			committedRoot = signed.Update().NewRoot()
 		}
 	}
+}
+
+func (u UpdateSubmitter) update(ctx context.Context, committedRoot common.Hash) (common.Hash, error) {
+	signed, err := u.messageDB.RetrieveProducedUpdate(committedRoot)
+	if errors.Is(err, pebble.ErrNotFound) {
+		logger.Infof("No produced update to submit for committed_root: %s", committedRoot)
+		return committedRoot, nil
+	} else if err != nil {
+		return committedRoot, fmt.Errorf("could not retrieve produced update: %w", err)
+	}
+
+	err = u.domain.Home().Update(ctx, u.signer, signed)
+	if err != nil {
+		return committedRoot, fmt.Errorf("could not produce update: %w", err)
+	}
+
+	committedRoot = signed.Update().NewRoot()
+	return committedRoot, nil
 }
