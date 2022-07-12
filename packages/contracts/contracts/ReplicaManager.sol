@@ -99,17 +99,17 @@ contract ReplicaManager is Version0, UpdaterStorage {
     }
 
     function activeReplicaConfirmedAt(uint32 _remoteDomain, bytes32 _root)
-        external
-        view
-        returns (uint256)
+    external
+    view
+    returns (uint256)
     {
         return allReplicas[activeReplicas[_remoteDomain]].confirmAt[_root];
     }
 
     function activeReplicaMessageStatus(uint32 _remoteDomain, bytes32 _messageId)
-        external
-        view
-        returns (bytes32)
+    external
+    view
+    returns (bytes32)
     {
         return allReplicas[activeReplicas[_remoteDomain]].messageStatus[_messageId];
     }
@@ -305,9 +305,9 @@ contract ReplicaManager is Version0, UpdaterStorage {
     function _createReplica(uint32 _remoteDomain) internal returns (uint256 replicaIndex) {
         replicaIndex = replicaCount;
         allReplicas[replicaIndex].setupReplica(_remoteDomain);
-        unchecked {
-            replicaCount = replicaIndex + 1;
-        }
+    unchecked {
+        replicaCount = replicaIndex + 1;
+    }
     }
 
     /// @notice Hook for potential future use
@@ -319,7 +319,7 @@ contract ReplicaManager is Version0, UpdaterStorage {
         if (_returnData.length < 68) return "Transaction reverted silently";
 
         assembly {
-            // Slice the sighash.
+        // Slice the sighash.
             _returnData := add(_returnData, 0x04)
         }
         return abi.decode(_returnData, (string)); // All that remains is the revert string

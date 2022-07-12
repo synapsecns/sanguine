@@ -37,15 +37,15 @@ library Message {
         bytes memory _messageBody
     ) internal pure returns (bytes memory) {
         return
-            abi.encodePacked(
-                _originDomain,
-                _sender,
-                _nonce,
-                _destinationDomain,
-                _recipient,
-                _optimisticSeconds,
-                _messageBody
-            );
+        abi.encodePacked(
+            _originDomain,
+            _sender,
+            _nonce,
+            _destinationDomain,
+            _recipient,
+            _optimisticSeconds,
+            _messageBody
+        );
     }
 
     /**
@@ -68,17 +68,17 @@ library Message {
         bytes memory _body
     ) internal pure returns (bytes32) {
         return
-            keccak256(
-                formatMessage(
-                    _origin,
-                    _sender,
-                    _nonce,
-                    _destination,
-                    _recipient,
-                    _optimisticSeconds,
-                    _body
-                )
-            );
+        keccak256(
+            formatMessage(
+                _origin,
+                _sender,
+                _nonce,
+                _destination,
+                _recipient,
+                _optimisticSeconds,
+                _body
+            )
+        );
     }
 
     /// @notice Returns message's origin field
@@ -123,14 +123,14 @@ library Message {
 
     function leaf(bytes29 _message) internal view returns (bytes32) {
         return
-            messageHash(
-                origin(_message),
-                sender(_message),
-                nonce(_message),
-                destination(_message),
-                recipient(_message),
-                optimisticSeconds(_message),
-                TypedMemView.clone(body(_message))
-            );
+        messageHash(
+            origin(_message),
+            sender(_message),
+            nonce(_message),
+            destination(_message),
+            recipient(_message),
+            optimisticSeconds(_message),
+            TypedMemView.clone(body(_message))
+        );
     }
 }

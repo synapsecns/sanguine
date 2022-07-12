@@ -30,8 +30,9 @@ func TestMessageEncodeParity(t *testing.T) {
 	destination := gofakeit.Uint32()
 	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
+	optimisticSeconds := gofakeit.Uint32()
 
-	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, body)
+	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, body)
 	Nil(t, err)
 
 	decodedMessage, err := types.DecodeMessage(formattedMessage)
@@ -42,6 +43,22 @@ func TestMessageEncodeParity(t *testing.T) {
 	Equal(t, decodedMessage.Nonce(), nonce)
 	Equal(t, decodedMessage.Destination(), destination)
 	Equal(t, decodedMessage.Body(), body)
+}
+
+func TestHomeDomainHash(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+	_, homeContract := deployManager.GetHomeHarness(ctx, testBackend)
+
+	domainHash, err := homeContract.HomeDomainHash(&bind.CallOpts{Context: ctx})
+	Nil(t, err)
+
+	goDomainHash, err := types.HomeDomainHash(testutil.HomeHarnessDomain)
+	Nil(t, err)
+	Equal(t, domainHash, goDomainHash)
 }
 
 func TestNewMessageEncodeDecode(t *testing.T) {

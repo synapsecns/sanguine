@@ -44,7 +44,7 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		return nil, fmt.Errorf("could not get home contract: %w", err)
 	}
 
-	boundHome, err := NewHomeContract(underlyingClient, homeAddress)
+	boundHome, err := NewHomeContract(ctx, underlyingClient, homeAddress)
 	if err != nil {
 		return nil, fmt.Errorf("could not bind home contract: %w", err)
 	}
