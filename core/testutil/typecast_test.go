@@ -22,3 +22,17 @@ func (s SimulatedSuite) TestTypecastMessageHarness() {
 		NotNil(s.T(), messageHarness)
 	})
 }
+
+func (s SimulatedSuite) TestTypecastHomeHarness() {
+	NotPanics(s.T(), func() {
+		_, messageHarness := s.deployManager.GetHomeHarness(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), messageHarness)
+	})
+}
+
+func (s SimulatedSuite) TestTypecastUpdaterManager() {
+	NotPanics(s.T(), func() {
+		_, updaterManager := s.deployManager.GetUpdaterManager(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), updaterManager)
+	})
+}

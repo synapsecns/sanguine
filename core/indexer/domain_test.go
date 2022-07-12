@@ -1,18 +1,20 @@
 package indexer_test
 
 import (
+	"context"
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/config"
-	"github.com/synapsecns/sanguine/core/db"
+	"github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/indexer"
 	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/synapse-node/testutils/utils"
 	"math"
 	"testing"
+	"time"
 )
 
 // TestDispatch is a test dispatch call.
@@ -23,13 +25,16 @@ type TestDispatch struct {
 	recipientAddress common.Hash
 	// raw message
 	message []byte
+	// optimisticSeconds is the optimistic second count
+	optimisticSeconds uint32
 }
 
 func NewTestDispatch() TestDispatch {
 	return TestDispatch{
-		domain:           gofakeit.Uint32(),
-		recipientAddress: common.BytesToHash(utils.NewMockAddress().Bytes()),
-		message:          []byte(gofakeit.Paragraph(4, 1, 4, " ")),
+		domain:            gofakeit.Uint32(),
+		recipientAddress:  common.BytesToHash(utils.NewMockAddress().Bytes()),
+		message:           []byte(gofakeit.Paragraph(4, 1, 4, " ")),
+		optimisticSeconds: gofakeit.Uint32(),
 	}
 }
 
@@ -37,7 +42,7 @@ func NewTestDispatch() TestDispatch {
 func (d TestDispatch) Call(i IndexerSuite) (blockNumber uint32) {
 	auth := i.testBackend.GetTxContext(i.GetTestContext(), nil)
 
-	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.message)
+	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, d.message)
 	Nil(i.T(), err)
 
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
@@ -60,10 +65,9 @@ func (i IndexerSuite) NewTestDispatches(dispatchCount int) (testDispatches []Tes
 }
 
 func (i IndexerSuite) TestSyncMessages() {
-	i.T().Skip("skip sync")
-	i.NewTestDispatches(25)
+	_, lastBlock := i.NewTestDispatches(25)
 
-	testDB, err := db.NewDB(filet.TmpDir(i.T(), ""), "")
+	testDB, err := pebble.NewMessageDB(filet.TmpDir(i.T(), ""), "")
 	Nil(i.T(), err)
 
 	_, xAppConfig := i.deployManager.GetXAppConfig(i.GetTestContext(), i.testBackend)
@@ -78,9 +82,26 @@ func (i IndexerSuite) TestSyncMessages() {
 	})
 	Nil(i.T(), err)
 
-	domainIndexer := indexer.NewDomainIndexer(testDB, domainClient)
+	domainIndexer := indexer.NewDomainIndexer(testDB, domainClient, 0)
 
-	Nil(i.T(), domainIndexer.SyncMessages(i.GetTestContext()))
+	go func() {
+		ctx, cancel := context.WithTimeout(i.GetTestContext(), time.Second*20)
+		defer cancel()
+
+		// this will error because of context cancellation
+		_ = domainIndexer.SyncMessages(ctx)
+	}()
+
+	// wait until all blocks are indexed
+	i.Eventually(func() bool {
+		time.Sleep(time.Second * 4)
+
+		testHeight, _ := testDB.GetMessageLatestBlockEnd()
+
+		return testHeight > lastBlock
+	})
+
+	// TODO: something w/ dispatches
 }
 
 func TestUint32Max(t *testing.T) {

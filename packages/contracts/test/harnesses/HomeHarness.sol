@@ -20,4 +20,14 @@ contract HomeHarness is Home {
     function destinationAndNonce(uint32 _destination, uint32 _nonce) public pure returns (uint64) {
         return _destinationAndNonce(_destination, _nonce);
     }
+
+    function isUpdaterSignature(
+        bytes32 _oldRoot,
+        bytes32 _newRoot,
+        bytes memory _signature
+    ) external view returns (bool) {
+        return _isUpdaterSignature(_oldRoot, _newRoot, _signature);
+    }
+
+
 }

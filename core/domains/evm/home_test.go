@@ -5,7 +5,10 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/agents/updater"
+	pebble2 "github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/core/domains/evm"
+	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/synapse-node/testutils/utils"
 )
 
@@ -17,13 +20,16 @@ type TestDispatch struct {
 	recipientAddress common.Hash
 	// raw message
 	message []byte
+	// optimisticSeconds is the seconds count to use
+	optimisticSeconds uint32
 }
 
 func NewTestDispatch() TestDispatch {
 	return TestDispatch{
-		domain:           gofakeit.Uint32(),
-		recipientAddress: common.BytesToHash(utils.NewMockAddress().Bytes()),
-		message:          []byte(gofakeit.Paragraph(4, 1, 4, " ")),
+		domain:            gofakeit.Uint32(),
+		recipientAddress:  common.BytesToHash(utils.NewMockAddress().Bytes()),
+		message:           []byte(gofakeit.Paragraph(4, 1, 4, " ")),
+		optimisticSeconds: gofakeit.Uint32(),
 	}
 }
 
@@ -31,7 +37,7 @@ func NewTestDispatch() TestDispatch {
 func (d TestDispatch) Call(i ContractSuite) (blockNumber uint32) {
 	auth := i.testBackend.GetTxContext(i.GetTestContext(), nil)
 
-	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.message)
+	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, d.message)
 	Nil(i.T(), err)
 
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
@@ -56,7 +62,7 @@ func (i ContractSuite) NewTestDispatches(dispatchCount int) (testDispatches []Te
 func (i ContractSuite) TestFetchSortedHomeUpdates() {
 	testDispatches, filterTo := i.NewTestDispatches(33)
 
-	homeIndexer, err := evm.NewHomeContract(i.testBackend, i.homeContract.Address())
+	homeIndexer, err := evm.NewHomeContract(i.GetTestContext(), i.testBackend, i.homeContract.Address())
 	Nil(i.T(), err)
 
 	messages, err := homeIndexer.FetchSortedMessages(i.GetTestContext(), 0, filterTo)
@@ -69,4 +75,24 @@ func (i ContractSuite) TestFetchSortedHomeUpdates() {
 		True(i.T(), bytes.Contains(message.Message(), testDispatch.message))
 		Equal(i.T(), message.LeafIndex(), uint32(iter))
 	}
+}
+
+func (i ContractSuite) TestUpdateHomeContract() {
+	i.NewTestDispatches(1)
+
+	homeIndexer, err := evm.NewHomeContract(i.GetTestContext(), i.testBackend, i.homeContract.Address())
+	Nil(i.T(), err)
+
+	producedUpdate, err := homeIndexer.ProduceUpdate(i.GetTestContext())
+	Nil(i.T(), err)
+
+	hashedUpdate, err := updater.HashUpdate(producedUpdate)
+	Nil(i.T(), err)
+
+	sig, err := i.signer.SignMessage(i.GetTestContext(), pebble2.ToSlice(hashedUpdate), false)
+	Nil(i.T(), err)
+
+	signedUpdate := types.NewSignedUpdate(producedUpdate, sig)
+	err = homeIndexer.Update(i.GetTestContext(), i.signer, signedUpdate)
+	Nil(i.T(), err)
 }
