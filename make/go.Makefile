@@ -28,6 +28,6 @@ help: ## This help dialog.
 
 
 lint: golangci-install ## Run golangci-lint and go fmt ./...
-	go mod tidy
+	go mod tidy -compat=1.17
 	go fmt ./...
 	@golangci-lint run --fix --config=../.golangci.yml
