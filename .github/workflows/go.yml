@@ -55,6 +55,18 @@ jobs:
           - 1.18.x
         platform:
           - ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:latest
+        ports:
+          - 3306
+        env:
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: password
+        options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -84,14 +96,40 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
+      - name: Verify MariaDB connection
+        env:
+          PORT: ${{ job.services.mariadb.ports[3306] }}
+        run: |
+          while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
+          sleep 1
+          done
+
       - name: Test
         run:  go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
+        env:
+          ENABLE_MYSQL_TEST: true
+          MYSQL_HOST: 0.0.0.0
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
+          GOMAXPROCS: 18
 
+      - name: Generate ignore list
+        # generate a list of files to ignore on goveralls
+        run: |
+          echo "IGNORED=$(find . \( -name "*_generated.go" -o -name "*.abigen.go"  -o -name "*_string.go"   \) -print0 | xargs -0 ls | sed 's/.\/*//' | tr '\n' ',' |  sed 's/,*\r*$//')" >> $GITHUB_ENV
+
+      # We customize the build step because by default
+      # We can not use ** because goveralls uses filepath.Match
+      # to match ignore files and it does not support it.
       - name: Send coverage
         uses: shogo82148/actions-goveralls@v1
         with:
           github-token: ${{ secrets.github_token }}
           path-to-profile: profile.cov
+          ignore: ${{ env.IGNORED }}
 
   #note: right now this is not run against all work dirs
   lint:

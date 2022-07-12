@@ -1,4 +1,4 @@
-package db
+package pebble
 
 import "github.com/ipfs/go-log"
 

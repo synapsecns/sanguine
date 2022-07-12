@@ -75,6 +75,7 @@ type Dispatch struct {
 	destinationDomain uint32
 	recipientAddress  [32]byte
 	messageBody       []byte
+	optimisticSeconds uint32
 }
 
 // GenerateDispatch generates a mock dispatch for testing.
@@ -88,6 +89,7 @@ func GenerateDispatch() Dispatch {
 		destinationDomain: gofakeit.Uint32(),
 		recipientAddress:  recipient,
 		messageBody:       []byte(gofakeit.Paragraph(3, 2, 1, " ")),
+		optimisticSeconds: gofakeit.Uint32(),
 	}
 }
 
@@ -110,7 +112,7 @@ func (e *RPCSuite) TestFilterer() {
 	for _, dispatch := range dispatches {
 		auth := e.testBackend.GetTxContext(e.GetTestContext(), nil)
 
-		addedDispatch, err := handle.Dispatch(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.messageBody)
+		addedDispatch, err := handle.Dispatch(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, dispatch.messageBody)
 		Nil(e.T(), err)
 
 		e.testBackend.WaitForConfirmation(e.GetTestContext(), addedDispatch)
@@ -144,4 +146,8 @@ func (e *RPCSuite) TestFilterer() {
 	})
 
 	Nil(e.T(), g.Wait())
+}
+
+func (e *RPCSuite) TestProduceUpdate() {
+	e.T().Skip("TODO: add produce update test")
 }
