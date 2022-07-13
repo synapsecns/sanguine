@@ -35,8 +35,8 @@ func (u UpdaterSuite) TestUpdaterE2E() {
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
 
 	go func() {
-		err = ud.Start(u.GetTestContext())
-		Nil(u.T(), err)
+		// we don't check errors here since this will error on cancellation at the end of the test
+		_ = ud.Start(u.GetTestContext())
 	}()
 
 	u.Eventually(func() bool {
