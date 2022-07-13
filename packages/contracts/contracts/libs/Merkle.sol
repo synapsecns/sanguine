@@ -65,9 +65,8 @@ library MerkleLib {
 
         for (uint256 i = 0; i < TREE_DEPTH; ) {
             uint256 _ithBit = (_index >> i) & 0x01;
-            bytes32 _next = _tree.branch[i];
             if (_ithBit == 1) {
-                _current = keccak256(abi.encodePacked(_next, _current));
+                _current = keccak256(abi.encodePacked(_tree.branch[i], _current));
             } else {
                 _current = keccak256(abi.encodePacked(_current, _zeroes[i]));
             }
