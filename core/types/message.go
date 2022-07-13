@@ -33,12 +33,13 @@ type Message interface {
 
 // messageImpl implements a message. It is used for testutils. Real messages are emitted by the contract.
 type messageImpl struct {
-	origin      uint32
-	sender      common.Hash
-	nonce       uint32
-	destination uint32
-	recipient   common.Hash
-	body        []byte
+	origin            uint32
+	sender            common.Hash
+	nonce             uint32
+	destination       uint32
+	recipient         common.Hash
+	optimisticSeconds uint32
+	body              []byte
 }
 
 // NewMessage creates a new message from fields passed in.
@@ -125,21 +126,23 @@ func (m messageImpl) Body() []byte {
 
 // messageEncoder contains the binary structore of the message.
 type messageEncoder struct {
-	Origin      uint32
-	Sender      [32]byte
-	Nonce       uint32
-	Destination uint32
-	Recipient   [32]byte
+	Origin            uint32
+	Sender            [32]byte
+	Nonce             uint32
+	Destination       uint32
+	Recipient         [32]byte
+	OptimisticSeconds uint32
 }
 
 // Encode encodes the message to a bytes
 // TODO: this should use a helper message once contract abis are ready.
 func (m messageImpl) Encode() ([]byte, error) {
 	newMessage := messageEncoder{
-		Origin:      m.origin,
-		Sender:      m.sender,
-		Nonce:       m.nonce,
-		Destination: m.destination,
+		Origin:            m.origin,
+		Sender:            m.sender,
+		Nonce:             m.nonce,
+		Destination:       m.destination,
+		OptimisticSeconds: m.optimisticSeconds,
 	}
 
 	buf := new(bytes.Buffer)
