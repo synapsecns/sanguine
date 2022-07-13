@@ -7,7 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
+	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/synapse-node/testutils/backends"
@@ -25,11 +27,47 @@ func NewHomeDeployer(registry deployer.GetOnlyContractRegistry, backend backends
 
 // Deploy deploys the home contract.
 func (d HomeDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return home.DeployHome(transactOps, backend, uint32(d.Backend().GetChainID()))
+	updateManagerContract := d.Registry().Get(ctx, UpdaterManagerType)
+
+	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
+		// deploy the home contract
+		var rawHandle *home.Home
+		address, tx, rawHandle, err = home.DeployHome(transactOps, backend, uint32(d.Backend().GetChainID()))
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy home: %w", err)
+		}
+
+		// initialize the home contract
+		initializationTx, err := rawHandle.Initialize(transactOps, updateManagerContract.Address())
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize contract: %w", err)
+		}
+		d.Backend().WaitForConfirmation(ctx, initializationTx)
+
+		// get the owner of the updater manage rcontract
+		updaterTransactOps := d.Backend().GetTxContext(ctx, updateManagerContract.OwnerPtr())
+
+		// set the home contract on the updater manager
+		updateManager, ok := updateManagerContract.ContractHandle().(*updatermanager.UpdaterManagerRef)
+		if !ok {
+			return common.Address{}, nil, nil, fmt.Errorf("could not update contract: %w", err)
+		}
+
+		setTx, err := updateManager.SetHome(updaterTransactOps.TransactOpts, address)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not set home: %w", err)
+		}
+		d.Backend().WaitForConfirmation(ctx, setTx)
+
+		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return home.NewHomeRef(address, backend)
 	})
+}
+
+// Dependencies gets a list of dependencies used to deploy the home contract.
+func (d HomeDeployer) Dependencies() []deployer.ContractType {
+	return []deployer.ContractType{UpdaterManagerType}
 }
 
 // XAppConfigDeployer deploys the XAppConfig contract.
@@ -97,5 +135,46 @@ func (d MessageHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedCo
 		return messageharness.DeployMessageHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return messageharness.NewMessageHarnessRef(address, backend)
+	})
+}
+
+// HomeHarnessDomain is the domain used for the home harness.
+const HomeHarnessDomain = 1
+
+// HomeHarnessDeployer deploys the home harness for testing.
+type HomeHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewHomeHarnessDeployer deploys the new home harness.
+func NewHomeHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return HomeHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, HomeHarnessType)}
+}
+
+// Deploy deploys the home harness.
+func (h HomeHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return homeharness.DeployHomeHarness(transactOps, backend, HomeHarnessDomain)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return homeharness.NewHomeHarnessRef(address, backend)
+	})
+}
+
+// UpdateManagerDeployer deploys the update manager.
+type UpdateManagerDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewUpdateManagerDeployer deploys a new update manager.
+func NewUpdateManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return UpdateManagerDeployer{deployer.NewSimpleDeployer(registry, backend, UpdaterManagerType)}
+}
+
+// Deploy deploys the updater contract.
+func (u UpdateManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return u.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return updatermanager.DeployUpdaterManager(transactOps, backend, transactOps.From)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return updatermanager.NewUpdaterManagerRef(address, backend)
 	})
 }

@@ -1,58 +1,78 @@
-package db
+package pebble
 
 import (
 	"errors"
 	"fmt"
 	"github.com/cockroachdb/pebble"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/types"
 	"strconv"
 )
 
-// DB contains the synapse db.
-type DB interface {
-	// StoreCommittedMessage stores a committed message.
-	StoreCommittedMessage(committedMessage types.CommittedMessage) error
-	// StoreLatestMessage stores a raw committed message building off the leaf index
-	StoreLatestMessage(committedMessage types.CommittedMessage) error
-	// MessageByNonce retreives a raw committed message by its leaf hash.
-	MessageByNonce(destination, nonce uint32) (types.CommittedMessage, error)
-	// MessageByLeaf fetches a message by leaf
-	MessageByLeaf(leaf common.Hash) (types.CommittedMessage, error)
-	// MessageByLeafIndex fetches a message by leaf the index of it's leaf
-	MessageByLeafIndex(leafIndex uint32) (types.CommittedMessage, error)
-	// StoreProof stores a proof of the lead index
-	StoreProof(leafIndex uint32, proof types.Proof) error
-	// ProofByLeafIndex gets a proof by it's leaf index
-	ProofByLeafIndex(leafIndex uint32) (types.Proof, error)
-
-	// StoreIndexedHeight stores the indexed height
-	StoreIndexedHeight(domain string, height uint32) error
-	// GetIndexedHeight gets the indexed height for a domain
-	GetIndexedHeight(domain string) (uint32, error)
-	// UpdateLatestLeafIndex sets the latest leaf
-	UpdateLatestLeafIndex(leafIndex uint32) error
-	// StoreMessageLatestBlockEnd stores the latest block end
-	StoreMessageLatestBlockEnd(blockNumber uint32) error
-	// GetMessageLatestBlockEnd gets the message latest block
-	GetMessageLatestBlockEnd() (height uint32, err error)
-}
-
 // pebbleDB contains a rocksdb used to store merkle trees.
+// TODO: deprecate in favor of mysql.
 type pebbleDB struct {
 	*pebble.DB
 	entity string
 }
 
-// NewDB creates a new db.
-func NewDB(dbPath, entity string) (DB, error) {
-	db, err := pebble.Open(dbPath, &pebble.Options{})
+// NewMessageDB creates a new db.
+func NewMessageDB(dbPath, entity string) (db.MessageDB, error) {
+	messageDB, err := pebble.Open(dbPath, &pebble.Options{})
 
 	if err != nil {
-		return nil, fmt.Errorf("could not create db: %w", err)
+		return nil, fmt.Errorf("could not create messageDB: %w", err)
 	}
 
-	return &pebbleDB{DB: db, entity: entity}, nil
+	return &pebbleDB{DB: messageDB, entity: entity}, nil
+}
+
+func (d *pebbleDB) RetrieveProducedUpdate(root common.Hash) (types.SignedUpdate, error) {
+	rawUpdate, _, err := d.Get(d.FullKey(UpdaterProducedUpdate, root.Bytes()))
+	if err != nil {
+		return nil, fmt.Errorf("could not get latest height: %w", err)
+	}
+
+	decodedUpdate, err := types.DecodeSignedUpdate(rawUpdate)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode signed update: %w", err)
+	}
+
+	return decodedUpdate, nil
+}
+
+func (d *pebbleDB) StoreProducedUpdate(previousRoot common.Hash, update types.SignedUpdate) error {
+	signedUpdate, err := types.EncodeSignedUpdate(update)
+	if err != nil {
+		return fmt.Errorf("could not encode signed update: %w", err)
+	}
+
+	err = d.StoreKeyedEncodable(UpdaterProducedUpdate, previousRoot.Bytes(), signedUpdate)
+	if err != nil {
+		return fmt.Errorf("could not store produced update: %w", err)
+	}
+
+	return nil
+}
+
+// RetrieveLatestRoot gets the latest root.
+func (d *pebbleDB) RetrieveLatestRoot() (common.Hash, error) {
+	rawRoot, _, err := d.Get(d.FullKey(LatestRoot, []byte("")))
+	if err != nil {
+		return common.Hash{}, fmt.Errorf("could not get latest height: %w", err)
+	}
+
+	return common.BytesToHash(rawRoot), nil
+}
+
+// StoreLatestRoot stores the latest root.
+func (d *pebbleDB) StoreLatestRoot(latestRoot common.Hash) error {
+	err := d.StoreKeyedEncodable(LatestRoot, []byte(""), latestRoot.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not store latest root: %w", err)
+	}
+	return nil
 }
 
 // GetIndexedHeight gets the indexed height.
@@ -299,7 +319,7 @@ func (d *pebbleDB) GetMessageLatestBlockEnd() (height uint32, err error) {
 
 // StoreMessageLatestBlockEnd stores the latest message block.
 func (d *pebbleDB) StoreMessageLatestBlockEnd(height uint32) error {
-	err := d.StoreKeyedEncodable("", []byte(MessagesLastBlockEnd), []byte(fmt.Sprintf("%d", height)))
+	err := d.StoreKeyedEncodable(MessagesLastBlockEnd, []byte(""), []byte(fmt.Sprintf("%d", height)))
 	if err != nil {
 		return fmt.Errorf("could not store height: %w", err)
 	}

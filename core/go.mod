@@ -8,15 +8,21 @@ require (
 	github.com/cockroachdb/pebble v0.0.0-20220523221036-bb2c1501ac23
 	github.com/coinbase/rosetta-sdk-go v0.7.0
 	github.com/ethereum/go-ethereum v1.10.11
+	github.com/fatih/structtag v1.2.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
+	github.com/libs4go/crypto v0.0.1
 	github.com/pkg/errors v0.9.1
 	github.com/richardwilkes/toolbox v1.52.0
 	github.com/stretchr/testify v1.7.1
 	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/ugorji/go/codec v1.1.7
+	go.uber.org/zap v1.19.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	gorm.io/driver/mysql v1.1.2
+	gorm.io/driver/sqlite v1.1.5
+	gorm.io/gorm v1.21.15
 )
 
 require (
@@ -78,7 +84,6 @@ require (
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/elastic/gosigar v0.10.5 // indirect
 	github.com/fatih/color v1.13.0 // indirect
-	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
@@ -96,7 +101,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.0.0 // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/gopacket v1.1.18 // indirect
 	github.com/google/uuid v1.1.5 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
@@ -189,6 +194,7 @@ require (
 	github.com/libp2p/go-tcp-transport v0.2.0 // indirect
 	github.com/libp2p/go-ws-transport v0.3.1 // indirect
 	github.com/libp2p/go-yamux v1.3.7 // indirect
+	github.com/libs4go/errors v0.0.3 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
@@ -198,6 +204,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mattn/go-sqlite3 v1.14.9 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
+	github.com/miguelmota/go-ethereum-hdwallet v0.1.1 // indirect
 	github.com/mimoo/StrobeGo v0.0.0-20181016162300-f8f6d4d2b643 // indirect
 	github.com/minio/blake2b-simd v0.0.0-20160723061019-3f5f724cb5b1 // indirect
 	github.com/minio/sha256-simd v0.1.1 // indirect
@@ -220,7 +227,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/otiai10/primes v0.0.0-20180210170552-f6d2a1ba97c4 // indirect
-	github.com/pborman/uuid v1.2.0 // indirect
+	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2 // indirect
@@ -282,7 +289,6 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/goleak v1.1.12 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
-	go.uber.org/zap v1.19.1 // indirect
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/net v0.0.0-20220121210141-e204ce36a2ba // indirect
@@ -300,9 +306,6 @@ require (
 	gopkg.in/urfave/cli.v1 v1.20.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	gorm.io/driver/mysql v1.1.2 // indirect
-	gorm.io/driver/sqlite v1.1.5 // indirect
-	gorm.io/gorm v1.21.15 // indirect
 	k8s.io/apimachinery v0.22.2 // indirect
 	k8s.io/klog/v2 v2.9.0 // indirect
 )
