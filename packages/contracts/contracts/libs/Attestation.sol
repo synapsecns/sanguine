@@ -3,12 +3,12 @@ pragma solidity 0.8.13;
 
 import { TypedMemView } from "./TypedMemView.sol";
 
-library RootUpdate {
+library Attestation {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
     /**
-     * @dev RootUpdate memory layout
+     * @dev Attestation memory layout
      * [000 .. 004): homeDomain     uint32   4 bytes
      * [004 .. 008): nonce          uint32   4 bytes
      * [008 .. 040): root           bytes32 32 bytes
@@ -17,16 +17,16 @@ library RootUpdate {
     uint256 internal constant OFFSET_HOME_DOMAIN = 0;
     uint256 internal constant OFFSET_NONCE = 4;
     uint256 internal constant OFFSET_ROOT = 8;
-    uint256 internal constant HOME_UPDATE_LENGTH = 40;
+    uint256 internal constant ATTESTATION_LENGTH = 40;
 
     /**
-     * @notice Returns formatted RootUpdate message with provided fields
+     * @notice Returns formatted Attestation message with provided fields
      * @param _domain   Domain of Home's chain
      * @param _root     New merkle root
      * @param _nonce    Nonce of the merkle root
      * @return Formatted message
      **/
-    function formatRootUpdate(
+    function formatAttestation(
         uint32 _domain,
         uint32 _nonce,
         bytes32 _root
@@ -35,30 +35,30 @@ library RootUpdate {
     }
 
     /**
-     * @notice Checks that message is a valid HopeUpdate, by checking its length
+     * @notice Checks that message is a valid Attestation, by checking its length
      */
-    function isValidUpdate(bytes29 _rootUpdate) internal pure returns (bool) {
-        return _rootUpdate.len() == HOME_UPDATE_LENGTH;
+    function isValidAttestation(bytes29 _view) internal pure returns (bool) {
+        return _view.len() == ATTESTATION_LENGTH;
     }
 
     /**
      * @notice Returns domain of chain where the Home contract is deployed
      */
-    function updateDomain(bytes29 _rootUpdate) internal pure returns (uint32) {
-        return uint32(_rootUpdate.indexUint(OFFSET_HOME_DOMAIN, 4));
+    function attestationDomain(bytes29 _view) internal pure returns (uint32) {
+        return uint32(_view.indexUint(OFFSET_HOME_DOMAIN, 4));
     }
 
     /**
      * @notice Returns nonce of Home contract at the time, when `root` was the Merkle root.
      */
-    function updateNonce(bytes29 _rootUpdate) internal pure returns (uint32) {
-        return uint32(_rootUpdate.indexUint(OFFSET_NONCE, 4));
+    function attestationNonce(bytes29 _view) internal pure returns (uint32) {
+        return uint32(_view.indexUint(OFFSET_NONCE, 4));
     }
 
     /**
      * @notice Returns a historical Merkle root from the Home contract
      */
-    function updateRoot(bytes29 _rootUpdate) internal pure returns (bytes32) {
-        return _rootUpdate.index(OFFSET_ROOT, 32);
+    function attestationRoot(bytes29 _view) internal pure returns (bytes32) {
+        return _view.index(OFFSET_ROOT, 32);
     }
 }

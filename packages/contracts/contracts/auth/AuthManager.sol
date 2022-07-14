@@ -2,7 +2,7 @@
 pragma solidity 0.8.13;
 
 import { TypedMemView } from "../libs/TypedMemView.sol";
-import { RootUpdate } from "../libs/RootUpdate.sol";
+import { Attestation } from "../libs/Attestation.sol";
 import { Auth } from "../libs/Auth.sol";
 
 abstract contract AuthManager {
@@ -10,7 +10,7 @@ abstract contract AuthManager {
     ▏*║                              LIBRARIES                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    using RootUpdate for bytes29;
+    using Attestation for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             UPGRADE GAP                              ║*▕
@@ -23,21 +23,21 @@ abstract contract AuthManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice  Checks if the passed payload is a valid RootUpdate message,
+     * @notice  Checks if the passed payload is a valid Attestation message,
      *          if the signature is valid and if the signer is an authorized updater.
      * @param _updater      Signer of the message, needs to be authorized as updater, revert otherwise.
-     * @param _payload      Message with update of Home merkle root. Needs to be valid, revert otherwise.
-     * @param _signature    `_payload` signed by `_updater`. Needs to be valid, revert otherwise.
+     * @param _attestation  Attestation of Home merkle root. Needs to be valid, revert otherwise.
+     * @param _signature    `_attestation` signed by `_updater`. Needs to be valid, revert otherwise.
      */
     function _checkUpdaterAuth(
         address _updater,
-        bytes memory _payload,
+        bytes memory _attestation,
         bytes memory _signature
     ) internal view returns (bytes29 _view) {
         // This will revert if signature is invalid
-        _view = Auth.checkSignature(_updater, _payload, _signature);
-        require(_view.isValidUpdate(), "Message is not a valid update");
-        require(_isUpdater(_view.updateDomain(), _updater), "Signer is not an updater");
+        _view = Auth.checkSignature(_updater, _attestation, _signature);
+        require(_view.isValidAttestation(), "Not a valid attestation");
+        require(_isUpdater(_view.attestationDomain(), _updater), "Signer is not an updater");
     }
 
     function _checkWatchtowerAuth(
