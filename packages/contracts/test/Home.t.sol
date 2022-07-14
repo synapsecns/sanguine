@@ -122,10 +122,10 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     function test_improperUpdate_wrongDomain() public {
         uint32 nonce = 42;
         bytes32 root = "very real much wow";
-        // Any signed update from another chain should be rejected
-        (bytes memory update, bytes memory sig) = signRemoteUpdate(updaterPK, nonce, root);
+        // Any signed attestation from another chain should be rejected
+        (bytes memory attestation, bytes memory sig) = signRemoteUpdate(updaterPK, nonce, root);
         vm.expectRevert("Wrong domain");
-        home.improperUpdate(updater, update, sig);
+        home.improperUpdate(updater, attestation, sig);
     }
 
     function test_improperUpdate_fraud_invalidNonce() public {
@@ -155,13 +155,13 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         _checkImproperUpdate(nonce, root);
     }
 
-    /// @dev Signs improper (nonce, root) update and presents it to Home.
+    /// @dev Signs improper (nonce, root) attestation and presents it to Home.
     function _checkImproperUpdate(uint32 nonce, bytes32 root) internal {
-        (bytes memory update, bytes memory sig) = signHomeUpdate(updaterPK, nonce, root);
+        (bytes memory attestation, bytes memory sig) = signHomeUpdate(updaterPK, nonce, root);
         vm.expectEmit(true, true, true, true);
         emit ImproperUpdate(nonce, root, sig);
-        // Home should recognize this as improper update
-        assertTrue(home.improperUpdate(updater, update, sig));
+        // Home should recognize this as improper attestation
+        assertTrue(home.improperUpdate(updater, attestation, sig));
         // Home should be in Failed state
         assertEq(uint256(home.state()), 2);
     }
@@ -176,9 +176,9 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         // sanity checks
         assertEq(nonce, 3);
         assertEq(root, home.historicalRoots(nonce));
-        (bytes memory update, bytes memory sig) = signHomeUpdate(updaterPK, nonce, root);
-        // Should not be an improper update
-        assertFalse(home.improperUpdate(updater, update, sig));
+        (bytes memory attestation, bytes memory sig) = signHomeUpdate(updaterPK, nonce, root);
+        // Should not be an improper attestation
+        assertFalse(home.improperUpdate(updater, attestation, sig));
         assertEq(uint256(home.state()), 1);
     }
 }

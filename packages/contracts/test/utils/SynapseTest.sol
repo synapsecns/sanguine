@@ -5,10 +5,10 @@ pragma solidity 0.8.13;
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 import "../../contracts/UpdaterManager.sol";
-import { RootUpdate } from "../../contracts/libs/RootUpdate.sol";
+import { Attestation } from "../../contracts/libs/Attestation.sol";
 
 contract SynapseTest is Test {
-    using RootUpdate for bytes;
+    using Attestation for bytes;
 
     uint256 updaterPK = 1;
     uint256 fakeUpdaterPK = 2;
@@ -31,18 +31,18 @@ contract SynapseTest is Test {
         uint256 privKey,
         uint32 nonce,
         bytes32 root
-    ) public returns (bytes memory update, bytes memory signature) {
-        update = RootUpdate.formatRootUpdate(localDomain, nonce, root);
-        signature = signMessage(privKey, update);
+    ) public returns (bytes memory attestation, bytes memory signature) {
+        attestation = Attestation.formatAttestation(localDomain, nonce, root);
+        signature = signMessage(privKey, attestation);
     }
 
     function signRemoteUpdate(
         uint256 privKey,
         uint32 nonce,
         bytes32 root
-    ) public returns (bytes memory update, bytes memory signature) {
-        update = RootUpdate.formatRootUpdate(remoteDomain, nonce, root);
-        signature = signMessage(privKey, update);
+    ) public returns (bytes memory attestation, bytes memory signature) {
+        attestation = Attestation.formatAttestation(remoteDomain, nonce, root);
+        signature = signMessage(privKey, attestation);
     }
 
     function signMessage(uint256 privKey, bytes memory message)

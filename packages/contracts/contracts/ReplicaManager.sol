@@ -4,7 +4,7 @@ pragma solidity 0.8.13;
 // ============ Internal Imports ============
 import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { AuthManager } from "./auth/AuthManager.sol";
-import { RootUpdate } from "./libs/RootUpdate.sol";
+import { Attestation } from "./libs/Attestation.sol";
 import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
@@ -25,7 +25,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     using MerkleLib for MerkleLib.Tree;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
-    using RootUpdate for bytes29;
+    using Attestation for bytes29;
     using Message for bytes29;
 
     // ============ Immutables ============
@@ -153,23 +153,23 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * @dev Reverts if update doesn't build off latest committedRoot
      * or if signature is invalid.
      * @param _updater      Updater who signer the update
-     * @param _update       Message with update details
-     * @param _signature    Updater's signature on `_update`
+     * @param _attestation  Message with attestation details
+     * @param _signature    Updater's signature on `_attestation`
      */
     function update(
         address _updater,
-        bytes memory _update,
+        bytes memory _attestation,
         bytes memory _signature
     ) external {
-        bytes29 homeUpdate = _checkUpdaterAuth(_updater, _update, _signature);
-        uint32 remoteDomain = homeUpdate.updateDomain();
+        bytes29 _view = _checkUpdaterAuth(_updater, _attestation, _signature);
+        uint32 remoteDomain = _view.attestationDomain();
         require(remoteDomain != localDomain, "Update refers to local chain");
-        uint32 nonce = homeUpdate.updateNonce();
+        uint32 nonce = _view.attestationNonce();
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[remoteDomain]];
         require(nonce > replica.nonce, "Update older than current state");
         // Hook for future use
         _beforeUpdate();
-        bytes32 newRoot = homeUpdate.updateRoot();
+        bytes32 newRoot = _view.attestationRoot();
         replica.setConfirmAt(newRoot, block.timestamp);
         // update nonce
         replica.setNonce(nonce);
