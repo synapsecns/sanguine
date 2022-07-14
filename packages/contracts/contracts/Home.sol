@@ -5,7 +5,7 @@ pragma solidity 0.8.13;
 import { Version0 } from "./Version0.sol";
 import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { AuthManager } from "./auth/AuthManager.sol";
-import { HomeUpdate } from "./libs/HomeUpdate.sol";
+import { RootUpdate } from "./libs/RootUpdate.sol";
 import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
@@ -27,7 +27,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     // ============ Libraries ============
 
-    using HomeUpdate for bytes29;
+    using RootUpdate for bytes29;
     using MerkleLib for MerkleLib.Tree;
 
     // ============ Enums ============
@@ -259,9 +259,9 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         bytes memory _signature
     ) public notFailed returns (bool) {
         // This will revert if signature is not valid
-        bytes29 homeUpdate = _checkUpdaterAuth(_updater, _update, _signature);
-        uint32 _nonce = homeUpdate.updateNonce();
-        bytes32 _root = homeUpdate.updateRoot();
+        bytes29 rootUpdate = _checkUpdaterAuth(_updater, _update, _signature);
+        uint32 _nonce = rootUpdate.updateNonce();
+        bytes32 _root = rootUpdate.updateRoot();
         // Check if nonce is valid, if not => update is fraud
         if (_nonce < historicalRoots.length) {
             if (_root == historicalRoots[_nonce]) {

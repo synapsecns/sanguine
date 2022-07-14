@@ -2,7 +2,7 @@
 pragma solidity 0.8.13;
 
 import { TypedMemView } from "../libs/TypedMemView.sol";
-import { HomeUpdate } from "../libs/HomeUpdate.sol";
+import { RootUpdate } from "../libs/RootUpdate.sol";
 import { Auth } from "../libs/Auth.sol";
 
 abstract contract AuthManager {
@@ -10,7 +10,7 @@ abstract contract AuthManager {
     ▏*║                              LIBRARIES                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    using HomeUpdate for bytes29;
+    using RootUpdate for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             UPGRADE GAP                              ║*▕
@@ -23,7 +23,7 @@ abstract contract AuthManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice  Checks if the passed payload is a valid HomeUpdate message,
+     * @notice  Checks if the passed payload is a valid RootUpdate message,
      *          if the signature is valid and if the signer is an authorized updater.
      * @param _updater      Signer of the message, needs to be authorized as updater, revert otherwise.
      * @param _payload      Message with update of Home merkle root. Needs to be valid, revert otherwise.

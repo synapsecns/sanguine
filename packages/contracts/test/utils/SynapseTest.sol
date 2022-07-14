@@ -5,10 +5,10 @@ pragma solidity 0.8.13;
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 import "../../contracts/UpdaterManager.sol";
-import { HomeUpdate } from "../../contracts/libs/HomeUpdate.sol";
+import { RootUpdate } from "../../contracts/libs/RootUpdate.sol";
 
 contract SynapseTest is Test {
-    using HomeUpdate for bytes;
+    using RootUpdate for bytes;
 
     uint256 updaterPK = 1;
     uint256 fakeUpdaterPK = 2;
@@ -32,7 +32,7 @@ contract SynapseTest is Test {
         uint32 nonce,
         bytes32 root
     ) public returns (bytes memory update, bytes memory signature) {
-        update = HomeUpdate.formatHomeUpdate(localDomain, nonce, root);
+        update = RootUpdate.formatRootUpdate(localDomain, nonce, root);
         signature = signMessage(privKey, update);
     }
 
@@ -41,7 +41,7 @@ contract SynapseTest is Test {
         uint32 nonce,
         bytes32 root
     ) public returns (bytes memory update, bytes memory signature) {
-        update = HomeUpdate.formatHomeUpdate(remoteDomain, nonce, root);
+        update = RootUpdate.formatRootUpdate(remoteDomain, nonce, root);
         signature = signMessage(privKey, update);
     }
 
