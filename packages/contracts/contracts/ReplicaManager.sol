@@ -126,17 +126,17 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     }
 
     function activeReplicaConfirmedAt(uint32 _remoteDomain, bytes32 _root)
-    external
-    view
-    returns (uint256)
+        external
+        view
+        returns (uint256)
     {
         return allReplicas[activeReplicas[_remoteDomain]].confirmAt[_root];
     }
 
     function activeReplicaMessageStatus(uint32 _remoteDomain, bytes32 _messageId)
-    external
-    view
-    returns (bytes32)
+        external
+        view
+        returns (bytes32)
     {
         return allReplicas[activeReplicas[_remoteDomain]].messageStatus[_messageId];
     }
@@ -252,22 +252,22 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         // returned by a malicious contract
         assembly {
             _success := call(
-            _gas, // gas
-            _recipient, // recipient
-            0, // ether value
-            add(_calldata, 0x20), // inloc
-            mload(_calldata), // inlen
-            0, // outloc
-            0 // outlen
+                _gas, // gas
+                _recipient, // recipient
+                0, // ether value
+                add(_calldata, 0x20), // inloc
+                mload(_calldata), // inlen
+                0, // outloc
+                0 // outlen
             )
-        // limit our copy to 256 bytes
+            // limit our copy to 256 bytes
             _toCopy := returndatasize()
             if gt(_toCopy, _maxCopy) {
                 _toCopy := _maxCopy
             }
-        // Store the length of the copied bytes
+            // Store the length of the copied bytes
             mstore(_returnData, _toCopy)
-        // copy the bytes from returndata[0:_toCopy]
+            // copy the bytes from returndata[0:_toCopy]
             returndatacopy(add(_returnData, 0x20), 0, _toCopy)
         }
         if (!_success) revert(_getRevertMsg(_returnData));
@@ -376,9 +376,9 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     function _createReplica(uint32 _remoteDomain) internal returns (uint256 replicaIndex) {
         replicaIndex = replicaCount;
         allReplicas[replicaIndex].setupReplica(_remoteDomain);
-    unchecked {
-        replicaCount = replicaIndex + 1;
-    }
+        unchecked {
+            replicaCount = replicaIndex + 1;
+        }
     }
 
     /// @notice Hook for potential future use
@@ -390,7 +390,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         if (_returnData.length < 68) return "Transaction reverted silently";
 
         assembly {
-        // Slice the sighash.
+            // Slice the sighash.
             _returnData := add(_returnData, 0x04)
         }
         return abi.decode(_returnData, (string)); // All that remains is the revert string
