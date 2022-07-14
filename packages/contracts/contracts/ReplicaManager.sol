@@ -4,7 +4,7 @@ pragma solidity 0.8.13;
 // ============ Internal Imports ============
 import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { AuthManager } from "./auth/AuthManager.sol";
-import { HomeUpdate } from "./libs/HomeUpdate.sol";
+import { RootUpdate } from "./libs/RootUpdate.sol";
 import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
@@ -25,7 +25,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     using MerkleLib for MerkleLib.Tree;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
-    using HomeUpdate for bytes29;
+    using RootUpdate for bytes29;
     using Message for bytes29;
 
     // ============ Immutables ============

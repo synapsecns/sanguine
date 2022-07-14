@@ -2,20 +2,20 @@
 
 pragma solidity 0.8.13;
 
-import { HomeUpdate } from "../../contracts/libs/HomeUpdate.sol";
+import { RootUpdate } from "../../contracts/libs/RootUpdate.sol";
 import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 
-contract HomeUpdateHarness {
-    using HomeUpdate for bytes29;
+contract RootUpdateHarness {
+    using RootUpdate for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
-    function formatHomeUpdate(
+    function formatRootUpdate(
         uint32 _domain,
         uint32 _nonce,
         bytes32 _root
     ) public pure returns (bytes memory) {
-        return HomeUpdate.formatHomeUpdate(_domain, _nonce, _root);
+        return RootUpdate.formatRootUpdate(_domain, _nonce, _root);
     }
 
     function isValid(bytes memory _update) public pure returns (bool) {
