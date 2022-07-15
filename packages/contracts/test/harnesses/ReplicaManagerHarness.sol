@@ -11,11 +11,7 @@ contract ReplicaManagerHarness is ReplicaManager {
 
     uint256 public sensitiveValue;
 
-    constructor(
-        uint32 _localDomain,
-        uint256 _processGas,
-        uint256 _reserveGas
-    ) ReplicaManager(_localDomain, _processGas, _reserveGas) {}
+    constructor(uint32 _localDomain) ReplicaManager(_localDomain) {}
 
     function setSensitiveValue(uint256 _newValue) external onlySystemMessenger {
         sensitiveValue = _newValue;
