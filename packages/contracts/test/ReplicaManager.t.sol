@@ -35,17 +35,13 @@ contract ReplicaManagerTest is SynapseTest {
     function setUp() public override {
         super.setUp();
         committedRoot = "";
-        processGas = 850_000;
-        reserveGas = 15_000;
-        replicaManager = new ReplicaManagerHarness(localDomain, processGas, reserveGas);
+        replicaManager = new ReplicaManagerHarness(localDomain);
         replicaManager.initialize(remoteDomain, updater);
         dApp = new AppHarness(OPTIMISTIC_PERIOD);
     }
 
     // ============ INITIAL STATE ============
     function test_correctlyInitialized() public {
-        assertEq(uint256(replicaManager.PROCESS_GAS()), processGas);
-        assertEq(uint256(replicaManager.RESERVE_GAS()), reserveGas);
         assertEq(uint256(replicaManager.localDomain()), uint256(localDomain));
         assertEq(replicaManager.updater(), updater);
         // replicaManager set to active

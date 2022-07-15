@@ -14,11 +14,7 @@ contract ReplicaManagerHarness is ReplicaManager {
 
     event LogTips(uint96 updaterTip, uint96 relayerTip, uint96 proverTip, uint96 processorTip);
 
-    constructor(
-        uint32 _localDomain,
-        uint256 _processGas,
-        uint256 _reserveGas
-    ) ReplicaManager(_localDomain, _processGas, _reserveGas) {}
+    constructor(uint32 _localDomain) ReplicaManager(_localDomain) {}
 
     function setMessageStatus(
         uint32 _remoteDomain,
