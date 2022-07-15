@@ -42,9 +42,7 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         home.initialize(IUpdaterManager(updaterManager));
         updaterManager.setHome(address(home));
 
-        uint256 processGas = 850_000;
-        uint256 reserveGas = 15_000;
-        replicaManager = new ReplicaManagerHarness(localDomain, processGas, reserveGas);
+        replicaManager = new ReplicaManagerHarness(localDomain);
         replicaManager.initialize(remoteDomain, updater);
 
         systemMessenger = new SystemMessengerHarness(
