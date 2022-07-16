@@ -13,13 +13,26 @@ contract AttestationHarness {
     function formatAttestation(
         uint32 _domain,
         uint32 _nonce,
-        bytes32 _root
+        bytes32 _root,
+        bytes memory _signature
     ) public pure returns (bytes memory) {
-        return Attestation.formatAttestation(_domain, _nonce, _root);
+        return
+            Attestation.formatAttestation(
+                formatAttestationData(_domain, _nonce, _root),
+                _signature
+            );
     }
 
-    function isValid(bytes memory _attestation) public pure returns (bool) {
-        return _attestation.ref(0).isValidAttestation();
+    function formatAttestationData(
+        uint32 _domain,
+        uint32 _nonce,
+        bytes32 _root
+    ) public pure returns (bytes memory) {
+        return Attestation.formatAttestationData(_domain, _nonce, _root);
+    }
+
+    function isAttestation(bytes memory _attestation) public pure returns (bool) {
+        return _attestation.ref(0).isAttestation();
     }
 
     function domain(bytes memory _attestation) public pure returns (uint32) {
@@ -32,5 +45,13 @@ contract AttestationHarness {
 
     function root(bytes memory _attestation) public pure returns (bytes32) {
         return _attestation.ref(0).attestationRoot();
+    }
+
+    function data(bytes memory _attestation) public view returns (bytes memory) {
+        return _attestation.ref(0).attestationData().clone();
+    }
+
+    function signature(bytes memory _attestation) public view returns (bytes memory) {
+        return _attestation.ref(0).attestationSignature().clone();
     }
 }

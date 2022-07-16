@@ -9,7 +9,7 @@ import { AttestationCollectorHarness } from "./harnesses/AttestationCollectorHar
 contract AttestationCollectorTest is SynapseTest {
     AttestationCollectorHarness internal collector;
 
-    event AttestationSubmitted(address indexed updater, bytes attestation, bytes signature);
+    event AttestationSubmitted(address indexed updater, bytes attestation);
 
     event UpdaterAdded(uint32 indexed domain, address updater);
 
@@ -56,43 +56,31 @@ contract AttestationCollectorTest is SynapseTest {
 
     function test_submitAttestation() public {
         test_addUpdater();
-        (bytes memory attestation, bytes memory signature) = signHomeUpdate(updaterPK, nonce, root);
+        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
         vm.expectEmit(true, true, true, true);
-        emit AttestationSubmitted(updater, attestation, signature);
-        collector.submitAttestation(updater, attestation, signature);
+        emit AttestationSubmitted(updater, attestation);
+        collector.submitAttestation(updater, attestation);
     }
 
     function test_submitAttestation_invalidSignature() public {
         test_addUpdater();
-        (bytes memory attestation, bytes memory signature) = signHomeUpdate(
-            fakeUpdaterPK,
-            nonce,
-            root
-        );
+        (bytes memory attestation, ) = signHomeAttestation(fakeUpdaterPK, nonce, root);
         vm.expectRevert("Invalid signature");
-        collector.submitAttestation(updater, attestation, signature);
+        collector.submitAttestation(updater, attestation);
     }
 
     function test_submitAttestation_notUpdater() public {
         test_addUpdater();
-        (bytes memory attestation, bytes memory signature) = signHomeUpdate(
-            fakeUpdaterPK,
-            nonce,
-            root
-        );
+        (bytes memory attestation, ) = signHomeAttestation(fakeUpdaterPK, nonce, root);
         vm.expectRevert("Signer is not an updater");
-        collector.submitAttestation(fakeUpdater, attestation, signature);
+        collector.submitAttestation(fakeUpdater, attestation);
     }
 
     function test_submitAttestation_wrongDomain() public {
         test_addUpdater();
-        (bytes memory attestation, bytes memory signature) = signRemoteUpdate(
-            updaterPK,
-            nonce,
-            root
-        );
+        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
         // Signer is not set as updater for the `remoteDomain`
         vm.expectRevert("Signer is not an updater");
-        collector.submitAttestation(updater, attestation, signature);
+        collector.submitAttestation(updater, attestation);
     }
 }

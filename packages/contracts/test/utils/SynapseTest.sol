@@ -27,22 +27,24 @@ contract SynapseTest is Test {
         vm.label(fakeSigner, "fake signer");
     }
 
-    function signHomeUpdate(
+    function signHomeAttestation(
         uint256 privKey,
         uint32 nonce,
         bytes32 root
     ) public returns (bytes memory attestation, bytes memory signature) {
-        attestation = Attestation.formatAttestation(localDomain, nonce, root);
-        signature = signMessage(privKey, attestation);
+        bytes memory data = Attestation.formatAttestationData(localDomain, nonce, root);
+        signature = signMessage(privKey, data);
+        attestation = Attestation.formatAttestation(data, signature);
     }
 
-    function signRemoteUpdate(
+    function signRemoteAttestation(
         uint256 privKey,
         uint32 nonce,
         bytes32 root
     ) public returns (bytes memory attestation, bytes memory signature) {
-        attestation = Attestation.formatAttestation(remoteDomain, nonce, root);
-        signature = signMessage(privKey, attestation);
+        bytes memory data = Attestation.formatAttestationData(remoteDomain, nonce, root);
+        signature = signMessage(privKey, data);
+        attestation = Attestation.formatAttestation(data, signature);
     }
 
     function signMessage(uint256 privKey, bytes memory message)
