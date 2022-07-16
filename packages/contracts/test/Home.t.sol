@@ -117,18 +117,18 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     }
 
     // ============ UPDATING MESSAGES ============
-    event ImproperUpdate(uint32 nonce, bytes32 root, bytes signature);
+    event ImproperAttestation(address updater, bytes attestation);
 
-    function test_improperUpdate_wrongDomain() public {
+    function test_improperAttestation_wrongDomain() public {
         uint32 nonce = 42;
         bytes32 root = "very real much wow";
         // Any signed attestation from another chain should be rejected
-        (bytes memory attestation, bytes memory sig) = signRemoteUpdate(updaterPK, nonce, root);
+        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
         vm.expectRevert("Wrong domain");
-        home.improperUpdate(updater, attestation, sig);
+        home.improperAttestation(updater, attestation);
     }
 
-    function test_improperUpdate_fraud_invalidNonce() public {
+    function test_improperAttestation_fraud_invalidNonce() public {
         test_dispatch();
         uint32 nonce = 1;
         bytes32 root = home.root();
@@ -137,7 +137,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         _checkImproperUpdate(nonce, root);
     }
 
-    function test_improperUpdate_fraud_correctRootWrongNonce() public {
+    function test_improperAttestation_fraud_correctRootWrongNonce() public {
         test_dispatch();
         test_dispatch();
         uint32 nonce = 0;
@@ -147,7 +147,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         _checkImproperUpdate(nonce, root);
     }
 
-    function test_improperUpdate_fraud_validNonceWrongRoot() public {
+    function test_improperAttestation_fraud_validNonceWrongRoot() public {
         test_dispatch();
         uint32 nonce = 0;
         bytes32 root = "this is clearly fraud";
@@ -157,11 +157,11 @@ contract HomeTest is SynapseTestWithUpdaterManager {
 
     /// @dev Signs improper (nonce, root) attestation and presents it to Home.
     function _checkImproperUpdate(uint32 nonce, bytes32 root) internal {
-        (bytes memory attestation, bytes memory sig) = signHomeUpdate(updaterPK, nonce, root);
+        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
         vm.expectEmit(true, true, true, true);
-        emit ImproperUpdate(nonce, root, sig);
+        emit ImproperAttestation(updater, attestation);
         // Home should recognize this as improper attestation
-        assertTrue(home.improperUpdate(updater, attestation, sig));
+        assertTrue(home.improperAttestation(updater, attestation));
         // Home should be in Failed state
         assertEq(uint256(home.state()), 2);
     }
@@ -176,9 +176,9 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         // sanity checks
         assertEq(nonce, 3);
         assertEq(root, home.historicalRoots(nonce));
-        (bytes memory attestation, bytes memory sig) = signHomeUpdate(updaterPK, nonce, root);
+        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
         // Should not be an improper attestation
-        assertFalse(home.improperUpdate(updater, attestation, sig));
+        assertFalse(home.improperAttestation(updater, attestation));
         assertEq(uint256(home.state()), 1);
     }
 }
