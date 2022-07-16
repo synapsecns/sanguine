@@ -8,25 +8,44 @@ library Attestation {
     using TypedMemView for bytes29;
 
     /**
-     * @dev Attestation memory layout
+     * @dev AttestationData memory layout
      * [000 .. 004): homeDomain     uint32   4 bytes
      * [004 .. 008): nonce          uint32   4 bytes
      * [008 .. 040): root           bytes32 32 bytes
+     *
+     *      Attestation memory layout
+     * [000 .. 040): data           bytes   40 bytes (see above)
+     * [040 .. END): signature      bytes   ?? bytes (64/65 bytes)
      */
 
     uint256 internal constant OFFSET_HOME_DOMAIN = 0;
     uint256 internal constant OFFSET_NONCE = 4;
     uint256 internal constant OFFSET_ROOT = 8;
-    uint256 internal constant ATTESTATION_LENGTH = 40;
+    uint256 internal constant ATTESTATION_DATA_LENGTH = 40;
+    uint256 internal constant OFFSET_SIGNATURE = ATTESTATION_DATA_LENGTH;
 
     /**
-     * @notice Returns formatted Attestation message with provided fields
+     * @notice Returns formatted Attestation with provided fields
+     * @param _data         Attestation Data (see above)
+     * @param _signature    Notary's signature on `_data`
+     * @return Formatted attestation
+     **/
+    function formatAttestation(bytes memory _data, bytes memory _signature)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return abi.encodePacked(_data, _signature);
+    }
+
+    /**
+     * @notice Returns formatted Attestation Data with provided fields
      * @param _domain   Domain of Home's chain
      * @param _root     New merkle root
      * @param _nonce    Nonce of the merkle root
-     * @return Formatted message
+     * @return Formatted data
      **/
-    function formatAttestation(
+    function formatAttestationData(
         uint32 _domain,
         uint32 _nonce,
         bytes32 _root
@@ -35,10 +54,11 @@ library Attestation {
     }
 
     /**
-     * @notice Checks that message is a valid Attestation, by checking its length
+     * @notice Checks that message is an Attestation, by checking its length
      */
-    function isValidAttestation(bytes29 _view) internal pure returns (bool) {
-        return _view.len() == ATTESTATION_LENGTH;
+    function isAttestation(bytes29 _view) internal pure returns (bool) {
+        // Should have non-zero length for signature. Signature validity is not checked.
+        return _view.len() > ATTESTATION_DATA_LENGTH;
     }
 
     /**
@@ -60,5 +80,19 @@ library Attestation {
      */
     function attestationRoot(bytes29 _view) internal pure returns (bytes32) {
         return _view.index(OFFSET_ROOT, 32);
+    }
+
+    /**
+     * @notice Returns Attestation's Data, that is going to be signed by the Notary
+     */
+    function attestationData(bytes29 _view) internal pure returns (bytes29) {
+        return _view.slice(OFFSET_HOME_DOMAIN, ATTESTATION_DATA_LENGTH, 0);
+    }
+
+    /**
+     * @notice Returns Notary's signature on AttestationData
+     */
+    function attestationSignature(bytes29 _view) internal pure returns (bytes29) {
+        return _view.slice(OFFSET_SIGNATURE, _view.len() - ATTESTATION_DATA_LENGTH, 0);
     }
 }
