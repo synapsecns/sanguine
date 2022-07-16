@@ -83,13 +83,12 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     );
 
     /**
-     * @notice Emitted when proof of an improper update is submitted,
+     * @notice Emitted when proof of an improper attestation is submitted,
      * which sets the contract to FAILED state
-     * @param nonce Nonce of the improper update
-     * @param root Root of the improper update
-     * @param signature Signature on `nonce` and `root`
+     * @param updater       Updater who signed improper attestation
+     * @param attestation   Attestation data and signature
      */
-    event ImproperUpdate(uint32 nonce, bytes32 root, bytes signature);
+    event ImproperAttestation(address updater, bytes attestation);
 
     /**
      * @notice Emitted when the Updater is slashed
@@ -229,37 +228,36 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     // ============ Public Functions  ============
 
     /**
-     * @notice Check if an Update is an Improper Update;
+     * @notice Check if an Attestation is an Improper Attestation;
      * if so, slash the Updater and set the contract to FAILED state.
      *
-     * An Improper Update is a (_nonce, _root) update that doesn't correspond with
+     * An Improper Attestation is a (_nonce, _root) update that doesn't correspond with
      * the historical state of Home contract. Either of those needs to be true:
      * - _nonce is higher than current nonce (no root exists for this nonce)
      * - _root is not equal to the historical root of _nonce
      * This would mean that message(s) that were not truly
      * dispatched on Home were falsely included in the signed root.
      *
-     * An Improper Update will only be accepted as valid by the Replica
-     * If an Improper Update is attempted on Home,
+     * An Improper Attestation will only be accepted as valid by the Replica
+     * If an Improper Attestation is attempted on Home,
      * the Updater will be slashed immediately.
-     * If an Improper Update is submitted to the Replica,
+     * If an Improper Attestation is submitted to the Replica,
      * it should be relayed to the Home contract using this function
-     * in order to slash the Updater with an Improper Update.
+     * in order to slash the Updater with an Improper Attestation.
      *
      * @dev Reverts (and doesn't slash updater) if signature is invalid or
      * update not current
-     * @param _updater      Updater who signed the update
-     * @param _attestation       Update message
-     * @param _signature    Updater signature on `_attestation`
-     * @return TRUE if update was an Improper Update (implying Updater was slashed)
+     * @param _updater      Updater who signed the attestation
+     * @param _attestation  Attestation data and signature
+     * @return TRUE if update was an Improper Attestation (implying Updater was slashed)
      */
-    function improperUpdate(
-        address _updater,
-        bytes memory _attestation,
-        bytes memory _signature
-    ) public notFailed returns (bool) {
+    function improperAttestation(address _updater, bytes memory _attestation)
+        public
+        notFailed
+        returns (bool)
+    {
         // This will revert if signature is not valid
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation, _signature);
+        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
         uint32 _nonce = _view.attestationNonce();
         bytes32 _root = _view.attestationRoot();
         // Check if nonce is valid, if not => update is fraud
@@ -271,7 +269,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
             // Signed root is not the same as the historical one => update is fraud
         }
         _fail();
-        emit ImproperUpdate(_nonce, _root, _signature);
+        emit ImproperAttestation(_updater, _attestation);
         return true;
     }
 

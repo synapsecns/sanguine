@@ -3,6 +3,7 @@ pragma solidity 0.8.13;
 
 import { AuthManager } from "./auth/AuthManager.sol";
 import { Attestation } from "./libs/Attestation.sol";
+import { TypedMemView } from "./libs/TypedMemView.sol";
 
 import {
     OwnableUpgradeable
@@ -10,12 +11,14 @@ import {
 
 contract AttestationCollector is AuthManager, OwnableUpgradeable {
     using Attestation for bytes29;
+    using TypedMemView for bytes;
+    using TypedMemView for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    event AttestationSubmitted(address indexed updater, bytes attestation, bytes signature);
+    event AttestationSubmitted(address indexed updater, bytes attestation);
 
     event UpdaterAdded(uint32 indexed domain, address updater);
 
@@ -60,14 +63,10 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function submitAttestation(
-        address _updater,
-        bytes memory _attestation,
-        bytes memory _signature
-    ) external {
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation, _signature);
+    function submitAttestation(address _updater, bytes memory _attestation) external {
+        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
         _storeAttestation(_view);
-        emit AttestationSubmitted(_updater, _attestation, _signature);
+        emit AttestationSubmitted(_updater, _attestation);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

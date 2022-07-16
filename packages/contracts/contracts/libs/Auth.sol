@@ -11,18 +11,16 @@ library Auth {
 
     /**
      * @notice Checks signer is authorized and that their signature is valid.
-     * Returns a view over the passed payload for later slicing.
      * @param _signer       Who signed the message
-     * @param _payload      Message to be signed
-     * @param _signature    `_payload` signed by `_signer`, reverts if invalid
+     * @param _data         Data that was signed
+     * @param _signature    `_data` signed by `_signer`, reverts if invalid
      */
     function checkSignature(
         address _signer,
-        bytes memory _payload,
+        bytes29 _data,
         bytes memory _signature
-    ) internal pure returns (bytes29 _view) {
-        _view = _payload.ref(0);
-        bytes32 digest = _view.keccak();
+    ) internal pure {
+        bytes32 digest = _data.keccak();
         digest = ECDSA.toEthSignedMessageHash(digest);
         require((ECDSA.recover(digest, _signature) == _signer), "Invalid signature");
     }

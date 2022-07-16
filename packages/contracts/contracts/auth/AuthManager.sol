@@ -11,6 +11,8 @@ abstract contract AuthManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     using Attestation for bytes29;
+    using TypedMemView for bytes;
+    using TypedMemView for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             UPGRADE GAP                              ║*▕
@@ -27,27 +29,30 @@ abstract contract AuthManager {
      *          if the signature is valid and if the signer is an authorized updater.
      * @param _updater      Signer of the message, needs to be authorized as updater, revert otherwise.
      * @param _attestation  Attestation of Home merkle root. Needs to be valid, revert otherwise.
-     * @param _signature    `_attestation` signed by `_updater`. Needs to be valid, revert otherwise.
+     * @return _view        Memory view on attestation
      */
-    function _checkUpdaterAuth(
-        address _updater,
-        bytes memory _attestation,
-        bytes memory _signature
-    ) internal view returns (bytes29 _view) {
+    function _checkUpdaterAuth(address _updater, bytes memory _attestation)
+        internal
+        view
+        returns (bytes29 _view)
+    {
+        _view = _attestation.ref(0);
+        require(_view.isAttestation(), "Not an attestation");
         // This will revert if signature is invalid
-        _view = Auth.checkSignature(_updater, _attestation, _signature);
-        require(_view.isValidAttestation(), "Not a valid attestation");
+        Auth.checkSignature(
+            _updater,
+            _view.attestationData(),
+            _view.attestationSignature().clone()
+        );
         require(_isUpdater(_view.attestationDomain(), _updater), "Signer is not an updater");
     }
 
-    function _checkWatchtowerAuth(
-        address _watchtower,
-        bytes memory _payload,
-        bytes memory _signature
-    ) internal view returns (bytes29 _view) {
-        require(_isWatchtower(_watchtower), "Signer is not a watchtower");
-        _view = Auth.checkSignature(_watchtower, _payload, _signature);
-        // TODO: check if _payload is valid, once watchtower message standard is finalized
+    function _checkWatchtowerAuth(address _watchtower, bytes memory _report)
+        internal
+        view
+        returns (bytes29 _data)
+    {
+        // TODO: check if _report is valid, once watchtower message standard is finalized
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
