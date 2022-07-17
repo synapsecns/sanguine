@@ -93,8 +93,12 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * @param _remoteDomain The domain of the Home contract this follows
      * @param _updater The EVM id of the updater
      */
-    function initialize(uint32 _remoteDomain, address _updater) public initializer {
-        __SynapseBase_initialize(_updater);
+    function initialize(
+        uint32 _remoteDomain,
+        address _updater,
+        address _watchtower
+    ) public initializer {
+        __SynapseBase_initialize(_updater, _watchtower);
         // set storage variables
         entered = 1;
         activeReplicas[_remoteDomain] = _createReplica(_remoteDomain);
@@ -340,8 +344,8 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         return _updater == updater;
     }
 
-    function _isWatchtower(address) internal pure override returns (bool) {
-        return false;
+    function _isWatchtower(address _watchtower) internal view override returns (bool) {
+        return _watchtower == watchtower;
     }
 
     function _checkForSystemMessage(bytes32 _recipient) internal view returns (address recipient) {

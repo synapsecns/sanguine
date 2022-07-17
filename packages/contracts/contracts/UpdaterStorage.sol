@@ -26,6 +26,8 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
 
     // Address of bonded Updater
     address public updater;
+    // Address of bonded Watchtower
+    address public watchtower;
 
     ISystemMessenger public systemMessenger;
 
@@ -67,9 +69,13 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
 
     // ============ Initializer ============
 
-    function __SynapseBase_initialize(address _updater) internal onlyInitializing {
+    function __SynapseBase_initialize(address _updater, address _watchtower)
+        internal
+        onlyInitializing
+    {
         __Ownable_init();
         _setUpdater(_updater);
+        watchtower = _watchtower;
     }
 
     // ============ Modifiers ============

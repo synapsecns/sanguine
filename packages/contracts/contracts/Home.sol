@@ -6,6 +6,8 @@ import { Version0 } from "./Version0.sol";
 import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { AuthManager } from "./auth/AuthManager.sol";
 import { Attestation } from "./libs/Attestation.sol";
+import { Report } from "./libs/Report.sol";
+import { TypedMemView } from "./libs/TypedMemView.sol";
 import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Header } from "./libs/Header.sol";
@@ -32,6 +34,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     // ============ Libraries ============
 
     using Attestation for bytes29;
+    using Report for bytes29;
+    using TypedMemView for bytes29;
     using MerkleLib for MerkleLib.Tree;
 
     using Tips for bytes;
@@ -92,20 +96,32 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     );
 
     /**
-     * @notice Emitted when proof of an improper attestation is submitted,
+     * @notice Emitted when proof of an invalid attestation is submitted,
      * which sets the contract to FAILED state
-     * @param updater       Updater who signed improper attestation
+     * @param updater       Updater who signed invalid attestation
      * @param attestation   Attestation data and signature
      */
-    event ImproperAttestation(address updater, bytes attestation);
+    event InvalidAttestation(address updater, bytes attestation);
+
+    /**
+     * @notice Emitted when proof of an invalid fraud report is submitted
+     * @param watchtower    Watchtower who signed invalid fraud report
+     * @param report        Report data and signature
+     */
+    event InvalidReport(address watchtower, bytes report);
 
     /**
      * @notice Emitted when the Updater is slashed
-     * (should be paired with ImproperUpdater or DoubleUpdate event)
-     * @param updater The address of the updater
-     * @param reporter The address of the entity that reported the updater misbehavior
+     * (should be paired with InvalidAttestation event)
+     * @param updater       The address of the updater
+     * @param reporter      The address of the entity that reported the updater misbehavior
+     * @param watchtower    The address of watchtower that signed the fraud report
      */
-    event UpdaterSlashed(address indexed updater, address indexed reporter);
+    event UpdaterSlashed(
+        address indexed updater,
+        address indexed reporter,
+        address indexed watchtower
+    );
 
     /**
      * @notice Emitted when the UpdaterManager contract is changed
@@ -119,10 +135,10 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
 
     // ============ Initializer ============
 
-    function initialize(IUpdaterManager _updaterManager) public initializer {
+    function initialize(IUpdaterManager _updaterManager, address _watchtower) public initializer {
         // initialize queue, set Updater Manager, and initialize
         _setUpdaterManager(_updaterManager);
-        __SynapseBase_initialize(updaterManager.updater());
+        __SynapseBase_initialize(updaterManager.updater(), _watchtower);
         state = States.Active;
     }
 
@@ -239,51 +255,58 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         return _domainHash(localDomain);
     }
 
-    // ============ Public Functions  ============
-
     /**
-     * @notice Check if an Attestation is an Improper Attestation;
+     * @notice Check if an Attestation is an Invalid Attestation;
      * if so, slash the Updater and set the contract to FAILED state.
      *
-     * An Improper Attestation is a (_nonce, _root) update that doesn't correspond with
+     * An Invalid Attestation is a (_nonce, _root) update that doesn't correspond with
      * the historical state of Home contract. Either of those needs to be true:
      * - _nonce is higher than current nonce (no root exists for this nonce)
      * - _root is not equal to the historical root of _nonce
      * This would mean that message(s) that were not truly
      * dispatched on Home were falsely included in the signed root.
      *
-     * An Improper Attestation will only be accepted as valid by the Replica
-     * If an Improper Attestation is attempted on Home,
+     * An Invalid Attestation will only be accepted as valid by the Replica
+     * If an Invalid Attestation is attempted on Home,
      * the Updater will be slashed immediately.
-     * If an Improper Attestation is submitted to the Replica,
+     * If an Invalid Attestation is submitted to the Replica,
      * it should be relayed to the Home contract using this function
-     * in order to slash the Updater with an Improper Attestation.
+     * in order to slash the Updater with an Invalid Attestation.
      *
      * @dev Reverts (and doesn't slash updater) if signature is invalid or
      * update not current
-     * @param _updater      Updater who signed the attestation
-     * @param _attestation  Attestation data and signature
-     * @return TRUE if update was an Improper Attestation (implying Updater was slashed)
+     * @param _watchtower   Watchtower that signed the report
+     * @param  _report      Report data and signature
+     * @return TRUE if update was an Invalid Attestation (implying Updater was slashed)
      */
-    function improperAttestation(address _updater, bytes memory _attestation)
-        public
+    function submitReport(address _watchtower, bytes memory _report)
+        external
         notFailed
         returns (bool)
     {
-        // This will revert if signature is not valid
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
-        uint32 _nonce = _view.attestationNonce();
-        bytes32 _root = _view.attestationRoot();
-        // Check if nonce is valid, if not => update is fraud
+        // this will revert if Watchtower signature is invalid
+        bytes29 _reportView = _checkWatchtowerAuth(_watchtower, _report);
+        // Get data from the report
+        bytes29 _reportData = _reportView.reportData();
+        address _updater = _reportData.reportUpdater();
+        bytes29 _attestation = _reportData.reportAttestation();
+        // this will revert if Updater signature is invalid
+        _checkUpdaterAuth(_updater, _attestation);
+        // Get merkle state from the attestation
+        uint32 _nonce = _attestation.attestationNonce();
+        bytes32 _root = _attestation.attestationRoot();
+        // Check if nonce is valid, if not => attestation is fraud
         if (_nonce < historicalRoots.length) {
             if (_root == historicalRoots[_nonce]) {
-                // Signed (nonce, root) update is valid
+                // Signed (nonce, root) attestation is valid
+                // TODO: slash Watchtower for signing invalid fraud report
+                emit InvalidReport(_watchtower, _report);
                 return false;
             }
-            // Signed root is not the same as the historical one => update is fraud
+            // Signed root is not the same as the historical one => attestation is fraud
         }
-        _fail();
-        emit ImproperAttestation(_updater, _attestation);
+        _fail(_watchtower);
+        emit InvalidAttestation(_updater, _attestation.clone());
         return true;
     }
 
@@ -301,14 +324,14 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
 
     /**
      * @notice Slash the Updater and set contract state to FAILED
-     * @dev Called when fraud is proven (Improper Update or Double Update)
+     * @dev Called when fraud is proven (Invalid Update or Double Update)
      */
-    function _fail() internal {
+    function _fail(address _watchtower) internal {
         // set contract to FAILED
         state = States.Failed;
         // slash Updater
         updaterManager.slashUpdater(payable(msg.sender));
-        emit UpdaterSlashed(updater, msg.sender);
+        emit UpdaterSlashed(updater, msg.sender, _watchtower);
     }
 
     /**
@@ -337,8 +360,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         return _updater == updater;
     }
 
-    function _isWatchtower(address) internal pure override returns (bool) {
-        return false;
+    function _isWatchtower(address _watchtower) internal view override returns (bool) {
+        return _watchtower == watchtower;
     }
 
     /**
