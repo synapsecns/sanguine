@@ -3,6 +3,7 @@ pragma solidity 0.8.13;
 
 import { TypedMemView } from "../libs/TypedMemView.sol";
 import { Attestation } from "../libs/Attestation.sol";
+import { Report } from "../libs/Report.sol";
 import { Auth } from "../libs/Auth.sol";
 
 abstract contract AuthManager {
@@ -11,6 +12,8 @@ abstract contract AuthManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     using Attestation for bytes29;
+    using Report for bytes;
+    using Report for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
@@ -37,6 +40,10 @@ abstract contract AuthManager {
         returns (bytes29 _view)
     {
         _view = _attestation.ref(0);
+        _checkUpdaterAuth(_updater, _view);
+    }
+
+    function _checkUpdaterAuth(address _updater, bytes29 _view) internal view {
         require(_view.isAttestation(), "Not an attestation");
         // This will revert if signature is invalid
         Auth.checkSignature(
@@ -50,9 +57,16 @@ abstract contract AuthManager {
     function _checkWatchtowerAuth(address _watchtower, bytes memory _report)
         internal
         view
-        returns (bytes29 _data)
+        returns (bytes29 _view)
     {
-        // TODO: check if _report is valid, once watchtower message standard is finalized
+        _view = _report.castToReport();
+        _checkWatchtowerAuth(_watchtower, _view);
+    }
+
+    function _checkWatchtowerAuth(address _watchtower, bytes29 _view) internal view {
+        require(_view.isReport(), "Not a report");
+        Auth.checkSignature(_watchtower, _view.reportData(), _view.reportSignature().clone());
+        require(_isWatchtower(_watchtower), "Signer is not a watchtower");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
