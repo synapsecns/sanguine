@@ -19,7 +19,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         super.setUp();
         optimisticSeconds = 10;
         home = new HomeHarness(localDomain);
-        home.initialize(IUpdaterManager(updaterManager));
+        home.initialize(IUpdaterManager(updaterManager), watchtower);
         updaterManager.setHome(address(home));
         systemMessenger = ISystemMessenger(address(1234567890));
         home.setSystemMessenger(systemMessenger);
@@ -35,7 +35,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
 
     function test_cannotInitializeTwice() public {
         vm.expectRevert("Initializable: contract is already initialized");
-        home.initialize(updaterManager);
+        home.initialize(updaterManager, watchtower);
     }
 
     function test_cannotSetUpdaterAsNotUpdaterManager() public {
@@ -143,53 +143,69 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     }
 
     // ============ UPDATING MESSAGES ============
-    event ImproperAttestation(address updater, bytes attestation);
+    event InvalidAttestation(address updater, bytes attestation);
+    event InvalidReport(address watchtower, bytes report);
 
-    function test_improperAttestation_wrongDomain() public {
+    function test_submitReport_wrongDomain() public {
         uint32 nonce = 42;
         bytes32 root = "very real much wow";
         // Any signed attestation from another chain should be rejected
         (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
+        bytes memory report = signReport(updaterPK, watchtowerPK, attestation);
         vm.expectRevert("Wrong domain");
-        home.improperAttestation(updater, attestation);
+        home.submitReport(watchtower, report);
     }
 
-    function test_improperAttestation_fraud_invalidNonce() public {
+    function test_submitReport_fraud_invalidNonce() public {
         test_dispatch();
         uint32 nonce = 1;
         bytes32 root = home.root();
         // This root exists, but with nonce = 0
         // Nonce = 1 doesn't exists yet
-        _checkImproperUpdate(nonce, root);
+        _checkSubmitReport(nonce, root, true);
     }
 
-    function test_improperAttestation_fraud_correctRootWrongNonce() public {
+    function test_submitReport_fraud_correctRootWrongNonce() public {
         test_dispatch();
         test_dispatch();
         uint32 nonce = 0;
         bytes32 root = home.root();
         // This root exists, but with nonce = 1
         // nonce = 0 exists, with a different Merkle root
-        _checkImproperUpdate(nonce, root);
+        _checkSubmitReport(nonce, root, true);
     }
 
-    function test_improperAttestation_fraud_validNonceWrongRoot() public {
+    function test_submitReport_fraud_validNonceWrongRoot() public {
         test_dispatch();
         uint32 nonce = 0;
         bytes32 root = "this is clearly fraud";
         // nonce = 0 exists, with a different Merkle root
-        _checkImproperUpdate(nonce, root);
+        _checkSubmitReport(nonce, root, true);
     }
 
-    /// @dev Signs improper (nonce, root) attestation and presents it to Home.
-    function _checkImproperUpdate(uint32 nonce, bytes32 root) internal {
+    /// @dev Signs report on (nonce, root) attestation and presents it to Home.
+    function _checkSubmitReport(
+        uint32 nonce,
+        bytes32 root,
+        bool isValidReport
+    ) internal {
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
+        bytes memory report = signReport(updaterPK, watchtowerPK, attestation);
         vm.expectEmit(true, true, true, true);
-        emit ImproperAttestation(updater, attestation);
-        // Home should recognize this as improper attestation
-        assertTrue(home.improperAttestation(updater, attestation));
-        // Home should be in Failed state
-        assertEq(uint256(home.state()), 2);
+        if (isValidReport) {
+            emit InvalidAttestation(updater, attestation);
+        } else {
+            emit InvalidReport(watchtower, report);
+        }
+        // Home should recognize this as invalid attestation
+        home.submitReport(watchtower, report);
+        if (isValidReport) {
+            // Home should be in Failed state
+            assertEq(uint256(home.state()), 2);
+        } else {
+            // Home should be in Active state
+            assertEq(uint256(home.state()), 1);
+        }
     }
 
     // Dispatches 4 messages, and then Updater signs latest new roots
@@ -203,8 +219,11 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         assertEq(nonce, 3);
         assertEq(root, home.historicalRoots(nonce));
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
-        // Should not be an improper attestation
-        assertFalse(home.improperAttestation(updater, attestation));
+        bytes memory report = signReport(updaterPK, watchtowerPK, attestation);
+        vm.expectEmit(true, true, true, true);
+        emit InvalidReport(watchtower, report);
+        // Should not be an invalid attestation
+        assertFalse(home.submitReport(watchtower, report));
         assertEq(uint256(home.state()), 1);
     }
 

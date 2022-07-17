@@ -7,16 +7,21 @@ import "forge-std/console2.sol";
 import "../../contracts/UpdaterManager.sol";
 import { Attestation } from "../../contracts/libs/Attestation.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
+import { Report } from "../../contracts/libs/Report.sol";
 
 contract SynapseTest is Test {
     using Attestation for bytes;
+    using Report for bytes;
 
     uint256 updaterPK = 1;
     uint256 fakeUpdaterPK = 2;
     address updater = vm.addr(updaterPK);
     address fakeUpdater = vm.addr(fakeUpdaterPK);
-    address signer = vm.addr(3);
-    address fakeSigner = vm.addr(4);
+
+    uint256 watchtowerPK = 3;
+    uint256 fakeWatchtowerPK = 4;
+    address watchtower = vm.addr(watchtowerPK);
+    address fakeWatchtower = vm.addr(fakeWatchtowerPK);
 
     uint32 localDomain = 1500;
     uint32 remoteDomain = 1000;
@@ -30,8 +35,8 @@ contract SynapseTest is Test {
     function setUp() public virtual {
         vm.label(updater, "updater");
         vm.label(fakeUpdater, "fake updater");
-        vm.label(signer, "signer");
-        vm.label(fakeSigner, "fake signer");
+        vm.label(watchtower, "watchtower");
+        vm.label(fakeWatchtower, "fake watchtower");
     }
 
     function getDefaultTips() internal pure returns (bytes memory) {
@@ -60,6 +65,16 @@ contract SynapseTest is Test {
         bytes memory data = Attestation.formatAttestationData(remoteDomain, nonce, root);
         signature = signMessage(privKey, data);
         attestation = Attestation.formatAttestation(data, signature);
+    }
+
+    function signReport(
+        uint256 notaryPrivKey,
+        uint256 signerPrivKey,
+        bytes memory attestation
+    ) public returns (bytes memory report) {
+        bytes memory data = Report.formatReportData(vm.addr(notaryPrivKey), attestation);
+        bytes memory signature = signMessage(signerPrivKey, data);
+        report = Report.formatReport(data, signature);
     }
 
     function signMessage(uint256 privKey, bytes memory message)

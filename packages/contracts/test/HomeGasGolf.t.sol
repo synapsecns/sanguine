@@ -14,7 +14,7 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
     function setUp() public override {
         super.setUp();
         home = new HomeHarness(localDomain);
-        home.initialize(IUpdaterManager(updaterManager));
+        home.initialize(IUpdaterManager(updaterManager), watchtower);
         updaterManager.setHome(address(home));
     }
 

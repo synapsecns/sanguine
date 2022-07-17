@@ -25,7 +25,7 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         super.setUp();
 
         home = new HomeHarness(localDomain);
-        home.initialize(IUpdaterManager(updaterManager));
+        home.initialize(IUpdaterManager(updaterManager), watchtower);
         updaterManager.setHome(address(home));
 
         vm.label(replicaManager, "replica");

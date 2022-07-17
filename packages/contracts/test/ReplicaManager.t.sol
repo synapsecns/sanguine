@@ -38,7 +38,7 @@ contract ReplicaManagerTest is SynapseTest {
     function setUp() public override {
         super.setUp();
         replicaManager = new ReplicaManagerHarness(localDomain);
-        replicaManager.initialize(remoteDomain, updater);
+        replicaManager.initialize(remoteDomain, updater, watchtower);
         dApp = new AppHarness(OPTIMISTIC_PERIOD);
         systemMessenger = ISystemMessenger(address(1234567890));
         replicaManager.setSystemMessenger(systemMessenger);
@@ -52,7 +52,7 @@ contract ReplicaManagerTest is SynapseTest {
 
     function test_cannotInitializeTwice() public {
         vm.expectRevert("Initializable: contract is already initialized");
-        replicaManager.initialize(remoteDomain, updater);
+        replicaManager.initialize(remoteDomain, updater, watchtower);
     }
 
     // ============ STATE & PERMISSIONING ============

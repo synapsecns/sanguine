@@ -18,7 +18,7 @@ contract UpdaterManagerTest is SynapseTestWithUpdaterManager {
         super.setUp();
         home = new HomeHarness(localDomain);
         fakeHome = new HomeHarness(localDomain);
-        home.initialize(IUpdaterManager(updaterManager));
+        home.initialize(IUpdaterManager(updaterManager), watchtower);
         updaterManager.setHome(address(home));
     }
 

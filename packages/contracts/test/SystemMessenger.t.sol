@@ -41,11 +41,11 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         super.setUp();
 
         home = new HomeHarness(localDomain);
-        home.initialize(IUpdaterManager(updaterManager));
+        home.initialize(IUpdaterManager(updaterManager), watchtower);
         updaterManager.setHome(address(home));
 
         replicaManager = new ReplicaManagerHarness(localDomain);
-        replicaManager.initialize(remoteDomain, updater);
+        replicaManager.initialize(remoteDomain, updater, watchtower);
 
         systemMessenger = new SystemMessengerHarness(
             address(home),
@@ -228,7 +228,7 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         return
             _createSystemMessage(
                 remoteDomain,
-                addressToBytes32(fakeSigner),
+                addressToBytes32(fakeWatchtower),
                 _nonce,
                 localDomain,
                 addressToBytes32(address(systemMessenger)),

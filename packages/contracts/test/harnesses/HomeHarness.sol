@@ -14,7 +14,7 @@ contract HomeHarness is Home {
     }
 
     function setFailed() public {
-        _fail();
+        _fail(address(0));
     }
 
     function destinationAndNonce(uint32 _destination, uint32 _nonce) public pure returns (uint64) {
