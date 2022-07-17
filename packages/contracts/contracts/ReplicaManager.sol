@@ -5,6 +5,7 @@ pragma solidity 0.8.13;
 import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { AuthManager } from "./auth/AuthManager.sol";
 import { Attestation } from "./libs/Attestation.sol";
+import { Report } from "./libs/Report.sol";
 import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
@@ -30,6 +31,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     using Message for bytes;
     using TypedMemView for bytes29;
     using Attestation for bytes29;
+    using Report for bytes29;
     using Message for bytes29;
     using Header for bytes29;
 
@@ -74,6 +76,13 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         bytes32 indexed root,
         uint256 previousConfirmAt,
         uint256 newConfirmAt
+    );
+
+    event UpdaterBlacklisted(
+        address indexed updater,
+        address indexed reporter,
+        address indexed watchtower,
+        bytes report
     );
 
     // ============ Constructor ============
@@ -154,6 +163,24 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         // update nonce
         replica.setNonce(nonce);
         emit Update(remoteDomain, nonce, newRoot, _view.attestationSignature().clone());
+    }
+
+    /**
+     * @notice Called by external agent. Submits the signed report,
+     * and blacklists the reported updater.
+     * @dev Reverts if report signer is not a watchtower, or if reported updater is not an updater.
+     * @param _watchtower   Watchtower who signed the report
+     * @param _report       Report data and signature
+     */
+    function submitReport(address _watchtower, bytes memory _report) external {
+        // Check if real watchtower & signature
+        bytes29 _reportView = _checkWatchtowerAuth(_watchtower, _report);
+        bytes29 _reportData = _reportView.reportData();
+        address _updater = _reportData.reportUpdater();
+        // Check if real updater & signature
+        _checkUpdaterAuth(_updater, _reportData.reportAttestation());
+        _blacklistUpdater(_updater);
+        emit UpdaterBlacklisted(_updater, msg.sender, _watchtower, _report);
     }
 
     /**
@@ -365,5 +392,9 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
 
     function _storeTips(bytes29 _tips) internal virtual {
         // TODO: implement storing & claiming logic
+    }
+
+    function _blacklistUpdater(address _updater) internal {
+        // TODO: implement blacklisting
     }
 }
