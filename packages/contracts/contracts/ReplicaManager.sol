@@ -7,6 +7,8 @@ import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
+import { Header } from "./libs/Header.sol";
+import { Tips } from "./libs/Tips.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
@@ -21,9 +23,10 @@ contract ReplicaManager is Version0, UpdaterStorage {
 
     using ReplicaLib for ReplicaLib.Replica;
     using MerkleLib for MerkleLib.Tree;
-    using TypedMemView for bytes;
+    using Message for bytes;
     using TypedMemView for bytes29;
     using Message for bytes29;
+    using Header for bytes29;
 
     // ============ Public Storage ============
 
@@ -99,17 +102,17 @@ contract ReplicaManager is Version0, UpdaterStorage {
     }
 
     function activeReplicaConfirmedAt(uint32 _remoteDomain, bytes32 _root)
-    external
-    view
-    returns (uint256)
+        external
+        view
+        returns (uint256)
     {
         return allReplicas[activeReplicas[_remoteDomain]].confirmAt[_root];
     }
 
     function activeReplicaMessageStatus(uint32 _remoteDomain, bytes32 _messageId)
-    external
-    view
-    returns (bytes32)
+        external
+        view
+        returns (bytes32)
     {
         return allReplicas[activeReplicas[_remoteDomain]].messageStatus[_messageId];
     }
@@ -178,26 +181,31 @@ contract ReplicaManager is Version0, UpdaterStorage {
      * @param _message Formatted message
      */
     function process(bytes memory _message) public {
-        bytes29 _m = _message.ref(0);
-        uint32 _remoteDomain = _m.origin();
+        bytes29 _m = _message.messageView();
+        bytes29 _header = _m.header();
+        uint32 _remoteDomain = _header.origin();
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         // ensure message was meant for this domain
-        require(_m.destination() == localDomain, "!destination");
+        require(_header.destination() == localDomain, "!destination");
         // ensure message has been proven
         bytes32 _messageHash = _m.keccak();
         bytes32 _root = replica.messageStatus[_messageHash];
         require(ReplicaLib.isPotentialRoot(_root), "!exists || processed");
-        require(acceptableRoot(_remoteDomain, _m.optimisticSeconds(), _root), "!optimisticSeconds");
+        require(
+            acceptableRoot(_remoteDomain, _header.optimisticSeconds(), _root),
+            "!optimisticSeconds"
+        );
         // check re-entrancy guard
         require(entered == 1, "!reentrant");
         entered = 0;
+        _storeTips(_m.tips());
         // update message status as processed
         replica.setMessageStatus(_messageHash, ReplicaLib.MESSAGE_STATUS_PROCESSED);
-        address recipient = _m.recipientAddress();
+        address recipient = _header.recipientAddress();
         IMessageRecipient(recipient).handle(
             _remoteDomain,
-            _m.nonce(),
-            _m.sender(),
+            _header.nonce(),
+            _header.sender(),
             replica.confirmAt[_root],
             _m.body().clone()
         );
@@ -305,9 +313,9 @@ contract ReplicaManager is Version0, UpdaterStorage {
     function _createReplica(uint32 _remoteDomain) internal returns (uint256 replicaIndex) {
         replicaIndex = replicaCount;
         allReplicas[replicaIndex].setupReplica(_remoteDomain);
-    unchecked {
-        replicaCount = replicaIndex + 1;
-    }
+        unchecked {
+            replicaCount = replicaIndex + 1;
+        }
     }
 
     /// @notice Hook for potential future use
@@ -319,9 +327,13 @@ contract ReplicaManager is Version0, UpdaterStorage {
         if (_returnData.length < 68) return "Transaction reverted silently";
 
         assembly {
-        // Slice the sighash.
+            // Slice the sighash.
             _returnData := add(_returnData, 0x04)
         }
         return abi.decode(_returnData, (string)); // All that remains is the revert string
+    }
+
+    function _storeTips(bytes29 _tips) internal virtual {
+        // TODO: implement storing & claiming logic
     }
 }

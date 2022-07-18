@@ -3,6 +3,7 @@ pragma solidity 0.8.13;
 
 import "forge-std/console2.sol";
 import { HomeHarness } from "./harnesses/HomeHarness.sol";
+import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
 import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
@@ -67,7 +68,13 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     function test_haltsOnFail() public {
         home.setFailed();
         vm.expectRevert("failed state");
-        home.dispatch(remoteDomain, addressToBytes32(address(1337)), optimisticSeconds, bytes(""));
+        home.dispatch(
+            remoteDomain,
+            addressToBytes32(address(1337)),
+            optimisticSeconds,
+            getEmptyTips(),
+            bytes("")
+        );
     }
 
     // TODO: testHashDomain against Go generated domains
@@ -85,6 +92,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
         bytes32 committedRoot,
+        bytes tips,
         bytes message
     );
 
@@ -94,15 +102,16 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         address sender = vm.addr(1555);
         bytes memory messageBody = bytes("message");
         uint32 nonce = home.nonces(remoteDomain);
-        bytes memory message = Message.formatMessage(
+        bytes memory _header = Header.formatHeader(
             localDomain,
             addressToBytes32(sender),
             nonce,
             remoteDomain,
             recipient,
-            optimisticSeconds,
-            messageBody
+            optimisticSeconds
         );
+        bytes memory _tips = getDefaultTips();
+        bytes memory message = Message.formatMessage(_header, _tips, messageBody);
         bytes32 messageHash = keccak256(message);
         vm.expectEmit(true, true, true, true);
         emit Dispatch(
@@ -110,10 +119,17 @@ contract HomeTest is SynapseTestWithUpdaterManager {
             home.count(),
             (uint64(remoteDomain) << 32) | nonce,
             home.committedRoot(),
+            _tips,
             message
         );
-        vm.prank(sender);
-        home.dispatch(remoteDomain, recipient, optimisticSeconds, messageBody);
+        hoax(sender);
+        home.dispatch{ value: TOTAL_TIPS }(
+            remoteDomain,
+            recipient,
+            optimisticSeconds,
+            _tips,
+            messageBody
+        );
         assert(home.queueContains(home.root()));
     }
 
@@ -122,19 +138,9 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes32 recipient = addressToBytes32(vm.addr(1337));
         address sender = vm.addr(1555);
         bytes memory messageBody = new bytes(2 * 2**10 + 1);
-        uint32 nonce = home.nonces(remoteDomain);
-        bytes memory message = Message.formatMessage(
-            localDomain,
-            addressToBytes32(sender),
-            nonce,
-            remoteDomain,
-            recipient,
-            optimisticSeconds,
-            messageBody
-        );
         vm.prank(sender);
         vm.expectRevert("msg too long");
-        home.dispatch(remoteDomain, recipient, optimisticSeconds, messageBody);
+        home.dispatch(remoteDomain, recipient, optimisticSeconds, getEmptyTips(), messageBody);
     }
 
     // ============ UPDATING MESSAGES ============
@@ -152,7 +158,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         home.improperUpdate(oldRoot, newRoot, sig);
         assertEq(uint256(home.state()), 2);
         vm.expectRevert("failed state");
-        home.dispatch(0, bytes32(0), optimisticSeconds, bytes(""));
+        home.dispatch(0, bytes32(0), optimisticSeconds, getEmptyTips(), bytes(""));
     }
 
     // Tests signing new roots of queue, becoming committed root
