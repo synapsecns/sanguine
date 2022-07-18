@@ -5,11 +5,11 @@ pragma solidity 0.8.13;
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 import "../../contracts/UpdaterManager.sol";
-import { RootUpdate } from "../../contracts/libs/RootUpdate.sol";
+import { Attestation } from "../../contracts/libs/Attestation.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
 
 contract SynapseTest is Test {
-    using RootUpdate for bytes;
+    using Attestation for bytes;
 
     uint256 updaterPK = 1;
     uint256 fakeUpdaterPK = 2;
@@ -34,19 +34,6 @@ contract SynapseTest is Test {
         vm.label(fakeSigner, "fake signer");
     }
 
-    function getMessage(
-        bytes32 oldRoot,
-        bytes32 newRoot,
-        uint32 domain
-    ) public pure returns (bytes memory) {
-        bytes memory message = abi.encodePacked(
-            keccak256(abi.encodePacked(domain, "SYN")),
-            oldRoot,
-            newRoot
-        );
-        return message;
-    }
-
     function getDefaultTips() internal pure returns (bytes memory) {
         return Tips.formatTips(UPDATER_TIP, RELAYER_TIP, PROVER_TIP, PROCESSOR_TIP);
     }
@@ -55,22 +42,24 @@ contract SynapseTest is Test {
         return Tips.emptyTips();
     }
 
-    function signHomeUpdate(
+    function signHomeAttestation(
         uint256 privKey,
         uint32 nonce,
         bytes32 root
-    ) public returns (bytes memory update, bytes memory signature) {
-        update = RootUpdate.formatRootUpdate(localDomain, nonce, root);
-        signature = signMessage(privKey, update);
+    ) public returns (bytes memory attestation, bytes memory signature) {
+        bytes memory data = Attestation.formatAttestationData(localDomain, nonce, root);
+        signature = signMessage(privKey, data);
+        attestation = Attestation.formatAttestation(data, signature);
     }
 
-    function signRemoteUpdate(
+    function signRemoteAttestation(
         uint256 privKey,
         uint32 nonce,
         bytes32 root
-    ) public returns (bytes memory update, bytes memory signature) {
-        update = RootUpdate.formatRootUpdate(remoteDomain, nonce, root);
-        signature = signMessage(privKey, update);
+    ) public returns (bytes memory attestation, bytes memory signature) {
+        bytes memory data = Attestation.formatAttestationData(remoteDomain, nonce, root);
+        signature = signMessage(privKey, data);
+        attestation = Attestation.formatAttestation(data, signature);
     }
 
     function signMessage(uint256 privKey, bytes memory message)
