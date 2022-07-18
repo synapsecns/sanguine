@@ -176,8 +176,8 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         uint8 _recipient,
         function(uint32, uint32, uint8) internal returns (bytes memory) _createReceivedMessage
     ) internal returns (bytes memory message) {
-        (bytes memory update, bytes memory sig) = signRemoteUpdate(updaterPK, NONCE, ROOT);
-        replicaManager.update(updater, update, sig);
+        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, NONCE, ROOT);
+        replicaManager.submitAttestation(updater, attestation);
 
         message = _createReceivedMessage(69, _optimisticSeconds, _recipient);
         bytes32 messageHash = keccak256(message);

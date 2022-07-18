@@ -105,47 +105,51 @@ contract ReplicaManagerTest is SynapseTest {
     function test_successfulUpdate() public {
         uint32 nonce = 42;
         assertEq(replicaManager.updater(), vm.addr(updaterPK));
-        (bytes memory update, bytes memory sig) = signRemoteUpdate(updaterPK, nonce, ROOT);
+        (bytes memory attestation, bytes memory sig) = signRemoteAttestation(
+            updaterPK,
+            nonce,
+            ROOT
+        );
         // Root doesn't exist yet
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), 0);
         // Relayer sends over a root signed by the updater on the Home chain
         vm.expectEmit(true, true, true, true);
         emit Update(remoteDomain, nonce, ROOT, sig);
-        replicaManager.update(updater, update, sig);
+        replicaManager.submitAttestation(updater, attestation);
         // Time at which root was confirmed is set, optimistic timeout starts now
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), block.timestamp);
     }
 
     function test_updateWithFakeSigner() public {
         uint32 nonce = 42;
-        (bytes memory update, bytes memory sig) = signRemoteUpdate(fakeUpdaterPK, nonce, ROOT);
+        (bytes memory attestation, ) = signRemoteAttestation(fakeUpdaterPK, nonce, ROOT);
         vm.expectRevert("Signer is not an updater");
         // Update signed by fakeUpdater should be rejected
-        replicaManager.update(fakeUpdater, update, sig);
+        replicaManager.submitAttestation(fakeUpdater, attestation);
     }
 
     function test_updateWithFakeSignerInvalidSignature() public {
         uint32 nonce = 42;
-        (bytes memory update, bytes memory sig) = signRemoteUpdate(fakeUpdaterPK, nonce, ROOT);
+        (bytes memory attestation, ) = signRemoteAttestation(fakeUpdaterPK, nonce, ROOT);
         vm.expectRevert("Invalid signature");
         // Signer (updater) and the signature (fakeUpdater) don't match
-        replicaManager.update(updater, update, sig);
+        replicaManager.submitAttestation(updater, attestation);
     }
 
     function test_updateWithGoodSignerInvalidSignature() public {
         uint32 nonce = 42;
-        (bytes memory update, bytes memory sig) = signRemoteUpdate(updaterPK, nonce, ROOT);
+        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, ROOT);
         vm.expectRevert("Invalid signature");
         // Signer (fakeUpdater) and the signature (updater) don't match
-        replicaManager.update(fakeUpdater, update, sig);
+        replicaManager.submitAttestation(fakeUpdater, attestation);
     }
 
     function test_updateWithLocalDomain() public {
         uint32 nonce = 42;
-        (bytes memory update, bytes memory sig) = signHomeUpdate(updaterPK, nonce, ROOT);
+        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, ROOT);
         vm.expectRevert("Update refers to local chain");
         // Replica should reject updates from the chain it's deployed on
-        replicaManager.update(updater, update, sig);
+        replicaManager.submitAttestation(updater, attestation);
     }
 
     function test_acceptableRoot() public {

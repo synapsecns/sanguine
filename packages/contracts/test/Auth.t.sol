@@ -20,8 +20,7 @@ contract AuthTest is SynapseTest {
 
     function test_checkSignature() public {
         bytes memory signature = signMessage(updaterPK, message);
-        bytes29 _view = harness.checkSignature(updater, message, signature);
-        assertEq(_view.clone(), message);
+        harness.checkSignature(updater, message, signature);
     }
 
     function test_checkSignature_wrongSigner() public {
