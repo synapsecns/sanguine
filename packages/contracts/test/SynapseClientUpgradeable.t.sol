@@ -10,6 +10,7 @@ import { HomeHarness } from "./harnesses/HomeHarness.sol";
 import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
 
 import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
+import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
 import {
@@ -176,29 +177,32 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         bytes32 indexed messageHash,
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
+        bytes tips,
         bytes message
     );
 
     function test_send() public {
         test_setTrustedSender();
         bytes memory messageBody = hex"01030307";
-        bytes memory message = Message.formatMessage(
+        bytes memory _header = Header.formatHeader(
             localDomain,
             bytes32(uint256(uint160(address(client)))),
             0,
             remoteDomain,
             trustedSender,
-            0,
-            messageBody
+            0
         );
+        bytes memory _tips = getDefaultTips();
+        bytes memory message = Message.formatMessage(_header, _tips, messageBody);
         vm.expectEmit(true, true, true, true);
-        emit Dispatch(keccak256(message), 0, uint64(remoteDomain) << 32, message);
-        client.send(remoteDomain, messageBody);
+        emit Dispatch(keccak256(message), 0, uint64(remoteDomain) << 32, _tips, message);
+        deal(address(this), TOTAL_TIPS);
+        client.send{ value: TOTAL_TIPS }(remoteDomain, _tips, messageBody);
     }
 
     function test_sendNoRecipient() public {
         bytes memory messageBody = hex"01030307";
         vm.expectRevert("Client: !recipient");
-        client.send(remoteDomain, messageBody);
+        client.send(remoteDomain, getEmptyTips(), messageBody);
     }
 }
