@@ -24,7 +24,11 @@ contract SynapseClientUpgradeableHarness is SynapseClientUpgradeable {
         return 0;
     }
 
-    function send(uint32 _destination, bytes memory _message) external {
-        _send(_destination, _message);
+    function send(
+        uint32 _destination,
+        bytes memory _tips,
+        bytes memory _message
+    ) external payable {
+        _send(_destination, _tips, _message);
     }
 }

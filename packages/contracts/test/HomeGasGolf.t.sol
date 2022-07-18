@@ -3,6 +3,7 @@ pragma solidity 0.8.13;
 
 import "forge-std/console2.sol";
 import { HomeHarness } from "./harnesses/HomeHarness.sol";
+import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
 import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
@@ -21,6 +22,7 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
         bytes32 indexed messageHash,
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
+        bytes tips,
         bytes message
     );
 
@@ -29,20 +31,27 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
         address sender = vm.addr(1555);
         bytes memory messageBody = bytes("message");
         uint32 nonce = home.nonces(remoteDomain);
-        bytes memory message = Message.formatMessage(
+        bytes memory _header = Header.formatHeader(
             localDomain,
             addressToBytes32(sender),
             nonce,
             remoteDomain,
             recipient,
-            0,
-            messageBody
+            0
         );
+        bytes memory _tips = getDefaultTips();
+        bytes memory message = Message.formatMessage(_header, _tips, messageBody);
         bytes32 messageHash = keccak256(message);
         vm.expectEmit(true, true, true, true);
-        emit Dispatch(messageHash, home.count(), (uint64(remoteDomain) << 32) | nonce, message);
-        vm.prank(sender);
-        home.dispatch(remoteDomain, recipient, 0, messageBody);
+        emit Dispatch(
+            messageHash,
+            home.count(),
+            (uint64(remoteDomain) << 32) | nonce,
+            _tips,
+            message
+        );
+        hoax(sender);
+        home.dispatch{ value: TOTAL_TIPS }(remoteDomain, recipient, 0, _tips, messageBody);
         newRoot = home.root();
     }
 
