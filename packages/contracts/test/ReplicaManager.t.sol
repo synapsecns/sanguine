@@ -152,6 +152,22 @@ contract ReplicaManagerTest is SynapseTest {
         replicaManager.submitAttestation(updater, attestation);
     }
 
+    event UpdaterBlacklisted(
+        address indexed updater,
+        address indexed reporter,
+        address indexed watchtower,
+        bytes report
+    );
+
+    function test_submitReport() public {
+        uint32 nonce = 42;
+        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, ROOT);
+        bytes memory report = signReport(updaterPK, watchtowerPK, attestation);
+        vm.expectEmit(true, true, true, true);
+        emit UpdaterBlacklisted(updater, address(this), watchtower, report);
+        replicaManager.submitReport(watchtower, report);
+    }
+
     function test_acceptableRoot() public {
         uint32 optimisticSeconds = 69;
         test_successfulUpdate();

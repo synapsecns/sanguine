@@ -183,6 +183,15 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         _checkSubmitReport(nonce, root, true);
     }
 
+    function test_submitReport_invalidReport() public {
+        test_dispatch();
+        test_dispatch();
+        uint32 nonce = 1;
+        bytes32 root = home.root();
+        // This root has nonce = 1 => report is invalid, Watchtower will be slashed
+        _checkSubmitReport(nonce, root, false);
+    }
+
     /// @dev Signs report on (nonce, root) attestation and presents it to Home.
     function _checkSubmitReport(
         uint32 nonce,
