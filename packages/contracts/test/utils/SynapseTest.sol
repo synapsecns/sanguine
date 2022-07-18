@@ -5,9 +5,12 @@ pragma solidity 0.8.13;
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 import "../../contracts/UpdaterManager.sol";
+import { Attestation } from "../../contracts/libs/Attestation.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
 
 contract SynapseTest is Test {
+    using Attestation for bytes;
+
     uint256 updaterPK = 1;
     uint256 fakeUpdaterPK = 2;
     address updater = vm.addr(updaterPK);
@@ -31,19 +34,6 @@ contract SynapseTest is Test {
         vm.label(fakeSigner, "fake signer");
     }
 
-    function getMessage(
-        bytes32 oldRoot,
-        bytes32 newRoot,
-        uint32 domain
-    ) public pure returns (bytes memory) {
-        bytes memory message = abi.encodePacked(
-            keccak256(abi.encodePacked(domain, "SYN")),
-            oldRoot,
-            newRoot
-        );
-        return message;
-    }
-
     function getDefaultTips() internal pure returns (bytes memory) {
         return Tips.formatTips(UPDATER_TIP, RELAYER_TIP, PROVER_TIP, PROCESSOR_TIP);
     }
@@ -52,28 +42,34 @@ contract SynapseTest is Test {
         return Tips.emptyTips();
     }
 
-    function signHomeUpdate(
+    function signHomeAttestation(
         uint256 privKey,
-        bytes32 oldRoot,
-        bytes32 newRoot
-    ) public returns (bytes memory) {
-        bytes32 digest = keccak256(getMessage(oldRoot, newRoot, localDomain));
-        digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", digest));
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
-        bytes memory signature = abi.encodePacked(r, s, v);
-        return signature;
+        uint32 nonce,
+        bytes32 root
+    ) public returns (bytes memory attestation, bytes memory signature) {
+        bytes memory data = Attestation.formatAttestationData(localDomain, nonce, root);
+        signature = signMessage(privKey, data);
+        attestation = Attestation.formatAttestation(data, signature);
     }
 
-    function signRemoteUpdate(
+    function signRemoteAttestation(
         uint256 privKey,
-        bytes32 oldRoot,
-        bytes32 newRoot
-    ) public returns (bytes memory) {
-        bytes32 digest = keccak256(getMessage(oldRoot, newRoot, remoteDomain));
+        uint32 nonce,
+        bytes32 root
+    ) public returns (bytes memory attestation, bytes memory signature) {
+        bytes memory data = Attestation.formatAttestationData(remoteDomain, nonce, root);
+        signature = signMessage(privKey, data);
+        attestation = Attestation.formatAttestation(data, signature);
+    }
+
+    function signMessage(uint256 privKey, bytes memory message)
+        public
+        returns (bytes memory signature)
+    {
+        bytes32 digest = keccak256(message);
         digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", digest));
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
-        bytes memory signature = abi.encodePacked(r, s, v);
-        return signature;
+        signature = abi.encodePacked(r, s, v);
     }
 
     function stringToBytes32(string memory source) public pure returns (bytes32 result) {

@@ -15,11 +15,12 @@ contract MerkleTreeManager {
 
     using MerkleLib for MerkleLib.Tree;
     MerkleLib.Tree public tree;
+    bytes32[] public historicalRoots;
 
     // ============ Upgrade Gap ============
 
     // gap for upgrade safety
-    uint256[49] private __GAP;
+    uint256[48] private __GAP;
 
     // ============ Public Functions ============
 
@@ -35,5 +36,15 @@ contract MerkleTreeManager {
      */
     function count() public view returns (uint256) {
         return tree.count;
+    }
+
+    // ============ Internal Functions ============
+
+    /**
+     * @notice Inserts _hash into the Merkle tree and stores the new merkle root.
+     */
+    function _insertHash(bytes32 _hash) internal {
+        tree.insert(_hash);
+        historicalRoots.push(tree.root());
     }
 }
