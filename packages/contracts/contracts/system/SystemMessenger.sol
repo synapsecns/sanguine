@@ -5,6 +5,7 @@ import { Client } from "../client/Client.sol";
 import { TypedMemView } from "../libs/TypedMemView.sol";
 import { SystemMessage } from "./SystemMessage.sol";
 import { ISystemMessenger } from "../interfaces/ISystemMessenger.sol";
+import { Tips } from "../libs/Tips.sol";
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
@@ -79,7 +80,7 @@ contract SystemMessenger is Client, ISystemMessenger {
          *      and use SYSTEM_SENDER address as "sender" instead. This enables not
          *      knowing SystemMessenger address on remote chain in advance.
          */
-        _send(_destDomain, message);
+        _send(_destDomain, Tips.emptyTips(), message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

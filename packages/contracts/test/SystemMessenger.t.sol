@@ -6,7 +6,8 @@ import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
 import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
 import { SystemMessage } from "../contracts/system/SystemMessage.sol";
 import { Message } from "../contracts/libs/Message.sol";
-
+import { Header } from "../contracts/libs/Header.sol";
+import { Tips } from "../contracts/libs/Tips.sol";
 import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
 
 import { HomeHarness } from "./harnesses/HomeHarness.sol";
@@ -32,6 +33,7 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
         bytes32 committedRoot,
+        bytes tips,
         bytes message
     );
 
@@ -153,7 +155,14 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
             bytes memory message = _createSentSystemMessage(t, t);
             bytes32 messageHash = keccak256(message);
             vm.expectEmit(true, true, true, true);
-            emit Dispatch(messageHash, t, (uint64(remoteDomain) << 32) | t, bytes32(0), message);
+            emit Dispatch(
+                messageHash,
+                t,
+                (uint64(remoteDomain) << 32) | t,
+                bytes32(0),
+                Tips.emptyTips(),
+                message
+            );
             vm.prank(_sender);
             systemMessenger.sendSystemMessage(
                 remoteDomain,
@@ -240,12 +249,15 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
     ) internal view returns (bytes memory) {
         return
             Message.formatMessage(
-                _originDomain,
-                _sender,
-                _nonce,
-                _destDomain,
-                _receiver,
-                _optimisticSeconds,
+                Header.formatHeader(
+                    _originDomain,
+                    _sender,
+                    _nonce,
+                    _destDomain,
+                    _receiver,
+                    _optimisticSeconds
+                ),
+                Tips.emptyTips(),
                 abi.encodePacked(uint8(SystemMessage.SystemMessageType.Call), _recipient, payload)
             );
     }

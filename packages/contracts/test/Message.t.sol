@@ -2,13 +2,12 @@
 
 pragma solidity 0.8.13;
 
-import "forge-std/Test.sol";
-import "forge-std/console2.sol";
+import { SynapseTest } from "./utils/SynapseTest.sol";
 
 import { MessageHarness } from "./harnesses/MessageHarness.sol";
 import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
 
-contract MessageTest is Test {
+contract MessageTest is SynapseTest {
     MessageHarness messageHarness;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -19,16 +18,19 @@ contract MessageTest is Test {
     uint32 destinationDomain;
     uint32 optimisticSeconds;
     bytes32 recipient;
+    bytes tips;
     bytes messageBody;
 
-    function setUp() public {
+    function setUp() public override {
+        super.setUp();
         messageHarness = new MessageHarness();
         originDomain = 1000;
         sender = bytes32("AAAA THE SENDOOOOOR");
-        nonce = 0;
+        nonce = 42;
         destinationDomain = 2000;
         optimisticSeconds = 4;
         recipient = bytes32("AAAA THE RECEIVOOOR");
+        tips = getDefaultTips();
         messageBody = bytes("Messagoooor");
     }
 
@@ -40,17 +42,18 @@ contract MessageTest is Test {
             destinationDomain,
             recipient,
             optimisticSeconds,
+            tips,
             messageBody
         );
 
-        console2.log(messageHarness.origin(message));
         assertEq(messageHarness.origin(message), originDomain);
         assertEq(messageHarness.sender(message), sender);
         assertEq(messageHarness.nonce(message), nonce);
         assertEq(messageHarness.destination(message), destinationDomain);
         assertEq(messageHarness.recipient(message), recipient);
         assertEq(messageHarness.optimisticSeconds(message), optimisticSeconds);
-        assertEq(messageHarness.body(message), (messageBody));
+        assertEq(messageHarness.tips(message), tips);
+        assertEq(messageHarness.body(message), messageBody);
         assertEq(messageHarness.leaf(message), keccak256(message));
     }
 
@@ -62,6 +65,7 @@ contract MessageTest is Test {
             destinationDomain,
             recipient,
             optimisticSeconds,
+            tips,
             messageBody
         );
 
@@ -72,6 +76,7 @@ contract MessageTest is Test {
             destinationDomain,
             recipient,
             optimisticSeconds,
+            tips,
             messageBody
         );
 

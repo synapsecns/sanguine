@@ -5,11 +5,15 @@ pragma solidity 0.8.13;
 import { ReplicaManager } from "../../contracts/ReplicaManager.sol";
 
 import { ReplicaLib } from "../../contracts/libs/Replica.sol";
+import { Tips } from "../../contracts/libs/Tips.sol";
 
 contract ReplicaManagerHarness is ReplicaManager {
     using ReplicaLib for ReplicaLib.Replica;
 
     uint256 public sensitiveValue;
+    using Tips for bytes29;
+
+    event LogTips(uint96 updaterTip, uint96 relayerTip, uint96 proverTip, uint96 processorTip);
 
     constructor(uint32 _localDomain) ReplicaManager(_localDomain) {}
 
@@ -23,5 +27,14 @@ contract ReplicaManagerHarness is ReplicaManager {
         bytes32 _status
     ) external {
         allReplicas[activeReplicas[_remoteDomain]].setMessageStatus(_messageHash, _status);
+    }
+
+    function _storeTips(bytes29 _tips) internal override {
+        emit LogTips(
+            _tips.updaterTip(),
+            _tips.relayerTip(),
+            _tips.proverTip(),
+            _tips.processorTip()
+        );
     }
 }

@@ -5,6 +5,7 @@ pragma solidity 0.8.13;
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 import "../../contracts/UpdaterManager.sol";
+import { Tips } from "../../contracts/libs/Tips.sol";
 
 contract SynapseTest is Test {
     uint256 updaterPK = 1;
@@ -16,6 +17,12 @@ contract SynapseTest is Test {
 
     uint32 localDomain = 1500;
     uint32 remoteDomain = 1000;
+
+    uint96 internal constant UPDATER_TIP = 1234;
+    uint96 internal constant RELAYER_TIP = 3456;
+    uint96 internal constant PROVER_TIP = 5678;
+    uint96 internal constant PROCESSOR_TIP = 7890;
+    uint96 internal constant TOTAL_TIPS = UPDATER_TIP + RELAYER_TIP + PROVER_TIP + PROCESSOR_TIP;
 
     function setUp() public virtual {
         vm.label(updater, "updater");
@@ -35,6 +42,14 @@ contract SynapseTest is Test {
             newRoot
         );
         return message;
+    }
+
+    function getDefaultTips() internal pure returns (bytes memory) {
+        return Tips.formatTips(UPDATER_TIP, RELAYER_TIP, PROVER_TIP, PROCESSOR_TIP);
+    }
+
+    function getEmptyTips() internal pure returns (bytes memory) {
+        return Tips.emptyTips();
     }
 
     function signHomeUpdate(

@@ -3,11 +3,13 @@
 pragma solidity 0.8.13;
 
 import { Message } from "../../contracts/libs/Message.sol";
+import { Header } from "../../contracts/libs/Header.sol";
 import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 
 contract MessageHarness {
+    using Message for bytes;
     using Message for bytes29;
-    using TypedMemView for bytes;
+    using Header for bytes29;
     using TypedMemView for bytes29;
 
     function formatMessage(
@@ -17,18 +19,18 @@ contract MessageHarness {
         uint32 _destinationDomain,
         bytes32 _recipient,
         uint32 _optimisticSeconds,
+        bytes memory _tips,
         bytes memory _messageBody
     ) public pure returns (bytes memory) {
-        return
-            Message.formatMessage(
-                _originDomain,
-                _sender,
-                _nonce,
-                _destinationDomain,
-                _recipient,
-                _optimisticSeconds,
-                _messageBody
-            );
+        bytes memory _header = Header.formatHeader(
+            _originDomain,
+            _sender,
+            _nonce,
+            _destinationDomain,
+            _recipient,
+            _optimisticSeconds
+        );
+        return Message.formatMessage(_header, _tips, _messageBody);
     }
 
     /**
@@ -48,44 +50,57 @@ contract MessageHarness {
         uint32 _destination,
         bytes32 _recipient,
         uint32 _optimisticSeconds,
+        bytes memory _tips,
         bytes memory _body
     ) public pure returns (bytes32) {
-        return Message.messageHash(_origin, _sender, _nonce, _destination, _recipient, _optimisticSeconds, _body);
+        bytes memory _header = Header.formatHeader(
+            _origin,
+            _sender,
+            _nonce,
+            _destination,
+            _recipient,
+            _optimisticSeconds
+        );
+        return Message.messageHash(_header, _tips, _body);
+    }
+
+    function tips(bytes memory _message) external view returns (bytes memory) {
+        return _message.messageView().tips().clone();
     }
 
     function body(bytes memory _message) external view returns (bytes memory) {
-        return _message.ref(0).body().clone();
+        return _message.messageView().body().clone();
     }
 
     function origin(bytes memory _message) external pure returns (uint32) {
-        return _message.ref(0).origin();
+        return _message.messageView().header().origin();
     }
 
     function sender(bytes memory _message) external pure returns (bytes32) {
-        return _message.ref(0).sender();
+        return _message.messageView().header().sender();
     }
 
     function nonce(bytes memory _message) external pure returns (uint32) {
-        return _message.ref(0).nonce();
+        return _message.messageView().header().nonce();
     }
 
     function destination(bytes memory _message) external pure returns (uint32) {
-        return _message.ref(0).destination();
+        return _message.messageView().header().destination();
     }
 
     function recipient(bytes memory _message) external pure returns (bytes32) {
-        return _message.ref(0).recipient();
+        return _message.messageView().header().recipient();
     }
 
     function recipientAddress(bytes memory _message) external pure returns (address) {
-        return _message.ref(0).recipientAddress();
+        return _message.messageView().header().recipientAddress();
     }
 
     function optimisticSeconds(bytes memory _message) external pure returns (uint32) {
-        return _message.ref(0).optimisticSeconds();
+        return _message.messageView().header().optimisticSeconds();
     }
 
-    function leaf(bytes memory _message) external view returns (bytes32) {
-        return _message.ref(0).leaf();
+    function leaf(bytes memory _message) external pure returns (bytes32) {
+        return _message.messageView().leaf();
     }
 }
