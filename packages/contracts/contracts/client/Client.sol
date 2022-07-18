@@ -67,10 +67,20 @@ abstract contract Client is IMessageRecipient {
      * @param _destination  Domain of the destination chain
      * @param _message      The message
      */
-    function _send(uint32 _destination, bytes memory _message) internal {
+    function _send(
+        uint32 _destination,
+        bytes memory _tips,
+        bytes memory _message
+    ) internal {
         bytes32 recipient = trustedSender(_destination);
         require(recipient != bytes32(0), "Client: !recipient");
-        Home(home).dispatch(_destination, recipient, optimisticSeconds(), _message);
+        Home(home).dispatch{ value: msg.value }(
+            _destination,
+            recipient,
+            optimisticSeconds(),
+            _tips,
+            _message
+        );
     }
 
     /// @dev Period of time since the root was submitted to Replica. Once this period is over,

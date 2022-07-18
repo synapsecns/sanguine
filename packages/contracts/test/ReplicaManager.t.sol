@@ -7,10 +7,11 @@ import "forge-std/Test.sol";
 import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
 import { TypeCasts } from "../contracts/libs/TypeCasts.sol";
 
+import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
 import { ReplicaLib } from "../contracts/libs/Replica.sol";
-
+import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
 import { ReplicaManagerHarness } from "./harnesses/ReplicaManagerHarness.sol";
 
 import { AppHarness } from "./harnesses/AppHarness.sol";
@@ -28,23 +29,23 @@ contract ReplicaManagerTest is SynapseTest {
     uint256 processGas;
     uint256 reserveGas;
 
+    ISystemMessenger internal systemMessenger;
+
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
     using Message for bytes29;
 
     function setUp() public override {
         super.setUp();
-        processGas = 850_000;
-        reserveGas = 15_000;
-        replicaManager = new ReplicaManagerHarness(localDomain, processGas, reserveGas);
+        replicaManager = new ReplicaManagerHarness(localDomain);
         replicaManager.initialize(remoteDomain, updater);
         dApp = new AppHarness(OPTIMISTIC_PERIOD);
+        systemMessenger = ISystemMessenger(address(1234567890));
+        replicaManager.setSystemMessenger(systemMessenger);
     }
 
     // ============ INITIAL STATE ============
     function test_correctlyInitialized() public {
-        assertEq(uint256(replicaManager.PROCESS_GAS()), processGas);
-        assertEq(uint256(replicaManager.RESERVE_GAS()), reserveGas);
         assertEq(uint256(replicaManager.localDomain()), uint256(localDomain));
         assertEq(replicaManager.updater(), updater);
     }
@@ -165,9 +166,13 @@ contract ReplicaManagerTest is SynapseTest {
         assertFalse(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
     }
 
+    event LogTips(uint96 updaterTip, uint96 relayerTip, uint96 proverTip, uint96 processorTip);
+
     function test_process() public {
         bytes memory message = _prepareProcessTest(OPTIMISTIC_PERIOD);
         vm.warp(block.timestamp + OPTIMISTIC_PERIOD);
+        vm.expectEmit(true, true, true, true);
+        emit LogTips(UPDATER_TIP, RELAYER_TIP, PROVER_TIP, PROCESSOR_TIP);
         replicaManager.process(message);
     }
 
@@ -191,6 +196,17 @@ contract ReplicaManagerTest is SynapseTest {
         replicaManager.process(message);
     }
 
+    function test_onlySystemMessenger() public {
+        vm.prank(address(systemMessenger));
+        replicaManager.setSensitiveValue(1337);
+        assertEq(replicaManager.sensitiveValue(), 1337);
+    }
+
+    function test_onlySystemMessenger_rejectOthers() public {
+        vm.expectRevert("!systemMessenger");
+        replicaManager.setSensitiveValue(1337);
+    }
+
     function _prepareProcessTest(uint32 optimisticPeriod) internal returns (bytes memory message) {
         test_successfulUpdate();
 
@@ -200,15 +216,16 @@ contract ReplicaManagerTest is SynapseTest {
         dApp.prepare(remoteDomain, nonce, sender, messageBody);
         bytes32 recipient = TypeCasts.addressToBytes32(address(dApp));
 
-        message = Message.formatMessage(
+        bytes memory _header = Header.formatHeader(
             remoteDomain,
             sender,
             nonce,
             localDomain,
             recipient,
-            optimisticPeriod,
-            messageBody
+            optimisticPeriod
         );
+
+        message = Message.formatMessage(_header, getDefaultTips(), messageBody);
         bytes32 messageHash = keccak256(message);
         // Let's imagine message was proved against current root
         replicaManager.setMessageStatus(remoteDomain, messageHash, ROOT);
