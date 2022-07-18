@@ -8,9 +8,13 @@ import { AuthManager } from "./auth/AuthManager.sol";
 import { RootUpdate } from "./libs/RootUpdate.sol";
 import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
+import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
+import { Tips } from "./libs/Tips.sol";
+import { SystemMessage } from "./system/SystemMessage.sol";
 import { MerkleTreeManager } from "./Merkle.sol";
 import { IUpdaterManager } from "./interfaces/IUpdaterManager.sol";
+import { TypeCasts } from "./libs/TypeCasts.sol";
 // ============ External Imports ============
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
@@ -29,6 +33,9 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
 
     using RootUpdate for bytes29;
     using MerkleLib for MerkleLib.Tree;
+
+    using Tips for bytes;
+    using Tips for bytes29;
 
     // ============ Enums ============
 
@@ -73,12 +80,14 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      * @param leafIndex Index of message's leaf in merkle tree
      * @param destinationAndNonce Destination and destination-specific
      *        nonce combined in single field ((destination << 32) & nonce)
+     * @param tips Tips paid for the remote off-chain agents
      * @param message Raw bytes of message
      */
     event Dispatch(
         bytes32 indexed messageHash,
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
+        bytes tips,
         bytes message
     );
 
@@ -175,22 +184,26 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         uint32 _destinationDomain,
         bytes32 _recipientAddress,
         uint32 _optimisticSeconds,
+        bytes memory _tips,
         bytes memory _messageBody
-    ) external notFailed {
+    ) external payable notFailed {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
+        require(_tips.tipsView().totalTips() == msg.value, "!tips");
         // get the next nonce for the destination domain, then increment it
         uint32 _nonce = nonces[_destinationDomain];
         nonces[_destinationDomain] = _nonce + 1;
+        bytes32 _sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
-        bytes memory _message = Message.formatMessage(
+        bytes memory _header = Header.formatHeader(
             localDomain,
-            bytes32(uint256(uint160(msg.sender))),
+            _sender,
             _nonce,
             _destinationDomain,
             _recipientAddress,
-            _optimisticSeconds,
-            _messageBody
+            _optimisticSeconds
         );
+        // format the message into packed bytes
+        bytes memory _message = Message.formatMessage(_header, _tips, _messageBody);
         // insert the hashed message into the Merkle tree
         bytes32 _messageHash = keccak256(_message);
         // new root is added to the historical roots
@@ -201,6 +214,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
             _messageHash,
             count() - 1,
             _destinationAndNonce(_destinationDomain, _nonce),
+            _tips,
             _message
         );
     }
@@ -327,5 +341,32 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
 
     function _isWatchtower(address) internal pure override returns (bool) {
         return false;
+    }
+
+    /**
+     * @notice  Returns "adjusted" sender address.
+     * @dev     By default, "sender address" is msg.sender.
+     *          However, if SystemMessenger sends a message, specifying SYSTEM_SENDER as the recipient,
+     *          SYSTEM_SENDER is used as "sender address" on origin chain.
+     *          Note that transaction will revert if anyone but SystemMessenger uses SYSTEM_SENDER as the recipient.
+     */
+    function _checkForSystemMessage(bytes32 _recipientAddress)
+        internal
+        view
+        returns (bytes32 sender)
+    {
+        if (_recipientAddress != SystemMessage.SYSTEM_SENDER) {
+            sender = TypeCasts.addressToBytes32(msg.sender);
+            /**
+             * @dev Note: SYSTEM_SENDER has highest 12 bytes set,
+             *      whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
+             *      Thus, in this branch: sender != SystemMessage.SYSTEM_SENDER
+             */
+        } else {
+            // Check that SystemMessenger specified SYSTEM_SENDER as recipient, revert otherwise.
+            _assertSystemMessenger();
+            // Adjust "sender address" for correct processing on remote chain.
+            sender = SystemMessage.SYSTEM_SENDER;
+        }
     }
 }

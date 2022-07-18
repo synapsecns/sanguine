@@ -2,6 +2,7 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
+import { ISystemMessenger } from "./interfaces/ISystemMessenger.sol";
 import { Message } from "./libs/Message.sol";
 // ============ External Imports ============
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -26,10 +27,12 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
     // Address of bonded Updater
     address public updater;
 
+    ISystemMessenger public systemMessenger;
+
     // ============ Upgrade Gap ============
 
     // gap for upgrade safety
-    uint256[49] private __GAP;
+    uint256[48] private __GAP;
 
     // ============ Events ============
 
@@ -69,7 +72,28 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
         _setUpdater(_updater);
     }
 
+    // ============ Modifiers ============
+
+    /**
+     * @dev Modifier for functions that are supposed to be called from
+     * System Contracts on other chains.
+     */
+    modifier onlySystemMessenger() {
+        _assertSystemMessenger();
+        _;
+    }
+
+    // ============ Restricted Functions ============
+
+    function setSystemMessenger(ISystemMessenger _systemMessenger) external onlyOwner {
+        systemMessenger = _systemMessenger;
+    }
+
     // ============ Internal Functions ============
+
+    function _assertSystemMessenger() internal view {
+        require(msg.sender == address(systemMessenger), "!systemMessenger");
+    }
 
     /**
      * @notice Hash of domain concatenated with "SYN"
