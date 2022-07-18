@@ -26,13 +26,13 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
     bytes32 internal constant SYSTEM_SENDER =
         0xFFFFFFFF_FFFFFFFF_FFFFFFFF_00000000_00000000_00000000_00000000_00000000;
 
+    uint32 internal constant NONCE = 420;
     bytes32 internal constant ROOT = "root";
 
     event Dispatch(
         bytes32 indexed messageHash,
         uint256 indexed leafIndex,
         uint64 indexed destinationAndNonce,
-        bytes32 committedRoot,
         bytes tips,
         bytes message
     );
@@ -159,7 +159,6 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
                 messageHash,
                 t,
                 (uint64(remoteDomain) << 32) | t,
-                bytes32(0),
                 Tips.emptyTips(),
                 message
             );
@@ -177,8 +176,8 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         uint8 _recipient,
         function(uint32, uint32, uint8) internal returns (bytes memory) _createReceivedMessage
     ) internal returns (bytes memory message) {
-        bytes memory sig = signRemoteUpdate(updaterPK, bytes32(0), ROOT);
-        replicaManager.update(remoteDomain, bytes32(0), ROOT, sig);
+        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, NONCE, ROOT);
+        replicaManager.submitAttestation(updater, attestation);
 
         message = _createReceivedMessage(69, _optimisticSeconds, _recipient);
         bytes32 messageHash = keccak256(message);

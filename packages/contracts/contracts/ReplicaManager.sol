@@ -3,6 +3,8 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { UpdaterStorage } from "./UpdaterStorage.sol";
+import { AuthManager } from "./auth/AuthManager.sol";
+import { Attestation } from "./libs/Attestation.sol";
 import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
@@ -20,13 +22,14 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract ReplicaManager is Version0, UpdaterStorage {
+contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     // ============ Libraries ============
 
     using ReplicaLib for ReplicaLib.Replica;
     using MerkleLib for MerkleLib.Tree;
     using Message for bytes;
     using TypedMemView for bytes29;
+    using Attestation for bytes29;
     using Message for bytes29;
     using Header for bytes29;
 
@@ -99,8 +102,8 @@ contract ReplicaManager is Version0, UpdaterStorage {
 
     // ============ Active Replica Views ============
 
-    function activeReplicaCommittedRoot(uint32 _remoteDomain) external view returns (bytes32) {
-        return allReplicas[activeReplicas[_remoteDomain]].committedRoot;
+    function activeReplicaNonce(uint32 _remoteDomain) external view returns (uint32) {
+        return allReplicas[activeReplicas[_remoteDomain]].nonce;
     }
 
     function activeReplicaConfirmedAt(uint32 _remoteDomain, bytes32 _root)
@@ -126,34 +129,27 @@ contract ReplicaManager is Version0, UpdaterStorage {
     // ============ External Functions ============
 
     /**
-     * @notice Called by external agent. Submits the signed update's new root,
+     * @notice Called by external agent. Submits the signed attestation,
      * marks root's allowable confirmation time, and emits an `Update` event.
      * @dev Reverts if update doesn't build off latest committedRoot
      * or if signature is invalid.
-     * @param _oldRoot Old merkle root
-     * @param _newRoot New merkle root
-     * @param _signature Updater's signature on `_oldRoot` and `_newRoot` = `keccak256(message, optimisticSeconds)`
+     * @param _updater      Updater who signer the attestation
+     * @param _attestation  Attestation data and signature
      */
-    function update(
-        uint32 _remoteDomain,
-        bytes32 _oldRoot,
-        bytes32 _newRoot,
-        bytes memory _signature
-    ) external {
-        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
-        // ensure that replica is active
-        require(replica.status == ReplicaLib.ReplicaStatus.Active, "Replica not active");
-        // ensure that update is building off the last submitted root
-        require(_oldRoot == replica.committedRoot, "not current update");
-        // validate updater signature
-        require(_isUpdaterSignature(_remoteDomain, _oldRoot, _newRoot, _signature), "!updater sig");
+    function submitAttestation(address _updater, bytes memory _attestation) external {
+        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
+        uint32 remoteDomain = _view.attestationDomain();
+        require(remoteDomain != localDomain, "Update refers to local chain");
+        uint32 nonce = _view.attestationNonce();
+        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[remoteDomain]];
+        require(nonce > replica.nonce, "Update older than current state");
         // Hook for future use
         _beforeUpdate();
-        // set the new root's confirmation timer
-        replica.setConfirmAt(_newRoot, block.timestamp);
-        // update committedRoot
-        replica.setCommittedRoot(_newRoot);
-        emit Update(_remoteDomain, _oldRoot, _newRoot, _signature);
+        bytes32 newRoot = _view.attestationRoot();
+        replica.setConfirmAt(newRoot, block.timestamp);
+        // update nonce
+        replica.setNonce(nonce);
+        emit Update(remoteDomain, nonce, newRoot, _view.attestationSignature().clone());
     }
 
     /**
@@ -338,6 +334,14 @@ contract ReplicaManager is Version0, UpdaterStorage {
             _returnData := add(_returnData, 0x04)
         }
         return abi.decode(_returnData, (string)); // All that remains is the revert string
+    }
+
+    function _isUpdater(uint32, address _updater) internal view override returns (bool) {
+        return _updater == updater;
+    }
+
+    function _isWatchtower(address) internal pure override returns (bool) {
+        return false;
     }
 
     function _checkForSystemMessage(bytes32 _recipient) internal view returns (address recipient) {
