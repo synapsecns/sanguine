@@ -7,6 +7,7 @@ import "forge-std/Test.sol";
 import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
 import { TypeCasts } from "../contracts/libs/TypeCasts.sol";
 
+import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
 import { ReplicaLib } from "../contracts/libs/Replica.sol";
@@ -150,9 +151,13 @@ contract ReplicaManagerTest is SynapseTest {
         assertFalse(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, newRoot));
     }
 
+    event LogTips(uint96 updaterTip, uint96 relayerTip, uint96 proverTip, uint96 processorTip);
+
     function test_process() public {
         bytes memory message = _prepareProcessTest(OPTIMISTIC_PERIOD);
         vm.warp(block.timestamp + OPTIMISTIC_PERIOD);
+        vm.expectEmit(true, true, true, true);
+        emit LogTips(UPDATER_TIP, RELAYER_TIP, PROVER_TIP, PROCESSOR_TIP);
         replicaManager.process(message);
     }
 
@@ -188,15 +193,16 @@ contract ReplicaManagerTest is SynapseTest {
         dApp.prepare(remoteDomain, nonce, sender, messageBody);
         bytes32 recipient = TypeCasts.addressToBytes32(address(dApp));
 
-        message = Message.formatMessage(
+        bytes memory _header = Header.formatHeader(
             remoteDomain,
             sender,
             nonce,
             localDomain,
             recipient,
-            optimisticPeriod,
-            messageBody
+            optimisticPeriod
         );
+
+        message = Message.formatMessage(_header, getDefaultTips(), messageBody);
         bytes32 messageHash = keccak256(message);
         // Let's imagine message was proved against current root
         replicaManager.setMessageStatus(remoteDomain, messageHash, root);
