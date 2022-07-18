@@ -10,11 +10,16 @@ import { Tips } from "../../contracts/libs/Tips.sol";
 contract ReplicaManagerHarness is ReplicaManager {
     using ReplicaLib for ReplicaLib.Replica;
 
+    uint256 public sensitiveValue;
     using Tips for bytes29;
 
     event LogTips(uint96 updaterTip, uint96 relayerTip, uint96 proverTip, uint96 processorTip);
 
     constructor(uint32 _localDomain) ReplicaManager(_localDomain) {}
+
+    function setSensitiveValue(uint256 _newValue) external onlySystemMessenger {
+        sensitiveValue = _newValue;
+    }
 
     function setMessageStatus(
         uint32 _remoteDomain,

@@ -9,6 +9,8 @@ import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
 import { Header } from "./libs/Header.sol";
 import { Tips } from "./libs/Tips.sol";
+import { TypeCasts } from "./libs/TypeCasts.sol";
+import { SystemMessage } from "./system/SystemMessage.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
@@ -139,6 +141,8 @@ contract ReplicaManager is Version0, UpdaterStorage {
         bytes memory _signature
     ) external {
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
+        // ensure that replica is active
+        require(replica.status == ReplicaLib.ReplicaStatus.Active, "Replica not active");
         // ensure that update is building off the last submitted root
         require(_oldRoot == replica.committedRoot, "not current update");
         // validate updater signature
@@ -201,7 +205,7 @@ contract ReplicaManager is Version0, UpdaterStorage {
         _storeTips(_m.tips());
         // update message status as processed
         replica.setMessageStatus(_messageHash, ReplicaLib.MESSAGE_STATUS_PROCESSED);
-        address recipient = _header.recipientAddress();
+        address recipient = _checkForSystemMessage(_header.recipient());
         IMessageRecipient(recipient).handle(
             _remoteDomain,
             _header.nonce(),
@@ -293,6 +297,8 @@ contract ReplicaManager is Version0, UpdaterStorage {
     ) public returns (bool) {
         bytes32 _leaf = keccak256(_message);
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
+        // ensure that replica is active
+        require(replica.status == ReplicaLib.ReplicaStatus.Active, "Replica not active");
         // ensure that message has not been proven or processed
         require(
             replica.messageStatus[_leaf] == ReplicaLib.MESSAGE_STATUS_NONE,
@@ -311,11 +317,12 @@ contract ReplicaManager is Version0, UpdaterStorage {
     // ============ Internal Functions ============
 
     function _createReplica(uint32 _remoteDomain) internal returns (uint256 replicaIndex) {
-        replicaIndex = replicaCount;
-        allReplicas[replicaIndex].setupReplica(_remoteDomain);
+        // Start indexing from 1, so default replica (allReplicas[0]) will be forever inactive
         unchecked {
-            replicaCount = replicaIndex + 1;
+            replicaIndex = replicaCount + 1;
         }
+        allReplicas[replicaIndex].setupReplica(_remoteDomain);
+        replicaCount = replicaIndex;
     }
 
     /// @notice Hook for potential future use
@@ -331,6 +338,21 @@ contract ReplicaManager is Version0, UpdaterStorage {
             _returnData := add(_returnData, 0x04)
         }
         return abi.decode(_returnData, (string)); // All that remains is the revert string
+    }
+
+    function _checkForSystemMessage(bytes32 _recipient) internal view returns (address recipient) {
+        // Check if SYSTEM_SENDER was specified as message recipient
+        if (_recipient == SystemMessage.SYSTEM_SENDER) {
+            /**
+             * @dev Route message to SystemMessenger.
+             *      Note: Only SystemMessenger contract on origin chain
+             *      can send such a message (enforced in Home.sol).
+             */
+            recipient = address(systemMessenger);
+        } else {
+            // Cast bytes32 to address otherwise
+            recipient = TypeCasts.bytes32ToAddress(_recipient);
+        }
     }
 
     function _storeTips(bytes29 _tips) internal virtual {

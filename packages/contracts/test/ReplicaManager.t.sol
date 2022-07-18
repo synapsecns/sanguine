@@ -11,7 +11,7 @@ import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
 import { ReplicaLib } from "../contracts/libs/Replica.sol";
-
+import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
 import { ReplicaManagerHarness } from "./harnesses/ReplicaManagerHarness.sol";
 
 import { AppHarness } from "./harnesses/AppHarness.sol";
@@ -28,6 +28,8 @@ contract ReplicaManagerTest is SynapseTest {
     uint256 processGas;
     uint256 reserveGas;
 
+    ISystemMessenger internal systemMessenger;
+
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
     using Message for bytes29;
@@ -38,6 +40,8 @@ contract ReplicaManagerTest is SynapseTest {
         replicaManager = new ReplicaManagerHarness(localDomain);
         replicaManager.initialize(remoteDomain, updater);
         dApp = new AppHarness(OPTIMISTIC_PERIOD);
+        systemMessenger = ISystemMessenger(address(1234567890));
+        replicaManager.setSystemMessenger(systemMessenger);
     }
 
     // ============ INITIAL STATE ============
@@ -179,6 +183,17 @@ contract ReplicaManagerTest is SynapseTest {
         bytes memory message = _prepareProcessTest(0);
         vm.expectRevert("app: !optimisticSeconds");
         replicaManager.process(message);
+    }
+
+    function test_onlySystemMessenger() public {
+        vm.prank(address(systemMessenger));
+        replicaManager.setSensitiveValue(1337);
+        assertEq(replicaManager.sensitiveValue(), 1337);
+    }
+
+    function test_onlySystemMessenger_rejectOthers() public {
+        vm.expectRevert("!systemMessenger");
+        replicaManager.setSensitiveValue(1337);
     }
 
     function _prepareProcessTest(uint32 optimisticPeriod) internal returns (bytes memory message) {
