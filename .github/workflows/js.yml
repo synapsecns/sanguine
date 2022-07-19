@@ -1,7 +1,9 @@
 name: JS Checks
 on:
   pull_request:
-    types: [opened, synchronize]
+  push:
+    branches-ignore:
+      - 'gh-pages'
 
 jobs:
   checks:
