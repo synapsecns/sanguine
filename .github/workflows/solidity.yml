@@ -95,12 +95,12 @@ jobs:
         with:
           version: nightly
 
-#      - name: Build Contracts
-#        run: |
-#          npx lerna exec npm run build:contracts
+      - name: Build Contracts
+        run: |
+          npx lerna exec npm run build:slither
 
       - name: Run Slither
-        uses: crytic/slither-action@v0.1.0
+        uses: crytic/slither-action@v0.1.1
         continue-on-error: true
         id: slither
         with:

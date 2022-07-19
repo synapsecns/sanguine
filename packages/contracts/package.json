@@ -6,6 +6,7 @@
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
     "build:go": "yarn sol-merger \"./contracts/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin & yarn sol-merger \"./test/harnesses/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin",
     "build:contracts": "forge build",
+    "build:slither": "hardhat compile",
     "build:typescript": "typechain --target ethers-v5 'artifacts/**/*json'",
     "test": "forge test",
     "lint:contracts:fix": "yarn prettier --write 'contracts/**/*.sol' && solhint --fix -c .solhint.json --ignore-path .prettierignore contracts/**/*.sol test/**/*.sol",
