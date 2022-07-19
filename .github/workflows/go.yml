@@ -119,7 +119,7 @@ jobs:
 #          echo $FILTERED_PATHS
 #          export FILTER_LENGTH=(echo $FILTERED_PATHS | jq '. | length')
 #          echo $FILTER_LENGTH
-##          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LE NGTH)"
+##          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
         env:
           FILTERED_PATHS: ${{ steps.filter.outputs.changes }}
 
