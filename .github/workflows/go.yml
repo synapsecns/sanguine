@@ -133,6 +133,7 @@ jobs:
         run:  go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
 
   # lint_changes allows us to only run a job on changed packages
+  # we can remove this when this is a public repo since it doesn't incrementally add build time
   lint_changes:
     runs-on: ubuntu-latest
     outputs:
