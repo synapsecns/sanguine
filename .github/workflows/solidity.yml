@@ -51,8 +51,11 @@ jobs:
   slither:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      # always required
       security-events: write
+      # only required for private repos
+      actions: read
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
