@@ -5,9 +5,7 @@ pragma solidity 0.8.13;
 import { Client } from "./Client.sol";
 // ============ External Imports ============
 
-import {
-    OwnableUpgradeable
-} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
     // ============ Internal Variables ============

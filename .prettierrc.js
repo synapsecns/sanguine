@@ -16,8 +16,8 @@ module.exports = {
           singleQuote: false,
           bracketSpacing: true,
           // These options are specific to the Solidity Plugin
-          explicitTypes: 'always',
-          compiler: '0.8.13',
+          // explicitTypes: 'always',
+          // compiler: '0.8.13',
         },
       },
     ],
