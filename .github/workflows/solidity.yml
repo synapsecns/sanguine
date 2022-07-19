@@ -86,6 +86,10 @@ jobs:
         run: |
           npx lerna bootstrap
 
+      - name: Build Contracts
+        run: |
+          npx lerna exec npm run build:contracts
+
       - name: Run Slither
         uses: crytic/slither-action@v0.1.0
         continue-on-error: true
