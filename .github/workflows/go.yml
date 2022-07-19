@@ -132,8 +132,8 @@ jobs:
         # go build all workspaces
         run:  go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
 
-  # changes allows us to only run a job on changed packages
-  changes:
+  # lint_changes allows us to only run a job on changed packages
+  lint_changes:
     runs-on: ubuntu-latest
     outputs:
       # Expose matched filters as job 'packages' output variable
@@ -157,12 +157,12 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    needs: changes
+    needs: lint_changes
     strategy:
       matrix:
         # Parse JSON array containing names of all filters matching any of changed files
-        # e.g. ['package1', 'package2'] if both package folders contains changes
-        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        # e.g. ['package1', 'package2'] if both package folders contains lint_changes
+        package: ${{ fromJSON(needs.lint_changes.outputs.packages) }}
     steps:
       - uses: actions/setup-go@v3
         with:
