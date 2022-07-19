@@ -115,8 +115,8 @@ jobs:
             ethergo: 'ethergo/**'
       - run: |
           echo $FILTERED_PATHS
-          FILTER_LENGTH=(echo $FILTERED_PATHS | jq '. | length')
-          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
+#          FILTER_LENGTH=(echo $FILTERED_PATHS | jq '. | length')
+#          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
         env:
           FILTERED_PATHS: ${{ steps.filter.outputs.changes }}
 
