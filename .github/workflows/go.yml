@@ -157,6 +157,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    needs: changes
     strategy:
       matrix:
         # Parse JSON array containing names of all filters matching any of changed files
