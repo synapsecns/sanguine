@@ -16,3 +16,7 @@ C-Protocol-Critical:
 
 Go:
   - '**/*.go'
+
+CI:
+  - '.github/**/*'
+  - '.circleci/**/*'
