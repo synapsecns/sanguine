@@ -13,7 +13,7 @@ import (
 // appName is the name of the abi generator.
 const appName = "abigen"
 
-// TODO use ifacemaker to generate interfaces for these.
+// TODO maybe use ifacemaker to generate interfaces for these.
 func main() {
 	app := cli.NewApp()
 	app.Name = appName
