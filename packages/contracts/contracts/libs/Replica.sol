@@ -33,8 +33,8 @@ library ReplicaLib {
 
     // TODO: optimize read/writes by further packing?
     struct Replica {
-        // The latest root that has been signed by the Updater for this given Replica
-        bytes32 committedRoot; // 256 bits
+        // The latest nonce that has been signed by the Updater for this given Replica
+        uint32 nonce; // 32 bits
         // Domain of home chain
         uint32 remoteDomain; // 32 bits
         // Status of Replica based on the Home remote domain
@@ -54,8 +54,8 @@ library ReplicaLib {
         replica.status = ReplicaStatus.Active;
     }
 
-    function setCommittedRoot(Replica storage replica, bytes32 _committedRoot) internal {
-        replica.committedRoot = _committedRoot;
+    function setNonce(Replica storage replica, uint32 _nonce) internal {
+        replica.nonce = _nonce;
     }
 
     function setConfirmAt(

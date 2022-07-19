@@ -3,10 +3,16 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { UpdaterStorage } from "./UpdaterStorage.sol";
+import { AuthManager } from "./auth/AuthManager.sol";
+import { Attestation } from "./libs/Attestation.sol";
 import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
+import { Header } from "./libs/Header.sol";
+import { Tips } from "./libs/Tips.sol";
+import { TypeCasts } from "./libs/TypeCasts.sol";
+import { SystemMessage } from "./system/SystemMessage.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
@@ -16,21 +22,16 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract ReplicaManager is Version0, UpdaterStorage {
+contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     // ============ Libraries ============
 
     using ReplicaLib for ReplicaLib.Replica;
     using MerkleLib for MerkleLib.Tree;
-    using TypedMemView for bytes;
+    using Message for bytes;
     using TypedMemView for bytes29;
+    using Attestation for bytes29;
     using Message for bytes29;
-
-    // ============ Immutables ============
-
-    // Minimum gas for message processing
-    uint256 public immutable PROCESS_GAS;
-    // Reserved gas (to ensure tx completes in case message processing runs out)
-    uint256 public immutable RESERVE_GAS;
+    using Header for bytes29;
 
     // ============ Public Storage ============
 
@@ -59,16 +60,8 @@ contract ReplicaManager is Version0, UpdaterStorage {
     /**
      * @notice Emitted when message is processed
      * @param messageHash The keccak256 hash of the message that was processed
-     * @param success TRUE if the call was executed successfully,
-     * FALSE if the call reverted or threw
-     * @param returnData the return data from the external call
      */
-    event Process(
-        uint32 indexed remoteDomain,
-        bytes32 indexed messageHash,
-        bool indexed success,
-        bytes returnData
-    );
+    event Process(uint32 indexed remoteDomain, bytes32 indexed messageHash);
 
     /**
      * @notice Emitted when a root's confirmation is modified by governance
@@ -85,16 +78,7 @@ contract ReplicaManager is Version0, UpdaterStorage {
 
     // ============ Constructor ============
 
-    constructor(
-        uint32 _localDomain,
-        uint256 _processGas,
-        uint256 _reserveGas
-    ) UpdaterStorage(_localDomain) {
-        require(_processGas >= 850_000, "!process gas");
-        require(_reserveGas >= 15_000, "!reserve gas");
-        PROCESS_GAS = _processGas;
-        RESERVE_GAS = _reserveGas;
-    }
+    constructor(uint32 _localDomain) UpdaterStorage(_localDomain) {}
 
     // ============ Initializer ============
 
@@ -118,22 +102,22 @@ contract ReplicaManager is Version0, UpdaterStorage {
 
     // ============ Active Replica Views ============
 
-    function activeReplicaCommittedRoot(uint32 _remoteDomain) external view returns (bytes32) {
-        return allReplicas[activeReplicas[_remoteDomain]].committedRoot;
+    function activeReplicaNonce(uint32 _remoteDomain) external view returns (uint32) {
+        return allReplicas[activeReplicas[_remoteDomain]].nonce;
     }
 
     function activeReplicaConfirmedAt(uint32 _remoteDomain, bytes32 _root)
-        external
-        view
-        returns (uint256)
+    external
+    view
+    returns (uint256)
     {
         return allReplicas[activeReplicas[_remoteDomain]].confirmAt[_root];
     }
 
     function activeReplicaMessageStatus(uint32 _remoteDomain, bytes32 _messageId)
-        external
-        view
-        returns (bytes32)
+    external
+    view
+    returns (bytes32)
     {
         return allReplicas[activeReplicas[_remoteDomain]].messageStatus[_messageId];
     }
@@ -145,32 +129,27 @@ contract ReplicaManager is Version0, UpdaterStorage {
     // ============ External Functions ============
 
     /**
-     * @notice Called by external agent. Submits the signed update's new root,
+     * @notice Called by external agent. Submits the signed attestation,
      * marks root's allowable confirmation time, and emits an `Update` event.
      * @dev Reverts if update doesn't build off latest committedRoot
      * or if signature is invalid.
-     * @param _oldRoot Old merkle root
-     * @param _newRoot New merkle root
-     * @param _signature Updater's signature on `_oldRoot` and `_newRoot` = `keccak256(message, optimisticSeconds)`
+     * @param _updater      Updater who signer the attestation
+     * @param _attestation  Attestation data and signature
      */
-    function update(
-        uint32 _remoteDomain,
-        bytes32 _oldRoot,
-        bytes32 _newRoot,
-        bytes memory _signature
-    ) external {
-        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
-        // ensure that update is building off the last submitted root
-        require(_oldRoot == replica.committedRoot, "not current update");
-        // validate updater signature
-        require(_isUpdaterSignature(_remoteDomain, _oldRoot, _newRoot, _signature), "!updater sig");
+    function submitAttestation(address _updater, bytes memory _attestation) external {
+        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
+        uint32 remoteDomain = _view.attestationDomain();
+        require(remoteDomain != localDomain, "Update refers to local chain");
+        uint32 nonce = _view.attestationNonce();
+        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[remoteDomain]];
+        require(nonce > replica.nonce, "Update older than current state");
         // Hook for future use
         _beforeUpdate();
-        // set the new root's confirmation timer
-        replica.setConfirmAt(_newRoot, block.timestamp);
-        // update committedRoot
-        replica.setCommittedRoot(_newRoot);
-        emit Update(_remoteDomain, _oldRoot, _newRoot, _signature);
+        bytes32 newRoot = _view.attestationRoot();
+        replica.setConfirmAt(newRoot, block.timestamp);
+        // update nonce
+        replica.setNonce(nonce);
+        emit Update(remoteDomain, nonce, newRoot, _view.attestationSignature().clone());
     }
 
     /**
@@ -198,78 +177,39 @@ contract ReplicaManager is Version0, UpdaterStorage {
      * @dev Recipient must implement a `handle` method (refer to IMessageRecipient.sol)
      * Reverts if formatted message's destination domain is not the Replica's domain,
      * if message has not been proven,
-     * or if not enough gas is provided for the dispatch transaction.
+     * or if recipient reverted upon receiving the message.
      * @param _message Formatted message
-     * @return _success TRUE iff dispatch transaction succeeded
      */
-    function process(bytes memory _message) public returns (bool _success) {
-        bytes29 _m = _message.ref(0);
-        uint32 _remoteDomain = _m.origin();
+    function process(bytes memory _message) public {
+        bytes29 _m = _message.messageView();
+        bytes29 _header = _m.header();
+        uint32 _remoteDomain = _header.origin();
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         // ensure message was meant for this domain
-        require(_m.destination() == localDomain, "!destination");
+        require(_header.destination() == localDomain, "!destination");
         // ensure message has been proven
         bytes32 _messageHash = _m.keccak();
         bytes32 _root = replica.messageStatus[_messageHash];
         require(ReplicaLib.isPotentialRoot(_root), "!exists || processed");
-        require(acceptableRoot(_remoteDomain, _m.optimisticSeconds(), _root), "!optimisticSeconds");
+        require(
+            acceptableRoot(_remoteDomain, _header.optimisticSeconds(), _root),
+            "!optimisticSeconds"
+        );
         // check re-entrancy guard
         require(entered == 1, "!reentrant");
         entered = 0;
+        _storeTips(_m.tips());
         // update message status as processed
         replica.setMessageStatus(_messageHash, ReplicaLib.MESSAGE_STATUS_PROCESSED);
-        // A call running out of gas TYPICALLY errors the whole tx. We want to
-        // a) ensure the call has a sufficient amount of gas to make a
-        //    meaningful state change.
-        // b) ensure that if the subcall runs out of gas, that the tx as a whole
-        //    does not revert (i.e. we still mark the message processed)
-        // To do this, we require that we have enough gas to process
-        // and still return. We then delegate only the minimum processing gas.
-        require(gasleft() >= PROCESS_GAS + RESERVE_GAS, "!gas");
-        bytes memory _calldata = abi.encodeWithSelector(
-            IMessageRecipient.handle.selector,
+        address recipient = _checkForSystemMessage(_header.recipient());
+        IMessageRecipient(recipient).handle(
             _remoteDomain,
-            _m.nonce(),
-            _m.sender(),
+            _header.nonce(),
+            _header.sender(),
             replica.confirmAt[_root],
             _m.body().clone()
         );
-        // get the message recipient
-        address _recipient = _m.recipientAddress();
-        // set up for assembly call
-        uint256 _toCopy;
-        uint256 _maxCopy = 256;
-        uint256 _gas = PROCESS_GAS;
-        // allocate memory for returndata
-        bytes memory _returnData = new bytes(_maxCopy);
-
-        // dispatch message to recipient
-        // by assembly calling "handle" function
-        // we call via assembly to avoid memcopying a very large returndata
-        // returned by a malicious contract
-        assembly {
-            _success := call(
-                _gas, // gas
-                _recipient, // recipient
-                0, // ether value
-                add(_calldata, 0x20), // inloc
-                mload(_calldata), // inlen
-                0, // outloc
-                0 // outlen
-            )
-            // limit our copy to 256 bytes
-            _toCopy := returndatasize()
-            if gt(_toCopy, _maxCopy) {
-                _toCopy := _maxCopy
-            }
-            // Store the length of the copied bytes
-            mstore(_returnData, _toCopy)
-            // copy the bytes from returndata[0:_toCopy]
-            returndatacopy(add(_returnData, 0x20), 0, _toCopy)
-        }
-        if (!_success) revert(_getRevertMsg(_returnData));
-        // emit process results
-        emit Process(_remoteDomain, _messageHash, _success, _returnData);
+        emit Process(_remoteDomain, _messageHash);
         // reset re-entrancy guard
         entered = 1;
     }
@@ -353,6 +293,8 @@ contract ReplicaManager is Version0, UpdaterStorage {
     ) public returns (bool) {
         bytes32 _leaf = keccak256(_message);
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
+        // ensure that replica is active
+        require(replica.status == ReplicaLib.ReplicaStatus.Active, "Replica not active");
         // ensure that message has not been proven or processed
         require(
             replica.messageStatus[_leaf] == ReplicaLib.MESSAGE_STATUS_NONE,
@@ -371,11 +313,12 @@ contract ReplicaManager is Version0, UpdaterStorage {
     // ============ Internal Functions ============
 
     function _createReplica(uint32 _remoteDomain) internal returns (uint256 replicaIndex) {
-        replicaIndex = replicaCount;
+        // Start indexing from 1, so default replica (allReplicas[0]) will be forever inactive
+    unchecked {
+        replicaIndex = replicaCount + 1;
+    }
         allReplicas[replicaIndex].setupReplica(_remoteDomain);
-        unchecked {
-            replicaCount = replicaIndex + 1;
-        }
+        replicaCount = replicaIndex;
     }
 
     /// @notice Hook for potential future use
@@ -387,9 +330,36 @@ contract ReplicaManager is Version0, UpdaterStorage {
         if (_returnData.length < 68) return "Transaction reverted silently";
 
         assembly {
-            // Slice the sighash.
+        // Slice the sighash.
             _returnData := add(_returnData, 0x04)
         }
         return abi.decode(_returnData, (string)); // All that remains is the revert string
+    }
+
+    function _isUpdater(uint32, address _updater) internal view override returns (bool) {
+        return _updater == updater;
+    }
+
+    function _isWatchtower(address) internal pure override returns (bool) {
+        return false;
+    }
+
+    function _checkForSystemMessage(bytes32 _recipient) internal view returns (address recipient) {
+        // Check if SYSTEM_SENDER was specified as message recipient
+        if (_recipient == SystemMessage.SYSTEM_SENDER) {
+            /**
+             * @dev Route message to SystemMessenger.
+             *      Note: Only SystemMessenger contract on origin chain
+             *      can send such a message (enforced in Home.sol).
+             */
+            recipient = address(systemMessenger);
+        } else {
+            // Cast bytes32 to address otherwise
+            recipient = TypeCasts.bytes32ToAddress(_recipient);
+        }
+    }
+
+    function _storeTips(bytes29 _tips) internal virtual {
+        // TODO: implement storing & claiming logic
     }
 }

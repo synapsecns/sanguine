@@ -1,136 +1,150 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import "./TypedMemView.sol";
+import { TypedMemView } from "./TypedMemView.sol";
 
-import { TypeCasts } from "./TypeCasts.sol";
+import { Header } from "./Header.sol";
 
 /**
  * @title Message Library
  * @author Illusory Systems Inc.
- * @notice Library for formatted messages used by Home and Replica.
+ * @notice Library for versioned formatted messages used by Home and Replica.
  **/
 library Message {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
-    // Number of bytes in formatted message before `body` field
-    uint256 internal constant PREFIX_LENGTH = 80;
+    /**
+     * @dev This is only updated if the whole message structure is changed,
+     *      i.e. if a new part is added.
+     *      If already existing part is changed, the message version does not get bumped.
+     */
+    uint16 internal constant MESSAGE_VERSION = 1;
+
+    /// @dev Parts.Last is used only for marking the last element of the enum
+    enum Parts {
+        Version,
+        Header,
+        Tips,
+        Body,
+        Last
+    }
+
+    uint40 internal constant MESSAGE_TYPE = 1337;
+    uint40 internal constant HEADER_TYPE = uint40(Parts.Header);
+    uint40 internal constant TIPS_TYPE = uint40(Parts.Tips);
+    uint40 internal constant BODY_TYPE = uint40(Parts.Body);
+
+    modifier onlyMessage(bytes29 _view) {
+        _view.assertType(MESSAGE_TYPE);
+        _;
+    }
+
+    /**
+     * @dev Message memory layout
+     *      All offsets are stored for backwards compatibility
+     * [000 .. 002): version            uint16  2 bytes
+     * [002 .. 004): header offset = 8  uint16  2 bytes
+     * [004 .. 006): tips offset (AAA)  uint16  2 bytes
+     * [006 .. 008): body offset (BBB)  uint16  2 bytes
+     * [008 .. AAA): header             bytes   ? bytes
+     * [AAA .. BBB): tips               bytes   ? bytes
+     * [BBB .. CCC): body               bytes   ? bytes
+     */
+
+    /// @dev How much bytes is used for storing the version, or a single offset value
+    uint8 internal constant TWO_BYTES = 2;
+    /// @dev This value reflects the header offset in the latest message version
+    uint16 internal constant HEADER_OFFSET = TWO_BYTES * uint8(Parts.Last);
 
     /**
      * @notice Returns formatted (packed) message with provided fields
-     * @param _originDomain Domain of home chain
-     * @param _sender Address of sender as bytes32
-     * @param _nonce Destination-specific nonce
-     * @param _destinationDomain Domain of destination chain
-     * @param _recipient Address of recipient on destination chain as bytes32
+     * @param _header Formatted header
      * @param _messageBody Raw bytes of message body
      * @return Formatted message
      **/
     function formatMessage(
-        uint32 _originDomain,
-        bytes32 _sender,
-        uint32 _nonce,
-        uint32 _destinationDomain,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
+        bytes memory _header,
+        bytes memory _tips,
         bytes memory _messageBody
     ) internal pure returns (bytes memory) {
+        // Version + Offsets + Header + Tips are supposed to fit within 65535 bytes
+        uint16 tipsOffset = HEADER_OFFSET + uint16(_header.length);
+        uint16 bodyOffset = tipsOffset + uint16(_tips.length);
         return
-            abi.encodePacked(
-                _originDomain,
-                _sender,
-                _nonce,
-                _destinationDomain,
-                _recipient,
-                _optimisticSeconds,
-                _messageBody
-            );
+        abi.encodePacked(
+            MESSAGE_VERSION,
+            HEADER_OFFSET,
+            tipsOffset,
+            bodyOffset,
+            _header,
+            _tips,
+            _messageBody
+        );
     }
 
     /**
      * @notice Returns leaf of formatted message with provided fields.
-     * @param _origin Domain of home chain
-     * @param _sender Address of sender as bytes32
-     * @param _nonce Destination-specific nonce number
-     * @param _destination Domain of destination chain
-     * @param _recipient Address of recipient on destination chain as bytes32
-     * @param _body Raw bytes of message body
+     * @param _header Formatted header
+     * @param _messageBody Raw bytes of message body
      * @return Leaf (hash) of formatted message
      **/
     function messageHash(
-        uint32 _origin,
-        bytes32 _sender,
-        uint32 _nonce,
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _body
+        bytes memory _header,
+        bytes memory _tips,
+        bytes memory _messageBody
     ) internal pure returns (bytes32) {
+        return keccak256(formatMessage(_header, _tips, _messageBody));
+    }
+
+    function messageView(bytes memory _message) internal pure returns (bytes29) {
+        return _message.ref(MESSAGE_TYPE);
+    }
+
+    /// @notice Returns message's header field as bytes29 (refer to TypedMemView library for details on bytes29 type)
+    function header(bytes29 _message) internal pure onlyMessage(_message) returns (bytes29) {
         return
-            keccak256(
-                formatMessage(
-                    _origin,
-                    _sender,
-                    _nonce,
-                    _destination,
-                    _recipient,
-                    _optimisticSeconds,
-                    _body
-                )
-            );
+        _between(
+            _message,
+            _loadOffset(_message, Parts.Header),
+            _loadOffset(_message, Parts.Tips),
+            HEADER_TYPE
+        );
     }
 
-    /// @notice Returns message's origin field
-    function origin(bytes29 _message) internal pure returns (uint32) {
-        return uint32(_message.indexUint(0, 4));
-    }
-
-    /// @notice Returns message's sender field
-    function sender(bytes29 _message) internal pure returns (bytes32) {
-        return _message.index(4, 32);
-    }
-
-    /// @notice Returns message's nonce field
-    function nonce(bytes29 _message) internal pure returns (uint32) {
-        return uint32(_message.indexUint(36, 4));
-    }
-
-    /// @notice Returns message's destination field
-    function destination(bytes29 _message) internal pure returns (uint32) {
-        return uint32(_message.indexUint(40, 4));
-    }
-
-    /// @notice Returns message's recipient field as bytes32
-    function recipient(bytes29 _message) internal pure returns (bytes32) {
-        return _message.index(44, 32);
-    }
-
-    /// @notice Returns the optimistic seconds from the message
-    function optimisticSeconds(bytes29 _message) internal pure returns (uint32) {
-        return uint32(_message.indexUint(76, 4));
-    }
-
-    /// @notice Returns message's recipient field as an address
-    function recipientAddress(bytes29 _message) internal pure returns (address) {
-        return TypeCasts.bytes32ToAddress(recipient(_message));
+    /// @notice Returns message's tips field as bytes29 (refer to TypedMemView library for details on bytes29 type)
+    function tips(bytes29 _message) internal pure onlyMessage(_message) returns (bytes29) {
+        return
+        _between(
+            _message,
+            _loadOffset(_message, Parts.Tips),
+            _loadOffset(_message, Parts.Body),
+            TIPS_TYPE
+        );
     }
 
     /// @notice Returns message's body field as bytes29 (refer to TypedMemView library for details on bytes29 type)
-    function body(bytes29 _message) internal pure returns (bytes29) {
-        return _message.slice(PREFIX_LENGTH, _message.len() - PREFIX_LENGTH, 0);
+    function body(bytes29 _message) internal pure onlyMessage(_message) returns (bytes29) {
+        return _between(_message, _loadOffset(_message, Parts.Body), _message.len(), BODY_TYPE);
     }
 
-    function leaf(bytes29 _message) internal view returns (bytes32) {
-        return
-            messageHash(
-                origin(_message),
-                sender(_message),
-                nonce(_message),
-                destination(_message),
-                recipient(_message),
-                optimisticSeconds(_message),
-                TypedMemView.clone(body(_message))
-            );
+    /// @notice Returns leaf of the formatted message.
+    function leaf(bytes29 _message) internal pure onlyMessage(_message) returns (bytes32) {
+        // TODO: do we actually need this?
+        return _message.keccak();
+    }
+
+    function _between(
+        bytes29 _message,
+        uint256 _from,
+        uint256 _to,
+        uint40 _newType
+    ) private pure returns (bytes29) {
+        return _message.slice(_from, _to - _from, _newType);
+    }
+
+    /// @notice Loads offset for a given part of the message
+    function _loadOffset(bytes29 _message, Parts _part) private pure returns (uint256) {
+        return _message.indexUint(uint256(_part) * TWO_BYTES, TWO_BYTES);
     }
 }
