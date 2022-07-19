@@ -95,15 +95,16 @@ jobs:
         with:
           version: nightly
 
-      - name: Build Contracts
-        run: |
-          npx lerna exec npm run build:contracts
+#      - name: Build Contracts
+#        run: |
+#          npx lerna exec npm run build:contracts
 
       - name: Run Slither
         uses: crytic/slither-action@v0.1.0
         continue-on-error: true
         id: slither
         with:
+          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
           target: ./packages/contracts
           ignore-compile: true
           sarif: results.sarif
