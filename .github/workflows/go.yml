@@ -149,12 +149,9 @@ jobs:
         id: filter
         with:
           filters: |
-            core:
-             - 'core/**'
-            tools:
-             - 'tools/**'
-            ethergo:
-             - 'ethergo/**'
+            core: 'core/**'
+            tools: 'tools/**'
+            ethergo: 'ethergo/**'
 
   #note: right now this is not run against all work dirs
   lint:
