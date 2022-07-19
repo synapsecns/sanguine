@@ -124,7 +124,9 @@ jobs:
   # make sure the build works
   build:
     name: Build
+    needs: changes
     runs-on: ${{ matrix.platform }}
+    if: ${{ needs.changes.outputs.package_count > 0 }}
     strategy:
       matrix:
         go-version:
