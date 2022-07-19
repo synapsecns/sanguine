@@ -72,15 +72,15 @@ library Message {
         uint16 tipsOffset = HEADER_OFFSET + uint16(_header.length);
         uint16 bodyOffset = tipsOffset + uint16(_tips.length);
         return
-        abi.encodePacked(
-            MESSAGE_VERSION,
-            HEADER_OFFSET,
-            tipsOffset,
-            bodyOffset,
-            _header,
-            _tips,
-            _messageBody
-        );
+            abi.encodePacked(
+                MESSAGE_VERSION,
+                HEADER_OFFSET,
+                tipsOffset,
+                bodyOffset,
+                _header,
+                _tips,
+                _messageBody
+            );
     }
 
     /**
@@ -104,23 +104,23 @@ library Message {
     /// @notice Returns message's header field as bytes29 (refer to TypedMemView library for details on bytes29 type)
     function header(bytes29 _message) internal pure onlyMessage(_message) returns (bytes29) {
         return
-        _between(
-            _message,
-            _loadOffset(_message, Parts.Header),
-            _loadOffset(_message, Parts.Tips),
-            HEADER_TYPE
-        );
+            _between(
+                _message,
+                _loadOffset(_message, Parts.Header),
+                _loadOffset(_message, Parts.Tips),
+                HEADER_TYPE
+            );
     }
 
     /// @notice Returns message's tips field as bytes29 (refer to TypedMemView library for details on bytes29 type)
     function tips(bytes29 _message) internal pure onlyMessage(_message) returns (bytes29) {
         return
-        _between(
-            _message,
-            _loadOffset(_message, Parts.Tips),
-            _loadOffset(_message, Parts.Body),
-            TIPS_TYPE
-        );
+            _between(
+                _message,
+                _loadOffset(_message, Parts.Tips),
+                _loadOffset(_message, Parts.Body),
+                TIPS_TYPE
+            );
     }
 
     /// @notice Returns message's body field as bytes29 (refer to TypedMemView library for details on bytes29 type)
