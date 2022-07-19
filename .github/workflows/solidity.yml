@@ -49,6 +49,8 @@ jobs:
         run: npx lerna exec npm run ci:lint
 
   slither:
+    # see https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/setting-up-code-scanning-for-a-repository
+    if: ${{!github.event.repository.private}}
     runs-on: ubuntu-latest
     permissions:
       # always required
