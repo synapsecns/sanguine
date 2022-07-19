@@ -149,9 +149,9 @@ jobs:
         id: filter
         with:
           filters: |
-            core: core/**.go
-            tools: tools/**.go
-            ethergo: ethergo/**.go
+            core: 'core/**.go'
+            tools: 'tools/**.go'
+            ethergo: 'ethergo/**.go'
 
   #note: right now this is not run against all work dirs
   lint:
