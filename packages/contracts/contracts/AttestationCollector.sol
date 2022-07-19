@@ -5,7 +5,9 @@ import { AuthManager } from "./auth/AuthManager.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { TypedMemView } from "./libs/TypedMemView.sol";
 
-import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {
+    OwnableUpgradeable
+} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract AttestationCollector is AuthManager, OwnableUpgradeable {
     using Attestation for bytes29;
