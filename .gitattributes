@@ -6,6 +6,8 @@
 # modern version of git and editors capable of LF line endings.
 
 *.go -text diff=golang
+*.go text eol=lf
+
 
 # don't count abigen files in linguist as go
 *.abigen.go linguist-vendored
