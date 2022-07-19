@@ -25,7 +25,9 @@
   },
   "homepage": "https://github.com/synapsecns/sanguine#readme",
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "lerna": "^4.0.0",
+    "prettier": "^2.7.1",
+    "prettier-plugin-solidity": "^1.0.0-dev.23"
   },
   "dependencies": {
     "@changesets/cli": "^2.22.0"
