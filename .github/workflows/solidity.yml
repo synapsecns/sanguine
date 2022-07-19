@@ -86,6 +86,11 @@ jobs:
         run: |
           npx lerna bootstrap
 
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
       - name: Build Contracts
         run: |
           npx lerna exec npm run build:contracts
