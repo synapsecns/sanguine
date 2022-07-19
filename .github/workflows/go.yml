@@ -99,6 +99,7 @@ jobs:
     outputs:
       # Expose matched filters as job 'packages' output variable
       packages: ${{ steps.filter.outputs.changes }}
+      package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -113,13 +114,10 @@ jobs:
             core: 'core/**'
             tools: 'tools/**'
             ethergo: 'ethergo/**'
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-#      - run: |
-#          echo $FILTERED_PATHS
-#          export FILTER_LENGTH=(echo $FILTERED_PATHS | jq '. | length')
-#          echo $FILTER_LENGTH
-##          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
+      - id: length
+        run: |
+          export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
+          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
         env:
           FILTERED_PATHS: ${{ steps.filter.outputs.changes }}
 
