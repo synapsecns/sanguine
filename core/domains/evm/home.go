@@ -35,9 +35,10 @@ func NewHomeContract(ctx context.Context, client evm.Chain, homeAddress common.A
 type homeContract struct {
 	// contract contains the contract handle
 	contract home.IHome
-	// client is the client
+	// client is the client for interacting with the chain
 	client evm.Chain
 	// nonceManager is the nonce manager used for transacting
+	// TODO: switch w/ db transactor
 	nonceManager nonce.Manager
 }
 

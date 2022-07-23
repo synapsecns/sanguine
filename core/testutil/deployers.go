@@ -178,3 +178,8 @@ func (u UpdateManagerDeployer) Deploy(ctx context.Context) (backends.DeployedCon
 		return updatermanager.NewUpdaterManagerRef(address, backend)
 	})
 }
+
+// SynapseTestDeployer deploys the synapse test contract
+type SynapseTestDeployer struct {
+	*deployer.BaseDeployer
+}

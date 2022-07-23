@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
-    "build:go": "yarn sol-merger \"./contracts/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin & yarn sol-merger \"./test/harnesses/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin",
+    "build:go": "yarn sol-merger \"./contracts/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin & yarn sol-merger \"./test/harnesses/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin & yarn sol-merger \"./test/utils/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin",
     "build:contracts": "forge build",
     "build:slither": "hardhat compile",
     "build:typescript": "typechain --target ethers-v5 'artifacts/**/*json'",

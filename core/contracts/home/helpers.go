@@ -25,7 +25,7 @@ func (s HomeRef) Parser() Parser {
 	return s.parser
 }
 
-// NewHomeRef creates a new home contract with a contract ref.
+// NewHomeRef creates a new home contract with a contract ref and an interface for parsing events into custom types.
 func NewHomeRef(address common.Address, backend bind.ContractBackend) (*HomeRef, error) {
 	homeContract, err := NewHome(address, backend)
 	if err != nil {

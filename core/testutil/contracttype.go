@@ -5,6 +5,7 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/synapsetest"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
@@ -48,6 +49,8 @@ const (
 	HomeHarnessType contractTypeImpl = iota // HomeHarness
 	// UpdaterManagerType is the type of the update manager.
 	UpdaterManagerType contractTypeImpl = iota // UpdaterManager
+	// SynapseTestType is the type of the synapse test contract.
+	SynapseTestType contractTypeImpl = iota
 )
 
 // ID gets the contract type as an id.
@@ -78,6 +81,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return homeharness.Contracts["solidity/HomeHarness.sol:HomeHarness"]
 	case UpdaterManagerType:
 		return updatermanager.Contracts["solidity/UpdaterManager.sol:UpdaterManager"]
+	case SynapseTestType:
+		return synapsetest.Contracts["solidity/SynapseTest.sol:SynapseTest"]
 	default:
 		panic("not yet implemented")
 	}
