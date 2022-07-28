@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
@@ -68,4 +69,14 @@ func (d *DeployManager) GetUpdaterManager(ctx context.Context, backend backends.
 	assert.True(d.T(), ok)
 
 	return updaterManagerContract, updaterManager
+}
+
+func (d *DeployManager) GetAttestationCollector(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *attestationcollector.AttestationCollectorRef) {
+	d.T().Helper()
+
+	attestionContract := d.GetContractRegistry(backend).Get(ctx, AttestationCollectorType)
+	attestationCollector, ok := attestionContract.ContractHandle().(*attestationcollector.AttestationCollectorRef)
+	assert.True(d.T(), ok)
+
+	return attestionContract, attestationCollector
 }

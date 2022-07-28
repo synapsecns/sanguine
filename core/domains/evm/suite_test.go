@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/testutil"
@@ -49,9 +50,10 @@ func TestEVMSuite(t *testing.T) {
 // ContractSuite defines a suite for testing contracts. This uses the simulated backend.
 type ContractSuite struct {
 	*testutils.TestSuite
-	homeContract *home.HomeRef
-	testBackend  backends.SimulatedTestBackend
-	signer       signer.Signer
+	homeContract        *home.HomeRef
+	attestationContract *attestationcollector.AttestationCollectorRef
+	testBackend         backends.SimulatedTestBackend
+	signer              signer.Signer
 }
 
 func NewContractSuite(tb testing.TB) *ContractSuite {
@@ -68,6 +70,7 @@ func (i *ContractSuite) SetupTest() {
 	i.testBackend = simulated.NewSimulatedBackend(i.GetTestContext(), i.T())
 
 	_, i.homeContract = deployManager.GetHome(i.GetTestContext(), i.testBackend)
+	_, i.attestationContract = deployManager.GetAttestationCollector(i.GetTestContext(), i.testBackend)
 
 	wall, err := wallet.FromRandom()
 	Nil(i.T(), err)

@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
@@ -176,5 +177,24 @@ func (u UpdateManagerDeployer) Deploy(ctx context.Context) (backends.DeployedCon
 		return updatermanager.DeployUpdaterManager(transactOps, backend, transactOps.From)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return updatermanager.NewUpdaterManagerRef(address, backend)
+	})
+}
+
+// AttestationCollectorDeployer deploys the attestation collector
+type AttestationCollectorDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewAttestationCollectorDeployer creates the deployer for  the attestation collecotr
+func NewAttestationCollectorDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return AttestationCollectorDeployer{deployer.NewSimpleDeployer(registry, backend, AttestationCollectorType)}
+}
+
+// Deploy deploys the attestation collector
+func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return attestationcollector.DeployAttestationCollector(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return attestationcollector.NewAttestationCollectorRef(address, backend)
 	})
 }

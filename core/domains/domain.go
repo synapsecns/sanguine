@@ -36,5 +36,9 @@ type HomeContract interface {
 	Update(ctx context.Context, signer signer.Signer, update types.SignedUpdate) error
 }
 
+type AttestationCollectorContract interface {
+	SubmitAttestation(signer signer.Signer, updater common.Hash, attestation []byte) error
+}
+
 // ErrNoUpdate indicates no update has been produced.
 var ErrNoUpdate = errors.New("no update produced")

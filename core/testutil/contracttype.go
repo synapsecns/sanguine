@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
@@ -48,6 +49,8 @@ const (
 	HomeHarnessType contractTypeImpl = iota // HomeHarness
 	// UpdaterManagerType is the type of the update manager.
 	UpdaterManagerType contractTypeImpl = iota // UpdaterManager
+	// AttestationCollectorType is the type of the attestation collector
+	AttestationCollectorType contractTypeImpl = iota // AttestationCollector
 )
 
 // ID gets the contract type as an id.
@@ -78,6 +81,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return homeharness.Contracts["solidity/HomeHarness.sol:HomeHarness"]
 	case UpdaterManagerType:
 		return updatermanager.Contracts["solidity/UpdaterManager.sol:UpdaterManager"]
+	case AttestationCollectorType:
+		return attestationcollector.Contracts["solidity/AttestationCollector.sol:AttestationCollector"]
 	default:
 		panic("not yet implemented")
 	}
