@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
@@ -161,6 +162,25 @@ func (h HomeHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContr
 	})
 }
 
+// AttestionHarnessDeployer deploys the attestation harness.
+type AttestionHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewAttestationHarnessDeployer creates a new deployer for the attestation harness.
+func NewAttestationHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return AttestionHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, AttestationHarnessType)}
+}
+
+// Deploy deploys the attestation harness.
+func (a AttestionHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return attestationharness.DeployAttestationHarness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return attestationharness.NewAttestationHarnessRef(address, backend)
+	})
+}
+
 // UpdateManagerDeployer deploys the update manager.
 type UpdateManagerDeployer struct {
 	*deployer.BaseDeployer
@@ -180,20 +200,32 @@ func (u UpdateManagerDeployer) Deploy(ctx context.Context) (backends.DeployedCon
 	})
 }
 
-// AttestationCollectorDeployer deploys the attestation collector
+// AttestationCollectorDeployer deploys the attestation collector.
 type AttestationCollectorDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewAttestationCollectorDeployer creates the deployer for  the attestation collecotr
+// NewAttestationCollectorDeployer creates the deployer for  the attestation collecotr.
 func NewAttestationCollectorDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return AttestationCollectorDeployer{deployer.NewSimpleDeployer(registry, backend, AttestationCollectorType)}
 }
 
-// Deploy deploys the attestation collector
+// Deploy deploys the attestation collector.
 func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return attestationcollector.DeployAttestationCollector(transactOps, backend)
+		attestationAddress, attestationTx, collector, err := attestationcollector.DeployAttestationCollector(transactOps, backend)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy attesation collector: %w", err)
+		}
+
+		auth := a.Backend().GetTxContext(ctx, &transactOps.From)
+		initTx, err := collector.Initialize(auth.TransactOpts)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize attesation collector: %w", err)
+		}
+		a.Backend().WaitForConfirmation(ctx, initTx)
+
+		return attestationAddress, attestationTx, collector, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return attestationcollector.NewAttestationCollectorRef(address, backend)
 	})

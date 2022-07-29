@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
@@ -47,9 +48,11 @@ const (
 	MessageHarnessType contractTypeImpl = iota // MessageHarness
 	// HomeHarnessType is the home harness type.
 	HomeHarnessType contractTypeImpl = iota // HomeHarness
+	// AttestationHarnessType is the attestation harness type.
+	AttestationHarnessType contractTypeImpl = iota
 	// UpdaterManagerType is the type of the update manager.
 	UpdaterManagerType contractTypeImpl = iota // UpdaterManager
-	// AttestationCollectorType is the type of the attestation collector
+	// AttestationCollectorType is the type of the attestation collector.
 	AttestationCollectorType contractTypeImpl = iota // AttestationCollector
 )
 
@@ -79,6 +82,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return messageharness.Contracts["solidity/MessageHarness.sol:MessageHarness"]
 	case HomeHarnessType:
 		return homeharness.Contracts["solidity/HomeHarness.sol:HomeHarness"]
+	case AttestationHarnessType:
+		return attestationharness.Contracts["solidity/AttestationHarness.sol:AttestationHarness"]
 	case UpdaterManagerType:
 		return updatermanager.Contracts["solidity/UpdaterManager.sol:UpdaterManager"]
 	case AttestationCollectorType:

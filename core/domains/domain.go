@@ -36,8 +36,9 @@ type HomeContract interface {
 	Update(ctx context.Context, signer signer.Signer, update types.SignedUpdate) error
 }
 
+// AttestationCollectorContract contains the interface for the attestation collector.
 type AttestationCollectorContract interface {
-	SubmitAttestation(signer signer.Signer, updater common.Hash, attestation []byte) error
+	SubmitAttestation(signer signer.Signer, attestation types.SignedAttestation) error
 }
 
 // ErrNoUpdate indicates no update has been produced.

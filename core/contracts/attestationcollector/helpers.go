@@ -6,12 +6,14 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-// AttestationCollectorRef is a bound attestatoin collector contract that returns the address of the attestation collector contract
+// AttestationCollectorRef is a bound attestatoin collector contract that returns the address of the attestation collector contract.
+//nolint: golint
 type AttestationCollectorRef struct {
 	*AttestationCollector
 	address common.Address
 }
 
+// Address gets the address of the attestation contract.
 func (a AttestationCollectorRef) Address() common.Address {
 	return a.address
 }
