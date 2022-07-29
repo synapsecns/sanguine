@@ -194,7 +194,7 @@ func (d *pebbleDB) StoreLeaf(leafIndex uint32, destinationAndNonce uint64, leaf 
 	return nil
 }
 
-// MessageByNonce retreives a raw committed message by its leaf hash.
+// MessageByNonce retrieves a raw committed message by its leaf hash.
 func (d *pebbleDB) MessageByNonce(destination, nonce uint32) (types.CommittedMessage, error) {
 	leaf, err := d.LeafByNonce(destination, nonce)
 	if err != nil {
@@ -223,7 +223,7 @@ func (d *pebbleDB) MessageByLeaf(leaf common.Hash) (types.CommittedMessage, erro
 	return committedMessage, nil
 }
 
-// LeafByNonce retreives the leaf hash keyed by destination and nonce.
+// LeafByNonce retrieves the leaf hash keyed by destination and nonce.
 func (d *pebbleDB) LeafByNonce(destination, nonce uint32) (common.Hash, error) {
 	destAndNonce := types.CombineDestinationAndNonce(destination, nonce)
 	value, _, err := d.DB.Get(d.FullKey(LEAF, []byte(fmt.Sprintf("%d", destAndNonce))))
@@ -252,7 +252,7 @@ func (d *pebbleDB) LeafByIndex(leafIndex uint32) (common.Hash, error) {
 	return common.BytesToHash(value), nil
 }
 
-// MessageByLeafIndex retreives a message by its leaf index.
+// MessageByLeafIndex retrieves a message by its leaf index.
 func (d *pebbleDB) MessageByLeafIndex(leafIndex uint32) (types.CommittedMessage, error) {
 	leaf, err := d.LeafByIndex(leafIndex)
 	if err != nil {

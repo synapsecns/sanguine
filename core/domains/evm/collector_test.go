@@ -31,5 +31,5 @@ func (i ContractSuite) TestSubmitAttestation() {
 	err = attestionCollector.SubmitAttestation(i.signer, signedAttestation)
 	Nil(i.T(), err)
 
-	// TODO retreive once we have a way to
+	// TODO retrieve once we have a way to
 }

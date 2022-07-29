@@ -20,7 +20,7 @@ type DomainClient interface {
 	Config() config.DomainConfig
 	// BlockNumber gets the latest block
 	BlockNumber(ctx context.Context) (uint32, error)
-	// Home retreives a handle for the home contract
+	// Home retrieves a handle for the home contract
 	Home() HomeContract
 }
 
