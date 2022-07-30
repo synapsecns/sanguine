@@ -168,3 +168,16 @@ func HashUpdate(update types.Update) ([32]byte, error) {
 	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
 	return signedHash, nil
 }
+
+// HashAttestation hashes an attestation.
+func HashAttestation(attestation types.Attestation) ([32]byte, error) {
+	encodedAttestation, err := types.EncodeAttestation(attestation)
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("could not encode attestation: %w", err)
+	}
+
+	hashedDigest := crypto.Keccak256Hash(encodedAttestation)
+
+	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
+	return signedHash, nil
+}

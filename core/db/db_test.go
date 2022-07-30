@@ -54,7 +54,7 @@ func (m *MessageSuite) TestStoresAndRetrievesMessages() {
 	})
 }
 
-func (m *MessageSuite) TestStoresAndRetreivesProofs() {
+func (m *MessageSuite) TestStoresAndretrievesProofs() {
 	m.RunOnAllDBs(func(newDB db.MessageDB) {
 		leaf := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		index := gofakeit.Uint32()
@@ -101,10 +101,10 @@ func (m *MessageSuite) TestStoreAndRetrieveLatestRoot() {
 		err = newDB.StoreLatestRoot(latestRoot)
 		Nil(m.T(), err)
 
-		retreivedRoot, err := newDB.RetrieveLatestRoot()
+		retrievedRoot, err := newDB.RetrieveLatestRoot()
 		Nil(m.T(), err)
 
-		Equal(m.T(), retreivedRoot, latestRoot)
+		Equal(m.T(), retrievedRoot, latestRoot)
 	})
 }
 

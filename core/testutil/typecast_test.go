@@ -36,3 +36,17 @@ func (s SimulatedSuite) TestTypecastUpdaterManager() {
 		NotNil(s.T(), updaterManager)
 	})
 }
+
+func (s SimulatedSuite) TestTypecastAttesationCollector() {
+	NotPanics(s.T(), func() {
+		_, attestationCollector := s.deployManager.GetAttestationCollector(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), attestationCollector)
+	})
+}
+
+func (s SimulatedSuite) TestTypecastAttestionHarness() {
+	NotPanics(s.T(), func() {
+		_, attestationHarness := s.deployManager.GetAttestionHarness(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), attestationHarness)
+	})
+}

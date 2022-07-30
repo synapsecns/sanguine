@@ -25,7 +25,7 @@ type MessageDB interface {
 	StoreCommittedMessage(committedMessage types.CommittedMessage) error
 	// StoreLatestMessage stores a raw committed message building off the leaf index
 	StoreLatestMessage(committedMessage types.CommittedMessage) error
-	// MessageByNonce retreives a raw committed message by its leaf hash.
+	// MessageByNonce retrieves a raw committed message by its leaf hash.
 	MessageByNonce(destination, nonce uint32) (types.CommittedMessage, error)
 	// MessageByLeaf fetches a message by leaf
 	MessageByLeaf(leaf common.Hash) (types.CommittedMessage, error)
@@ -47,7 +47,7 @@ type MessageDB interface {
 	// GetMessageLatestBlockEnd gets the message latest block
 	GetMessageLatestBlockEnd() (height uint32, err error)
 
-	// RetrieveLatestRoot retreives latest root
+	// RetrieveLatestRoot retrieves latest root
 	RetrieveLatestRoot() (common.Hash, error)
 	// StoreLatestRoot stores the latest root
 	StoreLatestRoot(latestRoot common.Hash) error

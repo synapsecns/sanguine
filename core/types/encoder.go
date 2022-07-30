@@ -22,6 +22,43 @@ func EncodeSignedUpdate(signed SignedUpdate) ([]byte, error) {
 	return append(encodedUpdate, encodedSignature...), nil
 }
 
+// EncodeSignedAttestation encodes a signed attestation.
+func EncodeSignedAttestation(signed SignedAttestation) ([]byte, error) {
+	encodedAttestation, err := EncodeAttestation(signed.Attestation())
+	if err != nil {
+		return nil, fmt.Errorf("could not encode attestation: %w", err)
+	}
+
+	encodedSignature, err := EncodeSignature(signed.Signature())
+	if err != nil {
+		return nil, fmt.Errorf("could not encode signature: %w", err)
+	}
+
+	return append(encodedAttestation, encodedSignature...), nil
+}
+
+// DecodeSignedAttestation decodes a signed attestation.
+func DecodeSignedAttestation(toDecode []byte) (SignedAttestation, error) {
+	var decAttestation attestation
+
+	signedAttesationSize := binary.Size(decAttestation)
+
+	attestationBin := toDecode[0:signedAttesationSize]
+	signBin := toDecode[signedAttesationSize:]
+
+	att, err := DecodeAttestation(attestationBin)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode attestation: %w", err)
+	}
+
+	sig, err := DecodeSignature(signBin)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode signature: %w", err)
+	}
+
+	return NewSignedAttestation(att, sig), nil
+}
+
 // DecodeSignedUpdate decodes a signed update.
 func DecodeSignedUpdate(toDecode []byte) (SignedUpdate, error) {
 	var decUpdate updateEncoder
@@ -105,4 +142,51 @@ func DecodeSignature(toDecode []byte) (sig Signature, err error) {
 	}
 
 	return NewSignature(v, r, s), nil
+}
+
+// attestationEncoder encodes attestations.
+type attestationEncoder struct {
+	Domain, Nonce uint32
+	Root          [32]byte
+}
+
+// EncodeAttestation encodes an attestation.
+func EncodeAttestation(attestation Attestation) ([]byte, error) {
+	buf := new(bytes.Buffer)
+
+	encodedUpdate := attestationEncoder{
+		Domain: attestation.Domain(),
+		Nonce:  attestation.Nonce(),
+		Root:   attestation.Root(),
+	}
+
+	err := binary.Write(buf, binary.BigEndian, encodedUpdate)
+	if err != nil {
+		return nil, fmt.Errorf("could not write binary: %w", err)
+	}
+
+	return buf.Bytes(), nil
+}
+
+// DecodeAttestation decodes an attestation.
+func DecodeAttestation(toDecode []byte) (Attestation, error) {
+	reader := bytes.NewReader(toDecode)
+
+	var encodedAttestation attestationEncoder
+	dataSize := binary.Size(encodedAttestation)
+
+	if dataSize > len(toDecode) {
+		return nil, fmt.Errorf("message too small, expected at least %d, got %d", dataSize, len(toDecode))
+	}
+
+	err := binary.Read(reader, binary.BigEndian, &encodedAttestation)
+	if err != nil {
+		return nil, fmt.Errorf("could not read: %w", err)
+	}
+
+	return attestation{
+		domain: encodedAttestation.Domain,
+		nonce:  encodedAttestation.Nonce,
+		root:   encodedAttestation.Root,
+	}, nil
 }

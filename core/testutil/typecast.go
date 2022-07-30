@@ -3,7 +3,9 @@ package testutil
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
@@ -51,12 +53,24 @@ func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.
 func (d *DeployManager) GetHomeHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *homeharness.HomeHarnessRef) {
 	d.T().Helper()
 
-	homeHarnessContract := d.GetContractRegistry(backend).Get(ctx, HomeHarnessType)
+	messageHarnessContract := d.GetContractRegistry(backend).Get(ctx, HomeHarnessType)
 
-	messageHarness, ok := homeHarnessContract.ContractHandle().(*homeharness.HomeHarnessRef)
+	messageHarness, ok := messageHarnessContract.ContractHandle().(*homeharness.HomeHarnessRef)
 	assert.True(d.T(), ok)
 
-	return homeHarnessContract, messageHarness
+	return messageHarnessContract, messageHarness
+}
+
+// GetAttestionHarness gets the attestation harness.
+func (d *DeployManager) GetAttestionHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *attestationharness.AttestationHarnessRef) {
+	d.T().Helper()
+
+	attestationHarnessContract := d.GetContractRegistry(backend).Get(ctx, AttestationHarnessType)
+
+	attestionHarness, ok := attestationHarnessContract.ContractHandle().(*attestationharness.AttestationHarnessRef)
+	assert.True(d.T(), ok)
+
+	return attestationHarnessContract, attestionHarness
 }
 
 // GetUpdaterManager gets the update manager.
@@ -68,4 +82,15 @@ func (d *DeployManager) GetUpdaterManager(ctx context.Context, backend backends.
 	assert.True(d.T(), ok)
 
 	return updaterManagerContract, updaterManager
+}
+
+// GetAttestationCollector gets the attestation collector contract.
+func (d *DeployManager) GetAttestationCollector(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *attestationcollector.AttestationCollectorRef) {
+	d.T().Helper()
+
+	attestionContract := d.GetContractRegistry(backend).Get(ctx, AttestationCollectorType)
+	attestationCollector, ok := attestionContract.ContractHandle().(*attestationcollector.AttestationCollectorRef)
+	assert.True(d.T(), ok)
+
+	return attestionContract, attestationCollector
 }
