@@ -2,6 +2,7 @@ package attestationharness
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -23,7 +24,7 @@ func (a AttestationHarnessRef) Address() common.Address {
 func NewAttestationHarnessRef(address common.Address, backend bind.ContractBackend) (*AttestationHarnessRef, error) {
 	contract, err := NewAttestationHarness(address, backend)
 	if err != nil {
-		return nil, fmt.Errorf("could not create home harness: %w", err)
+		return nil, fmt.Errorf("could not create attestation harness: %w", err)
 	}
 
 	return &AttestationHarnessRef{

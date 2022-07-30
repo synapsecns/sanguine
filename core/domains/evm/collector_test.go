@@ -1,6 +1,8 @@
 package evm_test
 
 import (
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -8,11 +10,10 @@ import (
 	pebble2 "github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/types"
-	"math/big"
 )
 
 func (i ContractSuite) TestSubmitAttestation() {
-	attestionCollector, err := evm.NewAttestationCollectorContract(i.GetTestContext(), i.attestationBackend, i.attestationContract.Address())
+	attestationCollector, err := evm.NewAttestationCollectorContract(i.GetTestContext(), i.attestationBackend, i.attestationContract.Address())
 	Nil(i.T(), err)
 
 	localDomain := attestationDomain
@@ -28,7 +29,7 @@ func (i ContractSuite) TestSubmitAttestation() {
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, signature)
 
-	err = attestionCollector.SubmitAttestation(i.signer, signedAttestation)
+	err = attestationCollector.SubmitAttestation(i.signer, signedAttestation)
 	Nil(i.T(), err)
 
 	// TODO retrieve once we have a way to
