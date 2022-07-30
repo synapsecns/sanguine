@@ -165,18 +165,18 @@ func (h HomeHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContr
 	})
 }
 
-// attestationHarnessDeployer deploys the attestation harness.
-type attestationHarnessDeployer struct {
+// AttestationHarnessDeployer deploys the attestation harness.
+type AttestationHarnessDeployer struct {
 	*deployer.BaseDeployer
 }
 
 // NewAttestationHarnessDeployer creates a new deployer for the attestation harness.
 func NewAttestationHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return attestationHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, AttestationHarnessType)}
+	return AttestationHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, AttestationHarnessType)}
 }
 
 // Deploy deploys the attestation harness.
-func (a attestationHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (a AttestationHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return attestationharness.DeployAttestationHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
