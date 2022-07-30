@@ -20,7 +20,7 @@ type DomainClient interface {
 	Config() config.DomainConfig
 	// BlockNumber gets the latest block
 	BlockNumber(ctx context.Context) (uint32, error)
-	// Home retreives a handle for the home contract
+	// Home retrieves a handle for the home contract
 	Home() HomeContract
 }
 
@@ -34,6 +34,11 @@ type HomeContract interface {
 	CommittedRoot(ctx context.Context) (common.Hash, error)
 	// Update updates the home contract
 	Update(ctx context.Context, signer signer.Signer, update types.SignedUpdate) error
+}
+
+// AttestationCollectorContract contains the interface for the attestation collector.
+type AttestationCollectorContract interface {
+	SubmitAttestation(signer signer.Signer, attestation types.SignedAttestation) error
 }
 
 // ErrNoUpdate indicates no update has been produced.
