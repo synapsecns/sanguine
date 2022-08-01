@@ -23,10 +23,10 @@ library Tips {
      * [038 .. 050): processorTip       uint96	12 bytes
      */
 
-    uint256 private constant OFFSET_UPDATER = 2;
-    uint256 private constant OFFSET_RELAYER = 14;
-    uint256 private constant OFFSET_PROVER = 26;
-    uint256 private constant OFFSET_PROCESSOR = 38;
+    uint256 internal constant OFFSET_UPDATER = 2;
+    uint256 internal constant OFFSET_RELAYER = 14;
+    uint256 internal constant OFFSET_PROVER = 26;
+    uint256 internal constant OFFSET_PROCESSOR = 38;
 
     modifier onlyTips(bytes29 _view) {
         _view.assertType(Message.TIPS_TYPE);

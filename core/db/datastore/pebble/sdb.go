@@ -28,34 +28,6 @@ func NewMessageDB(dbPath, entity string) (db.MessageDB, error) {
 	return &pebbleDB{DB: messageDB, entity: entity}, nil
 }
 
-func (d *pebbleDB) RetrieveProducedUpdate(root common.Hash) (types.SignedUpdate, error) {
-	rawUpdate, _, err := d.Get(d.FullKey(UpdaterProducedUpdate, root.Bytes()))
-	if err != nil {
-		return nil, fmt.Errorf("could not get latest height: %w", err)
-	}
-
-	decodedUpdate, err := types.DecodeSignedUpdate(rawUpdate)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode signed update: %w", err)
-	}
-
-	return decodedUpdate, nil
-}
-
-func (d *pebbleDB) StoreProducedUpdate(previousRoot common.Hash, update types.SignedUpdate) error {
-	signedUpdate, err := types.EncodeSignedUpdate(update)
-	if err != nil {
-		return fmt.Errorf("could not encode signed update: %w", err)
-	}
-
-	err = d.StoreKeyedEncodable(UpdaterProducedUpdate, previousRoot.Bytes(), signedUpdate)
-	if err != nil {
-		return fmt.Errorf("could not store produced update: %w", err)
-	}
-
-	return nil
-}
-
 // RetrieveLatestRoot gets the latest root.
 func (d *pebbleDB) RetrieveLatestRoot() (common.Hash, error) {
 	rawRoot, _, err := d.Get(d.FullKey(LatestRoot, []byte("")))

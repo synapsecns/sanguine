@@ -17,7 +17,7 @@ type UpdateSubmitter struct {
 	domain domains.DomainClient
 	// messageDB contains the messageDB object
 	messageDB db.MessageDB
-	// txQueueDB contains the transaction queue db
+	// txQueueDB contains the transaction queue legacyDB
 	txQueueDB db.TxQueueDB
 	// signer is the signer
 	signer signer.Signer

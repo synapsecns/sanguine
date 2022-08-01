@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
+	github.com/Thor-x86/nullable v1.0.0
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/cockroachdb/pebble v0.0.0-20220523221036-bb2c1501ac23
 	github.com/coinbase/rosetta-sdk-go v0.7.0
@@ -14,6 +15,7 @@ require (
 	github.com/libs4go/crypto v0.0.1
 	github.com/pkg/errors v0.9.1
 	github.com/richardwilkes/toolbox v1.52.0
+	github.com/spatialcurrent/go-math v0.0.0-20211120210754-b3872f7000fe
 	github.com/stretchr/testify v1.7.1
 	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/synapse-node v0.242.0
@@ -45,7 +47,8 @@ require (
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/binance-chain/tss-lib v1.3.3 // indirect
 	github.com/briandowns/spinner v1.6.1 // indirect
-	github.com/btcsuite/btcd v0.22.0-beta // indirect
+	github.com/btcsuite/btcd v0.22.1 // indirect
+	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
 	github.com/celo-org/celo-blockchain v0.0.0-20210222234634-f8c8f6744526 // indirect
 	github.com/celo-org/celo-bls-go v0.2.4 // indirect

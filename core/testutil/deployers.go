@@ -8,9 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
-	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
-	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
-	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
@@ -119,66 +116,6 @@ func (d XAppConfigDeployer) Deploy(ctx context.Context) (backends.DeployedContra
 // Dependencies gets dependencies of the xappconfig contract.
 func (d XAppConfigDeployer) Dependencies() []deployer.ContractType {
 	return d.RecursiveDependencies([]deployer.ContractType{HomeType})
-}
-
-// MessageHarnessDeployer deploys the message harness for testing.
-type MessageHarnessDeployer struct {
-	*deployer.BaseDeployer
-}
-
-// NewMessageHarnessDeployer creates a message harness deployer.
-func NewMessageHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return MessageHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, MessageHarnessType)}
-}
-
-// Deploy deploys the message harness deployer.
-func (d MessageHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return messageharness.DeployMessageHarness(transactOps, backend)
-	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return messageharness.NewMessageHarnessRef(address, backend)
-	})
-}
-
-// HomeHarnessDomain is the domain used for the home harness.
-const HomeHarnessDomain = 1
-
-// HomeHarnessDeployer deploys the home harness for testing.
-type HomeHarnessDeployer struct {
-	*deployer.BaseDeployer
-}
-
-// NewHomeHarnessDeployer deploys the new home harness.
-func NewHomeHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return HomeHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, HomeHarnessType)}
-}
-
-// Deploy deploys the home harness.
-func (h HomeHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return homeharness.DeployHomeHarness(transactOps, backend, HomeHarnessDomain)
-	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return homeharness.NewHomeHarnessRef(address, backend)
-	})
-}
-
-// AttestionHarnessDeployer deploys the attestation harness.
-type AttestionHarnessDeployer struct {
-	*deployer.BaseDeployer
-}
-
-// NewAttestationHarnessDeployer creates a new deployer for the attestation harness.
-func NewAttestationHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return AttestionHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, AttestationHarnessType)}
-}
-
-// Deploy deploys the attestation harness.
-func (a AttestionHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return attestationharness.DeployAttestationHarness(transactOps, backend)
-	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return attestationharness.NewAttestationHarnessRef(address, backend)
-	})
 }
 
 // UpdateManagerDeployer deploys the update manager.

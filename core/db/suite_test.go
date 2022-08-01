@@ -61,36 +61,36 @@ func TestMessageSuite(t *testing.T) {
 	suite.Run(t, NewMessageSuite(t))
 }
 
-type TxQueueSuite struct {
+type DBSuite struct {
 	*testutils.TestSuite
-	dbs []db.TxQueueDB
+	dbs []db.SynapseDB
 }
 
 // NewTxQueueSuite creates a new transaction queue suite.
-func NewTxQueueSuite(tb testing.TB) *TxQueueSuite {
+func NewTxQueueSuite(tb testing.TB) *DBSuite {
 	tb.Helper()
-	return &TxQueueSuite{
+	return &DBSuite{
 		TestSuite: testutils.NewTestSuite(tb),
-		dbs:       []db.TxQueueDB{},
+		dbs:       []db.SynapseDB{},
 	}
 }
 
-func (t *TxQueueSuite) SetupTest() {
+func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
 
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""))
 	Nil(t.T(), err)
 
-	t.dbs = []db.TxQueueDB{sqliteStore}
+	t.dbs = []db.SynapseDB{sqliteStore}
 	t.setupMysqlDB()
 }
 
 // connString gets the connection string.
-func (t *TxQueueSuite) connString(dbname string) string {
+func (t *DBSuite) connString(dbname string) string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", common.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), common.GetEnv("MYSQL_HOST", "127.0.0.1"), common.GetEnvInt("MYSQL_PORT", 3306), dbname)
 }
 
-func (t *TxQueueSuite) setupMysqlDB() {
+func (t *DBSuite) setupMysqlDB() {
 	// skip if mysql test disabled, this really only needs to be run in ci
 
 	// skip if mysql test disabled
@@ -122,14 +122,14 @@ func (t *TxQueueSuite) setupMysqlDB() {
 	t.dbs = append(t.dbs, mysqlStore)
 }
 
-func (t *TxQueueSuite) RunOnAllDBs(testFunc func(testDB db.TxQueueDB)) {
+func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.SynapseDB)) {
 	t.T().Helper()
 
 	wg := sync.WaitGroup{}
 	for _, testDB := range t.dbs {
 		wg.Add(1)
 		// capture the value
-		go func(testDB db.TxQueueDB) {
+		go func(testDB db.SynapseDB) {
 			defer wg.Done()
 			testFunc(testDB)
 		}(testDB)

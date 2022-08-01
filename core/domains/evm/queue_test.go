@@ -10,6 +10,7 @@ import (
 	dbMocks "github.com/synapsecns/sanguine/core/db/mocks"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/testutil"
+	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	signerMocks "github.com/synapsecns/sanguine/ethergo/signer/signer/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
@@ -58,12 +59,15 @@ func (t *TxQueueSuite) TestGetTransactor() {
 
 	chn.FundAccount(t.GetTestContext(), msigner.Address(), *big.NewInt(params.Ether))
 
-	tx, err := homeHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, []byte("hello world"))
+	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
+	Nil(t.T(), err)
+
+	tx, err := homeHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, encodedTips, []byte("hello world"))
 	Nil(t.T(), err)
 
 	chn.WaitForConfirmation(t.GetTestContext(), tx)
 
-	_, err = homeHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, []byte("hello world"))
+	_, err = homeHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, encodedTips, []byte("hello world"))
 	Nil(t.T(), err)
 	chn.WaitForConfirmation(t.GetTestContext(), tx)
 }

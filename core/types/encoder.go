@@ -4,23 +4,11 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"github.com/libs4go/crypto/ecdsa"
+	"math/big"
 )
-
-// EncodeSignedUpdate encodes a signed update in binary.
-func EncodeSignedUpdate(signed SignedUpdate) ([]byte, error) {
-	encodedUpdate, err := EncodeUpdate(signed.Update())
-	if err != nil {
-		return nil, fmt.Errorf("could not encode update: %w", err)
-	}
-	encodedSignature, err := EncodeSignature(signed.Signature())
-	if err != nil {
-		return nil, fmt.Errorf("could not encode signature: %w", err)
-	}
-
-	return append(encodedUpdate, encodedSignature...), nil
-}
 
 // EncodeSignedAttestation encodes a signed attestation.
 func EncodeSignedAttestation(signed SignedAttestation) ([]byte, error) {
@@ -57,76 +45,6 @@ func DecodeSignedAttestation(toDecode []byte) (SignedAttestation, error) {
 	}
 
 	return NewSignedAttestation(att, sig), nil
-}
-
-// DecodeSignedUpdate decodes a signed update.
-func DecodeSignedUpdate(toDecode []byte) (SignedUpdate, error) {
-	var decUpdate updateEncoder
-
-	decUpdateSize := binary.Size(decUpdate)
-
-	updateBin := toDecode[0:decUpdateSize]
-	signBin := toDecode[decUpdateSize:]
-
-	upd, err := DecodeUpdate(updateBin)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode update: %w", err)
-	}
-
-	sig, err := DecodeSignature(signBin)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode signature: %w", err)
-	}
-
-	return NewSignedUpdate(upd, sig), nil
-}
-
-// updateEncoder encodes/decodes updates in binary.
-type updateEncoder struct {
-	HomeDomain   uint32
-	PreviousRoot [32]byte
-	NewRoot      [32]byte
-}
-
-// EncodeUpdate encodes an update to a byte slice.
-func EncodeUpdate(update Update) ([]byte, error) {
-	buf := new(bytes.Buffer)
-
-	encodedUpdate := updateEncoder{
-		HomeDomain:   update.HomeDomain(),
-		PreviousRoot: update.PreviousRoot(),
-		NewRoot:      update.NewRoot(),
-	}
-
-	err := binary.Write(buf, binary.BigEndian, encodedUpdate)
-	if err != nil {
-		return nil, fmt.Errorf("could not write binary: %w", err)
-	}
-
-	return buf.Bytes(), nil
-}
-
-// DecodeUpdate decodes an update.
-func DecodeUpdate(toDecode []byte) (Update, error) {
-	reader := bytes.NewReader(toDecode)
-
-	var encodedUpdate updateEncoder
-	dataSize := binary.Size(encodedUpdate)
-
-	if dataSize > len(toDecode) {
-		return nil, fmt.Errorf("message too small, expected at least %d, got %d", dataSize, len(toDecode))
-	}
-
-	err := binary.Read(reader, binary.BigEndian, &encodedUpdate)
-	if err != nil {
-		return nil, fmt.Errorf("could not read: %w", err)
-	}
-
-	return update{
-		homeDomain:   encodedUpdate.HomeDomain,
-		previousRoot: encodedUpdate.PreviousRoot,
-		newRoot:      encodedUpdate.NewRoot,
-	}, nil
 }
 
 // EncodeSignature encodes a signature.
@@ -189,4 +107,68 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 		nonce:  encodedAttestation.Nonce,
 		root:   encodedAttestation.Root,
 	}, nil
+}
+
+const (
+	tipsVersion     = uint16(1)
+	offsetUpdater   = 2
+	offsetRelayer   = 14
+	offsetProver    = 26
+	offsetProcessor = 38
+	uint96Len       = 12
+)
+
+// EncodeTips encodes a list of tips.
+func EncodeTips(tips Tips) ([]byte, error) {
+	b := make([]byte, offsetUpdater)
+	binary.BigEndian.PutUint16(b, tipsVersion)
+
+	b = append(b, math.PaddedBigBytes(tips.UpdaterTip(), uint96Len)...)
+	b = append(b, math.PaddedBigBytes(tips.RelayerTip(), uint96Len)...)
+	b = append(b, math.PaddedBigBytes(tips.ProverTip(), uint96Len)...)
+	b = append(b, math.PaddedBigBytes(tips.ProcessorTip(), uint96Len)...)
+
+	return b, nil
+}
+
+// DecodeTips decodes a tips typed mem view.
+func DecodeTips(toDecode []byte) (Tips, error) {
+	updaterTip := new(big.Int).SetBytes(toDecode[offsetUpdater:offsetRelayer])
+	relayerTip := new(big.Int).SetBytes(toDecode[offsetRelayer:offsetProver])
+	proverTip := new(big.Int).SetBytes(toDecode[offsetProver:offsetProcessor])
+	processorTip := new(big.Int).SetBytes(toDecode[offsetProcessor:])
+
+	return NewTips(updaterTip, relayerTip, proverTip, processorTip), nil
+}
+
+// messageEncoder contains the binary structore of the message.
+type messageEncoder struct {
+	Origin            uint32
+	Sender            [32]byte
+	Nonce             uint32
+	Destination       uint32
+	Recipient         [32]byte
+	OptimisticSeconds uint32
+}
+
+// EncodeMessage encodes a message
+func EncodeMessage(m Message) ([]byte, error) {
+	newMessage := messageEncoder{
+		Origin:            m.Origin(),
+		Sender:            m.Sender(),
+		Nonce:             m.Nonce(),
+		Destination:       m.Destination(),
+		OptimisticSeconds: m.OptimisticSeconds(),
+	}
+
+	buf := new(bytes.Buffer)
+
+	err := binary.Write(buf, binary.BigEndian, newMessage)
+	if err != nil {
+		return nil, fmt.Errorf("could not write binary: %w", err)
+	}
+
+	buf.Write(m.Body())
+
+	return buf.Bytes(), nil
 }

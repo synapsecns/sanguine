@@ -40,12 +40,12 @@ func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
 
 	dbType, err := sql.DBTypeFromString(cfg.Database.Type)
 	if err != nil {
-		return Updater{}, fmt.Errorf("could not get db type: %w", err)
+		return Updater{}, fmt.Errorf("could not get legacyDB type: %w", err)
 	}
 
-	txQueueDB, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString)
+	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString)
 	if err != nil {
-		return Updater{}, fmt.Errorf("could not connect to db: %w", err)
+		return Updater{}, fmt.Errorf("could not connect to legacyDB: %w", err)
 	}
 
 	for name, domain := range cfg.Domains {
@@ -54,14 +54,14 @@ func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
 			return Updater{}, fmt.Errorf("could not create updater for: %w", err)
 		}
 
-		dbHandle, err := pebble.NewMessageDB(cfg.Database.DBPath, name)
+		legacyDBHandle, err := pebble.NewMessageDB(cfg.Database.DBPath, name)
 		if err != nil {
 			return Updater{}, fmt.Errorf("can not create messageDB: %w", err)
 		}
 
 		updater.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient, RefreshInterval)
-		updater.producers[name] = NewUpdateProducer(domainClient, dbHandle, updater.signer, RefreshInterval)
-		updater.submitters[name] = NewUpdateSubmitter(domainClient, dbHandle, txQueueDB, updater.signer, RefreshInterval)
+		updater.producers[name] = NewUpdateProducer(domainClient, legacyDBHandle, dbHandle, updater.signer, RefreshInterval)
+		updater.submitters[name] = NewUpdateSubmitter(domainClient, legacyDBHandle, dbHandle, updater.signer, RefreshInterval)
 	}
 
 	return updater, nil

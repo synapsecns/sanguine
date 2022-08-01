@@ -9,7 +9,6 @@ import (
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/synapse-node/pkg/evm"
 	"math/big"
 )
@@ -75,13 +74,13 @@ func (h homeContract) FetchSortedMessages(ctx context.Context, from uint32, to u
 	return messages, nil
 }
 
-func (h homeContract) ProduceUpdate(ctx context.Context) (types.Update, error) {
+func (h homeContract) ProduceUpdate(ctx context.Context) (types.Attestation, error) {
 	suggestedUpdate, err := h.contract.SuggestUpdate(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, fmt.Errorf("could not suggest update: %w", err)
 	}
 
-	if suggestedUpdate.New == [32]byte{} {
+	if suggestedUpdate.Root == [32]byte{} {
 		return nil, domains.ErrNoUpdate
 	}
 
@@ -91,44 +90,9 @@ func (h homeContract) ProduceUpdate(ctx context.Context) (types.Update, error) {
 		return nil, fmt.Errorf("could not get local domain: %w", err)
 	}
 
-	update := types.NewUpdate(localDomain, suggestedUpdate.CommittedRoot, suggestedUpdate.New)
+	update := types.NewAttestation(localDomain, suggestedUpdate.Nonce, suggestedUpdate.Root)
 
 	return update, nil
-}
-
-func (h homeContract) CommittedRoot(ctx context.Context) (common.Hash, error) {
-	root, err := h.contract.CommittedRoot(&bind.CallOpts{Context: ctx})
-	if err != nil {
-		return common.Hash{}, fmt.Errorf("could not get committed root: %w", err)
-	}
-
-	return root, nil
-}
-
-func (h homeContract) Update(ctx context.Context, signer signer.Signer, update types.SignedUpdate) error {
-	encodedSignature, err := types.EncodeSignature(update.Signature())
-	if err != nil {
-		return fmt.Errorf("could not encode signature: %w", err)
-	}
-
-	transactor, err := signer.GetTransactor(h.client.GetBigChainID())
-	if err != nil {
-		return fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := h.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	_, err = h.contract.Update(transactOpts, update.Update().PreviousRoot(), update.Update().NewRoot(), encodedSignature)
-	if err != nil {
-		return fmt.Errorf("could not update contract: %w", err)
-	}
-
-	return nil
 }
 
 var _ domains.HomeContract = &homeContract{}

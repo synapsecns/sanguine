@@ -50,3 +50,10 @@ func (s SimulatedSuite) TestTypecastAttestionHarness() {
 		NotNil(s.T(), attestationHarness)
 	})
 }
+
+func (s SimulatedSuite) TestTypecastTipsHarness() {
+	NotPanics(s.T(), func() {
+		_, attestationHarness := s.deployManager.GetTipsHarness(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), attestationHarness)
+	})
+}

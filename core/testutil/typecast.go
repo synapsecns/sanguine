@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/synapse-node/testutils/backends"
@@ -93,4 +94,14 @@ func (d *DeployManager) GetAttestationCollector(ctx context.Context, backend bac
 	assert.True(d.T(), ok)
 
 	return attestionContract, attestationCollector
+}
+
+func (d *DeployManager) GetTipsHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *tipsharness.TipsHarnessRef) {
+	d.T().Helper()
+
+	tipsContract := d.GetContractRegistry(backend).Get(ctx, TipsHarnessType)
+	tipsHarness, ok := tipsContract.ContractHandle().(*tipsharness.TipsHarnessRef)
+	assert.True(d.T(), ok)
+
+	return tipsContract, tipsHarness
 }

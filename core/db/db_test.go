@@ -15,10 +15,10 @@ func (m *MessageSuite) TestStoresAndRetrievesMessages() {
 	m.RunOnAllDBs(func(newDB db.MessageDB) {
 		realMessage := types.NewMessage(10, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32(), gofakeit.Uint32(), []byte(gofakeit.Sentence(10)), common.BigToHash(big.NewInt(gofakeit.Int64())))
 
-		encoded, err := realMessage.Encode()
+		encoded, err := types.EncodeMessage(realMessage)
 		Nil(m.T(), err)
 
-		committedMessage := types.NewCommittedMessage(100, common.BigToHash(big.NewInt(gofakeit.Int64())), encoded)
+		committedMessage := types.NewCommittedMessage(100, encoded)
 
 		realLeaf, err := realMessage.ToLeaf()
 		Nil(m.T(), err)
@@ -33,7 +33,6 @@ func (m *MessageSuite) TestStoresAndRetrievesMessages() {
 		Nil(m.T(), err)
 
 		Equal(m.T(), byNonce.Message(), encoded)
-		Equal(m.T(), byNonce.CommitedRoot(), committedMessage.CommitedRoot())
 		Equal(m.T(), byNonce.Leaf(), committedMessage.Leaf())
 		Equal(m.T(), byNonce.LeafIndex(), committedMessage.LeafIndex())
 
@@ -42,7 +41,6 @@ func (m *MessageSuite) TestStoresAndRetrievesMessages() {
 		Nil(m.T(), err)
 
 		Equal(m.T(), byNonce.Message(), byLeaf.Message())
-		Equal(m.T(), byNonce.CommitedRoot(), byLeaf.CommitedRoot())
 		Equal(m.T(), byNonce.Leaf(), byLeaf.Leaf())
 		Equal(m.T(), byNonce.LeafIndex(), byLeaf.LeafIndex())
 
@@ -110,4 +108,33 @@ func (m *MessageSuite) TestStoreAndRetrieveLatestRoot() {
 
 func (m *MessageSuite) TestStoreGetProducedUpdate() {
 	m.T().Skip("TODO:  teststore/retrieve produced update")
+}
+
+func (t *DBSuite) TestRetrieveLatestNonce() {
+	const domainID = 1
+
+	t.RunOnAllDBs(func(testDB db.SynapseDB) {
+		_, err := testDB.RetrieveLatestNonce(t.GetTestContext(), domainID)
+		ErrorIs(t.T(), err, db.ErrNoNonceForDomain)
+
+		nonce := 0
+		leafIndex := uint32(1)
+
+		for i := 0; i < 10; i++ {
+			realMessage := types.NewMessage(10, common.BigToHash(big.NewInt(gofakeit.Int64())), uint32(nonce), gofakeit.Uint32(), []byte(gofakeit.Sentence(10)), common.BigToHash(big.NewInt(gofakeit.Int64())))
+
+			encoded, err := types.EncodeMessage(realMessage)
+			Nil(t.T(), err)
+
+			err = testDB.StoreCommittedMessage(t.GetTestContext(), domainID, types.NewCommittedMessage(leafIndex, encoded))
+			Nil(t.T(), err)
+
+			newNonce, err := testDB.RetrieveLatestNonce(t.GetTestContext(), domainID)
+			Equal(t.T(), uint32(nonce), newNonce)
+
+			nonce += 1
+			leafIndex += 1
+		}
+
+	})
 }

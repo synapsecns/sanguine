@@ -23,12 +23,12 @@ type Message interface {
 	Recipient() common.Hash
 	// Body is the message contents
 	Body() []byte
-	// Encode encodes a message
-	Encode() ([]byte, error)
 	// ToLeaf converts a leaf to a keccac256
 	ToLeaf() (leaf [32]byte, err error)
 	// DestinationAndNonce gets the destination and nonce encoded into a single field
 	DestinationAndNonce() uint64
+	// OptimisticSeconds gets the optimistic seconds count
+	OptimisticSeconds() uint32
 }
 
 // messageImpl implements a message. It is used for testutils. Real messages are emitted by the contract.
@@ -108,6 +108,10 @@ func (m messageImpl) Recipient() common.Hash {
 	return m.recipient
 }
 
+func (m messageImpl) OptimisticSeconds() uint32 {
+	return m.optimisticSeconds
+}
+
 // DestinationAndNonce gets the destination and nonce encoded in a single field
 // TODO: statically assert 32 bit fields here.
 func (m messageImpl) DestinationAndNonce() uint64 {
@@ -124,42 +128,9 @@ func (m messageImpl) Body() []byte {
 	return m.body
 }
 
-// messageEncoder contains the binary structore of the message.
-type messageEncoder struct {
-	Origin            uint32
-	Sender            [32]byte
-	Nonce             uint32
-	Destination       uint32
-	Recipient         [32]byte
-	OptimisticSeconds uint32
-}
-
-// Encode encodes the message to a bytes
-// TODO: this should use a helper message once contract abis are ready.
-func (m messageImpl) Encode() ([]byte, error) {
-	newMessage := messageEncoder{
-		Origin:            m.origin,
-		Sender:            m.sender,
-		Nonce:             m.nonce,
-		Destination:       m.destination,
-		OptimisticSeconds: m.optimisticSeconds,
-	}
-
-	buf := new(bytes.Buffer)
-
-	err := binary.Write(buf, binary.BigEndian, newMessage)
-	if err != nil {
-		return nil, fmt.Errorf("could not write binary: %w", err)
-	}
-
-	buf.Write(m.body)
-
-	return buf.Bytes(), nil
-}
-
 // ToLeaf converts a message to an encoded leaf.
 func (m messageImpl) ToLeaf() (leaf [32]byte, err error) {
-	encodedMessage, err := m.Encode()
+	encodedMessage, err := EncodeMessage(m)
 	if err != nil {
 		return common.Hash{}, fmt.Errorf("could not encode message: %w", err)
 	}
@@ -173,8 +144,6 @@ func (m messageImpl) ToLeaf() (leaf [32]byte, err error) {
 type CommittedMessage interface {
 	// LeafIndex is the index at which the message is committed
 	LeafIndex() uint32
-	// CommitedRoot is the current root when the message was committed.
-	CommitedRoot() common.Hash
 	// Message is the fully detailed message that was committed
 	Message() []byte
 	// Leaf gets a leaf
@@ -184,11 +153,10 @@ type CommittedMessage interface {
 }
 
 // NewCommittedMessage creates a new committed message.
-func NewCommittedMessage(leafIndex uint32, committedRoot common.Hash, message []byte) CommittedMessage {
+func NewCommittedMessage(leafIndex uint32, message []byte) CommittedMessage {
 	return committedMessageImpl{
-		leafIndex:     leafIndex,
-		committedRoot: committedRoot,
-		message:       message,
+		leafIndex: leafIndex,
+		message:   message,
 	}
 }
 
@@ -226,6 +194,7 @@ func DecodeCommittedMessage(rawMessage []byte) (CommittedMessage, error) {
 }
 
 // Encode encodes a committed message.
+// Deprecated: will be removed
 func (c committedMessageImpl) Encode() ([]byte, error) {
 	newCommittedMessage := CommittedMessageEncoder{
 		LeafIndex:     c.leafIndex,
@@ -254,11 +223,6 @@ func (c committedMessageImpl) Leaf() (leaf [32]byte) {
 // LeafIndex gets the index of the leaf.
 func (c committedMessageImpl) LeafIndex() uint32 {
 	return c.leafIndex
-}
-
-// CommitedRoot gets the root.
-func (c committedMessageImpl) CommitedRoot() common.Hash {
-	return c.committedRoot
 }
 
 // Message gets the message.

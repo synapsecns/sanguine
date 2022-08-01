@@ -22,8 +22,11 @@ import (
 type UpdateProducer struct {
 	// domain allows access to the home contract
 	domain domains.DomainClient
-	// db contains the db object
-	db db.MessageDB
+	// legacyDB contains the legacyDB object
+	legacyDB db.MessageDB
+	// db is the synapse db
+	db db.SynapseDB
+
 	// signer is the signer
 	signer signer.Signer
 	// interval waits for an interval
@@ -31,10 +34,11 @@ type UpdateProducer struct {
 }
 
 // NewUpdateProducer creates an update producer.
-func NewUpdateProducer(domain domains.DomainClient, db db.MessageDB, signer signer.Signer, interval time.Duration) UpdateProducer {
+func NewUpdateProducer(domain domains.DomainClient, legacyDB db.MessageDB, db db.SynapseDB, signer signer.Signer, interval time.Duration) UpdateProducer {
 	return UpdateProducer{
 		domain:   domain,
 		db:       db,
+		legacyDB: legacyDB,
 		signer:   signer,
 		interval: interval,
 	}
@@ -42,7 +46,7 @@ func NewUpdateProducer(domain domains.DomainClient, db db.MessageDB, signer sign
 
 // FindLatestRoot finds the latest root.
 func (u UpdateProducer) FindLatestRoot() (common.Hash, error) {
-	latestRoot, err := u.db.RetrieveLatestRoot()
+	latestRoot, err := u.legacyDB.RetrieveLatestRoot()
 	if err != nil && errors.Is(err, pebble.ErrNotFound) {
 		return common.Hash{}, nil
 	} else if err != nil {
@@ -57,14 +61,14 @@ func (u UpdateProducer) FindLatestRoot() (common.Hash, error) {
 // This does not produce update meta or update the latest update messageDB value.
 // It is used by update production and submission.
 func (u UpdateProducer) StoreProducedUpdate(update types.SignedUpdate) error {
-	existingOpt, err := u.db.RetrieveProducedUpdate(update.Update().PreviousRoot())
+	existingOpt, err := u.legacyDB.RetrieveProducedUpdate(update.Update().PreviousRoot())
 	if err != nil && !errors.Is(err, pebble.ErrNotFound) {
 		return fmt.Errorf("could not retrieve produced update: %w", err)
 	}
 
 	if errors.Is(err, pebble.ErrNotFound) {
 		//nolint: wrapcheck
-		return u.db.StoreProducedUpdate(update.Update().PreviousRoot(), update)
+		return u.legacyDB.StoreProducedUpdate(update.Update().PreviousRoot(), update)
 	} else if existingOpt.Update().NewRoot() != update.Update().NewRoot() {
 		return fmt.Errorf("updater attempted to store conflicting update. Existing update: %s. New conflicting update: %S.\"", update.Update().NewRoot(), update.Update().NewRoot())
 	}
@@ -103,14 +107,14 @@ func (u UpdateProducer) update(ctx context.Context) error {
 		return fmt.Errorf("could not suggest update: %w", err)
 	}
 
-	if suggestedUpdate.PreviousRoot() != latestRoot {
+	if suggestedUpdate.Root() != latestRoot {
 		logger.Debugf("Local root not equal to chain root. Skipping update")
 		return nil
 	}
 
 	// Ensure we have not already signed a conflicting update.
 	// Ignore suggested if we have.
-	existing, err := u.db.RetrieveProducedUpdate(suggestedUpdate.PreviousRoot())
+	existing, err := u.legacyDB.RetrieveProducedUpdate(suggestedUpdate.PreviousRoot())
 	if err != nil && !errors.Is(err, pebble.ErrNotFound) {
 		return fmt.Errorf("could not get update: %w", err)
 		// existing was found
@@ -165,7 +169,7 @@ func HashUpdate(update types.Update) ([32]byte, error) {
 
 	hashedDigest := crypto.Keccak256Hash(buf.Bytes())
 
-	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
+	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed CMMessage:\n32"), hashedDigest.Bytes())
 	return signedHash, nil
 }
 
@@ -178,6 +182,6 @@ func HashAttestation(attestation types.Attestation) ([32]byte, error) {
 
 	hashedDigest := crypto.Keccak256Hash(encodedAttestation)
 
-	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
+	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed CMMessage:\n32"), hashedDigest.Bytes())
 	return signedHash, nil
 }

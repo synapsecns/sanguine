@@ -19,6 +19,24 @@ type TxQueueDB interface {
 	GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error)
 }
 
+type NewMessageDB interface {
+	// RetrieveLatestNonce gets the latest nonce of a committed message
+	// returns ErrNoNonceForDomain if no nonce exists
+	RetrieveLatestNonce(ctx context.Context, domainID uint32) (nonce uint32, err error)
+	// StoreMessageLatestBlockEnd stores the latest block end
+	StoreMessageLatestBlockEnd(ctx context.Context, domainID uint32, blockNumber uint32) error
+	// GetMessageLatestBlockEnd gets the message latest block
+	// returns ErrNoStoredBlockForChain when not precent
+	GetMessageLatestBlockEnd(ctx context.Context, domainID uint32) (height uint32, err error)
+	// StoreCommittedMessage stores a raw committed message building off the leaf index
+	StoreCommittedMessage(ctx context.Context, domainID uint32, message types.CommittedMessage) error
+}
+
+type SynapseDB interface {
+	NewMessageDB
+	TxQueueDB
+}
+
 // MessageDB contains the synapse db.
 type MessageDB interface {
 	// StoreCommittedMessage stores a committed message.
@@ -51,9 +69,4 @@ type MessageDB interface {
 	RetrieveLatestRoot() (common.Hash, error)
 	// StoreLatestRoot stores the latest root
 	StoreLatestRoot(latestRoot common.Hash) error
-
-	// RetrieveProducedUpdate retrieves a produced update for a root
-	RetrieveProducedUpdate(root common.Hash) (types.SignedUpdate, error)
-	// StoreProducedUpdate stores a produced update
-	StoreProducedUpdate(previousRoot common.Hash, update types.SignedUpdate) error
 }
