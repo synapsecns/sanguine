@@ -208,6 +208,19 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         assertEq(uint256(home.state()), 1);
     }
 
+    // Check that all roots are correctly queried (including nonce of 0)
+    function test_getHistoricalRoot() public {
+        bytes32 root = home.getHistoricalRoot(0);
+        assertEq(root, bytes32(""));
+        test_dispatch();
+        test_dispatch();
+        test_dispatch();
+        root = home.getHistoricalRoot(1);
+        assertEq(root, home.historicalRoots(1));
+        root = home.getHistoricalRoot(2);
+        assertEq(root, home.historicalRoots(2));
+    }
+
     function test_onlySystemMessenger() public {
         vm.prank(address(systemMessenger));
         home.setSensitiveValue(1337);

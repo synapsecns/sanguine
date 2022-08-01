@@ -233,6 +233,20 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     }
 
     /**
+     * @notice Gets the historical root based off of the nonce.
+     * @dev If no messages have been sent, null bytes returned for the root
+     * @param _nonce Nonce of historical root to get
+     * @return _root Historical root
+     */
+    function getHistoricalRoot(uint32 _nonce) external view returns (bytes32 _root) {
+        uint256 length = historicalRoots.length;
+        if (length != 0) {
+            require(_nonce < length, "there is no root of the given nonce");
+            _root = historicalRoots[_nonce];
+        }
+    }
+
+    /**
      * @notice Hash of Home domain concatenated with "SYN"
      */
     function homeDomainHash() external view returns (bytes32) {

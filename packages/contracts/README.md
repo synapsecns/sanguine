@@ -4,7 +4,9 @@
 
 # Setup
 
-TODO
+Foundry is used to test the contracts. To run the tests, make sure Foundry is installed, by running `curl https://sh.rustup.rs -sSf | sh`, then `. ~/.<zshrc/bashrc>`. More information about installation is here: https://book.getfoundry.sh/getting-started/installation
+
+After, ensure all node packages are installed by running `yarn` or `npm i` in `packages/contracts`. Running `git submodule update --init --recursive` will populate the `forge-std`. From here, running `forge test` will execute the tests in `packages/contracts/test`, with each file `<ContractName>.t.sol` representing a test for the file `<ContractName>.sol`.
 
 ## Gotchas:
 
