@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/config"
-	"github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/core/db/datastore/sql"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/indexer"
@@ -54,14 +53,9 @@ func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
 			return Updater{}, fmt.Errorf("could not create updater for: %w", err)
 		}
 
-		legacyDBHandle, err := pebble.NewMessageDB(cfg.Database.DBPath, name)
-		if err != nil {
-			return Updater{}, fmt.Errorf("can not create messageDB: %w", err)
-		}
-
 		updater.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient, RefreshInterval)
 		updater.producers[name] = NewAttestationProducer(domainClient, dbHandle, updater.signer, RefreshInterval)
-		updater.submitters[name] = NewAttestationSubmitter(domainClient, legacyDBHandle, dbHandle, updater.signer, RefreshInterval)
+		updater.submitters[name] = NewAttestationSubmitter(domainClient, dbHandle, updater.signer, RefreshInterval)
 	}
 
 	return updater, nil
