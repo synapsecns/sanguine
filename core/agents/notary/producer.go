@@ -115,6 +115,6 @@ func HashAttestation(attestation types.Attestation) ([32]byte, error) {
 
 	hashedDigest := crypto.Keccak256Hash(encodedAttestation)
 
-	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed CMMessage:\n32"), hashedDigest.Bytes())
+	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
 	return signedHash, nil
 }

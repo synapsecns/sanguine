@@ -55,7 +55,7 @@ func (a attestationCollectorContract) SubmitAttestation(ctx context.Context, sig
 		return fmt.Errorf("could not get signed attestations: %w", err)
 	}
 
-	_, err = a.contract.SubmitAttestation(transactOpts, transactOpts.From, encodedAttestation)
+	_, err = a.contract.SubmitAttestation(transactOpts, signer.Address(), encodedAttestation)
 	if err != nil {
 		return fmt.Errorf("could not submit attestation: %w", err)
 	}
