@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
@@ -165,5 +166,24 @@ func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (backends.Depl
 		return attestationAddress, attestationTx, collector, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return attestationcollector.NewAttestationCollectorRef(address, backend)
+	})
+}
+
+// ReplicaManagerDeployer deploys the replica manager.
+type ReplicaManagerDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewReplicaManagerDeployer creates the deployer for the replica manager.
+func NewReplicaManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return ReplicaManagerDeployer{deployer.NewSimpleDeployer(registry, backend, ReplicaManagerType)}
+}
+
+// Deploy deploys the replica manager.
+func (r ReplicaManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return r.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return replicamanager.DeployReplicaManager(transactOps, backend, uint32(r.Backend().GetChainID()))
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return replicamanager.NewReplicaManagerRef(address, backend)
 	})
 }

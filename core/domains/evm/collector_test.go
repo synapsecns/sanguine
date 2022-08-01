@@ -12,7 +12,7 @@ import (
 )
 
 func (i ContractSuite) TestSubmitAttestation() {
-	attestionCollector, err := evm.NewAttestationCollectorContract(i.GetTestContext(), i.attestationBackend, i.attestationContract.Address())
+	attestationCollector, err := evm.NewAttestationCollectorContract(i.GetTestContext(), i.attestationBackend, i.attestationContract.Address())
 	Nil(i.T(), err)
 
 	localDomain := uint32(attestationDomain)
@@ -28,10 +28,10 @@ func (i ContractSuite) TestSubmitAttestation() {
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, signature)
 
-	err = attestionCollector.SubmitAttestation(i.GetTestContext(), i.signer, signedAttestation)
+	err = attestationCollector.SubmitAttestation(i.GetTestContext(), i.signer, signedAttestation)
 	Nil(i.T(), err)
 
-	latestNonce, err := attestionCollector.LatestNonce(i.GetTestContext(), localDomain)
+	latestNonce, err := attestationCollector.LatestNonce(i.GetTestContext(), localDomain)
 	Nil(i.T(), err)
 	Equal(i.T(), nonce, latestNonce)
 }

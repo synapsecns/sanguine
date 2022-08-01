@@ -87,7 +87,7 @@ func TestEncodeAttestationParity(t *testing.T) {
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
-	_, attesationContract := deployManager.GetAttestionHarness(ctx, testBackend)
+	_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
 
 	contractData, err := attesationContract.FormatAttestationData(&bind.CallOpts{Context: ctx}, domain, nonce, root)
 	Nil(t, err)
@@ -104,7 +104,7 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	testBackend := simulated.NewSimulatedBackend(ctx, t)
 	deployManager := testutil.NewDeployManager(t)
 
-	_, attesationContract := deployManager.GetAttestionHarness(ctx, testBackend)
+	_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
 
 	domain := gofakeit.Uint32()
 	nonce := gofakeit.Uint32()

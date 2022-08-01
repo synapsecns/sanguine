@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/synapse-node/testutils/backends"
@@ -54,18 +55,18 @@ func (h HomeHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContr
 	})
 }
 
-// AttestionHarnessDeployer deploys the attestation harness.
-type AttestionHarnessDeployer struct {
+// AttestationHarnessDeployer deploys the attestation harness.
+type AttestationHarnessDeployer struct {
 	*deployer.BaseDeployer
 }
 
 // NewAttestationHarnessDeployer creates a new deployer for the attestation harness.
 func NewAttestationHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return AttestionHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, AttestationHarnessType)}
+	return AttestationHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, AttestationHarnessType)}
 }
 
 // Deploy deploys the attestation harness.
-func (a AttestionHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (a AttestationHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return attestationharness.DeployAttestationHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -89,5 +90,24 @@ func (a TipsHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContr
 		return tipsharness.DeployTipsHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return tipsharness.NewTipsHarnessRef(address, backend)
+	})
+}
+
+// ReplicaManagerHarnessDeployer deploys the replica manager harness.
+type ReplicaManagerHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewReplicaManagerHarnessDeployer creates a new deployer for the replica manager harness.
+func NewReplicaManagerHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return ReplicaManagerHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, ReplicaManagerHarnessType)}
+}
+
+// Deploy deploys the replica manager harness.
+func (r ReplicaManagerHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return r.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return replicamanagerharness.DeployReplicaManagerHarness(transactOps, backend, uint32(r.Backend().GetChainID()))
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return replicamanagerharness.NewReplicaManagerHarnessRef(address, backend)
 	})
 }

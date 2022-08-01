@@ -4,9 +4,11 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
@@ -53,10 +55,14 @@ const (
 	AttestationHarnessType contractTypeImpl = iota
 	// TipsHarnessType is the type of the tips harness.
 	TipsHarnessType contractTypeImpl = iota
+	// ReplicaManagerHarnessType is the replica manager harness type.
+	ReplicaManagerHarnessType contractTypeImpl = iota
 	// UpdaterManagerType is the type of the update manager.
 	UpdaterManagerType contractTypeImpl = iota // UpdaterManager
 	// AttestationCollectorType is the type of the attestation collector.
 	AttestationCollectorType contractTypeImpl = iota // AttestationCollector
+	// ReplicaManagerType is the type of the replica manager.
+	ReplicaManagerType contractTypeImpl = iota // ReplicaManager
 )
 
 // ID gets the contract type as an id.
@@ -75,6 +81,7 @@ func (c contractTypeImpl) Name() string {
 
 // ContractInfo gets the source code of every contract. See TODO above.
 // TODO these should use contract name and maybe come out of the generator.
+//nolint: cyclop
 func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case HomeType:
@@ -87,12 +94,16 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return homeharness.Contracts["solidity/HomeHarness.sol:HomeHarness"]
 	case AttestationHarnessType:
 		return attestationharness.Contracts["solidity/AttestationHarness.sol:AttestationHarness"]
+	case ReplicaManagerHarnessType:
+		return replicamanagerharness.Contracts["solidity/ReplicaManagerHarness.sol:ReplicaManagerHarness"]
 	case UpdaterManagerType:
 		return updatermanager.Contracts["solidity/UpdaterManager.sol:UpdaterManager"]
 	case TipsHarnessType:
 		return tipsharness.Contracts["solidity/TipsHarness.sol:TipsHarness"]
 	case AttestationCollectorType:
 		return attestationcollector.Contracts["solidity/AttestationCollector.sol:AttestationCollector"]
+	case ReplicaManagerType:
+		return replicamanager.Contracts["solidity/ReplicaManager.sol:ReplicaManager"]
 	default:
 		panic("not yet implemented")
 	}
