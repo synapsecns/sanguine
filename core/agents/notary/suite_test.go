@@ -25,8 +25,8 @@ import (
 	"time"
 )
 
-// UpdaterSuite tests the updater agent.
-type UpdaterSuite struct {
+// NotarySuite tests the updater agent.
+type NotarySuite struct {
 	*testutils.TestSuite
 	testBackend         backends.TestBackend
 	deployManager       *testutil.DeployManager
@@ -39,16 +39,16 @@ type UpdaterSuite struct {
 	signer signer.Signer
 }
 
-// NewUpdaterSuite creates a new updater suite.
-func NewUpdaterSuite(tb testing.TB) *UpdaterSuite {
+// NewNotarySuite creates a new updater suite.
+func NewNotarySuite(tb testing.TB) *NotarySuite {
 	tb.Helper()
 
-	return &UpdaterSuite{
+	return &NotarySuite{
 		TestSuite: testutils.NewTestSuite(tb),
 	}
 }
 
-func (u *UpdaterSuite) SetupTest() {
+func (u *NotarySuite) SetupTest() {
 	chainwatcher.PollInterval = time.Second
 
 	u.TestSuite.SetupTest()
@@ -61,7 +61,7 @@ func (u *UpdaterSuite) SetupTest() {
 
 	var err error
 	u.domainClient, err = evm.NewEVM(u.GetTestContext(), "updater", config.DomainConfig{
-		DomainID:                   1,
+		DomainID:                   uint32(u.testBackend.Config().ChainID),
 		Type:                       types.EVM.String(),
 		XAppConfigAddress:          u.xappConfig.Address().String(),
 		AttesationCollectorAddress: u.attestationContract.Address().String(),
@@ -89,6 +89,6 @@ func (u *UpdaterSuite) SetupTest() {
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
 }
 
-func TestUpdaterSuite(t *testing.T) {
-	suite.Run(t, NewUpdaterSuite(t))
+func TestNotarySuite(t *testing.T) {
+	suite.Run(t, NewNotarySuite(t))
 }

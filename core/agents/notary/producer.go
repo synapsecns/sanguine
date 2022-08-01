@@ -38,13 +38,13 @@ func NewAttestationProducer(domain domains.DomainClient, db db.SynapseDB, signer
 }
 
 // Start starts the update producer.
-func (u AttestationProducer) Start(ctx context.Context) error {
+func (a AttestationProducer) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(u.interval): // TODO: u.interval
-			err := u.update(ctx)
+		case <-time.After(a.interval): // TODO: a.interval
+			err := a.update(ctx)
 			if err != nil {
 				return err
 			}
@@ -52,15 +52,27 @@ func (u AttestationProducer) Start(ctx context.Context) error {
 	}
 }
 
+// FindLatestNonce fetches the latest nonce for a given chain.
+func (a AttestationProducer) FindLatestNonce(ctx context.Context) (nonce uint32, err error) {
+	latestNonce, err := a.db.RetrieveLatestCommittedMessageNonce(ctx, a.domain.Config().DomainID)
+	if err != nil {
+		if errors.Is(err, db.ErrNoNonceForDomain) {
+			return 0, nil
+		}
+		return 0, fmt.Errorf("could not find latest root: %w", err)
+	}
+	return latestNonce, nil
+}
+
 // update runs the update producer to produce an update.
 //nolint: cyclop
-func (u AttestationProducer) update(ctx context.Context) error {
-	latestNonce, err := u.db.RetrieveLatestCommittedMessageNonce(ctx, u.domain.Config().DomainID)
+func (a AttestationProducer) update(ctx context.Context) error {
+	latestNonce, err := a.FindLatestNonce(ctx)
 	if err != nil {
 		return fmt.Errorf("could not find latest root: %w", err)
 	}
 
-	suggestedAttestation, err := u.domain.Home().ProduceAttestation(ctx)
+	suggestedAttestation, err := a.domain.Home().ProduceAttestation(ctx)
 	if errors.Is(err, domains.ErrNoUpdate) {
 		// no update produced this time
 		return nil
@@ -77,7 +89,7 @@ func (u AttestationProducer) update(ctx context.Context) error {
 
 	// Ensure we have not already signed a conflicting update.
 	// Ignore suggested if we have.
-	existing, err := u.db.RetrieveSignedAttestationByNonce(ctx, u.domain.Config().DomainID, suggestedAttestation.Nonce())
+	existing, err := a.db.RetrieveSignedAttestationByNonce(ctx, a.domain.Config().DomainID, suggestedAttestation.Nonce())
 	if err != nil && !errors.Is(err, db.ErrNotFound) {
 		return fmt.Errorf("could not get update: %w", err)
 		// existing was found
@@ -93,13 +105,13 @@ func (u AttestationProducer) update(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not hash update: %w", err)
 	}
-	signature, err := u.signer.SignMessage(ctx, bridge.KappaToSlice(hashedUpdate), false)
+	signature, err := a.signer.SignMessage(ctx, bridge.KappaToSlice(hashedUpdate), false)
 	if err != nil {
 		return fmt.Errorf("could not sign message: %w", err)
 	}
 
 	signedAttestation := types.NewSignedAttestation(suggestedAttestation, signature)
-	err = u.db.StoreSignedAttestations(ctx, signedAttestation)
+	err = a.db.StoreSignedAttestations(ctx, signedAttestation)
 	if err != nil {
 		return fmt.Errorf("could not store signed attestations: %w", err)
 	}

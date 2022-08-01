@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func (u UpdaterSuite) TestUpdateProducer() {
+func (u NotarySuite) TestUpdateProducer() {
 	testDB, err := sqlite.NewSqliteStore(u.GetTestContext(), filet.TmpDir(u.T(), ""))
 	Nil(u.T(), err)
 
@@ -28,9 +28,7 @@ func (u UpdaterSuite) TestUpdateProducer() {
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(u.T(), err)
 
-	domain := gofakeit.Uint32()
-
-	tx, err := u.homeContract.Dispatch(auth.TransactOpts, domain, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
+	tx, err := u.homeContract.Dispatch(auth.TransactOpts, u.domainClient.Config().DomainID, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
 	Nil(u.T(), err)
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
 
@@ -41,7 +39,7 @@ func (u UpdaterSuite) TestUpdateProducer() {
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	producedAttestation, err := testDB.RetrieveSignedAttestationByNonce(u.GetTestContext(), domain, 1)
+	producedAttestation, err := testDB.RetrieveSignedAttestationByNonce(u.GetTestContext(), u.domainClient.Config().DomainID, 0)
 	Nil(u.T(), err)
-	Equal(u.T(), producedAttestation.Attestation().Nonce(), 1)
+	Equal(u.T(), producedAttestation.Attestation().Nonce(), uint32(0))
 }

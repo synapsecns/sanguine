@@ -12,7 +12,7 @@ import (
 	"math/big"
 )
 
-func (u UpdaterSuite) TestUpdaterE2E() {
+func (u NotarySuite) TestNotaryE2E() {
 	u.T().Skip("todo")
 
 	testConfig := config.Config{
