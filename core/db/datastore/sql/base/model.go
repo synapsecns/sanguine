@@ -25,7 +25,7 @@ var (
 	DomainIDFieldName string
 	// BlockNumberFieldName is the name of the block number field.
 	BlockNumberFieldName string
-	// LeafIndexFieldName is the field name of the leaf index
+	// LeafIndexFieldName is the field name of the leaf index.
 	LeafIndexFieldName string
 )
 
@@ -79,7 +79,7 @@ type BlockEndModel struct {
 }
 
 // CommittedMessage is a committed message
-// it allows for querying on both the committed message and the underlying fields
+// it allows for querying on both the committed message and the underlying fields.
 type CommittedMessage struct {
 	gorm.Model
 	// CMDomainID is the id of the domain we're renaming
@@ -106,61 +106,70 @@ type CommittedMessage struct {
 	CMOptimisticSeconds uint32 `gorm:"column:optimistic_seconds"`
 }
 
+// Origin returns the Slip-44 ID.
 func (c CommittedMessage) Origin() uint32 {
 	return c.CMOrigin
 }
 
+// Sender is the address of the sender.
 func (c CommittedMessage) Sender() common.Hash {
 	return common.BytesToHash(c.CMSender)
 }
 
+// Nonce is the count of all previous messages to the destination.
 func (c CommittedMessage) Nonce() uint32 {
 	return c.CMNonce
 }
 
+// Destination is the slip-44 id of the destination.
 func (c CommittedMessage) Destination() uint32 {
 	return c.CMDestination
 }
 
+// Recipient is the address of the recipient.
 func (c CommittedMessage) Recipient() common.Hash {
 	return common.BytesToHash(c.CMRecipient)
 }
 
+// Body is the message contents.
 func (c CommittedMessage) Body() []byte {
 	return c.CMBody
 }
 
+// ToLeaf converts a leaf to a keccac256.
 func (c CommittedMessage) ToLeaf() (leaf [32]byte, err error) {
 	return common.BytesToHash(c.CMLeaf), nil
 }
 
+// DestinationAndNonce gets the destination and nonce encoded into a single field.
 func (c CommittedMessage) DestinationAndNonce() uint64 {
 	return types.CombineDestinationAndNonce(c.Destination(), c.Nonce())
 }
 
+// OptimisticSeconds gets the optimistic seconds count.
 func (c CommittedMessage) OptimisticSeconds() uint32 {
 	return c.CMOptimisticSeconds
 }
 
-// LeafIndex gets the leaf index of the committed message
+// LeafIndex gets the leaf index of the committed message.
 func (c CommittedMessage) LeafIndex() uint32 {
 	return c.CMLeafIndex
 }
 
-// Message gets the message
+// Message gets the message.
 func (c CommittedMessage) Message() []byte {
 	return c.CMMessage
 }
 
-// Leaf gets the leaf
+// Leaf gets the leaf.
 func (c CommittedMessage) Leaf() [32]byte {
 	return common.BytesToHash(c.CMLeaf)
 }
 
 // Encode encodes the message
-// Deprecated: will be removed
+// Deprecated: will be removed.
 func (c CommittedMessage) Encode() ([]byte, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -168,7 +177,7 @@ var _ types.CommittedMessage = CommittedMessage{}
 
 var _ types.Message = CommittedMessage{}
 
-// SignedAttestation stores attestations
+// SignedAttestation stores attestations.
 type SignedAttestation struct {
 	gorm.Model
 	// SADomain is the domain of the attestation
@@ -181,6 +190,7 @@ type SignedAttestation struct {
 	SASignature []byte `gorm:"column:signature"`
 }
 
+// Attestation gets the attestation.
 func (s SignedAttestation) Attestation() types.Attestation {
 	return s
 }
@@ -196,14 +206,17 @@ func (s SignedAttestation) Signature() types.Signature {
 	return res
 }
 
+// Domain gets the domain of the signed attestation.
 func (s SignedAttestation) Domain() uint32 {
 	return s.SADomain
 }
 
+// Nonce gets the nonce of the signed attestation.
 func (s SignedAttestation) Nonce() uint32 {
 	return s.SANonce
 }
 
+// Root gets the root of the signed attestation.
 func (s SignedAttestation) Root() [32]byte {
 	return common.BytesToHash(s.SARoot)
 }

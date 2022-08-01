@@ -1,10 +1,9 @@
-package updater
+package notary
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/cockroachdb/pebble"
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -33,9 +32,9 @@ func NewAttestationSubmitter(domain domains.DomainClient, db db.SynapseDB, signe
 	}
 }
 
-// Start runs the update submitter
+// Start runs the update submitter.
 func (u AttestationSubmitter) Start(ctx context.Context) error {
-	committedRoot, err := u.domain.Home().CommittedRoot(ctx)
+	committedNonce, err := u.domain.AttestationCollector().LatestNonce(ctx, u.domain.Config().DomainID)
 	if err != nil {
 		return fmt.Errorf("could not get committed root: %w", err)
 	}
@@ -45,20 +44,20 @@ func (u AttestationSubmitter) Start(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case <-time.After(u.interval):
-			signed, err := u.messageDB.RetrieveProducedUpdate(committedRoot)
-			if errors.Is(err, pebble.ErrNotFound) {
-				logger.Infof("No produced update to submit for committed_root: %s", committedRoot)
+			nonce, err := u.db.RetrieveSignedAttestationByNonce(ctx, u.domain.Config().DomainID, committedNonce+1)
+			if errors.Is(err, db.ErrNotFound) {
+				logger.Infof("No produced attestation to submit for nonce: %d", nonce)
 				continue
 			} else if err != nil {
 				return fmt.Errorf("could not retrieve produced update: %w", err)
 			}
 
-			err = u.domain.Home().Update(ctx, u.signer, signed)
+			err = u.domain.AttestationCollector().SubmitAttestation(ctx, u.signer, nonce)
 			if err != nil {
 				return fmt.Errorf("could not produce update: %w", err)
 			}
 
-			committedRoot = signed.Update().NewRoot()
+			committedNonce++
 		}
 	}
 }

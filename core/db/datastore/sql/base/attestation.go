@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// StoreSignedAttestations stores signed attestations
+// StoreSignedAttestations stores signed attestations.
 func (s Store) StoreSignedAttestations(ctx context.Context, attestation types.SignedAttestation) error {
 	sig, err := types.EncodeSignature(attestation.Signature())
 	if err != nil {
@@ -34,6 +34,7 @@ func (s Store) StoreSignedAttestations(ctx context.Context, attestation types.Si
 	return nil
 }
 
+// RetrieveSignedAttestationByNonce retrieves a signed attesation by nonce.
 func (s Store) RetrieveSignedAttestationByNonce(ctx context.Context, domainID, nonce uint32) (attestation types.SignedAttestation, err error) {
 	var signedAttesation SignedAttestation
 	tx := s.DB().WithContext(ctx).Model(&SignedAttestation{}).Where(&SignedAttestation{

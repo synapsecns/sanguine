@@ -69,14 +69,14 @@ contract AttestationCollectorTest is SynapseTest {
         emit AttestationSubmitted(updater, attestation);
         collector.submitAttestation(updater, attestation);
 
-        assertEq(collector.latestNonce(), nonce);
+        assertEq(collector.latestNonce(localDomain), nonce);
 
         // submit a lower nonce to see if it messes up
         (bytes memory newAttestation, ) = signHomeAttestation(updaterPK, 419, root);
         vm.expectEmit(true, true, true, true);
         emit AttestationSubmitted(updater, newAttestation);
         collector.submitAttestation(updater, newAttestation);
-        assertEq(collector.latestNonce(), nonce);
+        assertEq(collector.latestNonce(localDomain), nonce);
     }
 
     function test_submitAttestation_invalidSignature() public {

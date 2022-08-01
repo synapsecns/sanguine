@@ -1,4 +1,4 @@
-package updater_test
+package notary_test
 
 import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -6,6 +6,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/core/domains"
@@ -27,11 +28,12 @@ import (
 // UpdaterSuite tests the updater agent.
 type UpdaterSuite struct {
 	*testutils.TestSuite
-	testBackend   backends.TestBackend
-	deployManager *testutil.DeployManager
-	xappConfig    *xappconfig.XAppConfigRef
-	homeContract  *home.HomeRef
-	domainClient  domains.DomainClient
+	testBackend         backends.TestBackend
+	deployManager       *testutil.DeployManager
+	xappConfig          *xappconfig.XAppConfigRef
+	homeContract        *home.HomeRef
+	attestationContract *attestationcollector.AttestationCollectorRef
+	domainClient        domains.DomainClient
 	// wallet is the wallet used for the signer
 	wallet wallet.Wallet
 	signer signer.Signer
@@ -55,13 +57,15 @@ func (u *UpdaterSuite) SetupTest() {
 	u.deployManager = testutil.NewDeployManager(u.T())
 	_, u.xappConfig = u.deployManager.GetXAppConfig(u.GetTestContext(), u.testBackend)
 	_, u.homeContract = u.deployManager.GetHome(u.GetTestContext(), u.testBackend)
+	_, u.attestationContract = u.deployManager.GetAttestationCollector(u.GetTestContext(), u.testBackend)
 
 	var err error
 	u.domainClient, err = evm.NewEVM(u.GetTestContext(), "updater", config.DomainConfig{
-		DomainID:          1,
-		Type:              types.EVM.String(),
-		XAppConfigAddress: u.xappConfig.Address().String(),
-		RPCUrl:            u.testBackend.RPCAddress(),
+		DomainID:                   1,
+		Type:                       types.EVM.String(),
+		XAppConfigAddress:          u.xappConfig.Address().String(),
+		AttesationCollectorAddress: u.attestationContract.Address().String(),
+		RPCUrl:                     u.testBackend.RPCAddress(),
 	})
 	Nil(u.T(), err)
 

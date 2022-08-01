@@ -119,6 +119,7 @@ const (
 )
 
 // EncodeTips encodes a list of tips.
+//nolint: makezero
 func EncodeTips(tips Tips) ([]byte, error) {
 	b := make([]byte, offsetUpdater)
 	binary.BigEndian.PutUint16(b, tipsVersion)
@@ -151,7 +152,7 @@ type messageEncoder struct {
 	OptimisticSeconds uint32
 }
 
-// EncodeMessage encodes a message
+// EncodeMessage encodes a message.
 func EncodeMessage(m Message) ([]byte, error) {
 	newMessage := messageEncoder{
 		Origin:            m.Origin(),

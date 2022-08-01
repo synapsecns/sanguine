@@ -11,7 +11,7 @@ import (
 )
 
 // StoreCommittedMessage stores a raw committed message building off the leaf index
-// this method is idempotent
+// this method is idempotent.
 func (s Store) StoreCommittedMessage(ctx context.Context, domainID uint32, message types.CommittedMessage) error {
 	decodedMessage, err := types.DecodeMessage(message.Message())
 	if err != nil {
@@ -64,7 +64,8 @@ func (s Store) StoreCommittedMessage(ctx context.Context, domainID uint32, messa
 	return nil
 }
 
-func (s Store) RetrieveLatestNonce(ctx context.Context, domainID uint32) (_ uint32, err error) {
+// RetrieveLatestCommittedMessageNonce gets the latest commitedd message by nonce.
+func (s Store) RetrieveLatestCommittedMessageNonce(ctx context.Context, domainID uint32) (_ uint32, err error) {
 	var nonce nullable.Uint32
 
 	selectMaxNonce := fmt.Sprintf("max(`%s`)", NonceFieldName)

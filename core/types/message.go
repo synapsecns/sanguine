@@ -194,7 +194,7 @@ func DecodeCommittedMessage(rawMessage []byte) (CommittedMessage, error) {
 }
 
 // Encode encodes a committed message.
-// Deprecated: will be removed
+// Deprecated: will be removed.
 func (c committedMessageImpl) Encode() ([]byte, error) {
 	newCommittedMessage := CommittedMessageEncoder{
 		LeafIndex:     c.leafIndex,

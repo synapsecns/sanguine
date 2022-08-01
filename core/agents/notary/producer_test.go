@@ -1,10 +1,10 @@
-package updater_test
+package notary_test
 
 import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/core/agents/updater"
+	"github.com/synapsecns/sanguine/core/agents/notary"
 	"github.com/synapsecns/sanguine/core/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
@@ -35,7 +35,7 @@ func (u UpdaterSuite) TestUpdateProducer() {
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
 
 	// call the update producing function
-	attestationProducer := updater.NewAttestationProducer(u.domainClient, testDB, signer, 1*time.Second)
+	attestationProducer := notary.NewAttestationProducer(u.domainClient, testDB, signer, 1*time.Second)
 
 	err = attestationProducer.Update(u.GetTestContext())
 	Nil(u.T(), err)

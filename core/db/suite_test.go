@@ -7,7 +7,6 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/db"
-	pebbleStore "github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/core/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/core/db/datastore/sql/sqlite"
 	"github.com/synapsecns/synapse-node/pkg/common"
@@ -18,48 +17,6 @@ import (
 	"testing"
 	"time"
 )
-
-// MessageSuite is the db test suite.
-type MessageSuite struct {
-	*testutils.TestSuite
-	dbs []db.MessageDB
-}
-
-// NewDBSuite creates a db test suite.
-func NewMessageSuite(tb testing.TB) *MessageSuite {
-	tb.Helper()
-	return &MessageSuite{TestSuite: testutils.NewTestSuite(tb)}
-}
-
-func (m *MessageSuite) SetupTest() {
-	m.TestSuite.SetupTest()
-
-	newDB, err := pebbleStore.NewMessageDB(filet.TmpDir(m.T(), ""), "home1")
-	Nil(m.T(), err)
-
-	m.dbs = []db.MessageDB{newDB}
-}
-
-// TODO: we can remove duplication here once we introduce generics.
-func (m *MessageSuite) RunOnAllDBs(testFunc func(testDB db.MessageDB)) {
-	m.T().Helper()
-
-	wg := sync.WaitGroup{}
-	for _, testDB := range m.dbs {
-		wg.Add(1)
-		// capture the value
-		go func(testDB db.MessageDB) {
-			defer wg.Done()
-			testFunc(testDB)
-		}(testDB)
-	}
-	wg.Wait()
-}
-
-// TestDBSuite tests the db suite.
-func TestMessageSuite(t *testing.T) {
-	suite.Run(t, NewMessageSuite(t))
-}
 
 type DBSuite struct {
 	*testutils.TestSuite

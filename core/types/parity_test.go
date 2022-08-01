@@ -63,6 +63,8 @@ func TestEncodeTipsParity(t *testing.T) {
 // randomUint96BigInt is a helper method for generating random uint96 values
 // see:  https://stackoverflow.com/a/45428754
 func randomUint96BigInt(tb testing.TB) *big.Int {
+	tb.Helper()
+
 	// Max random value, a 130-bits integer, i.e 2^96 - 1
 	max := new(big.Int)
 	max.Exp(big.NewInt(2), big.NewInt(96), nil).Sub(max, big.NewInt(1))

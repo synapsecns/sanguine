@@ -1,4 +1,4 @@
-package updater
+package notary
 
 import (
 	"context"
@@ -13,9 +13,9 @@ import (
 	"time"
 )
 
-// UpdateProducer updates a producer.
+// AttestationProducer updates a producer.
 // TODO: this needs to become an interface.
-type UpdateProducer struct {
+type AttestationProducer struct {
 	// domain allows access to the home contract
 	domain domains.DomainClient
 	// db is the synapse db
@@ -27,9 +27,9 @@ type UpdateProducer struct {
 	interval time.Duration
 }
 
-// NewAttestationProducer creates an update producer.
-func NewAttestationProducer(domain domains.DomainClient, db db.SynapseDB, signer signer.Signer, interval time.Duration) UpdateProducer {
-	return UpdateProducer{
+// NewAttestationProducer creates an attestation producer.
+func NewAttestationProducer(domain domains.DomainClient, db db.SynapseDB, signer signer.Signer, interval time.Duration) AttestationProducer {
+	return AttestationProducer{
 		domain:   domain,
 		db:       db,
 		signer:   signer,
@@ -38,7 +38,7 @@ func NewAttestationProducer(domain domains.DomainClient, db db.SynapseDB, signer
 }
 
 // Start starts the update producer.
-func (u UpdateProducer) Start(ctx context.Context) error {
+func (u AttestationProducer) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -54,8 +54,8 @@ func (u UpdateProducer) Start(ctx context.Context) error {
 
 // update runs the update producer to produce an update.
 //nolint: cyclop
-func (u UpdateProducer) update(ctx context.Context) error {
-	latestNonce, err := u.db.RetrieveLatestNonce(ctx, u.domain.Config().DomainID)
+func (u AttestationProducer) update(ctx context.Context) error {
+	latestNonce, err := u.db.RetrieveLatestCommittedMessageNonce(ctx, u.domain.Config().DomainID)
 	if err != nil {
 		return fmt.Errorf("could not find latest root: %w", err)
 	}
@@ -83,7 +83,7 @@ func (u UpdateProducer) update(ctx context.Context) error {
 		// existing was found
 	} else if err == nil {
 		if existing.Attestation().Root() != suggestedAttestation.Root() {
-			logger.Infof("Updater ignoring conflicting suggested update. Indicates chain awaiting already produced update. Existing update: %s. Suggested conflicting update: %s", existing.Attestation().Root(), suggestedAttestation.Root())
+			logger.Infof("Notary ignoring conflicting suggested update. Indicates chain awaiting already produced update. Existing update: %s. Suggested conflicting update: %s", existing.Attestation().Root(), suggestedAttestation.Root())
 		}
 		return nil
 	}
@@ -101,7 +101,7 @@ func (u UpdateProducer) update(ctx context.Context) error {
 	signedAttestation := types.NewSignedAttestation(suggestedAttestation, signature)
 	err = u.db.StoreSignedAttestations(ctx, signedAttestation)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not store signed attestations: %w", err)
 	}
 	return nil
 }

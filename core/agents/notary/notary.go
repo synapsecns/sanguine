@@ -1,4 +1,4 @@
-package updater
+package notary
 
 import (
 	"context"
@@ -12,10 +12,10 @@ import (
 	"time"
 )
 
-// Updater updates the updater.
-type Updater struct {
+// Notary updates the updater.
+type Notary struct {
 	indexers   map[string]indexer.DomainIndexer
-	producers  map[string]UpdateProducer
+	producers  map[string]AttestationProducer
 	submitters map[string]AttestationSubmitter
 	signer     signer.Signer
 }
@@ -24,37 +24,38 @@ type Updater struct {
 //TODO: This should be done in config.
 var RefreshInterval = 1 * time.Second
 
-// NewUpdater creates a new updater.
-func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
-	updater := Updater{
+// NewNotary creates a new updater.
+func NewNotary(ctx context.Context, cfg config.Config) (_ Notary, err error) {
+	updater := Notary{
 		indexers:   make(map[string]indexer.DomainIndexer),
-		producers:  make(map[string]UpdateProducer),
+		producers:  make(map[string]AttestationProducer),
 		submitters: make(map[string]AttestationSubmitter),
 	}
 
 	updater.signer, err = config.SignerFromConfig(cfg.Signer)
 	if err != nil {
-		return Updater{}, fmt.Errorf("could not create updater: %w", err)
+		return Notary{}, fmt.Errorf("could not create updater: %w", err)
 	}
 
 	dbType, err := sql.DBTypeFromString(cfg.Database.Type)
 	if err != nil {
-		return Updater{}, fmt.Errorf("could not get legacyDB type: %w", err)
+		return Notary{}, fmt.Errorf("could not get legacyDB type: %w", err)
 	}
 
 	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString)
 	if err != nil {
-		return Updater{}, fmt.Errorf("could not connect to legacyDB: %w", err)
+		return Notary{}, fmt.Errorf("could not connect to legacyDB: %w", err)
 	}
 
 	for name, domain := range cfg.Domains {
 		domainClient, err := evm.NewEVM(ctx, name, domain)
 		if err != nil {
-			return Updater{}, fmt.Errorf("could not create updater for: %w", err)
+			return Notary{}, fmt.Errorf("could not create updater for: %w", err)
 		}
 
 		updater.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient, RefreshInterval)
 		updater.producers[name] = NewAttestationProducer(domainClient, dbHandle, updater.signer, RefreshInterval)
+		// TODO: this needs to be on a separate chain so it'll need to use a different domain client. Config needs to be modified
 		updater.submitters[name] = NewAttestationSubmitter(domainClient, dbHandle, updater.signer, RefreshInterval)
 	}
 
@@ -62,7 +63,7 @@ func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
 }
 
 // Start starts the updater.{.
-func (u Updater) Start(ctx context.Context) error {
+func (u Notary) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 	for i := range u.indexers {
 		i := i // capture func literal

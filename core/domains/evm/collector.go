@@ -3,6 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/domains"
@@ -36,8 +37,7 @@ type attestationCollectorContract struct {
 	nonceManager nonce.Manager
 }
 
-// SubmitAttestation submits an attestation to the attestation collector.
-func (a attestationCollectorContract) SubmitAttestation(signer signer.Signer, attestation types.SignedAttestation) error {
+func (a attestationCollectorContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
 	transactor, err := signer.GetTransactor(a.client.GetBigChainID())
 	if err != nil {
 		return fmt.Errorf("could not sign tx: %w", err)
@@ -47,6 +47,8 @@ func (a attestationCollectorContract) SubmitAttestation(signer signer.Signer, at
 	if err != nil {
 		return fmt.Errorf("could not create tx: %w", err)
 	}
+
+	transactOpts.Context = ctx
 
 	encodedAttestation, err := types.EncodeSignedAttestation(attestation)
 	if err != nil {
@@ -59,4 +61,13 @@ func (a attestationCollectorContract) SubmitAttestation(signer signer.Signer, at
 	}
 
 	return nil
+}
+
+func (a attestationCollectorContract) LatestNonce(ctx context.Context, domain uint32) (nonce uint32, err error) {
+	latestNonce, err := a.contract.LatestNonce(&bind.CallOpts{Context: ctx}, domain)
+	if err != nil {
+		return 0, fmt.Errorf("could not retrieve latest nonce: %w", err)
+	}
+
+	return latestNonce, nil
 }

@@ -21,6 +21,7 @@ func TestTotalTips(t *testing.T) {
 		realSum, err := math.Sum(vals)
 		Nil(t, err)
 
+		// nolint: forcetypeassert
 		Equal(t, types.TotalTips(tips).Uint64(), uint64(realSum.(int)))
 	}
 }

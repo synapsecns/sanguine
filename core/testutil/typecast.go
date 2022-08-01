@@ -96,6 +96,7 @@ func (d *DeployManager) GetAttestationCollector(ctx context.Context, backend bac
 	return attestionContract, attestationCollector
 }
 
+// GetTipsHarness gets the tips harness for testing.
 func (d *DeployManager) GetTipsHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *tipsharness.TipsHarnessRef) {
 	d.T().Helper()
 

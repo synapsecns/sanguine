@@ -34,6 +34,8 @@ type TestDispatch struct {
 }
 
 func NewTestDispatch(tb testing.TB) TestDispatch {
+	tb.Helper()
+
 	tips := types.NewTips(
 		randomTip(tb),
 		randomTip(tb),
@@ -53,6 +55,8 @@ func NewTestDispatch(tb testing.TB) TestDispatch {
 // randomTip is a helper method for generating random tip that is less than 1 gwei
 // see:  https://stackoverflow.com/a/45428754
 func randomTip(tb testing.TB) *big.Int {
+	tb.Helper()
+
 	// Max random value = 1 eth
 	max := new(big.Int)
 

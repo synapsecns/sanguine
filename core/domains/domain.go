@@ -21,6 +21,8 @@ type DomainClient interface {
 	BlockNumber(ctx context.Context) (uint32, error)
 	// Home retrieves a handle for the home contract
 	Home() HomeContract
+	// AttestationCollector is the attestation collector
+	AttestationCollector() AttestationCollectorContract
 }
 
 // HomeContract represents the home contract on a particular chain.
@@ -33,7 +35,10 @@ type HomeContract interface {
 
 // AttestationCollectorContract contains the interface for the attestation collector.
 type AttestationCollectorContract interface {
-	SubmitAttestation(signer signer.Signer, attestation types.SignedAttestation) error
+	// SubmitAttestation submits an attestation to the attestation collector.
+	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
+	// LatestNonce gets the latest nonce for the domain on the attestation collector
+	LatestNonce(ctx context.Context, domain uint32) (nonce uint32, err error)
 }
 
 // ErrNoUpdate indicates no update has been produced.

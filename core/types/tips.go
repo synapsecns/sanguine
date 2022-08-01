@@ -17,6 +17,7 @@ type Tips interface {
 	ProcessorTip() *big.Int
 }
 
+// NewTips creates a new tips type.
 func NewTips(updaterTip, relayerTip, proverTip, processorTip *big.Int) Tips {
 	return tips{
 		updaterTip:   updaterTip,
@@ -49,7 +50,7 @@ func (t tips) ProcessorTip() *big.Int {
 
 var _ Tips = tips{}
 
-// TotalTips gets the combined value of the tips
+// TotalTips gets the combined value of the tips.
 func TotalTips(tips Tips) *big.Int {
 	vals := []*big.Int{tips.UpdaterTip(), tips.ProcessorTip(), tips.RelayerTip(), tips.ProverTip()}
 	total := new(big.Int)
