@@ -17,7 +17,7 @@ import (
 type Updater struct {
 	indexers   map[string]indexer.DomainIndexer
 	producers  map[string]UpdateProducer
-	submitters map[string]UpdateSubmitter
+	submitters map[string]AttestationSubmitter
 	signer     signer.Signer
 }
 
@@ -30,7 +30,7 @@ func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
 	updater := Updater{
 		indexers:   make(map[string]indexer.DomainIndexer),
 		producers:  make(map[string]UpdateProducer),
-		submitters: make(map[string]UpdateSubmitter),
+		submitters: make(map[string]AttestationSubmitter),
 	}
 
 	updater.signer, err = config.SignerFromConfig(cfg.Signer)
@@ -60,8 +60,8 @@ func NewUpdater(ctx context.Context, cfg config.Config) (_ Updater, err error) {
 		}
 
 		updater.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient, RefreshInterval)
-		updater.producers[name] = NewUpdateProducer(domainClient, legacyDBHandle, dbHandle, updater.signer, RefreshInterval)
-		updater.submitters[name] = NewUpdateSubmitter(domainClient, legacyDBHandle, dbHandle, updater.signer, RefreshInterval)
+		updater.producers[name] = NewAttestationProducer(domainClient, dbHandle, updater.signer, RefreshInterval)
+		updater.submitters[name] = NewAttestationSubmitter(domainClient, legacyDBHandle, dbHandle, updater.signer, RefreshInterval)
 	}
 
 	return updater, nil

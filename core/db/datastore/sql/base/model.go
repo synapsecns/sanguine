@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/types"
 	"gorm.io/gorm"
+	"math/big"
 	"time"
 )
 
@@ -78,7 +79,7 @@ type BlockEndModel struct {
 }
 
 // CommittedMessage is a committed message
-// it allows for querying on both the committed message and hte underlying fields
+// it allows for querying on both the committed message and the underlying fields
 type CommittedMessage struct {
 	gorm.Model
 	// CMDomainID is the id of the domain we're renaming
@@ -166,3 +167,47 @@ func (c CommittedMessage) Encode() ([]byte, error) {
 var _ types.CommittedMessage = CommittedMessage{}
 
 var _ types.Message = CommittedMessage{}
+
+// SignedAttestation stores attestations
+type SignedAttestation struct {
+	gorm.Model
+	// SADomain is the domain of the attestation
+	SADomain uint32 `gorm:"column:domain_id;uniqueIndex:sa_idx_id"`
+	// SANonce is the nonce of the attestation
+	SANonce uint32 `gorm:"column:nonce;uniqueIndex:sa_idx_id"`
+	// SARoot is the root of the signed attestation
+	SARoot []byte `gorm:"column:root"`
+	// SASignature stores the raw signature
+	SASignature []byte `gorm:"column:signature"`
+}
+
+func (s SignedAttestation) Attestation() types.Attestation {
+	return s
+}
+
+// Signature gets the signature of the signed attestation
+//note: this is the only accessor method that can fail on decoding
+func (s SignedAttestation) Signature() types.Signature {
+	res, err := types.DecodeSignature(s.SASignature)
+	if err != nil {
+		return types.NewSignature(big.NewInt(0), big.NewInt(0), big.NewInt(0))
+	}
+
+	return res
+}
+
+func (s SignedAttestation) Domain() uint32 {
+	return s.SADomain
+}
+
+func (s SignedAttestation) Nonce() uint32 {
+	return s.SANonce
+}
+
+func (s SignedAttestation) Root() [32]byte {
+	return common.BytesToHash(s.SARoot)
+}
+
+var _ types.Attestation = SignedAttestation{}
+
+var _ types.SignedAttestation = SignedAttestation{}

@@ -3,10 +3,9 @@ package updater_test
 import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/agents/updater"
-	"github.com/synapsecns/sanguine/core/db/datastore/pebble"
+	"github.com/synapsecns/sanguine/core/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
@@ -15,7 +14,7 @@ import (
 )
 
 func (u UpdaterSuite) TestUpdateProducer() {
-	testDB, err := pebble.NewMessageDB(filet.TmpDir(u.T(), ""), "home1")
+	testDB, err := sqlite.NewSqliteStore(u.GetTestContext(), filet.TmpDir(u.T(), ""))
 	Nil(u.T(), err)
 
 	testWallet, err := wallet.FromRandom()
@@ -29,18 +28,20 @@ func (u UpdaterSuite) TestUpdateProducer() {
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(u.T(), err)
 
-	tx, err := u.homeContract.Dispatch(auth.TransactOpts, gofakeit.Uint32(), [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
+	domain := gofakeit.Uint32()
+
+	tx, err := u.homeContract.Dispatch(auth.TransactOpts, domain, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
 	Nil(u.T(), err)
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
 
 	// call the update producing function
-	updateProducer := updater.NewUpdateProducer(u.domainClient, testDB, signer, 1*time.Second)
+	attestationProducer := updater.NewAttestationProducer(u.domainClient, testDB, signer, 1*time.Second)
 
-	err = updateProducer.Update(u.GetTestContext())
+	err = attestationProducer.Update(u.GetTestContext())
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	producedUpdate, err := testDB.RetrieveProducedUpdate(common.Hash{})
+	producedAttestation, err := testDB.RetrieveSignedAttestationByNonce(u.GetTestContext(), domain, 1)
 	Nil(u.T(), err)
-	Equal(u.T(), producedUpdate.Update().PreviousRoot(), common.Hash{})
+	Equal(u.T(), producedAttestation.Attestation().Nonce(), 1)
 }

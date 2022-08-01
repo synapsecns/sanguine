@@ -74,7 +74,7 @@ func (h homeContract) FetchSortedMessages(ctx context.Context, from uint32, to u
 	return messages, nil
 }
 
-func (h homeContract) ProduceUpdate(ctx context.Context) (types.Attestation, error) {
+func (h homeContract) ProduceAttestation(ctx context.Context) (types.Attestation, error) {
 	suggestedUpdate, err := h.contract.SuggestUpdate(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, fmt.Errorf("could not suggest update: %w", err)

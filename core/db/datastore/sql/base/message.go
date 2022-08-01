@@ -59,7 +59,7 @@ func (s Store) StoreCommittedMessage(ctx context.Context, domainID uint32, messa
 	})
 
 	if tx.Error != nil {
-		return fmt.Errorf("could not block updated: %w", tx.Error)
+		return fmt.Errorf("could not store committed message updated: %w", tx.Error)
 	}
 	return nil
 }

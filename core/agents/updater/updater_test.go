@@ -9,6 +9,8 @@ import (
 	"github.com/synapsecns/sanguine/core/agents/updater"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/db/datastore/sql"
+	"github.com/synapsecns/sanguine/core/types"
+	"math/big"
 )
 
 func (u UpdaterSuite) TestUpdaterE2E() {
@@ -30,7 +32,11 @@ func (u UpdaterSuite) TestUpdaterE2E() {
 	Nil(u.T(), err)
 
 	auth := u.testBackend.GetTxContext(u.GetTestContext(), nil)
-	tx, err := u.homeContract.Dispatch(auth.TransactOpts, gofakeit.Uint32(), [32]byte{}, gofakeit.Uint32(), []byte(gofakeit.Paragraph(3, 2, 1, " ")))
+
+	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
+	Nil(u.T(), err)
+
+	tx, err := u.homeContract.Dispatch(auth.TransactOpts, gofakeit.Uint32(), [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
 	Nil(u.T(), err)
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
 

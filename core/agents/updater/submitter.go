@@ -11,35 +11,30 @@ import (
 	"time"
 )
 
-// UpdateSubmitter submits updates continuously.
-type UpdateSubmitter struct {
+// AttestationSubmitter submits updates continuously.
+type AttestationSubmitter struct {
 	// domain allows access to the home contract
 	domain domains.DomainClient
-	// messageDB contains the messageDB object
-	messageDB db.MessageDB
-	// txQueueDB contains the transaction queue legacyDB
-	txQueueDB db.TxQueueDB
+	// db contains the transaction queue legacyDB
+	db db.SynapseDB
 	// signer is the signer
 	signer signer.Signer
 	// interval is count in seconds
 	interval time.Duration
 }
 
-// NewUpdateSubmitter creates an update producer.
-func NewUpdateSubmitter(domain domains.DomainClient, messageDB db.MessageDB, txDB db.TxQueueDB, signer signer.Signer, interval time.Duration) UpdateSubmitter {
-	return UpdateSubmitter{
-		domain:    domain,
-		messageDB: messageDB,
-		txQueueDB: txDB,
-		signer:    signer,
-		interval:  interval,
+// NewAttestationSubmitter creates an update producer.
+func NewAttestationSubmitter(domain domains.DomainClient, db db.SynapseDB, signer signer.Signer, interval time.Duration) AttestationSubmitter {
+	return AttestationSubmitter{
+		domain:   domain,
+		db:       db,
+		signer:   signer,
+		interval: interval,
 	}
 }
 
 // Start runs the update submitter
-// todo: next up you need to borrow the tx loop from synapse-node and test well
-// myabe in ethergo? Should be agnostic and utilize nonce manager.
-func (u UpdateSubmitter) Start(ctx context.Context) error {
+func (u AttestationSubmitter) Start(ctx context.Context) error {
 	committedRoot, err := u.domain.Home().CommittedRoot(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get committed root: %w", err)
