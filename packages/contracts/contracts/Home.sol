@@ -236,7 +236,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      * @notice Gets the historical root based off of the nonce.
      * @dev If no messages have been sent, null bytes returned for the root
      * @param _nonce Nonce of historical root to get
-     * @return _root Historical root
+     * @return _root Historical root with index of _nonce
      */
     function getHistoricalRoot(uint32 _nonce) external view returns (bytes32 _root) {
         uint256 length = historicalRoots.length;
