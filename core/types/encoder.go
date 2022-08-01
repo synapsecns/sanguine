@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"github.com/libs4go/crypto/ecdsa"
 )
@@ -41,10 +42,10 @@ func EncodeSignedAttestation(signed SignedAttestation) ([]byte, error) {
 func DecodeSignedAttestation(toDecode []byte) (SignedAttestation, error) {
 	var decAttestation attestation
 
-	signedAttesationSize := binary.Size(decAttestation)
+	signedAttestationSize := binary.Size(decAttestation)
 
-	attestationBin := toDecode[0:signedAttesationSize]
-	signBin := toDecode[signedAttesationSize:]
+	attestationBin := toDecode[0:signedAttestationSize]
+	signBin := toDecode[signedAttestationSize:]
 
 	att, err := DecodeAttestation(attestationBin)
 	if err != nil {

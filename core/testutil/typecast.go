@@ -2,12 +2,15 @@ package testutil
 
 import (
 	"context"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/synapse-node/testutils/backends"
@@ -61,16 +64,27 @@ func (d *DeployManager) GetHomeHarness(ctx context.Context, backend backends.Sim
 	return messageHarnessContract, messageHarness
 }
 
-// GetAttestionHarness gets the attestation harness.
-func (d *DeployManager) GetAttestionHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *attestationharness.AttestationHarnessRef) {
+// GetAttestationHarness gets the attestation harness.
+func (d *DeployManager) GetAttestationHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *attestationharness.AttestationHarnessRef) {
 	d.T().Helper()
 
 	attestationHarnessContract := d.GetContractRegistry(backend).Get(ctx, AttestationHarnessType)
 
-	attestionHarness, ok := attestationHarnessContract.ContractHandle().(*attestationharness.AttestationHarnessRef)
+	attestationHarness, ok := attestationHarnessContract.ContractHandle().(*attestationharness.AttestationHarnessRef)
 	assert.True(d.T(), ok)
 
-	return attestationHarnessContract, attestionHarness
+	return attestationHarnessContract, attestationHarness
+}
+
+// GetReplicaManagerHarness gets the replica manager harness.
+func (d *DeployManager) GetReplicaManagerHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *replicamanagerharness.ReplicaManagerHarnessRef) {
+	d.T().Helper()
+
+	replicaManagerHarnessContract := d.GetContractRegistry(backend).Get(ctx, ReplicaManagerHarnessType)
+	replicaManagerHarness, ok := replicaManagerHarnessContract.ContractHandle().(*replicamanagerharness.ReplicaManagerHarnessRef)
+	assert.True(d.T(), ok)
+
+	return replicaManagerHarnessContract, replicaManagerHarness
 }
 
 // GetUpdaterManager gets the update manager.
@@ -88,9 +102,20 @@ func (d *DeployManager) GetUpdaterManager(ctx context.Context, backend backends.
 func (d *DeployManager) GetAttestationCollector(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *attestationcollector.AttestationCollectorRef) {
 	d.T().Helper()
 
-	attestionContract := d.GetContractRegistry(backend).Get(ctx, AttestationCollectorType)
-	attestationCollector, ok := attestionContract.ContractHandle().(*attestationcollector.AttestationCollectorRef)
+	attestationContract := d.GetContractRegistry(backend).Get(ctx, AttestationCollectorType)
+	attestationCollector, ok := attestationContract.ContractHandle().(*attestationcollector.AttestationCollectorRef)
 	assert.True(d.T(), ok)
 
-	return attestionContract, attestationCollector
+	return attestationContract, attestationCollector
+}
+
+// GetReplicaManager gets the replica manager contract.
+func (d *DeployManager) GetReplicaManager(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *replicamanager.ReplicaManagerRef) {
+	d.T().Helper()
+
+	replicaManagerContract := d.GetContractRegistry(backend).Get(ctx, ReplicaManagerType)
+	replicaManager, ok := replicaManagerContract.ContractHandle().(*replicamanager.ReplicaManagerRef)
+	assert.True(d.T(), ok)
+
+	return replicaManagerContract, replicaManager
 }

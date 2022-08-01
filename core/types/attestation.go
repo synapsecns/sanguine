@@ -50,7 +50,7 @@ type SignedAttestation interface {
 	Signature() Signature
 }
 
-// signedAttestation is a struct that conforms to SignedAttesation.
+// signedAttestation is a struct that conforms to SignedAttestation.
 type signedAttestation struct {
 	attestation Attestation
 	signature   Signature
