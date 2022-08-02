@@ -83,4 +83,22 @@ contract AttestationCollectorTest is SynapseTest {
         vm.expectRevert("Signer is not an updater");
         collector.submitAttestation(updater, attestation);
     }
+
+    function test_storeAttestation() public {
+        test_addUpdater();
+        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
+        collector.submitAttestation(updater, attestation);
+        assert(collector.attestations(nonce) == bytes29(attestation));
+        (bytes memory attestation_two, ) = signHomeAttestation(updaterPK, nonce + 1, "newroot");
+        collector.submitAttestation(updater, attestation_two);
+        assert(collector.attestations(nonce + 1) == bytes29(attestation_two));
+    }
+
+    function test_storeAttestation_repeatedNonce() public {
+        test_addUpdater();
+        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
+        collector.submitAttestation(updater, attestation);
+        vm.expectRevert("attestation already exists at nonce");
+        collector.submitAttestation(updater, attestation);
+    }
 }

@@ -31,6 +31,9 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
     // [homeDomain => [updater => isUpdater]]
     mapping(uint32 => mapping(address => bool)) public isUpdater;
 
+    // [nonce => attestation]
+    mapping(uint32 => bytes29) public attestations;
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             UPGRADE GAP                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -65,7 +68,7 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
 
     function submitAttestation(address _updater, bytes memory _attestation) external {
         bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
-        _storeAttestation(_view);
+        _storeAttestation(_view, _attestation);
         emit AttestationSubmitted(_updater, _attestation);
     }
 
@@ -98,7 +101,9 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
         }
     }
 
-    function _storeAttestation(bytes29 _view) internal {
-        // TODO: implement storing logic for easy retrieval
+    function _storeAttestation(bytes29 _view, bytes memory _attestation) internal {
+        uint32 nonce = _view.attestationNonce();
+        require(attestations[nonce] == bytes29(""), "attestation already exists at nonce");
+        attestations[nonce] = bytes29(_attestation);
     }
 }
