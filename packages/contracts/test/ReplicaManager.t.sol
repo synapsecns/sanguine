@@ -162,13 +162,13 @@ contract ReplicaManagerTest is SynapseTest {
         assertFalse(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
     }
 
-    event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 processorTip);
+    event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);
 
     function test_process() public {
         bytes memory message = _prepareProcessTest(OPTIMISTIC_PERIOD);
         vm.warp(block.timestamp + OPTIMISTIC_PERIOD);
         vm.expectEmit(true, true, true, true);
-        emit LogTips(notary_TIP, BROADCASTER_TIP, PROVER_TIP, PROCESSOR_TIP);
+        emit LogTips(notary_TIP, BROADCASTER_TIP, PROVER_TIP, EXECUTOR_TIP);
         replicaManager.process(message);
     }
 

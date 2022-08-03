@@ -13,7 +13,7 @@ contract ReplicaManagerHarness is ReplicaManager {
     uint256 public sensitiveValue;
     using Tips for bytes29;
 
-    event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 processorTip);
+    event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);
 
     constructor(uint32 _localDomain) ReplicaManager(_localDomain) {}
 
@@ -34,7 +34,7 @@ contract ReplicaManagerHarness is ReplicaManager {
             _tips.notaryTip(),
             _tips.broadcasterTip(),
             _tips.proverTip(),
-            _tips.processorTip()
+            _tips.executorTip()
         );
     }
 }

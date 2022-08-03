@@ -24,8 +24,8 @@ contract SynapseTest is Test {
     uint96 internal constant notary_TIP = 1234;
     uint96 internal constant BROADCASTER_TIP = 3456;
     uint96 internal constant PROVER_TIP = 5678;
-    uint96 internal constant PROCESSOR_TIP = 7890;
-    uint96 internal constant TOTAL_TIPS = notary_TIP + BROADCASTER_TIP + PROVER_TIP + PROCESSOR_TIP;
+    uint96 internal constant EXECUTOR_TIP = 7890;
+    uint96 internal constant TOTAL_TIPS = notary_TIP + BROADCASTER_TIP + PROVER_TIP + EXECUTOR_TIP;
 
     function setUp() public virtual {
         vm.label(notary, "notary");
@@ -35,7 +35,7 @@ contract SynapseTest is Test {
     }
 
     function getDefaultTips() internal pure returns (bytes memory) {
-        return Tips.formatTips(notary_TIP, BROADCASTER_TIP, PROVER_TIP, PROCESSOR_TIP);
+        return Tips.formatTips(notary_TIP, BROADCASTER_TIP, PROVER_TIP, EXECUTOR_TIP);
     }
 
     function getEmptyTips() internal pure returns (bytes memory) {
