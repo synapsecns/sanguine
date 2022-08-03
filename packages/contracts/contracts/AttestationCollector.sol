@@ -77,7 +77,7 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
         return isNotary[_homeDomain][_notary];
     }
 
-    function _isWatchtower(address _watchtower) internal view override returns (bool) {}
+    function _isGuard(address _guard) internal view override returns (bool) {}
 
     function _addNotary(uint32 _domain, address _notary) internal {
         if (!isNotary[_domain][_notary]) {

@@ -13,7 +13,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
  * @title XAppConnectionManager
  * @author Illusory Systems Inc.
  * @notice Manages a registry of local Replica contracts
- * for remote Home domains. Acepts Watcher signatures
+ * for remote Home domains. Acepts Guard signatures
  * to un-enroll Replicas attached to fraudulent remote Homes
  */
 contract XAppConfig is Ownable {
@@ -25,8 +25,8 @@ contract XAppConfig is Ownable {
     mapping(address => uint32) public replicaToDomain;
     // remote Home domain => local Replica address
     mapping(uint32 => address) public domainToReplica;
-    // watcher address => replica remote domain => has/doesn't have permission
-    mapping(address => mapping(uint32 => bool)) private watcherPermissions;
+    // guard address => replica remote domain => has/doesn't have permission
+    mapping(address => mapping(uint32 => bool)) private guardPermissions;
 
     // ============ Events ============
 
@@ -45,12 +45,12 @@ contract XAppConfig is Ownable {
     event ReplicaUnenrolled(uint32 indexed domain, address replica);
 
     /**
-     * @notice Emitted when Watcher permissions are changed
+     * @notice Emitted when Guard permissions are changed
      * @param domain the remote domain of the Home contract for the Replica
-     * @param watcher the address of the Watcher
-     * @param access TRUE if the Watcher was given permissions, FALSE if permissions were removed
+     * @param guard the address of the Guard
+     * @param access TRUE if the Guard was given permissions, FALSE if permissions were removed
      */
-    event WatcherPermissionSet(uint32 indexed domain, address watcher, bool access);
+    event GuardPermissionSet(uint32 indexed domain, address guard, bool access);
 
     // ============ Constructor ============
 
@@ -63,11 +63,11 @@ contract XAppConfig is Ownable {
      * @notice Un-Enroll a replica contract
      * in the case that fraud was detected on the Home
      * @dev in the future, if fraud occurs on the Home contract,
-     * the Watcher will submit their signature directly to the Home
+     * the Guard will submit their signature directly to the Home
      * and it can be relayed to all remote chains to un-enroll the Replicas
      * @param _domain the remote domain of the Home contract for the Replica
      * @param _notary the address of the Notary for the Home contract (also stored on Replica)
-     * @param _signature signature of watcher on (domain, replica address, notary address)
+     * @param _signature signature of guard on (domain, replica address, notary address)
      */
     function unenrollReplica(
         uint32 _domain,
@@ -82,15 +82,15 @@ contract XAppConfig is Ownable {
             ReplicaManager(_replica).notary() == TypeCasts.bytes32ToAddress(_notary),
             "!current notary"
         );
-        // get the watcher address from the signature
-        // and ensure that the watcher has permission to un-enroll this replica
-        address _watcher = _recoverWatcherFromSig(
+        // get the guard address from the signature
+        // and ensure that the guard has permission to un-enroll this replica
+        address _guard = _recoverGuardFromSig(
             _domain,
             TypeCasts.addressToBytes32(_replica),
             _notary,
             _signature
         );
-        require(watcherPermissions[_watcher][_domain], "!valid watcher");
+        require(guardPermissions[_guard][_domain], "!valid guard");
         // remove the replica from mappings
         _unenrollReplica(_replica);
     }
@@ -126,18 +126,18 @@ contract XAppConfig is Ownable {
     }
 
     /**
-     * @notice Allow Owner to set Watcher permissions for a Replica
-     * @param _watcher the address of the Watcher
+     * @notice Allow Owner to set Guard permissions for a Replica
+     * @param _guard the address of the Guard
      * @param _domain the remote domain of the Home contract for the Replica
-     * @param _access TRUE to give the Watcher permissions, FALSE to remove permissions
+     * @param _access TRUE to give the Guard permissions, FALSE to remove permissions
      */
-    function setWatcherPermission(
-        address _watcher,
+    function setGuardPermission(
+        address _guard,
         uint32 _domain,
         bool _access
     ) external onlyOwner {
-        watcherPermissions[_watcher][_domain] = _access;
-        emit WatcherPermissionSet(_domain, _watcher, _access);
+        guardPermissions[_guard][_domain] = _access;
+        emit GuardPermissionSet(_domain, _guard, _access);
     }
 
     /**
@@ -149,13 +149,13 @@ contract XAppConfig is Ownable {
     }
 
     /**
-     * @notice Get access permissions for the watcher on the domain
-     * @param _watcher the address of the watcher
-     * @param _domain the domain to check for watcher permissions
-     * @return TRUE iff _watcher has permission to un-enroll replicas on _domain
+     * @notice Get access permissions for the guard on the domain
+     * @param _guard the address of the guard
+     * @param _domain the domain to check for guard permissions
+     * @return TRUE iff _guard has permission to un-enroll replicas on _domain
      */
-    function watcherPermission(address _watcher, uint32 _domain) external view returns (bool) {
-        return watcherPermissions[_watcher][_domain];
+    function guardPermission(address _guard, uint32 _domain) external view returns (bool) {
+        return guardPermissions[_guard][_domain];
     }
 
     // ============ Public Functions ============
@@ -183,10 +183,10 @@ contract XAppConfig is Ownable {
     }
 
     /**
-     * @notice Get the Watcher address from the provided signature
-     * @return address of watcher that signed
+     * @notice Get the Guard address from the provided signature
+     * @return address of guard that signed
      */
-    function _recoverWatcherFromSig(
+    function _recoverGuardFromSig(
         uint32 _domain,
         bytes32 _replica,
         bytes32 _notary,

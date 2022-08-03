@@ -331,7 +331,7 @@ contract Home is Version0, MerkleTreeManager, NotaryStorage, AuthManager {
         return _notary == notary;
     }
 
-    function _isWatchtower(address) internal pure override returns (bool) {
+    function _isGuard(address) internal pure override returns (bool) {
         return false;
     }
 

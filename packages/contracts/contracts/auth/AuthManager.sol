@@ -43,12 +43,12 @@ abstract contract AuthManager {
         require(_isNotary(_view.attestationDomain(), _notary), "Signer is not an notary");
     }
 
-    function _checkWatchtowerAuth(address _watchtower, bytes memory _report)
+    function _checkGuardAuth(address _guard, bytes memory _report)
         internal
         view
         returns (bytes29 _data)
     {
-        // TODO: check if _report is valid, once watchtower message standard is finalized
+        // TODO: check if _report is valid, once guard message standard is finalized
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -57,5 +57,5 @@ abstract contract AuthManager {
 
     function _isNotary(uint32 _homeDomain, address _notary) internal view virtual returns (bool);
 
-    function _isWatchtower(address _watchtower) internal view virtual returns (bool);
+    function _isGuard(address _guard) internal view virtual returns (bool);
 }
