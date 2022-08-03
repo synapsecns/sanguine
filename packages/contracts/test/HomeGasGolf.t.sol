@@ -5,17 +5,17 @@ import "forge-std/console2.sol";
 import { HomeHarness } from "./harnesses/HomeHarness.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
-import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
-import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
+import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
+import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
-contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
+contract HomeGasGolfTest is SynapseTestWithNotaryManager {
     HomeHarness home;
 
     function setUp() public override {
         super.setUp();
         home = new HomeHarness(localDomain);
-        home.initialize(IUpdaterManager(updaterManager));
-        updaterManager.setHome(address(home));
+        home.initialize(INotaryManager(notaryManager));
+        notaryManager.setHome(address(home));
     }
 
     event Dispatch(

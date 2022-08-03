@@ -7,9 +7,9 @@ import "forge-std/Test.sol";
 import { SynapseClientUpgradeableHarness } from "./harnesses/SynapseClientUpgradeableHarness.sol";
 import { HomeHarness } from "./harnesses/HomeHarness.sol";
 
-import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
+import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
-import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
+import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
@@ -17,7 +17,7 @@ import {
     TransparentUpgradeableProxy
 } from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
-contract SynapseClientTest is SynapseTestWithUpdaterManager {
+contract SynapseClientTest is SynapseTestWithNotaryManager {
     SynapseClientUpgradeableHarness public client;
     HomeHarness public home;
 
@@ -29,8 +29,8 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         super.setUp();
 
         home = new HomeHarness(localDomain);
-        home.initialize(IUpdaterManager(updaterManager));
-        updaterManager.setHome(address(home));
+        home.initialize(INotaryManager(notaryManager));
+        notaryManager.setHome(address(home));
 
         vm.label(replicaManager, "replica");
         vm.label(owner, "owner");

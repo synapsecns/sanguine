@@ -6,10 +6,10 @@ import { HomeHarness } from "./harnesses/HomeHarness.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
-import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
-import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
+import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
+import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
-contract HomeTest is SynapseTestWithUpdaterManager {
+contract HomeTest is SynapseTestWithNotaryManager {
     HomeHarness home;
     uint32 optimisticSeconds;
 
@@ -19,55 +19,55 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         super.setUp();
         optimisticSeconds = 10;
         home = new HomeHarness(localDomain);
-        home.initialize(IUpdaterManager(updaterManager));
-        updaterManager.setHome(address(home));
+        home.initialize(INotaryManager(notaryManager));
+        notaryManager.setHome(address(home));
         systemMessenger = ISystemMessenger(address(1234567890));
         home.setSystemMessenger(systemMessenger);
     }
 
     // ============ STATE AND PERMISSIONING ============
     function test_correctlyInitialized() public {
-        assertEq(address(home.updaterManager()), address(updaterManager));
+        assertEq(address(home.notaryManager()), address(notaryManager));
         assertEq(home.owner(), address(this));
         assertEq(uint256(home.state()), 1);
-        assertEq(home.updater(), updater);
+        assertEq(home.notary(), notary);
     }
 
     function test_cannotInitializeTwice() public {
         vm.expectRevert("Initializable: contract is already initialized");
-        home.initialize(updaterManager);
+        home.initialize(notaryManager);
     }
 
-    function test_cannotSetUpdaterAsNotUpdaterManager() public {
-        vm.expectRevert("!updaterManager");
-        home.setUpdater(address(0));
+    function test_cannotSetNotaryAsNotNotaryManager() public {
+        vm.expectRevert("!notaryManager");
+        home.setNotary(address(0));
     }
 
-    function test_setUpdater() public {
-        assertFalse(home.updater() == address(1337));
-        vm.prank(address(updaterManager));
-        home.setUpdater(address(1337));
-        assertEq(home.updater(), address(1337));
+    function test_setNotary() public {
+        assertFalse(home.notary() == address(1337));
+        vm.prank(address(notaryManager));
+        home.setNotary(address(1337));
+        assertEq(home.notary(), address(1337));
     }
 
-    function test_cannotSetUpdaterManagerAsNotOwner(address _notOwner) public {
+    function test_cannotSetNotaryManagerAsNotOwner(address _notOwner) public {
         vm.assume(_notOwner != home.owner());
         vm.startPrank(_notOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        // Must pass in a contract to setUpdaterManager, otherwise will revert with !contract updaterManger
-        home.setUpdaterManager(address(home));
+        // Must pass in a contract to setNotaryManager, otherwise will revert with !contract notaryManger
+        home.setNotaryManager(address(home));
     }
 
-    function test_setUpdaterManager() public {
-        assertFalse(address(home.updaterManager()) == address(home));
-        home.setUpdaterManager(address(home));
-        // Must pass in a contract to setUpdaterManager, otherwise will revert with !contract updaterManger
-        assertEq(address(home.updaterManager()), address(home));
+    function test_setNotaryManager() public {
+        assertFalse(address(home.notaryManager()) == address(home));
+        home.setNotaryManager(address(home));
+        // Must pass in a contract to setNotaryManager, otherwise will revert with !contract notaryManger
+        assertEq(address(home.notaryManager()), address(home));
     }
 
-    function test_onlyContractCanBeUpdaterManager() public {
-        vm.expectRevert("!contract updaterManager");
-        home.setUpdaterManager(address(1337));
+    function test_onlyContractCanBeNotaryManager() public {
+        vm.expectRevert("!contract notaryManager");
+        home.setNotaryManager(address(1337));
     }
 
     function test_haltsOnFail() public {
@@ -143,15 +143,15 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     }
 
     // ============ UPDATING MESSAGES ============
-    event ImproperAttestation(address updater, bytes attestation);
+    event ImproperAttestation(address notary, bytes attestation);
 
     function test_improperAttestation_wrongDomain() public {
         uint32 nonce = 42;
         bytes32 root = "very real much wow";
         // Any signed attestation from another chain should be rejected
-        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, root);
         vm.expectRevert("Wrong domain");
-        home.improperAttestation(updater, attestation);
+        home.improperAttestation(notary, attestation);
     }
 
     function test_improperAttestation_fraud_invalidNonce() public {
@@ -160,7 +160,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes32 root = home.root();
         // This root exists, but with nonce = 0
         // Nonce = 1 doesn't exists yet
-        _checkImproperUpdate(nonce, root);
+        _checkImproperAttestation(nonce, root);
     }
 
     function test_improperAttestation_fraud_correctRootWrongNonce() public {
@@ -170,7 +170,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes32 root = home.root();
         // This root exists, but with nonce = 1
         // nonce = 0 exists, with a different Merkle root
-        _checkImproperUpdate(nonce, root);
+        _checkImproperAttestation(nonce, root);
     }
 
     function test_improperAttestation_fraud_validNonceWrongRoot() public {
@@ -178,33 +178,33 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         uint32 nonce = 0;
         bytes32 root = "this is clearly fraud";
         // nonce = 0 exists, with a different Merkle root
-        _checkImproperUpdate(nonce, root);
+        _checkImproperAttestation(nonce, root);
     }
 
     /// @dev Signs improper (nonce, root) attestation and presents it to Home.
-    function _checkImproperUpdate(uint32 nonce, bytes32 root) internal {
-        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
+    function _checkImproperAttestation(uint32 nonce, bytes32 root) internal {
+        (bytes memory attestation, ) = signHomeAttestation(notaryPK, nonce, root);
         vm.expectEmit(true, true, true, true);
-        emit ImproperAttestation(updater, attestation);
+        emit ImproperAttestation(notary, attestation);
         // Home should recognize this as improper attestation
-        assertTrue(home.improperAttestation(updater, attestation));
+        assertTrue(home.improperAttestation(notary, attestation));
         // Home should be in Failed state
         assertEq(uint256(home.state()), 2);
     }
 
-    // Dispatches 4 messages, and then Updater signs latest new roots
-    function test_suggestUpdate() public {
+    // Dispatches 4 messages, and then Notary signs latest new roots
+    function test_suggestAttestation() public {
         test_dispatch();
         test_dispatch();
         test_dispatch();
         test_dispatch();
-        (uint32 nonce, bytes32 root) = home.suggestUpdate();
+        (uint32 nonce, bytes32 root) = home.suggestAttestation();
         // sanity checks
         assertEq(nonce, 3);
         assertEq(root, home.historicalRoots(nonce));
-        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
+        (bytes memory attestation, ) = signHomeAttestation(notaryPK, nonce, root);
         // Should not be an improper attestation
-        assertFalse(home.improperAttestation(updater, attestation));
+        assertFalse(home.improperAttestation(notary, attestation));
         assertEq(uint256(home.state()), 1);
     }
 

@@ -2,7 +2,7 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
-import { UpdaterStorage } from "./UpdaterStorage.sol";
+import { NotaryStorage } from "./NotaryStorage.sol";
 import { AuthManager } from "./auth/AuthManager.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { Version0 } from "./Version0.sol";
@@ -22,7 +22,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
+contract ReplicaManager is Version0, NotaryStorage, AuthManager {
     // ============ Libraries ============
 
     using ReplicaLib for ReplicaLib.Replica;
@@ -78,7 +78,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
 
     // ============ Constructor ============
 
-    constructor(uint32 _localDomain) UpdaterStorage(_localDomain) {}
+    constructor(uint32 _localDomain) NotaryStorage(_localDomain) {}
 
     // ============ Initializer ============
 
@@ -91,10 +91,10 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      *      - sets a trusted root, and pre-approves messages under it
      *      - sets the optimistic timer
      * @param _remoteDomain The domain of the Home contract this follows
-     * @param _updater The EVM id of the updater
+     * @param _notary The EVM id of the notary
      */
-    function initialize(uint32 _remoteDomain, address _updater) public initializer {
-        __SynapseBase_initialize(_updater);
+    function initialize(uint32 _remoteDomain, address _notary) public initializer {
+        __SynapseBase_initialize(_notary);
         // set storage variables
         entered = 1;
         activeReplicas[_remoteDomain] = _createReplica(_remoteDomain);
@@ -130,26 +130,28 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
 
     /**
      * @notice Called by external agent. Submits the signed attestation,
-     * marks root's allowable confirmation time, and emits an `Update` event.
-     * @dev Reverts if update doesn't build off latest committedRoot
-     * or if signature is invalid.
-     * @param _updater      Updater who signer the attestation
+     * marks root's allowable confirmation time, and emits an `AttestationSubmitted` event.
+     * @dev Reverts if attestation is outdated or signature is invalid.
+     * @param _notary       Notary who signer the attestation
      * @param _attestation  Attestation data and signature
      */
-    function submitAttestation(address _updater, bytes memory _attestation) external {
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
+    function submitAttestation(address _notary, bytes memory _attestation) external {
+        bytes29 _view = _checkNotaryAuth(_notary, _attestation);
         uint32 remoteDomain = _view.attestationDomain();
-        require(remoteDomain != localDomain, "Update refers to local chain");
+        require(remoteDomain != localDomain, "Attestation refers to local chain");
         uint32 nonce = _view.attestationNonce();
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[remoteDomain]];
-        require(nonce > replica.nonce, "Update older than current state");
-        // Hook for future use
-        _beforeUpdate();
+        require(nonce > replica.nonce, "Attestation older than current state");
         bytes32 newRoot = _view.attestationRoot();
         replica.setConfirmAt(newRoot, block.timestamp);
         // update nonce
         replica.setNonce(nonce);
-        emit Update(remoteDomain, nonce, newRoot, _view.attestationSignature().clone());
+        emit AttestationSubmitted(
+            remoteDomain,
+            nonce,
+            newRoot,
+            _view.attestationSignature().clone()
+        );
     }
 
     /**
@@ -157,7 +159,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * `message`. If the message is successfully proven, then tries to process
      * message.
      * @dev Reverts if `prove` call returns false
-     * @param _message Formatted message (refer to UpdaterStorage.sol Message library)
+     * @param _message Formatted message (refer to NotaryStorage.sol Message library)
      * @param _proof Merkle proof of inclusion for message's leaf
      * @param _index Index of leaf in home's merkle tree
      */
@@ -225,13 +227,13 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     // ============ External Owner Functions ============
 
     /**
-     * @notice Set Updater role
-     * @dev MUST ensure that all roots signed by previous Updater have
+     * @notice Set Notary role
+     * @dev MUST ensure that all roots signed by previous Notary have
      * been relayed before calling. Only callable by owner (Governance)
-     * @param _updater New Updater
+     * @param _notary New Notary
      */
-    function setUpdater(address _updater) external onlyOwner {
-        _setUpdater(_updater);
+    function setNotary(address _notary) external onlyOwner {
+        _setNotary(_notary);
     }
 
     /**
@@ -258,7 +260,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * @notice Check that the root has been submitted
      * and that the optimistic timeout period has expired,
      * meaning the root can be processed
-     * @param _root the Merkle root, submitted in an update, to check
+     * @param _root the Merkle root, submitted in an attestation, to check
      * @return TRUE iff root has been submitted & timeout has expired
      */
     function acceptableRoot(
@@ -321,10 +323,6 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         replicaCount = replicaIndex;
     }
 
-    /// @notice Hook for potential future use
-    // solhint-disable-next-line no-empty-blocks
-    function _beforeUpdate() internal {}
-
     function _getRevertMsg(bytes memory _returnData) internal pure returns (string memory) {
         // If the _res length is less than 68, then the transaction failed silently (without a revert message)
         if (_returnData.length < 68) return "Transaction reverted silently";
@@ -336,8 +334,8 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         return abi.decode(_returnData, (string)); // All that remains is the revert string
     }
 
-    function _isUpdater(uint32, address _updater) internal view override returns (bool) {
-        return _updater == updater;
+    function _isNotary(uint32, address _notary) internal view override returns (bool) {
+        return _notary == notary;
     }
 
     function _isWatchtower(address) internal pure override returns (bool) {

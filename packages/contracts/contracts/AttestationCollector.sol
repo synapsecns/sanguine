@@ -18,18 +18,18 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
     ▏*║                                EVENTS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    event AttestationSubmitted(address indexed updater, bytes attestation);
+    event AttestationSubmitted(address indexed notary, bytes attestation);
 
-    event UpdaterAdded(uint32 indexed domain, address updater);
+    event NotaryAdded(uint32 indexed domain, address notary);
 
-    event UpdaterRemoved(uint32 indexed domain, address updater);
+    event NotaryRemoved(uint32 indexed domain, address notary);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // [homeDomain => [updater => isUpdater]]
-    mapping(uint32 => mapping(address => bool)) public isUpdater;
+    // [homeDomain => [notary => isNotary]]
+    mapping(uint32 => mapping(address => bool)) public isNotary;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             UPGRADE GAP                              ║*▕
@@ -49,52 +49,47 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
     ▏*║                              OWNER ONLY                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // TODO: add/remove updaters upon bonding/unbonding
+    // TODO: add/remove notarys upon bonding/unbonding
 
-    function addUpdater(uint32 _domain, address _updater) external onlyOwner {
-        _addUpdater(_domain, _updater);
+    function addNotary(uint32 _domain, address _notary) external onlyOwner {
+        _addNotary(_domain, _notary);
     }
 
-    function removeUpdater(uint32 _domain, address _updater) external onlyOwner {
-        _removeUpdater(_domain, _updater);
+    function removeNotary(uint32 _domain, address _notary) external onlyOwner {
+        _removeNotary(_domain, _notary);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function submitAttestation(address _updater, bytes memory _attestation) external {
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
+    function submitAttestation(address _notary, bytes memory _attestation) external {
+        bytes29 _view = _checkNotaryAuth(_notary, _attestation);
         _storeAttestation(_view);
-        emit AttestationSubmitted(_updater, _attestation);
+        emit AttestationSubmitted(_notary, _attestation);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _isUpdater(uint32 _homeDomain, address _updater)
-        internal
-        view
-        override
-        returns (bool)
-    {
-        return isUpdater[_homeDomain][_updater];
+    function _isNotary(uint32 _homeDomain, address _notary) internal view override returns (bool) {
+        return isNotary[_homeDomain][_notary];
     }
 
     function _isWatchtower(address _watchtower) internal view override returns (bool) {}
 
-    function _addUpdater(uint32 _domain, address _updater) internal {
-        if (!isUpdater[_domain][_updater]) {
-            isUpdater[_domain][_updater] = true;
-            emit UpdaterAdded(_domain, _updater);
+    function _addNotary(uint32 _domain, address _notary) internal {
+        if (!isNotary[_domain][_notary]) {
+            isNotary[_domain][_notary] = true;
+            emit NotaryAdded(_domain, _notary);
         }
     }
 
-    function _removeUpdater(uint32 _domain, address _updater) internal {
-        if (isUpdater[_domain][_updater]) {
-            isUpdater[_domain][_updater] = false;
-            emit UpdaterRemoved(_domain, _updater);
+    function _removeNotary(uint32 _domain, address _notary) internal {
+        if (isNotary[_domain][_notary]) {
+            isNotary[_domain][_notary] = false;
+            emit NotaryRemoved(_domain, _notary);
         }
     }
 

@@ -3,14 +3,14 @@
 pragma solidity 0.8.13;
 
 import "forge-std/Test.sol";
-import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
+import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
 import { HomeHarness } from "./harnesses/HomeHarness.sol";
 
-import { UpdaterManager } from "../contracts/UpdaterManager.sol";
-import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
+import { NotaryManager } from "../contracts/NotaryManager.sol";
+import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 
-contract UpdaterManagerTest is SynapseTestWithUpdaterManager {
+contract NotaryManagerTest is SynapseTestWithNotaryManager {
     HomeHarness home;
     HomeHarness fakeHome;
 
@@ -18,61 +18,61 @@ contract UpdaterManagerTest is SynapseTestWithUpdaterManager {
         super.setUp();
         home = new HomeHarness(localDomain);
         fakeHome = new HomeHarness(localDomain);
-        home.initialize(IUpdaterManager(updaterManager));
-        updaterManager.setHome(address(home));
+        home.initialize(INotaryManager(notaryManager));
+        notaryManager.setHome(address(home));
     }
 
     function test_cannotSetHomeAsNotOwner(address _notOwner) public {
-        vm.assume(_notOwner != updaterManager.owner());
+        vm.assume(_notOwner != notaryManager.owner());
         vm.startPrank(_notOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        updaterManager.setHome(address(fakeHome));
+        notaryManager.setHome(address(fakeHome));
     }
 
     event NewHome(address home);
 
     function test_setHomeAsOwner() public {
-        vm.startPrank(updaterManager.owner());
-        assertEq(updaterManager.home(), address(home));
+        vm.startPrank(notaryManager.owner());
+        assertEq(notaryManager.home(), address(home));
         vm.expectEmit(false, false, false, true);
         emit NewHome(address(fakeHome));
-        updaterManager.setHome(address(fakeHome));
-        assertEq(updaterManager.home(), address(fakeHome));
+        notaryManager.setHome(address(fakeHome));
+        assertEq(notaryManager.home(), address(fakeHome));
     }
 
-    function test_cannotSetUpdaterAsNotOwner(address _notOwner) public {
-        vm.assume(_notOwner != updaterManager.owner());
+    function test_cannotSetNotaryAsNotOwner(address _notOwner) public {
+        vm.assume(_notOwner != notaryManager.owner());
         vm.startPrank(_notOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        updaterManager.setUpdater(fakeUpdater);
+        notaryManager.setNotary(fakeNotary);
     }
 
-    event NewUpdater(address updater);
+    event NewNotary(address notary);
 
-    function test_setUpdaterAsOwner() public {
-        vm.startPrank(updaterManager.owner());
-        assertEq(updaterManager.updater(), address(updater));
-        assertEq(home.updater(), address(updater));
+    function test_setNotaryAsOwner() public {
+        vm.startPrank(notaryManager.owner());
+        assertEq(notaryManager.notary(), address(notary));
+        assertEq(home.notary(), address(notary));
         vm.expectEmit(false, false, false, true);
-        emit NewUpdater(fakeUpdater);
-        updaterManager.setUpdater(address(fakeUpdater));
-        assertEq(updaterManager.updater(), address(fakeUpdater));
-        assertEq(home.updater(), address(fakeUpdater));
+        emit NewNotary(fakeNotary);
+        notaryManager.setNotary(address(fakeNotary));
+        assertEq(notaryManager.notary(), address(fakeNotary));
+        assertEq(home.notary(), address(fakeNotary));
     }
 
-    function test_cannotSlashUpdaterAsNotHome(address _notHome) public {
-        vm.assume(_notHome != updaterManager.home());
+    function test_cannotSlashNotaryAsNotHome(address _notHome) public {
+        vm.assume(_notHome != notaryManager.home());
         vm.startPrank(_notHome);
         vm.expectRevert("!home");
-        updaterManager.slashUpdater(payable(address(this)));
+        notaryManager.slashNotary(payable(address(this)));
     }
 
     event FakeSlashed(address reporter);
 
-    function test_slashUpdaterAsHome() public {
-        vm.startPrank(updaterManager.home());
+    function test_slashNotaryAsHome() public {
+        vm.startPrank(notaryManager.home());
         vm.expectEmit(false, false, false, true);
         emit FakeSlashed(address(this));
-        updaterManager.slashUpdater(payable(address(this)));
+        notaryManager.slashNotary(payable(address(this)));
     }
 }

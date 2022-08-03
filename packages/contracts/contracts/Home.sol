@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
-import { UpdaterStorage } from "./UpdaterStorage.sol";
+import { NotaryStorage } from "./NotaryStorage.sol";
 import { AuthManager } from "./auth/AuthManager.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { QueueLib } from "./libs/Queue.sol";
@@ -13,7 +13,7 @@ import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
 import { SystemMessage } from "./system/SystemMessage.sol";
 import { MerkleTreeManager } from "./Merkle.sol";
-import { IUpdaterManager } from "./interfaces/IUpdaterManager.sol";
+import { INotaryManager } from "./interfaces/INotaryManager.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
 // ============ External Imports ============
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
@@ -23,12 +23,12 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * @author Illusory Systems Inc.
  * @notice Accepts messages to be dispatched to remote chains,
  * constructs a Merkle tree of the messages,
- * and accepts signatures from a bonded Updater
+ * and accepts signatures from a bonded Notary
  * which notarize the Merkle tree roots.
  * Accepts submissions of fraudulent signatures
- * by the Updater and slashes the Updater in this case.
+ * by the Notary and slashes the Notary in this case.
  */
-contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
+contract Home is Version0, MerkleTreeManager, NotaryStorage, AuthManager {
     // ============ Libraries ============
 
     using Attestation for bytes29;
@@ -44,7 +44,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     //   note: the contract is initialized at deploy time, so it should never be in this state
     //   1 - Active - as long as the contract has not become fraudulent
     //   2 - Failed - after a valid fraud proof has been submitted;
-    //   contract will no longer accept updates or new messages
+    //   contract will no longer accept new messages
     enum States {
         UnInitialized,
         Active,
@@ -61,8 +61,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
 
     // domain => next available nonce for the domain
     mapping(uint32 => uint32) public nonces;
-    // contract responsible for Updater bonding, slashing and rotation
-    IUpdaterManager public updaterManager;
+    // contract responsible for Notary bonding, slashing and rotation
+    INotaryManager public notaryManager;
     // Current state of contract
     States public state;
 
@@ -94,45 +94,45 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     /**
      * @notice Emitted when proof of an improper attestation is submitted,
      * which sets the contract to FAILED state
-     * @param updater       Updater who signed improper attestation
+     * @param notary       Notary who signed improper attestation
      * @param attestation   Attestation data and signature
      */
-    event ImproperAttestation(address updater, bytes attestation);
+    event ImproperAttestation(address notary, bytes attestation);
 
     /**
-     * @notice Emitted when the Updater is slashed
-     * (should be paired with ImproperUpdater or DoubleUpdate event)
-     * @param updater The address of the updater
-     * @param reporter The address of the entity that reported the updater misbehavior
+     * @notice Emitted when the Notary is slashed
+     * (should be paired with ImproperAttestation event)
+     * @param notary The address of the notary
+     * @param reporter The address of the entity that reported the notary misbehavior
      */
-    event UpdaterSlashed(address indexed updater, address indexed reporter);
+    event NotarySlashed(address indexed notary, address indexed reporter);
 
     /**
-     * @notice Emitted when the UpdaterManager contract is changed
-     * @param updaterManager The address of the new updaterManager
+     * @notice Emitted when the NotaryManager contract is changed
+     * @param notaryManager The address of the new notaryManager
      */
-    event NewUpdaterManager(address updaterManager);
+    event NewNotaryManager(address notaryManager);
 
     // ============ Constructor ============
 
-    constructor(uint32 _localDomain) UpdaterStorage(_localDomain) {} // solhint-disable-line no-empty-blocks
+    constructor(uint32 _localDomain) NotaryStorage(_localDomain) {} // solhint-disable-line no-empty-blocks
 
     // ============ Initializer ============
 
-    function initialize(IUpdaterManager _updaterManager) public initializer {
-        // initialize queue, set Updater Manager, and initialize
-        _setUpdaterManager(_updaterManager);
-        __SynapseBase_initialize(updaterManager.updater());
+    function initialize(INotaryManager _notaryManager) public initializer {
+        // initialize queue, set Notary Manager, and initialize
+        _setNotaryManager(_notaryManager);
+        __SynapseBase_initialize(notaryManager.notary());
         state = States.Active;
     }
 
     // ============ Modifiers ============
 
     /**
-     * @notice Ensures that function is called by the UpdaterManager contract
+     * @notice Ensures that function is called by the NotaryManager contract
      */
-    modifier onlyUpdaterManager() {
-        require(msg.sender == address(updaterManager), "!updaterManager");
+    modifier onlyNotaryManager() {
+        require(msg.sender == address(notaryManager), "!notaryManager");
         _;
     }
 
@@ -144,29 +144,29 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         _;
     }
 
-    // ============ External: Updater & UpdaterManager Configuration  ============
+    // ============ External: Notary & NotaryManager Configuration  ============
 
     /**
-     * @notice Set a new Updater
-     * @dev To be set when rotating Updater after Fraud
-     * @param _updater the new Updater
+     * @notice Set a new Notary
+     * @dev To be set when rotating Notary after Fraud
+     * @param _notary the new Notary
      */
-    function setUpdater(address _updater) external onlyUpdaterManager {
-        _setUpdater(_updater);
+    function setNotary(address _notary) external onlyNotaryManager {
+        _setNotary(_notary);
         // set the Home state to Active
-        // now that Updater has been rotated
+        // now that Notary has been rotated
         state = States.Active;
     }
 
     /**
-     * @notice Set a new UpdaterManager contract
-     * @dev Home(s) will initially be initialized using a trusted UpdaterManager contract;
+     * @notice Set a new NotaryManager contract
+     * @dev Home(s) will initially be initialized using a trusted NotaryManager contract;
      * we will progressively decentralize by swapping the trusted contract with a new implementation
-     * that implements Updater bonding & slashing, and rules for Updater selection & rotation
-     * @param _updaterManager the new UpdaterManager contract
+     * that implements Notary bonding & slashing, and rules for Notary selection & rotation
+     * @param _notaryManager the new NotaryManager contract
      */
-    function setUpdaterManager(address _updaterManager) external onlyOwner {
-        _setUpdaterManager(IUpdaterManager(_updaterManager));
+    function setNotaryManager(address _notaryManager) external onlyOwner {
+        _setNotaryManager(INotaryManager(_notaryManager));
     }
 
     // ============ External Functions  ============
@@ -219,12 +219,12 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     }
 
     /**
-     * @notice Suggest an update for the Updater to sign and submit.
+     * @notice Suggest an attestation for the Notary to sign and submit.
      * @dev If no messages have been sent, null bytes returned for both
      * @return _nonce Current nonce
      * @return _root Current merkle root
      */
-    function suggestUpdate() external view returns (uint32 _nonce, bytes32 _root) {
+    function suggestAttestation() external view returns (uint32 _nonce, bytes32 _root) {
         uint256 length = historicalRoots.length;
         if (length != 0) {
             _nonce = uint32(length - 1);
@@ -243,9 +243,9 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
 
     /**
      * @notice Check if an Attestation is an Improper Attestation;
-     * if so, slash the Updater and set the contract to FAILED state.
+     * if so, slash the Notary and set the contract to FAILED state.
      *
-     * An Improper Attestation is a (_nonce, _root) update that doesn't correspond with
+     * An Improper Attestation is a (_nonce, _root) attestation that doesn't correspond with
      * the historical state of Home contract. Either of those needs to be true:
      * - _nonce is higher than current nonce (no root exists for this nonce)
      * - _root is not equal to the historical root of _nonce
@@ -254,61 +254,60 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      *
      * An Improper Attestation will only be accepted as valid by the Replica
      * If an Improper Attestation is attempted on Home,
-     * the Updater will be slashed immediately.
+     * the Notary will be slashed immediately.
      * If an Improper Attestation is submitted to the Replica,
      * it should be relayed to the Home contract using this function
-     * in order to slash the Updater with an Improper Attestation.
+     * in order to slash the Notary with an Improper Attestation.
      *
-     * @dev Reverts (and doesn't slash updater) if signature is invalid or
-     * update not current
-     * @param _updater      Updater who signed the attestation
+     * @dev Reverts (and doesn't slash notary) if signature is invalid
+     * @param _notary       Notary who signed the attestation
      * @param _attestation  Attestation data and signature
-     * @return TRUE if update was an Improper Attestation (implying Updater was slashed)
+     * @return TRUE if attestation was an Improper Attestation (implying Notary was slashed)
      */
-    function improperAttestation(address _updater, bytes memory _attestation)
+    function improperAttestation(address _notary, bytes memory _attestation)
         public
         notFailed
         returns (bool)
     {
         // This will revert if signature is not valid
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
+        bytes29 _view = _checkNotaryAuth(_notary, _attestation);
         uint32 _nonce = _view.attestationNonce();
         bytes32 _root = _view.attestationRoot();
-        // Check if nonce is valid, if not => update is fraud
+        // Check if nonce is valid, if not => attestation is fraud
         if (_nonce < historicalRoots.length) {
             if (_root == historicalRoots[_nonce]) {
-                // Signed (nonce, root) update is valid
+                // Signed (nonce, root) attestation is valid
                 return false;
             }
-            // Signed root is not the same as the historical one => update is fraud
+            // Signed root is not the same as the historical one => attestation is fraud
         }
         _fail();
-        emit ImproperAttestation(_updater, _attestation);
+        emit ImproperAttestation(_notary, _attestation);
         return true;
     }
 
     // ============ Internal Functions  ============
 
     /**
-     * @notice Set the UpdaterManager
-     * @param _updaterManager Address of the UpdaterManager
+     * @notice Set the NotaryManager
+     * @param _notaryManager Address of the NotaryManager
      */
-    function _setUpdaterManager(IUpdaterManager _updaterManager) internal {
-        require(Address.isContract(address(_updaterManager)), "!contract updaterManager");
-        updaterManager = IUpdaterManager(_updaterManager);
-        emit NewUpdaterManager(address(_updaterManager));
+    function _setNotaryManager(INotaryManager _notaryManager) internal {
+        require(Address.isContract(address(_notaryManager)), "!contract notaryManager");
+        notaryManager = INotaryManager(_notaryManager);
+        emit NewNotaryManager(address(_notaryManager));
     }
 
     /**
-     * @notice Slash the Updater and set contract state to FAILED
-     * @dev Called when fraud is proven (Improper Update or Double Update)
+     * @notice Slash the Notary and set contract state to FAILED
+     * @dev Called when fraud is proven (Improper Attestation)
      */
     function _fail() internal {
         // set contract to FAILED
         state = States.Failed;
-        // slash Updater
-        updaterManager.slashUpdater(payable(msg.sender));
-        emit UpdaterSlashed(updater, msg.sender);
+        // slash Notary
+        notaryManager.slashNotary(payable(msg.sender));
+        emit NotarySlashed(notary, msg.sender);
     }
 
     /**
@@ -327,14 +326,9 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         return (uint64(_destination) << 32) | _nonce;
     }
 
-    function _isUpdater(uint32 _homeDomain, address _updater)
-        internal
-        view
-        override
-        returns (bool)
-    {
+    function _isNotary(uint32 _homeDomain, address _notary) internal view override returns (bool) {
         require(_homeDomain == localDomain, "Wrong domain");
-        return _updater == updater;
+        return _notary == notary;
     }
 
     function _isWatchtower(address) internal pure override returns (bool) {

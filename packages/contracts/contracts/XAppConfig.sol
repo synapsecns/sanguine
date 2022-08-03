@@ -66,28 +66,28 @@ contract XAppConfig is Ownable {
      * the Watcher will submit their signature directly to the Home
      * and it can be relayed to all remote chains to un-enroll the Replicas
      * @param _domain the remote domain of the Home contract for the Replica
-     * @param _updater the address of the Updater for the Home contract (also stored on Replica)
-     * @param _signature signature of watcher on (domain, replica address, updater address)
+     * @param _notary the address of the Notary for the Home contract (also stored on Replica)
+     * @param _signature signature of watcher on (domain, replica address, notary address)
      */
     function unenrollReplica(
         uint32 _domain,
-        bytes32 _updater,
+        bytes32 _notary,
         bytes memory _signature
     ) external {
         // ensure that the replica is currently set
         address _replica = domainToReplica[_domain];
         require(_replica != address(0), "!replica exists");
-        // ensure that the signature is on the proper updater
+        // ensure that the signature is on the proper notary
         require(
-            ReplicaManager(_replica).updater() == TypeCasts.bytes32ToAddress(_updater),
-            "!current updater"
+            ReplicaManager(_replica).notary() == TypeCasts.bytes32ToAddress(_notary),
+            "!current notary"
         );
         // get the watcher address from the signature
         // and ensure that the watcher has permission to un-enroll this replica
         address _watcher = _recoverWatcherFromSig(
             _domain,
             TypeCasts.addressToBytes32(_replica),
-            _updater,
+            _notary,
             _signature
         );
         require(watcherPermissions[_watcher][_domain], "!valid watcher");
@@ -189,12 +189,12 @@ contract XAppConfig is Ownable {
     function _recoverWatcherFromSig(
         uint32 _domain,
         bytes32 _replica,
-        bytes32 _updater,
+        bytes32 _notary,
         bytes memory _signature
     ) internal view returns (address) {
         bytes32 _homeDomainHash = ReplicaManager(TypeCasts.bytes32ToAddress(_replica))
             .homeDomainHash(_domain);
-        bytes32 _digest = keccak256(abi.encodePacked(_homeDomainHash, _domain, _updater));
+        bytes32 _digest = keccak256(abi.encodePacked(_homeDomainHash, _domain, _notary));
         _digest = ECDSA.toEthSignedMessageHash(_digest);
         return ECDSA.recover(_digest, _signature);
     }

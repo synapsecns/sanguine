@@ -38,7 +38,7 @@ contract ReplicaManagerTest is SynapseTest {
     function setUp() public override {
         super.setUp();
         replicaManager = new ReplicaManagerHarness(localDomain);
-        replicaManager.initialize(remoteDomain, updater);
+        replicaManager.initialize(remoteDomain, notary);
         dApp = new AppHarness(OPTIMISTIC_PERIOD);
         systemMessenger = ISystemMessenger(address(1234567890));
         replicaManager.setSystemMessenger(systemMessenger);
@@ -47,28 +47,28 @@ contract ReplicaManagerTest is SynapseTest {
     // ============ INITIAL STATE ============
     function test_correctlyInitialized() public {
         assertEq(uint256(replicaManager.localDomain()), uint256(localDomain));
-        assertEq(replicaManager.updater(), updater);
+        assertEq(replicaManager.notary(), notary);
     }
 
     function test_cannotInitializeTwice() public {
         vm.expectRevert("Initializable: contract is already initialized");
-        replicaManager.initialize(remoteDomain, updater);
+        replicaManager.initialize(remoteDomain, notary);
     }
 
     // ============ STATE & PERMISSIONING ============
 
-    function test_cannotSetUpdaterAsNotOwner(address _notOwner, address _updater) public {
+    function test_cannotSetNotaryAsNotOwner(address _notOwner, address _notary) public {
         vm.assume(_notOwner != replicaManager.owner());
         vm.prank(_notOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        replicaManager.setUpdater(_updater);
+        replicaManager.setNotary(_notary);
     }
 
-    function test_setUpdater(address _updater) public {
-        vm.assume(_updater != replicaManager.updater());
+    function test_setNotary(address _notary) public {
+        vm.assume(_notary != replicaManager.notary());
         vm.prank(replicaManager.owner());
-        replicaManager.setUpdater(_updater);
-        assertEq(replicaManager.updater(), _updater);
+        replicaManager.setNotary(_notary);
+        assertEq(replicaManager.notary(), _notary);
     }
 
     function test_cannotSetConfirmationAsNotOwner(address _notOwner) public {
@@ -94,85 +94,81 @@ contract ReplicaManagerTest is SynapseTest {
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), _confirmAt);
     }
 
-    event Update(
+    event AttestationSubmitted(
         uint32 indexed homeDomain,
         uint32 indexed nonce,
         bytes32 indexed root,
         bytes signature
     );
 
-    // Relayer relays a new root signed by updater on Home chain
-    function test_successfulUpdate() public {
+    // Relayer relays a new root signed by notary on Home chain
+    function test_successfulAttestation() public {
         uint32 nonce = 42;
-        assertEq(replicaManager.updater(), vm.addr(updaterPK));
-        (bytes memory attestation, bytes memory sig) = signRemoteAttestation(
-            updaterPK,
-            nonce,
-            ROOT
-        );
+        assertEq(replicaManager.notary(), vm.addr(notaryPK));
+        (bytes memory attestation, bytes memory sig) = signRemoteAttestation(notaryPK, nonce, ROOT);
         // Root doesn't exist yet
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), 0);
-        // Relayer sends over a root signed by the updater on the Home chain
+        // Relayer sends over a root signed by the notary on the Home chain
         vm.expectEmit(true, true, true, true);
-        emit Update(remoteDomain, nonce, ROOT, sig);
-        replicaManager.submitAttestation(updater, attestation);
+        emit AttestationSubmitted(remoteDomain, nonce, ROOT, sig);
+        replicaManager.submitAttestation(notary, attestation);
         // Time at which root was confirmed is set, optimistic timeout starts now
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), block.timestamp);
     }
 
-    function test_updateWithFakeSigner() public {
+    function test_attestationWithFakeSigner() public {
         uint32 nonce = 42;
-        (bytes memory attestation, ) = signRemoteAttestation(fakeUpdaterPK, nonce, ROOT);
-        vm.expectRevert("Signer is not an updater");
-        // Update signed by fakeUpdater should be rejected
-        replicaManager.submitAttestation(fakeUpdater, attestation);
+        (bytes memory attestation, ) = signRemoteAttestation(fakeNotaryPK, nonce, ROOT);
+        vm.expectRevert("Signer is not an notary");
+        // Attestation signed by fakeNotary should be rejected
+        replicaManager.submitAttestation(fakeNotary, attestation);
     }
 
-    function test_updateWithFakeSignerInvalidSignature() public {
+    function test_attestationWithFakeSignerInvalidSignature() public {
         uint32 nonce = 42;
-        (bytes memory attestation, ) = signRemoteAttestation(fakeUpdaterPK, nonce, ROOT);
+        (bytes memory attestation, ) = signRemoteAttestation(fakeNotaryPK, nonce, ROOT);
         vm.expectRevert("Invalid signature");
-        // Signer (updater) and the signature (fakeUpdater) don't match
-        replicaManager.submitAttestation(updater, attestation);
+        // Signer (notary) and the signature (fakeNotary) don't match
+        replicaManager.submitAttestation(notary, attestation);
     }
 
-    function test_updateWithGoodSignerInvalidSignature() public {
+    function test_attestationWithGoodSignerInvalidSignature() public {
         uint32 nonce = 42;
-        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, ROOT);
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, ROOT);
         vm.expectRevert("Invalid signature");
-        // Signer (fakeUpdater) and the signature (updater) don't match
-        replicaManager.submitAttestation(fakeUpdater, attestation);
+        // Signer (fakeNotary) and the signature (notary) don't match
+        replicaManager.submitAttestation(fakeNotary, attestation);
     }
 
-    function test_updateWithLocalDomain() public {
+    function test_attestationWithLocalDomain() public {
         uint32 nonce = 42;
-        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, ROOT);
-        vm.expectRevert("Update refers to local chain");
-        // Replica should reject updates from the chain it's deployed on
-        replicaManager.submitAttestation(updater, attestation);
+        (bytes memory attestation, ) = signHomeAttestation(notaryPK, nonce, ROOT);
+        vm.expectRevert("Attestation refers to local chain");
+        // Replica should reject attestations from the chain it's deployed on
+        replicaManager.submitAttestation(notary, attestation);
     }
 
     function test_acceptableRoot() public {
         uint32 optimisticSeconds = 69;
-        test_successfulUpdate();
+        test_successfulAttestation();
         vm.warp(block.timestamp + optimisticSeconds);
         assertTrue(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
     }
 
     function test_cannotAcceptableRoot() public {
-        test_successfulUpdate();
+        test_successfulAttestation();
         uint32 optimisticSeconds = 69;
         vm.warp(block.timestamp + optimisticSeconds - 1);
         assertFalse(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
     }
 
-    event LogTips(uint96 updaterTip, uint96 relayerTip, uint96 proverTip, uint96 processorTip);
+    event LogTips(uint96 notaryTip, uint96 relayerTip, uint96 proverTip, uint96 processorTip);
 
     function test_process() public {
         bytes memory message = _prepareProcessTest(OPTIMISTIC_PERIOD);
         vm.warp(block.timestamp + OPTIMISTIC_PERIOD);
         vm.expectEmit(true, true, true, true);
-        emit LogTips(UPDATER_TIP, RELAYER_TIP, PROVER_TIP, PROCESSOR_TIP);
+        emit LogTips(notary_TIP, RELAYER_TIP, PROVER_TIP, PROCESSOR_TIP);
         replicaManager.process(message);
     }
 
@@ -208,7 +204,7 @@ contract ReplicaManagerTest is SynapseTest {
     }
 
     function _prepareProcessTest(uint32 optimisticPeriod) internal returns (bytes memory message) {
-        test_successfulUpdate();
+        test_successfulAttestation();
 
         uint32 nonce = 1234;
         bytes32 sender = "sender";

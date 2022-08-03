@@ -2,19 +2,19 @@
 
 pragma solidity 0.8.13;
 
-import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
+import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
 import { SystemMessage } from "../contracts/system/SystemMessage.sol";
 import { Message } from "../contracts/libs/Message.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Tips } from "../contracts/libs/Tips.sol";
-import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
+import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
 import { HomeHarness } from "./harnesses/HomeHarness.sol";
 import { ReplicaManagerHarness } from "./harnesses/ReplicaManagerHarness.sol";
 import { SystemMessengerHarness } from "./harnesses/SystemMessengerHarness.sol";
 
-contract SystemMessengerTest is SynapseTestWithUpdaterManager {
+contract SystemMessengerTest is SynapseTestWithNotaryManager {
     SystemMessengerHarness internal systemMessenger;
     HomeHarness internal home;
     ReplicaManagerHarness internal replicaManager;
@@ -41,11 +41,11 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         super.setUp();
 
         home = new HomeHarness(localDomain);
-        home.initialize(IUpdaterManager(updaterManager));
-        updaterManager.setHome(address(home));
+        home.initialize(INotaryManager(notaryManager));
+        notaryManager.setHome(address(home));
 
         replicaManager = new ReplicaManagerHarness(localDomain);
-        replicaManager.initialize(remoteDomain, updater);
+        replicaManager.initialize(remoteDomain, notary);
 
         systemMessenger = new SystemMessengerHarness(
             address(home),
@@ -176,8 +176,8 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         uint8 _recipient,
         function(uint32, uint32, uint8) internal returns (bytes memory) _createReceivedMessage
     ) internal returns (bytes memory message) {
-        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, NONCE, ROOT);
-        replicaManager.submitAttestation(updater, attestation);
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
+        replicaManager.submitAttestation(notary, attestation);
 
         message = _createReceivedMessage(69, _optimisticSeconds, _recipient);
         bytes32 messageHash = keccak256(message);

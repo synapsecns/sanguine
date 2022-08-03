@@ -26,12 +26,12 @@ abstract contract AuthManager {
 
     /**
      * @notice  Checks if the passed payload is a valid Attestation message,
-     *          if the signature is valid and if the signer is an authorized updater.
-     * @param _updater      Signer of the message, needs to be authorized as updater, revert otherwise.
+     *          if the signature is valid and if the signer is an authorized notary.
+     * @param _notary       Signer of the message, needs to be authorized as notary, revert otherwise.
      * @param _attestation  Attestation of Home merkle root. Needs to be valid, revert otherwise.
      * @return _view        Memory view on attestation
      */
-    function _checkUpdaterAuth(address _updater, bytes memory _attestation)
+    function _checkNotaryAuth(address _notary, bytes memory _attestation)
         internal
         view
         returns (bytes29 _view)
@@ -39,12 +39,8 @@ abstract contract AuthManager {
         _view = _attestation.ref(0);
         require(_view.isAttestation(), "Not an attestation");
         // This will revert if signature is invalid
-        Auth.checkSignature(
-            _updater,
-            _view.attestationData(),
-            _view.attestationSignature().clone()
-        );
-        require(_isUpdater(_view.attestationDomain(), _updater), "Signer is not an updater");
+        Auth.checkSignature(_notary, _view.attestationData(), _view.attestationSignature().clone());
+        require(_isNotary(_view.attestationDomain(), _notary), "Signer is not an notary");
     }
 
     function _checkWatchtowerAuth(address _watchtower, bytes memory _report)
@@ -59,7 +55,7 @@ abstract contract AuthManager {
     ▏*║                          VIRTUAL FUNCTIONS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _isUpdater(uint32 _homeDomain, address _updater) internal view virtual returns (bool);
+    function _isNotary(uint32 _homeDomain, address _notary) internal view virtual returns (bool);
 
     function _isWatchtower(address _watchtower) internal view virtual returns (bool);
 }

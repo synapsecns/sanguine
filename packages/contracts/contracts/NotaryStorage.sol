@@ -12,11 +12,11 @@ import {
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
- * @title UpdaterStorage
+ * @title NotaryStorage
  * @author Illusory Systems Inc.
  * @notice Shared utilities between Home and Replica.
  */
-abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
+abstract contract NotaryStorage is Initializable, OwnableUpgradeable {
     // ============ Immutable Variables ============
 
     // Domain of chain on which the contract is deployed
@@ -24,8 +24,8 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
 
     // ============ Public Variables ============
 
-    // Address of bonded Updater
-    address public updater;
+    // Address of bonded Notary
+    address public notary;
 
     ISystemMessenger public systemMessenger;
 
@@ -37,15 +37,14 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
     // ============ Events ============
 
     /**
-     * @notice Emitted when update is made on Home
-     * or unconfirmed update root is submitted on Replica
+     * @notice Emitted when attestation is submitted on Replica
      * @param homeDomain Domain of home contract
      * @param nonce Nonce of new merkle root
      * @param root New merkle root
-     * @param signature Updater's signature on `homeDomain`, `nonce` and `root`
+     * @param signature Notary's signature on `homeDomain`, `nonce` and `root`
      */
-    // TODO: emit abi encoded update instead?
-    event Update(
+    // TODO: emit abi encoded attestation instead?
+    event AttestationSubmitted(
         uint32 indexed homeDomain,
         uint32 indexed nonce,
         bytes32 indexed root,
@@ -53,11 +52,11 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
     );
 
     /**
-     * @notice Emitted when Updater is rotated
-     * @param oldUpdater The address of the old updater
-     * @param newUpdater The address of the new updater
+     * @notice Emitted when Notary is rotated
+     * @param oldNotary The address of the old notary
+     * @param newNotary The address of the new notary
      */
-    event NewUpdater(address oldUpdater, address newUpdater);
+    event NewNotary(address oldNotary, address newNotary);
 
     // ============ Constructor ============
 
@@ -67,9 +66,9 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
 
     // ============ Initializer ============
 
-    function __SynapseBase_initialize(address _updater) internal onlyInitializing {
+    function __SynapseBase_initialize(address _notary) internal onlyInitializing {
         __Ownable_init();
-        _setUpdater(_updater);
+        _setNotary(_notary);
     }
 
     // ============ Modifiers ============
@@ -104,24 +103,24 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
     }
 
     /**
-     * @notice Set the Updater
-     * @param _newUpdater Address of the new Updater
+     * @notice Set the Notary
+     * @param _newNotary Address of the new Notary
      */
-    function _setUpdater(address _newUpdater) internal {
-        address _oldUpdater = updater;
-        updater = _newUpdater;
-        emit NewUpdater(_oldUpdater, _newUpdater);
+    function _setNotary(address _newNotary) internal {
+        address _oldNotary = notary;
+        notary = _newNotary;
+        emit NewNotary(_oldNotary, _newNotary);
     }
 
     /**
-     * @notice Checks that signature was signed by Updater
+     * @notice Checks that signature was signed by Notary
      * @param _homeDomain Domain of Home contract where the signing was done
      * @param _oldRoot Old merkle root
      * @param _newRoot New merkle root
      * @param _signature Signature on `_oldRoot` and `_newRoot`
-     * @return TRUE if signature is valid signed by updater
+     * @return TRUE if signature is valid signed by notary
      **/
-    function _isUpdaterSignature(
+    function _isNotarySignature(
         uint32 _homeDomain,
         bytes32 _oldRoot,
         bytes32 _newRoot,
@@ -129,7 +128,7 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
     ) internal view returns (bool) {
         bytes32 _digest = keccak256(abi.encodePacked(_domainHash(_homeDomain), _oldRoot, _newRoot));
         _digest = ECDSA.toEthSignedMessageHash(_digest);
-        return (ECDSA.recover(_digest, _signature) == updater);
+        return (ECDSA.recover(_digest, _signature) == notary);
     }
 
     /**

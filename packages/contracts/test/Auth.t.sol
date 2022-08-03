@@ -19,13 +19,13 @@ contract AuthTest is SynapseTest {
     }
 
     function test_checkSignature() public {
-        bytes memory signature = signMessage(updaterPK, message);
-        harness.checkSignature(updater, message, signature);
+        bytes memory signature = signMessage(notaryPK, message);
+        harness.checkSignature(notary, message, signature);
     }
 
     function test_checkSignature_wrongSigner() public {
-        bytes memory signature = signMessage(fakeUpdaterPK, message);
+        bytes memory signature = signMessage(fakeNotaryPK, message);
         vm.expectRevert("Invalid signature");
-        harness.checkSignature(updater, message, signature);
+        harness.checkSignature(notary, message, signature);
     }
 }
