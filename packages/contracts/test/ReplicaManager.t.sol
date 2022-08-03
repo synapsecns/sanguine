@@ -101,14 +101,14 @@ contract ReplicaManagerTest is SynapseTest {
         bytes signature
     );
 
-    // Relayer relays a new root signed by notary on Home chain
+    // Broadcaster relays a new root signed by notary on Home chain
     function test_successfulAttestation() public {
         uint32 nonce = 42;
         assertEq(replicaManager.notary(), vm.addr(notaryPK));
         (bytes memory attestation, bytes memory sig) = signRemoteAttestation(notaryPK, nonce, ROOT);
         // Root doesn't exist yet
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), 0);
-        // Relayer sends over a root signed by the notary on the Home chain
+        // Broadcaster sends over a root signed by the notary on the Home chain
         vm.expectEmit(true, true, true, true);
         emit AttestationSubmitted(remoteDomain, nonce, ROOT, sig);
         replicaManager.submitAttestation(notary, attestation);
@@ -162,13 +162,13 @@ contract ReplicaManagerTest is SynapseTest {
         assertFalse(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
     }
 
-    event LogTips(uint96 notaryTip, uint96 relayerTip, uint96 proverTip, uint96 processorTip);
+    event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 processorTip);
 
     function test_process() public {
         bytes memory message = _prepareProcessTest(OPTIMISTIC_PERIOD);
         vm.warp(block.timestamp + OPTIMISTIC_PERIOD);
         vm.expectEmit(true, true, true, true);
-        emit LogTips(notary_TIP, RELAYER_TIP, PROVER_TIP, PROCESSOR_TIP);
+        emit LogTips(notary_TIP, BROADCASTER_TIP, PROVER_TIP, PROCESSOR_TIP);
         replicaManager.process(message);
     }
 
