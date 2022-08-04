@@ -169,7 +169,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         uint32 nonce = 0;
         bytes32 root = home.root();
         // This root exists, but with nonce = 1
-        // nonce = 0 exists, with a different Merkle root
+        // nonce = 2 exists, with a different Merkle root
         _checkImproperUpdate(nonce, root);
     }
 

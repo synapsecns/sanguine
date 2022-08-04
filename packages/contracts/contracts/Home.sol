@@ -124,8 +124,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         _setUpdaterManager(_updaterManager);
         __SynapseBase_initialize(updaterManager.updater());
         state = States.Active;
-        // insert a historical root so nonces start at 1 rather then 0
-        historicalRoots.push(bytes32(""));
+        // insert a historical root so nonces start at 1 rather then 0. Here we insert the default root of a sparse merkle tree
+        historicalRoots.push(hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757");
     }
 
     // ============ Modifiers ============
