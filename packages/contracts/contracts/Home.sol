@@ -60,7 +60,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     // ============ Public Storage Variables ============
 
     // domain => next available nonce for the domain
-    mapping(uint32 => uint32) public nonces;
+    uint32 public nonce;
     // contract responsible for Updater bonding, slashing and rotation
     IUpdaterManager public updaterManager;
     // Current state of contract
@@ -191,14 +191,13 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         require(_tips.tipsView().totalTips() == msg.value, "!tips");
         // get the next nonce for the destination domain, then increment it
-        uint32 _nonce = nonces[_destinationDomain];
-        nonces[_destinationDomain] = _nonce + 1;
+        nonce = nonce + 1;
         bytes32 _sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
         bytes memory _header = Header.formatHeader(
             localDomain,
             _sender,
-            _nonce,
+            nonce,
             _destinationDomain,
             _recipientAddress,
             _optimisticSeconds
@@ -214,7 +213,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         emit Dispatch(
             _messageHash,
             count() - 1,
-            _destinationAndNonce(_destinationDomain, _nonce),
+            _destinationAndNonce(_destinationDomain, nonce),
             _tips,
             _message
         );
