@@ -27,30 +27,28 @@ abstract contract AuthManager {
     /**
      * @notice  Checks if the passed payload is a valid Attestation message,
      *          if the signature is valid and if the signer is an authorized updater.
-     * @param _updater      Signer of the message, needs to be authorized as updater, revert otherwise.
      * @param _attestation  Attestation of Home merkle root. Needs to be valid, revert otherwise.
+     * @return _updater     Updater that signed the Attestation
      * @return _view        Memory view on attestation
      */
-    function _checkUpdaterAuth(address _updater, bytes memory _attestation)
+    function _checkUpdaterAuth(bytes memory _attestation)
         internal
         view
-        returns (bytes29 _view)
+        returns (address _updater, bytes29 _view)
     {
         _view = _attestation.ref(0);
         require(_view.isAttestation(), "Not an attestation");
-        // This will revert if signature is invalid
-        Auth.checkSignature(
-            _updater,
+        _updater = Auth.recoverSigner(
             _view.attestationData(),
             _view.attestationSignature().clone()
         );
         require(_isUpdater(_view.attestationDomain(), _updater), "Signer is not an updater");
     }
 
-    function _checkWatchtowerAuth(address _watchtower, bytes memory _report)
+    function _checkWatchtowerAuth(bytes memory _report)
         internal
         view
-        returns (bytes29 _data)
+        returns (address _watchtower, bytes29 _data)
     {
         // TODO: check if _report is valid, once watchtower message standard is finalized
     }

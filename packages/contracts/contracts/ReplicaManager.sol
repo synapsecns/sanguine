@@ -133,11 +133,10 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * marks root's allowable confirmation time, and emits an `Update` event.
      * @dev Reverts if update doesn't build off latest committedRoot
      * or if signature is invalid.
-     * @param _updater      Updater who signer the attestation
      * @param _attestation  Attestation data and signature
      */
-    function submitAttestation(address _updater, bytes memory _attestation) external {
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
+    function submitAttestation(bytes memory _attestation) external {
+        (, bytes29 _view) = _checkUpdaterAuth(_attestation);
         uint32 remoteDomain = _view.attestationDomain();
         require(remoteDomain != localDomain, "Update refers to local chain");
         uint32 nonce = _view.attestationNonce();

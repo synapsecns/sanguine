@@ -260,17 +260,12 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      *
      * @dev Reverts (and doesn't slash updater) if signature is invalid or
      * update not current
-     * @param _updater      Updater who signed the attestation
      * @param _attestation  Attestation data and signature
      * @return TRUE if update was an Improper Attestation (implying Updater was slashed)
      */
-    function improperAttestation(address _updater, bytes memory _attestation)
-        public
-        notFailed
-        returns (bool)
-    {
+    function improperAttestation(bytes memory _attestation) public notFailed returns (bool) {
         // This will revert if signature is not valid
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
+        (address _updater, bytes29 _view) = _checkUpdaterAuth(_attestation);
         uint32 _nonce = _view.attestationNonce();
         bytes32 _root = _view.attestationRoot();
         // Check if nonce is valid, if not => update is fraud
