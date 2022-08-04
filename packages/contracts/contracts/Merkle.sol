@@ -15,7 +15,7 @@ contract MerkleTreeManager {
 
     using MerkleLib for MerkleLib.Tree;
     MerkleLib.Tree public tree;
-    bytes32[] public historicalRoots;
+    bytes32[] internal _historicalRoots;
 
     // ============ Upgrade Gap ============
 
@@ -45,6 +45,6 @@ contract MerkleTreeManager {
      */
     function _insertHash(bytes32 _hash) internal {
         tree.insert(_hash);
-        historicalRoots.push(tree.root());
+        _historicalRoots.push(tree.root());
     }
 }

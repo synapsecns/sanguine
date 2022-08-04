@@ -13,6 +13,10 @@ contract HomeHarness is Home {
         sensitiveValue = _newValue;
     }
 
+    function historicalRoots(uint256 _nonce) public view returns (bytes32) {
+        return _historicalRoots[_nonce];
+    }
+
     function setFailed() public {
         _fail();
     }

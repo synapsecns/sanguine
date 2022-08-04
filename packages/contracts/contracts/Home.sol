@@ -225,10 +225,10 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      * @return _root Current merkle root
      */
     function suggestUpdate() external view returns (uint32 _nonce, bytes32 _root) {
-        uint256 length = historicalRoots.length;
+        uint256 length = _historicalRoots.length;
         if (length != 0) {
             _nonce = uint32(length - 1);
-            _root = historicalRoots[_nonce];
+            _root = _historicalRoots[_nonce];
         }
     }
 
@@ -239,10 +239,10 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      * @return _root Historical root with index of _nonce
      */
     function getHistoricalRoot(uint32 _nonce) external view returns (bytes32 _root) {
-        uint256 length = historicalRoots.length;
+        uint256 length = _historicalRoots.length;
         if (length != 0) {
             require(_nonce < length, "there is no root of the given nonce");
-            _root = historicalRoots[_nonce];
+            _root = _historicalRoots[_nonce];
         }
     }
 
@@ -289,8 +289,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         uint32 _nonce = _view.attestationNonce();
         bytes32 _root = _view.attestationRoot();
         // Check if nonce is valid, if not => update is fraud
-        if (_nonce < historicalRoots.length) {
-            if (_root == historicalRoots[_nonce]) {
+        if (_nonce < _historicalRoots.length) {
+            if (_root == _historicalRoots[_nonce]) {
                 // Signed (nonce, root) update is valid
                 return false;
             }
