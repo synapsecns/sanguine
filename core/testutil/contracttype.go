@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
@@ -52,6 +53,8 @@ const (
 	HomeHarnessType contractTypeImpl = iota // HomeHarness
 	// AttestationHarnessType is the attestation harness type.
 	AttestationHarnessType contractTypeImpl = iota
+	// TipsHarnessType is the type of the tips harness.
+	TipsHarnessType contractTypeImpl = iota
 	// ReplicaManagerHarnessType is the replica manager harness type.
 	ReplicaManagerHarnessType contractTypeImpl = iota
 	// UpdaterManagerType is the type of the update manager.
@@ -95,6 +98,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return replicamanagerharness.Contracts["solidity/ReplicaManagerHarness.sol:ReplicaManagerHarness"]
 	case UpdaterManagerType:
 		return updatermanager.Contracts["solidity/UpdaterManager.sol:UpdaterManager"]
+	case TipsHarnessType:
+		return tipsharness.Contracts["solidity/TipsHarness.sol:TipsHarness"]
 	case AttestationCollectorType:
 		return attestationcollector.Contracts["solidity/AttestationCollector.sol:AttestationCollector"]
 	case ReplicaManagerType:

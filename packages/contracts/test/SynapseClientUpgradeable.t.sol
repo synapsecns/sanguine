@@ -100,6 +100,7 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         }
     }
 
+
     function test_setTrustedSendersAsNotOwner(address _notOwner) public {
         vm.assume(_notOwner != owner);
         uint32[] memory domains = new uint32[](1);
@@ -187,7 +188,7 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         bytes memory _header = Header.formatHeader(
             localDomain,
             bytes32(uint256(uint160(address(client)))),
-            0,
+            1,
             remoteDomain,
             trustedSender,
             0
@@ -195,7 +196,7 @@ contract SynapseClientTest is SynapseTestWithUpdaterManager {
         bytes memory _tips = getDefaultTips();
         bytes memory message = Message.formatMessage(_header, _tips, messageBody);
         vm.expectEmit(true, true, true, true);
-        emit Dispatch(keccak256(message), 0, uint64(remoteDomain) << 32, _tips, message);
+        emit Dispatch(keccak256(message), 0, uint64(remoteDomain) << 32 | 1, _tips, message);
         deal(address(this), TOTAL_TIPS);
         client.send{ value: TOTAL_TIPS }(remoteDomain, _tips, messageBody);
     }

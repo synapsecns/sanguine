@@ -31,6 +31,9 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
     // [homeDomain => [updater => isUpdater]]
     mapping(uint32 => mapping(address => bool)) public isUpdater;
 
+    // stores the latest nonce
+    mapping(uint32 => uint32) private domainNonces;
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             UPGRADE GAP                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -69,6 +72,10 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
         emit AttestationSubmitted(_updater, _attestation);
     }
 
+    function latestNonce(uint32 domain) external view returns (uint32) {
+        return domainNonces[domain];
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -100,5 +107,12 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
 
     function _storeAttestation(bytes29 _view) internal {
         // TODO: implement storing logic for easy retrieval
+        uint32 domain = Attestation.attestationDomain(_view);
+
+        uint32 newNonce = Attestation.attestationNonce(_view);
+
+        if (newNonce > domainNonces[domain]) {
+            domainNonces[domain] = newNonce;
+        }
     }
 }
