@@ -115,7 +115,7 @@ contract ReplicaManagerTest is SynapseTest {
         // Relayer sends over a root signed by the updater on the Home chain
         vm.expectEmit(true, true, true, true);
         emit Update(remoteDomain, nonce, ROOT, sig);
-        replicaManager.submitAttestation(updater, attestation);
+        replicaManager.submitAttestation(attestation);
         // Time at which root was confirmed is set, optimistic timeout starts now
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), block.timestamp);
     }
@@ -125,23 +125,7 @@ contract ReplicaManagerTest is SynapseTest {
         (bytes memory attestation, ) = signRemoteAttestation(fakeUpdaterPK, nonce, ROOT);
         vm.expectRevert("Signer is not an updater");
         // Update signed by fakeUpdater should be rejected
-        replicaManager.submitAttestation(fakeUpdater, attestation);
-    }
-
-    function test_updateWithFakeSignerInvalidSignature() public {
-        uint32 nonce = 42;
-        (bytes memory attestation, ) = signRemoteAttestation(fakeUpdaterPK, nonce, ROOT);
-        vm.expectRevert("Invalid signature");
-        // Signer (updater) and the signature (fakeUpdater) don't match
-        replicaManager.submitAttestation(updater, attestation);
-    }
-
-    function test_updateWithGoodSignerInvalidSignature() public {
-        uint32 nonce = 42;
-        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, ROOT);
-        vm.expectRevert("Invalid signature");
-        // Signer (fakeUpdater) and the signature (updater) don't match
-        replicaManager.submitAttestation(fakeUpdater, attestation);
+        replicaManager.submitAttestation(attestation);
     }
 
     function test_updateWithLocalDomain() public {
@@ -149,7 +133,7 @@ contract ReplicaManagerTest is SynapseTest {
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, ROOT);
         vm.expectRevert("Update refers to local chain");
         // Replica should reject updates from the chain it's deployed on
-        replicaManager.submitAttestation(updater, attestation);
+        replicaManager.submitAttestation(attestation);
     }
 
     function test_acceptableRoot() public {
