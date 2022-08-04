@@ -151,7 +151,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes32 root = "very real much wow";
         // Any signed attestation from another chain should be rejected
         (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
-        bytes memory report = signReport(updaterPK, watchtowerPK, attestation);
+        bytes memory report = signReport(watchtowerPK, attestation);
         vm.expectRevert("Wrong domain");
         home.submitReport(report);
     }
@@ -199,7 +199,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bool isValidReport
     ) internal {
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
-        bytes memory report = signReport(updaterPK, watchtowerPK, attestation);
+        bytes memory report = signReport(watchtowerPK, attestation);
         vm.expectEmit(true, true, true, true);
         if (isValidReport) {
             emit InvalidAttestation(updater, attestation);
@@ -228,7 +228,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         assertEq(nonce, 3);
         assertEq(root, home.historicalRoots(nonce));
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
-        bytes memory report = signReport(updaterPK, watchtowerPK, attestation);
+        bytes memory report = signReport(watchtowerPK, attestation);
         vm.expectEmit(true, true, true, true);
         emit InvalidReport(watchtower, report);
         // Should not be an invalid attestation
