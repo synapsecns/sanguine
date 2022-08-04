@@ -143,8 +143,6 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         uint32 nonce = _view.attestationNonce();
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[remoteDomain]];
         require(nonce > replica.nonce, "Update older than current state");
-        // Hook for future use
-        _beforeUpdate();
         bytes32 newRoot = _view.attestationRoot();
         replica.setConfirmAt(newRoot, block.timestamp);
         // update nonce
@@ -320,10 +318,6 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         allReplicas[replicaIndex].setupReplica(_remoteDomain);
         replicaCount = replicaIndex;
     }
-
-    /// @notice Hook for potential future use
-    // solhint-disable-next-line no-empty-blocks
-    function _beforeUpdate() internal {}
 
     function _getRevertMsg(bytes memory _returnData) internal pure returns (string memory) {
         // If the _res length is less than 68, then the transaction failed silently (without a revert message)

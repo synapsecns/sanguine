@@ -114,25 +114,6 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
     }
 
     /**
-     * @notice Checks that signature was signed by Updater
-     * @param _homeDomain Domain of Home contract where the signing was done
-     * @param _oldRoot Old merkle root
-     * @param _newRoot New merkle root
-     * @param _signature Signature on `_oldRoot` and `_newRoot`
-     * @return TRUE if signature is valid signed by updater
-     **/
-    function _isUpdaterSignature(
-        uint32 _homeDomain,
-        bytes32 _oldRoot,
-        bytes32 _newRoot,
-        bytes memory _signature
-    ) internal view returns (bool) {
-        bytes32 _digest = keccak256(abi.encodePacked(_domainHash(_homeDomain), _oldRoot, _newRoot));
-        _digest = ECDSA.toEthSignedMessageHash(_digest);
-        return (ECDSA.recover(_digest, _signature) == updater);
-    }
-
-    /**
      * @dev should be impossible to renounce ownership;
      * we override OpenZeppelin OwnableUpgradeable's
      * implementation of renounceOwnership to make it a no-op
