@@ -63,8 +63,8 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function submitAttestation(address _updater, bytes memory _attestation) external {
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
+    function submitAttestation(bytes memory _attestation) external {
+        (address _updater, bytes29 _view) = _checkUpdaterAuth(_attestation);
         _storeAttestation(_view);
         emit AttestationSubmitted(_updater, _attestation);
     }

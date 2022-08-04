@@ -2,6 +2,10 @@ package types_test
 
 import (
 	"context"
+	"math/big"
+	"testing"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -9,10 +13,60 @@ import (
 	"github.com/synapsecns/sanguine/core/testutil"
 	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/synapse-node/testutils/backends/simulated"
-	"math/big"
-	"testing"
-	"time"
 )
+
+func TestEncodeAttestationParity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+
+	domain := gofakeit.Uint32()
+	nonce := gofakeit.Uint32()
+	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+
+	_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
+
+	contractData, err := attesationContract.FormatAttestationData(&bind.CallOpts{Context: ctx}, domain, nonce, root)
+	Nil(t, err)
+
+	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(domain, nonce, root))
+	Nil(t, err)
+	Equal(t, contractData, goFormattedData)
+}
+
+func TestEncodeSignedAttestationParity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+
+	_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
+
+	domain := gofakeit.Uint32()
+	nonce := gofakeit.Uint32()
+	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+
+	sig := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+
+	signedAttestation := types.NewSignedAttestation(
+		types.NewAttestation(domain, nonce, root),
+		sig,
+	)
+
+	encodedSignature, err := types.EncodeSignature(sig)
+	Nil(t, err)
+
+	signedContractAttestation, err := attesationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, domain, nonce, root, encodedSignature)
+	Nil(t, err)
+
+	goData, err := types.EncodeSignedAttestation(signedAttestation)
+	Nil(t, err)
+
+	Equal(t, signedContractAttestation, goData)
+}
 
 func TestMessageEncodeParity(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)

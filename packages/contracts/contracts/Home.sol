@@ -64,7 +64,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     // ============ Public Storage Variables ============
 
     // domain => next available nonce for the domain
-    mapping(uint32 => uint32) public nonces;
+    uint32 public nonce;
     // contract responsible for Updater bonding, slashing and rotation
     IUpdaterManager public updaterManager;
     // Current state of contract
@@ -205,14 +205,13 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         require(_tips.tipsView().totalTips() == msg.value, "!tips");
         // get the next nonce for the destination domain, then increment it
-        uint32 _nonce = nonces[_destinationDomain];
-        nonces[_destinationDomain] = _nonce + 1;
+        nonce = nonce + 1;
         bytes32 _sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
         bytes memory _header = Header.formatHeader(
             localDomain,
             _sender,
-            _nonce,
+            nonce,
             _destinationDomain,
             _recipientAddress,
             _optimisticSeconds
@@ -228,7 +227,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         emit Dispatch(
             _messageHash,
             count() - 1,
-            _destinationAndNonce(_destinationDomain, _nonce),
+            _destinationAndNonce(_destinationDomain, nonce),
             _tips,
             _message
         );
@@ -275,23 +274,18 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      *
      * @dev Reverts (and doesn't slash updater) if signature is invalid or
      * update not current
-     * @param _watchtower   Watchtower that signed the report
      * @param  _report      Report data and signature
      * @return TRUE if update was an Invalid Attestation (implying Updater was slashed)
      */
-    function submitReport(address _watchtower, bytes memory _report)
-        external
-        notFailed
-        returns (bool)
-    {
+    function submitReport(bytes memory _report) external notFailed returns (bool) {
         // this will revert if Watchtower signature is invalid
-        bytes29 _reportView = _checkWatchtowerAuth(_watchtower, _report);
+        (address _watchtower, bytes29 _reportView) = _checkWatchtowerAuth(_report);
         // Get data from the report
         bytes29 _reportData = _reportView.reportData();
         address _updater = _reportData.reportUpdater();
         bytes29 _attestation = _reportData.reportAttestation();
         // this will revert if Updater signature is invalid
-        _checkUpdaterAuth(_updater, _attestation);
+        _checkUpdaterAuth(_attestation);
         // Get merkle state from the attestation
         uint32 _nonce = _attestation.attestationNonce();
         bytes32 _root = _attestation.attestationRoot();

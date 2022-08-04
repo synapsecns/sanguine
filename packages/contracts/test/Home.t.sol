@@ -100,7 +100,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes32 recipient = addressToBytes32(vm.addr(1337));
         address sender = vm.addr(1555);
         bytes memory messageBody = bytes("message");
-        uint32 nonce = home.nonces(remoteDomain);
+        uint32 nonce = home.nonce() + 1;
         bytes memory _header = Header.formatHeader(
             localDomain,
             addressToBytes32(sender),
@@ -153,7 +153,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
         bytes memory report = signReport(updaterPK, watchtowerPK, attestation);
         vm.expectRevert("Wrong domain");
-        home.submitReport(watchtower, report);
+        home.submitReport(report);
     }
 
     function test_submitReport_fraud_invalidNonce() public {
@@ -207,7 +207,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
             emit InvalidReport(watchtower, report);
         }
         // Home should recognize this as invalid attestation
-        home.submitReport(watchtower, report);
+        home.submitReport(report);
         if (isValidReport) {
             // Home should be in Failed state
             assertEq(uint256(home.state()), 2);
@@ -232,7 +232,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         vm.expectEmit(true, true, true, true);
         emit InvalidReport(watchtower, report);
         // Should not be an invalid attestation
-        assertFalse(home.submitReport(watchtower, report));
+        assertFalse(home.submitReport(report));
         assertEq(uint256(home.state()), 1);
     }
 

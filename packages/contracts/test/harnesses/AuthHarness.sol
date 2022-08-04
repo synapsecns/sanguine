@@ -8,11 +8,11 @@ import { Auth } from "../../contracts/libs/Auth.sol";
 contract AuthHarness {
     using TypedMemView for bytes;
 
-    function checkSignature(
-        address _signer,
-        bytes memory _payload,
-        bytes memory _signature
-    ) public pure {
-        Auth.checkSignature(_signer, _payload.ref(0), _signature);
+    function recoverSigner(bytes memory _payload, bytes memory _signature)
+        public
+        pure
+        returns (address)
+    {
+        return Auth.recoverSigner(_payload.ref(0), _signature);
     }
 }

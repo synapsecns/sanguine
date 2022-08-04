@@ -1,15 +1,16 @@
 package testutil
 
 import (
-	"github.com/synapsecns/sanguine/ethergo/manager"
 	"testing"
+
+	"github.com/synapsecns/sanguine/ethergo/manager"
 )
 
 // NewDeployManager creates a deploy manager.
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	parentManager := manager.NewDeployerManager(t, NewHomeDeployer, NewXAppConfigDeployer, NewMessageHarnessDeployer, NewHomeHarnessDeployer, NewUpdateManagerDeployer)
+	parentManager := manager.NewDeployerManager(t, NewHomeDeployer, NewXAppConfigDeployer, NewMessageHarnessDeployer, NewHomeHarnessDeployer, NewUpdateManagerDeployer, NewAttestationCollectorDeployer, NewAttestationHarnessDeployer, NewReplicaManagerDeployer, NewReplicaManagerHarnessDeployer)
 	return &DeployManager{parentManager}
 }
 

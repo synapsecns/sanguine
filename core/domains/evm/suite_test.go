@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/testutil"
@@ -49,9 +50,11 @@ func TestEVMSuite(t *testing.T) {
 // ContractSuite defines a suite for testing contracts. This uses the simulated backend.
 type ContractSuite struct {
 	*testutils.TestSuite
-	homeContract *home.HomeRef
-	testBackend  backends.SimulatedTestBackend
-	signer       signer.Signer
+	homeContract        *home.HomeRef
+	attestationContract *attestationcollector.AttestationCollectorRef
+	testBackend         backends.SimulatedTestBackend
+	attestationBackend  backends.SimulatedTestBackend
+	signer              signer.Signer
 }
 
 func NewContractSuite(tb testing.TB) *ContractSuite {
@@ -61,19 +64,26 @@ func NewContractSuite(tb testing.TB) *ContractSuite {
 	}
 }
 
+const attestationDomain = 4
+
 func (i *ContractSuite) SetupTest() {
 	i.TestSuite.SetupTest()
 
 	deployManager := testutil.NewDeployManager(i.T())
-	i.testBackend = simulated.NewSimulatedBackend(i.GetTestContext(), i.T())
+	i.testBackend = simulated.NewSimulatedBackendWithChainID(i.GetTestContext(), i.T(), big.NewInt(1))
+	i.attestationBackend = simulated.NewSimulatedBackendWithChainID(i.GetTestContext(), i.T(), big.NewInt(2))
 
 	_, i.homeContract = deployManager.GetHome(i.GetTestContext(), i.testBackend)
+
+	var attestationContract backends.DeployedContract
+	attestationContract, i.attestationContract = deployManager.GetAttestationCollector(i.GetTestContext(), i.attestationBackend)
 
 	wall, err := wallet.FromRandom()
 	Nil(i.T(), err)
 
 	i.signer = localsigner.NewSigner(wall.PrivateKey())
 	i.testBackend.FundAccount(i.GetTestContext(), wall.Address(), *big.NewInt(params.Ether))
+	i.attestationBackend.FundAccount(i.GetTestContext(), wall.Address(), *big.NewInt(params.Ether))
 
 	// change the updater as defined by the update manager contract
 	_, updaterManager := deployManager.GetUpdaterManager(i.GetTestContext(), i.testBackend)
@@ -85,8 +95,14 @@ func (i *ContractSuite) SetupTest() {
 	// set the signer address to the updater
 	tx, err := updaterManager.SetUpdater(transactOpts.TransactOpts, i.signer.Address())
 	Nil(i.T(), err)
-
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	// add the updater to attestation contract
+	auth := i.attestationBackend.GetTxContext(i.GetTestContext(), attestationContract.OwnerPtr())
+
+	tx, err = i.attestationContract.AddUpdater(auth.TransactOpts, attestationDomain, i.signer.Address())
+	Nil(i.T(), err)
+	i.attestationBackend.WaitForConfirmation(i.GetTestContext(), tx)
 }
 
 func TestContractSuite(t *testing.T) {

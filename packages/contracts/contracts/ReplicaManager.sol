@@ -146,11 +146,10 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * marks root's allowable confirmation time, and emits an `Update` event.
      * @dev Reverts if update doesn't build off latest committedRoot
      * or if signature is invalid.
-     * @param _updater      Updater who signer the attestation
      * @param _attestation  Attestation data and signature
      */
-    function submitAttestation(address _updater, bytes memory _attestation) external {
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
+    function submitAttestation(bytes memory _attestation) external {
+        (, bytes29 _view) = _checkUpdaterAuth(_attestation);
         uint32 remoteDomain = _view.attestationDomain();
         require(remoteDomain != localDomain, "Update refers to local chain");
         uint32 nonce = _view.attestationNonce();
@@ -169,16 +168,15 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * @notice Called by external agent. Submits the signed report,
      * and blacklists the reported updater.
      * @dev Reverts if report signer is not a watchtower, or if reported updater is not an updater.
-     * @param _watchtower   Watchtower who signed the report
      * @param _report       Report data and signature
      */
-    function submitReport(address _watchtower, bytes memory _report) external {
+    function submitReport(bytes memory _report) external {
         // Check if real watchtower & signature
-        bytes29 _reportView = _checkWatchtowerAuth(_watchtower, _report);
+        (address _watchtower, bytes29 _reportView) = _checkWatchtowerAuth(_report);
         bytes29 _reportData = _reportView.reportData();
         address _updater = _reportData.reportUpdater();
         // Check if real updater & signature
-        _checkUpdaterAuth(_updater, _reportData.reportAttestation());
+        _checkUpdaterAuth(_reportData.reportAttestation());
         _blacklistUpdater(_updater);
         emit UpdaterBlacklisted(_updater, msg.sender, _watchtower, _report);
     }

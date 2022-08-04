@@ -152,13 +152,14 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
 
     function _testSendSystemMessage(address _sender) internal {
         for (uint8 t = 0; t <= 1; ++t) {
-            bytes memory message = _createSentSystemMessage(t, t);
+            bytes memory message = _createSentSystemMessage(t + 1, t);
             bytes32 messageHash = keccak256(message);
+
             vm.expectEmit(true, true, true, true);
             emit Dispatch(
                 messageHash,
                 t,
-                (uint64(remoteDomain) << 32) | t,
+                (uint64(remoteDomain) << 32) | (t + 1),
                 Tips.emptyTips(),
                 message
             );
@@ -177,7 +178,7 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         function(uint32, uint32, uint8) internal returns (bytes memory) _createReceivedMessage
     ) internal returns (bytes memory message) {
         (bytes memory attestation, ) = signRemoteAttestation(updaterPK, NONCE, ROOT);
-        replicaManager.submitAttestation(updater, attestation);
+        replicaManager.submitAttestation(attestation);
 
         message = _createReceivedMessage(69, _optimisticSeconds, _recipient);
         bytes32 messageHash = keccak256(message);
