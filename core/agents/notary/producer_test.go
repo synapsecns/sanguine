@@ -41,5 +41,5 @@ func (u NotarySuite) TestUpdateProducer() {
 	// make sure an update has been produced
 	producedAttestation, err := testDB.RetrieveSignedAttestationByNonce(u.GetTestContext(), u.domainClient.Config().DomainID, 0)
 	Nil(u.T(), err)
-	Equal(u.T(), producedAttestation.Attestation().Nonce(), uint32(0))
+	Equal(u.T(), producedAttestation.Attestation().Nonce(), uint32(1))
 }

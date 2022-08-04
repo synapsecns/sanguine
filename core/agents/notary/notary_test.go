@@ -2,6 +2,7 @@ package notary_test
 
 import (
 	"github.com/Flaque/filet"
+	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
@@ -10,11 +11,10 @@ import (
 	"github.com/synapsecns/sanguine/core/db/datastore/sql"
 	"github.com/synapsecns/sanguine/core/types"
 	"math/big"
+	"time"
 )
 
 func (u NotarySuite) TestNotaryE2E() {
-	u.T().Skip("todo")
-
 	testConfig := config.Config{
 		Domains: map[string]config.DomainConfig{
 			"test": u.domainClient.Config(),
@@ -47,6 +47,7 @@ func (u NotarySuite) TestNotaryE2E() {
 	}()
 
 	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 		latestNonce, err := u.attestationContract.LatestNonce(&bind.CallOpts{Context: u.GetTestContext()}, u.domainClient.Config().DomainID)
 		Nil(u.T(), err)
 

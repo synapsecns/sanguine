@@ -80,10 +80,21 @@ func (u *NotarySuite) SetupTest() {
 	u.signer = localsigner.NewSigner(u.wallet.PrivateKey())
 	u.testBackend.FundAccount(u.GetTestContext(), u.signer.Address(), *big.NewInt(params.Ether))
 
-	transactOpts := u.testBackend.GetTxContext(u.GetTestContext(), &owner)
+	auth := u.testBackend.GetTxContext(u.GetTestContext(), &owner)
 
-	// set the updater
-	tx, err := updaterManager.SetUpdater(transactOpts.TransactOpts, u.signer.Address())
+	// set the updater on the update manager
+	tx, err := updaterManager.SetUpdater(auth.TransactOpts, u.signer.Address())
+	Nil(u.T(), err)
+
+	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
+
+	// set the updater on the attestation collector
+	owner, err = u.attestationContract.Owner(&bind.CallOpts{Context: u.GetTestContext()})
+	Nil(u.T(), err)
+
+	auth = u.testBackend.GetTxContext(u.GetTestContext(), &owner)
+
+	tx, err = u.attestationContract.AddUpdater(auth.TransactOpts, u.domainClient.Config().DomainID, u.signer.Address())
 	Nil(u.T(), err)
 
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
