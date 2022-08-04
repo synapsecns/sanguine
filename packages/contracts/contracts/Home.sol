@@ -6,7 +6,6 @@ import { Version0 } from "./Version0.sol";
 import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { AuthManager } from "./auth/AuthManager.sol";
 import { Attestation } from "./libs/Attestation.sol";
-import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
