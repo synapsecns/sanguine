@@ -404,20 +404,20 @@ func (_m *IHome) MAXMESSAGEBODYBYTES(opts *bind.CallOpts) (*big.Int, error) {
 	return r0, r1
 }
 
-// Nonces provides a mock function with given fields: opts, arg0
-func (_m *IHome) Nonces(opts *bind.CallOpts, arg0 uint32) (uint32, error) {
-	ret := _m.Called(opts, arg0)
+// Nonce provides a mock function with given fields: opts
+func (_m *IHome) Nonce(opts *bind.CallOpts) (uint32, error) {
+	ret := _m.Called(opts)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) uint32); ok {
-		r0 = rf(opts, arg0)
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint32); ok {
+		r0 = rf(opts)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
-		r1 = rf(opts, arg0)
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}

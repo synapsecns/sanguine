@@ -35,10 +35,10 @@ type IHomeCaller interface {
 	//
 	// Solidity: function localDomain() view returns(uint32)
 	LocalDomain(opts *bind.CallOpts) (uint32, error)
-	// Nonces is a free data retrieval call binding the contract method 0xb95a2001.
+	// Nonce is a free data retrieval call binding the contract method 0xaffed0e0.
 	//
-	// Solidity: function nonces(uint32 ) view returns(uint32)
-	Nonces(opts *bind.CallOpts, arg0 uint32) (uint32, error)
+	// Solidity: function nonce() view returns(uint32)
+	Nonce(opts *bind.CallOpts) (uint32, error)
 	// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 	//
 	// Solidity: function owner() view returns(address)
