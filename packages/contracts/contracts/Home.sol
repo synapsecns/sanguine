@@ -280,12 +280,10 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     function submitReport(bytes memory _report) external notFailed returns (bool) {
         // this will revert if Watchtower signature is invalid
         (address _watchtower, bytes29 _reportView) = _checkWatchtowerAuth(_report);
-        // Get data from the report
-        bytes29 _reportData = _reportView.reportData();
-        address _updater = _reportData.reportUpdater();
-        bytes29 _attestation = _reportData.reportAttestation();
+        // Get attestation from the report
+        bytes29 _attestation = _reportView.reportAttestation();
         // this will revert if Updater signature is invalid
-        _checkUpdaterAuth(_attestation);
+        address _updater = _checkUpdaterAuth(_attestation);
         // Get merkle state from the attestation
         uint32 _nonce = _attestation.attestationNonce();
         bytes32 _root = _attestation.attestationRoot();

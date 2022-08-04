@@ -173,10 +173,8 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     function submitReport(bytes memory _report) external {
         // Check if real watchtower & signature
         (address _watchtower, bytes29 _reportView) = _checkWatchtowerAuth(_report);
-        bytes29 _reportData = _reportView.reportData();
-        address _updater = _reportData.reportUpdater();
         // Check if real updater & signature
-        _checkUpdaterAuth(_reportData.reportAttestation());
+        address _updater = _checkUpdaterAuth(_reportView.reportAttestation());
         _blacklistUpdater(_updater);
         emit UpdaterBlacklisted(_updater, msg.sender, _watchtower, _report);
     }

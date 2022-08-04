@@ -31,6 +31,4 @@ library SynapseTypes {
 
     // prettier-ignore
     uint40 internal constant REPORT                     = 0x02_01_00_00_00;
-    // prettier-ignore
-    uint40 internal constant REPORT_DATA                = 0x02_02_00_00_00;
 }

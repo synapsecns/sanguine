@@ -11,6 +11,8 @@ import { SynapseTypes } from "./SynapseTypes.sol";
  *          an allegedly fraudulent Notary.
  *          Just like an Attestation, a Report could be checked on Home contract
  *          back on the chain the Notary in question is attesting.
+ *          Report includes an allegedly fraudulent Attestation (which includes the Notary signature),
+ *          and Guard signature on such Attestation.
  */
 library Report {
     using TypedMemView for bytes;
@@ -22,66 +24,51 @@ library Report {
     }
 
     /**
-     * @dev ReportData memory layout (to be signed by the Guard)
-     * [000 .. 020): notary         address 20 bytes
-     * [020 .. END): attestation    bytes   ?? bytes (40 + 64/65 bytes)
-     *
-     *      Report memory layout
-     * [000 .. 002): dataLength     uint16   2 bytes
-     * [002 .. AAA): data           bytes   ?? bytes (24 + 40 + 64/65 bytes)
+     * @dev Report memory layout
+     * [000 .. 002): attLength      uint16   2 bytes
+     * [002 .. AAA): attestation    bytes   ?? bytes (40 + 64/65 bytes)
      * [AAA .. END): signature      bytes   ?? bytes (64/65 bytes)
      */
 
-    uint256 internal constant OFFSET_NOTARY = 0;
-    uint256 internal constant OFFSET_ATTESTATION = 20;
+    uint256 internal constant OFFSET_ATTESTATION_LENGTH = 0;
+    uint256 internal constant OFFSET_ATTESTATION = 2;
 
-    uint256 internal constant OFFSET_DATA_LENGTH = 0;
-    uint256 internal constant OFFSET_DATA = 2;
-
-    function formatReport(bytes memory _data, bytes memory _signature)
+    function formatReport(bytes memory _attestation, bytes memory _signature)
         internal
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(uint16(_data.length), _data, _signature);
+        return abi.encodePacked(uint16(_attestation.length), _attestation, _signature);
     }
-
-    function formatReportData(address _notary, bytes memory _attestation)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return abi.encodePacked(_notary, _attestation);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                REPORT                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function castToReport(bytes memory _payload) internal pure returns (bytes29) {
         return _payload.ref(SynapseTypes.REPORT);
     }
 
     function isReport(bytes29 _view) internal pure returns (bool) {
-        uint256 dataLength = reportDataLength(_view);
+        uint256 attestationLength = reportAttestationLength(_view);
         // signature needs to exist
-        if (_view.len() <= OFFSET_DATA + dataLength) return false;
-        return isReportData(reportData(_view));
+        return (_view.len() > OFFSET_ATTESTATION + attestationLength);
     }
 
     /// @dev No type checks in private functions,
     /// as the type is checked in the function that called this one.
-    function reportDataLength(bytes29 _view) private pure returns (uint256) {
-        return _view.indexUint(OFFSET_DATA_LENGTH, 2);
+    function reportAttestationLength(bytes29 _view) private pure returns (uint256) {
+        return _view.indexUint(OFFSET_ATTESTATION_LENGTH, 2);
     }
 
-    function reportData(bytes29 _view)
+    function reportAttestation(bytes29 _view)
         internal
         pure
         onlyType(_view, SynapseTypes.REPORT)
         returns (bytes29)
     {
-        return _view.slice(OFFSET_DATA, reportDataLength(_view), SynapseTypes.REPORT_DATA);
+        return
+            _view.slice(
+                OFFSET_ATTESTATION,
+                reportAttestationLength(_view),
+                SynapseTypes.ATTESTATION
+            );
     }
 
     function reportSignature(bytes29 _view)
@@ -90,41 +77,7 @@ library Report {
         onlyType(_view, SynapseTypes.REPORT)
         returns (bytes29)
     {
-        uint256 offsetSignature = OFFSET_DATA + reportDataLength(_view);
+        uint256 offsetSignature = OFFSET_ATTESTATION + reportAttestationLength(_view);
         return _view.slice(offsetSignature, _view.len() - offsetSignature, SynapseTypes.SIGNATURE);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             REPORT DATA                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function isReportData(bytes29 _view) internal pure returns (bool) {
-        // Attestation needs to exist
-        if (_view.len() <= OFFSET_ATTESTATION) return false;
-        return Attestation.isAttestation(reportAttestation(_view));
-    }
-
-    // TODO: rename to Notary
-    function reportUpdater(bytes29 _view)
-        internal
-        pure
-        onlyType(_view, SynapseTypes.REPORT_DATA)
-        returns (address)
-    {
-        return _view.indexAddress(OFFSET_NOTARY);
-    }
-
-    function reportAttestation(bytes29 _view)
-        internal
-        pure
-        onlyType(_view, SynapseTypes.REPORT_DATA)
-        returns (bytes29)
-    {
-        return
-            _view.slice(
-                OFFSET_ATTESTATION,
-                _view.len() - OFFSET_ATTESTATION,
-                SynapseTypes.ATTESTATION
-            );
     }
 }
