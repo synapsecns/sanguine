@@ -4,12 +4,13 @@ pragma solidity 0.8.13;
 import { AuthManager } from "./auth/AuthManager.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { TypedMemView } from "./libs/TypedMemView.sol";
+import { NotaryRegistry } from "./NotaryRegistry.sol";
 
 import {
     OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract AttestationCollector is AuthManager, OwnableUpgradeable {
+contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable {
     using Attestation for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -20,16 +21,9 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
 
     event AttestationSubmitted(address indexed updater, bytes attestation);
 
-    event UpdaterAdded(uint32 indexed domain, address updater);
-
-    event UpdaterRemoved(uint32 indexed domain, address updater);
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // [homeDomain => [updater => isUpdater]]
-    mapping(uint32 => mapping(address => bool)) public isUpdater;
 
     /**
      * @dev All submitted Notary Attestations are stored.
@@ -56,7 +50,7 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
     ▏*║                             UPGRADE GAP                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    uint256[45] private __GAP;
+    uint256[46] private __GAP;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕
@@ -98,10 +92,28 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
     }
 
     /**
-     * @notice Get latest attestation for the domain (WIP).
+     * @notice Get latest attestation for the domain.
      */
     function getLatestAttestation(uint32 _domain) external view returns (bytes memory) {
-        // TODO: enumerate Notaries to implement this
+        uint256 notariesAmount = domainNotaries[_domain].length;
+        require(notariesAmount != 0, "!notaries");
+        uint32 _latestNonce = 0;
+        bytes32 _latestRoot;
+        for (uint256 i = 0; i < notariesAmount; ) {
+            address notary = domainNotaries[_domain][i];
+            uint32 nonce = latestNonce[_domain][notary];
+            // Check latest Notary's nonce against current latest nonce
+            if (nonce > _latestNonce) {
+                _latestRoot = latestRoot[_domain][notary];
+                _latestNonce = nonce;
+            }
+            unchecked {
+                ++i;
+            }
+        }
+        // Check if we found anything
+        require(_latestNonce != 0, "No attestations found");
+        return _formatAttestation(_domain, _latestNonce, _latestRoot);
     }
 
     /**
@@ -113,7 +125,7 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
         returns (bytes memory)
     {
         uint32 nonce = latestNonce[_domain][_updater];
-        require(nonce > 0, "No attestations found");
+        require(nonce != 0, "No attestations found");
         bytes32 root = latestRoot[_domain][_updater];
         return _formatAttestation(_domain, nonce, root);
     }
@@ -145,14 +157,14 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
     ▏*║                              OWNER ONLY                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // TODO: add/remove updaters upon bonding/unbonding
+    // TODO: add/remove notaries upon bonding/unbonding
 
-    function addUpdater(uint32 _domain, address _updater) external onlyOwner {
-        _addUpdater(_domain, _updater);
+    function addNotary(uint32 _domain, address _notary) external onlyOwner {
+        _addNotary(_domain, _notary);
     }
 
-    function removeUpdater(uint32 _domain, address _updater) external onlyOwner {
-        _removeUpdater(_domain, _updater);
+    function removeNotary(uint32 _domain, address _notary) external onlyOwner {
+        _removeNotary(_domain, _notary);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -175,24 +187,10 @@ contract AttestationCollector is AuthManager, OwnableUpgradeable {
         override
         returns (bool)
     {
-        return isUpdater[_homeDomain][_updater];
+        return _isNotary(_homeDomain, _updater);
     }
 
     function _isWatchtower(address _watchtower) internal view override returns (bool) {}
-
-    function _addUpdater(uint32 _domain, address _updater) internal {
-        if (!isUpdater[_domain][_updater]) {
-            isUpdater[_domain][_updater] = true;
-            emit UpdaterAdded(_domain, _updater);
-        }
-    }
-
-    function _removeUpdater(uint32 _domain, address _updater) internal {
-        if (isUpdater[_domain][_updater]) {
-            isUpdater[_domain][_updater] = false;
-            emit UpdaterRemoved(_domain, _updater);
-        }
-    }
 
     function _formatAttestation(
         uint32 _domain,
