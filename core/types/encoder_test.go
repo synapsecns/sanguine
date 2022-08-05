@@ -91,3 +91,33 @@ func TestEncodeDecodeTips(t *testing.T) {
 	Equal(t, decodedTips.ProverTip(), proverTip)
 	Equal(t, decodedTips.ProcessorTip(), processorTip)
 }
+
+func TestNewMessageEncodeDecode(t *testing.T) {
+	origin := gofakeit.Uint32()
+	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	nonce := gofakeit.Uint32()
+	destination := gofakeit.Uint32()
+	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
+	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
+
+	newMessage := types.NewMessage(origin, sender, nonce, destination, body, recipient)
+
+	Equal(t, newMessage.Origin(), origin)
+	Equal(t, newMessage.Sender(), sender)
+	Equal(t, newMessage.Nonce(), nonce)
+	Equal(t, newMessage.Destination(), destination)
+	Equal(t, newMessage.Body(), body)
+
+	encodedMessage, err := types.EncodeMessage(newMessage)
+	Nil(t, err)
+
+	// make sure decode is same as encode
+	decodedMessage, err := types.DecodeMessage(encodedMessage)
+	Nil(t, err)
+
+	Equal(t, newMessage.Origin(), decodedMessage.Origin())
+	Equal(t, newMessage.Sender(), decodedMessage.Sender())
+	Equal(t, newMessage.Nonce(), decodedMessage.Nonce())
+	Equal(t, newMessage.Destination(), decodedMessage.Destination())
+	Equal(t, newMessage.Body(), decodedMessage.Body())
+}

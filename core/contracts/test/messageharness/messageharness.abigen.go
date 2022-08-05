@@ -28,10 +28,183 @@ var (
 	_ = event.NewSubscription
 )
 
+// HeaderMetaData contains all meta data concerning the Header contract.
+var HeaderMetaData = &bind.MetaData{
+	ABI: "[]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220151de2853871dd0747b9d52f6ca623fb23b91958b265dd507ad724e447a11b3c64736f6c634300080d0033",
+}
+
+// HeaderABI is the input ABI used to generate the binding from.
+// Deprecated: Use HeaderMetaData.ABI instead.
+var HeaderABI = HeaderMetaData.ABI
+
+// HeaderBin is the compiled bytecode used for deploying new contracts.
+// Deprecated: Use HeaderMetaData.Bin instead.
+var HeaderBin = HeaderMetaData.Bin
+
+// DeployHeader deploys a new Ethereum contract, binding an instance of Header to it.
+func DeployHeader(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *Header, error) {
+	parsed, err := HeaderMetaData.GetAbi()
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	if parsed == nil {
+		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
+	}
+
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(HeaderBin), backend)
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	return address, tx, &Header{HeaderCaller: HeaderCaller{contract: contract}, HeaderTransactor: HeaderTransactor{contract: contract}, HeaderFilterer: HeaderFilterer{contract: contract}}, nil
+}
+
+// Header is an auto generated Go binding around an Ethereum contract.
+type Header struct {
+	HeaderCaller     // Read-only binding to the contract
+	HeaderTransactor // Write-only binding to the contract
+	HeaderFilterer   // Log filterer for contract events
+}
+
+// HeaderCaller is an auto generated read-only Go binding around an Ethereum contract.
+type HeaderCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// HeaderTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type HeaderTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// HeaderFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type HeaderFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// HeaderSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type HeaderSession struct {
+	Contract     *Header           // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// HeaderCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type HeaderCallerSession struct {
+	Contract *HeaderCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts // Call options to use throughout this session
+}
+
+// HeaderTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type HeaderTransactorSession struct {
+	Contract     *HeaderTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// HeaderRaw is an auto generated low-level Go binding around an Ethereum contract.
+type HeaderRaw struct {
+	Contract *Header // Generic contract binding to access the raw methods on
+}
+
+// HeaderCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type HeaderCallerRaw struct {
+	Contract *HeaderCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// HeaderTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type HeaderTransactorRaw struct {
+	Contract *HeaderTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewHeader creates a new instance of Header, bound to a specific deployed contract.
+func NewHeader(address common.Address, backend bind.ContractBackend) (*Header, error) {
+	contract, err := bindHeader(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &Header{HeaderCaller: HeaderCaller{contract: contract}, HeaderTransactor: HeaderTransactor{contract: contract}, HeaderFilterer: HeaderFilterer{contract: contract}}, nil
+}
+
+// NewHeaderCaller creates a new read-only instance of Header, bound to a specific deployed contract.
+func NewHeaderCaller(address common.Address, caller bind.ContractCaller) (*HeaderCaller, error) {
+	contract, err := bindHeader(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &HeaderCaller{contract: contract}, nil
+}
+
+// NewHeaderTransactor creates a new write-only instance of Header, bound to a specific deployed contract.
+func NewHeaderTransactor(address common.Address, transactor bind.ContractTransactor) (*HeaderTransactor, error) {
+	contract, err := bindHeader(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &HeaderTransactor{contract: contract}, nil
+}
+
+// NewHeaderFilterer creates a new log filterer instance of Header, bound to a specific deployed contract.
+func NewHeaderFilterer(address common.Address, filterer bind.ContractFilterer) (*HeaderFilterer, error) {
+	contract, err := bindHeader(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &HeaderFilterer{contract: contract}, nil
+}
+
+// bindHeader binds a generic wrapper to an already deployed contract.
+func bindHeader(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(HeaderABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Header *HeaderRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Header.Contract.HeaderCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Header *HeaderRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Header.Contract.HeaderTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Header *HeaderRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Header.Contract.HeaderTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Header *HeaderCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Header.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Header *HeaderTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Header.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Header *HeaderTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Header.Contract.contract.Transact(opts, method, params...)
+}
+
 // MessageMetaData contains all meta data concerning the Message contract.
 var MessageMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220e699ec66a289d31f4a6aa782afafded5efcb81ef4d6b4e07a69f1690989c50f564736f6c634300080d0033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212208d58afd4704cdd3440a04f310b6727d2cf48c056ac3049266e870f046ba9116064736f6c634300080d0033",
 }
 
 // MessageABI is the input ABI used to generate the binding from.
@@ -203,21 +376,22 @@ func (_Message *MessageTransactorRaw) Transact(opts *bind.TransactOpts, method s
 
 // MessageHarnessMetaData contains all meta data concerning the MessageHarness contract.
 var MessageHarnessMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"body\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"destination\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_originDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_destinationDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_recipient\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_optimisticSeconds\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"_messageBody\",\"type\":\"bytes\"}],\"name\":\"formatMessage\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"leaf\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_destination\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_recipient\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_optimisticSeconds\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"_body\",\"type\":\"bytes\"}],\"name\":\"messageHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"optimisticSeconds\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"origin\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"recipient\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"recipientAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"sender\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"body\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"destination\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_originDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_destinationDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_recipient\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_optimisticSeconds\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"_tips\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_messageBody\",\"type\":\"bytes\"}],\"name\":\"formatMessage\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"leaf\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_destination\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_recipient\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_optimisticSeconds\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"_tips\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_body\",\"type\":\"bytes\"}],\"name\":\"messageHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"optimisticSeconds\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"origin\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"recipient\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"recipientAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"sender\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"tips\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"c97c703a": "body(bytes)",
 		"c81aa9c8": "destination(bytes)",
-		"9a1b300a": "formatMessage(uint32,bytes32,uint32,uint32,bytes32,uint32,bytes)",
+		"7c517825": "formatMessage(uint32,bytes32,uint32,uint32,bytes32,uint32,bytes,bytes)",
 		"d7a7a72c": "leaf(bytes)",
-		"311f82e3": "messageHash(uint32,bytes32,uint32,uint32,bytes32,uint32,bytes)",
+		"46fad66e": "messageHash(uint32,bytes32,uint32,uint32,bytes32,uint32,bytes,bytes)",
 		"4e765004": "nonce(bytes)",
 		"7c1cfff9": "optimisticSeconds(bytes)",
 		"cb3eb0e1": "origin(bytes)",
 		"985a5c31": "recipient(bytes)",
 		"f45387ba": "recipientAddress(bytes)",
 		"6dc3c4f7": "sender(bytes)",
+		"045c6c0b": "tips(bytes)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b50611223806100206000396000f3fe608060405234801561001057600080fd5b50600436106100c95760003560e01c80639a1b300a11610081578063cb3eb0e11161005b578063cb3eb0e11461019b578063d7a7a72c146101ae578063f45387ba146101c157600080fd5b80639a1b300a14610155578063c81aa9c814610175578063c97c703a1461018857600080fd5b80636dc3c4f7116100b25780636dc3c4f71461011c5780637c1cfff91461012f578063985a5c311461014257600080fd5b8063311f82e3146100ce5780634e765004146100f4575b600080fd5b6100e16100dc366004610e32565b6101f9565b6040519081526020015b60405180910390f35b610107610102366004610ec5565b610216565b60405163ffffffff90911681526020016100eb565b6100e161012a366004610ec5565b610236565b61010761013d366004610ec5565b610250565b6100e1610150366004610ec5565b61026a565b610168610163366004610e32565b610284565b6040516100eb9190610f74565b610107610183366004610ec5565b610295565b610168610196366004610ec5565b6102af565b6101076101a9366004610ec5565b6102d8565b6100e16101bc366004610ec5565b6102f2565b6101d46101cf366004610ec5565b61030c565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020016100eb565b600061020a88888888888888610326565b98975050505050505050565b6000610230610225838361034b565b62ffffff191661036f565b92915050565b6000610230610245838361034b565b62ffffff1916610384565b600061023061025f838361034b565b62ffffff1916610399565b6000610230610279838361034b565b62ffffff19166103ae565b606061020a888888888888886103c3565b60006102306102a4838361034b565b62ffffff19166103fe565b60606102306102cd6102c284600061034b565b62ffffff1916610413565b62ffffff1916610446565b60006102306102e7838361034b565b62ffffff1916610499565b6000610230610301838361034b565b62ffffff19166104ad565b600061023061031b838361034b565b62ffffff19166104fe565b6000610337888888888888886103c3565b805190602001209050979650505050505050565b81516000906020840161036664ffffffffff8516828461050f565b95945050505050565b600061023062ffffff19831660246004610559565b600061023062ffffff19831660046020610589565b600061023062ffffff198316604c6004610559565b600061023062ffffff198316602c6020610589565b6060878787878787876040516020016103e29796959493929190610f87565b6040516020818303038152906040529050979650505050505050565b600061023062ffffff19831660286004610559565b6000610230605061043681601886901c6bffffffffffffffffffffffff16611035565b62ffffff19851691906000610784565b60606000806104638460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff1690506040519150819250610488848360200161080a565b508181016020016040529052919050565b600061023062ffffff198316826004610559565b60006102306104bb83610499565b6104c484610384565b6104cd8561036f565b6104d6866103fe565b6104df876103ae565b6104e888610399565b6104f96104f48a610413565b610446565b610326565b600061023061050c836103ae565b90565b60008061051c838561104c565b905060405181111561052c575060005b806000036105415762ffffff19915050610552565b5050606083811b8317901b811760181b5b9392505050565b6000610566826020611064565b610571906008611087565b60ff1661057f858585610589565b901c949350505050565b60008160ff1660000361059e57506000610552565b6105b68460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff166105d160ff84168561104c565b111561066c576106306105f28560781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff166106188660181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16858560ff166109e3565b6040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016106639190610f74565b60405180910390fd5b60208260ff161115610700576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603a60248201527f54797065644d656d566965772f696e646578202d20417474656d70746564207460448201527f6f20696e646578206d6f7265207468616e2033322062797465730000000000006064820152608401610663565b60088202600061071e8660781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16905060007f80000000000000000000000000000000000000000000000000000000000000007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff84011d91909501511695945050505050565b60008061079f8660781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff1690506107b886610a51565b846107c3878461104c565b6107cd919061104c565b11156107e05762ffffff19915050610802565b6107ea858261104c565b90506107fe8364ffffffffff16828661050f565b9150505b949350505050565b600062ffffff19808416036108a1576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602860248201527f54797065644d656d566965772f636f7079546f202d204e756c6c20706f696e7460448201527f65722064657265660000000000000000000000000000000000000000000000006064820152608401610663565b6108aa83610a99565b610936576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602b60248201527f54797065644d656d566965772f636f7079546f202d20496e76616c696420706f60448201527f696e7465722064657265660000000000000000000000000000000000000000006064820152608401610663565b60006109508460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff169050600061097a8560781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff169050600060405190508481111561099f5760206060fd5b8285848460045afa506109d96109b58760d81c90565b70ffffffffff000000000000000000000000606091821b168717901b841760181b90565b9695505050505050565b606060006109f086610ad6565b91505060006109fe86610ad6565b9150506000610a0c86610ad6565b9150506000610a1a86610ad6565b91505083838383604051602001610a3494939291906110b0565b604051602081830303815290604052945050505050949350505050565b6000610a6b8260181c6bffffffffffffffffffffffff1690565b610a838360781c6bffffffffffffffffffffffff1690565b016bffffffffffffffffffffffff169050919050565b6000610aa58260d81c90565b64ffffffffff1664ffffffffff03610abf57506000919050565b6000610aca83610a51565b60405110199392505050565b600080601f5b600f8160ff161115610b49576000610af5826008611087565b60ff1685901c9050610b0681610bc0565b61ffff16841793508160ff16601014610b2157601084901b93505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01610adc565b50600f5b60ff8160ff161015610bba576000610b66826008611087565b60ff1685901c9050610b7781610bc0565b61ffff16831792508160ff16600014610b9257601083901b92505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01610b4d565b50915091565b6000610bd260048360ff16901c610bf2565b60ff1661ffff919091161760081b610be982610bf2565b60ff1617919050565b600060f08083179060ff82169003610c0d5750603092915050565b8060ff1660f103610c215750603192915050565b8060ff1660f203610c355750603292915050565b8060ff1660f303610c495750603392915050565b8060ff1660f403610c5d5750603492915050565b8060ff1660f503610c715750603592915050565b8060ff1660f603610c855750603692915050565b8060ff1660f703610c995750603792915050565b8060ff1660f803610cad5750603892915050565b8060ff1660f903610cc15750603992915050565b8060ff1660fa03610cd55750606192915050565b8060ff1660fb03610ce95750606292915050565b8060ff1660fc03610cfd5750606392915050565b8060ff1660fd03610d115750606492915050565b8060ff1660fe03610d255750606592915050565b8060ff1660ff03610d395750606692915050565b50919050565b803563ffffffff81168114610d5357600080fd5b919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f830112610d9857600080fd5b813567ffffffffffffffff80821115610db357610db3610d58565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f01168101908282118183101715610df957610df9610d58565b81604052838152866020858801011115610e1257600080fd5b836020870160208301376000602085830101528094505050505092915050565b600080600080600080600060e0888a031215610e4d57600080fd5b610e5688610d3f565b965060208801359550610e6b60408901610d3f565b9450610e7960608901610d3f565b935060808801359250610e8e60a08901610d3f565b915060c088013567ffffffffffffffff811115610eaa57600080fd5b610eb68a828b01610d87565b91505092959891949750929550565b600060208284031215610ed757600080fd5b813567ffffffffffffffff811115610eee57600080fd5b61080284828501610d87565b60005b83811015610f15578181015183820152602001610efd565b83811115610f24576000848401525b50505050565b60008151808452610f42816020860160208601610efa565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b6020815260006105526020830184610f2a565b60007fffffffff00000000000000000000000000000000000000000000000000000000808a60e01b168352886004840152808860e01b166024840152808760e01b16602884015285602c840152808560e01b16604c840152508251610ff3816050850160208701610efa565b9190910160500198975050505050505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60008282101561104757611047611006565b500390565b6000821982111561105f5761105f611006565b500190565b600060ff821660ff84168082101561107e5761107e611006565b90039392505050565b600060ff821660ff84168160ff04811182151516156110a8576110a8611006565b029392505050565b7f54797065644d656d566965772f696e646578202d204f76657272616e2074686581527f20766965772e20536c696365206973206174203078000000000000000000000060208201527fffffffffffff000000000000000000000000000000000000000000000000000060d086811b821660358401527f2077697468206c656e6774682030780000000000000000000000000000000000603b840181905286821b8316604a8501527f2e20417474656d7074656420746f20696e646578206174206f6666736574203060508501527f7800000000000000000000000000000000000000000000000000000000000000607085015285821b83166071850152607784015283901b1660868201527f2e00000000000000000000000000000000000000000000000000000000000000608c8201526000608d82016109d956fea26469706673582212201915af46790450a9ea3d880d1db7f439535eff830387876eb7c43eeaa7a8f1fc64736f6c634300080d0033",
+	Bin: "0x608060405234801561001057600080fd5b50611742806100206000396000f3fe608060405234801561001057600080fd5b50600436106100d45760003560e01c8063985a5c3111610081578063cb3eb0e11161005b578063cb3eb0e1146101bd578063d7a7a72c146101d0578063f45387ba146101e357600080fd5b8063985a5c3114610184578063c81aa9c814610197578063c97c703a146101aa57600080fd5b80636dc3c4f7116100b25780636dc3c4f71461014b5780637c1cfff91461015e5780637c5178251461017157600080fd5b8063045c6c0b146100d957806346fad66e146101025780634e76500414610123575b600080fd5b6100ec6100e7366004611260565b61021b565b6040516100f9919061130f565b60405180910390f35b61011561011036600461133b565b610248565b6040519081526020016100f9565b610136610131366004611260565b6102f7565b60405163ffffffff90911681526020016100f9565b610115610159366004611260565b61031e565b61013661016c366004611260565b61033a565b6100ec61017f36600461133b565b610356565b610115610192366004611260565b6103f7565b6101366101a5366004611260565b610413565b6100ec6101b8366004611260565b61042f565b6101366101cb366004611260565b61044b565b6101156101de366004611260565b610467565b6101f66101f1366004611260565b610480565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020016100f9565b606061024261023761022c8461049c565b62ffffff19166104aa565b62ffffff19166104ea565b92915050565b604080517e0100000000000000000000000000000000000000000000000000000000000060208201527fffffffff0000000000000000000000000000000000000000000000000000000060e08b811b82166022840152602683018b905289811b8216604684015288811b8216604a840152604e830188905286901b16606e8201528151808203605201815260729091019091526000906102e981858561053d565b9a9950505050505050505050565b60006102426103136103088461049c565b62ffffff191661055b565b62ffffff1916610592565b600061024261032f6103088461049c565b62ffffff19166105bc565b600061024261034b6103088461049c565b62ffffff19166105dd565b604080517e0100000000000000000000000000000000000000000000000000000000000060208201527fffffffff0000000000000000000000000000000000000000000000000000000060e08b811b82166022840152602683018b905289811b8216604684015288811b8216604a840152604e830188905286901b16606e8201528151808203605201815260729091019091526060906102e98185856105fe565b60006102426104086103088461049c565b62ffffff1916610678565b60006102426104246103088461049c565b62ffffff1916610699565b60606102426102376104408461049c565b62ffffff19166106ba565b600061024261045c6103088461049c565b62ffffff19166106f9565b60006102426104758361049c565b62ffffff191661071a565b60006102426104916103088461049c565b62ffffff191661073f565b600061024282610539610750565b6000816104bf62ffffff198216610539610774565b506104e1836104cf856002610898565b6104da866003610898565b60026108ca565b91505b50919050565b60606000806105078460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff169050604051915081925061052c84836020016108f4565b508181016020016040529052919050565b600061054a8484846105fe565b8051906020012090505b9392505050565b60008161057062ffffff198216610539610774565b506104e183610580856001610898565b61058b866002610898565b60016108ca565b6000816105a860015b62ffffff19831690610774565b506104e162ffffff19841660266004610acd565b6000816105c9600161059b565b506104e162ffffff19841660066020610afd565b6000816105ea600161059b565b506104e162ffffff198416604e6004610acd565b825160609060009061061260046002611453565b60ff1661061f919061147c565b90506000845182610630919061147c565b9050600161064060046002611453565b60ff16838389898960405160200161065e97969594939291906114a2565b604051602081830303815290604052925050509392505050565b600081610685600161059b565b506104e162ffffff198416602e6020610afd565b6000816106a6600161059b565b506104e162ffffff198416602a6004610acd565b6000816106cf62ffffff198216610539610774565b506104e1836106df856003610898565b601886901c6bffffffffffffffffffffffff1660036108ca565b600081610706600161059b565b506104e162ffffff19841660026004610acd565b60008161072f62ffffff198216610539610774565b506104e162ffffff198416610cef565b600061024261074d83610678565b90565b81516000906020840161076b64ffffffffff85168284610d4c565b95945050505050565b60006107808383610d93565b61089157600061079f6107938560d81c90565b64ffffffffff16610db6565b91505060006107b48464ffffffffff16610db6565b6040517f5479706520617373657274696f6e206661696c65642e20476f7420307800000060208201527fffffffffffffffffffff0000000000000000000000000000000000000000000060b086811b8216603d8401527f2e20457870656374656420307800000000000000000000000000000000000000604784015283901b16605482015290925060009150605e016040516020818303038152906040529050806040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401610888919061130f565b60405180910390fd5b5090919050565b600061055460028360048111156108b1576108b16113f5565b6108bb9190611540565b62ffffff198516906002610acd565b60006108e9846108da818661157d565b62ffffff198816919085610ea0565b90505b949350505050565b600062ffffff198084160361098b576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602860248201527f54797065644d656d566965772f636f7079546f202d204e756c6c20706f696e7460448201527f65722064657265660000000000000000000000000000000000000000000000006064820152608401610888565b61099483610f1a565b610a20576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602b60248201527f54797065644d656d566965772f636f7079546f202d20496e76616c696420706f60448201527f696e7465722064657265660000000000000000000000000000000000000000006064820152608401610888565b6000610a3a8460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff1690506000610a648560781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff1690506000604051905084811115610a895760206060fd5b8285848460045afa50610ac3610a9f8760d81c90565b70ffffffffff000000000000000000000000606091821b168717901b841760181b90565b9695505050505050565b6000610ada826020611594565b610ae5906008611453565b60ff16610af3858585610afd565b901c949350505050565b60008160ff16600003610b1257506000610554565b610b2a8460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16610b4560ff8416856115b7565b1115610bd757610ba4610b668560781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16610b8c8660181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16858560ff16610f57565b6040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401610888919061130f565b60208260ff161115610c6b576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603a60248201527f54797065644d656d566965772f696e646578202d20417474656d70746564207460448201527f6f20696e646578206d6f7265207468616e2033322062797465730000000000006064820152608401610888565b600882026000610c898660781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16905060007f80000000000000000000000000000000000000000000000000000000000000007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff84011d91909501511695945050505050565b600080610d0a8360781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff1690506000610d348460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff169091209392505050565b600080610d5983856115b7565b9050604051811115610d69575060005b80600003610d7e5762ffffff19915050610554565b5050606092831b9190911790911b1760181b90565b60008164ffffffffff16610da78460d81c90565b64ffffffffff16149392505050565b600080601f5b600f8160ff161115610e29576000610dd5826008611453565b60ff1685901c9050610de681610fc5565b61ffff16841793508160ff16601014610e0157601084901b93505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01610dbc565b50600f5b60ff8160ff161015610e9a576000610e46826008611453565b60ff1685901c9050610e5781610fc5565b61ffff16831792508160ff16600014610e7257601083901b92505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01610e2d565b50915091565b600080610ebb8660781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff169050610ed486610ff7565b84610edf87846115b7565b610ee991906115b7565b1115610efc5762ffffff199150506108ec565b610f0685826115b7565b9050610ac38364ffffffffff168286610d4c565b6000610f268260d81c90565b64ffffffffff1664ffffffffff03610f4057506000919050565b6000610f4b83610ff7565b60405110199392505050565b60606000610f6486610db6565b9150506000610f7286610db6565b9150506000610f8086610db6565b9150506000610f8e86610db6565b91505083838383604051602001610fa894939291906115cf565b604051602081830303815290604052945050505050949350505050565b6000610fd760048360ff16901c61103f565b60ff1661ffff919091161760081b610fee8261103f565b60ff1617919050565b60006110118260181c6bffffffffffffffffffffffff1690565b6110298360781c6bffffffffffffffffffffffff1690565b016bffffffffffffffffffffffff169050919050565b600060f08083179060ff8216900361105a5750603092915050565b8060ff1660f10361106e5750603192915050565b8060ff1660f2036110825750603292915050565b8060ff1660f3036110965750603392915050565b8060ff1660f4036110aa5750603492915050565b8060ff1660f5036110be5750603592915050565b8060ff1660f6036110d25750603692915050565b8060ff1660f7036110e65750603792915050565b8060ff1660f8036110fa5750603892915050565b8060ff1660f90361110e5750603992915050565b8060ff1660fa036111225750606192915050565b8060ff1660fb036111365750606292915050565b8060ff1660fc0361114a5750606392915050565b8060ff1660fd0361115e5750606492915050565b8060ff1660fe036111725750606592915050565b8060ff1660ff036104e45750606692915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f8301126111c657600080fd5b813567ffffffffffffffff808211156111e1576111e1611186565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f0116810190828211818310171561122757611227611186565b8160405283815286602085880101111561124057600080fd5b836020870160208301376000602085830101528094505050505092915050565b60006020828403121561127257600080fd5b813567ffffffffffffffff81111561128957600080fd5b6108ec848285016111b5565b60005b838110156112b0578181015183820152602001611298565b838111156112bf576000848401525b50505050565b600081518084526112dd816020860160208601611295565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b60208152600061055460208301846112c5565b803563ffffffff8116811461133657600080fd5b919050565b600080600080600080600080610100898b03121561135857600080fd5b61136189611322565b97506020890135965061137660408a01611322565b955061138460608a01611322565b94506080890135935061139960a08a01611322565b925060c089013567ffffffffffffffff808211156113b657600080fd5b6113c28c838d016111b5565b935060e08b01359150808211156113d857600080fd5b506113e58b828c016111b5565b9150509295985092959890939650565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602160045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b600060ff821660ff84168160ff048111821515161561147457611474611424565b029392505050565b600061ffff80831681851680830382111561149957611499611424565b01949350505050565b60007fffff000000000000000000000000000000000000000000000000000000000000808a60f01b168352808960f01b166002840152808860f01b166004840152808760f01b166006840152508451611502816008850160208901611295565b845190830190611519816008840160208901611295565b845191019061152f816008840160208801611295565b016008019998505050505050505050565b6000817fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff048311821515161561157857611578611424565b500290565b60008282101561158f5761158f611424565b500390565b600060ff821660ff8416808210156115ae576115ae611424565b90039392505050565b600082198211156115ca576115ca611424565b500190565b7f54797065644d656d566965772f696e646578202d204f76657272616e2074686581527f20766965772e20536c696365206973206174203078000000000000000000000060208201527fffffffffffff000000000000000000000000000000000000000000000000000060d086811b821660358401527f2077697468206c656e6774682030780000000000000000000000000000000000603b840181905286821b8316604a8501527f2e20417474656d7074656420746f20696e646578206174206f6666736574203060508501527f7800000000000000000000000000000000000000000000000000000000000000607085015285821b83166071850152607784015283901b1660868201527f2e00000000000000000000000000000000000000000000000000000000000000608c8201526000608d8201610ac356fea264697066735822122091a8f3707296d120f4c00eef1ddbd608a08744cf35154a101a76438fcd3c18b064736f6c634300080d0033",
 }
 
 // MessageHarnessABI is the input ABI used to generate the binding from.
@@ -453,12 +627,12 @@ func (_MessageHarness *MessageHarnessCallerSession) Destination(_message []byte)
 	return _MessageHarness.Contract.Destination(&_MessageHarness.CallOpts, _message)
 }
 
-// FormatMessage is a free data retrieval call binding the contract method 0x9a1b300a.
+// FormatMessage is a free data retrieval call binding the contract method 0x7c517825.
 //
-// Solidity: function formatMessage(uint32 _originDomain, bytes32 _sender, uint32 _nonce, uint32 _destinationDomain, bytes32 _recipient, uint32 _optimisticSeconds, bytes _messageBody) pure returns(bytes)
-func (_MessageHarness *MessageHarnessCaller) FormatMessage(opts *bind.CallOpts, _originDomain uint32, _sender [32]byte, _nonce uint32, _destinationDomain uint32, _recipient [32]byte, _optimisticSeconds uint32, _messageBody []byte) ([]byte, error) {
+// Solidity: function formatMessage(uint32 _originDomain, bytes32 _sender, uint32 _nonce, uint32 _destinationDomain, bytes32 _recipient, uint32 _optimisticSeconds, bytes _tips, bytes _messageBody) pure returns(bytes)
+func (_MessageHarness *MessageHarnessCaller) FormatMessage(opts *bind.CallOpts, _originDomain uint32, _sender [32]byte, _nonce uint32, _destinationDomain uint32, _recipient [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) ([]byte, error) {
 	var out []interface{}
-	err := _MessageHarness.contract.Call(opts, &out, "formatMessage", _originDomain, _sender, _nonce, _destinationDomain, _recipient, _optimisticSeconds, _messageBody)
+	err := _MessageHarness.contract.Call(opts, &out, "formatMessage", _originDomain, _sender, _nonce, _destinationDomain, _recipient, _optimisticSeconds, _tips, _messageBody)
 
 	if err != nil {
 		return *new([]byte), err
@@ -470,23 +644,23 @@ func (_MessageHarness *MessageHarnessCaller) FormatMessage(opts *bind.CallOpts, 
 
 }
 
-// FormatMessage is a free data retrieval call binding the contract method 0x9a1b300a.
+// FormatMessage is a free data retrieval call binding the contract method 0x7c517825.
 //
-// Solidity: function formatMessage(uint32 _originDomain, bytes32 _sender, uint32 _nonce, uint32 _destinationDomain, bytes32 _recipient, uint32 _optimisticSeconds, bytes _messageBody) pure returns(bytes)
-func (_MessageHarness *MessageHarnessSession) FormatMessage(_originDomain uint32, _sender [32]byte, _nonce uint32, _destinationDomain uint32, _recipient [32]byte, _optimisticSeconds uint32, _messageBody []byte) ([]byte, error) {
-	return _MessageHarness.Contract.FormatMessage(&_MessageHarness.CallOpts, _originDomain, _sender, _nonce, _destinationDomain, _recipient, _optimisticSeconds, _messageBody)
+// Solidity: function formatMessage(uint32 _originDomain, bytes32 _sender, uint32 _nonce, uint32 _destinationDomain, bytes32 _recipient, uint32 _optimisticSeconds, bytes _tips, bytes _messageBody) pure returns(bytes)
+func (_MessageHarness *MessageHarnessSession) FormatMessage(_originDomain uint32, _sender [32]byte, _nonce uint32, _destinationDomain uint32, _recipient [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) ([]byte, error) {
+	return _MessageHarness.Contract.FormatMessage(&_MessageHarness.CallOpts, _originDomain, _sender, _nonce, _destinationDomain, _recipient, _optimisticSeconds, _tips, _messageBody)
 }
 
-// FormatMessage is a free data retrieval call binding the contract method 0x9a1b300a.
+// FormatMessage is a free data retrieval call binding the contract method 0x7c517825.
 //
-// Solidity: function formatMessage(uint32 _originDomain, bytes32 _sender, uint32 _nonce, uint32 _destinationDomain, bytes32 _recipient, uint32 _optimisticSeconds, bytes _messageBody) pure returns(bytes)
-func (_MessageHarness *MessageHarnessCallerSession) FormatMessage(_originDomain uint32, _sender [32]byte, _nonce uint32, _destinationDomain uint32, _recipient [32]byte, _optimisticSeconds uint32, _messageBody []byte) ([]byte, error) {
-	return _MessageHarness.Contract.FormatMessage(&_MessageHarness.CallOpts, _originDomain, _sender, _nonce, _destinationDomain, _recipient, _optimisticSeconds, _messageBody)
+// Solidity: function formatMessage(uint32 _originDomain, bytes32 _sender, uint32 _nonce, uint32 _destinationDomain, bytes32 _recipient, uint32 _optimisticSeconds, bytes _tips, bytes _messageBody) pure returns(bytes)
+func (_MessageHarness *MessageHarnessCallerSession) FormatMessage(_originDomain uint32, _sender [32]byte, _nonce uint32, _destinationDomain uint32, _recipient [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) ([]byte, error) {
+	return _MessageHarness.Contract.FormatMessage(&_MessageHarness.CallOpts, _originDomain, _sender, _nonce, _destinationDomain, _recipient, _optimisticSeconds, _tips, _messageBody)
 }
 
 // Leaf is a free data retrieval call binding the contract method 0xd7a7a72c.
 //
-// Solidity: function leaf(bytes _message) view returns(bytes32)
+// Solidity: function leaf(bytes _message) pure returns(bytes32)
 func (_MessageHarness *MessageHarnessCaller) Leaf(opts *bind.CallOpts, _message []byte) ([32]byte, error) {
 	var out []interface{}
 	err := _MessageHarness.contract.Call(opts, &out, "leaf", _message)
@@ -503,24 +677,24 @@ func (_MessageHarness *MessageHarnessCaller) Leaf(opts *bind.CallOpts, _message 
 
 // Leaf is a free data retrieval call binding the contract method 0xd7a7a72c.
 //
-// Solidity: function leaf(bytes _message) view returns(bytes32)
+// Solidity: function leaf(bytes _message) pure returns(bytes32)
 func (_MessageHarness *MessageHarnessSession) Leaf(_message []byte) ([32]byte, error) {
 	return _MessageHarness.Contract.Leaf(&_MessageHarness.CallOpts, _message)
 }
 
 // Leaf is a free data retrieval call binding the contract method 0xd7a7a72c.
 //
-// Solidity: function leaf(bytes _message) view returns(bytes32)
+// Solidity: function leaf(bytes _message) pure returns(bytes32)
 func (_MessageHarness *MessageHarnessCallerSession) Leaf(_message []byte) ([32]byte, error) {
 	return _MessageHarness.Contract.Leaf(&_MessageHarness.CallOpts, _message)
 }
 
-// MessageHash is a free data retrieval call binding the contract method 0x311f82e3.
+// MessageHash is a free data retrieval call binding the contract method 0x46fad66e.
 //
-// Solidity: function messageHash(uint32 _origin, bytes32 _sender, uint32 _nonce, uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds, bytes _body) pure returns(bytes32)
-func (_MessageHarness *MessageHarnessCaller) MessageHash(opts *bind.CallOpts, _origin uint32, _sender [32]byte, _nonce uint32, _destination uint32, _recipient [32]byte, _optimisticSeconds uint32, _body []byte) ([32]byte, error) {
+// Solidity: function messageHash(uint32 _origin, bytes32 _sender, uint32 _nonce, uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds, bytes _tips, bytes _body) pure returns(bytes32)
+func (_MessageHarness *MessageHarnessCaller) MessageHash(opts *bind.CallOpts, _origin uint32, _sender [32]byte, _nonce uint32, _destination uint32, _recipient [32]byte, _optimisticSeconds uint32, _tips []byte, _body []byte) ([32]byte, error) {
 	var out []interface{}
-	err := _MessageHarness.contract.Call(opts, &out, "messageHash", _origin, _sender, _nonce, _destination, _recipient, _optimisticSeconds, _body)
+	err := _MessageHarness.contract.Call(opts, &out, "messageHash", _origin, _sender, _nonce, _destination, _recipient, _optimisticSeconds, _tips, _body)
 
 	if err != nil {
 		return *new([32]byte), err
@@ -532,18 +706,18 @@ func (_MessageHarness *MessageHarnessCaller) MessageHash(opts *bind.CallOpts, _o
 
 }
 
-// MessageHash is a free data retrieval call binding the contract method 0x311f82e3.
+// MessageHash is a free data retrieval call binding the contract method 0x46fad66e.
 //
-// Solidity: function messageHash(uint32 _origin, bytes32 _sender, uint32 _nonce, uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds, bytes _body) pure returns(bytes32)
-func (_MessageHarness *MessageHarnessSession) MessageHash(_origin uint32, _sender [32]byte, _nonce uint32, _destination uint32, _recipient [32]byte, _optimisticSeconds uint32, _body []byte) ([32]byte, error) {
-	return _MessageHarness.Contract.MessageHash(&_MessageHarness.CallOpts, _origin, _sender, _nonce, _destination, _recipient, _optimisticSeconds, _body)
+// Solidity: function messageHash(uint32 _origin, bytes32 _sender, uint32 _nonce, uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds, bytes _tips, bytes _body) pure returns(bytes32)
+func (_MessageHarness *MessageHarnessSession) MessageHash(_origin uint32, _sender [32]byte, _nonce uint32, _destination uint32, _recipient [32]byte, _optimisticSeconds uint32, _tips []byte, _body []byte) ([32]byte, error) {
+	return _MessageHarness.Contract.MessageHash(&_MessageHarness.CallOpts, _origin, _sender, _nonce, _destination, _recipient, _optimisticSeconds, _tips, _body)
 }
 
-// MessageHash is a free data retrieval call binding the contract method 0x311f82e3.
+// MessageHash is a free data retrieval call binding the contract method 0x46fad66e.
 //
-// Solidity: function messageHash(uint32 _origin, bytes32 _sender, uint32 _nonce, uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds, bytes _body) pure returns(bytes32)
-func (_MessageHarness *MessageHarnessCallerSession) MessageHash(_origin uint32, _sender [32]byte, _nonce uint32, _destination uint32, _recipient [32]byte, _optimisticSeconds uint32, _body []byte) ([32]byte, error) {
-	return _MessageHarness.Contract.MessageHash(&_MessageHarness.CallOpts, _origin, _sender, _nonce, _destination, _recipient, _optimisticSeconds, _body)
+// Solidity: function messageHash(uint32 _origin, bytes32 _sender, uint32 _nonce, uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds, bytes _tips, bytes _body) pure returns(bytes32)
+func (_MessageHarness *MessageHarnessCallerSession) MessageHash(_origin uint32, _sender [32]byte, _nonce uint32, _destination uint32, _recipient [32]byte, _optimisticSeconds uint32, _tips []byte, _body []byte) ([32]byte, error) {
+	return _MessageHarness.Contract.MessageHash(&_MessageHarness.CallOpts, _origin, _sender, _nonce, _destination, _recipient, _optimisticSeconds, _tips, _body)
 }
 
 // Nonce is a free data retrieval call binding the contract method 0x4e765004.
@@ -732,10 +906,41 @@ func (_MessageHarness *MessageHarnessCallerSession) Sender(_message []byte) ([32
 	return _MessageHarness.Contract.Sender(&_MessageHarness.CallOpts, _message)
 }
 
+// Tips is a free data retrieval call binding the contract method 0x045c6c0b.
+//
+// Solidity: function tips(bytes _message) view returns(bytes)
+func (_MessageHarness *MessageHarnessCaller) Tips(opts *bind.CallOpts, _message []byte) ([]byte, error) {
+	var out []interface{}
+	err := _MessageHarness.contract.Call(opts, &out, "tips", _message)
+
+	if err != nil {
+		return *new([]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
+
+	return out0, err
+
+}
+
+// Tips is a free data retrieval call binding the contract method 0x045c6c0b.
+//
+// Solidity: function tips(bytes _message) view returns(bytes)
+func (_MessageHarness *MessageHarnessSession) Tips(_message []byte) ([]byte, error) {
+	return _MessageHarness.Contract.Tips(&_MessageHarness.CallOpts, _message)
+}
+
+// Tips is a free data retrieval call binding the contract method 0x045c6c0b.
+//
+// Solidity: function tips(bytes _message) view returns(bytes)
+func (_MessageHarness *MessageHarnessCallerSession) Tips(_message []byte) ([]byte, error) {
+	return _MessageHarness.Contract.Tips(&_MessageHarness.CallOpts, _message)
+}
+
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220b795b35fc25fd7faffb0dd9d3666ae2d47004a27138f625a5c76afe2a10b834164736f6c634300080d0033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220272115c0d3c96e86b1f3a1b79c1d18812f629ad36943b92e2cb880d9130a014f64736f6c634300080d0033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.
@@ -911,7 +1116,7 @@ var TypedMemViewMetaData = &bind.MetaData{
 	Sigs: map[string]string{
 		"f26be3fc": "NULL()",
 	},
-	Bin: "0x60c9610038600b82828239805160001a607314602b57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063f26be3fc146038575b600080fd5b605e7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000909116815260200160405180910390f3fea2646970667358221220e14c0831205326b09f0b121fc50130e7898abf45847fd586294a1cb1ad7a44f764736f6c634300080d0033",
+	Bin: "0x60c9610038600b82828239805160001a607314602b57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063f26be3fc146038575b600080fd5b605e7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000909116815260200160405180910390f3fea2646970667358221220d7745ca3a0dd1dcedb2899b14e00eea6ad2532032fb3c7ffb3294b0043fa0f0864736f6c634300080d0033",
 }
 
 // TypedMemViewABI is the input ABI used to generate the binding from.
