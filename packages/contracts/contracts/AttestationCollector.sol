@@ -119,14 +119,14 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
     /**
      * @notice Get latest attestation for the domain signed by given Notary.
      */
-    function getLatestAttestation(uint32 _domain, address _updater)
+    function getLatestAttestation(uint32 _domain, address _notary)
         external
         view
         returns (bytes memory)
     {
-        uint32 nonce = latestNonce[_domain][_updater];
+        uint32 nonce = latestNonce[_domain][_notary];
         require(nonce != 0, "No attestations found");
-        bytes32 root = latestRoot[_domain][_updater];
+        bytes32 root = latestRoot[_domain][_notary];
         return _formatAttestation(_domain, nonce, root);
     }
 
@@ -171,23 +171,18 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function submitAttestation(address _updater, bytes memory _attestation) external {
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
-        _storeAttestation(_updater, _view);
-        emit AttestationSubmitted(_updater, _attestation);
+    function submitAttestation(address _notary, bytes memory _attestation) external {
+        bytes29 _view = _checkUpdaterAuth(_notary, _attestation);
+        _storeAttestation(_notary, _view);
+        emit AttestationSubmitted(_notary, _attestation);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _isUpdater(uint32 _homeDomain, address _updater)
-        internal
-        view
-        override
-        returns (bool)
-    {
-        return _isNotary(_homeDomain, _updater);
+    function _isUpdater(uint32 _homeDomain, address _notary) internal view override returns (bool) {
+        return _isNotary(_homeDomain, _notary);
     }
 
     function _isWatchtower(address _watchtower) internal view override returns (bool) {}
@@ -212,13 +207,13 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
         return signatures[_domain][_nonce][_root].length > 0;
     }
 
-    function _storeAttestation(address _updater, bytes29 _view) internal {
+    function _storeAttestation(address _notary, bytes29 _view) internal {
         uint32 domain = _view.attestationDomain();
         uint32 nonce = _view.attestationNonce();
         bytes32 root = _view.attestationRoot();
-        require(nonce > latestNonce[domain][_updater], "Outdated attestation");
-        latestNonce[domain][_updater] = nonce;
-        latestRoot[domain][_updater] = root;
+        require(nonce > latestNonce[domain][_notary], "Outdated attestation");
+        latestNonce[domain][_notary] = nonce;
+        latestRoot[domain][_notary] = root;
         // Store root & signature only once
         if (!_signatureExists(domain, nonce, root)) {
             signatures[domain][nonce][root] = _view.attestationSignature().clone();
