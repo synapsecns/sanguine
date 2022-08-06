@@ -171,10 +171,16 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function submitAttestation(address _notary, bytes memory _attestation) external {
+    function submitAttestation(address _notary, bytes memory _attestation)
+        external
+        returns (bool attestationStored)
+    {
         bytes29 _view = _checkUpdaterAuth(_notary, _attestation);
-        _storeAttestation(_notary, _view);
-        emit AttestationSubmitted(_notary, _attestation);
+        attestationStored = _storeAttestation(_notary, _view);
+        if (attestationStored) {
+            // Emit Event only if the Attestation was stored
+            emit AttestationSubmitted(_notary, _attestation);
+        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -207,17 +213,18 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
         return signatures[_domain][_nonce][_root].length > 0;
     }
 
-    function _storeAttestation(address _notary, bytes29 _view) internal {
+    function _storeAttestation(address _notary, bytes29 _view) internal returns (bool) {
         uint32 domain = _view.attestationDomain();
         uint32 nonce = _view.attestationNonce();
         bytes32 root = _view.attestationRoot();
         require(nonce > latestNonce[domain][_notary], "Outdated attestation");
+        // Don't store Attestation, if another Notary
+        // have submitted the same (domain, nonce, root) before.
+        if (_signatureExists(domain, nonce, root)) return false;
         latestNonce[domain][_notary] = nonce;
         latestRoot[domain][_notary] = root;
-        // Store root & signature only once
-        if (!_signatureExists(domain, nonce, root)) {
-            signatures[domain][nonce][root] = _view.attestationSignature().clone();
-            attestationRoots[domain][nonce].push(root);
-        }
+        signatures[domain][nonce][root] = _view.attestationSignature().clone();
+        attestationRoots[domain][nonce].push(root);
+        return true;
     }
 }
