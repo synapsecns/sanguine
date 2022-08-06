@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"github.com/libs4go/crypto/ecdsa"
-	"math/big"
 )
 
 // EncodeSignedAttestation encodes a signed attestation.
@@ -140,6 +141,36 @@ func DecodeTips(toDecode []byte) (Tips, error) {
 	processorTip := new(big.Int).SetBytes(toDecode[offsetProcessor:])
 
 	return NewTips(updaterTip, relayerTip, proverTip, processorTip), nil
+}
+
+type headerEncoder struct {
+	OriginDomain      uint32
+	Sender            [32]byte
+	Nonce             uint32
+	DestinationDomain uint32
+	Recipient         [32]byte
+	OptimisticSeconds uint32
+}
+
+// EncodeHeader encodes a message header.
+func EncodeHeader(header Header) ([]byte, error) {
+	newHeader := headerEncoder{
+		OriginDomain:      header.OriginDomain(),
+		Sender:            header.Sender(),
+		Nonce:             header.Nonce(),
+		DestinationDomain: header.DestinationDomain(),
+		Recipient:         header.Recipient(),
+		OptimisticSeconds: header.OptimisticSeconds(),
+	}
+
+	buf := new(bytes.Buffer)
+
+	err := binary.Write(buf, binary.BigEndian, newHeader)
+	if err != nil {
+		return nil, fmt.Errorf("could not write binary: %w", err)
+	}
+
+	return buf.Bytes(), nil
 }
 
 // messageEncoder contains the binary structore of the message.
