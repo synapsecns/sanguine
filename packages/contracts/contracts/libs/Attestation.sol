@@ -2,6 +2,7 @@
 pragma solidity 0.8.13;
 
 import { TypedMemView } from "./TypedMemView.sol";
+import { SynapseTypes } from "./SynapseTypes.sol";
 
 library Attestation {
     using TypedMemView for bytes;
@@ -51,6 +52,10 @@ library Attestation {
         bytes32 _root
     ) internal pure returns (bytes memory) {
         return abi.encodePacked(_domain, _nonce, _root);
+    }
+
+    function attestationView(bytes memory _payload) internal pure returns (bytes29) {
+        return _payload.ref(SynapseTypes.ATTESTATION);
     }
 
     /**

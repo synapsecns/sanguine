@@ -173,6 +173,8 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
     function submitReport(bytes memory _report) external {
         // Check if real watchtower & signature
         (address _watchtower, bytes29 _reportView) = _checkWatchtowerAuth(_report);
+        // Check if this is a fraud report
+        require(_reportView.reportIsFraud(), "!fraud");
         // Check if real updater & signature
         address _updater = _checkUpdaterAuth(_reportView.reportAttestation());
         _blacklistUpdater(_updater);

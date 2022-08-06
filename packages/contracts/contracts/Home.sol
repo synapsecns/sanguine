@@ -280,6 +280,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     function submitReport(bytes memory _report) external notFailed returns (bool) {
         // this will revert if Watchtower signature is invalid
         (address _watchtower, bytes29 _reportView) = _checkWatchtowerAuth(_report);
+        // Check if this is a fraud report
+        require(_reportView.reportIsFraud(), "!fraud");
         // Get attestation from the report
         bytes29 _attestation = _reportView.reportAttestation();
         // this will revert if Updater signature is invalid

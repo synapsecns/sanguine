@@ -57,16 +57,13 @@ abstract contract AuthManager {
         view
         returns (address _watchtower, bytes29 _view)
     {
-        _view = _report.castToReport();
+        _view = _report.reportView();
         _watchtower = _checkWatchtowerAuth(_view);
     }
 
     function _checkWatchtowerAuth(bytes29 _view) internal view returns (address _watchtower) {
         require(_view.isReport(), "Not a report");
-        _watchtower = Auth.recoverSigner(
-            _view.reportAttestation(),
-            _view.reportSignature().clone()
-        );
+        _watchtower = Auth.recoverSigner(_view.reportData(), _view.reportGuardSignature().clone());
         require(_isWatchtower(_watchtower), "Signer is not a watchtower");
     }
 

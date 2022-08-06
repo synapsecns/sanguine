@@ -71,8 +71,9 @@ contract SynapseTest is Test {
         public
         returns (bytes memory report)
     {
-        bytes memory signature = signMessage(signerPrivKey, attestation);
-        report = Report.formatReport(attestation, signature);
+        bytes memory reportData = Report.formatFraudReportData(attestation);
+        bytes memory signature = signMessage(signerPrivKey, reportData);
+        report = Report.formatFraudReport(attestation, signature);
     }
 
     function signMessage(uint256 privKey, bytes memory message)
