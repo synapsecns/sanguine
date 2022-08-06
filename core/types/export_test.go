@@ -7,4 +7,5 @@ const (
 	OffsetRelayer   = offsetRelayer
 	OffsetProver    = offsetProver
 	OffsetProcessor = offsetProcessor
+	HeaderVersion   = headerVersion
 )

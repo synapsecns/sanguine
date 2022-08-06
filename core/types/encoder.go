@@ -144,6 +144,7 @@ func DecodeTips(toDecode []byte) (Tips, error) {
 }
 
 type headerEncoder struct {
+	Version           uint16
 	OriginDomain      uint32
 	Sender            [32]byte
 	Nonce             uint32
@@ -155,6 +156,7 @@ type headerEncoder struct {
 // EncodeHeader encodes a message header.
 func EncodeHeader(header Header) ([]byte, error) {
 	newHeader := headerEncoder{
+		Version:           header.Version(),
 		OriginDomain:      header.OriginDomain(),
 		Sender:            header.Sender(),
 		Nonce:             header.Nonce(),

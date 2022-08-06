@@ -14,15 +14,16 @@ func _() {
 	_ = x[HomeHarnessType-3]
 	_ = x[AttestationHarnessType-4]
 	_ = x[TipsHarnessType-5]
-	_ = x[ReplicaManagerHarnessType-6]
-	_ = x[UpdaterManagerType-7]
-	_ = x[AttestationCollectorType-8]
-	_ = x[ReplicaManagerType-9]
+	_ = x[HeaderHarnessType-6]
+	_ = x[ReplicaManagerHarnessType-7]
+	_ = x[UpdaterManagerType-8]
+	_ = x[AttestationCollectorType-9]
+	_ = x[ReplicaManagerType-10]
 }
 
-const _contractTypeImpl_name = "HomeXAppConfigMessageHarnessHomeHarnessAttestationHarnessTypeTipsHarnessTypeReplicaManagerHarnessTypeUpdaterManagerAttestationCollectorReplicaManager"
+const _contractTypeImpl_name = "HomeXAppConfigMessageHarnessHomeHarnessAttestationHarnessTypeTipsHarnessTypeHeaderHarnessTypeReplicaManagerHarnessTypeUpdaterManagerAttestationCollectorReplicaManager"
 
-var _contractTypeImpl_index = [...]uint8{0, 4, 14, 28, 39, 61, 76, 101, 115, 135, 149}
+var _contractTypeImpl_index = [...]uint8{0, 4, 14, 28, 39, 61, 76, 93, 118, 132, 152, 166}
 
 func (i contractTypeImpl) String() string {
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {

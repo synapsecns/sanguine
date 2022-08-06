@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
@@ -109,5 +110,24 @@ func (r ReplicaManagerHarnessDeployer) Deploy(ctx context.Context) (backends.Dep
 		return replicamanagerharness.DeployReplicaManagerHarness(transactOps, backend, uint32(r.Backend().GetChainID()))
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return replicamanagerharness.NewReplicaManagerHarnessRef(address, backend)
+	})
+}
+
+// HeaderHarnessDeployer deploys the header harness.
+type HeaderHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewHeaderHarnessDeployer gets the header harness.
+func NewHeaderHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return HeaderHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, HeaderHarnessType)}
+}
+
+// Deploy deploys the header harness.
+func (h HeaderHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return headerharness.DeployHeaderHarness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return headerharness.NewHeaderHarnessRef(address, backend)
 	})
 }

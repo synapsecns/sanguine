@@ -71,3 +71,10 @@ func (s SimulatedSuite) TestTypecastReplicaManagerHarness() {
 		NotNil(s.T(), replicaManagerHarness)
 	})
 }
+
+func (s SimulatedSuite) TestTypecastHeaderHarness() {
+	NotPanics(s.T(), func() {
+		_, headerHarness := s.deployManager.GetHeaderHarness(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), headerHarness)
+	})
+}

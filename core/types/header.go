@@ -10,21 +10,24 @@ import (
 
 // Header contains information of a message.
 type Header interface {
-	// The origin domain of the message
+	// Version gets the version of the header
+	Version() uint16
+	// OriginDomain is the origin domain of the message
 	OriginDomain() uint32
-	// The sender of the message
+	// Sender is the sender of the message
 	Sender() common.Hash
-	// The nonce of the message
+	// Nonce is the nonce of the message
 	Nonce() uint32
-	// The destination domain of the message
+	// DestinationDomain is the destination domain of the message
 	DestinationDomain() uint32
-	// The recipient of the message
+	// Recipient is the recipient of the message
 	Recipient() common.Hash
-	// The optimistic time period of the message in seconds
+	// OptimisticSeconds is the optimistic time period of the message in seconds
 	OptimisticSeconds() uint32
 }
 
 type headerImpl struct {
+	version           uint16
 	originDomain      uint32
 	sender            common.Hash
 	nonce             uint32
@@ -33,9 +36,16 @@ type headerImpl struct {
 	optimisticSeconds uint32
 }
 
+func (h headerImpl) Version() uint16 {
+	return h.version
+}
+
+const headerVersion uint16 = 1
+
 // NewHeader creates a new header type.
 func NewHeader(originDomain uint32, sender common.Hash, nonce uint32, destinationDomain uint32, recipient common.Hash, optimisticSeconds uint32) Header {
 	return &headerImpl{
+		version:           headerVersion,
 		originDomain:      originDomain,
 		sender:            sender,
 		nonce:             nonce,

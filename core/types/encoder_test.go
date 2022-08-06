@@ -121,3 +121,25 @@ func TestNewMessageEncodeDecode(t *testing.T) {
 	Equal(t, newMessage.Destination(), decodedMessage.Destination())
 	Equal(t, newMessage.Body(), decodedMessage.Body())
 }
+
+func TestHeaderEncodeDecode(t *testing.T) {
+	domain := gofakeit.Uint32()
+	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	nonce := gofakeit.Uint32()
+	destination := gofakeit.Uint32()
+	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	optimisticSeconds := gofakeit.Uint32()
+
+	ogHeader, err := types.EncodeHeader(types.NewHeader(domain, sender, nonce, destination, recipient, optimisticSeconds))
+	Nil(t, err)
+
+	decodedHeader, err := types.DecodeHeader(ogHeader)
+	Nil(t, err)
+
+	Equal(t, decodedHeader.OriginDomain(), domain)
+	Equal(t, decodedHeader.Sender(), sender)
+	Equal(t, decodedHeader.Nonce(), nonce)
+	Equal(t, decodedHeader.DestinationDomain(), destination)
+	Equal(t, decodedHeader.Recipient(), recipient)
+	Equal(t, decodedHeader.OptimisticSeconds(), optimisticSeconds)
+}
