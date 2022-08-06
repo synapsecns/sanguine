@@ -7,6 +7,8 @@ import (
 
 // Tips contain tips used for scientizing different agents.
 type Tips interface {
+	// Version gets the version of the tips header
+	Version() uint16
 	// UpdaterTip gets the tips for the updater
 	UpdaterTip() *big.Int
 	// RelayerTip gets the tips for the updater
@@ -20,6 +22,7 @@ type Tips interface {
 // NewTips creates a new tips type.
 func NewTips(updaterTip, relayerTip, proverTip, processorTip *big.Int) Tips {
 	return tips{
+		version:      tipsVersion,
 		updaterTip:   updaterTip,
 		relayerTip:   relayerTip,
 		proverTip:    proverTip,
@@ -29,7 +32,12 @@ func NewTips(updaterTip, relayerTip, proverTip, processorTip *big.Int) Tips {
 
 // tips implements Tips.
 type tips struct {
+	version                                         uint16
 	updaterTip, relayerTip, proverTip, processorTip *big.Int
+}
+
+func (t tips) Version() uint16 {
+	return t.version
 }
 
 func (t tips) UpdaterTip() *big.Int {

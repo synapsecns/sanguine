@@ -67,6 +67,7 @@ func DecodeHeader(header []byte) (Header, error) {
 	}
 
 	decoded := headerImpl{
+		version:           encoded.Version,
 		originDomain:      encoded.OriginDomain,
 		sender:            encoded.Sender,
 		nonce:             encoded.Nonce,

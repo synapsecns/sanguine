@@ -137,8 +137,16 @@ func TestMessageEncodeParity(t *testing.T) {
 	deployManager := testutil.NewDeployManager(t)
 	_, messageContract := deployManager.GetMessageHarness(ctx, testBackend)
 
-	// generate some fake data
+	// check constant parity
+	version, err := messageContract.MessageVersion(&bind.CallOpts{Context: ctx})
+	Nil(t, err)
+	Equal(t, version, types.MessageVersion)
 
+	headerOffset, err := messageContract.HeaderOffset(&bind.CallOpts{Context: ctx})
+	Nil(t, err)
+	Equal(t, headerOffset, types.HeaderOffset)
+
+	// generate some fake data
 	origin := gofakeit.Uint32()
 	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	nonce := gofakeit.Uint32()
@@ -147,20 +155,21 @@ func TestMessageEncodeParity(t *testing.T) {
 	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
 	optimisticSeconds := gofakeit.Uint32()
 
-	tips := types.NewTips(new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-	encodedTips, err := types.EncodeTips(tips)
-	Nil(t, err)
+	updaterTip := randomUint96BigInt(t)
+	relayerTip := randomUint96BigInt(t)
+	proverTip := randomUint96BigInt(t)
+	processorTip := randomUint96BigInt(t)
 
-	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, encodedTips, body)
+	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, updaterTip, relayerTip, proverTip, processorTip, body)
 	Nil(t, err)
 
 	decodedMessage, err := types.DecodeMessage(formattedMessage)
 	Nil(t, err)
 
-	Equal(t, decodedMessage.Origin(), origin)
+	Equal(t, decodedMessage.OriginDomain(), origin)
 	Equal(t, decodedMessage.Sender(), sender)
 	Equal(t, decodedMessage.Nonce(), nonce)
-	Equal(t, decodedMessage.Destination(), destination)
+	Equal(t, decodedMessage.DestinationDomain(), destination)
 	Equal(t, decodedMessage.Body(), body)
 }
 

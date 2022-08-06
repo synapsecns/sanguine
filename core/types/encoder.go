@@ -111,12 +111,12 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 }
 
 const (
-	tipsVersion     = uint16(1)
-	offsetUpdater   = 2
-	offsetRelayer   = 14
-	offsetProver    = 26
-	offsetProcessor = 38
-	uint96Len       = 12
+	tipsVersion     uint16 = 1
+	offsetUpdater          = 2
+	offsetRelayer          = 14
+	offsetProver           = 26
+	offsetProcessor        = 38
+	uint96Len              = 12
 )
 
 // EncodeTips encodes a list of tips.
@@ -177,31 +177,45 @@ func EncodeHeader(header Header) ([]byte, error) {
 
 // messageEncoder contains the binary structore of the message.
 type messageEncoder struct {
-	Origin            uint32
-	Sender            [32]byte
-	Nonce             uint32
-	Destination       uint32
-	Recipient         [32]byte
-	OptimisticSeconds uint32
+	Version      uint16
+	HeaderOffset uint16
+	TipsOffset   uint16
+	BodyOffset   uint16
 }
 
 // EncodeMessage encodes a message.
 func EncodeMessage(m Message) ([]byte, error) {
+	encodedHeader, err := EncodeHeader(m.Header())
+	if err != nil {
+		return []byte{}, fmt.Errorf("could not encode header: %w", err)
+	}
+
+	encodedTips, err := EncodeTips(m.Tips())
+	if err != nil {
+		return []byte{}, fmt.Errorf("could not encode tips: %w", err)
+	}
+
+	tipsOffset := headerOffset + uint16(len(encodedHeader))
+	bodyOffset := tipsOffset + uint16(len(encodedTips))
+
+	//payload := append(append(encodedHeader, encodedTips...), m.Body()...)
+
 	newMessage := messageEncoder{
-		Origin:            m.Origin(),
-		Sender:            m.Sender(),
-		Nonce:             m.Nonce(),
-		Destination:       m.Destination(),
-		OptimisticSeconds: m.OptimisticSeconds(),
+		Version:      m.Version(),
+		HeaderOffset: headerOffset,
+		TipsOffset:   tipsOffset,
+		BodyOffset:   bodyOffset,
 	}
 
 	buf := new(bytes.Buffer)
 
-	err := binary.Write(buf, binary.BigEndian, newMessage)
+	err = binary.Write(buf, binary.BigEndian, newMessage)
 	if err != nil {
 		return nil, fmt.Errorf("could not write binary: %w", err)
 	}
 
+	buf.Write(encodedHeader)
+	buf.Write(encodedTips)
 	buf.Write(m.Body())
 
 	return buf.Bytes(), nil
