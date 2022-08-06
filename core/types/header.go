@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// Header contains information of a message
+// Header contains information of a message.
 type Header interface {
 	// The origin domain of the message
 	OriginDomain() uint32
@@ -53,7 +53,7 @@ func DecodeHeader(header []byte) (Header, error) {
 
 	err := binary.Read(reader, binary.BigEndian, &encoded)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode header: %v", err)
+		return nil, fmt.Errorf("failed to decode header: %w", err)
 	}
 
 	decoded := headerImpl{
