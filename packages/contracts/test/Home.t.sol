@@ -82,9 +82,6 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         );
     }
 
-    // TODO: testHashDomain against Go generated domains
-    // function test_homeDomainHash() public {}
-
     // ============ DISPATCHING MESSAGING ============
 
     event Dispatch(

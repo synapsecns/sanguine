@@ -96,14 +96,6 @@ abstract contract UpdaterStorage is Initializable, OwnableUpgradeable {
     }
 
     /**
-     * @notice Hash of domain concatenated with "SYN"
-     * @param _domain The domain to hash
-     */
-    function _domainHash(uint32 _domain) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_domain, "SYN"));
-    }
-
-    /**
      * @notice Set the Updater
      * @param _newUpdater Address of the new Updater
      */

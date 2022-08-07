@@ -230,13 +230,6 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         }
     }
 
-    /**
-     * @notice Hash of Home domain concatenated with "SYN"
-     */
-    function homeDomainHash() external view returns (bytes32) {
-        return _domainHash(localDomain);
-    }
-
     // ============ Public Functions  ============
 
     /**

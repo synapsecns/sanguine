@@ -212,14 +212,6 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         entered = 1;
     }
 
-    /**
-     * @notice Hash of Home domain concatenated with "SYN"
-     * @param _homeDomain the Home domain to hash
-     */
-    function homeDomainHash(uint32 _homeDomain) external pure returns (bytes32) {
-        return _domainHash(_homeDomain);
-    }
-
     // ============ External Owner Functions ============
 
     /**
