@@ -318,7 +318,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, ReportHub {
 
     /**
      * @notice Slash the Updater and set contract state to FAILED
-     * @dev Called when fraud is proven (Invalid Update or Double Update)
+     * @dev Called when fraud is proven (Invalid Attestation)
      */
     function _fail(address _watchtower) internal {
         // set contract to FAILED
