@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { UpdaterStorage } from "./UpdaterStorage.sol";
-import { AuthManager } from "./auth/AuthManager.sol";
+import { ReportHub } from "./auth/ReportHub.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { Report } from "./libs/Report.sol";
 import { Version0 } from "./Version0.sol";
@@ -23,7 +23,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
+contract ReplicaManager is Version0, UpdaterStorage, ReportHub {
     // ============ Libraries ============
 
     using ReplicaLib for ReplicaLib.Replica;
@@ -162,23 +162,6 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         // update nonce
         replica.setNonce(nonce);
         emit Update(remoteDomain, nonce, newRoot, _view.attestationSignature().clone());
-    }
-
-    /**
-     * @notice Called by external agent. Submits the signed report,
-     * and blacklists the reported updater.
-     * @dev Reverts if report signer is not a watchtower, or if reported updater is not an updater.
-     * @param _report       Report data and signature
-     */
-    function submitReport(bytes memory _report) external {
-        // Check if real watchtower & signature
-        (address _watchtower, bytes29 _reportView) = _checkWatchtowerAuth(_report);
-        // Check if this is a fraud report
-        require(_reportView.reportIsFraud(), "!fraud");
-        // Check if real updater & signature
-        address _updater = _checkUpdaterAuth(_reportView.reportAttestation());
-        _blacklistUpdater(_updater);
-        emit UpdaterBlacklisted(_updater, msg.sender, _watchtower, _report);
     }
 
     /**
@@ -388,11 +371,22 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         }
     }
 
+    function _handleReport(
+        address _guard,
+        address _notary,
+        bytes29,
+        bytes memory _report
+    ) internal override returns (bool) {
+        _blacklistNotary(_notary);
+        emit UpdaterBlacklisted(_notary, msg.sender, _guard, _report);
+        return true;
+    }
+
     function _storeTips(bytes29 _tips) internal virtual {
         // TODO: implement storing & claiming logic
     }
 
-    function _blacklistUpdater(address _updater) internal {
+    function _blacklistNotary(address _notary) internal {
         // TODO: implement blacklisting
     }
 }

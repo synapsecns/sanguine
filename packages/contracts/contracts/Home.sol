@@ -4,7 +4,7 @@ pragma solidity 0.8.13;
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
 import { UpdaterStorage } from "./UpdaterStorage.sol";
-import { AuthManager } from "./auth/AuthManager.sol";
+import { ReportHub } from "./auth/ReportHub.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { Report } from "./libs/Report.sol";
 import { TypedMemView } from "./libs/TypedMemView.sol";
@@ -30,7 +30,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Accepts submissions of fraudulent signatures
  * by the Updater and slashes the Updater in this case.
  */
-contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
+contract Home is Version0, MerkleTreeManager, UpdaterStorage, ReportHub {
     // ============ Libraries ============
 
     using Attestation for bytes29;
@@ -254,6 +254,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         return _domainHash(localDomain);
     }
 
+    // ============ Internal Functions  ============
+
     /**
      * @notice Check if an Attestation is an Invalid Attestation;
      * if so, slash the Updater and set the contract to FAILED state.
@@ -274,37 +276,35 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      *
      * @dev Reverts (and doesn't slash updater) if signature is invalid or
      * update not current
-     * @param  _report      Report data and signature
+     * @param _guard            Guard address
+     * @param _notary           Notary address
+     * @param _attestationView  Memory view over Attestation
+     * @param _report           Report payload
      * @return TRUE if update was an Invalid Attestation (implying Updater was slashed)
      */
-    function submitReport(bytes memory _report) external notFailed returns (bool) {
-        // this will revert if Watchtower signature is invalid
-        (address _watchtower, bytes29 _reportView) = _checkWatchtowerAuth(_report);
-        // Check if this is a fraud report
-        require(_reportView.reportIsFraud(), "!fraud");
-        // Get attestation from the report
-        bytes29 _attestation = _reportView.reportAttestation();
-        // this will revert if Updater signature is invalid
-        address _updater = _checkUpdaterAuth(_attestation);
+    function _handleReport(
+        address _guard,
+        address _notary,
+        bytes29 _attestationView,
+        bytes memory _report
+    ) internal override notFailed returns (bool) {
         // Get merkle state from the attestation
-        uint32 _nonce = _attestation.attestationNonce();
-        bytes32 _root = _attestation.attestationRoot();
+        uint32 _nonce = _attestationView.attestationNonce();
+        bytes32 _root = _attestationView.attestationRoot();
         // Check if nonce is valid, if not => attestation is fraud
         if (_nonce < historicalRoots.length) {
             if (_root == historicalRoots[_nonce]) {
                 // Signed (nonce, root) attestation is valid
                 // TODO: slash Watchtower for signing invalid fraud report
-                emit InvalidReport(_watchtower, _report);
+                emit InvalidReport(_guard, _report);
                 return false;
             }
             // Signed root is not the same as the historical one => attestation is fraud
         }
-        _fail(_watchtower);
-        emit InvalidAttestation(_updater, _attestation.clone());
+        _fail(_guard);
+        emit InvalidAttestation(_notary, _attestationView.clone());
         return true;
     }
-
-    // ============ Internal Functions  ============
 
     /**
      * @notice Set the UpdaterManager
