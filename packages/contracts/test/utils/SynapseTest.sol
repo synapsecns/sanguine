@@ -38,7 +38,7 @@ contract SynapseTest is Test {
         return Tips.formatTips(UPDATER_TIP, RELAYER_TIP, PROVER_TIP, PROCESSOR_TIP);
     }
 
-    function getFormattedTips(uint96 _updaterTip, uint96 _relayerTip, uint96 _proverTip, uint96 _processorTip) internal returns (bytes memory) {
+    function getFormattedTips(uint96 _updaterTip, uint96 _relayerTip, uint96 _proverTip, uint96 _processorTip) internal pure returns (bytes memory) {
         return Tips.formatTips(_updaterTip, _relayerTip, _proverTip, _processorTip);
     }
 

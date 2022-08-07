@@ -1,11 +1,12 @@
 package base
 
 import (
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/types"
 	"gorm.io/gorm"
-	"math/big"
-	"time"
 )
 
 // define common field names. See package docs  for an explanation of why we have to do this.
@@ -175,7 +176,7 @@ func (c CommittedMessage) Encode() ([]byte, error) {
 
 var _ types.CommittedMessage = CommittedMessage{}
 
-var _ types.Message = CommittedMessage{}
+// var _ types.Message = CommittedMessage{}
 
 // SignedAttestation stores attestations.
 type SignedAttestation struct {

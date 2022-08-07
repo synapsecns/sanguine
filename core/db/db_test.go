@@ -1,12 +1,13 @@
 package db_test
 
 import (
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/db"
 	"github.com/synapsecns/sanguine/core/types"
-	"math/big"
 )
 
 func (t *DBSuite) TestRetrieveLatestNonce() {
@@ -20,7 +21,9 @@ func (t *DBSuite) TestRetrieveLatestNonce() {
 		leafIndex := uint32(1)
 
 		for i := 0; i < 10; i++ {
-			realMessage := types.NewMessage(10, common.BigToHash(big.NewInt(gofakeit.Int64())), uint32(nonce), gofakeit.Uint32(), []byte(gofakeit.Sentence(10)), common.BigToHash(big.NewInt(gofakeit.Int64())))
+			realTips := types.NewTips(big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+			realHeader := types.NewHeader(gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), uint32(nonce), gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
+			realMessage := types.NewMessage(realHeader, realTips, []byte(gofakeit.Sentence(10)))
 
 			encoded, err := types.EncodeMessage(realMessage)
 			Nil(t.T(), err)

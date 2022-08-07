@@ -34,7 +34,6 @@ contract MessageTest is SynapseTest {
         destinationDomain = 2000;
         optimisticSeconds = 4;
         recipient = bytes32("AAAA THE RECEIVOOOR");
-        // tips = getDefaultTips();
         updaterTip = 1234;
         relayerTip = 3456;
         proverTip = 5678;
