@@ -34,7 +34,7 @@ func NewAttestationSubmitter(domain domains.DomainClient, db db.SynapseDB, signe
 
 // Start runs the update submitter.
 func (u AttestationSubmitter) Start(ctx context.Context) error {
-	committedNonce, err := u.domain.AttestationCollector().LatestNonce(ctx, u.domain.Config().DomainID)
+	committedNonce, err := u.domain.AttestationCollector().LatestNonce(ctx, u.domain.Config().DomainID, u.signer)
 	if err != nil {
 		return fmt.Errorf("could not get committed root: %w", err)
 	}

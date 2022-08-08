@@ -48,7 +48,7 @@ func (u NotarySuite) TestNotaryE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		latestNonce, err := u.attestationContract.LatestNonce(&bind.CallOpts{Context: u.GetTestContext()}, u.domainClient.Config().DomainID)
+		latestNonce, err := u.attestationContract.LatestNonce(&bind.CallOpts{Context: u.GetTestContext()}, u.domainClient.Config().DomainID, u.signer.Address())
 		Nil(u.T(), err)
 
 		return latestNonce != 0

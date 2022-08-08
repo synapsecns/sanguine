@@ -291,29 +291,6 @@ func (_m *IHome) HistoricalRoots(opts *bind.CallOpts, arg0 *big.Int) ([32]byte, 
 	return r0, r1
 }
 
-// HomeDomainHash provides a mock function with given fields: opts
-func (_m *IHome) HomeDomainHash(opts *bind.CallOpts) ([32]byte, error) {
-	ret := _m.Called(opts)
-
-	var r0 [32]byte
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) [32]byte); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([32]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // ImproperAttestation provides a mock function with given fields: opts, _updater, _attestation
 func (_m *IHome) ImproperAttestation(opts *bind.TransactOpts, _updater common.Address, _attestation []byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, _updater, _attestation)

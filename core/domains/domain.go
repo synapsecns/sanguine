@@ -38,7 +38,7 @@ type AttestationCollectorContract interface {
 	// SubmitAttestation submits an attestation to the attestation collector.
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// LatestNonce gets the latest nonce for the domain on the attestation collector
-	LatestNonce(ctx context.Context, domain uint32) (nonce uint32, err error)
+	LatestNonce(ctx context.Context, domain uint32, signer signer.Signer) (nonce uint32, err error)
 }
 
 // ErrNoUpdate indicates no update has been produced.
