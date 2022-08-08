@@ -1,230 +1,331 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity 0.8.13;
 
-import { AuthManager } from "./auth/AuthManager.sol";
-import { Attestation } from "./libs/Attestation.sol";
-import { TypedMemView } from "./libs/TypedMemView.sol";
-import { NotaryRegistry } from "./NotaryRegistry.sol";
+import { SynapseTest } from "./utils/SynapseTest.sol";
 
-import {
-    OwnableUpgradeable
-} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import { AttestationCollectorHarness } from "./harnesses/AttestationCollectorHarness.sol";
 
-contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable {
-    using Attestation for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+contract AttestationCollectorTest is SynapseTest {
+    AttestationCollectorHarness internal collector;
 
     event AttestationSubmitted(address indexed updater, bytes attestation);
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    event NotaryAdded(uint32 indexed domain, address notary);
 
-    /**
-     * @dev All submitted Notary Attestations are stored.
-     * As different Notaries might sign attestations with the same nonce,
-     * but different root (meaning one of the attestations is fraudulent),
-     * we need a system so store all such attestations.
-     *
-     * `attestationRoots` stores a list of attested roots for every (domain, nonce) pair
-     * `signatures` stores a signature for every submitted (domain, nonce, root) attestation.
-     * We only store the first submitted signature for such attestation.
-     */
-    // [homeDomain => [nonce => [roots]]]
-    mapping(uint32 => mapping(uint32 => bytes32[])) internal attestationRoots;
-    // [homeDomain => [nonce => [root => signature]]]
-    mapping(uint32 => mapping(uint32 => mapping(bytes32 => bytes))) internal signatures;
+    event NotaryRemoved(uint32 indexed domain, address notary);
 
-    /// @dev We are also storing last submitted (nonce, root) attestation for every Notary.
-    // [homeDomain => [notary => latestNonce]]
-    mapping(uint32 => mapping(address => uint32)) public latestNonce;
-    // [homeDomain => [notary => latestRoot]]
-    mapping(uint32 => mapping(address => bytes32)) public latestRoot;
+    uint32 internal nonce = 420;
+    bytes32 internal root = "root";
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             UPGRADE GAP                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    uint256[] internal notariesPK;
+    address[] internal notaries;
 
-    uint256[46] private __GAP;
+    uint32[][] internal attestedNonces;
+    bytes32[][] internal attestedRoots;
+    mapping(uint32 => uint256) internal rootsAmount;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             INITIALIZER                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    uint256 internal constant NOTARIES_AMOUNT = 4;
 
-    function initialize() external initializer {
-        __Ownable_init_unchained();
-    }
+    function setUp() public override {
+        super.setUp();
+        collector = new AttestationCollectorHarness();
+        collector.initialize();
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                VIEWS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Get i-th attestation for given (domain, nonce), if exists.
-     * Assuming no fraud is committed, index = 0 should be used.
-     * If fraud was committed, there might be more than one attestation for given (domain, nonce).
-     */
-    function getAttestation(
-        uint32 _domain,
-        uint32 _nonce,
-        uint256 _index
-    ) external view returns (bytes memory) {
-        bytes32 root = getRoot(_domain, _nonce, _index);
-        // signature always exists for a stored root
-        return _formatAttestation(_domain, _nonce, root);
-    }
-
-    /**
-     * @notice Get attestation for (domain, nonce, root), if exists.
-     */
-    function getAttestation(
-        uint32 _domain,
-        uint32 _nonce,
-        bytes32 _root
-    ) external view returns (bytes memory) {
-        require(_signatureExists(_domain, _nonce, _root), "!signature");
-        return _formatAttestation(_domain, _nonce, _root);
-    }
-
-    /**
-     * @notice Get latest attestation for the domain.
-     */
-    function getLatestAttestation(uint32 _domain) external view returns (bytes memory) {
-        uint256 notariesAmount = domainNotaries[_domain].length;
-        require(notariesAmount != 0, "!notaries");
-        uint32 _latestNonce = 0;
-        bytes32 _latestRoot;
-        for (uint256 i = 0; i < notariesAmount; ) {
-            address notary = domainNotaries[_domain][i];
-            uint32 nonce = latestNonce[_domain][notary];
-            // Check latest Notary's nonce against current latest nonce
-            if (nonce > _latestNonce) {
-                _latestRoot = latestRoot[_domain][notary];
-                _latestNonce = nonce;
-            }
-            unchecked {
-                ++i;
-            }
+        notariesPK = new uint256[](NOTARIES_AMOUNT);
+        notaries = new address[](NOTARIES_AMOUNT);
+        for (uint256 i = 0; i < NOTARIES_AMOUNT; ++i) {
+            notariesPK[i] = 42 + i * 69;
+            notaries[i] = vm.addr(notariesPK[i]);
         }
-        // Check if we found anything
-        require(_latestNonce != 0, "No attestations found");
-        return _formatAttestation(_domain, _latestNonce, _latestRoot);
+
+        attestedNonces = new uint32[][](NOTARIES_AMOUNT);
+        attestedRoots = new bytes32[][](NOTARIES_AMOUNT);
     }
 
-    /**
-     * @notice Get latest attestation for the domain signed by given Notary.
-     */
-    function getLatestAttestation(uint32 _domain, address _notary)
-        external
-        view
-        returns (bytes memory)
-    {
-        uint32 nonce = latestNonce[_domain][_notary];
-        require(nonce != 0, "No attestations found");
-        bytes32 root = latestRoot[_domain][_notary];
-        return _formatAttestation(_domain, nonce, root);
+    function test_cannotInitializeTwice() public {
+        vm.expectRevert("Initializable: contract is already initialized");
+        collector.initialize();
     }
 
-    /**
-     * @notice Get i-th root for given (domain, nonce), if exists.
-     * Assuming no fraud is committed, index = 0 should be used.
-     * If fraud was committed, there might be more than one root for given (domain, nonce).
-     */
-    function getRoot(
-        uint32 _domain,
-        uint32 _nonce,
-        uint256 _index
-    ) public view returns (bytes32) {
-        require(_index < attestationRoots[_domain][_nonce].length, "!index");
-        return attestationRoots[_domain][_nonce][_index];
+    function test_addNotary() public {
+        vm.expectEmit(true, true, true, true);
+        emit NotaryAdded(localDomain, updater);
+        collector.addNotary(localDomain, updater);
     }
 
-    /**
-     * @notice Get amount of attested roots for given (domain, nonce).
-     * Assuming no fraud is committed, amount <= 1.
-     * If amount > 1, fraud was committed.
-     */
-    function rootsAmount(uint32 _domain, uint32 _nonce) external view returns (uint256) {
-        return attestationRoots[_domain][_nonce].length;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              OWNER ONLY                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // TODO: add/remove notaries upon bonding/unbonding
-
-    function addNotary(uint32 _domain, address _notary) external onlyOwner {
-        _addNotary(_domain, _notary);
-    }
-
-    function removeNotary(uint32 _domain, address _notary) external onlyOwner {
-        _removeNotary(_domain, _notary);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function submitAttestation(address _notary, bytes memory _attestation)
-        external
-        returns (bool attestationStored)
-    {
-        bytes29 _view = _checkUpdaterAuth(_notary, _attestation);
-        attestationStored = _storeAttestation(_notary, _view);
-        if (attestationStored) {
-            // Emit Event only if the Attestation was stored
-            emit AttestationSubmitted(_notary, _attestation);
+    function test_addNotaries() public {
+        for (uint256 i = 0; i < NOTARIES_AMOUNT; ++i) {
+            vm.expectEmit(true, true, true, true);
+            emit NotaryAdded(localDomain, notaries[i]);
+            collector.addNotary(localDomain, notaries[i]);
+            assertTrue(collector.isNotary(localDomain, notaries[i]));
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function _isUpdater(uint32 _homeDomain, address _notary) internal view override returns (bool) {
-        return _isNotary(_homeDomain, _notary);
+    function test_addNotary_notOwner() public {
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(address(1337));
+        collector.addNotary(localDomain, fakeUpdater);
     }
 
-    function _isWatchtower(address _watchtower) internal view override returns (bool) {}
+    function test_removeNotary() public {
+        test_addNotary();
+        emit NotaryRemoved(localDomain, updater);
+        collector.removeNotary(localDomain, updater);
+    }
 
-    function _formatAttestation(
-        uint32 _domain,
+    function test_removeNotary_notOwner() public {
+        test_addNotary();
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(address(1337));
+        collector.removeNotary(localDomain, fakeUpdater);
+    }
+
+    function test_submitAttestation() public {
+        test_addNotary();
+        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
+        vm.expectEmit(true, true, true, true);
+        emit AttestationSubmitted(updater, attestation);
+        assertTrue(collector.submitAttestation(updater, attestation));
+    }
+
+    function test_submitAttestation_invalidSignature() public {
+        test_addNotary();
+        (bytes memory attestation, ) = signHomeAttestation(fakeUpdaterPK, nonce, root);
+        vm.expectRevert("Invalid signature");
+        collector.submitAttestation(updater, attestation);
+    }
+
+    function test_submitAttestation_notUpdater() public {
+        test_addNotary();
+        (bytes memory attestation, ) = signHomeAttestation(fakeUpdaterPK, nonce, root);
+        vm.expectRevert("Signer is not an updater");
+        collector.submitAttestation(fakeUpdater, attestation);
+    }
+
+    function test_submitAttestation_wrongDomain() public {
+        test_addNotary();
+        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
+        // Signer is not set as updater for the `remoteDomain`
+        vm.expectRevert("Signer is not an updater");
+        collector.submitAttestation(updater, attestation);
+    }
+
+    function test_submitAttestation_zeroNonce() public {
+        test_addNotary();
+        (bytes memory attestation, ) = signHomeAttestation(updaterPK, 0, root);
+        vm.expectRevert("Outdated attestation");
+        collector.submitAttestation(updater, attestation);
+    }
+
+    function test_submitAttestation_outdated() public {
+        test_submitAttestation();
+        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
+        vm.expectRevert("Outdated attestation");
+        collector.submitAttestation(updater, attestation);
+    }
+
+    function test_submitAttestation_duplicate() public {
+        test_submitAttestation();
+        test_addNotaries();
+        (bytes memory attestation, ) = signHomeAttestation(notariesPK[0], nonce, root);
+        // duplicate attestation should not be stored
+        assertFalse(collector.submitAttestation(notaries[0], attestation));
+    }
+
+    function test_submitAttestations() public {
+        test_addNotaries();
+        // First Notary submits attestations with nonces: [1, 2, 5]
+        _submitTestAttestation(1, 0, true);
+        _submitTestAttestation(2, 0, true);
+        _submitTestAttestation(5, 0, true);
+        // Second Notary submits attestations with nonces: [1, 3, 6]
+        // duplicate attestation is not stored
+        _submitTestAttestation(1, 1, 0, false);
+        _submitTestAttestation(3, 1, true);
+        _submitTestAttestation(6, 1, true);
+        // Third Notary submits nonces [1, 6, 7]
+        // first two are conflicting attestations, they are stored
+        _submitTestAttestation(1, 2, true);
+        _submitTestAttestation(6, 2, true);
+        _submitTestAttestation(7, 2, true);
+        // Fourth Notary submits all duplicate attestations for nonces [1, 6]
+        // duplicates are not stored
+        _submitTestAttestation(1, 3, 0, false);
+        _submitTestAttestation(1, 3, 2, false);
+        _submitTestAttestation(6, 3, 1, false);
+        _submitTestAttestation(6, 3, 2, false);
+
+        // Submit a few fresh attestations
+        _submitTestAttestation(9, 2, true);
+        _submitTestAttestation(10, 0, true);
+        _submitTestAttestation(12, 3, true);
+        _submitTestAttestation(8, 1, true);
+    }
+
+    function test_getAttestation() public {
+        test_submitAttestations();
+        _checkGetAttestation(1, 0, 0);
+        _checkGetAttestation(2, 0, 0);
+        _checkGetAttestation(5, 0, 0);
+
+        _checkGetAttestation(3, 1, 0);
+        _checkGetAttestation(6, 1, 0);
+
+        // conflicting attestations are stored with index > 0
+        _checkGetAttestation(1, 2, 1);
+        _checkGetAttestation(6, 2, 1);
+        _checkGetAttestation(7, 2, 0);
+
+        _checkGetAttestation(9, 2, 0);
+        _checkGetAttestation(10, 0, 0);
+        _checkGetAttestation(12, 3, 0);
+        _checkGetAttestation(8, 1, 0);
+    }
+
+    function test_getAttestation_noSignature() public {
+        test_submitAttestations();
+        vm.expectRevert("!signature");
+        // Nonce 6 was submitted only by Notaries 1 and 2
+        collector.getAttestation(localDomain, 6, _generateTestRoot(6, 3));
+    }
+
+    function test_getRoot_noAttestations() public {
+        test_submitAttestations();
+        vm.expectRevert("!index");
+        collector.getRoot(localDomain, 4, 0);
+    }
+
+    function test_getLatestAttestation_noNotaryAttestations() public {
+        test_submitAttestation();
+        test_addNotaries();
+        vm.expectRevert("No attestations found");
+        collector.getLatestAttestation(localDomain, notaries[0]);
+    }
+
+    function test_getLatestAttestation_noAttestations() public {
+        test_addNotaries();
+        vm.expectRevert("No attestations found");
+        collector.getLatestAttestation(localDomain);
+    }
+
+    function test_getLatestAttestation_noNotaries() public {
+        vm.expectRevert("!notaries");
+        collector.getLatestAttestation(localDomain);
+    }
+
+    function test_rootsAmount() public {
+        test_submitAttestations();
+        for (uint32 _nonce = 0; _nonce < 16; ++_nonce) {
+            assertEq(collector.rootsAmount(localDomain, _nonce), rootsAmount[_nonce]);
+        }
+    }
+
+    function _submitTestAttestation(
         uint32 _nonce,
-        bytes32 _root
-    ) internal view returns (bytes memory) {
-        return
-            Attestation.formatAttestation(
-                Attestation.formatAttestationData(_domain, _nonce, _root),
-                signatures[_domain][_nonce][_root]
+        uint256 _notaryIndex,
+        bool _stored
+    ) internal {
+        // Make Notary sign "their own" attestation
+        _submitTestAttestation(_nonce, _notaryIndex, _notaryIndex, _stored);
+    }
+
+    function _submitTestAttestation(
+        uint32 _nonce,
+        uint256 _notaryIndex,
+        uint256 _notaryGenerationIndex,
+        bool _stored
+    ) internal {
+        // Create attestation based by index specified for attestation generation
+        bytes32 _root = _generateTestRoot(_nonce, _notaryGenerationIndex);
+        bytes memory attestation = _generateTestAttestation(
+            _nonce,
+            _notaryIndex,
+            _notaryGenerationIndex
+        );
+        if (_stored) {
+            vm.expectEmit(true, true, true, true);
+            emit AttestationSubmitted(notaries[_notaryIndex], attestation);
+            // Store testing info for later checking
+            attestedNonces[_notaryIndex].push(_nonce);
+            attestedRoots[_notaryIndex].push(_root);
+            ++rootsAmount[_nonce];
+        }
+        // Use potentially another notary index for signing
+        assertEq(collector.submitAttestation(notaries[_notaryIndex], attestation), _stored);
+        // Check both getLatestAttestation() functions
+        _checkLatestAttestations();
+    }
+
+    // This will generate unique root for every Notary, even with the same nonce
+    function _generateTestRoot(uint32 _nonce, uint256 _notaryIndex)
+    internal
+    pure
+    returns (bytes32)
+    {
+        return keccak256(abi.encode("root", _nonce, _notaryIndex));
+    }
+
+    function _generateTestAttestation(
+        uint32 _nonce,
+        uint256 _notaryIndex,
+        uint256 _notaryGenerationIndex
+    ) internal returns (bytes memory attestation) {
+        (attestation, ) = signHomeAttestation(
+            notariesPK[_notaryIndex],
+            _nonce,
+            _generateTestRoot(_nonce, _notaryGenerationIndex)
+        );
+    }
+
+    function _checkGetAttestation(
+        uint32 _nonce,
+        uint256 _notaryIndex,
+        uint256 _attestationIndex
+    ) internal {
+        _checkGetAttestation(_nonce, _notaryIndex, _notaryIndex, _attestationIndex);
+    }
+
+    function _checkGetAttestation(
+        uint32 _nonce,
+        uint256 _notaryIndex,
+        uint256 _notaryGenerationIndex,
+        uint256 _attestationIndex
+    ) internal {
+        bytes32 _root = _generateTestRoot(_nonce, _notaryGenerationIndex);
+        bytes memory attestation = _generateTestAttestation(
+            _nonce,
+            _notaryIndex,
+            _notaryGenerationIndex
+        );
+        assertEq(collector.getRoot(localDomain, _nonce, _attestationIndex), _root);
+        assertEq(collector.getAttestation(localDomain, _nonce, _attestationIndex), attestation);
+        assertEq(collector.getAttestation(localDomain, _nonce, _root), attestation);
+    }
+
+    function _checkLatestAttestations() internal {
+        uint32 latestNonce = 0;
+        bytes memory latestAttestation;
+        for (uint256 i = 0; i < NOTARIES_AMOUNT; ++i) {
+            if (attestedNonces[i].length == 0) continue;
+            uint256 indexLast = attestedNonces[i].length - 1;
+            if (attestedNonces[i][indexLast] == 0) continue;
+            assert(attestedRoots[i][indexLast] != bytes32(0));
+            (bytes memory attestation, ) = signHomeAttestation(
+                notariesPK[i],
+                attestedNonces[i][indexLast],
+                attestedRoots[i][indexLast]
             );
-    }
+            assertEq(collector.getLatestAttestation(localDomain, notaries[i]), attestation);
 
-    function _signatureExists(
-        uint32 _domain,
-        uint32 _nonce,
-        bytes32 _root
-    ) internal view returns (bool) {
-        return signatures[_domain][_nonce][_root].length > 0;
-    }
-
-    function _storeAttestation(address _notary, bytes29 _view) internal returns (bool) {
-        uint32 domain = _view.attestationDomain();
-        uint32 nonce = _view.attestationNonce();
-        bytes32 root = _view.attestationRoot();
-        require(nonce > latestNonce[domain][_notary], "Outdated attestation");
-        // Don't store Attestation, if another Notary
-        // have submitted the same (domain, nonce, root) before.
-        if (_signatureExists(domain, nonce, root)) return false;
-        latestNonce[domain][_notary] = nonce;
-        latestRoot[domain][_notary] = root;
-        signatures[domain][nonce][root] = _view.attestationSignature().clone();
-        attestationRoots[domain][nonce].push(root);
-        return true;
+            if (attestedNonces[i][indexLast] > latestNonce) {
+                latestNonce = attestedNonces[i][indexLast];
+                latestAttestation = attestation;
+            }
+        }
+        if (latestNonce != 0) {
+            assertEq(collector.getLatestAttestation(localDomain), latestAttestation);
+        }
     }
 }

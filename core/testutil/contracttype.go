@@ -6,11 +6,12 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
-	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 )
 
@@ -44,14 +45,16 @@ type contractTypeImpl int
 const (
 	// HomeType is the type of the home.
 	HomeType contractTypeImpl = 0 // Home
-	// XAppConfigType is the xAppConfig contract type.
-	XAppConfigType contractTypeImpl = iota // XAppConfig
 	// MessageHarnessType is the type of the message harness contract.
 	MessageHarnessType contractTypeImpl = iota // MessageHarness
 	// HomeHarnessType is the home harness type.
 	HomeHarnessType contractTypeImpl = iota // HomeHarness
 	// AttestationHarnessType is the attestation harness type.
 	AttestationHarnessType contractTypeImpl = iota
+	// TipsHarnessType is the type of the tips harness.
+	TipsHarnessType contractTypeImpl = iota
+	// HeaderHarnessType is the tyoe of the header harness.
+	HeaderHarnessType contractTypeImpl = iota
 	// ReplicaManagerHarnessType is the replica manager harness type.
 	ReplicaManagerHarnessType contractTypeImpl = iota
 	// UpdaterManagerType is the type of the update manager.
@@ -83,8 +86,6 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case HomeType:
 		return home.Contracts["solidity/Home.sol:Home"]
-	case XAppConfigType:
-		return xappconfig.Contracts["solidity/XAppConfig.sol:XAppConfig"]
 	case MessageHarnessType:
 		return messageharness.Contracts["solidity/MessageHarness.sol:MessageHarness"]
 	case HomeHarnessType:
@@ -95,10 +96,14 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return replicamanagerharness.Contracts["solidity/ReplicaManagerHarness.sol:ReplicaManagerHarness"]
 	case UpdaterManagerType:
 		return updatermanager.Contracts["solidity/UpdaterManager.sol:UpdaterManager"]
+	case TipsHarnessType:
+		return tipsharness.Contracts["solidity/TipsHarness.sol:TipsHarness"]
 	case AttestationCollectorType:
 		return attestationcollector.Contracts["solidity/AttestationCollector.sol:AttestationCollector"]
 	case ReplicaManagerType:
 		return replicamanager.Contracts["solidity/ReplicaManager.sol:ReplicaManager"]
+	case HeaderHarnessType:
+		return headerharness.Contracts["solidity/HeaderHarness.sol:HeaderHarness"]
 	default:
 		panic("not yet implemented")
 	}

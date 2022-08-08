@@ -82,9 +82,6 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         );
     }
 
-    // TODO: testHashDomain against Go generated domains
-    // function test_homeDomainHash() public {}
-
     // ============ DISPATCHING MESSAGING ============
 
     event Dispatch(
@@ -100,7 +97,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes32 recipient = addressToBytes32(vm.addr(1337));
         address sender = vm.addr(1555);
         bytes memory messageBody = bytes("message");
-        uint32 nonce = home.nonces(remoteDomain);
+        uint32 nonce = home.nonce() + 1;
         bytes memory _header = Header.formatHeader(
             localDomain,
             addressToBytes32(sender),
@@ -129,7 +126,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
             _tips,
             messageBody
         );
-        assert(home.historicalRoots(count) == home.root());
+        assert(home.historicalRoots(count+1) == home.root());
     }
 
     // Rejects messages over a set size
@@ -156,10 +153,10 @@ contract HomeTest is SynapseTestWithUpdaterManager {
 
     function test_improperAttestation_fraud_invalidNonce() public {
         test_dispatch();
-        uint32 nonce = 1;
+        uint32 nonce = 2;
         bytes32 root = home.root();
-        // This root exists, but with nonce = 0
-        // Nonce = 1 doesn't exists yet
+        // This root exists, but with nonce = 1
+        // Nonce = 0 doesn't exists yet
         _checkImproperUpdate(nonce, root);
     }
 
@@ -200,7 +197,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         test_dispatch();
         (uint32 nonce, bytes32 root) = home.suggestUpdate();
         // sanity checks
-        assertEq(nonce, 3);
+        assertEq(nonce, 4);
         assertEq(root, home.historicalRoots(nonce));
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
         // Should not be an improper attestation

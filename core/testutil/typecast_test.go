@@ -9,13 +9,6 @@ func (s SimulatedSuite) TestTypecastHome() {
 	})
 }
 
-func (s SimulatedSuite) TestTypecastXappConfig() {
-	NotPanics(s.T(), func() {
-		_, xappHandle := s.deployManager.GetXAppConfig(s.GetTestContext(), s.testBackend)
-		NotNil(s.T(), xappHandle)
-	})
-}
-
 func (s SimulatedSuite) TestTypecastMessageHarness() {
 	NotPanics(s.T(), func() {
 		_, messageHarness := s.deployManager.GetMessageHarness(s.GetTestContext(), s.testBackend)
@@ -37,7 +30,7 @@ func (s SimulatedSuite) TestTypecastUpdaterManager() {
 	})
 }
 
-func (s SimulatedSuite) TestTypecastAttestationCollector() {
+func (s SimulatedSuite) TestTypecastAttesationCollector() {
 	NotPanics(s.T(), func() {
 		_, attestationCollector := s.deployManager.GetAttestationCollector(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), attestationCollector)
@@ -47,6 +40,13 @@ func (s SimulatedSuite) TestTypecastAttestationCollector() {
 func (s SimulatedSuite) TestTypecastAttestationHarness() {
 	NotPanics(s.T(), func() {
 		_, attestationHarness := s.deployManager.GetAttestationHarness(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), attestationHarness)
+	})
+}
+
+func (s SimulatedSuite) TestTypecastTipsHarness() {
+	NotPanics(s.T(), func() {
+		_, attestationHarness := s.deployManager.GetTipsHarness(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), attestationHarness)
 	})
 }
@@ -62,5 +62,12 @@ func (s SimulatedSuite) TestTypecastReplicaManagerHarness() {
 	NotPanics(s.T(), func() {
 		_, replicaManagerHarness := s.deployManager.GetReplicaManagerHarness(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), replicaManagerHarness)
+	})
+}
+
+func (s SimulatedSuite) TestTypecastHeaderHarness() {
+	NotPanics(s.T(), func() {
+		_, headerHarness := s.deployManager.GetHeaderHarness(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), headerHarness)
 	})
 }

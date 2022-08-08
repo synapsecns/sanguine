@@ -61,13 +61,13 @@ var testTxes = []*types.Transaction{
 	}),
 }
 
-func (t *TxQueueSuite) TestTxInsertion() {
+func (t *DBSuite) TestTxInsertion() {
 	testWallet, err := wallet.FromRandom()
 	Nil(t.T(), err)
 
 	signer := localsigner.NewSigner(testWallet.PrivateKey())
 
-	t.RunOnAllDBs(func(testDB db.TxQueueDB) {
+	t.RunOnAllDBs(func(testDB db.SynapseDB) {
 		for _, testTx := range testTxes {
 			err := testDB.StoreRawTx(t.GetTestContext(), testTx, testTx.ChainId(), signer.Address())
 			Nil(t.T(), err)
@@ -88,11 +88,11 @@ func (t *TxQueueSuite) TestTxInsertion() {
 }
 
 /// make sure tx doesn't conflict on both chains.
-func (t *TxQueueSuite) TestTxNonceQueryMultiChain() {
+func (t *DBSuite) TestTxNonceQueryMultiChain() {
 	fakeTx := testTxes[0]
 	fakeTx2 := testTxes[1]
 
-	t.RunOnAllDBs(func(testDB db.TxQueueDB) {
+	t.RunOnAllDBs(func(testDB db.SynapseDB) {
 		from := common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64()))
 
 		err := testDB.StoreRawTx(t.GetTestContext(), fakeTx, fakeTx.ChainId(), from)

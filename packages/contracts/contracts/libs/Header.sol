@@ -25,12 +25,12 @@ library Header {
      * [078 .. 082): optimisticSeconds  uint32   4 bytes
      */
 
-    uint256 private constant OFFSET_ORIGIN = 2;
-    uint256 private constant OFFSET_SENDER = 6;
-    uint256 private constant OFFSET_NONCE = 38;
-    uint256 private constant OFFSET_DESTINATION = 42;
-    uint256 private constant OFFSET_RECIPIENT = 46;
-    uint256 private constant OFFSET_OPTIMISTIC_SECONDS = 78;
+    uint256 internal constant OFFSET_ORIGIN = 2;
+    uint256 internal constant OFFSET_SENDER = 6;
+    uint256 internal constant OFFSET_NONCE = 38;
+    uint256 internal constant OFFSET_DESTINATION = 42;
+    uint256 internal constant OFFSET_RECIPIENT = 46;
+    uint256 internal constant OFFSET_OPTIMISTIC_SECONDS = 78;
 
     modifier onlyHeader(bytes29 _view) {
         _view.assertType(Message.HEADER_TYPE);
