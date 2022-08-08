@@ -7,7 +7,6 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/db"
-	pebbleStore "github.com/synapsecns/sanguine/core/db/datastore/pebble"
 	"github.com/synapsecns/sanguine/core/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/core/db/datastore/sql/sqlite"
 	"github.com/synapsecns/synapse-node/pkg/common"
@@ -19,78 +18,36 @@ import (
 	"time"
 )
 
-// MessageSuite is the db test suite.
-type MessageSuite struct {
+type DBSuite struct {
 	*testutils.TestSuite
-	dbs []db.MessageDB
-}
-
-// NewDBSuite creates a db test suite.
-func NewMessageSuite(tb testing.TB) *MessageSuite {
-	tb.Helper()
-	return &MessageSuite{TestSuite: testutils.NewTestSuite(tb)}
-}
-
-func (m *MessageSuite) SetupTest() {
-	m.TestSuite.SetupTest()
-
-	newDB, err := pebbleStore.NewMessageDB(filet.TmpDir(m.T(), ""), "home1")
-	Nil(m.T(), err)
-
-	m.dbs = []db.MessageDB{newDB}
-}
-
-// TODO: we can remove duplication here once we introduce generics.
-func (m *MessageSuite) RunOnAllDBs(testFunc func(testDB db.MessageDB)) {
-	m.T().Helper()
-
-	wg := sync.WaitGroup{}
-	for _, testDB := range m.dbs {
-		wg.Add(1)
-		// capture the value
-		go func(testDB db.MessageDB) {
-			defer wg.Done()
-			testFunc(testDB)
-		}(testDB)
-	}
-	wg.Wait()
-}
-
-// TestDBSuite tests the db suite.
-func TestMessageSuite(t *testing.T) {
-	suite.Run(t, NewMessageSuite(t))
-}
-
-type TxQueueSuite struct {
-	*testutils.TestSuite
-	dbs []db.TxQueueDB
+	dbs []db.SynapseDB
 }
 
 // NewTxQueueSuite creates a new transaction queue suite.
-func NewTxQueueSuite(tb testing.TB) *TxQueueSuite {
+func NewTxQueueSuite(tb testing.TB) *DBSuite {
 	tb.Helper()
-	return &TxQueueSuite{
+	return &DBSuite{
 		TestSuite: testutils.NewTestSuite(tb),
-		dbs:       []db.TxQueueDB{},
+		dbs:       []db.SynapseDB{},
 	}
 }
 
-func (t *TxQueueSuite) SetupTest() {
+func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
 
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""))
 	Nil(t.T(), err)
 
-	t.dbs = []db.TxQueueDB{sqliteStore}
+	t.dbs = []db.SynapseDB{sqliteStore}
 	t.setupMysqlDB()
 }
 
 // connString gets the connection string.
-func (t *TxQueueSuite) connString(dbname string) string {
+func (t *DBSuite) connString(dbname string) string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", common.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), common.GetEnv("MYSQL_HOST", "127.0.0.1"), common.GetEnvInt("MYSQL_PORT", 3306), dbname)
 }
 
-func (t *TxQueueSuite) setupMysqlDB() {
+func (t *DBSuite) setupMysqlDB() {
 	// skip if mysql test disabled, this really only needs to be run in ci
 
 	// skip if mysql test disabled
@@ -122,14 +79,14 @@ func (t *TxQueueSuite) setupMysqlDB() {
 	t.dbs = append(t.dbs, mysqlStore)
 }
 
-func (t *TxQueueSuite) RunOnAllDBs(testFunc func(testDB db.TxQueueDB)) {
+func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.SynapseDB)) {
 	t.T().Helper()
 
 	wg := sync.WaitGroup{}
 	for _, testDB := range t.dbs {
 		wg.Add(1)
 		// capture the value
-		go func(testDB db.TxQueueDB) {
+		go func(testDB db.SynapseDB) {
 			defer wg.Done()
 			testFunc(testDB)
 		}(testDB)

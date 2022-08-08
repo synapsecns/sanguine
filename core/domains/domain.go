@@ -3,7 +3,6 @@ package domains
 import (
 	"context"
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -22,23 +21,24 @@ type DomainClient interface {
 	BlockNumber(ctx context.Context) (uint32, error)
 	// Home retrieves a handle for the home contract
 	Home() HomeContract
+	// AttestationCollector is the attestation collector
+	AttestationCollector() AttestationCollectorContract
 }
 
 // HomeContract represents the home contract on a particular chain.
 type HomeContract interface {
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
 	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
-	// ProduceUpdate suggests an update from the home contract
-	ProduceUpdate(ctx context.Context) (types.Update, error)
-	// CommittedRoot gets the committed root
-	CommittedRoot(ctx context.Context) (common.Hash, error)
-	// Update updates the home contract
-	Update(ctx context.Context, signer signer.Signer, update types.SignedUpdate) error
+	// ProduceAttestation suggests an update from the home contract
+	ProduceAttestation(ctx context.Context) (types.Attestation, error)
 }
 
 // AttestationCollectorContract contains the interface for the attestation collector.
 type AttestationCollectorContract interface {
-	SubmitAttestation(signer signer.Signer, attestation types.SignedAttestation) error
+	// SubmitAttestation submits an attestation to the attestation collector.
+	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
+	// LatestNonce gets the latest nonce for the domain on the attestation collector
+	LatestNonce(ctx context.Context, domain uint32) (nonce uint32, err error)
 }
 
 // ErrNoUpdate indicates no update has been produced.

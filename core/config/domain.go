@@ -42,6 +42,8 @@ type DomainConfig struct {
 	RequiredConfirmations uint32 `toml:"Confirmations"`
 	// XappConfigAddress gets the x app config address
 	XAppConfigAddress string `toml:"XAppConfigAddress"`
+	// AttesationCollectorAddress contains the attestation collector address (if present)
+	AttesationCollectorAddress string `toml:"AttesationCollectorAddress"`
 	// RPCUrl to use for the chain
 	RPCUrl string `toml:"RPCURL"`
 	// Minimum start height

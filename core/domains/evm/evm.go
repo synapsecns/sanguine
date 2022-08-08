@@ -23,6 +23,8 @@ type evmClient struct {
 	xAppConfig *xappconfig.XAppConfigRef
 	// home contains the home contract
 	home domains.HomeContract
+	// attestationCollecotr contains the attestation collector contract
+	attestationCollector domains.AttestationCollectorContract
 }
 
 var _ domains.DomainClient = &evmClient{}
@@ -49,12 +51,18 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		return nil, fmt.Errorf("could not bind home contract: %w", err)
 	}
 
+	boundCollector, err := NewAttestationCollectorContract(ctx, underlyingClient, common.HexToAddress(domain.AttesationCollectorAddress))
+	if err != nil {
+		return nil, fmt.Errorf("could not bind attestation contract: %w", err)
+	}
+
 	return evmClient{
-		name:       name,
-		config:     domain,
-		client:     underlyingClient,
-		xAppConfig: xAppConfig,
-		home:       boundHome,
+		name:                 name,
+		config:               domain,
+		client:               underlyingClient,
+		attestationCollector: boundCollector,
+		xAppConfig:           xAppConfig,
+		home:                 boundHome,
 	}, nil
 }
 
@@ -81,4 +89,9 @@ func (e evmClient) BlockNumber(ctx context.Context) (uint32, error) {
 // Home returns the bound home contract.
 func (e evmClient) Home() domains.HomeContract {
 	return e.home
+}
+
+// AttestationCollector gets the attestation collector.
+func (e evmClient) AttestationCollector() domains.AttestationCollectorContract {
+	return e.attestationCollector
 }
