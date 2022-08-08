@@ -12,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
-	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 )
 
@@ -46,8 +45,6 @@ type contractTypeImpl int
 const (
 	// HomeType is the type of the home.
 	HomeType contractTypeImpl = 0 // Home
-	// XAppConfigType is the xAppConfig contract type.
-	XAppConfigType contractTypeImpl = iota // XAppConfig
 	// MessageHarnessType is the type of the message harness contract.
 	MessageHarnessType contractTypeImpl = iota // MessageHarness
 	// HomeHarnessType is the home harness type.
@@ -89,8 +86,6 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case HomeType:
 		return home.Contracts["solidity/Home.sol:Home"]
-	case XAppConfigType:
-		return xappconfig.Contracts["solidity/XAppConfig.sol:XAppConfig"]
 	case MessageHarnessType:
 		return messageharness.Contracts["solidity/MessageHarness.sol:MessageHarness"]
 	case HomeHarnessType:

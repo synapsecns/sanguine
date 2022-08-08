@@ -106,13 +106,13 @@ func (i IndexerSuite) TestSyncMessages() {
 	db, err := sqlite.NewSqliteStore(i.GetTestContext(), filet.TmpDir(i.T(), ""))
 	Nil(i.T(), err)
 
-	_, xAppConfig := i.deployManager.GetXAppConfig(i.GetTestContext(), i.testBackend)
+	_, homeContract := i.deployManager.GetHome(i.GetTestContext(), i.testBackend)
 
 	domainClient, err := evm.NewEVM(i.GetTestContext(), "test", config.DomainConfig{
 		DomainID:              1,
 		Type:                  types.EVM.String(),
 		RequiredConfirmations: 0,
-		XAppConfigAddress:     xAppConfig.Address().String(),
+		HomeAddress:           homeContract.Address().String(),
 		RPCUrl:                i.testBackend.RPCAddress(),
 		StartHeight:           0,
 	})
@@ -130,11 +130,11 @@ func (i IndexerSuite) TestSyncMessages() {
 
 	// wait until all blocks are indexed
 	i.Eventually(func() bool {
-		time.Sleep(time.Second * 4)
+		time.Sleep(time.Second * 1)
 
 		testHeight, _ := db.GetMessageLatestBlockEnd(i.GetTestContext(), domainClient.Config().DomainID)
 
-		return testHeight > lastBlock
+		return testHeight >= lastBlock
 	})
 
 	// TODO: something w/ retrieve dispatches from db

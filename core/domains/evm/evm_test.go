@@ -22,12 +22,12 @@ import (
 func (e *RPCSuite) TestGetters() {
 	name := "hi"
 
-	_, xAppContract := e.deployManager.GetXAppConfig(e.GetTestContext(), e.testBackend)
+	_, homeContract := e.deployManager.GetHome(e.GetTestContext(), e.testBackend)
 
 	testCfg := config.DomainConfig{
-		DomainID:          1,
-		RPCUrl:            e.testBackend.RPCAddress(),
-		XAppConfigAddress: xAppContract.Address().String(),
+		DomainID:    1,
+		RPCUrl:      e.testBackend.RPCAddress(),
+		HomeAddress: homeContract.Address().String(),
 	}
 
 	testEvm, err := evm.NewEVM(e.GetTestContext(), name, testCfg)

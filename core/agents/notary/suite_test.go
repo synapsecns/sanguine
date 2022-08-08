@@ -8,7 +8,6 @@ import (
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
-	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/testutil"
@@ -30,7 +29,6 @@ type NotarySuite struct {
 	*testutils.TestSuite
 	testBackend         backends.TestBackend
 	deployManager       *testutil.DeployManager
-	xappConfig          *xappconfig.XAppConfigRef
 	homeContract        *home.HomeRef
 	attestationContract *attestationcollector.AttestationCollectorRef
 	domainClient        domains.DomainClient
@@ -55,7 +53,6 @@ func (u *NotarySuite) SetupTest() {
 
 	u.testBackend = preset.GetRinkeby().Geth(u.GetTestContext(), u.T())
 	u.deployManager = testutil.NewDeployManager(u.T())
-	_, u.xappConfig = u.deployManager.GetXAppConfig(u.GetTestContext(), u.testBackend)
 	_, u.homeContract = u.deployManager.GetHome(u.GetTestContext(), u.testBackend)
 	_, u.attestationContract = u.deployManager.GetAttestationCollector(u.GetTestContext(), u.testBackend)
 
@@ -63,7 +60,7 @@ func (u *NotarySuite) SetupTest() {
 	u.domainClient, err = evm.NewEVM(u.GetTestContext(), "updater", config.DomainConfig{
 		DomainID:                   uint32(u.testBackend.Config().ChainID),
 		Type:                       types.EVM.String(),
-		XAppConfigAddress:          u.xappConfig.Address().String(),
+		HomeAddress:                u.homeContract.Address().String(),
 		AttesationCollectorAddress: u.attestationContract.Address().String(),
 		RPCUrl:                     u.testBackend.RPCAddress(),
 	})
