@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"github.com/libs4go/crypto/ecdsa"
-	"math/big"
 )
 
 // EncodeSignedAttestation encodes a signed attestation.
@@ -110,12 +111,13 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 }
 
 const (
-	tipsVersion     = uint16(1)
-	offsetUpdater   = 2
-	offsetRelayer   = 14
-	offsetProver    = 26
-	offsetProcessor = 38
-	uint96Len       = 12
+	//nolint: staticcheck
+	tipsVersion     uint16 = 1
+	offsetUpdater          = 2
+	offsetRelayer          = 14
+	offsetProver           = 26
+	offsetProcessor        = 38
+	uint96Len              = 12
 )
 
 // EncodeTips encodes a list of tips.
@@ -142,33 +144,79 @@ func DecodeTips(toDecode []byte) (Tips, error) {
 	return NewTips(updaterTip, relayerTip, proverTip, processorTip), nil
 }
 
-// messageEncoder contains the binary structore of the message.
-type messageEncoder struct {
-	Origin            uint32
+type headerEncoder struct {
+	Version           uint16
+	OriginDomain      uint32
 	Sender            [32]byte
 	Nonce             uint32
-	Destination       uint32
+	DestinationDomain uint32
 	Recipient         [32]byte
 	OptimisticSeconds uint32
 }
 
-// EncodeMessage encodes a message.
-func EncodeMessage(m Message) ([]byte, error) {
-	newMessage := messageEncoder{
-		Origin:            m.Origin(),
-		Sender:            m.Sender(),
-		Nonce:             m.Nonce(),
-		Destination:       m.Destination(),
-		OptimisticSeconds: m.OptimisticSeconds(),
+// EncodeHeader encodes a message header.
+func EncodeHeader(header Header) ([]byte, error) {
+	newHeader := headerEncoder{
+		Version:           header.Version(),
+		OriginDomain:      header.OriginDomain(),
+		Sender:            header.Sender(),
+		Nonce:             header.Nonce(),
+		DestinationDomain: header.DestinationDomain(),
+		Recipient:         header.Recipient(),
+		OptimisticSeconds: header.OptimisticSeconds(),
 	}
 
 	buf := new(bytes.Buffer)
 
-	err := binary.Write(buf, binary.BigEndian, newMessage)
+	err := binary.Write(buf, binary.BigEndian, newHeader)
 	if err != nil {
 		return nil, fmt.Errorf("could not write binary: %w", err)
 	}
 
+	return buf.Bytes(), nil
+}
+
+// messageEncoder contains the binary structore of the message.
+type messageEncoder struct {
+	Version      uint16
+	HeaderOffset uint16
+	TipsOffset   uint16
+	BodyOffset   uint16
+}
+
+// EncodeMessage encodes a message.
+func EncodeMessage(m Message) ([]byte, error) {
+	encodedHeader, err := EncodeHeader(m.Header())
+	if err != nil {
+		return []byte{}, fmt.Errorf("could not encode header: %w", err)
+	}
+
+	encodedTips, err := EncodeTips(m.Tips())
+	if err != nil {
+		return []byte{}, fmt.Errorf("could not encode tips: %w", err)
+	}
+
+	tipsOffset := headerOffset + uint16(len(encodedHeader))
+	bodyOffset := tipsOffset + uint16(len(encodedTips))
+
+	// payload := append(append(encodedHeader, encodedTips...), m.Body()...)
+
+	newMessage := messageEncoder{
+		Version:      m.Version(),
+		HeaderOffset: headerOffset,
+		TipsOffset:   tipsOffset,
+		BodyOffset:   bodyOffset,
+	}
+
+	buf := new(bytes.Buffer)
+
+	err = binary.Write(buf, binary.BigEndian, newMessage)
+	if err != nil {
+		return nil, fmt.Errorf("could not write binary: %w", err)
+	}
+
+	buf.Write(encodedHeader)
+	buf.Write(encodedTips)
 	buf.Write(m.Body())
 
 	return buf.Bytes(), nil

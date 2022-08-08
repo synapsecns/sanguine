@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
@@ -55,6 +56,8 @@ const (
 	AttestationHarnessType contractTypeImpl = iota
 	// TipsHarnessType is the type of the tips harness.
 	TipsHarnessType contractTypeImpl = iota
+	// HeaderHarnessType is the tyoe of the header harness.
+	HeaderHarnessType contractTypeImpl = iota
 	// ReplicaManagerHarnessType is the replica manager harness type.
 	ReplicaManagerHarnessType contractTypeImpl = iota
 	// UpdaterManagerType is the type of the update manager.
@@ -104,6 +107,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return attestationcollector.Contracts["solidity/AttestationCollector.sol:AttestationCollector"]
 	case ReplicaManagerType:
 		return replicamanager.Contracts["solidity/ReplicaManager.sol:ReplicaManager"]
+	case HeaderHarnessType:
+		return headerharness.Contracts["solidity/HeaderHarness.sol:HeaderHarness"]
 	default:
 		panic("not yet implemented")
 	}

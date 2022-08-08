@@ -24,12 +24,16 @@ func TestCommittedMessageAccessors(t *testing.T) {
 		CMRecipient:         common.BytesToHash([]byte(gofakeit.Paragraph(4, 1, 4, " "))).Bytes(),
 		CMBody:              []byte(gofakeit.Paragraph(4, 1, 4, " ")),
 		CMOptimisticSeconds: gofakeit.Uint32(),
+		CMUpdaterTip:        new(big.Int).SetUint64(gofakeit.Uint64()).Bytes(),
+		CMRelayerTip:        new(big.Int).SetUint64(gofakeit.Uint64()).Bytes(),
+		CMProcessorTip:      new(big.Int).SetUint64(gofakeit.Uint64()).Bytes(),
+		CMProverTip:         new(big.Int).SetUint64(gofakeit.Uint64()).Bytes(),
 	}
 
-	Equal(t, cm.Origin(), cm.CMOrigin)
+	Equal(t, cm.OriginDomain(), cm.CMOrigin)
 	Equal(t, cm.Sender().Bytes(), cm.CMSender)
 	Equal(t, cm.Nonce(), cm.CMNonce)
-	Equal(t, cm.Destination(), cm.CMDestination)
+	Equal(t, cm.DestinationDomain(), cm.CMDestination)
 	Equal(t, cm.Recipient().Bytes(), cm.CMRecipient)
 	Equal(t, cm.Body(), cm.CMBody)
 
@@ -42,6 +46,11 @@ func TestCommittedMessageAccessors(t *testing.T) {
 	Equal(t, cm.LeafIndex(), cm.CMLeafIndex)
 	Equal(t, cm.Message(), cm.CMMessage)
 	Equal(t, bridge.KappaToSlice(cm.Leaf()), cm.CMLeaf)
+
+	Equal(t, cm.CMProverTip, cm.Tips().ProverTip().Bytes())
+	Equal(t, cm.CMProcessorTip, cm.Tips().ProcessorTip().Bytes())
+	Equal(t, cm.CMRelayerTip, cm.Tips().RelayerTip().Bytes())
+	Equal(t, cm.CMUpdaterTip, cm.Tips().UpdaterTip().Bytes())
 }
 
 func TestSignedAttestation(t *testing.T) {

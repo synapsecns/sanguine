@@ -20,7 +20,10 @@ func (t *DBSuite) TestRetrieveLatestNonce() {
 		leafIndex := uint32(1)
 
 		for i := 0; i < 10; i++ {
-			realMessage := types.NewMessage(10, common.BigToHash(big.NewInt(gofakeit.Int64())), uint32(nonce), gofakeit.Uint32(), []byte(gofakeit.Sentence(10)), common.BigToHash(big.NewInt(gofakeit.Int64())))
+			header := types.NewHeader(gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), uint32(i), gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
+			tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+
+			realMessage := types.NewMessage(header, tips, []byte(gofakeit.Sentence(10)))
 
 			encoded, err := types.EncodeMessage(realMessage)
 			Nil(t.T(), err)

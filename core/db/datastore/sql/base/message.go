@@ -49,13 +49,17 @@ func (s Store) StoreCommittedMessage(ctx context.Context, domainID uint32, messa
 		CMLeafIndex:         message.LeafIndex(),
 		CMMessage:           message.Message(),
 		CMLeaf:              hashToSlice(message.Leaf()),
-		CMOrigin:            decodedMessage.Origin(),
+		CMOrigin:            decodedMessage.OriginDomain(),
 		CMSender:            hashToSlice(decodedMessage.Sender()),
 		CMNonce:             decodedMessage.Nonce(),
-		CMDestination:       decodedMessage.Destination(),
+		CMDestination:       decodedMessage.DestinationDomain(),
 		CMRecipient:         hashToSlice(decodedMessage.Recipient()),
 		CMBody:              decodedMessage.Body(),
 		CMOptimisticSeconds: decodedMessage.OptimisticSeconds(),
+		CMUpdaterTip:        decodedMessage.Tips().UpdaterTip().Bytes(),
+		CMRelayerTip:        decodedMessage.Tips().RelayerTip().Bytes(),
+		CMProverTip:         decodedMessage.Tips().ProverTip().Bytes(),
+		CMProcessorTip:      decodedMessage.Tips().ProcessorTip().Bytes(),
 	})
 
 	if tx.Error != nil {
