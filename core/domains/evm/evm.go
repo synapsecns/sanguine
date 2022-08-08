@@ -4,10 +4,8 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/config"
-	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/synapse-node/pkg/evm"
 )
@@ -19,8 +17,6 @@ type evmClient struct {
 	config config.DomainConfig
 	// client uses the old synapse client for now
 	client evm.Chain
-	// xAppConfig is the xAppConfig handle
-	xAppConfig *xappconfig.XAppConfigRef
 	// home contains the home contract
 	home domains.HomeContract
 	// attestationCollecotr contains the attestation collector contract
@@ -36,17 +32,7 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		return nil, fmt.Errorf("could not get evm: %w", err)
 	}
 
-	xAppConfig, err := xappconfig.NewXAppConfigRef(common.HexToAddress(domain.XAppConfigAddress), underlyingClient)
-	if err != nil {
-		return nil, fmt.Errorf("could not create xappconfig handle: %w", err)
-	}
-
-	homeAddress, err := xAppConfig.Home(&bind.CallOpts{Context: ctx})
-	if err != nil {
-		return nil, fmt.Errorf("could not get home contract: %w", err)
-	}
-
-	boundHome, err := NewHomeContract(ctx, underlyingClient, homeAddress)
+	boundHome, err := NewHomeContract(ctx, underlyingClient, common.HexToAddress(domain.HomeAddress))
 	if err != nil {
 		return nil, fmt.Errorf("could not bind home contract: %w", err)
 	}
@@ -61,7 +47,6 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		config:               domain,
 		client:               underlyingClient,
 		attestationCollector: boundCollector,
-		xAppConfig:           xAppConfig,
 		home:                 boundHome,
 	}, nil
 }

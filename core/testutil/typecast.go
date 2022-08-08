@@ -14,7 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
-	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/synapse-node/testutils/backends"
 )
 
@@ -28,18 +27,6 @@ func (d *DeployManager) GetHome(ctx context.Context, backend backends.SimulatedT
 	assert.True(d.T(), ok)
 
 	return homeContract, homeHandle
-}
-
-// GetXAppConfig gets a typecast XAppConfig contract.
-func (d *DeployManager) GetXAppConfig(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *xappconfig.XAppConfigRef) {
-	d.T().Helper()
-
-	xAppContract := d.GetContractRegistry(backend).Get(ctx, XAppConfigType)
-
-	xAppConfig, ok := xAppContract.ContractHandle().(*xappconfig.XAppConfigRef)
-	assert.True(d.T(), ok)
-
-	return xAppContract, xAppConfig
 }
 
 // GetMessageHarness gets the message harness.
