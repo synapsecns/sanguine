@@ -90,23 +90,6 @@ contract AttestationCollectorTest is SynapseTest {
         assertTrue(collector.submitAttestation(updater, attestation));
     }
 
-    function test_latestNonce() public {
-        test_addUpdater();
-        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
-        vm.expectEmit(true, true, true, true);
-        emit AttestationSubmitted(updater, attestation);
-        collector.submitAttestation(updater, attestation);
-
-        assertEq(collector.latestNonce(localDomain), nonce);
-
-        // submit a lower nonce to see if it messes up
-        (bytes memory newAttestation, ) = signHomeAttestation(updaterPK, 419, root);
-        vm.expectEmit(true, true, true, true);
-        emit AttestationSubmitted(updater, newAttestation);
-        collector.submitAttestation(updater, newAttestation);
-        assertEq(collector.latestNonce(localDomain), nonce);
-    }
-
     function test_submitAttestation_invalidSignature() public {
         test_addNotary();
         (bytes memory attestation, ) = signHomeAttestation(fakeUpdaterPK, nonce, root);
@@ -230,6 +213,21 @@ contract AttestationCollectorTest is SynapseTest {
     function test_getLatestAttestation_noNotaries() public {
         vm.expectRevert("!notaries");
         collector.getLatestAttestation(localDomain);
+    }
+
+    function test_latestNonce() public {
+        test_submitAttestations();
+        for (uint256 i = 0; i < NOTARIES_AMOUNT; ++i) {
+            uint256 notaryNonces = attestedNonces[i].length;
+            if (notaryNonces == 0) {
+                assertEq(collector.latestNonce(localDomain, notaries[i]), 0);
+            } else {
+                assertEq(
+                    collector.latestNonce(localDomain, notaries[i]),
+                    attestedNonces[i][notaryNonces - 1]
+                );
+            }
+        }
     }
 
     function test_rootsAmount() public {
