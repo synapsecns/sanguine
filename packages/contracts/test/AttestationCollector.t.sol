@@ -260,9 +260,9 @@ contract AttestationCollectorTest is SynapseTest {
 
     // This will generate unique root for every Notary, even with the same nonce
     function _generateTestRoot(uint32 _nonce, uint256 _notaryIndex)
-        internal
-        pure
-        returns (bytes32)
+    internal
+    pure
+    returns (bytes32)
     {
         return keccak256(abi.encode("root", _nonce, _notaryIndex));
     }

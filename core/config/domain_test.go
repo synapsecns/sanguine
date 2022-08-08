@@ -13,7 +13,7 @@ func domainConfigFixture() config.DomainConfig {
 		DomainID:              gofakeit.Uint32(),
 		Type:                  types.AllChainTypes()[0].String(),
 		RequiredConfirmations: gofakeit.Uint32(),
-		XAppConfigAddress:     utils.NewMockAddress().String(),
+		HomeAddress:           utils.NewMockAddress().String(),
 		RPCUrl:                gofakeit.URL(),
 	}
 }
@@ -38,7 +38,7 @@ func (c ConfigSuite) TestDomainConfigID() {
 
 func (c ConfigSuite) TestXappConfigAddressBlank() {
 	domainConfig := domainConfigFixture()
-	domainConfig.XAppConfigAddress = ""
+	domainConfig.HomeAddress = ""
 
 	ok, err := domainConfig.IsValid(c.GetTestContext())
 	False(c.T(), ok)

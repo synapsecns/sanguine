@@ -2,7 +2,7 @@ run:
   concurrency: 1
   tests: true
   skip-dirs-use-default: false
-  timeout: 10m
+  timeout: 15m
   skip-files:
     - ".*\\.abigen\\.go$"
     - ".*\\.metadata\\.go$"

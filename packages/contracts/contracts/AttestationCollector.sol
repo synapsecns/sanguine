@@ -7,7 +7,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
 import { NotaryRegistry } from "./NotaryRegistry.sol";
 
 import {
-    OwnableUpgradeable
+OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable {
@@ -107,9 +107,9 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
                 _latestRoot = latestRoot[_domain][notary];
                 _latestNonce = nonce;
             }
-            unchecked {
-                ++i;
-            }
+        unchecked {
+            ++i;
+        }
         }
         // Check if we found anything
         require(_latestNonce != 0, "No attestations found");
@@ -120,9 +120,9 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
      * @notice Get latest attestation for the domain signed by given Notary.
      */
     function getLatestAttestation(uint32 _domain, address _notary)
-        external
-        view
-        returns (bytes memory)
+    external
+    view
+    returns (bytes memory)
     {
         uint32 nonce = latestNonce[_domain][_notary];
         require(nonce != 0, "No attestations found");
@@ -172,8 +172,8 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function submitAttestation(address _notary, bytes memory _attestation)
-        external
-        returns (bool attestationStored)
+    external
+    returns (bool attestationStored)
     {
         bytes29 _view = _checkUpdaterAuth(_notary, _attestation);
         attestationStored = _storeAttestation(_notary, _view);
@@ -199,10 +199,10 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
         bytes32 _root
     ) internal view returns (bytes memory) {
         return
-            Attestation.formatAttestation(
-                Attestation.formatAttestationData(_domain, _nonce, _root),
-                signatures[_domain][_nonce][_root]
-            );
+        Attestation.formatAttestation(
+            Attestation.formatAttestationData(_domain, _nonce, _root),
+            signatures[_domain][_nonce][_root]
+        );
     }
 
     function _signatureExists(

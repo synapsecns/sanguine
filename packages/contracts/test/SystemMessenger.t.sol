@@ -152,13 +152,14 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
 
     function _testSendSystemMessage(address _sender) internal {
         for (uint8 t = 0; t <= 1; ++t) {
-            bytes memory message = _createSentSystemMessage(t, t);
+            bytes memory message = _createSentSystemMessage(t+1, t);
             bytes32 messageHash = keccak256(message);
+
             vm.expectEmit(true, true, true, true);
             emit Dispatch(
                 messageHash,
                 t,
-                (uint64(remoteDomain) << 32) | t,
+                (uint64(remoteDomain) << 32) | t+1,
                 Tips.emptyTips(),
                 message
             );
