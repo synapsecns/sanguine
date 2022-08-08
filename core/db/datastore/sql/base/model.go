@@ -82,6 +82,7 @@ type BlockEndModel struct {
 // it allows for querying on both the committed message and the underlying fields.
 type CommittedMessage struct {
 	gorm.Model
+	CMVersion uint16 `gorm:"column:cm_version"`
 	// CMDomainID is the id of the domain we're renaming
 	CMDomainID uint32 `gorm:"column:domain_id;uniqueIndex:cm_idx_id"`
 	// CMLeafIndex is the leaf index at which the message is committed
@@ -104,10 +105,33 @@ type CommittedMessage struct {
 	CMBody []byte `gorm:"column:body"`
 	// CMOptimisticSeconds is the optimistic seconds of the message
 	CMOptimisticSeconds uint32 `gorm:"column:optimistic_seconds"`
+	// CMUpdaterTip is the updater tip
+	CMUpdaterTip []byte `gorm:"column:updater_tip"`
+	// CMRelayerTip is the relayer tip
+	CMRelayerTip []byte `gorm:"column:relayer_tip"`
+	// CMProverTip is the prover tip
+	CMProverTip []byte `gorm:"column:prover_tip"`
+	// CMProcessorTip is the processor tip
+	CMProcessorTip []byte `gorm:"column:processor_tip"`
 }
 
-// Origin returns the Slip-44 ID.
-func (c CommittedMessage) Origin() uint32 {
+// Version gets the message version.
+func (c CommittedMessage) Version() uint16 {
+	return c.CMVersion
+}
+
+// Header gets the header.
+func (c CommittedMessage) Header() types.Header {
+	return types.NewHeader(c.OriginDomain(), c.Sender(), c.Nonce(), c.DestinationDomain(), c.Recipient(), c.OptimisticSeconds())
+}
+
+// Tips gets the tips.
+func (c CommittedMessage) Tips() types.Tips {
+	return types.NewTips(new(big.Int).SetBytes(c.CMUpdaterTip), new(big.Int).SetBytes(c.CMRelayerTip), new(big.Int).SetBytes(c.CMProverTip), new(big.Int).SetBytes(c.CMProcessorTip))
+}
+
+// OriginDomain returns the Slip-44 ID.
+func (c CommittedMessage) OriginDomain() uint32 {
 	return c.CMOrigin
 }
 
@@ -121,8 +145,8 @@ func (c CommittedMessage) Nonce() uint32 {
 	return c.CMNonce
 }
 
-// Destination is the slip-44 id of the destination.
-func (c CommittedMessage) Destination() uint32 {
+// DestinationDomain is the slip-44 id of the destination.
+func (c CommittedMessage) DestinationDomain() uint32 {
 	return c.CMDestination
 }
 
@@ -143,7 +167,7 @@ func (c CommittedMessage) ToLeaf() (leaf [32]byte, err error) {
 
 // DestinationAndNonce gets the destination and nonce encoded into a single field.
 func (c CommittedMessage) DestinationAndNonce() uint64 {
-	return types.CombineDestinationAndNonce(c.Destination(), c.Nonce())
+	return types.CombineDestinationAndNonce(c.DestinationDomain(), c.Nonce())
 }
 
 // OptimisticSeconds gets the optimistic seconds count.

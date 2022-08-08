@@ -111,6 +111,7 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 }
 
 const (
+	//nolint: staticcheck
 	tipsVersion     uint16 = 1
 	offsetUpdater          = 2
 	offsetRelayer          = 14
@@ -198,7 +199,7 @@ func EncodeMessage(m Message) ([]byte, error) {
 	tipsOffset := headerOffset + uint16(len(encodedHeader))
 	bodyOffset := tipsOffset + uint16(len(encodedTips))
 
-	//payload := append(append(encodedHeader, encodedTips...), m.Body()...)
+	// payload := append(append(encodedHeader, encodedTips...), m.Body()...)
 
 	newMessage := messageEncoder{
 		Version:      m.Version(),
