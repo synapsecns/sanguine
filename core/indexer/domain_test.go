@@ -130,11 +130,11 @@ func (i IndexerSuite) TestSyncMessages() {
 
 	// wait until all blocks are indexed
 	i.Eventually(func() bool {
-		time.Sleep(time.Second * 4)
+		time.Sleep(time.Second * 1)
 
 		testHeight, _ := db.GetMessageLatestBlockEnd(i.GetTestContext(), domainClient.Config().DomainID)
 
-		return testHeight > lastBlock
+		return testHeight >= lastBlock
 	})
 
 	// TODO: something w/ retrieve dispatches from db
