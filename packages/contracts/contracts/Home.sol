@@ -6,7 +6,6 @@ import { Version0 } from "./Version0.sol";
 import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { AuthManager } from "./auth/AuthManager.sol";
 import { Attestation } from "./libs/Attestation.sol";
-import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
@@ -124,6 +123,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         _setUpdaterManager(_updaterManager);
         __SynapseBase_initialize(updaterManager.updater());
         state = States.Active;
+        // insert a historical root so nonces start at 1 rather then 0
+        historicalRoots.push(bytes32(""));
     }
 
     // ============ Modifiers ============
@@ -229,13 +230,6 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
             _nonce = uint32(length - 1);
             _root = historicalRoots[_nonce];
         }
-    }
-
-    /**
-     * @notice Hash of Home domain concatenated with "SYN"
-     */
-    function homeDomainHash() external view returns (bytes32) {
-        return _domainHash(localDomain);
     }
 
     // ============ Public Functions  ============

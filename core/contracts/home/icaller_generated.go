@@ -19,14 +19,14 @@ type IHomeCaller interface {
 	//
 	// Solidity: function VERSION() view returns(uint8)
 	VERSION(opts *bind.CallOpts) (uint8, error)
-	// CommittedRoot is a free data retrieval call binding the contract method 0x67a6771d.
-	//
-	// Solidity: function committedRoot() view returns(bytes32)
-	CommittedRoot(opts *bind.CallOpts) ([32]byte, error)
 	// Count is a free data retrieval call binding the contract method 0x06661abd.
 	//
 	// Solidity: function count() view returns(uint256)
 	Count(opts *bind.CallOpts) (*big.Int, error)
+	// HistoricalRoots is a free data retrieval call binding the contract method 0x7ea97f40.
+	//
+	// Solidity: function historicalRoots(uint256 ) view returns(bytes32)
+	HistoricalRoots(opts *bind.CallOpts, arg0 *big.Int) ([32]byte, error)
 	// HomeDomainHash is a free data retrieval call binding the contract method 0x45630b1a.
 	//
 	// Solidity: function homeDomainHash() view returns(bytes32)
@@ -35,26 +35,14 @@ type IHomeCaller interface {
 	//
 	// Solidity: function localDomain() view returns(uint32)
 	LocalDomain(opts *bind.CallOpts) (uint32, error)
-	// Nonces is a free data retrieval call binding the contract method 0xb95a2001.
+	// Nonce is a free data retrieval call binding the contract method 0xaffed0e0.
 	//
-	// Solidity: function nonces(uint32 ) view returns(uint32)
-	Nonces(opts *bind.CallOpts, arg0 uint32) (uint32, error)
+	// Solidity: function nonce() view returns(uint32)
+	Nonce(opts *bind.CallOpts) (uint32, error)
 	// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 	//
 	// Solidity: function owner() view returns(address)
 	Owner(opts *bind.CallOpts) (common.Address, error)
-	// QueueContains is a free data retrieval call binding the contract method 0x2bef2892.
-	//
-	// Solidity: function queueContains(bytes32 _item) view returns(bool)
-	QueueContains(opts *bind.CallOpts, _item [32]byte) (bool, error)
-	// QueueEnd is a free data retrieval call binding the contract method 0xf6d16102.
-	//
-	// Solidity: function queueEnd() view returns(bytes32)
-	QueueEnd(opts *bind.CallOpts) ([32]byte, error)
-	// QueueLength is a free data retrieval call binding the contract method 0xab91c7b0.
-	//
-	// Solidity: function queueLength() view returns(uint256)
-	QueueLength(opts *bind.CallOpts) (*big.Int, error)
 	// Root is a free data retrieval call binding the contract method 0xebf0c717.
 	//
 	// Solidity: function root() view returns(bytes32)
@@ -65,11 +53,15 @@ type IHomeCaller interface {
 	State(opts *bind.CallOpts) (uint8, error)
 	// SuggestUpdate is a free data retrieval call binding the contract method 0x36e104de.
 	//
-	// Solidity: function suggestUpdate() view returns(bytes32 _committedRoot, bytes32 _new)
+	// Solidity: function suggestUpdate() view returns(uint32 _nonce, bytes32 _root)
 	SuggestUpdate(opts *bind.CallOpts) (struct {
-		CommittedRoot [32]byte
-		New           [32]byte
+		Nonce uint32
+		Root  [32]byte
 	}, error)
+	// SystemMessenger is a free data retrieval call binding the contract method 0xccbdf9c9.
+	//
+	// Solidity: function systemMessenger() view returns(address)
+	SystemMessenger(opts *bind.CallOpts) (common.Address, error)
 	// Tree is a free data retrieval call binding the contract method 0xfd54b228.
 	//
 	// Solidity: function tree() view returns(uint256 count)
