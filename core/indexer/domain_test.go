@@ -2,17 +2,19 @@ package indexer_test
 
 import (
 	"context"
+	"crypto/rand"
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/config"
-	"github.com/synapsecns/sanguine/core/db/datastore/pebble"
+	"github.com/synapsecns/sanguine/core/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/indexer"
 	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/synapse-node/testutils/utils"
 	"math"
+	"math/big"
 	"testing"
 	"time"
 )
@@ -27,22 +29,56 @@ type TestDispatch struct {
 	message []byte
 	// optimisticSeconds is the optimistic second count
 	optimisticSeconds uint32
+	// tips defines the tips to use
+	tips types.Tips
 }
 
-func NewTestDispatch() TestDispatch {
+func NewTestDispatch(tb testing.TB) TestDispatch {
+	tb.Helper()
+
+	tips := types.NewTips(
+		randomTip(tb),
+		randomTip(tb),
+		randomTip(tb),
+		randomTip(tb),
+	)
+
 	return TestDispatch{
 		domain:            gofakeit.Uint32(),
 		recipientAddress:  common.BytesToHash(utils.NewMockAddress().Bytes()),
 		message:           []byte(gofakeit.Paragraph(4, 1, 4, " ")),
 		optimisticSeconds: gofakeit.Uint32(),
+		tips:              tips,
 	}
+}
+
+// randomTip is a helper method for generating random tip that is less than 1 gwei
+// see:  https://stackoverflow.com/a/45428754
+func randomTip(tb testing.TB) *big.Int {
+	tb.Helper()
+
+	// Max random value = 1 eth
+	max := new(big.Int)
+
+	max.Exp(big.NewInt(2), big.NewInt(9), nil).Sub(max, big.NewInt(1))
+
+	// Generate cryptographically strong pseudo-random between 0 - max
+	n, err := rand.Int(rand.Reader, max)
+	Nil(tb, err)
+
+	return n
 }
 
 // Call calls dispatch and returns the block number.
 func (d TestDispatch) Call(i IndexerSuite) (blockNumber uint32) {
 	auth := i.testBackend.GetTxContext(i.GetTestContext(), nil)
 
-	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, d.message)
+	auth.TransactOpts.Value = types.TotalTips(d.tips)
+
+	encodedTips, err := types.EncodeTips(d.tips)
+	Nil(i.T(), err)
+
+	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, encodedTips, d.message)
 	Nil(i.T(), err)
 
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
@@ -55,7 +91,7 @@ func (d TestDispatch) Call(i IndexerSuite) (blockNumber uint32) {
 
 func (i IndexerSuite) NewTestDispatches(dispatchCount int) (testDispatches []TestDispatch, lastBlock uint32) {
 	for iter := 0; iter < dispatchCount; iter++ {
-		testDispatch := NewTestDispatch()
+		testDispatch := NewTestDispatch(i.T())
 		lastBlock = testDispatch.Call(i)
 
 		testDispatches = append(testDispatches, testDispatch)
@@ -67,7 +103,7 @@ func (i IndexerSuite) NewTestDispatches(dispatchCount int) (testDispatches []Tes
 func (i IndexerSuite) TestSyncMessages() {
 	_, lastBlock := i.NewTestDispatches(25)
 
-	testDB, err := pebble.NewMessageDB(filet.TmpDir(i.T(), ""), "")
+	db, err := sqlite.NewSqliteStore(i.GetTestContext(), filet.TmpDir(i.T(), ""))
 	Nil(i.T(), err)
 
 	_, xAppConfig := i.deployManager.GetXAppConfig(i.GetTestContext(), i.testBackend)
@@ -82,7 +118,7 @@ func (i IndexerSuite) TestSyncMessages() {
 	})
 	Nil(i.T(), err)
 
-	domainIndexer := indexer.NewDomainIndexer(testDB, domainClient, 0)
+	domainIndexer := indexer.NewDomainIndexer(db, domainClient, 0)
 
 	go func() {
 		ctx, cancel := context.WithTimeout(i.GetTestContext(), time.Second*20)
@@ -96,12 +132,12 @@ func (i IndexerSuite) TestSyncMessages() {
 	i.Eventually(func() bool {
 		time.Sleep(time.Second * 4)
 
-		testHeight, _ := testDB.GetMessageLatestBlockEnd()
+		testHeight, _ := db.GetMessageLatestBlockEnd(i.GetTestContext(), domainClient.Config().DomainID)
 
 		return testHeight > lastBlock
 	})
 
-	// TODO: something w/ dispatches
+	// TODO: something w/ retrieve dispatches from db
 }
 
 func TestUint32Max(t *testing.T) {

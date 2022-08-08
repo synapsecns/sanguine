@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/core/contracts/test/headerharness"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
@@ -11,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/synapse-node/testutils/backends"
@@ -118,4 +120,26 @@ func (d *DeployManager) GetReplicaManager(ctx context.Context, backend backends.
 	assert.True(d.T(), ok)
 
 	return replicaManagerContract, replicaManager
+}
+
+// GetTipsHarness gets the tips harness for testing.
+func (d *DeployManager) GetTipsHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *tipsharness.TipsHarnessRef) {
+	d.T().Helper()
+
+	tipsContract := d.GetContractRegistry(backend).Get(ctx, TipsHarnessType)
+	tipsHarness, ok := tipsContract.ContractHandle().(*tipsharness.TipsHarnessRef)
+	assert.True(d.T(), ok)
+
+	return tipsContract, tipsHarness
+}
+
+// GetHeaderHarness gets the header harness.
+func (d *DeployManager) GetHeaderHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *headerharness.HeaderHarnessRef) {
+	d.T().Helper()
+
+	headerHarnessContract := d.GetContractRegistry(backend).Get(ctx, HeaderHarnessType)
+	headerHarness, ok := headerHarnessContract.ContractHandle().(*headerharness.HeaderHarnessRef)
+	assert.True(d.T(), ok)
+
+	return headerHarnessContract, headerHarness
 }

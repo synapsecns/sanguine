@@ -1,4 +1,4 @@
-package updater
+package notary
 
 import "github.com/ipfs/go-log"
 

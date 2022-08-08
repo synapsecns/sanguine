@@ -1,4 +1,4 @@
-package updater_test
+package notary_test
 
 import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -6,6 +6,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/core/domains"
@@ -24,29 +25,30 @@ import (
 	"time"
 )
 
-// UpdaterSuite tests the updater agent.
-type UpdaterSuite struct {
+// NotarySuite tests the updater agent.
+type NotarySuite struct {
 	*testutils.TestSuite
-	testBackend   backends.TestBackend
-	deployManager *testutil.DeployManager
-	xappConfig    *xappconfig.XAppConfigRef
-	homeContract  *home.HomeRef
-	domainClient  domains.DomainClient
+	testBackend         backends.TestBackend
+	deployManager       *testutil.DeployManager
+	xappConfig          *xappconfig.XAppConfigRef
+	homeContract        *home.HomeRef
+	attestationContract *attestationcollector.AttestationCollectorRef
+	domainClient        domains.DomainClient
 	// wallet is the wallet used for the signer
 	wallet wallet.Wallet
 	signer signer.Signer
 }
 
-// NewUpdaterSuite creates a new updater suite.
-func NewUpdaterSuite(tb testing.TB) *UpdaterSuite {
+// NewNotarySuite creates a new updater suite.
+func NewNotarySuite(tb testing.TB) *NotarySuite {
 	tb.Helper()
 
-	return &UpdaterSuite{
+	return &NotarySuite{
 		TestSuite: testutils.NewTestSuite(tb),
 	}
 }
 
-func (u *UpdaterSuite) SetupTest() {
+func (u *NotarySuite) SetupTest() {
 	chainwatcher.PollInterval = time.Second
 
 	u.TestSuite.SetupTest()
@@ -55,13 +57,15 @@ func (u *UpdaterSuite) SetupTest() {
 	u.deployManager = testutil.NewDeployManager(u.T())
 	_, u.xappConfig = u.deployManager.GetXAppConfig(u.GetTestContext(), u.testBackend)
 	_, u.homeContract = u.deployManager.GetHome(u.GetTestContext(), u.testBackend)
+	_, u.attestationContract = u.deployManager.GetAttestationCollector(u.GetTestContext(), u.testBackend)
 
 	var err error
 	u.domainClient, err = evm.NewEVM(u.GetTestContext(), "updater", config.DomainConfig{
-		DomainID:          1,
-		Type:              types.EVM.String(),
-		XAppConfigAddress: u.xappConfig.Address().String(),
-		RPCUrl:            u.testBackend.RPCAddress(),
+		DomainID:                   uint32(u.testBackend.Config().ChainID),
+		Type:                       types.EVM.String(),
+		XAppConfigAddress:          u.xappConfig.Address().String(),
+		AttesationCollectorAddress: u.attestationContract.Address().String(),
+		RPCUrl:                     u.testBackend.RPCAddress(),
 	})
 	Nil(u.T(), err)
 
@@ -76,15 +80,26 @@ func (u *UpdaterSuite) SetupTest() {
 	u.signer = localsigner.NewSigner(u.wallet.PrivateKey())
 	u.testBackend.FundAccount(u.GetTestContext(), u.signer.Address(), *big.NewInt(params.Ether))
 
-	transactOpts := u.testBackend.GetTxContext(u.GetTestContext(), &owner)
+	auth := u.testBackend.GetTxContext(u.GetTestContext(), &owner)
 
-	// set the updater
-	tx, err := updaterManager.SetUpdater(transactOpts.TransactOpts, u.signer.Address())
+	// set the updater on the update manager
+	tx, err := updaterManager.SetUpdater(auth.TransactOpts, u.signer.Address())
+	Nil(u.T(), err)
+
+	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
+
+	// set the updater on the attestation collector
+	owner, err = u.attestationContract.Owner(&bind.CallOpts{Context: u.GetTestContext()})
+	Nil(u.T(), err)
+
+	auth = u.testBackend.GetTxContext(u.GetTestContext(), &owner)
+
+	tx, err = u.attestationContract.AddUpdater(auth.TransactOpts, u.domainClient.Config().DomainID, u.signer.Address())
 	Nil(u.T(), err)
 
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
 }
 
-func TestUpdaterSuite(t *testing.T) {
-	suite.Run(t, NewUpdaterSuite(t))
+func TestNotarySuite(t *testing.T) {
+	suite.Run(t, NewNotarySuite(t))
 }

@@ -12,7 +12,7 @@ import (
 
 // NewStoreFromConfig creates a new datastore from a config file.
 //nolint: wrapcheck
-func NewStoreFromConfig(ctx context.Context, dbType DBType, connString string) (db.TxQueueDB, error) {
+func NewStoreFromConfig(ctx context.Context, dbType DBType, connString string) (db.SynapseDB, error) {
 	switch dbType {
 	case Mysql:
 		return mysql.NewMysqlStore(ctx, connString)
