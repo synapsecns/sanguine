@@ -126,7 +126,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
             _tips,
             messageBody
         );
-        assert(home.historicalRoots(count+1) == home.root());
+        assert(home.historicalRoots(count + 1) == home.root());
     }
 
     // Rejects messages over a set size
