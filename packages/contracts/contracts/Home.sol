@@ -123,6 +123,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         _setUpdaterManager(_updaterManager);
         __SynapseBase_initialize(updaterManager.updater());
         state = States.Active;
+        // insert a historical root so nonces start at 1 rather then 0
+        historicalRoots.push(bytes32(""));
     }
 
     // ============ Modifiers ============
