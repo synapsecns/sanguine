@@ -382,24 +382,26 @@ contract ReplicaManager is Version0, UpdaterStorage, ReportHub {
      * @param _guard    Guard address
      * @param _notary   Notary address
      * @param _report   Report payload
-     * @return TRUE if Notary was blacklisted as a result, FALSE if Notary has been blacklisted earlier.
+     * @return notaryBlacklisted TRUE if Notary was blacklisted as a result, FALSE if Notary has been blacklisted earlier.
      */
     function _handleReport(
         address _guard,
         address _notary,
         bytes29,
         bytes memory _report
-    ) internal override returns (bool) {
-        _blacklistNotary(_notary);
-        emit UpdaterBlacklisted(_notary, msg.sender, _guard, _report);
-        return true;
+    ) internal override returns (bool notaryBlacklisted) {
+        notaryBlacklisted = _blacklistNotary(_notary);
+        if (notaryBlacklisted) {
+            emit UpdaterBlacklisted(_notary, msg.sender, _guard, _report);
+        }
     }
 
     function _storeTips(bytes29 _tips) internal virtual {
         // TODO: implement storing & claiming logic
     }
 
-    function _blacklistNotary(address _notary) internal {
-        // TODO: implement blacklisting
+    function _blacklistNotary(address _notary) internal returns (bool) {
+        // TODO: implement actual blacklisting
+        return _notary == updater;
     }
 }
