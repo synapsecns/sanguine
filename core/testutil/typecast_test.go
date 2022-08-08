@@ -9,13 +9,6 @@ func (s SimulatedSuite) TestTypecastHome() {
 	})
 }
 
-func (s SimulatedSuite) TestTypecastXappConfig() {
-	NotPanics(s.T(), func() {
-		_, xappHandle := s.deployManager.GetXAppConfig(s.GetTestContext(), s.testBackend)
-		NotNil(s.T(), xappHandle)
-	})
-}
-
 func (s SimulatedSuite) TestTypecastMessageHarness() {
 	NotPanics(s.T(), func() {
 		_, messageHarness := s.deployManager.GetMessageHarness(s.GetTestContext(), s.testBackend)
