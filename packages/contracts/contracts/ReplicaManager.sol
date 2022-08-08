@@ -371,6 +371,19 @@ contract ReplicaManager is Version0, UpdaterStorage, ReportHub {
         }
     }
 
+    /**
+     * @notice Applies submitted Report to blacklist reported Notary, and all roots signed by this Notary.
+     * An honest Notary is incentivized to sign a valid Attestation to collect tips
+     * from the pending messages, which prevents downtime caused by root blacklisting.
+     *
+     * @dev Both Notary and Guard signatures
+     * have been checked at this point (see ReportHub.sol).
+     *
+     * @param _guard    Guard address
+     * @param _notary   Notary address
+     * @param _report   Report payload
+     * @return TRUE if Notary was blacklisted as a result, FALSE if Notary has been blacklisted earlier.
+     */
     function _handleReport(
         address _guard,
         address _notary,

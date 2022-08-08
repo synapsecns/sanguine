@@ -19,8 +19,12 @@ abstract contract ReportHub is AuthManager {
 
     /**
      * @notice Called by the external agent. Submits the signed report for the contract to handle it.
-     * @dev Reverts if report signer is not a watchtower, or if reported updater is not an updater.
-     * @param _report       Report data and signature
+     * @dev Reverts if either of this is true:
+     *      - Report signer is not a Guard.
+     *      - Reported notary is not a Notary.
+     *      - Report is not a Fraud Report.
+     * @param _report   Payload with Report data and signature
+     * @return TRUE if Report was handled correctly.
      */
     function submitReport(bytes memory _report) external returns (bool) {
         // Check if real Guard & signature
@@ -37,6 +41,14 @@ abstract contract ReportHub is AuthManager {
     ▏*║                          VIRTUAL FUNCTIONS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @dev Implement logic for handling the Report in the child contracts.
+     * @param _guard            Guard address (signature&role already verified)
+     * @param _notary           Notary address (signature&role already verified)
+     * @param _attestationView  Memory view over reported Attestation for convenience
+     * @param _report           Payload with Report data and signature
+     * @return TRUE if Report was handled correctly.
+     */
     function _handleReport(
         address _guard,
         address _notary,

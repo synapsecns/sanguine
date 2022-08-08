@@ -257,10 +257,10 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, ReportHub {
     // ============ Internal Functions  ============
 
     /**
-     * @notice Check if an Attestation is an Invalid Attestation;
-     * if so, slash the Updater and set the contract to FAILED state.
+     * @notice Check if a reported Attestation is an Invalid Attestation;
+     * if so, slash the Notary and set the contract to FAILED state.
      *
-     * An Invalid Attestation is a (_nonce, _root) update that doesn't correspond with
+     * An Invalid Attestation is a (_nonce, _root) attestation that doesn't correspond with
      * the historical state of Home contract. Either of those needs to be true:
      * - _nonce is higher than current nonce (no root exists for this nonce)
      * - _root is not equal to the historical root of _nonce
@@ -268,19 +268,19 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, ReportHub {
      * dispatched on Home were falsely included in the signed root.
      *
      * An Invalid Attestation will only be accepted as valid by the Replica
-     * If an Invalid Attestation is attempted on Home,
-     * the Updater will be slashed immediately.
-     * If an Invalid Attestation is submitted to the Replica,
-     * it should be relayed to the Home contract using this function
-     * in order to slash the Updater with an Invalid Attestation.
+     * If an Invalid Attestation is attempted on Home, the Notary will be slashed immediately.
+     * If an Invalid Attestation is submitted to the Replica, a Guard should generate a Report.
+     * This Report should be submitted to the Home contract using this function
+     * in order to slash the Notary with an Invalid Attestation.
      *
-     * @dev Reverts (and doesn't slash updater) if signature is invalid or
-     * update not current
+     * @dev Both Notary and Guard signatures
+     * have been checked at this point (see ReportHub.sol).
+     *
      * @param _guard            Guard address
      * @param _notary           Notary address
-     * @param _attestationView  Memory view over Attestation
-     * @param _report           Report payload
-     * @return TRUE if update was an Invalid Attestation (implying Updater was slashed)
+     * @param _attestationView  Memory view over reported Attestation
+     * @param _report           Payload with Report data and signature
+     * @return TRUE if attestation was an Invalid Attestation (implying Notary was slashed)
      */
     function _handleReport(
         address _guard,
@@ -291,15 +291,16 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, ReportHub {
         // Get merkle state from the attestation
         uint32 _nonce = _attestationView.attestationNonce();
         bytes32 _root = _attestationView.attestationRoot();
-        // Check if nonce is valid, if not => attestation is fraud
+        // Check if `_nonce` exists, if not => attestation is fraud
         if (_nonce < historicalRoots.length) {
             if (_root == historicalRoots[_nonce]) {
-                // Signed (nonce, root) attestation is valid
-                // TODO: slash Watchtower for signing invalid fraud report
+                // (nonce, root) corresponds with the historical merkle state of Home.
+                // Means Notary attestation is valid, while Guard report is invalid.
+                // TODO: slash Guard for signing an invalid fraud report
                 emit InvalidReport(_guard, _report);
                 return false;
             }
-            // Signed root is not the same as the historical one => attestation is fraud
+            // `_root` doesn't match historical root for `_nonce` => attestation is fraud
         }
         _fail(_guard);
         emit InvalidAttestation(_notary, _attestationView.clone());
