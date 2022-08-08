@@ -10,7 +10,6 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/home"
 	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
-	"github.com/synapsecns/sanguine/core/contracts/xappconfig"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/synapse-node/testutils/backends"
 )
@@ -68,55 +67,6 @@ func (d HomeDeployer) Deploy(ctx context.Context) (backends.DeployedContract, er
 // Dependencies gets a list of dependencies used to deploy the home contract.
 func (d HomeDeployer) Dependencies() []deployer.ContractType {
 	return []deployer.ContractType{UpdaterManagerType}
-}
-
-// XAppConfigDeployer deploys the XAppConfig contract.
-type XAppConfigDeployer struct {
-	*deployer.BaseDeployer
-}
-
-// NewXAppConfigDeployer creates an XAppConfig deployer.
-func NewXAppConfigDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return XAppConfigDeployer{deployer.NewSimpleDeployer(registry, backend, XAppConfigType)}
-}
-
-// Deploy deploys the xapp config contract.
-func (d XAppConfigDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	homeContract := d.Registry().Get(ctx, HomeType)
-
-	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		xAppAddress, deployTx, handle, err := xappconfig.DeployXAppConfig(transactOps, backend)
-		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not deploy xapp config: %w", err)
-		}
-
-		// wait for xapp deployment
-		d.Backend().WaitForConfirmation(ctx, deployTx)
-
-		// verify we're setting to the owner
-		xAppOwner, err := handle.Owner(&bind.CallOpts{Context: ctx})
-		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not get xapp owner: %w", err)
-		}
-
-		auth := d.Backend().GetTxContext(ctx, &xAppOwner)
-
-		// set the home to the previously deployed contract
-		tx, err := handle.SetHome(auth.TransactOpts, homeContract.Address())
-		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not set home on xapp %s: %w", xAppAddress, err)
-		}
-		d.Backend().WaitForConfirmation(ctx, tx)
-
-		return xAppAddress, deployTx, handle, nil
-	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return xappconfig.NewXAppConfigRef(address, backend)
-	})
-}
-
-// Dependencies gets dependencies of the xappconfig contract.
-func (d XAppConfigDeployer) Dependencies() []deployer.ContractType {
-	return d.RecursiveDependencies([]deployer.ContractType{HomeType})
 }
 
 // UpdateManagerDeployer deploys the update manager.
