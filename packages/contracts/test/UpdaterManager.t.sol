@@ -52,12 +52,12 @@ contract UpdaterManagerTest is SynapseTestWithUpdaterManager {
     function test_setUpdaterAsOwner() public {
         vm.startPrank(updaterManager.owner());
         assertEq(updaterManager.updater(), address(updater));
-        assertEq(home.updater(), address(updater));
+        assertTrue(home.isNotary(updater));
         vm.expectEmit(false, false, false, true);
         emit NewUpdater(fakeUpdater);
         updaterManager.setUpdater(address(fakeUpdater));
         assertEq(updaterManager.updater(), address(fakeUpdater));
-        assertEq(home.updater(), address(fakeUpdater));
+        assertTrue(home.isNotary(fakeUpdater));
     }
 
     function test_cannotSlashUpdaterAsNotHome(address _notHome) public {
