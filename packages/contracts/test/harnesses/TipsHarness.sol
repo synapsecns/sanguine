@@ -5,7 +5,7 @@ import { Tips } from "../../contracts/libs/Tips.sol";
 
 /**
  * @notice exposes tips methods for testing against golang
-*/
+ */
 contract TipsHarness {
     using Tips for bytes;
     using Tips for bytes29;

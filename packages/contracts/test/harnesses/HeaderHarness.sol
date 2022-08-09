@@ -43,13 +43,20 @@ contract HeaderHarness {
         bytes32 _recipient,
         uint32 _optimisticSeconds
     ) public pure returns (bytes memory) {
-        return Header.formatHeader(_originDomain, _sender, _nonce, _destinationDomain, _recipient, _optimisticSeconds);
+        return
+            Header.formatHeader(
+                _originDomain,
+                _sender,
+                _nonce,
+                _destinationDomain,
+                _recipient,
+                _optimisticSeconds
+            );
     }
 
     function headerVersion(bytes29 _header) public pure returns (uint16) {
         return Header.headerVersion(_header);
     }
-
 
     function origin(bytes29 _header) public pure returns (uint32) {
         return Header.origin(_header);
