@@ -291,36 +291,13 @@ func (_m *IHome) HistoricalRoots(opts *bind.CallOpts, arg0 *big.Int) ([32]byte, 
 	return r0, r1
 }
 
-// HomeDomainHash provides a mock function with given fields: opts
-func (_m *IHome) HomeDomainHash(opts *bind.CallOpts) ([32]byte, error) {
-	ret := _m.Called(opts)
-
-	var r0 [32]byte
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) [32]byte); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([32]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ImproperAttestation provides a mock function with given fields: opts, _updater, _attestation
-func (_m *IHome) ImproperAttestation(opts *bind.TransactOpts, _updater common.Address, _attestation []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, _updater, _attestation)
+// ImproperAttestation provides a mock function with given fields: opts, _attestation
+func (_m *IHome) ImproperAttestation(opts *bind.TransactOpts, _attestation []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, _attestation)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address, []byte) *types.Transaction); ok {
-		r0 = rf(opts, _updater, _attestation)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte) *types.Transaction); ok {
+		r0 = rf(opts, _attestation)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -328,8 +305,8 @@ func (_m *IHome) ImproperAttestation(opts *bind.TransactOpts, _updater common.Ad
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address, []byte) error); ok {
-		r1 = rf(opts, _updater, _attestation)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte) error); ok {
+		r1 = rf(opts, _attestation)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -171,11 +171,11 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function submitAttestation(address _notary, bytes memory _attestation)
+    function submitAttestation(bytes memory _attestation)
         external
         returns (bool attestationStored)
     {
-        bytes29 _view = _checkUpdaterAuth(_notary, _attestation);
+        (address _notary, bytes29 _view) = _checkUpdaterAuth(_attestation);
         attestationStored = _storeAttestation(_notary, _view);
         if (attestationStored) {
             // Emit Event only if the Attestation was stored
