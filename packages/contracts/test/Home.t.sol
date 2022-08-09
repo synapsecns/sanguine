@@ -148,7 +148,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         // Any signed attestation from another chain should be rejected
         (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
         vm.expectRevert("Wrong domain");
-        home.improperAttestation(updater, attestation);
+        home.improperAttestation(attestation);
     }
 
     function test_improperAttestation_fraud_invalidNonce() public {
@@ -184,7 +184,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         vm.expectEmit(true, true, true, true);
         emit ImproperAttestation(updater, attestation);
         // Home should recognize this as improper attestation
-        assertTrue(home.improperAttestation(updater, attestation));
+        assertTrue(home.improperAttestation(attestation));
         // Home should be in Failed state
         assertEq(uint256(home.state()), 2);
     }
@@ -201,7 +201,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         assertEq(root, home.historicalRoots(nonce));
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
         // Should not be an improper attestation
-        assertFalse(home.improperAttestation(updater, attestation));
+        assertFalse(home.improperAttestation(attestation));
         assertEq(uint256(home.state()), 1);
     }
 

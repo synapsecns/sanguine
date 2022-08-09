@@ -87,21 +87,14 @@ contract AttestationCollectorTest is SynapseTest {
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
         vm.expectEmit(true, true, true, true);
         emit AttestationSubmitted(updater, attestation);
-        assertTrue(collector.submitAttestation(updater, attestation));
-    }
-
-    function test_submitAttestation_invalidSignature() public {
-        test_addNotary();
-        (bytes memory attestation, ) = signHomeAttestation(fakeUpdaterPK, nonce, root);
-        vm.expectRevert("Invalid signature");
-        collector.submitAttestation(updater, attestation);
+        collector.submitAttestation(attestation);
     }
 
     function test_submitAttestation_notUpdater() public {
         test_addNotary();
         (bytes memory attestation, ) = signHomeAttestation(fakeUpdaterPK, nonce, root);
         vm.expectRevert("Signer is not an updater");
-        collector.submitAttestation(fakeUpdater, attestation);
+        collector.submitAttestation(attestation);
     }
 
     function test_submitAttestation_wrongDomain() public {
@@ -109,21 +102,21 @@ contract AttestationCollectorTest is SynapseTest {
         (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
         // Signer is not set as updater for the `remoteDomain`
         vm.expectRevert("Signer is not an updater");
-        collector.submitAttestation(updater, attestation);
+        collector.submitAttestation(attestation);
     }
 
     function test_submitAttestation_zeroNonce() public {
         test_addNotary();
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, 0, root);
         vm.expectRevert("Outdated attestation");
-        collector.submitAttestation(updater, attestation);
+        collector.submitAttestation(attestation);
     }
 
     function test_submitAttestation_outdated() public {
         test_submitAttestation();
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
         vm.expectRevert("Outdated attestation");
-        collector.submitAttestation(updater, attestation);
+        collector.submitAttestation(attestation);
     }
 
     function test_submitAttestation_duplicate() public {
@@ -131,7 +124,7 @@ contract AttestationCollectorTest is SynapseTest {
         test_addNotaries();
         (bytes memory attestation, ) = signHomeAttestation(notariesPK[0], nonce, root);
         // duplicate attestation should not be stored
-        assertFalse(collector.submitAttestation(notaries[0], attestation));
+        assertFalse(collector.submitAttestation(attestation));
     }
 
     function test_submitAttestations() public {
@@ -268,7 +261,7 @@ contract AttestationCollectorTest is SynapseTest {
             ++rootsAmount[_nonce];
         }
         // Use potentially another notary index for signing
-        assertEq(collector.submitAttestation(notaries[_notaryIndex], attestation), _stored);
+        assertEq(collector.submitAttestation(attestation), _stored);
         // Check both getLatestAttestation() functions
         _checkLatestAttestations();
     }
