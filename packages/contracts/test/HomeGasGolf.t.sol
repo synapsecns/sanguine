@@ -62,7 +62,7 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
             roots[i] = _dispatch();
         }
         for (uint256 i = 0; i < amount; ++i) {
-            assertEq(home.historicalRoots(i+1), roots[i]);
+            assertEq(home.historicalRoots(i + 1), roots[i]);
         }
     }
 }
