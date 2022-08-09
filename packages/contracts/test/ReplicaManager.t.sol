@@ -123,12 +123,13 @@ contract ReplicaManagerTest is SynapseTest {
     function test_updateWithFakeSigner() public {
         uint32 nonce = 42;
         (bytes memory attestation, ) = signRemoteAttestation(fakeUpdaterPK, nonce, ROOT);
-        vm.expectRevert("Signer is not an updater");
+        vm.expectRevert("Signer is not a notary");
         // Update signed by fakeUpdater should be rejected
         replicaManager.submitAttestation(attestation);
     }
 
     function test_updateWithLocalDomain() public {
+        replicaManager.addNotary(localDomain, updater);
         uint32 nonce = 42;
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, ROOT);
         vm.expectRevert("Update refers to local chain");

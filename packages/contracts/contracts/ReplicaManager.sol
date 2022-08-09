@@ -3,7 +3,8 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { UpdaterStorage } from "./UpdaterStorage.sol";
-import { AuthManager } from "./auth/AuthManager.sol";
+import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
+import { GuardRegistry } from "./registry/GuardRegistry.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
@@ -22,7 +23,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
+contract ReplicaManager is Version0, UpdaterStorage, GlobalNotaryRegistry, GuardRegistry {
     // ============ Libraries ============
 
     using ReplicaLib for ReplicaLib.Replica;
@@ -95,6 +96,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      */
     function initialize(uint32 _remoteDomain, address _updater) public initializer {
         __SynapseBase_initialize(_updater);
+        _addNotary(_remoteDomain, _updater);
         // set storage variables
         entered = 1;
         activeReplicas[_remoteDomain] = _createReplica(_remoteDomain);
@@ -136,7 +138,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * @param _attestation  Attestation data and signature
      */
     function submitAttestation(bytes memory _attestation) external {
-        (, bytes29 _view) = _checkUpdaterAuth(_attestation);
+        (, bytes29 _view) = _checkNotaryAuth(_attestation);
         uint32 remoteDomain = _view.attestationDomain();
         require(remoteDomain != localDomain, "Update refers to local chain");
         uint32 nonce = _view.attestationNonce();
@@ -319,14 +321,6 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
             _returnData := add(_returnData, 0x04)
         }
         return abi.decode(_returnData, (string)); // All that remains is the revert string
-    }
-
-    function _isUpdater(uint32, address _updater) internal view override returns (bool) {
-        return _updater == updater;
-    }
-
-    function _isWatchtower(address) internal pure override returns (bool) {
-        return false;
     }
 
     function _checkForSystemMessage(bytes32 _recipient) internal view returns (address recipient) {

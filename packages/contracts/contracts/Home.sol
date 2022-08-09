@@ -4,7 +4,8 @@ pragma solidity 0.8.13;
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
 import { UpdaterStorage } from "./UpdaterStorage.sol";
-import { AuthManager } from "./auth/AuthManager.sol";
+import { DomainNotaryRegistry } from "./registry/DomainNotaryRegistry.sol";
+import { GuardRegistry } from "./registry/GuardRegistry.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Header } from "./libs/Header.sol";
@@ -27,7 +28,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Accepts submissions of fraudulent signatures
  * by the Updater and slashes the Updater in this case.
  */
-contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
+contract Home is Version0, MerkleTreeManager, UpdaterStorage, DomainNotaryRegistry, GuardRegistry {
     // ============ Libraries ============
 
     using Attestation for bytes29;
@@ -114,7 +115,10 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
 
     // ============ Constructor ============
 
-    constructor(uint32 _localDomain) UpdaterStorage(_localDomain) {} // solhint-disable-line no-empty-blocks
+    constructor(uint32 _localDomain)
+        UpdaterStorage(_localDomain)
+        DomainNotaryRegistry(_localDomain)
+    {} // solhint-disable-line no-empty-blocks
 
     // ============ Initializer ============
 
@@ -122,6 +126,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         // initialize queue, set Updater Manager, and initialize
         _setUpdaterManager(_updaterManager);
         __SynapseBase_initialize(updaterManager.updater());
+        _addNotary(updaterManager.updater());
         state = States.Active;
         // insert a historical root so nonces start at 1 rather then 0
         historicalRoots.push(bytes32(""));
@@ -259,7 +264,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      */
     function improperAttestation(bytes memory _attestation) public notFailed returns (bool) {
         // This will revert if signature is not valid
-        (address _updater, bytes29 _view) = _checkUpdaterAuth(_attestation);
+        (address _updater, bytes29 _view) = _checkNotaryAuth(_attestation);
         uint32 _nonce = _view.attestationNonce();
         bytes32 _root = _view.attestationRoot();
         // Check if nonce is valid, if not => update is fraud
@@ -313,20 +318,6 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         returns (uint64)
     {
         return (uint64(_destination) << 32) | _nonce;
-    }
-
-    function _isUpdater(uint32 _homeDomain, address _updater)
-        internal
-        view
-        override
-        returns (bool)
-    {
-        require(_homeDomain == localDomain, "Wrong domain");
-        return _updater == updater;
-    }
-
-    function _isWatchtower(address) internal pure override returns (bool) {
-        return false;
     }
 
     /**
