@@ -2,7 +2,6 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
-import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
 import { GuardRegistry } from "./registry/GuardRegistry.sol";
 import { Attestation } from "./libs/Attestation.sol";
@@ -14,6 +13,7 @@ import { Header } from "./libs/Header.sol";
 import { Tips } from "./libs/Tips.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
 import { SystemMessage } from "./system/SystemMessage.sol";
+import { SystemContract } from "./system/SystemContract.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
@@ -23,7 +23,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract ReplicaManager is Version0, UpdaterStorage, GlobalNotaryRegistry, GuardRegistry {
+contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, GuardRegistry {
     // ============ Libraries ============
 
     using ReplicaLib for ReplicaLib.Replica;
@@ -77,9 +77,17 @@ contract ReplicaManager is Version0, UpdaterStorage, GlobalNotaryRegistry, Guard
         uint256 newConfirmAt
     );
 
+    event AttestationAccepted(
+        uint32 indexed homeDomain,
+        uint32 indexed nonce,
+        bytes32 indexed root,
+        bytes signature
+    );
+
     // ============ Constructor ============
 
-    constructor(uint32 _localDomain) UpdaterStorage(_localDomain) {}
+    //solhint-disable-next-line no-empty-blocks
+    constructor(uint32 _localDomain) SystemContract(_localDomain) {}
 
     // ============ Initializer ============
 
@@ -95,7 +103,7 @@ contract ReplicaManager is Version0, UpdaterStorage, GlobalNotaryRegistry, Guard
      * @param _updater The EVM id of the updater
      */
     function initialize(uint32 _remoteDomain, address _updater) public initializer {
-        __SynapseBase_initialize(_updater);
+        __SystemContract_initialize();
         _addNotary(_remoteDomain, _updater);
         // set storage variables
         entered = 1;
@@ -148,7 +156,12 @@ contract ReplicaManager is Version0, UpdaterStorage, GlobalNotaryRegistry, Guard
         replica.setConfirmAt(newRoot, block.timestamp);
         // update nonce
         replica.setNonce(nonce);
-        emit Update(remoteDomain, nonce, newRoot, _view.attestationSignature().clone());
+        emit AttestationAccepted(
+            remoteDomain,
+            nonce,
+            newRoot,
+            _view.attestationSignature().clone()
+        );
     }
 
     /**
@@ -156,7 +169,7 @@ contract ReplicaManager is Version0, UpdaterStorage, GlobalNotaryRegistry, Guard
      * `message`. If the message is successfully proven, then tries to process
      * message.
      * @dev Reverts if `prove` call returns false
-     * @param _message Formatted message (refer to UpdaterStorage.sol Message library)
+     * @param _message Formatted message (refer to Message library)
      * @param _proof Merkle proof of inclusion for message's leaf
      * @param _index Index of leaf in home's merkle tree
      */
@@ -221,8 +234,9 @@ contract ReplicaManager is Version0, UpdaterStorage, GlobalNotaryRegistry, Guard
      * been relayed before calling. Only callable by owner (Governance)
      * @param _updater New Updater
      */
-    function setUpdater(address _updater) external onlyOwner {
-        _setUpdater(_updater);
+    function setUpdater(uint32 _domain, address _updater) external onlyOwner {
+        // TODO: proper implementation
+        _addNotary(_domain, _updater);
     }
 
     /**
