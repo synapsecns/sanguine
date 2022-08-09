@@ -1,11 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
+import { AbstractNotaryRegistry } from "./AbstractNotaryRegistry.sol";
+
 /**
+ * @notice A Registry to keep track of Notaries on all domains.
+ *
  * @dev Modified OZ's EnumerableSet. This enables mapping into EnumerableSet.
  * https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/structs/EnumerableSet.sol
  */
-contract NotaryRegistry {
+contract GlobalNotaryRegistry is AbstractNotaryRegistry {
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               STORAGE                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // [domain => [notaries]]
+    mapping(uint32 => address[]) internal domainNotaries;
+
+    // [domain => [notary => position in the above array plus 1]]
+    // (index 0 means notary is not in the array)
+    mapping(uint32 => mapping(address => uint256)) private notariesIndexes;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             UPGRADE GAP                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // solhint-disable-next-line var-name-mixedcase
+    uint256[48] private __GAP;
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -15,28 +37,8 @@ contract NotaryRegistry {
     event NotaryRemoved(uint32 indexed domain, address notary);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // [domain => [notaries]]
-    mapping(uint32 => address[]) internal domainNotaries;
-
-    // [domain => [notary => position in the above array plus 1]] (index 0 means notary is not in the array)
-    mapping(uint32 => mapping(address => uint256)) private notariesIndexes;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             UPGRADE GAP                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    uint256[48] private __GAP;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function _isNotary(uint32 _domain, address _notary) internal view returns (bool) {
-        return notariesIndexes[_domain][_notary] != 0;
-    }
 
     function _addNotary(uint32 _domain, address _notary) internal returns (bool) {
         if (_isNotary(_domain, _notary)) return false;
@@ -49,8 +51,9 @@ contract NotaryRegistry {
     function _removeNotary(uint32 _domain, address _notary) internal returns (bool) {
         uint256 valueIndex = notariesIndexes[_domain][_notary];
         if (valueIndex == 0) return false;
-        // To delete a Notary from the array in O(1), we swap the Notary to delete with the last one in
-        // the array, and then remove the last Notary (sometimes called as 'swap and pop').
+        // To delete a Notary from the array in O(1),
+        // we swap the Notary to delete with the last one in the array,
+        // and then remove the last Notary (sometimes called as 'swap and pop').
         address[] storage notaries = domainNotaries[_domain];
         uint256 toDeleteIndex = valueIndex - 1;
         uint256 lastIndex = notaries.length - 1;
@@ -67,5 +70,9 @@ contract NotaryRegistry {
         delete notariesIndexes[_domain][_notary];
         emit NotaryRemoved(_domain, _notary);
         return true;
+    }
+
+    function _isNotary(uint32 _domain, address _notary) internal view override returns (bool) {
+        return notariesIndexes[_domain][_notary] != 0;
     }
 }

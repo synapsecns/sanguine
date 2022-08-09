@@ -3,9 +3,9 @@ pragma solidity 0.8.13;
 
 import "forge-std/Test.sol";
 
-import { NotaryRegistryHarness } from "./harnesses/NotaryRegistryHarness.sol";
+import { GlobalNotaryRegistryHarness } from "./harnesses/GlobalNotaryRegistryHarness.sol";
 
-contract NotaryRegistryTest is Test {
+contract GlobalNotaryRegistryTest is Test {
     event NotaryAdded(uint32 indexed domain, address notary);
     event NotaryRemoved(uint32 indexed domain, address notary);
 
@@ -17,10 +17,10 @@ contract NotaryRegistryTest is Test {
     uint32 internal constant DOMAIN_1 = 1234;
     uint32 internal constant DOMAIN_2 = 4321;
 
-    NotaryRegistryHarness internal registry;
+    GlobalNotaryRegistryHarness internal registry;
 
     function setUp() public {
-        registry = new NotaryRegistryHarness();
+        registry = new GlobalNotaryRegistryHarness();
     }
 
     function test_addNotary_multipleDomains() public {
