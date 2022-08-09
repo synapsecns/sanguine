@@ -27,10 +27,6 @@ type IHomeCaller interface {
 	//
 	// Solidity: function historicalRoots(uint256 ) view returns(bytes32)
 	HistoricalRoots(opts *bind.CallOpts, arg0 *big.Int) ([32]byte, error)
-	// HomeDomainHash is a free data retrieval call binding the contract method 0x45630b1a.
-	//
-	// Solidity: function homeDomainHash() view returns(bytes32)
-	HomeDomainHash(opts *bind.CallOpts) ([32]byte, error)
 	// LocalDomain is a free data retrieval call binding the contract method 0x8d3638f4.
 	//
 	// Solidity: function localDomain() view returns(uint32)

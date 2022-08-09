@@ -55,7 +55,7 @@ func (a attestationCollectorContract) SubmitAttestation(ctx context.Context, sig
 		return fmt.Errorf("could not get signed attestations: %w", err)
 	}
 
-	_, err = a.contract.SubmitAttestation(transactOpts, signer.Address(), encodedAttestation)
+	_, err = a.contract.SubmitAttestation(transactOpts, encodedAttestation)
 	if err != nil {
 		return fmt.Errorf("could not submit attestation: %w", err)
 	}
@@ -63,8 +63,8 @@ func (a attestationCollectorContract) SubmitAttestation(ctx context.Context, sig
 	return nil
 }
 
-func (a attestationCollectorContract) LatestNonce(ctx context.Context, domain uint32) (nonce uint32, err error) {
-	latestNonce, err := a.contract.LatestNonce(&bind.CallOpts{Context: ctx}, domain)
+func (a attestationCollectorContract) LatestNonce(ctx context.Context, domain uint32, signer signer.Signer) (nonce uint32, err error) {
+	latestNonce, err := a.contract.LatestNonce(&bind.CallOpts{Context: ctx}, domain, signer.Address())
 	if err != nil {
 		return 0, fmt.Errorf("could not retrieve latest nonce: %w", err)
 	}
