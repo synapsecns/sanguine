@@ -60,5 +60,4 @@ jobs:
           github-token: ${{ secrets.github_token }}
           path-to-lcov: ./packages/contracts/lcov.info
           base-path: ./packages/contracts/
-
-#          flag-name: foundry
+          flag-name: foundry
