@@ -9,7 +9,7 @@ import { AttestationCollectorHarness } from "./harnesses/AttestationCollectorHar
 contract AttestationCollectorTest is SynapseTest {
     AttestationCollectorHarness internal collector;
 
-    event AttestationSubmitted(address indexed updater, bytes attestation);
+    event AttestationSubmitted(address indexed notary, bytes attestation);
 
     event NotaryAdded(uint32 indexed domain, address notary);
 
@@ -50,8 +50,8 @@ contract AttestationCollectorTest is SynapseTest {
 
     function test_addNotary() public {
         vm.expectEmit(true, true, true, true);
-        emit NotaryAdded(localDomain, updater);
-        collector.addNotary(localDomain, updater);
+        emit NotaryAdded(localDomain, notary);
+        collector.addNotary(localDomain, notary);
     }
 
     function test_addNotaries() public {
@@ -66,55 +66,55 @@ contract AttestationCollectorTest is SynapseTest {
     function test_addNotary_notOwner() public {
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(1337));
-        collector.addNotary(localDomain, fakeUpdater);
+        collector.addNotary(localDomain, fakeNotary);
     }
 
     function test_removeNotary() public {
         test_addNotary();
-        emit NotaryRemoved(localDomain, updater);
-        collector.removeNotary(localDomain, updater);
+        emit NotaryRemoved(localDomain, notary);
+        collector.removeNotary(localDomain, notary);
     }
 
     function test_removeNotary_notOwner() public {
         test_addNotary();
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(1337));
-        collector.removeNotary(localDomain, fakeUpdater);
+        collector.removeNotary(localDomain, fakeNotary);
     }
 
     function test_submitAttestation() public {
         test_addNotary();
-        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
+        (bytes memory attestation, ) = signHomeAttestation(notaryPK, nonce, root);
         vm.expectEmit(true, true, true, true);
-        emit AttestationSubmitted(updater, attestation);
+        emit AttestationSubmitted(notary, attestation);
         collector.submitAttestation(attestation);
     }
 
-    function test_submitAttestation_notUpdater() public {
+    function test_submitAttestation_notNotary() public {
         test_addNotary();
-        (bytes memory attestation, ) = signHomeAttestation(fakeUpdaterPK, nonce, root);
+        (bytes memory attestation, ) = signHomeAttestation(fakeNotaryPK, nonce, root);
         vm.expectRevert("Signer is not a notary");
         collector.submitAttestation(attestation);
     }
 
     function test_submitAttestation_wrongDomain() public {
         test_addNotary();
-        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
-        // Signer is not set as updater for the `remoteDomain`
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, root);
+        // Signer is not set as notary for the `remoteDomain`
         vm.expectRevert("Signer is not a notary");
         collector.submitAttestation(attestation);
     }
 
     function test_submitAttestation_zeroNonce() public {
         test_addNotary();
-        (bytes memory attestation, ) = signHomeAttestation(updaterPK, 0, root);
+        (bytes memory attestation, ) = signHomeAttestation(notaryPK, 0, root);
         vm.expectRevert("Outdated attestation");
         collector.submitAttestation(attestation);
     }
 
     function test_submitAttestation_outdated() public {
         test_submitAttestation();
-        (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
+        (bytes memory attestation, ) = signHomeAttestation(notaryPK, nonce, root);
         vm.expectRevert("Outdated attestation");
         collector.submitAttestation(attestation);
     }

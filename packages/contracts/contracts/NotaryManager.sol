@@ -2,20 +2,20 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
-import { IUpdaterManager } from "./interfaces/IUpdaterManager.sol";
+import { INotaryManager } from "./interfaces/INotaryManager.sol";
 import { Home } from "./Home.sol";
 // ============ External Imports ============
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
- * @title UpdaterManager
+ * @title NotaryManager
  * @author Illusory Systems Inc.
  * @notice MVP / centralized version of contract
- * that will manage Updater bonding, slashing,
+ * that will manage Notary bonding, slashing,
  * selection and rotation
  */
-contract UpdaterManager is IUpdaterManager, Ownable {
+contract NotaryManager is INotaryManager, Ownable {
     // ============ Public Storage ============
 
     // address of home contract
@@ -23,8 +23,8 @@ contract UpdaterManager is IUpdaterManager, Ownable {
 
     // ============ Private Storage ============
 
-    // address of the current updater
-    address private _updater;
+    // address of the current notary
+    address private _notary;
 
     // ============ Events ============
 
@@ -35,13 +35,13 @@ contract UpdaterManager is IUpdaterManager, Ownable {
     event NewHome(address home);
 
     /**
-     * @notice Emitted when a new updater is set
-     * @param updater The address of the new updater
+     * @notice Emitted when a new notary is set
+     * @param notary The address of the new notary
      */
-    event NewUpdater(address updater);
+    event NewNotary(address notary);
 
     /**
-     * @notice Emitted when slashUpdater is called
+     * @notice Emitted when slashNotary is called
      */
     event FakeSlashed(address reporter);
 
@@ -58,8 +58,8 @@ contract UpdaterManager is IUpdaterManager, Ownable {
 
     // ============ Constructor ============
 
-    constructor(address _updaterAddress) payable Ownable() {
-        _updater = _updaterAddress;
+    constructor(address _notaryAddress) payable Ownable() {
+        _notary = _notaryAddress;
     }
 
     // ============ External Functions ============
@@ -77,32 +77,32 @@ contract UpdaterManager is IUpdaterManager, Ownable {
     }
 
     /**
-     * @notice Set the address of a new updater
+     * @notice Set the address of a new notary
      * @dev only callable by trusted owner
-     * @param _updaterAddress The address of the new updater
+     * @param _notaryAddress The address of the new notary
      */
-    function setUpdater(address _updaterAddress) external onlyOwner {
-        _updater = _updaterAddress;
-        Home(home).setUpdater(_updaterAddress);
-        emit NewUpdater(_updaterAddress);
+    function setNotary(address _notaryAddress) external onlyOwner {
+        _notary = _notaryAddress;
+        Home(home).setNotary(_notaryAddress);
+        emit NewNotary(_notaryAddress);
     }
 
     /**
-     * @notice Slashes the updater
+     * @notice Slashes the notary
      * @dev Currently does nothing, functionality will be implemented later
-     * when updater bonding and rotation are also implemented
-     * @param _reporter The address of the entity that reported the updater fraud
+     * when notary bonding and rotation are also implemented
+     * @param _reporter The address of the entity that reported the notary fraud
      */
-    function slashUpdater(address payable _reporter) external override onlyHome {
+    function slashNotary(address payable _reporter) external override onlyHome {
         emit FakeSlashed(_reporter);
     }
 
     /**
-     * @notice Get address of current updater
-     * @return the updater address
+     * @notice Get address of current notary
+     * @return the notary address
      */
-    function updater() external view override returns (address) {
-        return _updater;
+    function notary() external view override returns (address) {
+        return _notary;
     }
 
     /**

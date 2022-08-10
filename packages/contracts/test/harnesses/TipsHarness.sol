@@ -14,8 +14,8 @@ contract TipsHarness {
         return Tips.TIPS_VERSION;
     }
 
-    function offsetUpdater() public pure returns (uint256) {
-        return Tips.OFFSET_UPDATER;
+    function offsetNotary() public pure returns (uint256) {
+        return Tips.OFFSET_NOTARY;
     }
 
     function offsetRelayer() public pure returns (uint256) {
@@ -31,12 +31,12 @@ contract TipsHarness {
     }
 
     function formatTips(
-        uint96 _updaterTip,
+        uint96 _notaryTip,
         uint96 _relayerTip,
         uint96 _proverTip,
         uint96 _processorTip
     ) public pure returns (bytes memory) {
-        return Tips.formatTips(_updaterTip, _relayerTip, _proverTip, _processorTip);
+        return Tips.formatTips(_notaryTip, _relayerTip, _proverTip, _processorTip);
     }
 
     function emptyTips() external pure returns (bytes memory) {
@@ -51,9 +51,9 @@ contract TipsHarness {
         return Tips.tipsVersion(_tips);
     }
 
-    /// @notice Returns updaterTip field
-    function updaterTip(bytes29 _tips) external pure returns (uint96) {
-        return Tips.updaterTip(_tips);
+    /// @notice Returns notaryTip field
+    function notaryTip(bytes29 _tips) external pure returns (uint96) {
+        return Tips.notaryTip(_tips);
     }
 
     /// @notice Returns relayerTip field

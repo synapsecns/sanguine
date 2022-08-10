@@ -20,7 +20,7 @@ contract MessageTest is SynapseTest {
     bytes32 recipient;
     bytes tips;
     bytes messageBody;
-    uint96 updaterTip;
+    uint96 notaryTip;
     uint96 relayerTip;
     uint96 proverTip;
     uint96 processorTip;
@@ -34,11 +34,11 @@ contract MessageTest is SynapseTest {
         destinationDomain = 2000;
         optimisticSeconds = 4;
         recipient = bytes32("AAAA THE RECEIVOOOR");
-        updaterTip = 1234;
+        notaryTip = 1234;
         relayerTip = 3456;
         proverTip = 5678;
         processorTip = 7890;
-        tips = getFormattedTips(updaterTip, relayerTip, proverTip, processorTip);
+        tips = getFormattedTips(notaryTip, relayerTip, proverTip, processorTip);
         messageBody = bytes("Messagoooor");
     }
 
@@ -50,7 +50,7 @@ contract MessageTest is SynapseTest {
             destinationDomain,
             recipient,
             optimisticSeconds,
-            updaterTip,
+            notaryTip,
             relayerTip,
             proverTip,
             processorTip,
@@ -76,7 +76,7 @@ contract MessageTest is SynapseTest {
             destinationDomain,
             recipient,
             optimisticSeconds,
-            updaterTip,
+            notaryTip,
             relayerTip,
             proverTip,
             processorTip,

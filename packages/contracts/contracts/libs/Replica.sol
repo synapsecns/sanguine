@@ -33,7 +33,7 @@ library ReplicaLib {
 
     // TODO: optimize read/writes by further packing?
     struct Replica {
-        // The latest nonce that has been signed by the Updater for this given Replica
+        // The latest nonce that has been signed by the Notary for this given Replica
         uint32 nonce; // 32 bits
         // Domain of home chain
         uint32 remoteDomain; // 32 bits

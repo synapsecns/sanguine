@@ -100,11 +100,11 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
      *      - sets a trusted root, and pre-approves messages under it
      *      - sets the optimistic timer
      * @param _remoteDomain The domain of the Home contract this follows
-     * @param _updater The EVM id of the updater
+     * @param _notary The EVM id of the notary
      */
-    function initialize(uint32 _remoteDomain, address _updater) public initializer {
+    function initialize(uint32 _remoteDomain, address _notary) public initializer {
         __SystemContract_initialize();
-        _addNotary(_remoteDomain, _updater);
+        _addNotary(_remoteDomain, _notary);
         // set storage variables
         entered = 1;
         activeReplicas[_remoteDomain] = _createReplica(_remoteDomain);
@@ -229,14 +229,14 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
     // ============ External Owner Functions ============
 
     /**
-     * @notice Set Updater role
-     * @dev MUST ensure that all roots signed by previous Updater have
+     * @notice Set Notary role
+     * @dev MUST ensure that all roots signed by previous Notary have
      * been relayed before calling. Only callable by owner (Governance)
-     * @param _updater New Updater
+     * @param _notary New Notary
      */
-    function setUpdater(uint32 _domain, address _updater) external onlyOwner {
+    function setNotary(uint32 _domain, address _notary) external onlyOwner {
         // TODO: proper implementation
-        _addNotary(_domain, _updater);
+        _addNotary(_domain, _notary);
     }
 
     /**

@@ -17,13 +17,13 @@ library Tips {
     /**
      * @dev Tips memory layout
      * [000 .. 002): version            uint16	 2 bytes
-     * [002 .. 014): updaterTip         uint96	12 bytes
+     * [002 .. 014): notaryTip          uint96	12 bytes
      * [014 .. 026): relayerTip         uint96	12 bytes
      * [026 .. 038): proverTip          uint96	12 bytes
      * [038 .. 050): processorTip       uint96	12 bytes
      */
 
-    uint256 internal constant OFFSET_UPDATER = 2;
+    uint256 internal constant OFFSET_NOTARY = 2;
     uint256 internal constant OFFSET_RELAYER = 14;
     uint256 internal constant OFFSET_PROVER = 26;
     uint256 internal constant OFFSET_PROCESSOR = 38;
@@ -35,19 +35,19 @@ library Tips {
 
     /**
      * @notice Returns formatted (packed) tips with provided fields
-     * @param _updaterTip Tip for the Updater
+     * @param _notaryTip Tip for the Notary
      * @param _relayerTip Tip for the Relayer
      * @param _proverTip Tip for the Prover
      * @param _processorTip Tip for the Processor
      * @return Formatted tips
      **/
     function formatTips(
-        uint96 _updaterTip,
+        uint96 _notaryTip,
         uint96 _relayerTip,
         uint96 _proverTip,
         uint96 _processorTip
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(TIPS_VERSION, _updaterTip, _relayerTip, _proverTip, _processorTip);
+        return abi.encodePacked(TIPS_VERSION, _notaryTip, _relayerTip, _proverTip, _processorTip);
     }
 
     /**
@@ -69,9 +69,9 @@ library Tips {
         return uint16(_tips.indexUint(0, 2));
     }
 
-    /// @notice Returns updaterTip field
-    function updaterTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_UPDATER, 12));
+    /// @notice Returns notaryTip field
+    function notaryTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
+        return uint32(_tips.indexUint(OFFSET_NOTARY, 12));
     }
 
     /// @notice Returns relayerTip field
@@ -90,6 +90,6 @@ library Tips {
     }
 
     function totalTips(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return updaterTip(_tips) + relayerTip(_tips) + proverTip(_tips) + processorTip(_tips);
+        return notaryTip(_tips) + relayerTip(_tips) + proverTip(_tips) + processorTip(_tips);
     }
 }

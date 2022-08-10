@@ -18,7 +18,7 @@ contract AttestationCollector is GlobalNotaryRegistry, OwnableUpgradeable {
     ▏*║                                EVENTS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    event AttestationSubmitted(address indexed updater, bytes attestation);
+    event AttestationSubmitted(address indexed notary, bytes attestation);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
