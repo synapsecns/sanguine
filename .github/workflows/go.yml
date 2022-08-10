@@ -94,7 +94,7 @@ jobs:
           ignore: ${{ env.IGNORED }}
           flag-name: Go-${{ matrix.go-version }}
           parallel: true
-      - name: Invoke workflow without inputs
+      - name: Trigger Coverage when both jobs are done
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Combine Coverage

@@ -9,7 +9,7 @@ jobs:
   post-coverage:
     name: Mark Coveralls Complete
     # TODO: improve naming here
-#    needs: [test,check]
+    needs: [test,check]
     runs-on: ubuntu-latest
     steps:
       - uses: shogo82148/actions-goveralls@v1
