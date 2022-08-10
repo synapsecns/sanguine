@@ -18,7 +18,7 @@ library ReplicaLib {
     //   note: the contract is initialized at deploy time, so it should never be in this state
     //   1 - Active - as long as the contract has not become fraudulent
     //   2 - Failed - after a valid fraud proof has been submitted;
-    //   contract will no longer accept updates or new messages
+    //   contract will no longer accept attestations or new messages
     enum ReplicaStatus {
         UnInitialized,
         Active,

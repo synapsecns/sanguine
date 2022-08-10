@@ -102,7 +102,7 @@ contract ReplicaManagerTest is SynapseTest {
     );
 
     // Relayer relays a new root signed by notary on Home chain
-    function test_successfulUpdate() public {
+    function test_submitAttestation() public {
         uint32 nonce = 42;
         assertTrue(replicaManager.isNotary(remoteDomain, vm.addr(notaryPK)));
         (bytes memory attestation, bytes memory sig) = signRemoteAttestation(notaryPK, nonce, ROOT);
@@ -116,32 +116,32 @@ contract ReplicaManagerTest is SynapseTest {
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), block.timestamp);
     }
 
-    function test_updateWithFakeSigner() public {
+    function test_submitAttestation_fakeNotary() public {
         uint32 nonce = 42;
         (bytes memory attestation, ) = signRemoteAttestation(fakeNotaryPK, nonce, ROOT);
         vm.expectRevert("Signer is not a notary");
-        // Update signed by fakeNotary should be rejected
+        // Attestation signed by fakeNotary should be rejected
         replicaManager.submitAttestation(attestation);
     }
 
-    function test_updateWithLocalDomain() public {
+    function test_submitAttestation_localDomain() public {
         replicaManager.addNotary(localDomain, notary);
         uint32 nonce = 42;
         (bytes memory attestation, ) = signHomeAttestation(notaryPK, nonce, ROOT);
-        vm.expectRevert("Update refers to local chain");
-        // Replica should reject updates from the chain it's deployed on
+        vm.expectRevert("Attestation refers to local chain");
+        // Replica should reject attestations from the chain it's deployed on
         replicaManager.submitAttestation(attestation);
     }
 
     function test_acceptableRoot() public {
         uint32 optimisticSeconds = 69;
-        test_successfulUpdate();
+        test_submitAttestation();
         vm.warp(block.timestamp + optimisticSeconds);
         assertTrue(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
     }
 
     function test_cannotAcceptableRoot() public {
-        test_successfulUpdate();
+        test_submitAttestation();
         uint32 optimisticSeconds = 69;
         vm.warp(block.timestamp + optimisticSeconds - 1);
         assertFalse(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
@@ -189,7 +189,7 @@ contract ReplicaManagerTest is SynapseTest {
     }
 
     function _prepareProcessTest(uint32 optimisticPeriod) internal returns (bytes memory message) {
-        test_successfulUpdate();
+        test_submitAttestation();
 
         uint32 nonce = 1234;
         bytes32 sender = "sender";

@@ -159,7 +159,7 @@ contract HomeTest is SynapseTestWithNotaryManager {
         bytes32 root = home.root();
         // This root exists, but with nonce = 1
         // Nonce = 0 doesn't exists yet
-        _checkImproperUpdate(nonce, root);
+        _checkImproperAttestation(nonce, root);
     }
 
     function test_improperAttestation_fraud_correctRootWrongNonce() public {
@@ -169,7 +169,7 @@ contract HomeTest is SynapseTestWithNotaryManager {
         bytes32 root = home.root();
         // This root exists, but with nonce = 1
         // nonce = 2 exists, with a different Merkle root
-        _checkImproperUpdate(nonce, root);
+        _checkImproperAttestation(nonce, root);
     }
 
     function test_improperAttestation_fraud_validNonceWrongRoot() public {
@@ -177,11 +177,11 @@ contract HomeTest is SynapseTestWithNotaryManager {
         uint32 nonce = 0;
         bytes32 root = "this is clearly fraud";
         // nonce = 0 exists, with a different Merkle root
-        _checkImproperUpdate(nonce, root);
+        _checkImproperAttestation(nonce, root);
     }
 
     /// @dev Signs improper (nonce, root) attestation and presents it to Home.
-    function _checkImproperUpdate(uint32 nonce, bytes32 root) internal {
+    function _checkImproperAttestation(uint32 nonce, bytes32 root) internal {
         (bytes memory attestation, ) = signHomeAttestation(notaryPK, nonce, root);
         vm.expectEmit(true, true, true, true);
         emit ImproperAttestation(notary, attestation);
@@ -192,12 +192,12 @@ contract HomeTest is SynapseTestWithNotaryManager {
     }
 
     // Dispatches 4 messages, and then Notary signs latest new roots
-    function test_suggestUpdate() public {
+    function test_suggestAttestation() public {
         test_dispatch();
         test_dispatch();
         test_dispatch();
         test_dispatch();
-        (uint32 nonce, bytes32 root) = home.suggestUpdate();
+        (uint32 nonce, bytes32 root) = home.suggestAttestation();
         // sanity checks
         assertEq(nonce, 4);
         assertEq(root, home.historicalRoots(nonce));

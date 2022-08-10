@@ -44,7 +44,7 @@ contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegist
     //   note: the contract is initialized at deploy time, so it should never be in this state
     //   1 - Active - as long as the contract has not become fraudulent
     //   2 - Failed - after a valid fraud proof has been submitted;
-    //   contract will no longer accept updates or new messages
+    //   contract will no longer accept new messages
     enum States {
         UnInitialized,
         Active,
@@ -101,7 +101,7 @@ contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegist
 
     /**
      * @notice Emitted when the Notary is slashed
-     * (should be paired with ImproperNotary or DoubleUpdate event)
+     * (should be paired with ImproperAttestation event)
      * @param notary The address of the notary
      * @param reporter The address of the entity that reported the notary misbehavior
      */
@@ -233,12 +233,12 @@ contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegist
     }
 
     /**
-     * @notice Suggest an update for the Notary to sign and submit.
+     * @notice Suggest an attestation for the Notary to sign and submit.
      * @dev If no messages have been sent, null bytes returned for both
      * @return _nonce Current nonce
      * @return _root Current merkle root
      */
-    function suggestUpdate() external view returns (uint32 _nonce, bytes32 _root) {
+    function suggestAttestation() external view returns (uint32 _nonce, bytes32 _root) {
         uint256 length = historicalRoots.length;
         if (length != 0) {
             _nonce = uint32(length - 1);
@@ -252,7 +252,7 @@ contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegist
      * @notice Check if an Attestation is an Improper Attestation;
      * if so, slash the Notary and set the contract to FAILED state.
      *
-     * An Improper Attestation is a (_nonce, _root) update that doesn't correspond with
+     * An Improper Attestation is a (_nonce, _root) attestation that doesn't correspond with
      * the historical state of Home contract. Either of those needs to be true:
      * - _nonce is higher than current nonce (no root exists for this nonce)
      * - _root is not equal to the historical root of _nonce
@@ -266,23 +266,22 @@ contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegist
      * it should be relayed to the Home contract using this function
      * in order to slash the Notary with an Improper Attestation.
      *
-     * @dev Reverts (and doesn't slash notary) if signature is invalid or
-     * update not current
+     * @dev Reverts (and doesn't slash notary) if signature is invalid
      * @param _attestation  Attestation data and signature
-     * @return TRUE if update was an Improper Attestation (implying Notary was slashed)
+     * @return TRUE if attestation was an Improper Attestation (implying Notary was slashed)
      */
     function improperAttestation(bytes memory _attestation) public notFailed returns (bool) {
         // This will revert if signature is not valid
         (address _notary, bytes29 _view) = _checkNotaryAuth(_attestation);
         uint32 _nonce = _view.attestationNonce();
         bytes32 _root = _view.attestationRoot();
-        // Check if nonce is valid, if not => update is fraud
+        // Check if nonce is valid, if not => attestation is fraud
         if (_nonce < historicalRoots.length) {
             if (_root == historicalRoots[_nonce]) {
-                // Signed (nonce, root) update is valid
+                // Signed (nonce, root) attestation is valid
                 return false;
             }
-            // Signed root is not the same as the historical one => update is fraud
+            // Signed root is not the same as the historical one => attestation is fraud
         }
         _fail(_notary);
         emit ImproperAttestation(_notary, _attestation);
@@ -303,7 +302,7 @@ contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegist
 
     /**
      * @notice Slash the Notary and set contract state to FAILED
-     * @dev Called when fraud is proven (Improper Update or Double Update)
+     * @dev Called when fraud is proven (Improper Attestation)
      */
     function _fail(address _notary) internal {
         /**

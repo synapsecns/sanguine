@@ -20,7 +20,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
 
 /**
  * @title ReplicaManager
- * @notice Track root updates on Home,
+ * @notice Track merkle root state of Home contracts on other chains,
  * prove and dispatch messages to end recipients.
  */
 contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, GuardRegistry {
@@ -140,18 +140,17 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
 
     /**
      * @notice Called by external agent. Submits the signed attestation,
-     * marks root's allowable confirmation time, and emits an `Update` event.
-     * @dev Reverts if update doesn't build off latest committedRoot
-     * or if signature is invalid.
+     * marks root's allowable confirmation time, and emits an `AttestationAccepted` event.
+     * @dev Reverts if signature is invalid.
      * @param _attestation  Attestation data and signature
      */
     function submitAttestation(bytes memory _attestation) external {
         (, bytes29 _view) = _checkNotaryAuth(_attestation);
         uint32 remoteDomain = _view.attestationDomain();
-        require(remoteDomain != localDomain, "Update refers to local chain");
+        require(remoteDomain != localDomain, "Attestation refers to local chain");
         uint32 nonce = _view.attestationNonce();
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[remoteDomain]];
-        require(nonce > replica.nonce, "Update older than current state");
+        require(nonce > replica.nonce, "Attestation older than current state");
         bytes32 newRoot = _view.attestationRoot();
         replica.setConfirmAt(newRoot, block.timestamp);
         // update nonce
@@ -263,7 +262,7 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
      * @notice Check that the root has been submitted
      * and that the optimistic timeout period has expired,
      * meaning the root can be processed
-     * @param _root the Merkle root, submitted in an update, to check
+     * @param _root the Merkle root, submitted in an attestation, to check
      * @return TRUE iff root has been submitted & timeout has expired
      */
     function acceptableRoot(
