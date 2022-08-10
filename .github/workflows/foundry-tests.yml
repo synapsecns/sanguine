@@ -34,6 +34,8 @@ jobs:
       - name: Send Coverage
         uses: coverallsapp/github-action@master
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.github_token }}
           path-to-lcov: ./packages/contracts/lcov.info
+          base-path: ./packages/contracts/
+
 #          flag-name: foundry
