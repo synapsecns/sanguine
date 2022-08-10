@@ -16,11 +16,13 @@ jobs:
         with:
           check-name: check
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref }}
           wait-interval: 20
       - name: Wait for go coverage to complete
         uses: lewagon/wait-on-check-action@v1.0.0
         with:
           check-name: test
+          ref: ${{ github.ref }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 20
       - uses: shogo82148/actions-goveralls@v1
