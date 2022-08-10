@@ -70,6 +70,7 @@ jobs:
         with:
           command: go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
           max_attempts: 4
+          timeout_minutes: 20
         env:
           ENABLE_MYSQL_TEST: true
           MYSQL_HOST: 0.0.0.0
