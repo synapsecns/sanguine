@@ -11,7 +11,8 @@ jobs:
     name: Mark Coveralls Complete
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for go coverage to complete
+      # for an explanation on why we need two workflows, see: https://github.com/lewagon/wait-on-check-action/issues/25
+      - name: Wait for Coverage to complete
         uses: lewagon/wait-on-check-action@v1.1.2
         if: github.event_name != 'pull_request'
         with:
@@ -19,49 +20,14 @@ jobs:
           check-regexp: Coverage
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 30
-      - name: Wait for go coverage to complete
+          allowed-conclusions: success,skipped,cancelled
+      - name: Wait for Coverage to complete
         uses: lewagon/wait-on-check-action@v1.1.2
         if: github.event_name == 'pull_request'
         with:
+          allowed-conclusions: success,skipped,cancelled
           ref: ${{ github.event.pull_request.head.sha }}
           check-regexp: Coverage
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 30
-
-
-      # new checks (go), see: https://github.com/lewagon/wait-on-check-action/issues/25#issuecomment-1203747335
-      - name: Wait for go coverage to complete
-        uses: lewagon/wait-on-check-action@v1.1.2
-        if: github.event_name != 'pull_request'
-        with:
-          ref: ${{ github.sha }}
-          check-name: test
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 30
-      - name: Wait for go coverage to complete
-        uses: lewagon/wait-on-check-action@v1.1.2
-        if: github.event_name == 'pull_request'
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          check-name: test
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 30
-
-      # new checks, see: https://github.com/lewagon/wait-on-check-action/issues/25#issuecomment-1203747335
-      - name: Wait for foundry coverage to complete
-        uses: lewagon/wait-on-check-action@v1.1.2
-        if: github.event_name != 'pull_request'
-        with:
-          ref: ${{ github.sha }}
-          check-name: check
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 30
-      - name: Wait for foundry coverage to complete
-        uses: lewagon/wait-on-check-action@v1.1.2
-        if: github.event_name == 'pull_request'
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          check-name: check
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 30
 
