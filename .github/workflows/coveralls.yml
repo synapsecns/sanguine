@@ -3,7 +3,7 @@ name: Coverall Combines
 # TODO: maybe this should be a workflow run? https://stackoverflow.com/questions/58457140/dependencies-between-workflows-on-github-actions
 on:
   workflow_run:
-    workflows: [Foundry Tests]
+    workflows: [Go Workflows, Foundry Tests]
     types:
       - completed
 
@@ -11,8 +11,6 @@ jobs:
   # notify coveralls paralell jobs are finished running
   post-coverage:
     name: Mark Coveralls Complete
-    # TODO: improve naming here
-    needs: [test,check]
     runs-on: ubuntu-latest
     steps:
       - uses: shogo82148/actions-goveralls@v1
