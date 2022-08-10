@@ -16,7 +16,7 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           ref: ${{ github.sha }}
-          check-regexp: /Coverage/
+          check-regexp: .?Coverage
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 30
       - name: Wait for go coverage to complete
