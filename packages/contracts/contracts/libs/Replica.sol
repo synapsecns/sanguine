@@ -39,7 +39,7 @@ library ReplicaLib {
         uint32 remoteDomain; // 32 bits
         // Status of Replica based on the Home remote domain
         ReplicaStatus status; // 8 bits
-        // Mapping of roots to time at which Relayer submitted on-chain. Latency period begins here.
+        // Mapping of roots to time at which Broadcaster submitted on-chain. Latency period begins here.
         // TODO: confirmAt doesn't need to be uint256 necessarily
         mapping(bytes32 => uint256) confirmAt;
         // Mapping of message leaves to status:

@@ -14,10 +14,10 @@ contract TipsTest is Test {
     using Tips for bytes29;
 
     uint96 internal constant NOTARY_TIP = 1234;
-    uint96 internal constant RELAYER_TIP = 3456;
+    uint96 internal constant BROADCASTER_TIP = 3456;
     uint96 internal constant PROVER_TIP = 5678;
     uint96 internal constant PROCESSOR_TIP = 7890;
-    uint96 internal constant TOTAL_TIPS = NOTARY_TIP + RELAYER_TIP + PROVER_TIP + PROCESSOR_TIP;
+    uint96 internal constant TOTAL_TIPS = NOTARY_TIP + BROADCASTER_TIP + PROVER_TIP + PROCESSOR_TIP;
 
     uint40 internal constant WRONG_TYPE = 1337;
 
@@ -25,7 +25,7 @@ contract TipsTest is Test {
         bytes29 tipsView = _createTestData();
 
         assertEq(tipsView.notaryTip(), NOTARY_TIP);
-        assertEq(tipsView.relayerTip(), RELAYER_TIP);
+        assertEq(tipsView.broadcasterTip(), BROADCASTER_TIP);
         assertEq(tipsView.proverTip(), PROVER_TIP);
         assertEq(tipsView.processorTip(), PROCESSOR_TIP);
 
@@ -36,8 +36,8 @@ contract TipsTest is Test {
         _createTestDataMistyped().notaryTip();
     }
 
-    function test_incorrectType_relayerTip() public {
-        _createTestDataMistyped().relayerTip();
+    function test_incorrectType_broadcasterTip() public {
+        _createTestDataMistyped().broadcasterTip();
     }
 
     function test_incorrectType_proverTip() public {
@@ -49,7 +49,7 @@ contract TipsTest is Test {
     }
 
     function _createTestData() internal pure returns (bytes29) {
-        bytes memory tips = Tips.formatTips(NOTARY_TIP, RELAYER_TIP, PROVER_TIP, PROCESSOR_TIP);
+        bytes memory tips = Tips.formatTips(NOTARY_TIP, BROADCASTER_TIP, PROVER_TIP, PROCESSOR_TIP);
         return tips.tipsView();
     }
 
