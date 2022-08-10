@@ -1,20 +1,17 @@
----
-name: Test
+name: Combine Coverage
 
-on:
-  workflow_run:
-    workflows:
-      - Preflight
-    types:
-      - completed
+# We need to use workflow_dispatch here because workflow_on (auto triggering after a completed workflow, see: https://github.com/orgs/community/discussions/25288)
+# only works on the default branch and maxes out at 3 runs for now. We use workflow_dispatch after jobs that require coverage to get around this
+on: workflow_dispatch
 
 jobs:
-  test-job:
-    name: Test Step
+  # notify coveralls paralell jobs are finished running
+  post-coverage:
+    name: Mark Coveralls Complete
+    # TODO: improve naming here
+#    needs: [test,check]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: shogo82148/actions-goveralls@v1
         with:
-          ref: ${{ github.event.workflow_run.head_branch }}
-      - run: git branch
-      - run: env
+          parallel-finished: true
