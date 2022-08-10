@@ -28,7 +28,11 @@ jobs:
         working-directory: ./packages/contracts
         run: forge snapshot >> $GITHUB_STEP_SUMMARY
 
+      - name: Cat lcov
+        run: cat ./packages/contracts/lcov.info
+
       - name: Send Coverage
+        working-directory: ./
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
