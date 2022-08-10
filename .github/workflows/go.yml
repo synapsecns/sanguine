@@ -1,9 +1,10 @@
 name: Go Workflows
-on:
-  pull_request:
-  push:
-    branches-ignore:
-      - 'gh-pages'
+on: workflow_dispatch
+#on:
+#  pull_request:
+#  push:
+#    branches-ignore:
+#      - 'gh-pages'
 
 
 jobs:
