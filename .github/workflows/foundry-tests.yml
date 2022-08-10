@@ -37,4 +37,4 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ./packages/contracts/lcov.info
-          flag-name: foundry
+#          flag-name: foundry
