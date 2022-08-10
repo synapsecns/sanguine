@@ -2,8 +2,8 @@
 on:
   workflow_run:
     workflows: [Go Workflows, Foundry Tests]
-    types:
-      - completed
+#    types:
+#      - completed
 name: Coverall
 
 jobs:
