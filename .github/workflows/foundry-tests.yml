@@ -63,4 +63,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Combine Coverage
-          token: ${{ secrets.DISPATCH_TOKEN }}
+          token: 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 # single use for debugging, deleted after this commit
