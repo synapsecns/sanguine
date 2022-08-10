@@ -66,7 +66,11 @@ jobs:
           done
 
       - name: Test
-        run:  go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
+        uses: Wandalen/wretry.action@v1.0.11
+        with:
+          command: go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
+          attempt_limit: 4
+          attempt_delay: 0
         env:
           ENABLE_MYSQL_TEST: true
           MYSQL_HOST: 0.0.0.0
