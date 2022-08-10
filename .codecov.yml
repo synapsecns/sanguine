@@ -10,4 +10,4 @@ ignore:
   - "**/*.abigen.go"       # wildcards accepted
   - "**/_string.go"         # glob accepted
 # solidity test files
-  - 'packages/contracts/test/*'
+  - "packages/contracts/test/*"
