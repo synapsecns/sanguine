@@ -60,9 +60,9 @@ jobs:
           flag-name: foundry
 
       - uses: codecov/codecov-action@v3
-        name: Send Coverage (CODECOV)
+        name: Send Coverage (Codecov)
         with:
-          token: ${{ secrets.CODECOV }} # not required for public repos
+          token: ${{ secrets.CODECOV }}
           files: ./packages/contracts/lcov.info
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)

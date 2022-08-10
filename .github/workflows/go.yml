@@ -1,10 +1,9 @@
 name: Go Workflows
-on: workflow_dispatch
-#on:
-#  pull_request:
-#  push:
-#    branches-ignore:
-#      - 'gh-pages'
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - 'gh-pages'
 
 
 jobs:
@@ -90,13 +89,21 @@ jobs:
       # We customize the build step because by default
       # We can not use ** because goveralls uses filepath.Match
       # to match ignore files and it does not support it.
-      - name: Send coverage
+      - name: Send coverage (Coveralls)
         uses: shogo82148/actions-goveralls@v1
         with:
           github-token: ${{ secrets.github_token }}
           path-to-profile: profile.cov
           ignore: ${{ env.IGNORED }}
           flag-name: Go-${{ matrix.go-version }}
+
+      - uses: codecov/codecov-action@v3
+        name: Send Coverage (Codecov)
+        with:
+          token: ${{ secrets.CODECOV }}
+          files: profile.cov
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
 
   # changes allows us to only run a job on changed packages
   changes:
