@@ -63,7 +63,7 @@ jobs:
         name: Send Coverage (Codecov)
         with:
           token: ${{ secrets.CODECOV }}
-          files: ./packages/contracts/lcov.info
+          files: lcov.info
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
           working-directory: ./packages/contracts/
