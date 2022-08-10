@@ -95,7 +95,7 @@ jobs:
           flag-name: Go-${{ matrix.go-version }}
           parallel: true
       - name: Invoke workflow without inputs
-        uses: ph-fritsche/action-dispatch@v1
+        uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Combine Coverage
           token: ${{ secrets.DISPATCH_TOKEN }}
