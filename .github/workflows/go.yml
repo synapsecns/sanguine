@@ -92,6 +92,8 @@ jobs:
           github-token: ${{ secrets.github_token }}
           path-to-profile: profile.cov
           ignore: ${{ env.IGNORED }}
+          flag-name: Go-${{ matrix.go-version }}
+          parallel: true
 
   # changes allows us to only run a job on changed packages
   changes:

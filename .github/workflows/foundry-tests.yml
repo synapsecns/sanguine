@@ -61,3 +61,4 @@ jobs:
           path-to-lcov: ./packages/contracts/lcov.info
           base-path: ./packages/contracts/
           flag-name: foundry
+          parallel: true
