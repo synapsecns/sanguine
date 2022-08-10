@@ -31,7 +31,8 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 5
 
-      - uses: shogo82148/actions-goveralls@v1
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
         with:
-          parallel-finished: true
           github-token: ${{ secrets.github_token }}
+          parallel-finished: true
