@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/types"
 	"math/big"
 	"time"
 )
@@ -18,7 +19,10 @@ func (h HomeSuite) TestDispatchTopic() {
 	sub, err := h.homeContract.WatchDispatch(&bind.WatchOpts{Context: h.GetTestContext()}, dispatchSink, [][32]byte{}, []*big.Int{}, []uint64{})
 	Nil(h.T(), err)
 
-	tx, err := h.homeContract.Dispatch(txContext.TransactOpts, 1, [32]byte{}, 1, nil)
+	enodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
+	Nil(h.T(), err)
+
+	tx, err := h.homeContract.Dispatch(txContext.TransactOpts, 1, [32]byte{}, 1, enodedTips, nil)
 	Nil(h.T(), err)
 
 	h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)

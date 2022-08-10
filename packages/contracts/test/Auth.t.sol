@@ -18,14 +18,8 @@ contract AuthTest is SynapseTest {
         harness = new AuthHarness();
     }
 
-    function test_checkSignature() public {
+    function test_recoverSigner() public {
         bytes memory signature = signMessage(updaterPK, message);
-        harness.checkSignature(updater, message, signature);
-    }
-
-    function test_checkSignature_wrongSigner() public {
-        bytes memory signature = signMessage(fakeUpdaterPK, message);
-        vm.expectRevert("Invalid signature");
-        harness.checkSignature(updater, message, signature);
+        assertEq(harness.recoverSigner(message, signature), updater);
     }
 }

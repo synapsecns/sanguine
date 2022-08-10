@@ -84,9 +84,6 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         );
     }
 
-    // TODO: testHashDomain against Go generated domains
-    // function test_homeDomainHash() public {}
-
     // ============ DISPATCHING MESSAGING ============
 
     event Dispatch(
@@ -102,7 +99,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         bytes32 recipient = addressToBytes32(vm.addr(1337));
         address sender = vm.addr(1555);
         bytes memory messageBody = bytes("message");
-        uint32 nonce = home.nonces(remoteDomain);
+        uint32 nonce = home.nonce() + 1;
         bytes memory _header = Header.formatHeader(
             localDomain,
             addressToBytes32(sender),
@@ -131,7 +128,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
             _tips,
             messageBody
         );
-        assert(home.historicalRoots(count+1) == home.root());
+        assert(home.historicalRoots(count + 1) == home.root());
     }
 
     // Rejects messages over a set size
@@ -153,7 +150,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         // Any signed attestation from another chain should be rejected
         (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
         vm.expectRevert("Wrong domain");
-        home.improperAttestation(updater, attestation);
+        home.improperAttestation(attestation);
     }
 
     function test_improperAttestation_fraud_invalidNonce() public {
@@ -189,7 +186,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         vm.expectEmit(true, true, true, true);
         emit ImproperAttestation(updater, attestation);
         // Home should recognize this as improper attestation
-        assertTrue(home.improperAttestation(updater, attestation));
+        assertTrue(home.improperAttestation(attestation));
         // Home should be in Failed state
         assertEq(uint256(home.state()), 2);
     }
@@ -206,7 +203,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         assertEq(root, home.historicalRoots(nonce));
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, root);
         // Should not be an improper attestation
-        assertFalse(home.improperAttestation(updater, attestation));
+        assertFalse(home.improperAttestation(attestation));
         assertEq(uint256(home.state()), 1);
     }
 

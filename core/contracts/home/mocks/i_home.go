@@ -38,29 +38,6 @@ func (_m *IHome) Address() common.Address {
 	return r0
 }
 
-// CommittedRoot provides a mock function with given fields: opts
-func (_m *IHome) CommittedRoot(opts *bind.CallOpts) ([32]byte, error) {
-	ret := _m.Called(opts)
-
-	var r0 [32]byte
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) [32]byte); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([32]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Count provides a mock function with given fields: opts
 func (_m *IHome) Count(opts *bind.CallOpts) (*big.Int, error) {
 	ret := _m.Called(opts)
@@ -84,13 +61,13 @@ func (_m *IHome) Count(opts *bind.CallOpts) (*big.Int, error) {
 	return r0, r1
 }
 
-// Dispatch provides a mock function with given fields: opts, _destinationDomain, _recipientAddress, _optimisticSeconds, _messageBody
-func (_m *IHome) Dispatch(opts *bind.TransactOpts, _destinationDomain uint32, _recipientAddress [32]byte, _optimisticSeconds uint32, _messageBody []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, _destinationDomain, _recipientAddress, _optimisticSeconds, _messageBody)
+// Dispatch provides a mock function with given fields: opts, _destinationDomain, _recipientAddress, _optimisticSeconds, _tips, _messageBody
+func (_m *IHome) Dispatch(opts *bind.TransactOpts, _destinationDomain uint32, _recipientAddress [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, _destinationDomain, _recipientAddress, _optimisticSeconds, _tips, _messageBody)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, [32]byte, uint32, []byte) *types.Transaction); ok {
-		r0 = rf(opts, _destinationDomain, _recipientAddress, _optimisticSeconds, _messageBody)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, [32]byte, uint32, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, _destinationDomain, _recipientAddress, _optimisticSeconds, _tips, _messageBody)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -98,31 +75,8 @@ func (_m *IHome) Dispatch(opts *bind.TransactOpts, _destinationDomain uint32, _r
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, [32]byte, uint32, []byte) error); ok {
-		r1 = rf(opts, _destinationDomain, _recipientAddress, _optimisticSeconds, _messageBody)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// DoubleUpdate provides a mock function with given fields: opts, _oldRoot, _newRoot, _signature, _signature2
-func (_m *IHome) DoubleUpdate(opts *bind.TransactOpts, _oldRoot [32]byte, _newRoot [2][32]byte, _signature []byte, _signature2 []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, _oldRoot, _newRoot, _signature, _signature2)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, [32]byte, [2][32]byte, []byte, []byte) *types.Transaction); ok {
-		r0 = rf(opts, _oldRoot, _newRoot, _signature, _signature2)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, [32]byte, [2][32]byte, []byte, []byte) error); ok {
-		r1 = rf(opts, _oldRoot, _newRoot, _signature, _signature2)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, [32]byte, uint32, []byte, []byte) error); ok {
+		r1 = rf(opts, _destinationDomain, _recipientAddress, _optimisticSeconds, _tips, _messageBody)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -153,39 +107,16 @@ func (_m *IHome) FilterDispatch(opts *bind.FilterOpts, messageHash [][32]byte, l
 	return r0, r1
 }
 
-// FilterDoubleUpdate provides a mock function with given fields: opts
-func (_m *IHome) FilterDoubleUpdate(opts *bind.FilterOpts) (*home.HomeDoubleUpdateIterator, error) {
+// FilterImproperAttestation provides a mock function with given fields: opts
+func (_m *IHome) FilterImproperAttestation(opts *bind.FilterOpts) (*home.HomeImproperAttestationIterator, error) {
 	ret := _m.Called(opts)
 
-	var r0 *home.HomeDoubleUpdateIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *home.HomeDoubleUpdateIterator); ok {
+	var r0 *home.HomeImproperAttestationIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *home.HomeImproperAttestationIterator); ok {
 		r0 = rf(opts)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*home.HomeDoubleUpdateIterator)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FilterImproperUpdate provides a mock function with given fields: opts
-func (_m *IHome) FilterImproperUpdate(opts *bind.FilterOpts) (*home.HomeImproperUpdateIterator, error) {
-	ret := _m.Called(opts)
-
-	var r0 *home.HomeImproperUpdateIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *home.HomeImproperUpdateIterator); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*home.HomeImproperUpdateIterator)
+			r0 = ret.Get(0).(*home.HomeImproperAttestationIterator)
 		}
 	}
 
@@ -291,13 +222,13 @@ func (_m *IHome) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner
 	return r0, r1
 }
 
-// FilterUpdate provides a mock function with given fields: opts, homeDomain, oldRoot, newRoot
-func (_m *IHome) FilterUpdate(opts *bind.FilterOpts, homeDomain []uint32, oldRoot [][32]byte, newRoot [][32]byte) (*home.HomeUpdateIterator, error) {
-	ret := _m.Called(opts, homeDomain, oldRoot, newRoot)
+// FilterUpdate provides a mock function with given fields: opts, homeDomain, nonce, root
+func (_m *IHome) FilterUpdate(opts *bind.FilterOpts, homeDomain []uint32, nonce []uint32, root [][32]byte) (*home.HomeUpdateIterator, error) {
+	ret := _m.Called(opts, homeDomain, nonce, root)
 
 	var r0 *home.HomeUpdateIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []uint32, [][32]byte, [][32]byte) *home.HomeUpdateIterator); ok {
-		r0 = rf(opts, homeDomain, oldRoot, newRoot)
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []uint32, []uint32, [][32]byte) *home.HomeUpdateIterator); ok {
+		r0 = rf(opts, homeDomain, nonce, root)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*home.HomeUpdateIterator)
@@ -305,8 +236,8 @@ func (_m *IHome) FilterUpdate(opts *bind.FilterOpts, homeDomain []uint32, oldRoo
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []uint32, [][32]byte, [][32]byte) error); ok {
-		r1 = rf(opts, homeDomain, oldRoot, newRoot)
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []uint32, []uint32, [][32]byte) error); ok {
+		r1 = rf(opts, homeDomain, nonce, root)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -337,13 +268,13 @@ func (_m *IHome) FilterUpdaterSlashed(opts *bind.FilterOpts, updater []common.Ad
 	return r0, r1
 }
 
-// HomeDomainHash provides a mock function with given fields: opts
-func (_m *IHome) HomeDomainHash(opts *bind.CallOpts) ([32]byte, error) {
-	ret := _m.Called(opts)
+// HistoricalRoots provides a mock function with given fields: opts, arg0
+func (_m *IHome) HistoricalRoots(opts *bind.CallOpts, arg0 *big.Int) ([32]byte, error) {
+	ret := _m.Called(opts, arg0)
 
 	var r0 [32]byte
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) [32]byte); ok {
-		r0 = rf(opts)
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, *big.Int) [32]byte); ok {
+		r0 = rf(opts, arg0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([32]byte)
@@ -351,8 +282,8 @@ func (_m *IHome) HomeDomainHash(opts *bind.CallOpts) ([32]byte, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, *big.Int) error); ok {
+		r1 = rf(opts, arg0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -360,13 +291,13 @@ func (_m *IHome) HomeDomainHash(opts *bind.CallOpts) ([32]byte, error) {
 	return r0, r1
 }
 
-// ImproperUpdate provides a mock function with given fields: opts, _oldRoot, _newRoot, _signature
-func (_m *IHome) ImproperUpdate(opts *bind.TransactOpts, _oldRoot [32]byte, _newRoot [32]byte, _signature []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, _oldRoot, _newRoot, _signature)
+// ImproperAttestation provides a mock function with given fields: opts, _attestation
+func (_m *IHome) ImproperAttestation(opts *bind.TransactOpts, _attestation []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, _attestation)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, [32]byte, [32]byte, []byte) *types.Transaction); ok {
-		r0 = rf(opts, _oldRoot, _newRoot, _signature)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte) *types.Transaction); ok {
+		r0 = rf(opts, _attestation)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -374,8 +305,8 @@ func (_m *IHome) ImproperUpdate(opts *bind.TransactOpts, _oldRoot [32]byte, _new
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, [32]byte, [32]byte, []byte) error); ok {
-		r1 = rf(opts, _oldRoot, _newRoot, _signature)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte) error); ok {
+		r1 = rf(opts, _attestation)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -450,20 +381,20 @@ func (_m *IHome) MAXMESSAGEBODYBYTES(opts *bind.CallOpts) (*big.Int, error) {
 	return r0, r1
 }
 
-// Nonces provides a mock function with given fields: opts, arg0
-func (_m *IHome) Nonces(opts *bind.CallOpts, arg0 uint32) (uint32, error) {
-	ret := _m.Called(opts, arg0)
+// Nonce provides a mock function with given fields: opts
+func (_m *IHome) Nonce(opts *bind.CallOpts) (uint32, error) {
+	ret := _m.Called(opts)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) uint32); ok {
-		r0 = rf(opts, arg0)
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint32); ok {
+		r0 = rf(opts)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
-		r1 = rf(opts, arg0)
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -517,39 +448,16 @@ func (_m *IHome) ParseDispatch(log types.Log) (*home.HomeDispatch, error) {
 	return r0, r1
 }
 
-// ParseDoubleUpdate provides a mock function with given fields: log
-func (_m *IHome) ParseDoubleUpdate(log types.Log) (*home.HomeDoubleUpdate, error) {
+// ParseImproperAttestation provides a mock function with given fields: log
+func (_m *IHome) ParseImproperAttestation(log types.Log) (*home.HomeImproperAttestation, error) {
 	ret := _m.Called(log)
 
-	var r0 *home.HomeDoubleUpdate
-	if rf, ok := ret.Get(0).(func(types.Log) *home.HomeDoubleUpdate); ok {
+	var r0 *home.HomeImproperAttestation
+	if rf, ok := ret.Get(0).(func(types.Log) *home.HomeImproperAttestation); ok {
 		r0 = rf(log)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*home.HomeDoubleUpdate)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
-		r1 = rf(log)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ParseImproperUpdate provides a mock function with given fields: log
-func (_m *IHome) ParseImproperUpdate(log types.Log) (*home.HomeImproperUpdate, error) {
-	ret := _m.Called(log)
-
-	var r0 *home.HomeImproperUpdate
-	if rf, ok := ret.Get(0).(func(types.Log) *home.HomeImproperUpdate); ok {
-		r0 = rf(log)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*home.HomeImproperUpdate)
+			r0 = ret.Get(0).(*home.HomeImproperAttestation)
 		}
 	}
 
@@ -717,73 +625,6 @@ func (_m *IHome) Parser() home.Parser {
 	return r0
 }
 
-// QueueContains provides a mock function with given fields: opts, _item
-func (_m *IHome) QueueContains(opts *bind.CallOpts, _item [32]byte) (bool, error) {
-	ret := _m.Called(opts, _item)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts, [32]byte) bool); ok {
-		r0 = rf(opts, _item)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts, [32]byte) error); ok {
-		r1 = rf(opts, _item)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// QueueEnd provides a mock function with given fields: opts
-func (_m *IHome) QueueEnd(opts *bind.CallOpts) ([32]byte, error) {
-	ret := _m.Called(opts)
-
-	var r0 [32]byte
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) [32]byte); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([32]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// QueueLength provides a mock function with given fields: opts
-func (_m *IHome) QueueLength(opts *bind.CallOpts) (*big.Int, error) {
-	ret := _m.Called(opts)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) *big.Int); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // RenounceOwnership provides a mock function with given fields: opts
 func (_m *IHome) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
 	ret := _m.Called(opts)
@@ -823,6 +664,29 @@ func (_m *IHome) Root(opts *bind.CallOpts) ([32]byte, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SetSystemMessenger provides a mock function with given fields: opts, _systemMessenger
+func (_m *IHome) SetSystemMessenger(opts *bind.TransactOpts, _systemMessenger common.Address) (*types.Transaction, error) {
+	ret := _m.Called(opts, _systemMessenger)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address) *types.Transaction); ok {
+		r0 = rf(opts, _systemMessenger)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
+		r1 = rf(opts, _systemMessenger)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -899,25 +763,48 @@ func (_m *IHome) State(opts *bind.CallOpts) (uint8, error) {
 
 // SuggestUpdate provides a mock function with given fields: opts
 func (_m *IHome) SuggestUpdate(opts *bind.CallOpts) (struct {
-	CommittedRoot [32]byte
-	New           [32]byte
+	Nonce uint32
+	Root  [32]byte
 }, error) {
 	ret := _m.Called(opts)
 
 	var r0 struct {
-		CommittedRoot [32]byte
-		New           [32]byte
+		Nonce uint32
+		Root  [32]byte
 	}
 	if rf, ok := ret.Get(0).(func(*bind.CallOpts) struct {
-		CommittedRoot [32]byte
-		New           [32]byte
+		Nonce uint32
+		Root  [32]byte
 	}); ok {
 		r0 = rf(opts)
 	} else {
 		r0 = ret.Get(0).(struct {
-			CommittedRoot [32]byte
-			New           [32]byte
+			Nonce uint32
+			Root  [32]byte
 		})
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SystemMessenger provides a mock function with given fields: opts
+func (_m *IHome) SystemMessenger(opts *bind.CallOpts) (common.Address, error) {
+	ret := _m.Called(opts)
+
+	var r0 common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Address)
+		}
 	}
 
 	var r1 error
@@ -969,29 +856,6 @@ func (_m *IHome) Tree(opts *bind.CallOpts) (*big.Int, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Update provides a mock function with given fields: opts, _committedRoot, _newRoot, _signature
-func (_m *IHome) Update(opts *bind.TransactOpts, _committedRoot [32]byte, _newRoot [32]byte, _signature []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, _committedRoot, _newRoot, _signature)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, [32]byte, [32]byte, []byte) *types.Transaction); ok {
-		r0 = rf(opts, _committedRoot, _newRoot, _signature)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, [32]byte, [32]byte, []byte) error); ok {
-		r1 = rf(opts, _committedRoot, _newRoot, _signature)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1089,12 +953,12 @@ func (_m *IHome) WatchDispatch(opts *bind.WatchOpts, sink chan<- *home.HomeDispa
 	return r0, r1
 }
 
-// WatchDoubleUpdate provides a mock function with given fields: opts, sink
-func (_m *IHome) WatchDoubleUpdate(opts *bind.WatchOpts, sink chan<- *home.HomeDoubleUpdate) (event.Subscription, error) {
+// WatchImproperAttestation provides a mock function with given fields: opts, sink
+func (_m *IHome) WatchImproperAttestation(opts *bind.WatchOpts, sink chan<- *home.HomeImproperAttestation) (event.Subscription, error) {
 	ret := _m.Called(opts, sink)
 
 	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *home.HomeDoubleUpdate) event.Subscription); ok {
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *home.HomeImproperAttestation) event.Subscription); ok {
 		r0 = rf(opts, sink)
 	} else {
 		if ret.Get(0) != nil {
@@ -1103,30 +967,7 @@ func (_m *IHome) WatchDoubleUpdate(opts *bind.WatchOpts, sink chan<- *home.HomeD
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeDoubleUpdate) error); ok {
-		r1 = rf(opts, sink)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// WatchImproperUpdate provides a mock function with given fields: opts, sink
-func (_m *IHome) WatchImproperUpdate(opts *bind.WatchOpts, sink chan<- *home.HomeImproperUpdate) (event.Subscription, error) {
-	ret := _m.Called(opts, sink)
-
-	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *home.HomeImproperUpdate) event.Subscription); ok {
-		r0 = rf(opts, sink)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(event.Subscription)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeImproperUpdate) error); ok {
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeImproperAttestation) error); ok {
 		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)
@@ -1227,13 +1068,13 @@ func (_m *IHome) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *ho
 	return r0, r1
 }
 
-// WatchUpdate provides a mock function with given fields: opts, sink, homeDomain, oldRoot, newRoot
-func (_m *IHome) WatchUpdate(opts *bind.WatchOpts, sink chan<- *home.HomeUpdate, homeDomain []uint32, oldRoot [][32]byte, newRoot [][32]byte) (event.Subscription, error) {
-	ret := _m.Called(opts, sink, homeDomain, oldRoot, newRoot)
+// WatchUpdate provides a mock function with given fields: opts, sink, homeDomain, nonce, root
+func (_m *IHome) WatchUpdate(opts *bind.WatchOpts, sink chan<- *home.HomeUpdate, homeDomain []uint32, nonce []uint32, root [][32]byte) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, homeDomain, nonce, root)
 
 	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *home.HomeUpdate, []uint32, [][32]byte, [][32]byte) event.Subscription); ok {
-		r0 = rf(opts, sink, homeDomain, oldRoot, newRoot)
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *home.HomeUpdate, []uint32, []uint32, [][32]byte) event.Subscription); ok {
+		r0 = rf(opts, sink, homeDomain, nonce, root)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(event.Subscription)
@@ -1241,8 +1082,8 @@ func (_m *IHome) WatchUpdate(opts *bind.WatchOpts, sink chan<- *home.HomeUpdate,
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeUpdate, []uint32, [][32]byte, [][32]byte) error); ok {
-		r1 = rf(opts, sink, homeDomain, oldRoot, newRoot)
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeUpdate, []uint32, []uint32, [][32]byte) error); ok {
+		r1 = rf(opts, sink, homeDomain, nonce, root)
 	} else {
 		r1 = ret.Error(1)
 	}

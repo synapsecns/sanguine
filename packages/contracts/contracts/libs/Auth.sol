@@ -10,18 +10,18 @@ library Auth {
     using TypedMemView for bytes29;
 
     /**
-     * @notice Checks signer is authorized and that their signature is valid.
-     * @param _signer       Who signed the message
+     * @notice Recovers signer from data and signature.
      * @param _data         Data that was signed
-     * @param _signature    `_data` signed by `_signer`, reverts if invalid
+     * @param _signature    `_data` signed by `signer`
+     * @return signer       Address that signed the data
      */
-    function checkSignature(
-        address _signer,
-        bytes29 _data,
-        bytes memory _signature
-    ) internal pure {
+    function recoverSigner(bytes29 _data, bytes memory _signature)
+        internal
+        pure
+        returns (address signer)
+    {
         bytes32 digest = _data.keccak();
         digest = ECDSA.toEthSignedMessageHash(digest);
-        require((ECDSA.recover(digest, _signature) == _signer), "Invalid signature");
+        signer = ECDSA.recover(digest, _signature);
     }
 }

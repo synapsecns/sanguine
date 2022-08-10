@@ -4,12 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/core/types"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/testutil"
+	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/synapse-node/pkg/common"
 	"github.com/synapsecns/synapse-node/pkg/evm/client/mocks"
 	"github.com/synapsecns/synapse-node/testutils/utils"
@@ -21,12 +22,12 @@ import (
 func (e *RPCSuite) TestGetters() {
 	name := "hi"
 
-	_, xAppContract := e.deployManager.GetXAppConfig(e.GetTestContext(), e.testBackend)
+	_, homeContract := e.deployManager.GetHome(e.GetTestContext(), e.testBackend)
 
 	testCfg := config.DomainConfig{
-		DomainID:          1,
-		RPCUrl:            e.testBackend.RPCAddress(),
-		XAppConfigAddress: xAppContract.Address().String(),
+		DomainID:    1,
+		RPCUrl:      e.testBackend.RPCAddress(),
+		HomeAddress: homeContract.Address().String(),
 	}
 
 	testEvm, err := evm.NewEVM(e.GetTestContext(), name, testCfg)
@@ -108,11 +109,14 @@ func (e *RPCSuite) TestFilterer() {
 
 	dispatches := GenerateDispatches(10)
 
-	var lastTx *types.Transaction
+	var lastTx *ethTypes.Transaction
 	for _, dispatch := range dispatches {
 		auth := e.testBackend.GetTxContext(e.GetTestContext(), nil)
 
-		addedDispatch, err := handle.Dispatch(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, dispatch.messageBody)
+		enodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
+		Nil(e.T(), err)
+
+		addedDispatch, err := handle.Dispatch(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, enodedTips, dispatch.messageBody)
 		Nil(e.T(), err)
 
 		e.testBackend.WaitForConfirmation(e.GetTestContext(), addedDispatch)

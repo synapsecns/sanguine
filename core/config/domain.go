@@ -40,8 +40,10 @@ type DomainConfig struct {
 	Type string `toml:"Type"`
 	// RequiredConfirmations is the number of confirmations to way
 	RequiredConfirmations uint32 `toml:"Confirmations"`
-	// XappConfigAddress gets the x app config address
-	XAppConfigAddress string `toml:"XAppConfigAddress"`
+	// HomeAddress gets the x app config address
+	HomeAddress string `toml:"HomeAddress"`
+	// AttesationCollectorAddress contains the attestation collector address (if present)
+	AttesationCollectorAddress string `toml:"AttesationCollectorAddress"`
 	// RPCUrl to use for the chain
 	RPCUrl string `toml:"RPCURL"`
 	// Minimum start height
@@ -60,8 +62,8 @@ func (d DomainConfig) IsValid(_ context.Context) (ok bool, err error) {
 	}
 
 	// TODO: we should defer to chain-specific config here for verification
-	if d.XAppConfigAddress == "" {
-		return false, fmt.Errorf("field XAppConfigAddress: %w", ErrRequiredField)
+	if d.HomeAddress == "" {
+		return false, fmt.Errorf("field HomeAddress: %w", ErrRequiredField)
 	}
 
 	if d.RPCUrl == "" {

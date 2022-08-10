@@ -6,7 +6,6 @@ import { Version0 } from "./Version0.sol";
 import { UpdaterStorage } from "./UpdaterStorage.sol";
 import { AuthManager } from "./auth/AuthManager.sol";
 import { Attestation } from "./libs/Attestation.sol";
-import { QueueLib } from "./libs/Queue.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
@@ -60,7 +59,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
     // ============ Public Storage Variables ============
 
     // domain => next available nonce for the domain
-    mapping(uint32 => uint32) public nonces;
+    uint32 public nonce;
     // contract responsible for Updater bonding, slashing and rotation
     IUpdaterManager public updaterManager;
     // Current state of contract
@@ -191,14 +190,13 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         require(_tips.tipsView().totalTips() == msg.value, "!tips");
         // get the next nonce for the destination domain, then increment it
-        uint32 _nonce = nonces[_destinationDomain];
-        nonces[_destinationDomain] = _nonce + 1;
+        nonce = nonce + 1;
         bytes32 _sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
         bytes memory _header = Header.formatHeader(
             localDomain,
             _sender,
-            _nonce,
+            nonce,
             _destinationDomain,
             _recipientAddress,
             _optimisticSeconds
@@ -214,7 +212,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         emit Dispatch(
             _messageHash,
             count() - 1,
-            _destinationAndNonce(_destinationDomain, _nonce),
+            _destinationAndNonce(_destinationDomain, nonce),
             _tips,
             _message
         );
@@ -232,13 +230,6 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
             _nonce = uint32(length - 1);
             _root = historicalRoots[_nonce];
         }
-    }
-
-    /**
-     * @notice Hash of Home domain concatenated with "SYN"
-     */
-    function homeDomainHash() external view returns (bytes32) {
-        return _domainHash(localDomain);
     }
 
     // ============ Public Functions  ============
@@ -263,17 +254,12 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      *
      * @dev Reverts (and doesn't slash updater) if signature is invalid or
      * update not current
-     * @param _updater      Updater who signed the attestation
      * @param _attestation  Attestation data and signature
      * @return TRUE if update was an Improper Attestation (implying Updater was slashed)
      */
-    function improperAttestation(address _updater, bytes memory _attestation)
-        public
-        notFailed
-        returns (bool)
-    {
+    function improperAttestation(bytes memory _attestation) public notFailed returns (bool) {
         // This will revert if signature is not valid
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
+        (address _updater, bytes29 _view) = _checkUpdaterAuth(_attestation);
         uint32 _nonce = _view.attestationNonce();
         bytes32 _root = _view.attestationRoot();
         // Check if nonce is valid, if not => update is fraud

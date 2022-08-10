@@ -32,7 +32,6 @@ var UpdateTopic common.Hash
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
 		DispatchEvent: DispatchTopic,
-		UpdateEvent:   UpdateTopic,
 	}
 }
 

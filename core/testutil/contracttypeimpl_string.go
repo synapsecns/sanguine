@@ -9,19 +9,20 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[HomeType-0]
-	_ = x[XAppConfigType-1]
-	_ = x[MessageHarnessType-2]
-	_ = x[HomeHarnessType-3]
-	_ = x[AttestationHarnessType-4]
-	_ = x[ReplicaManagerHarnessType-5]
-	_ = x[UpdaterManagerType-6]
-	_ = x[AttestationCollectorType-7]
-	_ = x[ReplicaManagerType-8]
+	_ = x[MessageHarnessType-1]
+	_ = x[HomeHarnessType-2]
+	_ = x[AttestationHarnessType-3]
+	_ = x[TipsHarnessType-4]
+	_ = x[HeaderHarnessType-5]
+	_ = x[ReplicaManagerHarnessType-6]
+	_ = x[UpdaterManagerType-7]
+	_ = x[AttestationCollectorType-8]
+	_ = x[ReplicaManagerType-9]
 }
 
-const _contractTypeImpl_name = "HomeXAppConfigMessageHarnessHomeHarnessAttestationHarnessTypeReplicaManagerHarnessTypeUpdaterManagerAttestationCollectorReplicaManager"
+const _contractTypeImpl_name = "HomeMessageHarnessHomeHarnessAttestationHarnessTypeTipsHarnessTypeHeaderHarnessTypeReplicaManagerHarnessTypeUpdaterManagerAttestationCollectorReplicaManager"
 
-var _contractTypeImpl_index = [...]uint8{0, 4, 14, 28, 39, 61, 86, 100, 120, 134}
+var _contractTypeImpl_index = [...]uint8{0, 4, 18, 29, 51, 66, 83, 108, 122, 142, 156}
 
 func (i contractTypeImpl) String() string {
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {

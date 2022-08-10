@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 
 import { Message } from "../../contracts/libs/Message.sol";
 import { Header } from "../../contracts/libs/Header.sol";
+import { Tips } from "../../contracts/libs/Tips.sol";
 import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 
 contract MessageHarness {
@@ -19,9 +20,15 @@ contract MessageHarness {
         uint32 _destinationDomain,
         bytes32 _recipient,
         uint32 _optimisticSeconds,
-        bytes memory _tips,
+        // tips params
+        uint96 _updaterTip,
+        uint96 _relayerTip,
+        uint96 _proverTip,
+        uint96 _processorTip,
         bytes memory _messageBody
     ) public pure returns (bytes memory) {
+        bytes memory _tips = Tips.formatTips(_updaterTip, _relayerTip, _proverTip, _processorTip);
+
         bytes memory _header = Header.formatHeader(
             _originDomain,
             _sender,
@@ -102,5 +109,13 @@ contract MessageHarness {
 
     function leaf(bytes memory _message) external pure returns (bytes32) {
         return _message.messageView().leaf();
+    }
+
+    function messageVersion() public pure returns (uint16) {
+        return Message.MESSAGE_VERSION;
+    }
+
+    function headerOffset() public pure returns (uint16) {
+        return Message.HEADER_OFFSET;
     }
 }

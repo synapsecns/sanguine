@@ -2,7 +2,6 @@ package db_test
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/cockroachdb/pebble"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/db"
@@ -10,104 +9,34 @@ import (
 	"math/big"
 )
 
-// StoresAndRetrievesMessages tests storage/retreival.
-func (m *MessageSuite) TestStoresAndRetrievesMessages() {
-	m.RunOnAllDBs(func(newDB db.MessageDB) {
-		realMessage := types.NewMessage(10, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32(), gofakeit.Uint32(), []byte(gofakeit.Sentence(10)), common.BigToHash(big.NewInt(gofakeit.Int64())))
+func (t *DBSuite) TestRetrieveLatestNonce() {
+	const domainID = 1
 
-		encoded, err := realMessage.Encode()
-		Nil(m.T(), err)
+	t.RunOnAllDBs(func(testDB db.SynapseDB) {
+		_, err := testDB.RetrieveLatestCommittedMessageNonce(t.GetTestContext(), domainID)
+		ErrorIs(t.T(), err, db.ErrNoNonceForDomain)
 
-		committedMessage := types.NewCommittedMessage(100, common.BigToHash(big.NewInt(gofakeit.Int64())), encoded)
+		nonce := 0
+		leafIndex := uint32(1)
 
-		realLeaf, err := realMessage.ToLeaf()
-		Nil(m.T(), err)
+		for i := 0; i < 10; i++ {
+			header := types.NewHeader(gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), uint32(i), gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
+			tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 
-		Equal(m.T(), realLeaf, committedMessage.Leaf())
+			realMessage := types.NewMessage(header, tips, []byte(gofakeit.Sentence(10)))
 
-		err = newDB.StoreCommittedMessage(committedMessage)
-		Nil(m.T(), err)
+			encoded, err := types.EncodeMessage(realMessage)
+			Nil(t.T(), err)
 
-		// try by nonce
-		byNonce, err := newDB.MessageByNonce(realMessage.Destination(), realMessage.Nonce())
-		Nil(m.T(), err)
+			err = testDB.StoreCommittedMessage(t.GetTestContext(), domainID, types.NewCommittedMessage(leafIndex, encoded))
+			Nil(t.T(), err)
 
-		Equal(m.T(), byNonce.Message(), encoded)
-		Equal(m.T(), byNonce.CommitedRoot(), committedMessage.CommitedRoot())
-		Equal(m.T(), byNonce.Leaf(), committedMessage.Leaf())
-		Equal(m.T(), byNonce.LeafIndex(), committedMessage.LeafIndex())
+			newNonce, err := testDB.RetrieveLatestCommittedMessageNonce(t.GetTestContext(), domainID)
+			Nil(t.T(), err)
+			Equal(t.T(), uint32(nonce), newNonce)
 
-		// try by leaf
-		byLeaf, err := newDB.MessageByLeaf(realLeaf)
-		Nil(m.T(), err)
-
-		Equal(m.T(), byNonce.Message(), byLeaf.Message())
-		Equal(m.T(), byNonce.CommitedRoot(), byLeaf.CommitedRoot())
-		Equal(m.T(), byNonce.Leaf(), byLeaf.Leaf())
-		Equal(m.T(), byNonce.LeafIndex(), byLeaf.LeafIndex())
-
-		// try by leaf index
-		byLeafIndex, err := newDB.MessageByLeafIndex(byNonce.LeafIndex())
-		Nil(m.T(), err)
-
-		Equal(m.T(), byLeafIndex.Message(), byNonce.Message())
+			nonce++
+			leafIndex++
+		}
 	})
-}
-
-func (m *MessageSuite) TestStoresAndretrievesProofs() {
-	m.RunOnAllDBs(func(newDB db.MessageDB) {
-		leaf := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		index := gofakeit.Uint32()
-		path := common.Hash{}
-
-		proof := types.NewProof(leaf, index, path)
-
-		err := newDB.StoreProof(13, proof)
-		Nil(m.T(), err)
-
-		byIndex, err := newDB.ProofByLeafIndex(13)
-		Nil(m.T(), err)
-
-		Equal(m.T(), byIndex.Index(), index)
-		Equal(m.T(), byIndex.Path(), path)
-		Equal(m.T(), byIndex.Leaf(), leaf)
-	})
-}
-
-func (m *MessageSuite) TestStoreGetMessageLatestBlockEnd() {
-	m.RunOnAllDBs(func(newDB db.MessageDB) {
-		_, err := newDB.GetMessageLatestBlockEnd()
-		Error(m.T(), err, pebble.ErrNotFound)
-
-		fakeBlock := gofakeit.Uint32()
-
-		err = newDB.StoreMessageLatestBlockEnd(fakeBlock)
-		Nil(m.T(), err)
-
-		latestHeight, err := newDB.GetMessageLatestBlockEnd()
-		Nil(m.T(), err)
-
-		Equal(m.T(), latestHeight, fakeBlock)
-	})
-}
-
-func (m *MessageSuite) TestStoreAndRetrieveLatestRoot() {
-	m.RunOnAllDBs(func(newDB db.MessageDB) {
-		_, err := newDB.RetrieveLatestRoot()
-		Error(m.T(), err, pebble.ErrNotFound)
-
-		latestRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
-
-		err = newDB.StoreLatestRoot(latestRoot)
-		Nil(m.T(), err)
-
-		retrievedRoot, err := newDB.RetrieveLatestRoot()
-		Nil(m.T(), err)
-
-		Equal(m.T(), retrievedRoot, latestRoot)
-	})
-}
-
-func (m *MessageSuite) TestStoreGetProducedUpdate() {
-	m.T().Skip("TODO:  teststore/retrieve produced update")
 }

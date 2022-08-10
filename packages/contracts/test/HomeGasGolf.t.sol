@@ -30,7 +30,7 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
         bytes32 recipient = addressToBytes32(vm.addr(1337));
         address sender = vm.addr(1555);
         bytes memory messageBody = bytes("message");
-        uint32 nonce = home.nonces(remoteDomain);
+        uint32 nonce = home.nonce() + 1;
         bytes memory _header = Header.formatHeader(
             localDomain,
             addressToBytes32(sender),
@@ -62,7 +62,7 @@ contract HomeGasGolfTest is SynapseTestWithUpdaterManager {
             roots[i] = _dispatch();
         }
         for (uint256 i = 0; i < amount; ++i) {
-            assertEq(home.historicalRoots(i+1), roots[i]);
+            assertEq(home.historicalRoots(i + 1), roots[i]);
         }
     }
 }

@@ -133,18 +133,15 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * marks root's allowable confirmation time, and emits an `Update` event.
      * @dev Reverts if update doesn't build off latest committedRoot
      * or if signature is invalid.
-     * @param _updater      Updater who signer the attestation
      * @param _attestation  Attestation data and signature
      */
-    function submitAttestation(address _updater, bytes memory _attestation) external {
-        bytes29 _view = _checkUpdaterAuth(_updater, _attestation);
+    function submitAttestation(bytes memory _attestation) external {
+        (, bytes29 _view) = _checkUpdaterAuth(_attestation);
         uint32 remoteDomain = _view.attestationDomain();
         require(remoteDomain != localDomain, "Update refers to local chain");
         uint32 nonce = _view.attestationNonce();
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[remoteDomain]];
         require(nonce > replica.nonce, "Update older than current state");
-        // Hook for future use
-        _beforeUpdate();
         bytes32 newRoot = _view.attestationRoot();
         replica.setConfirmAt(newRoot, block.timestamp);
         // update nonce
@@ -212,14 +209,6 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         emit Process(_remoteDomain, _messageHash);
         // reset re-entrancy guard
         entered = 1;
-    }
-
-    /**
-     * @notice Hash of Home domain concatenated with "SYN"
-     * @param _homeDomain the Home domain to hash
-     */
-    function homeDomainHash(uint32 _homeDomain) external pure returns (bytes32) {
-        return _domainHash(_homeDomain);
     }
 
     // ============ External Owner Functions ============
@@ -320,10 +309,6 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         allReplicas[replicaIndex].setupReplica(_remoteDomain);
         replicaCount = replicaIndex;
     }
-
-    /// @notice Hook for potential future use
-    // solhint-disable-next-line no-empty-blocks
-    function _beforeUpdate() internal {}
 
     function _getRevertMsg(bytes memory _returnData) internal pure returns (string memory) {
         // If the _res length is less than 68, then the transaction failed silently (without a revert message)
