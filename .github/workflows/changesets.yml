@@ -8,11 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: Wandalen/wretry.action@v1.0.11
-          with: actions/checkout@v2
-          # this will flake for some reason
-          attempt_limit: 5
-          attempt_delay: 2000
+        uses: actions/checkout@v2
 
       - name: Read .nvmrc
         run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
