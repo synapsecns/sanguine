@@ -9,6 +9,5 @@ ignore:
   - "*_generated.go"  # ignore folders and all its contents
   - "*.abigen.go"       # wildcards accepted
   - "*_string.go"         # glob accepted
-  - "*_string.go"         # glob accepted
 # solidity test files
   - 'packages/contracts/test/*'
