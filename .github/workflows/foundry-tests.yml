@@ -62,5 +62,5 @@ jobs:
       - name: Invoke workflow without inputs
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: Combine Coverage
+          workflow: Combine
           token: ${{ secrets.DISPATCH_SECRET }}

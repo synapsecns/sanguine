@@ -1,4 +1,4 @@
-name: Combine Coverage
+name: Combine
 
 # We need to use workflow_dispatch here because workflow_on (auto triggering after a completed workflow, see: https://github.com/orgs/community/discussions/25288)
 # only works on the default branch and maxes out at 3 runs for now. We use workflow_dispatch after jobs that require coverage to get around this
