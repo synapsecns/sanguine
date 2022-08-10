@@ -1,10 +1,11 @@
+codecov:
+  require_ci_to_pass: false
 # Team Yaml
 coverage:
   round: down
   precision: 5
 
 ignore:
-# go generated extensions
   - "*_generated.go"  # ignore folders and all its contents
   - "*.abigen.go"       # wildcards accepted
   - "*_string.go"         # glob accepted
