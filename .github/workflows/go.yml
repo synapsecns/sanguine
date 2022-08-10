@@ -94,6 +94,7 @@ jobs:
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
 
+
       # We customize the build step because by default
       # We can not use ** because goveralls uses filepath.Match
       # to match ignore files and it does not support it.
