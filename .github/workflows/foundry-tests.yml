@@ -22,8 +22,15 @@ jobs:
 
       - name: Run tests
         working-directory: ./packages/contracts
-        run: forge test -vvv
+        run: forge coverage -vvv --report=lcov
 
       - name: Run snapshot
         working-directory: ./packages/contracts
         run: forge snapshot >> $GITHUB_STEP_SUMMARY
+
+      - name: Send Coverage
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./packages/contracts/lcov.info
+          flag-name: foundry
