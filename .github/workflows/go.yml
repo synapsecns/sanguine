@@ -101,7 +101,6 @@ jobs:
         name: Send Coverage (Codecov)
         with:
           token: ${{ secrets.CODECOV }}
-          files: profile.cov
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
 
