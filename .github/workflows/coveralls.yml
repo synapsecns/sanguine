@@ -11,20 +11,42 @@ jobs:
     name: Mark Coveralls Complete
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for foundry coverage to complete
-        uses: lewagon/wait-on-check-action@v1.0.0
-        with:
-          running-workflow-name: 'Run Foundry Tests'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref }}
-          wait-interval: 20
+      # new checks (go)
       - name: Wait for go coverage to complete
-        uses: lewagon/wait-on-check-action@v1.0.0
+        uses: lewagon/wait-on-check-action@v1.1.2
+        if: github.event_name != 'pull_request'
         with:
-          check-name: 'Run Go Tests'
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
+          check-name: test
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 20
+          wait-interval: 30
+      - name: Wait for go coverage to complete
+        uses: lewagon/wait-on-check-action@v1.1.2
+        if: github.event_name == 'pull_request'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: test
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+
+      # new checks
+      - name: Wait for foundry coverage to complete
+        uses: lewagon/wait-on-check-action@v1.1.2
+        if: github.event_name != 'pull_request'
+        with:
+          ref: ${{ github.sha }}
+          check-name: check
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+      - name: Wait for foundry coverage to complete
+        uses: lewagon/wait-on-check-action@v1.1.2
+        if: github.event_name == 'pull_request'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: check
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+
       - uses: shogo82148/actions-goveralls@v1
         with:
           parallel-finished: true
