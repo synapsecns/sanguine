@@ -59,8 +59,8 @@ jobs:
           base-path: ./packages/contracts/
           flag-name: foundry
           parallel: true
-      - name: Trigger Coverage when both jobs are done
+      - name: Invoke workflow without inputs
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Combine Coverage
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.DISPATCH_TOKEN }}
