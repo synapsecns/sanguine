@@ -51,14 +51,6 @@ jobs:
         working-directory: ./packages/contracts
         run: forge snapshot >> $GITHUB_STEP_SUMMARY
 
-      - name: Send Coverage (Coveralls)
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.github_token }}
-          path-to-lcov: ./packages/contracts/lcov.info
-          base-path: ./packages/contracts/
-          flag-name: foundry
-
       - uses: codecov/codecov-action@v3
         name: Send Coverage (Codecov)
         with:
@@ -66,3 +58,12 @@ jobs:
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
           working-directory: ./packages/contracts/
+
+
+      - name: Send Coverage (Coveralls)
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          path-to-lcov: ./packages/contracts/lcov.info
+          base-path: ./packages/contracts/
+          flag-name: foundry
