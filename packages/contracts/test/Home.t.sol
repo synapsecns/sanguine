@@ -31,6 +31,8 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         assertEq(home.owner(), address(this));
         assertEq(uint256(home.state()), 1);
         assertEq(home.updater(), updater);
+        // Root of an empty sparse Merkle tree should be stored with nonce=0
+        assertEq(home.historicalRoots(0), home.root());
     }
 
     function test_cannotInitializeTwice() public {
@@ -166,7 +168,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         uint32 nonce = 0;
         bytes32 root = home.root();
         // This root exists, but with nonce = 1
-        // nonce = 0 exists, with a different Merkle root
+        // nonce = 2 exists, with a different Merkle root
         _checkImproperUpdate(nonce, root);
     }
 
