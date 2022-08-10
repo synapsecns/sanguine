@@ -6,10 +6,6 @@ jobs:
   check:
     name: Packages/contracts
     runs-on: ubuntu-latest
-    secrets:
-      HELP:
-        description: 'needed for login'
-        required: true
     steps:
 #      - uses: actions/checkout@v3
 #        with:
@@ -67,4 +63,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Combine Coverage
-          token: ${{ secrets.HELP }}
+          token: ${{ secrets.GIT_TOKEN }}
