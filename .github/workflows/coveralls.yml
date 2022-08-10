@@ -21,7 +21,7 @@ jobs:
       - name: Wait for go coverage to complete
         uses: lewagon/wait-on-check-action@v1.0.0
         with:
-          running-workflow-name: 'Run Go Tests'
+          check-name: 'Run Go Tests'
           ref: ${{ github.ref }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 20
