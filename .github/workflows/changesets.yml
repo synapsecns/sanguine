@@ -1,5 +1,5 @@
 ---
-name: Changeset integrity checker
+name: Automaton
 on:
   - pull_request_target
 
