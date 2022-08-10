@@ -5,15 +5,14 @@ on:
     branches-ignore:
       - 'gh-pages'
 
-# TODO: improve naming here
-needs: [test,check]
-
 name: Coverall
 
 jobs:
   # notify coveralls paralell jobs are finished running
   post-coverage:
     name: Packages/contracts
+    # TODO: improve naming here
+    needs: [ test,check ]
     runs-on: ubuntu-latest
     steps:
       - uses: shogo82148/actions-goveralls@v1
