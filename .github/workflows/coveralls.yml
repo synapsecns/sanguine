@@ -1,4 +1,4 @@
-name: Combine
+name: Combine Coverage
 
 # We need to use workflow_dispatch here because workflow_on (auto triggering after a completed workflow, see: https://github.com/orgs/community/discussions/25288)
 # only works on the default branch and maxes out at 3 runs for now. We use workflow_dispatch after jobs that require coverage to get around this
@@ -8,10 +8,20 @@ jobs:
   # notify coveralls paralell jobs are finished running
   post-coverage:
     name: Mark Coveralls Complete
-    # TODO: improve naming here
-#    needs: [test,check]
     runs-on: ubuntu-latest
     steps:
+      - name: Wait for foundry coverage to complete
+        uses: lewagon/wait-on-check-action@v1.0.0
+        with:
+          check-name: check
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 20
+      - name: Wait for go coverage to complete
+        uses: lewagon/wait-on-check-action@v1.0.0
+        with:
+          check-name: test
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 20
       - uses: shogo82148/actions-goveralls@v1
         with:
           parallel-finished: true

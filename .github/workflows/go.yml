@@ -1,10 +1,9 @@
 name: Go Workflows
-on: workflow_dispatch # save some money
-#on:
-#  pull_request:
-#  push:
-#    branches-ignore:
-#      - 'gh-pages'
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - 'gh-pages'
 
 
 jobs:
@@ -95,12 +94,6 @@ jobs:
           ignore: ${{ env.IGNORED }}
           flag-name: Go-${{ matrix.go-version }}
           parallel: true
-      - name: Invoke workflow without inputs
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Combine Coverage
-          token: ${{ secrets.DISPATCH_TOKEN }}
-
 
   # changes allows us to only run a job on changed packages
   changes:
