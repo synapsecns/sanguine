@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: Go Coverage
     runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
@@ -66,7 +66,11 @@ jobs:
           done
 
       - name: Test
-        run:  go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
+        uses: nick-fields/retry@v2
+        with:
+          command: go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
+          max_attempts: 4
+          timeout_minutes: 20
         env:
           ENABLE_MYSQL_TEST: true
           MYSQL_HOST: 0.0.0.0
@@ -82,15 +86,25 @@ jobs:
         run: |
           echo "IGNORED=$(find . \( -name "*_generated.go" -o -name "*.abigen.go"  -o -name "*_string.go"   \) -print0 | xargs -0 ls | sed 's/.\/*//' | tr '\n' ',' |  sed 's/,*\r*$//')" >> $GITHUB_ENV
 
+      - uses: codecov/codecov-action@v3
+        name: Send Coverage (Codecov)
+        with:
+          token: ${{ secrets.CODECOV }}
+          files: profile.cov
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
+
+
       # We customize the build step because by default
       # We can not use ** because goveralls uses filepath.Match
       # to match ignore files and it does not support it.
-      - name: Send coverage
+      - name: Send coverage (Coveralls)
         uses: shogo82148/actions-goveralls@v1
         with:
           github-token: ${{ secrets.github_token }}
           path-to-profile: profile.cov
           ignore: ${{ env.IGNORED }}
+          flag-name: Go-${{ matrix.go-version }}
 
   # changes allows us to only run a job on changed packages
   changes:
