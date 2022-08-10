@@ -19,7 +19,7 @@ jobs:
           ref: ${{ github.sha }}
           check-regexp: Coverage
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 5
+          wait-interval: 25
           allowed-conclusions: success,skipped,cancelled
       - name: Wait for Coverage to complete
         uses: lewagon/wait-on-check-action@v1.1.2
@@ -29,7 +29,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           check-regexp: Coverage
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 5
+          wait-interval: 25
 
       - name: Coveralls Finished
         uses: coverallsapp/github-action@master
