@@ -8,10 +8,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: Wandalen/wretry.action@v1.0.11
+          with: actions/checkout@v2
+          # this will flake for some reason
+          attempt_limit: 5
+          attempt_delay: 2000
 
-      - name: Install Dependencies
-        run: yarn
+      - name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+        id: nvmrc
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: "Use NodeJS by nvmrc"
+        uses: actions/setup-node@v2
+        with:
+          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+
+      - name: Initialize Yarn cache
+        uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install Node Dependencies
+        run: yarn install --frozen-lockfile --check-files
 
       - name: Changeset Status
         run: npx changeset status
