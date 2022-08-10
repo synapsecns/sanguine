@@ -64,3 +64,4 @@ jobs:
         with:
           workflow: Combine
           token: ${{ secrets.DISPATCH_SECRET }}
+          ref: ${{ github.event.pull_request.head.ref }}
