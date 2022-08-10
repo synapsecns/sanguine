@@ -38,6 +38,52 @@ func (_m *IHome) Address() common.Address {
 	return r0
 }
 
+// AllGuards provides a mock function with given fields: opts
+func (_m *IHome) AllGuards(opts *bind.CallOpts) ([]common.Address, error) {
+	ret := _m.Called(opts)
+
+	var r0 []common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) []common.Address); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// AllNotaries provides a mock function with given fields: opts
+func (_m *IHome) AllNotaries(opts *bind.CallOpts) ([]common.Address, error) {
+	ret := _m.Called(opts)
+
+	var r0 []common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) []common.Address); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Count provides a mock function with given fields: opts
 func (_m *IHome) Count(opts *bind.CallOpts) (*big.Int, error) {
 	ret := _m.Called(opts)
@@ -107,6 +153,98 @@ func (_m *IHome) FilterDispatch(opts *bind.FilterOpts, messageHash [][32]byte, l
 	return r0, r1
 }
 
+// FilterDomainNotaryAdded provides a mock function with given fields: opts
+func (_m *IHome) FilterDomainNotaryAdded(opts *bind.FilterOpts) (*home.HomeDomainNotaryAddedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *home.HomeDomainNotaryAddedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *home.HomeDomainNotaryAddedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*home.HomeDomainNotaryAddedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterDomainNotaryRemoved provides a mock function with given fields: opts
+func (_m *IHome) FilterDomainNotaryRemoved(opts *bind.FilterOpts) (*home.HomeDomainNotaryRemovedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *home.HomeDomainNotaryRemovedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *home.HomeDomainNotaryRemovedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*home.HomeDomainNotaryRemovedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterGuardAdded provides a mock function with given fields: opts
+func (_m *IHome) FilterGuardAdded(opts *bind.FilterOpts) (*home.HomeGuardAddedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *home.HomeGuardAddedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *home.HomeGuardAddedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*home.HomeGuardAddedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterGuardRemoved provides a mock function with given fields: opts
+func (_m *IHome) FilterGuardRemoved(opts *bind.FilterOpts) (*home.HomeGuardRemovedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *home.HomeGuardRemovedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *home.HomeGuardRemovedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*home.HomeGuardRemovedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterImproperAttestation provides a mock function with given fields: opts
 func (_m *IHome) FilterImproperAttestation(opts *bind.FilterOpts) (*home.HomeImproperAttestationIterator, error) {
 	ret := _m.Called(opts)
@@ -140,29 +278,6 @@ func (_m *IHome) FilterInitialized(opts *bind.FilterOpts) (*home.HomeInitialized
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*home.HomeInitializedIterator)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FilterNewUpdater provides a mock function with given fields: opts
-func (_m *IHome) FilterNewUpdater(opts *bind.FilterOpts) (*home.HomeNewUpdaterIterator, error) {
-	ret := _m.Called(opts)
-
-	var r0 *home.HomeNewUpdaterIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *home.HomeNewUpdaterIterator); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*home.HomeNewUpdaterIterator)
 		}
 	}
 
@@ -222,29 +337,6 @@ func (_m *IHome) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner
 	return r0, r1
 }
 
-// FilterUpdate provides a mock function with given fields: opts, homeDomain, nonce, root
-func (_m *IHome) FilterUpdate(opts *bind.FilterOpts, homeDomain []uint32, nonce []uint32, root [][32]byte) (*home.HomeUpdateIterator, error) {
-	ret := _m.Called(opts, homeDomain, nonce, root)
-
-	var r0 *home.HomeUpdateIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []uint32, []uint32, [][32]byte) *home.HomeUpdateIterator); ok {
-		r0 = rf(opts, homeDomain, nonce, root)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*home.HomeUpdateIterator)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []uint32, []uint32, [][32]byte) error); ok {
-		r1 = rf(opts, homeDomain, nonce, root)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // FilterUpdaterSlashed provides a mock function with given fields: opts, updater, reporter
 func (_m *IHome) FilterUpdaterSlashed(opts *bind.FilterOpts, updater []common.Address, reporter []common.Address) (*home.HomeUpdaterSlashedIterator, error) {
 	ret := _m.Called(opts, updater, reporter)
@@ -261,6 +353,75 @@ func (_m *IHome) FilterUpdaterSlashed(opts *bind.FilterOpts, updater []common.Ad
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address, []common.Address) error); ok {
 		r1 = rf(opts, updater, reporter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetGuard provides a mock function with given fields: opts, _index
+func (_m *IHome) GetGuard(opts *bind.CallOpts, _index *big.Int) (common.Address, error) {
+	ret := _m.Called(opts, _index)
+
+	var r0 common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, *big.Int) common.Address); ok {
+		r0 = rf(opts, _index)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, *big.Int) error); ok {
+		r1 = rf(opts, _index)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetNotary provides a mock function with given fields: opts, _index
+func (_m *IHome) GetNotary(opts *bind.CallOpts, _index *big.Int) (common.Address, error) {
+	ret := _m.Called(opts, _index)
+
+	var r0 common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, *big.Int) common.Address); ok {
+		r0 = rf(opts, _index)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, *big.Int) error); ok {
+		r1 = rf(opts, _index)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GuardsAmount provides a mock function with given fields: opts
+func (_m *IHome) GuardsAmount(opts *bind.CallOpts) (*big.Int, error) {
+	ret := _m.Called(opts)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) *big.Int); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -402,6 +563,29 @@ func (_m *IHome) Nonce(opts *bind.CallOpts) (uint32, error) {
 	return r0, r1
 }
 
+// NotariesAmount provides a mock function with given fields: opts
+func (_m *IHome) NotariesAmount(opts *bind.CallOpts) (*big.Int, error) {
+	ret := _m.Called(opts)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) *big.Int); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Owner provides a mock function with given fields: opts
 func (_m *IHome) Owner(opts *bind.CallOpts) (common.Address, error) {
 	ret := _m.Called(opts)
@@ -435,6 +619,98 @@ func (_m *IHome) ParseDispatch(log types.Log) (*home.HomeDispatch, error) {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*home.HomeDispatch)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseDomainNotaryAdded provides a mock function with given fields: log
+func (_m *IHome) ParseDomainNotaryAdded(log types.Log) (*home.HomeDomainNotaryAdded, error) {
+	ret := _m.Called(log)
+
+	var r0 *home.HomeDomainNotaryAdded
+	if rf, ok := ret.Get(0).(func(types.Log) *home.HomeDomainNotaryAdded); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*home.HomeDomainNotaryAdded)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseDomainNotaryRemoved provides a mock function with given fields: log
+func (_m *IHome) ParseDomainNotaryRemoved(log types.Log) (*home.HomeDomainNotaryRemoved, error) {
+	ret := _m.Called(log)
+
+	var r0 *home.HomeDomainNotaryRemoved
+	if rf, ok := ret.Get(0).(func(types.Log) *home.HomeDomainNotaryRemoved); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*home.HomeDomainNotaryRemoved)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseGuardAdded provides a mock function with given fields: log
+func (_m *IHome) ParseGuardAdded(log types.Log) (*home.HomeGuardAdded, error) {
+	ret := _m.Called(log)
+
+	var r0 *home.HomeGuardAdded
+	if rf, ok := ret.Get(0).(func(types.Log) *home.HomeGuardAdded); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*home.HomeGuardAdded)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseGuardRemoved provides a mock function with given fields: log
+func (_m *IHome) ParseGuardRemoved(log types.Log) (*home.HomeGuardRemoved, error) {
+	ret := _m.Called(log)
+
+	var r0 *home.HomeGuardRemoved
+	if rf, ok := ret.Get(0).(func(types.Log) *home.HomeGuardRemoved); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*home.HomeGuardRemoved)
 		}
 	}
 
@@ -494,29 +770,6 @@ func (_m *IHome) ParseInitialized(log types.Log) (*home.HomeInitialized, error) 
 	return r0, r1
 }
 
-// ParseNewUpdater provides a mock function with given fields: log
-func (_m *IHome) ParseNewUpdater(log types.Log) (*home.HomeNewUpdater, error) {
-	ret := _m.Called(log)
-
-	var r0 *home.HomeNewUpdater
-	if rf, ok := ret.Get(0).(func(types.Log) *home.HomeNewUpdater); ok {
-		r0 = rf(log)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*home.HomeNewUpdater)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
-		r1 = rf(log)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // ParseNewUpdaterManager provides a mock function with given fields: log
 func (_m *IHome) ParseNewUpdaterManager(log types.Log) (*home.HomeNewUpdaterManager, error) {
 	ret := _m.Called(log)
@@ -550,29 +803,6 @@ func (_m *IHome) ParseOwnershipTransferred(log types.Log) (*home.HomeOwnershipTr
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*home.HomeOwnershipTransferred)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
-		r1 = rf(log)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ParseUpdate provides a mock function with given fields: log
-func (_m *IHome) ParseUpdate(log types.Log) (*home.HomeUpdate, error) {
-	ret := _m.Called(log)
-
-	var r0 *home.HomeUpdate
-	if rf, ok := ret.Get(0).(func(types.Log) *home.HomeUpdate); ok {
-		r0 = rf(log)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*home.HomeUpdate)
 		}
 	}
 
@@ -863,29 +1093,6 @@ func (_m *IHome) Tree(opts *bind.CallOpts) (*big.Int, error) {
 	return r0, r1
 }
 
-// Updater provides a mock function with given fields: opts
-func (_m *IHome) Updater(opts *bind.CallOpts) (common.Address, error) {
-	ret := _m.Called(opts)
-
-	var r0 common.Address
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(common.Address)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // UpdaterManager provides a mock function with given fields: opts
 func (_m *IHome) UpdaterManager(opts *bind.CallOpts) (common.Address, error) {
 	ret := _m.Called(opts)
@@ -953,6 +1160,98 @@ func (_m *IHome) WatchDispatch(opts *bind.WatchOpts, sink chan<- *home.HomeDispa
 	return r0, r1
 }
 
+// WatchDomainNotaryAdded provides a mock function with given fields: opts, sink
+func (_m *IHome) WatchDomainNotaryAdded(opts *bind.WatchOpts, sink chan<- *home.HomeDomainNotaryAdded) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *home.HomeDomainNotaryAdded) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeDomainNotaryAdded) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchDomainNotaryRemoved provides a mock function with given fields: opts, sink
+func (_m *IHome) WatchDomainNotaryRemoved(opts *bind.WatchOpts, sink chan<- *home.HomeDomainNotaryRemoved) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *home.HomeDomainNotaryRemoved) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeDomainNotaryRemoved) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchGuardAdded provides a mock function with given fields: opts, sink
+func (_m *IHome) WatchGuardAdded(opts *bind.WatchOpts, sink chan<- *home.HomeGuardAdded) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *home.HomeGuardAdded) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeGuardAdded) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchGuardRemoved provides a mock function with given fields: opts, sink
+func (_m *IHome) WatchGuardRemoved(opts *bind.WatchOpts, sink chan<- *home.HomeGuardRemoved) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *home.HomeGuardRemoved) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeGuardRemoved) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // WatchImproperAttestation provides a mock function with given fields: opts, sink
 func (_m *IHome) WatchImproperAttestation(opts *bind.WatchOpts, sink chan<- *home.HomeImproperAttestation) (event.Subscription, error) {
 	ret := _m.Called(opts, sink)
@@ -991,29 +1290,6 @@ func (_m *IHome) WatchInitialized(opts *bind.WatchOpts, sink chan<- *home.HomeIn
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeInitialized) error); ok {
-		r1 = rf(opts, sink)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// WatchNewUpdater provides a mock function with given fields: opts, sink
-func (_m *IHome) WatchNewUpdater(opts *bind.WatchOpts, sink chan<- *home.HomeNewUpdater) (event.Subscription, error) {
-	ret := _m.Called(opts, sink)
-
-	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *home.HomeNewUpdater) event.Subscription); ok {
-		r0 = rf(opts, sink)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(event.Subscription)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeNewUpdater) error); ok {
 		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)
@@ -1061,29 +1337,6 @@ func (_m *IHome) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *ho
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeOwnershipTransferred, []common.Address, []common.Address) error); ok {
 		r1 = rf(opts, sink, previousOwner, newOwner)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// WatchUpdate provides a mock function with given fields: opts, sink, homeDomain, nonce, root
-func (_m *IHome) WatchUpdate(opts *bind.WatchOpts, sink chan<- *home.HomeUpdate, homeDomain []uint32, nonce []uint32, root [][32]byte) (event.Subscription, error) {
-	ret := _m.Called(opts, sink, homeDomain, nonce, root)
-
-	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *home.HomeUpdate, []uint32, []uint32, [][32]byte) event.Subscription); ok {
-		r0 = rf(opts, sink, homeDomain, nonce, root)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(event.Subscription)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *home.HomeUpdate, []uint32, []uint32, [][32]byte) error); ok {
-		r1 = rf(opts, sink, homeDomain, nonce, root)
 	} else {
 		r1 = ret.Error(1)
 	}

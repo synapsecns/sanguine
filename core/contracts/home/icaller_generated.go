@@ -19,10 +19,30 @@ type IHomeCaller interface {
 	//
 	// Solidity: function VERSION() view returns(uint8)
 	VERSION(opts *bind.CallOpts) (uint8, error)
+	// AllGuards is a free data retrieval call binding the contract method 0x9fe03fa2.
+	//
+	// Solidity: function allGuards() view returns(address[])
+	AllGuards(opts *bind.CallOpts) ([]common.Address, error)
+	// AllNotaries is a free data retrieval call binding the contract method 0x9817e315.
+	//
+	// Solidity: function allNotaries() view returns(address[])
+	AllNotaries(opts *bind.CallOpts) ([]common.Address, error)
 	// Count is a free data retrieval call binding the contract method 0x06661abd.
 	//
 	// Solidity: function count() view returns(uint256)
 	Count(opts *bind.CallOpts) (*big.Int, error)
+	// GetGuard is a free data retrieval call binding the contract method 0x629ddf69.
+	//
+	// Solidity: function getGuard(uint256 _index) view returns(address)
+	GetGuard(opts *bind.CallOpts, _index *big.Int) (common.Address, error)
+	// GetNotary is a free data retrieval call binding the contract method 0xc07dc7f5.
+	//
+	// Solidity: function getNotary(uint256 _index) view returns(address)
+	GetNotary(opts *bind.CallOpts, _index *big.Int) (common.Address, error)
+	// GuardsAmount is a free data retrieval call binding the contract method 0x246c2449.
+	//
+	// Solidity: function guardsAmount() view returns(uint256)
+	GuardsAmount(opts *bind.CallOpts) (*big.Int, error)
 	// HistoricalRoots is a free data retrieval call binding the contract method 0x7ea97f40.
 	//
 	// Solidity: function historicalRoots(uint256 ) view returns(bytes32)
@@ -35,6 +55,10 @@ type IHomeCaller interface {
 	//
 	// Solidity: function nonce() view returns(uint32)
 	Nonce(opts *bind.CallOpts) (uint32, error)
+	// NotariesAmount is a free data retrieval call binding the contract method 0x8e62e9ef.
+	//
+	// Solidity: function notariesAmount() view returns(uint256)
+	NotariesAmount(opts *bind.CallOpts) (*big.Int, error)
 	// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 	//
 	// Solidity: function owner() view returns(address)
@@ -62,10 +86,6 @@ type IHomeCaller interface {
 	//
 	// Solidity: function tree() view returns(uint256 count)
 	Tree(opts *bind.CallOpts) (*big.Int, error)
-	// Updater is a free data retrieval call binding the contract method 0xdf034cd0.
-	//
-	// Solidity: function updater() view returns(address)
-	Updater(opts *bind.CallOpts) (common.Address, error)
 	// UpdaterManager is a free data retrieval call binding the contract method 0x9df6c8e1.
 	//
 	// Solidity: function updaterManager() view returns(address)
