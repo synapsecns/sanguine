@@ -87,7 +87,6 @@ jobs:
       # to match ignore files and it does not support it.
       - name: Send coverage
         uses: shogo82148/actions-goveralls@v1
-        # TODO make parallel
         with:
           github-token: ${{ secrets.github_token }}
           path-to-profile: profile.cov
