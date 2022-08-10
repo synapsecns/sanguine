@@ -26,17 +26,17 @@ contract TipsHarness {
         return Tips.OFFSET_PROVER;
     }
 
-    function offsetProcessor() public pure returns (uint256) {
-        return Tips.OFFSET_PROCESSOR;
+    function offsetExecutor() public pure returns (uint256) {
+        return Tips.OFFSET_EXECUTOR;
     }
 
     function formatTips(
         uint96 _notaryTip,
         uint96 _broadcasterTip,
         uint96 _proverTip,
-        uint96 _processorTip
+        uint96 _executorTip
     ) public pure returns (bytes memory) {
-        return Tips.formatTips(_notaryTip, _broadcasterTip, _proverTip, _processorTip);
+        return Tips.formatTips(_notaryTip, _broadcasterTip, _proverTip, _executorTip);
     }
 
     function emptyTips() external pure returns (bytes memory) {
@@ -66,9 +66,9 @@ contract TipsHarness {
         return Tips.proverTip(_tips);
     }
 
-    /// @notice Returns processorTip field
-    function processorTip(bytes29 _tips) external pure returns (uint96) {
-        return Tips.processorTip(_tips);
+    /// @notice Returns executorTip field
+    function executorTip(bytes29 _tips) external pure returns (uint96) {
+        return Tips.executorTip(_tips);
     }
 
     function totalTips(bytes29 _tips) external pure returns (uint96) {

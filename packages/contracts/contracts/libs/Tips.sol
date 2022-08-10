@@ -20,13 +20,13 @@ library Tips {
      * [002 .. 014): notaryTip          uint96	12 bytes
      * [014 .. 026): broadcasterTip     uint96	12 bytes
      * [026 .. 038): proverTip          uint96	12 bytes
-     * [038 .. 050): processorTip       uint96	12 bytes
+     * [038 .. 050): executorTip        uint96	12 bytes
      */
 
     uint256 internal constant OFFSET_NOTARY = 2;
     uint256 internal constant OFFSET_BROADCASTER = 14;
     uint256 internal constant OFFSET_PROVER = 26;
-    uint256 internal constant OFFSET_PROCESSOR = 38;
+    uint256 internal constant OFFSET_EXECUTOR = 38;
 
     modifier onlyTips(bytes29 _view) {
         _view.assertType(Message.TIPS_TYPE);
@@ -38,17 +38,17 @@ library Tips {
      * @param _notaryTip Tip for the Notary
      * @param _broadcasterTip Tip for the Broadcaster
      * @param _proverTip Tip for the Prover
-     * @param _processorTip Tip for the Processor
+     * @param _executorTip Tip for the Executor
      * @return Formatted tips
      **/
     function formatTips(
         uint96 _notaryTip,
         uint96 _broadcasterTip,
         uint96 _proverTip,
-        uint96 _processorTip
+        uint96 _executorTip
     ) internal pure returns (bytes memory) {
         return
-            abi.encodePacked(TIPS_VERSION, _notaryTip, _broadcasterTip, _proverTip, _processorTip);
+            abi.encodePacked(TIPS_VERSION, _notaryTip, _broadcasterTip, _proverTip, _executorTip);
     }
 
     /**
@@ -85,12 +85,12 @@ library Tips {
         return uint32(_tips.indexUint(OFFSET_PROVER, 12));
     }
 
-    /// @notice Returns processorTip field
-    function processorTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_PROCESSOR, 12));
+    /// @notice Returns executorTip field
+    function executorTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
+        return uint32(_tips.indexUint(OFFSET_EXECUTOR, 12));
     }
 
     function totalTips(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return notaryTip(_tips) + broadcasterTip(_tips) + proverTip(_tips) + processorTip(_tips);
+        return notaryTip(_tips) + broadcasterTip(_tips) + proverTip(_tips) + executorTip(_tips);
     }
 }

@@ -59,10 +59,10 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
     // ============ Events ============
 
     /**
-     * @notice Emitted when message is processed
-     * @param messageHash The keccak256 hash of the message that was processed
+     * @notice Emitted when message is executed
+     * @param messageHash The keccak256 hash of the message that was executed
      */
-    event Process(uint32 indexed remoteDomain, bytes32 indexed messageHash);
+    event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash);
 
     /**
      * @notice Emitted when a root's confirmation is modified by governance
@@ -165,21 +165,21 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
 
     /**
      * @notice First attempts to prove the validity of provided formatted
-     * `message`. If the message is successfully proven, then tries to process
+     * `message`. If the message is successfully proven, then tries to execute
      * message.
      * @dev Reverts if `prove` call returns false
      * @param _message Formatted message (refer to Message library)
      * @param _proof Merkle proof of inclusion for message's leaf
      * @param _index Index of leaf in home's merkle tree
      */
-    function proveAndProcess(
+    function proveAndExecute(
         uint32 _remoteDomain,
         bytes memory _message,
         bytes32[32] calldata _proof,
         uint256 _index
     ) external {
         require(prove(_remoteDomain, _message, _proof, _index), "!prove");
-        process(_message);
+        execute(_message);
     }
 
     /**
@@ -191,7 +191,7 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
      * or if recipient reverted upon receiving the message.
      * @param _message Formatted message
      */
-    function process(bytes memory _message) public {
+    function execute(bytes memory _message) public {
         bytes29 _m = _message.messageView();
         bytes29 _header = _m.header();
         uint32 _remoteDomain = _header.origin();
@@ -201,7 +201,7 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
         // ensure message has been proven
         bytes32 _messageHash = _m.keccak();
         bytes32 _root = replica.messageStatus[_messageHash];
-        require(ReplicaLib.isPotentialRoot(_root), "!exists || processed");
+        require(ReplicaLib.isPotentialRoot(_root), "!exists || executed");
         require(
             acceptableRoot(_remoteDomain, _header.optimisticSeconds(), _root),
             "!optimisticSeconds"
@@ -210,8 +210,8 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
         require(entered == 1, "!reentrant");
         entered = 0;
         _storeTips(_m.tips());
-        // update message status as processed
-        replica.setMessageStatus(_messageHash, ReplicaLib.MESSAGE_STATUS_PROCESSED);
+        // update message status as executed
+        replica.setMessageStatus(_messageHash, ReplicaLib.MESSAGE_STATUS_EXECUTED);
         address recipient = _checkForSystemMessage(_header.recipient());
         IMessageRecipient(recipient).handle(
             _remoteDomain,
@@ -220,7 +220,7 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
             replica.confirmAt[_root],
             _m.body().clone()
         );
-        emit Process(_remoteDomain, _messageHash);
+        emit Executed(_remoteDomain, _messageHash);
         // reset re-entrancy guard
         entered = 1;
     }
@@ -281,7 +281,7 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
      * @notice Attempts to prove the validity of message given its leaf, the
      * merkle proof of inclusion for the leaf, and the index of the leaf.
      * @dev Reverts if message's MessageStatus != None (i.e. if message was
-     * already proven or processed)
+     * already proven or executed)
      * @dev For convenience, we allow proving against any previous root.
      * This means that witnesses never need to be updated for the new root
      * @param _message Formatted message
@@ -299,7 +299,7 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
         ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
         // ensure that replica is active
         require(replica.status == ReplicaLib.ReplicaStatus.Active, "Replica not active");
-        // ensure that message has not been proven or processed
+        // ensure that message has not been proven or executed
         require(
             replica.messageStatus[_leaf] == ReplicaLib.MESSAGE_STATUS_NONE,
             "!MessageStatus.None"

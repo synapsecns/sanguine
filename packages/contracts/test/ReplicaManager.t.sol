@@ -147,34 +147,34 @@ contract ReplicaManagerTest is SynapseTest {
         assertFalse(replicaManager.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
     }
 
-    event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 processorTip);
+    event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);
 
-    function test_process() public {
-        bytes memory message = _prepareProcessTest(OPTIMISTIC_PERIOD);
+    function test_execute() public {
+        bytes memory message = _prepareExecuteTest(OPTIMISTIC_PERIOD);
         vm.warp(block.timestamp + OPTIMISTIC_PERIOD);
         vm.expectEmit(true, true, true, true);
-        emit LogTips(NOTARY_TIP, BROADCASTER_TIP, PROVER_TIP, PROCESSOR_TIP);
-        replicaManager.process(message);
+        emit LogTips(NOTARY_TIP, BROADCASTER_TIP, PROVER_TIP, EXECUTOR_TIP);
+        replicaManager.execute(message);
     }
 
-    function test_processPeriodNotPassed() public {
-        bytes memory message = _prepareProcessTest(OPTIMISTIC_PERIOD);
+    function test_executePeriodNotPassed() public {
+        bytes memory message = _prepareExecuteTest(OPTIMISTIC_PERIOD);
         vm.warp(block.timestamp + OPTIMISTIC_PERIOD - 1);
         vm.expectRevert("!optimisticSeconds");
-        replicaManager.process(message);
+        replicaManager.execute(message);
     }
 
-    function test_processForgedPeriodReduced() public {
-        bytes memory message = _prepareProcessTest(OPTIMISTIC_PERIOD - 1);
+    function test_executeForgedPeriodReduced() public {
+        bytes memory message = _prepareExecuteTest(OPTIMISTIC_PERIOD - 1);
         vm.warp(block.timestamp + OPTIMISTIC_PERIOD - 1);
         vm.expectRevert("app: !optimisticSeconds");
-        replicaManager.process(message);
+        replicaManager.execute(message);
     }
 
-    function test_processForgePeriodZero() public {
-        bytes memory message = _prepareProcessTest(0);
+    function test_executeForgePeriodZero() public {
+        bytes memory message = _prepareExecuteTest(0);
         vm.expectRevert("app: !optimisticSeconds");
-        replicaManager.process(message);
+        replicaManager.execute(message);
     }
 
     function test_onlySystemMessenger() public {
@@ -188,7 +188,7 @@ contract ReplicaManagerTest is SynapseTest {
         replicaManager.setSensitiveValue(1337);
     }
 
-    function _prepareProcessTest(uint32 optimisticPeriod) internal returns (bytes memory message) {
+    function _prepareExecuteTest(uint32 optimisticPeriod) internal returns (bytes memory message) {
         test_submitAttestation();
 
         uint32 nonce = 1234;

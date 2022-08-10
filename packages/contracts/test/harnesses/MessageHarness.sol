@@ -24,15 +24,10 @@ contract MessageHarness {
         uint96 _notaryTip,
         uint96 _broadcasterTip,
         uint96 _proverTip,
-        uint96 _processorTip,
+        uint96 _executorTip,
         bytes memory _messageBody
     ) public pure returns (bytes memory) {
-        bytes memory _tips = Tips.formatTips(
-            _notaryTip,
-            _broadcasterTip,
-            _proverTip,
-            _processorTip
-        );
+        bytes memory _tips = Tips.formatTips(_notaryTip, _broadcasterTip, _proverTip, _executorTip);
 
         bytes memory _header = Header.formatHeader(
             _originDomain,

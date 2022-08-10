@@ -4,13 +4,13 @@ pragma solidity 0.8.13;
 library ReplicaLib {
     // ============ Enums ============
     // Status of Message:
-    //   0 - None - message has not been proven or processed
+    //   0 - None - message has not been proven or executed
     //   1 - Proven - message inclusion proof has been validated
-    //   2 - Processed - message has been dispatched to recipient
+    //   2 - Executed - message has been dispatched to recipient
     enum MessageStatus {
         None,
         Proven,
-        Processed
+        Executed
     }
 
     // States:
@@ -27,9 +27,9 @@ library ReplicaLib {
 
     // ============ Constants ============
     /// @dev Should not be possible to have 0x0 or 0x1 as valid Merkle root,
-    /// so it's safe to use those values as NONE/PROCESSED
+    /// so it's safe to use those values as NONE/EXECUTED
     bytes32 public constant MESSAGE_STATUS_NONE = bytes32(0);
-    bytes32 public constant MESSAGE_STATUS_PROCESSED = bytes32(uint256(1));
+    bytes32 public constant MESSAGE_STATUS_EXECUTED = bytes32(uint256(1));
 
     // TODO: optimize read/writes by further packing?
     struct Replica {
@@ -44,8 +44,8 @@ library ReplicaLib {
         mapping(bytes32 => uint256) confirmAt;
         // Mapping of message leaves to status:
         // - NONE: message not yet submitted
-        // - PROCESSED: message was proven and processed
-        // bytes32 root: message was proven against `root`, but not yet processed
+        // - EXECUTED: message was proven and executed
+        // bytes32 root: message was proven against `root`, but not yet executed
         mapping(bytes32 => bytes32) messageStatus;
     }
 
@@ -79,6 +79,6 @@ library ReplicaLib {
     }
 
     function isPotentialRoot(bytes32 messageStatus) internal pure returns (bool) {
-        return messageStatus != MESSAGE_STATUS_NONE && messageStatus != MESSAGE_STATUS_PROCESSED;
+        return messageStatus != MESSAGE_STATUS_NONE && messageStatus != MESSAGE_STATUS_EXECUTED;
     }
 }

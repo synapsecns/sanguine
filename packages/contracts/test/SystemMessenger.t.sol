@@ -90,7 +90,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
             _createReceivedSystemMessage
         );
         skip(optimisticPeriod);
-        replicaManager.process(message);
+        replicaManager.execute(message);
         assertEq(home.sensitiveValue(), secretValue);
     }
 
@@ -101,7 +101,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
             _createReceivedSystemMessage
         );
         skip(optimisticPeriod);
-        replicaManager.process(message);
+        replicaManager.execute(message);
         assertEq(replicaManager.sensitiveValue(), secretValue);
     }
 
@@ -113,7 +113,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         );
         skip(optimisticPeriod - 1);
         vm.expectRevert("!optimisticSeconds");
-        replicaManager.process(message);
+        replicaManager.execute(message);
     }
 
     function test_receiveSystemMessage_optimisticPeriodForged() public {
@@ -121,7 +121,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(fakePeriod, 0, _createReceivedSystemMessage);
         skip(fakePeriod);
         vm.expectRevert("Client: !optimisticSeconds");
-        replicaManager.process(message);
+        replicaManager.execute(message);
     }
 
     function test_receiveSystemMessage_unknownRecipient() public {
@@ -132,7 +132,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         );
         skip(optimisticPeriod);
         vm.expectRevert("Unknown recipient");
-        replicaManager.process(message);
+        replicaManager.execute(message);
     }
 
     /**
@@ -147,7 +147,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         );
         skip(optimisticPeriod);
         vm.expectRevert("Client: !trustedSender");
-        replicaManager.process(message);
+        replicaManager.execute(message);
     }
 
     function _testSendSystemMessage(address _sender) internal {

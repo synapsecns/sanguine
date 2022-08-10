@@ -23,7 +23,7 @@ contract MessageTest is SynapseTest {
     uint96 notaryTip;
     uint96 broadcasterTip;
     uint96 proverTip;
-    uint96 processorTip;
+    uint96 executorTip;
 
     function setUp() public override {
         super.setUp();
@@ -37,8 +37,8 @@ contract MessageTest is SynapseTest {
         notaryTip = 1234;
         broadcasterTip = 3456;
         proverTip = 5678;
-        processorTip = 7890;
-        tips = getFormattedTips(notaryTip, broadcasterTip, proverTip, processorTip);
+        executorTip = 7890;
+        tips = getFormattedTips(notaryTip, broadcasterTip, proverTip, executorTip);
         messageBody = bytes("Messagoooor");
     }
 
@@ -53,7 +53,7 @@ contract MessageTest is SynapseTest {
             notaryTip,
             broadcasterTip,
             proverTip,
-            processorTip,
+            executorTip,
             messageBody
         );
 
@@ -79,7 +79,7 @@ contract MessageTest is SynapseTest {
             notaryTip,
             broadcasterTip,
             proverTip,
-            processorTip,
+            executorTip,
             messageBody
         );
 
