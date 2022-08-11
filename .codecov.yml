@@ -1,0 +1,13 @@
+codecov:
+  require_ci_to_pass: false
+# Team Yaml
+coverage:
+  round: down
+  precision: 5
+
+ignore:
+  - "**/_generated.go"
+  - "**/*.abigen.go"
+  - "**/_string.go"
+# solidity test files
+  - "packages/contracts/test/*"
