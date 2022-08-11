@@ -2,8 +2,8 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
-import { UpdaterStorage } from "./UpdaterStorage.sol";
-import { AuthManager } from "./auth/AuthManager.sol";
+import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
+import { GuardRegistry } from "./registry/GuardRegistry.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { Version0 } from "./Version0.sol";
 import { ReplicaLib } from "./libs/Replica.sol";
@@ -13,6 +13,7 @@ import { Header } from "./libs/Header.sol";
 import { Tips } from "./libs/Tips.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
 import { SystemMessage } from "./system/SystemMessage.sol";
+import { SystemContract } from "./system/SystemContract.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 // ============ External Imports ============
 import { TypedMemView } from "./libs/TypedMemView.sol";
@@ -22,7 +23,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track root updates on Home,
  * prove and dispatch messages to end recipients.
  */
-contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
+contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, GuardRegistry {
     // ============ Libraries ============
 
     using ReplicaLib for ReplicaLib.Replica;
@@ -76,9 +77,17 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         uint256 newConfirmAt
     );
 
+    event AttestationAccepted(
+        uint32 indexed homeDomain,
+        uint32 indexed nonce,
+        bytes32 indexed root,
+        bytes signature
+    );
+
     // ============ Constructor ============
 
-    constructor(uint32 _localDomain) UpdaterStorage(_localDomain) {}
+    //solhint-disable-next-line no-empty-blocks
+    constructor(uint32 _localDomain) SystemContract(_localDomain) {}
 
     // ============ Initializer ============
 
@@ -94,7 +103,8 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * @param _updater The EVM id of the updater
      */
     function initialize(uint32 _remoteDomain, address _updater) public initializer {
-        __SynapseBase_initialize(_updater);
+        __SystemContract_initialize();
+        _addNotary(_remoteDomain, _updater);
         // set storage variables
         entered = 1;
         activeReplicas[_remoteDomain] = _createReplica(_remoteDomain);
@@ -136,7 +146,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * @param _attestation  Attestation data and signature
      */
     function submitAttestation(bytes memory _attestation) external {
-        (, bytes29 _view) = _checkUpdaterAuth(_attestation);
+        (, bytes29 _view) = _checkNotaryAuth(_attestation);
         uint32 remoteDomain = _view.attestationDomain();
         require(remoteDomain != localDomain, "Update refers to local chain");
         uint32 nonce = _view.attestationNonce();
@@ -146,7 +156,12 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
         replica.setConfirmAt(newRoot, block.timestamp);
         // update nonce
         replica.setNonce(nonce);
-        emit Update(remoteDomain, nonce, newRoot, _view.attestationSignature().clone());
+        emit AttestationAccepted(
+            remoteDomain,
+            nonce,
+            newRoot,
+            _view.attestationSignature().clone()
+        );
     }
 
     /**
@@ -154,7 +169,7 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * `message`. If the message is successfully proven, then tries to process
      * message.
      * @dev Reverts if `prove` call returns false
-     * @param _message Formatted message (refer to UpdaterStorage.sol Message library)
+     * @param _message Formatted message (refer to Message library)
      * @param _proof Merkle proof of inclusion for message's leaf
      * @param _index Index of leaf in home's merkle tree
      */
@@ -219,8 +234,9 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
      * been relayed before calling. Only callable by owner (Governance)
      * @param _updater New Updater
      */
-    function setUpdater(address _updater) external onlyOwner {
-        _setUpdater(_updater);
+    function setUpdater(uint32 _domain, address _updater) external onlyOwner {
+        // TODO: proper implementation
+        _addNotary(_domain, _updater);
     }
 
     /**
@@ -319,14 +335,6 @@ contract ReplicaManager is Version0, UpdaterStorage, AuthManager {
             _returnData := add(_returnData, 0x04)
         }
         return abi.decode(_returnData, (string)); // All that remains is the revert string
-    }
-
-    function _isUpdater(uint32, address _updater) internal view override returns (bool) {
-        return _updater == updater;
-    }
-
-    function _isWatchtower(address) internal pure override returns (bool) {
-        return false;
     }
 
     function _checkForSystemMessage(bytes32 _recipient) internal view returns (address recipient) {

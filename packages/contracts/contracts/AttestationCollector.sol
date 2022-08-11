@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import { AuthManager } from "./auth/AuthManager.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { TypedMemView } from "./libs/TypedMemView.sol";
-import { NotaryRegistry } from "./NotaryRegistry.sol";
+import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
 
 import {
     OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable {
+contract AttestationCollector is GlobalNotaryRegistry, OwnableUpgradeable {
     using Attestation for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -175,7 +174,7 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
         external
         returns (bool attestationStored)
     {
-        (address _notary, bytes29 _view) = _checkUpdaterAuth(_attestation);
+        (address _notary, bytes29 _view) = _checkNotaryAuth(_attestation);
         attestationStored = _storeAttestation(_notary, _view);
         if (attestationStored) {
             // Emit Event only if the Attestation was stored
@@ -186,12 +185,6 @@ contract AttestationCollector is AuthManager, NotaryRegistry, OwnableUpgradeable
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function _isUpdater(uint32 _homeDomain, address _notary) internal view override returns (bool) {
-        return _isNotary(_homeDomain, _notary);
-    }
-
-    function _isWatchtower(address _watchtower) internal view override returns (bool) {}
 
     function _formatAttestation(
         uint32 _domain,

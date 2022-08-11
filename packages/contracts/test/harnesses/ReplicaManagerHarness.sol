@@ -17,6 +17,14 @@ contract ReplicaManagerHarness is ReplicaManager {
 
     constructor(uint32 _localDomain) ReplicaManager(_localDomain) {}
 
+    function addNotary(uint32 _domain, address _notary) public {
+        _addNotary(_domain, _notary);
+    }
+
+    function isNotary(uint32 _domain, address _notary) public view returns (bool) {
+        return _isNotary(_domain, _notary);
+    }
+
     function setSensitiveValue(uint256 _newValue) external onlySystemMessenger {
         sensitiveValue = _newValue;
     }

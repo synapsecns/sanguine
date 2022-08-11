@@ -93,7 +93,7 @@ contract AttestationCollectorTest is SynapseTest {
     function test_submitAttestation_notUpdater() public {
         test_addNotary();
         (bytes memory attestation, ) = signHomeAttestation(fakeUpdaterPK, nonce, root);
-        vm.expectRevert("Signer is not an updater");
+        vm.expectRevert("Signer is not a notary");
         collector.submitAttestation(attestation);
     }
 
@@ -101,7 +101,7 @@ contract AttestationCollectorTest is SynapseTest {
         test_addNotary();
         (bytes memory attestation, ) = signRemoteAttestation(updaterPK, nonce, root);
         // Signer is not set as updater for the `remoteDomain`
-        vm.expectRevert("Signer is not an updater");
+        vm.expectRevert("Signer is not a notary");
         collector.submitAttestation(attestation);
     }
 

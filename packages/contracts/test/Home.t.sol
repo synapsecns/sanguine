@@ -30,7 +30,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
         assertEq(address(home.updaterManager()), address(updaterManager));
         assertEq(home.owner(), address(this));
         assertEq(uint256(home.state()), 1);
-        assertEq(home.updater(), updater);
+        assertTrue(home.isNotary(updater));
         // Root of an empty sparse Merkle tree should be stored with nonce=0
         assertEq(home.historicalRoots(0), home.root());
     }
@@ -46,10 +46,10 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     }
 
     function test_setUpdater() public {
-        assertFalse(home.updater() == address(1337));
+        assertFalse(home.isNotary(address(1337)));
         vm.prank(address(updaterManager));
         home.setUpdater(address(1337));
-        assertEq(home.updater(), address(1337));
+        assertTrue(home.isNotary(address(1337)));
     }
 
     function test_cannotSetUpdaterManagerAsNotOwner(address _notOwner) public {
@@ -73,7 +73,7 @@ contract HomeTest is SynapseTestWithUpdaterManager {
     }
 
     function test_haltsOnFail() public {
-        home.setFailed();
+        home.setFailed(updater);
         vm.expectRevert("failed state");
         home.dispatch(
             remoteDomain,
