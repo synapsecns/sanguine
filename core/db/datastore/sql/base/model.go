@@ -1,11 +1,12 @@
 package base
 
 import (
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/types"
 	"gorm.io/gorm"
-	"math/big"
-	"time"
 )
 
 // define common field names. See package docs  for an explanation of why we have to do this.
@@ -76,6 +77,34 @@ type BlockEndModel struct {
 	DomainID uint32 `gorm:"column:domain_id;primaryKey;autoIncrement:false"`
 	// BlockHeight is the highest height we've seen on the chain
 	BlockNumber uint32 `gorm:"block_number"`
+}
+
+// DispatchMessage is used to store information about dispatched messages from the Home contract.
+// Monitoring uses these messages' nonces to check for missing messages on destination chains.
+type DispatchMessage struct {
+	// DMOrigin is the origin chainID of the message.
+	DMOrigin uint32 `gorm:"column:origin"`
+	// DMSender is the sender of the message.
+	DMSender string `gorm:"column:sender"`
+	// DMNonce is the nonce of the message.
+	DMNonce uint32 `gorm:"column:nonce"`
+	// DMDestination is the destination chainID of the message.
+	DMDestination uint32 `gorm:"column:destination"`
+	// DMRecipient is the recipient of the message.
+	DMRecipient string `gorm:"column:recipient"`
+}
+
+// AcceptedAttestation is used to track every received accepted attestation over all replicas.
+// Monitoring uses these accepted attestations' nonces to check for missing messages on destination chains.
+type AcceptedAttestation struct {
+	// AAHomeDomain is the chainID of the Home contract.
+	AAHomeDomain uint32 `gorm:"column:home_domain"`
+	// AANonce is the nonce of the attestation.
+	AANonce uint32 `gorm:"column:nonce"`
+	// AARoot is the root of the attestation.
+	AARoot [32]byte `gorm:"column:root"`
+	// AAReplicaDomain is the chainID of the ReplicaManager contract.
+	AAReplicaDomain uint32 `gorm:"column:replica_domain"`
 }
 
 // CommittedMessage is a committed message

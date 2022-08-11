@@ -19,10 +19,10 @@ type attestation struct {
 	root [32]byte
 }
 
-// NewAttestation creates a new attesation.
-func NewAttestation(localDomain, nonce uint32, root [32]byte) Attestation {
+// NewAttestation creates a new attestation.
+func NewAttestation(homeDomain, nonce uint32, root [32]byte) Attestation {
 	return attestation{
-		domain: localDomain,
+		domain: homeDomain,
 		nonce:  nonce,
 		root:   root,
 	}

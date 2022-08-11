@@ -4,11 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/db"
 	"gorm.io/gorm"
-	"math/big"
 )
 
 // Store is the sqlite store. It extends the base store for sqlite specific queries.
@@ -30,7 +31,7 @@ func (s Store) DB() *gorm.DB {
 //see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels,
-		&RawEthTX{}, &ProcessedEthTx{}, &BlockEndModel{}, &CommittedMessage{}, &SignedAttestation{})
+		&RawEthTX{}, &ProcessedEthTx{}, &BlockEndModel{}, &CommittedMessage{}, &SignedAttestation{}, &DispatchMessage{}, &AcceptedAttestation{})
 	return allModels
 }
 
