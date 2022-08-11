@@ -7,19 +7,14 @@ import (
 	"github.com/synapsecns/sanguine/core/types"
 )
 
-// StoreDispatchMessage takes a committed message and stores the necessary information.
-func (s Store) StoreDispatchMessage(ctx context.Context, message types.CommittedMessage) error {
-	decodedMessage, err := types.DecodeMessage(message.Message())
-	if err != nil {
-		return fmt.Errorf("could not decode message for insertion")
-	}
-
+// StoreDispatchMessage takes a message and stores the information.
+func (s Store) StoreDispatchMessage(ctx context.Context, message types.Message) error {
 	dxTx := s.DB().WithContext(ctx).Create(&DispatchMessage{
-		DMOrigin:      decodedMessage.OriginDomain(),
-		DMSender:      decodedMessage.Sender().String(),
-		DMNonce:       decodedMessage.Nonce(),
-		DMDestination: decodedMessage.DestinationDomain(),
-		DMRecipient:   decodedMessage.Recipient().String(),
+		DMOrigin:      message.OriginDomain(),
+		DMSender:      message.Sender().String(),
+		DMNonce:       message.Nonce(),
+		DMDestination: message.DestinationDomain(),
+		DMRecipient:   message.Recipient().String(),
 	})
 	if dxTx.Error != nil {
 		return fmt.Errorf("could not insert dispatch message: %w", dxTx.Error)
