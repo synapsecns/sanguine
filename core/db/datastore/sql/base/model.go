@@ -102,7 +102,7 @@ type AcceptedAttestation struct {
 	// AANonce is the nonce of the attestation.
 	AANonce uint32 `gorm:"column:nonce"`
 	// AARoot is the root of the attestation.
-	AARoot [32]byte `gorm:"column:root"`
+	AARoot string `gorm:"column:root"`
 	// AAReplicaDomain is the chainID of the ReplicaManager contract.
 	AAReplicaDomain uint32 `gorm:"column:replica_domain"`
 }

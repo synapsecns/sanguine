@@ -48,10 +48,12 @@ func (t *DBSuite) TestStoreMonitoring() {
 		tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 		message := types.NewMessage(header, tips, []byte(gofakeit.Sentence(10)))
 
-		testDB.StoreDispatchMessage(t.GetTestContext(), message)
+		err := testDB.StoreDispatchMessage(t.GetTestContext(), message)
+		Nil(t.T(), err)
 
 		attestation := types.NewAttestation(1, gofakeit.Uint32(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
 
-		testDB.StoreAcceptedAttestation(t.GetTestContext(), 2, attestation)
+		err = testDB.StoreAcceptedAttestation(t.GetTestContext(), 2, attestation)
+		Nil(t.T(), err)
 	})
 }

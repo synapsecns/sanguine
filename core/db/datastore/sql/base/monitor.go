@@ -2,6 +2,7 @@ package base
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/synapsecns/sanguine/core/types"
@@ -24,10 +25,11 @@ func (s Store) StoreDispatchMessage(ctx context.Context, message types.Message) 
 
 // StoreAcceptedAttestation stores an accepted attestation from a replica.
 func (s Store) StoreAcceptedAttestation(ctx context.Context, replicaDomain uint32, attestation types.Attestation) error {
+	root := attestation.Root()
 	dxTx := s.DB().WithContext(ctx).Create(&AcceptedAttestation{
 		AAHomeDomain:    attestation.Domain(),
 		AANonce:         attestation.Nonce(),
-		AARoot:          attestation.Root(),
+		AARoot:          "0x" + hex.EncodeToString(root[:]),
 		AAReplicaDomain: replicaDomain,
 	})
 	if dxTx.Error != nil {
