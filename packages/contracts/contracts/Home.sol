@@ -3,14 +3,15 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { Version0 } from "./Version0.sol";
-import { UpdaterStorage } from "./UpdaterStorage.sol";
-import { AuthManager } from "./auth/AuthManager.sol";
+import { DomainNotaryRegistry } from "./registry/DomainNotaryRegistry.sol";
+import { GuardRegistry } from "./registry/GuardRegistry.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
 import { SystemMessage } from "./system/SystemMessage.sol";
+import { SystemContract } from "./system/SystemContract.sol";
 import { MerkleTreeManager } from "./Merkle.sol";
 import { IUpdaterManager } from "./interfaces/IUpdaterManager.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
@@ -27,7 +28,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Accepts submissions of fraudulent signatures
  * by the Updater and slashes the Updater in this case.
  */
-contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
+contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegistry, GuardRegistry {
     // ============ Libraries ============
 
     using Attestation for bytes29;
@@ -114,14 +115,17 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
 
     // ============ Constructor ============
 
-    constructor(uint32 _localDomain) UpdaterStorage(_localDomain) {} // solhint-disable-line no-empty-blocks
+    constructor(uint32 _localDomain)
+        SystemContract(_localDomain)
+        DomainNotaryRegistry(_localDomain)
+    {} // solhint-disable-line no-empty-blocks
 
     // ============ Initializer ============
 
     function initialize(IUpdaterManager _updaterManager) public initializer {
-        // initialize queue, set Updater Manager, and initialize
+        __SystemContract_initialize();
         _setUpdaterManager(_updaterManager);
-        __SynapseBase_initialize(updaterManager.updater());
+        _addNotary(updaterManager.updater());
         state = States.Active;
         // insert a historical root so nonces start at 1 rather then 0. Here we insert the default root of a sparse merkle tree
         historicalRoots.push(hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757");
@@ -153,7 +157,17 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      * @param _updater the new Updater
      */
     function setUpdater(address _updater) external onlyUpdaterManager {
-        _setUpdater(_updater);
+        /**
+         * TODO: do this properly
+         * @dev 1. New Notaries should be added to all System Contracts
+         *      from "secondary" Bonding contracts (global Notary/Guard registry)
+         *      1a. onlyUpdaterManager -> onlyBondingManager (or w/e the name would be)
+         *      2. There is supposed to be more than one active Notary
+         *      2a. setUpdater() -> addNotary()
+         *      3. No need to reset the `state`, as Home is not supposed
+         *      to be in Failed state in the first place (see _fail() for reasoning).
+         */
+        _addNotary(_updater);
         // set the Home state to Active
         // now that Updater has been rotated
         state = States.Active;
@@ -259,7 +273,7 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      */
     function improperAttestation(bytes memory _attestation) public notFailed returns (bool) {
         // This will revert if signature is not valid
-        (address _updater, bytes29 _view) = _checkUpdaterAuth(_attestation);
+        (address _notary, bytes29 _view) = _checkNotaryAuth(_attestation);
         uint32 _nonce = _view.attestationNonce();
         bytes32 _root = _view.attestationRoot();
         // Check if nonce is valid, if not => update is fraud
@@ -270,8 +284,8 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
             }
             // Signed root is not the same as the historical one => update is fraud
         }
-        _fail();
-        emit ImproperAttestation(_updater, _attestation);
+        _fail(_notary);
+        emit ImproperAttestation(_notary, _attestation);
         return true;
     }
 
@@ -291,12 +305,20 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
      * @notice Slash the Updater and set contract state to FAILED
      * @dev Called when fraud is proven (Improper Update or Double Update)
      */
-    function _fail() internal {
+    function _fail(address _notary) internal {
+        /**
+         * TODO: remove Failed state
+         * @dev With the asynchronous updates Home is never in the FAILED state.
+         *      It's rather some Replicas might end up with a corrupted merkle state (upon receiving a fraud attestation).
+         *      It's a Replica job to get this conflict fixed, as long as there's more than one active Notary,
+         *      new messages on Home could be verified by an honest Notary.
+         *      Meaning Home should not be halted upon discovering a fraud attestation.
+         */
         // set contract to FAILED
         state = States.Failed;
         // slash Updater
         updaterManager.slashUpdater(payable(msg.sender));
-        emit UpdaterSlashed(updater, msg.sender);
+        emit UpdaterSlashed(_notary, msg.sender);
     }
 
     /**
@@ -313,20 +335,6 @@ contract Home is Version0, MerkleTreeManager, UpdaterStorage, AuthManager {
         returns (uint64)
     {
         return (uint64(_destination) << 32) | _nonce;
-    }
-
-    function _isUpdater(uint32 _homeDomain, address _updater)
-        internal
-        view
-        override
-        returns (bool)
-    {
-        require(_homeDomain == localDomain, "Wrong domain");
-        return _updater == updater;
-    }
-
-    function _isWatchtower(address) internal pure override returns (bool) {
-        return false;
     }
 
     /**

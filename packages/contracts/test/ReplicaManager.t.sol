@@ -47,7 +47,7 @@ contract ReplicaManagerTest is SynapseTest {
     // ============ INITIAL STATE ============
     function test_correctlyInitialized() public {
         assertEq(uint256(replicaManager.localDomain()), uint256(localDomain));
-        assertEq(replicaManager.updater(), updater);
+        assertTrue(replicaManager.isNotary(remoteDomain, updater));
     }
 
     function test_cannotInitializeTwice() public {
@@ -61,14 +61,14 @@ contract ReplicaManagerTest is SynapseTest {
         vm.assume(_notOwner != replicaManager.owner());
         vm.prank(_notOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        replicaManager.setUpdater(_updater);
+        replicaManager.setUpdater(remoteDomain, _updater);
     }
 
     function test_setUpdater(address _updater) public {
-        vm.assume(_updater != replicaManager.updater());
+        vm.assume(_updater != updater);
         vm.prank(replicaManager.owner());
-        replicaManager.setUpdater(_updater);
-        assertEq(replicaManager.updater(), _updater);
+        replicaManager.setUpdater(remoteDomain, _updater);
+        assertTrue(replicaManager.isNotary(remoteDomain, _updater));
     }
 
     function test_cannotSetConfirmationAsNotOwner(address _notOwner) public {
@@ -94,7 +94,7 @@ contract ReplicaManagerTest is SynapseTest {
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), _confirmAt);
     }
 
-    event Update(
+    event AttestationAccepted(
         uint32 indexed homeDomain,
         uint32 indexed nonce,
         bytes32 indexed root,
@@ -104,7 +104,7 @@ contract ReplicaManagerTest is SynapseTest {
     // Relayer relays a new root signed by updater on Home chain
     function test_successfulUpdate() public {
         uint32 nonce = 42;
-        assertEq(replicaManager.updater(), vm.addr(updaterPK));
+        assertTrue(replicaManager.isNotary(remoteDomain, vm.addr(updaterPK)));
         (bytes memory attestation, bytes memory sig) = signRemoteAttestation(
             updaterPK,
             nonce,
@@ -114,7 +114,7 @@ contract ReplicaManagerTest is SynapseTest {
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), 0);
         // Relayer sends over a root signed by the updater on the Home chain
         vm.expectEmit(true, true, true, true);
-        emit Update(remoteDomain, nonce, ROOT, sig);
+        emit AttestationAccepted(remoteDomain, nonce, ROOT, sig);
         replicaManager.submitAttestation(attestation);
         // Time at which root was confirmed is set, optimistic timeout starts now
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), block.timestamp);
@@ -123,12 +123,13 @@ contract ReplicaManagerTest is SynapseTest {
     function test_updateWithFakeSigner() public {
         uint32 nonce = 42;
         (bytes memory attestation, ) = signRemoteAttestation(fakeUpdaterPK, nonce, ROOT);
-        vm.expectRevert("Signer is not an updater");
+        vm.expectRevert("Signer is not a notary");
         // Update signed by fakeUpdater should be rejected
         replicaManager.submitAttestation(attestation);
     }
 
     function test_updateWithLocalDomain() public {
+        replicaManager.addNotary(localDomain, updater);
         uint32 nonce = 42;
         (bytes memory attestation, ) = signHomeAttestation(updaterPK, nonce, ROOT);
         vm.expectRevert("Update refers to local chain");
