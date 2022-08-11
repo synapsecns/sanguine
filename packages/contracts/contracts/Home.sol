@@ -157,7 +157,16 @@ contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegist
      * @param _updater the new Updater
      */
     function setUpdater(address _updater) external onlyUpdaterManager {
-        // TODO: do this properly
+        /**
+         * TODO: do this properly
+         * @dev 1. New Notaries should be added to all System Contracts
+         *      from "secondary" Bonding contracts (global Notary/Guard registry)
+         *      1a. onlyUpdaterManager -> onlyBondingManager (or w/e the name would be)
+         *      2. There is supposed to be more than one active Notary
+         *      2a. setUpdater() -> addNotary()
+         *      3. No need to reset the `state`, as Home is not supposed
+         *      to be in Failed state in the first place (see _fail() for reasoning).
+         */
         _addNotary(_updater);
         // set the Home state to Active
         // now that Updater has been rotated
@@ -297,7 +306,14 @@ contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegist
      * @dev Called when fraud is proven (Improper Update or Double Update)
      */
     function _fail(address _notary) internal {
-        // TODO: remove Failed state
+        /**
+         * TODO: remove Failed state
+         * @dev With the asynchronous updates Home is never in the FAILED state.
+         *      It's rather some Replicas might end up with a corrupted merkle state (upon receiving a fraud attestation).
+         *      It's a Replica job to get this conflict fixed, as long as there's more than one active Notary,
+         *      new messages on Home could be verified by an honest Notary.
+         *      Meaning Home should not be halted upon discovering a fraud attestation.
+         */
         // set contract to FAILED
         state = States.Failed;
         // slash Updater
