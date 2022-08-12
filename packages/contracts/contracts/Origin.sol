@@ -279,8 +279,8 @@ contract Origin is
     function improperAttestation(bytes memory _attestation) public notFailed returns (bool) {
         // This will revert if signature is not valid
         (address _notary, bytes29 _view) = _checkNotaryAuth(_attestation);
-        uint32 _nonce = _view.attestationNonce();
-        bytes32 _root = _view.attestationRoot();
+        uint32 _nonce = _view.attestedNonce();
+        bytes32 _root = _view.attestedRoot();
         // Check if nonce is valid, if not => attestation is fraud
         if (_nonce < historicalRoots.length) {
             if (_root == historicalRoots[_nonce]) {

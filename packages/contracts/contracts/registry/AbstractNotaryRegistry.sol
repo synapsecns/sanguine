@@ -6,6 +6,7 @@ import { Attestation } from "../libs/Attestation.sol";
 import { Auth } from "../libs/Auth.sol";
 
 abstract contract AbstractNotaryRegistry {
+    using Attestation for bytes;
     using Attestation for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -22,10 +23,10 @@ abstract contract AbstractNotaryRegistry {
         view
         returns (address _notary, bytes29 _view)
     {
-        _view = _attestation.ref(0);
+        _view = _attestation.castToAttestation();
         require(_view.isAttestation(), "Not an attestation");
         _notary = Auth.recoverSigner(_view.attestationData(), _view.attestationSignature().clone());
-        require(_isNotary(_view.attestationDomain(), _notary), "Signer is not a notary");
+        require(_isNotary(_view.attestedDomain(), _notary), "Signer is not a notary");
     }
 
     function _isNotary(uint32 _origin, address _notary) internal view virtual returns (bool);

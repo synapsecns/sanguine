@@ -6,6 +6,7 @@ import { Attestation } from "../../contracts/libs/Attestation.sol";
 import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 
 contract AttestationHarness {
+    using Attestation for bytes;
     using Attestation for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -32,26 +33,26 @@ contract AttestationHarness {
     }
 
     function isAttestation(bytes memory _attestation) public pure returns (bool) {
-        return _attestation.ref(0).isAttestation();
+        return _attestation.castToAttestation().isAttestation();
     }
 
     function domain(bytes memory _attestation) public pure returns (uint32) {
-        return _attestation.ref(0).attestationDomain();
+        return _attestation.castToAttestation().attestedDomain();
     }
 
     function nonce(bytes memory _attestation) public pure returns (uint32) {
-        return _attestation.ref(0).attestationNonce();
+        return _attestation.castToAttestation().attestedNonce();
     }
 
     function root(bytes memory _attestation) public pure returns (bytes32) {
-        return _attestation.ref(0).attestationRoot();
+        return _attestation.castToAttestation().attestedRoot();
     }
 
     function data(bytes memory _attestation) public view returns (bytes memory) {
-        return _attestation.ref(0).attestationData().clone();
+        return _attestation.castToAttestation().attestationData().clone();
     }
 
     function signature(bytes memory _attestation) public view returns (bytes memory) {
-        return _attestation.ref(0).attestationSignature().clone();
+        return _attestation.castToAttestation().attestationSignature().clone();
     }
 }

@@ -146,12 +146,12 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
      */
     function submitAttestation(bytes memory _attestation) external {
         (, bytes29 _view) = _checkNotaryAuth(_attestation);
-        uint32 remoteDomain = _view.attestationDomain();
+        uint32 remoteDomain = _view.attestedDomain();
         require(remoteDomain != localDomain, "Attestation refers to local chain");
-        uint32 nonce = _view.attestationNonce();
+        uint32 nonce = _view.attestedNonce();
         MirrorLib.Mirror storage mirror = allMirrors[activeMirrors[remoteDomain]];
         require(nonce > mirror.nonce, "Attestation older than current state");
-        bytes32 newRoot = _view.attestationRoot();
+        bytes32 newRoot = _view.attestedRoot();
         mirror.setConfirmAt(newRoot, block.timestamp);
         // update nonce
         mirror.setNonce(nonce);
