@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -132,7 +133,20 @@ func NewReplicaManagerDeployer(registry deployer.GetOnlyContractRegistry, backen
 // Deploy deploys the replica manager.
 func (r ReplicaManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return r.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return replicamanager.DeployReplicaManager(transactOps, backend, uint32(r.Backend().GetChainID()))
+		replicaAddress, replicaTx, replica, err := replicamanager.DeployReplicaManager(transactOps, backend, uint32(r.Backend().GetChainID()))
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy replica manager: %w", err)
+		}
+
+		auth := r.Backend().GetTxContext(ctx, &transactOps.From)
+		initTx, err := replica.Initialize(auth.TransactOpts, uint32(r.Registry().Get(ctx, HomeType).ChainID().Uint64()), common.Address{})
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize replica manager: %w", err)
+		}
+		r.Backend().WaitForConfirmation(ctx, initTx)
+
+		return replicaAddress, replicaTx, replica, nil
+		// return replicamanager.DeployReplicaManager(transactOps, backend, uint32(r.Backend().GetChainID()))
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return replicamanager.NewReplicaManagerRef(address, backend)
 	})
