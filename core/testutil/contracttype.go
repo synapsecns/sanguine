@@ -53,7 +53,7 @@ const (
 	AttestationHarnessType contractTypeImpl = iota
 	// TipsHarnessType is the type of the tips harness.
 	TipsHarnessType contractTypeImpl = iota
-	// HeaderHarnessType is the tyoe of the header harness.
+	// HeaderHarnessType is the type of the header harness.
 	HeaderHarnessType contractTypeImpl = iota
 	// ReplicaManagerHarnessType is the replica manager harness type.
 	ReplicaManagerHarnessType contractTypeImpl = iota

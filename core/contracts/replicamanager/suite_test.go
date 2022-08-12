@@ -19,7 +19,7 @@ import (
 	"github.com/synapsecns/synapse-node/testutils/backends/preset"
 )
 
-// ReplicaManagerSuite is the home test suite.
+// ReplicaManagerSuite is the replica manager test suite.
 type ReplicaManagerSuite struct {
 	*testutils.TestSuite
 	homeContract            *home.HomeRef
@@ -32,8 +32,8 @@ type ReplicaManagerSuite struct {
 	signer                  signer.Signer
 }
 
-// NewHomeSuite creates a end-to-end test suite.
-func NewHomeSuite(tb testing.TB) *ReplicaManagerSuite {
+// NewReplicaManagerSuite creates a end-to-end test suite.
+func NewReplicaManagerSuite(tb testing.TB) *ReplicaManagerSuite {
 	tb.Helper()
 	return &ReplicaManagerSuite{
 		TestSuite: testutils.NewTestSuite(tb),
@@ -77,7 +77,7 @@ func (r *ReplicaManagerSuite) SetupTest() {
 	r.testBackendHome.WaitForConfirmation(r.GetTestContext(), tx)
 }
 
-// TestHomeSuite runs the integration test suite.
-func TestHomeSuite(t *testing.T) {
-	suite.Run(t, NewHomeSuite(t))
+// TestReplicaManagerSuite runs the integration test suite.
+func TestReplicaManagerSuite(t *testing.T) {
+	suite.Run(t, NewReplicaManagerSuite(t))
 }

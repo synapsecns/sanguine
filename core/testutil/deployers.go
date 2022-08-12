@@ -146,7 +146,6 @@ func (r ReplicaManagerDeployer) Deploy(ctx context.Context) (backends.DeployedCo
 		r.Backend().WaitForConfirmation(ctx, initTx)
 
 		return replicaAddress, replicaTx, replica, nil
-		// return replicamanager.DeployReplicaManager(transactOps, backend, uint32(r.Backend().GetChainID()))
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return replicamanager.NewReplicaManagerRef(address, backend)
 	})
