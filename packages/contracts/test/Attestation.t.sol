@@ -2,43 +2,70 @@
 
 pragma solidity 0.8.13;
 
-import "forge-std/Test.sol";
-
-import { AttestationHarness } from "./harnesses/AttestationHarness.sol";
 import { SynapseTest } from "./utils/SynapseTest.sol";
+import { Bytes29Test } from "./utils/Bytes29Test.sol";
+import { Attestation } from "../contracts/libs/Attestation.sol";
+import { SynapseTypes } from "../contracts/libs/SynapseTypes.sol";
 import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
 
-contract AttestationTest is SynapseTest {
+// solhint-disable func-name-mixedcase
+
+contract AttestationTest is SynapseTest, Bytes29Test {
+    using Attestation for bytes;
+    using Attestation for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
-
-    AttestationHarness internal harness;
 
     uint32 internal domain = 1234;
     uint32 internal nonce = 4321;
     bytes32 internal root = keccak256("root");
 
-    function setUp() public override {
-        super.setUp();
-        harness = new AttestationHarness();
+    uint256 internal constant SIGNER_PK = 1337;
+
+    function test_formattedCorrectly() public {
+        bytes29 _view = _createTestView();
+        assertTrue(_view.isAttestation());
+
+        assertEq(_view.attestedDomain(), domain);
+        assertEq(_view.attestedNonce(), nonce);
+        assertEq(_view.attestedRoot(), root);
+
+        bytes memory data = abi.encodePacked(domain, nonce, root);
+        assertEq(_view.attestationData().clone(), data);
+        bytes memory sig = signMessage(SIGNER_PK, data);
+        assertEq(_view.attestationSignature().clone(), sig);
     }
 
-    function test_formatAttestation() public {
-        bytes memory _data = harness.formatAttestationData(domain, nonce, root);
-        bytes memory _sig = signMessage(1337, _data);
-        bytes memory _view = harness.formatAttestation(domain, nonce, root, _sig);
-
-        assertTrue(harness.isAttestation(_view));
-
-        assertEq(harness.domain(_view), domain);
-        assertEq(harness.nonce(_view), nonce);
-        assertEq(harness.root(_view), root);
-        assertEq(harness.signature(_view), _sig);
-    }
-
-    function test_invalidAttestation_tooShort() public {
+    function test_isAttestation_tooShort() public {
         // no signature provided
-        bytes memory _data = harness.formatAttestationData(domain, nonce, root);
-        assertFalse(harness.isAttestation(_data));
+        bytes memory _data = Attestation.formatAttestationData(domain, nonce, root);
+        assertFalse(_data.ref(0).isAttestation());
+    }
+
+    function test_incorrectType_attestedDomain() public {
+        _prepareMistypedTest(SynapseTypes.ATTESTATION).attestedDomain();
+    }
+
+    function test_incorrectType_attestedNonce() public {
+        _prepareMistypedTest(SynapseTypes.ATTESTATION).attestedNonce();
+    }
+
+    function test_incorrectType_attestationData() public {
+        _prepareMistypedTest(SynapseTypes.ATTESTATION).attestationData();
+    }
+
+    function test_incorrectType_attestationSignature() public {
+        _prepareMistypedTest(SynapseTypes.ATTESTATION).attestationSignature();
+    }
+
+    function test_incorrectType_attestedRoot() public {
+        _prepareMistypedTest(SynapseTypes.ATTESTATION).attestedRoot();
+    }
+
+    function _createTestView() internal override returns (bytes29 _view) {
+        bytes memory data = Attestation.formatAttestationData(domain, nonce, root);
+        bytes memory sig = signMessage(SIGNER_PK, data);
+        bytes memory attestation = Attestation.formatAttestation(data, sig);
+        _view = attestation.castToAttestation();
     }
 }
