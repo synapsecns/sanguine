@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 import { TypedMemView } from "./TypedMemView.sol";
 
 import { Header } from "./Header.sol";
+import { SynapseTypes } from "./SynapseTypes.sol";
 
 /**
  * @title Message Library
@@ -31,7 +32,6 @@ library Message {
     }
 
     uint40 internal constant MESSAGE_TYPE = 1337;
-    uint40 internal constant HEADER_TYPE = uint40(Parts.Header);
     uint40 internal constant TIPS_TYPE = uint40(Parts.Tips);
     uint40 internal constant BODY_TYPE = uint40(Parts.Body);
 
@@ -108,7 +108,7 @@ library Message {
                 _message,
                 _loadOffset(_message, Parts.Header),
                 _loadOffset(_message, Parts.Tips),
-                HEADER_TYPE
+                SynapseTypes.MESSAGE_HEADER
             );
     }
 

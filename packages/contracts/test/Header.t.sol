@@ -2,18 +2,18 @@
 
 pragma solidity 0.8.13;
 
-import "forge-std/Test.sol";
-
+import { Bytes29Test } from "./utils/Bytes29Test.sol";
 import { Header } from "../contracts/libs/Header.sol";
-import { Message } from "../contracts/libs/Message.sol";
+import { SynapseTypes } from "../contracts/libs/SynapseTypes.sol";
 import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
 
-contract HeaderTest is Test {
+// solhint-disable func-name-mixedcase
+
+contract HeaderTest is Bytes29Test {
     using Header for bytes;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
     using Header for bytes29;
-    using Message for bytes29;
 
     uint32 internal constant ORIGIN = 1234;
     bytes32 internal constant SENDER = bytes32("sender");
@@ -22,53 +22,77 @@ contract HeaderTest is Test {
     bytes32 internal constant RECIPIENT = bytes32("recipient");
     uint32 internal constant OPTIMISTIC_SECONDS = 7890;
 
-    uint40 internal constant WRONG_TYPE = 1337;
+    function test_formattedCorrectly() public {
+        bytes29 _view = _createTestView();
 
-    function test_encodedCorrectly() public {
-        bytes29 headerView = _createTestData();
+        assertTrue(_view.isHeader());
 
-        assertEq(headerView.headerVersion(), Header.HEADER_VERSION);
-        assertEq(headerView.origin(), ORIGIN);
-        assertEq(headerView.sender(), SENDER);
-        assertEq(headerView.nonce(), NONCE);
-        assertEq(headerView.destination(), DESTINATION);
-        assertEq(headerView.recipient(), RECIPIENT);
-        assertEq(headerView.optimisticSeconds(), OPTIMISTIC_SECONDS);
+        assertEq(_view.headerVersion(), Header.HEADER_VERSION);
+        assertEq(_view.origin(), ORIGIN);
+        assertEq(_view.sender(), SENDER);
+        assertEq(_view.nonce(), NONCE);
+        assertEq(_view.destination(), DESTINATION);
+        assertEq(_view.recipient(), RECIPIENT);
+        assertEq(_view.optimisticSeconds(), OPTIMISTIC_SECONDS);
     }
 
     function test_incorrectType_headerVersion() public {
-        _createTestDataMistyped().headerVersion();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_HEADER).headerVersion();
     }
 
     function test_incorrectType_origin() public {
-        _createTestDataMistyped().origin();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_HEADER).origin();
     }
 
     function test_incorrectType_sender() public {
-        _createTestDataMistyped().sender();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_HEADER).sender();
     }
 
     function test_incorrectType_nonce() public {
-        _createTestDataMistyped().nonce();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_HEADER).nonce();
     }
 
     function test_incorrectType_destination() public {
-        _createTestDataMistyped().destination();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_HEADER).destination();
     }
 
     function test_incorrectType_recipient() public {
-        _createTestDataMistyped().recipient();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_HEADER).recipient();
     }
 
     function test_incorrectType_recipientAddress() public {
-        _createTestDataMistyped().recipientAddress();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_HEADER).recipientAddress();
     }
 
     function test_incorrectType_optimisticSeconds() public {
-        _createTestDataMistyped().optimisticSeconds();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_HEADER).optimisticSeconds();
     }
 
-    function _createTestData() internal pure returns (bytes29) {
+    function test_isHeader_incorrectVersion() public {
+        bytes memory _header = abi.encodePacked(uint16(0), new bytes(Header.HEADER_LENGTH - 2));
+        assert(_header.length == Header.HEADER_LENGTH);
+        assertFalse(_header.castToHeader().isHeader());
+    }
+
+    function test_isHeader_emptyPayload() public {
+        bytes memory _header = bytes("");
+        assert(_header.length == 0);
+        assertFalse(_header.castToHeader().isHeader());
+    }
+
+    function test_isHeader_tooShort() public {
+        bytes memory _header = abi.encodePacked(uint16(1), new bytes(Header.HEADER_LENGTH - 3));
+        assert(_header.length < Header.HEADER_LENGTH);
+        assertFalse(_header.castToHeader().isHeader());
+    }
+
+    function test_isHeader_tooLong() public {
+        bytes memory _header = abi.encodePacked(uint16(1), new bytes(Header.HEADER_LENGTH - 1));
+        assert(_header.length > Header.HEADER_LENGTH);
+        assertFalse(_header.castToHeader().isHeader());
+    }
+
+    function _createTestView() internal pure override returns (bytes29) {
         bytes memory _header = Header.formatHeader(
             ORIGIN,
             SENDER,
@@ -77,23 +101,6 @@ contract HeaderTest is Test {
             RECIPIENT,
             OPTIMISTIC_SECONDS
         );
-        return _header.headerView();
-    }
-
-    function _createTestDataMistyped() internal returns (bytes29 headerView) {
-        headerView = _createTestData().castTo(WRONG_TYPE);
-        vm.expectRevert(_expectedRevertMessage());
-    }
-
-    function _expectedRevertMessage() internal pure returns (bytes memory) {
-        (, uint256 g) = TypedMemView.encodeHex(WRONG_TYPE);
-        (, uint256 e) = TypedMemView.encodeHex(Message.HEADER_TYPE);
-        return
-            abi.encodePacked(
-                "Type assertion failed. Got 0x",
-                uint80(g),
-                ". Expected 0x",
-                uint80(e)
-            );
+        return _header.castToHeader();
     }
 }
