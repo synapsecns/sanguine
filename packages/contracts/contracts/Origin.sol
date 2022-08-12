@@ -208,7 +208,7 @@ contract Origin is
         bytes memory _messageBody
     ) external payable notFailed {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
-        require(_tips.tipsView().totalTips() == msg.value, "!tips");
+        require(_tips.castToTips().totalTips() == msg.value, "!tips");
         // get the next nonce for the destination domain, then increment it
         nonce = nonce + 1;
         bytes32 _sender = _checkForSystemMessage(_recipientAddress);

@@ -43,8 +43,8 @@ contract TipsHarness {
         return Tips.emptyTips();
     }
 
-    function tipsView(bytes memory _tips) external pure returns (bytes29) {
-        return Tips.tipsView(_tips);
+    function castToTips(bytes memory _tips) external pure returns (bytes29) {
+        return Tips.castToTips(_tips);
     }
 
     function tipsVersion(bytes29 _tips) external pure returns (uint16) {

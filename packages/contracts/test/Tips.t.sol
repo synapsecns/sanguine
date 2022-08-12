@@ -2,13 +2,14 @@
 
 pragma solidity 0.8.13;
 
-import "forge-std/Test.sol";
-
-import { Message } from "../contracts/libs/Message.sol";
+import { Bytes29Test } from "./utils/Bytes29Test.sol";
+import { SynapseTypes } from "../contracts/libs/SynapseTypes.sol";
 import { Tips } from "../contracts/libs/Tips.sol";
 import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
 
-contract TipsTest is Test {
+// solhint-disable func-name-mixedcase
+
+contract TipsTest is Bytes29Test {
     using Tips for bytes;
     using TypedMemView for bytes29;
     using Tips for bytes29;
@@ -19,54 +20,65 @@ contract TipsTest is Test {
     uint96 internal constant EXECUTOR_TIP = 7890;
     uint96 internal constant TOTAL_TIPS = NOTARY_TIP + BROADCASTER_TIP + PROVER_TIP + EXECUTOR_TIP;
 
-    uint40 internal constant WRONG_TYPE = 1337;
+    function test_formattedCorrectly() public {
+        bytes29 _view = _createTestView();
 
-    function test_correctTipsEncoding() public {
-        bytes29 tipsView = _createTestData();
+        assertTrue(_view.isTips());
 
-        assertEq(tipsView.notaryTip(), NOTARY_TIP);
-        assertEq(tipsView.broadcasterTip(), BROADCASTER_TIP);
-        assertEq(tipsView.proverTip(), PROVER_TIP);
-        assertEq(tipsView.executorTip(), EXECUTOR_TIP);
+        assertEq(_view.notaryTip(), NOTARY_TIP);
+        assertEq(_view.broadcasterTip(), BROADCASTER_TIP);
+        assertEq(_view.proverTip(), PROVER_TIP);
+        assertEq(_view.executorTip(), EXECUTOR_TIP);
 
-        assertEq(tipsView.totalTips(), TOTAL_TIPS);
+        assertEq(_view.totalTips(), TOTAL_TIPS);
     }
 
     function test_incorrectType_notaryTip() public {
-        _createTestDataMistyped().notaryTip();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_TIPS).notaryTip();
     }
 
     function test_incorrectType_broadcasterTip() public {
-        _createTestDataMistyped().broadcasterTip();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_TIPS).broadcasterTip();
     }
 
     function test_incorrectType_proverTip() public {
-        _createTestDataMistyped().proverTip();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_TIPS).proverTip();
     }
 
     function test_incorrectType_executorTip() public {
-        _createTestDataMistyped().executorTip();
+        _prepareMistypedTest(SynapseTypes.MESSAGE_TIPS).executorTip();
     }
 
-    function _createTestData() internal pure returns (bytes29) {
+    function test_incorrectType_totalTips() public {
+        _prepareMistypedTest(SynapseTypes.MESSAGE_TIPS).totalTips();
+    }
+
+    function test_isTips_incorrectVersion() public {
+        bytes memory _tips = abi.encodePacked(uint16(0), new bytes(Tips.TIPS_LENGTH - 2));
+        assert(_tips.length == Tips.TIPS_LENGTH);
+        assertFalse(_tips.castToTips().isTips());
+    }
+
+    function test_isTips_emptyPayload() public {
+        bytes memory _tips = bytes("");
+        assert(_tips.length == 0);
+        assertFalse(_tips.castToTips().isTips());
+    }
+
+    function test_isTips_tooShort() public {
+        bytes memory _tips = abi.encodePacked(uint16(1), new bytes(Tips.TIPS_LENGTH - 3));
+        assert(_tips.length < Tips.TIPS_LENGTH);
+        assertFalse(_tips.castToTips().isTips());
+    }
+
+    function test_isTips_tooLong() public {
+        bytes memory _tips = abi.encodePacked(uint16(1), new bytes(Tips.TIPS_LENGTH - 1));
+        assert(_tips.length > Tips.TIPS_LENGTH);
+        assertFalse(_tips.castToTips().isTips());
+    }
+
+    function _createTestView() internal pure override returns (bytes29) {
         bytes memory tips = Tips.formatTips(NOTARY_TIP, BROADCASTER_TIP, PROVER_TIP, EXECUTOR_TIP);
-        return tips.tipsView();
-    }
-
-    function _createTestDataMistyped() internal returns (bytes29 tipsView) {
-        tipsView = _createTestData().castTo(WRONG_TYPE);
-        vm.expectRevert(_expectedRevertMessage());
-    }
-
-    function _expectedRevertMessage() internal pure returns (bytes memory) {
-        (, uint256 g) = TypedMemView.encodeHex(WRONG_TYPE);
-        (, uint256 e) = TypedMemView.encodeHex(Message.TIPS_TYPE);
-        return
-            abi.encodePacked(
-                "Type assertion failed. Got 0x",
-                uint80(g),
-                ". Expected 0x",
-                uint80(e)
-            );
+        return tips.castToTips();
     }
 }
