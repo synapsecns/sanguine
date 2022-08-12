@@ -125,6 +125,11 @@ type ReplicaManagerDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// Dependencies gets a list of dependencies used to deploy the replicamanager contract.
+func (r ReplicaManagerDeployer) Dependencies() []deployer.ContractType {
+	return []deployer.ContractType{HomeType, UpdaterManagerType}
+}
+
 // NewReplicaManagerDeployer creates the deployer for the replica manager.
 func NewReplicaManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return ReplicaManagerDeployer{deployer.NewSimpleDeployer(registry, backend, ReplicaManagerType)}
