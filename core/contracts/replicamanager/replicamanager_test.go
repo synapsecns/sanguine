@@ -91,6 +91,6 @@ func (r ReplicaManagerSuite) TestReplicaManagerSuite() {
 	}
 }
 
-func (h ReplicaManagerSuite) TestUpdateTopic() {
-	h.T().Skip("TODO: test this. Mocker should be able to mock this out")
+func (r ReplicaManagerSuite) TestUpdateTopic() {
+	r.T().Skip("TODO: test this. Mocker should be able to mock this out")
 }
