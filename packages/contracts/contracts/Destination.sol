@@ -192,35 +192,35 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
      * @param _message Formatted message
      */
     function execute(bytes memory _message) public {
-        bytes29 _m = _message.messageView();
-        bytes29 _header = _m.header();
-        uint32 _remoteDomain = _header.origin();
-        MirrorLib.Mirror storage mirror = allMirrors[activeMirrors[_remoteDomain]];
+        bytes29 messageView = _message.castToMessage();
+        bytes29 header = messageView.header();
+        uint32 remoteDomain = header.origin();
+        MirrorLib.Mirror storage mirror = allMirrors[activeMirrors[remoteDomain]];
         // ensure message was meant for this domain
-        require(_header.destination() == localDomain, "!destination");
+        require(header.destination() == localDomain, "!destination");
         // ensure message has been proven
-        bytes32 _messageHash = _m.keccak();
-        bytes32 _root = mirror.messageStatus[_messageHash];
-        require(MirrorLib.isPotentialRoot(_root), "!exists || executed");
+        bytes32 messageHash = messageView.keccak();
+        bytes32 root = mirror.messageStatus[messageHash];
+        require(MirrorLib.isPotentialRoot(root), "!exists || executed");
         require(
-            acceptableRoot(_remoteDomain, _header.optimisticSeconds(), _root),
+            acceptableRoot(remoteDomain, header.optimisticSeconds(), root),
             "!optimisticSeconds"
         );
         // check re-entrancy guard
         require(entered == 1, "!reentrant");
         entered = 0;
-        _storeTips(_m.tips());
+        _storeTips(messageView.tips());
         // update message status as executed
-        mirror.setMessageStatus(_messageHash, MirrorLib.MESSAGE_STATUS_EXECUTED);
-        address recipient = _checkForSystemMessage(_header.recipient());
+        mirror.setMessageStatus(messageHash, MirrorLib.MESSAGE_STATUS_EXECUTED);
+        address recipient = _checkForSystemMessage(header.recipient());
         IMessageRecipient(recipient).handle(
-            _remoteDomain,
-            _header.nonce(),
-            _header.sender(),
-            mirror.confirmAt[_root],
-            _m.body().clone()
+            remoteDomain,
+            header.nonce(),
+            header.sender(),
+            mirror.confirmAt[root],
+            messageView.body().clone()
         );
-        emit Executed(_remoteDomain, _messageHash);
+        emit Executed(remoteDomain, messageHash);
         // reset re-entrancy guard
         entered = 1;
     }
