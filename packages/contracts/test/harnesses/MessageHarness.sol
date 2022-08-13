@@ -72,43 +72,39 @@ contract MessageHarness {
     }
 
     function tips(bytes memory _message) external view returns (bytes memory) {
-        return _message.messageView().tips().clone();
+        return _message.castToMessage().tips().clone();
     }
 
     function body(bytes memory _message) external view returns (bytes memory) {
-        return _message.messageView().body().clone();
+        return _message.castToMessage().body().clone();
     }
 
     function origin(bytes memory _message) external pure returns (uint32) {
-        return _message.messageView().header().origin();
+        return _message.castToMessage().header().origin();
     }
 
     function sender(bytes memory _message) external pure returns (bytes32) {
-        return _message.messageView().header().sender();
+        return _message.castToMessage().header().sender();
     }
 
     function nonce(bytes memory _message) external pure returns (uint32) {
-        return _message.messageView().header().nonce();
+        return _message.castToMessage().header().nonce();
     }
 
     function destination(bytes memory _message) external pure returns (uint32) {
-        return _message.messageView().header().destination();
+        return _message.castToMessage().header().destination();
     }
 
     function recipient(bytes memory _message) external pure returns (bytes32) {
-        return _message.messageView().header().recipient();
+        return _message.castToMessage().header().recipient();
     }
 
     function recipientAddress(bytes memory _message) external pure returns (address) {
-        return _message.messageView().header().recipientAddress();
+        return _message.castToMessage().header().recipientAddress();
     }
 
     function optimisticSeconds(bytes memory _message) external pure returns (uint32) {
-        return _message.messageView().header().optimisticSeconds();
-    }
-
-    function leaf(bytes memory _message) external pure returns (bytes32) {
-        return _message.messageView().leaf();
+        return _message.castToMessage().header().optimisticSeconds();
     }
 
     function messageVersion() public pure returns (uint16) {
@@ -116,6 +112,6 @@ contract MessageHarness {
     }
 
     function headerOffset() public pure returns (uint16) {
-        return Message.HEADER_OFFSET;
+        return Message.OFFSET_HEADER;
     }
 }
