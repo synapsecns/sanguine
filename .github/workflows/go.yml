@@ -325,6 +325,9 @@ jobs:
           files: |
             *.go
 
+      - uses: jwalton/gh-find-current-pr@v1
+        id: find_pr
+
         # Fail if files need regeneration
       - name: Add Label
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -332,7 +335,7 @@ jobs:
         with:
           add-labels: "needs-go-generate"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{github.event.issue.number}}
+          issue-number: ${{ steps.find_pr.outputs.pr }}
 
       - name: Remove Label
         if: steps.verify-changed-files.outputs.files_changed != 'true'
@@ -340,4 +343,4 @@ jobs:
         with:
           remove-labels: "needs-go-generate"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{github.event.issue.number}}
+          issue-number: ${{ steps.find_pr.outputs.pr }}
