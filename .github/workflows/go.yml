@@ -237,7 +237,7 @@ jobs:
           GOGC: 20
           GOPRIVATE: "GOPRIVATE=github.com/synapsecns/synapse-node"
 
-  # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes
+  # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
   check-generation:
     name: Go Generate
     runs-on: ubuntu-latest
@@ -312,6 +312,7 @@ jobs:
             ${{ runner.os }}-go-
 
       # See if we need to rerun go generate
+      # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
       - name: Try Go Generate
         working-directory: ${{matrix.package}}/
         run: |
@@ -327,4 +328,14 @@ jobs:
         # Fail if files need regeneration
       - name: Run if files need to be regenerated
         if: steps.verify-changed-files.outputs.files_changed == 'true'
-        run: exit 1
+        uses: andymckay/labeler@e6c4322d0397f3240f0e7e30a33b5c5df2d39e90
+        with:
+          add-labels: "needs-go-generate"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run if files need to be regenerated
+        if: steps.verify-changed-files.outputs.files_changed != 'true'
+        uses: andymckay/labeler@e6c4322d0397f3240f0e7e30a33b5c5df2d39e90
+        with:
+          remove-labels: "needs-go-generate"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
