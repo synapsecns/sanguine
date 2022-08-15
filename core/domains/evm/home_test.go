@@ -61,7 +61,7 @@ func (i ContractSuite) NewTestDispatches(dispatchCount int) (testDispatches []Te
 	return testDispatches, lastBlock
 }
 
-func (i ContractSuite) TestFetchSortedHomeUpdates() {
+func (i ContractSuite) TestFetchSortedOriginUpdates() {
 	testDispatches, filterTo := i.NewTestDispatches(33)
 
 	originIndexer, err := evm.NewOriginContract(i.GetTestContext(), i.testBackend, i.originContract.Address())

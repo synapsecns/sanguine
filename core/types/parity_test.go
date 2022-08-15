@@ -46,15 +46,15 @@ func TestEncodeTipsParity(t *testing.T) {
 	Equal(t, processorOffset, big.NewInt(types.OffsetExecutor))
 
 	// we want to make sure we can deal w/ overflows
-	updaterTip := randomUint96BigInt(t)
-	relayerTip := randomUint96BigInt(t)
+	notaryTip := randomUint96BigInt(t)
+	broadcasterTip := randomUint96BigInt(t)
 	proverTip := randomUint96BigInt(t)
-	processorTip := randomUint96BigInt(t)
+	executorTip := randomUint96BigInt(t)
 
-	solidityFormattedTips, err := handle.FormatTips(&bind.CallOpts{Context: ctx}, updaterTip, relayerTip, proverTip, processorTip)
+	solidityFormattedTips, err := handle.FormatTips(&bind.CallOpts{Context: ctx}, notaryTip, broadcasterTip, proverTip, executorTip)
 	Nil(t, err)
 
-	goTips, err := types.EncodeTips(types.NewTips(updaterTip, relayerTip, proverTip, processorTip))
+	goTips, err := types.EncodeTips(types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip))
 	Nil(t, err)
 
 	Equal(t, goTips, solidityFormattedTips)
@@ -155,12 +155,12 @@ func TestMessageEncodeParity(t *testing.T) {
 	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
 	optimisticSeconds := gofakeit.Uint32()
 
-	updaterTip := randomUint96BigInt(t)
-	relayerTip := randomUint96BigInt(t)
+	notaryTip := randomUint96BigInt(t)
+	broadcasterTip := randomUint96BigInt(t)
 	proverTip := randomUint96BigInt(t)
-	processorTip := randomUint96BigInt(t)
+	executorTip := randomUint96BigInt(t)
 
-	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, updaterTip, relayerTip, proverTip, processorTip, body)
+	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, notaryTip, broadcasterTip, proverTip, executorTip, body)
 	Nil(t, err)
 
 	decodedMessage, err := types.DecodeMessage(formattedMessage)

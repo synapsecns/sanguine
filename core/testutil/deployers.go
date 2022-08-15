@@ -7,9 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
+	"github.com/synapsecns/sanguine/core/contracts/destination"
 	"github.com/synapsecns/sanguine/core/contracts/notarymanager"
 	"github.com/synapsecns/sanguine/core/contracts/origin"
-	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/synapse-node/testutils/backends"
 )
@@ -79,7 +79,7 @@ func NewNotaryManagerDeployer(registry deployer.GetOnlyContractRegistry, backend
 	return NotaryManagerDeployer{deployer.NewSimpleDeployer(registry, backend, NotaryManagerType)}
 }
 
-// Deploy deploys the updater contract.
+// Deploy deploys the notarycontract.
 func (u NotaryManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return u.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return notarymanager.DeployNotaryManager(transactOps, backend, transactOps.From)
@@ -119,21 +119,21 @@ func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (backends.Depl
 	})
 }
 
-// ReplicaManagerDeployer deploys the replica manager.
-type ReplicaManagerDeployer struct {
+// DestinationDeployer deploys the destination.
+type DestinationDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewReplicaManagerDeployer creates the deployer for the replica manager.
-func NewReplicaManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return ReplicaManagerDeployer{deployer.NewSimpleDeployer(registry, backend, ReplicaManagerType)}
+// NewDestinationDeployer creates the deployer for the destination.
+func NewDestinationDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return DestinationDeployer{deployer.NewSimpleDeployer(registry, backend, DestinationType)}
 }
 
-// Deploy deploys the replica manager.
-func (r ReplicaManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+// Deploy deploys the destination.
+func (r DestinationDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return r.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return replicamanager.DeployReplicaManager(transactOps, backend, uint32(r.Backend().GetChainID()))
+		return destination.DeployDestination(transactOps, backend, uint32(r.Backend().GetChainID()))
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return replicamanager.NewReplicaManagerRef(address, backend)
+		return destination.NewDestinationRef(address, backend)
 	})
 }

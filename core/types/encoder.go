@@ -136,12 +136,12 @@ func EncodeTips(tips Tips) ([]byte, error) {
 
 // DecodeTips decodes a tips typed mem view.
 func DecodeTips(toDecode []byte) (Tips, error) {
-	updaterTip := new(big.Int).SetBytes(toDecode[offsetNotary:offsetBroadcaster])
-	relayerTip := new(big.Int).SetBytes(toDecode[offsetBroadcaster:offsetProver])
+	notaryTip := new(big.Int).SetBytes(toDecode[offsetNotary:offsetBroadcaster])
+	broadcasterTip := new(big.Int).SetBytes(toDecode[offsetBroadcaster:offsetProver])
 	proverTip := new(big.Int).SetBytes(toDecode[offsetProver:offsetExecutor])
-	processorTip := new(big.Int).SetBytes(toDecode[offsetExecutor:])
+	executorTip := new(big.Int).SetBytes(toDecode[offsetExecutor:])
 
-	return NewTips(updaterTip, relayerTip, proverTip, processorTip), nil
+	return NewTips(notaryTip, broadcasterTip, proverTip, executorTip), nil
 }
 
 type headerEncoder struct {

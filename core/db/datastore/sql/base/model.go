@@ -105,14 +105,14 @@ type CommittedMessage struct {
 	CMBody []byte `gorm:"column:body"`
 	// CMOptimisticSeconds is the optimistic seconds of the message
 	CMOptimisticSeconds uint32 `gorm:"column:optimistic_seconds"`
-	// CMUpdaterTip is the updater tip
-	CMUpdaterTip []byte `gorm:"column:updater_tip"`
-	// CMRelayerTip is the relayer tip
-	CMRelayerTip []byte `gorm:"column:relayer_tip"`
+	// CMNotaryTip is the notarytip
+	CMNotaryTip []byte `gorm:"column:notary_tip"`
+	// CMBroadcasterTip is the relayer tip
+	CMBroadcasterTip []byte `gorm:"column:broadcaster_tip"`
 	// CMProverTip is the prover tip
 	CMProverTip []byte `gorm:"column:prover_tip"`
-	// CMProcessorTip is the processor tip
-	CMProcessorTip []byte `gorm:"column:processor_tip"`
+	// CMExecutorTip is the processor tip
+	CMExecutorTip []byte `gorm:"column:executor_tip"`
 }
 
 // Version gets the message version.
@@ -127,7 +127,7 @@ func (c CommittedMessage) Header() types.Header {
 
 // Tips gets the tips.
 func (c CommittedMessage) Tips() types.Tips {
-	return types.NewTips(new(big.Int).SetBytes(c.CMUpdaterTip), new(big.Int).SetBytes(c.CMRelayerTip), new(big.Int).SetBytes(c.CMProverTip), new(big.Int).SetBytes(c.CMProcessorTip))
+	return types.NewTips(new(big.Int).SetBytes(c.CMNotaryTip), new(big.Int).SetBytes(c.CMBroadcasterTip), new(big.Int).SetBytes(c.CMProverTip), new(big.Int).SetBytes(c.CMExecutorTip))
 }
 
 // OriginDomain returns the Slip-44 ID.

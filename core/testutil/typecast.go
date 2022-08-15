@@ -7,12 +7,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
+	"github.com/synapsecns/sanguine/core/contracts/destination"
 	"github.com/synapsecns/sanguine/core/contracts/notarymanager"
-	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/originharness"
-	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/synapse-node/testutils/backends"
 )
@@ -65,15 +65,15 @@ func (d *DeployManager) GetAttestationHarness(ctx context.Context, backend backe
 	return attestationHarnessContract, attestationHarness
 }
 
-// GetReplicaManagerHarness gets the replica manager harness.
-func (d *DeployManager) GetReplicaManagerHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *replicamanagerharness.ReplicaManagerHarnessRef) {
+// GetDestinationHarness gets the destination harness.
+func (d *DeployManager) GetDestinationHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *destinationharness.DestinationHarnessRef) {
 	d.T().Helper()
 
-	replicaManagerHarnessContract := d.GetContractRegistry(backend).Get(ctx, ReplicaManagerHarnessType)
-	replicaManagerHarness, ok := replicaManagerHarnessContract.ContractHandle().(*replicamanagerharness.ReplicaManagerHarnessRef)
+	destinationHarnessContract := d.GetContractRegistry(backend).Get(ctx, DestinationHarnessType)
+	destinationHarness, ok := destinationHarnessContract.ContractHandle().(*destinationharness.DestinationHarnessRef)
 	assert.True(d.T(), ok)
 
-	return replicaManagerHarnessContract, replicaManagerHarness
+	return destinationHarnessContract, destinationHarness
 }
 
 // GetNotaryManager gets the update manager.
@@ -98,15 +98,15 @@ func (d *DeployManager) GetAttestationCollector(ctx context.Context, backend bac
 	return attestationContract, attestationCollector
 }
 
-// GetReplicaManager gets the replica manager contract.
-func (d *DeployManager) GetReplicaManager(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *replicamanager.ReplicaManagerRef) {
+// GetDestination gets the destination contract.
+func (d *DeployManager) GetDestination(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *destination.DestinationRef) {
 	d.T().Helper()
 
-	replicaManagerContract := d.GetContractRegistry(backend).Get(ctx, ReplicaManagerType)
-	replicaManager, ok := replicaManagerContract.ContractHandle().(*replicamanager.ReplicaManagerRef)
+	destinationContract := d.GetContractRegistry(backend).Get(ctx, DestinationType)
+	destination, ok := destinationContract.ContractHandle().(*destination.DestinationRef)
 	assert.True(d.T(), ok)
 
-	return replicaManagerContract, replicaManager
+	return destinationContract, destination
 }
 
 // GetTipsHarness gets the tips harness for testing.

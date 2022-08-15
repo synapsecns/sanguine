@@ -75,21 +75,21 @@ func TestEncodeDecodeSignedAttestation(t *testing.T) {
 
 func TestEncodeDecodeTips(t *testing.T) {
 	// we want to make sure we can deal w/ overflows
-	updaterTip := randomUint96BigInt(t)
-	relayerTip := randomUint96BigInt(t)
+	notaryTip := randomUint96BigInt(t)
+	broadcasterTip := randomUint96BigInt(t)
 	proverTip := randomUint96BigInt(t)
-	processorTip := randomUint96BigInt(t)
+	executorTip := randomUint96BigInt(t)
 
-	encodedTips, err := types.EncodeTips(types.NewTips(updaterTip, relayerTip, proverTip, processorTip))
+	encodedTips, err := types.EncodeTips(types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip))
 	Nil(t, err)
 
 	decodedTips, err := types.DecodeTips(encodedTips)
 	Nil(t, err)
 
-	Equal(t, decodedTips.NotaryTip(), updaterTip)
-	Equal(t, decodedTips.BroadcasterTip(), relayerTip)
+	Equal(t, decodedTips.NotaryTip(), notaryTip)
+	Equal(t, decodedTips.BroadcasterTip(), broadcasterTip)
 	Equal(t, decodedTips.ProverTip(), proverTip)
-	Equal(t, decodedTips.ExecutorTip(), processorTip)
+	Equal(t, decodedTips.ExecutorTip(), executorTip)
 }
 
 func TestNewMessageEncodeDecode(t *testing.T) {
@@ -104,12 +104,12 @@ func TestNewMessageEncodeDecode(t *testing.T) {
 	header := types.NewHeader(
 		origin, sender, nonce, destination, recipient, optimisticSeconds)
 
-	updaterTip := randomUint96BigInt(t)
-	relayerTip := randomUint96BigInt(t)
+	notaryTip := randomUint96BigInt(t)
+	broadcasterTip := randomUint96BigInt(t)
 	proverTip := randomUint96BigInt(t)
-	processorTip := randomUint96BigInt(t)
+	executorTip := randomUint96BigInt(t)
 
-	tips := types.NewTips(updaterTip, relayerTip, proverTip, processorTip)
+	tips := types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip)
 
 	newMessage := types.NewMessage(header, tips, body)
 

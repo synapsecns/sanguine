@@ -25,8 +25,8 @@ func (s SimulatedSuite) TestTypecastOriginHarness() {
 
 func (s SimulatedSuite) TestTypecastNotaryManager() {
 	NotPanics(s.T(), func() {
-		_, updaterManager := s.deployManager.GetNotaryManager(s.GetTestContext(), s.testBackend)
-		NotNil(s.T(), updaterManager)
+		_, notaryManager := s.deployManager.GetNotaryManager(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), notaryManager)
 	})
 }
 
@@ -51,17 +51,17 @@ func (s SimulatedSuite) TestTypecastTipsHarness() {
 	})
 }
 
-func (s SimulatedSuite) TestTypecastReplicaManager() {
+func (s SimulatedSuite) TestTypecastDestination() {
 	NotPanics(s.T(), func() {
-		_, replicaManager := s.deployManager.GetReplicaManager(s.GetTestContext(), s.testBackend)
-		NotNil(s.T(), replicaManager)
+		_, destination := s.deployManager.GetDestination(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), destination)
 	})
 }
 
-func (s SimulatedSuite) TestTypecastReplicaManagerHarness() {
+func (s SimulatedSuite) TestTypecastDestinationHarness() {
 	NotPanics(s.T(), func() {
-		_, replicaManagerHarness := s.deployManager.GetReplicaManagerHarness(s.GetTestContext(), s.testBackend)
-		NotNil(s.T(), replicaManagerHarness)
+		_, destinationHarness := s.deployManager.GetDestinationHarness(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), destinationHarness)
 	})
 }
 

@@ -3,14 +3,14 @@ package testutil
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
+	"github.com/synapsecns/sanguine/core/contracts/destination"
 	"github.com/synapsecns/sanguine/core/contracts/notarymanager"
 	"github.com/synapsecns/sanguine/core/contracts/origin"
-	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/originharness"
-	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 )
@@ -55,14 +55,14 @@ const (
 	TipsHarnessType contractTypeImpl = iota
 	// HeaderHarnessType is the tyoe of the header harness.
 	HeaderHarnessType contractTypeImpl = iota
-	// ReplicaManagerHarnessType is the replica manager harness type.
-	ReplicaManagerHarnessType contractTypeImpl = iota
+	// DestinationHarnessType is the destination harness type.
+	DestinationHarnessType contractTypeImpl = iota // DestinationHarness
 	// NotaryManagerType is the type of the update manager.
-	NotaryManagerType contractTypeImpl = iota // UpdaterManager
+	NotaryManagerType contractTypeImpl = iota // NotaryManager
 	// AttestationCollectorType is the type of the attestation collector.
 	AttestationCollectorType contractTypeImpl = iota // AttestationCollector
-	// ReplicaManagerType is the type of the replica manager.
-	ReplicaManagerType contractTypeImpl = iota // ReplicaManager
+	// DestinationType is the type of the destination.
+	DestinationType contractTypeImpl = iota // Destination
 )
 
 // ID gets the contract type as an id.
@@ -92,16 +92,16 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return originharness.Contracts["solidity/OriginHarness.sol:OriginHarness"]
 	case AttestationHarnessType:
 		return attestationharness.Contracts["solidity/AttestationHarness.sol:AttestationHarness"]
-	case ReplicaManagerHarnessType:
-		return replicamanagerharness.Contracts["solidity/ReplicaManagerHarness.sol:ReplicaManagerHarness"]
+	case DestinationHarnessType:
+		return destinationharness.Contracts["solidity/DestinationHarness.sol:DestinationHarness"]
 	case NotaryManagerType:
-		return notarymanager.Contracts["solidity/UpdaterManager.sol:UpdaterManager"]
+		return notarymanager.Contracts["solidity/NotaryManager.sol:NotaryManager"]
 	case TipsHarnessType:
 		return tipsharness.Contracts["solidity/TipsHarness.sol:TipsHarness"]
 	case AttestationCollectorType:
 		return attestationcollector.Contracts["solidity/AttestationCollector.sol:AttestationCollector"]
-	case ReplicaManagerType:
-		return replicamanager.Contracts["solidity/ReplicaManager.sol:ReplicaManager"]
+	case DestinationType:
+		return destination.Contracts["solidity/Destination.sol:Destination"]
 	case HeaderHarnessType:
 		return headerharness.Contracts["solidity/HeaderHarness.sol:HeaderHarness"]
 	default:
