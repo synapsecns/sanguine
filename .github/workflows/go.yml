@@ -241,8 +241,6 @@ jobs:
   check-generation:
     name: Go Generate
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
     needs: changes
     if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes }}
     strategy:
