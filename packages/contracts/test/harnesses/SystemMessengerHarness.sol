@@ -6,8 +6,8 @@ import { SystemMessenger } from "../../contracts/system/SystemMessenger.sol";
 
 contract SystemMessengerHarness is SystemMessenger {
     constructor(
-        address _home,
-        address _replicaManager,
+        address _origin,
+        address _destination,
         uint32 _optimisticSeconds
-    ) SystemMessenger(_home, _replicaManager, _optimisticSeconds) {}
+    ) SystemMessenger(_origin, _destination, _optimisticSeconds) {}
 }

@@ -14,26 +14,26 @@ contract MessageHarness {
     using TypedMemView for bytes29;
 
     function formatMessage(
-        uint32 _originDomain,
+        uint32 _origin,
         bytes32 _sender,
         uint32 _nonce,
-        uint32 _destinationDomain,
+        uint32 _destination,
         bytes32 _recipient,
         uint32 _optimisticSeconds,
         // tips params
-        uint96 _updaterTip,
-        uint96 _relayerTip,
+        uint96 _notaryTip,
+        uint96 _broadcasterTip,
         uint96 _proverTip,
-        uint96 _processorTip,
+        uint96 _executorTip,
         bytes memory _messageBody
     ) public pure returns (bytes memory) {
-        bytes memory _tips = Tips.formatTips(_updaterTip, _relayerTip, _proverTip, _processorTip);
+        bytes memory _tips = Tips.formatTips(_notaryTip, _broadcasterTip, _proverTip, _executorTip);
 
         bytes memory _header = Header.formatHeader(
-            _originDomain,
+            _origin,
             _sender,
             _nonce,
-            _destinationDomain,
+            _destination,
             _recipient,
             _optimisticSeconds
         );
@@ -42,7 +42,7 @@ contract MessageHarness {
 
     /**
      * @notice Returns leaf of formatted message with provided fields.
-     * @param _origin Domain of home chain
+     * @param _origin Domain of origin chain
      * @param _sender Address of sender as bytes32
      * @param _nonce Destination-specific nonce number
      * @param _destination Domain of destination chain

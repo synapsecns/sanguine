@@ -19,7 +19,7 @@ contract AuthTest is SynapseTest {
     }
 
     function test_recoverSigner() public {
-        bytes memory signature = signMessage(updaterPK, message);
-        assertEq(harness.recoverSigner(message, signature), updater);
+        bytes memory signature = signMessage(notaryPK, message);
+        assertEq(harness.recoverSigner(message, signature), notary);
     }
 }

@@ -7,84 +7,84 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
-	"github.com/synapsecns/sanguine/core/contracts/home"
-	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
-	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
+	"github.com/synapsecns/sanguine/core/contracts/destination"
+	"github.com/synapsecns/sanguine/core/contracts/notarymanager"
+	"github.com/synapsecns/sanguine/core/contracts/origin"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/synapse-node/testutils/backends"
 )
 
-// HomeDeployer deploys the home contract.
-type HomeDeployer struct {
+// OriginDeployer deploys the origin contract.
+type OriginDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewHomeDeployer deploys the home contract.
-func NewHomeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return HomeDeployer{deployer.NewSimpleDeployer(registry, backend, HomeType)}
+// NewOriginDeployer deploys the origin contract.
+func NewOriginDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return OriginDeployer{deployer.NewSimpleDeployer(registry, backend, OriginType)}
 }
 
-// Deploy deploys the home contract.
-func (d HomeDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	updateManagerContract := d.Registry().Get(ctx, UpdaterManagerType)
+// Deploy deploys the origin contract.
+func (d OriginDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	notaryManagerContract := d.Registry().Get(ctx, NotaryManagerType)
 
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
-		// deploy the home contract
-		var rawHandle *home.Home
-		address, tx, rawHandle, err = home.DeployHome(transactOps, backend, uint32(d.Backend().GetChainID()))
+		// deploy the origin contract
+		var rawHandle *origin.Origin
+		address, tx, rawHandle, err = origin.DeployOrigin(transactOps, backend, uint32(d.Backend().GetChainID()))
 		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not deploy home: %w", err)
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
 
-		// initialize the home contract
-		initializationTx, err := rawHandle.Initialize(transactOps, updateManagerContract.Address())
+		// initialize the origin contract
+		initializationTx, err := rawHandle.Initialize(transactOps, notaryManagerContract.Address())
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not initialize contract: %w", err)
 		}
 		d.Backend().WaitForConfirmation(ctx, initializationTx)
 
-		// get the owner of the updater manage rcontract
-		updaterTransactOps := d.Backend().GetTxContext(ctx, updateManagerContract.OwnerPtr())
+		// get the owner of the notary manager contract
+		notaryTransactOps := d.Backend().GetTxContext(ctx, notaryManagerContract.OwnerPtr())
 
-		// set the home contract on the updater manager
-		updateManager, ok := updateManagerContract.ContractHandle().(*updatermanager.UpdaterManagerRef)
+		// set the notary contract on the notary manager
+		updateManager, ok := notaryManagerContract.ContractHandle().(*notarymanager.NotaryManagerRef)
 		if !ok {
 			return common.Address{}, nil, nil, fmt.Errorf("could not update contract: %w", err)
 		}
 
-		setTx, err := updateManager.SetHome(updaterTransactOps.TransactOpts, address)
+		setTx, err := updateManager.SetOrigin(notaryTransactOps.TransactOpts, address)
 		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not set home: %w", err)
+			return common.Address{}, nil, nil, fmt.Errorf("could not set origin: %w", err)
 		}
 		d.Backend().WaitForConfirmation(ctx, setTx)
 
 		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return home.NewHomeRef(address, backend)
+		return origin.NewOriginRef(address, backend)
 	})
 }
 
-// Dependencies gets a list of dependencies used to deploy the home contract.
-func (d HomeDeployer) Dependencies() []deployer.ContractType {
-	return []deployer.ContractType{UpdaterManagerType}
+// Dependencies gets a list of dependencies used to deploy the origin contract.
+func (d OriginDeployer) Dependencies() []deployer.ContractType {
+	return []deployer.ContractType{NotaryManagerType}
 }
 
-// UpdateManagerDeployer deploys the update manager.
-type UpdateManagerDeployer struct {
+// NotaryManagerDeployer deploys the update manager.
+type NotaryManagerDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewUpdateManagerDeployer deploys a new update manager.
-func NewUpdateManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return UpdateManagerDeployer{deployer.NewSimpleDeployer(registry, backend, UpdaterManagerType)}
+// NewNotaryManagerDeployer deploys a new notary manager.
+func NewNotaryManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return NotaryManagerDeployer{deployer.NewSimpleDeployer(registry, backend, NotaryManagerType)}
 }
 
-// Deploy deploys the updater contract.
-func (u UpdateManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	return u.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return updatermanager.DeployUpdaterManager(transactOps, backend, transactOps.From)
+// Deploy deploys the notary contract.
+func (n NotaryManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return notarymanager.DeployNotaryManager(transactOps, backend, transactOps.From)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return updatermanager.NewUpdaterManagerRef(address, backend)
+		return notarymanager.NewNotaryManagerRef(address, backend)
 	})
 }
 
@@ -119,21 +119,21 @@ func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (backends.Depl
 	})
 }
 
-// ReplicaManagerDeployer deploys the replica manager.
-type ReplicaManagerDeployer struct {
+// DestinationDeployer deploys the destination.
+type DestinationDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewReplicaManagerDeployer creates the deployer for the replica manager.
-func NewReplicaManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return ReplicaManagerDeployer{deployer.NewSimpleDeployer(registry, backend, ReplicaManagerType)}
+// NewDestinationDeployer creates the deployer for the destination.
+func NewDestinationDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return DestinationDeployer{deployer.NewSimpleDeployer(registry, backend, DestinationType)}
 }
 
-// Deploy deploys the replica manager.
-func (r ReplicaManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+// Deploy deploys the destination.
+func (r DestinationDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return r.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return replicamanager.DeployReplicaManager(transactOps, backend, uint32(r.Backend().GetChainID()))
+		return destination.DeployDestination(transactOps, backend, uint32(r.Backend().GetChainID()))
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return replicamanager.NewReplicaManagerRef(address, backend)
+		return destination.NewDestinationRef(address, backend)
 	})
 }

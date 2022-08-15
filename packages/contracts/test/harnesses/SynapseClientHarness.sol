@@ -5,7 +5,7 @@ pragma solidity 0.8.13;
 import { SynapseClient } from "../../contracts/client/SynapseClient.sol";
 
 contract SynapseClientHarness is SynapseClient {
-    constructor(address _home, address _replicaManager) SynapseClient(_home, _replicaManager) {}
+    constructor(address _origin, address _destination) SynapseClient(_origin, _destination) {}
 
     function _handle(
         uint32,

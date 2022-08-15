@@ -6,7 +6,8 @@ import { TypeCasts } from "./TypeCasts.sol";
 import { Message } from "./Message.sol";
 
 /**
- * @notice Library for versioned formatting [the tips part] of [the messages used by Home and Replicas].
+ * @notice Library for versioned formatting [the tips part]
+ * of [the messages used by Origin and Destination].
  */
 library Tips {
     using TypedMemView for bytes;
@@ -17,16 +18,16 @@ library Tips {
     /**
      * @dev Tips memory layout
      * [000 .. 002): version            uint16	 2 bytes
-     * [002 .. 014): updaterTip         uint96	12 bytes
-     * [014 .. 026): relayerTip         uint96	12 bytes
+     * [002 .. 014): notaryTip          uint96	12 bytes
+     * [014 .. 026): broadcasterTip     uint96	12 bytes
      * [026 .. 038): proverTip          uint96	12 bytes
-     * [038 .. 050): processorTip       uint96	12 bytes
+     * [038 .. 050): executorTip        uint96	12 bytes
      */
 
-    uint256 internal constant OFFSET_UPDATER = 2;
-    uint256 internal constant OFFSET_RELAYER = 14;
+    uint256 internal constant OFFSET_NOTARY = 2;
+    uint256 internal constant OFFSET_BROADCASTER = 14;
     uint256 internal constant OFFSET_PROVER = 26;
-    uint256 internal constant OFFSET_PROCESSOR = 38;
+    uint256 internal constant OFFSET_EXECUTOR = 38;
 
     modifier onlyTips(bytes29 _view) {
         _view.assertType(Message.TIPS_TYPE);
@@ -35,19 +36,20 @@ library Tips {
 
     /**
      * @notice Returns formatted (packed) tips with provided fields
-     * @param _updaterTip Tip for the Updater
-     * @param _relayerTip Tip for the Relayer
+     * @param _notaryTip Tip for the Notary
+     * @param _broadcasterTip Tip for the Broadcaster
      * @param _proverTip Tip for the Prover
-     * @param _processorTip Tip for the Processor
+     * @param _executorTip Tip for the Executor
      * @return Formatted tips
      **/
     function formatTips(
-        uint96 _updaterTip,
-        uint96 _relayerTip,
+        uint96 _notaryTip,
+        uint96 _broadcasterTip,
         uint96 _proverTip,
-        uint96 _processorTip
+        uint96 _executorTip
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(TIPS_VERSION, _updaterTip, _relayerTip, _proverTip, _processorTip);
+        return
+            abi.encodePacked(TIPS_VERSION, _notaryTip, _broadcasterTip, _proverTip, _executorTip);
     }
 
     /**
@@ -69,14 +71,14 @@ library Tips {
         return uint16(_tips.indexUint(0, 2));
     }
 
-    /// @notice Returns updaterTip field
-    function updaterTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_UPDATER, 12));
+    /// @notice Returns notaryTip field
+    function notaryTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
+        return uint32(_tips.indexUint(OFFSET_NOTARY, 12));
     }
 
-    /// @notice Returns relayerTip field
-    function relayerTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_RELAYER, 12));
+    /// @notice Returns broadcasterTip field
+    function broadcasterTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
+        return uint32(_tips.indexUint(OFFSET_BROADCASTER, 12));
     }
 
     /// @notice Returns proverTip field
@@ -84,12 +86,12 @@ library Tips {
         return uint32(_tips.indexUint(OFFSET_PROVER, 12));
     }
 
-    /// @notice Returns processorTip field
-    function processorTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_PROCESSOR, 12));
+    /// @notice Returns executorTip field
+    function executorTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
+        return uint32(_tips.indexUint(OFFSET_EXECUTOR, 12));
     }
 
     function totalTips(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return updaterTip(_tips) + relayerTip(_tips) + proverTip(_tips) + processorTip(_tips);
+        return notaryTip(_tips) + broadcasterTip(_tips) + proverTip(_tips) + executorTip(_tips);
     }
 }

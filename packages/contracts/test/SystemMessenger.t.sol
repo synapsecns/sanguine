@@ -2,26 +2,26 @@
 
 pragma solidity 0.8.13;
 
-import { IUpdaterManager } from "../contracts/interfaces/IUpdaterManager.sol";
+import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
 import { SystemMessage } from "../contracts/system/SystemMessage.sol";
 import { Message } from "../contracts/libs/Message.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Tips } from "../contracts/libs/Tips.sol";
-import { SynapseTestWithUpdaterManager } from "./utils/SynapseTest.sol";
+import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
-import { HomeHarness } from "./harnesses/HomeHarness.sol";
-import { ReplicaManagerHarness } from "./harnesses/ReplicaManagerHarness.sol";
+import { OriginHarness } from "./harnesses/OriginHarness.sol";
+import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
 import { SystemMessengerHarness } from "./harnesses/SystemMessengerHarness.sol";
 
-contract SystemMessengerTest is SynapseTestWithUpdaterManager {
+contract SystemMessengerTest is SynapseTestWithNotaryManager {
     SystemMessengerHarness internal systemMessenger;
-    HomeHarness internal home;
-    ReplicaManagerHarness internal replicaManager;
+    OriginHarness internal origin;
+    DestinationHarness internal destination;
 
     uint32 internal optimisticPeriod = 420;
     uint256 internal secretValue = 1337;
-    bytes payload = abi.encodeWithSelector(home.setSensitiveValue.selector, secretValue);
+    bytes payload = abi.encodeWithSelector(origin.setSensitiveValue.selector, secretValue);
 
     bytes32 internal constant SYSTEM_SENDER =
         0xFFFFFFFF_FFFFFFFF_FFFFFFFF_00000000_00000000_00000000_00000000_00000000;
@@ -40,25 +40,25 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
     function setUp() public override {
         super.setUp();
 
-        home = new HomeHarness(localDomain);
-        home.initialize(IUpdaterManager(updaterManager));
-        updaterManager.setHome(address(home));
+        origin = new OriginHarness(localDomain);
+        origin.initialize(INotaryManager(notaryManager));
+        notaryManager.setOrigin(address(origin));
 
-        replicaManager = new ReplicaManagerHarness(localDomain);
-        replicaManager.initialize(remoteDomain, updater);
+        destination = new DestinationHarness(localDomain);
+        destination.initialize(remoteDomain, notary);
 
         systemMessenger = new SystemMessengerHarness(
-            address(home),
-            address(replicaManager),
+            address(origin),
+            address(destination),
             optimisticPeriod
         );
-        home.setSystemMessenger(systemMessenger);
-        replicaManager.setSystemMessenger(systemMessenger);
+        origin.setSystemMessenger(systemMessenger);
+        destination.setSystemMessenger(systemMessenger);
     }
 
     function test_constructor() public {
-        assertEq(systemMessenger.home(), address(home));
-        assertEq(systemMessenger.replicaManager(), address(replicaManager));
+        assertEq(systemMessenger.origin(), address(origin));
+        assertEq(systemMessenger.destination(), address(destination));
         assertEq(systemMessenger.optimisticSeconds(), optimisticPeriod);
     }
 
@@ -66,12 +66,12 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         assertEq(systemMessenger.trustedSender(0), SYSTEM_SENDER);
     }
 
-    function test_sendSystemMessage_home() public {
-        _testSendSystemMessage(address(home));
+    function test_sendSystemMessage_origin() public {
+        _testSendSystemMessage(address(origin));
     }
 
-    function test_sendSystemMessage_replicaManager() public {
-        _testSendSystemMessage(address(replicaManager));
+    function test_sendSystemMessage_destination() public {
+        _testSendSystemMessage(address(destination));
     }
 
     function test_sendSystemMessage_notSystemSender() public {
@@ -83,26 +83,26 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         );
     }
 
-    function test_receiveSystemMessage_home() public {
+    function test_receiveSystemMessage_origin() public {
         bytes memory message = _prepareReceiveTest(
             optimisticPeriod,
             0,
             _createReceivedSystemMessage
         );
         skip(optimisticPeriod);
-        replicaManager.process(message);
-        assertEq(home.sensitiveValue(), secretValue);
+        destination.execute(message);
+        assertEq(origin.sensitiveValue(), secretValue);
     }
 
-    function test_receiveSystemMessage_replicaManager() public {
+    function test_receiveSystemMessage_destination() public {
         bytes memory message = _prepareReceiveTest(
             optimisticPeriod,
             1,
             _createReceivedSystemMessage
         );
         skip(optimisticPeriod);
-        replicaManager.process(message);
-        assertEq(replicaManager.sensitiveValue(), secretValue);
+        destination.execute(message);
+        assertEq(destination.sensitiveValue(), secretValue);
     }
 
     function test_receiveSystemMessage_optimisticPeriodNotOver() public {
@@ -113,7 +113,7 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         );
         skip(optimisticPeriod - 1);
         vm.expectRevert("!optimisticSeconds");
-        replicaManager.process(message);
+        destination.execute(message);
     }
 
     function test_receiveSystemMessage_optimisticPeriodForged() public {
@@ -121,7 +121,7 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         bytes memory message = _prepareReceiveTest(fakePeriod, 0, _createReceivedSystemMessage);
         skip(fakePeriod);
         vm.expectRevert("Client: !optimisticSeconds");
-        replicaManager.process(message);
+        destination.execute(message);
     }
 
     function test_receiveSystemMessage_unknownRecipient() public {
@@ -132,7 +132,7 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         );
         skip(optimisticPeriod);
         vm.expectRevert("Unknown recipient");
-        replicaManager.process(message);
+        destination.execute(message);
     }
 
     /**
@@ -147,7 +147,7 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         );
         skip(optimisticPeriod);
         vm.expectRevert("Client: !trustedSender");
-        replicaManager.process(message);
+        destination.execute(message);
     }
 
     function _testSendSystemMessage(address _sender) internal {
@@ -177,14 +177,14 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         uint8 _recipient,
         function(uint32, uint32, uint8) internal returns (bytes memory) _createReceivedMessage
     ) internal returns (bytes memory message) {
-        (bytes memory attestation, ) = signRemoteAttestation(updaterPK, NONCE, ROOT);
-        replicaManager.submitAttestation(attestation);
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
+        destination.submitAttestation(attestation);
 
         message = _createReceivedMessage(69, _optimisticSeconds, _recipient);
         bytes32 messageHash = keccak256(message);
-        replicaManager.setMessageStatus(remoteDomain, messageHash, ROOT);
+        destination.setMessageStatus(remoteDomain, messageHash, ROOT);
 
-        assert(home.sensitiveValue() != secretValue);
+        assert(origin.sensitiveValue() != secretValue);
     }
 
     function _createSentSystemMessage(uint32 _nonce, uint8 _recipient)
@@ -239,10 +239,10 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
     }
 
     function _createSystemMessage(
-        uint32 _originDomain,
+        uint32 _origin,
         bytes32 _sender,
         uint32 _nonce,
-        uint32 _destDomain,
+        uint32 _destination,
         bytes32 _receiver,
         uint32 _optimisticSeconds,
         uint8 _recipient
@@ -250,10 +250,10 @@ contract SystemMessengerTest is SynapseTestWithUpdaterManager {
         return
             Message.formatMessage(
                 Header.formatHeader(
-                    _originDomain,
+                    _origin,
                     _sender,
                     _nonce,
-                    _destDomain,
+                    _destination,
                     _receiver,
                     _optimisticSeconds
                 ),

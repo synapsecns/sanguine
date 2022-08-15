@@ -74,7 +74,7 @@ func (d domainIndexer) checkAndStoreMessages(ctx context.Context, startHeight ui
 	}
 
 	// TODO: handle required confs
-	sortedMessages, err := d.domain.Home().FetchSortedMessages(ctx, startHeight, tip)
+	sortedMessages, err := d.domain.Origin().FetchSortedMessages(ctx, startHeight, tip)
 	if err != nil {
 		return false, tip, fmt.Errorf("could not sync updates: %w", err)
 	}

@@ -40,8 +40,8 @@ type DomainConfig struct {
 	Type string `toml:"Type"`
 	// RequiredConfirmations is the number of confirmations to way
 	RequiredConfirmations uint32 `toml:"Confirmations"`
-	// HomeAddress gets the x app config address
-	HomeAddress string `toml:"HomeAddress"`
+	// OriginAddress gets origin contract address
+	OriginAddress string `toml:"OriginAddress"`
 	// AttesationCollectorAddress contains the attestation collector address (if present)
 	AttesationCollectorAddress string `toml:"AttesationCollectorAddress"`
 	// RPCUrl to use for the chain
@@ -62,8 +62,8 @@ func (d DomainConfig) IsValid(_ context.Context) (ok bool, err error) {
 	}
 
 	// TODO: we should defer to chain-specific config here for verification
-	if d.HomeAddress == "" {
-		return false, fmt.Errorf("field HomeAddress: %w", ErrRequiredField)
+	if d.OriginAddress == "" {
+		return false, fmt.Errorf("field OriginAddress: %w", ErrRequiredField)
 	}
 
 	if d.RPCUrl == "" {

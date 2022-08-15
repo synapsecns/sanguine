@@ -36,10 +36,10 @@ contract SystemMessenger is Client, ISystemMessenger {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     constructor(
-        address _home,
-        address _replicaManager,
+        address _origin,
+        address _destination,
         uint32 _optimisticSeconds
-    ) Client(_home, _replicaManager) {
+    ) Client(_origin, _destination) {
         // TODO: Do we ever want to adjust this?
         // (the value should be the same across all chains)
         // Or could it be converted into immutable?
@@ -52,7 +52,7 @@ contract SystemMessenger is Client, ISystemMessenger {
 
     /// @notice Allows calls only from any of the System Contracts
     modifier anySystem() {
-        require(msg.sender == home || msg.sender == replicaManager, "Unauthorized caller");
+        require(msg.sender == origin || msg.sender == destination, "Unauthorized caller");
         _;
     }
 
@@ -65,22 +65,22 @@ contract SystemMessenger is Client, ISystemMessenger {
      * @dev     Only System contracts are allowed to call this function.
      *          Note that knowledge of recipient address is not required,
      *          routing will be done by SystemMessenger on the destination chain.
-     * @param _destDomain   Domain of destination chain
+     * @param _destination  Domain of destination chain
      * @param _recipient    System contract type of the recipient
      * @param _payload      Data for calling recipient on destination chain
      */
     function sendSystemMessage(
-        uint32 _destDomain,
+        uint32 _destination,
         SystemContracts _recipient,
         bytes memory _payload
     ) external anySystem {
         bytes memory message = SystemMessage.formatCall(uint8(_recipient), _payload);
         /**
-         * @dev Home should recognize SystemMessenger as the "true sender"
+         * @dev Origin should recognize SystemMessenger as the "true sender"
          *      and use SYSTEM_SENDER address as "sender" instead. This enables not
          *      knowing SystemMessenger address on remote chain in advance.
          */
-        _send(_destDomain, Tips.emptyTips(), message);
+        _send(_destination, Tips.emptyTips(), message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -107,8 +107,8 @@ contract SystemMessenger is Client, ISystemMessenger {
          * It's not possible for anyone but SystemMessenger
          * to send messages "from SYSTEM_SENDER" on other deployed chains.
          *
-         * ReplicaManager is supposed to reject messages
-         * from unknown chains, so we can skip originDomain check here.
+         * Destination is supposed to reject messages
+         * from unknown chains, so we can skip origin check here.
          */
         return SystemMessage.SYSTEM_SENDER;
     }
@@ -142,8 +142,8 @@ contract SystemMessenger is Client, ISystemMessenger {
     }
 
     function _getSystemRecipient(uint8 _recipient) internal view returns (address) {
-        if (_recipient == uint8(SystemContracts.Home)) return home;
-        if (_recipient == uint8(SystemContracts.ReplicaManager)) return replicaManager;
+        if (_recipient == uint8(SystemContracts.Origin)) return origin;
+        if (_recipient == uint8(SystemContracts.Destination)) return destination;
         revert("Unknown recipient");
     }
 }

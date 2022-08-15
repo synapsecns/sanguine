@@ -12,55 +12,55 @@ contract MessageTest is SynapseTest {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
-    uint32 originDomain;
+    uint32 origin;
     bytes32 sender;
     uint32 nonce;
-    uint32 destinationDomain;
+    uint32 destination;
     uint32 optimisticSeconds;
     bytes32 recipient;
     bytes tips;
     bytes messageBody;
-    uint96 updaterTip;
-    uint96 relayerTip;
+    uint96 notaryTip;
+    uint96 broadcasterTip;
     uint96 proverTip;
-    uint96 processorTip;
+    uint96 executorTip;
 
     function setUp() public override {
         super.setUp();
         messageHarness = new MessageHarness();
-        originDomain = 1000;
+        origin = 1000;
         sender = bytes32("AAAA THE SENDOOOOOR");
         nonce = 42;
-        destinationDomain = 2000;
+        destination = 2000;
         optimisticSeconds = 4;
         recipient = bytes32("AAAA THE RECEIVOOOR");
-        updaterTip = 1234;
-        relayerTip = 3456;
+        notaryTip = 1234;
+        broadcasterTip = 3456;
         proverTip = 5678;
-        processorTip = 7890;
-        tips = getFormattedTips(updaterTip, relayerTip, proverTip, processorTip);
+        executorTip = 7890;
+        tips = getFormattedTips(notaryTip, broadcasterTip, proverTip, executorTip);
         messageBody = bytes("Messagoooor");
     }
 
     function test_formatMessage() public {
         bytes memory message = messageHarness.formatMessage(
-            originDomain,
+            origin,
             sender,
             nonce,
-            destinationDomain,
+            destination,
             recipient,
             optimisticSeconds,
-            updaterTip,
-            relayerTip,
+            notaryTip,
+            broadcasterTip,
             proverTip,
-            processorTip,
+            executorTip,
             messageBody
         );
 
-        assertEq(messageHarness.origin(message), originDomain);
+        assertEq(messageHarness.origin(message), origin);
         assertEq(messageHarness.sender(message), sender);
         assertEq(messageHarness.nonce(message), nonce);
-        assertEq(messageHarness.destination(message), destinationDomain);
+        assertEq(messageHarness.destination(message), destination);
         assertEq(messageHarness.recipient(message), recipient);
         assertEq(messageHarness.optimisticSeconds(message), optimisticSeconds);
         assertEq(messageHarness.tips(message), tips);
@@ -70,24 +70,24 @@ contract MessageTest is SynapseTest {
 
     function test_messageHash() public {
         bytes memory message = messageHarness.formatMessage(
-            originDomain,
+            origin,
             sender,
             nonce,
-            destinationDomain,
+            destination,
             recipient,
             optimisticSeconds,
-            updaterTip,
-            relayerTip,
+            notaryTip,
+            broadcasterTip,
             proverTip,
-            processorTip,
+            executorTip,
             messageBody
         );
 
         bytes32 messageHash = messageHarness.messageHash(
-            originDomain,
+            origin,
             sender,
             nonce,
-            destinationDomain,
+            destination,
             recipient,
             optimisticSeconds,
             tips,

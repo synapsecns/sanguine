@@ -8,7 +8,7 @@ import { Header } from "./Header.sol";
 /**
  * @title Message Library
  * @author Illusory Systems Inc.
- * @notice Library for versioned formatted messages used by Home and Replica.
+ * @notice Library for versioned formatted messages used by Origin and Mirror.
  **/
 library Message {
     using TypedMemView for bytes;
