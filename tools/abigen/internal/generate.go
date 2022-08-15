@@ -227,6 +227,7 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 		//
 		fmt.Println("nbusy " + strconv.Itoa(nbusy))
 		if err != nil {
+			fmt.Println("I got an error")
 			fmt.Println(err.Error())
 		} else {
 			fmt.Println("no err")
