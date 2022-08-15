@@ -167,9 +167,9 @@ contract Origin is
          * TODO: do this properly
          * @dev 1. New Notaries should be added to all System Contracts
          *      from "secondary" Bonding contracts (global Notary/Guard registry)
-         *      1a. onlyUpdaterManager -> onlyBondingManager (or w/e the name would be)
+         *      1a. onlyNotaryManager -> onlyBondingManager (or w/e the name would be)
          *      2. There is supposed to be more than one active Notary
-         *      2a. setUpdater() -> addNotary()
+         *      2a. setNotary() -> addNotary()
          *      3. No need to reset the `state`, as Origin is not supposed
          *      to be in Failed state in the first place (see _fail() for reasoning).
          */
@@ -313,7 +313,7 @@ contract Origin is
     function _fail(address _notary) internal {
         /**
          * TODO: remove Failed state
-         * @dev With the asynchronous updates Origin is never in the FAILED state.
+         * @dev With the asynchronous attestations Origin is never in the FAILED state.
          * It's rather some Destinations might end up with a corrupted merkle state
          * (upon receiving a fraud attestation). It's a Destination job to get this conflict fixed.
          * As long as there's more than one active Notary, new messages on Origin could be verified

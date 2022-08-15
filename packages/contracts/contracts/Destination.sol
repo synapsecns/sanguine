@@ -260,8 +260,8 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
 
     /**
      * @notice Check that the root has been submitted
-     * and that the optimistic timeout period has expired,
-     * meaning the root can be processed
+     * and that the root's optimistic timeout period has expired,
+     * meaning message proven against the root can be executed.
      * @param _root the Merkle root, submitted in an attestation, to check
      * @return TRUE iff root has been submitted & timeout has expired
      */
