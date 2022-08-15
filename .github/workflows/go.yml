@@ -108,39 +108,53 @@ jobs:
 
   # changes allows us to only run a job on changed packages
   changes:
-    name: Go Changes
+    name: Change Detection
     runs-on: ubuntu-latest
     outputs:
       # Expose matched filters as job 'packages' output variable
-      packages: ${{ steps.filter.outputs.changes }}
-      package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
+      go_package_changes: ${{ steps.filter_go.outputs.changes }}
+      go_change_count: ${{ steps.length.outputs.GO_CHANGES_LENGTH }}
+      solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
           submodules: 'recursive'
 
-      # For pull requests it's not necessary to checkout the code
+      # Check if any go files have been changed in each of the go packages
       - uses: dorny/paths-filter@v2
-        id: filter
+        name: "Check for Go Changes"
+        id: filter_go
         with:
           filters: |
             core: 'core/**'
             tools: 'tools/**'
             ethergo: 'ethergo/**'
-      - id: length
+
+      # Check for solidity changes, if anything has been changed here we need to regenerate core
+      - name: Check For Solidity Changes
+        id: filter_solidity
+        uses: tj-actions/changed-files@v26.1
+        with:
+          files: |
+            **/*.sol
+
+
+      - id: Get go output changes length
         run: |
-          export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
-          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
+          # get length of go changes
+          export GO_CHANGES_LENGTH=$(echo GO_FILTERED_PATHS | jq '. | length')
+          echo "##[set-output name=GO_CHANGES_LENGTH;]$(echo GO_CHANGES_LENGTH)"
         env:
-          FILTERED_PATHS: ${{ steps.filter.outputs.changes }}
+          GO_FILTERED_PATHS: ${{ steps.filter_go.outputs.changes }}
+
 
   # make sure the build works
   build:
     name: Build
     needs: changes
     runs-on: ${{ matrix.platform }}
-    if: ${{ needs.changes.outputs.package_count > 0 }}
+    if: ${{ needs.changes.outputs.go_change_count > 0 }}
     strategy:
       matrix:
         go-version:
@@ -181,12 +195,12 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ needs.changes.outputs.package_count > 0 }}
+    if: ${{ needs.changes.outputs.go_change_count > 0 }}
     strategy:
       matrix:
         # Parse JSON array containing names of all filters matching any of changed files
         # e.g. ['package1', 'package2'] if both package folders contains changes
-        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        package: ${{ fromJSON(needs.changes.outputs.go_package_changes) }}
     steps:
       - uses: actions/setup-go@v3
         with:
@@ -223,3 +237,112 @@ jobs:
           # see: https://github.com/golangci/golangci-lint/issues/337#issuecomment-510136513
           GOGC: 20
           GOPRIVATE: "GOPRIVATE=github.com/synapsecns/synapse-node"
+
+  # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
+  check-generation:
+    name: Go Generate
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes }}
+    strategy:
+      matrix:
+        # only do on core for now
+        package: ['core']
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      # Setup npm
+      - name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+        id: nvmrc
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: "Use NodeJS by nvmrc"
+        uses: actions/setup-node@v2
+        with:
+          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+
+      - name: Initialize Yarn cache
+        uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install Node Dependencies
+        run: yarn install --frozen-lockfile --check-files
+
+      - name: Install dependencies
+        run: |
+          npx lerna bootstrap
+
+      # Generate flattened files
+      - name: Run flattener
+        run: npx lerna exec npm run build:go
+
+      # Setup Go
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: authenticate with github for private go modules
+        uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
+
+
+      - name: Go modules cache
+        uses: actions/cache@v2
+        with:
+          # see https://github.com/mvdan/github-actions-golang
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      # See if we need to rerun go generate
+      # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
+      - name: Try Go Generate
+        working-directory: ${{matrix.package}}/
+        run: |
+          go generate ./...
+
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@v10.1
+        id: verify-changed-files
+        with:
+          files: |
+            *.go
+            *.json
+
+      - uses: jwalton/gh-find-current-pr@v1
+        id: find_pr
+
+        # Fail if files need regeneration
+      - name: Add Label
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: andymckay/labeler@e6c4322d0397f3240f0e7e30a33b5c5df2d39e90
+        with:
+          add-labels: "needs-go-generate"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ steps.find_pr.outputs.pr }}
+
+      - name: Remove Label
+        if: steps.verify-changed-files.outputs.files_changed != 'true'
+        uses: andymckay/labeler@e6c4322d0397f3240f0e7e30a33b5c5df2d39e90
+        with:
+          remove-labels: "needs-go-generate"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ steps.find_pr.outputs.pr }}
