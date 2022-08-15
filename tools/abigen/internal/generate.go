@@ -225,7 +225,8 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 		//
 		// http://golang.org/issue/3001
 		//
-		fmt.Println("nbusy " + string(nbusy))
+		fmt.Println("nbusy " + strconv.Itoa(nbusy))
+		fmt.Println(err.Error())
 		if err != nil && nbusy < 3 && strings.Contains(err.Error(), "text file busy") {
 			fmt.Println("true")
 			time.Sleep(100 * time.Millisecond << uint(nbusy))
