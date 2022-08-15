@@ -77,7 +77,7 @@ func (r ReplicaManagerSuite) TestReplicaManagerSuite() {
 		r.T().Error(r.T(), fmt.Errorf("test context completed %w", r.GetTestContext().Err()))
 	case <-subAttestation.Err():
 		r.T().Error(r.T(), subAttestation.Err())
-	// get dispatch event
+	// get attestation accepted event
 	case item := <-attestationSink:
 		parser, err := replicamanager.NewParser(r.replicaContract.Address())
 		Nil(r.T(), err)
@@ -89,8 +89,4 @@ func (r ReplicaManagerSuite) TestReplicaManagerSuite() {
 
 		break
 	}
-}
-
-func (r ReplicaManagerSuite) TestUpdateTopic() {
-	r.T().Skip("TODO: test this. Mocker should be able to mock this out")
 }
