@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 )
 
 // GenerateABIFromEtherscan generates the abi for an etherscan file.
@@ -134,8 +135,6 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 		return nil, err
 	}
 
-	_ = runFile.Close()
-
 	wd, err := os.Getwd()
 	if err != nil {
 		return nil, fmt.Errorf("could not determine working dir: %w", err)
@@ -169,17 +168,71 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 		}
 	}()
 
-	// compile the solidity
-	var stderr, stdout bytes.Buffer
 	args := []string{"--combined-json", "bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata,hashes", "--optimize", "--optimize-runs", strconv.Itoa(optimizeRuns), "--allow-paths", "., ./, ../"}
-	//nolint: gosec
-	cmd := exec.Command(runFile.Name(), append(args, "--", fmt.Sprintf("/solidity/%s", filepath.Base(solFile.Name())))...)
-	cmd.Stderr = &stderr
-	cmd.Stdout = &stdout
 
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("solc: %w\n%s", err, stderr.Bytes())
+	nbusy := 0
+	var stderr, stdout bytes.Buffer
+	for {
+		// reset
+		stderr = bytes.Buffer{}
+		stdout = bytes.Buffer{}
+
+		// compile the solidity
+		//nolint: gosec
+		cmd := exec.Command(runFile.Name(), append(args, "--", fmt.Sprintf("/solidity/%s", filepath.Base(solFile.Name())))...)
+		cmd.Stderr = &stderr
+		cmd.Stdout = &stdout
+
+		err = cmd.Run()
+		// cmd.Run will fail on Unix if some other process has the binary
+		// we want to run open for writing.  This can happen here because
+		// we build and install the cgo command and then run it.
+		// If another command was kicked off while we were writing the
+		// cgo binary, the child process for that command may be holding
+		// a reference to the fd, keeping us from running exec.
+		//
+		// But, you might reasonably wonder, how can this happen?
+		// The cgo fd, like all our fds, is close-on-exec, so that we need
+		// not worry about other processes inheriting the fd accidentally.
+		// The answer is that running a command is fork and exec.
+		// A child forked while the cgo fd is open inherits that fd.
+		// Until the child has called exec, it holds the fd open and the
+		// kernel will not let us run cgo.  Even if the child were to close
+		// the fd explicitly, it would still be open from the time of the fork
+		// until the time of the explicit close, and the race would remain.
+		//
+		// On Unix systems, this results in ETXTBSY, which formats
+		// as "text file busy".  Rather than hard-code specific error cases,
+		// we just look for that string.  If this happens, sleep a little
+		// and try again.  We let this happen three times, with increasing
+		// sleep lengths: 100+200+400 ms = 0.7 seconds.
+		//
+		// An alternate solution might be to split the cmd.Run into
+		// separate cmd.Start and cmd.Wait, and then use an RWLock
+		// to make sure that copyFile only executes when no cmd.Start
+		// call is in progress.  However, cmd.Start (really syscall.forkExec)
+		// only guarantees that when it returns, the exec is committed to
+		// happen and succeed.  It uses a close-on-exec file descriptor
+		// itself to determine this, so we know that when cmd.Start returns,
+		// at least one close-on-exec file descriptor has been closed.
+		// However, we cannot be sure that all of them have been closed,
+		// so the program might still encounter ETXTBSY even with such
+		// an RWLock.  The race window would be smaller, perhaps, but not
+		// guaranteed to be gone.
+		//
+		// Sleeping when we observe the race seems to be the most reliable
+		// option we have.
+		//
+		// http://golang.org/issue/3001
+		//
+		if err != nil && nbusy < 3 && strings.Contains(err.Error(), "text file busy") {
+			time.Sleep(100 * time.Millisecond << uint(nbusy))
+			nbusy++
+			continue
+		}
+		break
 	}
+
 	contract, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(args, " "))
 	if err != nil {
 		return nil, fmt.Errorf("could not parse json: %w", err)
