@@ -9,7 +9,7 @@ library Attestation {
 
     /**
      * @dev AttestationData memory layout
-     * [000 .. 004): originDomain     uint32   4 bytes
+     * [000 .. 004): origin         uint32   4 bytes
      * [004 .. 008): nonce          uint32   4 bytes
      * [008 .. 040): root           bytes32 32 bytes
      *

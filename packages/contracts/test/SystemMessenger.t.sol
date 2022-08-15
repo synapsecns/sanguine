@@ -239,10 +239,10 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
     }
 
     function _createSystemMessage(
-        uint32 _originDomain,
+        uint32 _origin,
         bytes32 _sender,
         uint32 _nonce,
-        uint32 _destDomain,
+        uint32 _destination,
         bytes32 _receiver,
         uint32 _optimisticSeconds,
         uint8 _recipient
@@ -250,10 +250,10 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         return
             Message.formatMessage(
                 Header.formatHeader(
-                    _originDomain,
+                    _origin,
                     _sender,
                     _nonce,
-                    _destDomain,
+                    _destination,
                     _receiver,
                     _optimisticSeconds
                 ),

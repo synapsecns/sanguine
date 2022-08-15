@@ -95,7 +95,7 @@ contract DestinationTest is SynapseTest {
     }
 
     event AttestationAccepted(
-        uint32 indexed originDomain,
+        uint32 indexed origin,
         uint32 indexed nonce,
         bytes32 indexed root,
         bytes signature

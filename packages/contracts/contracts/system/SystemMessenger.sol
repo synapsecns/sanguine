@@ -65,12 +65,12 @@ contract SystemMessenger is Client, ISystemMessenger {
      * @dev     Only System contracts are allowed to call this function.
      *          Note that knowledge of recipient address is not required,
      *          routing will be done by SystemMessenger on the destination chain.
-     * @param _destDomain   Domain of destination chain
+     * @param _destination  Domain of destination chain
      * @param _recipient    System contract type of the recipient
      * @param _payload      Data for calling recipient on destination chain
      */
     function sendSystemMessage(
-        uint32 _destDomain,
+        uint32 _destination,
         SystemContracts _recipient,
         bytes memory _payload
     ) external anySystem {
@@ -80,7 +80,7 @@ contract SystemMessenger is Client, ISystemMessenger {
          *      and use SYSTEM_SENDER address as "sender" instead. This enables not
          *      knowing SystemMessenger address on remote chain in advance.
          */
-        _send(_destDomain, Tips.emptyTips(), message);
+        _send(_destination, Tips.emptyTips(), message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -108,7 +108,7 @@ contract SystemMessenger is Client, ISystemMessenger {
          * to send messages "from SYSTEM_SENDER" on other deployed chains.
          *
          * Destination is supposed to reject messages
-         * from unknown chains, so we can skip originDomain check here.
+         * from unknown chains, so we can skip origin check here.
          */
         return SystemMessage.SYSTEM_SENDER;
     }

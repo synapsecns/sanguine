@@ -14,10 +14,10 @@ contract MessageHarness {
     using TypedMemView for bytes29;
 
     function formatMessage(
-        uint32 _originDomain,
+        uint32 _origin,
         bytes32 _sender,
         uint32 _nonce,
-        uint32 _destinationDomain,
+        uint32 _destination,
         bytes32 _recipient,
         uint32 _optimisticSeconds,
         // tips params
@@ -30,10 +30,10 @@ contract MessageHarness {
         bytes memory _tips = Tips.formatTips(_notaryTip, _broadcasterTip, _proverTip, _executorTip);
 
         bytes memory _header = Header.formatHeader(
-            _originDomain,
+            _origin,
             _sender,
             _nonce,
-            _destinationDomain,
+            _destination,
             _recipient,
             _optimisticSeconds
         );

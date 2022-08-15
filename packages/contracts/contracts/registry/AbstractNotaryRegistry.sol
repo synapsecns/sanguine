@@ -28,5 +28,5 @@ abstract contract AbstractNotaryRegistry {
         require(_isNotary(_view.attestationDomain(), _notary), "Signer is not a notary");
     }
 
-    function _isNotary(uint32 _originDomain, address _notary) internal view virtual returns (bool);
+    function _isNotary(uint32 _origin, address _notary) internal view virtual returns (bool);
 }

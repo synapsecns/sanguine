@@ -78,7 +78,7 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
     );
 
     event AttestationAccepted(
-        uint32 indexed originDomain,
+        uint32 indexed origin,
         uint32 indexed nonce,
         bytes32 indexed root,
         bytes signature
