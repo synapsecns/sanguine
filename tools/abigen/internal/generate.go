@@ -156,6 +156,11 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 		return nil, fmt.Errorf("could not write to sol tmp file at %s: %w", solFile.Name(), err)
 	}
 
+	err = solFile.Close()
+	if err != nil {
+		return nil, fmt.Errorf("could not close solidity file handle %s: %w", solFile.Name(), err)
+	}
+
 	defer func() {
 		if err == nil {
 			err = os.Remove(solFile.Name())
@@ -194,6 +199,12 @@ func createRunFile(version string) (runFile *os.File, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not create temp file: %w", err)
 	}
+
+	err = runFile.Close()
+	if err != nil {
+		return nil, fmt.Errorf("could not close temp file: %w", err)
+	}
+
 	// TODO this should really be done natively. See: https://pkg.go.dev/bitbucket.org/dchapes/mode maybe?
 	//nolint: gosec
 	err = exec.Command("chmod", "+x", runFile.Name()).Run()
