@@ -3,7 +3,8 @@ package testutil
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
-	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/notarymanager"
+	"github.com/synapsecns/sanguine/core/contracts/origin"
 	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/headerharness"
@@ -11,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
-	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 )
 
@@ -43,8 +43,8 @@ func verifyStringerUpdated(contractType contractTypeImpl) {
 type contractTypeImpl int
 
 const (
-	// HomeType is the type of the home.
-	HomeType contractTypeImpl = 0 // Home
+	// OriginType is the type of the origin.
+	OriginType contractTypeImpl = 0 // Origin
 	// MessageHarnessType is the type of the message harness contract.
 	MessageHarnessType contractTypeImpl = iota // MessageHarness
 	// HomeHarnessType is the home harness type.
@@ -57,8 +57,8 @@ const (
 	HeaderHarnessType contractTypeImpl = iota
 	// ReplicaManagerHarnessType is the replica manager harness type.
 	ReplicaManagerHarnessType contractTypeImpl = iota
-	// UpdaterManagerType is the type of the update manager.
-	UpdaterManagerType contractTypeImpl = iota // UpdaterManager
+	// NotaryManagerType is the type of the update manager.
+	NotaryManagerType contractTypeImpl = iota // UpdaterManager
 	// AttestationCollectorType is the type of the attestation collector.
 	AttestationCollectorType contractTypeImpl = iota // AttestationCollector
 	// ReplicaManagerType is the type of the replica manager.
@@ -84,8 +84,8 @@ func (c contractTypeImpl) Name() string {
 //nolint: cyclop
 func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
-	case HomeType:
-		return home.Contracts["solidity/Home.sol:Home"]
+	case OriginType:
+		return origin.Contracts["solidity/Origin.sol:Origin"]
 	case MessageHarnessType:
 		return messageharness.Contracts["solidity/MessageHarness.sol:MessageHarness"]
 	case HomeHarnessType:
@@ -94,8 +94,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return attestationharness.Contracts["solidity/AttestationHarness.sol:AttestationHarness"]
 	case ReplicaManagerHarnessType:
 		return replicamanagerharness.Contracts["solidity/ReplicaManagerHarness.sol:ReplicaManagerHarness"]
-	case UpdaterManagerType:
-		return updatermanager.Contracts["solidity/UpdaterManager.sol:UpdaterManager"]
+	case NotaryManagerType:
+		return notarymanager.Contracts["solidity/UpdaterManager.sol:UpdaterManager"]
 	case TipsHarnessType:
 		return tipsharness.Contracts["solidity/TipsHarness.sol:TipsHarness"]
 	case AttestationCollectorType:

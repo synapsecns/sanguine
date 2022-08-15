@@ -2,10 +2,10 @@ package testutil_test
 
 import . "github.com/stretchr/testify/assert"
 
-func (s SimulatedSuite) TestTypecastHome() {
+func (s SimulatedSuite) TestTypecastOrigin() {
 	NotPanics(s.T(), func() {
-		_, homeHandle := s.deployManager.GetHome(s.GetTestContext(), s.testBackend)
-		NotNil(s.T(), homeHandle)
+		_, originHandle := s.deployManager.GetOrigin(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), originHandle)
 	})
 }
 
@@ -23,9 +23,9 @@ func (s SimulatedSuite) TestTypecastHomeHarness() {
 	})
 }
 
-func (s SimulatedSuite) TestTypecastUpdaterManager() {
+func (s SimulatedSuite) TestTypecastNotaryManager() {
 	NotPanics(s.T(), func() {
-		_, updaterManager := s.deployManager.GetUpdaterManager(s.GetTestContext(), s.testBackend)
+		_, updaterManager := s.deployManager.GetNotaryManager(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), updaterManager)
 	})
 }

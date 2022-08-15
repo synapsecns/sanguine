@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/origin"
 	"github.com/synapsecns/sanguine/core/domains"
 	"github.com/synapsecns/sanguine/core/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
@@ -13,34 +13,34 @@ import (
 	"math/big"
 )
 
-// NewHomeContract returns a new bound home contract.
-func NewHomeContract(ctx context.Context, client evm.Chain, homeAddress common.Address) (domains.HomeContract, error) {
-	boundContract, err := home.NewHomeRef(homeAddress, client)
+// NewOriginContract returns a new bound origin contract.
+func NewOriginContract(ctx context.Context, client evm.Chain, originAddress common.Address) (domains.OriginContract, error) {
+	boundContract, err := origin.NewOriginRef(originAddress, client)
 	if err != nil {
-		return nil, fmt.Errorf("could not create %T: %w", &home.HomeRef{}, err)
+		return nil, fmt.Errorf("could not create %T: %w", &origin.OriginRef{}, err)
 	}
 
 	nonceManager := nonce.NewNonceManager(ctx, client, client.GetBigChainID())
 
-	return homeContract{
+	return originContract{
 		contract:     boundContract,
 		client:       client,
 		nonceManager: nonceManager,
 	}, nil
 }
 
-// homeContract contains an interface for interacting with the home chain that implements
-// domains.HomeContract.
-type homeContract struct {
+// originContract contains an interface for interacting with the origin chain that implements
+// domains.OriginContract.
+type originContract struct {
 	// contract contains the contract handle
-	contract home.IHome
+	contract origin.IOrigin
 	// client is the client
 	client evm.Chain
 	// nonceManager is the nonce manager used for transacting
 	nonceManager nonce.Manager
 }
 
-func (h homeContract) FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error) {
+func (h originContract) FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error) {
 	rangeFilter := NewRangeFilter(h.contract.Address(), h.client, big.NewInt(int64(from)), big.NewInt(int64(to)), 100, false)
 
 	// blocks until done `
@@ -60,7 +60,7 @@ func (h homeContract) FetchSortedMessages(ctx context.Context, from uint32, to u
 			continue
 		}
 
-		if logType == home.DispatchEvent {
+		if logType == origin.DispatchEvent {
 			dispatchEvents, ok := h.contract.Parser().ParseDispatch(log)
 			// TODO: this should never happen. Maybe we should return an error here?
 			if !ok {
@@ -74,8 +74,8 @@ func (h homeContract) FetchSortedMessages(ctx context.Context, from uint32, to u
 	return messages, nil
 }
 
-func (h homeContract) ProduceAttestation(ctx context.Context) (types.Attestation, error) {
-	suggestedUpdate, err := h.contract.SuggestUpdate(&bind.CallOpts{Context: ctx})
+func (h originContract) ProduceAttestation(ctx context.Context) (types.Attestation, error) {
+	suggestedUpdate, err := h.contract.SuggestAttestation(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, fmt.Errorf("could not suggest update: %w", err)
 	}
@@ -95,4 +95,4 @@ func (h homeContract) ProduceAttestation(ctx context.Context) (types.Attestation
 	return update, nil
 }
 
-var _ domains.HomeContract = &homeContract{}
+var _ domains.OriginContract = &originContract{}

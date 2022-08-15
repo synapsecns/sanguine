@@ -64,7 +64,7 @@ func (i ContractSuite) NewTestDispatches(dispatchCount int) (testDispatches []Te
 func (i ContractSuite) TestFetchSortedHomeUpdates() {
 	testDispatches, filterTo := i.NewTestDispatches(33)
 
-	homeIndexer, err := evm.NewHomeContract(i.GetTestContext(), i.testBackend, i.homeContract.Address())
+	homeIndexer, err := evm.NewOriginContract(i.GetTestContext(), i.testBackend, i.homeContract.Address())
 	Nil(i.T(), err)
 
 	messages, err := homeIndexer.FetchSortedMessages(i.GetTestContext(), 0, filterTo)

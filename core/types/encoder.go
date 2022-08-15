@@ -112,34 +112,34 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 
 const (
 	//nolint: staticcheck
-	tipsVersion     uint16 = 1
-	offsetUpdater          = 2
-	offsetRelayer          = 14
-	offsetProver           = 26
-	offsetProcessor        = 38
-	uint96Len              = 12
+	tipsVersion       uint16 = 1
+	offsetNotary             = 2
+	offsetBroadcaster        = 14
+	offsetProver             = 26
+	offsetExecutor           = 38
+	uint96Len                = 12
 )
 
 // EncodeTips encodes a list of tips.
 //nolint: makezero
 func EncodeTips(tips Tips) ([]byte, error) {
-	b := make([]byte, offsetUpdater)
+	b := make([]byte, offsetNotary)
 	binary.BigEndian.PutUint16(b, tipsVersion)
 
-	b = append(b, math.PaddedBigBytes(tips.UpdaterTip(), uint96Len)...)
-	b = append(b, math.PaddedBigBytes(tips.RelayerTip(), uint96Len)...)
+	b = append(b, math.PaddedBigBytes(tips.NotaryTip(), uint96Len)...)
+	b = append(b, math.PaddedBigBytes(tips.BroadcasterTip(), uint96Len)...)
 	b = append(b, math.PaddedBigBytes(tips.ProverTip(), uint96Len)...)
-	b = append(b, math.PaddedBigBytes(tips.ProcessorTip(), uint96Len)...)
+	b = append(b, math.PaddedBigBytes(tips.ExecutorTip(), uint96Len)...)
 
 	return b, nil
 }
 
 // DecodeTips decodes a tips typed mem view.
 func DecodeTips(toDecode []byte) (Tips, error) {
-	updaterTip := new(big.Int).SetBytes(toDecode[offsetUpdater:offsetRelayer])
-	relayerTip := new(big.Int).SetBytes(toDecode[offsetRelayer:offsetProver])
-	proverTip := new(big.Int).SetBytes(toDecode[offsetProver:offsetProcessor])
-	processorTip := new(big.Int).SetBytes(toDecode[offsetProcessor:])
+	updaterTip := new(big.Int).SetBytes(toDecode[offsetNotary:offsetBroadcaster])
+	relayerTip := new(big.Int).SetBytes(toDecode[offsetBroadcaster:offsetProver])
+	proverTip := new(big.Int).SetBytes(toDecode[offsetProver:offsetExecutor])
+	processorTip := new(big.Int).SetBytes(toDecode[offsetExecutor:])
 
 	return NewTips(updaterTip, relayerTip, proverTip, processorTip), nil
 }

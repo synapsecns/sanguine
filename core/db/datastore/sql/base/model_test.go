@@ -48,9 +48,9 @@ func TestCommittedMessageAccessors(t *testing.T) {
 	Equal(t, bridge.KappaToSlice(cm.Leaf()), cm.CMLeaf)
 
 	Equal(t, cm.CMProverTip, cm.Tips().ProverTip().Bytes())
-	Equal(t, cm.CMProcessorTip, cm.Tips().ProcessorTip().Bytes())
-	Equal(t, cm.CMRelayerTip, cm.Tips().RelayerTip().Bytes())
-	Equal(t, cm.CMUpdaterTip, cm.Tips().UpdaterTip().Bytes())
+	Equal(t, cm.CMProcessorTip, cm.Tips().ExecutorTip().Bytes())
+	Equal(t, cm.CMRelayerTip, cm.Tips().BroadcasterTip().Bytes())
+	Equal(t, cm.CMUpdaterTip, cm.Tips().NotaryTip().Bytes())
 }
 
 func TestSignedAttestation(t *testing.T) {

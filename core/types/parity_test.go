@@ -29,21 +29,21 @@ func TestEncodeTipsParity(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tipsVersion, types.TipsVersion)
 
-	updaterOffset, err := handle.OffsetUpdater(&bind.CallOpts{Context: ctx})
+	notaryOffset, err := handle.OffsetNotary(&bind.CallOpts{Context: ctx})
 	Nil(t, err)
-	Equal(t, updaterOffset, big.NewInt(types.OffsetUpdater))
+	Equal(t, notaryOffset, big.NewInt(types.OffsetNotary))
 
-	relayerOffset, err := handle.OffsetRelayer(&bind.CallOpts{Context: ctx})
+	relayerOffset, err := handle.OffsetBroadcaster(&bind.CallOpts{Context: ctx})
 	Nil(t, err)
-	Equal(t, relayerOffset, big.NewInt(types.OffsetRelayer))
+	Equal(t, relayerOffset, big.NewInt(types.OffsetBroadcaster))
 
 	proverOffset, err := handle.OffsetProver(&bind.CallOpts{Context: ctx})
 	Nil(t, err)
 	Equal(t, proverOffset, big.NewInt(types.OffsetProver))
 
-	processorOffset, err := handle.OffsetProcessor(&bind.CallOpts{Context: ctx})
+	processorOffset, err := handle.OffsetExecutor(&bind.CallOpts{Context: ctx})
 	Nil(t, err)
-	Equal(t, processorOffset, big.NewInt(types.OffsetProcessor))
+	Equal(t, processorOffset, big.NewInt(types.OffsetExecutor))
 
 	// we want to make sure we can deal w/ overflows
 	updaterTip := randomUint96BigInt(t)

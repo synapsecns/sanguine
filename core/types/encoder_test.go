@@ -86,10 +86,10 @@ func TestEncodeDecodeTips(t *testing.T) {
 	decodedTips, err := types.DecodeTips(encodedTips)
 	Nil(t, err)
 
-	Equal(t, decodedTips.UpdaterTip(), updaterTip)
-	Equal(t, decodedTips.RelayerTip(), relayerTip)
+	Equal(t, decodedTips.NotaryTip(), updaterTip)
+	Equal(t, decodedTips.BroadcasterTip(), relayerTip)
 	Equal(t, decodedTips.ProverTip(), proverTip)
-	Equal(t, decodedTips.ProcessorTip(), processorTip)
+	Equal(t, decodedTips.ExecutorTip(), processorTip)
 }
 
 func TestNewMessageEncodeDecode(t *testing.T) {

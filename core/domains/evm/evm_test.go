@@ -22,12 +22,12 @@ import (
 func (e *RPCSuite) TestGetters() {
 	name := "hi"
 
-	_, homeContract := e.deployManager.GetHome(e.GetTestContext(), e.testBackend)
+	_, originContract := e.deployManager.GetOrigin(e.GetTestContext(), e.testBackend)
 
 	testCfg := config.DomainConfig{
-		DomainID:    1,
-		RPCUrl:      e.testBackend.RPCAddress(),
-		HomeAddress: homeContract.Address().String(),
+		DomainID:      1,
+		RPCUrl:        e.testBackend.RPCAddress(),
+		OriginAddress: originContract.Address().String(),
 	}
 
 	testEvm, err := evm.NewEVM(e.GetTestContext(), name, testCfg)
@@ -105,7 +105,7 @@ func GenerateDispatches(dispatchCount int) (arr []Dispatch) {
 func (e *RPCSuite) TestFilterer() {
 	deployHelper := testutil.NewDeployManager(e.T())
 
-	deployedContract, handle := deployHelper.GetHome(e.GetTestContext(), e.testBackend)
+	deployedContract, handle := deployHelper.GetOrigin(e.GetTestContext(), e.testBackend)
 
 	dispatches := GenerateDispatches(10)
 

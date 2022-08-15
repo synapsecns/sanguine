@@ -9,58 +9,58 @@ import (
 type Tips interface {
 	// Version gets the version of the tips header
 	Version() uint16
-	// UpdaterTip gets the tips for the updater
-	UpdaterTip() *big.Int
-	// RelayerTip gets the tips for the updater
-	RelayerTip() *big.Int
+	// NotaryTip gets the tips for the updater
+	NotaryTip() *big.Int
+	// BroadcasterTip gets the tips for the updater
+	BroadcasterTip() *big.Int
 	// ProverTip gets the tips for the prover
 	ProverTip() *big.Int
-	// ProcessorTip gets the tips for the processor
-	ProcessorTip() *big.Int
+	// ExecutorTip gets the tips for the processor
+	ExecutorTip() *big.Int
 }
 
 // NewTips creates a new tips type.
-func NewTips(updaterTip, relayerTip, proverTip, processorTip *big.Int) Tips {
+func NewTips(notaryTip, broadcasterTip, proverTip, executorTip *big.Int) Tips {
 	return tips{
-		version:      tipsVersion,
-		updaterTip:   updaterTip,
-		relayerTip:   relayerTip,
-		proverTip:    proverTip,
-		processorTip: processorTip,
+		version:        tipsVersion,
+		notaryTip:      notaryTip,
+		broadcasterTip: broadcasterTip,
+		proverTip:      proverTip,
+		executorTip:    executorTip,
 	}
 }
 
 // tips implements Tips.
 type tips struct {
-	version                                         uint16
-	updaterTip, relayerTip, proverTip, processorTip *big.Int
+	version                                           uint16
+	notaryTip, broadcasterTip, proverTip, executorTip *big.Int
 }
 
 func (t tips) Version() uint16 {
 	return t.version
 }
 
-func (t tips) UpdaterTip() *big.Int {
-	return common.CopyBigInt(t.updaterTip)
+func (t tips) NotaryTip() *big.Int {
+	return common.CopyBigInt(t.notaryTip)
 }
 
-func (t tips) RelayerTip() *big.Int {
-	return common.CopyBigInt(t.relayerTip)
+func (t tips) BroadcasterTip() *big.Int {
+	return common.CopyBigInt(t.broadcasterTip)
 }
 
 func (t tips) ProverTip() *big.Int {
 	return common.CopyBigInt(t.proverTip)
 }
 
-func (t tips) ProcessorTip() *big.Int {
-	return common.CopyBigInt(t.processorTip)
+func (t tips) ExecutorTip() *big.Int {
+	return common.CopyBigInt(t.executorTip)
 }
 
 var _ Tips = tips{}
 
 // TotalTips gets the combined value of the tips.
 func TotalTips(tips Tips) *big.Int {
-	vals := []*big.Int{tips.UpdaterTip(), tips.ProcessorTip(), tips.RelayerTip(), tips.ProverTip()}
+	vals := []*big.Int{tips.NotaryTip(), tips.ExecutorTip(), tips.BroadcasterTip(), tips.ProverTip()}
 	total := new(big.Int)
 
 	for _, val := range vals {

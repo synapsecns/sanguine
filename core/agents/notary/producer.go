@@ -16,7 +16,7 @@ import (
 // AttestationProducer updates a producer.
 // TODO: this needs to become an interface.
 type AttestationProducer struct {
-	// domain allows access to the home contract
+	// domain allows access to the origin contract
 	domain domains.DomainClient
 	// db is the synapse db
 	db db.SynapseDB
@@ -72,7 +72,7 @@ func (a AttestationProducer) update(ctx context.Context) error {
 		return fmt.Errorf("could not find latest root: %w", err)
 	}
 
-	suggestedAttestation, err := a.domain.Home().ProduceAttestation(ctx)
+	suggestedAttestation, err := a.domain.Origin().ProduceAttestation(ctx)
 	if errors.Is(err, domains.ErrNoUpdate) {
 		// no update produced this time
 		return nil

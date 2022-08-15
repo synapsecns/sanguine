@@ -2,31 +2,31 @@ package testutil
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/core/contracts/origin"
 	"github.com/synapsecns/sanguine/core/contracts/test/headerharness"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
-	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/notarymanager"
 	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
-	"github.com/synapsecns/sanguine/core/contracts/updatermanager"
 	"github.com/synapsecns/synapse-node/testutils/backends"
 )
 
-// GetHome gets a typecast home contract.
-func (d *DeployManager) GetHome(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *home.HomeRef) {
+// GetOrigin gets a typecast origin contract.
+func (d *DeployManager) GetOrigin(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *origin.OriginRef) {
 	d.T().Helper()
 
-	homeContract := d.GetContractRegistry(backend).Get(ctx, HomeType)
+	originContract := d.GetContractRegistry(backend).Get(ctx, OriginType)
 
-	homeHandle, ok := homeContract.ContractHandle().(*home.HomeRef)
+	originHandle, ok := originContract.ContractHandle().(*origin.OriginRef)
 	assert.True(d.T(), ok)
 
-	return homeContract, homeHandle
+	return originContract, originHandle
 }
 
 // GetMessageHarness gets the message harness.
@@ -41,7 +41,7 @@ func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.
 	return messageHarnessContract, messageHarness
 }
 
-// GetHomeHarness gets the home harness.
+// GetHomeHarness gets the origin harness.
 func (d *DeployManager) GetHomeHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *homeharness.HomeHarnessRef) {
 	d.T().Helper()
 
@@ -76,15 +76,15 @@ func (d *DeployManager) GetReplicaManagerHarness(ctx context.Context, backend ba
 	return replicaManagerHarnessContract, replicaManagerHarness
 }
 
-// GetUpdaterManager gets the update manager.
-func (d *DeployManager) GetUpdaterManager(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *updatermanager.UpdaterManagerRef) {
+// GetNotaryManager gets the update manager.
+func (d *DeployManager) GetNotaryManager(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *notarymanager.NotaryManagerRef) {
 	d.T().Helper()
 
-	updaterManagerContract := d.GetContractRegistry(backend).Get(ctx, UpdaterManagerType)
-	updaterManager, ok := updaterManagerContract.ContractHandle().(*updatermanager.UpdaterManagerRef)
+	notaryManagerContract := d.GetContractRegistry(backend).Get(ctx, NotaryManagerType)
+	notaryManager, ok := notaryManagerContract.ContractHandle().(*notarymanager.NotaryManagerRef)
 	assert.True(d.T(), ok)
 
-	return updaterManagerContract, updaterManager
+	return notaryManagerContract, notaryManager
 }
 
 // GetAttestationCollector gets the attestation collector contract.

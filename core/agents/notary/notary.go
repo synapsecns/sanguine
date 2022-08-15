@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// Notary updates the updater.
+// Notary updates the origin contract.
 type Notary struct {
 	indexers   map[string]indexer.DomainIndexer
 	producers  map[string]AttestationProducer
@@ -24,17 +24,17 @@ type Notary struct {
 //TODO: This should be done in config.
 var RefreshInterval = 1 * time.Second
 
-// NewNotary creates a new updater.
+// NewNotary creates a new notary.
 func NewNotary(ctx context.Context, cfg config.Config) (_ Notary, err error) {
-	updater := Notary{
+	notary := Notary{
 		indexers:   make(map[string]indexer.DomainIndexer),
 		producers:  make(map[string]AttestationProducer),
 		submitters: make(map[string]AttestationSubmitter),
 	}
 
-	updater.signer, err = config.SignerFromConfig(cfg.Signer)
+	notary.signer, err = config.SignerFromConfig(cfg.Signer)
 	if err != nil {
-		return Notary{}, fmt.Errorf("could not create updater: %w", err)
+		return Notary{}, fmt.Errorf("could not create notary: %w", err)
 	}
 
 	dbType, err := sql.DBTypeFromString(cfg.Database.Type)
@@ -50,19 +50,19 @@ func NewNotary(ctx context.Context, cfg config.Config) (_ Notary, err error) {
 	for name, domain := range cfg.Domains {
 		domainClient, err := evm.NewEVM(ctx, name, domain)
 		if err != nil {
-			return Notary{}, fmt.Errorf("could not create updater for: %w", err)
+			return Notary{}, fmt.Errorf("could not create notary for: %w", err)
 		}
 
-		updater.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient, RefreshInterval)
-		updater.producers[name] = NewAttestationProducer(domainClient, dbHandle, updater.signer, RefreshInterval)
+		notary.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient, RefreshInterval)
+		notary.producers[name] = NewAttestationProducer(domainClient, dbHandle, notary.signer, RefreshInterval)
 		// TODO: this needs to be on a separate chain so it'll need to use a different domain client. Config needs to be modified
-		updater.submitters[name] = NewAttestationSubmitter(domainClient, dbHandle, updater.signer, RefreshInterval)
+		notary.submitters[name] = NewAttestationSubmitter(domainClient, dbHandle, notary.signer, RefreshInterval)
 	}
 
-	return updater, nil
+	return notary, nil
 }
 
-// Start starts the updater.{.
+// Start starts the notary.{.
 func (u Notary) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 	for i := range u.indexers {
@@ -91,7 +91,7 @@ func (u Notary) Start(ctx context.Context) error {
 
 	err := g.Wait()
 	if err != nil {
-		return fmt.Errorf("could not start the updater: %w", err)
+		return fmt.Errorf("could not start the notary: %w", err)
 	}
 
 	return nil

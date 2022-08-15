@@ -19,14 +19,14 @@ type DomainClient interface {
 	Config() config.DomainConfig
 	// BlockNumber gets the latest block
 	BlockNumber(ctx context.Context) (uint32, error)
-	// Home retrieves a handle for the home contract
-	Home() HomeContract
+	// Origin retrieves a handle for the origin contract
+	Origin() OriginContract
 	// AttestationCollector is the attestation collector
 	AttestationCollector() AttestationCollectorContract
 }
 
-// HomeContract represents the home contract on a particular chain.
-type HomeContract interface {
+// OriginContract represents the origin contract on a particular chain.
+type OriginContract interface {
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
 	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
 	// ProduceAttestation suggests an update from the home contract

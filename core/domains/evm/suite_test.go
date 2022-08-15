@@ -6,7 +6,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/contracts/attestationcollector"
-	"github.com/synapsecns/sanguine/core/contracts/home"
+	"github.com/synapsecns/sanguine/core/contracts/origin"
 	"github.com/synapsecns/sanguine/core/domains/evm"
 	"github.com/synapsecns/sanguine/core/testutil"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -50,7 +50,7 @@ func TestEVMSuite(t *testing.T) {
 // ContractSuite defines a suite for testing contracts. This uses the simulated backend.
 type ContractSuite struct {
 	*testutils.TestSuite
-	homeContract        *home.HomeRef
+	homeContract        *origin.OriginRef
 	attestationContract *attestationcollector.AttestationCollectorRef
 	testBackend         backends.SimulatedTestBackend
 	attestationBackend  backends.SimulatedTestBackend
@@ -73,7 +73,7 @@ func (i *ContractSuite) SetupTest() {
 	i.testBackend = simulated.NewSimulatedBackendWithChainID(i.GetTestContext(), i.T(), big.NewInt(1))
 	i.attestationBackend = simulated.NewSimulatedBackendWithChainID(i.GetTestContext(), i.T(), big.NewInt(2))
 
-	_, i.homeContract = deployManager.GetHome(i.GetTestContext(), i.testBackend)
+	_, i.homeContract = deployManager.GetOrigin(i.GetTestContext(), i.testBackend)
 
 	var attestationContract backends.DeployedContract
 	attestationContract, i.attestationContract = deployManager.GetAttestationCollector(i.GetTestContext(), i.attestationBackend)
@@ -86,14 +86,14 @@ func (i *ContractSuite) SetupTest() {
 	i.attestationBackend.FundAccount(i.GetTestContext(), wall.Address(), *big.NewInt(params.Ether))
 
 	// change the updater as defined by the update manager contract
-	_, updaterManager := deployManager.GetUpdaterManager(i.GetTestContext(), i.testBackend)
-	owner, err := updaterManager.Owner(&bind.CallOpts{Context: i.GetTestContext()})
+	_, notaryManager := deployManager.GetNotaryManager(i.GetTestContext(), i.testBackend)
+	owner, err := notaryManager.Owner(&bind.CallOpts{Context: i.GetTestContext()})
 	Nil(i.T(), err)
 
 	transactOpts := i.testBackend.GetTxContext(i.GetTestContext(), &owner)
 
 	// set the signer address to the updater
-	tx, err := updaterManager.SetUpdater(transactOpts.TransactOpts, i.signer.Address())
+	tx, err := notaryManager.SetNotary(transactOpts.TransactOpts, i.signer.Address())
 	Nil(i.T(), err)
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
