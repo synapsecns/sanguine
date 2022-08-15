@@ -14,29 +14,29 @@ contract TipsHarness {
         return Tips.TIPS_VERSION;
     }
 
-    function offsetUpdater() public pure returns (uint256) {
-        return Tips.OFFSET_UPDATER;
+    function offsetNotary() public pure returns (uint256) {
+        return Tips.OFFSET_NOTARY;
     }
 
-    function offsetRelayer() public pure returns (uint256) {
-        return Tips.OFFSET_RELAYER;
+    function offsetBroadcaster() public pure returns (uint256) {
+        return Tips.OFFSET_BROADCASTER;
     }
 
     function offsetProver() public pure returns (uint256) {
         return Tips.OFFSET_PROVER;
     }
 
-    function offsetProcessor() public pure returns (uint256) {
-        return Tips.OFFSET_PROCESSOR;
+    function offsetExecutor() public pure returns (uint256) {
+        return Tips.OFFSET_EXECUTOR;
     }
 
     function formatTips(
-        uint96 _updaterTip,
-        uint96 _relayerTip,
+        uint96 _notaryTip,
+        uint96 _broadcasterTip,
         uint96 _proverTip,
-        uint96 _processorTip
+        uint96 _executorTip
     ) public pure returns (bytes memory) {
-        return Tips.formatTips(_updaterTip, _relayerTip, _proverTip, _processorTip);
+        return Tips.formatTips(_notaryTip, _broadcasterTip, _proverTip, _executorTip);
     }
 
     function emptyTips() external pure returns (bytes memory) {
@@ -51,14 +51,14 @@ contract TipsHarness {
         return Tips.tipsVersion(_tips);
     }
 
-    /// @notice Returns updaterTip field
-    function updaterTip(bytes29 _tips) external pure returns (uint96) {
-        return Tips.updaterTip(_tips);
+    /// @notice Returns notaryTip field
+    function notaryTip(bytes29 _tips) external pure returns (uint96) {
+        return Tips.notaryTip(_tips);
     }
 
-    /// @notice Returns relayerTip field
-    function relayerTip(bytes29 _tips) external pure returns (uint96) {
-        return Tips.relayerTip(_tips);
+    /// @notice Returns broadcasterTip field
+    function broadcasterTip(bytes29 _tips) external pure returns (uint96) {
+        return Tips.broadcasterTip(_tips);
     }
 
     /// @notice Returns proverTip field
@@ -66,9 +66,9 @@ contract TipsHarness {
         return Tips.proverTip(_tips);
     }
 
-    /// @notice Returns processorTip field
-    function processorTip(bytes29 _tips) external pure returns (uint96) {
-        return Tips.processorTip(_tips);
+    /// @notice Returns executorTip field
+    function executorTip(bytes29 _tips) external pure returns (uint96) {
+        return Tips.executorTip(_tips);
     }
 
     function totalTips(bytes29 _tips) external pure returns (uint96) {

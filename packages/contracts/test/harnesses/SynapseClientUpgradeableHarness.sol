@@ -5,8 +5,8 @@ pragma solidity 0.8.13;
 import { SynapseClientUpgradeable } from "../../contracts/client/SynapseClientUpgradeable.sol";
 
 contract SynapseClientUpgradeableHarness is SynapseClientUpgradeable {
-    constructor(address _home, address _replicaManager)
-        SynapseClientUpgradeable(_home, _replicaManager)
+    constructor(address _origin, address _destination)
+        SynapseClientUpgradeable(_origin, _destination)
     {}
 
     function initialize() external initializer {

@@ -78,7 +78,7 @@ func (d TestDispatch) Call(i IndexerSuite) (blockNumber uint32) {
 	encodedTips, err := types.EncodeTips(d.tips)
 	Nil(i.T(), err)
 
-	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, encodedTips, d.message)
+	tx, err := i.originContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, encodedTips, d.message)
 	Nil(i.T(), err)
 
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
@@ -106,13 +106,13 @@ func (i IndexerSuite) TestSyncMessages() {
 	db, err := sqlite.NewSqliteStore(i.GetTestContext(), filet.TmpDir(i.T(), ""))
 	Nil(i.T(), err)
 
-	_, homeContract := i.deployManager.GetHome(i.GetTestContext(), i.testBackend)
+	_, originContract := i.deployManager.GetOrigin(i.GetTestContext(), i.testBackend)
 
 	domainClient, err := evm.NewEVM(i.GetTestContext(), "test", config.DomainConfig{
 		DomainID:              1,
 		Type:                  types.EVM.String(),
 		RequiredConfirmations: 0,
-		HomeAddress:           homeContract.Address().String(),
+		OriginAddress:         originContract.Address().String(),
 		RPCUrl:                i.testBackend.RPCAddress(),
 		StartHeight:           0,
 	})

@@ -6,10 +6,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/headerharness"
-	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
-	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/synapse-node/testutils/backends"
@@ -34,25 +34,25 @@ func (d MessageHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedCo
 	})
 }
 
-// HomeHarnessDomain is the domain used for the home harness.
-const HomeHarnessDomain = 1
+// OriginHarnessDomain is the domain used for the origin harness.
+const OriginHarnessDomain = 1
 
-// HomeHarnessDeployer deploys the home harness for testing.
-type HomeHarnessDeployer struct {
+// OriginHarnessDeployer deploys the origin harness for testing.
+type OriginHarnessDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewHomeHarnessDeployer deploys the new home harness.
-func NewHomeHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return HomeHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, HomeHarnessType)}
+// NewOriginHarnessDeployer deploys a new origin harness.
+func NewOriginHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return OriginHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, OriginHarnessType)}
 }
 
-// Deploy deploys the home harness.
-func (h HomeHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return homeharness.DeployHomeHarness(transactOps, backend, HomeHarnessDomain)
+// Deploy deploys the origin harness.
+func (o OriginHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return originharness.DeployOriginHarness(transactOps, backend, OriginHarnessDomain)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return homeharness.NewHomeHarnessRef(address, backend)
+		return originharness.NewOriginHarnessRef(address, backend)
 	})
 }
 
@@ -94,22 +94,22 @@ func (a TipsHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContr
 	})
 }
 
-// ReplicaManagerHarnessDeployer deploys the replica manager harness.
-type ReplicaManagerHarnessDeployer struct {
+// DestinationHarnessDeployer deploys the destination harness.
+type DestinationHarnessDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewReplicaManagerHarnessDeployer creates a new deployer for the replica manager harness.
-func NewReplicaManagerHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return ReplicaManagerHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, ReplicaManagerHarnessType)}
+// NewDestinationHarnessDeployer creates a new deployer for the destination harness.
+func NewDestinationHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return DestinationHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, DestinationHarnessType)}
 }
 
-// Deploy deploys the replica manager harness.
-func (r ReplicaManagerHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	return r.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return replicamanagerharness.DeployReplicaManagerHarness(transactOps, backend, uint32(r.Backend().GetChainID()))
+// Deploy deploys the destination harness.
+func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()))
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return replicamanagerharness.NewReplicaManagerHarnessRef(address, backend)
+		return destinationharness.NewDestinationHarnessRef(address, backend)
 	})
 }
 

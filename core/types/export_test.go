@@ -3,11 +3,11 @@ package types
 // export constants for testing.
 const (
 	// Tips.
-	TipsVersion     = tipsVersion
-	OffsetUpdater   = offsetUpdater
-	OffsetRelayer   = offsetRelayer
-	OffsetProver    = offsetProver
-	OffsetProcessor = offsetProcessor
+	TipsVersion       = tipsVersion
+	OffsetNotary      = offsetNotary
+	OffsetBroadcaster = offsetBroadcaster
+	OffsetProver      = offsetProver
+	OffsetExecutor    = offsetExecutor
 	// Header.
 	HeaderVersion = headerVersion
 	// Message.

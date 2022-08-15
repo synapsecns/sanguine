@@ -31,7 +31,7 @@ var (
 // HeaderMetaData contains all meta data concerning the Header contract.
 var HeaderMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205365420036cda746eb8352956b3072ebeae2af69625c55afcc8e67104df4316464736f6c634300080d0033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212201dc0d95416ddf16e13bef54bfd4ee76bb5705fabea67b5cf923eda1fbe6034de64736f6c634300080d0033",
 }
 
 // HeaderABI is the input ABI used to generate the binding from.
@@ -204,7 +204,7 @@ func (_Header *HeaderTransactorRaw) Transact(opts *bind.TransactOpts, method str
 // MessageMetaData contains all meta data concerning the Message contract.
 var MessageMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220197ca01069b17f5799ef5da3d241af37ec5800195e5180d76bfa64701a739b3564736f6c634300080d0033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220783700902ca7fc5b50315265a728a1b4f1932107dfee2ca16e1db7b264f3e7ef64736f6c634300080d0033",
 }
 
 // MessageABI is the input ABI used to generate the binding from.
@@ -377,7 +377,7 @@ func (_Message *MessageTransactorRaw) Transact(opts *bind.TransactOpts, method s
 // TipsMetaData contains all meta data concerning the Tips contract.
 var TipsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220afc6e3c028c4a3ba975d2e5743574dc8ea4e4a296d7c25af1359472490ce8ac564736f6c634300080d0033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220377d15cc3af73bce72716392b842d15e7349ed2cb694903af6a80020411834ca64736f6c634300080d0033",
 }
 
 // TipsABI is the input ABI used to generate the binding from.
@@ -549,24 +549,24 @@ func (_Tips *TipsTransactorRaw) Transact(opts *bind.TransactOpts, method string,
 
 // TipsHarnessMetaData contains all meta data concerning the TipsHarness contract.
 var TipsHarnessMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"emptyTips\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint96\",\"name\":\"_updaterTip\",\"type\":\"uint96\"},{\"internalType\":\"uint96\",\"name\":\"_relayerTip\",\"type\":\"uint96\"},{\"internalType\":\"uint96\",\"name\":\"_proverTip\",\"type\":\"uint96\"},{\"internalType\":\"uint96\",\"name\":\"_processorTip\",\"type\":\"uint96\"}],\"name\":\"formatTips\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetProcessor\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetProver\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetRelayer\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetUpdater\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"processorTip\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"proverTip\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"relayerTip\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"tipsVersion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"tipsVersion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_tips\",\"type\":\"bytes\"}],\"name\":\"tipsView\",\"outputs\":[{\"internalType\":\"bytes29\",\"name\":\"\",\"type\":\"bytes29\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"totalTips\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"updaterTip\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"broadcasterTip\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"emptyTips\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"executorTip\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint96\",\"name\":\"_notaryTip\",\"type\":\"uint96\"},{\"internalType\":\"uint96\",\"name\":\"_broadcasterTip\",\"type\":\"uint96\"},{\"internalType\":\"uint96\",\"name\":\"_proverTip\",\"type\":\"uint96\"},{\"internalType\":\"uint96\",\"name\":\"_executorTip\",\"type\":\"uint96\"}],\"name\":\"formatTips\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"notaryTip\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetBroadcaster\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetExecutor\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetNotary\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetProver\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"proverTip\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"tipsVersion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"tipsVersion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_tips\",\"type\":\"bytes\"}],\"name\":\"tipsView\",\"outputs\":[{\"internalType\":\"bytes29\",\"name\":\"\",\"type\":\"bytes29\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_tips\",\"type\":\"bytes29\"}],\"name\":\"totalTips\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
+		"4dd48d13": "broadcasterTip(bytes29)",
 		"725bd463": "emptyTips()",
+		"25fdebc2": "executorTip(bytes29)",
 		"d024f867": "formatTips(uint96,uint96,uint96,uint96)",
-		"01fab8df": "offsetProcessor()",
+		"27a9fa56": "notaryTip(bytes29)",
+		"15bb7d2b": "offsetBroadcaster()",
+		"51970c3f": "offsetExecutor()",
+		"b4b4ccb2": "offsetNotary()",
 		"98de8554": "offsetProver()",
-		"0032b444": "offsetRelayer()",
-		"71370889": "offsetUpdater()",
-		"1c9caa04": "processorTip(bytes29)",
 		"cc6a5c9b": "proverTip(bytes29)",
-		"aa02b2b2": "relayerTip(bytes29)",
 		"60fb5709": "tipsVersion()",
 		"c46647e2": "tipsVersion(bytes29)",
 		"ec000108": "tipsView(bytes)",
 		"91864805": "totalTips(bytes29)",
-		"8ff916f8": "updaterTip(bytes29)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b50610f46806100206000396000f3fe608060405234801561001057600080fd5b50600436106100e95760003560e01c8063918648051161008c578063c46647e211610066578063c46647e2146101ad578063cc6a5c9b146101c0578063d024f867146101d3578063ec000108146101e657600080fd5b8063918648051461018057806398de855414610193578063aa02b2b21461019a57600080fd5b806360fb5709116100c857806360fb57091461013b5780637137088914610151578063725bd463146101585780638ff916f81461016d57600080fd5b806232b444146100ee57806301fab8df146101045780631c9caa041461010b575b600080fd5b600e5b6040519081526020015b60405180910390f35b60266100f1565b61011e610119366004610c36565b61020e565b6040516bffffffffffffffffffffffff90911681526020016100fb565b60015b60405161ffff90911681526020016100fb565b60026100f1565b61016061021f565b6040516100fb9190610cc7565b61011e61017b366004610c36565b610283565b61011e61018e366004610c36565b61028e565b601a6100f1565b61011e6101a8366004610c36565b610299565b61013e6101bb366004610c36565b6102a4565b61011e6101ce366004610c36565b6102af565b6101606101e1366004610cfb565b6102ba565b6101f96101f4366004610d7e565b61034c565b60405162ffffff1990911681526020016100fb565b600061021982610357565b92915050565b606061027e604080517e010000000000000000000000000000000000000000000000000000000000006020820152600060228201819052602e8201819052603a8201819052604682015281518082036032018152605290910190915290565b905090565b600061021982610390565b6000610219826103b1565b600061021982610408565b600061021982610429565b60006102198261044a565b604080517e0100000000000000000000000000000000000000000000000000000000000060208201527fffffffffffffffffffffffff000000000000000000000000000000000000000060a087811b8216602284015286811b8216602e84015285811b8216603a84015284901b1660468201528151808203603201815260529091019091526060905b95945050505050565b60006102198261046b565b60008161036d60025b62ffffff19831690610478565b5061038162ffffff1984166026600c61059c565b63ffffffff1691505b50919050565b60008161039d6002610360565b5061038162ffffff1984166002600c61059c565b6000816103be6002610360565b506103c883610357565b6103d18461044a565b6103da85610408565b6103e386610390565b6103ed9190610e7c565b6103f79190610e7c565b6104019190610e7c565b9392505050565b6000816104156002610360565b5061038162ffffff198416600e600c61059c565b6000816104366002610360565b5061040162ffffff1984166000600261059c565b6000816104576002610360565b5061038162ffffff198416601a600c61059c565b60006102198260026105cc565b600061048483836105e7565b6105955760006104a36104978560d81c90565b64ffffffffff1661060a565b91505060006104b88464ffffffffff1661060a565b6040517f5479706520617373657274696f6e206661696c65642e20476f7420307800000060208201527fffffffffffffffffffff0000000000000000000000000000000000000000000060b086811b8216603d8401527f2e20457870656374656420307800000000000000000000000000000000000000604784015283901b16605482015290925060009150605e016040516020818303038152906040529050806040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161058c9190610cc7565b60405180910390fd5b5090919050565b60006105a9826020610eac565b6105b4906008610ecf565b60ff166105c28585856106f4565b901c949350505050565b81516000906020840161034364ffffffffff851682846108e6565b60008164ffffffffff166105fb8460d81c90565b64ffffffffff16149392505050565b600080601f5b600f8160ff16111561067d576000610629826008610ecf565b60ff1685901c905061063a8161092d565b61ffff16841793508160ff1660101461065557601084901b93505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01610610565b50600f5b60ff8160ff1610156106ee57600061069a826008610ecf565b60ff1685901c90506106ab8161092d565b61ffff16831792508160ff166000146106c657601083901b92505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01610681565b50915091565b60008160ff1660000361070957506000610401565b6107218460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff1661073c60ff841685610ef8565b11156107ce5761079b61075d8560781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff166107838660181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16858560ff1661095f565b6040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161058c9190610cc7565b60208260ff161115610862576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603a60248201527f54797065644d656d566965772f696e646578202d20417474656d70746564207460448201527f6f20696e646578206d6f7265207468616e203332206279746573000000000000606482015260840161058c565b6008820260006108808660781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16905060007f80000000000000000000000000000000000000000000000000000000000000007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff84011d91909501511695945050505050565b6000806108f38385610ef8565b9050604051811115610903575060005b806000036109185762ffffff19915050610401565b5050606092831b9190911790911b1760181b90565b600061093f60048360ff16901c610aef565b60ff1661ffff919091161760081b61095682610aef565b60ff1617919050565b6060600061096c8661060a565b915050600061097a8661060a565b91505060006109888661060a565b91505060006109968661060a565b604080517f54797065644d656d566965772f696e646578202d204f76657272616e2074686560208201527f20766965772e20536c6963652069732061742030780000000000000000000000818301527fffffffffffff000000000000000000000000000000000000000000000000000060d098891b811660558301527f2077697468206c656e6774682030780000000000000000000000000000000000605b830181905297891b8116606a8301527f2e20417474656d7074656420746f20696e646578206174206f6666736574203060708301527f7800000000000000000000000000000000000000000000000000000000000000609083015295881b861660918201526097810196909652951b90921660a684015250507f2e0000000000000000000000000000000000000000000000000000000000000060ac8201528151808203608d01815260ad90910190915295945050505050565b600060f08083179060ff82169003610b0a5750603092915050565b8060ff1660f103610b1e5750603192915050565b8060ff1660f203610b325750603292915050565b8060ff1660f303610b465750603392915050565b8060ff1660f403610b5a5750603492915050565b8060ff1660f503610b6e5750603592915050565b8060ff1660f603610b825750603692915050565b8060ff1660f703610b965750603792915050565b8060ff1660f803610baa5750603892915050565b8060ff1660f903610bbe5750603992915050565b8060ff1660fa03610bd25750606192915050565b8060ff1660fb03610be65750606292915050565b8060ff1660fc03610bfa5750606392915050565b8060ff1660fd03610c0e5750606492915050565b8060ff1660fe03610c225750606592915050565b8060ff1660ff0361038a5750606692915050565b600060208284031215610c4857600080fd5b813562ffffff198116811461040157600080fd5b6000815180845260005b81811015610c8257602081850181015186830182015201610c66565b81811115610c94576000602083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b6020815260006104016020830184610c5c565b80356bffffffffffffffffffffffff81168114610cf657600080fd5b919050565b60008060008060808587031215610d1157600080fd5b610d1a85610cda565b9350610d2860208601610cda565b9250610d3660408601610cda565b9150610d4460608601610cda565b905092959194509250565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600060208284031215610d9057600080fd5b813567ffffffffffffffff80821115610da857600080fd5b818401915084601f830112610dbc57600080fd5b813581811115610dce57610dce610d4f565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f01168101908382118183101715610e1457610e14610d4f565b81604052828152876020848701011115610e2d57600080fd5b826020860160208301376000928101602001929092525095945050505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60006bffffffffffffffffffffffff808316818516808303821115610ea357610ea3610e4d565b01949350505050565b600060ff821660ff841680821015610ec657610ec6610e4d565b90039392505050565b600060ff821660ff84168160ff0481118215151615610ef057610ef0610e4d565b029392505050565b60008219821115610f0b57610f0b610e4d565b50019056fea26469706673582212208f255dfec8ffaa1926c97ec49cbec9b3afdeb220c5461d83959ed30acf3bb86e64736f6c634300080d0033",
+	Bin: "0x608060405234801561001057600080fd5b50610f47806100206000396000f3fe608060405234801561001057600080fd5b50600436106100ea5760003560e01c8063918648051161008c578063c46647e211610066578063c46647e2146101ae578063cc6a5c9b146101c1578063d024f867146101d4578063ec000108146101e757600080fd5b8063918648051461018d57806398de8554146101a0578063b4b4ccb2146101a757600080fd5b80634dd48d13116100c85780634dd48d131461014857806351970c3f1461015b57806360fb570914610162578063725bd4631461017857600080fd5b806315bb7d2b146100ef57806325fdebc21461010557806327a9fa5614610135575b600080fd5b600e5b6040519081526020015b60405180910390f35b610118610113366004610c37565b61020f565b6040516bffffffffffffffffffffffff90911681526020016100fc565b610118610143366004610c37565b610220565b610118610156366004610c37565b61022b565b60266100f2565b60015b60405161ffff90911681526020016100fc565b610180610236565b6040516100fc9190610cc8565b61011861019b366004610c37565b61029a565b601a6100f2565b60026100f2565b6101656101bc366004610c37565b6102a5565b6101186101cf366004610c37565b6102b0565b6101806101e2366004610cfc565b6102bb565b6101fa6101f5366004610d7f565b61034d565b60405162ffffff1990911681526020016100fc565b600061021a82610358565b92915050565b600061021a82610391565b600061021a826103b2565b6060610295604080517e010000000000000000000000000000000000000000000000000000000000006020820152600060228201819052602e8201819052603a8201819052604682015281518082036032018152605290910190915290565b905090565b600061021a826103d3565b600061021a8261042a565b600061021a8261044b565b604080517e0100000000000000000000000000000000000000000000000000000000000060208201527fffffffffffffffffffffffff000000000000000000000000000000000000000060a087811b8216602284015286811b8216602e84015285811b8216603a84015284901b1660468201528151808203603201815260529091019091526060905b95945050505050565b600061021a8261046c565b60008161036e60025b62ffffff19831690610479565b5061038262ffffff1984166026600c61059d565b63ffffffff1691505b50919050565b60008161039e6002610361565b5061038262ffffff1984166002600c61059d565b6000816103bf6002610361565b5061038262ffffff198416600e600c61059d565b6000816103e06002610361565b506103ea83610358565b6103f38461044b565b6103fc856103b2565b61040586610391565b61040f9190610e7d565b6104199190610e7d565b6104239190610e7d565b9392505050565b6000816104376002610361565b5061042362ffffff1984166000600261059d565b6000816104586002610361565b5061038262ffffff198416601a600c61059d565b600061021a8260026105cd565b600061048583836105e8565b6105965760006104a46104988560d81c90565b64ffffffffff1661060b565b91505060006104b98464ffffffffff1661060b565b6040517f5479706520617373657274696f6e206661696c65642e20476f7420307800000060208201527fffffffffffffffffffff0000000000000000000000000000000000000000000060b086811b8216603d8401527f2e20457870656374656420307800000000000000000000000000000000000000604784015283901b16605482015290925060009150605e016040516020818303038152906040529050806040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161058d9190610cc8565b60405180910390fd5b5090919050565b60006105aa826020610ead565b6105b5906008610ed0565b60ff166105c38585856106f5565b901c949350505050565b81516000906020840161034464ffffffffff851682846108e7565b60008164ffffffffff166105fc8460d81c90565b64ffffffffff16149392505050565b600080601f5b600f8160ff16111561067e57600061062a826008610ed0565b60ff1685901c905061063b8161092e565b61ffff16841793508160ff1660101461065657601084901b93505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01610611565b50600f5b60ff8160ff1610156106ef57600061069b826008610ed0565b60ff1685901c90506106ac8161092e565b61ffff16831792508160ff166000146106c757601083901b92505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01610682565b50915091565b60008160ff1660000361070a57506000610423565b6107228460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff1661073d60ff841685610ef9565b11156107cf5761079c61075e8560781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff166107848660181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16858560ff16610960565b6040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161058d9190610cc8565b60208260ff161115610863576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603a60248201527f54797065644d656d566965772f696e646578202d20417474656d70746564207460448201527f6f20696e646578206d6f7265207468616e203332206279746573000000000000606482015260840161058d565b6008820260006108818660781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16905060007f80000000000000000000000000000000000000000000000000000000000000007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff84011d91909501511695945050505050565b6000806108f48385610ef9565b9050604051811115610904575060005b806000036109195762ffffff19915050610423565b5050606092831b9190911790911b1760181b90565b600061094060048360ff16901c610af0565b60ff1661ffff919091161760081b61095782610af0565b60ff1617919050565b6060600061096d8661060b565b915050600061097b8661060b565b91505060006109898661060b565b91505060006109978661060b565b604080517f54797065644d656d566965772f696e646578202d204f76657272616e2074686560208201527f20766965772e20536c6963652069732061742030780000000000000000000000818301527fffffffffffff000000000000000000000000000000000000000000000000000060d098891b811660558301527f2077697468206c656e6774682030780000000000000000000000000000000000605b830181905297891b8116606a8301527f2e20417474656d7074656420746f20696e646578206174206f6666736574203060708301527f7800000000000000000000000000000000000000000000000000000000000000609083015295881b861660918201526097810196909652951b90921660a684015250507f2e0000000000000000000000000000000000000000000000000000000000000060ac8201528151808203608d01815260ad90910190915295945050505050565b600060f08083179060ff82169003610b0b5750603092915050565b8060ff1660f103610b1f5750603192915050565b8060ff1660f203610b335750603292915050565b8060ff1660f303610b475750603392915050565b8060ff1660f403610b5b5750603492915050565b8060ff1660f503610b6f5750603592915050565b8060ff1660f603610b835750603692915050565b8060ff1660f703610b975750603792915050565b8060ff1660f803610bab5750603892915050565b8060ff1660f903610bbf5750603992915050565b8060ff1660fa03610bd35750606192915050565b8060ff1660fb03610be75750606292915050565b8060ff1660fc03610bfb5750606392915050565b8060ff1660fd03610c0f5750606492915050565b8060ff1660fe03610c235750606592915050565b8060ff1660ff0361038b5750606692915050565b600060208284031215610c4957600080fd5b813562ffffff198116811461042357600080fd5b6000815180845260005b81811015610c8357602081850181015186830182015201610c67565b81811115610c95576000602083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b6020815260006104236020830184610c5d565b80356bffffffffffffffffffffffff81168114610cf757600080fd5b919050565b60008060008060808587031215610d1257600080fd5b610d1b85610cdb565b9350610d2960208601610cdb565b9250610d3760408601610cdb565b9150610d4560608601610cdb565b905092959194509250565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600060208284031215610d9157600080fd5b813567ffffffffffffffff80821115610da957600080fd5b818401915084601f830112610dbd57600080fd5b813581811115610dcf57610dcf610d50565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f01168101908382118183101715610e1557610e15610d50565b81604052828152876020848701011115610e2e57600080fd5b826020860160208301376000928101602001929092525095945050505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60006bffffffffffffffffffffffff808316818516808303821115610ea457610ea4610e4e565b01949350505050565b600060ff821660ff841680821015610ec757610ec7610e4e565b90039392505050565b600060ff821660ff84168160ff0481118215151615610ef157610ef1610e4e565b029392505050565b60008219821115610f0c57610f0c610e4e565b50019056fea26469706673582212207c58427e875935ddc72a38f2c67bda6b232867f98d7ba5816f0185ef9c2ac12764736f6c634300080d0033",
 }
 
 // TipsHarnessABI is the input ABI used to generate the binding from.
@@ -740,6 +740,37 @@ func (_TipsHarness *TipsHarnessTransactorRaw) Transact(opts *bind.TransactOpts, 
 	return _TipsHarness.Contract.contract.Transact(opts, method, params...)
 }
 
+// BroadcasterTip is a free data retrieval call binding the contract method 0x4dd48d13.
+//
+// Solidity: function broadcasterTip(bytes29 _tips) pure returns(uint96)
+func (_TipsHarness *TipsHarnessCaller) BroadcasterTip(opts *bind.CallOpts, _tips [29]byte) (*big.Int, error) {
+	var out []interface{}
+	err := _TipsHarness.contract.Call(opts, &out, "broadcasterTip", _tips)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// BroadcasterTip is a free data retrieval call binding the contract method 0x4dd48d13.
+//
+// Solidity: function broadcasterTip(bytes29 _tips) pure returns(uint96)
+func (_TipsHarness *TipsHarnessSession) BroadcasterTip(_tips [29]byte) (*big.Int, error) {
+	return _TipsHarness.Contract.BroadcasterTip(&_TipsHarness.CallOpts, _tips)
+}
+
+// BroadcasterTip is a free data retrieval call binding the contract method 0x4dd48d13.
+//
+// Solidity: function broadcasterTip(bytes29 _tips) pure returns(uint96)
+func (_TipsHarness *TipsHarnessCallerSession) BroadcasterTip(_tips [29]byte) (*big.Int, error) {
+	return _TipsHarness.Contract.BroadcasterTip(&_TipsHarness.CallOpts, _tips)
+}
+
 // EmptyTips is a free data retrieval call binding the contract method 0x725bd463.
 //
 // Solidity: function emptyTips() pure returns(bytes)
@@ -771,12 +802,43 @@ func (_TipsHarness *TipsHarnessCallerSession) EmptyTips() ([]byte, error) {
 	return _TipsHarness.Contract.EmptyTips(&_TipsHarness.CallOpts)
 }
 
+// ExecutorTip is a free data retrieval call binding the contract method 0x25fdebc2.
+//
+// Solidity: function executorTip(bytes29 _tips) pure returns(uint96)
+func (_TipsHarness *TipsHarnessCaller) ExecutorTip(opts *bind.CallOpts, _tips [29]byte) (*big.Int, error) {
+	var out []interface{}
+	err := _TipsHarness.contract.Call(opts, &out, "executorTip", _tips)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// ExecutorTip is a free data retrieval call binding the contract method 0x25fdebc2.
+//
+// Solidity: function executorTip(bytes29 _tips) pure returns(uint96)
+func (_TipsHarness *TipsHarnessSession) ExecutorTip(_tips [29]byte) (*big.Int, error) {
+	return _TipsHarness.Contract.ExecutorTip(&_TipsHarness.CallOpts, _tips)
+}
+
+// ExecutorTip is a free data retrieval call binding the contract method 0x25fdebc2.
+//
+// Solidity: function executorTip(bytes29 _tips) pure returns(uint96)
+func (_TipsHarness *TipsHarnessCallerSession) ExecutorTip(_tips [29]byte) (*big.Int, error) {
+	return _TipsHarness.Contract.ExecutorTip(&_TipsHarness.CallOpts, _tips)
+}
+
 // FormatTips is a free data retrieval call binding the contract method 0xd024f867.
 //
-// Solidity: function formatTips(uint96 _updaterTip, uint96 _relayerTip, uint96 _proverTip, uint96 _processorTip) pure returns(bytes)
-func (_TipsHarness *TipsHarnessCaller) FormatTips(opts *bind.CallOpts, _updaterTip *big.Int, _relayerTip *big.Int, _proverTip *big.Int, _processorTip *big.Int) ([]byte, error) {
+// Solidity: function formatTips(uint96 _notaryTip, uint96 _broadcasterTip, uint96 _proverTip, uint96 _executorTip) pure returns(bytes)
+func (_TipsHarness *TipsHarnessCaller) FormatTips(opts *bind.CallOpts, _notaryTip *big.Int, _broadcasterTip *big.Int, _proverTip *big.Int, _executorTip *big.Int) ([]byte, error) {
 	var out []interface{}
-	err := _TipsHarness.contract.Call(opts, &out, "formatTips", _updaterTip, _relayerTip, _proverTip, _processorTip)
+	err := _TipsHarness.contract.Call(opts, &out, "formatTips", _notaryTip, _broadcasterTip, _proverTip, _executorTip)
 
 	if err != nil {
 		return *new([]byte), err
@@ -790,24 +852,24 @@ func (_TipsHarness *TipsHarnessCaller) FormatTips(opts *bind.CallOpts, _updaterT
 
 // FormatTips is a free data retrieval call binding the contract method 0xd024f867.
 //
-// Solidity: function formatTips(uint96 _updaterTip, uint96 _relayerTip, uint96 _proverTip, uint96 _processorTip) pure returns(bytes)
-func (_TipsHarness *TipsHarnessSession) FormatTips(_updaterTip *big.Int, _relayerTip *big.Int, _proverTip *big.Int, _processorTip *big.Int) ([]byte, error) {
-	return _TipsHarness.Contract.FormatTips(&_TipsHarness.CallOpts, _updaterTip, _relayerTip, _proverTip, _processorTip)
+// Solidity: function formatTips(uint96 _notaryTip, uint96 _broadcasterTip, uint96 _proverTip, uint96 _executorTip) pure returns(bytes)
+func (_TipsHarness *TipsHarnessSession) FormatTips(_notaryTip *big.Int, _broadcasterTip *big.Int, _proverTip *big.Int, _executorTip *big.Int) ([]byte, error) {
+	return _TipsHarness.Contract.FormatTips(&_TipsHarness.CallOpts, _notaryTip, _broadcasterTip, _proverTip, _executorTip)
 }
 
 // FormatTips is a free data retrieval call binding the contract method 0xd024f867.
 //
-// Solidity: function formatTips(uint96 _updaterTip, uint96 _relayerTip, uint96 _proverTip, uint96 _processorTip) pure returns(bytes)
-func (_TipsHarness *TipsHarnessCallerSession) FormatTips(_updaterTip *big.Int, _relayerTip *big.Int, _proverTip *big.Int, _processorTip *big.Int) ([]byte, error) {
-	return _TipsHarness.Contract.FormatTips(&_TipsHarness.CallOpts, _updaterTip, _relayerTip, _proverTip, _processorTip)
+// Solidity: function formatTips(uint96 _notaryTip, uint96 _broadcasterTip, uint96 _proverTip, uint96 _executorTip) pure returns(bytes)
+func (_TipsHarness *TipsHarnessCallerSession) FormatTips(_notaryTip *big.Int, _broadcasterTip *big.Int, _proverTip *big.Int, _executorTip *big.Int) ([]byte, error) {
+	return _TipsHarness.Contract.FormatTips(&_TipsHarness.CallOpts, _notaryTip, _broadcasterTip, _proverTip, _executorTip)
 }
 
-// OffsetProcessor is a free data retrieval call binding the contract method 0x01fab8df.
+// NotaryTip is a free data retrieval call binding the contract method 0x27a9fa56.
 //
-// Solidity: function offsetProcessor() pure returns(uint256)
-func (_TipsHarness *TipsHarnessCaller) OffsetProcessor(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function notaryTip(bytes29 _tips) pure returns(uint96)
+func (_TipsHarness *TipsHarnessCaller) NotaryTip(opts *bind.CallOpts, _tips [29]byte) (*big.Int, error) {
 	var out []interface{}
-	err := _TipsHarness.contract.Call(opts, &out, "offsetProcessor")
+	err := _TipsHarness.contract.Call(opts, &out, "notaryTip", _tips)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -819,18 +881,111 @@ func (_TipsHarness *TipsHarnessCaller) OffsetProcessor(opts *bind.CallOpts) (*bi
 
 }
 
-// OffsetProcessor is a free data retrieval call binding the contract method 0x01fab8df.
+// NotaryTip is a free data retrieval call binding the contract method 0x27a9fa56.
 //
-// Solidity: function offsetProcessor() pure returns(uint256)
-func (_TipsHarness *TipsHarnessSession) OffsetProcessor() (*big.Int, error) {
-	return _TipsHarness.Contract.OffsetProcessor(&_TipsHarness.CallOpts)
+// Solidity: function notaryTip(bytes29 _tips) pure returns(uint96)
+func (_TipsHarness *TipsHarnessSession) NotaryTip(_tips [29]byte) (*big.Int, error) {
+	return _TipsHarness.Contract.NotaryTip(&_TipsHarness.CallOpts, _tips)
 }
 
-// OffsetProcessor is a free data retrieval call binding the contract method 0x01fab8df.
+// NotaryTip is a free data retrieval call binding the contract method 0x27a9fa56.
 //
-// Solidity: function offsetProcessor() pure returns(uint256)
-func (_TipsHarness *TipsHarnessCallerSession) OffsetProcessor() (*big.Int, error) {
-	return _TipsHarness.Contract.OffsetProcessor(&_TipsHarness.CallOpts)
+// Solidity: function notaryTip(bytes29 _tips) pure returns(uint96)
+func (_TipsHarness *TipsHarnessCallerSession) NotaryTip(_tips [29]byte) (*big.Int, error) {
+	return _TipsHarness.Contract.NotaryTip(&_TipsHarness.CallOpts, _tips)
+}
+
+// OffsetBroadcaster is a free data retrieval call binding the contract method 0x15bb7d2b.
+//
+// Solidity: function offsetBroadcaster() pure returns(uint256)
+func (_TipsHarness *TipsHarnessCaller) OffsetBroadcaster(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _TipsHarness.contract.Call(opts, &out, "offsetBroadcaster")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// OffsetBroadcaster is a free data retrieval call binding the contract method 0x15bb7d2b.
+//
+// Solidity: function offsetBroadcaster() pure returns(uint256)
+func (_TipsHarness *TipsHarnessSession) OffsetBroadcaster() (*big.Int, error) {
+	return _TipsHarness.Contract.OffsetBroadcaster(&_TipsHarness.CallOpts)
+}
+
+// OffsetBroadcaster is a free data retrieval call binding the contract method 0x15bb7d2b.
+//
+// Solidity: function offsetBroadcaster() pure returns(uint256)
+func (_TipsHarness *TipsHarnessCallerSession) OffsetBroadcaster() (*big.Int, error) {
+	return _TipsHarness.Contract.OffsetBroadcaster(&_TipsHarness.CallOpts)
+}
+
+// OffsetExecutor is a free data retrieval call binding the contract method 0x51970c3f.
+//
+// Solidity: function offsetExecutor() pure returns(uint256)
+func (_TipsHarness *TipsHarnessCaller) OffsetExecutor(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _TipsHarness.contract.Call(opts, &out, "offsetExecutor")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// OffsetExecutor is a free data retrieval call binding the contract method 0x51970c3f.
+//
+// Solidity: function offsetExecutor() pure returns(uint256)
+func (_TipsHarness *TipsHarnessSession) OffsetExecutor() (*big.Int, error) {
+	return _TipsHarness.Contract.OffsetExecutor(&_TipsHarness.CallOpts)
+}
+
+// OffsetExecutor is a free data retrieval call binding the contract method 0x51970c3f.
+//
+// Solidity: function offsetExecutor() pure returns(uint256)
+func (_TipsHarness *TipsHarnessCallerSession) OffsetExecutor() (*big.Int, error) {
+	return _TipsHarness.Contract.OffsetExecutor(&_TipsHarness.CallOpts)
+}
+
+// OffsetNotary is a free data retrieval call binding the contract method 0xb4b4ccb2.
+//
+// Solidity: function offsetNotary() pure returns(uint256)
+func (_TipsHarness *TipsHarnessCaller) OffsetNotary(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _TipsHarness.contract.Call(opts, &out, "offsetNotary")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// OffsetNotary is a free data retrieval call binding the contract method 0xb4b4ccb2.
+//
+// Solidity: function offsetNotary() pure returns(uint256)
+func (_TipsHarness *TipsHarnessSession) OffsetNotary() (*big.Int, error) {
+	return _TipsHarness.Contract.OffsetNotary(&_TipsHarness.CallOpts)
+}
+
+// OffsetNotary is a free data retrieval call binding the contract method 0xb4b4ccb2.
+//
+// Solidity: function offsetNotary() pure returns(uint256)
+func (_TipsHarness *TipsHarnessCallerSession) OffsetNotary() (*big.Int, error) {
+	return _TipsHarness.Contract.OffsetNotary(&_TipsHarness.CallOpts)
 }
 
 // OffsetProver is a free data retrieval call binding the contract method 0x98de8554.
@@ -864,99 +1019,6 @@ func (_TipsHarness *TipsHarnessCallerSession) OffsetProver() (*big.Int, error) {
 	return _TipsHarness.Contract.OffsetProver(&_TipsHarness.CallOpts)
 }
 
-// OffsetRelayer is a free data retrieval call binding the contract method 0x0032b444.
-//
-// Solidity: function offsetRelayer() pure returns(uint256)
-func (_TipsHarness *TipsHarnessCaller) OffsetRelayer(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _TipsHarness.contract.Call(opts, &out, "offsetRelayer")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// OffsetRelayer is a free data retrieval call binding the contract method 0x0032b444.
-//
-// Solidity: function offsetRelayer() pure returns(uint256)
-func (_TipsHarness *TipsHarnessSession) OffsetRelayer() (*big.Int, error) {
-	return _TipsHarness.Contract.OffsetRelayer(&_TipsHarness.CallOpts)
-}
-
-// OffsetRelayer is a free data retrieval call binding the contract method 0x0032b444.
-//
-// Solidity: function offsetRelayer() pure returns(uint256)
-func (_TipsHarness *TipsHarnessCallerSession) OffsetRelayer() (*big.Int, error) {
-	return _TipsHarness.Contract.OffsetRelayer(&_TipsHarness.CallOpts)
-}
-
-// OffsetUpdater is a free data retrieval call binding the contract method 0x71370889.
-//
-// Solidity: function offsetUpdater() pure returns(uint256)
-func (_TipsHarness *TipsHarnessCaller) OffsetUpdater(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _TipsHarness.contract.Call(opts, &out, "offsetUpdater")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// OffsetUpdater is a free data retrieval call binding the contract method 0x71370889.
-//
-// Solidity: function offsetUpdater() pure returns(uint256)
-func (_TipsHarness *TipsHarnessSession) OffsetUpdater() (*big.Int, error) {
-	return _TipsHarness.Contract.OffsetUpdater(&_TipsHarness.CallOpts)
-}
-
-// OffsetUpdater is a free data retrieval call binding the contract method 0x71370889.
-//
-// Solidity: function offsetUpdater() pure returns(uint256)
-func (_TipsHarness *TipsHarnessCallerSession) OffsetUpdater() (*big.Int, error) {
-	return _TipsHarness.Contract.OffsetUpdater(&_TipsHarness.CallOpts)
-}
-
-// ProcessorTip is a free data retrieval call binding the contract method 0x1c9caa04.
-//
-// Solidity: function processorTip(bytes29 _tips) pure returns(uint96)
-func (_TipsHarness *TipsHarnessCaller) ProcessorTip(opts *bind.CallOpts, _tips [29]byte) (*big.Int, error) {
-	var out []interface{}
-	err := _TipsHarness.contract.Call(opts, &out, "processorTip", _tips)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// ProcessorTip is a free data retrieval call binding the contract method 0x1c9caa04.
-//
-// Solidity: function processorTip(bytes29 _tips) pure returns(uint96)
-func (_TipsHarness *TipsHarnessSession) ProcessorTip(_tips [29]byte) (*big.Int, error) {
-	return _TipsHarness.Contract.ProcessorTip(&_TipsHarness.CallOpts, _tips)
-}
-
-// ProcessorTip is a free data retrieval call binding the contract method 0x1c9caa04.
-//
-// Solidity: function processorTip(bytes29 _tips) pure returns(uint96)
-func (_TipsHarness *TipsHarnessCallerSession) ProcessorTip(_tips [29]byte) (*big.Int, error) {
-	return _TipsHarness.Contract.ProcessorTip(&_TipsHarness.CallOpts, _tips)
-}
-
 // ProverTip is a free data retrieval call binding the contract method 0xcc6a5c9b.
 //
 // Solidity: function proverTip(bytes29 _tips) pure returns(uint96)
@@ -986,37 +1048,6 @@ func (_TipsHarness *TipsHarnessSession) ProverTip(_tips [29]byte) (*big.Int, err
 // Solidity: function proverTip(bytes29 _tips) pure returns(uint96)
 func (_TipsHarness *TipsHarnessCallerSession) ProverTip(_tips [29]byte) (*big.Int, error) {
 	return _TipsHarness.Contract.ProverTip(&_TipsHarness.CallOpts, _tips)
-}
-
-// RelayerTip is a free data retrieval call binding the contract method 0xaa02b2b2.
-//
-// Solidity: function relayerTip(bytes29 _tips) pure returns(uint96)
-func (_TipsHarness *TipsHarnessCaller) RelayerTip(opts *bind.CallOpts, _tips [29]byte) (*big.Int, error) {
-	var out []interface{}
-	err := _TipsHarness.contract.Call(opts, &out, "relayerTip", _tips)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// RelayerTip is a free data retrieval call binding the contract method 0xaa02b2b2.
-//
-// Solidity: function relayerTip(bytes29 _tips) pure returns(uint96)
-func (_TipsHarness *TipsHarnessSession) RelayerTip(_tips [29]byte) (*big.Int, error) {
-	return _TipsHarness.Contract.RelayerTip(&_TipsHarness.CallOpts, _tips)
-}
-
-// RelayerTip is a free data retrieval call binding the contract method 0xaa02b2b2.
-//
-// Solidity: function relayerTip(bytes29 _tips) pure returns(uint96)
-func (_TipsHarness *TipsHarnessCallerSession) RelayerTip(_tips [29]byte) (*big.Int, error) {
-	return _TipsHarness.Contract.RelayerTip(&_TipsHarness.CallOpts, _tips)
 }
 
 // TipsVersion is a free data retrieval call binding the contract method 0x60fb5709.
@@ -1143,41 +1174,10 @@ func (_TipsHarness *TipsHarnessCallerSession) TotalTips(_tips [29]byte) (*big.In
 	return _TipsHarness.Contract.TotalTips(&_TipsHarness.CallOpts, _tips)
 }
 
-// UpdaterTip is a free data retrieval call binding the contract method 0x8ff916f8.
-//
-// Solidity: function updaterTip(bytes29 _tips) pure returns(uint96)
-func (_TipsHarness *TipsHarnessCaller) UpdaterTip(opts *bind.CallOpts, _tips [29]byte) (*big.Int, error) {
-	var out []interface{}
-	err := _TipsHarness.contract.Call(opts, &out, "updaterTip", _tips)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// UpdaterTip is a free data retrieval call binding the contract method 0x8ff916f8.
-//
-// Solidity: function updaterTip(bytes29 _tips) pure returns(uint96)
-func (_TipsHarness *TipsHarnessSession) UpdaterTip(_tips [29]byte) (*big.Int, error) {
-	return _TipsHarness.Contract.UpdaterTip(&_TipsHarness.CallOpts, _tips)
-}
-
-// UpdaterTip is a free data retrieval call binding the contract method 0x8ff916f8.
-//
-// Solidity: function updaterTip(bytes29 _tips) pure returns(uint96)
-func (_TipsHarness *TipsHarnessCallerSession) UpdaterTip(_tips [29]byte) (*big.Int, error) {
-	return _TipsHarness.Contract.UpdaterTip(&_TipsHarness.CallOpts, _tips)
-}
-
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212207a4a829a4ff4787148001272e92eb978a36314f1e5fb49597cce4efaf4118a2064736f6c634300080d0033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220c0432fc9b2902ee2678f0bfbb54ccc2ef9993d7ec1a3f972a0f45b53d8ebc5b864736f6c634300080d0033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.
@@ -1353,7 +1353,7 @@ var TypedMemViewMetaData = &bind.MetaData{
 	Sigs: map[string]string{
 		"f26be3fc": "NULL()",
 	},
-	Bin: "0x60c9610038600b82828239805160001a607314602b57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063f26be3fc146038575b600080fd5b605e7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000909116815260200160405180910390f3fea264697066735822122078c50a2fa8be8f96b424fd97322fe02bd9fbb184e917c2c74eaea55a9edfa96764736f6c634300080d0033",
+	Bin: "0x60c9610038600b82828239805160001a607314602b57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063f26be3fc146038575b600080fd5b605e7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000909116815260200160405180910390f3fea2646970667358221220b4c47daa41aa50c2c9ef519b7ce774f0a13195e6e22dcdf1a319e036a0d2283a64736f6c634300080d0033",
 }
 
 // TypedMemViewABI is the input ABI used to generate the binding from.

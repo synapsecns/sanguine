@@ -6,7 +6,8 @@ import { TypeCasts } from "./TypeCasts.sol";
 import { Message } from "./Message.sol";
 
 /**
- * @notice Library for versioned formatting [the header part] of [the messages used by Home and Replicas].
+ * @notice Library for versioned formatting [the header part]
+ * of [the messages used by Origin and Destination].
  */
 library Header {
     using TypedMemView for bytes;
@@ -17,10 +18,10 @@ library Header {
     /**
      * @dev Header memory layout
      * [000 .. 002): version            uint16   2 bytes
-     * [002 .. 006): originDomain       uint32   4 bytes
+     * [002 .. 006): origin             uint32   4 bytes
      * [006 .. 038): sender             bytes32 32 bytes
      * [038 .. 042): nonce              uint32   4 bytes
-     * [042 .. 046): destinationDomain  uint32   4 bytes
+     * [042 .. 046): destination        uint32   4 bytes
      * [046 .. 078): recipient          bytes32 32 bytes
      * [078 .. 082): optimisticSeconds  uint32   4 bytes
      */
@@ -38,20 +39,20 @@ library Header {
     }
 
     function formatHeader(
-        uint32 _originDomain,
+        uint32 _origin,
         bytes32 _sender,
         uint32 _nonce,
-        uint32 _destinationDomain,
+        uint32 _destination,
         bytes32 _recipient,
         uint32 _optimisticSeconds
     ) internal pure returns (bytes memory) {
         return
             abi.encodePacked(
                 HEADER_VERSION,
-                _originDomain,
+                _origin,
                 _sender,
                 _nonce,
-                _destinationDomain,
+                _destination,
                 _recipient,
                 _optimisticSeconds
             );

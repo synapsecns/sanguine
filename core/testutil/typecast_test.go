@@ -2,10 +2,10 @@ package testutil_test
 
 import . "github.com/stretchr/testify/assert"
 
-func (s SimulatedSuite) TestTypecastHome() {
+func (s SimulatedSuite) TestTypecastOrigin() {
 	NotPanics(s.T(), func() {
-		_, homeHandle := s.deployManager.GetHome(s.GetTestContext(), s.testBackend)
-		NotNil(s.T(), homeHandle)
+		_, originHandle := s.deployManager.GetOrigin(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), originHandle)
 	})
 }
 
@@ -16,17 +16,17 @@ func (s SimulatedSuite) TestTypecastMessageHarness() {
 	})
 }
 
-func (s SimulatedSuite) TestTypecastHomeHarness() {
+func (s SimulatedSuite) TestTypecastOriginHarness() {
 	NotPanics(s.T(), func() {
-		_, messageHarness := s.deployManager.GetHomeHarness(s.GetTestContext(), s.testBackend)
+		_, messageHarness := s.deployManager.GetOriginHarness(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), messageHarness)
 	})
 }
 
-func (s SimulatedSuite) TestTypecastUpdaterManager() {
+func (s SimulatedSuite) TestTypecastNotaryManager() {
 	NotPanics(s.T(), func() {
-		_, updaterManager := s.deployManager.GetUpdaterManager(s.GetTestContext(), s.testBackend)
-		NotNil(s.T(), updaterManager)
+		_, notaryManager := s.deployManager.GetNotaryManager(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), notaryManager)
 	})
 }
 
@@ -51,17 +51,17 @@ func (s SimulatedSuite) TestTypecastTipsHarness() {
 	})
 }
 
-func (s SimulatedSuite) TestTypecastReplicaManager() {
+func (s SimulatedSuite) TestTypecastDestination() {
 	NotPanics(s.T(), func() {
-		_, replicaManager := s.deployManager.GetReplicaManager(s.GetTestContext(), s.testBackend)
-		NotNil(s.T(), replicaManager)
+		_, destination := s.deployManager.GetDestination(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), destination)
 	})
 }
 
-func (s SimulatedSuite) TestTypecastReplicaManagerHarness() {
+func (s SimulatedSuite) TestTypecastDestinationHarness() {
 	NotPanics(s.T(), func() {
-		_, replicaManagerHarness := s.deployManager.GetReplicaManagerHarness(s.GetTestContext(), s.testBackend)
-		NotNil(s.T(), replicaManagerHarness)
+		_, destinationHarness := s.deployManager.GetDestinationHarness(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), destinationHarness)
 	})
 }
 

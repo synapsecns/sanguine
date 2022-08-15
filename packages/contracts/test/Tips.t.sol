@@ -13,43 +13,43 @@ contract TipsTest is Test {
     using TypedMemView for bytes29;
     using Tips for bytes29;
 
-    uint96 internal constant UPDATER_TIP = 1234;
-    uint96 internal constant RELAYER_TIP = 3456;
+    uint96 internal constant NOTARY_TIP = 1234;
+    uint96 internal constant BROADCASTER_TIP = 3456;
     uint96 internal constant PROVER_TIP = 5678;
-    uint96 internal constant PROCESSOR_TIP = 7890;
-    uint96 internal constant TOTAL_TIPS = UPDATER_TIP + RELAYER_TIP + PROVER_TIP + PROCESSOR_TIP;
+    uint96 internal constant EXECUTOR_TIP = 7890;
+    uint96 internal constant TOTAL_TIPS = NOTARY_TIP + BROADCASTER_TIP + PROVER_TIP + EXECUTOR_TIP;
 
     uint40 internal constant WRONG_TYPE = 1337;
 
     function test_correctTipsEncoding() public {
         bytes29 tipsView = _createTestData();
 
-        assertEq(tipsView.updaterTip(), UPDATER_TIP);
-        assertEq(tipsView.relayerTip(), RELAYER_TIP);
+        assertEq(tipsView.notaryTip(), NOTARY_TIP);
+        assertEq(tipsView.broadcasterTip(), BROADCASTER_TIP);
         assertEq(tipsView.proverTip(), PROVER_TIP);
-        assertEq(tipsView.processorTip(), PROCESSOR_TIP);
+        assertEq(tipsView.executorTip(), EXECUTOR_TIP);
 
         assertEq(tipsView.totalTips(), TOTAL_TIPS);
     }
 
-    function test_incorrectType_updaterTip() public {
-        _createTestDataMistyped().updaterTip();
+    function test_incorrectType_notaryTip() public {
+        _createTestDataMistyped().notaryTip();
     }
 
-    function test_incorrectType_relayerTip() public {
-        _createTestDataMistyped().relayerTip();
+    function test_incorrectType_broadcasterTip() public {
+        _createTestDataMistyped().broadcasterTip();
     }
 
     function test_incorrectType_proverTip() public {
         _createTestDataMistyped().proverTip();
     }
 
-    function test_incorrectType_processorTip() public {
-        _createTestDataMistyped().processorTip();
+    function test_incorrectType_executorTip() public {
+        _createTestDataMistyped().executorTip();
     }
 
     function _createTestData() internal pure returns (bytes29) {
-        bytes memory tips = Tips.formatTips(UPDATER_TIP, RELAYER_TIP, PROVER_TIP, PROCESSOR_TIP);
+        bytes memory tips = Tips.formatTips(NOTARY_TIP, BROADCASTER_TIP, PROVER_TIP, EXECUTOR_TIP);
         return tips.tipsView();
     }
 

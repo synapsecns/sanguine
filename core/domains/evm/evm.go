@@ -17,8 +17,8 @@ type evmClient struct {
 	config config.DomainConfig
 	// client uses the old synapse client for now
 	client evm.Chain
-	// home contains the home contract
-	home domains.HomeContract
+	// origin contains the origin contract
+	origin domains.OriginContract
 	// attestationCollecotr contains the attestation collector contract
 	attestationCollector domains.AttestationCollectorContract
 }
@@ -32,9 +32,9 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		return nil, fmt.Errorf("could not get evm: %w", err)
 	}
 
-	boundHome, err := NewHomeContract(ctx, underlyingClient, common.HexToAddress(domain.HomeAddress))
+	boundOrigin, err := NewOriginContract(ctx, underlyingClient, common.HexToAddress(domain.OriginAddress))
 	if err != nil {
-		return nil, fmt.Errorf("could not bind home contract: %w", err)
+		return nil, fmt.Errorf("could not bind origin contract: %w", err)
 	}
 
 	boundCollector, err := NewAttestationCollectorContract(ctx, underlyingClient, common.HexToAddress(domain.AttesationCollectorAddress))
@@ -47,7 +47,7 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		config:               domain,
 		client:               underlyingClient,
 		attestationCollector: boundCollector,
-		home:                 boundHome,
+		origin:               boundOrigin,
 	}, nil
 }
 
@@ -71,9 +71,9 @@ func (e evmClient) BlockNumber(ctx context.Context) (uint32, error) {
 	return uint32(blockNumber), nil
 }
 
-// Home returns the bound home contract.
-func (e evmClient) Home() domains.HomeContract {
-	return e.home
+// Origin returns the bound origin contract.
+func (e evmClient) Origin() domains.OriginContract {
+	return e.origin
 }
 
 // AttestationCollector gets the attestation collector.
