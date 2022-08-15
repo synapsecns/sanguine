@@ -12,7 +12,7 @@ import (
 
 // AttestationSubmitter submits updates continuously.
 type AttestationSubmitter struct {
-	// domain allows access to the home contract
+	// domain allows access to the origin contract
 	domain domains.DomainClient
 	// db contains the transaction queue legacyDB
 	db db.SynapseDB
