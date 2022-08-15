@@ -19,7 +19,7 @@ import { TypeCasts } from "./libs/TypeCasts.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
- * @title Home Contract
+ * @title Home
  * @author Illusory Systems Inc.
  * @notice Accepts messages to be dispatched to remote chains,
  * constructs a Merkle tree of the messages,
