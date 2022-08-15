@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
-    "build:go": "rm ./flattened/* && yarn sol-merger \"./contracts/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin & yarn sol-merger \"./test/harnesses/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin",
+    "build:go": "rimraf ./flattened/* && yarn sol-merger \"./contracts/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin & yarn sol-merger \"./test/harnesses/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin",
     "build:contracts": "forge build",
     "build:slither": "hardhat compile",
     "build:typescript": "typechain --target ethers-v5 'artifacts/**/*json'",
@@ -20,10 +20,11 @@
     "hardhat": "^2.9.6",
     "prettier": "^2.7.1",
     "prettier-plugin-solidity": "^1.0.0-dev.23",
-    "typechain": "^8.0.0",
-    "typescript": "^4.6.4",
+    "rimraf": "^3.0.2",
     "solhint": "^3.3.6",
-    "solhint-plugin-prettier": "^0.0.5"
+    "solhint-plugin-prettier": "^0.0.5",
+    "typechain": "^8.0.0",
+    "typescript": "^4.6.4"
   },
   "dependencies": {
     "@nodelib/fs.walk": "^1.2.8",
