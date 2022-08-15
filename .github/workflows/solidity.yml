@@ -106,7 +106,7 @@ jobs:
 
       - name: Run Slither
         uses: crytic/slither-action@v0.1.1
-        continue-on-error: tru
+        continue-on-error: true
         id: slither
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
