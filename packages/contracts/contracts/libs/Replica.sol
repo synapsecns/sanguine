@@ -35,9 +35,9 @@ library ReplicaLib {
     struct Replica {
         // The latest nonce that has been signed by the Notary for this given Replica
         uint32 nonce; // 32 bits
-        // Domain of home chain
+        // Domain of origin chain
         uint32 remoteDomain; // 32 bits
-        // Status of Replica based on the Home remote domain
+        // Status of Replica based on the Origin remote domain
         ReplicaStatus status; // 8 bits
         // Mapping of roots to time at which Broadcaster submitted on-chain. Latency period begins here.
         // TODO: confirmAt doesn't need to be uint256 necessarily

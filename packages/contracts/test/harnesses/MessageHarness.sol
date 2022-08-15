@@ -42,7 +42,7 @@ contract MessageHarness {
 
     /**
      * @notice Returns leaf of formatted message with provided fields.
-     * @param _origin Domain of home chain
+     * @param _origin Domain of origin chain
      * @param _sender Address of sender as bytes32
      * @param _nonce Destination-specific nonce number
      * @param _destination Domain of destination chain

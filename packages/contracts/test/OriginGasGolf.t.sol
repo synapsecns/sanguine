@@ -2,20 +2,20 @@
 pragma solidity 0.8.13;
 
 import "forge-std/console2.sol";
-import { HomeHarness } from "./harnesses/HomeHarness.sol";
+import { OriginHarness } from "./harnesses/OriginHarness.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
-contract HomeGasGolfTest is SynapseTestWithNotaryManager {
-    HomeHarness home;
+contract OriginGasGolfTest is SynapseTestWithNotaryManager {
+    OriginHarness origin;
 
     function setUp() public override {
         super.setUp();
-        home = new HomeHarness(localDomain);
-        home.initialize(INotaryManager(notaryManager));
-        notaryManager.setHome(address(home));
+        origin = new OriginHarness(localDomain);
+        origin.initialize(INotaryManager(notaryManager));
+        notaryManager.setOrigin(address(origin));
     }
 
     event Dispatch(
@@ -30,7 +30,7 @@ contract HomeGasGolfTest is SynapseTestWithNotaryManager {
         bytes32 recipient = addressToBytes32(vm.addr(1337));
         address sender = vm.addr(1555);
         bytes memory messageBody = bytes("message");
-        uint32 nonce = home.nonce() + 1;
+        uint32 nonce = origin.nonce() + 1;
         bytes memory _header = Header.formatHeader(
             localDomain,
             addressToBytes32(sender),
@@ -45,14 +45,14 @@ contract HomeGasGolfTest is SynapseTestWithNotaryManager {
         vm.expectEmit(true, true, true, true);
         emit Dispatch(
             messageHash,
-            home.count(),
+            origin.count(),
             (uint64(remoteDomain) << 32) | nonce,
             _tips,
             message
         );
         hoax(sender);
-        home.dispatch{ value: TOTAL_TIPS }(remoteDomain, recipient, 0, _tips, messageBody);
-        newRoot = home.root();
+        origin.dispatch{ value: TOTAL_TIPS }(remoteDomain, recipient, 0, _tips, messageBody);
+        newRoot = origin.root();
     }
 
     function test_dispatch_30() public {
@@ -62,7 +62,7 @@ contract HomeGasGolfTest is SynapseTestWithNotaryManager {
             roots[i] = _dispatch();
         }
         for (uint256 i = 0; i < amount; ++i) {
-            assertEq(home.historicalRoots(i + 1), roots[i]);
+            assertEq(origin.historicalRoots(i + 1), roots[i]);
         }
     }
 }

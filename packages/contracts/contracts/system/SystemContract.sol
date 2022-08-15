@@ -8,7 +8,7 @@ import {
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
- * @notice Shared utilities between Synapse System Contracts: Home, ReplicaManager, etc.
+ * @notice Shared utilities between Synapse System Contracts: Origin, ReplicaManager, etc.
  */
 abstract contract SystemContract is OwnableUpgradeable {
     /*╔══════════════════════════════════════════════════════════════════════╗*\

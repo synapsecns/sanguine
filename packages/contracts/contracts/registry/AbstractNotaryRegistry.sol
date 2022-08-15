@@ -13,7 +13,7 @@ abstract contract AbstractNotaryRegistry {
     /**
      * @notice  Checks if the passed payload is a valid Attestation message,
      *          if the signature is valid and if the signer is an authorized notary.
-     * @param _attestation  Attestation of Home merkle root. Needs to be valid, revert otherwise.
+     * @param _attestation  Attestation of Origin merkle root. Needs to be valid, revert otherwise.
      * @return _notary     Notary that signed the Attestation
      * @return _view        Memory view on attestation
      */
@@ -28,5 +28,5 @@ abstract contract AbstractNotaryRegistry {
         require(_isNotary(_view.attestationDomain(), _notary), "Signer is not a notary");
     }
 
-    function _isNotary(uint32 _homeDomain, address _notary) internal view virtual returns (bool);
+    function _isNotary(uint32 _originDomain, address _notary) internal view virtual returns (bool);
 }

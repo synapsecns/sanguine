@@ -20,7 +20,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
 
 /**
  * @title ReplicaManager
- * @notice Track merkle root state of Home contracts on other chains,
+ * @notice Track merkle root state of Origin contracts on other chains,
  * prove and dispatch messages to end recipients.
  */
 contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, GuardRegistry {
@@ -78,7 +78,7 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
     );
 
     event AttestationAccepted(
-        uint32 indexed homeDomain,
+        uint32 indexed originDomain,
         uint32 indexed nonce,
         bytes32 indexed root,
         bytes signature
@@ -99,7 +99,7 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
      *      - sets remote domain
      *      - sets a trusted root, and pre-approves messages under it
      *      - sets the optimistic timer
-     * @param _remoteDomain The domain of the Home contract this follows
+     * @param _remoteDomain The domain of the Origin contract this follows
      * @param _notary The EVM id of the notary
      */
     function initialize(uint32 _remoteDomain, address _notary) public initializer {
@@ -170,7 +170,7 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
      * @dev Reverts if `prove` call returns false
      * @param _message Formatted message (refer to Message library)
      * @param _proof Merkle proof of inclusion for message's leaf
-     * @param _index Index of leaf in home's merkle tree
+     * @param _index Index of leaf in origin's merkle tree
      */
     function proveAndExecute(
         uint32 _remoteDomain,
@@ -286,7 +286,7 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
      * This means that witnesses never need to be updated for the new root
      * @param _message Formatted message
      * @param _proof Merkle proof of inclusion for leaf
-     * @param _index Index of leaf in home's merkle tree
+     * @param _index Index of leaf in origin's merkle tree
      * @return Returns true if proof was valid and `prove` call succeeded
      **/
     function prove(
@@ -342,7 +342,7 @@ contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, Guard
             /**
              * @dev Route message to SystemMessenger.
              *      Note: Only SystemMessenger contract on origin chain
-             *      can send such a message (enforced in Home.sol).
+             *      can send such a message (enforced in Origin.sol).
              */
             recipient = address(systemMessenger);
         } else {

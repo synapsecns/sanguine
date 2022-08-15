@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { INotaryManager } from "./interfaces/INotaryManager.sol";
-import { Home } from "./Home.sol";
+import { Origin } from "./Origin.sol";
 // ============ External Imports ============
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
@@ -18,8 +18,8 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 contract NotaryManager is INotaryManager, Ownable {
     // ============ Public Storage ============
 
-    // address of home contract
-    address public home;
+    // address of origin contract
+    address public origin;
 
     // ============ Private Storage ============
 
@@ -29,10 +29,10 @@ contract NotaryManager is INotaryManager, Ownable {
     // ============ Events ============
 
     /**
-     * @notice Emitted when a new home is set
-     * @param home The address of the new home contract
+     * @notice Emitted when a new origin is set
+     * @param origin The address of the new origin contract
      */
-    event NewHome(address home);
+    event NewOrigin(address origin);
 
     /**
      * @notice Emitted when a new notary is set
@@ -49,10 +49,10 @@ contract NotaryManager is INotaryManager, Ownable {
 
     /**
      * @notice Require that the function is called
-     * by the Home contract
+     * by the Origin contract
      */
-    modifier onlyHome() {
-        require(msg.sender == home, "!home");
+    modifier onlyOrigin() {
+        require(msg.sender == origin, "!origin");
         _;
     }
 
@@ -65,15 +65,15 @@ contract NotaryManager is INotaryManager, Ownable {
     // ============ External Functions ============
 
     /**
-     * @notice Set the address of the a new home contract
+     * @notice Set the address of the a new origin contract
      * @dev only callable by trusted owner
-     * @param _home The address of the new home contract
+     * @param _origin The address of the new origin contract
      */
-    function setHome(address _home) external onlyOwner {
-        require(Address.isContract(_home), "!contract home");
-        home = _home;
+    function setOrigin(address _origin) external onlyOwner {
+        require(Address.isContract(_origin), "!contract origin");
+        origin = _origin;
 
-        emit NewHome(_home);
+        emit NewOrigin(_origin);
     }
 
     /**
@@ -83,7 +83,7 @@ contract NotaryManager is INotaryManager, Ownable {
      */
     function setNotary(address _notaryAddress) external onlyOwner {
         _notary = _notaryAddress;
-        Home(home).setNotary(_notaryAddress);
+        Origin(origin).setNotary(_notaryAddress);
         emit NewNotary(_notaryAddress);
     }
 
@@ -93,7 +93,7 @@ contract NotaryManager is INotaryManager, Ownable {
      * when notary bonding and rotation are also implemented
      * @param _reporter The address of the entity that reported the notary fraud
      */
-    function slashNotary(address payable _reporter) external override onlyHome {
+    function slashNotary(address payable _reporter) external override onlyOrigin {
         emit FakeSlashed(_reporter);
     }
 

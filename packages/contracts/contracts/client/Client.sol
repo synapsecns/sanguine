@@ -3,23 +3,23 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
-import { Home } from "../Home.sol";
+import { Origin } from "../Origin.sol";
 
 /// @dev Stateless contract, that can be potentially used as a parent
 /// for the upgradeable contract.
 abstract contract Client is IMessageRecipient {
     // ============ Immutable Variables ============
 
-    // local chain Home: used for sending messages
-    address public immutable home;
+    // local chain Origin: used for sending messages
+    address public immutable origin;
 
     // local chain ReplicaManager: used for receiving messages
     address public immutable replicaManager;
 
     // ============ Constructor ============
 
-    constructor(address _home, address _replicaManager) {
-        home = _home;
+    constructor(address _origin, address _replicaManager) {
+        origin = _origin;
         replicaManager = _replicaManager;
     }
 
@@ -74,7 +74,7 @@ abstract contract Client is IMessageRecipient {
     ) internal {
         bytes32 recipient = trustedSender(_destination);
         require(recipient != bytes32(0), "Client: !recipient");
-        Home(home).dispatch{ value: msg.value }(
+        Origin(origin).dispatch{ value: msg.value }(
             _destination,
             recipient,
             optimisticSeconds(),

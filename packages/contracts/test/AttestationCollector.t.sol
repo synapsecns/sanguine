@@ -84,7 +84,7 @@ contract AttestationCollectorTest is SynapseTest {
 
     function test_submitAttestation() public {
         test_addNotary();
-        (bytes memory attestation, ) = signHomeAttestation(notaryPK, nonce, root);
+        (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
         vm.expectEmit(true, true, true, true);
         emit AttestationSubmitted(notary, attestation);
         collector.submitAttestation(attestation);
@@ -92,7 +92,7 @@ contract AttestationCollectorTest is SynapseTest {
 
     function test_submitAttestation_notNotary() public {
         test_addNotary();
-        (bytes memory attestation, ) = signHomeAttestation(fakeNotaryPK, nonce, root);
+        (bytes memory attestation, ) = signOriginAttestation(fakeNotaryPK, nonce, root);
         vm.expectRevert("Signer is not a notary");
         collector.submitAttestation(attestation);
     }
@@ -107,14 +107,14 @@ contract AttestationCollectorTest is SynapseTest {
 
     function test_submitAttestation_zeroNonce() public {
         test_addNotary();
-        (bytes memory attestation, ) = signHomeAttestation(notaryPK, 0, root);
+        (bytes memory attestation, ) = signOriginAttestation(notaryPK, 0, root);
         vm.expectRevert("Outdated attestation");
         collector.submitAttestation(attestation);
     }
 
     function test_submitAttestation_outdated() public {
         test_submitAttestation();
-        (bytes memory attestation, ) = signHomeAttestation(notaryPK, nonce, root);
+        (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
         vm.expectRevert("Outdated attestation");
         collector.submitAttestation(attestation);
     }
@@ -122,7 +122,7 @@ contract AttestationCollectorTest is SynapseTest {
     function test_submitAttestation_duplicate() public {
         test_submitAttestation();
         test_addNotaries();
-        (bytes memory attestation, ) = signHomeAttestation(notariesPK[0], nonce, root);
+        (bytes memory attestation, ) = signOriginAttestation(notariesPK[0], nonce, root);
         // duplicate attestation should not be stored
         assertFalse(collector.submitAttestation(attestation));
     }
@@ -280,7 +280,7 @@ contract AttestationCollectorTest is SynapseTest {
         uint256 _notaryIndex,
         uint256 _notaryGenerationIndex
     ) internal returns (bytes memory attestation) {
-        (attestation, ) = signHomeAttestation(
+        (attestation, ) = signOriginAttestation(
             notariesPK[_notaryIndex],
             _nonce,
             _generateTestRoot(_nonce, _notaryGenerationIndex)
@@ -320,7 +320,7 @@ contract AttestationCollectorTest is SynapseTest {
             uint256 indexLast = attestedNonces[i].length - 1;
             if (attestedNonces[i][indexLast] == 0) continue;
             assert(attestedRoots[i][indexLast] != bytes32(0));
-            (bytes memory attestation, ) = signHomeAttestation(
+            (bytes memory attestation, ) = signOriginAttestation(
                 notariesPK[i],
                 attestedNonces[i][indexLast],
                 attestedRoots[i][indexLast]

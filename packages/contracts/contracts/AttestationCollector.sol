@@ -34,15 +34,15 @@ contract AttestationCollector is GlobalNotaryRegistry, OwnableUpgradeable {
      * `signatures` stores a signature for every submitted (domain, nonce, root) attestation.
      * We only store the first submitted signature for such attestation.
      */
-    // [homeDomain => [nonce => [roots]]]
+    // [originDomain => [nonce => [roots]]]
     mapping(uint32 => mapping(uint32 => bytes32[])) internal attestationRoots;
-    // [homeDomain => [nonce => [root => signature]]]
+    // [originDomain => [nonce => [root => signature]]]
     mapping(uint32 => mapping(uint32 => mapping(bytes32 => bytes))) internal signatures;
 
     /// @dev We are also storing last submitted (nonce, root) attestation for every Notary.
-    // [homeDomain => [notary => latestNonce]]
+    // [originDomain => [notary => latestNonce]]
     mapping(uint32 => mapping(address => uint32)) public latestNonce;
-    // [homeDomain => [notary => latestRoot]]
+    // [originDomain => [notary => latestRoot]]
     mapping(uint32 => mapping(address => bytes32)) public latestRoot;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

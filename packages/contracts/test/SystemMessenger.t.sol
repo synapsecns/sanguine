@@ -10,18 +10,18 @@ import { Header } from "../contracts/libs/Header.sol";
 import { Tips } from "../contracts/libs/Tips.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
-import { HomeHarness } from "./harnesses/HomeHarness.sol";
+import { OriginHarness } from "./harnesses/OriginHarness.sol";
 import { ReplicaManagerHarness } from "./harnesses/ReplicaManagerHarness.sol";
 import { SystemMessengerHarness } from "./harnesses/SystemMessengerHarness.sol";
 
 contract SystemMessengerTest is SynapseTestWithNotaryManager {
     SystemMessengerHarness internal systemMessenger;
-    HomeHarness internal home;
+    OriginHarness internal origin;
     ReplicaManagerHarness internal replicaManager;
 
     uint32 internal optimisticPeriod = 420;
     uint256 internal secretValue = 1337;
-    bytes payload = abi.encodeWithSelector(home.setSensitiveValue.selector, secretValue);
+    bytes payload = abi.encodeWithSelector(origin.setSensitiveValue.selector, secretValue);
 
     bytes32 internal constant SYSTEM_SENDER =
         0xFFFFFFFF_FFFFFFFF_FFFFFFFF_00000000_00000000_00000000_00000000_00000000;
@@ -40,24 +40,24 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
     function setUp() public override {
         super.setUp();
 
-        home = new HomeHarness(localDomain);
-        home.initialize(INotaryManager(notaryManager));
-        notaryManager.setHome(address(home));
+        origin = new OriginHarness(localDomain);
+        origin.initialize(INotaryManager(notaryManager));
+        notaryManager.setOrigin(address(origin));
 
         replicaManager = new ReplicaManagerHarness(localDomain);
         replicaManager.initialize(remoteDomain, notary);
 
         systemMessenger = new SystemMessengerHarness(
-            address(home),
+            address(origin),
             address(replicaManager),
             optimisticPeriod
         );
-        home.setSystemMessenger(systemMessenger);
+        origin.setSystemMessenger(systemMessenger);
         replicaManager.setSystemMessenger(systemMessenger);
     }
 
     function test_constructor() public {
-        assertEq(systemMessenger.home(), address(home));
+        assertEq(systemMessenger.origin(), address(origin));
         assertEq(systemMessenger.replicaManager(), address(replicaManager));
         assertEq(systemMessenger.optimisticSeconds(), optimisticPeriod);
     }
@@ -66,8 +66,8 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         assertEq(systemMessenger.trustedSender(0), SYSTEM_SENDER);
     }
 
-    function test_sendSystemMessage_home() public {
-        _testSendSystemMessage(address(home));
+    function test_sendSystemMessage_origin() public {
+        _testSendSystemMessage(address(origin));
     }
 
     function test_sendSystemMessage_replicaManager() public {
@@ -83,7 +83,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         );
     }
 
-    function test_receiveSystemMessage_home() public {
+    function test_receiveSystemMessage_origin() public {
         bytes memory message = _prepareReceiveTest(
             optimisticPeriod,
             0,
@@ -91,7 +91,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         );
         skip(optimisticPeriod);
         replicaManager.execute(message);
-        assertEq(home.sensitiveValue(), secretValue);
+        assertEq(origin.sensitiveValue(), secretValue);
     }
 
     function test_receiveSystemMessage_replicaManager() public {
@@ -184,7 +184,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         bytes32 messageHash = keccak256(message);
         replicaManager.setMessageStatus(remoteDomain, messageHash, ROOT);
 
-        assert(home.sensitiveValue() != secretValue);
+        assert(origin.sensitiveValue() != secretValue);
     }
 
     function _createSentSystemMessage(uint32 _nonce, uint8 _recipient)

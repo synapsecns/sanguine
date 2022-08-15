@@ -36,10 +36,10 @@ contract SystemMessenger is Client, ISystemMessenger {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     constructor(
-        address _home,
+        address _origin,
         address _replicaManager,
         uint32 _optimisticSeconds
-    ) Client(_home, _replicaManager) {
+    ) Client(_origin, _replicaManager) {
         // TODO: Do we ever want to adjust this?
         // (the value should be the same across all chains)
         // Or could it be converted into immutable?
@@ -52,7 +52,7 @@ contract SystemMessenger is Client, ISystemMessenger {
 
     /// @notice Allows calls only from any of the System Contracts
     modifier anySystem() {
-        require(msg.sender == home || msg.sender == replicaManager, "Unauthorized caller");
+        require(msg.sender == origin || msg.sender == replicaManager, "Unauthorized caller");
         _;
     }
 
@@ -76,7 +76,7 @@ contract SystemMessenger is Client, ISystemMessenger {
     ) external anySystem {
         bytes memory message = SystemMessage.formatCall(uint8(_recipient), _payload);
         /**
-         * @dev Home should recognize SystemMessenger as the "true sender"
+         * @dev Origin should recognize SystemMessenger as the "true sender"
          *      and use SYSTEM_SENDER address as "sender" instead. This enables not
          *      knowing SystemMessenger address on remote chain in advance.
          */
@@ -142,7 +142,7 @@ contract SystemMessenger is Client, ISystemMessenger {
     }
 
     function _getSystemRecipient(uint8 _recipient) internal view returns (address) {
-        if (_recipient == uint8(SystemContracts.Home)) return home;
+        if (_recipient == uint8(SystemContracts.Origin)) return origin;
         if (_recipient == uint8(SystemContracts.ReplicaManager)) return replicaManager;
         revert("Unknown recipient");
     }

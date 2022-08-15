@@ -2,12 +2,12 @@
 
 pragma solidity 0.8.13;
 
-import { Home } from "../../contracts/Home.sol";
+import { Origin } from "../../contracts/Origin.sol";
 
-contract HomeHarness is Home {
+contract OriginHarness is Origin {
     uint256 public sensitiveValue;
 
-    constructor(uint32 _domain) Home(_domain) {}
+    constructor(uint32 _domain) Origin(_domain) {}
 
     function isNotary(address _notary) public view returns (bool) {
         return _isNotary(localDomain, _notary);

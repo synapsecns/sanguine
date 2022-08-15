@@ -18,7 +18,7 @@ abstract contract SynapseClient is Client, Ownable {
 
     // ============ Constructor ============
 
-    constructor(address _home, address _replicaManager) Client(_home, _replicaManager) {}
+    constructor(address _origin, address _replicaManager) Client(_origin, _replicaManager) {}
 
     // ============ Public Functions  ============
 

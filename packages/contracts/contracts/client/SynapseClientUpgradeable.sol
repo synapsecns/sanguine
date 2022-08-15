@@ -26,7 +26,7 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
 
     // ============ Constructor ============
 
-    constructor(address _home, address _replicaManager) Client(_home, _replicaManager) {}
+    constructor(address _origin, address _replicaManager) Client(_origin, _replicaManager) {}
 
     // ============ Initializer ============
 

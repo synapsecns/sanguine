@@ -5,7 +5,7 @@ pragma solidity 0.8.13;
 import "forge-std/Test.sol";
 
 import { SynapseClientHarness } from "./harnesses/SynapseClientHarness.sol";
-import { HomeHarness } from "./harnesses/HomeHarness.sol";
+import { OriginHarness } from "./harnesses/OriginHarness.sol";
 
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
@@ -15,7 +15,7 @@ import { Message } from "../contracts/libs/Message.sol";
 
 contract SynapseClientTest is SynapseTestWithNotaryManager {
     SynapseClientHarness public client;
-    HomeHarness public home;
+    OriginHarness public origin;
 
     address public constant replicaManager = address(1234567890);
     address public constant owner = address(9876543210);
@@ -24,19 +24,19 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
     function setUp() public override {
         super.setUp();
 
-        home = new HomeHarness(localDomain);
-        home.initialize(INotaryManager(notaryManager));
-        notaryManager.setHome(address(home));
+        origin = new OriginHarness(localDomain);
+        origin.initialize(INotaryManager(notaryManager));
+        notaryManager.setOrigin(address(origin));
 
         vm.label(replicaManager, "replica");
         vm.label(owner, "owner");
 
-        client = new SynapseClientHarness(address(home), replicaManager);
+        client = new SynapseClientHarness(address(origin), replicaManager);
         client.transferOwnership(owner);
     }
 
     function test_constructor() public {
-        assertEq(client.home(), address(home));
+        assertEq(client.origin(), address(origin));
         assertEq(client.replicaManager(), replicaManager);
     }
 

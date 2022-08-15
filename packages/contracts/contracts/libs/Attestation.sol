@@ -9,7 +9,7 @@ library Attestation {
 
     /**
      * @dev AttestationData memory layout
-     * [000 .. 004): homeDomain     uint32   4 bytes
+     * [000 .. 004): originDomain     uint32   4 bytes
      * [004 .. 008): nonce          uint32   4 bytes
      * [008 .. 040): root           bytes32 32 bytes
      *
@@ -18,7 +18,7 @@ library Attestation {
      * [040 .. END): signature      bytes   ?? bytes (64/65 bytes)
      */
 
-    uint256 internal constant OFFSET_HOME_DOMAIN = 0;
+    uint256 internal constant OFFSET_ORIGIN_DOMAIN = 0;
     uint256 internal constant OFFSET_NONCE = 4;
     uint256 internal constant OFFSET_ROOT = 8;
     uint256 internal constant ATTESTATION_DATA_LENGTH = 40;
@@ -40,7 +40,7 @@ library Attestation {
 
     /**
      * @notice Returns formatted Attestation Data with provided fields
-     * @param _domain   Domain of Home's chain
+     * @param _domain   Domain of Origin's chain
      * @param _root     New merkle root
      * @param _nonce    Nonce of the merkle root
      * @return Formatted data
@@ -62,21 +62,21 @@ library Attestation {
     }
 
     /**
-     * @notice Returns domain of chain where the Home contract is deployed
+     * @notice Returns domain of chain where the Origin contract is deployed
      */
     function attestationDomain(bytes29 _view) internal pure returns (uint32) {
-        return uint32(_view.indexUint(OFFSET_HOME_DOMAIN, 4));
+        return uint32(_view.indexUint(OFFSET_ORIGIN_DOMAIN, 4));
     }
 
     /**
-     * @notice Returns nonce of Home contract at the time, when `root` was the Merkle root.
+     * @notice Returns nonce of Origin contract at the time, when `root` was the Merkle root.
      */
     function attestationNonce(bytes29 _view) internal pure returns (uint32) {
         return uint32(_view.indexUint(OFFSET_NONCE, 4));
     }
 
     /**
-     * @notice Returns a historical Merkle root from the Home contract
+     * @notice Returns a historical Merkle root from the Origin contract
      */
     function attestationRoot(bytes29 _view) internal pure returns (bytes32) {
         return _view.index(OFFSET_ROOT, 32);
@@ -86,7 +86,7 @@ library Attestation {
      * @notice Returns Attestation's Data, that is going to be signed by the Notary
      */
     function attestationData(bytes29 _view) internal pure returns (bytes29) {
-        return _view.slice(OFFSET_HOME_DOMAIN, ATTESTATION_DATA_LENGTH, 0);
+        return _view.slice(OFFSET_ORIGIN_DOMAIN, ATTESTATION_DATA_LENGTH, 0);
     }
 
     /**

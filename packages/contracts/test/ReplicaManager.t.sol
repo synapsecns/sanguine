@@ -95,20 +95,20 @@ contract ReplicaManagerTest is SynapseTest {
     }
 
     event AttestationAccepted(
-        uint32 indexed homeDomain,
+        uint32 indexed originDomain,
         uint32 indexed nonce,
         bytes32 indexed root,
         bytes signature
     );
 
-    // Broadcaster relays a new root signed by notary on Home chain
+    // Broadcaster relays a new root signed by notary on Origin chain
     function test_submitAttestation() public {
         uint32 nonce = 42;
         assertTrue(replicaManager.isNotary(remoteDomain, vm.addr(notaryPK)));
         (bytes memory attestation, bytes memory sig) = signRemoteAttestation(notaryPK, nonce, ROOT);
         // Root doesn't exist yet
         assertEq(replicaManager.activeReplicaConfirmedAt(remoteDomain, ROOT), 0);
-        // Broadcaster sends over a root signed by the notary on the Home chain
+        // Broadcaster sends over a root signed by the notary on the Origin chain
         vm.expectEmit(true, true, true, true);
         emit AttestationAccepted(remoteDomain, nonce, ROOT, sig);
         replicaManager.submitAttestation(attestation);
@@ -127,7 +127,7 @@ contract ReplicaManagerTest is SynapseTest {
     function test_submitAttestation_localDomain() public {
         replicaManager.addNotary(localDomain, notary);
         uint32 nonce = 42;
-        (bytes memory attestation, ) = signHomeAttestation(notaryPK, nonce, ROOT);
+        (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, ROOT);
         vm.expectRevert("Attestation refers to local chain");
         // Replica should reject attestations from the chain it's deployed on
         replicaManager.submitAttestation(attestation);

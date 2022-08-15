@@ -5,39 +5,39 @@ pragma solidity 0.8.13;
 import "forge-std/Test.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
-import { HomeHarness } from "./harnesses/HomeHarness.sol";
+import { OriginHarness } from "./harnesses/OriginHarness.sol";
 
 import { NotaryManager } from "../contracts/NotaryManager.sol";
 import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 
 contract NotaryManagerTest is SynapseTestWithNotaryManager {
-    HomeHarness home;
-    HomeHarness fakeHome;
+    OriginHarness origin;
+    OriginHarness fakeOrigin;
 
     function setUp() public override {
         super.setUp();
-        home = new HomeHarness(localDomain);
-        fakeHome = new HomeHarness(localDomain);
-        home.initialize(INotaryManager(notaryManager));
-        notaryManager.setHome(address(home));
+        origin = new OriginHarness(localDomain);
+        fakeOrigin = new OriginHarness(localDomain);
+        origin.initialize(INotaryManager(notaryManager));
+        notaryManager.setOrigin(address(origin));
     }
 
-    function test_cannotSetHomeAsNotOwner(address _notOwner) public {
+    function test_cannotSetOriginAsNotOwner(address _notOwner) public {
         vm.assume(_notOwner != notaryManager.owner());
         vm.startPrank(_notOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        notaryManager.setHome(address(fakeHome));
+        notaryManager.setOrigin(address(fakeOrigin));
     }
 
-    event NewHome(address home);
+    event NewOrigin(address origin);
 
-    function test_setHomeAsOwner() public {
+    function test_setOriginAsOwner() public {
         vm.startPrank(notaryManager.owner());
-        assertEq(notaryManager.home(), address(home));
+        assertEq(notaryManager.origin(), address(origin));
         vm.expectEmit(false, false, false, true);
-        emit NewHome(address(fakeHome));
-        notaryManager.setHome(address(fakeHome));
-        assertEq(notaryManager.home(), address(fakeHome));
+        emit NewOrigin(address(fakeOrigin));
+        notaryManager.setOrigin(address(fakeOrigin));
+        assertEq(notaryManager.origin(), address(fakeOrigin));
     }
 
     function test_cannotSetNotaryAsNotOwner(address _notOwner) public {
@@ -52,25 +52,25 @@ contract NotaryManagerTest is SynapseTestWithNotaryManager {
     function test_setNotaryAsOwner() public {
         vm.startPrank(notaryManager.owner());
         assertEq(notaryManager.notary(), address(notary));
-        assertTrue(home.isNotary(notary));
+        assertTrue(origin.isNotary(notary));
         vm.expectEmit(false, false, false, true);
         emit NewNotary(fakeNotary);
         notaryManager.setNotary(address(fakeNotary));
         assertEq(notaryManager.notary(), address(fakeNotary));
-        assertTrue(home.isNotary(fakeNotary));
+        assertTrue(origin.isNotary(fakeNotary));
     }
 
-    function test_cannotSlashNotaryAsNotHome(address _notHome) public {
-        vm.assume(_notHome != notaryManager.home());
-        vm.startPrank(_notHome);
-        vm.expectRevert("!home");
+    function test_cannotSlashNotaryAsNotOrigin(address _notOrigin) public {
+        vm.assume(_notOrigin != notaryManager.origin());
+        vm.startPrank(_notOrigin);
+        vm.expectRevert("!origin");
         notaryManager.slashNotary(payable(address(this)));
     }
 
     event FakeSlashed(address reporter);
 
-    function test_slashNotaryAsHome() public {
-        vm.startPrank(notaryManager.home());
+    function test_slashNotaryAsOrigin() public {
+        vm.startPrank(notaryManager.origin());
         vm.expectEmit(false, false, false, true);
         emit FakeSlashed(address(this));
         notaryManager.slashNotary(payable(address(this)));

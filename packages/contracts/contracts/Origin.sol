@@ -19,7 +19,7 @@ import { TypeCasts } from "./libs/TypeCasts.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
- * @title Home
+ * @title Origin
  * @author Illusory Systems Inc.
  * @notice Accepts messages to be dispatched to remote chains,
  * constructs a Merkle tree of the messages,
@@ -28,7 +28,13 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Accepts submissions of fraudulent signatures
  * by the Notary and slashes the Notary in this case.
  */
-contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegistry, GuardRegistry {
+contract Origin is
+    Version0,
+    MerkleTreeManager,
+    SystemContract,
+    DomainNotaryRegistry,
+    GuardRegistry
+{
     // ============ Libraries ============
 
     using Attestation for bytes29;
@@ -164,18 +170,18 @@ contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegist
          *      1a. onlyUpdaterManager -> onlyBondingManager (or w/e the name would be)
          *      2. There is supposed to be more than one active Notary
          *      2a. setUpdater() -> addNotary()
-         *      3. No need to reset the `state`, as Home is not supposed
+         *      3. No need to reset the `state`, as Origin is not supposed
          *      to be in Failed state in the first place (see _fail() for reasoning).
          */
         _addNotary(_notary);
-        // set the Home state to Active
+        // set the Origin state to Active
         // now that Notary has been rotated
         state = States.Active;
     }
 
     /**
      * @notice Set a new NotaryManager contract
-     * @dev Home(s) will initially be initialized using a trusted NotaryManager contract;
+     * @dev Origin(s) will initially be initialized using a trusted NotaryManager contract;
      * we will progressively decentralize by swapping the trusted contract with a new implementation
      * that implements Notary bonding & slashing, and rules for Notary selection & rotation
      * @param _notaryManager the new NotaryManager contract
@@ -253,17 +259,17 @@ contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegist
      * if so, slash the Notary and set the contract to FAILED state.
      *
      * An Improper Attestation is a (_nonce, _root) attestation that doesn't correspond with
-     * the historical state of Home contract. Either of those needs to be true:
+     * the historical state of Origin contract. Either of those needs to be true:
      * - _nonce is higher than current nonce (no root exists for this nonce)
      * - _root is not equal to the historical root of _nonce
      * This would mean that message(s) that were not truly
-     * dispatched on Home were falsely included in the signed root.
+     * dispatched on Origin were falsely included in the signed root.
      *
      * An Improper Attestation will only be accepted as valid by the Replica
-     * If an Improper Attestation is attempted on Home,
+     * If an Improper Attestation is attempted on Origin,
      * the Notary will be slashed immediately.
      * If an Improper Attestation is submitted to the Replica,
-     * it should be relayed to the Home contract using this function
+     * it should be relayed to the Origin contract using this function
      * in order to slash the Notary with an Improper Attestation.
      *
      * @dev Reverts (and doesn't slash notary) if signature is invalid
@@ -307,11 +313,11 @@ contract Home is Version0, MerkleTreeManager, SystemContract, DomainNotaryRegist
     function _fail(address _notary) internal {
         /**
          * TODO: remove Failed state
-         * @dev With the asynchronous updates Home is never in the FAILED state.
+         * @dev With the asynchronous updates Origin is never in the FAILED state.
          *      It's rather some Replicas might end up with a corrupted merkle state (upon receiving a fraud attestation).
          *      It's a Replica job to get this conflict fixed, as long as there's more than one active Notary,
-         *      new messages on Home could be verified by an honest Notary.
-         *      Meaning Home should not be halted upon discovering a fraud attestation.
+         *      new messages on Origin could be verified by an honest Notary.
+         *      Meaning Origin should not be halted upon discovering a fraud attestation.
          */
         // set contract to FAILED
         state = States.Failed;

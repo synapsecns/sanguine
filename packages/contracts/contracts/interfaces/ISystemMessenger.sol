@@ -4,7 +4,7 @@ pragma solidity 0.8.13;
 interface ISystemMessenger {
     /// @dev Potential senders/recipients of a system message
     enum SystemContracts {
-        Home,
+        Origin,
         ReplicaManager
     }
 

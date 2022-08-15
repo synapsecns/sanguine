@@ -51,7 +51,7 @@ contract SynapseTest is Test {
         return Tips.emptyTips();
     }
 
-    function signHomeAttestation(
+    function signOriginAttestation(
         uint256 privKey,
         uint32 nonce,
         bytes32 root
