@@ -172,6 +172,9 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
       - name: Build
         # go build all workspaces
         run:  go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
