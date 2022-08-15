@@ -19,7 +19,7 @@ type OriginDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewOriginDeployer deploys the home contract.
+// NewOriginDeployer deploys the origin contract.
 func NewOriginDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return OriginDeployer{deployer.NewSimpleDeployer(registry, backend, OriginType)}
 }
@@ -54,7 +54,7 @@ func (d OriginDeployer) Deploy(ctx context.Context) (backends.DeployedContract, 
 
 		setTx, err := updateManager.SetOrigin(notaryTransactOps.TransactOpts, address)
 		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not set home: %w", err)
+			return common.Address{}, nil, nil, fmt.Errorf("could not set origin: %w", err)
 		}
 		d.Backend().WaitForConfirmation(ctx, setTx)
 

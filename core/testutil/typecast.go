@@ -10,8 +10,8 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/notarymanager"
 	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
-	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/synapse-node/testutils/backends"
@@ -41,13 +41,13 @@ func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.
 	return messageHarnessContract, messageHarness
 }
 
-// GetHomeHarness gets the origin harness.
-func (d *DeployManager) GetHomeHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *homeharness.HomeHarnessRef) {
+// GetOriginHarness gets the origin harness.
+func (d *DeployManager) GetOriginHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *originharness.OriginHarnessRef) {
 	d.T().Helper()
 
-	messageHarnessContract := d.GetContractRegistry(backend).Get(ctx, HomeHarnessType)
+	messageHarnessContract := d.GetContractRegistry(backend).Get(ctx, OriginHarnessType)
 
-	messageHarness, ok := messageHarnessContract.ContractHandle().(*homeharness.HomeHarnessRef)
+	messageHarness, ok := messageHarnessContract.ContractHandle().(*originharness.OriginHarnessRef)
 	assert.True(d.T(), ok)
 
 	return messageHarnessContract, messageHarness

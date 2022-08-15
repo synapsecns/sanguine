@@ -8,8 +8,8 @@ import (
 	"github.com/synapsecns/sanguine/core/contracts/replicamanager"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/headerharness"
-	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
@@ -47,8 +47,8 @@ const (
 	OriginType contractTypeImpl = 0 // Origin
 	// MessageHarnessType is the type of the message harness contract.
 	MessageHarnessType contractTypeImpl = iota // MessageHarness
-	// HomeHarnessType is the home harness type.
-	HomeHarnessType contractTypeImpl = iota // HomeHarness
+	// OriginHarnessType is the origin harness type.
+	OriginHarnessType contractTypeImpl = iota // OriginHarness
 	// AttestationHarnessType is the attestation harness type.
 	AttestationHarnessType contractTypeImpl = iota
 	// TipsHarnessType is the type of the tips harness.
@@ -88,8 +88,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return origin.Contracts["solidity/Origin.sol:Origin"]
 	case MessageHarnessType:
 		return messageharness.Contracts["solidity/MessageHarness.sol:MessageHarness"]
-	case HomeHarnessType:
-		return homeharness.Contracts["solidity/HomeHarness.sol:HomeHarness"]
+	case OriginHarnessType:
+		return originharness.Contracts["solidity/OriginHarness.sol:OriginHarness"]
 	case AttestationHarnessType:
 		return attestationharness.Contracts["solidity/AttestationHarness.sol:AttestationHarness"]
 	case ReplicaManagerHarnessType:

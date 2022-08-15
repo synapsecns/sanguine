@@ -39,7 +39,7 @@ func (d TestDispatch) Call(i ContractSuite) (blockNumber uint32) {
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(i.T(), err)
 
-	tx, err := i.homeContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, encodedTips, d.message)
+	tx, err := i.originContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, encodedTips, d.message)
 	Nil(i.T(), err)
 
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
@@ -64,10 +64,10 @@ func (i ContractSuite) NewTestDispatches(dispatchCount int) (testDispatches []Te
 func (i ContractSuite) TestFetchSortedHomeUpdates() {
 	testDispatches, filterTo := i.NewTestDispatches(33)
 
-	homeIndexer, err := evm.NewOriginContract(i.GetTestContext(), i.testBackend, i.homeContract.Address())
+	originIndexer, err := evm.NewOriginContract(i.GetTestContext(), i.testBackend, i.originContract.Address())
 	Nil(i.T(), err)
 
-	messages, err := homeIndexer.FetchSortedMessages(i.GetTestContext(), 0, filterTo)
+	messages, err := originIndexer.FetchSortedMessages(i.GetTestContext(), 0, filterTo)
 	Nil(i.T(), err)
 
 	Equal(i.T(), len(messages), len(testDispatches))

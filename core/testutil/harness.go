@@ -7,8 +7,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/headerharness"
-	"github.com/synapsecns/sanguine/core/contracts/test/homeharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/messageharness"
+	"github.com/synapsecns/sanguine/core/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/replicamanagerharness"
 	"github.com/synapsecns/sanguine/core/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
@@ -34,25 +34,25 @@ func (d MessageHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedCo
 	})
 }
 
-// HomeHarnessDomain is the domain used for the home harness.
-const HomeHarnessDomain = 1
+// OriginHarnessDomain is the domain used for the origin harness.
+const OriginHarnessDomain = 1
 
-// HomeHarnessDeployer deploys the home harness for testing.
-type HomeHarnessDeployer struct {
+// OriginHarnessDeployer deploys the origin harness for testing.
+type OriginHarnessDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewHomeHarnessDeployer deploys the new home harness.
-func NewHomeHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return HomeHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, HomeHarnessType)}
+// NewOriginHarnessDeployer deploys a new origin harness.
+func NewOriginHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return OriginHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, OriginHarnessType)}
 }
 
-// Deploy deploys the home harness.
-func (h HomeHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+// Deploy deploys the origin harness.
+func (h OriginHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return homeharness.DeployHomeHarness(transactOps, backend, HomeHarnessDomain)
+		return originharness.DeployOriginHarness(transactOps, backend, OriginHarnessDomain)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return homeharness.NewHomeHarnessRef(address, backend)
+		return originharness.NewOriginHarnessRef(address, backend)
 	})
 }
 

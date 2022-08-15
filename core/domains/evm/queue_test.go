@@ -42,7 +42,7 @@ func (t *TxQueueSuite) TestGetTransactor() {
 	chn := simulated.NewSimulatedBackend(t.GetTestContext(), t.T())
 	manager := testutil.NewDeployManager(t.T())
 
-	_, homeHarness := manager.GetHomeHarness(t.GetTestContext(), chn)
+	_, originHarness := manager.GetOriginHarness(t.GetTestContext(), chn)
 
 	// create a test signer
 	wllt, err := wallet.FromRandom()
@@ -62,12 +62,12 @@ func (t *TxQueueSuite) TestGetTransactor() {
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(t.T(), err)
 
-	tx, err := homeHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, encodedTips, []byte("hello world"))
+	tx, err := originHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, encodedTips, []byte("hello world"))
 	Nil(t.T(), err)
 
 	chn.WaitForConfirmation(t.GetTestContext(), tx)
 
-	_, err = homeHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, encodedTips, []byte("hello world"))
+	_, err = originHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, encodedTips, []byte("hello world"))
 	Nil(t.T(), err)
 	chn.WaitForConfirmation(t.GetTestContext(), tx)
 }

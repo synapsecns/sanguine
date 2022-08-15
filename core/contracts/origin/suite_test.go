@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-// OriginSuite is the home test suite.
+// OriginSuite is the origin test suite.
 type OriginSuite struct {
 	*testutils.TestSuite
 	originContract *origin.OriginRef

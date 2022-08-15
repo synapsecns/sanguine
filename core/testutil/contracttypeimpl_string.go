@@ -10,7 +10,7 @@ func _() {
 	var x [1]struct{}
 	_ = x[OriginType-0]
 	_ = x[MessageHarnessType-1]
-	_ = x[HomeHarnessType-2]
+	_ = x[OriginHarnessType-2]
 	_ = x[AttestationHarnessType-3]
 	_ = x[TipsHarnessType-4]
 	_ = x[HeaderHarnessType-5]

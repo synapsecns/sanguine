@@ -50,7 +50,7 @@ func TestEVMSuite(t *testing.T) {
 // ContractSuite defines a suite for testing contracts. This uses the simulated backend.
 type ContractSuite struct {
 	*testutils.TestSuite
-	homeContract        *origin.OriginRef
+	originContract      *origin.OriginRef
 	attestationContract *attestationcollector.AttestationCollectorRef
 	testBackend         backends.SimulatedTestBackend
 	attestationBackend  backends.SimulatedTestBackend
@@ -73,7 +73,7 @@ func (i *ContractSuite) SetupTest() {
 	i.testBackend = simulated.NewSimulatedBackendWithChainID(i.GetTestContext(), i.T(), big.NewInt(1))
 	i.attestationBackend = simulated.NewSimulatedBackendWithChainID(i.GetTestContext(), i.T(), big.NewInt(2))
 
-	_, i.homeContract = deployManager.GetOrigin(i.GetTestContext(), i.testBackend)
+	_, i.originContract = deployManager.GetOrigin(i.GetTestContext(), i.testBackend)
 
 	var attestationContract backends.DeployedContract
 	attestationContract, i.attestationContract = deployManager.GetAttestationCollector(i.GetTestContext(), i.attestationBackend)

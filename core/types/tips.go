@@ -9,9 +9,9 @@ import (
 type Tips interface {
 	// Version gets the version of the tips header
 	Version() uint16
-	// NotaryTip gets the tips for the updater
+	// NotaryTip gets the tips for the notary
 	NotaryTip() *big.Int
-	// BroadcasterTip gets the tips for the updater
+	// BroadcasterTip gets the tips for the broadcaster
 	BroadcasterTip() *big.Int
 	// ProverTip gets the tips for the prover
 	ProverTip() *big.Int

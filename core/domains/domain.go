@@ -29,7 +29,7 @@ type DomainClient interface {
 type OriginContract interface {
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
 	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
-	// ProduceAttestation suggests an update from the home contract
+	// ProduceAttestation suggests an update from the origin contract
 	ProduceAttestation(ctx context.Context) (types.Attestation, error)
 }
 

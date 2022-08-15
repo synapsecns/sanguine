@@ -106,13 +106,13 @@ func (i IndexerSuite) TestSyncMessages() {
 	db, err := sqlite.NewSqliteStore(i.GetTestContext(), filet.TmpDir(i.T(), ""))
 	Nil(i.T(), err)
 
-	_, homeContract := i.deployManager.GetOrigin(i.GetTestContext(), i.testBackend)
+	_, originContract := i.deployManager.GetOrigin(i.GetTestContext(), i.testBackend)
 
 	domainClient, err := evm.NewEVM(i.GetTestContext(), "test", config.DomainConfig{
 		DomainID:              1,
 		Type:                  types.EVM.String(),
 		RequiredConfirmations: 0,
-		OriginAddress:         homeContract.Address().String(),
+		OriginAddress:         originContract.Address().String(),
 		RPCUrl:                i.testBackend.RPCAddress(),
 		StartHeight:           0,
 	})

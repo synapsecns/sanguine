@@ -16,9 +16,9 @@ func (s SimulatedSuite) TestTypecastMessageHarness() {
 	})
 }
 
-func (s SimulatedSuite) TestTypecastHomeHarness() {
+func (s SimulatedSuite) TestTypecastOriginHarness() {
 	NotPanics(s.T(), func() {
-		_, messageHarness := s.deployManager.GetHomeHarness(s.GetTestContext(), s.testBackend)
+		_, messageHarness := s.deployManager.GetOriginHarness(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), messageHarness)
 	})
 }
