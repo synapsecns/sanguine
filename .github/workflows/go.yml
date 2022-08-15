@@ -326,14 +326,14 @@ jobs:
             *.go
 
         # Fail if files need regeneration
-      - name: Run if files need to be regenerated
+      - name: Add Label
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         uses: andymckay/labeler@e6c4322d0397f3240f0e7e30a33b5c5df2d39e90
         with:
           add-labels: "needs-go-generate"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run if files need to be regenerated
+      - name: Remove Label
         if: steps.verify-changed-files.outputs.files_changed != 'true'
         uses: andymckay/labeler@e6c4322d0397f3240f0e7e30a33b5c5df2d39e90
         with:
