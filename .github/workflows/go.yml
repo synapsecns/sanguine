@@ -284,7 +284,7 @@ jobs:
           npx lerna bootstrap
 
       # Generate flattened files
-      - name: Run tests
+      - name: Run flattener
         run: npx lerna exec npm run build:go
 
       # Setup Go
