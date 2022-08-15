@@ -5,6 +5,7 @@ package internal
 
 import (
 	"github.com/ugorji/go/codec"
+	"github.com/vburenin/ifacemaker/maker"
 )
 
 func init() {
@@ -12,3 +13,4 @@ func init() {
 }
 
 var _ = codec.Decoder{}
+var _ = maker.ParseStruct
