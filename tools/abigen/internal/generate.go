@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/compiler"
@@ -183,7 +184,10 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 		cmd.Stderr = &stderr
 		cmd.Stdout = &stdout
 
+		yo := gofakeit.Word()
+		fmt.Println(yo)
 		err = cmd.Run()
+		fmt.Println(yo)
 		// cmd.Run will fail on Unix if some other process has the binary
 		// we want to run open for writing.  This can happen here because
 		// we build and install the cgo command and then run it.
