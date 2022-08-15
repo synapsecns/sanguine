@@ -277,6 +277,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Try Go Generate
+        working-directory: ${{matrix.package}}/
         run: |
           go generate ./...
 
