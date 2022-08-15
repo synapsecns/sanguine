@@ -332,7 +332,7 @@ jobs:
         with:
           add-labels: "needs-go-generate"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{github.event.number}}
+          issue-number: ${{github.event.issue.number}}
 
       - name: Remove Label
         if: steps.verify-changed-files.outputs.files_changed != 'true'
@@ -340,4 +340,4 @@ jobs:
         with:
           remove-labels: "needs-go-generate"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{github.event.number}}
+          issue-number: ${{github.event.issue.number}}
