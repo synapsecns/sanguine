@@ -227,6 +227,7 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 		//
 		fmt.Println("nbusy " + string(nbusy))
 		if err != nil && nbusy < 3 && strings.Contains(err.Error(), "text file busy") {
+			fmt.Println("true")
 			time.Sleep(100 * time.Millisecond << uint(nbusy))
 			nbusy++
 			continue
