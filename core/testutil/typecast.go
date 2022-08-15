@@ -76,7 +76,7 @@ func (d *DeployManager) GetDestinationHarness(ctx context.Context, backend backe
 	return destinationHarnessContract, destinationHarness
 }
 
-// GetNotaryManager gets the update manager.
+// GetNotaryManager gets the notary manager.
 func (d *DeployManager) GetNotaryManager(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *notarymanager.NotaryManagerRef) {
 	d.T().Helper()
 

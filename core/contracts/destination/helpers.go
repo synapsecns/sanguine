@@ -18,7 +18,7 @@ func (r DestinationRef) Address() common.Address {
 	return r.address
 }
 
-// NewDestinationRef creates an destination contract with a contract re f.
+// NewDestinationRef creates an destination contract with a contract ref.
 func NewDestinationRef(address common.Address, backend bind.ContractBackend) (*DestinationRef, error) {
 	destinationContract, err := NewDestination(address, backend)
 	if err != nil {

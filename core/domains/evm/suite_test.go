@@ -85,7 +85,7 @@ func (i *ContractSuite) SetupTest() {
 	i.testBackend.FundAccount(i.GetTestContext(), wall.Address(), *big.NewInt(params.Ether))
 	i.attestationBackend.FundAccount(i.GetTestContext(), wall.Address(), *big.NewInt(params.Ether))
 
-	// change the notaryas defined by the update manager contract
+	// change the notary as defined by the update manager contract
 	_, notaryManager := deployManager.GetNotaryManager(i.GetTestContext(), i.testBackend)
 	owner, err := notaryManager.Owner(&bind.CallOpts{Context: i.GetTestContext()})
 	Nil(i.T(), err)

@@ -48,8 +48,8 @@ func NewOriginHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend
 }
 
 // Deploy deploys the origin harness.
-func (h OriginHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+func (o OriginHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return originharness.DeployOriginHarness(transactOps, backend, OriginHarnessDomain)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return originharness.NewOriginHarnessRef(address, backend)
@@ -105,9 +105,9 @@ func NewDestinationHarnessDeployer(registry deployer.GetOnlyContractRegistry, ba
 }
 
 // Deploy deploys the destination harness.
-func (r DestinationHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	return r.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return destinationharness.DeployDestinationHarness(transactOps, backend, uint32(r.Backend().GetChainID()))
+func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()))
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return destinationharness.NewDestinationHarnessRef(address, backend)
 	})

@@ -74,12 +74,12 @@ type NotaryManagerDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewNotaryManagerDeployer deploys a new update manager.
+// NewNotaryManagerDeployer deploys a new notary manager.
 func NewNotaryManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return NotaryManagerDeployer{deployer.NewSimpleDeployer(registry, backend, NotaryManagerType)}
 }
 
-// Deploy deploys the notarycontract.
+// Deploy deploys the notary contract.
 func (u NotaryManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
 	return u.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return notarymanager.DeployNotaryManager(transactOps, backend, transactOps.From)

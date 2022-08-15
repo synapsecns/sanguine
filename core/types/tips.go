@@ -15,7 +15,7 @@ type Tips interface {
 	BroadcasterTip() *big.Int
 	// ProverTip gets the tips for the prover
 	ProverTip() *big.Int
-	// ExecutorTip gets the tips for the processor
+	// ExecutorTip gets the tips for the executor
 	ExecutorTip() *big.Int
 }
 
