@@ -15,7 +15,7 @@ library SystemMessage {
     /**
      * @dev Custom address, used for receiving and sending system messages.
      *      Origin is supposed to dispatch messages from SystemMessenger as if they were sent by this address.
-     *      ReplicaManager is supposed to reroute messages for this address to SystemMessenger.
+     *      Destination is supposed to reroute messages for this address to SystemMessenger.
      *      Note: all bits except for lower 20 bytes are set to 1.
      *      Note: TypeCasts.bytes32ToAddress(SYSTEM_SENDER) = address(0)
      */

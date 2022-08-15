@@ -21,7 +21,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
     SynapseClientUpgradeableHarness public client;
     OriginHarness public origin;
 
-    address public constant replicaManager = address(1234567890);
+    address public constant destination = address(1234567890);
     address public constant owner = address(9876543210);
     bytes32 public constant trustedSender = bytes32(uint256(1234554321));
 
@@ -32,12 +32,12 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         origin.initialize(INotaryManager(notaryManager));
         notaryManager.setOrigin(address(origin));
 
-        vm.label(replicaManager, "replica");
+        vm.label(destination, "replica");
         vm.label(owner, "owner");
 
         SynapseClientUpgradeableHarness impl = new SynapseClientUpgradeableHarness(
             address(origin),
-            replicaManager
+            destination
         );
 
         TransparentUpgradeableProxy proxy = new TransparentUpgradeableProxy(
@@ -52,7 +52,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
     function test_constructor() public {
         assertEq(client.origin(), address(origin));
-        assertEq(client.replicaManager(), replicaManager);
+        assertEq(client.destination(), destination);
     }
 
     function test_cannotInitializeTwice() public {
@@ -120,12 +120,12 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
     function test_handle() public {
         test_setTrustedSender();
 
-        vm.prank(replicaManager);
+        vm.prank(destination);
         client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
 
     function test_handleNotReplica(address _notReplica) public {
-        vm.assume(_notReplica != replicaManager);
+        vm.assume(_notReplica != destination);
         test_setTrustedSender();
 
         vm.prank(_notReplica);
@@ -138,7 +138,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
         test_setTrustedSender();
 
-        vm.prank(replicaManager);
+        vm.prank(destination);
         vm.expectRevert("Client: !trustedSender");
         client.handle(_notRemote, 0, trustedSender, block.timestamp, bytes(""));
     }
@@ -148,7 +148,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
         test_setTrustedSender();
 
-        vm.prank(replicaManager);
+        vm.prank(destination);
         vm.expectRevert("Client: !trustedSender");
         client.handle(remoteDomain, 0, _notSender, block.timestamp, bytes(""));
     }
@@ -158,7 +158,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
         test_setTrustedSender();
 
-        vm.prank(replicaManager);
+        vm.prank(destination);
         vm.expectRevert("Client: !trustedSender");
         // trustedSender for unknown remote is bytes32(0),
         // but this still has to revert
@@ -168,7 +168,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
     function test_handleOptimisticSecondsNotPassed() public {
         test_setTrustedSender();
 
-        vm.prank(replicaManager);
+        vm.prank(destination);
         vm.expectRevert("Client: !optimisticSeconds");
         client.handle(remoteDomain, 0, trustedSender, block.timestamp + 1, bytes(""));
     }

@@ -2,12 +2,12 @@
 
 pragma solidity 0.8.13;
 
-import { ReplicaManager } from "../../contracts/ReplicaManager.sol";
+import { Destination } from "../../contracts/Destination.sol";
 
 import { ReplicaLib } from "../../contracts/libs/Replica.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
 
-contract ReplicaManagerHarness is ReplicaManager {
+contract DestinationHarness is Destination {
     using ReplicaLib for ReplicaLib.Replica;
 
     uint256 public sensitiveValue;
@@ -15,7 +15,7 @@ contract ReplicaManagerHarness is ReplicaManager {
 
     event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);
 
-    constructor(uint32 _localDomain) ReplicaManager(_localDomain) {}
+    constructor(uint32 _localDomain) Destination(_localDomain) {}
 
     function addNotary(uint32 _domain, address _notary) public {
         _addNotary(_domain, _notary);

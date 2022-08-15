@@ -11,13 +11,13 @@ import { Tips } from "../contracts/libs/Tips.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
 import { OriginHarness } from "./harnesses/OriginHarness.sol";
-import { ReplicaManagerHarness } from "./harnesses/ReplicaManagerHarness.sol";
+import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
 import { SystemMessengerHarness } from "./harnesses/SystemMessengerHarness.sol";
 
 contract SystemMessengerTest is SynapseTestWithNotaryManager {
     SystemMessengerHarness internal systemMessenger;
     OriginHarness internal origin;
-    ReplicaManagerHarness internal replicaManager;
+    DestinationHarness internal destination;
 
     uint32 internal optimisticPeriod = 420;
     uint256 internal secretValue = 1337;
@@ -44,21 +44,21 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         origin.initialize(INotaryManager(notaryManager));
         notaryManager.setOrigin(address(origin));
 
-        replicaManager = new ReplicaManagerHarness(localDomain);
-        replicaManager.initialize(remoteDomain, notary);
+        destination = new DestinationHarness(localDomain);
+        destination.initialize(remoteDomain, notary);
 
         systemMessenger = new SystemMessengerHarness(
             address(origin),
-            address(replicaManager),
+            address(destination),
             optimisticPeriod
         );
         origin.setSystemMessenger(systemMessenger);
-        replicaManager.setSystemMessenger(systemMessenger);
+        destination.setSystemMessenger(systemMessenger);
     }
 
     function test_constructor() public {
         assertEq(systemMessenger.origin(), address(origin));
-        assertEq(systemMessenger.replicaManager(), address(replicaManager));
+        assertEq(systemMessenger.destination(), address(destination));
         assertEq(systemMessenger.optimisticSeconds(), optimisticPeriod);
     }
 
@@ -70,8 +70,8 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         _testSendSystemMessage(address(origin));
     }
 
-    function test_sendSystemMessage_replicaManager() public {
-        _testSendSystemMessage(address(replicaManager));
+    function test_sendSystemMessage_destination() public {
+        _testSendSystemMessage(address(destination));
     }
 
     function test_sendSystemMessage_notSystemSender() public {
@@ -90,19 +90,19 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
             _createReceivedSystemMessage
         );
         skip(optimisticPeriod);
-        replicaManager.execute(message);
+        destination.execute(message);
         assertEq(origin.sensitiveValue(), secretValue);
     }
 
-    function test_receiveSystemMessage_replicaManager() public {
+    function test_receiveSystemMessage_destination() public {
         bytes memory message = _prepareReceiveTest(
             optimisticPeriod,
             1,
             _createReceivedSystemMessage
         );
         skip(optimisticPeriod);
-        replicaManager.execute(message);
-        assertEq(replicaManager.sensitiveValue(), secretValue);
+        destination.execute(message);
+        assertEq(destination.sensitiveValue(), secretValue);
     }
 
     function test_receiveSystemMessage_optimisticPeriodNotOver() public {
@@ -113,7 +113,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         );
         skip(optimisticPeriod - 1);
         vm.expectRevert("!optimisticSeconds");
-        replicaManager.execute(message);
+        destination.execute(message);
     }
 
     function test_receiveSystemMessage_optimisticPeriodForged() public {
@@ -121,7 +121,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(fakePeriod, 0, _createReceivedSystemMessage);
         skip(fakePeriod);
         vm.expectRevert("Client: !optimisticSeconds");
-        replicaManager.execute(message);
+        destination.execute(message);
     }
 
     function test_receiveSystemMessage_unknownRecipient() public {
@@ -132,7 +132,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         );
         skip(optimisticPeriod);
         vm.expectRevert("Unknown recipient");
-        replicaManager.execute(message);
+        destination.execute(message);
     }
 
     /**
@@ -147,7 +147,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         );
         skip(optimisticPeriod);
         vm.expectRevert("Client: !trustedSender");
-        replicaManager.execute(message);
+        destination.execute(message);
     }
 
     function _testSendSystemMessage(address _sender) internal {
@@ -178,11 +178,11 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         function(uint32, uint32, uint8) internal returns (bytes memory) _createReceivedMessage
     ) internal returns (bytes memory message) {
         (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
-        replicaManager.submitAttestation(attestation);
+        destination.submitAttestation(attestation);
 
         message = _createReceivedMessage(69, _optimisticSeconds, _recipient);
         bytes32 messageHash = keccak256(message);
-        replicaManager.setMessageStatus(remoteDomain, messageHash, ROOT);
+        destination.setMessageStatus(remoteDomain, messageHash, ROOT);
 
         assert(origin.sensitiveValue() != secretValue);
     }

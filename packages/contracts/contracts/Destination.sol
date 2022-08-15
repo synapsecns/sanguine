@@ -19,11 +19,11 @@ import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 import { TypedMemView } from "./libs/TypedMemView.sol";
 
 /**
- * @title ReplicaManager
+ * @title Destination
  * @notice Track merkle root state of Origin contracts on other chains,
  * prove and dispatch messages to end recipients.
  */
-contract ReplicaManager is Version0, SystemContract, GlobalNotaryRegistry, GuardRegistry {
+contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardRegistry {
     // ============ Libraries ============
 
     using ReplicaLib for ReplicaLib.Replica;

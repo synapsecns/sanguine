@@ -5,7 +5,7 @@ interface ISystemMessenger {
     /// @dev Potential senders/recipients of a system message
     enum SystemContracts {
         Origin,
-        ReplicaManager
+        Destination
     }
 
     /**

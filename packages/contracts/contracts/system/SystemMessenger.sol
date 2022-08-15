@@ -37,9 +37,9 @@ contract SystemMessenger is Client, ISystemMessenger {
 
     constructor(
         address _origin,
-        address _replicaManager,
+        address _destination,
         uint32 _optimisticSeconds
-    ) Client(_origin, _replicaManager) {
+    ) Client(_origin, _destination) {
         // TODO: Do we ever want to adjust this?
         // (the value should be the same across all chains)
         // Or could it be converted into immutable?
@@ -52,7 +52,7 @@ contract SystemMessenger is Client, ISystemMessenger {
 
     /// @notice Allows calls only from any of the System Contracts
     modifier anySystem() {
-        require(msg.sender == origin || msg.sender == replicaManager, "Unauthorized caller");
+        require(msg.sender == origin || msg.sender == destination, "Unauthorized caller");
         _;
     }
 
@@ -107,7 +107,7 @@ contract SystemMessenger is Client, ISystemMessenger {
          * It's not possible for anyone but SystemMessenger
          * to send messages "from SYSTEM_SENDER" on other deployed chains.
          *
-         * ReplicaManager is supposed to reject messages
+         * Destination is supposed to reject messages
          * from unknown chains, so we can skip originDomain check here.
          */
         return SystemMessage.SYSTEM_SENDER;
@@ -143,7 +143,7 @@ contract SystemMessenger is Client, ISystemMessenger {
 
     function _getSystemRecipient(uint8 _recipient) internal view returns (address) {
         if (_recipient == uint8(SystemContracts.Origin)) return origin;
-        if (_recipient == uint8(SystemContracts.ReplicaManager)) return replicaManager;
+        if (_recipient == uint8(SystemContracts.Destination)) return destination;
         revert("Unknown recipient");
     }
 }

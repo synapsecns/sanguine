@@ -13,19 +13,19 @@ abstract contract Client is IMessageRecipient {
     // local chain Origin: used for sending messages
     address public immutable origin;
 
-    // local chain ReplicaManager: used for receiving messages
-    address public immutable replicaManager;
+    // local chain Destination: used for receiving messages
+    address public immutable destination;
 
     // ============ Constructor ============
 
-    constructor(address _origin, address _replicaManager) {
+    constructor(address _origin, address _destination) {
         origin = _origin;
-        replicaManager = _replicaManager;
+        destination = _destination;
     }
 
     /**
      * @notice          Handles an incoming message.
-     * @dev             Can only be called by chain's ReplicaManager.
+     * @dev             Can only be called by chain's Destination.
      *                  Can only be sent from a trusted sender on the remote chain.
      * @param _origin   Domain of the remote chain, where message originated
      * @param _nonce    Unique identifier for the message from origin to destination chain
@@ -39,7 +39,7 @@ abstract contract Client is IMessageRecipient {
         uint256 _rootTimestamp,
         bytes memory _message
     ) external {
-        require(msg.sender == replicaManager, "Client: !replica");
+        require(msg.sender == destination, "Client: !replica");
         require(
             _sender == trustedSender(_origin) && _sender != bytes32(0),
             "Client: !trustedSender"
