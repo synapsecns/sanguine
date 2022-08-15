@@ -6,7 +6,8 @@ import { TypeCasts } from "./TypeCasts.sol";
 import { Message } from "./Message.sol";
 
 /**
- * @notice Library for versioned formatting [the tips part] of [the messages used by Origin and Replicas].
+ * @notice Library for versioned formatting [the tips part]
+ * of [the messages used by Origin and Destination].
  */
 library Tips {
     using TypedMemView for bytes;

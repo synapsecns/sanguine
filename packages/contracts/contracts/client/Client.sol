@@ -39,7 +39,7 @@ abstract contract Client is IMessageRecipient {
         uint256 _rootTimestamp,
         bytes memory _message
     ) external {
-        require(msg.sender == destination, "Client: !replica");
+        require(msg.sender == destination, "Client: !mirror");
         require(
             _sender == trustedSender(_origin) && _sender != bytes32(0),
             "Client: !trustedSender"
@@ -83,7 +83,7 @@ abstract contract Client is IMessageRecipient {
         );
     }
 
-    /// @dev Period of time since the root was submitted to Replica. Once this period is over,
+    /// @dev Period of time since the root was submitted to Mirror. Once this period is over,
     /// root can be used for proving and executing a message though this Client.
     function optimisticSeconds() public view virtual returns (uint32);
 

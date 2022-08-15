@@ -6,7 +6,7 @@ import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
 import { GuardRegistry } from "./registry/GuardRegistry.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { Version0 } from "./Version0.sol";
-import { ReplicaLib } from "./libs/Replica.sol";
+import { MirrorLib } from "./libs/Mirror.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
 import { Header } from "./libs/Header.sol";
@@ -26,7 +26,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
 contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardRegistry {
     // ============ Libraries ============
 
-    using ReplicaLib for ReplicaLib.Replica;
+    using MirrorLib for MirrorLib.Mirror;
     using MerkleLib for MerkleLib.Tree;
     using Message for bytes;
     using TypedMemView for bytes29;
@@ -39,17 +39,17 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
     // re-entrancy guard
     uint8 private entered;
 
-    uint256 internal replicaCount;
+    uint256 internal mirrorCount;
 
-    // all Replicas: both active and archived
-    mapping(uint256 => ReplicaLib.Replica) internal allReplicas;
+    // all Mirrors: both active and archived
+    mapping(uint256 => MirrorLib.Mirror) internal allMirrors;
 
-    // (domain => replica index): index of the active replica in allReplicas
-    mapping(uint32 => uint256) internal activeReplicas;
+    // (domain => mirror index): index of the active mirror in allMirrors
+    mapping(uint32 => uint256) internal activeMirrors;
 
-    //TODO: Handle fail-over replicas and modify activeReplicas
-    // (domain => [replica indexes]): array of indexes of archived replicas in allReplicas
-    mapping(uint32 => uint256[]) internal archivedReplicas;
+    //TODO: Handle fail-over mirrors and modify activeMirrors
+    // (domain => [mirror indexes]): array of indexes of archived mirrors in allMirrors
+    mapping(uint32 => uint256[]) internal archivedMirrors;
 
     // ============ Upgrade Gap ============
 
@@ -92,7 +92,7 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
     // ============ Initializer ============
 
     /**
-     * @notice Initialize the replica
+     * @notice Initialize the mirror
      * @dev Performs the following action:
      *      - initializes inherited contracts
      *      - initializes re-entrancy guard
@@ -107,34 +107,34 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
         _addNotary(_remoteDomain, _notary);
         // set storage variables
         entered = 1;
-        activeReplicas[_remoteDomain] = _createReplica(_remoteDomain);
+        activeMirrors[_remoteDomain] = _createMirror(_remoteDomain);
     }
 
-    // ============ Active Replica Views ============
+    // ============ Active Mirror Views ============
 
-    function activeReplicaNonce(uint32 _remoteDomain) external view returns (uint32) {
-        return allReplicas[activeReplicas[_remoteDomain]].nonce;
+    function activeMirrorNonce(uint32 _remoteDomain) external view returns (uint32) {
+        return allMirrors[activeMirrors[_remoteDomain]].nonce;
     }
 
-    function activeReplicaConfirmedAt(uint32 _remoteDomain, bytes32 _root)
+    function activeMirrorConfirmedAt(uint32 _remoteDomain, bytes32 _root)
         external
         view
         returns (uint256)
     {
-        return allReplicas[activeReplicas[_remoteDomain]].confirmAt[_root];
+        return allMirrors[activeMirrors[_remoteDomain]].confirmAt[_root];
     }
 
-    function activeReplicaMessageStatus(uint32 _remoteDomain, bytes32 _messageId)
+    function activeMirrorMessageStatus(uint32 _remoteDomain, bytes32 _messageId)
         external
         view
         returns (bytes32)
     {
-        return allReplicas[activeReplicas[_remoteDomain]].messageStatus[_messageId];
+        return allMirrors[activeMirrors[_remoteDomain]].messageStatus[_messageId];
     }
 
-    // ============ Archived Replica Views ============
+    // ============ Archived Mirror Views ============
 
-    // TODO: getters for archived replicas
+    // TODO: getters for archived mirrors
 
     // ============ External Functions ============
 
@@ -149,12 +149,12 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
         uint32 remoteDomain = _view.attestationDomain();
         require(remoteDomain != localDomain, "Attestation refers to local chain");
         uint32 nonce = _view.attestationNonce();
-        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[remoteDomain]];
-        require(nonce > replica.nonce, "Attestation older than current state");
+        MirrorLib.Mirror storage mirror = allMirrors[activeMirrors[remoteDomain]];
+        require(nonce > mirror.nonce, "Attestation older than current state");
         bytes32 newRoot = _view.attestationRoot();
-        replica.setConfirmAt(newRoot, block.timestamp);
+        mirror.setConfirmAt(newRoot, block.timestamp);
         // update nonce
-        replica.setNonce(nonce);
+        mirror.setNonce(nonce);
         emit AttestationAccepted(
             remoteDomain,
             nonce,
@@ -186,7 +186,7 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
      * @notice Given formatted message, attempts to dispatch
      * message payload to end recipient.
      * @dev Recipient must implement a `handle` method (refer to IMessageRecipient.sol)
-     * Reverts if formatted message's destination domain is not the Replica's domain,
+     * Reverts if formatted message's destination domain is not the Mirror's domain,
      * if message has not been proven,
      * or if recipient reverted upon receiving the message.
      * @param _message Formatted message
@@ -195,13 +195,13 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
         bytes29 _m = _message.messageView();
         bytes29 _header = _m.header();
         uint32 _remoteDomain = _header.origin();
-        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
+        MirrorLib.Mirror storage mirror = allMirrors[activeMirrors[_remoteDomain]];
         // ensure message was meant for this domain
         require(_header.destination() == localDomain, "!destination");
         // ensure message has been proven
         bytes32 _messageHash = _m.keccak();
-        bytes32 _root = replica.messageStatus[_messageHash];
-        require(ReplicaLib.isPotentialRoot(_root), "!exists || executed");
+        bytes32 _root = mirror.messageStatus[_messageHash];
+        require(MirrorLib.isPotentialRoot(_root), "!exists || executed");
         require(
             acceptableRoot(_remoteDomain, _header.optimisticSeconds(), _root),
             "!optimisticSeconds"
@@ -211,13 +211,13 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
         entered = 0;
         _storeTips(_m.tips());
         // update message status as executed
-        replica.setMessageStatus(_messageHash, ReplicaLib.MESSAGE_STATUS_EXECUTED);
+        mirror.setMessageStatus(_messageHash, MirrorLib.MESSAGE_STATUS_EXECUTED);
         address recipient = _checkForSystemMessage(_header.recipient());
         IMessageRecipient(recipient).handle(
             _remoteDomain,
             _header.nonce(),
             _header.sender(),
-            replica.confirmAt[_root],
+            mirror.confirmAt[_root],
             _m.body().clone()
         );
         emit Executed(_remoteDomain, _messageHash);
@@ -250,9 +250,9 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
         bytes32 _root,
         uint256 _confirmAt
     ) external onlyOwner {
-        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
-        uint256 _previousConfirmAt = replica.confirmAt[_root];
-        replica.setConfirmAt(_root, _confirmAt);
+        MirrorLib.Mirror storage mirror = allMirrors[activeMirrors[_remoteDomain]];
+        uint256 _previousConfirmAt = mirror.confirmAt[_root];
+        mirror.setConfirmAt(_root, _confirmAt);
         emit SetConfirmation(_remoteDomain, _root, _previousConfirmAt, _confirmAt);
     }
 
@@ -270,7 +270,7 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
         uint32 _optimisticSeconds,
         bytes32 _root
     ) public view returns (bool) {
-        uint256 _time = allReplicas[activeReplicas[_remoteDomain]].confirmAt[_root];
+        uint256 _time = allMirrors[activeMirrors[_remoteDomain]].confirmAt[_root];
         if (_time == 0) {
             return false;
         }
@@ -296,19 +296,19 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
         uint256 _index
     ) public returns (bool) {
         bytes32 _leaf = keccak256(_message);
-        ReplicaLib.Replica storage replica = allReplicas[activeReplicas[_remoteDomain]];
-        // ensure that replica is active
-        require(replica.status == ReplicaLib.ReplicaStatus.Active, "Replica not active");
+        MirrorLib.Mirror storage mirror = allMirrors[activeMirrors[_remoteDomain]];
+        // ensure that mirror is active
+        require(mirror.status == MirrorLib.MirrorStatus.Active, "Mirror not active");
         // ensure that message has not been proven or executed
         require(
-            replica.messageStatus[_leaf] == ReplicaLib.MESSAGE_STATUS_NONE,
+            mirror.messageStatus[_leaf] == MirrorLib.MESSAGE_STATUS_NONE,
             "!MessageStatus.None"
         );
         // calculate the expected root based on the proof
         bytes32 _calculatedRoot = MerkleLib.branchRoot(_leaf, _proof, _index);
         // if the root is valid, save it for later optimistic period checking
-        if (replica.confirmAt[_calculatedRoot] != 0) {
-            replica.setMessageStatus(_leaf, _calculatedRoot);
+        if (mirror.confirmAt[_calculatedRoot] != 0) {
+            mirror.setMessageStatus(_leaf, _calculatedRoot);
             return true;
         }
         return false;
@@ -316,13 +316,13 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
 
     // ============ Internal Functions ============
 
-    function _createReplica(uint32 _remoteDomain) internal returns (uint256 replicaIndex) {
-        // Start indexing from 1, so default replica (allReplicas[0]) will be forever inactive
+    function _createMirror(uint32 _remoteDomain) internal returns (uint256 mirrorIndex) {
+        // Start indexing from 1, so default mirror (allMirrors[0]) will be forever inactive
         unchecked {
-            replicaIndex = replicaCount + 1;
+            mirrorIndex = mirrorCount + 1;
         }
-        allReplicas[replicaIndex].setupReplica(_remoteDomain);
-        replicaCount = replicaIndex;
+        allMirrors[mirrorIndex].setupMirror(_remoteDomain);
+        mirrorCount = mirrorIndex;
     }
 
     function _getRevertMsg(bytes memory _returnData) internal pure returns (string memory) {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-library ReplicaLib {
+library MirrorLib {
     // ============ Enums ============
     // Status of Message:
     //   0 - None - message has not been proven or executed
@@ -19,7 +19,7 @@ library ReplicaLib {
     //   1 - Active - as long as the contract has not become fraudulent
     //   2 - Failed - after a valid fraud proof has been submitted;
     //   contract will no longer accept attestations or new messages
-    enum ReplicaStatus {
+    enum MirrorStatus {
         UnInitialized,
         Active,
         Failed
@@ -32,13 +32,13 @@ library ReplicaLib {
     bytes32 public constant MESSAGE_STATUS_EXECUTED = bytes32(uint256(1));
 
     // TODO: optimize read/writes by further packing?
-    struct Replica {
-        // The latest nonce that has been signed by the Notary for this given Replica
+    struct Mirror {
+        // The latest nonce that has been signed by the Notary for this given Mirror
         uint32 nonce; // 32 bits
         // Domain of origin chain
         uint32 remoteDomain; // 32 bits
-        // Status of Replica based on the Origin remote domain
-        ReplicaStatus status; // 8 bits
+        // Status of Mirror based on the Origin remote domain
+        MirrorStatus status; // 8 bits
         // Mapping of roots to time at which Broadcaster submitted on-chain. Latency period begins here.
         // TODO: confirmAt doesn't need to be uint256 necessarily
         mapping(bytes32 => uint256) confirmAt;
@@ -49,33 +49,33 @@ library ReplicaLib {
         mapping(bytes32 => bytes32) messageStatus;
     }
 
-    function setupReplica(Replica storage replica, uint32 _remoteDomain) internal {
-        replica.remoteDomain = _remoteDomain;
-        replica.status = ReplicaStatus.Active;
+    function setupMirror(Mirror storage mirror, uint32 _remoteDomain) internal {
+        mirror.remoteDomain = _remoteDomain;
+        mirror.status = MirrorStatus.Active;
     }
 
-    function setNonce(Replica storage replica, uint32 _nonce) internal {
-        replica.nonce = _nonce;
+    function setNonce(Mirror storage mirror, uint32 _nonce) internal {
+        mirror.nonce = _nonce;
     }
 
     function setConfirmAt(
-        Replica storage replica,
+        Mirror storage mirror,
         bytes32 _root,
         uint256 _confirmAt
     ) internal {
-        replica.confirmAt[_root] = _confirmAt;
+        mirror.confirmAt[_root] = _confirmAt;
     }
 
     function setMessageStatus(
-        Replica storage replica,
+        Mirror storage mirror,
         bytes32 _messageHash,
         bytes32 _status
     ) internal {
-        replica.messageStatus[_messageHash] = _status;
+        mirror.messageStatus[_messageHash] = _status;
     }
 
-    function setStatus(Replica storage replica, ReplicaStatus _status) internal {
-        replica.status = _status;
+    function setStatus(Mirror storage mirror, MirrorStatus _status) internal {
+        mirror.status = _status;
     }
 
     function isPotentialRoot(bytes32 messageStatus) internal pure returns (bool) {

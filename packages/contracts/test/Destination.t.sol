@@ -10,7 +10,7 @@ import { TypeCasts } from "../contracts/libs/TypeCasts.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
-import { ReplicaLib } from "../contracts/libs/Replica.sol";
+import { MirrorLib } from "../contracts/libs/Mirror.sol";
 import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
 import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
 
@@ -87,11 +87,11 @@ contract DestinationTest is SynapseTest {
 
     function test_setConfirmation(uint256 _confirmAt) public {
         vm.startPrank(destination.owner());
-        assertEq(destination.activeReplicaConfirmedAt(remoteDomain, ROOT), 0);
+        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), 0);
         vm.expectEmit(true, true, true, true);
         emit SetConfirmation(remoteDomain, ROOT, 0, _confirmAt);
         destination.setConfirmation(remoteDomain, ROOT, _confirmAt);
-        assertEq(destination.activeReplicaConfirmedAt(remoteDomain, ROOT), _confirmAt);
+        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), _confirmAt);
     }
 
     event AttestationAccepted(
@@ -107,13 +107,13 @@ contract DestinationTest is SynapseTest {
         assertTrue(destination.isNotary(remoteDomain, vm.addr(notaryPK)));
         (bytes memory attestation, bytes memory sig) = signRemoteAttestation(notaryPK, nonce, ROOT);
         // Root doesn't exist yet
-        assertEq(destination.activeReplicaConfirmedAt(remoteDomain, ROOT), 0);
+        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), 0);
         // Broadcaster sends over a root signed by the notary on the Origin chain
         vm.expectEmit(true, true, true, true);
         emit AttestationAccepted(remoteDomain, nonce, ROOT, sig);
         destination.submitAttestation(attestation);
         // Time at which root was confirmed is set, optimistic timeout starts now
-        assertEq(destination.activeReplicaConfirmedAt(remoteDomain, ROOT), block.timestamp);
+        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), block.timestamp);
     }
 
     function test_submitAttestation_fakeNotary() public {
@@ -129,7 +129,7 @@ contract DestinationTest is SynapseTest {
         uint32 nonce = 42;
         (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, ROOT);
         vm.expectRevert("Attestation refers to local chain");
-        // Replica should reject attestations from the chain it's deployed on
+        // Mirror should reject attestations from the chain it's deployed on
         destination.submitAttestation(attestation);
     }
 

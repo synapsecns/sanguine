@@ -265,10 +265,10 @@ contract Origin is
      * This would mean that message(s) that were not truly
      * dispatched on Origin were falsely included in the signed root.
      *
-     * An Improper Attestation will only be accepted as valid by the Replica
+     * An Improper Attestation will only be accepted as valid by the Mirror
      * If an Improper Attestation is attempted on Origin,
      * the Notary will be slashed immediately.
-     * If an Improper Attestation is submitted to the Replica,
+     * If an Improper Attestation is submitted to the Mirror,
      * it should be relayed to the Origin contract using this function
      * in order to slash the Notary with an Improper Attestation.
      *
@@ -314,10 +314,11 @@ contract Origin is
         /**
          * TODO: remove Failed state
          * @dev With the asynchronous updates Origin is never in the FAILED state.
-         *      It's rather some Replicas might end up with a corrupted merkle state (upon receiving a fraud attestation).
-         *      It's a Replica job to get this conflict fixed, as long as there's more than one active Notary,
-         *      new messages on Origin could be verified by an honest Notary.
-         *      Meaning Origin should not be halted upon discovering a fraud attestation.
+         * It's rather some Destinations might end up with a corrupted merkle state
+         * (upon receiving a fraud attestation). It's a Destination job to get this conflict fixed.
+         * As long as there's more than one active Notary, new messages on Origin could be verified
+         * by an honest Notary signing fresh valid attestations.
+         * Meaning Origin should not be halted upon discovering a fraud attestation.
          */
         // set contract to FAILED
         state = States.Failed;

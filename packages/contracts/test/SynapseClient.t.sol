@@ -28,7 +28,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         origin.initialize(INotaryManager(notaryManager));
         notaryManager.setOrigin(address(origin));
 
-        vm.label(destination, "replica");
+        vm.label(destination, "mirror");
         vm.label(owner, "owner");
 
         client = new SynapseClientHarness(address(origin), destination);
@@ -104,12 +104,12 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
 
-    function test_handleNotReplica(address _notReplica) public {
-        vm.assume(_notReplica != destination);
+    function test_handleNotMirror(address _notMirror) public {
+        vm.assume(_notMirror != destination);
         test_setTrustedSender();
 
-        vm.prank(_notReplica);
-        vm.expectRevert("Client: !replica");
+        vm.prank(_notMirror);
+        vm.expectRevert("Client: !mirror");
         client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
 

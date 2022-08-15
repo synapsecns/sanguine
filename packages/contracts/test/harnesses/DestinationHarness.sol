@@ -4,11 +4,11 @@ pragma solidity 0.8.13;
 
 import { Destination } from "../../contracts/Destination.sol";
 
-import { ReplicaLib } from "../../contracts/libs/Replica.sol";
+import { MirrorLib } from "../../contracts/libs/Mirror.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
 
 contract DestinationHarness is Destination {
-    using ReplicaLib for ReplicaLib.Replica;
+    using MirrorLib for MirrorLib.Mirror;
 
     uint256 public sensitiveValue;
     using Tips for bytes29;
@@ -34,7 +34,7 @@ contract DestinationHarness is Destination {
         bytes32 _messageHash,
         bytes32 _status
     ) external {
-        allReplicas[activeReplicas[_remoteDomain]].setMessageStatus(_messageHash, _status);
+        allMirrors[activeMirrors[_remoteDomain]].setMessageStatus(_messageHash, _status);
     }
 
     function _storeTips(bytes29 _tips) internal override {
