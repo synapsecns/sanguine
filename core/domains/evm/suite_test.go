@@ -97,7 +97,7 @@ func (i *ContractSuite) SetupTest() {
 	Nil(i.T(), err)
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
-	// add the notaryto attestation contract
+	// add the notary to attestation contract
 	auth := i.attestationBackend.GetTxContext(i.GetTestContext(), attestationContract.OwnerPtr())
 
 	tx, err = i.attestationContract.AddNotary(auth.TransactOpts, attestationDomain, i.signer.Address())

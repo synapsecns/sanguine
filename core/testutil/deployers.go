@@ -80,8 +80,8 @@ func NewNotaryManagerDeployer(registry deployer.GetOnlyContractRegistry, backend
 }
 
 // Deploy deploys the notary contract.
-func (u NotaryManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	return u.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+func (n NotaryManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return notarymanager.DeployNotaryManager(transactOps, backend, transactOps.From)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return notarymanager.NewNotaryManagerRef(address, backend)
