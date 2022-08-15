@@ -241,6 +241,8 @@ jobs:
   check-generation:
     name: Go Generate
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     needs: changes
     if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes }}
     strategy:
@@ -332,6 +334,7 @@ jobs:
         with:
           add-labels: "needs-go-generate"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{github.event.number}}
 
       - name: Remove Label
         if: steps.verify-changed-files.outputs.files_changed != 'true'
@@ -339,3 +342,4 @@ jobs:
         with:
           remove-labels: "needs-go-generate"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{github.event.number}}
