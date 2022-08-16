@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/kms v1.17.3
 	github.com/aws/smithy-go v1.11.3
 	github.com/brianvoe/gofakeit/v6 v6.9.0
-	github.com/ethereum/go-ethereum v1.10.11
+	github.com/ethereum/go-ethereum v1.10.21
 	github.com/ipfs/go-log v1.0.5
 	github.com/miguelmota/go-ethereum-hdwallet v0.1.1
 	github.com/neverlee/keymutex v0.0.0-20171121013845-f593aa834bf9

@@ -8,7 +8,7 @@ require (
 	github.com/aws/smithy-go v1.11.3
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/coinbase/rosetta-sdk-go v0.7.0
-	github.com/ethereum/go-ethereum v1.10.11
+	github.com/ethereum/go-ethereum v1.10.21
 	github.com/fatih/structtag v1.2.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
