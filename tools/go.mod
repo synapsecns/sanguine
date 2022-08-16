@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
-	github.com/brianvoe/gofakeit/v6 v6.9.0
+	github.com/brianvoe/gofakeit/v6 v6.18.0
 	github.com/ethereum/go-ethereum v1.10.11
 	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
 	github.com/markbates/pkger v0.17.1
