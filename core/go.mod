@@ -308,7 +308,7 @@ require (
 )
 
 replace (
-	github.com/CosmWasm/wasmvm => github.com/CosmWasm/wasmvm v0.16.6
+	github.com/CosmWasm/wasmvm => github.com/CosmWasm/wasmvm v0.16.7
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/synapsecns/sanguine/ethergo => ../ethergo
 	github.com/synapsecns/synapse-node => github.com/synapsecns/synapse-node v0.242.1-0.20220523175312-65a2f2613b1f

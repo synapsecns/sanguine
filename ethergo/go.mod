@@ -306,7 +306,7 @@ require (
 )
 
 replace (
-	github.com/CosmWasm/wasmvm => github.com/CosmWasm/wasmvm v0.16.6
+	github.com/CosmWasm/wasmvm => github.com/CosmWasm/wasmvm v0.16.7
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	// add secp256k1 support https://github.com/nsmithuk/local-kms/pull/29/files
 	github.com/nsmithuk/local-kms => github.com/eupn/local-kms v0.0.0-20210821122212-69cb524fc207
