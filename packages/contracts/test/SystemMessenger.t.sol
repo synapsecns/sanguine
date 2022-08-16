@@ -258,7 +258,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
                     _optimisticSeconds
                 ),
                 Tips.emptyTips(),
-                abi.encodePacked(uint8(SystemMessage.SystemMessageType.Call), _recipient, payload)
+                SystemMessage.formatSystemCall(_recipient, payload)
             );
     }
 }
