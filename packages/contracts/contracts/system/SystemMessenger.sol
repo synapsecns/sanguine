@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 import { Client } from "../client/Client.sol";
 import { TypedMemView } from "../libs/TypedMemView.sol";
-import { SystemMessage } from "./SystemMessage.sol";
+import { SystemMessage } from "../libs/SystemMessage.sol";
 import { ISystemMessenger } from "../interfaces/ISystemMessenger.sol";
 import { Tips } from "../libs/Tips.sol";
 

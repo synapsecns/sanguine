@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import { SynapseTypes } from "../libs/SynapseTypes.sol";
-import { TypedMemView } from "../libs/TypedMemView.sol";
+import { SynapseTypes } from "./SynapseTypes.sol";
+import { TypedMemView } from "./TypedMemView.sol";
 
 library SystemMessage {
     using TypedMemView for bytes;

@@ -4,7 +4,7 @@ pragma solidity 0.8.13;
 
 import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
-import { SystemMessage } from "../contracts/system/SystemMessage.sol";
+import { SystemMessage } from "../contracts/libs/SystemMessage.sol";
 import { Message } from "../contracts/libs/Message.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Tips } from "../contracts/libs/Tips.sol";

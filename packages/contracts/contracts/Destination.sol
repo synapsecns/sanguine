@@ -12,7 +12,7 @@ import { Message } from "./libs/Message.sol";
 import { Header } from "./libs/Header.sol";
 import { Tips } from "./libs/Tips.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
-import { SystemMessage } from "./system/SystemMessage.sol";
+import { SystemMessage } from "./libs/SystemMessage.sol";
 import { SystemContract } from "./system/SystemContract.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 // ============ External Imports ============

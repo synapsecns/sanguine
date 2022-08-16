@@ -10,7 +10,7 @@ import { MerkleLib } from "./libs/Merkle.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
-import { SystemMessage } from "./system/SystemMessage.sol";
+import { SystemMessage } from "./libs/SystemMessage.sol";
 import { SystemContract } from "./system/SystemContract.sol";
 import { MerkleTreeManager } from "./Merkle.sol";
 import { INotaryManager } from "./interfaces/INotaryManager.sol";
