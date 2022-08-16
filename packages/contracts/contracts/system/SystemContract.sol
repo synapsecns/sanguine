@@ -24,6 +24,19 @@ abstract contract SystemContract is OwnableUpgradeable {
     ISystemMessenger public systemMessenger;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @dev Modifier for functions that are supposed to be called from
+     * System Contracts on other chains.
+     */
+    modifier onlySystemMessenger() {
+        _assertSystemMessenger();
+        _;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -35,21 +48,9 @@ abstract contract SystemContract is OwnableUpgradeable {
     ▏*║                             INITIALIZER                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // solhint-disable-next-line func-name-mixedcase
     function __SystemContract_initialize() internal onlyInitializing {
         __Ownable_init_unchained();
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @dev Modifier for functions that are supposed to be called from
-     * System Contracts on other chains.
-     */
-    modifier onlySystemMessenger() {
-        _assertSystemMessenger();
-        _;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
