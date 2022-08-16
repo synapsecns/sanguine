@@ -12,7 +12,7 @@ require (
 	github.com/stretchr/testify v1.7.1
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/thoas/go-funk v0.9.0
-	github.com/urfave/cli/v2 v2.3.0
+	github.com/urfave/cli/v2 v2.11.2
 	golang.org/x/mod v0.5.1
 	golang.org/x/tools v0.1.8
 )
