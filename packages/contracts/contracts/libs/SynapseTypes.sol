@@ -46,4 +46,11 @@ library SynapseTypes {
     uint40 internal constant MESSAGE_TIPS               = 0x03_01_02_00_00;
     // prettier-ignore
     uint40 internal constant MESSAGE_BODY               = 0x03_01_03_00_00;
+
+    // prettier-ignore
+    uint40 internal constant SYSTEM_MESSAGE             = 0x03_02_00_00_00;
+    // prettier-ignore
+    uint40 internal constant SYSTEM_MESSAGE_CALL        = 0x03_02_01_00_00;
+    // prettier-ignore
+    uint40 internal constant SYSTEM_MESSAGE_ADJUST      = 0x03_02_02_00_00;
 }
