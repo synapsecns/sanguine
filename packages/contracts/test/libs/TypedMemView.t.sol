@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity >=0.8.12;
 
-import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
+import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 
 import "forge-std/Test.sol";
 

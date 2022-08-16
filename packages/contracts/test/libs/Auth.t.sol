@@ -2,10 +2,10 @@
 
 pragma solidity 0.8.13;
 
-import { AuthHarness } from "./harnesses/AuthHarness.sol";
+import { AuthHarness } from "../harnesses/AuthHarness.sol";
 
-import { SynapseTest } from "./utils/SynapseTest.sol";
-import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
+import { SynapseTest } from "../utils/SynapseTest.sol";
+import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 
 contract AuthTest is SynapseTest {
     using TypedMemView for bytes29;

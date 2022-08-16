@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.13;
 
-import { SynapseTest } from "./utils/SynapseTest.sol";
-import { Bytes29Test } from "./utils/Bytes29Test.sol";
-import { Attestation } from "../contracts/libs/Attestation.sol";
-import { SynapseTypes } from "../contracts/libs/SynapseTypes.sol";
-import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
+import { SynapseTest } from "../utils/SynapseTest.sol";
+import { Bytes29Test } from "../utils/Bytes29Test.sol";
+import { Attestation } from "../../contracts/libs/Attestation.sol";
+import { SynapseTypes } from "../../contracts/libs/SynapseTypes.sol";
+import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 
 // solhint-disable func-name-mixedcase
 

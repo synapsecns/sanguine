@@ -3,9 +3,9 @@ pragma solidity 0.8.13;
 
 import "forge-std/Test.sol";
 
-import { MirrorLib } from "../contracts/libs/Mirror.sol";
+import { MirrorLib } from "../../contracts/libs/Mirror.sol";
 
-import { SynapseTest } from "./utils/SynapseTest.sol";
+import { SynapseTest } from "../utils/SynapseTest.sol";
 
 contract MirrorTest is SynapseTest {
     using MirrorLib for MirrorLib.Mirror;

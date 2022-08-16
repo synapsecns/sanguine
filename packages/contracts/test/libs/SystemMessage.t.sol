@@ -2,12 +2,12 @@
 
 pragma solidity 0.8.13;
 
-import { Bytes29Test } from "./utils/Bytes29Test.sol";
+import { Bytes29Test } from "../utils/Bytes29Test.sol";
 
-import { SystemMessage } from "../contracts/libs/SystemMessage.sol";
-import { SynapseTypes } from "../contracts/libs/SynapseTypes.sol";
-import { TypedMemView } from "../contracts/libs/TypedMemView.sol";
-import { TypeCasts } from "../contracts/libs/TypeCasts.sol";
+import { SystemMessage } from "../../contracts/libs/SystemMessage.sol";
+import { SynapseTypes } from "../../contracts/libs/SynapseTypes.sol";
+import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
+import { TypeCasts } from "../../contracts/libs/TypeCasts.sol";
 
 contract SystemMessageTest is Bytes29Test {
     using TypedMemView for bytes;
