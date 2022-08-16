@@ -9,7 +9,7 @@ require (
 	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
 	github.com/markbates/pkger v0.17.1
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.8.0
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/thoas/go-funk v0.9.0
 	github.com/urfave/cli/v2 v2.3.0
