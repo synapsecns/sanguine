@@ -33,7 +33,7 @@ contract AttestationTest is SynapseTest, Bytes29Test {
         bytes memory data = abi.encodePacked(domain, nonce, root);
         assertEq(_view.attestationData().clone(), data);
         bytes memory sig = signMessage(SIGNER_PK, data);
-        assertEq(_view.attestationSignature().clone(), sig);
+        assertEq(_view.notarySignature().clone(), sig);
     }
 
     function test_isAttestation_tooShort() public {
@@ -54,8 +54,8 @@ contract AttestationTest is SynapseTest, Bytes29Test {
         _prepareMistypedTest(SynapseTypes.ATTESTATION).attestationData();
     }
 
-    function test_incorrectType_attestationSignature() public {
-        _prepareMistypedTest(SynapseTypes.ATTESTATION).attestationSignature();
+    function test_incorrectType_notarySignature() public {
+        _prepareMistypedTest(SynapseTypes.ATTESTATION).notarySignature();
     }
 
     function test_incorrectType_attestedRoot() public {

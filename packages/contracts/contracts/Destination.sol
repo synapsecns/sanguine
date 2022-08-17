@@ -155,12 +155,7 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
         mirror.setConfirmAt(newRoot, block.timestamp);
         // update nonce
         mirror.setNonce(nonce);
-        emit AttestationAccepted(
-            remoteDomain,
-            nonce,
-            newRoot,
-            _view.attestationSignature().clone()
-        );
+        emit AttestationAccepted(remoteDomain, nonce, newRoot, _view.notarySignature().clone());
     }
 
     /**

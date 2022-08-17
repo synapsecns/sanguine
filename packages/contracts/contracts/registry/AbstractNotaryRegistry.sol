@@ -25,7 +25,7 @@ abstract contract AbstractNotaryRegistry {
     {
         _view = _attestation.castToAttestation();
         require(_view.isAttestation(), "Not an attestation");
-        _notary = Auth.recoverSigner(_view.attestationData(), _view.attestationSignature().clone());
+        _notary = Auth.recoverSigner(_view.attestationData(), _view.notarySignature().clone());
         require(_isNotary(_view.attestedDomain(), _notary), "Signer is not a notary");
     }
 

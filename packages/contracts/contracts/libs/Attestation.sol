@@ -123,12 +123,7 @@ library Attestation {
     /**
      * @notice Returns Notary's signature on AttestationData
      */
-    function attestationSignature(bytes29 _view)
-        internal
-        pure
-        onlyAttestation(_view)
-        returns (bytes29)
-    {
+    function notarySignature(bytes29 _view) internal pure onlyAttestation(_view) returns (bytes29) {
         return _view.sliceFrom(OFFSET_SIGNATURE, SynapseTypes.SIGNATURE);
     }
 }

@@ -216,7 +216,7 @@ contract AttestationCollector is GlobalNotaryRegistry, OwnableUpgradeable {
         if (_signatureExists(domain, nonce, root)) return false;
         latestNonce[domain][_notary] = nonce;
         latestRoot[domain][_notary] = root;
-        signatures[domain][nonce][root] = _view.attestationSignature().clone();
+        signatures[domain][nonce][root] = _view.notarySignature().clone();
         attestedRoots[domain][nonce].push(root);
         return true;
     }
