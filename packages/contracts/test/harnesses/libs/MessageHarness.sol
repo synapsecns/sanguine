@@ -5,13 +5,14 @@ pragma solidity 0.8.13;
 import { Message } from "../../../contracts/libs/Message.sol";
 import { Header } from "../../../contracts/libs/Header.sol";
 import { Tips } from "../../../contracts/libs/Tips.sol";
-import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
 
+/**
+ * @notice Exposes Message methods for testing against golang.
+ */
 contract MessageHarness {
-    using Message for bytes;
-    using Message for bytes29;
-    using Header for bytes29;
-    using TypedMemView for bytes29;
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              FORMATTERS                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatMessage(
         uint32 _origin,
@@ -37,81 +38,30 @@ contract MessageHarness {
             _recipient,
             _optimisticSeconds
         );
+        return formatMessage(_header, _tips, _messageBody);
+    }
+
+    function formatMessage(
+        bytes memory _header,
+        bytes memory _tips,
+        bytes memory _messageBody
+    ) public pure returns (bytes memory) {
         return Message.formatMessage(_header, _tips, _messageBody);
     }
 
-    /**
-     * @notice Returns leaf of formatted message with provided fields.
-     * @param _origin Domain of origin chain
-     * @param _sender Address of sender as bytes32
-     * @param _nonce Destination-specific nonce number
-     * @param _destination Domain of destination chain
-     * @param _recipient Address of recipient on destination chain as bytes32
-     * @param _body Raw bytes of message body
-     * @return Leaf (hash) of formatted message
-     **/
-    function messageHash(
-        uint32 _origin,
-        bytes32 _sender,
-        uint32 _nonce,
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _tips,
-        bytes memory _body
-    ) public pure returns (bytes32) {
-        bytes memory _header = Header.formatHeader(
-            _origin,
-            _sender,
-            _nonce,
-            _destination,
-            _recipient,
-            _optimisticSeconds
-        );
-        return Message.messageHash(_header, _tips, _body);
-    }
-
-    function tips(bytes memory _message) external view returns (bytes memory) {
-        return _message.castToMessage().tips().clone();
-    }
-
-    function body(bytes memory _message) external view returns (bytes memory) {
-        return _message.castToMessage().body().clone();
-    }
-
-    function origin(bytes memory _message) external pure returns (uint32) {
-        return _message.castToMessage().header().origin();
-    }
-
-    function sender(bytes memory _message) external pure returns (bytes32) {
-        return _message.castToMessage().header().sender();
-    }
-
-    function nonce(bytes memory _message) external pure returns (uint32) {
-        return _message.castToMessage().header().nonce();
-    }
-
-    function destination(bytes memory _message) external pure returns (uint32) {
-        return _message.castToMessage().header().destination();
-    }
-
-    function recipient(bytes memory _message) external pure returns (bytes32) {
-        return _message.castToMessage().header().recipient();
-    }
-
-    function recipientAddress(bytes memory _message) external pure returns (address) {
-        return _message.castToMessage().header().recipientAddress();
-    }
-
-    function optimisticSeconds(bytes memory _message) external pure returns (uint32) {
-        return _message.castToMessage().header().optimisticSeconds();
-    }
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           CONSTANT GETTERS                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function messageVersion() public pure returns (uint16) {
         return Message.MESSAGE_VERSION;
     }
 
-    function headerOffset() public pure returns (uint16) {
+    function offsetVersion() public pure returns (uint256) {
+        return Message.OFFSET_VERSION;
+    }
+
+    function offsetHeader() public pure returns (uint256) {
         return Message.OFFSET_HEADER;
     }
 }
