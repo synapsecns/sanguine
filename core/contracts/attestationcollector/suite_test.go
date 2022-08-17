@@ -20,7 +20,7 @@ import (
 	"github.com/synapsecns/synapse-node/testutils/backends/preset"
 )
 
-// AttestationCollectorSuite is the attestation collector test suite
+// AttestationCollectorSuite is the attestation collector test suite.
 type AttestationCollectorSuite struct {
 	*testutils.TestSuite
 	originContract              *origin.OriginRef

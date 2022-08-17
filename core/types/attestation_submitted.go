@@ -4,7 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// Attestation Submitted is the type emitted by
+// AttestationSubmitted is the type emitted by
 // the AttestationCollector when an attestation is submitted.
 type AttestationSubmitted interface {
 	// Notary gets the notary of the attestation.
@@ -18,6 +18,7 @@ type attestationSubmitted struct {
 	attestation []byte
 }
 
+// NewAttestationSubmitted creates a new attestation submitted type.
 func NewAttestationSubmitted(notary common.Hash, attestation []byte) AttestationSubmitted {
 	return attestationSubmitted{
 		notary:      notary,
