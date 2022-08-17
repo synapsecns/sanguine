@@ -161,7 +161,7 @@ library SystemMessage {
         returns (MessageFlag messageFlag, bytes29 bodyView)
     {
         messageFlag = MessageFlag(_messageFlagIntValue(_view));
-        bodyView = _view.slice(OFFSET_BODY, _view.len() - OFFSET_BODY, _getFlagType(messageFlag));
+        bodyView = _view.sliceFrom(OFFSET_BODY, _getFlagType(messageFlag));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

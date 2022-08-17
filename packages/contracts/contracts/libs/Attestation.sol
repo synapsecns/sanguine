@@ -129,11 +129,6 @@ library Attestation {
         onlyAttestation(_view)
         returns (bytes29)
     {
-        return
-            _view.slice(
-                OFFSET_SIGNATURE,
-                _view.len() - ATTESTATION_DATA_LENGTH,
-                SynapseTypes.SIGNATURE
-            );
+        return _view.sliceFrom(OFFSET_SIGNATURE, SynapseTypes.SIGNATURE);
     }
 }

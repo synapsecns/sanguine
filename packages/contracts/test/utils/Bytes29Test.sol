@@ -53,7 +53,7 @@ abstract contract Bytes29Test is Test {
         newPayload = abi.encodePacked(
             _view.prefix(_from, 0).clone(),
             _newData,
-            _view.postfix(_view.len() - (_from + _len), 0).clone()
+            _view.sliceFrom(_from + _len, 0).clone()
         );
         assert(newPayload.length == _view.len() + _newData.length - _len);
     }

@@ -84,6 +84,14 @@ contract TestMemView is Test {
         require(v1.prefix(14, 0).equal(v2.postfix(14, 0)), "abcdffff1111ffffffffffffffff");
 
         require(v1.postfix(2, 0).equal(v2.prefix(2, 0)), "ffff");
+
+        require(v1.sliceFrom(8, 0).equal(v2.postfix(8, 0)), "ffffffffffffffff");
+
+        require(v1.sliceFrom(8, 0).equal(v2.sliceFrom(8, 0)), "ffffffffffffffff");
+
+        require(v1.prefix(14, 0).equal(v2.sliceFrom(2, 0)), "abcdffff1111ffffffffffffffff");
+
+        require(v1.sliceFrom(14, 0).equal(v2.prefix(2, 0)), "ffff");
     }
 
     function test_Slicing() public view {
