@@ -2,8 +2,8 @@
 
 pragma solidity 0.8.13;
 
-import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
-import { Auth } from "../../contracts/libs/Auth.sol";
+import { Auth } from "../../../contracts/libs/Auth.sol";
+import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
 
 contract AuthHarness {
     using TypedMemView for bytes;

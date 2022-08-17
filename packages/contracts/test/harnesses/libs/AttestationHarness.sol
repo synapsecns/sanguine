@@ -2,8 +2,8 @@
 
 pragma solidity 0.8.13;
 
-import { Attestation } from "../../contracts/libs/Attestation.sol";
-import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
+import { Attestation } from "../../../contracts/libs/Attestation.sol";
+import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
 
 contract AttestationHarness {
     using Attestation for bytes;

@@ -2,10 +2,10 @@
 
 pragma solidity 0.8.13;
 
-import { Message } from "../../contracts/libs/Message.sol";
-import { Header } from "../../contracts/libs/Header.sol";
-import { Tips } from "../../contracts/libs/Tips.sol";
-import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
+import { Message } from "../../../contracts/libs/Message.sol";
+import { Header } from "../../../contracts/libs/Header.sol";
+import { Tips } from "../../../contracts/libs/Tips.sol";
+import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
 
 contract MessageHarness {
     using Message for bytes;

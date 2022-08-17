@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import { Tips } from "../../contracts/libs/Tips.sol";
+import { Tips } from "../../../contracts/libs/Tips.sol";
 
 /**
  * @notice exposes tips methods for testing against golang
