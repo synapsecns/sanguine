@@ -23,13 +23,10 @@ abstract contract ReportHub is AbstractGuardRegistry, AbstractNotaryRegistry {
     function submitReport(bytes memory _report) external returns (bool) {
         // Check if real Guard & signature
         (address _guard, bytes29 _reportView) = _checkGuardAuth(_report);
-        // Check if fraud flag is supported,
-        // e.g. some contracts might want to accept only Fraud Reports
-        _checkFraudFlag(_reportView.reportedFraud());
         bytes29 _attestationView = _reportView.reportedAttestation();
         // Check if real Notary & signature
         address _notary = _checkNotaryAuth(_attestationView);
-        return _handleReport(_guard, _notary, _attestationView, _report);
+        return _handleReport(_guard, _notary, _attestationView, _reportView);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -37,23 +34,18 @@ abstract contract ReportHub is AbstractGuardRegistry, AbstractNotaryRegistry {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @dev Implement logic for checking the fraud flag in the child contracts.
-     * Note: contract is supposed to revert if the fraud flag is not supported.
-     */
-    function _checkFraudFlag(bool _flag) internal virtual;
-
-    /**
      * @dev Implement logic for handling the Report in the child contracts.
+     * Note: Report can have either Valid or Fraud flag, make sure to check that.
      * @param _guard            Guard address (signature&role already verified)
      * @param _notary           Notary address (signature&role already verified)
      * @param _attestationView  Memory view over reported Attestation for convenience
-     * @param _report           Payload with Report data and signature
+     * @param _reportView       Memory view over Report for convenience
      * @return TRUE if Report was handled correctly.
      */
     function _handleReport(
         address _guard,
         address _notary,
         bytes29 _attestationView,
-        bytes memory _report
+        bytes29 _reportView
     ) internal virtual returns (bool);
 }
