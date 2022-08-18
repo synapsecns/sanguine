@@ -17,7 +17,7 @@ import (
 )
 
 func (d DestinationSuite) TestDestinationSuite() {
-	// Set up contexts for both Origin and Destination, also getting owner for Destination for reassigning updater role.
+	// Set up contexts for both Origin and Destination, also getting owner for Destination for reassigning notary role.
 	txContextOrigin := d.testBackendOrigin.GetTxContext(d.GetTestContext(), nil)
 	txContextDestination := d.testBackendDestination.GetTxContext(d.GetTestContext(), d.destinationContractMetadata.OwnerPtr())
 
@@ -58,7 +58,7 @@ func (d DestinationSuite) TestDestinationSuite() {
 	)
 	Nil(d.T(), err)
 
-	// Set updater to the testing address so we can submit attestations.
+	// Set notary to the testing address so we can submit attestations.
 	tx, err = d.destinationContract.SetNotary(txContextDestination.TransactOpts, uint32(d.testBackendOrigin.GetChainID()), d.signer.Address())
 	Nil(d.T(), err)
 	d.testBackendDestination.WaitForConfirmation(d.GetTestContext(), tx)
