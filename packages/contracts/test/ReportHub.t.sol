@@ -32,7 +32,6 @@ contract ReportHubTest is SynapseTest {
     bytes internal attestationData;
     bytes internal report;
 
-    event LogFraudFlag(bool flag);
     event LogReport(address guard, address notary, bytes attestation, bytes report);
 
     function setUp() public override {
@@ -52,8 +51,6 @@ contract ReportHubTest is SynapseTest {
 
     function test_submitReport() public {
         _createTestReport(notaryPK, GUARD_PK);
-        vm.expectEmit(true, true, true, true);
-        emit LogFraudFlag(flag == Report.Flag.Fraud);
         vm.expectEmit(true, true, true, true);
         emit LogReport(guard, notary, attestation, report);
         reportHub.submitReport(report);

@@ -11,20 +11,15 @@ import { GlobalNotaryRegistryHarness } from "./GlobalNotaryRegistryHarness.sol";
 contract ReportHubHarness is ReportHub, GuardRegistryHarness, GlobalNotaryRegistryHarness {
     using TypedMemView for bytes29;
 
-    event LogFraudFlag(bool flag);
     event LogReport(address guard, address notary, bytes attestation, bytes report);
-
-    function _checkFraudFlag(bool _flag) internal override {
-        emit LogFraudFlag(_flag);
-    }
 
     function _handleReport(
         address _guard,
         address _notary,
         bytes29 _attestationView,
-        bytes memory _report
+        bytes29 _reportView
     ) internal override returns (bool) {
-        emit LogReport(_guard, _notary, _attestationView.clone(), _report);
+        emit LogReport(_guard, _notary, _attestationView.clone(), _reportView.clone());
         return true;
     }
 }
