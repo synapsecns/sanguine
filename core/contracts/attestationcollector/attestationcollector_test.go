@@ -59,7 +59,7 @@ func (a AttestationCollectorSuite) TestAttestationCollectorSuite() {
 	)
 	Nil(a.T(), err)
 
-	// Set updater to the testing address so we can submit attestations.
+	// Set notary to the testing address so we can submit attestations.
 	tx, err = a.destinationContract.SetNotary(txContextDestination.TransactOpts, uint32(a.testBackendOrigin.GetChainID()), a.signer.Address())
 	Nil(a.T(), err)
 	a.testBackendDestination.WaitForConfirmation(a.GetTestContext(), tx)
@@ -69,7 +69,7 @@ func (a AttestationCollectorSuite) TestAttestationCollectorSuite() {
 	Nil(a.T(), err)
 	a.testBackendDestination.WaitForConfirmation(a.GetTestContext(), tx)
 
-	// Set updater to the testing address so we can submit attestations.
+	// Set notary to the testing address so we can submit attestations.
 	tx, err = a.attestationContract.AddNotary(txContextAttestationCollector.TransactOpts, uint32(a.testBackendOrigin.GetChainID()), a.signer.Address())
 	Nil(a.T(), err)
 	a.testBackendDestination.WaitForConfirmation(a.GetTestContext(), tx)
