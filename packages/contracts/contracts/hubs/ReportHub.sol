@@ -24,7 +24,7 @@ abstract contract ReportHub is AbstractGuardRegistry, AbstractNotaryRegistry {
         // Check if real Guard & signature
         (address _guard, bytes29 _reportView) = _checkGuardAuth(_report);
         // Check if fraud flag is supported,
-        // e.g. Origin would want to accept only Fraud Reports
+        // e.g. some contracts might want to accept only Fraud Reports
         _checkFraudFlag(_reportView.reportedFraud());
         bytes29 _attestationView = _reportView.reportedAttestation();
         // Check if real Notary & signature
