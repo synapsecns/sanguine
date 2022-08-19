@@ -47,10 +47,16 @@ func (s Store) GetDelinquentMessages(ctx context.Context, destinationDomain uint
 	var res DispatchMessage
 	stmt := &gorm.Statement{DB: s.DB().WithContext(ctx)}
 	// Get the SQL table name of the DispatchMessage table.
-	stmt.Parse(&DispatchMessage{})
+	err := stmt.Parse(&DispatchMessage{})
+	if err != nil {
+		return nil, fmt.Errorf("could not parse dispatch message table name: %w", err)
+	}
 	dmTable := stmt.Schema.Table
 	// Get the SQL table name of the AcceptedAttestation table.
-	stmt.Parse(&AcceptedAttestation{})
+	err = stmt.Parse(&AcceptedAttestation{})
+	if err != nil {
+		return nil, fmt.Errorf("could not parse accepted attestation table name: %w", err)
+	}
 	aaTable := stmt.Schema.Table
 
 	// Run an inverse join on the nonces between dispatched messages and accepted attestations on a given destination domain.
