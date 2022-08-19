@@ -22,7 +22,7 @@ require (
 	github.com/ugorji/go/codec v1.1.7
 	github.com/vburenin/ifacemaker v1.1.0
 	go.uber.org/zap v1.19.1
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sync 7fc1605a5dde
 	gorm.io/driver/mysql v1.1.2
 	gorm.io/driver/sqlite v1.1.5
 	gorm.io/gorm v1.21.15
