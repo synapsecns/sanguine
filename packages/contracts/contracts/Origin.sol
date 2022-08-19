@@ -5,11 +5,14 @@ pragma solidity 0.8.13;
 import { Version0 } from "./Version0.sol";
 import { DomainNotaryRegistry } from "./registry/DomainNotaryRegistry.sol";
 import { GuardRegistry } from "./registry/GuardRegistry.sol";
+import { ReportHub } from "./hubs/ReportHub.sol";
 import { Attestation } from "./libs/Attestation.sol";
+import { Report } from "./libs/Report.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
+import { TypedMemView } from "./libs/TypedMemView.sol";
 import { SystemMessage } from "./libs/SystemMessage.sol";
 import { SystemContract } from "./system/SystemContract.sol";
 import { MerkleTreeManager } from "./Merkle.sol";
@@ -32,12 +35,15 @@ contract Origin is
     Version0,
     MerkleTreeManager,
     SystemContract,
+    ReportHub,
     DomainNotaryRegistry,
     GuardRegistry
 {
     // ============ Libraries ============
 
     using Attestation for bytes29;
+    using Report for bytes29;
+    using TypedMemView for bytes29;
     using MerkleLib for MerkleLib.Tree;
 
     using Tips for bytes;
@@ -98,20 +104,36 @@ contract Origin is
     );
 
     /**
-     * @notice Emitted when proof of an improper attestation is submitted,
+     * @notice Emitted when proof of an incorrect report is submitted.
+     * @param guard     Guard who signed the incorrect report
+     * @param report    Report data and signature
+     */
+    event IncorrectReport(address indexed guard, bytes report);
+
+    /**
+     * @notice Emitted when proof of an fraud attestation is submitted,
      * which sets the contract to FAILED state
-     * @param notary       Notary who signed improper attestation
+     * @param notary        Notary who signed fraud attestation
      * @param attestation   Attestation data and signature
      */
-    event ImproperAttestation(address notary, bytes attestation);
+    event FraudAttestation(address indexed notary, bytes attestation);
+
+    /**
+     * @notice Emitted when the Guard is slashed
+     * (should be paired with IncorrectReport event)
+     * @param guard     The address of the guard that signed the incorrect report
+     * @param reporter  The address of the entity that reported the guard misbehavior
+     */
+    event GuardSlashed(address indexed guard, address indexed reporter);
 
     /**
      * @notice Emitted when the Notary is slashed
-     * (should be paired with ImproperAttestation event)
-     * @param notary The address of the notary
-     * @param reporter The address of the entity that reported the notary misbehavior
+     * (should be paired with FraudAttestation event)
+     * @param notary    The address of the notary
+     * @param guard     The address of the guard that signed the fraud report
+     * @param reporter  The address of the entity that reported the notary misbehavior
      */
-    event NotarySlashed(address indexed notary, address indexed reporter);
+    event NotarySlashed(address indexed notary, address indexed guard, address indexed reporter);
 
     /**
      * @notice Emitted when the NotaryManager contract is changed
@@ -252,49 +274,88 @@ contract Origin is
         }
     }
 
-    // ============ Public Functions  ============
+    // ============ Internal Functions  ============
 
     /**
-     * @notice Check if an Attestation is an Improper Attestation;
-     * if so, slash the Notary and set the contract to FAILED state.
+     * @notice Checks if a submitted Report is a correct Report. Reported Attestation
+     * can be either valid or fraud. Report flag can also be either Valid or Fraud.
+     * Report is correct if its flag matches the Attestation validity.
+     * 1. Attestation: valid, Flag: Fraud.
+     *      Report is deemed incorrect, Guard is slashed (if they haven't been already).
+     * 2. Attestation: valid, Flag: Valid.
+     *      Report is deemed correct, no action is done.
+     * 3. Attestation: Fraud, Flag: Fraud.
+     *      Report is deemed correct, Notary is slashed (if they haven't been already).
+     * 4. Attestation: Fraud, Flag: Valid.
+     *      Report is deemed incorrect, Guard is slashed.
+     *      Note: Notary can be only slashed via a report with a Fraud flag.
      *
-     * An Improper Attestation is a (_nonce, _root) attestation that doesn't correspond with
+     * A Fraud Attestation is a (_nonce, _root) attestation that doesn't correspond with
      * the historical state of Origin contract. Either of those needs to be true:
      * - _nonce is higher than current nonce (no root exists for this nonce)
      * - _root is not equal to the historical root of _nonce
      * This would mean that message(s) that were not truly
      * dispatched on Origin were falsely included in the signed root.
      *
-     * An Improper Attestation will only be accepted as valid by the Mirror
-     * If an Improper Attestation is attempted on Origin,
-     * the Notary will be slashed immediately.
-     * If an Improper Attestation is submitted to the Mirror,
-     * it should be relayed to the Origin contract using this function
-     * in order to slash the Notary with an Improper Attestation.
+     * A Fraud Attestation will only be accepted as valid by the Mirror.
+     * If a Fraud Attestation is submitted to the Mirror, a Guard should
+     * submit a Fraud Report using Origin.submitReport()
+     * in order to slash the Notary with a Fraud Attestation.
      *
-     * @dev Reverts (and doesn't slash notary) if signature is invalid
-     * @param _attestation  Attestation data and signature
-     * @return TRUE if attestation was an Improper Attestation (implying Notary was slashed)
+     * @dev Both Notary and Guard signatures
+     * have been checked at this point (see ReportHub.sol).
+     *
+     * @param _guard            Guard address
+     * @param _notary           Notary address
+     * @param _attestationView  Memory view over reported Attestation
+     * @param _reportView       Memory view over Report
+     * @return TRUE if Report was correct (implying Guard was not slashed)
      */
-    function improperAttestation(bytes memory _attestation) public notFailed returns (bool) {
-        // This will revert if signature is not valid
-        (address _notary, bytes29 _view) = _checkNotaryAuth(_attestation);
-        uint32 _nonce = _view.attestedNonce();
-        bytes32 _root = _view.attestedRoot();
-        // Check if nonce is valid, if not => attestation is fraud
-        if (_nonce < historicalRoots.length) {
-            if (_root == historicalRoots[_nonce]) {
-                // Signed (nonce, root) attestation is valid
+    function _handleReport(
+        address _guard,
+        address _notary,
+        bytes29 _attestationView,
+        bytes29 _reportView
+    ) internal override notFailed returns (bool) {
+        uint32 _nonce = _attestationView.attestedNonce();
+        bytes32 _root = _attestationView.attestedRoot();
+        if (_isValidAttestation(_nonce, _root)) {
+            // Attestation: Valid
+            if (_reportView.reportedFraud()) {
+                // Flag: Fraud
+                // Report is incorrect, slash the Guard
+                emit IncorrectReport(_guard, _reportView.clone());
+                _slashGuard(_guard);
+                return false;
+            } else {
+                // Flag: Valid
+                // Report is correct, no action needed
+                return true;
+            }
+        } else {
+            // Attestation: Fraud
+            if (_reportView.reportedFraud()) {
+                // Flag: Fraud
+                // Report is correct, slash the Notary
+                emit FraudAttestation(_notary, _attestationView.clone());
+                _fail(_notary, _guard);
+                return true;
+            } else {
+                // Flag: Valid
+                // Report is incorrect, slash the Guard
+                // Notary can be only slashed using the Fraud flag
+                emit IncorrectReport(_guard, _reportView.clone());
+                _slashGuard(_guard);
                 return false;
             }
-            // Signed root is not the same as the historical one => attestation is fraud
         }
-        _fail(_notary);
-        emit ImproperAttestation(_notary, _attestation);
-        return true;
     }
 
-    // ============ Internal Functions  ============
+    function _isValidAttestation(uint32 _nonce, bytes32 _root) internal view returns (bool) {
+        // Check if nonce is valid, if not => attestation is fraud
+        // Check if root the same as the historical one, if not => attestation is fraud
+        return (_nonce < historicalRoots.length && _root == historicalRoots[_nonce]);
+    }
 
     /**
      * @notice Set the NotaryManager
@@ -308,9 +369,9 @@ contract Origin is
 
     /**
      * @notice Slash the Notary and set contract state to FAILED
-     * @dev Called when fraud is proven (Improper Attestation)
+     * @dev Called when fraud is proven (Fraud Attestation)
      */
-    function _fail(address _notary) internal {
+    function _fail(address _notary, address _guard) internal {
         /**
          * TODO: remove Failed state
          * @dev With the asynchronous attestations Origin is never in the FAILED state.
@@ -324,7 +385,16 @@ contract Origin is
         state = States.Failed;
         // slash Notary
         notaryManager.slashNotary(payable(msg.sender));
-        emit NotarySlashed(_notary, msg.sender);
+        emit NotarySlashed(_notary, _guard, msg.sender);
+    }
+
+    /**
+     * @notice Slash the Guard.
+     * @dev Called when guard misbehavior is proven (Incorrect Report).
+     */
+    function _slashGuard(address _guard) internal {
+        // TODO: implement actual slashing & slash only once
+        emit GuardSlashed(_guard, msg.sender);
     }
 
     /**
