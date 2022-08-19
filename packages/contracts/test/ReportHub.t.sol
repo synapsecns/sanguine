@@ -17,12 +17,6 @@ contract ReportHubTest is SynapseTest {
 
     ReportHubHarness internal reportHub;
 
-    uint256 internal constant GUARD_PK = 7331;
-    uint256 internal constant FAKE_GUARD_PK = 13377331;
-
-    address internal guard;
-    address internal fakeGuard;
-
     uint32 internal domain = 1234;
     uint32 internal nonce = 4321;
     bytes32 internal root = keccak256("root");
@@ -36,7 +30,6 @@ contract ReportHubTest is SynapseTest {
 
     function setUp() public override {
         super.setUp();
-        guard = vm.addr(GUARD_PK);
         reportHub = new ReportHubHarness();
         reportHub.addNotary(domain, notary);
         reportHub.addGuard(guard);
@@ -50,7 +43,7 @@ contract ReportHubTest is SynapseTest {
     }
 
     function test_submitReport() public {
-        _createTestReport(notaryPK, GUARD_PK);
+        _createTestReport(notaryPK, guardPK);
         vm.expectEmit(true, true, true, true);
         emit LogReport(guard, notary, attestation, report);
         reportHub.submitReport(report);
@@ -62,7 +55,7 @@ contract ReportHubTest is SynapseTest {
     }
 
     function test_submitReport_notReport() public {
-        _createTestReport(notaryPK, GUARD_PK);
+        _createTestReport(notaryPK, guardPK);
         // Exclude Guard signature from the report
         report = Report.formatReport(flag, attestation, bytes(""));
         // payload without guard signature is not a Report
@@ -71,13 +64,13 @@ contract ReportHubTest is SynapseTest {
     }
 
     function test_submitReport_notGuard() public {
-        _createTestReport(notaryPK, FAKE_GUARD_PK);
+        _createTestReport(notaryPK, fakeGuardPK);
         vm.expectRevert("Signer is not a guard");
         reportHub.submitReport(report);
     }
 
     function test_submitReport_notAttestation() public {
-        _createTestReport(notaryPK, GUARD_PK);
+        _createTestReport(notaryPK, guardPK);
         bytes memory guardSig = report.castToReport().guardSignature().clone();
         // Exclude Notary signature from the attestation
         report = Report.formatReport(flag, attestationData, guardSig);
@@ -87,7 +80,7 @@ contract ReportHubTest is SynapseTest {
     }
 
     function test_submitReport_notNotary() public {
-        _createTestReport(fakeNotaryPK, GUARD_PK);
+        _createTestReport(fakeNotaryPK, guardPK);
         vm.expectRevert("Signer is not a notary");
         reportHub.submitReport(report);
     }

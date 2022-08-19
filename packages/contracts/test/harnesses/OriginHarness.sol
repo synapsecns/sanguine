@@ -3,8 +3,9 @@
 pragma solidity 0.8.13;
 
 import { Origin } from "../../contracts/Origin.sol";
+import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
 
-contract OriginHarness is Origin {
+contract OriginHarness is Origin, GuardRegistryHarness {
     uint256 public sensitiveValue;
 
     constructor(uint32 _domain) Origin(_domain) {}
@@ -18,7 +19,7 @@ contract OriginHarness is Origin {
     }
 
     function setFailed(address _notary) public {
-        _fail(_notary);
+        _fail(_notary, address(0));
     }
 
     function destinationAndNonce(uint32 _destination, uint32 _nonce) public pure returns (uint64) {
