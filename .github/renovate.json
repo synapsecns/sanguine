@@ -3,20 +3,19 @@
     "config:base"
   ],
   "assignees": [],
-  "enabledManagers": ["gomod"],
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "excludePackagePrefixes": [],
       "matchManagers": ["gomod"],
-      "automerge": true,
+      "automerge": false,
       "postUpdateOptions": [
         "gomodTidy"
       ]
     }
   ],
-  "branchConcurrentLimit": 10,
-  "prConcurrentLimit": 10,
+  "branchConcurrentLimit": 1,
+  "prConcurrentLimit": 1,
   "git-submodules": {
     "enabled": true
   }
