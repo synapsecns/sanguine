@@ -44,6 +44,8 @@ type MonitorDB interface {
 	StoreDispatchMessage(ctx context.Context, message types.Message) error
 	// StoreAcceptedAttestation stores an accepted attestation
 	StoreAcceptedAttestation(ctx context.Context, destinationDomain uint32, attestation types.Attestation) error
+	// GetDelinquentMessage gets messages that were sent, but never received
+	GetDelinquentMessages(ctx context.Context, destinationDomain uint32) ([]types.DelinquentMessage, error)
 }
 
 // SynapseDB combines db types.
