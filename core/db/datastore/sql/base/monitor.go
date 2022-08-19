@@ -7,6 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/types"
+	"gorm.io/gorm"
 )
 
 // StoreDispatchMessage takes a message and stores the information.
@@ -44,8 +45,16 @@ func (s Store) StoreAcceptedAttestation(ctx context.Context, destinationDomain u
 func (s Store) GetDelinquentMessages(ctx context.Context, destinationDomain uint32) ([]types.DelinquentMessage, error) {
 	var delinquentMessages []types.DelinquentMessage
 	var res DispatchMessage
+	stmt := &gorm.Statement{DB: s.DB().WithContext(ctx)}
+	// Get the SQL table name of the DispatchMessage table.
+	stmt.Parse(&DispatchMessage{})
+	dmTable := stmt.Schema.Table
+	// Get the SQL table name of the AcceptedAttestation table.
+	stmt.Parse(&AcceptedAttestation{})
+	aaTable := stmt.Schema.Table
+
 	// Run an inverse join on the nonces between dispatched messages and accepted attestations on a given destination domain.
-	rows, err := s.DB().WithContext(ctx).Model(&DispatchMessage{}).Select("dispatch_messages.*").Joins("LEFT OUTER JOIN accepted_attestations ON accepted_attestations.nonce = dispatch_messages.nonce").Where("accepted_attestations.nonce IS NULL AND dispatch_messages.destination = ?", destinationDomain).Rows()
+	rows, err := s.DB().WithContext(ctx).Model(&DispatchMessage{}).Select(dmTable+".*").Joins("LEFT OUTER JOIN "+aaTable+" ON "+aaTable+".nonce = "+dmTable+".nonce").Where(aaTable+".nonce IS NULL AND "+dmTable+".destination = ?", destinationDomain).Rows()
 	if err != nil {
 		return []types.DelinquentMessage{}, fmt.Errorf("could not get rows: %w", err)
 	}
