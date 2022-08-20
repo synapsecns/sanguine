@@ -104,6 +104,13 @@ contract Origin is
     );
 
     /**
+     * @notice Emitted when a correct report on a fraud attestation is submitted.
+     * @param guard     Guard who signed the fraud report
+     * @param report    Report data and signature
+     */
+    event CorrectFraudReport(address indexed guard, bytes report);
+
+    /**
      * @notice Emitted when proof of an incorrect report is submitted.
      * @param guard     Guard who signed the incorrect report
      * @param report    Report data and signature
@@ -341,6 +348,7 @@ contract Origin is
             if (_reportView.reportedFraud()) {
                 // Flag: Fraud
                 // Report is correct, slash the Notary
+                emit CorrectFraudReport(_guard, _reportView.clone());
                 emit FraudAttestation(_notary, _attestationView.clone());
                 _fail(_notary, _guard);
                 return true;
