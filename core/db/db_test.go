@@ -46,10 +46,21 @@ func (t *DBSuite) TestRetrieveLatestNonce() {
 
 func (t *DBSuite) TestStoreMonitoring() {
 	t.RunOnAllDBs(func(testDB db.SynapseDB) {
-		header := types.NewHeader(gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32(), gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
-		tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		message := types.NewMessage(header, tips, []byte(gofakeit.Sentence(10)))
+		originDomain := gofakeit.Uint32()
+		sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		nonce := gofakeit.Uint32()
+		destinationDomain := gofakeit.Uint32()
+		recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		optimisticSeconds := gofakeit.Uint32()
+		header := types.NewHeader(originDomain, sender, nonce, destinationDomain, recipient, optimisticSeconds)
+		notaryTip := big.NewInt(gofakeit.Int64())
+		broadcasterTip := big.NewInt(gofakeit.Int64())
+		proverTip := big.NewInt(gofakeit.Int64())
+		executorTip := big.NewInt(gofakeit.Int64())
+		tips := types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip)
+		body := []byte(gofakeit.Sentence(10))
 
+		message := types.NewMessage(header, tips, body)
 		err := testDB.StoreDispatchMessage(t.GetTestContext(), message)
 		Nil(t.T(), err)
 

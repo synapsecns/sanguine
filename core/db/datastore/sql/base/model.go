@@ -92,6 +92,18 @@ type DispatchMessage struct {
 	DMDestination uint32 `gorm:"column:destination"`
 	// DMRecipient is the recipient of the message.
 	DMRecipient string `gorm:"column:recipient"`
+	// DMOptimisticSeconds is the optimistic seconds of the message.
+	DMOptimisticSeconds uint32 `gorm:"column:optimistic_seconds"`
+	// DMNotaryTip is the notary tip of the message.
+	DMNotaryTip []byte `gorm:"column:notary_tip"`
+	// DMBroadcasterTip is the broadcaster tip of the message.
+	DMBroadcasterTip []byte `gorm:"column:broadcaster_tip"`
+	// DMProverTip is the prover tip of the message.
+	DMProverTip []byte `gorm:"column:prover_tip"`
+	// DMExecutorTip is the executor tip of the message.
+	DMExecutorTip []byte `gorm:"column:executor_tip"`
+	// DMBody is the body of the message.
+	DMBody []byte `gorm:"column:body"`
 }
 
 // AcceptedAttestation is used to track every received accepted attestation over all mirrors.
