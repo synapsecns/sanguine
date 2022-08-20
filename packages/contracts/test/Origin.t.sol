@@ -145,6 +145,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
     }
 
     // ============ REPORTS ============
+    event CorrectFraudReport(address indexed guard, bytes report);
     event IncorrectReport(address indexed guard, bytes report);
     event FraudAttestation(address indexed notary, bytes attestation);
     event GuardSlashed(address indexed guard, address indexed reporter);
@@ -213,6 +214,8 @@ contract OriginTest is SynapseTestWithNotaryManager {
     function _checkFraudAttestation(uint32 nonce, bytes32 root) internal {
         (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
         (bytes memory report, ) = signFraudReport(guardPK, attestation);
+        vm.expectEmit(true, true, true, true);
+        emit CorrectFraudReport(guard, report);
         vm.expectEmit(true, true, true, true);
         emit FraudAttestation(notary, attestation);
         vm.expectEmit(true, true, true, true);
