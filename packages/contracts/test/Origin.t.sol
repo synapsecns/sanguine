@@ -295,10 +295,25 @@ contract OriginTest is SynapseTestWithNotaryManager {
         emit IncorrectReport(guard, report);
         vm.expectEmit(true, true, true, true);
         emit GuardSlashed(guard, address(this));
+        if (flag == Report.Flag.Valid) {
+            // Incorrect Valid Report means reported attestation is in fact fraud
+            vm.expectEmit(true, true, true, true);
+            emit FraudAttestation(notary, attestation);
+            vm.expectEmit(true, true, true, true);
+            // Guard doesn't get a reward for incorrect report
+            emit NotarySlashed(notary, address(0), address(this));
+        }
         // Origin should recognize this as an incorrect report on the attestation
         assertFalse(origin.submitReport(report));
-        // Origin should be in Active state
-        assertEq(uint256(origin.state()), 1);
+        if (flag == Report.Flag.Valid) {
+            // Incorrect Valid Report means reported attestation is in fact fraud
+            // Origin should be in Failed state
+            assertEq(uint256(origin.state()), 2);
+        } else {
+            // Incorrect Fraud Report means reported attestation is in fact valid
+            // Origin should be in Active state
+            assertEq(uint256(origin.state()), 1);
+        }
     }
 
     // Dispatches 4 messages, and then Notary signs latest new roots
