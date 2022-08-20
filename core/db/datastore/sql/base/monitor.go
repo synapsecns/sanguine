@@ -60,7 +60,13 @@ func (s Store) GetDelinquentMessages(ctx context.Context, destinationDomain uint
 	aaTable := stmt.Schema.Table
 
 	// Run an inverse join on the nonces between dispatched messages and accepted attestations on a given destination domain.
-	rows, err := s.DB().WithContext(ctx).Model(&DispatchMessage{}).Select(dmTable+".*").Joins("LEFT OUTER JOIN "+aaTable+" ON "+aaTable+".nonce = "+dmTable+".nonce").Where(aaTable+".nonce IS NULL AND "+dmTable+".destination = ?", destinationDomain).Rows()
+	rows, err := s.DB().
+		WithContext(ctx).
+		Model(&DispatchMessage{}).
+		Select(dmTable+".*").
+		Joins("LEFT OUTER JOIN "+aaTable+" ON "+aaTable+".nonce = "+dmTable+".nonce").
+		Where(aaTable+".nonce IS NULL AND "+dmTable+".destination = ?", destinationDomain).
+		Rows()
 	if err != nil {
 		return []types.DelinquentMessage{}, fmt.Errorf("could not get rows: %w", err)
 	}
@@ -73,7 +79,13 @@ func (s Store) GetDelinquentMessages(ctx context.Context, destinationDomain uint
 			return []types.DelinquentMessage{}, fmt.Errorf("could not scan rows: %w", err)
 		}
 		// Create a new DelinquentMessage based on the data, and append to the returned list.
-		delinquentMessage := types.NewDelinquentMessage(res.DMOrigin, common.HexToHash(res.DMSender), res.DMNonce, res.DMDestination, common.HexToHash(res.DMRecipient))
+		delinquentMessage := types.NewDelinquentMessage(
+			res.DMOrigin,
+			common.HexToHash(res.DMSender),
+			res.DMNonce,
+			res.DMDestination,
+			common.HexToHash(res.DMRecipient),
+		)
 		delinquentMessages = append(delinquentMessages, delinquentMessage)
 	}
 	return delinquentMessages, nil
