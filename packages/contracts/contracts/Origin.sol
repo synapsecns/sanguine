@@ -276,6 +276,9 @@ contract Origin is
 
     // ============ Internal Functions  ============
 
+    // TODO: handleAttestation (needs AttestationHub) for reporting
+    // a fraud attestation without a Guard signature
+
     /**
      * @notice Checks if a submitted Report is a correct Report. Reported Attestation
      * can be either valid or fraud. Report flag can also be either Valid or Fraud.
@@ -287,8 +290,9 @@ contract Origin is
      * 3. Attestation: Fraud, Flag: Fraud.
      *      Report is deemed correct, Notary is slashed (if they haven't been already).
      * 4. Attestation: Fraud, Flag: Valid.
-     *      Report is deemed incorrect, Guard is slashed.
-     *      Note: Notary can be only slashed via a report with a Fraud flag.
+     *      Report is deemed incorrect, Guard is slashed (if they haven't been already).
+     *      Notary is slashed (if they haven't been already), but Guard doesn't receive
+     *      any rewards (as their report indicated that the attestation was valid).
      *
      * A Fraud Attestation is a (_nonce, _root) attestation that doesn't correspond with
      * the historical state of Origin contract. Either of those needs to be true:
@@ -343,9 +347,11 @@ contract Origin is
             } else {
                 // Flag: Valid
                 // Report is incorrect, slash the Guard
-                // Notary can be only slashed using the Fraud flag
                 emit IncorrectReport(_guard, _reportView.clone());
                 _slashGuard(_guard);
+                emit FraudAttestation(_notary, _attestationView.clone());
+                // Guard doesn't receive anything due to Valid flag on the Report
+                _fail(_notary, address(0));
                 return false;
             }
         }
