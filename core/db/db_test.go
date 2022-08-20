@@ -63,8 +63,8 @@ func (t *DBSuite) TestStoreMonitoring() {
 func (t *DBSuite) TestGetDelinquentMessage() {
 	t.RunOnAllDBs(func(testDB db.SynapseDB) {
 		tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		var nonceRange uint32 = uint32(gofakeit.Uint8())
-		var destinationDomain uint32 = gofakeit.Uint32()
+		var nonceRange = uint32(gofakeit.Uint8())
+		var destinationDomain = gofakeit.Uint32()
 		var targetedDomain uint32
 		var delinquentNonces []uint32
 		var otherDelinquentNonces []uint32
@@ -77,6 +77,7 @@ func (t *DBSuite) TestGetDelinquentMessage() {
 			// Populate the databases of DispatchMessages and AcceptedAttestations.
 			// Use random cases for different scenarios of domains and if an attestation is stored.
 			rand.Seed(time.Now().UnixNano())
+			//nolint:gosec
 			random := rand.Intn(4)
 			switch random {
 			// Case 0 is where we use destinationDomain and store the accepted attestation
