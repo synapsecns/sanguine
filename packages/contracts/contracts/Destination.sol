@@ -4,7 +4,9 @@ pragma solidity 0.8.13;
 // ============ Internal Imports ============
 import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
 import { GuardRegistry } from "./registry/GuardRegistry.sol";
+import { ReportHub } from "./hubs/ReportHub.sol";
 import { Attestation } from "./libs/Attestation.sol";
+import { Report } from "./libs/Report.sol";
 import { Version0 } from "./Version0.sol";
 import { MirrorLib } from "./libs/Mirror.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
@@ -23,7 +25,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track merkle root state of Origin contracts on other chains,
  * prove and dispatch messages to end recipients.
  */
-contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardRegistry {
+contract Destination is Version0, SystemContract, ReportHub, GlobalNotaryRegistry, GuardRegistry {
     // ============ Libraries ============
 
     using MirrorLib for MirrorLib.Mirror;
@@ -33,6 +35,7 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
     using Attestation for bytes29;
     using Message for bytes29;
     using Header for bytes29;
+    using Report for bytes29;
 
     // ============ Public Storage ============
 
@@ -82,6 +85,13 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
         uint32 indexed nonce,
         bytes32 indexed root,
         bytes signature
+    );
+
+    event NotaryBlacklisted(
+        address indexed notary,
+        address indexed guard,
+        address indexed reporter,
+        bytes report
     );
 
     // ============ Constructor ============
@@ -346,7 +356,46 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
         }
     }
 
+    /**
+     * @notice Applies submitted Report to blacklist reported Notary,
+     * and all roots signed by this Notary. An honest Notary is incentivized to sign
+     * a valid Attestation to collect tips from the pending messages,
+     * which prevents downtime caused by root blacklisting.
+     *
+     * @dev Both Notary and Guard signatures
+     * have been checked at this point (see ReportHub.sol).
+     *
+     * @param _guard            Guard address
+     * @param _notary           Notary address
+     * @param _attestationView  Memory view over reported Attestation
+     * @param _reportView       Memory view over Report
+     * @return blacklisted      TRUE if Notary was blacklisted as a result,
+     *                          FALSE if Notary has been blacklisted earlier.
+     */
+    function _handleReport(
+        address _guard,
+        address _notary,
+        bytes29 _attestationView,
+        bytes29 _reportView
+    ) internal override returns (bool blacklisted) {
+        require(_reportView.reportedFraud(), "Not a fraud report");
+        blacklisted = _blacklistNotary(_attestationView.attestedDomain(), _notary);
+        if (blacklisted) {
+            emit NotaryBlacklisted(_notary, _guard, msg.sender, _reportView.clone());
+        }
+    }
+
     function _storeTips(bytes29 _tips) internal virtual {
         // TODO: implement storing & claiming logic
+    }
+
+    function _blacklistNotary(uint32 _domain, address _notary) internal returns (bool blacklisted) {
+        blacklisted = _isNotary(_domain, _notary);
+        if (blacklisted) {
+            // TODO: implement actual blacklisting for the roots
+            // TODO: remove records about Notary, if it was active on other domains
+            // assuming being a Notary for more than one domain is possible
+            _removeNotary(_domain, _notary);
+        }
     }
 }
