@@ -331,7 +331,7 @@ jobs:
         # Fail if files need regeneration
       - name: Add Label
         if: steps.verify-changed-files.outputs.files_changed == 'true'
-        uses: andymckay/labeler@e6c4322d0397f3240f0e7e30a33b5c5df2d39e90
+        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
           add-labels: "needs-go-generate"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -339,7 +339,7 @@ jobs:
 
       - name: Remove Label
         if: steps.verify-changed-files.outputs.files_changed != 'true'
-        uses: andymckay/labeler@e6c4322d0397f3240f0e7e30a33b5c5df2d39e90
+        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
           remove-labels: "needs-go-generate"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
