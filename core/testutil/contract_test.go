@@ -37,7 +37,7 @@ func (s *SimulatedSuite) TestDependencies() {
 		Equal(s.T(), dc.ChainID().String(), wrappedBackend.GetBigChainID().String())
 
 		deployedContracts := s.GetDeployedContractsFromRegistry(contractRegistry)
-		// make sure dependency count is equal (adding our own coract to there expected amount)
+		// make sure dependency count is equal (adding our own contract to there expected amount)
 		Equal(s.T(), len(deployedContracts), len(contract.Dependencies())+1)
 		for _, dep := range contract.Dependencies() {
 			_, hasDep := deployedContracts[dep.ID()]
