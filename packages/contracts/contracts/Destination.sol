@@ -369,6 +369,7 @@ contract Destination is Version0, SystemContract, ReportHub, GlobalNotaryRegistr
      * @param _notary           Notary address
      * @param _attestationView  Memory view over reported Attestation
      * @param _reportView       Memory view over Report
+     * @param _report           Payload with Report data and signature
      * @return blacklisted      TRUE if Notary was blacklisted as a result,
      *                          FALSE if Notary has been blacklisted earlier.
      */
@@ -376,12 +377,13 @@ contract Destination is Version0, SystemContract, ReportHub, GlobalNotaryRegistr
         address _guard,
         address _notary,
         bytes29 _attestationView,
-        bytes29 _reportView
+        bytes29 _reportView,
+        bytes memory _report
     ) internal override returns (bool blacklisted) {
         require(_reportView.reportedFraud(), "Not a fraud report");
         blacklisted = _blacklistNotary(_attestationView.attestedDomain(), _notary);
         if (blacklisted) {
-            emit NotaryBlacklisted(_notary, _guard, msg.sender, _reportView.clone());
+            emit NotaryBlacklisted(_notary, _guard, msg.sender, _report);
         }
     }
 

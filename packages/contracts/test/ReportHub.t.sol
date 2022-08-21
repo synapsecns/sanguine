@@ -26,7 +26,13 @@ contract ReportHubTest is SynapseTest {
     bytes internal attestationData;
     bytes internal report;
 
-    event LogReport(address guard, address notary, bytes attestation, bytes report);
+    event LogReport(
+        address guard,
+        address notary,
+        bytes attestation,
+        bytes reportView,
+        bytes report
+    );
 
     function setUp() public override {
         super.setUp();
@@ -45,7 +51,7 @@ contract ReportHubTest is SynapseTest {
     function test_submitReport() public {
         _createTestReport(notaryPK, guardPK);
         vm.expectEmit(true, true, true, true);
-        emit LogReport(guard, notary, attestation, report);
+        emit LogReport(guard, notary, attestation, report, report);
         reportHub.submitReport(report);
     }
 

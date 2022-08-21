@@ -26,7 +26,9 @@ abstract contract ReportHub is AbstractGuardRegistry, AbstractNotaryRegistry {
         bytes29 _attestationView = _reportView.reportedAttestation();
         // Check if real Notary & signature
         address _notary = _checkNotaryAuth(_attestationView);
-        return _handleReport(_guard, _notary, _attestationView, _reportView);
+        // Pass _reportView as the existing bytes29 pointer to report payload
+        // Pass _report to avoid extra memory copy when emitting report payload
+        return _handleReport(_guard, _notary, _attestationView, _reportView, _report);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -40,12 +42,14 @@ abstract contract ReportHub is AbstractGuardRegistry, AbstractNotaryRegistry {
      * @param _notary           Notary address (signature&role already verified)
      * @param _attestationView  Memory view over reported Attestation for convenience
      * @param _reportView       Memory view over Report for convenience
+     * @param _report           Payload with Report data and signature
      * @return TRUE if Report was handled correctly.
      */
     function _handleReport(
         address _guard,
         address _notary,
         bytes29 _attestationView,
-        bytes29 _reportView
+        bytes29 _reportView,
+        bytes memory _report
     ) internal virtual returns (bool);
 }
