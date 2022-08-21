@@ -320,13 +320,15 @@ contract Origin is
      * @param _notary           Notary address
      * @param _attestationView  Memory view over reported Attestation
      * @param _reportView       Memory view over Report
+     * @param _report           Payload with Report data and signature
      * @return TRUE if Report was correct (implying Guard was not slashed)
      */
     function _handleReport(
         address _guard,
         address _notary,
         bytes29 _attestationView,
-        bytes29 _reportView
+        bytes29 _reportView,
+        bytes memory _report
     ) internal override notFailed returns (bool) {
         uint32 _nonce = _attestationView.attestedNonce();
         bytes32 _root = _attestationView.attestedRoot();
@@ -335,7 +337,7 @@ contract Origin is
             if (_reportView.reportedFraud()) {
                 // Flag: Fraud
                 // Report is incorrect, slash the Guard
-                emit IncorrectReport(_guard, _reportView.clone());
+                emit IncorrectReport(_guard, _report);
                 _slashGuard(_guard);
                 return false;
             } else {
@@ -348,14 +350,14 @@ contract Origin is
             if (_reportView.reportedFraud()) {
                 // Flag: Fraud
                 // Report is correct, slash the Notary
-                emit CorrectFraudReport(_guard, _reportView.clone());
+                emit CorrectFraudReport(_guard, _report);
                 emit FraudAttestation(_notary, _attestationView.clone());
                 _fail(_notary, _guard);
                 return true;
             } else {
                 // Flag: Valid
                 // Report is incorrect, slash the Guard
-                emit IncorrectReport(_guard, _reportView.clone());
+                emit IncorrectReport(_guard, _report);
                 _slashGuard(_guard);
                 emit FraudAttestation(_notary, _attestationView.clone());
                 // Guard doesn't receive anything due to Valid flag on the Report
