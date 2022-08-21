@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -103,13 +104,13 @@ func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (backends.Depl
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		attestationAddress, attestationTx, collector, err := attestationcollector.DeployAttestationCollector(transactOps, backend)
 		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not deploy attesation collector: %w", err)
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy attestation collector: %w", err)
 		}
 
 		auth := a.Backend().GetTxContext(ctx, &transactOps.From)
 		initTx, err := collector.Initialize(auth.TransactOpts)
 		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not initialize attesation collector: %w", err)
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize attestation collector: %w", err)
 		}
 		a.Backend().WaitForConfirmation(ctx, initTx)
 
@@ -130,10 +131,27 @@ func NewDestinationDeployer(registry deployer.GetOnlyContractRegistry, backend b
 }
 
 // Deploy deploys the destination.
-func (r DestinationDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
-	return r.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return destination.DeployDestination(transactOps, backend, uint32(r.Backend().GetChainID()))
+func (d DestinationDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		destinationAddress, destinationTx, destination, err := destination.DeployDestination(transactOps, backend, uint32(d.Backend().GetChainID()))
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy destination: %w", err)
+		}
+
+		auth := d.Backend().GetTxContext(ctx, &transactOps.From)
+		initTx, err := destination.Initialize(auth.TransactOpts, uint32(d.Registry().Get(ctx, OriginType).ChainID().Uint64()), common.Address{})
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize destination: %w", err)
+		}
+		d.Backend().WaitForConfirmation(ctx, initTx)
+
+		return destinationAddress, destinationTx, destination, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return destination.NewDestinationRef(address, backend)
 	})
+}
+
+// Dependencies gets a list of dependencies used to deploy the destination contract.
+func (d DestinationDeployer) Dependencies() []deployer.ContractType {
+	return []deployer.ContractType{OriginType, NotaryManagerType}
 }
