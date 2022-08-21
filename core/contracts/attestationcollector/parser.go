@@ -2,12 +2,17 @@ package attestationcollector
 
 import (
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/types"
-	legacyTypes "github.com/synapsecns/synapse-node/pkg/types"
 )
+
+// init serves as a static assertion that AllEventTypes are accounted for
+func init() {
+	if len(_EventType_index)-1 != len(AllEventTypes) {
+		panic("add new events to alle vent types")
+	}
+}
 
 // Parser parses events from the attestation collector contract.
 type Parser interface {
@@ -42,7 +47,7 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 		return *eventType, true
 	}
 	// return an unknown event to avoid cases where user failed to check the event type
-	return EventType(len(legacyTypes.AllEventTypes()) + 2), false
+	return EventType(len(AllEventTypes) + 2), false
 }
 
 // ParseAttestationSubmitted parses an AttestationSubmitted event.
@@ -73,3 +78,6 @@ const (
 func (i EventType) Int() uint8 {
 	return uint8(i)
 }
+
+// AllEventTypes contains all event types
+var AllEventTypes = []EventType{AttestationSubmittedEvent}
