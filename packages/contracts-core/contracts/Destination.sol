@@ -5,6 +5,7 @@ pragma solidity 0.8.13;
 import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
 import { GuardRegistry } from "./registry/GuardRegistry.sol";
 import { ReportHub } from "./hubs/ReportHub.sol";
+import { AttestationHub } from "./hubs/AttestationHub.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { Report } from "./libs/Report.sol";
 import { Version0 } from "./Version0.sol";
@@ -25,7 +26,14 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track merkle root state of Origin contracts on other chains,
  * prove and dispatch messages to end recipients.
  */
-contract Destination is Version0, SystemContract, ReportHub, GlobalNotaryRegistry, GuardRegistry {
+contract Destination is
+    Version0,
+    SystemContract,
+    AttestationHub,
+    ReportHub,
+    GlobalNotaryRegistry,
+    GuardRegistry
+{
     // ============ Libraries ============
 
     using MirrorLib for MirrorLib.Mirror;
@@ -147,26 +155,6 @@ contract Destination is Version0, SystemContract, ReportHub, GlobalNotaryRegistr
     // TODO: getters for archived mirrors
 
     // ============ External Functions ============
-
-    /**
-     * @notice Called by external agent. Submits the signed attestation,
-     * marks root's allowable confirmation time, and emits an `AttestationAccepted` event.
-     * @dev Reverts if signature is invalid.
-     * @param _attestation  Attestation data and signature
-     */
-    function submitAttestation(bytes memory _attestation) external {
-        (, bytes29 _view) = _checkNotaryAuth(_attestation);
-        uint32 remoteDomain = _view.attestedDomain();
-        require(remoteDomain != localDomain, "Attestation refers to local chain");
-        uint32 nonce = _view.attestedNonce();
-        MirrorLib.Mirror storage mirror = allMirrors[activeMirrors[remoteDomain]];
-        require(nonce > mirror.nonce, "Attestation older than current state");
-        bytes32 newRoot = _view.attestedRoot();
-        mirror.setConfirmAt(newRoot, block.timestamp);
-        // update nonce
-        mirror.setNonce(nonce);
-        emit AttestationAccepted(remoteDomain, nonce, newRoot, _view.notarySignature().clone());
-    }
 
     /**
      * @notice First attempts to prove the validity of provided formatted
@@ -354,6 +342,37 @@ contract Destination is Version0, SystemContract, ReportHub, GlobalNotaryRegistr
             // Cast bytes32 to address otherwise
             recipient = TypeCasts.bytes32ToAddress(_recipient);
         }
+    }
+
+    /**
+     * @notice Called by external agent. Submits the signed attestation,
+     * marks root's allowable confirmation time, and emits an `AttestationAccepted` event.
+     *
+     * @dev Notary signature has been checked at this point (see ReportHub.sol).
+     * @param _attestationView  Memory view over reported Attestation for convenience
+     * @return TRUE if Attestation was accepted (implying a new root was added to Mirror).
+     */
+    function _handleAttestation(
+        address,
+        bytes29 _attestationView,
+        bytes memory
+    ) internal override returns (bool) {
+        uint32 remoteDomain = _attestationView.attestedDomain();
+        require(remoteDomain != localDomain, "Attestation refers to local chain");
+        uint32 nonce = _attestationView.attestedNonce();
+        MirrorLib.Mirror storage mirror = allMirrors[activeMirrors[remoteDomain]];
+        require(nonce > mirror.nonce, "Attestation older than current state");
+        bytes32 newRoot = _attestationView.attestedRoot();
+        mirror.setConfirmAt(newRoot, block.timestamp);
+        // update nonce
+        mirror.setNonce(nonce);
+        emit AttestationAccepted(
+            remoteDomain,
+            nonce,
+            newRoot,
+            _attestationView.notarySignature().clone()
+        );
+        return true;
     }
 
     /**

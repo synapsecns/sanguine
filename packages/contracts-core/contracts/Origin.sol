@@ -5,6 +5,7 @@ pragma solidity 0.8.13;
 import { Version0 } from "./Version0.sol";
 import { DomainNotaryRegistry } from "./registry/DomainNotaryRegistry.sol";
 import { GuardRegistry } from "./registry/GuardRegistry.sol";
+import { AttestationHub } from "./hubs/AttestationHub.sol";
 import { ReportHub } from "./hubs/ReportHub.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { Report } from "./libs/Report.sol";
@@ -35,6 +36,7 @@ contract Origin is
     Version0,
     MerkleTreeManager,
     SystemContract,
+    AttestationHub,
     ReportHub,
     DomainNotaryRegistry,
     GuardRegistry
@@ -283,8 +285,49 @@ contract Origin is
 
     // ============ Internal Functions  ============
 
-    // TODO: handleAttestation (needs AttestationHub) for reporting
-    // a fraud attestation without a Guard signature
+    /**
+     * @notice Checks is a submitted Attestation is a valid Attestation.
+     * Attestation can be either Fraud or Valid.
+     * A Fraud Attestation is a (_nonce, _root) attestation that doesn't correspond with
+     * the historical state of Origin contract. Either of those needs to be true:
+     * - _nonce is higher than current nonce (no root exists for this nonce)
+     * - _root is not equal to the historical root of _nonce
+     * This would mean that message(s) that were not truly
+     * dispatched on Origin were falsely included in the signed root.
+     *
+     * A Fraud Attestation will only be accepted as valid by the Mirror.
+     * If a Fraud Attestation is submitted to the Mirror, a Guard should
+     * submit a Fraud Report using Origin.submitReport()
+     * in order to slash the Notary with a Fraud Attestation.
+     *
+     * @dev Both Notary and Guard signatures
+     * have been checked at this point (see ReportHub.sol).
+     *
+     * @param _notary           Notary address (signature&role already verified)
+     * @param _attestationView  Memory view over reported Attestation for convenience
+     * @param _attestation      Payload with Attestation data and signature
+     * @return isValid          TRUE if Attestation was valid (implying Notary was not slashed).
+     */
+    function _handleAttestation(
+        address _notary,
+        bytes29 _attestationView,
+        bytes memory _attestation
+    ) internal override returns (bool isValid) {
+        uint32 _nonce = _attestationView.attestedNonce();
+        bytes32 _root = _attestationView.attestedRoot();
+        isValid = _isValidAttestation(_nonce, _root);
+        if (!isValid) {
+            emit FraudAttestation(_notary, _attestation);
+            // Guard doesn't receive anything, as Notary wasn't slashed using the Fraud Report
+            _fail(_notary, address(0));
+            /**
+             * TODO: design incentives for the reporter in a way, where they get less
+             * by reporting directly instead of using a correct Fraud Report.
+             * That will allow Guards to focus on Report signing and don't worry
+             * about submitReport (whether their own or outsourced) txs being frontrun.
+             */
+        }
+    }
 
     /**
      * @notice Checks if a submitted Report is a correct Report. Reported Attestation
