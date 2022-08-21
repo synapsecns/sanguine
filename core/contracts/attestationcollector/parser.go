@@ -7,7 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/core/types"
 )
 
-// init serves as a static assertion that AllEventTypes are accounted for
+// init serves as a static assertion that AllEventTypes are accounted for.
 func init() {
 	if len(_EventType_index)-1 != len(AllEventTypes) {
 		panic("add new events to alle vent types")
@@ -79,5 +79,5 @@ func (i EventType) Int() uint8 {
 	return uint8(i)
 }
 
-// AllEventTypes contains all event types
+// AllEventTypes contains all event types.
 var AllEventTypes = []EventType{AttestationSubmittedEvent}
