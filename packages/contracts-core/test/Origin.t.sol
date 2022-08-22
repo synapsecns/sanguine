@@ -319,6 +319,77 @@ contract OriginTest is SynapseTestWithNotaryManager {
         }
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SUBMIT ATTESTATION                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_submitAttestation_valid() public {
+        test_dispatch();
+        uint32 nonce = 1;
+        bytes32 root = origin.root();
+        (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
+        // Submit a valid attestation
+        assertTrue(origin.submitAttestation(attestation));
+        // Origin should be in Active state
+        assertEq(uint256(origin.state()), 1);
+    }
+
+    function test_submitAttestation_wrongDomain() public {
+        uint32 nonce = 42;
+        bytes32 root = "very real much wow";
+        // Any signed attestation from another chain should be rejected
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, root);
+        vm.expectRevert("Wrong domain");
+        origin.submitAttestation(attestation);
+    }
+
+    function test_submitAttestation_notNotary() public {
+        uint32 nonce = 42;
+        bytes32 root = "very real much wow";
+        (bytes memory attestation, ) = signOriginAttestation(fakeNotaryPK, nonce, root);
+        vm.expectRevert("Signer is not a notary");
+        origin.submitAttestation(attestation);
+    }
+
+    function test_submitAttestation_fraud_bigNonce() public {
+        test_dispatch();
+        uint32 nonce = 2;
+        bytes32 root = origin.root();
+        // This root exists, but with nonce = 1
+        // Nonce = 2 doesn't exist yet
+        _submitFraudAttestation(nonce, root);
+    }
+
+    function test_submitAttestation_fraud_incorrectNonce() public {
+        test_dispatch();
+        test_dispatch();
+        uint32 nonce = 1;
+        bytes32 root = origin.root();
+        // This root exists, but with nonce = 2
+        // nonce = 1 exists, with a different Merkle root
+        _submitFraudAttestation(nonce, root);
+    }
+
+    function test_submitAttestation_fraud_incorrectRoot() public {
+        test_dispatch();
+        uint32 nonce = 1;
+        bytes32 root = "this is clearly fraud";
+        // nonce = 1 exists, with a different Merkle root
+        _submitFraudAttestation(nonce, root);
+    }
+
+    function _submitFraudAttestation(uint32 nonce, bytes32 root) internal {
+        (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
+        vm.expectEmit(true, true, true, true);
+        emit FraudAttestation(notary, attestation);
+        vm.expectEmit(true, true, true, true);
+        emit NotarySlashed(notary, address(0), address(this));
+        // False means that attestation was not Valid (i.e. Fraud)
+        assertFalse(origin.submitAttestation(attestation));
+        // Origin should be in Failed state
+        assertEq(uint256(origin.state()), 2);
+    }
+
     // Dispatches 4 messages, and then Notary signs latest new roots
     function test_suggestAttestation() public {
         test_dispatch();
