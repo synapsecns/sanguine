@@ -19,7 +19,7 @@ type ChainConfig struct {
 	Contracts ContractConfigs `toml:"Contracts"`
 }
 
-// ChainConfigs contains an array of ChainConfigs
+// ChainConfigs contains an array of ChainConfigs.
 type ChainConfigs []ChainConfig
 
 // IsValid validates the chain config by asserting no two chains appear twice.
