@@ -1,7 +1,9 @@
 name: Yaml Lint
 on: [push]  # yamllint disable-line rule:truthy
 jobs:
-  lintAllTheThings:
+  # TODO: add editor config linter
+  # https://github.com/editorconfig-checker/editorconfig-checker#continuous-integration
+  yaml:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
