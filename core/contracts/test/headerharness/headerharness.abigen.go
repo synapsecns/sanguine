@@ -31,7 +31,7 @@ var (
 // HeaderMetaData contains all meta data concerning the Header contract.
 var HeaderMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220cca661dcff00a2bd02b2d5a6ab07b780121cb8612b60f83f449cbfdb8d2cfa8864736f6c634300080d0033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220bcdcf3faa01b2d5d5bfbc9b6800fad2329ba8062447fe50a7ac7750346873fb264736f6c634300080d0033",
 }
 
 // HeaderABI is the input ABI used to generate the binding from.
@@ -203,25 +203,20 @@ func (_Header *HeaderTransactorRaw) Transact(opts *bind.TransactOpts, method str
 
 // HeaderHarnessMetaData contains all meta data concerning the HeaderHarness contract.
 var HeaderHarnessMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_header\",\"type\":\"bytes29\"}],\"name\":\"destination\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_destination\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_recipient\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_optimisticSeconds\",\"type\":\"uint32\"}],\"name\":\"formatHeader\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"headerVersion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_header\",\"type\":\"bytes29\"}],\"name\":\"headerVersion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_header\",\"type\":\"bytes29\"}],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetDestination\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetOptimisticSeconds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetOrigin\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetRecipient\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetSender\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_header\",\"type\":\"bytes29\"}],\"name\":\"optimisticSeconds\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_header\",\"type\":\"bytes29\"}],\"name\":\"origin\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_header\",\"type\":\"bytes29\"}],\"name\":\"recipient\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes29\",\"name\":\"_header\",\"type\":\"bytes29\"}],\"name\":\"sender\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_destination\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_recipient\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_optimisticSeconds\",\"type\":\"uint32\"}],\"name\":\"formatHeader\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"headerLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"headerVersion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetDestination\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetOptimisticSeconds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetOrigin\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetRecipient\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetSender\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetVersion\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"11cd4add": "destination(bytes29)",
 		"ac124002": "formatHeader(uint32,bytes32,uint32,uint32,bytes32,uint32)",
+		"80bfe8a3": "headerLength()",
 		"5cf682c6": "headerVersion()",
-		"ae2ab89f": "headerVersion(bytes29)",
-		"58c8a98f": "nonce(bytes29)",
 		"d2c4428a": "offsetDestination()",
 		"569e1eaf": "offsetNonce()",
 		"4155c3d5": "offsetOptimisticSeconds()",
 		"320bfc44": "offsetOrigin()",
 		"a2ce1f35": "offsetRecipient()",
 		"07fd670d": "offsetSender()",
-		"9253ae77": "optimisticSeconds(bytes29)",
-		"a9f877ad": "origin(bytes29)",
-		"418fad6d": "recipient(bytes29)",
-		"a0d41e58": "sender(bytes29)",
+		"0c096e8d": "offsetVersion()",
 	},
-	Bin: "0x608060405234801561001057600080fd5b50610d2e806100206000396000f3fe608060405234801561001057600080fd5b50600436106100f55760003560e01c80635cf682c611610097578063a9f877ad11610066578063a9f877ad146101b6578063ac124002146101c9578063ae2ab89f1461027e578063d2c4428a1461029157600080fd5b80635cf682c6146101735780639253ae7714610189578063a0d41e581461019c578063a2ce1f35146101af57600080fd5b80634155c3d5116100d35780634155c3d51461013f578063418fad6d14610146578063569e1eaf1461015957806358c8a98f1461016057600080fd5b806307fd670d146100fa57806311cd4add14610110578063320bfc4414610138575b600080fd5b60065b6040519081526020015b60405180910390f35b61012361011e366004610b42565b610298565b60405163ffffffff9091168152602001610107565b60026100fd565b604e6100fd565b6100fd610154366004610b42565b6102a9565b60266100fd565b61012361016e366004610b42565b6102b4565b60015b60405161ffff9091168152602001610107565b610123610197366004610b42565b6102bf565b6100fd6101aa366004610b42565b6102ca565b602e6100fd565b6101236101c4366004610b42565b6102d5565b6102716101d7366004610b81565b604080517e0100000000000000000000000000000000000000000000000000000000000060208201527fffffffff0000000000000000000000000000000000000000000000000000000060e098891b81166022830152602682019790975294871b8616604686015292861b8516604a850152604e84019190915290931b909116606e82015281518082036052018152607290910190915290565b6040516101079190610c52565b61017661028c366004610b42565b6102e0565b602a6100fd565b60006102a3826102eb565b92915050565b60006102a38261031e565b60006102a38261033f565b60006102a382610360565b60006102a382610381565b60006102a3826103a2565b60006102a3826103c3565b60008161030160015b62ffffff198316906103e4565b5061031562ffffff198416602a6004610508565b91505b50919050565b60008161032b60016102f4565b5061031562ffffff198416602e602061053a565b60008161034c60016102f4565b5061031562ffffff19841660266004610508565b60008161036d60016102f4565b5061031562ffffff198416604e6004610508565b60008161038e60016102f4565b5061031562ffffff1984166006602061053a565b6000816103af60016102f4565b5061031562ffffff19841660026004610508565b6000816103d060016102f4565b5061031562ffffff19841660006002610508565b60006103f0838361072c565b61050157600061040f6104038560d81c90565b64ffffffffff1661074f565b91505060006104248464ffffffffff1661074f565b6040517f5479706520617373657274696f6e206661696c65642e20476f7420307800000060208201527fffffffffffffffffffff0000000000000000000000000000000000000000000060b086811b8216603d8401527f2e20457870656374656420307800000000000000000000000000000000000000604784015283901b16605482015290925060009150605e016040516020818303038152906040529050806040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016104f89190610c52565b60405180910390fd5b5090919050565b6000610515826020610c94565b610520906008610cb7565b60ff1661052e85858561053a565b901c90505b9392505050565b60008160ff1660000361054f57506000610533565b6105678460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff1661058260ff841685610ce0565b1115610614576105e16105a38560781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff166105c98660181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16858560ff16610839565b6040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016104f89190610c52565b60208260ff1611156106a8576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603a60248201527f54797065644d656d566965772f696e646578202d20417474656d70746564207460448201527f6f20696e646578206d6f7265207468616e20333220627974657300000000000060648201526084016104f8565b6008820260006106c68660781c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16905060007f80000000000000000000000000000000000000000000000000000000000000007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff84011d91909501511695945050505050565b60008164ffffffffff166107408460d81c90565b64ffffffffff16149392505050565b600080601f5b600f8160ff1611156107c257600061076e826008610cb7565b60ff1685901c905061077f816109c9565b61ffff16841793508160ff1660101461079a57601084901b93505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01610755565b50600f5b60ff8160ff1610156108335760006107df826008610cb7565b60ff1685901c90506107f0816109c9565b61ffff16831792508160ff1660001461080b57601083901b92505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff016107c6565b50915091565b606060006108468661074f565b91505060006108548661074f565b91505060006108628661074f565b91505060006108708661074f565b604080517f54797065644d656d566965772f696e646578202d204f76657272616e2074686560208201527f20766965772e20536c6963652069732061742030780000000000000000000000818301527fffffffffffff000000000000000000000000000000000000000000000000000060d098891b811660558301527f2077697468206c656e6774682030780000000000000000000000000000000000605b830181905297891b8116606a8301527f2e20417474656d7074656420746f20696e646578206174206f6666736574203060708301527f7800000000000000000000000000000000000000000000000000000000000000609083015295881b861660918201526097810196909652951b90921660a684015250507f2e0000000000000000000000000000000000000000000000000000000000000060ac8201528151808203608d01815260ad90910190915295945050505050565b60006109db60048360ff16901c6109fb565b60ff1661ffff919091161760081b6109f2826109fb565b60ff1617919050565b600060f08083179060ff82169003610a165750603092915050565b8060ff1660f103610a2a5750603192915050565b8060ff1660f203610a3e5750603292915050565b8060ff1660f303610a525750603392915050565b8060ff1660f403610a665750603492915050565b8060ff1660f503610a7a5750603592915050565b8060ff1660f603610a8e5750603692915050565b8060ff1660f703610aa25750603792915050565b8060ff1660f803610ab65750603892915050565b8060ff1660f903610aca5750603992915050565b8060ff1660fa03610ade5750606192915050565b8060ff1660fb03610af25750606292915050565b8060ff1660fc03610b065750606392915050565b8060ff1660fd03610b1a5750606492915050565b8060ff1660fe03610b2e5750606592915050565b8060ff1660ff036103185750606692915050565b600060208284031215610b5457600080fd5b813562ffffff198116811461053357600080fd5b803563ffffffff81168114610b7c57600080fd5b919050565b60008060008060008060c08789031215610b9a57600080fd5b610ba387610b68565b955060208701359450610bb860408801610b68565b9350610bc660608801610b68565b925060808701359150610bdb60a08801610b68565b90509295509295509295565b6000815180845260005b81811015610c0d57602081850181015186830182015201610bf1565b81811115610c1f576000602083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b6020815260006105336020830184610be7565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b600060ff821660ff841680821015610cae57610cae610c65565b90039392505050565b600060ff821660ff84168160ff0481118215151615610cd857610cd8610c65565b029392505050565b60008219821115610cf357610cf3610c65565b50019056fea2646970667358221220184e1782f0ad7fbdf6bfe80b85d869f6fe903ec3e4517a9478a6a6f4b91929c864736f6c634300080d0033",
+	Bin: "0x608060405234801561001057600080fd5b506102f6806100206000396000f3fe608060405234801561001057600080fd5b50600436106100be5760003560e01c80635cf682c611610076578063a2ce1f351161005b578063a2ce1f351461010b578063ac12400214610112578063d2c4428a146101c757600080fd5b80635cf682c6146100f557806380bfe8a31461010457600080fd5b8063320bfc44116100a7578063320bfc44146100e05780634155c3d5146100e7578063569e1eaf146100ee57600080fd5b806307fd670d146100c35780630c096e8d146100d9575b600080fd5b60065b6040519081526020015b60405180910390f35b60006100c6565b60026100c6565b604e6100c6565b60266100c6565b604051600181526020016100d0565b60526100c6565b602e6100c6565b6101ba6101203660046101e7565b604080517e0100000000000000000000000000000000000000000000000000000000000060208201527fffffffff0000000000000000000000000000000000000000000000000000000060e098891b81166022830152602682019790975294871b8616604686015292861b8516604a850152604e84019190915290931b909116606e82015281518082036052018152607290910190915290565b6040516100d0919061024d565b602a6100c6565b803563ffffffff811681146101e257600080fd5b919050565b60008060008060008060c0878903121561020057600080fd5b610209876101ce565b95506020870135945061021e604088016101ce565b935061022c606088016101ce565b92506080870135915061024160a088016101ce565b90509295509295509295565b600060208083528351808285015260005b8181101561027a5785810183015185820160400152820161025e565b8181111561028c576000604083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01692909201604001939250505056fea2646970667358221220b6505692ba604657c53702ed85372e0a3a943eedfd0aedf561201e0ab649557964736f6c634300080d0033",
 }
 
 // HeaderHarnessABI is the input ABI used to generate the binding from.
@@ -395,37 +390,6 @@ func (_HeaderHarness *HeaderHarnessTransactorRaw) Transact(opts *bind.TransactOp
 	return _HeaderHarness.Contract.contract.Transact(opts, method, params...)
 }
 
-// Destination is a free data retrieval call binding the contract method 0x11cd4add.
-//
-// Solidity: function destination(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessCaller) Destination(opts *bind.CallOpts, _header [29]byte) (uint32, error) {
-	var out []interface{}
-	err := _HeaderHarness.contract.Call(opts, &out, "destination", _header)
-
-	if err != nil {
-		return *new(uint32), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint32)).(*uint32)
-
-	return out0, err
-
-}
-
-// Destination is a free data retrieval call binding the contract method 0x11cd4add.
-//
-// Solidity: function destination(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessSession) Destination(_header [29]byte) (uint32, error) {
-	return _HeaderHarness.Contract.Destination(&_HeaderHarness.CallOpts, _header)
-}
-
-// Destination is a free data retrieval call binding the contract method 0x11cd4add.
-//
-// Solidity: function destination(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessCallerSession) Destination(_header [29]byte) (uint32, error) {
-	return _HeaderHarness.Contract.Destination(&_HeaderHarness.CallOpts, _header)
-}
-
 // FormatHeader is a free data retrieval call binding the contract method 0xac124002.
 //
 // Solidity: function formatHeader(uint32 _origin, bytes32 _sender, uint32 _nonce, uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds) pure returns(bytes)
@@ -457,6 +421,37 @@ func (_HeaderHarness *HeaderHarnessCallerSession) FormatHeader(_origin uint32, _
 	return _HeaderHarness.Contract.FormatHeader(&_HeaderHarness.CallOpts, _origin, _sender, _nonce, _destination, _recipient, _optimisticSeconds)
 }
 
+// HeaderLength is a free data retrieval call binding the contract method 0x80bfe8a3.
+//
+// Solidity: function headerLength() pure returns(uint256)
+func (_HeaderHarness *HeaderHarnessCaller) HeaderLength(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _HeaderHarness.contract.Call(opts, &out, "headerLength")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// HeaderLength is a free data retrieval call binding the contract method 0x80bfe8a3.
+//
+// Solidity: function headerLength() pure returns(uint256)
+func (_HeaderHarness *HeaderHarnessSession) HeaderLength() (*big.Int, error) {
+	return _HeaderHarness.Contract.HeaderLength(&_HeaderHarness.CallOpts)
+}
+
+// HeaderLength is a free data retrieval call binding the contract method 0x80bfe8a3.
+//
+// Solidity: function headerLength() pure returns(uint256)
+func (_HeaderHarness *HeaderHarnessCallerSession) HeaderLength() (*big.Int, error) {
+	return _HeaderHarness.Contract.HeaderLength(&_HeaderHarness.CallOpts)
+}
+
 // HeaderVersion is a free data retrieval call binding the contract method 0x5cf682c6.
 //
 // Solidity: function headerVersion() pure returns(uint16)
@@ -486,68 +481,6 @@ func (_HeaderHarness *HeaderHarnessSession) HeaderVersion() (uint16, error) {
 // Solidity: function headerVersion() pure returns(uint16)
 func (_HeaderHarness *HeaderHarnessCallerSession) HeaderVersion() (uint16, error) {
 	return _HeaderHarness.Contract.HeaderVersion(&_HeaderHarness.CallOpts)
-}
-
-// HeaderVersion0 is a free data retrieval call binding the contract method 0xae2ab89f.
-//
-// Solidity: function headerVersion(bytes29 _header) pure returns(uint16)
-func (_HeaderHarness *HeaderHarnessCaller) HeaderVersion0(opts *bind.CallOpts, _header [29]byte) (uint16, error) {
-	var out []interface{}
-	err := _HeaderHarness.contract.Call(opts, &out, "headerVersion0", _header)
-
-	if err != nil {
-		return *new(uint16), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint16)).(*uint16)
-
-	return out0, err
-
-}
-
-// HeaderVersion0 is a free data retrieval call binding the contract method 0xae2ab89f.
-//
-// Solidity: function headerVersion(bytes29 _header) pure returns(uint16)
-func (_HeaderHarness *HeaderHarnessSession) HeaderVersion0(_header [29]byte) (uint16, error) {
-	return _HeaderHarness.Contract.HeaderVersion0(&_HeaderHarness.CallOpts, _header)
-}
-
-// HeaderVersion0 is a free data retrieval call binding the contract method 0xae2ab89f.
-//
-// Solidity: function headerVersion(bytes29 _header) pure returns(uint16)
-func (_HeaderHarness *HeaderHarnessCallerSession) HeaderVersion0(_header [29]byte) (uint16, error) {
-	return _HeaderHarness.Contract.HeaderVersion0(&_HeaderHarness.CallOpts, _header)
-}
-
-// Nonce is a free data retrieval call binding the contract method 0x58c8a98f.
-//
-// Solidity: function nonce(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessCaller) Nonce(opts *bind.CallOpts, _header [29]byte) (uint32, error) {
-	var out []interface{}
-	err := _HeaderHarness.contract.Call(opts, &out, "nonce", _header)
-
-	if err != nil {
-		return *new(uint32), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint32)).(*uint32)
-
-	return out0, err
-
-}
-
-// Nonce is a free data retrieval call binding the contract method 0x58c8a98f.
-//
-// Solidity: function nonce(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessSession) Nonce(_header [29]byte) (uint32, error) {
-	return _HeaderHarness.Contract.Nonce(&_HeaderHarness.CallOpts, _header)
-}
-
-// Nonce is a free data retrieval call binding the contract method 0x58c8a98f.
-//
-// Solidity: function nonce(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessCallerSession) Nonce(_header [29]byte) (uint32, error) {
-	return _HeaderHarness.Contract.Nonce(&_HeaderHarness.CallOpts, _header)
 }
 
 // OffsetDestination is a free data retrieval call binding the contract method 0xd2c4428a.
@@ -736,147 +669,54 @@ func (_HeaderHarness *HeaderHarnessCallerSession) OffsetSender() (*big.Int, erro
 	return _HeaderHarness.Contract.OffsetSender(&_HeaderHarness.CallOpts)
 }
 
-// OptimisticSeconds is a free data retrieval call binding the contract method 0x9253ae77.
+// OffsetVersion is a free data retrieval call binding the contract method 0x0c096e8d.
 //
-// Solidity: function optimisticSeconds(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessCaller) OptimisticSeconds(opts *bind.CallOpts, _header [29]byte) (uint32, error) {
+// Solidity: function offsetVersion() pure returns(uint256)
+func (_HeaderHarness *HeaderHarnessCaller) OffsetVersion(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _HeaderHarness.contract.Call(opts, &out, "optimisticSeconds", _header)
+	err := _HeaderHarness.contract.Call(opts, &out, "offsetVersion")
 
 	if err != nil {
-		return *new(uint32), err
+		return *new(*big.Int), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(uint32)).(*uint32)
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
 
 }
 
-// OptimisticSeconds is a free data retrieval call binding the contract method 0x9253ae77.
+// OffsetVersion is a free data retrieval call binding the contract method 0x0c096e8d.
 //
-// Solidity: function optimisticSeconds(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessSession) OptimisticSeconds(_header [29]byte) (uint32, error) {
-	return _HeaderHarness.Contract.OptimisticSeconds(&_HeaderHarness.CallOpts, _header)
+// Solidity: function offsetVersion() pure returns(uint256)
+func (_HeaderHarness *HeaderHarnessSession) OffsetVersion() (*big.Int, error) {
+	return _HeaderHarness.Contract.OffsetVersion(&_HeaderHarness.CallOpts)
 }
 
-// OptimisticSeconds is a free data retrieval call binding the contract method 0x9253ae77.
+// OffsetVersion is a free data retrieval call binding the contract method 0x0c096e8d.
 //
-// Solidity: function optimisticSeconds(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessCallerSession) OptimisticSeconds(_header [29]byte) (uint32, error) {
-	return _HeaderHarness.Contract.OptimisticSeconds(&_HeaderHarness.CallOpts, _header)
+// Solidity: function offsetVersion() pure returns(uint256)
+func (_HeaderHarness *HeaderHarnessCallerSession) OffsetVersion() (*big.Int, error) {
+	return _HeaderHarness.Contract.OffsetVersion(&_HeaderHarness.CallOpts)
 }
 
-// Origin is a free data retrieval call binding the contract method 0xa9f877ad.
-//
-// Solidity: function origin(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessCaller) Origin(opts *bind.CallOpts, _header [29]byte) (uint32, error) {
-	var out []interface{}
-	err := _HeaderHarness.contract.Call(opts, &out, "origin", _header)
-
-	if err != nil {
-		return *new(uint32), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint32)).(*uint32)
-
-	return out0, err
-
-}
-
-// Origin is a free data retrieval call binding the contract method 0xa9f877ad.
-//
-// Solidity: function origin(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessSession) Origin(_header [29]byte) (uint32, error) {
-	return _HeaderHarness.Contract.Origin(&_HeaderHarness.CallOpts, _header)
-}
-
-// Origin is a free data retrieval call binding the contract method 0xa9f877ad.
-//
-// Solidity: function origin(bytes29 _header) pure returns(uint32)
-func (_HeaderHarness *HeaderHarnessCallerSession) Origin(_header [29]byte) (uint32, error) {
-	return _HeaderHarness.Contract.Origin(&_HeaderHarness.CallOpts, _header)
-}
-
-// Recipient is a free data retrieval call binding the contract method 0x418fad6d.
-//
-// Solidity: function recipient(bytes29 _header) pure returns(bytes32)
-func (_HeaderHarness *HeaderHarnessCaller) Recipient(opts *bind.CallOpts, _header [29]byte) ([32]byte, error) {
-	var out []interface{}
-	err := _HeaderHarness.contract.Call(opts, &out, "recipient", _header)
-
-	if err != nil {
-		return *new([32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
-
-	return out0, err
-
-}
-
-// Recipient is a free data retrieval call binding the contract method 0x418fad6d.
-//
-// Solidity: function recipient(bytes29 _header) pure returns(bytes32)
-func (_HeaderHarness *HeaderHarnessSession) Recipient(_header [29]byte) ([32]byte, error) {
-	return _HeaderHarness.Contract.Recipient(&_HeaderHarness.CallOpts, _header)
-}
-
-// Recipient is a free data retrieval call binding the contract method 0x418fad6d.
-//
-// Solidity: function recipient(bytes29 _header) pure returns(bytes32)
-func (_HeaderHarness *HeaderHarnessCallerSession) Recipient(_header [29]byte) ([32]byte, error) {
-	return _HeaderHarness.Contract.Recipient(&_HeaderHarness.CallOpts, _header)
-}
-
-// Sender is a free data retrieval call binding the contract method 0xa0d41e58.
-//
-// Solidity: function sender(bytes29 _header) pure returns(bytes32)
-func (_HeaderHarness *HeaderHarnessCaller) Sender(opts *bind.CallOpts, _header [29]byte) ([32]byte, error) {
-	var out []interface{}
-	err := _HeaderHarness.contract.Call(opts, &out, "sender", _header)
-
-	if err != nil {
-		return *new([32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
-
-	return out0, err
-
-}
-
-// Sender is a free data retrieval call binding the contract method 0xa0d41e58.
-//
-// Solidity: function sender(bytes29 _header) pure returns(bytes32)
-func (_HeaderHarness *HeaderHarnessSession) Sender(_header [29]byte) ([32]byte, error) {
-	return _HeaderHarness.Contract.Sender(&_HeaderHarness.CallOpts, _header)
-}
-
-// Sender is a free data retrieval call binding the contract method 0xa0d41e58.
-//
-// Solidity: function sender(bytes29 _header) pure returns(bytes32)
-func (_HeaderHarness *HeaderHarnessCallerSession) Sender(_header [29]byte) ([32]byte, error) {
-	return _HeaderHarness.Contract.Sender(&_HeaderHarness.CallOpts, _header)
-}
-
-// MessageMetaData contains all meta data concerning the Message contract.
-var MessageMetaData = &bind.MetaData{
+// SynapseTypesMetaData contains all meta data concerning the SynapseTypes contract.
+var SynapseTypesMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220c48eed3d098fbdbe1f5d9f754ebf87f69f47b0ab3829cbef69c7e60454d8b13164736f6c634300080d0033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212209ef51f2d9d1e6ada5f3c6457da8679b3ec74bba992011606c11a4e425cc3308f64736f6c634300080d0033",
 }
 
-// MessageABI is the input ABI used to generate the binding from.
-// Deprecated: Use MessageMetaData.ABI instead.
-var MessageABI = MessageMetaData.ABI
+// SynapseTypesABI is the input ABI used to generate the binding from.
+// Deprecated: Use SynapseTypesMetaData.ABI instead.
+var SynapseTypesABI = SynapseTypesMetaData.ABI
 
-// MessageBin is the compiled bytecode used for deploying new contracts.
-// Deprecated: Use MessageMetaData.Bin instead.
-var MessageBin = MessageMetaData.Bin
+// SynapseTypesBin is the compiled bytecode used for deploying new contracts.
+// Deprecated: Use SynapseTypesMetaData.Bin instead.
+var SynapseTypesBin = SynapseTypesMetaData.Bin
 
-// DeployMessage deploys a new Ethereum contract, binding an instance of Message to it.
-func DeployMessage(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *Message, error) {
-	parsed, err := MessageMetaData.GetAbi()
+// DeploySynapseTypes deploys a new Ethereum contract, binding an instance of SynapseTypes to it.
+func DeploySynapseTypes(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *SynapseTypes, error) {
+	parsed, err := SynapseTypesMetaData.GetAbi()
 	if err != nil {
 		return common.Address{}, nil, nil, err
 	}
@@ -884,111 +724,111 @@ func DeployMessage(auth *bind.TransactOpts, backend bind.ContractBackend) (commo
 		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
 	}
 
-	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(MessageBin), backend)
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(SynapseTypesBin), backend)
 	if err != nil {
 		return common.Address{}, nil, nil, err
 	}
-	return address, tx, &Message{MessageCaller: MessageCaller{contract: contract}, MessageTransactor: MessageTransactor{contract: contract}, MessageFilterer: MessageFilterer{contract: contract}}, nil
+	return address, tx, &SynapseTypes{SynapseTypesCaller: SynapseTypesCaller{contract: contract}, SynapseTypesTransactor: SynapseTypesTransactor{contract: contract}, SynapseTypesFilterer: SynapseTypesFilterer{contract: contract}}, nil
 }
 
-// Message is an auto generated Go binding around an Ethereum contract.
-type Message struct {
-	MessageCaller     // Read-only binding to the contract
-	MessageTransactor // Write-only binding to the contract
-	MessageFilterer   // Log filterer for contract events
+// SynapseTypes is an auto generated Go binding around an Ethereum contract.
+type SynapseTypes struct {
+	SynapseTypesCaller     // Read-only binding to the contract
+	SynapseTypesTransactor // Write-only binding to the contract
+	SynapseTypesFilterer   // Log filterer for contract events
 }
 
-// MessageCaller is an auto generated read-only Go binding around an Ethereum contract.
-type MessageCaller struct {
+// SynapseTypesCaller is an auto generated read-only Go binding around an Ethereum contract.
+type SynapseTypesCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// MessageTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type MessageTransactor struct {
+// SynapseTypesTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type SynapseTypesTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// MessageFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type MessageFilterer struct {
+// SynapseTypesFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type SynapseTypesFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// MessageSession is an auto generated Go binding around an Ethereum contract,
+// SynapseTypesSession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type MessageSession struct {
-	Contract     *Message          // Generic contract binding to set the session for
+type SynapseTypesSession struct {
+	Contract     *SynapseTypes     // Generic contract binding to set the session for
 	CallOpts     bind.CallOpts     // Call options to use throughout this session
 	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
 }
 
-// MessageCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// SynapseTypesCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type MessageCallerSession struct {
-	Contract *MessageCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts  // Call options to use throughout this session
+type SynapseTypesCallerSession struct {
+	Contract *SynapseTypesCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts       // Call options to use throughout this session
 }
 
-// MessageTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// SynapseTypesTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type MessageTransactorSession struct {
-	Contract     *MessageTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts  // Transaction auth options to use throughout this session
+type SynapseTypesTransactorSession struct {
+	Contract     *SynapseTypesTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts       // Transaction auth options to use throughout this session
 }
 
-// MessageRaw is an auto generated low-level Go binding around an Ethereum contract.
-type MessageRaw struct {
-	Contract *Message // Generic contract binding to access the raw methods on
+// SynapseTypesRaw is an auto generated low-level Go binding around an Ethereum contract.
+type SynapseTypesRaw struct {
+	Contract *SynapseTypes // Generic contract binding to access the raw methods on
 }
 
-// MessageCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type MessageCallerRaw struct {
-	Contract *MessageCaller // Generic read-only contract binding to access the raw methods on
+// SynapseTypesCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type SynapseTypesCallerRaw struct {
+	Contract *SynapseTypesCaller // Generic read-only contract binding to access the raw methods on
 }
 
-// MessageTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type MessageTransactorRaw struct {
-	Contract *MessageTransactor // Generic write-only contract binding to access the raw methods on
+// SynapseTypesTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type SynapseTypesTransactorRaw struct {
+	Contract *SynapseTypesTransactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewMessage creates a new instance of Message, bound to a specific deployed contract.
-func NewMessage(address common.Address, backend bind.ContractBackend) (*Message, error) {
-	contract, err := bindMessage(address, backend, backend, backend)
+// NewSynapseTypes creates a new instance of SynapseTypes, bound to a specific deployed contract.
+func NewSynapseTypes(address common.Address, backend bind.ContractBackend) (*SynapseTypes, error) {
+	contract, err := bindSynapseTypes(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &Message{MessageCaller: MessageCaller{contract: contract}, MessageTransactor: MessageTransactor{contract: contract}, MessageFilterer: MessageFilterer{contract: contract}}, nil
+	return &SynapseTypes{SynapseTypesCaller: SynapseTypesCaller{contract: contract}, SynapseTypesTransactor: SynapseTypesTransactor{contract: contract}, SynapseTypesFilterer: SynapseTypesFilterer{contract: contract}}, nil
 }
 
-// NewMessageCaller creates a new read-only instance of Message, bound to a specific deployed contract.
-func NewMessageCaller(address common.Address, caller bind.ContractCaller) (*MessageCaller, error) {
-	contract, err := bindMessage(address, caller, nil, nil)
+// NewSynapseTypesCaller creates a new read-only instance of SynapseTypes, bound to a specific deployed contract.
+func NewSynapseTypesCaller(address common.Address, caller bind.ContractCaller) (*SynapseTypesCaller, error) {
+	contract, err := bindSynapseTypes(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &MessageCaller{contract: contract}, nil
+	return &SynapseTypesCaller{contract: contract}, nil
 }
 
-// NewMessageTransactor creates a new write-only instance of Message, bound to a specific deployed contract.
-func NewMessageTransactor(address common.Address, transactor bind.ContractTransactor) (*MessageTransactor, error) {
-	contract, err := bindMessage(address, nil, transactor, nil)
+// NewSynapseTypesTransactor creates a new write-only instance of SynapseTypes, bound to a specific deployed contract.
+func NewSynapseTypesTransactor(address common.Address, transactor bind.ContractTransactor) (*SynapseTypesTransactor, error) {
+	contract, err := bindSynapseTypes(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &MessageTransactor{contract: contract}, nil
+	return &SynapseTypesTransactor{contract: contract}, nil
 }
 
-// NewMessageFilterer creates a new log filterer instance of Message, bound to a specific deployed contract.
-func NewMessageFilterer(address common.Address, filterer bind.ContractFilterer) (*MessageFilterer, error) {
-	contract, err := bindMessage(address, nil, nil, filterer)
+// NewSynapseTypesFilterer creates a new log filterer instance of SynapseTypes, bound to a specific deployed contract.
+func NewSynapseTypesFilterer(address common.Address, filterer bind.ContractFilterer) (*SynapseTypesFilterer, error) {
+	contract, err := bindSynapseTypes(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &MessageFilterer{contract: contract}, nil
+	return &SynapseTypesFilterer{contract: contract}, nil
 }
 
-// bindMessage binds a generic wrapper to an already deployed contract.
-func bindMessage(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(MessageABI))
+// bindSynapseTypes binds a generic wrapper to an already deployed contract.
+func bindSynapseTypes(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(SynapseTypesABI))
 	if err != nil {
 		return nil, err
 	}
@@ -999,44 +839,44 @@ func bindMessage(address common.Address, caller bind.ContractCaller, transactor 
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Message *MessageRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Message.Contract.MessageCaller.contract.Call(opts, result, method, params...)
+func (_SynapseTypes *SynapseTypesRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _SynapseTypes.Contract.SynapseTypesCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_Message *MessageRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Message.Contract.MessageTransactor.contract.Transfer(opts)
+func (_SynapseTypes *SynapseTypesRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SynapseTypes.Contract.SynapseTypesTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_Message *MessageRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Message.Contract.MessageTransactor.contract.Transact(opts, method, params...)
+func (_SynapseTypes *SynapseTypesRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _SynapseTypes.Contract.SynapseTypesTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Message *MessageCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Message.Contract.contract.Call(opts, result, method, params...)
+func (_SynapseTypes *SynapseTypesCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _SynapseTypes.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_Message *MessageTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Message.Contract.contract.Transfer(opts)
+func (_SynapseTypes *SynapseTypesTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SynapseTypes.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_Message *MessageTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Message.Contract.contract.Transact(opts, method, params...)
+func (_SynapseTypes *SynapseTypesTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _SynapseTypes.Contract.contract.Transact(opts, method, params...)
 }
 
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220f11c483df684bb5a034546f8d1d105ed8ce50896e9a4a56684712e73b3407c0b64736f6c634300080d0033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220e37adc707c2ba64062374b76ee889928c6e911990928652b4c96056391d54cb364736f6c634300080d0033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.
@@ -1212,7 +1052,7 @@ var TypedMemViewMetaData = &bind.MetaData{
 	Sigs: map[string]string{
 		"f26be3fc": "NULL()",
 	},
-	Bin: "0x60c9610038600b82828239805160001a607314602b57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063f26be3fc146038575b600080fd5b605e7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000909116815260200160405180910390f3fea2646970667358221220a800e32605923a552b1b1116e6ef953ab40c76cb884788a21aa0ef250aea699f64736f6c634300080d0033",
+	Bin: "0x60c9610038600b82828239805160001a607314602b57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063f26be3fc146038575b600080fd5b605e7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000909116815260200160405180910390f3fea26469706673582212208dee875b1b8226fb0eb31d612e558a232e5694ac030d267a5f6c06fa22fc943564736f6c634300080d0033",
 }
 
 // TypedMemViewABI is the input ABI used to generate the binding from.
