@@ -19,8 +19,8 @@ type ChainConfig struct {
 	Contracts ContractConfigs `toml:"Contracts"`
 }
 
-// ChainConfigs contains a map of name->chain config.
-type ChainConfigs map[string]ChainConfig
+// ChainConfigs contains an array of ChainConfigs
+type ChainConfigs []ChainConfig
 
 // IsValid validates the chain config by asserting no two chains appear twice.
 // It also calls IsValid on each individual ContractConfig.

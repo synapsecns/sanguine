@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/richardwilkes/toolbox/collection"
 )
 
@@ -21,11 +22,12 @@ type ContractConfigs map[string]ContractConfig
 // IsValid validates the contract configs by asserting no two contracts appear twice.
 // It also calls IsValid on each individual ContractConfig.
 func (c ContractConfigs) IsValid(ctx context.Context) (ok bool, err error) {
-	intSet := collection.NewStringSet()
+	addressSet := collection.NewStringSet()
 
 	for _, cfg := range c {
-		if intSet.Contains(cfg.Address) {
-			return false, fmt.Errorf("duplicate contract address %s was found: %w", cfg.Address, ErrDuplicateAddress)
+		address := common.HexToAddress(cfg.Address).String()
+		if addressSet.Contains(address) {
+			return false, fmt.Errorf("duplicate contract address %s was found: %w", address, ErrDuplicateAddress)
 		}
 
 		ok, err = cfg.IsValid(ctx)
@@ -33,7 +35,7 @@ func (c ContractConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 			return false, err
 		}
 
-		intSet.Add(cfg.Address)
+		addressSet.Add(address)
 	}
 
 	return true, nil
@@ -43,6 +45,10 @@ func (c ContractConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 func (c ContractConfig) IsValid(ctx context.Context) (ok bool, err error) {
 	if c.Address == "" {
 		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
+	}
+	// the `+2` is for the 0x prefix
+	if len(c.Address) != (common.AddressLength*2)+2 {
+		return false, fmt.Errorf("address not correct length: %w", ErrAddressLength)
 	}
 	return true, nil
 }

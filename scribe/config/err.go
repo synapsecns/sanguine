@@ -13,3 +13,6 @@ var ErrDuplicateChainID = errors.New("duplicate chain id")
 
 // ErrDuplicateAddress indicates that a duplicate address is found.
 var ErrDuplicateAddress = errors.New("duplicate address")
+
+// ErrAddressLength indicates that an invalid address length is found.
+var ErrAddressLength = errors.New("invalid address length")

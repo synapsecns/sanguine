@@ -46,8 +46,8 @@ func (c ConfigSuite) TestChainConfigsDuplicateChainID() {
 	// manually set these to the same id
 	chainConfigB.ChainID = chainConfigA.ChainID
 	chainConfigs := config.ChainConfigs{
-		"a": chainConfigA,
-		"b": chainConfigB,
+		chainConfigA,
+		chainConfigB,
 	}
 
 	ok, err := chainConfigs.IsValid(c.GetTestContext())
