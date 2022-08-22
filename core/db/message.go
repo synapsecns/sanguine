@@ -2,10 +2,11 @@ package db
 
 import (
 	"context"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/types"
-	"math/big"
 )
 
 // TxQueueDB contains an interface for storing transactions currently being processed.
@@ -27,18 +28,29 @@ type MessageDB interface {
 	// StoreMessageLatestBlockEnd stores the latest block end
 	StoreMessageLatestBlockEnd(ctx context.Context, domainID uint32, blockNumber uint32) error
 	// GetMessageLatestBlockEnd gets the message latest block
-	// returns ErrNoStoredBlockForChain when not precent
+	// returns ErrNoStoredBlockForChain when not present
 	GetMessageLatestBlockEnd(ctx context.Context, domainID uint32) (height uint32, err error)
 	// StoreCommittedMessage stores a raw committed message
 	StoreCommittedMessage(ctx context.Context, domainID uint32, message types.CommittedMessage) error
 	// StoreSignedAttestations stores a signed attestation
 	StoreSignedAttestations(ctx context.Context, attestation types.SignedAttestation) error
-	// RetrieveSignedAttestationByNonce retreives a signed attestation by nonce
+	// RetrieveSignedAttestationByNonce retrieves a signed attestation by nonce
 	RetrieveSignedAttestationByNonce(ctx context.Context, domainID, nonce uint32) (attestation types.SignedAttestation, err error)
+}
+
+// MonitorDB stores event data for monitoring.
+type MonitorDB interface {
+	// StoreDispatchMessage stores a dispatch message
+	StoreDispatchMessage(ctx context.Context, message types.Message) error
+	// StoreAcceptedAttestation stores an accepted attestation
+	StoreAcceptedAttestation(ctx context.Context, destinationDomain uint32, attestation types.Attestation) error
+	// GetDelinquentMessage gets messages that were sent, but never received
+	GetDelinquentMessages(ctx context.Context, destinationDomain uint32) ([]types.Message, error)
 }
 
 // SynapseDB combines db types.
 type SynapseDB interface {
 	MessageDB
 	TxQueueDB
+	MonitorDB
 }
