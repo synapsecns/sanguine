@@ -27,7 +27,7 @@ func (c ConfigSuite) TestChainID() {
 
 	ok, err := chainConfig.IsValid(c.GetTestContext())
 	False(c.T(), ok)
-	ErrorIs(c.T(), err, config.ErrInvalidChainId)
+	ErrorIs(c.T(), err, config.ErrInvalidChainID)
 }
 
 func (c ConfigSuite) TestRPCUrl() {
@@ -52,5 +52,5 @@ func (c ConfigSuite) TestChainConfigsDuplicateChainID() {
 
 	ok, err := chainConfigs.IsValid(c.GetTestContext())
 	False(c.T(), ok)
-	ErrorIs(c.T(), err, config.ErrDuplicateChainId)
+	ErrorIs(c.T(), err, config.ErrDuplicateChainID)
 }

@@ -29,7 +29,7 @@ func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 
 	for _, cfg := range c {
 		if intSet.Contains(cfg.ChainID) {
-			return false, fmt.Errorf("chain id %d appears twice: %w", cfg.ChainID, ErrDuplicateChainId)
+			return false, fmt.Errorf("chain id %d appears twice: %w", cfg.ChainID, ErrDuplicateChainID)
 		}
 
 		ok, err = cfg.IsValid(ctx)
@@ -43,10 +43,10 @@ func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 	return true, nil
 }
 
-// ISValid validates the chain config.
+// IsValid validates the chain config.
 func (c ChainConfig) IsValid(ctx context.Context) (ok bool, err error) {
 	if c.ChainID == 0 {
-		return false, fmt.Errorf("%w: chain ID cannot be 0", ErrInvalidChainId)
+		return false, fmt.Errorf("%w: chain ID cannot be 0", ErrInvalidChainID)
 	}
 	if c.RPCUrl == "" {
 		return false, fmt.Errorf("field RPCUrl: %w", ErrRequiredField)
