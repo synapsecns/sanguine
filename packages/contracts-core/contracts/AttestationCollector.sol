@@ -211,8 +211,7 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
         require(nonce > latestNonce[domain][_notary], "Outdated attestation");
         // Don't store Attestation, if another Notary
         // have submitted the same (domain, nonce, root) before.
-        // TODO: revert for consistency instead of returning false?
-        if (_signatureExists(domain, nonce, root)) return false;
+        require(!_signatureExists(domain, nonce, root), "Duplicated attestation");
         latestNonce[domain][_notary] = nonce;
         latestRoot[domain][_notary] = root;
         signatures[domain][nonce][root] = _attestationView.notarySignature().clone();
