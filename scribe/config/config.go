@@ -47,7 +47,6 @@ func (c *Config) Encode() (string, error) {
 		indentLen := len(tomlCommon.Indent) * 2
 		newLines = append(newLines, strings.ReplaceAll(line, getStringOfLength(indentLen), getStringOfLength(indentLen-2)))
 	}
-	fmt.Println(strings.Join(newLines, "\n"))
 	return strings.Join(newLines, "\n"), nil
 }
 

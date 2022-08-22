@@ -8,7 +8,7 @@ import (
 	"github.com/synapsecns/synapse-node/testutils/utils"
 )
 
-func (c *ConfigSuite) TestConfigEncodeDecode() {
+func (c ConfigSuite) TestConfigEncodeDecode() {
 	// generate an example config
 	chainID := gofakeit.Uint32()
 	testConfig := config.Config{
