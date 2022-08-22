@@ -6,8 +6,8 @@ coverage:
   precision: 5
 
 ignore:
-  - "**/_generated.go"
-  - "**/*.abigen.go"
-  - "**/_string.go"
+  - '**/_generated.go'
+  - '**/*.abigen.go'
+  - '**/_string.go'
 # solidity test files
-  - "packages/contracts/test/*"
+  - 'packages/contracts/test/*'
