@@ -17,10 +17,10 @@ jobs:
         with:
           mode: exactly
           count: 0
-          labels: "do not merge"
+          labels: 'do not merge'
 
       - uses: mheap/github-action-required-labels@v2
         with:
           mode: exactly
           count: 0
-          labels: "needs go generate"
+          labels: 'needs go generate'
