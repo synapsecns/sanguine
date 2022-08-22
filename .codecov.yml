@@ -12,4 +12,5 @@ ignore:
 # solidity test files
   - '*/test/*.sol'
   - '*/lib/*.sol'
-  - 'packages/contracts/libs/*.sol'
+  - 'packages/contracts/contracts/libs/*.sol'
+  - 'packages/contracts/test/*.sol'
