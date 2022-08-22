@@ -1,5 +1,5 @@
 name: Yaml Lint
-on: [push]  # yamllint disable-line rule:truthy
+on: [push]
 jobs:
   # TODO: add editor config linter
   # https://github.com/editorconfig-checker/editorconfig-checker#continuous-integration
