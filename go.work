@@ -5,3 +5,5 @@ use ./core
 use ./tools
 
 use ./ethergo
+
+use ./scribe

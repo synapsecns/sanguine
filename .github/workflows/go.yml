@@ -5,7 +5,6 @@ on:
     branches-ignore:
       - 'gh-pages'
 
-
 jobs:
   test:
     name: Go Coverage
@@ -94,7 +93,6 @@ jobs:
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
 
-
       # We customize the build step because by default
       # We can not use ** because goveralls uses filepath.Match
       # to match ignore files and it does not support it.
@@ -128,6 +126,7 @@ jobs:
         with:
           filters: |
             core: 'core/**'
+            scribe: 'scribe/**'
             tools: 'tools/**'
             ethergo: 'ethergo/**'
       - name: Check For Solidity Changes
@@ -187,7 +186,7 @@ jobs:
             ${{ runner.os }}-go-
       - name: Build
         # go build all workspaces
-        run:  go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
+        run: go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
 
   #note: right now this is not run against all work dirs
   lint:
@@ -214,7 +213,6 @@ jobs:
         uses: fusion-engineering/setup-git-credentials@v2
         with:
           credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
-
 
       # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
       - name: Setup cache key
@@ -296,7 +294,6 @@ jobs:
         uses: fusion-engineering/setup-git-credentials@v2
         with:
           credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
-
 
       - name: Go modules cache
         uses: actions/cache@v2
