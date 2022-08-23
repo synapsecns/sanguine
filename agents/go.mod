@@ -17,11 +17,12 @@ require (
 	github.com/richardwilkes/toolbox v1.52.0
 	github.com/spatialcurrent/go-math v0.0.0-20211120210754-b3872f7000fe
 	github.com/stretchr/testify v1.7.1
+	github.com/synapsecns/sanguine/core v0.0.0-20220823193711-904c560fc7d3
 	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/ugorji/go/codec v1.1.7
 	github.com/vburenin/ifacemaker v1.1.0
-	go.uber.org/zap v1.19.1
+	go.uber.org/zap v1.22.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	gorm.io/driver/mysql v1.1.2
 	gorm.io/driver/sqlite v1.1.5
@@ -302,7 +303,7 @@ require (
 	gopkg.in/resty.v1 v1.12.0 // indirect
 	gopkg.in/urfave/cli.v1 v1.20.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apimachinery v0.22.2 // indirect
 	k8s.io/klog/v2 v2.9.0 // indirect
 )

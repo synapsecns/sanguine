@@ -214,6 +214,7 @@ import (
 )
 
 // rawContracts are the json we use to dervive the processed contracts
+//
 //go:embed {{ .Name }}.contractinfo.json
 var rawContracts []byte
 
