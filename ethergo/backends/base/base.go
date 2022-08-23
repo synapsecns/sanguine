@@ -216,6 +216,7 @@ func (b *Backend) Context() context.Context {
 }
 
 // ConfirmationClient waits for confirmation.
+//
 //go:generate go run github.com/vektra/mockery/v2 --name ConfirmationClient --output ./mocks --case=underscore
 type ConfirmationClient interface {
 	ethereum.TransactionReader

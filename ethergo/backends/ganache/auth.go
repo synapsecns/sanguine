@@ -3,7 +3,7 @@ package ganache
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 // Address is an object exported by --account_keys_path in ganache.
@@ -35,7 +35,7 @@ type Addresses struct {
 // ParseAddresses parses the addresses out of a path and returns an object.
 func ParseAddresses(path string) (addresses *Addresses, err error) {
 	//nolint: gosec
-	keyFile, err := ioutil.ReadFile(path)
+	keyFile, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("could not read file: %s (got error: %w)", path, err)
 	}

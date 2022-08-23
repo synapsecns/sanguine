@@ -103,6 +103,7 @@ func (k *MockKMSService) startServer(ctx context.Context) {
 	assert.Nil(k.tb, err)
 
 	// start the server and terminate it on end
+	//nolint: gosec
 	server := &http.Server{Addr: hostname, Handler: serveMux, BaseContext: func(listener net.Listener) context.Context {
 		return ctx
 	}}

@@ -17,7 +17,7 @@ import (
 const shellCommandName = "shell"
 
 // GenerateShellCommand generates the shell command with a list of commands that the shell should take.
-//TODO: this needs a more comprehensive test suite.
+// TODO: this needs a more comprehensive test suite.
 func GenerateShellCommand(shellCommands []*cli.Command) *cli.Command {
 	// explicitly exclude shell if included
 	capturedCommands := pruneShellCommands(shellCommands)

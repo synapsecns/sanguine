@@ -83,7 +83,7 @@ jobs:
           MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
           GOMAXPROCS: 18
           GANACHE_KEYS: /tmp/keys/rinkeby
-          GANACHE_RPC_URL: https://0.0.0.0:8045
+          GANACHE_RPC_URL: http://0.0.0.0:8045
 
       - name: Generate ignore list
         # generate a list of files to ignore on goveralls

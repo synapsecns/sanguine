@@ -11,6 +11,7 @@ import (
 )
 
 // Signer provides a common interface for signing/transacting.
+//
 //go:generate go run github.com/vektra/mockery/v2 --name Signer --output ./mocks --case=underscore
 type Signer interface {
 	// SignMessage signs a message
