@@ -52,7 +52,7 @@ type SimulatedTestBackend interface {
 }
 
 // TestBackend provides a backend for testing.
-// Deprecated: use simulated test backend
+// Deprecated: use simulated test backend.
 type TestBackend interface {
 	// SimulatedTestBackend is the base of a test backend
 	SimulatedTestBackend

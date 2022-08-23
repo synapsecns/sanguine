@@ -10,16 +10,16 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/ipfs/go-log"
 	"github.com/pkg/errors"
-	. "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/deployer"
+	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	synapseCommon "github.com/synapsecns/synapse-node/pkg/common"
 	"github.com/synapsecns/synapse-node/pkg/evm"
 	"github.com/synapsecns/synapse-node/pkg/evm/client"
-	"github.com/synapsecns/synapse-node/testutils/backends"
-	"github.com/synapsecns/synapse-node/testutils/contracts"
 	"github.com/synapsecns/synapse-node/testutils/debug/stacktrace"
 	tenderly "github.com/synapsecns/synapse-node/testutils/debug/tenderly"
-	"github.com/synapsecns/synapse-node/testutils/nonce"
 	"github.com/teivah/onecontext"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"math/big"
@@ -33,11 +33,12 @@ var logger = log.Logger("backend-base-logger")
 
 // Backend contains common functions across backends and can be used to extend a backend.
 type Backend struct {
-	// chain is the chain to be used by the abckend
+	// chain is the chain to be used by the backend
 	evm.Chain
 	// Manager is the nonce manager
 	nonce.Manager
 	// ctx is the context of the backend
+	//nolint: containedctx
 	ctx context.Context
 	// tb contains the testing object
 	t *testing.T
@@ -106,14 +107,14 @@ var logOnce sync.Once
 var EnableLocalDebug = os.Getenv("CI") == ""
 
 // VerifyContract calls the contract verification hook (e.g. tenderly).
-func (b *Backend) VerifyContract(contractType contracts.ContractType, contract backends.DeployedContract) (resError error) {
+func (b *Backend) VerifyContract(contractType deployer.ContractType, contract backends.DeployedContract) (resError error) {
 	// TODO actually verify the contract against abi locally: https://pkg.go.dev/github.com/iden3/tx-forwarder/eth/contracts/verifier
 	// until then we go ahead and run a code at to ensure the correct address was used, this helps avoid extremely hard to debug prob
 	go func() {
 		code, err := b.Client().CodeAt(b.ctx, contract.Address(), nil)
 		if !errors.Is(err, context.Canceled) {
-			Nil(b.T(), err)
-			NotEmpty(b.T(), code)
+			assert.Nil(b.T(), err)
+			assert.NotEmpty(b.T(), code)
 		}
 	}()
 
@@ -158,10 +159,11 @@ var (
 )
 
 // WaitForConfirmation waits for transaction confirmation.
-func (b *Backend) WaitForConfirmation(ctx context.Context, transaction *types.Transaction) {
-	ctx, cancel := onecontext.Merge(b.ctx, ctx)
+func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *types.Transaction) {
+	ctx, cancel := onecontext.Merge(b.ctx, parentCtx)
 	defer cancel()
 
+	//nolint: contextcheck
 	WaitForConfirmation(ctx, b.Client(), transaction, time.Millisecond*500)
 	// check or an error, if there is one log it
 	go func() {
@@ -202,6 +204,7 @@ func (b *Backend) WaitForConfirmation(ctx context.Context, transaction *types.Tr
 				return
 			}
 
+			//nolint: forcetypeassert
 			logger.Debugf("tx %s reverted: %v", transaction.Hash(), vs[0].(string))
 		}
 	}()
@@ -220,7 +223,7 @@ type ConfirmationClient interface {
 }
 
 // WaitForConfirmation is a helper that can be called by various inheriting funcs.
-// it blocks until the transaction is confirmed
+// it blocks until the transaction is confirmed.
 func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transaction *types.Transaction, timeout time.Duration) {
 	txConfirmedCtx, cancel := context.WithCancel(ctx)
 	var logOnce sync.Once

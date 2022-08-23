@@ -1,7 +1,6 @@
 package base_test
 
 import (
-	"context"
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -13,18 +12,16 @@ import (
 
 func (b *BaseSuite) TestWaitForConfirmation() {
 	mockClient := new(mocks.ConfirmationClient)
-	testCtx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	const minConfirmTime = 60 * time.Millisecond
-	timer := time.NewTimer(minConfirmTime)
 
 	mockTx := eth.GetMockTxes(b.GetTestContext(), b.T(), 1, types.LegacyTxType)[0]
+
+	const minConfirmTime = 60 * time.Millisecond
+	confirmStart := time.Now()
+	timer := time.NewTimer(minConfirmTime)
 
 	mockClient.On("TransactionByHash", mock.Anything, mock.Anything).Once().Return(nil, true, nil)
 	mockClient.On("TransactionByHash", mock.Anything, mock.Anything).WaitUntil(timer.C).Return(mockTx, false, nil)
 
-	confirmStart := time.Now()
-	base.WaitForConfirmation(testCtx, mockClient, mockTx, time.Millisecond*5)
+	base.WaitForConfirmation(b.GetTestContext(), mockClient, mockTx, time.Millisecond*5)
 	False(b.T(), time.Since(confirmStart) < minConfirmTime, "tx could not have been confirmed yet")
 }
