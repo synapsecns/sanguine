@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/testutil"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
@@ -16,7 +17,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/synapse-node/testutils"
 	"math/big"
 	"testing"
 	"time"
@@ -24,7 +24,7 @@ import (
 
 // RPCSuite defines a suite where we need live rpc endpoints (as opposed to a simulated backend) to test.
 type RPCSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 	testBackend   backends.TestBackend
 	deployManager *testutil.DeployManager
 }
@@ -32,7 +32,7 @@ type RPCSuite struct {
 // NewRPCSuite creates a new chain testing suite.
 func NewRPCSuite(tb testing.TB) *RPCSuite {
 	tb.Helper()
-	return &RPCSuite{TestSuite: testutils.NewTestSuite(tb)}
+	return &RPCSuite{TestSuite: testsuite.NewTestSuite(tb)}
 }
 
 func (e *RPCSuite) SetupTest() {
@@ -50,7 +50,7 @@ func TestEVMSuite(t *testing.T) {
 
 // ContractSuite defines a suite for testing contracts. This uses the simulated backend.
 type ContractSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 	originContract      *origin.OriginRef
 	attestationContract *attestationcollector.AttestationCollectorRef
 	testBackend         backends.SimulatedTestBackend
@@ -61,7 +61,7 @@ type ContractSuite struct {
 func NewContractSuite(tb testing.TB) *ContractSuite {
 	tb.Helper()
 	return &ContractSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 
@@ -112,7 +112,7 @@ func TestContractSuite(t *testing.T) {
 
 // TxQueueSuite tests out the transaction queue.
 type TxQueueSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 }
 
 // NewQueueSuite creates the queue.
@@ -120,7 +120,7 @@ func NewQueueSuite(tb testing.TB) *TxQueueSuite {
 	tb.Helper()
 
 	return &TxQueueSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

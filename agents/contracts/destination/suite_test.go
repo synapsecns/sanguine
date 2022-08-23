@@ -1,6 +1,7 @@
 package destination_test
 
 import (
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"math/big"
 	"testing"
@@ -17,12 +18,11 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/synapse-node/testutils"
 )
 
 // DestinationSuite is the destination test suite.
 type DestinationSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 	originContract              *origin.OriginRef
 	destinationContract         *destination.DestinationRef
 	destinationContractMetadata contracts.DeployedContract
@@ -37,7 +37,7 @@ type DestinationSuite struct {
 func NewDestinationSuite(tb testing.TB) *DestinationSuite {
 	tb.Helper()
 	return &DestinationSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

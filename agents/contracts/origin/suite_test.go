@@ -4,15 +4,15 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/testutil"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"github.com/synapsecns/synapse-node/testutils"
 	"testing"
 )
 
 // OriginSuite is the origin test suite.
 type OriginSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 	originContract *origin.OriginRef
 	testBackend    backends.SimulatedTestBackend
 }
@@ -21,7 +21,7 @@ type OriginSuite struct {
 func NewOriginSuite(tb testing.TB) *OriginSuite {
 	tb.Helper()
 	return &OriginSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

@@ -2,20 +2,20 @@ package nonce_test
 
 import (
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/synapse-node/testutils"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"testing"
 )
 
 // NonceSuite is the nonce suite.
 type NonceSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 }
 
 // NewNonceSuite creates a end-to-end test suite.
 func NewNonceSuite(tb testing.TB) *NonceSuite {
 	tb.Helper()
 	return &NonceSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

@@ -283,7 +283,6 @@ require (
 	go.etcd.io/bbolt v1.3.6 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	go.uber.org/goleak v1.1.12 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
 	golang.org/x/mod v0.5.1 // indirect
@@ -311,6 +310,7 @@ require (
 replace (
 	github.com/CosmWasm/wasmvm => github.com/CosmWasm/wasmvm v0.16.6
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+	github.com/synapsecns/sanguine/core => ../core
 	github.com/synapsecns/sanguine/ethergo => ../ethergo
 	github.com/synapsecns/synapse-node => github.com/synapsecns/synapse-node v0.242.1-0.20220523175312-65a2f2613b1f
 )

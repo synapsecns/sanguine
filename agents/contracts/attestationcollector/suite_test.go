@@ -1,6 +1,7 @@
 package attestationcollector_test
 
 import (
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"math/big"
 	"testing"
@@ -18,12 +19,11 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/synapse-node/testutils"
 )
 
 // AttestationCollectorSuite is the attestation collector test suite.
 type AttestationCollectorSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 	originContract              *origin.OriginRef
 	destinationContract         *destination.DestinationRef
 	destinationContractMetadata contracts.DeployedContract
@@ -40,7 +40,7 @@ type AttestationCollectorSuite struct {
 func NewAttestationCollectorSuite(tb testing.TB) *AttestationCollectorSuite {
 	tb.Helper()
 	return &AttestationCollectorSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 
