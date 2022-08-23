@@ -140,6 +140,18 @@ contract Origin is
     event NewNotaryManager(address notaryManager);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Ensures that function is called by the NotaryManager contract
+     */
+    modifier onlyNotaryManager() {
+        require(msg.sender == address(notaryManager), "!notaryManager");
+        _;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -157,18 +169,6 @@ contract Origin is
         // Insert a historical root so nonces start at 1 rather then 0.
         // Here we insert the default root of a sparse merkle tree
         historicalRoots.push(hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757");
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Ensures that function is called by the NotaryManager contract
-     */
-    modifier onlyNotaryManager() {
-        require(msg.sender == address(notaryManager), "!notaryManager");
-        _;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
