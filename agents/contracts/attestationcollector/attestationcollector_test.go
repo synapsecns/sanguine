@@ -3,6 +3,7 @@ package attestationcollector_test
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/synapse-node/contracts/bridge"
 )
 
 func (a AttestationCollectorSuite) TestAttestationCollectorSuite() {
@@ -43,7 +43,7 @@ func (a AttestationCollectorSuite) TestAttestationCollectorSuite() {
 	hashedAttestation, err := notary.HashAttestation(unsignedAttestation)
 	Nil(a.T(), err)
 
-	signature, err := a.signer.SignMessage(a.GetTestContext(), bridge.KappaToSlice(hashedAttestation), false)
+	signature, err := a.signer.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(a.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, signature)
