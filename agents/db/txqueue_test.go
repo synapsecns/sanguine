@@ -87,7 +87,7 @@ func (t *DBSuite) TestTxInsertion() {
 	})
 }
 
-/// make sure tx doesn't conflict on both chains.
+// / make sure tx doesn't conflict on both chains.
 func (t *DBSuite) TestTxNonceQueryMultiChain() {
 	fakeTx := testTxes[0]
 	fakeTx2 := testTxes[1]

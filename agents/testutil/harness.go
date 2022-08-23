@@ -11,8 +11,9 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
-	"github.com/synapsecns/synapse-node/testutils/backends"
 )
 
 // MessageHarnessDeployer deploys the message harness for testing.
@@ -26,7 +27,7 @@ func NewMessageHarnessDeployer(registry deployer.GetOnlyContractRegistry, backen
 }
 
 // Deploy deploys the message harness deployer.
-func (d MessageHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (d MessageHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return messageharness.DeployMessageHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -48,7 +49,7 @@ func NewOriginHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend
 }
 
 // Deploy deploys the origin harness.
-func (o OriginHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return originharness.DeployOriginHarness(transactOps, backend, OriginHarnessDomain)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -67,7 +68,7 @@ func NewAttestationHarnessDeployer(registry deployer.GetOnlyContractRegistry, ba
 }
 
 // Deploy deploys the attestation harness.
-func (a AttestationHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (a AttestationHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return attestationharness.DeployAttestationHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -86,7 +87,7 @@ func NewTipsHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend b
 }
 
 // Deploy deploys the attestation harness.
-func (a TipsHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (a TipsHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return tipsharness.DeployTipsHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -105,7 +106,7 @@ func NewDestinationHarnessDeployer(registry deployer.GetOnlyContractRegistry, ba
 }
 
 // Deploy deploys the destination harness.
-func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()))
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -124,7 +125,7 @@ func NewHeaderHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend
 }
 
 // Deploy deploys the header harness.
-func (h HeaderHarnessDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (h HeaderHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return headerharness.DeployHeaderHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {

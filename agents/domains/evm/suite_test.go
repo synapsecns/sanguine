@@ -9,13 +9,14 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/testutil"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/preset"
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/synapse-node/testutils"
-	"github.com/synapsecns/synapse-node/testutils/backends"
-	"github.com/synapsecns/synapse-node/testutils/backends/preset"
-	"github.com/synapsecns/synapse-node/testutils/backends/simulated"
 	"math/big"
 	"testing"
 	"time"
@@ -75,7 +76,7 @@ func (i *ContractSuite) SetupTest() {
 
 	_, i.originContract = deployManager.GetOrigin(i.GetTestContext(), i.testBackend)
 
-	var attestationContract backends.DeployedContract
+	var attestationContract contracts.DeployedContract
 	attestationContract, i.attestationContract = deployManager.GetAttestationCollector(i.GetTestContext(), i.attestationBackend)
 
 	wall, err := wallet.FromRandom()

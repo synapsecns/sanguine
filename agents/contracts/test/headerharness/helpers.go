@@ -8,7 +8,7 @@ import (
 )
 
 // HeaderHarnessRef is a header harness reference
-//nolint: golint
+// nolint: golint
 type HeaderHarnessRef struct {
 	*HeaderHarness
 	address common.Address

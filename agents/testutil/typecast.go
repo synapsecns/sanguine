@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
@@ -14,11 +15,11 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
-	"github.com/synapsecns/synapse-node/testutils/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends"
 )
 
 // GetOrigin gets a typecast origin contract.
-func (d *DeployManager) GetOrigin(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *origin.OriginRef) {
+func (d *DeployManager) GetOrigin(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *origin.OriginRef) {
 	d.T().Helper()
 
 	originContract := d.GetContractRegistry(backend).Get(ctx, OriginType)
@@ -30,7 +31,7 @@ func (d *DeployManager) GetOrigin(ctx context.Context, backend backends.Simulate
 }
 
 // GetMessageHarness gets the message harness.
-func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *messageharness.MessageHarnessRef) {
+func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *messageharness.MessageHarnessRef) {
 	d.T().Helper()
 
 	messageHarnessContract := d.GetContractRegistry(backend).Get(ctx, MessageHarnessType)
@@ -42,7 +43,7 @@ func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.
 }
 
 // GetOriginHarness gets the origin harness.
-func (d *DeployManager) GetOriginHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *originharness.OriginHarnessRef) {
+func (d *DeployManager) GetOriginHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *originharness.OriginHarnessRef) {
 	d.T().Helper()
 
 	messageHarnessContract := d.GetContractRegistry(backend).Get(ctx, OriginHarnessType)
@@ -54,7 +55,7 @@ func (d *DeployManager) GetOriginHarness(ctx context.Context, backend backends.S
 }
 
 // GetAttestationHarness gets the attestation harness.
-func (d *DeployManager) GetAttestationHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *attestationharness.AttestationHarnessRef) {
+func (d *DeployManager) GetAttestationHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *attestationharness.AttestationHarnessRef) {
 	d.T().Helper()
 
 	attestationHarnessContract := d.GetContractRegistry(backend).Get(ctx, AttestationHarnessType)
@@ -66,7 +67,7 @@ func (d *DeployManager) GetAttestationHarness(ctx context.Context, backend backe
 }
 
 // GetDestinationHarness gets the destination harness.
-func (d *DeployManager) GetDestinationHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *destinationharness.DestinationHarnessRef) {
+func (d *DeployManager) GetDestinationHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *destinationharness.DestinationHarnessRef) {
 	d.T().Helper()
 
 	destinationHarnessContract := d.GetContractRegistry(backend).Get(ctx, DestinationHarnessType)
@@ -77,7 +78,7 @@ func (d *DeployManager) GetDestinationHarness(ctx context.Context, backend backe
 }
 
 // GetNotaryManager gets the notary manager.
-func (d *DeployManager) GetNotaryManager(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *notarymanager.NotaryManagerRef) {
+func (d *DeployManager) GetNotaryManager(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *notarymanager.NotaryManagerRef) {
 	d.T().Helper()
 
 	notaryManagerContract := d.GetContractRegistry(backend).Get(ctx, NotaryManagerType)
@@ -88,7 +89,7 @@ func (d *DeployManager) GetNotaryManager(ctx context.Context, backend backends.S
 }
 
 // GetAttestationCollector gets the attestation collector contract.
-func (d *DeployManager) GetAttestationCollector(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *attestationcollector.AttestationCollectorRef) {
+func (d *DeployManager) GetAttestationCollector(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *attestationcollector.AttestationCollectorRef) {
 	d.T().Helper()
 
 	attestationContract := d.GetContractRegistry(backend).Get(ctx, AttestationCollectorType)
@@ -99,7 +100,7 @@ func (d *DeployManager) GetAttestationCollector(ctx context.Context, backend bac
 }
 
 // GetDestination gets the destination contract.
-func (d *DeployManager) GetDestination(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *destination.DestinationRef) {
+func (d *DeployManager) GetDestination(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *destination.DestinationRef) {
 	d.T().Helper()
 
 	destinationContract := d.GetContractRegistry(backend).Get(ctx, DestinationType)
@@ -110,7 +111,7 @@ func (d *DeployManager) GetDestination(ctx context.Context, backend backends.Sim
 }
 
 // GetTipsHarness gets the tips harness for testing.
-func (d *DeployManager) GetTipsHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *tipsharness.TipsHarnessRef) {
+func (d *DeployManager) GetTipsHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *tipsharness.TipsHarnessRef) {
 	d.T().Helper()
 
 	tipsContract := d.GetContractRegistry(backend).Get(ctx, TipsHarnessType)
@@ -121,7 +122,7 @@ func (d *DeployManager) GetTipsHarness(ctx context.Context, backend backends.Sim
 }
 
 // GetHeaderHarness gets the header harness.
-func (d *DeployManager) GetHeaderHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract backends.DeployedContract, handle *headerharness.HeaderHarnessRef) {
+func (d *DeployManager) GetHeaderHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *headerharness.HeaderHarnessRef) {
 	d.T().Helper()
 
 	headerHarnessContract := d.GetContractRegistry(backend).Get(ctx, HeaderHarnessType)

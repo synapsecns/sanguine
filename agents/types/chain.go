@@ -12,8 +12,9 @@ func init() {
 	}
 }
 
-//go:generate go run golang.org/x/tools/cmd/stringer -type=ChainType -linecomment
 // ChainType is the type of chain being used (e.g. evm).
+//
+//go:generate go run golang.org/x/tools/cmd/stringer -type=ChainType -linecomment
 type ChainType uint8
 
 const (

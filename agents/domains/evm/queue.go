@@ -17,8 +17,8 @@ import (
 // the transaction queue is thread safe
 //
 // Limitations:
-// - Once a transaction is submitted to the queue, it cannot be removed. Gas for the transaction is bumped until it is processed
-//   as a result every call to the transactor is treated as unique. Nonce's passed into the transactor are overridden
+//   - Once a transaction is submitted to the queue, it cannot be removed. Gas for the transaction is bumped until it is processed
+//     as a result every call to the transactor is treated as unique. Nonce's passed into the transactor are overridden
 type TxQueueTransactor struct {
 	// maxGasPrice is the max gas price to bid for a transactiosn inclusion on a particular chain
 	//nolint: structcheck,unused // TODO

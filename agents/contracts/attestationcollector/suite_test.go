@@ -1,6 +1,7 @@
 package attestationcollector_test
 
 import (
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"math/big"
 	"testing"
 
@@ -12,12 +13,12 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/testutil"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/synapse-node/testutils"
-	"github.com/synapsecns/synapse-node/testutils/backends"
-	"github.com/synapsecns/synapse-node/testutils/backends/preset"
 )
 
 // AttestationCollectorSuite is the attestation collector test suite.
@@ -25,10 +26,10 @@ type AttestationCollectorSuite struct {
 	*testutils.TestSuite
 	originContract              *origin.OriginRef
 	destinationContract         *destination.DestinationRef
-	destinationContractMetadata backends.DeployedContract
+	destinationContractMetadata contracts.DeployedContract
 	attestationHarness          *attestationharness.AttestationHarnessRef
 	attestationContract         *attestationcollector.AttestationCollectorRef
-	attestationContractMetadata backends.DeployedContract
+	attestationContractMetadata contracts.DeployedContract
 	testBackendOrigin           backends.SimulatedTestBackend
 	testBackendDestination      backends.SimulatedTestBackend
 	wallet                      wallet.Wallet

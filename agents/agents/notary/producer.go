@@ -65,7 +65,7 @@ func (a AttestationProducer) FindLatestNonce(ctx context.Context) (nonce uint32,
 }
 
 // update runs the update producer to produce an update.
-//nolint: cyclop
+// nolint: cyclop
 func (a AttestationProducer) update(ctx context.Context) error {
 	latestNonce, err := a.FindLatestNonce(ctx)
 	if err != nil {

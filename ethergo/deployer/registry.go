@@ -4,7 +4,8 @@ import (
 	"context"
 	"github.com/neverlee/keymutex"
 	"github.com/stretchr/testify/assert"
-	"github.com/synapsecns/synapse-node/testutils/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"strconv"
 	"sync"
 	"testing"
@@ -13,35 +14,35 @@ import (
 // ContractDeployer is a contract deployer for a single contract type.
 type ContractDeployer interface {
 	// Deploy deploys the contract and returns an error if it cannot be deployed
-	Deploy(ctx context.Context) (backends.DeployedContract, error)
+	Deploy(ctx context.Context) (contracts.DeployedContract, error)
 	// ContractType gets the type of the deployed contract
-	ContractType() ContractType
+	ContractType() contracts.ContractType
 	// Dependencies gets the dependencies of this contract
-	Dependencies() []ContractType
+	Dependencies() []contracts.ContractType
 }
 
 // GetOnlyContractRegistry is a contract registry that only allows gets.
 type GetOnlyContractRegistry interface {
 	// Get gets a contract by type. If the contract is not deployed, a new contract of type is deployed.
 	// In cases where an error is present, this error is triggered via the test object in the constructor
-	Get(ctx context.Context, contractType ContractType) backends.DeployedContract
+	Get(ctx context.Context, contractType contracts.ContractType) contracts.DeployedContract
 	// GetRegisteredDeployer gets the deployer for a given contract, returs nil if it doesn't exist
-	GetRegisteredDeployer(contractType ContractType) ContractDeployer
+	GetRegisteredDeployer(contractType contracts.ContractType) ContractDeployer
 }
 
 // ContractRegistry handles contract deployment/storage for a specific chain.
 type ContractRegistry interface {
 	GetOnlyContractRegistry
 	// Deploy deploys the contract type, but does not register it
-	Deploy(ctx context.Context, contractType ContractType) backends.DeployedContract
+	Deploy(ctx context.Context, contractType contracts.ContractType) contracts.DeployedContract
 	// Register registers the contract with the contract registry. If you use Get() this isn't
 	// required. This method is idempotent and will overwrite any contracts deployed
-	Register(contractType ContractType, contract backends.DeployedContract)
+	Register(contractType contracts.ContractType, contract contracts.DeployedContract)
 	// RegisterContractDeployer registers contract types that can be used for deployment. This allows extensibility by
 	// non-synapse libraries. This will overwrite previous contract deployers with the same type
 	RegisterContractDeployer(deployers ...ContractDeployer)
 	// IsContractDeployed checks if a contract is deplyoed yet
-	IsContractDeployed(contractType ContractType) bool
+	IsContractDeployed(contractType contracts.ContractType) bool
 	// RegisteredDeployers gets all deployers registered
 	RegisteredDeployers() []ContractDeployer
 }
@@ -61,7 +62,7 @@ type contractRegistryImpl struct {
 	// deployers stores the contract deploers
 	deployers map[int]ContractDeployer
 	// deployedContracts are the deployed contracts
-	deployedContracts map[int]backends.DeployedContract
+	deployedContracts map[int]contracts.DeployedContract
 }
 
 func (c *contractRegistryImpl) RegisteredDeployers() (deployers []ContractDeployer) {
@@ -73,7 +74,7 @@ func (c *contractRegistryImpl) RegisteredDeployers() (deployers []ContractDeploy
 	return deployers
 }
 
-func (c *contractRegistryImpl) IsContractDeployed(contractType ContractType) bool {
+func (c *contractRegistryImpl) IsContractDeployed(contractType contracts.ContractType) bool {
 	c.structMux.RLock()
 	defer c.structMux.RUnlock()
 	_, hasContract := c.deployedContracts[contractType.ID()]
@@ -90,12 +91,12 @@ func NewContractRegistry(tb testing.TB, backend backends.SimulatedTestBackend) C
 		structMux:         sync.RWMutex{},
 		deployMutex:       keymutex.New(47),
 		deployers:         make(map[int]ContractDeployer),
-		deployedContracts: make(map[int]backends.DeployedContract),
+		deployedContracts: make(map[int]contracts.DeployedContract),
 	}
 }
 
 // Get gets the deployed contract.
-func (c *contractRegistryImpl) Get(ctx context.Context, contractType ContractType) backends.DeployedContract {
+func (c *contractRegistryImpl) Get(ctx context.Context, contractType contracts.ContractType) contracts.DeployedContract {
 	c.tb.Helper()
 
 	// contractLock this deployedContract
@@ -125,16 +126,16 @@ func (c *contractRegistryImpl) Get(ctx context.Context, contractType ContractTyp
 }
 
 // contractLock creates a contractLock from a contract type and locks the mutex.
-func (c *contractRegistryImpl) contractLock(contractType ContractType) {
+func (c *contractRegistryImpl) contractLock(contractType contracts.ContractType) {
 	c.deployMutex.Lock(strconv.Itoa(contractType.ID()))
 }
 
 // contractUnlock unlocks a contractLock based on the contract type.
-func (c *contractRegistryImpl) contractUnlock(contractType ContractType) {
+func (c *contractRegistryImpl) contractUnlock(contractType contracts.ContractType) {
 	c.deployMutex.Unlock(strconv.Itoa(contractType.ID()))
 }
 
-func (c *contractRegistryImpl) Deploy(ctx context.Context, contractType ContractType) backends.DeployedContract {
+func (c *contractRegistryImpl) Deploy(ctx context.Context, contractType contracts.ContractType) contracts.DeployedContract {
 	c.tb.Helper()
 	c.structMux.RLock()
 	deploymentHandle := c.deployers[contractType.ID()]
@@ -153,7 +154,7 @@ func (c *contractRegistryImpl) Deploy(ctx context.Context, contractType Contract
 	return deployedContract
 }
 
-func (c *contractRegistryImpl) Register(contractType ContractType, contract backends.DeployedContract) {
+func (c *contractRegistryImpl) Register(contractType contracts.ContractType, contract contracts.DeployedContract) {
 	c.tb.Helper()
 	// contractLock this deployedContract
 	c.contractLock(contractType)
@@ -172,7 +173,7 @@ func (c *contractRegistryImpl) RegisterContractDeployer(deployers ...ContractDep
 	}
 }
 
-func (c *contractRegistryImpl) GetRegisteredDeployer(contractType ContractType) ContractDeployer {
+func (c *contractRegistryImpl) GetRegisteredDeployer(contractType contracts.ContractType) ContractDeployer {
 	c.structMux.RLock()
 	defer c.structMux.RUnlock()
 	for contract, deployer := range c.deployers {

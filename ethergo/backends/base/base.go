@@ -12,8 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/deployer"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	synapseCommon "github.com/synapsecns/synapse-node/pkg/common"
 	"github.com/synapsecns/synapse-node/pkg/evm"
@@ -107,7 +106,7 @@ var logOnce sync.Once
 var EnableLocalDebug = os.Getenv("CI") == ""
 
 // VerifyContract calls the contract verification hook (e.g. tenderly).
-func (b *Backend) VerifyContract(contractType deployer.ContractType, contract backends.DeployedContract) (resError error) {
+func (b *Backend) VerifyContract(contractType contracts.ContractType, contract contracts.DeployedContract) (resError error) {
 	// TODO actually verify the contract against abi locally: https://pkg.go.dev/github.com/iden3/tx-forwarder/eth/contracts/verifier
 	// until then we go ahead and run a code at to ensure the correct address was used, this helps avoid extremely hard to debug prob
 	go func() {
