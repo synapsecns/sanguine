@@ -1,6 +1,6 @@
 go 1.17
 
-use ./core
+use ./agents
 
 use ./tools
 
