@@ -49,7 +49,7 @@ type messageImpl struct {
 
 const messageVersion uint16 = 1
 
-const headerOffset uint16 = 8
+const headerOffset uint16 = 6
 
 // NewMessage creates a new message from fields passed in.
 func NewMessage(header Header, tips Tips, body []byte) Message {
@@ -80,14 +80,14 @@ func DecodeMessage(message []byte) (Message, error) {
 		return nil, fmt.Errorf("could not parse encoded: %w", err)
 	}
 
-	rawHeader := message[encoded.HeaderOffset:encoded.TipsOffset]
+	rawHeader := message[headerOffset : encoded.HeaderLength+headerOffset]
 
 	header, err := DecodeHeader(rawHeader)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode header: %w", err)
 	}
 
-	rawTips := message[encoded.TipsOffset:encoded.BodyOffset]
+	rawTips := message[headerOffset+encoded.HeaderLength : headerOffset+encoded.HeaderLength+encoded.TipsLength]
 	unmarshalledTips, err := DecodeTips(rawTips)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode unmarshalledTips: %w", err)
@@ -100,7 +100,7 @@ func DecodeMessage(message []byte) (Message, error) {
 		return nil, fmt.Errorf("message too small, expected at least %d, got %d", dataSize, len(message))
 	}
 
-	rawBody := message[encoded.BodyOffset:]
+	rawBody := message[headerOffset+encoded.HeaderLength+encoded.TipsLength:]
 
 	decoded := messageImpl{
 		version: encoded.Version,

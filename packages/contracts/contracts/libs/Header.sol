@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 import { TypedMemView } from "./TypedMemView.sol";
 import { TypeCasts } from "./TypeCasts.sol";
-import { Message } from "./Message.sol";
+import { SynapseTypes } from "./SynapseTypes.sol";
 
 /**
  * @notice Library for versioned formatting [the header part]
@@ -26,6 +26,7 @@ library Header {
      * [078 .. 082): optimisticSeconds  uint32   4 bytes
      */
 
+    uint256 internal constant OFFSET_VERSION = 0;
     uint256 internal constant OFFSET_ORIGIN = 2;
     uint256 internal constant OFFSET_SENDER = 6;
     uint256 internal constant OFFSET_NONCE = 38;
@@ -33,11 +34,38 @@ library Header {
     uint256 internal constant OFFSET_RECIPIENT = 46;
     uint256 internal constant OFFSET_OPTIMISTIC_SECONDS = 78;
 
+    uint256 internal constant HEADER_LENGTH = 82;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     modifier onlyHeader(bytes29 _view) {
-        _view.assertType(Message.HEADER_TYPE);
+        _view.assertType(SynapseTypes.MESSAGE_HEADER);
         _;
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              FORMATTERS                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Returns a properly typed bytes29 pointer for a header payload.
+     */
+    function castToHeader(bytes memory _payload) internal pure returns (bytes29) {
+        return _payload.ref(SynapseTypes.MESSAGE_HEADER);
+    }
+
+    /**
+     * @notice Returns a formatted Header payload with provided fields
+     * @param _origin               Domain of origin chain
+     * @param _sender               Address that sent the message
+     * @param _nonce                Message nonce on origin chain
+     * @param _destination          Domain of destination chain
+     * @param _recipient            Address that will receive the message
+     * @param _optimisticSeconds    Optimistic period for message execution
+     * @return Formatted header
+     **/
     function formatHeader(
         uint32 _origin,
         bytes32 _sender,
@@ -58,12 +86,24 @@ library Header {
             );
     }
 
-    function headerView(bytes memory _header) internal pure returns (bytes29) {
-        return _header.ref(Message.HEADER_TYPE);
+    /**
+     * @notice Checks that a payload is a formatted Header.
+     */
+    function isHeader(bytes29 _view) internal pure returns (bool) {
+        uint256 length = _view.len();
+        // Check if version exists in the payload
+        if (length < 2) return false;
+        // Check that header version and its length matches
+        return headerVersion(_view) == HEADER_VERSION && length == HEADER_LENGTH;
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            HEADER SLICING                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Returns header's version field.
     function headerVersion(bytes29 _header) internal pure onlyHeader(_header) returns (uint16) {
-        return uint16(_header.indexUint(0, 2));
+        return uint16(_header.indexUint(OFFSET_VERSION, 2));
     }
 
     /// @notice Returns header's origin field

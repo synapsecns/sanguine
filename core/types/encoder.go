@@ -179,9 +179,8 @@ func EncodeHeader(header Header) ([]byte, error) {
 // messageEncoder contains the binary structore of the message.
 type messageEncoder struct {
 	Version      uint16
-	HeaderOffset uint16
-	TipsOffset   uint16
-	BodyOffset   uint16
+	HeaderLength uint16
+	TipsLength   uint16
 }
 
 // EncodeMessage encodes a message.
@@ -196,16 +195,10 @@ func EncodeMessage(m Message) ([]byte, error) {
 		return []byte{}, fmt.Errorf("could not encode tips: %w", err)
 	}
 
-	tipsOffset := headerOffset + uint16(len(encodedHeader))
-	bodyOffset := tipsOffset + uint16(len(encodedTips))
-
-	// payload := append(append(encodedHeader, encodedTips...), m.Body()...)
-
 	newMessage := messageEncoder{
 		Version:      m.Version(),
-		HeaderOffset: headerOffset,
-		TipsOffset:   tipsOffset,
-		BodyOffset:   bodyOffset,
+		HeaderLength: uint16(len(encodedHeader)),
+		TipsLength:   uint16(len(encodedTips)),
 	}
 
 	buf := new(bytes.Buffer)

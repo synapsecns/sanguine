@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 import { Client } from "../client/Client.sol";
 import { TypedMemView } from "../libs/TypedMemView.sol";
-import { SystemMessage } from "./SystemMessage.sol";
+import { SystemMessage } from "../libs/SystemMessage.sol";
 import { ISystemMessenger } from "../interfaces/ISystemMessenger.sol";
 import { Tips } from "../libs/Tips.sol";
 
@@ -13,6 +13,7 @@ contract SystemMessenger is Client, ISystemMessenger {
     using Address for address;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
+    using SystemMessage for bytes;
     using SystemMessage for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -32,6 +33,16 @@ contract SystemMessenger is Client, ISystemMessenger {
     uint256[49] private __GAP;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Allows calls only from any of the System Contracts
+    modifier onlySystemContract() {
+        require(msg.sender == origin || msg.sender == destination, "Unauthorized caller");
+        _;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -47,16 +58,7 @@ contract SystemMessenger is Client, ISystemMessenger {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @notice Allows calls only from any of the System Contracts
-    modifier anySystem() {
-        require(msg.sender == origin || msg.sender == destination, "Unauthorized caller");
-        _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -73,8 +75,8 @@ contract SystemMessenger is Client, ISystemMessenger {
         uint32 _destination,
         SystemContracts _recipient,
         bytes memory _payload
-    ) external anySystem {
-        bytes memory message = SystemMessage.formatCall(uint8(_recipient), _payload);
+    ) external onlySystemContract {
+        bytes memory message = SystemMessage.formatSystemCall(uint8(_recipient), _payload);
         /**
          * @dev Origin should recognize SystemMessenger as the "true sender"
          *      and use SYSTEM_SENDER address as "sender" instead. This enables not
@@ -88,9 +90,11 @@ contract SystemMessenger is Client, ISystemMessenger {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice  Returns optimistic period of the merkle root, used for proving messages to SystemMessenger.
+     * @notice  Returns optimistic period of the merkle root, used for
+     *          proving messages to SystemMessenger.
      *          All messages to remote chains will be sent with this period.
-     *          Merkle root is checked to be at least this old on all incoming messages: see Client.handle()
+     *          Merkle root is checked to be at least this old (from time of submission)
+     *          for all incoming messages: see Client.handle()
      */
     function optimisticSeconds() public view override returns (uint32) {
         return _optimisticPeriod;
@@ -126,18 +130,19 @@ contract SystemMessenger is Client, ISystemMessenger {
         bytes32,
         bytes memory _message
     ) internal override {
-        (SystemMessage.SystemMessageType messageType, bytes29 messageView) = _message
-            .ref(0)
-            .systemMessage();
+        bytes29 messageView = _message.castToSystemMessage();
+        require(messageView.isSystemMessage(), "Not a system message");
+        (SystemMessage.MessageFlag messageType, bytes29 bodyView) = messageView.unpackMessage();
 
-        if (messageType == SystemMessage.SystemMessageType.Call) {
-            address recipient = _getSystemRecipient(messageView.callRecipient());
+        if (messageType == SystemMessage.MessageFlag.Call) {
+            address recipient = _getSystemRecipient(bodyView.callRecipient());
             require(recipient != address(0), "System Contract not set");
-            bytes29 payload = messageView.callPayload();
+            bytes29 payload = bodyView.callPayload();
             // this will call recipient and bubble the revert from the external call
             recipient.functionCall(payload.clone());
-        } else if (messageType == SystemMessage.SystemMessageType.Adjust) {
-            // TODO: handle messages with instructions to adjust some of the SystemMessenger parameters
+        } else if (messageType == SystemMessage.MessageFlag.Adjust) {
+            // TODO: handle messages with instructions
+            // to adjust some of the SystemMessenger parameters
         }
     }
 

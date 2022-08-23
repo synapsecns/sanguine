@@ -142,9 +142,9 @@ func TestMessageEncodeParity(t *testing.T) {
 	Nil(t, err)
 	Equal(t, version, types.MessageVersion)
 
-	headerOffset, err := messageContract.HeaderOffset(&bind.CallOpts{Context: ctx})
+	headerOffset, err := messageContract.OffsetHeader(&bind.CallOpts{Context: ctx})
 	Nil(t, err)
-	Equal(t, headerOffset, types.HeaderOffset)
+	Equal(t, headerOffset, big.NewInt(int64(types.HeaderOffset)))
 
 	// generate some fake data
 	origin := gofakeit.Uint32()
@@ -160,7 +160,7 @@ func TestMessageEncodeParity(t *testing.T) {
 	proverTip := randomUint96BigInt(t)
 	executorTip := randomUint96BigInt(t)
 
-	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, notaryTip, broadcasterTip, proverTip, executorTip, body)
+	formattedMessage, err := messageContract.FormatMessage0(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, notaryTip, broadcasterTip, proverTip, executorTip, body)
 	Nil(t, err)
 
 	decodedMessage, err := types.DecodeMessage(formattedMessage)

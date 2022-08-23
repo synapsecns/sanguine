@@ -492,6 +492,22 @@ library TypedMemView {
     }
 
     /**
+     * @notice          Shortcut to `slice`. Gets a view representing
+     *                  bytes from `_index` to end(memView).
+     * @param memView   The view
+     * @param _index    The start index
+     * @param newType   The new type
+     * @return          bytes29 - The new view
+     */
+    function sliceFrom(
+        bytes29 memView,
+        uint256 _index,
+        uint40 newType
+    ) internal pure returns (bytes29) {
+        return slice(memView, _index, len(memView) - _index, newType);
+    }
+
+    /**
      * @notice          Shortcut to `slice`. Gets a view representing the first `_len` bytes.
      * @param memView   The view
      * @param _len      The length

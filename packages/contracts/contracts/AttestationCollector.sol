@@ -30,12 +30,12 @@ contract AttestationCollector is GlobalNotaryRegistry, OwnableUpgradeable {
      * but different root (meaning one of the attestations is fraudulent),
      * we need a system so store all such attestations.
      *
-     * `attestationRoots` stores a list of attested roots for every (domain, nonce) pair
+     * `attestedRoots` stores a list of attested roots for every (domain, nonce) pair
      * `signatures` stores a signature for every submitted (domain, nonce, root) attestation.
      * We only store the first submitted signature for such attestation.
      */
     // [origin => [nonce => [roots]]]
-    mapping(uint32 => mapping(uint32 => bytes32[])) internal attestationRoots;
+    mapping(uint32 => mapping(uint32 => bytes32[])) internal attestedRoots;
     // [origin => [nonce => [root => signature]]]
     mapping(uint32 => mapping(uint32 => mapping(bytes32 => bytes))) internal signatures;
 
@@ -139,8 +139,8 @@ contract AttestationCollector is GlobalNotaryRegistry, OwnableUpgradeable {
         uint32 _nonce,
         uint256 _index
     ) public view returns (bytes32) {
-        require(_index < attestationRoots[_domain][_nonce].length, "!index");
-        return attestationRoots[_domain][_nonce][_index];
+        require(_index < attestedRoots[_domain][_nonce].length, "!index");
+        return attestedRoots[_domain][_nonce][_index];
     }
 
     /**
@@ -149,7 +149,7 @@ contract AttestationCollector is GlobalNotaryRegistry, OwnableUpgradeable {
      * If amount > 1, fraud was committed.
      */
     function rootsAmount(uint32 _domain, uint32 _nonce) external view returns (uint256) {
-        return attestationRoots[_domain][_nonce].length;
+        return attestedRoots[_domain][_nonce].length;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -207,17 +207,17 @@ contract AttestationCollector is GlobalNotaryRegistry, OwnableUpgradeable {
     }
 
     function _storeAttestation(address _notary, bytes29 _view) internal returns (bool) {
-        uint32 domain = _view.attestationDomain();
-        uint32 nonce = _view.attestationNonce();
-        bytes32 root = _view.attestationRoot();
+        uint32 domain = _view.attestedDomain();
+        uint32 nonce = _view.attestedNonce();
+        bytes32 root = _view.attestedRoot();
         require(nonce > latestNonce[domain][_notary], "Outdated attestation");
         // Don't store Attestation, if another Notary
         // have submitted the same (domain, nonce, root) before.
         if (_signatureExists(domain, nonce, root)) return false;
         latestNonce[domain][_notary] = nonce;
         latestRoot[domain][_notary] = root;
-        signatures[domain][nonce][root] = _view.attestationSignature().clone();
-        attestationRoots[domain][nonce].push(root);
+        signatures[domain][nonce][root] = _view.notarySignature().clone();
+        attestedRoots[domain][nonce].push(root);
         return true;
     }
 }
