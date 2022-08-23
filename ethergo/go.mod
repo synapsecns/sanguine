@@ -24,6 +24,7 @@ require (
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	github.com/teivah/onecontext v1.3.0
+	github.com/tenderly/tenderly-cli v1.1.2
 	github.com/tyler-smith/go-bip39 v1.1.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
@@ -266,7 +267,6 @@ require (
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/tenderly/tenderly-cli v1.1.2 // indirect
 	github.com/tendermint/btcd v0.1.1 // indirect
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15 // indirect
 	github.com/tendermint/go-amino v0.16.0 // indirect
