@@ -30,6 +30,7 @@ func verifyStringerUpdated(contractType contractTypeImpl) {
 
 // contractTypeImpl is the type of the contract being saved/fetched.
 // we use an interface here so the deploy helper here can be abstracted away from the synapse contracts
+//
 //go:generate go run golang.org/x/tools/cmd/stringer -type=contractTypeImpl -linecomment
 type contractTypeImpl int
 

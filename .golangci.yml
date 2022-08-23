@@ -86,6 +86,8 @@ linters:
     # no need to disallow returning interfaces
     - ireturn
     - nonamedreturns
+    - contextcheck
+    - nosnakecase
   fast: false
 
 issues:
