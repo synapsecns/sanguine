@@ -144,7 +144,7 @@ func TestMessageEncodeParity(t *testing.T) {
 
 	headerOffset, err := messageContract.OffsetHeader(&bind.CallOpts{Context: ctx})
 	Nil(t, err)
-	Equal(t, headerOffset, types.HeaderOffset)
+	Equal(t, headerOffset, big.NewInt(int64(types.HeaderOffset)))
 
 	// generate some fake data
 	origin := gofakeit.Uint32()
