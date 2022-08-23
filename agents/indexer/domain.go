@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/domains"
-	"time"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
 // domainIndexer indexes a single domain and stores event data in the database.
@@ -37,7 +39,7 @@ func NewDomainIndexer(db db.SynapseDB, domain domains.DomainClient, interval tim
 func (d domainIndexer) SyncMessages(ctx context.Context) error {
 	// get the latest indexed height for the dmoain. Note: this can differ based on contract, we'll need to switch this to a per contaact setting
 	indexedHeight, err := d.db.GetMessageLatestBlockEnd(ctx, d.domain.Config().DomainID)
-	if err != nil && !errors.Is(err, db.ErrNoStoredBlockForChain) {
+	if err != nil && !errors.Is(err, dbcommon.ErrNoStoredBlockForChain) {
 		return fmt.Errorf("could not get indexed height: %w", err)
 	}
 

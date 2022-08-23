@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/synapse-node/contracts/bridge"
-	"time"
 )
 
 // AttestationProducer updates a producer.
@@ -56,7 +58,7 @@ func (a AttestationProducer) Start(ctx context.Context) error {
 func (a AttestationProducer) FindLatestNonce(ctx context.Context) (nonce uint32, err error) {
 	latestNonce, err := a.db.RetrieveLatestCommittedMessageNonce(ctx, a.domain.Config().DomainID)
 	if err != nil {
-		if errors.Is(err, db.ErrNoNonceForDomain) {
+		if errors.Is(err, dbcommon.ErrNoNonceForDomain) {
 			return 0, nil
 		}
 		return 0, fmt.Errorf("could not find latest root: %w", err)
@@ -90,7 +92,7 @@ func (a AttestationProducer) update(ctx context.Context) error {
 	// Ensure we have not already signed a conflicting update.
 	// Ignore suggested if we have.
 	existing, err := a.db.RetrieveSignedAttestationByNonce(ctx, a.domain.Config().DomainID, suggestedAttestation.Nonce())
-	if err != nil && !errors.Is(err, db.ErrNotFound) {
+	if err != nil && !errors.Is(err, dbcommon.ErrNotFound) {
 		return fmt.Errorf("could not get update: %w", err)
 		// existing was found
 	} else if err == nil {

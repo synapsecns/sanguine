@@ -3,9 +3,10 @@ package base
 import (
 	"context"
 	"fmt"
+
 	"github.com/Thor-x86/nullable"
-	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm/clause"
 )
@@ -82,7 +83,7 @@ func (s Store) RetrieveLatestCommittedMessageNonce(ctx context.Context, domainID
 
 	// if no nonces, return the corresponding eror.
 	if nonce.Get() == nil {
-		return 0, db.ErrNoNonceForDomain
+		return 0, dbcommon.ErrNoNonceForDomain
 	}
 	return *nonce.Get(), nil
 }

@@ -3,11 +3,16 @@ package mysql
 import (
 	"context"
 	"fmt"
+	"time"
+
+	// "github.com/synapsecns/sanguine/agents/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/base"
+	common_base "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/base"
+	common_mysql "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/mysql"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"time"
 )
 
 // Store is the sqlite store. It extends the base store for sqlite specific queries.
@@ -23,10 +28,10 @@ var NamingStrategy = schema.NamingStrategy{}
 
 // NewMysqlStore creates a new mysql store for a given data store.
 func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
-	logger.Debug("creating mysql store")
+	common_mysql.Logger.Debug("creating mysql store")
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
-		Logger:               base.GetGormLogger(logger),
+		Logger:               common_base.GetGormLogger(common_mysql.Logger),
 		FullSaveAssociations: true,
 		NamingStrategy:       NamingStrategy,
 		NowFunc:              time.Now,

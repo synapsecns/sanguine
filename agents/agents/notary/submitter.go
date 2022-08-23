@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/domains"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"time"
 )
 
 // AttestationSubmitter submits updates continuously.
@@ -45,7 +47,7 @@ func (u AttestationSubmitter) Start(ctx context.Context) error {
 			return nil
 		case <-time.After(u.interval):
 			nonce, err := u.db.RetrieveSignedAttestationByNonce(ctx, u.domain.Config().DomainID, committedNonce+1)
-			if errors.Is(err, db.ErrNotFound) {
+			if errors.Is(err, dbcommon.ErrNotFound) {
 				logger.Infof("No produced attestation to submit for nonce: %d", nonce)
 				continue
 			} else if err != nil {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/scribe/db"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/scribe/types"
 	"gorm.io/gorm"
 )
@@ -41,7 +41,7 @@ func (s Store) RetrieveReceiptByTxHash(ctx context.Context, txHash common.Hash) 
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("could not find receipt with tx hash %s: %w", txHash.String(), db.ErrNotFound)
+			return nil, fmt.Errorf("could not find receipt with tx hash %s: %w", txHash.String(), dbcommon.ErrNotFound)
 		}
 		return nil, fmt.Errorf("could not store receipt: %w", dbTx.Error)
 	}

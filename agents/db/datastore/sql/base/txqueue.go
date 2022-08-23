@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/agents/db"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/gorm"
 )
 
@@ -81,7 +81,7 @@ func (s Store) getRawTXIDByParams(ctx context.Context, nonce uint64, chainID *bi
 	}).Find(&res)
 
 	if dbTx.RowsAffected == 0 {
-		return 0, db.ErrNotFound
+		return 0, dbcommon.ErrNotFound
 	}
 
 	if dbTx.Error != nil {
@@ -165,7 +165,7 @@ func (s Store) GetNonceForChainID(ctx context.Context, fromAddress common.Addres
 		}
 
 		if count == 0 {
-			return 0, db.ErrNoNonceForChain
+			return 0, dbcommon.ErrNoNonceForChain
 		}
 	}
 

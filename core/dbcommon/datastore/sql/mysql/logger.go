@@ -4,4 +4,4 @@ import (
 	"github.com/ipfs/go-log"
 )
 
-var logger = log.Logger("synapse-mysql")
+var Logger = log.Logger("synapse-mysql")

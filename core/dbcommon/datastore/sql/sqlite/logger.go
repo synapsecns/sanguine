@@ -4,4 +4,4 @@ import (
 	"github.com/ipfs/go-log"
 )
 
-var logger = log.Logger("synapse-sqlite")
+var Logger = log.Logger("synapse-sqlite")
