@@ -11,8 +11,8 @@ import (
 	"go/printer"
 	"go/token"
 	"golang.org/x/tools/go/ast/astutil"
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -132,7 +132,7 @@ func getUpdatedFileContents(path, newPackageName string) (fileContents []byte, e
 		return fileContents, fmt.Errorf("could not open file at %s: %w", path, err)
 	}
 
-	fileContents, err = ioutil.ReadAll(file)
+	fileContents, err = io.ReadAll(file)
 	if err != nil {
 		return fileContents, fmt.Errorf("could not read file %s: %w", fileContents, err)
 	}
