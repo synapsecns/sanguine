@@ -128,6 +128,7 @@ jobs:
             agents: 'agents/**'
             scribe: 'scribe/**'
             tools: 'tools/**'
+            core: 'core/**'
             ethergo: 'ethergo/**'
       - name: Check For Solidity Changes
         id: filter_solidity
