@@ -75,8 +75,6 @@ contract Origin is
 
     // ============ Public Storage Variables ============
 
-    // domain => next available nonce for the domain
-    uint32 public nonce;
     // contract responsible for Notary bonding, slashing and rotation
     INotaryManager public notaryManager;
     // Current state of contract
@@ -85,7 +83,7 @@ contract Origin is
     // ============ Upgrade Gap ============
 
     // gap for upgrade safety
-    uint256[47] private __GAP;
+    uint256[48] private __GAP;
 
     // ============ Events ============
 
@@ -240,14 +238,14 @@ contract Origin is
     ) external payable notFailed {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         require(_tips.castToTips().totalTips() == msg.value, "!tips");
-        // get the next nonce for the destination domain, then increment it
-        nonce = nonce + 1;
+        // get the next nonce
+        uint32 _nonce = nonce() + 1;
         bytes32 _sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
         bytes memory _header = Header.formatHeader(
             _localDomain(),
             _sender,
-            nonce,
+            _nonce,
             _destination,
             _recipientAddress,
             _optimisticSeconds
@@ -262,8 +260,8 @@ contract Origin is
         // note: leafIndex is count() - 1 since new leaf has already been inserted
         emit Dispatch(
             _messageHash,
-            count() - 1,
-            _destinationAndNonce(_destination, nonce),
+            _nonce - 1,
+            _destinationAndNonce(_destination, _nonce),
             _tips,
             _message
         );
@@ -271,16 +269,27 @@ contract Origin is
 
     /**
      * @notice Suggest an attestation for the Notary to sign and submit.
-     * @dev If no messages have been sent, null bytes returned for both
+     * @dev If no messages have been sent, following values are returned:
+     * - nonce = 0
+     * - root = 0x27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757
+     * Which is the merkle root for an empty sparse merkle tree.
      * @return _nonce Current nonce
      * @return _root Current merkle root
      */
     function suggestAttestation() external view returns (uint32 _nonce, bytes32 _root) {
-        uint256 length = historicalRoots.length;
-        if (length != 0) {
-            _nonce = uint32(length - 1);
-            _root = historicalRoots[_nonce];
-        }
+        _nonce = nonce();
+        _root = historicalRoots[_nonce];
+    }
+
+    // ============ Public Functions  ============
+
+    /**
+     * @notice Returns nonce of the last inserted Merkle root.
+     */
+    function nonce() public view returns (uint32) {
+        // historicalRoots has length of 1 upon initializing,
+        // so this never underflows assuming contract was initialized
+        return uint32(historicalRoots.length - 1);
     }
 
     // ============ Internal Functions  ============
