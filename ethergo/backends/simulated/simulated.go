@@ -17,11 +17,8 @@ import (
 	"github.com/synapsecns/synapse-node/pkg/evm"
 	"github.com/synapsecns/synapse-node/pkg/evm/client"
 	"github.com/synapsecns/synapse-node/pkg/evm/gas"
-	"github.com/synapsecns/synapse-node/testutils/backends"
-	"github.com/synapsecns/synapse-node/testutils/contracts"
 	"github.com/synapsecns/synapse-node/testutils/utils"
 	"github.com/teivah/onecontext"
-	"github.com/tenderly/tenderly-cli/providers"
 	"math/big"
 	"testing"
 	"time"
@@ -83,12 +80,6 @@ func (s *Backend) EnableTenderly() (enabled bool) {
 // Commit commits pending txes to the backend. Does not thing if no txes are pending.
 func (s *Backend) Commit() {
 	s.simulatedBackend.Commit()
-}
-
-// AddContract doesn't do anything on a simualated backend.
-func (s *Backend) AddContract(ctx context.Context, chn evm.Chain, contractType contracts.ContractType, contract backends.DeployedContract) (resultingContract *providers.Contract, err error) {
-	//nolint: nilnil
-	return nil, nil
 }
 
 // EmptyBlock mines an empty block.

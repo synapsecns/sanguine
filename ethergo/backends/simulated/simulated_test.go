@@ -5,8 +5,6 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/synapse-node/pkg/evm/client"
-	"github.com/synapsecns/synapse-node/testutils/contracts"
-	"github.com/synapsecns/synapse-node/testutils/contracts/deployers"
 	"github.com/synapsecns/synapse-node/testutils/utils"
 	"math/big"
 )
@@ -20,7 +18,6 @@ func (g *SimulatedSuite) TestGetSimulatedBackend() {
 	Equal(g.T(), uint(be.ChainConfig().ChainID.Uint64()), be.GetChainID())
 	Equal(g.T(), be.BackendName(), simulated.BackendName)
 	False(g.T(), be.EnableTenderly())
-	Nil(g.T(), be.VerifyContract(contracts.BridgeType, &deployers.DeployedContract{}))
 
 	// generate a new mock address
 	testAddress := utils.NewMockAddress()
