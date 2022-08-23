@@ -17,7 +17,11 @@ import (
 func (s Store) StoreLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	topics := []sql.NullString{}
 	topicsLength := len(log.Topics)
+	// Ethereum topics are always 3 long, excluding the primary topic.
 	indexedTopics := 3
+	// Loop through the topics and convert them to nullStrings.
+	// If the topic is empty, we set the String to "NULL" and Valid to false.
+	// If the topic is not empty, provide its string value and set Valid to true.
 	for index := 0; index <= indexedTopics+1; index++ {
 		if index < topicsLength {
 			topics = append(topics, sql.NullString{
@@ -68,8 +72,6 @@ func (s Store) RetrieveLogByTxHash(ctx context.Context, txHash common.Hash) (log
 		return nil, fmt.Errorf("could not store log: %w", dbTx.Error)
 	}
 
-	// var topicA common.Hash
-
 	parsedLog := types.NewLog(
 		common.HexToAddress(dbLog.Address),
 		dbLog.ChainID,
@@ -89,9 +91,11 @@ func (s Store) RetrieveLogByTxHash(ctx context.Context, txHash common.Hash) (log
 	return parsedLog, nil
 }
 
+// nullStringToHash converts a null string to a hash.
 func nullStringToHash(ns sql.NullString) common.Hash {
 	if ns.Valid {
 		return common.HexToHash(ns.String)
 	}
+	// If the nullString is not valid, return an empty hash.
 	return common.Hash{}
 }

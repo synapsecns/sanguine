@@ -15,8 +15,10 @@ import (
 func NewStoreFromConfig(ctx context.Context, dbType DBType, connString string) (db.EventDB, error) {
 	switch dbType {
 	case Mysql:
+		//nolint:wrapcheck
 		return mysql.NewMysqlStore(ctx, connString)
 	case Sqlite:
+		//nolint:wrapcheck
 		return sqlite.NewSqliteStore(ctx, connString)
 	default:
 		return nil, ErrNoSuchDriver
