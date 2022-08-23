@@ -1712,8 +1712,6 @@ github.com/stretchr/testify v1.7.1 h1:5TQK59W5E3v0r2duFAb7P95B6hEeOyEnHRa8MjYSMT
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/subosito/gotenv v1.2.0 h1:Slr1R9HxAlEKefgq5jn9U+DnETlIUa6HfgEzj0g5d7s=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
-github.com/synapsecns/sanguine/core v0.0.0-20220627141535-d43b02ec9f08 h1:WkTAEz+nbU6F1wPN1ttphB3xjQvfHoCiB/tW51iHoE0=
-github.com/synapsecns/sanguine/core v0.0.0-20220627141535-d43b02ec9f08/go.mod h1:LMnrTfPI7P2WwSBddhnKaj3XSN2qv3dOCd1dzmkj1GE=
 github.com/synapsecns/synapse-node v0.242.1-0.20220523175312-65a2f2613b1f h1:F2+tY8Y1n1Qn77mROlRcqV+k987FJNTwL4k48s4pck0=
 github.com/synapsecns/synapse-node v0.242.1-0.20220523175312-65a2f2613b1f/go.mod h1:5YlKLpGdk5NpjbEguajL2BA8xFvY4EqL1asSpUm8+4o=
 github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=

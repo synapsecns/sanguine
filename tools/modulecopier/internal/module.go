@@ -5,7 +5,6 @@ import (
 	"github.com/markbates/pkger"
 	"github.com/pkg/errors"
 	"golang.org/x/mod/modfile"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -52,7 +51,7 @@ func GetModulePath(dependencyName string) (modPath string, err error) {
 	resolvedModFile := path.Join(depModFile.Info().Dir, modFileName)
 
 	//nolint: gosec
-	depModFileContents, err := ioutil.ReadFile(resolvedModFile)
+	depModFileContents, err := os.ReadFile(resolvedModFile)
 	if err != nil {
 		return "", fmt.Errorf("could not read resolved module file at %s: %w", depModFile.Path().String(), err)
 	}
@@ -130,7 +129,7 @@ func getModfile() (*modfile.File, error) {
 
 	// read the file
 	//nolint: gosec
-	modContents, err := ioutil.ReadFile(modFile)
+	modContents, err := os.ReadFile(modFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not read modfile: %w", err)
 	}
