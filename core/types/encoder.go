@@ -195,14 +195,10 @@ func EncodeMessage(m Message) ([]byte, error) {
 		return []byte{}, fmt.Errorf("could not encode tips: %w", err)
 	}
 
-	tipsOffset := headerOffset + uint16(len(encodedHeader))
-
-	// payload := append(append(encodedHeader, encodedTips...), m.Body()...)
-
 	newMessage := messageEncoder{
 		Version:      m.Version(),
-		HeaderLength: headerOffset,
-		TipsLength:   tipsOffset,
+		HeaderLength: uint16(len(encodedHeader)),
+		TipsLength:   uint16(len(encodedTips)),
 	}
 
 	buf := new(bytes.Buffer)
