@@ -56,22 +56,6 @@ contract Origin is
     using Tips for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                ENUMS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // States:
-    //   0 - UnInitialized - before initialize function is called
-    //   note: the contract is initialized at deploy time, so it should never be in this state
-    //   1 - Active - as long as the contract has not become fraudulent
-    //   2 - Failed - after a valid fraud proof has been submitted;
-    //   contract will no longer accept new messages
-    enum States {
-        UnInitialized,
-        Active,
-        Failed
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -85,11 +69,9 @@ contract Origin is
 
     // contract responsible for Notary bonding, slashing and rotation
     INotaryManager public notaryManager;
-    // Current state of contract
-    States public state;
 
     // gap for upgrade safety
-    uint256[48] private __GAP; //solhint-disable-line var-name-mixedcase
+    uint256[49] private __GAP; //solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
@@ -172,7 +154,6 @@ contract Origin is
         __SystemContract_initialize();
         _setNotaryManager(_notaryManager);
         _addNotary(notaryManager.notary());
-        state = States.Active;
         // Insert a historical root so nonces start at 1 rather then 0.
         // Here we insert the default root of a sparse merkle tree
         historicalRoots.push(hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757");
@@ -187,14 +168,6 @@ contract Origin is
      */
     modifier onlyNotaryManager() {
         require(msg.sender == address(notaryManager), "!notaryManager");
-        _;
-    }
-
-    /**
-     * @notice Ensures that contract state != FAILED when the function is called
-     */
-    modifier notFailed() {
-        require(state != States.Failed, "failed state");
         _;
     }
 
@@ -215,13 +188,8 @@ contract Origin is
          *      1a. onlyNotaryManager -> onlyBondingManager (or w/e the name would be)
          *      2. There is supposed to be more than one active Notary
          *      2a. setNotary() -> addNotary()
-         *      3. No need to reset the `state`, as Origin is not supposed
-         *      to be in Failed state in the first place (see _fail() for reasoning).
          */
         _addNotary(_notary);
-        // set the Origin state to Active
-        // now that Notary has been rotated
-        state = States.Active;
     }
 
     /**
@@ -253,7 +221,7 @@ contract Origin is
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
-    ) external payable notFailed {
+    ) external payable haveActiveNotary {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         require(_tips.castToTips().totalTips() == msg.value, "!tips");
         // get the next nonce
@@ -344,13 +312,15 @@ contract Origin is
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool isValid) {
+        /// @dev Notary role have been checked in ReportHub, meaning
+        /// _notary is an active Notary at this point.
         uint32 _nonce = _attestationView.attestedNonce();
         bytes32 _root = _attestationView.attestedRoot();
         isValid = _isValidAttestation(_nonce, _root);
         if (!isValid) {
             emit FraudAttestation(_notary, _attestation);
             // Guard doesn't receive anything, as Notary wasn't slashed using the Fraud Report
-            _fail(_notary, address(0));
+            _slashNotary(_notary, address(0));
             /**
              * TODO: design incentives for the reporter in a way, where they get less
              * by reporting directly instead of using a correct Fraud Report.
@@ -390,8 +360,8 @@ contract Origin is
      * @dev Both Notary and Guard signatures
      * have been checked at this point (see ReportHub.sol).
      *
-     * @param _guard            Guard address
-     * @param _notary           Notary address
+     * @param _guard            Guard address (signature&role already verified)
+     * @param _notary           Notary address (signature&role already verified)
      * @param _attestationView  Memory view over reported Attestation
      * @param _reportView       Memory view over Report
      * @param _report           Payload with Report data and signature
@@ -403,7 +373,9 @@ contract Origin is
         bytes29 _attestationView,
         bytes29 _reportView,
         bytes memory _report
-    ) internal override notFailed returns (bool) {
+    ) internal override returns (bool) {
+        /// @dev Notary and Guard roles have been checked in ReportHub, meaning
+        /// _notary is an active Notary, _guard is an active Guard at this point.
         uint32 _nonce = _attestationView.attestedNonce();
         bytes32 _root = _attestationView.attestedRoot();
         if (_isValidAttestation(_nonce, _root)) {
@@ -426,7 +398,7 @@ contract Origin is
                 // Report is correct, slash the Notary
                 emit CorrectFraudReport(_guard, _report);
                 emit FraudAttestation(_notary, _attestationView.clone());
-                _fail(_notary, _guard);
+                _slashNotary(_notary, _guard);
                 return true;
             } else {
                 // Flag: Valid
@@ -435,7 +407,7 @@ contract Origin is
                 _slashGuard(_guard);
                 emit FraudAttestation(_notary, _attestationView.clone());
                 // Guard doesn't receive anything due to Valid flag on the Report
-                _fail(_notary, address(0));
+                _slashNotary(_notary, address(0));
                 return false;
             }
         }
@@ -452,24 +424,14 @@ contract Origin is
     }
 
     /**
-     * @notice Slash the Notary and set contract state to FAILED
-     * @dev Called when fraud is proven (Fraud Attestation)
+     * @notice Slash the Notary.
+     * @dev Called when fraud is proven (Fraud Attestation).
      * @param _notary   Notary to slash
      * @param _guard    Guard who reported fraudulent Notary [address(0) if not a Guard report]
      */
-    function _fail(address _notary, address _guard) internal {
-        /**
-         * TODO: remove Failed state
-         * @dev With the asynchronous attestations Origin is never in the FAILED state.
-         * It's rather some Destinations might end up with a corrupted merkle state
-         * (upon receiving a fraud attestation). It's a Destination job to get this conflict fixed.
-         * As long as there's more than one active Notary, new messages on Origin could be verified
-         * by an honest Notary signing fresh valid attestations.
-         * Meaning Origin should not be halted upon discovering a fraud attestation.
-         */
-        // set contract to FAILED
-        state = States.Failed;
-        // slash Notary
+    function _slashNotary(address _notary, address _guard) internal {
+        // _notary is always an active Notary at this point
+        _removeNotary(_notary);
         notaryManager.slashNotary(payable(msg.sender));
         emit NotarySlashed(_notary, _guard, msg.sender);
     }
@@ -480,7 +442,8 @@ contract Origin is
      * @param _guard    Guard to slash
      */
     function _slashGuard(address _guard) internal {
-        // TODO: implement actual slashing & slash only once
+        // _guard is always an active Guard at this point
+        _removeGuard(_guard);
         emit GuardSlashed(_guard, msg.sender);
     }
 

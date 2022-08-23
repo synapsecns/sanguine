@@ -34,7 +34,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
     function test_correctlyInitialized() public {
         assertEq(address(origin.notaryManager()), address(notaryManager));
         assertEq(origin.owner(), address(this));
-        assertEq(uint256(origin.state()), 1);
+        assertEq(uint256(origin.notariesAmount()), 1);
         assertTrue(origin.isNotary(notary));
         // Root of an empty sparse Merkle tree should be stored with nonce=0
         assertEq(origin.historicalRoots(0), origin.root());
@@ -77,9 +77,9 @@ contract OriginTest is SynapseTestWithNotaryManager {
         origin.setNotaryManager(address(1337));
     }
 
-    function test_haltsOnFail() public {
-        origin.setFailed(notary);
-        vm.expectRevert("failed state");
+    function test_haltsOnNoNotaries() public {
+        origin.removeAllNotaries();
+        vm.expectRevert("!notaries");
         origin.dispatch(
             remoteDomain,
             addressToBytes32(address(1337)),
@@ -224,8 +224,10 @@ contract OriginTest is SynapseTestWithNotaryManager {
         emit NotarySlashed(notary, guard, address(this));
         // Origin should recognize this as a correct report on fraud attestation
         assertTrue(origin.submitReport(report));
-        // Origin should be in Failed state
-        assertEq(uint256(origin.state()), 2);
+        // Origin should have zero active notaries
+        assertEq(uint256(origin.notariesAmount()), 0);
+        // guard should be still Origin's Guard
+        assertTrue(origin.isGuard(guard));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -253,8 +255,10 @@ contract OriginTest is SynapseTestWithNotaryManager {
         (bytes memory report, ) = signValidReport(guardPK, attestation);
         // Origin should recognize this as a correct report on valid attestation
         assertTrue(origin.submitReport(report));
-        // Origin should be in Active state
-        assertEq(uint256(origin.state()), 1);
+        // Origin should have one active notary
+        assertEq(uint256(origin.notariesAmount()), 1);
+        // guard should be still Origin's Guard
+        assertTrue(origin.isGuard(guard));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -312,13 +316,15 @@ contract OriginTest is SynapseTestWithNotaryManager {
         assertFalse(origin.submitReport(report));
         if (flag == Report.Flag.Valid) {
             // Incorrect Valid Report means reported attestation is in fact fraud
-            // Origin should be in Failed state
-            assertEq(uint256(origin.state()), 2);
+            // Origin should have zero active notaries
+            assertEq(uint256(origin.notariesAmount()), 0);
         } else {
             // Incorrect Fraud Report means reported attestation is in fact valid
-            // Origin should be in Active state
-            assertEq(uint256(origin.state()), 1);
+            // Origin should have one active notary
+            assertEq(uint256(origin.notariesAmount()), 1);
         }
+        // guard should not be Origin's Guard anymore
+        assertFalse(origin.isGuard(guard));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -332,8 +338,8 @@ contract OriginTest is SynapseTestWithNotaryManager {
         (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
         // Submit a valid attestation
         assertTrue(origin.submitAttestation(attestation));
-        // Origin should be in Active state
-        assertEq(uint256(origin.state()), 1);
+        // Origin should have one active notary
+        assertEq(uint256(origin.notariesAmount()), 1);
     }
 
     function test_submitAttestation_wrongDomain() public {
@@ -388,8 +394,8 @@ contract OriginTest is SynapseTestWithNotaryManager {
         emit NotarySlashed(notary, address(0), address(this));
         // False means that attestation was not Valid (i.e. Fraud)
         assertFalse(origin.submitAttestation(attestation));
-        // Origin should be in Failed state
-        assertEq(uint256(origin.state()), 2);
+        // Origin should have zero active notaries
+        assertEq(uint256(origin.notariesAmount()), 0);
     }
 
     // Dispatches 4 messages, and then Notary signs latest new roots
@@ -404,9 +410,12 @@ contract OriginTest is SynapseTestWithNotaryManager {
         assertEq(root, origin.historicalRoots(nonce));
         (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
         (bytes memory report, ) = signFraudReport(guardPK, attestation);
-        // Should not be an improper attestation
+        // Should be a valid attestation
+        assertTrue(origin.submitAttestation(attestation));
+        // Should recognize report as invalid
         assertFalse(origin.submitReport(report));
-        assertEq(uint256(origin.state()), 1);
+        // Origin should have one active notary
+        assertEq(uint256(origin.notariesAmount()), 1);
     }
 
     function test_onlySystemRouter() public {
