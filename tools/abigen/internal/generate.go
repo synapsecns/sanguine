@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/synapse-node/testutils/debug/etherscan"
+	"github.com/synapsecns/sanguine/tools/abigen/internal/etherscan"
 	"os"
 	"os/exec"
 	"path"

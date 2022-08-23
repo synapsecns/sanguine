@@ -7,7 +7,10 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/ethereum/go-ethereum v1.10.11
 	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
+	github.com/gofrs/flock v0.8.1
+	github.com/ipfs/go-log v1.0.5
 	github.com/markbates/pkger v0.17.1
+	github.com/nanmu42/etherscan-api v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.1
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
@@ -80,7 +83,6 @@ require (
 	github.com/gobuffalo/here v0.6.0 // indirect
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/godbus/dbus/v5 v5.0.4 // indirect
-	github.com/gofrs/flock v0.8.1 // indirect
 	github.com/gogo/gateway v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -117,7 +119,6 @@ require (
 	github.com/ipfs/go-ipfs-config v0.0.4 // indirect
 	github.com/ipfs/go-ipfs-util v0.0.2 // indirect
 	github.com/ipfs/go-ipns v0.0.2 // indirect
-	github.com/ipfs/go-log v1.0.5 // indirect
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jbenet/go-temp-err-catcher v0.1.0 // indirect
@@ -197,7 +198,6 @@ require (
 	github.com/multiformats/go-multihash v0.0.14 // indirect
 	github.com/multiformats/go-multistream v0.1.2 // indirect
 	github.com/multiformats/go-varint v0.0.6 // indirect
-	github.com/nanmu42/etherscan-api v1.4.0 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
