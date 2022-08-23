@@ -4,9 +4,9 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/testutil"
-	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/synapse-node/testutils"
+	"github.com/synapsecns/synapse-node/testutils/backends"
+	"github.com/synapsecns/synapse-node/testutils/backends/preset"
 	"testing"
 )
 

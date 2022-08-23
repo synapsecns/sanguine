@@ -11,8 +11,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
-	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
+	"github.com/synapsecns/synapse-node/testutils/backends"
 )
 
 // MessageHarnessDeployer deploys the message harness for testing.

@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/neverlee/keymutex"
 	"github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/synapse-node/testutils/backends"
 	"strconv"
 	"sync"
 	"testing"

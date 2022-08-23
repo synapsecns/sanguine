@@ -5,9 +5,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/sanguine/ethergo/example/counter"
+	"github.com/synapsecns/synapse-node/testutils/backends"
 )
 
 // CounterDeployer deploys a counter.

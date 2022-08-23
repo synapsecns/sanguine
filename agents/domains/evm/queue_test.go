@@ -11,11 +11,11 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	signerMocks "github.com/synapsecns/sanguine/ethergo/signer/signer/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	chainMocks "github.com/synapsecns/synapse-node/pkg/evm/mocks"
+	"github.com/synapsecns/synapse-node/testutils/backends/simulated"
 	"math/big"
 )
 

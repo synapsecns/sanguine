@@ -5,7 +5,7 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/crypto"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/backends/ganache"
+	"github.com/synapsecns/synapse-node/testutils/backends/ganache"
 	"log"
 )
 

@@ -11,12 +11,12 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/testutil"
-	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/synapse-node/testutils"
+	"github.com/synapsecns/synapse-node/testutils/backends"
+	"github.com/synapsecns/synapse-node/testutils/backends/preset"
 )
 
 // DestinationSuite is the destination test suite.
