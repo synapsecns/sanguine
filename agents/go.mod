@@ -3,6 +3,7 @@ module github.com/synapsecns/sanguine/agents
 go 1.17
 
 require (
+	github.com/BurntSushi/toml v1.1.0
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/Thor-x86/nullable v1.0.0
 	github.com/aws/smithy-go v1.11.3
@@ -32,7 +33,6 @@ require (
 require (
 	filippo.io/edwards25519 v1.0.0-beta.2 // indirect
 	github.com/99designs/keyring v1.1.6 // indirect
-	github.com/BurntSushi/toml v1.1.0 // indirect
 	github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d // indirect
 	github.com/CosmWasm/wasmvm v0.16.3 // indirect
 	github.com/DataDog/zstd v1.4.5 // indirect
