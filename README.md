@@ -17,7 +17,9 @@ root
 │   ├── <a href="./packages/contracts">contracts</a>: Contracts used for synapse
 ├── <a href="./tools">tools</a>
 │   ├── <a href="./tools/abigen">abigen</a>: Used to generate abigen bindings for go
-├── <a href="./core">core</a>: Core service contains the code used by different agents
+│   ├── <a href="./tools/module copier">module copier</a>: Used to copy internal modules and export methods for testing
+├── <a href="./agents">agents</a>: agents contain all the agents used in optimistic messaging
+├── <a href="./scribe">scribe</a>: scribe is a generalized event indexer
 </pre>
 
 

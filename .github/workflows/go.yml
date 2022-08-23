@@ -125,7 +125,7 @@ jobs:
         id: filter_go
         with:
           filters: |
-            core: 'core/**'
+            agents: 'agents/**'
             scribe: 'scribe/**'
             tools: 'tools/**'
             ethergo: 'ethergo/**'
@@ -243,8 +243,8 @@ jobs:
     if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes }}
     strategy:
       matrix:
-        # only do on core for now
-        package: ['core']
+        # only do on agents for now
+        package: ['agents']
     steps:
       - uses: actions/checkout@v2
         with:
