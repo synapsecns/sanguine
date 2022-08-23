@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/synapsecns/synapse-node/pkg/common"
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 )
 
@@ -25,22 +25,22 @@ type signature struct {
 // NewSignature creates a new signature.
 func NewSignature(v, r, s *big.Int) Signature {
 	return signature{
-		v: common.CopyBigInt(v),
-		r: common.CopyBigInt(r),
-		s: common.CopyBigInt(s),
+		v: core.CopyBigInt(v),
+		r: core.CopyBigInt(r),
+		s: core.CopyBigInt(s),
 	}
 }
 
 func (s signature) V() *big.Int {
-	return common.CopyBigInt(s.v)
+	return core.CopyBigInt(s.v)
 }
 
 func (s signature) R() *big.Int {
-	return common.CopyBigInt(s.r)
+	return core.CopyBigInt(s.r)
 }
 
 func (s signature) S() *big.Int {
-	return common.CopyBigInt(s.s)
+	return core.CopyBigInt(s.s)
 }
 
 var _ Signature = signature{}

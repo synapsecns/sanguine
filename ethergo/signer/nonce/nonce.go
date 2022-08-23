@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/pkg/errors"
-	synapseCommon "github.com/synapsecns/synapse-node/pkg/common"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/synapse-node/pkg/common/mapmutex"
 	"math/big"
 	"sync"
@@ -62,7 +62,7 @@ func NewNonceManager(ctx context.Context, chain ChainQuery, chainID *big.Int) Ma
 		//nolint: containedctx
 		ctx:          ctx,
 		chain:        chain,
-		chainID:      synapseCommon.CopyBigInt(chainID),
+		chainID:      core.CopyBigInt(chainID),
 		nonceMap:     make(map[common.Address]*big.Int),
 		nonceMapLock: sync.RWMutex{},
 		accountMutex: mapmutex.NewStringerMapMutex(),
