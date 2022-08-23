@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/synapse-node/testutils/debug/etherscan"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -103,12 +102,12 @@ func BuildTemplates(version, file, pkg, filename string, optimizerRuns int) erro
 		return fmt.Errorf("could not generate abigen file: %w", err)
 	}
 
-	err = ioutil.WriteFile(fmt.Sprintf("%s.abigen.go", filename), []byte(code), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s.abigen.go", filename), []byte(code), 0600)
 	if err != nil {
 		return fmt.Errorf("could not write abigen file: %w", err)
 	}
 
-	err = ioutil.WriteFile(fmt.Sprintf("%s.contractinfo.json", filename), marshalledContracts, 0600)
+	err = os.WriteFile(fmt.Sprintf("%s.contractinfo.json", filename), marshalledContracts, 0600)
 	if err != nil {
 		return fmt.Errorf("could not write contract info file: %w", err)
 	}
@@ -141,7 +140,7 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 		return nil, fmt.Errorf("could not determine working dir: %w", err)
 	}
 	//nolint: gosec
-	solContents, err := ioutil.ReadFile(filePath)
+	solContents, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read sol file %s: %w", filePath, err)
 	}

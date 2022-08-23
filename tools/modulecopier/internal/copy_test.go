@@ -9,7 +9,7 @@ import (
 	"go/parser"
 	"go/token"
 	"io/fs"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -57,7 +57,7 @@ func (s GeneratorSuite) TestCopyFile() {
 // validateGoFile validates that the file was correctly copied with the correct prefix.
 func (s GeneratorSuite) validateGoFile(path, packageName string) {
 	//nolint: gosec
-	src, err := ioutil.ReadFile(path)
+	src, err := os.ReadFile(path)
 	Nil(s.T(), err)
 
 	True(s.T(), bytes.Contains(src, []byte("DO NOT EDIT")))
