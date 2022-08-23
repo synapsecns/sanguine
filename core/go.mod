@@ -17,6 +17,7 @@ require (
 	github.com/synapsecns/synapse-node v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v2 v2.11.2
 	go.uber.org/zap v1.22.0
+	gorm.io/gorm v1.21.15
 )
 
 require (
