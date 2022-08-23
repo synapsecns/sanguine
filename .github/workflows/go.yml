@@ -26,12 +26,15 @@ jobs:
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: password
         options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
-
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
           submodules: 'recursive'
+
+      # todo: consider making this a service. You'd need another way to expose the private keys for the test
+      - name: Run rinkeby
+        run: docker run -p 8045:8545 -d -v /tmp/keys/:/tmp/keys/  --name rinkeby --restart always trufflesuite/ganache-cli ganache-cli --accounts 10 --account_keys_path /tmp/keys/rinkeby --chainId 4 # --fork https://rinkeby-light.eth.linkpool.io (no need to actually fork)
 
       - name: Go modules cache
         uses: actions/cache@v2
@@ -79,6 +82,8 @@ jobs:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
           GOMAXPROCS: 18
+          GANACHE_KEYS: /tmp/keys/rinkeby
+          GANACHE_RPC_URL: http://0.0.0.0:8045
 
       - name: Generate ignore list
         # generate a list of files to ignore on goveralls
@@ -128,6 +133,7 @@ jobs:
             agents: 'agents/**'
             scribe: 'scribe/**'
             tools: 'tools/**'
+            core: 'core/**'
             ethergo: 'ethergo/**'
       - name: Check For Solidity Changes
         id: filter_solidity
@@ -223,7 +229,7 @@ jobs:
         with:
           working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: v1.46.2
+          version: v1.48.0
           # Path to your GolangCI-Lint config within the repo (optional)
           config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yml
           # see: https://github.com/golangci/golangci-lint/issues/2654
