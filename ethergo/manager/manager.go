@@ -4,8 +4,8 @@ package manager
 import (
 	"context"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
-	"github.com/synapsecns/synapse-node/testutils/backends"
 	"sync"
 	"testing"
 )

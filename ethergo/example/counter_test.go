@@ -4,10 +4,10 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/example"
 	"github.com/synapsecns/sanguine/ethergo/example/counter"
 	"github.com/synapsecns/sanguine/ethergo/manager"
-	"github.com/synapsecns/synapse-node/testutils/backends/simulated"
 	"testing"
 	"time"
 )

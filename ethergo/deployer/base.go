@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/synapse-node/testutils/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends"
 )
 
 // BaseDeployer is a basic deployment contract. It contains several utility functions including:
