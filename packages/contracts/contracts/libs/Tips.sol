@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 import { TypedMemView } from "./TypedMemView.sol";
 import { TypeCasts } from "./TypeCasts.sol";
-import { Message } from "./Message.sol";
+import { SynapseTypes } from "./SynapseTypes.sol";
 
 /**
  * @notice Library for versioned formatting [the tips part]
@@ -15,6 +15,9 @@ library Tips {
 
     uint16 internal constant TIPS_VERSION = 1;
 
+    // TODO: determine if we need to pack the tips values,
+    // or if using uint256 instead will suffice.
+
     /**
      * @dev Tips memory layout
      * [000 .. 002): version            uint16	 2 bytes
@@ -24,22 +27,40 @@ library Tips {
      * [038 .. 050): executorTip        uint96	12 bytes
      */
 
+    uint256 internal constant OFFSET_VERSION = 0;
     uint256 internal constant OFFSET_NOTARY = 2;
     uint256 internal constant OFFSET_BROADCASTER = 14;
     uint256 internal constant OFFSET_PROVER = 26;
     uint256 internal constant OFFSET_EXECUTOR = 38;
 
+    uint256 internal constant TIPS_LENGTH = 50;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     modifier onlyTips(bytes29 _view) {
-        _view.assertType(Message.TIPS_TYPE);
+        _view.assertType(SynapseTypes.MESSAGE_TIPS);
         _;
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              FORMATTERS                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     /**
-     * @notice Returns formatted (packed) tips with provided fields
-     * @param _notaryTip Tip for the Notary
-     * @param _broadcasterTip Tip for the Broadcaster
-     * @param _proverTip Tip for the Prover
-     * @param _executorTip Tip for the Executor
+     * @notice Returns a properly typed bytes29 pointer for a tips payload.
+     */
+    function castToTips(bytes memory _payload) internal pure returns (bytes29) {
+        return _payload.ref(SynapseTypes.MESSAGE_TIPS);
+    }
+
+    /**
+     * @notice Returns a formatted Tips payload with provided fields
+     * @param _notaryTip        Tip for the Notary
+     * @param _broadcasterTip   Tip for the Broadcaster
+     * @param _proverTip        Tip for the Prover
+     * @param _executorTip      Tip for the Executor
      * @return Formatted tips
      **/
     function formatTips(
@@ -53,22 +74,31 @@ library Tips {
     }
 
     /**
-     * @notice Returns formatted empty tips
+     * @notice Returns a formatted Tips payload specifying empty tips.
      * @return Formatted tips
      **/
     function emptyTips() internal pure returns (bytes memory) {
         return formatTips(0, 0, 0, 0);
     }
 
-    /// @notice Returns view for the formatted tips
-    /// @dev Providing anything other than formatted tips will lead to unexpected behavior
-    function tipsView(bytes memory _tips) internal pure returns (bytes29) {
-        return _tips.ref(Message.TIPS_TYPE);
+    /**
+     * @notice Checks that a payload is a formatted Tips payload.
+     */
+    function isTips(bytes29 _view) internal pure returns (bool) {
+        uint256 length = _view.len();
+        // Check if version exists in the payload
+        if (length < 2) return false;
+        // Check that header version and its length matches
+        return tipsVersion(_view) == TIPS_VERSION && length == TIPS_LENGTH;
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             TIPS SLICING                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns version of formatted tips
     function tipsVersion(bytes29 _tips) internal pure onlyTips(_tips) returns (uint16) {
-        return uint16(_tips.indexUint(0, 2));
+        return uint16(_tips.indexUint(OFFSET_VERSION, 2));
     }
 
     /// @notice Returns notaryTip field
@@ -91,7 +121,8 @@ library Tips {
         return uint32(_tips.indexUint(OFFSET_EXECUTOR, 12));
     }
 
-    function totalTips(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
+    /// @notice Returns total tip amount.
+    function totalTips(bytes29 _tips) internal pure returns (uint96) {
         return notaryTip(_tips) + broadcasterTip(_tips) + proverTip(_tips) + executorTip(_tips);
     }
 }

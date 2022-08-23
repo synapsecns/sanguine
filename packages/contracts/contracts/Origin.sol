@@ -10,7 +10,7 @@ import { MerkleLib } from "./libs/Merkle.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
-import { SystemMessage } from "./system/SystemMessage.sol";
+import { SystemMessage } from "./libs/SystemMessage.sol";
 import { SystemContract } from "./system/SystemContract.sol";
 import { MerkleTreeManager } from "./Merkle.sol";
 import { INotaryManager } from "./interfaces/INotaryManager.sol";
@@ -208,7 +208,7 @@ contract Origin is
         bytes memory _messageBody
     ) external payable notFailed {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
-        require(_tips.tipsView().totalTips() == msg.value, "!tips");
+        require(_tips.castToTips().totalTips() == msg.value, "!tips");
         // get the next nonce for the destination domain, then increment it
         nonce = nonce + 1;
         bytes32 _sender = _checkForSystemMessage(_recipientAddress);
@@ -279,8 +279,8 @@ contract Origin is
     function improperAttestation(bytes memory _attestation) public notFailed returns (bool) {
         // This will revert if signature is not valid
         (address _notary, bytes29 _view) = _checkNotaryAuth(_attestation);
-        uint32 _nonce = _view.attestationNonce();
-        bytes32 _root = _view.attestationRoot();
+        uint32 _nonce = _view.attestedNonce();
+        bytes32 _root = _view.attestedRoot();
         // Check if nonce is valid, if not => attestation is fraud
         if (_nonce < historicalRoots.length) {
             if (_root == historicalRoots[_nonce]) {
