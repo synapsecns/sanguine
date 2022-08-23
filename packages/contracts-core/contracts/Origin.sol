@@ -162,7 +162,7 @@ contract Origin is
     ▏*║                             INITIALIZER                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function initialize(INotaryManager _notaryManager) public initializer {
+    function initialize(INotaryManager _notaryManager) external initializer {
         __SystemContract_initialize();
         _setNotaryManager(_notaryManager);
         _addNotary(notaryManager.notary());
