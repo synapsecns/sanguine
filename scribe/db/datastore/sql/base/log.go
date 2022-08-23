@@ -20,7 +20,7 @@ func (s Store) StoreLog(ctx context.Context, log ethTypes.Log, chainID uint32) e
 	// Ethereum topics are always 3 long, excluding the primary topic.
 	indexedTopics := 3
 	// Loop through the topics and convert them to nullStrings.
-	// If the topic is empty, we set the String to "NULL" and Valid to false.
+	// If the topic is empty, we set Valid to false.
 	// If the topic is not empty, provide its string value and set Valid to true.
 	for index := 0; index <= indexedTopics+1; index++ {
 		if index < topicsLength {
@@ -30,8 +30,7 @@ func (s Store) StoreLog(ctx context.Context, log ethTypes.Log, chainID uint32) e
 			})
 		} else {
 			topics = append(topics, sql.NullString{
-				String: "NULL",
-				Valid:  false,
+				Valid: false,
 			})
 		}
 	}

@@ -1,9 +1,14 @@
 package base
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"gorm.io/gorm"
+)
 
 // Log stores the log of an event.
 type Log struct {
+	gorm.Model
 	// Address is the address of the contract that generated the event
 	Address string `gorm:"address"`
 	// ChainID is the chain id of the contract that generated the event
@@ -34,6 +39,7 @@ type Log struct {
 
 // Receipt stores the receipt of an transaction.
 type Receipt struct {
+	gorm.Model
 	// Status is the status of the transaction
 	Status uint64 `gorm:"status"`
 	// CumulativeGasUsed is the total amount of gas used when this transaction was executed in the block
