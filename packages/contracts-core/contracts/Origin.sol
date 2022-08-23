@@ -26,12 +26,16 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 /**
  * @title Origin
  * @author Illusory Systems Inc.
- * @notice Accepts messages to be dispatched to remote chains,
- * constructs a Merkle tree of the messages,
- * and accepts signatures from a bonded Notary
- * which notarize the Merkle tree roots.
- * Accepts submissions of fraudulent signatures
- * by the Notary and slashes the Notary in this case.
+ * @notice Accepts messages to be dispatched to remote chains and
+ * constructs a Merkle tree of the messages.
+ * Notaries are signing the attestations of the Merkle tree's root state (aka merkle state),
+ * which are broadcasted to Destination, where the merkle root is used for proving that
+ * the message has been indeed dispatched on Origin.
+ * Origin accepts submissions of fraudulent signatures by the Notary,
+ * directly or in the form of a Guard's Fraud report on such an attestation,
+ * and slashes the Notary in this case.
+ * Origin accepts submissions of fraudulent signatures by the Guard in the form
+ * of a Guard's report with said signature and slashes Guard in that case.
  */
 contract Origin is
     Version0,
@@ -43,8 +47,6 @@ contract Origin is
     DomainNotaryRegistry,
     GuardRegistry
 {
-    // ============ Libraries ============
-
     using Attestation for bytes29;
     using Report for bytes29;
     using TypedMemView for bytes29;
@@ -53,7 +55,9 @@ contract Origin is
     using Tips for bytes;
     using Tips for bytes29;
 
-    // ============ Enums ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                ENUMS                                 ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // States:
     //   0 - UnInitialized - before initialize function is called
@@ -67,28 +71,32 @@ contract Origin is
         Failed
     }
 
-    // ============ Constants ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              CONSTANTS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // Maximum bytes per message = 2 KiB
     // (somewhat arbitrarily set to begin)
     uint256 public constant MAX_MESSAGE_BODY_BYTES = 2 * 2**10;
 
-    // ============ Public Storage Variables ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               STORAGE                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // contract responsible for Notary bonding, slashing and rotation
     INotaryManager public notaryManager;
     // Current state of contract
     States public state;
 
-    // ============ Upgrade Gap ============
-
     // gap for upgrade safety
-    uint256[48] private __GAP;
+    uint256[48] private __GAP; //solhint-disable-line var-name-mixedcase
 
-    // ============ Events ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                EVENTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Emitted when a new message is dispatched via Nomad
+     * @notice Emitted when a new message is dispatched
      * @param messageHash Hash of message; the leaf inserted to the Merkle tree
      *        for the message
      * @param leafIndex Index of message's leaf in merkle tree
@@ -120,8 +128,7 @@ contract Origin is
     event IncorrectReport(address indexed guard, bytes report);
 
     /**
-     * @notice Emitted when proof of an fraud attestation is submitted,
-     * which sets the contract to FAILED state
+     * @notice Emitted when proof of an fraud attestation is submitted.
      * @param notary        Notary who signed fraud attestation
      * @param attestation   Attestation data and signature
      */
@@ -150,23 +157,30 @@ contract Origin is
      */
     event NewNotaryManager(address notaryManager);
 
-    // ============ Constructor ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             CONSTRUCTOR                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // solhint-disable-next-line no-empty-blocks
     constructor(uint32 _localDomain) LocalDomainContext(_localDomain) {}
 
-    // ============ Initializer ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             INITIALIZER                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function initialize(INotaryManager _notaryManager) public initializer {
         __SystemContract_initialize();
         _setNotaryManager(_notaryManager);
         _addNotary(notaryManager.notary());
         state = States.Active;
-        // insert a historical root so nonces start at 1 rather then 0. Here we insert the default root of a sparse merkle tree
+        // Insert a historical root so nonces start at 1 rather then 0.
+        // Here we insert the default root of a sparse merkle tree
         historicalRoots.push(hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757");
     }
 
-    // ============ Modifiers ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Ensures that function is called by the NotaryManager contract
@@ -184,7 +198,9 @@ contract Origin is
         _;
     }
 
-    // ============ External: Notary & NotaryManager Configuration  ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                    EXTERNAL FUNCTIONS: RESTRICTED                    ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Set a new Notary
@@ -219,7 +235,9 @@ contract Origin is
         _setNotaryManager(INotaryManager(_notaryManager));
     }
 
-    // ============ External Functions  ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Dispatch the message to the destination domain & recipient
@@ -267,6 +285,10 @@ contract Origin is
         );
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                VIEWS                                 ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     /**
      * @notice Suggest an attestation for the Notary to sign and submit.
      * @dev If no messages have been sent, following values are returned:
@@ -281,8 +303,6 @@ contract Origin is
         _root = historicalRoots[_nonce];
     }
 
-    // ============ Public Functions  ============
-
     /**
      * @notice Returns nonce of the last inserted Merkle root.
      */
@@ -292,7 +312,9 @@ contract Origin is
         return uint32(historicalRoots.length - 1);
     }
 
-    // ============ Internal Functions  ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Checks is a submitted Attestation is a valid Attestation.
@@ -419,12 +441,6 @@ contract Origin is
         }
     }
 
-    function _isValidAttestation(uint32 _nonce, bytes32 _root) internal view returns (bool) {
-        // Check if nonce is valid, if not => attestation is fraud
-        // Check if root the same as the historical one, if not => attestation is fraud
-        return (_nonce < historicalRoots.length && _root == historicalRoots[_nonce]);
-    }
-
     /**
      * @notice Set the NotaryManager
      * @param _notaryManager Address of the NotaryManager
@@ -438,6 +454,8 @@ contract Origin is
     /**
      * @notice Slash the Notary and set contract state to FAILED
      * @dev Called when fraud is proven (Fraud Attestation)
+     * @param _notary   Notary to slash
+     * @param _guard    Guard who reported fraudulent Notary [address(0) if not a Guard report]
      */
     function _fail(address _notary, address _guard) internal {
         /**
@@ -459,34 +477,23 @@ contract Origin is
     /**
      * @notice Slash the Guard.
      * @dev Called when guard misbehavior is proven (Incorrect Report).
+     * @param _guard    Guard to slash
      */
     function _slashGuard(address _guard) internal {
         // TODO: implement actual slashing & slash only once
         emit GuardSlashed(_guard, msg.sender);
     }
 
-    /**
-     * @notice Internal utility function that combines
-     * `_destination` and `_nonce`.
-     * @dev Both destination and nonce should be less than 2^32 - 1
-     * @param _destination Domain of destination chain
-     * @param _nonce Current nonce for given destination chain
-     * @return Returns (`_destination` << 32) & `_nonce`
-     */
-    function _destinationAndNonce(uint32 _destination, uint32 _nonce)
-        internal
-        pure
-        returns (uint64)
-    {
-        return (uint64(_destination) << 32) | _nonce;
-    }
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL VIEWS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice  Returns "adjusted" sender address.
-     * @dev     By default, "sender address" is msg.sender.
-     *          However, if SystemRouter sends a message, specifying SYSTEM_ROUTER as the recipient,
-     *          SYSTEM_ROUTER is used as "sender address" on origin chain.
-     *          Note that transaction will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
+     * @notice Returns "adjusted" sender address.
+     * @dev By default, "sender address" is msg.sender.
+     * However, if SystemRouter sends a message, specifying SYSTEM_ROUTER as the recipient,
+     * SYSTEM_ROUTER is used as "sender address" on origin chain.
+     * Note: tx will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
      */
     function _checkForSystemMessage(bytes32 _recipientAddress)
         internal
@@ -506,5 +513,31 @@ contract Origin is
             // Adjust "sender address" for correct processing on remote chain.
             sender = SystemMessage.SYSTEM_ROUTER;
         }
+    }
+
+    /**
+     * @notice Returns whether (_nonce, _root) matches the historical state
+     * of the Merkle Tree.
+     */
+    function _isValidAttestation(uint32 _nonce, bytes32 _root) internal view returns (bool) {
+        // Check if nonce is valid, if not => attestation is fraud
+        // Check if root the same as the historical one, if not => attestation is fraud
+        return (_nonce < historicalRoots.length && _root == historicalRoots[_nonce]);
+    }
+
+    /**
+     * @notice Internal utility function that combines
+     * `_destination` and `_nonce`.
+     * @dev Both destination and nonce should be less than 2^32 - 1
+     * @param _destination Domain of destination chain
+     * @param _nonce Current nonce for given destination chain
+     * @return Returns (`_destination` << 32) & `_nonce`
+     */
+    function _destinationAndNonce(uint32 _destination, uint32 _nonce)
+        internal
+        pure
+        returns (uint64)
+    {
+        return (uint64(_destination) << 32) | _nonce;
     }
 }
