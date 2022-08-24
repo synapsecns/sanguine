@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/agents/db"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -34,19 +35,19 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 		}
 	}
 	dbTx := s.DB().WithContext(ctx).Create(&Log{
-		Address:      log.Address.String(),
-		ChainID:      chainID,
-		PrimaryTopic: topics[0],
-		TopicA:       topics[1],
-		TopicB:       topics[2],
-		TopicC:       topics[3],
-		Data:         log.Data,
-		BlockNumber:  log.BlockNumber,
-		TxHash:       log.TxHash.String(),
-		TxIndex:      uint64(log.TxIndex),
-		BlockHash:    log.BlockHash.String(),
-		Index:        uint64(log.Index),
-		Removed:      log.Removed,
+		ContractAddress: log.Address.String(),
+		ChainID:         chainID,
+		PrimaryTopic:    topics[0],
+		TopicA:          topics[1],
+		TopicB:          topics[2],
+		TopicC:          topics[3],
+		Data:            log.Data,
+		BlockNumber:     log.BlockNumber,
+		TxHash:          log.TxHash.String(),
+		TxIndex:         uint64(log.TxIndex),
+		BlockHash:       log.BlockHash.String(),
+		Index:           uint64(log.Index),
+		Removed:         log.Removed,
 	})
 
 	if dbTx.Error != nil {
@@ -59,9 +60,12 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 // RetrieveLogsByTxHash retrieves all logs that match a tx hash.
 func (s Store) RetrieveLogsByTxHash(ctx context.Context, txHash common.Hash) (logs []*types.Log, err error) {
 	dbLogs := []Log{}
-	dbTx := s.DB().WithContext(ctx).Model(&Log{}).Where(&Log{
-		TxHash: txHash.String(),
-	}).Find(&dbLogs)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Log{}).
+		Where(&Log{
+			TxHash: txHash.String(),
+		}).
+		Find(&dbLogs)
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
@@ -87,7 +91,7 @@ func (s Store) RetrieveLogsByTxHash(ctx context.Context, txHash common.Hash) (lo
 		}
 
 		parsedLog := &types.Log{
-			Address:     common.HexToAddress(dbLog.Address),
+			Address:     common.HexToAddress(dbLog.ContractAddress),
 			Topics:      topics,
 			Data:        dbLog.Data,
 			BlockNumber: dbLog.BlockNumber,
