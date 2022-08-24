@@ -14,7 +14,6 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		txHashRandom := gofakeit.Int64()
 		chainID := gofakeit.Uint32()
-		// nullHash := common.Hash{}
 
 		// Store two logs with the same txHash, and one with a different txHash.
 		txHashA := common.BigToHash(big.NewInt(txHashRandom))
