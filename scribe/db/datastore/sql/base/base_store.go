@@ -1,6 +1,9 @@
 package base
 
-import "gorm.io/gorm"
+import (
+	"github.com/synapsecns/sanguine/scribe/db"
+	"gorm.io/gorm"
+)
 
 // Store is the sqlite store. It extends the base store for sqlite specific queries.
 type Store struct {
@@ -25,3 +28,5 @@ func GetAllModels() (allModels []interface{}) {
 	)
 	return allModels
 }
+
+var _ db.EventDB = Store{}
