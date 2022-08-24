@@ -100,6 +100,8 @@ type LastIndexedInfo struct {
 	gorm.Model
 	// ContractAddress is the contract address
 	ContractAddress string `gorm:"column:contract_address"`
+	// ChainID is the chain id of the contract
+	ChainID uint32 `gorm:"column:chain_id"`
 	// LastIndexed is the last block number indexed
 	LastIndexed uint64 `gorm:"column:last_indexed"`
 }
