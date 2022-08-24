@@ -10,7 +10,6 @@ import { AttestationHub } from "./hubs/AttestationHub.sol";
 import { ReportHub } from "./hubs/ReportHub.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { Report } from "./libs/Report.sol";
-import { MerkleLib } from "./libs/Merkle.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
@@ -49,11 +48,10 @@ contract Origin is
 {
     using Attestation for bytes29;
     using Report for bytes29;
-    using TypedMemView for bytes29;
-    using MerkleLib for MerkleLib.Tree;
-
     using Tips for bytes;
     using Tips for bytes29;
+
+    using TypedMemView for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
@@ -224,32 +222,32 @@ contract Origin is
     ) external payable haveActiveNotary {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         require(_tips.castToTips().totalTips() == msg.value, "!tips");
-        // get the next nonce
-        uint32 _nonce = nonce() + 1;
-        bytes32 _sender = _checkForSystemMessage(_recipientAddress);
+        // get the message nonce: current nonce plus 1
+        uint32 messageNonce = nonce() + 1;
+        bytes32 sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
         bytes memory _header = Header.formatHeader(
             _localDomain(),
-            _sender,
-            _nonce,
+            sender,
+            messageNonce,
             _destination,
             _recipientAddress,
             _optimisticSeconds
         );
         // format the message into packed bytes
-        bytes memory _message = Message.formatMessage(_header, _tips, _messageBody);
+        bytes memory message = Message.formatMessage(_header, _tips, _messageBody);
         // insert the hashed message into the Merkle tree
-        bytes32 _messageHash = keccak256(_message);
+        bytes32 messageHash = keccak256(message);
         // new root is added to the historical roots
-        _insertHash(_messageHash);
+        _insertHash(messageHash);
         // Emit Dispatch event with message information
-        // note: leafIndex is count() - 1 since new leaf has already been inserted
+        // note: leafIndex is messageNonce - 1 since nonces start from 1 rather than from 0
         emit Dispatch(
-            _messageHash,
-            _nonce - 1,
-            _destinationAndNonce(_destination, _nonce),
+            messageHash,
+            messageNonce - 1,
+            _destinationAndNonce(_destination, messageNonce),
             _tips,
-            _message
+            message
         );
     }
 
@@ -263,21 +261,21 @@ contract Origin is
      * - nonce = 0
      * - root = 0x27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757
      * Which is the merkle root for an empty sparse merkle tree.
-     * @return _nonce Current nonce
-     * @return _root Current merkle root
+     * @return latestNonce Current nonce
+     * @return latestRoot  Current merkle root
      */
-    function suggestAttestation() external view returns (uint32 _nonce, bytes32 _root) {
-        _nonce = nonce();
-        _root = historicalRoots[_nonce];
+    function suggestAttestation() external view returns (uint32 latestNonce, bytes32 latestRoot) {
+        latestNonce = nonce();
+        latestRoot = historicalRoots[latestNonce];
     }
 
     /**
      * @notice Returns nonce of the last inserted Merkle root.
      */
-    function nonce() public view returns (uint32) {
+    function nonce() public view returns (uint32 latestNonce) {
         // historicalRoots has length of 1 upon initializing,
         // so this never underflows assuming contract was initialized
-        return uint32(historicalRoots.length - 1);
+        latestNonce = uint32(historicalRoots.length - 1);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -314,9 +312,9 @@ contract Origin is
     ) internal override returns (bool isValid) {
         /// @dev Notary role have been checked in ReportHub, meaning
         /// _notary is an active Notary at this point.
-        uint32 _nonce = _attestationView.attestedNonce();
-        bytes32 _root = _attestationView.attestedRoot();
-        isValid = _isValidAttestation(_nonce, _root);
+        uint32 attestedNonce = _attestationView.attestedNonce();
+        bytes32 attestedRoot = _attestationView.attestedRoot();
+        isValid = _isValidAttestation(attestedNonce, attestedRoot);
         if (!isValid) {
             emit FraudAttestation(_notary, _attestation);
             // Guard doesn't receive anything, as Notary wasn't slashed using the Fraud Report
@@ -376,9 +374,9 @@ contract Origin is
     ) internal override returns (bool) {
         /// @dev Notary and Guard roles have been checked in ReportHub, meaning
         /// _notary is an active Notary, _guard is an active Guard at this point.
-        uint32 _nonce = _attestationView.attestedNonce();
-        bytes32 _root = _attestationView.attestedRoot();
-        if (_isValidAttestation(_nonce, _root)) {
+        uint32 attestedNonce = _attestationView.attestedNonce();
+        bytes32 attestedRoot = _attestationView.attestedRoot();
+        if (_isValidAttestation(attestedNonce, attestedRoot)) {
             // Attestation: Valid
             if (_reportView.reportedFraud()) {
                 // Flag: Fraud
