@@ -120,7 +120,7 @@ func getChainID(tx *types.Transaction) (hasType bool, chainID *big.Int) {
 func (s Store) GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error) {
 	var newNonce sql.NullInt64
 
-	selectMaxNonce := fmt.Sprintf("max(`nonce`)")
+	selectMaxNonce := "max(`nonce`)"
 
 	dbTx := s.DB().WithContext(ctx).Model(&RawEthTX{}).Select(selectMaxNonce).Where(RawEthTX{
 		From:    fromAddress.String(),
