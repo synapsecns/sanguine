@@ -41,7 +41,7 @@ type Log struct {
 type Receipt struct {
 	gorm.Model
 	// Type is the type
-	Type uint8 `gorm:"type"`
+	Type uint8 `gorm:"receipt_type"`
 	// PostState is the post state
 	PostState []byte `gorm:"post_state"`
 	// Status is the status of the transaction
