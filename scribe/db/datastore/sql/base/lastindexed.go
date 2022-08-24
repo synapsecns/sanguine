@@ -14,8 +14,10 @@ func (s Store) StoreLastIndexed(ctx context.Context, contractAddress common.Addr
 	entry := LastIndexedInfo{}
 	dbTx := s.DB().WithContext(ctx).
 		Model(&LastIndexedInfo{}).
-		Where("contract_address = ?", contractAddress.String()).
-		Where("chain_id = ?", chainID).
+		Where(&LastIndexedInfo{
+			ContractAddress: contractAddress.String(),
+			ChainID:         chainID,
+		}).
 		Scan(&entry)
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not retrieve last indexed info: %w", dbTx.Error)
@@ -26,7 +28,7 @@ func (s Store) StoreLastIndexed(ctx context.Context, contractAddress common.Addr
 			Create(&LastIndexedInfo{
 				ContractAddress: contractAddress.String(),
 				ChainID:         chainID,
-				LastIndexed:     blockNumber,
+				BlockNumber:     blockNumber,
 			})
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not store last indexed info: %w", dbTx.Error)
@@ -35,9 +37,11 @@ func (s Store) StoreLastIndexed(ctx context.Context, contractAddress common.Addr
 	}
 	dbTx = s.DB().WithContext(ctx).
 		Model(&LastIndexedInfo{}).
-		Where("contract_address = ?", contractAddress.String()).
-		Where("chain_id = ?", chainID).
-		Update("last_indexed", blockNumber)
+		Where(&LastIndexedInfo{
+			ContractAddress: contractAddress.String(),
+			ChainID:         chainID,
+		}).
+		Update(BlockNumberFieldName, blockNumber)
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not update last indexed info: %w", dbTx.Error)
 	}
@@ -49,8 +53,10 @@ func (s Store) RetrieveLastIndexed(ctx context.Context, contractAddress common.A
 	entry := LastIndexedInfo{}
 	dbTx := s.DB().WithContext(ctx).
 		Model(&LastIndexedInfo{}).
-		Where("contract_address = ?", contractAddress.String()).
-		Where("chain_id = ?", chainID).
+		Where(&LastIndexedInfo{
+			ContractAddress: contractAddress.String(),
+			ChainID:         chainID,
+		}).
 		First(&entry)
 	if dbTx.RowsAffected == 0 {
 		return 0, nil
@@ -58,5 +64,5 @@ func (s Store) RetrieveLastIndexed(ctx context.Context, contractAddress common.A
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("could not retrieve last indexed info: %w", dbTx.Error)
 	}
-	return entry.LastIndexed, nil
+	return entry.BlockNumber, nil
 }
