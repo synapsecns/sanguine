@@ -11,8 +11,9 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"github.com/synapsecns/synapse-node/contracts/bridge"
+	"time"
 )
 
 // AttestationProducer updates a producer.
@@ -67,7 +68,7 @@ func (a AttestationProducer) FindLatestNonce(ctx context.Context) (nonce uint32,
 }
 
 // update runs the update producer to produce an update.
-//nolint: cyclop
+// nolint: cyclop
 func (a AttestationProducer) update(ctx context.Context) error {
 	latestNonce, err := a.FindLatestNonce(ctx)
 	if err != nil {
@@ -107,7 +108,7 @@ func (a AttestationProducer) update(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not hash update: %w", err)
 	}
-	signature, err := a.signer.SignMessage(ctx, bridge.KappaToSlice(hashedUpdate), false)
+	signature, err := a.signer.SignMessage(ctx, core.BytesToSlice(hashedUpdate), false)
 	if err != nil {
 		return fmt.Errorf("could not sign message: %w", err)
 	}

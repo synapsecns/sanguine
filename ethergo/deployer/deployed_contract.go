@@ -5,7 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/stretchr/testify/assert"
-	"github.com/synapsecns/synapse-node/testutils/backends"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"math/big"
 	"testing"
 )
@@ -72,4 +72,4 @@ func (d DeployedContract) ChainID() *big.Int {
 	return d.chainID
 }
 
-var _ backends.DeployedContract = DeployedContract{}
+var _ contracts.DeployedContract = DeployedContract{}

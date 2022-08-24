@@ -8,6 +8,7 @@ import (
 )
 
 // rawContracts are the json we use to dervive the processed contracts
+//
 //go:embed notarymanager.contractinfo.json
 var rawContracts []byte
 

@@ -6,7 +6,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/synapse-node/testutils/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 )
 
 // BaseDeployer is a basic deployment contract. It contains several utility functions including:
@@ -17,11 +18,11 @@ type BaseDeployer struct {
 	registry GetOnlyContractRegistry
 	// backend is the registry
 	backend      backends.SimulatedTestBackend
-	contractType ContractType
+	contractType contracts.ContractType
 }
 
 // NewSimpleDeployer creates a new base deployer.
-func NewSimpleDeployer(registry GetOnlyContractRegistry, backend backends.SimulatedTestBackend, contractType ContractType) *BaseDeployer {
+func NewSimpleDeployer(registry GetOnlyContractRegistry, backend backends.SimulatedTestBackend, contractType contracts.ContractType) *BaseDeployer {
 	return &BaseDeployer{
 		registry:     registry,
 		backend:      backend,
@@ -30,7 +31,7 @@ func NewSimpleDeployer(registry GetOnlyContractRegistry, backend backends.Simula
 }
 
 // Deploy is a placeholder to ensure function inheritance. Calling this directly will panic.
-func (n BaseDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (n BaseDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	panic("deploy not implemented in base deployer")
 }
 
@@ -45,19 +46,19 @@ func (n BaseDeployer) Registry() GetOnlyContractRegistry {
 }
 
 // ContractType returns the contract type.
-func (n BaseDeployer) ContractType() ContractType {
+func (n BaseDeployer) ContractType() contracts.ContractType {
 	return n.contractType
 }
 
 // Dependencies returns dependencies for the contract - this should be overridden by base classes if there are dependencies.
-func (n BaseDeployer) Dependencies() []ContractType {
-	return []ContractType{}
+func (n BaseDeployer) Dependencies() []contracts.ContractType {
+	return []contracts.ContractType{}
 }
 
 // RecursiveDependencies recursively get dependencies.
-func (n BaseDeployer) RecursiveDependencies(dependencies []ContractType) (res []ContractType) {
+func (n BaseDeployer) RecursiveDependencies(dependencies []contracts.ContractType) (res []contracts.ContractType) {
 	// check if dependency is already in result
-	resultHasDependency := func(dep ContractType) bool {
+	resultHasDependency := func(dep contracts.ContractType) bool {
 		for _, dependency := range res {
 			if dep.ID() == dependency.ID() {
 				return true
@@ -85,7 +86,7 @@ type HandleFunc func(address common.Address, backend bind.ContractBackend) (inte
 
 // DeploySimpleContract handles no dependency contract deployments.
 // All others must be handled in inheriting structs.
-func (n BaseDeployer) DeploySimpleContract(ctx context.Context, deployFunction DeployFunc, handleFunction HandleFunc) (backends.DeployedContract, error) {
+func (n BaseDeployer) DeploySimpleContract(ctx context.Context, deployFunction DeployFunc, handleFunction HandleFunc) (contracts.DeployedContract, error) {
 	auth := n.backend.GetTxContext(ctx, nil)
 	tmpAddress, tx, _, err := deployFunction(auth.TransactOpts, n.backend)
 	if err != nil {

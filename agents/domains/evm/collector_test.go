@@ -7,7 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/synapse-node/contracts/bridge"
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 )
 
@@ -23,7 +23,7 @@ func (i ContractSuite) TestSubmitAttestation() {
 	hashedAttestation, err := notary.HashAttestation(unsignedAttestation)
 	Nil(i.T(), err)
 
-	signature, err := i.signer.SignMessage(i.GetTestContext(), bridge.KappaToSlice(hashedAttestation), false)
+	signature, err := i.signer.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(i.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, signature)

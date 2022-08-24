@@ -3,13 +3,13 @@ package internal_test
 import (
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/synapse-node/testutils"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"testing"
 )
 
 // AbiSuite is the abigen suite.
 type AbiSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 	exampleFilePath string
 }
 
@@ -17,7 +17,7 @@ func NewAbiSuite(tb testing.TB) *AbiSuite {
 	tb.Helper()
 
 	return &AbiSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

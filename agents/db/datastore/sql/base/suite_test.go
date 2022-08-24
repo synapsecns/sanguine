@@ -2,7 +2,7 @@ package base_test
 
 import (
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/synapse-node/testutils"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"testing"
 )
 
@@ -11,13 +11,13 @@ import (
 // db package. this is made for testing sql/gorm implementation specific
 // cases.
 type SQLSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 }
 
 // NewDBSuite creates a new chain testing suite.
 func NewSQLSuite(tb testing.TB) *SQLSuite {
 	tb.Helper()
-	return &SQLSuite{TestSuite: testutils.NewTestSuite(tb)}
+	return &SQLSuite{TestSuite: testsuite.NewTestSuite(tb)}
 }
 
 func TestSqlSuite(t *testing.T) {

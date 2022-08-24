@@ -8,25 +8,25 @@ import (
 )
 
 // TestGetEnv makes sure that default variables are set/fetched.
-func (s *CoreSuite) TestGetEnv() {
+func (c *CoreSuite) TestGetEnv() {
 	testWord := gofakeit.Word()
 	testValue := gofakeit.Word()
 
-	Equal(s.T(), common.GetEnv(testWord, testValue), testValue)
+	Equal(c.T(), common.GetEnv(testWord, testValue), testValue)
 
 	err := os.Setenv(testWord, gofakeit.Word())
-	Nil(s.T(), err)
-	NotEqual(s.T(), testValue, common.GetEnv(testWord, testValue))
+	Nil(c.T(), err)
+	NotEqual(c.T(), testValue, common.GetEnv(testWord, testValue))
 
 	err = os.Setenv(testWord, testValue)
-	Nil(s.T(), err)
-	Equal(s.T(), testValue, common.GetEnv(testWord, testValue))
+	Nil(c.T(), err)
+	Equal(c.T(), testValue, common.GetEnv(testWord, testValue))
 }
 
-func (s *CoreSuite) TestGetEnvInt() {
-	Equal(s.T(), common.GetEnvInt(gofakeit.Word(), 1), 1)
-	Nil(s.T(), os.Setenv("invalid", "invalid"))
-	Equal(s.T(), common.GetEnvInt("invalid", 1), 1)
-	Nil(s.T(), os.Setenv("valid", "3"))
-	Equal(s.T(), common.GetEnvInt("valid", 1), 3)
+func (c *CoreSuite) TestGetEnvInt() {
+	Equal(c.T(), common.GetEnvInt(gofakeit.Word(), 1), 1)
+	Nil(c.T(), os.Setenv("invalid", "invalid"))
+	Equal(c.T(), common.GetEnvInt("invalid", 1), 1)
+	Nil(c.T(), os.Setenv("valid", "3"))
+	Equal(c.T(), common.GetEnvInt("valid", 1), 3)
 }

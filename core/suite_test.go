@@ -2,13 +2,13 @@ package core_test
 
 import (
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/synapse-node/testutils"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"testing"
 )
 
 // CoreSuite defines the basic test suite.
 type CoreSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -16,7 +16,7 @@ type CoreSuite struct {
 func NewTestSuite(tb testing.TB) *CoreSuite {
 	tb.Helper()
 	return &CoreSuite{
-		testutils.NewTestSuite(tb),
+		testsuite.NewTestSuite(tb),
 	}
 }
 

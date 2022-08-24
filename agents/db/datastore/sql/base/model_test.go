@@ -6,7 +6,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/synapse-node/contracts/bridge"
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 	"testing"
 )
@@ -45,7 +45,7 @@ func TestCommittedMessageAccessors(t *testing.T) {
 	Equal(t, cm.OptimisticSeconds(), cm.CMOptimisticSeconds)
 	Equal(t, cm.LeafIndex(), cm.CMLeafIndex)
 	Equal(t, cm.Message(), cm.CMMessage)
-	Equal(t, bridge.KappaToSlice(cm.Leaf()), cm.CMLeaf)
+	Equal(t, core.BytesToSlice(cm.Leaf()), cm.CMLeaf)
 
 	Equal(t, cm.CMProverTip, cm.Tips().ProverTip().Bytes())
 	Equal(t, cm.CMExecutorTip, cm.Tips().ExecutorTip().Bytes())
@@ -66,7 +66,7 @@ func TestSignedAttestation(t *testing.T) {
 		SASignature: rawSig,
 	}
 
-	Equal(t, bridge.KappaToSlice(sa.Attestation().Root()), sa.SARoot)
+	Equal(t, core.BytesToSlice(sa.Attestation().Root()), sa.SARoot)
 	Equal(t, sa.Attestation().Domain(), sa.SADomain)
 	Equal(t, sa.Attestation().Nonce(), sa.SANonce)
 	Equal(t, sa.Signature().V(), sig.V())

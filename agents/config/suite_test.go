@@ -2,20 +2,20 @@ package config_test
 
 import (
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/synapse-node/testutils"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"testing"
 )
 
 // ConfigSuite is the config test suite.
 type ConfigSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 }
 
 // NewConfigSuite creates a end-to-end test suite.
 func NewConfigSuite(tb testing.TB) *ConfigSuite {
 	tb.Helper()
 	return &ConfigSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

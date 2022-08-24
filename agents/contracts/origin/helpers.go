@@ -8,7 +8,7 @@ import (
 )
 
 // OriginRef is a bound origin contract that returns the address of the contract.
-//nolint: golint
+// nolint: golint
 type OriginRef struct {
 	*Origin
 	address common.Address

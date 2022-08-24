@@ -7,7 +7,7 @@ import (
 
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/synapse-node/contracts/bridge"
+	"github.com/synapsecns/sanguine/core"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -25,7 +25,7 @@ func (s Store) StoreSignedAttestations(ctx context.Context, attestation types.Si
 	}).Create(&SignedAttestation{
 		SADomain:    attestation.Attestation().Domain(),
 		SANonce:     attestation.Attestation().Nonce(),
-		SARoot:      bridge.KappaToSlice(attestation.Attestation().Root()),
+		SARoot:      core.BytesToSlice(attestation.Attestation().Root()),
 		SASignature: sig,
 	})
 

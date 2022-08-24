@@ -9,8 +9,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/synapse-node/pkg/common"
-	"github.com/synapsecns/synapse-node/testutils"
 	"gorm.io/gorm/schema"
 	"os"
 	"sync"
@@ -19,7 +19,7 @@ import (
 )
 
 type DBSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 	dbs []db.SynapseDB
 }
 
@@ -27,7 +27,7 @@ type DBSuite struct {
 func NewTxQueueSuite(tb testing.TB) *DBSuite {
 	tb.Helper()
 	return &DBSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 		dbs:       []db.SynapseDB{},
 	}
 }

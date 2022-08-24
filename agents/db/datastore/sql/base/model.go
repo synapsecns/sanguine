@@ -261,7 +261,7 @@ func (s SignedAttestation) Attestation() types.Attestation {
 }
 
 // Signature gets the signature of the signed attestation
-//note: this is the only accessor method that can fail on decoding
+// note: this is the only accessor method that can fail on decoding
 func (s SignedAttestation) Signature() types.Signature {
 	res, err := types.DecodeSignature(s.SASignature)
 	if err != nil {
