@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/indexer"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"golang.org/x/sync/errgroup"
 	"time"
@@ -37,7 +38,7 @@ func NewNotary(ctx context.Context, cfg config.Config) (_ Notary, err error) {
 		return Notary{}, fmt.Errorf("could not create notary: %w", err)
 	}
 
-	dbType, err := sql.DBTypeFromString(cfg.Database.Type)
+	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
 	if err != nil {
 		return Notary{}, fmt.Errorf("could not get legacyDB type: %w", err)
 	}
