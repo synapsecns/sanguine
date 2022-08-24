@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
