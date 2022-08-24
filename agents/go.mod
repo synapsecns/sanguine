@@ -10,7 +10,6 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/coinbase/rosetta-sdk-go v0.7.0
 	github.com/ethereum/go-ethereum v1.10.11
-	github.com/fatih/structtag v1.2.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
 	github.com/libs4go/crypto v0.0.1
@@ -23,7 +22,6 @@ require (
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/ugorji/go/codec v1.1.7
 	github.com/vburenin/ifacemaker v1.1.0
-	go.uber.org/zap v1.22.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	gorm.io/driver/mysql v1.1.2
 	gorm.io/driver/sqlite v1.1.5
@@ -84,6 +82,7 @@ require (
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/elastic/gosigar v0.10.5 // indirect
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
@@ -284,6 +283,7 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
+	go.uber.org/zap v1.22.0 // indirect
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
 	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/net v0.0.0-20220121210141-e204ce36a2ba // indirect

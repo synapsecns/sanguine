@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"time"
 )
 
 // AttestationProducer updates a producer.
@@ -20,7 +21,6 @@ type AttestationProducer struct {
 	domain domains.DomainClient
 	// db is the synapse db
 	db db.SynapseDB
-
 	// signer is the signer
 	signer signer.Signer
 	// interval waits for an interval

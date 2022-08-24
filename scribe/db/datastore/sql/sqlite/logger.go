@@ -4,5 +4,5 @@ import (
 	"github.com/ipfs/go-log"
 )
 
-// logger is the sqlite logger.
+// Logger is the mysql logger.
 var logger = log.Logger("synapse-sqlite")

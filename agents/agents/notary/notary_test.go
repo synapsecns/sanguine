@@ -8,8 +8,8 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/db/datastore/sql"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"math/big"
 	"time"
 )
@@ -24,7 +24,7 @@ func (u NotarySuite) TestNotaryE2E() {
 			File: filet.TmpFile(u.T(), "", u.wallet.PrivateKeyHex()).Name(),
 		},
 		Database: config.DBConfig{
-			Type:       sql.Sqlite.String(),
+			Type:       dbcommon.Sqlite.String(),
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},

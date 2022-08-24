@@ -9,8 +9,3 @@ import (
 func GetChainID(tx *types.Transaction) (hasType bool, chainID *big.Int) {
 	return getChainID(tx)
 }
-
-// GetGormFieldName wraps getGormFieldName to export it for testing.
-func GetGormFieldName(model interface{}, fieldName string) string {
-	return getGormFieldName(model, fieldName)
-}
