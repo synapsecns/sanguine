@@ -61,6 +61,7 @@ func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestat
 }
 
 // EventType is the type of the destination event
+//
 //go:generate go run golang.org/x/tools/cmd/stringer -type=EventType
 type EventType uint
 

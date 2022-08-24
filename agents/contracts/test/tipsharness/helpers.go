@@ -8,7 +8,7 @@ import (
 )
 
 // TipsHarnessRef is a tips harness reference
-//nolint: golint
+// nolint: golint
 type TipsHarnessRef struct {
 	*TipsHarness
 	address common.Address

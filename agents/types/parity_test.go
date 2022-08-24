@@ -9,7 +9,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/synapse-node/testutils/backends/simulated"
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"math/big"
 	"testing"
 	"time"

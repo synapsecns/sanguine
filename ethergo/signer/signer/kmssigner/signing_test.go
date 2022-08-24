@@ -5,8 +5,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/kmssigner"
-	"github.com/synapsecns/synapse-node/testutils/backends/simulated"
 	"math/big"
 )
 

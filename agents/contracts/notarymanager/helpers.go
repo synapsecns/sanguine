@@ -6,7 +6,7 @@ import (
 )
 
 // NotaryManagerRef is a bound update manager that returns the address of the contract
-//nolint: golint
+// nolint: golint
 type NotaryManagerRef struct {
 	*NotaryManager
 	address common.Address

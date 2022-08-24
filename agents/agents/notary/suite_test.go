@@ -12,13 +12,13 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/synapse-node/pkg/chainwatcher"
-	"github.com/synapsecns/synapse-node/testutils"
-	"github.com/synapsecns/synapse-node/testutils/backends"
-	"github.com/synapsecns/synapse-node/testutils/backends/preset"
 	"math/big"
 	"testing"
 	"time"
@@ -26,7 +26,7 @@ import (
 
 // NotarySuite tests the notary agent.
 type NotarySuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 	testBackend         backends.TestBackend
 	deployManager       *testutil.DeployManager
 	originContract      *origin.OriginRef
@@ -42,7 +42,7 @@ func NewNotarySuite(tb testing.TB) *NotarySuite {
 	tb.Helper()
 
 	return &NotarySuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

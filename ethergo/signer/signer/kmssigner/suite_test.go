@@ -2,19 +2,19 @@ package kmssigner_test
 
 import (
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/synapse-node/testutils"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"testing"
 )
 
 type KMSSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 }
 
 // NewKMSSuite creates a end-to-end test suite.
 func NewKMSSuite(tb testing.TB) *KMSSuite {
 	tb.Helper()
 	return &KMSSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

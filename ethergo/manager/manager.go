@@ -4,8 +4,9 @@ package manager
 import (
 	"context"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
-	"github.com/synapsecns/synapse-node/testutils/backends"
 	"sync"
 	"testing"
 )
@@ -52,7 +53,7 @@ func (d *DeployerManager) SetT(t *testing.T) {
 
 // BulkDeploy synchronously deploys a bunch of contracts as quickly as possible to speed up tests.
 // in a future version this will utilize dependency trees. Returns nothing when complete.
-func (d *DeployerManager) BulkDeploy(ctx context.Context, testBackends []backends.SimulatedTestBackend, contracts ...deployer.ContractType) {
+func (d *DeployerManager) BulkDeploy(ctx context.Context, testBackends []backends.SimulatedTestBackend, contracts ...contracts.ContractType) {
 	wg := sync.WaitGroup{}
 	for _, backend := range testBackends {
 		wg.Add(1)
@@ -89,7 +90,7 @@ func (d *DeployerManager) GetContractRegistry(backend backends.SimulatedTestBack
 }
 
 // Get gets the contract from the registry.
-func (d *DeployerManager) Get(ctx context.Context, backend backends.SimulatedTestBackend, contractType deployer.ContractType) backends.DeployedContract {
+func (d *DeployerManager) Get(ctx context.Context, backend backends.SimulatedTestBackend, contractType contracts.ContractType) contracts.DeployedContract {
 	return d.GetContractRegistry(backend).Get(ctx, contractType)
 }
 

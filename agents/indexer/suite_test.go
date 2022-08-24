@@ -4,15 +4,15 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/testutil"
-	"github.com/synapsecns/synapse-node/testutils"
-	"github.com/synapsecns/synapse-node/testutils/backends"
-	"github.com/synapsecns/synapse-node/testutils/backends/preset"
+	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"testing"
 )
 
 // IndexerSuite tests the indexer.
 type IndexerSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 	testBackend    backends.TestBackend
 	deployManager  *testutil.DeployManager
 	originContract *origin.OriginRef
@@ -22,7 +22,7 @@ type IndexerSuite struct {
 func NewIndexerSuite(tb testing.TB) *IndexerSuite {
 	tb.Helper()
 	return &IndexerSuite{
-		TestSuite:     testutils.NewTestSuite(tb),
+		TestSuite:     testsuite.NewTestSuite(tb),
 		testBackend:   nil,
 		deployManager: nil,
 	}

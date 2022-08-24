@@ -9,7 +9,7 @@ import (
 )
 
 // AttestationHarnessRef is an attestation harness reference
-//nolint: golint
+// nolint: golint
 type AttestationHarnessRef struct {
 	*AttestationHarness
 	address common.Address

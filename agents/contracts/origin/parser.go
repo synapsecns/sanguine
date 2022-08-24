@@ -59,6 +59,7 @@ func (p parserImpl) ParseDispatch(log ethTypes.Log) (_ types.CommittedMessage, o
 }
 
 // EventType is the type of the origin event
+//
 //go:generate go run golang.org/x/tools/cmd/stringer -type=EventType
 type EventType uint
 

@@ -2,20 +2,20 @@ package base_test
 
 import (
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/synapse-node/testutils"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"testing"
 )
 
 // BaseSuite is the base test suite.
 type BaseSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 }
 
 // NewBaseSuite creates a end-to-end test suite.
 func NewBaseSuite(tb testing.TB) *BaseSuite {
 	tb.Helper()
 	return &BaseSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

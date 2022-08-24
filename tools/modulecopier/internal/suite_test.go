@@ -2,19 +2,19 @@ package internal_test
 
 import (
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/synapse-node/testutils"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"testing"
 )
 
 type GeneratorSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 }
 
 // NewGeneratorSuite creates a end-to-end test suite.
 func NewGeneratorSuite(tb testing.TB) *GeneratorSuite {
 	tb.Helper()
 	return &GeneratorSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

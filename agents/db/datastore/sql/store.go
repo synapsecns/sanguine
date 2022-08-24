@@ -11,7 +11,7 @@ import (
 )
 
 // NewStoreFromConfig creates a new datastore from a config file.
-//nolint: wrapcheck
+// nolint: wrapcheck
 func NewStoreFromConfig(ctx context.Context, dbType DBType, connString string) (db.SynapseDB, error) {
 	switch dbType {
 	case Mysql:
@@ -24,6 +24,7 @@ func NewStoreFromConfig(ctx context.Context, dbType DBType, connString string) (
 }
 
 // DBType is the database driver to use.
+//
 //go:generate go run golang.org/x/tools/cmd/stringer -type=DBType -linecomment
 type DBType int
 
