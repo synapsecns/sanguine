@@ -9,6 +9,7 @@ replace (
 )
 
 require (
+	github.com/BurntSushi/toml v1.1.0
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/ipfs/go-log v1.0.5
