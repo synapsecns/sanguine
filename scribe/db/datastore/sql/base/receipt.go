@@ -4,19 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/scribe/types"
 	"gorm.io/gorm"
 )
 
 // StoreReceipt stores a receipt.
-func (s Store) StoreReceipt(ctx context.Context, receipt ethTypes.Receipt) error {
+func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt) error {
 	dbTx := s.DB().WithContext(ctx).Create(&Receipt{
+		Type:              receipt.Type,
+		PostState:         receipt.PostState,
 		Status:            receipt.Status,
 		CumulativeGasUsed: receipt.CumulativeGasUsed,
+		Bloom:             receipt.Bloom.Bytes(),
 		TxHash:            receipt.TxHash.String(),
 		ContractAddress:   receipt.ContractAddress.String(),
 		GasUsed:           receipt.GasUsed,
@@ -41,21 +44,31 @@ func (s Store) RetrieveReceiptByTxHash(ctx context.Context, txHash common.Hash) 
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("could not find receipt with tx hash %s: %w", txHash.String(), dbcommon.ErrNotFound)
+			return types.Receipt{}, fmt.Errorf("could not find receipt with tx hash %s: %w", txHash.String(), dbcommon.ErrNotFound)
 		}
-		return nil, fmt.Errorf("could not store receipt: %w", dbTx.Error)
+		return types.Receipt{}, fmt.Errorf("could not store receipt: %w", dbTx.Error)
 	}
 
-	parsedReceipt := types.NewReceipt(
-		dbReceipt.Status,
-		dbReceipt.CumulativeGasUsed,
-		common.HexToHash(dbReceipt.TxHash),
-		common.HexToAddress(dbReceipt.ContractAddress),
-		dbReceipt.GasUsed,
-		common.HexToHash(dbReceipt.BlockHash),
-		dbReceipt.BlockNumber,
-		dbReceipt.TransactionIndex,
-	)
+	// Retrieve Logs that match the receipt's tx hash in order to add them to the Receipt.
+	logs, err := s.RetrieveLogsByTxHash(ctx, txHash)
+	if err != nil {
+		return types.Receipt{}, fmt.Errorf("could not retrieve logs with tx hash %s: %w", txHash.String(), err)
+	}
+
+	parsedReceipt := types.Receipt{
+		Type:              dbReceipt.Type,
+		PostState:         dbReceipt.PostState,
+		Status:            dbReceipt.Status,
+		CumulativeGasUsed: dbReceipt.CumulativeGasUsed,
+		Bloom:             types.BytesToBloom(dbReceipt.Bloom),
+		Logs:              logs,
+		TxHash:            common.HexToHash(dbReceipt.TxHash),
+		ContractAddress:   common.HexToAddress(dbReceipt.ContractAddress),
+		GasUsed:           dbReceipt.GasUsed,
+		BlockHash:         common.HexToHash(dbReceipt.BlockHash),
+		BlockNumber:       big.NewInt(int64(dbReceipt.BlockNumber)),
+		TransactionIndex:  uint(dbReceipt.TransactionIndex),
+	}
 
 	return parsedReceipt, nil
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	// "github.com/synapsecns/sanguine/agents/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/base"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/base"
 	common_mysql "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/mysql"

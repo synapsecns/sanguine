@@ -40,10 +40,16 @@ type Log struct {
 // Receipt stores the receipt of an transaction.
 type Receipt struct {
 	gorm.Model
+	// Type is the type
+	Type uint8 `gorm:"type"`
+	// PostState is the post state
+	PostState []byte `gorm:"post_state"`
 	// Status is the status of the transaction
 	Status uint64 `gorm:"status"`
 	// CumulativeGasUsed is the total amount of gas used when this transaction was executed in the block
 	CumulativeGasUsed uint64 `gorm:"cumulative_gas_used"`
+	// Bloom is the bloom filter
+	Bloom []byte `gorm:"bloom"`
 	// TxHash is the hash of the transaction
 	TxHash string `gorm:"tx_hash"`
 	// ContractAddress is the address of the contract

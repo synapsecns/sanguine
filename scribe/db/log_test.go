@@ -1,12 +1,11 @@
 package db_test
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/scribe/db"
 )
@@ -15,68 +14,64 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		txHashRandom := gofakeit.Int64()
 		chainID := gofakeit.Uint32()
-		nullHash := common.Hash{}
+		// nullHash := common.Hash{}
 
-		// Store two logs with different tx hashes.
+		// Store two logs with the same txHash, and one with a different txHash.
 		txHashA := common.BigToHash(big.NewInt(txHashRandom))
 		logA := MakeRandomLog(txHashA)
 		err := testDB.StoreLog(t.GetTestContext(), *logA, chainID)
 		Nil(t.T(), err)
 
-		txHashB := common.BigToHash(big.NewInt(txHashRandom + 1))
-		logB := MakeRandomLog(txHashB)
-		err = testDB.StoreLog(t.GetTestContext(), *logB, chainID+1)
+		logB := MakeRandomLog(txHashA)
+		err = testDB.StoreLog(t.GetTestContext(), *logB, chainID)
+		Nil(t.T(), err)
+
+		txHashC := common.BigToHash(big.NewInt(txHashRandom + 1))
+		logC := MakeRandomLog(txHashC)
+		err = testDB.StoreLog(t.GetTestContext(), *logC, chainID+1)
 		Nil(t.T(), err)
 
 		// Ensure the logs from the database match the ones stored.
-		retrievedLogA, err := testDB.RetrieveLogByTxHash(t.GetTestContext(), txHashA)
+		// Check the logs for the two with the same txHash.
+		retrievedLogSame, err := testDB.RetrieveLogsByTxHash(t.GetTestContext(), txHashA)
 		Nil(t.T(), err)
-		Equal(t.T(), retrievedLogA.Address(), logA.Address)
-		Equal(t.T(), retrievedLogA.ChainID(), chainID)
-		Equal(t.T(), retrievedLogA.PrimaryTopic(), logA.Topics[0])
-		if retrievedLogA.TopicA() != nullHash {
-			Equal(t.T(), retrievedLogA.TopicA(), logA.Topics[1])
-		}
-		if retrievedLogA.TopicB() != nullHash {
-			Equal(t.T(), retrievedLogA.TopicB(), logA.Topics[2])
-		}
-		fmt.Println(retrievedLogA.TopicC().String())
-		if retrievedLogA.TopicC() != nullHash {
-			Equal(t.T(), retrievedLogA.TopicC(), logA.Topics[3])
-		}
-		Equal(t.T(), retrievedLogA.Data(), logA.Data)
-		Equal(t.T(), retrievedLogA.BlockNumber(), logA.BlockNumber)
-		Equal(t.T(), retrievedLogA.TxHash(), logA.TxHash)
-		Equal(t.T(), uint(retrievedLogA.TxIndex()), logA.TxIndex)
-		Equal(t.T(), retrievedLogA.BlockHash(), logA.BlockHash)
-		Equal(t.T(), uint(retrievedLogA.Index()), logA.Index)
-		Equal(t.T(), retrievedLogA.Removed(), logA.Removed)
+		Equal(t.T(), retrievedLogSame[0].Address, logA.Address)
+		Equal(t.T(), retrievedLogSame[0].Topics, logA.Topics)
+		Equal(t.T(), retrievedLogSame[0].Data, logA.Data)
+		Equal(t.T(), retrievedLogSame[0].BlockNumber, logA.BlockNumber)
+		Equal(t.T(), retrievedLogSame[0].TxHash, logA.TxHash)
+		Equal(t.T(), retrievedLogSame[0].TxIndex, logA.TxIndex)
+		Equal(t.T(), retrievedLogSame[0].BlockHash, logA.BlockHash)
+		Equal(t.T(), retrievedLogSame[0].Index, logA.Index)
+		Equal(t.T(), retrievedLogSame[0].Removed, logA.Removed)
 
-		retrievedLogB, err := testDB.RetrieveLogByTxHash(t.GetTestContext(), txHashB)
+		Equal(t.T(), retrievedLogSame[1].Address, logB.Address)
+		Equal(t.T(), retrievedLogSame[1].Topics, logB.Topics)
+		Equal(t.T(), retrievedLogSame[1].Data, logB.Data)
+		Equal(t.T(), retrievedLogSame[1].BlockNumber, logB.BlockNumber)
+		Equal(t.T(), retrievedLogSame[1].TxHash, logB.TxHash)
+		Equal(t.T(), retrievedLogSame[1].TxIndex, logB.TxIndex)
+		Equal(t.T(), retrievedLogSame[1].BlockHash, logB.BlockHash)
+		Equal(t.T(), retrievedLogSame[1].Index, logB.Index)
+		Equal(t.T(), retrievedLogSame[1].Removed, logB.Removed)
+
+		// Check the logs for the one with a different txHash.
+		retrievedLog, err := testDB.RetrieveLogsByTxHash(t.GetTestContext(), txHashC)
 		Nil(t.T(), err)
-		Equal(t.T(), retrievedLogB.Address(), logB.Address)
-		Equal(t.T(), retrievedLogB.ChainID(), chainID+1)
-		if retrievedLogB.TopicA() != nullHash {
-			Equal(t.T(), retrievedLogB.TopicA(), logB.Topics[1])
-		}
-		if retrievedLogB.TopicB() != nullHash {
-			Equal(t.T(), retrievedLogB.TopicB(), logB.Topics[2])
-		}
-		if retrievedLogB.TopicC() != nullHash {
-			Equal(t.T(), retrievedLogB.TopicC(), logB.Topics[3])
-		}
-		Equal(t.T(), retrievedLogB.Data(), logB.Data)
-		Equal(t.T(), retrievedLogB.BlockNumber(), logB.BlockNumber)
-		Equal(t.T(), retrievedLogB.TxHash(), logB.TxHash)
-		Equal(t.T(), uint(retrievedLogB.TxIndex()), logB.TxIndex)
-		Equal(t.T(), retrievedLogB.BlockHash(), logB.BlockHash)
-		Equal(t.T(), uint(retrievedLogB.Index()), logB.Index)
-		Equal(t.T(), retrievedLogB.Removed(), logB.Removed)
+		Equal(t.T(), retrievedLog[0].Address, logC.Address)
+		Equal(t.T(), retrievedLog[0].Topics, logC.Topics)
+		Equal(t.T(), retrievedLog[0].Data, logC.Data)
+		Equal(t.T(), retrievedLog[0].BlockNumber, logC.BlockNumber)
+		Equal(t.T(), retrievedLog[0].TxHash, logC.TxHash)
+		Equal(t.T(), retrievedLog[0].TxIndex, logC.TxIndex)
+		Equal(t.T(), retrievedLog[0].BlockHash, logC.BlockHash)
+		Equal(t.T(), retrievedLog[0].Index, logC.Index)
+		Equal(t.T(), retrievedLog[0].Removed, logC.Removed)
 	})
 }
 
-func MakeRandomLog(txHash common.Hash) *ethTypes.Log {
-	return &ethTypes.Log{
+func MakeRandomLog(txHash common.Hash) *types.Log {
+	return &types.Log{
 		Address:     common.BigToAddress(big.NewInt(gofakeit.Int64())),
 		Topics:      []common.Hash{common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64()))},
 		Data:        []byte(gofakeit.Sentence(10)),
