@@ -101,20 +101,14 @@ contract OriginTest is SynapseTestWithNotaryManager {
 
     // Tests sending a message and adding it to queue
     function test_dispatch() public {
-        bytes32 recipient = addressToBytes32(vm.addr(1337));
         address sender = vm.addr(1555);
-        bytes memory messageBody = bytes("message");
-        uint32 nonce = origin.nonce() + 1;
-        bytes memory _header = Header.formatHeader(
-            localDomain,
-            addressToBytes32(sender),
-            nonce,
-            remoteDomain,
-            recipient,
-            optimisticSeconds
-        );
-        bytes memory _tips = getDefaultTips();
-        bytes memory message = Message.formatMessage(_header, _tips, messageBody);
+        (
+            uint32 nonce,
+            bytes memory messageBody,
+            bytes32 recipient,
+            bytes memory message,
+            bytes memory tips
+        ) = _prepareTestMessage(sender);
         bytes32 messageHash = keccak256(message);
         uint256 count = origin.count();
         vm.expectEmit(true, true, true, true);
@@ -122,7 +116,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
             messageHash,
             origin.count(),
             (uint64(remoteDomain) << 32) | nonce,
-            _tips,
+            tips,
             message
         );
         hoax(sender);
@@ -130,10 +124,10 @@ contract OriginTest is SynapseTestWithNotaryManager {
             remoteDomain,
             recipient,
             optimisticSeconds,
-            _tips,
+            tips,
             messageBody
         );
-        assert(origin.historicalRoots(count + 1) == origin.root());
+        assertTrue(origin.historicalRoots(count + 1) == origin.root());
     }
 
     // Rejects messages over a set size
@@ -144,6 +138,63 @@ contract OriginTest is SynapseTestWithNotaryManager {
         vm.prank(sender);
         vm.expectRevert("msg too long");
         origin.dispatch(remoteDomain, recipient, optimisticSeconds, getEmptyTips(), messageBody);
+    }
+
+    function test_dispatch_tipsTooBig() public {
+        address sender = vm.addr(1555);
+        (, bytes memory messageBody, bytes32 recipient, , bytes memory tips) = _prepareTestMessage(
+            sender
+        );
+        vm.expectRevert("!tips");
+        hoax(sender);
+        origin.dispatch{ value: TOTAL_TIPS + 1 }(
+            remoteDomain,
+            recipient,
+            optimisticSeconds,
+            tips,
+            messageBody
+        );
+    }
+
+    function test_dispatch_tipsTooSmall() public {
+        address sender = vm.addr(1555);
+        (, bytes memory messageBody, bytes32 recipient, , bytes memory tips) = _prepareTestMessage(
+            sender
+        );
+        vm.expectRevert("!tips");
+        hoax(sender);
+        origin.dispatch{ value: TOTAL_TIPS - 1 }(
+            remoteDomain,
+            recipient,
+            optimisticSeconds,
+            tips,
+            messageBody
+        );
+    }
+
+    function _prepareTestMessage(address sender)
+        internal
+        returns (
+            uint32 nonce,
+            bytes memory messageBody,
+            bytes32 recipient,
+            bytes memory message,
+            bytes memory tips
+        )
+    {
+        recipient = addressToBytes32(vm.addr(1337));
+        messageBody = bytes("message");
+        nonce = origin.nonce() + 1;
+        bytes memory _header = Header.formatHeader(
+            localDomain,
+            addressToBytes32(sender),
+            nonce,
+            remoteDomain,
+            recipient,
+            optimisticSeconds
+        );
+        tips = getDefaultTips();
+        message = Message.formatMessage(_header, tips, messageBody);
     }
 
     // ============ REPORTS ============
