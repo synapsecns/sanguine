@@ -3,6 +3,7 @@ package db_test
 import (
 	"database/sql"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"os"
 	"sync"
 	"testing"
@@ -15,12 +16,11 @@ import (
 	"github.com/synapsecns/sanguine/scribe/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/scribe/db/datastore/sql/sqlite"
 	"github.com/synapsecns/synapse-node/pkg/common"
-	"github.com/synapsecns/synapse-node/testutils"
 	"gorm.io/gorm/schema"
 )
 
 type DBSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 	dbs []db.EventDB
 }
 
@@ -28,7 +28,7 @@ type DBSuite struct {
 func NewEventDBSuite(tb testing.TB) *DBSuite {
 	tb.Helper()
 	return &DBSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 		dbs:       []db.EventDB{},
 	}
 }
