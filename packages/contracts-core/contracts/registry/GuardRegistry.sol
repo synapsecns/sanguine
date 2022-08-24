@@ -52,21 +52,21 @@ contract GuardRegistry is AbstractGuardRegistry {
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _addGuard(address _guard) internal returns (bool guardAdded) {
+    function _addGuard(address _guard) internal override returns (bool guardAdded) {
         guardAdded = guards.add(_guard);
         if (guardAdded) {
             emit GuardAdded(_guard);
         }
     }
 
-    function _removeGuard(address _guard) internal returns (bool guardRemoved) {
+    function _removeGuard(address _guard) internal override returns (bool guardRemoved) {
         guardRemoved = guards.remove(_guard);
         if (guardRemoved) {
             emit GuardRemoved(_guard);
         }
     }
 
-    function _isGuard(address _guard) internal view override returns (bool) {
-        return guards.contains(_guard);
+    function _isGuard(address _account) internal view override returns (bool) {
+        return guards.contains(_account);
     }
 }

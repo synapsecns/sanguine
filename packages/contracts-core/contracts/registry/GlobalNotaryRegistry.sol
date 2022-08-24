@@ -40,7 +40,7 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _addNotary(uint32 _domain, address _notary) internal returns (bool) {
+    function _addNotary(uint32 _domain, address _notary) internal override returns (bool) {
         if (_isNotary(_domain, _notary)) return false;
         domainNotaries[_domain].push(_notary);
         notariesIndexes[_domain][_notary] = domainNotaries[_domain].length;
@@ -48,7 +48,7 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
         return true;
     }
 
-    function _removeNotary(uint32 _domain, address _notary) internal returns (bool) {
+    function _removeNotary(uint32 _domain, address _notary) internal override returns (bool) {
         uint256 valueIndex = notariesIndexes[_domain][_notary];
         if (valueIndex == 0) return false;
         // To delete a Notary from the array in O(1),
@@ -72,7 +72,7 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
         return true;
     }
 
-    function _isNotary(uint32 _domain, address _notary) internal view override returns (bool) {
-        return notariesIndexes[_domain][_notary] != 0;
+    function _isNotary(uint32 _domain, address _account) internal view override returns (bool) {
+        return notariesIndexes[_domain][_account] != 0;
     }
 }

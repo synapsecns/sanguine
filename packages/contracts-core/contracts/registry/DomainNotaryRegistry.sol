@@ -66,11 +66,21 @@ contract DomainNotaryRegistry is AbstractNotaryRegistry {
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    function _addNotary(uint32 _domain, address _notary) internal override returns (bool) {
+        _assertDomain(_domain);
+        return _addNotary(_notary);
+    }
+
     function _addNotary(address _notary) internal returns (bool notaryAdded) {
         notaryAdded = notaries.add(_notary);
         if (notaryAdded) {
             emit DomainNotaryAdded(_notary);
         }
+    }
+
+    function _removeNotary(uint32 _domain, address _notary) internal override returns (bool) {
+        _assertDomain(_domain);
+        return _removeNotary(_notary);
     }
 
     function _removeNotary(address _notary) internal returns (bool notaryRemoved) {
@@ -80,8 +90,16 @@ contract DomainNotaryRegistry is AbstractNotaryRegistry {
         }
     }
 
-    function _isNotary(uint32 _domain, address _notary) internal view override returns (bool) {
+    function _assertDomain(uint32 _domain) internal view {
         require(_domain == trackedDomain, "Wrong domain");
-        return notaries.contains(_notary);
+    }
+
+    function _isNotary(uint32 _domain, address _account) internal view override returns (bool) {
+        _assertDomain(_domain);
+        return _isNotary(_account);
+    }
+
+    function _isNotary(address _account) internal view returns (bool) {
+        return notaries.contains(_account);
     }
 }

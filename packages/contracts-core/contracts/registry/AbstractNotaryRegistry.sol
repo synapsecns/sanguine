@@ -12,6 +12,24 @@ abstract contract AbstractNotaryRegistry {
     using TypedMemView for bytes29;
 
     /**
+     * @notice Adds a new Notary to Registry.
+     * @dev Child contracts should implement this depending on how Notaries are stored.
+     * @param _origin   Origin domain where Notary is added
+     * @param _notary   New Notary to add
+     * @return TRUE if a notary was added
+     */
+    function _addNotary(uint32 _origin, address _notary) internal virtual returns (bool);
+
+    /**
+     * @notice Removes a Notary from Registry.
+     * @dev Child contracts should implement this depending on how Notaries are stored.
+     * @param _origin   Origin domain where Notary is removed
+     * @param _notary   Notary to remove
+     * @return TRUE if a notary was removed
+     */
+    function _removeNotary(uint32 _origin, address _notary) internal virtual returns (bool);
+
+    /**
      * @notice  Checks all following statements are true:
      *          - `_attestation` is a formatted Attestation payload
      *          - `_attestation` contains a signature
@@ -43,5 +61,12 @@ abstract contract AbstractNotaryRegistry {
         require(_isNotary(_view.attestedDomain(), _notary), "Signer is not a notary");
     }
 
-    function _isNotary(uint32 _origin, address _notary) internal view virtual returns (bool);
+    /**
+     * @notice Checks whether a given account in an authorized Notary.
+     * @dev Child contracts should implement this depending on how Notaries are stored.
+     * @param _origin   Origin domain to check
+     * @param _account  Address to check for being a Notary
+     * @return TRUE if the account is an authorized Notary.
+     */
+    function _isNotary(uint32 _origin, address _account) internal view virtual returns (bool);
 }

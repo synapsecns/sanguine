@@ -11,6 +11,22 @@ abstract contract AbstractGuardRegistry {
     using TypedMemView for bytes29;
 
     /**
+     * @notice Adds a new Guard to Registry.
+     * @dev Child contracts should implement this depending on how Guards are stored.
+     * @param _guard    New Guard to add
+     * @return TRUE if a guard was added
+     */
+    function _addGuard(address _guard) internal virtual returns (bool);
+
+    /**
+     * @notice Removes a Guard from Registry.
+     * @dev Child contracts should implement this depending on how Guards are stored.
+     * @param _guard    Guard to remove
+     * @return TRUE if a guard was removed
+     */
+    function _removeGuard(address _guard) internal virtual returns (bool);
+
+    /**
      * @notice  Checks all following statements are true:
      *          - `_report` is a formatted Report payload
      *          - `_report` contains a signature
