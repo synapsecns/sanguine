@@ -3,14 +3,37 @@ package base
 import (
 	"database/sql"
 
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/gorm"
+)
+
+// define common field names. See package docs  for an explanation of why we have to do this.
+// note: some models share names. In cases where they do, we run the check against all names.
+// This is cheap because it's only done at startup.
+func init() {
+	namer := dbcommon.NewNamer(GetAllModels())
+	TxHashFieldName = namer.GetConsistentName("TxHash")
+	ChainIDFieldName = namer.GetConsistentName("ChainID")
+	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
+	ContractAddressFieldName = namer.GetConsistentName("ContractAddress")
+}
+
+var (
+	// TxHashFieldName is the field name of the tx hash.
+	TxHashFieldName string
+	// ChainIDFieldName gets the chain id field name.
+	ChainIDFieldName string
+	// BlockNumberFieldName is the name of the block number field.
+	BlockNumberFieldName string
+	// ContractAddressFieldName is the address of the contract.
+	ContractAddressFieldName string
 )
 
 // Log stores the log of an event.
 type Log struct {
 	gorm.Model
-	// Address is the address of the contract that generated the event
-	Address string `gorm:"address"`
+	// ContractAddress is the address of the contract that generated the event
+	ContractAddress string `gorm:"contract_address"`
 	// ChainID is the chain id of the contract that generated the event
 	ChainID uint32 `gorm:"chain_id"`
 	// PrimaryTopic is the primary topic of the event. Topics[0]
@@ -82,7 +105,7 @@ type RawEthTX struct {
 
 // ProcessedEthTx contains a processed ethereum transaction.
 type ProcessedEthTx struct {
-	TxHash string `gorm:"txhash;uniqueIndex:idx_txhash;size:66"`
+	TxHash string `gorm:"tx_hash"`
 	// RawTx is the raw serialized transaction
 	RawTx []byte `gorm:"column:raw_tx"`
 	// RawEthTx is the txid that caused the event
@@ -102,6 +125,6 @@ type LastIndexedInfo struct {
 	ContractAddress string `gorm:"column:contract_address"`
 	// ChainID is the chain id of the contract
 	ChainID uint32 `gorm:"column:chain_id"`
-	// LastIndexed is the last block number indexed
-	LastIndexed uint64 `gorm:"column:last_indexed"`
+	// BlockNumber is the last block number indexed
+	BlockNumber uint64 `gorm:"column:block_number"`
 }
