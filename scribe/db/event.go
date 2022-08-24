@@ -24,4 +24,8 @@ type EventDB interface {
 	StoreProcessedTx(ctx context.Context, tx *types.Transaction) error
 	// GetNonceForChainID returns the nonce for a chain id
 	GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error)
+	// StoreLastIndexed stores the last indexed for a contract address
+	StoreLastIndexed(ctx context.Context, contractAddress common.Address, blockNumber uint64) error
+	// RetrieveLastIndexed retrieves the last indexed for a contract address
+	RetrieveLastIndexed(ctx context.Context, contractAddress common.Address) (uint64, error)
 }

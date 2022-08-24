@@ -94,3 +94,12 @@ type ProcessedEthTx struct {
 	// GasTipCap contains the gas tip cap stored in wei
 	GasTipCap uint64
 }
+
+// LastIndexedInfo contains information on when a contract was last indexed.
+type LastIndexedInfo struct {
+	gorm.Model
+	// ContractAddress is the contract address
+	ContractAddress string `gorm:"column:contract_address"`
+	// LastIndexed is the last block number indexed
+	LastIndexed uint64 `gorm:"column:last_indexed"`
+}
