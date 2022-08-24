@@ -3,9 +3,9 @@ package mysql
 import (
 	"context"
 	"fmt"
+	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"time"
 
-	common_base "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/base"
 	common_mysql "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/mysql"
 
 	"github.com/synapsecns/sanguine/scribe/db/datastore/sql/base"

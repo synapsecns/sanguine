@@ -1,4 +1,4 @@
-package base
+package dbcommon
 
 import (
 	goLog "log"

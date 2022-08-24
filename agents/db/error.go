@@ -1,4 +1,4 @@
-package dbcommon
+package db
 
 import "errors"
 

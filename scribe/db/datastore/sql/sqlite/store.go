@@ -3,9 +3,9 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"os"
 
-	common_base "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/base"
 	common_sqlite "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/sqlite"
 
 	"github.com/synapsecns/sanguine/scribe/db/datastore/sql/base"

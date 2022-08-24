@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/db"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/gorm"
 )
 
@@ -44,7 +44,7 @@ func (s Store) RetrieveReceiptByTxHash(ctx context.Context, txHash common.Hash) 
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return types.Receipt{}, fmt.Errorf("could not find receipt with tx hash %s: %w", txHash.String(), dbcommon.ErrNotFound)
+			return types.Receipt{}, fmt.Errorf("could not find receipt with tx hash %s: %w", txHash.String(), db.ErrNotFound)
 		}
 		return types.Receipt{}, fmt.Errorf("could not store receipt: %w", dbTx.Error)
 	}

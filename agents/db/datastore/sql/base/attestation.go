@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/db"
 
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -45,7 +45,7 @@ func (s Store) RetrieveSignedAttestationByNonce(ctx context.Context, domainID, n
 
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("could not find attestation with nonce %d and domain %d: %w", nonce, domainID, dbcommon.ErrNotFound)
+			return nil, fmt.Errorf("could not find attestation with nonce %d and domain %d: %w", nonce, domainID, db.ErrNotFound)
 		}
 		return nil, fmt.Errorf("could not store attestation: %w", tx.Error)
 	}

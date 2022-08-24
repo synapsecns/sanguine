@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/db"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/gorm"
 )
 
@@ -65,7 +65,7 @@ func (s Store) RetrieveLogsByTxHash(ctx context.Context, txHash common.Hash) (lo
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return []*types.Log{}, fmt.Errorf("could not find logs with tx hash %s: %w", txHash.String(), dbcommon.ErrNotFound)
+			return []*types.Log{}, fmt.Errorf("could not find logs with tx hash %s: %w", txHash.String(), db.ErrNotFound)
 		}
 		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
 	}

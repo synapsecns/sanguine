@@ -3,10 +3,10 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"os"
 
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/base"
-	common_base "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/base"
 	common_sqlite "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/sqlite"
 
 	"gorm.io/driver/sqlite"

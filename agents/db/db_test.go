@@ -10,7 +10,6 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
 func (t *DBSuite) TestRetrieveLatestNonce() {
@@ -18,7 +17,7 @@ func (t *DBSuite) TestRetrieveLatestNonce() {
 
 	t.RunOnAllDBs(func(testDB db.SynapseDB) {
 		_, err := testDB.RetrieveLatestCommittedMessageNonce(t.GetTestContext(), domainID)
-		ErrorIs(t.T(), err, dbcommon.ErrNoNonceForDomain)
+		ErrorIs(t.T(), err, db.ErrNoNonceForDomain)
 
 		nonce := 0
 		leafIndex := uint32(1)

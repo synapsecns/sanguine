@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/db"
 
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -32,7 +32,7 @@ func (s Store) GetMessageLatestBlockEnd(ctx context.Context, domainID uint32) (b
 	err = s.db.WithContext(ctx).First(&blockWatchModel).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return 0, dbcommon.ErrNoStoredBlockForChain
+			return 0, db.ErrNoStoredBlockForChain
 		}
 		return 0, fmt.Errorf("could not fetch latest block: %w", err)
 	}
