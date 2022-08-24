@@ -10,7 +10,6 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/coinbase/rosetta-sdk-go v0.7.0
 	github.com/ethereum/go-ethereum v1.10.11
-	github.com/fatih/structtag v1.2.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
 	github.com/libs4go/crypto v0.0.1
@@ -83,6 +82,7 @@ require (
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/elastic/gosigar v0.10.5 // indirect
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect

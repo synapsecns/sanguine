@@ -1,6 +1,7 @@
 package base
 
 import (
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"math/big"
 	"time"
 
@@ -13,10 +14,11 @@ import (
 // note: some models share names. In cases where they do, we run the check against all names.
 // This is cheap because it's only done at startup.
 func init() {
-	NonceFieldName = getConsistentName("Nonce")
-	DomainIDFieldName = getConsistentName("DomainID")
-	BlockNumberFieldName = getConsistentName("BlockNumber")
-	LeafIndexFieldName = getConsistentName("CMLeafIndex")
+	namer := dbcommon.NewNamer(GetAllModels())
+	NonceFieldName = namer.GetConsistentName("Nonce")
+	DomainIDFieldName = namer.GetConsistentName("DomainID")
+	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
+	LeafIndexFieldName = namer.GetConsistentName("CMLeafIndex")
 }
 
 var (

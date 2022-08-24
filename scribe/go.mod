@@ -11,7 +11,6 @@ require (
 	github.com/richardwilkes/toolbox v1.52.0
 	github.com/stretchr/testify v1.8.0
 	github.com/synapsecns/synapse-node v0.242.0
-	go.uber.org/zap v1.19.1
 	gorm.io/driver/mysql v1.1.2
 	gorm.io/driver/sqlite v1.1.5
 	gorm.io/gorm v1.21.15
@@ -254,6 +253,7 @@ require (
 	go.etcd.io/bbolt v1.3.6 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/goleak v1.1.12 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.22.0 // indirect
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect

@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/base"
-	common_mysql "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/mysql"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -27,10 +25,10 @@ var NamingStrategy = schema.NamingStrategy{}
 
 // NewMysqlStore creates a new mysql store for a given data store.
 func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
-	common_mysql.Logger.Debug("creating mysql store")
+	logger.Debug("creating mysql store")
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
-		Logger:               dbcommon.GetGormLogger(common_mysql.Logger),
+		Logger:               dbcommon.GetGormLogger(logger),
 		FullSaveAssociations: true,
 		NamingStrategy:       NamingStrategy,
 		NowFunc:              time.Now,

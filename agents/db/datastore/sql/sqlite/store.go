@@ -7,8 +7,6 @@ import (
 	"os"
 
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/base"
-	common_sqlite "github.com/synapsecns/sanguine/core/dbcommon/datastore/sql/sqlite"
-
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -20,7 +18,7 @@ type Store struct {
 
 // NewSqliteStore creates a new sqlite data store.
 func NewSqliteStore(ctx context.Context, dbPath string) (*Store, error) {
-	common_sqlite.Logger.Debugf("creating sqlite store at %s", dbPath)
+	logger.Debugf("creating sqlite store at %s", dbPath)
 
 	// creat the directory to the store if it doesn't exist
 	err := os.MkdirAll(dbPath, os.ModePerm)
@@ -30,7 +28,7 @@ func NewSqliteStore(ctx context.Context, dbPath string) (*Store, error) {
 
 	gdb, err := gorm.Open(sqlite.Open(fmt.Sprintf("%s/%s", dbPath, "synapse.db")), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
-		Logger:                                   common_base.GetGormLogger(common_sqlite.Logger),
+		Logger:                                   common_base.GetGormLogger(logger),
 		FullSaveAssociations:                     true,
 	})
 	if err != nil {
