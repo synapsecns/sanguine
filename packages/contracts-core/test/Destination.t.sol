@@ -89,13 +89,13 @@ contract DestinationTest is SynapseTest {
         uint256 newConfirmAt
     );
 
-    function test_setConfirmation(uint256 _confirmAt) public {
+    function test_setConfirmation(uint96 _confirmAt) public {
         vm.startPrank(destination.owner());
-        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), 0);
+        assertEq(destination.submittedAt(remoteDomain, ROOT), 0);
         vm.expectEmit(true, true, true, true);
         emit SetConfirmation(remoteDomain, ROOT, 0, _confirmAt);
         destination.setConfirmation(remoteDomain, ROOT, _confirmAt);
-        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), _confirmAt);
+        assertEq(destination.submittedAt(remoteDomain, ROOT), _confirmAt);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -171,13 +171,13 @@ contract DestinationTest is SynapseTest {
         assertTrue(destination.isNotary(remoteDomain, vm.addr(notaryPK)));
         (bytes memory attestation, bytes memory sig) = signRemoteAttestation(notaryPK, nonce, ROOT);
         // Root doesn't exist yet
-        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), 0);
+        assertEq(destination.submittedAt(remoteDomain, ROOT), 0);
         // Broadcaster sends over a root signed by the notary on the Origin chain
         vm.expectEmit(true, true, true, true);
         emit AttestationAccepted(remoteDomain, nonce, ROOT, sig);
         destination.submitAttestation(attestation);
         // Time at which root was confirmed is set, optimistic timeout starts now
-        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), block.timestamp);
+        assertEq(destination.submittedAt(remoteDomain, ROOT), block.timestamp);
     }
 
     function test_submitAttestation_fakeNotary() public {
@@ -194,7 +194,7 @@ contract DestinationTest is SynapseTest {
         destination.addNotary(localDomain, notary);
         uint32 nonce = 42;
         (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, ROOT);
-        vm.expectRevert("Attestation refers to local chain");
+        vm.expectRevert("Attestation is from local chain");
         // Mirror should reject attestations from the chain it's deployed on
         destination.submitAttestation(attestation);
     }

@@ -33,11 +33,11 @@ contract DestinationHarness is Destination, SystemContractHarness, GuardRegistry
     }
 
     function setMessageStatus(
-        uint32 _remoteDomain,
+        uint32 _originDomain,
         bytes32 _messageHash,
         bytes32 _status
     ) external {
-        allMirrors[activeMirrors[_remoteDomain]].setMessageStatus(_messageHash, _status);
+        messageStatus[_originDomain][_messageHash] = _status;
     }
 
     function _storeTips(bytes29 _tips) internal override {
