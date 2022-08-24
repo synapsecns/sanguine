@@ -9,30 +9,39 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"gorm.io/gorm"
 )
 
-// Store is the sqlite store. It extends the base store for sqlite specific queries.
-type Store struct {
-	db *gorm.DB
-}
+// StoreProcessedTx stores a processed text.
+func (s Store) StoreProcessedTx(ctx context.Context, tx *types.Transaction) error {
+	marshalledTx, err := tx.MarshalBinary()
+	if err != nil {
+		return fmt.Errorf("could not marshall tx to binary: %w", err)
+	}
 
-// NewStore creates a new tore.
-func NewStore(db *gorm.DB) *Store {
-	return &Store{db: db}
-}
+	signer := types.LatestSignerForChainID(tx.ChainId())
+	sender, err := types.Sender(signer, tx)
+	if err != nil {
+		return fmt.Errorf("could not get sender for tx: %s: %w", tx.Hash(), err)
+	}
 
-// DB gets the database.
-func (s Store) DB() *gorm.DB {
-	return s.db
-}
+	parentID, err := s.getRawTXIDByParams(ctx, tx.Nonce(), tx.ChainId(), sender)
+	if err != nil {
+		return fmt.Errorf("could not get parent tx: %w", err)
+	}
 
-// GetAllModels gets all models to migrate
-// see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
-func GetAllModels() (allModels []interface{}) {
-	allModels = append(allModels,
-		&RawEthTX{}, &ProcessedEthTx{}, &BlockEndModel{}, &CommittedMessage{}, &SignedAttestation{}, &DispatchMessage{}, &AcceptedAttestation{})
-	return allModels
+	dbTx := s.DB().WithContext(ctx).Create(&ProcessedEthTx{
+		TxHash:    tx.Hash().String(),
+		RawTx:     marshalledTx,
+		RawEthTx:  parentID,
+		GasFeeCap: tx.GasFeeCap().Uint64(),
+		GasTipCap: tx.GasTipCap().Uint64(),
+	})
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not create raw tx: %w", dbTx.Error)
+	}
+
+	return nil
 }
 
 // StoreRawTx stores a raw transaction.
@@ -91,39 +100,6 @@ func (s Store) getRawTXIDByParams(ctx context.Context, nonce uint64, chainID *bi
 	return res.ID, nil
 }
 
-// StoreProcessedTx stores a processed text.
-func (s Store) StoreProcessedTx(ctx context.Context, tx *types.Transaction) error {
-	marshalledTx, err := tx.MarshalBinary()
-	if err != nil {
-		return fmt.Errorf("could not marshall tx to binary: %w", err)
-	}
-
-	signer := types.LatestSignerForChainID(tx.ChainId())
-	sender, err := types.Sender(signer, tx)
-	if err != nil {
-		return fmt.Errorf("could not get sender for tx: %s: %w", tx.Hash(), err)
-	}
-
-	parentID, err := s.getRawTXIDByParams(ctx, tx.Nonce(), tx.ChainId(), sender)
-	if err != nil {
-		return fmt.Errorf("could not get parent tx: %w", err)
-	}
-
-	dbTx := s.DB().WithContext(ctx).Create(&ProcessedEthTx{
-		TxHash:    tx.Hash().String(),
-		RawTx:     marshalledTx,
-		RawEthTx:  parentID,
-		GasFeeCap: tx.GasFeeCap().Uint64(),
-		GasTipCap: tx.GasTipCap().Uint64(),
-	})
-
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not create raw tx: %w", dbTx.Error)
-	}
-
-	return nil
-}
-
 // getChainID gets the chain id from non-legacy transaction types
 // it is used to check chainids against the chainid passed in the raw id.
 func getChainID(tx *types.Transaction) (hasType bool, chainID *big.Int) {
@@ -144,7 +120,7 @@ func getChainID(tx *types.Transaction) (hasType bool, chainID *big.Int) {
 func (s Store) GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error) {
 	var newNonce sql.NullInt64
 
-	selectMaxNonce := fmt.Sprintf("max(`%s`)", NonceFieldName)
+	selectMaxNonce := "max(`nonce`)"
 
 	dbTx := s.DB().WithContext(ctx).Model(&RawEthTX{}).Select(selectMaxNonce).Where(RawEthTX{
 		From:    fromAddress.String(),

@@ -1,4 +1,4 @@
-package base
+package dbcommon
 
 import (
 	"fmt"
@@ -47,7 +47,18 @@ func getGormFieldName(model interface{}, fieldName string) string {
 	return parsedField.DBName
 }
 
-// getConsistentName makes sure a `ColumnName` has a common column tag against all models
+// Namer is used to pull consistent names for fields from models. This prevents inconsistency by panicing on breaking changes.
+// It also allows us to avoid using xModelFieldName, yModelFieldName by taking advantage of introspection.
+type Namer struct {
+	models []interface{}
+}
+
+// NewNamer creates a new namer.
+func NewNamer(models []interface{}) Namer {
+	return Namer{models: models}
+}
+
+// GetConsistentName makes sure a `ColumnName` has a common column tag against all models
 // we use this so we don't have to define bridgeRedeemModelFieldName, originChainFieldName, etc.
 // panic's on an inconsistency. Note: this should only be called from init.
 //
@@ -56,7 +67,7 @@ func getGormFieldName(model interface{}, fieldName string) string {
 //
 // this returns the result of getGormFieldName for a valid model. It also panics if no model is valid
 // todo consider generating getters for all field names.
-func getConsistentName(fieldName string) string {
+func (n Namer) GetConsistentName(fieldName string) string {
 	var (
 		// lastFoundModel is the interface where the model was last found
 		// this is used for logging differences between two models
@@ -67,7 +78,7 @@ func getConsistentName(fieldName string) string {
 		foundTagName bool
 	)
 
-	for _, model := range GetAllModels() {
+	for _, model := range n.models {
 		// check if the model has the field
 		_, ok := reflect.TypeOf(model).Elem().FieldByName(fieldName)
 		if !ok {

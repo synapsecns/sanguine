@@ -12,12 +12,14 @@ require (
 	github.com/BurntSushi/toml v1.1.0
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/c-bata/go-prompt v0.2.6
+	github.com/fatih/structtag v1.2.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.0
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/urfave/cli/v2 v2.11.2
 	go.uber.org/zap v1.22.0
+	gorm.io/gorm v1.21.15
 	k8s.io/apimachinery v0.22.2
 )
 
@@ -45,6 +47,8 @@ require (
 	github.com/gosimple/slug v1.1.1 // indirect
 	github.com/grafana-tools/sdk v0.0.0-20210921191058-888ef9d18611 // indirect
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.2 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect

@@ -1,13 +1,14 @@
-package base
+package dbcommon
 
 import (
+	goLog "log"
+	"os"
+	"time"
+
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/synapse-node/pkg/common"
 	"go.uber.org/zap/zapcore"
 	gormLogger "gorm.io/gorm/logger"
-	goLog "log"
-	"os"
-	"time"
 )
 
 // GetGormLogger gets a gorm logger at the correct level

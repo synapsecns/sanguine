@@ -3,8 +3,9 @@ package base
 import (
 	"context"
 	"fmt"
-	"github.com/Thor-x86/nullable"
 	"github.com/synapsecns/sanguine/agents/db"
+
+	"github.com/Thor-x86/nullable"
 	"github.com/synapsecns/sanguine/agents/types"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm/clause"

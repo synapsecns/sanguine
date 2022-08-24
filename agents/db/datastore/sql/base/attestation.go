@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/db"
+
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
 	"gorm.io/gorm"
@@ -34,13 +35,13 @@ func (s Store) StoreSignedAttestations(ctx context.Context, attestation types.Si
 	return nil
 }
 
-// RetrieveSignedAttestationByNonce retrieves a signed attesation by nonce.
+// RetrieveSignedAttestationByNonce retrieves a signed attestation by nonce.
 func (s Store) RetrieveSignedAttestationByNonce(ctx context.Context, domainID, nonce uint32) (attestation types.SignedAttestation, err error) {
-	var signedAttesation SignedAttestation
+	var signedAttestation SignedAttestation
 	tx := s.DB().WithContext(ctx).Model(&SignedAttestation{}).Where(&SignedAttestation{
 		SADomain: domainID,
 		SANonce:  nonce,
-	}).First(&signedAttesation)
+	}).First(&signedAttestation)
 
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
@@ -48,5 +49,5 @@ func (s Store) RetrieveSignedAttestationByNonce(ctx context.Context, domainID, n
 		}
 		return nil, fmt.Errorf("could not store attestation: %w", tx.Error)
 	}
-	return signedAttesation, err
+	return signedAttestation, err
 }

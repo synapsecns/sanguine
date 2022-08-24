@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/db"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

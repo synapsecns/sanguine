@@ -1,9 +1,10 @@
-package base_test
+package dbcommon_test
 
 import (
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/db/datastore/sql/base"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/gorm"
+	"testing"
 )
 
 // ExplicitColumnTestModel tests explicit naming
@@ -27,14 +28,14 @@ type MultiColumnModel struct {
 }
 
 // TestGetGormFieldName tests getting the gorm field by name.
-func (s SQLSuite) TestGetGormFieldName() {
-	fieldName := base.GetGormFieldName(&ExplicitColumnTestModel{}, "TestField")
-	Equal(s.T(), fieldName, "test_field")
+func TestGetGormFieldName(t *testing.T) {
+	fieldName := dbcommon.GetGormFieldName(&ExplicitColumnTestModel{}, "TestField")
+	Equal(t, fieldName, "test_field")
 
 	// test implicit naming
-	fieldName = base.GetGormFieldName(&ImplicitColumnTestModel{}, "TestField")
-	Equal(s.T(), fieldName, "test_field")
+	fieldName = dbcommon.GetGormFieldName(&ImplicitColumnTestModel{}, "TestField")
+	Equal(t, fieldName, "test_field")
 
-	fieldName = base.GetGormFieldName(&MultiColumnModel{}, "TestField")
-	Equal(s.T(), fieldName, "test_field")
+	fieldName = dbcommon.GetGormFieldName(&MultiColumnModel{}, "TestField")
+	Equal(t, fieldName, "test_field")
 }
