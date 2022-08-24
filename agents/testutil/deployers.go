@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -11,8 +12,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/notarymanager"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
-	"github.com/synapsecns/synapse-node/testutils/backends"
 )
 
 // OriginDeployer deploys the origin contract.
@@ -26,7 +27,7 @@ func NewOriginDeployer(registry deployer.GetOnlyContractRegistry, backend backen
 }
 
 // Deploy deploys the origin contract.
-func (d OriginDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	notaryManagerContract := d.Registry().Get(ctx, NotaryManagerType)
 
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
@@ -66,8 +67,8 @@ func (d OriginDeployer) Deploy(ctx context.Context) (backends.DeployedContract, 
 }
 
 // Dependencies gets a list of dependencies used to deploy the origin contract.
-func (d OriginDeployer) Dependencies() []deployer.ContractType {
-	return []deployer.ContractType{NotaryManagerType}
+func (d OriginDeployer) Dependencies() []contracts.ContractType {
+	return []contracts.ContractType{NotaryManagerType}
 }
 
 // NotaryManagerDeployer deploys the update manager.
@@ -81,7 +82,7 @@ func NewNotaryManagerDeployer(registry deployer.GetOnlyContractRegistry, backend
 }
 
 // Deploy deploys the notary contract.
-func (n NotaryManagerDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (n NotaryManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return notarymanager.DeployNotaryManager(transactOps, backend, transactOps.From)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -100,7 +101,7 @@ func NewAttestationCollectorDeployer(registry deployer.GetOnlyContractRegistry, 
 }
 
 // Deploy deploys the attestation collector.
-func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		attestationAddress, attestationTx, collector, err := attestationcollector.DeployAttestationCollector(transactOps, backend)
 		if err != nil {
@@ -131,7 +132,7 @@ func NewDestinationDeployer(registry deployer.GetOnlyContractRegistry, backend b
 }
 
 // Deploy deploys the destination.
-func (d DestinationDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		destinationAddress, destinationTx, destination, err := destination.DeployDestination(transactOps, backend, uint32(d.Backend().GetChainID()))
 		if err != nil {
@@ -152,6 +153,6 @@ func (d DestinationDeployer) Deploy(ctx context.Context) (backends.DeployedContr
 }
 
 // Dependencies gets a list of dependencies used to deploy the destination contract.
-func (d DestinationDeployer) Dependencies() []deployer.ContractType {
-	return []deployer.ContractType{OriginType, NotaryManagerType}
+func (d DestinationDeployer) Dependencies() []contracts.ContractType {
+	return []contracts.ContractType{OriginType, NotaryManagerType}
 }

@@ -1,6 +1,8 @@
 package destination_test
 
 import (
+	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"math/big"
 	"testing"
 
@@ -11,20 +13,19 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/testutil"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/synapse-node/testutils"
-	"github.com/synapsecns/synapse-node/testutils/backends"
-	"github.com/synapsecns/synapse-node/testutils/backends/preset"
 )
 
 // DestinationSuite is the destination test suite.
 type DestinationSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 	originContract              *origin.OriginRef
 	destinationContract         *destination.DestinationRef
-	destinationContractMetadata backends.DeployedContract
+	destinationContractMetadata contracts.DeployedContract
 	attestationHarness          *attestationharness.AttestationHarnessRef
 	testBackendOrigin           backends.SimulatedTestBackend
 	testBackendDestination      backends.SimulatedTestBackend
@@ -36,7 +37,7 @@ type DestinationSuite struct {
 func NewDestinationSuite(tb testing.TB) *DestinationSuite {
 	tb.Helper()
 	return &DestinationSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

@@ -2,7 +2,7 @@ package example
 
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
-	"github.com/synapsecns/sanguine/ethergo/deployer"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/example/counter"
 )
 
@@ -12,7 +12,7 @@ func init() {
 		contractType := contractTypeImpl(i)
 		AllContractTypes = append(AllContractTypes, contractType)
 		// assert type is correct
-		var _ deployer.ContractType = contractType
+		var _ contracts.ContractType = contractType
 	}
 }
 
@@ -70,4 +70,4 @@ func (c contractTypeImpl) ContractName() string {
 }
 
 // make sure contractTypeImpl conforms to deployer.ContractType.
-var _ deployer.ContractType = contractTypeImpl(1)
+var _ contracts.ContractType = contractTypeImpl(1)

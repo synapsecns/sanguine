@@ -3,6 +3,7 @@ package destination_test
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/synapse-node/contracts/bridge"
 )
 
 func (d DestinationSuite) TestDestinationSuite() {
@@ -42,7 +42,7 @@ func (d DestinationSuite) TestDestinationSuite() {
 	hashedAttestation, err := notary.HashAttestation(unsignedAttestation)
 	Nil(d.T(), err)
 
-	signature, err := d.signer.SignMessage(d.GetTestContext(), bridge.KappaToSlice(hashedAttestation), false)
+	signature, err := d.signer.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(d.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, signature)

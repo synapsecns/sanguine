@@ -10,6 +10,7 @@ import (
 )
 
 // TxQueueDB contains an interface for storing transactions currently being processed.
+//
 //go:generate go run github.com/vektra/mockery/v2 --name TxQueueDB --output ./mocks --case=underscore
 type TxQueueDB interface {
 	// StoreRawTx stores a raw transaction

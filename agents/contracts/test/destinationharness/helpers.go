@@ -9,7 +9,7 @@ import (
 )
 
 // DestinationHarnessRef is a destination harness reference
-//nolint: golint
+// nolint: golint
 type DestinationHarnessRef struct {
 	*DestinationHarness
 	address common.Address

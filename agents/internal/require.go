@@ -4,6 +4,7 @@
 package internal
 
 import (
+	"github.com/BurntSushi/toml"
 	"github.com/ugorji/go/codec"
 	"github.com/vburenin/ifacemaker/maker"
 )
@@ -14,3 +15,4 @@ func init() {
 
 var _ = codec.Decoder{}
 var _ = maker.ParseStruct
+var _ = toml.Unmarshal

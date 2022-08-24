@@ -121,7 +121,7 @@ const (
 )
 
 // EncodeTips encodes a list of tips.
-//nolint: makezero
+// nolint: makezero
 func EncodeTips(tips Tips) ([]byte, error) {
 	b := make([]byte, offsetNotary)
 	binary.BigEndian.PutUint16(b, tipsVersion)

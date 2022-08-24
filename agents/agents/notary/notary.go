@@ -21,7 +21,7 @@ type Notary struct {
 }
 
 // RefreshInterval is how long to wait before refreshing.
-//TODO: This should be done in config.
+// TODO: This should be done in config.
 var RefreshInterval = 1 * time.Second
 
 // NewNotary creates a new notary.

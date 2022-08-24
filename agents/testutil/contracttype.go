@@ -12,7 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
-	"github.com/synapsecns/sanguine/ethergo/deployer"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 )
 
 // set all contact types.
@@ -21,7 +21,7 @@ func init() {
 		contractType := contractTypeImpl(i)
 		AllContractTypes = append(AllContractTypes, contractType)
 		// assert type is correct
-		var _ deployer.ContractType = contractType
+		var _ contracts.ContractType = contractType
 	}
 }
 
@@ -39,6 +39,7 @@ func verifyStringerUpdated(contractType contractTypeImpl) {
 
 // contractTypeImpl is the type of the contract being saved/fetched.
 // we use an interface here so the deploy helper here can be abstracted away from the synapse contracts
+//
 //go:generate go run golang.org/x/tools/cmd/stringer -type=contractTypeImpl -linecomment
 type contractTypeImpl int
 
@@ -81,7 +82,7 @@ func (c contractTypeImpl) Name() string {
 
 // ContractInfo gets the source code of every contract. See TODO above.
 // TODO these should use contract name and maybe come out of the generator.
-//nolint: cyclop
+// nolint: cyclop
 func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case OriginType:
@@ -114,5 +115,5 @@ func (c contractTypeImpl) ContractName() string {
 	return c.Name()
 }
 
-// make sure contractTypeImpl conforms to deployer.ContractType.
-var _ deployer.ContractType = contractTypeImpl(1)
+// make sure contractTypeImpl conforms to contracts.ContractType.
+var _ contracts.ContractType = contractTypeImpl(1)

@@ -25,7 +25,7 @@ type DomainIndexer interface {
 }
 
 // NewDomainIndexer creates a new domain indexer.
-//nolint: golint,revive
+// nolint: golint,revive
 func NewDomainIndexer(db db.SynapseDB, domain domains.DomainClient, interval time.Duration) DomainIndexer {
 	return domainIndexer{
 		db:       db,

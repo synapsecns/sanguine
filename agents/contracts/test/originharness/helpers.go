@@ -8,7 +8,7 @@ import (
 )
 
 // OriginHarnessRef is a origin harness reference
-//nolint: golint
+// nolint: golint
 type OriginHarnessRef struct {
 	*OriginHarness
 	address common.Address

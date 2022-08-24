@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/synapsecns/synapse-node/pkg/common"
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 )
 
@@ -41,19 +41,19 @@ func (t tips) Version() uint16 {
 }
 
 func (t tips) NotaryTip() *big.Int {
-	return common.CopyBigInt(t.notaryTip)
+	return core.CopyBigInt(t.notaryTip)
 }
 
 func (t tips) BroadcasterTip() *big.Int {
-	return common.CopyBigInt(t.broadcasterTip)
+	return core.CopyBigInt(t.broadcasterTip)
 }
 
 func (t tips) ProverTip() *big.Int {
-	return common.CopyBigInt(t.proverTip)
+	return core.CopyBigInt(t.proverTip)
 }
 
 func (t tips) ExecutorTip() *big.Int {
-	return common.CopyBigInt(t.executorTip)
+	return core.CopyBigInt(t.executorTip)
 }
 
 var _ Tips = tips{}

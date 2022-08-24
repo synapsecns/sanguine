@@ -8,7 +8,7 @@ import (
 )
 
 // MessageHarnessRef is a message harness reference
-//nolint: golint
+// nolint: golint
 type MessageHarnessRef struct {
 	*MessageHarness
 	address common.Address

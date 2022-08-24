@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	tomlCommon "github.com/synapsecns/synapse-node/pkg/common/toml"
+	tomlCommon "github.com/synapsecns/sanguine/core/toml"
 )
 
 // Config is used to configure a Scribe instance and information about chains and contracts.
