@@ -5,9 +5,10 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/sanguine/ethergo/example/counter"
-	"github.com/synapsecns/synapse-node/testutils/backends"
 )
 
 // CounterDeployer deploys a counter.
@@ -23,7 +24,7 @@ func NewCounterDeployer(registry deployer.GetOnlyContractRegistry, backend backe
 }
 
 // Deploy deploys the contract.
-func (n *CounterDeployer) Deploy(ctx context.Context) (backends.DeployedContract, error) {
+func (n *CounterDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	//nolint: wrapcheck
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		//nolint: wrapcheck

@@ -5,7 +5,6 @@ on:
     branches-ignore:
       - 'gh-pages'
 
-
 jobs:
   test:
     name: Go Coverage
@@ -27,12 +26,15 @@ jobs:
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: password
         options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
-
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
           submodules: 'recursive'
+
+      # todo: consider making this a service. You'd need another way to expose the private keys for the test
+      - name: Run rinkeby
+        run: docker run -p 8045:8545 -d -v /tmp/keys/:/tmp/keys/  --name rinkeby --restart always trufflesuite/ganache-cli ganache-cli --accounts 10 --account_keys_path /tmp/keys/rinkeby --chainId 4 # --fork https://rinkeby-light.eth.linkpool.io (no need to actually fork)
 
       - name: Go modules cache
         uses: actions/cache@v2
@@ -80,6 +82,8 @@ jobs:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
           GOMAXPROCS: 18
+          GANACHE_KEYS: /tmp/keys/rinkeby
+          GANACHE_RPC_URL: http://0.0.0.0:8045
 
       - name: Generate ignore list
         # generate a list of files to ignore on goveralls
@@ -93,7 +97,6 @@ jobs:
           files: profile.cov
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
-
 
       # We customize the build step because by default
       # We can not use ** because goveralls uses filepath.Match
@@ -123,12 +126,14 @@ jobs:
 
       # For pull requests it's not necessary to checkout the code
       - uses: dorny/paths-filter@v2
-        name: "Check for Go Changes"
+        name: 'Check for Go Changes'
         id: filter_go
         with:
           filters: |
-            core: 'core/**'
+            agents: 'agents/**'
+            scribe: 'scribe/**'
             tools: 'tools/**'
+            core: 'core/**'
             ethergo: 'ethergo/**'
       - name: Check For Solidity Changes
         id: filter_solidity
@@ -187,7 +192,7 @@ jobs:
             ${{ runner.os }}-go-
       - name: Build
         # go build all workspaces
-        run:  go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
+        run: go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
 
   #note: right now this is not run against all work dirs
   lint:
@@ -215,7 +220,6 @@ jobs:
         with:
           credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
 
-
       # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
       - name: Setup cache key
         run: cp ${{matrix.package}}/go.mod go.mod -v
@@ -225,7 +229,7 @@ jobs:
         with:
           working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: v1.46.2
+          version: v1.48.0
           # Path to your GolangCI-Lint config within the repo (optional)
           config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yml
           # see: https://github.com/golangci/golangci-lint/issues/2654
@@ -235,7 +239,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # see: https://github.com/golangci/golangci-lint/issues/337#issuecomment-510136513
           GOGC: 20
-          GOPRIVATE: "GOPRIVATE=github.com/synapsecns/synapse-node"
+          GOPRIVATE: 'GOPRIVATE=github.com/synapsecns/synapse-node'
 
   # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
   check-generation:
@@ -245,8 +249,8 @@ jobs:
     if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes }}
     strategy:
       matrix:
-        # only do on core for now
-        package: ['core']
+        # only do on agents for now
+        package: ['agents']
     steps:
       - uses: actions/checkout@v2
         with:
@@ -262,7 +266,7 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
 
-      - name: "Use NodeJS by nvmrc"
+      - name: 'Use NodeJS by nvmrc'
         uses: actions/setup-node@v2
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
@@ -297,7 +301,6 @@ jobs:
         with:
           credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
 
-
       - name: Go modules cache
         uses: actions/cache@v2
         with:
@@ -331,16 +334,16 @@ jobs:
         # Fail if files need regeneration
       - name: Add Label
         if: steps.verify-changed-files.outputs.files_changed == 'true'
-        uses: andymckay/labeler@e6c4322d0397f3240f0e7e30a33b5c5df2d39e90
+        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
-          add-labels: "needs-go-generate"
+          add-labels: 'needs-go-generate'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ steps.find_pr.outputs.pr }}
 
       - name: Remove Label
         if: steps.verify-changed-files.outputs.files_changed != 'true'
-        uses: andymckay/labeler@e6c4322d0397f3240f0e7e30a33b5c5df2d39e90
+        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
-          remove-labels: "needs-go-generate"
+          remove-labels: 'needs-go-generate'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ steps.find_pr.outputs.pr }}

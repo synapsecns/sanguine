@@ -6,11 +6,12 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/synapse-node/pkg/common"
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 )
 
 // Signer provides a common interface for signing/transacting.
+//
 //go:generate go run github.com/vektra/mockery/v2 --name Signer --output ./mocks --case=underscore
 type Signer interface {
 	// SignMessage signs a message
@@ -43,15 +44,15 @@ type signatureImpl struct {
 }
 
 func (sg signatureImpl) V() *big.Int {
-	return common.CopyBigInt(sg.v)
+	return core.CopyBigInt(sg.v)
 }
 
 func (sg signatureImpl) R() *big.Int {
-	return common.CopyBigInt(sg.r)
+	return core.CopyBigInt(sg.r)
 }
 
 func (sg signatureImpl) S() *big.Int {
-	return common.CopyBigInt(sg.s)
+	return core.CopyBigInt(sg.s)
 }
 
 // Encode encodes a signature.

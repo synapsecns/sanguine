@@ -1,9 +1,11 @@
----
 2-reviewers:
   - 'packages/contracts/**/*'
 
 M-ci:
-  - any: ['.github/**/*', '.circleci/**/*']
+  - any: ['.github/**/*']
+
+M-make:
+  - any: ['make/**/*']
 
 M-integration:
   - any: ['integration-tests/**/*']

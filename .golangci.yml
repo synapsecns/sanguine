@@ -4,8 +4,8 @@ run:
   skip-dirs-use-default: false
   timeout: 15m
   skip-files:
-    - ".*\\.abigen\\.go$"
-    - ".*\\.metadata\\.go$"
+    - '.*\\.abigen\\.go$'
+    - '.*\\.metadata\\.go$'
 
 
 linters-settings:
@@ -86,6 +86,8 @@ linters:
     # no need to disallow returning interfaces
     - ireturn
     - nonamedreturns
+    - contextcheck
+    - nosnakecase
   fast: false
 
 issues:
@@ -95,11 +97,11 @@ issues:
       linters:
         - revive
         - stylecheck
-      text: "should not use dot imports"
+      text: 'should not use dot imports'
     - path: contracts/
       linters:
         - revive
-      text: "and that stutters; consider calling this"
+      text: 'and that stutters; consider calling this'
     - path: ethergo/example/*
       linters:
         - wrapcheck

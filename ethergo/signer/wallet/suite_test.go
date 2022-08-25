@@ -2,19 +2,19 @@ package wallet_test
 
 import (
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/synapse-node/testutils"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"testing"
 )
 
 type WalletSuite struct {
-	*testutils.TestSuite
+	*testsuite.TestSuite
 }
 
 // NewWalletSuite creates a end-to-end test suite.
 func NewWalletSuite(tb testing.TB) *WalletSuite {
 	tb.Helper()
 	return &WalletSuite{
-		TestSuite: testutils.NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 

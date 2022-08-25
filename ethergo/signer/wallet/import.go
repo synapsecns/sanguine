@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"github.com/tyler-smith/go-bip39"
-	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -40,7 +40,7 @@ func FromPrivateKey(privKey *ecdsa.PrivateKey) (Wallet, error) {
 // TODO: support json files.
 func FromKeyFile(keyFile string) (Wallet, error) {
 	// nolint: gosec
-	rawKey, err := ioutil.ReadFile(keyFile)
+	rawKey, err := os.ReadFile(keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not get seed phrase: %w", err)
 	}

@@ -11,7 +11,7 @@
         ```go
         package counter
 
-        //go:generate go run github.com/synapsecns/synapse-node/testutils/codegen/abigen generate --sol ./counter.sol --pkg counter --sol-version 0.8.4 --filename counter
+        //go:generate go run github.com/synapsecns/sanguine/tools/abigen generate --sol ./counter.sol --pkg counter --sol-version 0.8.4 --filename counter
 
         ```
 
@@ -115,7 +115,7 @@
         "github.com/ethereum/go-ethereum/core/types"
         "github.com/synapsecns/sanguine/ethergo/deployer"
         "github.com/synapsecns/sanguine/ethergo/example/counter"
-        "github.com/synapsecns/synapse-node/testutils/backends"
+        "github.com/synapsecns/sanguine/ethergo/backends"
       )
 
       // CounterDeployer deploys a counter.
@@ -156,7 +156,7 @@
         "github.com/synapsecns/sanguine/ethergo/example"
         "github.com/synapsecns/sanguine/ethergo/example/counter"
         "github.com/synapsecns/sanguine/ethergo/manager"
-        "github.com/synapsecns/synapse-node/testutils/backends/simulated"
+        "github.com/synapsecns/sanguine/ethergo/backends/simulated"
         "testing"
         "time"
       )
