@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/jftuga/ellipsis"
 	"github.com/olekukonko/tablewriter"
-	"github.com/synapsecns/sanguine/tools/rpc/internal"
+	"github.com/synapsecns/sanguine/services/omnirpc/pkg"
 	"os"
 	"sort"
 )
 
 // DisplayLatency displays latency results in a cli.
-func DisplayLatency(lat []internal.LatencyResult) {
+func DisplayLatency(lat []pkg.LatencyResult) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"URL", "Latency", "HasError (if any)"})
 
