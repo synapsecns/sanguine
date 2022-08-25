@@ -1,6 +1,6 @@
 module github.com/synapsecns/sanguine/agents
 
-go 1.18
+go 1.19
 
 require (
 	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a

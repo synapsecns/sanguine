@@ -1,6 +1,6 @@
 module github.com/synapsecns/sanguine/core
 
-go 1.18
+go 1.19
 
 replace (
 	github.com/CosmWasm/wasmvm => github.com/CosmWasm/wasmvm v0.16.6
