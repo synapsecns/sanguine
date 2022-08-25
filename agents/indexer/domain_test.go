@@ -13,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/indexer"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/synapse-node/testutils/utils"
-	"math"
 	"math/big"
 	"testing"
 	"time"
@@ -138,22 +137,4 @@ func (i IndexerSuite) TestSyncMessages() {
 	})
 
 	// TODO: something w/ retrieve dispatches from db
-}
-
-func TestUint32Max(t *testing.T) {
-	// fuzz
-	for i := 0; i < 50; i++ {
-		small := gofakeit.Uint32()
-		// we can't assert greater then max
-		if small == math.MaxUint32 {
-			continue
-		}
-
-		larger := small + 1
-
-		Equal(t, indexer.MaxUint32(small, larger), larger)
-	}
-
-	// edge case
-	Equal(t, indexer.MaxUint32(math.MaxUint32, 4), uint32(math.MaxUint32))
 }

@@ -2,9 +2,8 @@ go 1.18
 
 use (
 	./agents
-	./tools
+	./core
 	./ethergo
 	./scribe
-	./core
+	./tools
 )
-
