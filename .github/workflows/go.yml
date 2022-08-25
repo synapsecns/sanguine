@@ -347,3 +347,49 @@ jobs:
           remove-labels: 'needs-go-generate'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ steps.find_pr.outputs.pr }}
+
+  # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
+  # the next run since build-goreleaser and run-goreleaser are run concurrently. We expect github actions
+  # to fix this n a future verison
+  build-goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # needed if using new-from-rev (see: https://golangci-lint.run/usage/configuration/#issues-configuration)
+
+      - uses: dorny/paths-filter@v2
+        name: check if any changes warrant a new build of goreleaser-cgo-cross-compiler
+        id: changes
+        with:
+          token:  ${{ secrets.GITHUB_TOKEN }}
+          filters: |
+            src:
+              - 'docker/goreleaser/**'
+      - name: Enviornment variables
+        # TODO: this if block needs to be run on every step now, but should be fixed in a future version: https://github.com/actions/runner/issues/662
+        if: steps.changes.outputs.src == 'true'
+        uses: franzdiebold/github-env-vars-action@v1.0.0
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+      -
+        name: Login to GitHub Container Registry
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_DOCKER }}
+
+      -
+        name: Build and push
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          file: ./docker/goreleaser/Dockerfile
+          # TODO this needs to be versioned
+          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest

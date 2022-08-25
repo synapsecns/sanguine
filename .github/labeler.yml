@@ -7,6 +7,9 @@ M-ci:
 M-make:
   - any: ['make/**/*']
 
+M-docker:
+  - any: ['docker/**/*']
+
 M-integration:
   - any: ['integration-tests/**/*']
 
