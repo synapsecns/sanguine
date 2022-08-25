@@ -7,15 +7,7 @@ import (
 	"golang.org/x/exp/slices"
 	"net/http"
 	"testing"
-	"time"
 )
-
-func (r *RPCSuite) TestGetLatency() {
-	rpcMap, err := internal.ParseRPCMap([]byte(testData))
-	Nil(r.T(), err)
-
-	internal.GetRPCLatency(r.GetTestContext(), time.Second*5, rpcMap[1])
-}
 
 func (r *RPCSuite) TestGetRPCMap() {
 	httpmock.Activate()
