@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/serivces/omnirpc/latency"
 	"github.com/synapsecns/sanguine/serivces/omnirpc/rpcmap"
 	"github.com/synapsecns/synapse-node/config"
 	"github.com/urfave/cli/v2"
+	"os"
 	"time"
 )
 
@@ -33,7 +35,12 @@ func main() {
 				return nil
 			},
 		}}
-	_ = config.Config{}
-	_ = rpcmap.GetRPCMap
-	_ = latency.Result{}
+	shellCommand := commandline.GenerateShellCommand(app.Commands)
+	app.Commands = append(app.Commands, shellCommand)
+	app.Action = shellCommand.Action
+
+	err := app.Run(os.Args)
+	if err != nil {
+		panic(err)
+	}
 }
