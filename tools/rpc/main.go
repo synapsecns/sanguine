@@ -10,7 +10,8 @@ package main
 import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/commandline"
-	"github.com/synapsecns/sanguine/services/omnirpc/pkg"
+	"github.com/synapsecns/sanguine/tools/rpc/internal"
+	"github.com/synapsecns/synapse-node/config"
 	"github.com/urfave/cli/v2"
 	"os"
 	"time"
@@ -21,7 +22,7 @@ const appName = "modulecopier"
 func main() {
 	app := cli.NewApp()
 	app.Name = appName
-	app.Version = "0.1.0"
+	app.Version = config.AppVersion
 	app.Description = "Used for checking the lowest latency rpc endpoint fora given chain"
 	app.Commands = []*cli.Command{
 		{
@@ -29,12 +30,12 @@ func main() {
 			Usage: "checks latency for all rpc endpoints known for a chain id",
 			Flags: []cli.Flag{chainIDFlag},
 			Action: func(c *cli.Context) error {
-				rpcMap, err := pkg.GetRPCMap(c.Context)
+				rpcMap, err := internal.GetRPCMap(c.Context)
 				if err != nil {
 					return fmt.Errorf("could not get rpc map: %w", err)
 				}
 
-				res := pkg.GetRPCLatency(c.Context, time.Second*5, rpcMap[c.Int("chain-id")])
+				res := internal.GetRPCLatency(c.Context, time.Second*5, rpcMap[c.Int("chain-id")])
 				DisplayLatency(res)
 
 				return nil

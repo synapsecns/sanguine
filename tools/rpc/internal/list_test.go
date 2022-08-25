@@ -1,11 +1,11 @@
-package pkg_test
+package internal_test
 
 import (
 	"github.com/jarcoal/httpmock"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"
-	"github.com/synapsecns/sanguine/services/omnirpc/pkg"
+	"github.com/synapsecns/sanguine/tools/rpc/internal"
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 	"net/http"
@@ -26,7 +26,7 @@ func (r *RPCSuite) TestRPCLatency() {
 	})
 	Nil(r.T(), g.Wait())
 
-	latencySlice := pkg.GetRPCLatency(r.GetTestContext(), time.Second*3, []string{bsc.HTTPEndpoint(), avalanche.HTTPEndpoint()})
+	latencySlice := internal.GetRPCLatency(r.GetTestContext(), time.Second*3, []string{bsc.HTTPEndpoint(), avalanche.HTTPEndpoint()})
 	NotEqual(r.T(), latencySlice[0].URL, latencySlice[1].URL)
 	for _, latencyData := range latencySlice {
 		False(r.T(), latencyData.HasError)
@@ -38,16 +38,16 @@ func (r *RPCSuite) TestGetRPCMap() {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder(http.MethodGet, pkg.RPCMapURL, httpmock.NewStringResponder(http.StatusOK, testData))
+	httpmock.RegisterResponder(http.MethodGet, internal.RPCMapURL, httpmock.NewStringResponder(http.StatusOK, testData))
 
-	res, err := pkg.GetRPCMap(r.GetTestContext())
+	res, err := internal.GetRPCMap(r.GetTestContext())
 	Nil(r.T(), err)
 
 	True(r.T(), slices.Contains(res[1], "https://api.mycryptoapi.com/eth"))
 }
 
 func TestGetChainRPCS(t *testing.T) {
-	rpcMap, err := pkg.ParseRPCMap([]byte(testData))
+	rpcMap, err := internal.ParseRPCMap([]byte(testData))
 	Nil(t, err)
 
 	True(t, slices.Contains(rpcMap[1], "https://api.mycryptoapi.com/eth"))
