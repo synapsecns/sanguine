@@ -1,4 +1,4 @@
-FROM gohornet/goreleaser-cgo-cross-compiler:1.17.3
+FROM gohornet/goreleaser-cgo-cross-compiler:1.19
 
 LABEL org.label-schema.description="GoReleaser synapse node dockerfile"
 LABEL org.label-schema.name="ghcr.io/synapsecns/synapse-node-goreleaser"
