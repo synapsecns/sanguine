@@ -2,7 +2,7 @@
   - 'packages/contracts/**/*'
 
 M-ci:
-  - any: ['.github/*', '.circleci/**/*']
+  - any: ['.github/**/*']
 
 M-make:
   - any: ['make/**/*']
