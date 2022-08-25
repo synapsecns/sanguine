@@ -4,6 +4,9 @@
 M-ci:
   - any: ['.github/**/*', '.circleci/**/*']
 
+M-make:
+  - any: ['make/**/*']
+
 M-integration:
   - any: ['integration-tests/**/*']
 
