@@ -3,6 +3,11 @@
 
 default: help
 
+# set variables
+GIT_ROOT := $(shell git rev-parse --show-toplevel)
+CURRENT_PATH := $(shell pwd)
+
+
 # TODO tag a version
 golangci-install:
 	@#Travis (has sudo)
@@ -26,8 +31,10 @@ help: ## This help dialog.
 		printf "%-30s %s\n" $$help_command $$help_info ; \
 	done
 
-
 lint: golangci-install ## Run golangci-lint and go fmt ./...
 	go mod tidy -compat=1.17
 	go fmt ./...
-	@golangci-lint run --fix --config=../.golangci.yml
+	cd $(GIT_ROOT)
+	go work sync
+	cd $(CURRENT_PATH)
+	@golangci-lint run --fix --config=$(GIT_ROOT)/.golangci.yml
