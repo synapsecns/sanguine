@@ -1,11 +1,9 @@
-go 1.17
+go 1.19
 
-use ./agents
-
-use ./tools
-
-use ./ethergo
-
-use ./scribe
-
-use ./core
+use (
+	./agents
+	./core
+	./ethergo
+	./scribe
+	./tools
+)

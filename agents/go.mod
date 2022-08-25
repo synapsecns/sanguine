@@ -1,8 +1,9 @@
 module github.com/synapsecns/sanguine/agents
 
-go 1.17
+go 1.19
 
 require (
+	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a
 	github.com/BurntSushi/toml v1.1.0
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/Thor-x86/nullable v1.0.0
@@ -285,6 +286,7 @@ require (
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.22.0 // indirect
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
+	golang.org/x/exp v0.0.0-20220823124025-807a23277127 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664 // indirect
