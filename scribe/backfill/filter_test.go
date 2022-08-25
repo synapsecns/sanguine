@@ -13,7 +13,7 @@ import (
 )
 
 // TestFilterLogsMaxAttempts ensures after the maximum number of attempts, an error is returned.
-func (s BackfillSuite) TestFilterLogsMaxAttempts() {
+func (b BackfillSuite) TestFilterLogsMaxAttempts() {
 	mockFilterer := new(mocks.EVMClient)
 	contractAddress := utils.NewMockAddress()
 
@@ -26,11 +26,11 @@ func (s BackfillSuite) TestFilterLogsMaxAttempts() {
 		// return an error
 		Return(nil, errors.New("I'm a test error"))
 
-	logInfo, err := rangeFilter.FilterLogs(s.GetTestContext(), &common.Chunk{
+	logInfo, err := rangeFilter.FilterLogs(b.GetTestContext(), &common.Chunk{
 		StartBlock: big.NewInt(1),
 		EndBlock:   big.NewInt(10),
 	})
 
-	Nil(s.T(), logInfo)
-	NotNil(s.T(), err)
+	Nil(b.T(), logInfo)
+	NotNil(b.T(), err)
 }

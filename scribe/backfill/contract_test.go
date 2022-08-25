@@ -1,6 +1,7 @@
 package backfill_test
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/core/types"
@@ -12,7 +13,6 @@ import (
 
 // TestStartHeightForBackfill ensures the start height for backfill is calculated correctly.
 func (b BackfillSuite) TestStartHeightForBackfill() {
-
 	// Get simulated blockchain and deploy the test contract.
 	simulatedChain := simulated.NewSimulatedBackend(b.GetSuiteContext(), b.T())
 	testContract, _ := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
@@ -48,7 +48,6 @@ func (b BackfillSuite) TestStartHeightForBackfill() {
 	startHeight, err = backfiller.StartHeightForBackfill(b.GetTestContext(), true)
 	Nil(b.T(), err)
 	Equal(b.T(), uint64(1000), startHeight)
-
 }
 
 // TestGetLogsSimulated tests the GetLogs function using a simulated blockchain.
@@ -125,7 +124,6 @@ Next:
 Done:
 	// Check to see if 3 logs were collected.
 	Equal(b.T(), 3, len(collectedLogs))
-
 }
 
 // TestGetLogsMock tests the GetLogs function using a mocked blockchain for errors.
@@ -136,7 +134,7 @@ func (b BackfillSuite) TestGetLogsMock() {
 func (b BackfillSuite) getTxBlockNumber(chain *simulated.Backend, tx *types.Transaction) (uint64, error) {
 	receipt, err := chain.TransactionReceipt(b.GetTestContext(), tx.Hash())
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("error getting receipt for tx: %w", err)
 	}
 	return receipt.BlockNumber.Uint64(), nil
 }

@@ -13,6 +13,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// ContractBackfiller is a backfiller that fetches logs for a specific contract.
 type ContractBackfiller struct {
 	// contract is the contract to get logs for
 	contract contracts.DeployedContract
@@ -117,7 +118,7 @@ func (c ContractBackfiller) StartHeightForBackfill(ctx context.Context, useDB bo
 			// lastBlock will either be the last block that had stored indexed data for, or is 0 if no data is stored
 			lastBlock, err := c.eventDB.RetrieveLastIndexed(ctx, c.contract.Address(), uint32(c.contract.ChainID().Uint64()))
 			if err != nil {
-				return err
+				return fmt.Errorf("could not retrieve last indexed block for contract: %w", err)
 			}
 			setMaxHeight(lastBlock)
 		}
