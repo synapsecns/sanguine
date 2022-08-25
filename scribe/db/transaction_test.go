@@ -70,44 +70,15 @@ func (t *DBSuite) TestTxInsertion() {
 
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		for _, testTx := range testTxes {
-			err := testDB.StoreRawTx(t.GetTestContext(), testTx, testTx.ChainId(), signer.Address())
-			Nil(t.T(), err)
-
-			// TODO: retrieve raw tx
-
 			transactor, err := signer.GetTransactor(testTx.ChainId())
 			Nil(t.T(), err)
 
 			signedTx, err := transactor.Signer(signer.Address(), testTx)
 			Nil(t.T(), err)
 
-			err = testDB.StoreProcessedTx(t.GetTestContext(), signedTx)
+			err = testDB.StoreEthTx(t.GetTestContext(), signedTx)
 			Nil(t.T(), err)
 			// TODO: retrieve the processed tx
 		}
-	})
-}
-
-// / make sure tx doesn't conflict on both chains.
-func (t *DBSuite) TestTxNonceQueryMultiChain() {
-	fakeTx := testTxes[0]
-	fakeTx2 := testTxes[1]
-
-	t.RunOnAllDBs(func(testDB db.EventDB) {
-		from := common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64()))
-
-		err := testDB.StoreRawTx(t.GetTestContext(), fakeTx, fakeTx.ChainId(), from)
-		Nil(t.T(), err)
-
-		err = testDB.StoreRawTx(t.GetTestContext(), fakeTx2, fakeTx2.ChainId(), from)
-		Nil(t.T(), err)
-
-		nonce1, err := testDB.GetNonceForChainID(t.GetTestContext(), from, fakeTx.ChainId())
-		Nil(t.T(), err)
-		Equal(t.T(), nonce1, fakeTx.Nonce())
-
-		nonce2, err := testDB.GetNonceForChainID(t.GetTestContext(), from, fakeTx2.ChainId())
-		Nil(t.T(), err)
-		Equal(t.T(), nonce2, fakeTx2.Nonce())
 	})
 }
