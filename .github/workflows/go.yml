@@ -135,6 +135,7 @@ jobs:
             tools: 'tools/**'
             core: 'core/**'
             ethergo: 'ethergo/**'
+            omnirpc: 'services/omnirpc/**'
       - name: Check For Solidity Changes
         id: filter_solidity
         uses: tj-actions/changed-files@v26.1
