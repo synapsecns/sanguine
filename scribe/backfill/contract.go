@@ -13,7 +13,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type contractBackfiller struct {
+type ContractBackfiller struct {
 	// contract is the contract to get logs for
 	contract contracts.DeployedContract
 	// eventDB is the database to store event data in
@@ -23,19 +23,19 @@ type contractBackfiller struct {
 }
 
 // NewContractBackfiller creates a new backfiller for a contract.
-func NewContractBackfiller(eventDB db.EventDB, contract contracts.DeployedContract, client client.EVMClient) *contractBackfiller {
-	return &contractBackfiller{
+func NewContractBackfiller(eventDB db.EventDB, contract contracts.DeployedContract, client client.EVMClient) *ContractBackfiller {
+	return &ContractBackfiller{
 		contract: contract,
 		eventDB:  eventDB,
 		client:   client,
 	}
 }
 
-// chunkSize is how big to make the chunks when fetching
+// chunkSize is how big to make the chunks when fetching.
 const chunkSize = 1024
 
 // GetLogs gets all logs for the contract.
-func (c contractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight uint64) (logsChan <-chan types.Log, errsChan <-chan error, completeChan <-chan bool) {
+func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight uint64) (logsChan <-chan types.Log, errsChan <-chan error, completeChan <-chan bool) {
 	// initialize the channel
 	logChan := make(chan types.Log)
 	errChan := make(chan error)
@@ -83,7 +83,7 @@ func (c contractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight 
 
 // StartHeightForBackfill gets the creation height for the contract. This is the maximum
 // of the most recent block for the contract and the block that the contract was deployed.
-func (c contractBackfiller) StartHeightForBackfill(ctx context.Context, useDB bool) (startHeight uint64, err error) {
+func (c ContractBackfiller) StartHeightForBackfill(ctx context.Context, useDB bool) (startHeight uint64, err error) {
 	g, ctx := errgroup.WithContext(ctx)
 	// maxHeight to return
 	var maxHeight uint64

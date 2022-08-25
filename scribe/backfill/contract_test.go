@@ -27,22 +27,23 @@ func (b BackfillSuite) TestStartHeightForBackfill() {
 		// Since useDB is false, this should return the block number of the contract's deploy tx.
 		startHeight, err := backfiller.StartHeightForBackfill(b.GetTestContext(), false)
 		Nil(b.T(), err)
-		Equal(b.T(), uint64(deployedBlockNumber), startHeight)
+		Equal(b.T(), deployedBlockNumber, startHeight)
 
 		// Since useDB is true, but we have not filled in when the contract was last indexed,
 		// this should return the block number of the contract's deploy tx.
 		startHeight, err = backfiller.StartHeightForBackfill(b.GetTestContext(), true)
 		Nil(b.T(), err)
-		Equal(b.T(), uint64(deployedBlockNumber), startHeight)
+		Equal(b.T(), deployedBlockNumber, startHeight)
 
 		// Now fill in the contract's last indexed block.
-		testDB.StoreLastIndexed(b.GetTestContext(), testContract.Address(), uint32(simulatedChain.GetChainID()), 1000)
+		err = testDB.StoreLastIndexed(b.GetTestContext(), testContract.Address(), uint32(simulatedChain.GetChainID()), 1000)
+		Nil(b.T(), err)
 
 		// Since useDB is false, even though last indexed is filled in,
 		// this should still return the block number of the contract's deploy tx.
 		startHeight, err = backfiller.StartHeightForBackfill(b.GetTestContext(), false)
 		Nil(b.T(), err)
-		Equal(b.T(), uint64(deployedBlockNumber), startHeight)
+		Equal(b.T(), deployedBlockNumber, startHeight)
 
 		// Now that useDB is true and last indexed is filled in, this should return the last indexed block.
 		startHeight, err = backfiller.StartHeightForBackfill(b.GetTestContext(), true)
@@ -52,6 +53,8 @@ func (b BackfillSuite) TestStartHeightForBackfill() {
 }
 
 // TestGetLogsSimulated tests the GetLogs function using a simulated blockchain.
+//
+//nolint:cyclop
 func (b BackfillSuite) TestGetLogsSimulated() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
 	simulatedChain := simulated.NewSimulatedBackend(b.GetSuiteContext(), b.T())
@@ -94,8 +97,8 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 			select {
 			case <-b.GetTestContext().Done():
 				b.T().Error("test timed out")
-			case error := <-errors:
-				b.T().Error(error)
+			case e := <-errors:
+				b.T().Error(e)
 			case log := <-logs:
 				collectedLogs = append(collectedLogs, log)
 			case <-done:
@@ -103,6 +106,7 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 			}
 		}
 	Next:
+		// Check to see if 2 logs were collected.
 		Equal(b.T(), 2, len(collectedLogs))
 
 		// Get the logs for the last three events.
@@ -112,8 +116,8 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 			select {
 			case <-b.GetTestContext().Done():
 				b.T().Error("test timed out")
-			case error := <-errors:
-				b.T().Error(error)
+			case e := <-errors:
+				b.T().Error(e)
 			case log := <-logs:
 				collectedLogs = append(collectedLogs, log)
 			case <-done:
@@ -121,9 +125,9 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 			}
 		}
 	Done:
+		// Check to see if 3 logs were collected.
 		Equal(b.T(), 3, len(collectedLogs))
 	})
-
 }
 
 // TestGetLogsMock tests the GetLogs function using a mocked blockchain for errors.
