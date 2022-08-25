@@ -15,35 +15,52 @@ contract GuardRegistry is AbstractGuardRegistry {
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // All active guards
     EnumerableSet.AddressSet internal guards;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             UPGRADE GAP                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // solhint-disable-next-line var-name-mixedcase
-    uint256[49] private __GAP;
+    // gap for upgrade safety
+    uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @notice Emitted when a new Guard is added.
+     * @param guard    Address of the added guard
+     */
     event GuardAdded(address guard);
 
+    /**
+     * @notice Emitted when a Guard is removed.
+     * @param guard    Address of the removed guard
+     */
     event GuardRemoved(address guard);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @notice Returns addresses of all Guards.
+     * @dev This copies storage into memory, so can consume a lof of gas, if
+     * amount of notaries is large (see EnumerableSet.values())
+     */
     function allGuards() external view returns (address[] memory) {
         return guards.values();
     }
 
+    /**
+     * @notice Returns i-th Guard. O(1)
+     * @dev Will revert if index is out of range
+     */
     function getGuard(uint256 _index) external view returns (address) {
         return guards.at(_index);
     }
 
+    /**
+     * @notice Returns amount of active guards. O(1)
+     */
     function guardsAmount() external view returns (uint256) {
         return guards.length();
     }
@@ -52,6 +69,9 @@ contract GuardRegistry is AbstractGuardRegistry {
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @notice Tries to add a new guard, emits an event only if guard was added.
+     */
     function _addGuard(address _guard) internal override returns (bool guardAdded) {
         guardAdded = guards.add(_guard);
         if (guardAdded) {
@@ -59,6 +79,9 @@ contract GuardRegistry is AbstractGuardRegistry {
         }
     }
 
+    /**
+     * @notice Tries to remove a guard, emits an event only if guard was removed.
+     */
     function _removeGuard(address _guard) internal override returns (bool guardRemoved) {
         guardRemoved = guards.remove(_guard);
         if (guardRemoved) {
@@ -66,6 +89,9 @@ contract GuardRegistry is AbstractGuardRegistry {
         }
     }
 
+    /**
+     * @notice Returns whether given address is a guard.
+     */
     function _isGuard(address _account) internal view override returns (bool) {
         return guards.contains(_account);
     }
