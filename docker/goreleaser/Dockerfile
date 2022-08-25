@@ -1,11 +1,10 @@
 FROM gohornet/goreleaser-cgo-cross-compiler:1.19
 
 LABEL org.label-schema.description="GoReleaser synapse node dockerfile"
-LABEL org.label-schema.name="ghcr.io/synapsecns/synapse-node-goreleaser"
+LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine-goreleaser"
 LABEL org.label-schema.schema-version="1.0"
-LABEL org.label-schema.vcs-url="https://github.com/synapsecns/synapse-node/tree/deploydoc/docker/goreleaser"
-LABEL org.label-schema.usage="https://github.com/synapsecns/synapse-node/blob/deploydoc/docker/goreleaser/readme.md"
-LABEL org.opencontainers.image.source="https://github.com/synapsecns/synapse-node"
+LABEL org.label-schema.vcs-url="https://github.com/synapsecns/sanguine"
+LABEL org.opencontainers.image.source="https://github.com/synapsecns/sanguine"
 
 # add any extra dependencies here
 
