@@ -15,28 +15,46 @@ contract DomainNotaryRegistry is AbstractNotaryRegistry {
     ▏*║                              IMMUTABLES                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // unique id of the tracked chain (usually chainId, might differ for non-EVM chains)
     uint32 private immutable trackedDomain;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // All active notaries for the tracked chain
     EnumerableSet.AddressSet internal notaries;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             UPGRADE GAP                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // solhint-disable-next-line var-name-mixedcase
-    uint256[49] private __GAP;
+    // gap for upgrade safety
+    uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @notice Emitted when a new Notary is added.
+     * @param notary    Address of the added notary
+     */
     event DomainNotaryAdded(address notary);
 
+    /**
+     * @notice Emitted when a new Notary is removed.
+     * @param notary    Address of the removed notary
+     */
     event DomainNotaryRemoved(address notary);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Ensures that a domain matches the tracked one.
+     */
+    modifier onlyTracked(uint32 _domain) {
+        require(_domain == trackedDomain, "Wrong domain");
+        _;
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
@@ -50,14 +68,26 @@ contract DomainNotaryRegistry is AbstractNotaryRegistry {
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @notice Returns addresses of all Notaries.
+     * @dev This copies storage into memory, so can consume a lof of gas, if
+     * amount of notaries is large (see EnumerableSet.values())
+     */
     function allNotaries() external view returns (address[] memory) {
         return notaries.values();
     }
 
+    /**
+     * @notice Returns i-th Notary. O(1)
+     * @dev Will revert if index is out of range
+     */
     function getNotary(uint256 _index) external view returns (address) {
         return notaries.at(_index);
     }
 
+    /**
+     * @notice Returns amount of active notaries. O(1)
+     */
     function notariesAmount() external view returns (uint256) {
         return notaries.length();
     }
@@ -66,11 +96,22 @@ contract DomainNotaryRegistry is AbstractNotaryRegistry {
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _addNotary(uint32 _domain, address _notary) internal override returns (bool) {
-        _assertDomain(_domain);
+    /**
+     * @notice Tries to add a new notary, emits an event only if notary was added.
+     * @dev Reverts if domain doesn't match the tracked domain.
+     */
+    function _addNotary(uint32 _domain, address _notary)
+        internal
+        override
+        onlyTracked(_domain)
+        returns (bool)
+    {
         return _addNotary(_notary);
     }
 
+    /**
+     * @notice Tries to add a new notary, emits an event only if notary was added.
+     */
     function _addNotary(address _notary) internal returns (bool notaryAdded) {
         notaryAdded = notaries.add(_notary);
         if (notaryAdded) {
@@ -78,11 +119,22 @@ contract DomainNotaryRegistry is AbstractNotaryRegistry {
         }
     }
 
-    function _removeNotary(uint32 _domain, address _notary) internal override returns (bool) {
-        _assertDomain(_domain);
+    /**
+     * @notice Tries to remove a notary, emits an event only if notary was removed.
+     * @dev Reverts if domain doesn't match the tracked domain.
+     */
+    function _removeNotary(uint32 _domain, address _notary)
+        internal
+        override
+        onlyTracked(_domain)
+        returns (bool)
+    {
         return _removeNotary(_notary);
     }
 
+    /**
+     * @notice Tries to remove a notary, emits an event only if notary was removed.
+     */
     function _removeNotary(address _notary) internal returns (bool notaryRemoved) {
         notaryRemoved = notaries.remove(_notary);
         if (notaryRemoved) {
@@ -90,15 +142,23 @@ contract DomainNotaryRegistry is AbstractNotaryRegistry {
         }
     }
 
-    function _assertDomain(uint32 _domain) internal view {
-        require(_domain == trackedDomain, "Wrong domain");
-    }
-
-    function _isNotary(uint32 _domain, address _account) internal view override returns (bool) {
-        _assertDomain(_domain);
+    /**
+     * @notice Returns whether given address is a notary for the tracked domain.
+     * @dev Reverts if domain doesn't match the tracked domain.
+     */
+    function _isNotary(uint32 _domain, address _account)
+        internal
+        view
+        override
+        onlyTracked(_domain)
+        returns (bool)
+    {
         return _isNotary(_account);
     }
 
+    /**
+     * @notice Returns whether given address is a notary for the tracked domain.
+     */
     function _isNotary(address _account) internal view returns (bool) {
         return notaries.contains(_account);
     }
