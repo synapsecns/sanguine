@@ -23,6 +23,7 @@ require (
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/ugorji/go/codec v1.1.7
 	github.com/vburenin/ifacemaker v1.1.0
+	golang.org/x/exp v0.0.0-20220823124025-807a23277127
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 	gorm.io/driver/mysql v1.1.2
 	gorm.io/driver/sqlite v1.1.5
@@ -286,7 +287,6 @@ require (
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.22.0 // indirect
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
-	golang.org/x/exp v0.0.0-20220823124025-807a23277127 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664 // indirect
@@ -313,6 +313,5 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/synapsecns/sanguine/core => ../core
 	github.com/synapsecns/sanguine/ethergo => ../ethergo
-	github.com/synapsecns/sanguine/tools => ../tools
 	github.com/synapsecns/synapse-node => github.com/synapsecns/synapse-node v0.242.1-0.20220523175312-65a2f2613b1f
 )

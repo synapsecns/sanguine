@@ -8,6 +8,7 @@ import (
 
 	"github.com/ugorji/go/codec"
 	"github.com/vburenin/ifacemaker/maker"
+	"golang.org/x/exp/rand"
 )
 
 func init() {
@@ -17,3 +18,6 @@ func init() {
 var _ = codec.Decoder{}
 var _ = maker.ParseStruct
 var _ = toml.Unmarshal
+
+// required by abigen.
+var _ = rand.Int
