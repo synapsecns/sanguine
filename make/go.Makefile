@@ -32,7 +32,7 @@ help: ## This help dialog.
 	done
 
 lint: golangci-install ## Run golangci-lint and go fmt ./...
-	go mod tidy -compat=1.17
+	go mod tidy
 	go fmt ./...
 	cd $(GIT_ROOT)
 	go work sync

@@ -1,6 +1,7 @@
 package indexer
 
 import (
+	"bitbucket.org/tentontrain/math"
 	"context"
 	"errors"
 	"fmt"
@@ -42,7 +43,7 @@ func (d domainIndexer) SyncMessages(ctx context.Context) error {
 		return fmt.Errorf("could not get indexed height: %w", err)
 	}
 
-	startHeight := maxUint32(indexedHeight-d.domain.Config().RequiredConfirmations, d.domain.Config().StartHeight)
+	startHeight := math.Max(indexedHeight-d.domain.Config().RequiredConfirmations, d.domain.Config().StartHeight)
 
 	for {
 		select {
@@ -103,13 +104,4 @@ func (d domainIndexer) checkAndStoreMessages(ctx context.Context, startHeight ui
 	}
 
 	return true, tip, nil
-}
-
-// maxUint32 gets the maximum uint32 value out of two
-// TODO: once we upgrade to go 1.18 (currently waiting on golangci-lint), we can use https://bitbucket.org/tentontrain/math/src/master/compare_test.go
-func maxUint32(x, y uint32) uint32 {
-	if x > y {
-		return x
-	}
-	return y
 }
