@@ -81,7 +81,8 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         notaryManager.setOrigin(address(origin));
 
         destination = new DestinationHarness(localDomain);
-        destination.initialize(remoteDomain, notary);
+        destination.initialize();
+        destination.addNotary(remoteDomain, notary);
 
         systemRouter = new SystemRouterHarness(localDomain, address(origin), address(destination));
         origin.setSystemRouter(systemRouter);

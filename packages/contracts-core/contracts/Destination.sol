@@ -112,16 +112,9 @@ contract Destination is
      * @dev Performs the following action:
      *      - initializes inherited contracts
      *      - initializes re-entrancy guard
-     *      - sets remote domain
-     *      - sets a trusted root, and pre-approves messages under it
-     *      - sets the optimistic timer
-     * @param _remoteDomain The domain of the Origin contract this follows
-     * @param _notary The EVM id of the notary
      */
-    function initialize(uint32 _remoteDomain, address _notary) public initializer {
+    function initialize() external initializer {
         __SystemContract_initialize();
-        _addNotary(_remoteDomain, _notary);
-        // set storage variables
         entered = 1;
     }
 

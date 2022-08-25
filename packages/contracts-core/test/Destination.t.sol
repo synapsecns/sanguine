@@ -41,10 +41,11 @@ contract DestinationTest is SynapseTest {
     function setUp() public override {
         super.setUp();
         destination = new DestinationHarness(localDomain);
-        destination.initialize(remoteDomain, notary);
+        destination.initialize();
         dApp = new AppHarness(OPTIMISTIC_PERIOD);
         systemRouter = ISystemRouter(address(1234567890));
         destination.setSystemRouter(systemRouter);
+        destination.addNotary(remoteDomain, notary);
         destination.addGuard(guard);
     }
 
@@ -56,7 +57,7 @@ contract DestinationTest is SynapseTest {
 
     function test_cannotInitializeTwice() public {
         vm.expectRevert("Initializable: contract is already initialized");
-        destination.initialize(remoteDomain, notary);
+        destination.initialize();
     }
 
     // ============ STATE & PERMISSIONING ============
