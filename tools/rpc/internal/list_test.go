@@ -3,11 +3,36 @@ package internal_test
 import (
 	"github.com/jarcoal/httpmock"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/tools/rpc/internal"
 	"golang.org/x/exp/slices"
+	"golang.org/x/sync/errgroup"
 	"net/http"
 	"testing"
+	"time"
 )
+
+func (r *RPCSuite) TestRPCLatency() {
+	var bsc, avalanche *geth.Backend
+	g, _ := errgroup.WithContext(r.GetTestContext())
+	g.Go(func() error {
+		bsc = preset.GetBSCTestnet().Geth(r.GetTestContext(), r.T())
+		return nil
+	})
+	g.Go(func() error {
+		avalanche = preset.GetAvalancheLocal().Geth(r.GetTestContext(), r.T())
+		return nil
+	})
+	Nil(r.T(), g.Wait())
+
+	latencySlice := internal.GetRPCLatency(r.GetTestContext(), time.Second*3, []string{bsc.HTTPEndpoint(), avalanche.HTTPEndpoint()})
+	NotEqual(r.T(), latencySlice[0].URL, latencySlice[1].URL)
+	for _, latencyData := range latencySlice {
+		False(r.T(), latencyData.HasError)
+		Nil(r.T(), latencyData.Error)
+	}
+}
 
 func (r *RPCSuite) TestGetRPCMap() {
 	httpmock.Activate()
