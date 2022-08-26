@@ -415,11 +415,11 @@ jobs:
           tags: ghcr.io/synapsecns/sanguine-goreleaser-cgo-cross-compiler:latest,${{ steps.cross-compiler-name-export.outputs.TAG_NAME }}
           cache-from: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser-cgo-cross-compiler:buildcache
           cache-to: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser-cgo-cross-compiler:buildcache,mode=max
-          build-args: |
-            GORELEASER_SHA=1930375c56b0be0afa50fcb9b98fb7563645b9ffb13a19453bbede8d3f68a2af
-            GORELEASER_DOWNLOAD_FILE=goreleaser-pro_Linux_x86_64.tar.gz
-            GORELEASER_DOWNLOAD_URL=https://github.com/goreleaser/goreleaser-pro/releases/download/v1.10.3-pro/goreleaser-pro_Linux_x86_64.tar.gz
-            GORELEASER_VERSION=1.10.3-pro
+        env:
+          GORELEASER_SHA: 1930375c56b0be0afa50fcb9b98fb7563645b9ffb13a19453bbede8d3f68a2af
+          GORELEASER_DOWNLOAD_FILE: goreleaser-pro_Linux_x86_64.tar.gz
+          GORELEASER_DOWNLOAD_URL: https://github.com/goreleaser/goreleaser-pro/releases/download/v1.10.3-pro/goreleaser-pro_Linux_x86_64.tar.gz
+          GORELEASER_VERSION: 1.10.3-pro
 
       # we do this so we can use it in subseuqnet steps
       - name: Export latest tag name
@@ -440,7 +440,6 @@ jobs:
           tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.outputs.TAG_NAME }}
           cache-from: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache
           cache-to: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache,mode=max
-#          build-contexts: iotaledger/goreleaser-cgo-cross-compiler:latest=${{ steps.cross-compiler-name-export.outputs.TAG_NAME }}
         env:
           PARENT_IMAGE: ${{ steps.cross-compiler-name-export.outputs.TAG_NAME }}
   run-goreleaser:

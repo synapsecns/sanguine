@@ -1,6 +1,6 @@
 FROM ${PARRENT_IMAGE:-iotaledger/goreleaser-cgo-cross-compiler:latest}
 
-LABEL org.label-schema.description="GoReleaser synapse node dockerfile"
+LABEL org.label-schema.description="GoReleaser sanguine dockerfile"
 LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine-goreleaser"
 LABEL org.label-schema.schema-version="1.0.0"
 LABEL org.label-schema.vcs-url="https://github.com/synapsecns/sanguine"
