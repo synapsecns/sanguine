@@ -5,7 +5,7 @@ on:
       - "*"
 # for experimentation
     branches:
-      - lerna-tag
+      - lerna-build
 
 
 jobs:
