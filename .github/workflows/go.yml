@@ -458,7 +458,7 @@ jobs:
 
 
       - name: Run GoReleaser
-        run: goreleaser --rm-dist --debug --dry-run -f ${{matrix.package}}/.goreleaser.yaml
+        run: goreleaser --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GONOSUM: ".*"
