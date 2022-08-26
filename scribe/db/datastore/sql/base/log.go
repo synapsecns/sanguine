@@ -57,38 +57,27 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 	return nil
 }
 
-// RetrieveLogsByTxHash retrieves all logs that match a tx hash.
-func (s Store) RetrieveLogsByTxHash(ctx context.Context, txHash common.Hash) (logs []*types.Log, err error) {
+// RetrieveLogs retrieves all logs that match a tx hash and chain id.
+func (s Store) RetrieveLogs(ctx context.Context, txHash common.Hash, chainID uint32) (logs []*types.Log, err error) {
 	dbLogs := []Log{}
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
 		Where(&Log{
-			TxHash: txHash.String(),
+			ChainID: chainID,
+			TxHash:  txHash.String(),
 		}).
 		Find(&dbLogs)
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return []*types.Log{}, fmt.Errorf("could not find logs with tx hash %s: %w", txHash.String(), db.ErrNotFound)
+			return []*types.Log{}, fmt.Errorf("could not find logs with tx hash %s and chain id %d: %w", txHash.String(), chainID, db.ErrNotFound)
 		}
 		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
 	}
 
 	// Format the topics list, only including existing topics.
 	for _, dbLog := range dbLogs {
-		topics := []common.Hash{}
-		if dbLog.PrimaryTopic.Valid {
-			topics = append(topics, common.HexToHash(dbLog.PrimaryTopic.String))
-		}
-		if dbLog.TopicA.Valid {
-			topics = append(topics, common.HexToHash(dbLog.TopicA.String))
-		}
-		if dbLog.TopicB.Valid {
-			topics = append(topics, common.HexToHash(dbLog.TopicB.String))
-		}
-		if dbLog.TopicC.Valid {
-			topics = append(topics, common.HexToHash(dbLog.TopicC.String))
-		}
+		topics := buildTopics(dbLog)
 
 		parsedLog := &types.Log{
 			Address:     common.HexToAddress(dbLog.ContractAddress),
@@ -106,4 +95,58 @@ func (s Store) RetrieveLogsByTxHash(ctx context.Context, txHash common.Hash) (lo
 	}
 
 	return logs, nil
+}
+
+// RetrieveAllLogs retrieves all logs in the database.
+func (s Store) RetrieveAllLogs(ctx context.Context) (logs []*types.Log, err error) {
+	dbLogs := []Log{}
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Log{}).
+		Find(&dbLogs)
+
+	if dbTx.Error != nil {
+		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
+			return []*types.Log{}, fmt.Errorf("could not find logs: %w", db.ErrNotFound)
+		}
+		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
+	}
+
+	// Format the topics list, only including existing topics.
+	for _, dbLog := range dbLogs {
+		topics := buildTopics(dbLog)
+
+		parsedLog := &types.Log{
+			Address:     common.HexToAddress(dbLog.ContractAddress),
+			Topics:      topics,
+			Data:        dbLog.Data,
+			BlockNumber: dbLog.BlockNumber,
+			TxHash:      common.HexToHash(dbLog.TxHash),
+			TxIndex:     uint(dbLog.TxIndex),
+			BlockHash:   common.HexToHash(dbLog.BlockHash),
+			Index:       uint(dbLog.Index),
+			Removed:     dbLog.Removed,
+		}
+
+		logs = append(logs, parsedLog)
+	}
+
+	return logs, nil
+}
+
+func buildTopics(log Log) []common.Hash {
+	topics := []common.Hash{}
+	if log.PrimaryTopic.Valid {
+		topics = append(topics, common.HexToHash(log.PrimaryTopic.String))
+	}
+	if log.TopicA.Valid {
+		topics = append(topics, common.HexToHash(log.TopicA.String))
+	}
+	if log.TopicB.Valid {
+		topics = append(topics, common.HexToHash(log.TopicB.String))
+	}
+	if log.TopicC.Valid {
+		topics = append(topics, common.HexToHash(log.TopicC.String))
+	}
+
+	return topics
 }

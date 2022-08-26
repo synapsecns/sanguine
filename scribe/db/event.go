@@ -11,12 +11,16 @@ import (
 type EventDB interface {
 	// StoreLog stores a log
 	StoreLog(ctx context.Context, log types.Log, chainID uint32) error
-	// RetrieveLogsByTxHash retrieves a log by tx hash
-	RetrieveLogsByTxHash(ctx context.Context, txHash common.Hash) (logs []*types.Log, err error)
+	// RetrieveLogs retrieves logs that match a tx hash and chain id
+	RetrieveLogs(ctx context.Context, txHash common.Hash, chainID uint32) (logs []*types.Log, err error)
+	// RetrieveAllLogs retrieves all logs in the database
+	RetrieveAllLogs(ctx context.Context) (logs []*types.Log, err error)
 	// StoreReceipt stores a receipt
-	StoreReceipt(ctx context.Context, receipt types.Receipt) error
-	// RetrieveReceiptByTxHash retrieves a receipt by tx hash
-	RetrieveReceiptByTxHash(ctx context.Context, txHash common.Hash) (receipt types.Receipt, err error)
+	StoreReceipt(ctx context.Context, receipt types.Receipt, chainID uint32) error
+	// RetrieveReceipt retrieves a receipt by tx hash and chain id
+	RetrieveReceipt(ctx context.Context, txHash common.Hash, chainID uint32) (receipt types.Receipt, err error)
+	// RetrieveAllReceipts retrieves all receipts in the database
+	RetrieveAllReceipts(ctx context.Context) (receipts []types.Receipt, err error)
 	// StoreEthTx stores a processed transaction
 	StoreEthTx(ctx context.Context, tx *types.Transaction) error
 	// StoreLastIndexed stores the last indexed for a contract address

@@ -32,7 +32,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 
 		// Ensure the logs from the database match the ones stored.
 		// Check the logs for the two with the same txHash.
-		retrievedLogSame, err := testDB.RetrieveLogsByTxHash(t.GetTestContext(), txHashA)
+		retrievedLogSame, err := testDB.RetrieveLogs(t.GetTestContext(), txHashA, chainID)
 		Nil(t.T(), err)
 		Equal(t.T(), retrievedLogSame[0].Address, logA.Address)
 		Equal(t.T(), retrievedLogSame[0].Topics, logA.Topics)
@@ -55,7 +55,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		Equal(t.T(), retrievedLogSame[1].Removed, logB.Removed)
 
 		// Check the logs for the one with a different txHash.
-		retrievedLog, err := testDB.RetrieveLogsByTxHash(t.GetTestContext(), txHashC)
+		retrievedLog, err := testDB.RetrieveLogs(t.GetTestContext(), txHashC, chainID+1)
 		Nil(t.T(), err)
 		Equal(t.T(), retrievedLog[0].Address, logC.Address)
 		Equal(t.T(), retrievedLog[0].Topics, logC.Topics)
@@ -66,6 +66,11 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		Equal(t.T(), retrievedLog[0].BlockHash, logC.BlockHash)
 		Equal(t.T(), retrievedLog[0].Index, logC.Index)
 		Equal(t.T(), retrievedLog[0].Removed, logC.Removed)
+
+		// Check if `RetrieveAllLogs` returns all the logs.
+		allLogs, err := testDB.RetrieveAllLogs(t.GetTestContext())
+		Nil(t.T(), err)
+		Equal(t.T(), len(allLogs), 3)
 	})
 }
 

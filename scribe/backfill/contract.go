@@ -6,7 +6,9 @@ import (
 	"math/big"
 	"sync"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/scribe/db"
 	"github.com/synapsecns/synapse-node/pkg/evm/client"
@@ -24,12 +26,99 @@ type ContractBackfiller struct {
 }
 
 // NewContractBackfiller creates a new backfiller for a contract.
-func NewContractBackfiller(eventDB db.EventDB, contract contracts.DeployedContract, client client.EVMClient) *ContractBackfiller {
+func NewContractBackfiller(contract contracts.DeployedContract, eventDB db.EventDB, client client.EVMClient) *ContractBackfiller {
 	return &ContractBackfiller{
 		contract: contract,
 		eventDB:  eventDB,
 		client:   client,
 	}
+}
+
+// Backfill takes in a channel of logs, uses each log to get the receipt from its txHash,
+// gets all of the logs from the receipt, then stores the receipt, the logs from the
+// receipt, and the last indexed block for hte contract in the EventDB.
+//
+//nolint:gocognit, cyclop
+func (c ContractBackfiller) Backfill(ctx context.Context, endHeight uint64) error {
+	// initialize the cache for the txHashes
+	cache, err := lru.New(500)
+	if err != nil {
+		return fmt.Errorf("could not initialize cache: %w", err)
+	}
+	// initialize the channel for the logs
+	startHeight, err := c.StartHeightForBackfill(ctx, true)
+	if err != nil {
+		return fmt.Errorf("could not get start height: %w", err)
+	}
+	logChan, errChan, doneChan := c.GetLogs(ctx, startHeight, endHeight)
+	// start listening for logs
+	g, ctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case log := <-logChan:
+				// get the receipt that the log belongs to
+				receipt, err := c.GetReceiptFromLog(ctx, log.TxHash, cache)
+				if err != nil {
+					return fmt.Errorf("could not get receipt from log: %w", err)
+				}
+				// if the receipt is nil, then the receipt has already been added to the db
+				if receipt == nil {
+					continue
+				}
+				// since `StoreReceipt` stores logs that it gets from the db, we need to
+				// store the logs before we store the receipt
+
+				// get the logs from the receipt and store them in the db
+				for _, log := range receipt.Logs {
+					err = c.eventDB.StoreLog(ctx, *log, uint32(c.contract.ChainID().Uint64()))
+					if err != nil {
+						return fmt.Errorf("could not store log: %w", err)
+					}
+				}
+				// store the receipt in the db
+				err = c.eventDB.StoreReceipt(ctx, *receipt, uint32(c.contract.ChainID().Uint64()))
+				if err != nil {
+					return fmt.Errorf("could not store receipt: %w", err)
+				}
+				// store the last indexed block in the db
+				err = c.eventDB.StoreLastIndexed(ctx, c.contract.Address(), uint32(c.contract.ChainID().Uint64()), receipt.BlockNumber.Uint64())
+				if err != nil {
+					return fmt.Errorf("could not store last indexed block: %w", err)
+				}
+			case err := <-errChan:
+				return fmt.Errorf("could not get logs: %w", err)
+			case <-doneChan:
+				return nil
+			}
+		}
+	})
+
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not backfill contract: %w", err)
+	}
+	return nil
+}
+
+// GetReceiptFromLog gets the receipt for a log if the receipt of a certain txHash
+// does not exist in the cache of added txHashes.
+func (c ContractBackfiller) GetReceiptFromLog(ctx context.Context, txHash common.Hash, cache *lru.Cache) (*types.Receipt, error) {
+	// check the cache for the receipt
+	if _, ok := cache.Get(txHash); ok {
+		//nolint:nilnil
+		return nil, nil
+	}
+	// get the receipt
+	receipt, err := c.client.TransactionReceipt(ctx, txHash)
+	if err != nil {
+		return nil, fmt.Errorf("could not get transaction receipt for txHash: %w", err)
+	}
+	// add the receipt to the cache
+	cache.Add(txHash, 1)
+	return receipt, nil
 }
 
 // chunkSize is how big to make the chunks when fetching.

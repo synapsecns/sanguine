@@ -21,7 +21,7 @@ func (b BackfillSuite) TestStartHeightForBackfill() {
 	deployedBlockNumber, err := b.getTxBlockNumber(simulatedChain, testContract.DeployTx())
 	Nil(b.T(), err)
 
-	backfiller := backfill.NewContractBackfiller(b.testDB, testContract, simulatedChain)
+	backfiller := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
 
 	// Since useDB is false, this should return the block number of the contract's deploy tx.
 	startHeight, err := backfiller.StartHeightForBackfill(b.GetTestContext(), false)
@@ -57,30 +57,30 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
 	simulatedChain := simulated.NewSimulatedBackend(b.GetSuiteContext(), b.T())
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
-	testContract, ref := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
+	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 
-	backfiller := backfill.NewContractBackfiller(b.testDB, testContract, simulatedChain)
+	backfiller := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
 	// then the last three after.
-	tx, err := ref.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
 	Nil(b.T(), err)
 	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
-	tx, err = ref.EmitEventB(transactOpts.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
+	tx, err = testRef.EmitEventB(transactOpts.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
 	Nil(b.T(), err)
 	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
 	// Get the block that the second transaction was executed in.
 	txBlockNumberA, err := b.getTxBlockNumber(simulatedChain, tx)
 	Nil(b.T(), err)
 
-	tx, err = ref.EmitEventA(transactOpts.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
+	tx, err = testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
 	Nil(b.T(), err)
 	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
-	tx, err = ref.EmitEventB(transactOpts.TransactOpts, []byte{10}, big.NewInt(11), big.NewInt(12))
+	tx, err = testRef.EmitEventB(transactOpts.TransactOpts, []byte{10}, big.NewInt(11), big.NewInt(12))
 	Nil(b.T(), err)
 	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
-	tx, err = ref.EmitEventA(transactOpts.TransactOpts, big.NewInt(13), big.NewInt(14), big.NewInt(15))
+	tx, err = testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(13), big.NewInt(14), big.NewInt(15))
 	Nil(b.T(), err)
 	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
 	// Get the block that the last transaction was executed in.
@@ -126,9 +126,55 @@ Done:
 	Equal(b.T(), 3, len(collectedLogs))
 }
 
+// TestBackfill tests using a contractBackfiller for recording receipts and logs in a database.
+func (b BackfillSuite) TestBackfill() {
+	// Get simulated blockchain, deploy the test contract, and set up test variables.
+	simulatedChain := simulated.NewSimulatedBackend(b.GetSuiteContext(), b.T())
+	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
+	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
+	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
+
+	backfiller := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
+
+	// Emit events for the backfiller to read.
+	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+	tx, err = testRef.EmitEventB(transactOpts.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
+	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+	// Emit two logs in one receipt.
+	tx, err = testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
+	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+
+	// Get the block that the last transaction was executed in.
+	txBlockNumber, err := b.getTxBlockNumber(simulatedChain, tx)
+	Nil(b.T(), err)
+	// Backfill the events.
+	err = backfiller.Backfill(b.GetTestContext(), txBlockNumber)
+	Nil(b.T(), err)
+	// Get all receipts.
+	receipts, err := b.testDB.RetrieveAllReceipts(b.GetTestContext())
+	Nil(b.T(), err)
+	// Check to see if 3 receipts were collected.
+	Equal(b.T(), 3, len(receipts))
+	// Get all logs.
+	logs, err := b.testDB.RetrieveAllLogs(b.GetTestContext())
+	Nil(b.T(), err)
+	// Check to see if 4 logs were collected.
+	Equal(b.T(), 4, len(logs))
+	// Check to see if the last receipt has two logs.
+	Equal(b.T(), 2, len(receipts[2].Logs))
+	// Ensure last indexed block is correct.
+	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()))
+	Nil(b.T(), err)
+	Equal(b.T(), txBlockNumber, lastIndexed)
+}
+
 // TestGetLogsMock tests the GetLogs function using a mocked blockchain for errors.
 func (b BackfillSuite) TestGetLogsMock() {
-	// TODO: do this with mocks
+	// TODO: do this with mocks for error handling in GetLogs methods
 }
 
 func (b BackfillSuite) getTxBlockNumber(chain *simulated.Backend, tx *types.Transaction) (uint64, error) {
