@@ -386,10 +386,12 @@ jobs:
       -
         name: Build and push
         if: steps.changes.outputs.src == 'true'
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           push: true
           file: ./docker/goreleaser/Dockerfile
           # TODO this needs to be versioned
-          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest
+          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,ghcr.io/synapsecns/sanguine-goreleaser:${{ hashFiles('docker/goreleaser/**') }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
