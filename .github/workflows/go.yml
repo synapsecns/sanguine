@@ -474,3 +474,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GONOSUM: '.*'
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+          GOGC: 20
+          GOPRIVATE: 'GOPRIVATE=github.com/synapsecns/synapse-node'
