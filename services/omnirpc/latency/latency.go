@@ -1,4 +1,4 @@
-package internal
+package latency
 
 import (
 	"context"
@@ -13,8 +13,8 @@ import (
 	"time"
 )
 
-// LatencyResult is the result of a latency check on a url.
-type LatencyResult struct {
+// Result is the result of a latency check on a url.
+type Result struct {
 	// URL is the url of the latency being tested
 	URL string
 	// Latency is the latency time in seconds
@@ -26,7 +26,7 @@ type LatencyResult struct {
 }
 
 // GetRPCLatency gets latency from a list of rpcs.
-func GetRPCLatency(parentCtx context.Context, timeout time.Duration, rpcList []string) (latSlice []LatencyResult) {
+func GetRPCLatency(parentCtx context.Context, timeout time.Duration, rpcList []string) (latSlice []Result) {
 	var mux sync.Mutex
 
 	timeCtx, cancel := context.WithTimeout(parentCtx, timeout)
@@ -52,8 +52,8 @@ func GetRPCLatency(parentCtx context.Context, timeout time.Duration, rpcList []s
 	return latSlice
 }
 
-func getLatency(ctx context.Context, rpcURL string) (l LatencyResult) {
-	l = LatencyResult{URL: rpcURL, HasError: true}
+func getLatency(ctx context.Context, rpcURL string) (l Result) {
+	l = Result{URL: rpcURL, HasError: true}
 
 	parsedURL, err := url.Parse(rpcURL)
 	if err != nil {

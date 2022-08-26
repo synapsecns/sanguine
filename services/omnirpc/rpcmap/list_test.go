@@ -1,58 +1,33 @@
-package internal_test
+package rpcmap_test
 
 import (
 	"github.com/jarcoal/httpmock"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/backends/geth"
-	"github.com/synapsecns/sanguine/ethergo/backends/preset"
-	"github.com/synapsecns/sanguine/tools/rpc/internal"
+	"github.com/synapsecns/sanguine/serivces/omnirpc/rpcmap"
 	"golang.org/x/exp/slices"
-	"golang.org/x/sync/errgroup"
 	"net/http"
 	"testing"
-	"time"
 )
-
-func (r *RPCSuite) TestRPCLatency() {
-	var bsc, avalanche *geth.Backend
-	g, _ := errgroup.WithContext(r.GetTestContext())
-	g.Go(func() error {
-		bsc = preset.GetBSCTestnet().Geth(r.GetTestContext(), r.T())
-		return nil
-	})
-	g.Go(func() error {
-		avalanche = preset.GetAvalancheLocal().Geth(r.GetTestContext(), r.T())
-		return nil
-	})
-	Nil(r.T(), g.Wait())
-
-	latencySlice := internal.GetRPCLatency(r.GetTestContext(), time.Second*3, []string{bsc.HTTPEndpoint(), avalanche.HTTPEndpoint()})
-	NotEqual(r.T(), latencySlice[0].URL, latencySlice[1].URL)
-	for _, latencyData := range latencySlice {
-		False(r.T(), latencyData.HasError)
-		Nil(r.T(), latencyData.Error)
-	}
-}
 
 func (r *RPCSuite) TestGetRPCMap() {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder(http.MethodGet, internal.RPCMapURL, httpmock.NewStringResponder(http.StatusOK, testData))
+	httpmock.RegisterResponder(http.MethodGet, rpcmap.PublicRPCMapURL, httpmock.NewStringResponder(http.StatusOK, testData))
 
-	res, err := internal.GetRPCMap(r.GetTestContext())
+	res, err := rpcmap.GetPublicRPCMap(r.GetTestContext())
 	Nil(r.T(), err)
 
-	True(r.T(), slices.Contains(res[1], "https://api.mycryptoapi.com/eth"))
+	True(r.T(), slices.Contains(res.ChainID(1), "https://api.mycryptoapi.com/eth"))
 }
 
 func TestGetChainRPCS(t *testing.T) {
-	rpcMap, err := internal.ParseRPCMap([]byte(testData))
+	rpcMap, err := rpcmap.ParseRPCMap([]byte(testData))
 	Nil(t, err)
 
-	True(t, slices.Contains(rpcMap[1], "https://api.mycryptoapi.com/eth"))
-	True(t, slices.Contains(rpcMap[1], "https://cloudflare-eth.com/"))
-	True(t, slices.Contains(rpcMap[2], "https://node.eggs.cool"))
+	True(t, slices.Contains(rpcMap.RawMap()[1], "https://api.mycryptoapi.com/eth"))
+	True(t, slices.Contains(rpcMap.ChainID(1), "https://cloudflare-eth.com/"))
+	True(t, slices.Contains(rpcMap.ChainID(2), "https://node.eggs.cool"))
 }
 
 // first two rpcs from https://raw.githubusercontent.com/DefiLlama/chainlist/main/constants/extraRpcs.json
