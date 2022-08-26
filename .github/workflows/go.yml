@@ -397,7 +397,7 @@ jobs:
       - name: Export latest tag name
         id: name-export
         run:
-          echo "##[set-output name=LATEST_TAG_NAME;]$(echo $LATEST_TAG_NAME)"
+          echo "##[set-output name=TAG_NAME;]$(echo $LATEST_TAG_NAME)"
         env:
           LATEST_TAG_NAME: ghcr.io/synapsecns/sanguine-goreleaser:${{ hashFiles('docker/goreleaser/**') }}
 
@@ -410,7 +410,7 @@ jobs:
           push: true
           file: ./docker/goreleaser/Dockerfile
           # TODO this needs to be versioned
-          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.LATEST_TAG_NAME }}
+          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.TAG_NAME }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
   run-goreleaser:
