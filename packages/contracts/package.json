@@ -52,7 +52,6 @@
     "directory": "packages/contracts"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "restricted"
   },
-  "gitHead": "3f60ec6d7fbd2d58d5ae7c93faf474f01bdb4917"
 }
