@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/contracts",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
@@ -36,8 +36,5 @@
     "sol-merger": "4.1.1",
     "solidity-coverage": "0.7.21",
     "ts-node": "10.8.1"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
   }
 }
