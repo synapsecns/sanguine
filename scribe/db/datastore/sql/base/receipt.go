@@ -76,8 +76,10 @@ func (s Store) RetrieveReceipt(ctx context.Context, txHash common.Hash, chainID 
 	return parsedReceipt, nil
 }
 
-// RetrieveAllReceipts retrieves all receipts.
-func (s Store) RetrieveAllReceipts(ctx context.Context) (receipts []types.Receipt, err error) {
+// RetrieveAllReceipts_Test retrieves all receipts. Should only be used for testing.
+//
+//nolint:golint, revive, stylecheck
+func (s Store) RetrieveAllReceipts_Test(ctx context.Context) (receipts []types.Receipt, err error) {
 	dbReceipts := []Receipt{}
 	dbTx := s.DB().WithContext(ctx).Model(&Receipt{}).Find(&dbReceipts)
 

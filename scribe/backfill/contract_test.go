@@ -11,45 +11,6 @@ import (
 	"github.com/synapsecns/sanguine/scribe/backfill"
 )
 
-// TestStartHeightForBackfill ensures the start height for backfill is calculated correctly.
-func (b BackfillSuite) TestStartHeightForBackfill() {
-	// Get simulated blockchain and deploy the test contract.
-	simulatedChain := simulated.NewSimulatedBackend(b.GetSuiteContext(), b.T())
-	testContract, _ := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
-
-	// Use the receipt of the contract's deploy tx to get which block it was deployed in.
-	deployedBlockNumber, err := b.getTxBlockNumber(simulatedChain, testContract.DeployTx())
-	Nil(b.T(), err)
-
-	backfiller := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
-
-	// Since useDB is false, this should return the block number of the contract's deploy tx.
-	startHeight, err := backfiller.StartHeightForBackfill(b.GetTestContext(), false)
-	Nil(b.T(), err)
-	Equal(b.T(), deployedBlockNumber, startHeight)
-
-	// Since useDB is true, but we have not filled in when the contract was last indexed,
-	// this should return the block number of the contract's deploy tx.
-	startHeight, err = backfiller.StartHeightForBackfill(b.GetTestContext(), true)
-	Nil(b.T(), err)
-	Equal(b.T(), deployedBlockNumber, startHeight)
-
-	// Now fill in the contract's last indexed block.
-	err = b.testDB.StoreLastIndexed(b.GetTestContext(), testContract.Address(), uint32(simulatedChain.GetChainID()), 1000)
-	Nil(b.T(), err)
-
-	// Since useDB is false, even though last indexed is filled in,
-	// this should still return the block number of the contract's deploy tx.
-	startHeight, err = backfiller.StartHeightForBackfill(b.GetTestContext(), false)
-	Nil(b.T(), err)
-	Equal(b.T(), deployedBlockNumber, startHeight)
-
-	// Now that useDB is true and last indexed is filled in, this should return the last indexed block.
-	startHeight, err = backfiller.StartHeightForBackfill(b.GetTestContext(), true)
-	Nil(b.T(), err)
-	Equal(b.T(), uint64(1000), startHeight)
-}
-
 // TestGetLogsSimulated tests the GetLogs function using a simulated blockchain.
 //
 //nolint:cyclop
@@ -60,7 +21,8 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 
-	backfiller := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
+	backfiller, err := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
+	Nil(b.T(), err)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
 	// then the last three after.
@@ -134,7 +96,8 @@ func (b BackfillSuite) TestBackfill() {
 	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 
-	backfiller := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
+	backfiller, err := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
+	Nil(b.T(), err)
 
 	// Emit events for the backfiller to read.
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
@@ -151,16 +114,16 @@ func (b BackfillSuite) TestBackfill() {
 	// Get the block that the last transaction was executed in.
 	txBlockNumber, err := b.getTxBlockNumber(simulatedChain, tx)
 	Nil(b.T(), err)
-	// Backfill the events.
-	err = backfiller.Backfill(b.GetTestContext(), txBlockNumber)
+	// Backfill the events. The `0` will be replaced with the startBlock from the config.
+	err = backfiller.Backfill(b.GetTestContext(), 0, txBlockNumber)
 	Nil(b.T(), err)
 	// Get all receipts.
-	receipts, err := b.testDB.RetrieveAllReceipts(b.GetTestContext())
+	receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext())
 	Nil(b.T(), err)
 	// Check to see if 3 receipts were collected.
 	Equal(b.T(), 3, len(receipts))
 	// Get all logs.
-	logs, err := b.testDB.RetrieveAllLogs(b.GetTestContext())
+	logs, err := b.testDB.RetrieveAllLogs_Test(b.GetTestContext())
 	Nil(b.T(), err)
 	// Check to see if 4 logs were collected.
 	Equal(b.T(), 4, len(logs))

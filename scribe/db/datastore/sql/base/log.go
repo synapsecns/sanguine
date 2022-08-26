@@ -97,8 +97,10 @@ func (s Store) RetrieveLogs(ctx context.Context, txHash common.Hash, chainID uin
 	return logs, nil
 }
 
-// RetrieveAllLogs retrieves all logs in the database.
-func (s Store) RetrieveAllLogs(ctx context.Context) (logs []*types.Log, err error) {
+// RetrieveAllLogs_Test retrieves all logs in the database. This is only used for testing.
+//
+//nolint:golint, revive, stylecheck
+func (s Store) RetrieveAllLogs_Test(ctx context.Context) (logs []*types.Log, err error) {
 	dbLogs := []Log{}
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).

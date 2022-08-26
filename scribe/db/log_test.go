@@ -68,7 +68,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		Equal(t.T(), retrievedLog[0].Removed, logC.Removed)
 
 		// Check if `RetrieveAllLogs` returns all the logs.
-		allLogs, err := testDB.RetrieveAllLogs(t.GetTestContext())
+		allLogs, err := testDB.RetrieveAllLogs_Test(t.GetTestContext())
 		Nil(t.T(), err)
 		Equal(t.T(), len(allLogs), 3)
 	})
