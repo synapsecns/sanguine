@@ -26,6 +26,8 @@ jobs:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@synapsecns'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Git Identity
         run: |
