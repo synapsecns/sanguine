@@ -21,8 +21,7 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 
-	backfiller, err := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
-	Nil(b.T(), err)
+	backfiller := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
 	// then the last three after.
@@ -96,8 +95,7 @@ func (b BackfillSuite) TestBackfill() {
 	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 
-	backfiller, err := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
-	Nil(b.T(), err)
+	backfiller := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
 
 	// Emit events for the backfiller to read.
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
@@ -115,7 +113,7 @@ func (b BackfillSuite) TestBackfill() {
 	txBlockNumber, err := b.getTxBlockNumber(simulatedChain, tx)
 	Nil(b.T(), err)
 	// Backfill the events. The `0` will be replaced with the startBlock from the config.
-	err = backfiller.Backfill(b.GetTestContext(), 0, txBlockNumber)
+	err = backfiller.Backfill(b.GetTestContext(), txBlockNumber)
 	Nil(b.T(), err)
 	// Get all receipts.
 	receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext())
