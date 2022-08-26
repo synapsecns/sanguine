@@ -463,6 +463,11 @@ jobs:
           password: ${{ secrets.GHCR_DOCKER }}
 
 
+      - name: authenticate with github for private go modules
+        uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
+
       - name: Run GoReleaser
         run: goreleaser build --snapshot --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yaml
         env:
