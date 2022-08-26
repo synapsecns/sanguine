@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"github.com/jftuga/ellipsis"
 	"github.com/olekukonko/tablewriter"
-	"github.com/synapsecns/sanguine/tools/rpc/internal"
+	"github.com/synapsecns/sanguine/serivces/omnirpc/latency"
 	"os"
 	"sort"
 )
 
 // DisplayLatency displays latency results in a cli.
-func DisplayLatency(lat []internal.LatencyResult) {
+func DisplayLatency(lat []latency.Result) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"URL", "Latency", "HasError (if any)"})
 
 	sort.Slice(lat, func(i, j int) bool {
-		return lat[i].Latency > lat[j].Latency
+		return lat[i].Latency < lat[j].Latency
 	})
 
 	for _, latencyResult := range lat {

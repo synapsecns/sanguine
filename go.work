@@ -5,5 +5,6 @@ use (
 	./core
 	./ethergo
 	./scribe
+	./services/omnirpc
 	./tools
 )
