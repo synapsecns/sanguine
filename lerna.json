@@ -9,9 +9,5 @@
     "publish": {
       "registry": "https://npm.pkg.github.com"
     }
-  },
-  "publishConfig":{
-    "registry":"@synapsecns:registry=https://npm.pkg.github.com",
-    "access": "restricted"
   }
 }

@@ -15,7 +15,10 @@
     ]
   },
   "private": "true",
-  "repository": "github:synapsecns/sanguine",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/synapsecns/sanguine.git"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/synapsecns/sanguine/issues"
