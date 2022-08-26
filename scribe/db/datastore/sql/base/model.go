@@ -89,7 +89,10 @@ type Receipt struct {
 
 // EthTx contains a processed ethereum transaction.
 type EthTx struct {
+	// TxHash is the hash of the transaction
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
+	// ChainID is the chain id of the transaction
+	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// RawTx is the raw serialized transaction
 	RawTx []byte `gorm:"column:raw_tx"`
 	// GasFeeCap contains the gas fee cap stored in wei

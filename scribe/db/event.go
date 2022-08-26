@@ -22,7 +22,7 @@ type EventDB interface {
 	// RetrieveAllReceipts retrieves all receipts in the database
 	RetrieveAllReceipts(ctx context.Context) (receipts []types.Receipt, err error)
 	// StoreEthTx stores a processed transaction
-	StoreEthTx(ctx context.Context, tx *types.Transaction) error
+	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32) error
 	// StoreLastIndexed stores the last indexed for a contract address
 	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error
 	// RetrieveLastIndexed retrieves the last indexed for a contract address

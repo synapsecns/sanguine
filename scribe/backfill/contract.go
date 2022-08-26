@@ -83,6 +83,18 @@ func (c ContractBackfiller) Backfill(ctx context.Context, endHeight uint64) erro
 				if err != nil {
 					return fmt.Errorf("could not store receipt: %w", err)
 				}
+				// store the transaction in the db
+				txn, isPending, err := c.client.TransactionByHash(ctx, receipt.TxHash)
+				if err != nil {
+					return fmt.Errorf("could not get transaction by hash: %w", err)
+				}
+				if isPending {
+					return fmt.Errorf("transaction is pending")
+				}
+				err = c.eventDB.StoreEthTx(ctx, txn, uint32(c.contract.ChainID().Uint64()))
+				if err != nil {
+					return fmt.Errorf("could not store transaction: %w", err)
+				}
 				// store the last indexed block in the db
 				err = c.eventDB.StoreLastIndexed(ctx, c.contract.Address(), uint32(c.contract.ChainID().Uint64()), receipt.BlockNumber.Uint64())
 				if err != nil {
