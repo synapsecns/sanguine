@@ -11,6 +11,6 @@
     }
   },
   "publishConfig":{
-    "registry":"https://npm.pkg.github.com"
+    "registry":"@synapsecns:registry=https://npm.pkg.github.com"
   }
 }
