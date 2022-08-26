@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/contracts",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
