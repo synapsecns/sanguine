@@ -467,5 +467,5 @@ jobs:
         run: goreleaser --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GONOSUM: ".*"
+          GONOSUM: '.*'
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
