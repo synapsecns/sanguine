@@ -1,0 +1,53 @@
+project_name: omnirpc
+
+monorepo:
+  tag_prefix: omnirpc/
+  dir: omnirpc/
+
+
+builds:
+  # Linux AMD64
+  - id: omnirpc-amd64
+    binary: omnirpc-amd64
+    env:
+      - CGO_CFLAGS=-I/usr/local/include
+      - CGO_ENABLED=1
+      - CGO_LDFLAGS=-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lsnappy  -lzstd -lbz2
+    # see: https://github.com/cosmos/iavl/pull/465/files
+    ldflags:
+      - -s -w
+    main: main.go
+    flags:
+      - -tags=builtin_static,rocksdb,static
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+# add a source archive at release time
+source:
+  enabled: true
+
+# Archives
+archives:
+  - format: tar.gz
+    wrap_in_directory: true
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: '{{.ProjectName}}-{{.Version}}_{{.Os}}_{{.Arch}}'
+    replacements:
+      amd64: x86_64
+      arm64: ARM64
+      darwin: macOS
+      linux: Linux
+      windows: Windows
+    files:
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+# Add a changelog
+changelog:
+  sort: asc
