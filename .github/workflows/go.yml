@@ -354,7 +354,6 @@ jobs:
   # to fix this n a future verison
   build-goreleaser:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' }}
     outputs:
       goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
     steps:
