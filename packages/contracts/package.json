@@ -37,6 +37,7 @@
     "solidity-coverage": "0.7.21",
     "ts-node": "10.8.1"
   },
+  "main": "types/ethers-contracts/common.ts",
   "directories": {
     "types": "types",
     "contracts": "contracts"
@@ -50,5 +51,5 @@
     "url": "https://github.com/synapsecns/sanguine.git",
     "directory": "packages/contracts"
   },
-  "gitHead": "5b18d82b366055b39c0ef7f8d3cffa5d48e301bd"
+  "gitHead": "731978a06d28a6dc4c0607651513c1b4892c3be9"
 }
