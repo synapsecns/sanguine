@@ -103,7 +103,12 @@ jobs:
           yarn config set npmScopes.my-org.npmAlwaysAuth true
           yarn config set npmScopes.my-org.npmAuthToken $NPM_AUTH_TOKEN
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.YARN_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup .npmrc
+        run: |
+          echo //npm.pkg.github.com/:_authToken=$GITHUB_ACCESS_TOKEN >> ~/.npmrc
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish
 #        if: steps.tag_check.outputs.exists_tag == 'false'
         if: true
