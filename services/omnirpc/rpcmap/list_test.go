@@ -13,21 +13,21 @@ func (r *RPCSuite) TestGetRPCMap() {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder(http.MethodGet, rpcmap.RPCMapURL, httpmock.NewStringResponder(http.StatusOK, testData))
+	httpmock.RegisterResponder(http.MethodGet, rpcmap.PublicRPCMapURL, httpmock.NewStringResponder(http.StatusOK, testData))
 
-	res, err := rpcmap.GetRPCMap(r.GetTestContext())
+	res, err := rpcmap.GetPublicRPCMap(r.GetTestContext())
 	Nil(r.T(), err)
 
-	True(r.T(), slices.Contains(res[1], "https://api.mycryptoapi.com/eth"))
+	True(r.T(), slices.Contains(res.ChainID(1), "https://api.mycryptoapi.com/eth"))
 }
 
 func TestGetChainRPCS(t *testing.T) {
 	rpcMap, err := rpcmap.ParseRPCMap([]byte(testData))
 	Nil(t, err)
 
-	True(t, slices.Contains(rpcMap[1], "https://api.mycryptoapi.com/eth"))
-	True(t, slices.Contains(rpcMap[1], "https://cloudflare-eth.com/"))
-	True(t, slices.Contains(rpcMap[2], "https://node.eggs.cool"))
+	True(t, slices.Contains(rpcMap.RawMap()[1], "https://api.mycryptoapi.com/eth"))
+	True(t, slices.Contains(rpcMap.ChainID(1), "https://cloudflare-eth.com/"))
+	True(t, slices.Contains(rpcMap.ChainID(2), "https://node.eggs.cool"))
 }
 
 // first two rpcs from https://raw.githubusercontent.com/DefiLlama/chainlist/main/constants/extraRpcs.json

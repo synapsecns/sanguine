@@ -15,7 +15,7 @@ func DisplayLatency(lat []latency.Result) {
 	table.SetHeader([]string{"URL", "Latency", "HasError (if any)"})
 
 	sort.Slice(lat, func(i, j int) bool {
-		return lat[i].Latency > lat[j].Latency
+		return lat[i].Latency < lat[j].Latency
 	})
 
 	for _, latencyResult := range lat {
