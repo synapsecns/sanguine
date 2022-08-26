@@ -51,5 +51,8 @@
     "url": "https://github.com/synapsecns/sanguine.git",
     "directory": "packages/contracts"
   },
-  "gitHead": "731978a06d28a6dc4c0607651513c1b4892c3be9"
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "a1acc1ead0c09a192b42a4fd2311ca2b55e32b2c"
 }
