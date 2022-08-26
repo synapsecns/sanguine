@@ -36,5 +36,8 @@
     "sol-merger": "4.1.1",
     "solidity-coverage": "0.7.21",
     "ts-node": "10.8.1"
+  },
+  "publishConfig":{
+    "registry":"https://npm.pkg.github.com"
   }
 }
