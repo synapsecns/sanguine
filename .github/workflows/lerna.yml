@@ -25,6 +25,7 @@ jobs:
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
           registry-url: 'https://npm.pkg.github.com'
+          scope: '@synapsecns'
 
       - name: Git Identity
         run: |
@@ -98,13 +99,3 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/github-script@v4
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: 'https://github.com/${{ github.repository }}/releases/tag/v${{ env.CURRENT_VERSION }} is released 🎉'
-            })
