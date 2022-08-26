@@ -359,6 +359,12 @@ jobs:
         with:
           fetch-depth: 0 # needed if using new-from-rev (see: https://golangci-lint.run/usage/configuration/#issues-configuration)
 
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
+
       - uses: dorny/paths-filter@v2
         name: check if any changes warrant a new build of goreleaser-cgo-cross-compiler
         id: changes
