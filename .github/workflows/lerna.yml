@@ -113,6 +113,7 @@ jobs:
 #        if: steps.tag_check.outputs.exists_tag == 'false'
         if: true
         run: |
+          yarn login
           yarn lerna publish from-package --yes --loglevel silly
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
