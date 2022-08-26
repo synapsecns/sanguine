@@ -12,6 +12,10 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v2
