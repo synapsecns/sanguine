@@ -7,3 +7,6 @@
 [submodule "packages/contracts/lib/forge-std"]
 	path = packages/contracts/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "docker/goreleaser/goreleaser-cgo-cross-compiler"]
+	path = docker/goreleaser/goreleaser-cgo-cross-compiler
+	url = https://github.com/iotaledger/goreleaser-cgo-cross-compiler
