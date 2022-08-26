@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/contracts",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
@@ -37,7 +37,7 @@
     "solidity-coverage": "0.7.21",
     "ts-node": "10.8.1"
   },
-  "publishConfig":{
-    "registry":"https://npm.pkg.github.com"
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }
