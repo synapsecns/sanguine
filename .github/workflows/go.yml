@@ -354,6 +354,8 @@ jobs:
   # to fix this n a future verison
   build-goreleaser:
     runs-on: ubuntu-latest
+    outputs:
+      goreleaser-image: ${{ steps.name-export.LATEST_TAG_NAME }}
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
@@ -391,6 +393,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_DOCKER }}
 
+      # we do this so we can use it in subseuqnet steps
+      - name: Export latest tag name
+        id: name-export
+        run:
+          echo "##[set-output name=LATEST_TAG_NAME;]$(echo $LATEST_TAG_NAME)"
+        env:
+          LATEST_TAG_NAME: ghcr.io/synapsecns/sanguine-goreleaser:${{ hashFiles('docker/goreleaser/**') }}
+
       -
         name: Build and push
         if: steps.changes.outputs.src == 'true'
@@ -400,7 +410,7 @@ jobs:
           push: true
           file: ./docker/goreleaser/Dockerfile
           # TODO this needs to be versioned
-          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,ghcr.io/synapsecns/sanguine-goreleaser:${{ hashFiles('docker/goreleaser/**') }}
+          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.LATEST_TAG_NAME }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
   run-goreleaser:
@@ -412,7 +422,7 @@ jobs:
         # e.g. ['package1', 'package2'] if both package folders contains changes
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
     container:
-      image: ghcr.io/synapsecns/sanguine-goreleaser:${{ hashFiles('docker/goreleaser/**') }}
+      image: ${{ needs.build-goreleaser.goreleaser-image }}
       volumes: [ /repo ]
     steps:
       - name: Git Checkout
