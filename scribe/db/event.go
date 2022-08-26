@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -18,12 +17,8 @@ type EventDB interface {
 	StoreReceipt(ctx context.Context, receipt types.Receipt) error
 	// RetrieveReceiptByTxHash retrieves a receipt by tx hash
 	RetrieveReceiptByTxHash(ctx context.Context, txHash common.Hash) (receipt types.Receipt, err error)
-	// StoreRawTx stores a raw transaction
-	StoreRawTx(ctx context.Context, tx *types.Transaction, chainID *big.Int, from common.Address) error
-	// StoreProcessedTx stores a processed transaction
-	StoreProcessedTx(ctx context.Context, tx *types.Transaction) error
-	// GetNonceForChainID returns the nonce for a chain id
-	GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error)
+	// StoreEthTx stores a processed transaction
+	StoreEthTx(ctx context.Context, tx *types.Transaction) error
 	// StoreLastIndexed stores the last indexed for a contract address
 	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error
 	// RetrieveLastIndexed retrieves the last indexed for a contract address

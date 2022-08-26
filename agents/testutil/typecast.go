@@ -2,8 +2,10 @@ package testutil
 
 import (
 	"context"
+
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
+	"github.com/synapsecns/sanguine/agents/contracts/testcontract"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
 	"github.com/stretchr/testify/assert"
@@ -130,4 +132,15 @@ func (d *DeployManager) GetHeaderHarness(ctx context.Context, backend backends.S
 	assert.True(d.T(), ok)
 
 	return headerHarnessContract, headerHarness
+}
+
+// GetTestContract gets the test contract.
+func (d *DeployManager) GetTestContract(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testcontract.TestContractRef) {
+	d.T().Helper()
+
+	testContract := d.GetContractRegistry(backend).Get(ctx, TestContractType)
+	testContractHandle, ok := testContract.ContractHandle().(*testcontract.TestContractRef)
+	assert.True(d.T(), ok)
+
+	return testContract, testContractHandle
 }

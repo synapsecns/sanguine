@@ -87,31 +87,11 @@ type Receipt struct {
 	TransactionIndex uint64 `gorm:"transaction_index"`
 }
 
-// RawEthTX contains a raw evm transaction that is unsigned
-// note: idx_id contains a composite index of (chain_id,nonce)
-type RawEthTX struct {
-	gorm.Model
-	// From is the sender of the transaction
-	From string `gorm:"from"`
-	// To is the contract address the transaction was sent to.
-	To string `gorm:"index"`
-	// ChainID is the chain id the transaction hash will be sent on
-	ChainID uint64 `gorm:"column:chain_id;uniqueIndex:idx_id"`
-	// Nonce is the nonce of the raw evm tx
-	Nonce uint64 `gorm:"column:nonce;uniqueIndex:idx_id"`
-	// RawTx is the raw serialized transaction
-	RawTx []byte `gorm:"column:raw_tx"`
-}
-
-// ProcessedEthTx contains a processed ethereum transaction.
-type ProcessedEthTx struct {
+// EthTx contains a processed ethereum transaction.
+type EthTx struct {
 	TxHash string `gorm:"tx_hash"`
 	// RawTx is the raw serialized transaction
 	RawTx []byte `gorm:"column:raw_tx"`
-	// RawEthTx is the txid that caused the event
-	RawEthTx uint
-	// OriginatingEvent is the event that originated the tx
-	EthTx RawEthTX `gorm:"foreignkey:RawEthTx"`
 	// GasFeeCap contains the gas fee cap stored in wei
 	GasFeeCap uint64
 	// GasTipCap contains the gas tip cap stored in wei
