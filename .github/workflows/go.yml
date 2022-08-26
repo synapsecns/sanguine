@@ -355,7 +355,7 @@ jobs:
   build-goreleaser:
     runs-on: ubuntu-latest
     outputs:
-      goreleaser-image: ${{ steps.name-export.LATEST_TAG_NAME }}
+      goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
@@ -410,7 +410,7 @@ jobs:
           push: true
           file: ./docker/goreleaser/Dockerfile
           # TODO this needs to be versioned
-          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.TAG_NAME }}
+          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.outputs.TAG_NAME }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
   run-goreleaser:
