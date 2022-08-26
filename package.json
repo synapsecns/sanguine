@@ -1,6 +1,6 @@
 {
   "name": "sanguine",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Implementation of the Sanguine messaging standard",
   "workspaces": {
     "packages": [
