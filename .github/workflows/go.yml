@@ -440,8 +440,7 @@ jobs:
           tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.outputs.TAG_NAME }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            PARENT_IMAGE=${{ steps.cross-compiler-name-export.outputs.TAG_NAME }}
+          build-contexts: iotaledger/goreleaser-cgo-cross-compiler:latest=${{ steps.cross-compiler-name-export.outputs.TAG_NAME }}
 
   run-goreleaser:
     runs-on: ubuntu-latest
