@@ -1,4 +1,4 @@
-FROM ${PARRENT_IMAGE:-iotaledger/goreleaser-cgo-cross-compiler:latest}
+FROM iotaledger/goreleaser-cgo-cross-compiler
 
 LABEL org.label-schema.description="GoReleaser synapse node dockerfile"
 LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine-goreleaser"

@@ -440,9 +440,8 @@ jobs:
           tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.outputs.TAG_NAME }}
           cache-from: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache
           cache-to: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache,mode=max
-#          build-contexts: iotaledger/goreleaser-cgo-cross-compiler:latest=${{ steps.cross-compiler-name-export.outputs.TAG_NAME }}
-        env:
-          PARENT_IMAGE: ${{ steps.cross-compiler-name-export.outputs.TAG_NAME }}
+          build-contexts: iotaledger/goreleaser-cgo-cross-compiler=docker-image://${{ steps.cross-compiler-name-export.outputs.TAG_NAME }}
+
   run-goreleaser:
     runs-on: ubuntu-latest
     needs: [build-goreleaser, changes]
