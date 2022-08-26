@@ -99,9 +99,9 @@ jobs:
           prerelease: false
       - name: Setup .yarnrc.yml
         run: |
-          yarn config set npmScopes.my-org.npmRegistryServer "https://npm.pkg.github.com"
-          yarn config set npmScopes.my-org.npmAlwaysAuth true
-          yarn config set npmScopes.my-org.npmAuthToken $NPM_AUTH_TOKEN
+          yarn config set npmScopes.synapsecns.npmRegistryServer "https://npm.pkg.github.com"
+          yarn config set npmScopes.synapsecns.npmAlwaysAuth true
+          yarn config set npmScopes.synapsecns.npmAuthToken $NPM_AUTH_TOKEN
         env:
           NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup .npmrc
@@ -119,7 +119,7 @@ jobs:
         if: true
         run: |
           ls
-          yarn login --use-yarnrc ~/.yarnrc
+          yarn login --use-yarnrc ~/.yarnrc --non-interactive
           yarn lerna publish from-package --yes --loglevel silly
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
