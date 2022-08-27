@@ -3,8 +3,8 @@ on:
   # When Release Pull Request is merged
   pull_request:
     branches:
-      - master
-    types: [closed]
+      - lerna-build
+    #types: [closed]
 
 permissions:
   contents: write # for checkout and tag
