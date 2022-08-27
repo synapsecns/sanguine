@@ -78,11 +78,11 @@ jobs:
         run: |
           yarn lerna publish from-package --yes
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: "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" # for teesting only, deleted after this urn
+          NODE_AUTH_TOKEN: "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" # for teesting only, deleted after this urn
       - uses: actions/github-script@v4
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: "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" # for teesting only, deleted after this urn
           script: |
             github.issues.createComment({
               issue_number: context.issue.number,
