@@ -94,6 +94,10 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+      -
+        name: Fetch all tags
+        run: git fetch --force --tags
+
       # get the tag we just created
       - name: Git Fetch Unshallow
         run: git fetch
