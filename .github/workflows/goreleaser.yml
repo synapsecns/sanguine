@@ -113,19 +113,6 @@ jobs:
         with:
           go-version: 1.19
 
-      - name: Go modules cache
-        uses: actions/cache@v2
-        with:
-          # see https://github.com/mvdan/github-actions-golang
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-            ~/Library/Caches/go-build
-            %LocalAppData%\go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
       -
         name: Login to GitHub Container Registry
         uses: docker/login-action@v1
