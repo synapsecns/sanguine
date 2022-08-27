@@ -1,5 +1,5 @@
 {
-  "name": "@synapsecns/mono-one",
+  "name": "mono-one",
   "version": "2.1.4",
   "description": "",
   "homepage": "https://github.com/synapsecns/sanguine/tree/master/packages/mono-one/",
@@ -12,7 +12,7 @@
     "directory": "packages/mono-one"
   },
   "license": "MIT",
-  "author": "azu",
+  "author": "synapsecns",
   "files": [
     "bin/",
     "lib/",
