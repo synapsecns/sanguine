@@ -29,6 +29,6 @@
     "@trajan0x/mono-two": "^2.1.4"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "restricted"
   }
 }

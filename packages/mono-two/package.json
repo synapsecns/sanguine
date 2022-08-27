@@ -28,6 +28,6 @@
     "@trajan0x/mono-one": "^2.1.4"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "restricted"
   }
 }

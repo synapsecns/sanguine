@@ -3,7 +3,7 @@ on:
   issue_comment:
     types: [ created ]
 
-# require public member
+# require restricted member
 # private member is treated as CONTRIBUTOR
 permissions:
   contents: write # for checkout and commit
