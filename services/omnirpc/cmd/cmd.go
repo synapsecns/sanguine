@@ -15,7 +15,7 @@ import (
 
 const appName = "omnirpc"
 
-// Start starts the command line
+// Start starts the command line.
 func Start(args []string) {
 	app := cli.NewApp()
 	app.Name = appName
