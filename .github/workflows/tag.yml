@@ -2,7 +2,7 @@ name: Tag
 on:
   push:
     branches:
-      - ci/build-release
+      - ci/version
 jobs:
   tag:
     runs-on: ubuntu-latest
