@@ -1,4 +1,3 @@
-// Package main contains a next gen abi generator
 package cmd
 
 import (
@@ -11,6 +10,7 @@ import (
 // appName is the name of the abi generator.
 const appName = "abigen"
 
+// Run runs the cmd
 // TODO maybe use ifacemaker to generate interfaces for these.
 func Run(args []string) {
 	app := cli.NewApp()
