@@ -76,8 +76,6 @@ jobs:
             VERSION_ARG=1.10.3-pro
   tag:
     runs-on: ubuntu-latest
-    # no point tagging if we can't build goreleaser
-    needs: [build-goreleaser]
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
@@ -89,6 +87,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
+          RELEASE_BRANCHES: ci/build-release
 
   # TODO: once this is public, we need to dry run this on prs
   run-goreleaser:
