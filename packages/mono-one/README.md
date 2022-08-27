@@ -1,4 +1,4 @@
-# @synapsecns/mono-one
+# @trajan0x/mono-one
 
 One　
 
@@ -6,7 +6,7 @@ One　
 
 Install with [npm](https://www.npmjs.com/):
 
-    npm install @synapsecns/mono-one
+    npm install @trajan0x/mono-one
 
 ## Usage
 

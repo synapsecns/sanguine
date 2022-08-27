@@ -1,4 +1,4 @@
-# @synapsecns/mono-two
+# @trajan0x/mono-two
 
 Deps
 
@@ -8,7 +8,7 @@ Deps
 
 Install with [npm](https://www.npmjs.com/):
 
-    npm install @synapsecns/mono-two
+    npm install @trajan0x/mono-two
 
 ## Usage
 

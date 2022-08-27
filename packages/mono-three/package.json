@@ -1,5 +1,5 @@
 {
-  "name": "@synapsecns/mono-three",
+  "name": "@trajan0x/mono-three",
   "version": "2.1.4",
   "description": "",
   "homepage": "https://github.com/azu/lerna-monorepo-github-actions-release/tree/master/packages/mono-three/",
@@ -25,8 +25,8 @@
   },
   "scripts": {},
   "dependencies": {
-    "@synapsecns/mono-one": "^2.1.4",
-    "@synapsecns/mono-two": "^2.1.4"
+    "@trajan0x/mono-one": "^2.1.4",
+    "@trajan0x/mono-two": "^2.1.4"
   },
   "publishConfig": {
     "access": "public"
