@@ -8,7 +8,7 @@ monorepo:
 builds:
   # Linux AMD64
   - id: omnirpc-amd64
-    binary: omnirpc-amd64
+    binary: omnirpc
     env:
       - CGO_CFLAGS=-I/usr/local/include
       - CGO_ENABLED=1
