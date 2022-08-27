@@ -129,6 +129,7 @@ jobs:
         name: 'Check for Go Changes'
         id: filter_go
         with:
+          #  make sure to update run-goreleaser when adding a new package here
           filters: |
             agents: 'agents/**'
             scribe: 'scribe/**'
@@ -232,7 +233,7 @@ jobs:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.48.0
           # Path to your GolangCI-Lint config within the repo (optional)
-          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yml
+          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
           # see: https://github.com/golangci/golangci-lint/issues/2654
           args: --timeout=15m
         env:

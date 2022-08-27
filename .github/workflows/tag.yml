@@ -1,0 +1,22 @@
+name: Tag
+on:
+  push:
+    branches:
+      - ci/build-release
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+      - name: Bump version and push tag
+        if: false
+        # TODO: change once https://github.com/anothrNick/github-tag-action/pull/167 is merged
+        uses: nyoungstudios/github-tag-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          RELEASE_BRANCHES: .*
