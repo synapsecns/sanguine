@@ -97,6 +97,7 @@ func (b BackfillSuite) TestBackfill() {
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 
 	backfiller, err := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
+	Nil(b.T(), err)
 
 	// Emit events for the backfiller to read.
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
