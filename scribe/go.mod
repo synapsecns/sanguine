@@ -13,7 +13,7 @@ require (
 	github.com/richardwilkes/toolbox v1.52.0
 	github.com/stretchr/testify v1.8.0
 	github.com/synapsecns/sanguine/agents v0.0.0-20220824000943-9abcce41dac4
-	github.com/synapsecns/sanguine/core v0.0.0-20220823193711-904c560fc7d3
+	github.com/synapsecns/sanguine/core 814ce1c753ed
 	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/synapse-node v0.242.0
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4

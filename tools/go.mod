@@ -13,7 +13,7 @@ require (
 	github.com/nanmu42/etherscan-api v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.0
-	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
+	github.com/synapsecns/sanguine/core 814ce1c753ed
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/thoas/go-funk v0.9.0
 	github.com/urfave/cli/v2 v2.11.2
