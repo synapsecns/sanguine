@@ -1,6 +1,0 @@
-types
-flattened/
-build/
-
-# generated foundry coverage info
-lcov.info

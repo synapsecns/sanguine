@@ -1,36 +1,37 @@
 {
-  "name": "sanguine",
-  "version": "1.0.3",
-  "description": "Implementation of the Sanguine messaging standard",
-  "workspaces": {
-    "packages": [
-      "packages/*",
-      "core"
-    ],
-    "nohoist": [
-      "**/typechain",
-      "**/@typechain/*",
-      "**/@openzeppelin/contracts-upgradeable",
-      "**/@openzeppelin/contracts"
-    ]
+  "private": true,
+  "name": "root",
+  "version": "1.0.0",
+  "description": "Root",
+  "homepage": "https://github.com/azu/lerna-monorepo-github-actions-release",
+  "bugs": {
+    "url": "https://github.com/azu/lerna-monorepo-github-actions-release/issues"
   },
-  "private": "true",
   "repository": {
     "type": "git",
-    "url": "https://github.com/synapsecns/sanguine.git"
+    "url": "https://github.com/azu/lerna-monorepo-github-actions-release.git"
   },
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/synapsecns/sanguine/issues"
+  "author": "azu",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
   },
-  "homepage": "https://github.com/synapsecns/sanguine#readme",
+  "scripts": {
+    "versionup": "lerna version --conventional-commits --no-git-tag-version",
+    "versionup:patch": "lerna version patch --conventional-commits --no-git-tag-version",
+    "versionup:minor": "lerna version minor --conventional-commits --no-git-tag-version",
+    "versionup:major": "lerna version major --conventional-commits --no-git-tag-version",
+    "postversionup": "npm run commit-version",
+    "postversionup:patch": "npm run commit-version",
+    "postversionup:minor": "npm run commit-version",
+    "postversionup:major": "npm run commit-version",
+    "commit-version": "git add . && git commit -m \"chore(release): publish `node -p 'require(\"./lerna.json\").version'`\"",
+    "release": "lerna publish from-package",
+    "release:canary": "lerna publish --canary --preid next --dist-tag next --force-publish='*' --no-push --no-git-tag-version --yes"
+  },
   "devDependencies": {
-    "lerna": "^4.0.0",
-    "prettier": "2.7.1",
-    "prettier-plugin-solidity": "1.0.0-dev.23"
-  },
-  "dependencies": {
-    "@changesets/cli": "2.22.0",
-    "versionup": "^3.0.4"
+    "lerna": "^3.20.2"
   }
 }

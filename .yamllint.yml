@@ -1,9 +1,0 @@
-ignore: |
-  **/node_modules/**
-
-rules:
-  document-start:
-    present: false
-  quoted-strings:
-    quote-type: single
-    required: false

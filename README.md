@@ -1,56 +1,59 @@
-# Sanguine
+# Lerna + monorepo +GitHub Actions Release Flow
 
-[![Go Workflows](https://github.com/synapsecns/sanguine/actions/workflows/go.yml/badge.svg)](https://github.com/synapsecns/sanguine/actions/workflows/go.yml)
-[![Foundry Tests](https://github.com/synapsecns/sanguine/actions/workflows/foundry-tests.yml/badge.svg)](https://github.com/synapsecns/sanguine/actions/workflows/foundry-tests.yml)
+This repository is an example of monorepo release flow.
 
+## Purposes
+
+- User can control packages versions
+- Publish tag and packages from CI
+- Does not support independent mode
+
+## Roles and Works
+
+1. [Person] Develop and Submit Release Pull Request
+2. [Team] Review Release Pull Request
+3. [CI] Publish
+
+## Release Flow
+
+0. [Local] Checkout release branch: `git checkout release/<uniq>`
+1. [Local] Run `yarn run versionup`
+    - Update CHANGELOG.md and `package.json`'s `version`, and `lerna.json`'s `version`
+    - It does not git tag
+2. [Local] Submit to Release Pull Request
+3. [GitHub] Review Release Pull Request
+4. [GitHub] Write Release Note into the Release Pull Request's body
+4. [GitHub] Merge Release Pull Request
+5. [CI] Create git tag && Create GitHub Release && publish to npm(GitHub Package Registry)
+    - :memo: The GitHub Release's body is copied from Release Pull Request's body
+
+## Changelog
+
+See [Releases page](https://github.com/azu/lerna-monorepo-github-actions-release/releases).
+
+## Running tests
+
+Install devDependencies and Run `npm test`:
+
+    npm test
 
 ## Contributing
 
-Read through [CONTRIBUTING.md](./CONTRIBUTING.md) for a general overview of our contribution process.
-Then check out our list of [good first issues](https://github.com/ethereum-optimism/optimism/contribute) to find something fun to work on!
+Pull requests and stars are always welcome.
 
-## Directory Structure
+For bugs and feature requests, [please create an issue](https://github.com/azu/lerna-monorepo-github-actions-release/issues).
 
-<pre>
-root
-├── <a href="./packages">packages</a>
-│   ├── <a href="./packages/contracts">contracts</a>: Contracts used for synapse
-├── <a href="./tools">tools</a>
-│   ├── <a href="./tools/abigen">abigen</a>: Used to generate abigen bindings for go
-│   ├── <a href="./tools/module copier">module copier</a>: Used to copy internal modules and export methods for testing
-├── <a href="./agents">agents</a>: agents contain all the agents used in optimistic messaging
-├── <a href="./scribe">scribe</a>: scribe is a generalized event indexer
-</pre>
+1. Fork it!
+2. Create your feature branch: `git checkout -b my-new-feature`
+3. Commit your changes: `git commit -am 'Add some feature'`
+4. Push to the branch: `git push origin my-new-feature`
+5. Submit a pull request :D
 
+## Author
 
-## Setup
+- [github/azu](https://github.com/azu)
+- [twitter/azu_re](https://twitter.com/azu_re)
 
-Clone the repository, open it, and install nodejs packages with `yarn`:
+## License
 
-```bash
-git clone https://github.com/synapsecns/sanguine
-cd sanguine
-yarn install
-```
-
-
-### Install the Correct Version of NodeJS
-
-Using `nvm`, install the correct version of NodeJS.
-
-```
-nvm use
-```
-
-### Building the TypeScript packages
-
-To build all of the [TypeScript packages](./packages), run:
-
-```bash
-yarn clean
-yarn build
-```
-
-Packages compiled when on one branch may not be compatible with packages on a different branch.
-**You should recompile all packages whenever you move from one branch to another.**
-Use the above commands to recompile the packages.
+MIT © azu
