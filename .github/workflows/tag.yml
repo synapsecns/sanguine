@@ -16,6 +16,7 @@ jobs:
         # TODO: change once https://github.com/anothrNick/github-tag-action/pull/167 is merged
         uses: nyoungstudios/github-tag-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # need to use another tag token
+          GITHUB_TOKEN: ${{ secrets.TAG_TOKEN }}
           WITH_V: true
           RELEASE_BRANCHES: .*
