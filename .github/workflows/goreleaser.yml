@@ -76,6 +76,8 @@ jobs:
             VERSION_ARG=1.10.3-pro
   tag:
     runs-on: ubuntu-latest
+    # no point tagging if we can't build goreleaser
+    needs: [build-goreleaser]
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
