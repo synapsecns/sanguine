@@ -1,4 +1,4 @@
-# @trajan0x/mono-three
+# @synapsecns/mono-three
 
 deps +
 
@@ -9,7 +9,7 @@ deps +
 
 Install with [npm](https://www.npmjs.com/):
 
-    npm install @trajan0x/mono-three
+    npm install @synapsecns/mono-three
 
 ## Usage
 
