@@ -1,4 +1,4 @@
-# @azu/mono-one
+# @synapsecns/mono-one
 
 One　
 
@@ -6,7 +6,7 @@ One　
 
 Install with [npm](https://www.npmjs.com/):
 
-    npm install @azu/mono-one
+    npm install @synapsecns/mono-one
 
 ## Usage
 

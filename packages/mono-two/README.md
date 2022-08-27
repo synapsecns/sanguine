@@ -1,4 +1,4 @@
-# @azu/mono-two
+# @synapsecns/mono-two
 
 Deps
 
@@ -8,7 +8,7 @@ Deps
 
 Install with [npm](https://www.npmjs.com/):
 
-    npm install @azu/mono-two
+    npm install @synapsecns/mono-two
 
 ## Usage
 
