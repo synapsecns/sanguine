@@ -32,7 +32,7 @@ var (
 // Log stores the log of an event.
 type Log struct {
 	// ContractAddress is the address of the contract that generated the event
-	ContractAddress string `gorm:"column:contract_address"`
+	ContractAddress string `gorm:"column:contract_address;primaryKey"`
 	// ChainID is the chain id of the contract that generated the event
 	ChainID uint32 `gorm:"chain_id"`
 	// PrimaryTopic is the primary topic of the event. Topics[0]
@@ -48,13 +48,13 @@ type Log struct {
 	// BlockNumber is the block in which the transaction was included
 	BlockNumber uint64 `gorm:"block_number"`
 	// TxHash is the hash of the transaction
-	TxHash string `gorm:"column:tx_hash"`
+	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// TxIndex is the index of the transaction in the block
 	TxIndex uint64 `gorm:"tx_index"`
 	// BlockHash is the hash of the block in which the transaction was included
 	BlockHash string `gorm:"block_hash"`
 	// Index is the index of the log in the block
-	Index uint64 `gorm:"column:index"`
+	Index uint64 `gorm:"column:index;primaryKey;auto_increment:false"`
 	// Removed is true if this log was reverted due to a chain re-organization
 	Removed bool `gorm:"removed"`
 }
@@ -62,7 +62,7 @@ type Log struct {
 // Receipt stores the receipt of a transaction.
 type Receipt struct {
 	// ChainID is the chain id of the receipt
-	ChainID uint32 `gorm:"column:chain_id"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
 	// Type is the type
 	Type uint8 `gorm:"receipt_type"`
 	// PostState is the post state
@@ -74,7 +74,7 @@ type Receipt struct {
 	// Bloom is the bloom filter
 	Bloom []byte `gorm:"bloom"`
 	// TxHash is the hash of the transaction
-	TxHash string `gorm:"column:tx_hash"`
+	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// ContractAddress is the address of the contract
 	ContractAddress string `gorm:"contract_address"`
 	// GasUsed is the amount of gas used by this transaction alone
@@ -90,9 +90,9 @@ type Receipt struct {
 // EthTx contains a processed ethereum transaction.
 type EthTx struct {
 	// TxHash is the hash of the transaction
-	TxHash string `gorm:"column:tx_hash"`
+	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// ChainID is the chain id of the transaction
-	ChainID uint32 `gorm:"column:chain_id"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
 	// RawTx is the raw serialized transaction
 	RawTx []byte `gorm:"column:raw_tx"`
 	// GasFeeCap contains the gas fee cap stored in wei
@@ -109,5 +109,5 @@ type LastIndexedInfo struct {
 	// ChainID is the chain id of the contract
 	ChainID uint32 `gorm:"column:chain_id"`
 	// BlockNumber is the last block number indexed
-	BlockNumber uint64 `gorm:"column:block_number"`
+	BlockNumber uint64 `gorm:"column:block_number;auto_increment:false"`
 }

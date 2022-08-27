@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-
 	"github.com/synapsecns/sanguine/agents/db"
+	"sort"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -94,6 +94,9 @@ func (s Store) RetrieveLogs(ctx context.Context, txHash common.Hash, chainID uin
 		logs = append(logs, parsedLog)
 	}
 
+	sort.Slice(logs, func(i, j int) bool {
+		return logs[i].Index < logs[j].Index
+	})
 	return logs, nil
 }
 
