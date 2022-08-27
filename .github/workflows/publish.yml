@@ -23,6 +23,7 @@ jobs:
         with:
           node-version: 14
           registry-url: 'https://npm.pkg.github.com'
+          scope: "@synapsecns"
       - name: Git Identity
         run: |
           git config --global user.name 'github-actions[bot]'
