@@ -2,13 +2,13 @@
   "name": "@synapsecns/mono-three",
   "version": "2.1.4",
   "description": "",
-  "homepage": "https://github.com/azu/lerna-monorepo-github-actions-release/tree/master/packages/mono-three/",
+  "homepage": "https://github.com/synapsecns/sanguine/tree/master/packages/mono-three/",
   "bugs": {
-    "url": "https://github.com/azu/lerna-monorepo-github-actions-release/issues"
+    "url": "https://github.com/synapsecns/sanguine/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/azu/lerna-monorepo-github-actions-release.git",
+    "url": "https://github.com/synapsecns/sanguine.git",
     "directory": "packages/mono-three"
   },
   "license": "MIT",

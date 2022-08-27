@@ -29,7 +29,7 @@ This repository is an example of monorepo release flow.
 
 ## Changelog
 
-See [Releases page](https://github.com/azu/lerna-monorepo-github-actions-release/releases).
+See [Releases page](https://github.com/synapsecns/sanguine/releases).
 
 ## Running tests
 
@@ -41,7 +41,7 @@ Install devDependencies and Run `npm test`:
 
 Pull requests and stars are always welcome.
 
-For bugs and feature requests, [please create an issue](https://github.com/azu/lerna-monorepo-github-actions-release/issues).
+For bugs and feature requests, [please create an issue](https://github.com/synapsecns/sanguine/issues).
 
 1. Fork it!
 2. Create your feature branch: `git checkout -b my-new-feature`
