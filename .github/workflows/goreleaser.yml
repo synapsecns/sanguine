@@ -107,6 +107,11 @@ jobs:
         with:
           fetch-depth: 0
           submodules: 'recursive'
+
+      # get the tag we just created
+      - name: Git Fetch Unshallow
+        run: git fetch --prune --unshallow
+
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
