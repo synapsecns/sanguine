@@ -59,4 +59,4 @@ dockers:
     image_templates:
       - 'ghcr.io/synapsecns/sanguine/omnirpc:latest'
       - 'ghcr.io/synapsecns/sanguine/omnirpc:{{ .Tag }}'
-    dockerfile: ../../docker/base.Dockerfile
+    dockerfile: ../../docker/omnirpc.Dockerfile
