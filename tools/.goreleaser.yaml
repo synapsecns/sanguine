@@ -15,7 +15,7 @@ builds:
     # see: https://github.com/cosmos/iavl/pull/465/files
     ldflags:
       - -s -w
-    main: abigen/...
+    main: abigen/
     flags:
       - -tags=builtin_static,rocksdb,static
     goos:
@@ -32,7 +32,7 @@ builds:
     # see: https://github.com/cosmos/iavl/pull/465/files
     ldflags:
       - -s -w
-    main: modulecopier/...
+    main: modulecopier/
     flags:
       - -tags=builtin_static,rocksdb,static
     goos:
