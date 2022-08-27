@@ -2,7 +2,7 @@ name: Go Releaser
 on:
   push:
     tags:
-      - "*"
+      - '**'
   workflow_dispatch:
 
 jobs:
