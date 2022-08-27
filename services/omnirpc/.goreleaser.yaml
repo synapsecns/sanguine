@@ -1,7 +1,7 @@
 project_name: omnirpc
 
 monorepo:
-  tag_prefix: omnirpc/
+  tag_prefix: services/omnirpc/
   dir: services/omnirpc/
 
 
