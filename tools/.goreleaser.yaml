@@ -58,7 +58,8 @@ archives:
       linux: Linux
       windows: Windows
     files:
-      - README.md
+      - abigen/README.md
+      - modulecopier/README.md
 
 checksum:
   name_template: checksums.txt
