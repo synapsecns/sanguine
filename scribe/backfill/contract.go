@@ -98,7 +98,7 @@ func (c ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 	}
 
 	// parallelize storing logs, receipts, and transactions
-	g, ctx := errgroup.WithContext(ctx)
+	g, groupCtx := errgroup.WithContext(ctx)
 	if err != nil {
 		return fmt.Errorf("could not create errgroup: %w", err)
 	}
@@ -109,7 +109,7 @@ func (c ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
-			err = c.eventDB.StoreLog(ctx, *log, uint32(c.contract.ChainID().Uint64()))
+			err = c.eventDB.StoreLog(groupCtx, *log, uint32(c.contract.ChainID().Uint64()))
 			if err != nil {
 				return fmt.Errorf("could not store log: %w", err)
 			}
@@ -119,7 +119,7 @@ func (c ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 
 	g.Go(func() error {
 		// store the receipt in the db
-		err = c.eventDB.StoreReceipt(ctx, *receipt, uint32(c.contract.ChainID().Uint64()))
+		err = c.eventDB.StoreReceipt(groupCtx, *receipt, uint32(c.contract.ChainID().Uint64()))
 		if err != nil {
 			return fmt.Errorf("could not store receipt: %w", err)
 		}
@@ -128,14 +128,14 @@ func (c ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 
 	g.Go(func() error {
 		// store the transaction in the db
-		txn, isPending, err := c.client.TransactionByHash(ctx, receipt.TxHash)
+		txn, isPending, err := c.client.TransactionByHash(groupCtx, receipt.TxHash)
 		if err != nil {
 			return fmt.Errorf("could not get transaction by hash: %w", err)
 		}
 		if isPending {
 			return fmt.Errorf("transaction is pending")
 		}
-		err = c.eventDB.StoreEthTx(ctx, txn, uint32(c.contract.ChainID().Uint64()))
+		err = c.eventDB.StoreEthTx(groupCtx, txn, uint32(c.contract.ChainID().Uint64()))
 		if err != nil {
 			return fmt.Errorf("could not store transaction: %w", err)
 		}
