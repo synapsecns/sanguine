@@ -110,7 +110,7 @@ jobs:
 
       # get the tag we just created
       - name: Git Fetch Unshallow
-        run: git fetch --prune --unshallow
+        run: git fetch
 
       - name: Set up Go
         uses: actions/setup-go@v2
