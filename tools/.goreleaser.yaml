@@ -5,8 +5,40 @@ monorepo:
   dir: tools/
 
 builds:
-  - skip: true
+  # Linux AMD64
+  - id: abigen-amd64
+    binary: abigen-amd64
+    env:
+      - CGO_CFLAGS=-I/usr/local/include
+      - CGO_ENABLED=1
+      - CGO_LDFLAGS=-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lsnappy  -lzstd -lbz2
+    # see: https://github.com/cosmos/iavl/pull/465/files
+    ldflags:
+      - -s -w
+    main: abigen/...
+    flags:
+      - -tags=builtin_static,rocksdb,static
+    goos:
+      - linux
+    goarch:
+      - amd64
 
+  - id: modulecopier-amd64
+    binary: modulecopier-amd64
+    env:
+      - CGO_CFLAGS=-I/usr/local/include
+      - CGO_ENABLED=1
+      - CGO_LDFLAGS=-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lsnappy  -lzstd -lbz2
+    # see: https://github.com/cosmos/iavl/pull/465/files
+    ldflags:
+      - -s -w
+    main: modulecopier/...
+    flags:
+      - -tags=builtin_static,rocksdb,static
+    goos:
+      - linux
+    goarch:
+      - amd64
 # add a source archive at release time
 source:
   enabled: true
