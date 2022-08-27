@@ -4,19 +4,14 @@ pragma solidity 0.8.13;
 // ============ Internal Imports ============
 import { LocalDomainContext } from "./context/LocalDomainContext.sol";
 import { Version0 } from "./Version0.sol";
+import { OriginHub } from "./hubs/OriginHub.sol";
 import { DomainNotaryRegistry } from "./registry/DomainNotaryRegistry.sol";
 import { GuardRegistry } from "./registry/GuardRegistry.sol";
-import { AttestationHub } from "./hubs/AttestationHub.sol";
-import { ReportHub } from "./hubs/ReportHub.sol";
-import { Attestation } from "./libs/Attestation.sol";
-import { Report } from "./libs/Report.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
-import { TypedMemView } from "./libs/TypedMemView.sol";
 import { SystemMessage } from "./libs/SystemMessage.sol";
 import { SystemContract } from "./system/SystemContract.sol";
-import { MerkleTreeManager } from "./Merkle.sol";
 import { INotaryManager } from "./interfaces/INotaryManager.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
 // ============ External Imports ============
@@ -38,20 +33,14 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  */
 contract Origin is
     Version0,
-    MerkleTreeManager,
     SystemContract,
     LocalDomainContext,
-    AttestationHub,
-    ReportHub,
+    OriginHub,
     DomainNotaryRegistry,
     GuardRegistry
 {
-    using Attestation for bytes29;
-    using Report for bytes29;
     using Tips for bytes;
     using Tips for bytes29;
-
-    using TypedMemView for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
@@ -66,6 +55,7 @@ contract Origin is
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // contract responsible for Notary bonding, slashing and rotation
+    // TODO: use "bonding manager" instead when implemented
     INotaryManager public notaryManager;
 
     // gap for upgrade safety
@@ -92,27 +82,6 @@ contract Origin is
         bytes tips,
         bytes message
     );
-
-    /**
-     * @notice Emitted when a correct report on a fraud attestation is submitted.
-     * @param guard     Guard who signed the fraud report
-     * @param report    Report data and signature
-     */
-    event CorrectFraudReport(address indexed guard, bytes report);
-
-    /**
-     * @notice Emitted when proof of an incorrect report is submitted.
-     * @param guard     Guard who signed the incorrect report
-     * @param report    Report data and signature
-     */
-    event IncorrectReport(address indexed guard, bytes report);
-
-    /**
-     * @notice Emitted when proof of an fraud attestation is submitted.
-     * @param notary        Notary who signed fraud attestation
-     * @param attestation   Attestation data and signature
-     */
-    event FraudAttestation(address indexed notary, bytes attestation);
 
     /**
      * @notice Emitted when the Guard is slashed
@@ -162,11 +131,9 @@ contract Origin is
 
     function initialize(INotaryManager _notaryManager) external initializer {
         __SystemContract_initialize();
+        _initializeHistoricalRoots();
         _setNotaryManager(_notaryManager);
         _addNotary(notaryManager.notary());
-        // Insert a historical root so nonces start at 1 rather then 0.
-        // Here we insert the default root of a sparse merkle tree
-        historicalRoots.push(hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -252,164 +219,8 @@ contract Origin is
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                VIEWS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Suggest an attestation for the Notary to sign and submit.
-     * @dev If no messages have been sent, following values are returned:
-     * - nonce = 0
-     * - root = 0x27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757
-     * Which is the merkle root for an empty sparse merkle tree.
-     * @return latestNonce Current nonce
-     * @return latestRoot  Current merkle root
-     */
-    function suggestAttestation() external view returns (uint32 latestNonce, bytes32 latestRoot) {
-        latestNonce = nonce();
-        latestRoot = historicalRoots[latestNonce];
-    }
-
-    /**
-     * @notice Returns nonce of the last inserted Merkle root.
-     */
-    function nonce() public view returns (uint32 latestNonce) {
-        // historicalRoots has length of 1 upon initializing,
-        // so this never underflows assuming contract was initialized
-        latestNonce = uint32(historicalRoots.length - 1);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Checks is a submitted Attestation is a valid Attestation.
-     * Attestation can be either Fraud or Valid.
-     * A Fraud Attestation is a (_nonce, _root) attestation that doesn't correspond with
-     * the historical state of Origin contract. Either of those needs to be true:
-     * - _nonce is higher than current nonce (no root exists for this nonce)
-     * - _root is not equal to the historical root of _nonce
-     * This would mean that message(s) that were not truly
-     * dispatched on Origin were falsely included in the signed root.
-     *
-     * A Fraud Attestation will only be accepted as valid by the Mirror.
-     * If a Fraud Attestation is submitted to the Mirror, a Guard should
-     * submit a Fraud Report using Origin.submitReport()
-     * in order to slash the Notary with a Fraud Attestation.
-     *
-     * @dev Both Notary and Guard signatures
-     * have been checked at this point (see ReportHub.sol).
-     *
-     * @param _notary           Notary address (signature&role already verified)
-     * @param _attestationView  Memory view over reported Attestation for convenience
-     * @param _attestation      Payload with Attestation data and signature
-     * @return isValid          TRUE if Attestation was valid (implying Notary was not slashed).
-     */
-    function _handleAttestation(
-        address _notary,
-        bytes29 _attestationView,
-        bytes memory _attestation
-    ) internal override returns (bool isValid) {
-        /// @dev Notary role have been checked in ReportHub, meaning
-        /// _notary is an active Notary at this point.
-        uint32 attestedNonce = _attestationView.attestedNonce();
-        bytes32 attestedRoot = _attestationView.attestedRoot();
-        isValid = _isValidAttestation(attestedNonce, attestedRoot);
-        if (!isValid) {
-            emit FraudAttestation(_notary, _attestation);
-            // Guard doesn't receive anything, as Notary wasn't slashed using the Fraud Report
-            _slashNotary(_notary, address(0));
-            /**
-             * TODO: design incentives for the reporter in a way, where they get less
-             * by reporting directly instead of using a correct Fraud Report.
-             * That will allow Guards to focus on Report signing and don't worry
-             * about submitReport (whether their own or outsourced) txs being frontrun.
-             */
-        }
-    }
-
-    /**
-     * @notice Checks if a submitted Report is a correct Report. Reported Attestation
-     * can be either valid or fraud. Report flag can also be either Valid or Fraud.
-     * Report is correct if its flag matches the Attestation validity.
-     * 1. Attestation: valid, Flag: Fraud.
-     *      Report is deemed incorrect, Guard is slashed (if they haven't been already).
-     * 2. Attestation: valid, Flag: Valid.
-     *      Report is deemed correct, no action is done.
-     * 3. Attestation: Fraud, Flag: Fraud.
-     *      Report is deemed correct, Notary is slashed (if they haven't been already).
-     * 4. Attestation: Fraud, Flag: Valid.
-     *      Report is deemed incorrect, Guard is slashed (if they haven't been already).
-     *      Notary is slashed (if they haven't been already), but Guard doesn't receive
-     *      any rewards (as their report indicated that the attestation was valid).
-     *
-     * A Fraud Attestation is a (_nonce, _root) attestation that doesn't correspond with
-     * the historical state of Origin contract. Either of those needs to be true:
-     * - _nonce is higher than current nonce (no root exists for this nonce)
-     * - _root is not equal to the historical root of _nonce
-     * This would mean that message(s) that were not truly
-     * dispatched on Origin were falsely included in the signed root.
-     *
-     * A Fraud Attestation will only be accepted as valid by the Mirror.
-     * If a Fraud Attestation is submitted to the Mirror, a Guard should
-     * submit a Fraud Report using Origin.submitReport()
-     * in order to slash the Notary with a Fraud Attestation.
-     *
-     * @dev Both Notary and Guard signatures
-     * have been checked at this point (see ReportHub.sol).
-     *
-     * @param _guard            Guard address (signature&role already verified)
-     * @param _notary           Notary address (signature&role already verified)
-     * @param _attestationView  Memory view over reported Attestation
-     * @param _reportView       Memory view over Report
-     * @param _report           Payload with Report data and signature
-     * @return TRUE if Report was correct (implying Guard was not slashed)
-     */
-    function _handleReport(
-        address _guard,
-        address _notary,
-        bytes29 _attestationView,
-        bytes29 _reportView,
-        bytes memory _report
-    ) internal override returns (bool) {
-        /// @dev Notary and Guard roles have been checked in ReportHub, meaning
-        /// _notary is an active Notary, _guard is an active Guard at this point.
-        uint32 attestedNonce = _attestationView.attestedNonce();
-        bytes32 attestedRoot = _attestationView.attestedRoot();
-        if (_isValidAttestation(attestedNonce, attestedRoot)) {
-            // Attestation: Valid
-            if (_reportView.reportedFraud()) {
-                // Flag: Fraud
-                // Report is incorrect, slash the Guard
-                emit IncorrectReport(_guard, _report);
-                _slashGuard(_guard);
-                return false;
-            } else {
-                // Flag: Valid
-                // Report is correct, no action needed
-                return true;
-            }
-        } else {
-            // Attestation: Fraud
-            if (_reportView.reportedFraud()) {
-                // Flag: Fraud
-                // Report is correct, slash the Notary
-                emit CorrectFraudReport(_guard, _report);
-                emit FraudAttestation(_notary, _attestationView.clone());
-                _slashNotary(_notary, _guard);
-                return true;
-            } else {
-                // Flag: Valid
-                // Report is incorrect, slash the Guard
-                emit IncorrectReport(_guard, _report);
-                _slashGuard(_guard);
-                emit FraudAttestation(_notary, _attestationView.clone());
-                // Guard doesn't receive anything due to Valid flag on the Report
-                _slashNotary(_notary, address(0));
-                return false;
-            }
-        }
-    }
 
     /**
      * @notice Set the NotaryManager
@@ -427,7 +238,7 @@ contract Origin is
      * @param _notary   Notary to slash
      * @param _guard    Guard who reported fraudulent Notary [address(0) if not a Guard report]
      */
-    function _slashNotary(address _notary, address _guard) internal {
+    function _slashNotary(address _notary, address _guard) internal override {
         // _notary is always an active Notary at this point
         _removeNotary(_notary);
         notaryManager.slashNotary(payable(msg.sender));
@@ -439,7 +250,7 @@ contract Origin is
      * @dev Called when guard misbehavior is proven (Incorrect Report).
      * @param _guard    Guard to slash
      */
-    function _slashGuard(address _guard) internal {
+    function _slashGuard(address _guard) internal override {
         // _guard is always an active Guard at this point
         _removeGuard(_guard);
         emit GuardSlashed(_guard, msg.sender);
@@ -474,16 +285,6 @@ contract Origin is
             // Adjust "sender address" for correct processing on remote chain.
             sender = SystemMessage.SYSTEM_ROUTER;
         }
-    }
-
-    /**
-     * @notice Returns whether (_nonce, _root) matches the historical state
-     * of the Merkle Tree.
-     */
-    function _isValidAttestation(uint32 _nonce, bytes32 _root) internal view returns (bool) {
-        // Check if nonce is valid, if not => attestation is fraud
-        // Check if root the same as the historical one, if not => attestation is fraud
-        return (_nonce < historicalRoots.length && _root == historicalRoots[_nonce]);
     }
 
     /**
