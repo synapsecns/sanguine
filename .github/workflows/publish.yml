@@ -1,7 +1,7 @@
 name: publish
 on:
   # When Release Pull Request is merged
-  pull_request:
+  push:
     branches:
       - lerna-build
     #types: [closed]
