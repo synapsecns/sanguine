@@ -1,9 +1,8 @@
 name: Go Releaser
 on:
   push:
-    tags:
-      - '*'
-  workflow_dispatch:
+    branches:
+      - ci/version
 
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
