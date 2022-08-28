@@ -16,12 +16,12 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 		txHashA := common.BigToHash(big.NewInt(txHashRandom))
 		txHashB := common.BigToHash(big.NewInt(txHashRandom + 1))
 		randomLogsA := []types.Log{
-			*t.MakeRandomLog(txHashA),
-			*t.MakeRandomLog(txHashA),
+			t.MakeRandomLog(txHashA),
+			t.MakeRandomLog(txHashA),
 		}
 		randomLogsB := []types.Log{
-			*t.MakeRandomLog(txHashB),
-			*t.MakeRandomLog(txHashB),
+			t.MakeRandomLog(txHashB),
+			t.MakeRandomLog(txHashB),
 		}
 
 		// Store all random logs, since `RetrieveReceipt` needs to query them to build the Receipt.

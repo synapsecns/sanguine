@@ -19,16 +19,16 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		// Store two logs with the same txHash, and one with a different txHash.
 		txHashA := common.BigToHash(big.NewInt(txHashRandom))
 		logA := t.MakeRandomLog(txHashA)
-		err := testDB.StoreLog(t.GetTestContext(), *logA, chainID)
+		err := testDB.StoreLog(t.GetTestContext(), logA, chainID)
 		Nil(t.T(), err)
 
 		logB := t.MakeRandomLog(txHashA)
-		err = testDB.StoreLog(t.GetTestContext(), *logB, chainID)
+		err = testDB.StoreLog(t.GetTestContext(), logB, chainID)
 		Nil(t.T(), err)
 
 		txHashC := common.BigToHash(big.NewInt(txHashRandom + 1))
 		logC := t.MakeRandomLog(txHashC)
-		err = testDB.StoreLog(t.GetTestContext(), *logC, chainID+1)
+		err = testDB.StoreLog(t.GetTestContext(), logC, chainID+1)
 		Nil(t.T(), err)
 		time.Sleep(1 * time.Second)
 
@@ -66,11 +66,11 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 	})
 }
 
-func (t *DBSuite) MakeRandomLog(txHash common.Hash) *types.Log {
+func (t *DBSuite) MakeRandomLog(txHash common.Hash) types.Log {
 	currentIndex := t.logIndex.Load()
 	// increment next index
 	t.logIndex.Add(1)
-	return &types.Log{
+	return types.Log{
 		Address:     common.BigToAddress(big.NewInt(gofakeit.Int64())),
 		Topics:      []common.Hash{common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64()))},
 		Data:        []byte(gofakeit.Sentence(10)),
