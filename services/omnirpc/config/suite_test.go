@@ -1,4 +1,4 @@
-package rpcmap_test
+package config_test
 
 import (
 	"github.com/stretchr/testify/suite"

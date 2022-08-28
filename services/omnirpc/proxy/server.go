@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/synapsecns/sanguine/serivces/omnirpc/config"
 	"github.com/synapsecns/sanguine/serivces/omnirpc/latency"
-	"github.com/synapsecns/sanguine/serivces/omnirpc/rpcmap"
 	"golang.org/x/sync/errgroup"
 	"net/http"
 	"sort"
@@ -19,11 +19,11 @@ type RPCProxy struct {
 	port uint32
 	// rpcMap contains a list of [chainid]->[]hosts in order of altency
 	// this list may not be updated at
-	rpcMap *rpcmap.RPCMap
+	rpcMap config.RPCConfig
 }
 
 // NewProxy creates a new rpc proxy.
-func NewProxy(port uint32, rpcMap *rpcmap.RPCMap) *RPCProxy {
+func NewProxy(port uint32, rpcMap config.RPCConfig) *RPCProxy {
 	return &RPCProxy{
 		port:   port,
 		rpcMap: rpcMap,

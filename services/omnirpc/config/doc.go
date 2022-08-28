@@ -1,2 +1,2 @@
-// Package config allows you to pass in a custom config for which rpcs to hit
+// Package config provides a public rpc map
 package config

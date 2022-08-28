@@ -1,9 +1,9 @@
-package rpcmap_test
+package config_test
 
 import (
 	"github.com/jarcoal/httpmock"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/serivces/omnirpc/rpcmap"
+	"github.com/synapsecns/sanguine/serivces/omnirpc/config"
 	"golang.org/x/exp/slices"
 	"net/http"
 	"testing"
@@ -13,16 +13,16 @@ func (r *RPCSuite) TestGetRPCMap() {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder(http.MethodGet, rpcmap.PublicRPCMapURL, httpmock.NewStringResponder(http.StatusOK, testData))
+	httpmock.RegisterResponder(http.MethodGet, config.PublicRPCMapURL, httpmock.NewStringResponder(http.StatusOK, testData))
 
-	res, err := rpcmap.GetPublicRPCMap(r.GetTestContext())
+	res, err := config.GetPublicRPCMap(r.GetTestContext())
 	Nil(r.T(), err)
 
 	True(r.T(), slices.Contains(res.ChainID(1), "https://api.mycryptoapi.com/eth"))
 }
 
 func TestGetChainRPCS(t *testing.T) {
-	rpcMap, err := rpcmap.ParseRPCMap([]byte(testData))
+	rpcMap, err := config.ParseRPCMap([]byte(testData))
 	Nil(t, err)
 
 	True(t, slices.Contains(rpcMap.RawMap()[1], "https://api.mycryptoapi.com/eth"))
