@@ -129,12 +129,14 @@ jobs:
         name: 'Check for Go Changes'
         id: filter_go
         with:
+          #  make sure to update run-goreleaser when adding a new package here
           filters: |
             agents: 'agents/**'
             scribe: 'scribe/**'
             tools: 'tools/**'
             core: 'core/**'
             ethergo: 'ethergo/**'
+            services/omnirpc: 'services/omnirpc/**'
       - name: Check For Solidity Changes
         id: filter_solidity
         uses: tj-actions/changed-files@v26.1
@@ -231,7 +233,7 @@ jobs:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.48.0
           # Path to your GolangCI-Lint config within the repo (optional)
-          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yml
+          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
           # see: https://github.com/golangci/golangci-lint/issues/2654
           args: --timeout=15m
         env:
@@ -347,3 +349,73 @@ jobs:
           remove-labels: 'needs-go-generate'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ steps.find_pr.outputs.pr }}
+
+  # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
+  # the next run since build-goreleaser and run-goreleaser are run concurrently. We expect github actions
+  # to fix this n a future verison
+  build-goreleaser:
+    runs-on: ubuntu-latest
+    outputs:
+      goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # needed if using new-from-rev (see: https://golangci-lint.run/usage/configuration/#issues-configuration)
+          submodules: true
+
+      - uses: dorny/paths-filter@v2
+        name: check if any changes warrant a new build of goreleaser-cgo-cross-compiler
+        id: changes
+        with:
+          token:  ${{ secrets.GITHUB_TOKEN }}
+          filters: |
+            src:
+              - 'docker/goreleaser/**'
+      -
+        name: Set up Docker Buildx
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
+
+      - name: Enviornment variables
+        # TODO: this if block needs to be run on every step now, but should be fixed in a future version: https://github.com/actions/runner/issues/662
+        if: steps.changes.outputs.src == 'true'
+        uses: franzdiebold/github-env-vars-action@v1.0.0
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+      -
+        name: Login to GitHub Container Registry
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_DOCKER }}
+
+      # we do this so we can use it in subseuqnet steps
+      - name: Export latest tag name
+        id: name-export
+        run:
+          echo "##[set-output name=TAG_NAME;]$(echo $LATEST_TAG_NAME)"
+        env:
+          LATEST_TAG_NAME: ghcr.io/synapsecns/sanguine-goreleaser:${{ hashFiles('docker/goreleaser/**') }}
+      -
+        name: Build and push
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          file: ./docker/goreleaser/Dockerfile
+          # TODO this needs to be versioned
+          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.outputs.TAG_NAME }}
+          cache-from: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache
+          cache-to: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache,mode=max
+          build-args: |
+            SHA_ARG=1930375c56b0be0afa50fcb9b98fb7563645b9ffb13a19453bbede8d3f68a2af
+            FILE_ARG=goreleaser-pro_Linux_x86_64.tar.gz
+            DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser-pro/releases/download/v1.10.3-pro/goreleaser-pro_Linux_x86_64.tar.gz
+            VERSION_ARG=1.10.3-pro
