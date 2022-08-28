@@ -8,7 +8,7 @@ import (
 )
 
 // StoreEthTx stores a processed text.
-func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction) error {
+func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32) error {
 	marshalledTx, err := tx.MarshalBinary()
 	if err != nil {
 		return fmt.Errorf("could not marshall tx to binary: %w", err)
@@ -16,6 +16,7 @@ func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction) error {
 
 	dbTx := s.DB().WithContext(ctx).Create(&EthTx{
 		TxHash:    tx.Hash().String(),
+		ChainID:   chainID,
 		RawTx:     marshalledTx,
 		GasFeeCap: tx.GasFeeCap().Uint64(),
 		GasTipCap: tx.GasTipCap().Uint64(),

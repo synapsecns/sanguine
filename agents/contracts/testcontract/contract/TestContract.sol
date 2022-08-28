@@ -30,4 +30,13 @@ contract TestContract {
   ) public {
     emit EventB(msg.sender, valueA, valueB, valueC);
   }
+
+  function emitEventAandB(
+    uint256 valueA,
+    uint256 valueB,
+    uint256 valueC
+  ) public {
+    emitEventA(valueA, valueB, valueC);
+    emitEventB(abi.encodePacked(valueA), valueB, valueC);
+  }
 }
