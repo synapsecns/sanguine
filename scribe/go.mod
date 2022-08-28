@@ -7,6 +7,7 @@ require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/ethereum/go-ethereum v1.10.11
+	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
 	github.com/pkg/errors v0.9.1
@@ -110,7 +111,6 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-version v1.2.0 // indirect
-	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hdevalence/ed25519consensus v0.0.0-20210204194344-59a8610d2b87 // indirect
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect

@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"os"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -21,7 +22,8 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs []db.EventDB
+	dbs      []db.EventDB
+	logIndex atomic.Int64
 }
 
 // NewEventDBSuite creates a new EventDBSuite.
@@ -35,6 +37,8 @@ func NewEventDBSuite(tb testing.TB) *DBSuite {
 
 func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
+
+	t.logIndex.Store(0)
 
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""))
 	Nil(t.T(), err)

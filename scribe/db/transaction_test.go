@@ -76,7 +76,7 @@ func (t *DBSuite) TestTxInsertion() {
 			signedTx, err := transactor.Signer(signer.Address(), testTx)
 			Nil(t.T(), err)
 
-			err = testDB.StoreEthTx(t.GetTestContext(), signedTx)
+			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, uint32(testTx.ChainId().Uint64()))
 			Nil(t.T(), err)
 			// TODO: retrieve the processed tx
 		}
