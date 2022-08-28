@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"github.com/synapsecns/sanguine/services/scribe/db"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -10,7 +11,6 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/sanguine/scribe/db"
 )
 
 // addressPtr converts an address to a pointer.

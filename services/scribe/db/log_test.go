@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"github.com/synapsecns/sanguine/services/scribe/db"
 	"math/big"
 	"time"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/scribe/db"
 )
 
 func (t *DBSuite) TestStoreRetrieveLog() {

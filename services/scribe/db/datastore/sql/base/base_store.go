@@ -1,7 +1,7 @@
 package base
 
 import (
-	"github.com/synapsecns/sanguine/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/db"
 	"gorm.io/gorm"
 )
 
