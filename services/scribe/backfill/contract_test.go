@@ -2,8 +2,9 @@ package backfill_test
 
 import (
 	"fmt"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
@@ -88,8 +89,8 @@ Done:
 	Equal(b.T(), 3, len(collectedLogs))
 }
 
-// TestBackfill tests using a contractBackfiller for recording receipts and logs in a database.
-func (b BackfillSuite) TestBackfill() {
+// TestContractBackfill tests using a contractBackfiller for recording receipts and logs in a database.
+func (b BackfillSuite) TestContractBackfill() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
 	simulatedChain := simulated.NewSimulatedBackend(b.GetSuiteContext(), b.T())
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
@@ -118,12 +119,12 @@ func (b BackfillSuite) TestBackfill() {
 	err = backfiller.Backfill(b.GetTestContext(), 0, txBlockNumber)
 	Nil(b.T(), err)
 	// Get all receipts.
-	receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext())
+	receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext(), false, 0, "")
 	Nil(b.T(), err)
 	// Check to see if 3 receipts were collected.
 	Equal(b.T(), 3, len(receipts))
 	// Get all logs.
-	logs, err := b.testDB.RetrieveAllLogs_Test(b.GetTestContext())
+	logs, err := b.testDB.RetrieveAllLogs_Test(b.GetTestContext(), false, 0, "")
 	Nil(b.T(), err)
 	// Check to see if 4 logs were collected.
 	Equal(b.T(), 4, len(logs))

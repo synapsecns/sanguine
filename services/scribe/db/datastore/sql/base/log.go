@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/db"
 	"sort"
+
+	"github.com/synapsecns/sanguine/agents/db"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -103,11 +104,22 @@ func (s Store) RetrieveLogs(ctx context.Context, txHash common.Hash, chainID uin
 // RetrieveAllLogs_Test retrieves all logs in the database. This is only used for testing.
 //
 //nolint:golint, revive, stylecheck
-func (s Store) RetrieveAllLogs_Test(ctx context.Context) (logs []*types.Log, err error) {
+func (s Store) RetrieveAllLogs_Test(ctx context.Context, specific bool, chainID uint32, address string) (logs []*types.Log, err error) {
 	dbLogs := []Log{}
-	dbTx := s.DB().WithContext(ctx).
-		Model(&Log{}).
-		Find(&dbLogs)
+	var dbTx *gorm.DB
+	if specific {
+		dbTx = s.DB().WithContext(ctx).
+			Model(&Log{}).
+			Where(&Log{
+				ChainID:         chainID,
+				ContractAddress: address,
+			}).
+			Find(&dbLogs)
+	} else {
+		dbTx = s.DB().WithContext(ctx).
+			Model(&Log{}).
+			Find(&dbLogs)
+	}
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {

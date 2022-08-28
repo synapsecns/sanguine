@@ -79,9 +79,17 @@ func (s Store) RetrieveReceipt(ctx context.Context, txHash common.Hash, chainID 
 // RetrieveAllReceipts_Test retrieves all receipts. Should only be used for testing.
 //
 //nolint:golint, revive, stylecheck
-func (s Store) RetrieveAllReceipts_Test(ctx context.Context) (receipts []types.Receipt, err error) {
+func (s Store) RetrieveAllReceipts_Test(ctx context.Context, specific bool, chainID uint32, address string) (receipts []types.Receipt, err error) {
 	dbReceipts := []Receipt{}
-	dbTx := s.DB().WithContext(ctx).Model(&Receipt{}).Find(&dbReceipts)
+	var dbTx *gorm.DB
+	if specific {
+		dbTx = s.DB().WithContext(ctx).Model(&Receipt{}).Where(&Receipt{
+			ChainID:         chainID,
+			ContractAddress: address,
+		}).Find(&dbReceipts)
+	} else {
+		dbTx = s.DB().WithContext(ctx).Model(&Receipt{}).Find(&dbReceipts)
+	}
 
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("could not retrieve receipts: %w", dbTx.Error)
