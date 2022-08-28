@@ -13,13 +13,18 @@ Then check out our list of [good first issues](https://github.com/ethereum-optim
 
 <pre>
 root
+├── <a href="./core">core</a>: The Go core library with common utilities for use across the monorepo
+├── <a href="./ethergo">ethergo</a>: Go-based ethereum testing + common library
 ├── <a href="./packages">packages</a>
-│   ├── <a href="./packages/contracts">contracts</a>: Contracts used for synapse
+│   ├── <a href="./packages/contracts">contracts</a>: Contracts used for synapse, powered by <a href="https://github.com/foundry-rs/foundry">Foundry</a>
+├── <a href="./tools">services</a>
+│   ├── <a href="./services/omnirpc">omnirpc</a>: Latency aware RPC Client used across multiple-chains at once
+│   ├── <a href="./services/scribe">scribe</a>: Generalized ethereum event logger
 ├── <a href="./tools">tools</a>
 │   ├── <a href="./tools/abigen">abigen</a>: Used to generate abigen bindings for go
-│   ├── <a href="./tools/module copier">module copier</a>: Used to copy internal modules and export methods for testing
+│   ├── <a href="./tools/modulecopier">module copier</a>: Used to copy internal modules and export methods for testing
 ├── <a href="./agents">agents</a>: agents contain all the agents used in optimistic messaging
-├── <a href="./scribe">scribe</a>: scribe is a generalized event indexer
+├── <a href="services/scribe">scribe</a>: scribe is a generalized event indexer
 </pre>
 
 

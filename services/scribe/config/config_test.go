@@ -4,7 +4,7 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/synapse-node/testutils/utils"
 )
 

@@ -6,7 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"time"
 
-	"github.com/synapsecns/sanguine/scribe/db/datastore/sql/base"
+	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"

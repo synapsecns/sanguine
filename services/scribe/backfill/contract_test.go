@@ -2,13 +2,13 @@ package backfill_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"github.com/synapsecns/sanguine/scribe/backfill"
 )
 
 // TestGetLogsSimulated tests the GetLogs function using a simulated blockchain.

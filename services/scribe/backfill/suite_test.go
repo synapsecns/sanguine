@@ -10,8 +10,8 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/sanguine/scribe/db"
-	"github.com/synapsecns/sanguine/scribe/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
 )
 
 type BackfillSuite struct {

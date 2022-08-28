@@ -6,7 +6,7 @@ import (
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"os"
 
-	"github.com/synapsecns/sanguine/scribe/db/datastore/sql/base"
+	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
