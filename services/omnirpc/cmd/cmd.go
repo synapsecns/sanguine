@@ -3,11 +3,10 @@ package cmd
 import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/commandline"
-	rpcConfig "github.com/synapsecns/sanguine/serivces/omnirpc/config"
+	"github.com/synapsecns/sanguine/serivces/omnirpc/config"
 	"github.com/synapsecns/sanguine/serivces/omnirpc/latency"
 	"github.com/synapsecns/sanguine/serivces/omnirpc/proxy"
-	"github.com/synapsecns/sanguine/serivces/omnirpc/rpcmap"
-	"github.com/synapsecns/synapse-node/config"
+	synConfig "github.com/synapsecns/synapse-node/config"
 	"github.com/urfave/cli/v2"
 	"os"
 	"time"
@@ -19,7 +18,7 @@ const appName = "omnirpc"
 func Start(args []string) {
 	app := cli.NewApp()
 	app.Name = appName
-	app.Version = config.AppVersion
+	app.Version = synConfig.AppVersion
 	app.Description = "Used for checking the lowest latency rpc endpoint fora given chain"
 	app.Commands = []*cli.Command{
 		{
@@ -27,7 +26,7 @@ func Start(args []string) {
 			Usage: "checks latency for all rpc endpoints known for a chain id",
 			Flags: []cli.Flag{chainIDFlag},
 			Action: func(c *cli.Context) error {
-				rpcMap, err := rpcmap.GetPublicRPCMap(c.Context)
+				rpcMap, err := config.GetPublicRPCMap(c.Context)
 				if err != nil {
 					return fmt.Errorf("could not get rpc map: %w", err)
 				}
@@ -43,7 +42,7 @@ func Start(args []string) {
 			Usage: "runs a chainlist proxy server",
 			Flags: []cli.Flag{portFlag},
 			Action: func(c *cli.Context) error {
-				rpcMap, err := rpcmap.GetPublicRPCMap(c.Context)
+				rpcMap, err := config.GetPublicRPCMap(c.Context)
 				if err != nil {
 					return fmt.Errorf("could not get rpc map: %w", err)
 				}
@@ -60,12 +59,12 @@ func Start(args []string) {
 			Usage: "output a public config file from chainlist.org",
 			Flags: []cli.Flag{outputFlag},
 			Action: func(c *cli.Context) error {
-				rpcMap, err := rpcmap.GetPublicRPCMap(c.Context)
+				rpcMap, err := config.GetPublicRPCMap(c.Context)
 				if err != nil {
 					return fmt.Errorf("could not get rpc map: %w", err)
 				}
 
-				output := rpcConfig.MarshallFromMap(rpcMap)
+				output := config.MarshallFromMap(rpcMap)
 				outputConfig, err := os.Create(c.String(outputFlag.Name))
 				if err != nil {
 					return fmt.Errorf("could not create config file: %w", err)
@@ -92,7 +91,7 @@ func Start(args []string) {
 				portFlag,
 			},
 			Action: func(c *cli.Context) error {
-				rpcMap, err := rpcConfig.UnmarshallConfigFromFile(c.String(configFlag.Name))
+				rpcMap, err := config.UnmarshallConfigFromFile(c.String(configFlag.Name))
 				if err != nil {
 					return fmt.Errorf("could not unmarshall config: %w", err)
 				}

@@ -1,4 +1,4 @@
-package rpcmap
+package config
 
 import "github.com/ipfs/go-log"
 
