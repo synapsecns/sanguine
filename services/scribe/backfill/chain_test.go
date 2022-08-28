@@ -13,6 +13,90 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 )
 
+// TestConfirmations tests that data will not be added if a specified amount of blocks
+// have not passed before the block that the data belongs to.
+func (b BackfillSuite) TestConfirmations() {
+	// Get simulated blockchain, deploy three test contracts, and set up test variables.
+	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(4))
+	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
+	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
+	// Create a second test contract just meant to pass blocks.
+	dummyManager := testutil.NewDeployManager(b.T())
+	_, dummyRef := dummyManager.GetTestContract(b.GetTestContext(), simulatedChain)
+	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
+	// Set up the config.
+	deployTxHash := testContract.DeployTx().Hash()
+	receipt, err := simulatedChain.TransactionReceipt(b.GetTestContext(), deployTxHash)
+	Nil(b.T(), err)
+	startBlock := receipt.BlockNumber.Uint64()
+	contractConfigs := make(config.ContractConfigs)
+	contractConfigs["TestContract"] = config.ContractConfig{
+		Address:    testContract.Address().String(),
+		StartBlock: startBlock,
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:               4,
+		RPCUrl:                "an rpc url is not needed for simulated backends",
+		ConfirmationThreshold: 2,
+		Contracts:             contractConfigs,
+	}
+
+	// Set up the ChainBackfiller.
+	chainBackfiller, err := backfill.NewChainBackfiller([]contracts.DeployedContract{testContract}, b.testDB, simulatedChain, chainConfig)
+	Nil(b.T(), err)
+
+	// Emit three events from two transactions.
+	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+	tx, err = testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(4), big.NewInt(5), big.NewInt(6))
+	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+
+	// Use the dummy contract to pass two blocks.
+	tx, err = dummyRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+	tx, err = dummyRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+
+	// Backfill the first batch of events.
+	latestBlock, err := simulatedChain.BlockNumber(b.GetTestContext())
+	Nil(b.T(), err)
+	err = chainBackfiller.Backfill(b.GetTestContext(), latestBlock-uint64(chainConfig.ConfirmationThreshold))
+	Nil(b.T(), err)
+
+	// Check that the first batch of events were added to the database.
+	logs, err := b.testDB.RetrieveAllLogs_Test(b.GetTestContext(), true, chainConfig.ChainID, testContract.Address().String())
+	Nil(b.T(), err)
+	Equal(b.T(), 3, len(logs))
+
+	receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext(), true, chainConfig.ChainID)
+	Nil(b.T(), err)
+	Equal(b.T(), 2, len(receipts))
+
+	// Send one more transaction.
+	tx, err = testRef.EmitEventB(transactOpts.TransactOpts, []byte{7}, big.NewInt(8), big.NewInt(9))
+	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+
+	// Backfill before the confirmation threshold has passed.
+	latestBlock, err = simulatedChain.BlockNumber(b.GetTestContext())
+	Nil(b.T(), err)
+	err = chainBackfiller.Backfill(b.GetTestContext(), latestBlock-uint64(chainConfig.ConfirmationThreshold))
+	Nil(b.T(), err)
+
+	// Check that the second batch of events were not added to the database.
+	logs, err = b.testDB.RetrieveAllLogs_Test(b.GetTestContext(), true, chainConfig.ChainID, testContract.Address().String())
+	Nil(b.T(), err)
+	Equal(b.T(), 3, len(logs))
+
+	receipts, err = b.testDB.RetrieveAllReceipts_Test(b.GetTestContext(), true, chainConfig.ChainID)
+	Nil(b.T(), err)
+	Equal(b.T(), 2, len(receipts))
+}
+
 // TestChainBackfill tests the ChainBackfiller's ability to backfill a chain.
 func (b BackfillSuite) TestChainBackfill() {
 	// We need to set up multiple deploy managers, one for each contract. We will use
@@ -20,7 +104,7 @@ func (b BackfillSuite) TestChainBackfill() {
 	managerB := testutil.NewDeployManager(b.T())
 	managerC := testutil.NewDeployManager(b.T())
 	// Get simulated blockchain, deploy three test contracts, and set up test variables.
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetSuiteContext(), b.T(), big.NewInt(1))
+	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(1))
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
 	testContractA, testRefA := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	testContractB, testRefB := managerB.GetTestContract(b.GetTestContext(), simulatedChain)
