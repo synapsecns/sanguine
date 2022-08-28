@@ -119,7 +119,7 @@ func (b BackfillSuite) TestContractBackfill() {
 	err = backfiller.Backfill(b.GetTestContext(), 0, txBlockNumber)
 	Nil(b.T(), err)
 	// Get all receipts.
-	receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext(), false, 0, "")
+	receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext(), false, 0)
 	Nil(b.T(), err)
 	// Check to see if 3 receipts were collected.
 	Equal(b.T(), 3, len(receipts))

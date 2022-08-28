@@ -2,7 +2,6 @@ package db_test
 
 import (
 	"math/big"
-	"time"
 
 	"github.com/synapsecns/sanguine/services/scribe/db"
 
@@ -31,7 +30,6 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		logC := t.MakeRandomLog(txHashC)
 		err = testDB.StoreLog(t.GetTestContext(), logC, chainID+1)
 		Nil(t.T(), err)
-		time.Sleep(1 * time.Second)
 
 		// Ensure the logs from the database match the ones stored.
 		// Check the logs for the two with the same txHash.

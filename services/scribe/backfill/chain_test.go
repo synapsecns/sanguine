@@ -1,7 +1,6 @@
 package backfill_test
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/params"
@@ -89,20 +88,11 @@ func (b BackfillSuite) TestChainBackfill() {
 		// There should be 4 logs. One from `EmitEventA`, one from `EmitEventB`, and two
 		// from `EmitEventAandB`.
 		Equal(b.T(), 4, len(logs))
-		// Check the storage of receipts.
-		receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext(), true, chainConfig.ChainID, contract.Address().String())
-		Nil(b.T(), err)
-		// There should be 3 receipts. One from `EmitEventA`, one from `EmitEventB`, and
-		// one from `EmitEventAandB`.
-		Equal(b.T(), 3, len(receipts))
 	}
-	_ = chainBackfiller
-
-	fmt.Println("testContractA", testContractA.Address())
-	fmt.Println("testContractB", testContractB.Address())
-	fmt.Println("testContractC", testContractC.Address())
-	_ = testRefA
-	_ = testRefB
-	_ = testRefC
-	_ = transactOpts
+	// Check the storage of receipts.
+	receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext(), true, chainConfig.ChainID)
+	Nil(b.T(), err)
+	// There should be 9 receipts. One from `EmitEventA`, one from `EmitEventB`, and
+	// one from `EmitEventAandB`, for each contract.
+	Equal(b.T(), 9, len(receipts))
 }

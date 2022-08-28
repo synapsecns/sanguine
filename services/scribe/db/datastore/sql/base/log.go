@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // StoreLog stores a log.
@@ -35,21 +36,28 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 			})
 		}
 	}
-	dbTx := s.DB().WithContext(ctx).Create(&Log{
-		ContractAddress: log.Address.String(),
-		ChainID:         chainID,
-		PrimaryTopic:    topics[0],
-		TopicA:          topics[1],
-		TopicB:          topics[2],
-		TopicC:          topics[3],
-		Data:            log.Data,
-		BlockNumber:     log.BlockNumber,
-		TxHash:          log.TxHash.String(),
-		TxIndex:         uint64(log.TxIndex),
-		BlockHash:       log.BlockHash.String(),
-		Index:           uint64(log.Index),
-		Removed:         log.Removed,
-	})
+	dbTx := s.DB().WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: TxHashFieldName}, {Name: IndexFieldName},
+			},
+			DoNothing: true,
+		}).
+		Create(&Log{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			PrimaryTopic:    topics[0],
+			TopicA:          topics[1],
+			TopicB:          topics[2],
+			TopicC:          topics[3],
+			Data:            log.Data,
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+			TxIndex:         uint64(log.TxIndex),
+			BlockHash:       log.BlockHash.String(),
+			Index:           uint64(log.Index),
+			Removed:         log.Removed,
+		})
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store log: %w", dbTx.Error)

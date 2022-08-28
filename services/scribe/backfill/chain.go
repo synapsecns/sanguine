@@ -54,6 +54,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64) error {
 	g, ctx := errgroup.WithContext(ctx)
 	// iterate over each contract backfiller
 	for _, contractBackfiller := range c.contractBackfillers {
+		// capture func literal
+		contractBackfiller := contractBackfiller
 		// get the start height for the backfill
 		startHeight := c.chainConfig.Contracts[contractBackfiller.contract.Address().String()].StartBlock
 		// call Backfill concurrently

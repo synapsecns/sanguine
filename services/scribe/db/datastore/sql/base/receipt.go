@@ -11,24 +11,30 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // StoreReceipt stores a receipt.
 func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID uint32) error {
-	dbTx := s.DB().WithContext(ctx).Create(&Receipt{
-		ChainID:           chainID,
-		Type:              receipt.Type,
-		PostState:         receipt.PostState,
-		Status:            receipt.Status,
-		CumulativeGasUsed: receipt.CumulativeGasUsed,
-		Bloom:             receipt.Bloom.Bytes(),
-		TxHash:            receipt.TxHash.String(),
-		ContractAddress:   receipt.ContractAddress.String(),
-		GasUsed:           receipt.GasUsed,
-		BlockHash:         receipt.BlockHash.String(),
-		BlockNumber:       receipt.BlockNumber.Uint64(),
-		TransactionIndex:  uint64(receipt.TransactionIndex),
-	})
+	dbTx := s.DB().WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: TxHashFieldName}, {Name: ChainIDFieldName}},
+			DoNothing: true,
+		}).
+		Create(&Receipt{
+			ChainID:           chainID,
+			Type:              receipt.Type,
+			PostState:         receipt.PostState,
+			Status:            receipt.Status,
+			CumulativeGasUsed: receipt.CumulativeGasUsed,
+			Bloom:             receipt.Bloom.Bytes(),
+			TxHash:            receipt.TxHash.String(),
+			ContractAddress:   receipt.ContractAddress.String(),
+			GasUsed:           receipt.GasUsed,
+			BlockHash:         receipt.BlockHash.String(),
+			BlockNumber:       receipt.BlockNumber.Uint64(),
+			TransactionIndex:  uint64(receipt.TransactionIndex),
+		})
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store receipt: %w", dbTx.Error)
@@ -79,13 +85,12 @@ func (s Store) RetrieveReceipt(ctx context.Context, txHash common.Hash, chainID 
 // RetrieveAllReceipts_Test retrieves all receipts. Should only be used for testing.
 //
 //nolint:golint, revive, stylecheck
-func (s Store) RetrieveAllReceipts_Test(ctx context.Context, specific bool, chainID uint32, address string) (receipts []types.Receipt, err error) {
+func (s Store) RetrieveAllReceipts_Test(ctx context.Context, specific bool, chainID uint32) (receipts []*types.Receipt, err error) {
 	dbReceipts := []Receipt{}
 	var dbTx *gorm.DB
 	if specific {
 		dbTx = s.DB().WithContext(ctx).Model(&Receipt{}).Where(&Receipt{
-			ChainID:         chainID,
-			ContractAddress: address,
+			ChainID: chainID,
 		}).Find(&dbReceipts)
 	} else {
 		dbTx = s.DB().WithContext(ctx).Model(&Receipt{}).Find(&dbReceipts)
@@ -102,7 +107,7 @@ func (s Store) RetrieveAllReceipts_Test(ctx context.Context, specific bool, chai
 			return nil, fmt.Errorf("could not retrieve logs with tx hash %s and chain id %d: %w", dbReceipt.TxHash, dbReceipt.ChainID, err)
 		}
 
-		parsedReceipt := types.Receipt{
+		parsedReceipt := &types.Receipt{
 			Type:              dbReceipt.Type,
 			PostState:         dbReceipt.PostState,
 			Status:            dbReceipt.Status,
