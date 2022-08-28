@@ -1,8 +1,8 @@
 project_name: scribe
 
 monorepo:
-  tag_prefix: scribe/
-  dir: scribe/
+  tag_prefix: services/scribe/
+  dir: services/scribe/
 
 builds:
   - skip: true

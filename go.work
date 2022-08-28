@@ -4,7 +4,7 @@ use (
 	./agents
 	./core
 	./ethergo
-	./scribe
 	./services/omnirpc
+	./services/scribe
 	./tools
 )

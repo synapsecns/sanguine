@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"github.com/synapsecns/sanguine/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/synapse-node/pkg/evm/client"
 	"golang.org/x/sync/errgroup"
 )

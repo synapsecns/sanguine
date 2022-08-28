@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/scribe/db"
-	"github.com/synapsecns/sanguine/scribe/db/datastore/sql/mysql"
-	"github.com/synapsecns/sanguine/scribe/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
+	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
 )
 
 // NewStoreFromConfig creates a new database from a config file.

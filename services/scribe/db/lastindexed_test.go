@@ -1,12 +1,12 @@
 package db_test
 
 import (
+	"github.com/synapsecns/sanguine/services/scribe/db"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/scribe/db"
 )
 
 func (t *DBSuite) TestStoreRetrieveLastIndexed() {

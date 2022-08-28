@@ -97,7 +97,7 @@ jobs:
           #  make sure to update run-goreleaser when adding a new package here
           filters: |
             agents: 'agents/**'
-            scribe: 'scribe/**'
+            services/scribe: 'services/scribe/**'
             tools: 'tools/**'
             core: 'core/**'
             ethergo: 'ethergo/**'
