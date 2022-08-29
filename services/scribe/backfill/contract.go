@@ -102,6 +102,7 @@ func (c ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, end
 				}
 				// if everything works properly, restore timeout to 0 and attempts to 0
 				timeout = time.Duration(0)
+				b.Reset()
 				storeAttempt = 0
 			case err := <-errChan:
 				return fmt.Errorf("could not get logs: %w", err)
