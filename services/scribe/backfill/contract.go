@@ -77,16 +77,12 @@ func (c ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, end
 		}
 		// timeout should always be 0 on the first attempt
 		timeout := time.Duration(0)
-		storeAttempt := 0
 		for {
 			select {
 			case <-ctx.Done():
 				return nil
 			case log := <-logChan:
-				// check if the attempt count has exceeded maxAttempts
-				if storeAttempt > maxAttempts {
-					return fmt.Errorf("could not store logs after %d attempts", maxAttempts)
-				}
+				// TODO: add a notification for failure to store
 				// wait the timeout (will be 0 on first attempt)
 				time.Sleep(timeout)
 				// check if the txHash has already been stored in the cache
@@ -97,13 +93,11 @@ func (c ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, end
 				if err != nil {
 					timeout = b.Duration()
 					logger.Warnf("could not store data: %w", err)
-					storeAttempt++
 					continue
 				}
-				// if everything works properly, restore timeout to 0 and attempts to 0
+				// if everything works properly, restore timeout to 0
 				timeout = time.Duration(0)
 				b.Reset()
-				storeAttempt = 0
 			case err := <-errChan:
 				return fmt.Errorf("could not get logs: %w", err)
 			case <-doneChan:
