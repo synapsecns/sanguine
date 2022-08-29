@@ -83,7 +83,7 @@ func (c ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, end
 			case <-ctx.Done():
 				return nil
 			case log := <-logChan:
-				// check if either attempt count has exceeded maxAttempts
+				// check if the attempt count has exceeded maxAttempts
 				if storeAttempt > maxAttempts {
 					return fmt.Errorf("could not store logs after %d attempts", maxAttempts)
 				}
