@@ -31,8 +31,8 @@ func (c ConfigSuite) TestContractConfigDuplicateAddress() {
 	contractConfigB.Address = contractConfigA.Address
 
 	contractConfigs := config.ContractConfigs{
-		"a": contractConfigA,
-		"b": contractConfigB,
+		contractConfigA,
+		contractConfigB,
 	}
 
 	ok, err := contractConfigs.IsValid(c.GetTestContext())

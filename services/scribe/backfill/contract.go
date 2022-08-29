@@ -17,8 +17,6 @@ import (
 
 // ContractBackfiller is a backfiller that fetches logs for a specific contract.
 type ContractBackfiller struct {
-	// mapName is the name used in the config for name->contract
-	mapName string
 	// chainID is the chainID of the chain the contract is deployed on
 	chainID uint32
 	// address is the contract address to get logs for
@@ -32,7 +30,7 @@ type ContractBackfiller struct {
 }
 
 // NewContractBackfiller creates a new backfiller for a contract.
-func NewContractBackfiller(mapName string, chainID uint32, address string, eventDB db.EventDB, client client.EVMClient) (*ContractBackfiller, error) {
+func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client client.EVMClient) (*ContractBackfiller, error) {
 	// initialize the cache for the txHashes
 	cache, err := lru.New(500)
 	if err != nil {
@@ -40,7 +38,6 @@ func NewContractBackfiller(mapName string, chainID uint32, address string, event
 	}
 
 	return &ContractBackfiller{
-		mapName: mapName,
 		chainID: chainID,
 		address: address,
 		eventDB: eventDB,
