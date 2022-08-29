@@ -109,10 +109,9 @@ func (s Store) RetrieveLogs(ctx context.Context, txHash common.Hash, chainID uin
 	return logs, nil
 }
 
-// RetrieveAllLogs_Test retrieves all logs in the database. This is only used for testing.
-//
-//nolint:golint, revive, stylecheck
-func (s Store) RetrieveAllLogs_Test(ctx context.Context, specific bool, chainID uint32, address string) (logs []*types.Log, err error) {
+// UnsafeRetrieveAllLogs retrieves all logs in the database. When true, `specific` lets
+// you specify a chainID and contract address to specifically search for. This is only used for testing.
+func (s Store) UnsafeRetrieveAllLogs(ctx context.Context, specific bool, chainID uint32, address common.Address) (logs []*types.Log, err error) {
 	dbLogs := []Log{}
 	var dbTx *gorm.DB
 	if specific {
@@ -120,7 +119,7 @@ func (s Store) RetrieveAllLogs_Test(ctx context.Context, specific bool, chainID 
 			Model(&Log{}).
 			Where(&Log{
 				ChainID:         chainID,
-				ContractAddress: address,
+				ContractAddress: address.String(),
 			}).
 			Find(&dbLogs)
 	} else {

@@ -5,7 +5,9 @@ import (
 	"math/big"
 
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/config"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
@@ -17,12 +19,18 @@ import (
 //nolint:cyclop
 func (b BackfillSuite) TestGetLogsSimulated() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
-	simulatedChain := simulated.NewSimulatedBackend(b.GetSuiteContext(), b.T())
+	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetSuiteContext(), b.T(), big.NewInt(3))
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
 	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 
-	backfiller, err := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
+	// Set config.
+	contractConfig := config.ContractConfig{
+		Address:    testContract.Address().String(),
+		StartBlock: 0,
+	}
+
+	backfiller, err := backfill.NewContractBackfiller("test", 3, contractConfig.Address, b.testDB, simulatedChain)
 	Nil(b.T(), err)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
@@ -52,7 +60,7 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 
 	// Get the logs for the first two events.
 	collectedLogs := []types.Log{}
-	logs, errors, done := backfiller.GetLogs(b.GetTestContext(), 0, txBlockNumberA)
+	logs, errors, done := backfiller.GetLogs(b.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
 	for {
 		select {
 		case <-b.GetTestContext().Done():
@@ -92,12 +100,18 @@ Done:
 // TestContractBackfill tests using a contractBackfiller for recording receipts and logs in a database.
 func (b BackfillSuite) TestContractBackfill() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
-	simulatedChain := simulated.NewSimulatedBackend(b.GetSuiteContext(), b.T())
+	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetSuiteContext(), b.T(), big.NewInt(142))
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
 	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 
-	backfiller, err := backfill.NewContractBackfiller(testContract, b.testDB, simulatedChain)
+	// Set config.
+	contractConfig := config.ContractConfig{
+		Address:    testContract.Address().String(),
+		StartBlock: 0,
+	}
+
+	backfiller, err := backfill.NewContractBackfiller("test", 142, contractConfig.Address, b.testDB, simulatedChain)
 	Nil(b.T(), err)
 
 	// Emit events for the backfiller to read.
@@ -116,15 +130,15 @@ func (b BackfillSuite) TestContractBackfill() {
 	txBlockNumber, err := b.getTxBlockNumber(simulatedChain, tx)
 	Nil(b.T(), err)
 	// Backfill the events. The `0` will be replaced with the startBlock from the config.
-	err = backfiller.Backfill(b.GetTestContext(), 0, txBlockNumber)
+	err = backfiller.Backfill(b.GetTestContext(), contractConfig.StartBlock, txBlockNumber)
 	Nil(b.T(), err)
 	// Get all receipts.
-	receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext(), false, 0)
+	receipts, err := b.testDB.UnsafeRetrieveAllReceipts(b.GetTestContext(), false, 0)
 	Nil(b.T(), err)
 	// Check to see if 3 receipts were collected.
 	Equal(b.T(), 3, len(receipts))
 	// Get all logs.
-	logs, err := b.testDB.RetrieveAllLogs_Test(b.GetTestContext(), false, 0, "")
+	logs, err := b.testDB.UnsafeRetrieveAllLogs(b.GetTestContext(), false, 0, common.Address{})
 	Nil(b.T(), err)
 	// Check to see if 4 logs were collected.
 	Equal(b.T(), 4, len(logs))

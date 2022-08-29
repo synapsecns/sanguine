@@ -94,7 +94,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 		Equal(t.T(), resA, resB)
 
 		// Ensure RetrieveAllReceipts gets all receipts.
-		allReceipts, err := testDB.RetrieveAllReceipts_Test(t.GetTestContext(), false, 0)
+		allReceipts, err := testDB.UnsafeRetrieveAllReceipts(t.GetTestContext(), false, 0)
 		Nil(t.T(), err)
 		Equal(t.T(), 2, len(allReceipts))
 	})

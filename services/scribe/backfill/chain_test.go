@@ -42,7 +42,7 @@ func (b BackfillSuite) TestConfirmations() {
 	}
 
 	// Set up the ChainBackfiller.
-	chainBackfiller, err := backfill.NewChainBackfiller([]contracts.DeployedContract{testContract}, b.testDB, simulatedChain, chainConfig)
+	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, simulatedChain, chainConfig)
 	Nil(b.T(), err)
 
 	// Emit three events from two transactions.
@@ -68,11 +68,11 @@ func (b BackfillSuite) TestConfirmations() {
 	Nil(b.T(), err)
 
 	// Check that the first batch of events were added to the database.
-	logs, err := b.testDB.RetrieveAllLogs_Test(b.GetTestContext(), true, chainConfig.ChainID, testContract.Address().String())
+	logs, err := b.testDB.UnsafeRetrieveAllLogs(b.GetTestContext(), true, chainConfig.ChainID, testContract.Address())
 	Nil(b.T(), err)
 	Equal(b.T(), 3, len(logs))
 
-	receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext(), true, chainConfig.ChainID)
+	receipts, err := b.testDB.UnsafeRetrieveAllReceipts(b.GetTestContext(), true, chainConfig.ChainID)
 	Nil(b.T(), err)
 	Equal(b.T(), 2, len(receipts))
 
@@ -88,11 +88,11 @@ func (b BackfillSuite) TestConfirmations() {
 	Nil(b.T(), err)
 
 	// Check that the second batch of events were not added to the database.
-	logs, err = b.testDB.RetrieveAllLogs_Test(b.GetTestContext(), true, chainConfig.ChainID, testContract.Address().String())
+	logs, err = b.testDB.UnsafeRetrieveAllLogs(b.GetTestContext(), true, chainConfig.ChainID, testContract.Address())
 	Nil(b.T(), err)
 	Equal(b.T(), 3, len(logs))
 
-	receipts, err = b.testDB.RetrieveAllReceipts_Test(b.GetTestContext(), true, chainConfig.ChainID)
+	receipts, err = b.testDB.UnsafeRetrieveAllReceipts(b.GetTestContext(), true, chainConfig.ChainID)
 	Nil(b.T(), err)
 	Equal(b.T(), 2, len(receipts))
 }
@@ -156,7 +156,7 @@ func (b BackfillSuite) TestChainBackfill() {
 	}
 
 	// Set up the ChainBackfiller.
-	chainBackfiller, err := backfill.NewChainBackfiller(contracts, b.testDB, simulatedChain, chainConfig)
+	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, simulatedChain, chainConfig)
 	Nil(b.T(), err)
 	// Backfill the chain.
 	lastBlock, err := simulatedChain.BlockNumber(b.GetTestContext())
@@ -167,14 +167,14 @@ func (b BackfillSuite) TestChainBackfill() {
 	// Check that the events were written to the database.
 	for _, contract := range contracts {
 		// Check the storage of logs.
-		logs, err := b.testDB.RetrieveAllLogs_Test(b.GetTestContext(), true, chainConfig.ChainID, contract.Address().String())
+		logs, err := b.testDB.UnsafeRetrieveAllLogs(b.GetTestContext(), true, chainConfig.ChainID, contract.Address())
 		Nil(b.T(), err)
 		// There should be 4 logs. One from `EmitEventA`, one from `EmitEventB`, and two
 		// from `EmitEventAandB`.
 		Equal(b.T(), 4, len(logs))
 	}
 	// Check the storage of receipts.
-	receipts, err := b.testDB.RetrieveAllReceipts_Test(b.GetTestContext(), true, chainConfig.ChainID)
+	receipts, err := b.testDB.UnsafeRetrieveAllReceipts(b.GetTestContext(), true, chainConfig.ChainID)
 	Nil(b.T(), err)
 	// There should be 9 receipts. One from `EmitEventA`, one from `EmitEventB`, and
 	// one from `EmitEventAandB`, for each contract.

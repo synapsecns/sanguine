@@ -82,10 +82,9 @@ func (s Store) RetrieveReceipt(ctx context.Context, txHash common.Hash, chainID 
 	return parsedReceipt, nil
 }
 
-// RetrieveAllReceipts_Test retrieves all receipts. Should only be used for testing.
-//
-//nolint:golint, revive, stylecheck
-func (s Store) RetrieveAllReceipts_Test(ctx context.Context, specific bool, chainID uint32) (receipts []*types.Receipt, err error) {
+// UnsafeRetrieveAllReceipts retrieves all receipts in the database. When `specific` is true, you can specify
+// a chainID to specifically search for. This is only used for testing.
+func (s Store) UnsafeRetrieveAllReceipts(ctx context.Context, specific bool, chainID uint32) (receipts []*types.Receipt, err error) {
 	dbReceipts := []Receipt{}
 	var dbTx *gorm.DB
 	if specific {
