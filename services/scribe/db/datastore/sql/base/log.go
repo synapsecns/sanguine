@@ -5,12 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/db"
 	"sort"
+
+	"github.com/synapsecns/sanguine/agents/db"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // StoreLog stores a log.
@@ -34,21 +36,28 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 			})
 		}
 	}
-	dbTx := s.DB().WithContext(ctx).Create(&Log{
-		ContractAddress: log.Address.String(),
-		ChainID:         chainID,
-		PrimaryTopic:    topics[0],
-		TopicA:          topics[1],
-		TopicB:          topics[2],
-		TopicC:          topics[3],
-		Data:            log.Data,
-		BlockNumber:     log.BlockNumber,
-		TxHash:          log.TxHash.String(),
-		TxIndex:         uint64(log.TxIndex),
-		BlockHash:       log.BlockHash.String(),
-		Index:           uint64(log.Index),
-		Removed:         log.Removed,
-	})
+	dbTx := s.DB().WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: TxHashFieldName}, {Name: IndexFieldName},
+			},
+			DoNothing: true,
+		}).
+		Create(&Log{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			PrimaryTopic:    topics[0],
+			TopicA:          topics[1],
+			TopicB:          topics[2],
+			TopicC:          topics[3],
+			Data:            log.Data,
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+			TxIndex:         uint64(log.TxIndex),
+			BlockHash:       log.BlockHash.String(),
+			Index:           uint64(log.Index),
+			Removed:         log.Removed,
+		})
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store log: %w", dbTx.Error)
@@ -100,14 +109,24 @@ func (s Store) RetrieveLogs(ctx context.Context, txHash common.Hash, chainID uin
 	return logs, nil
 }
 
-// RetrieveAllLogs_Test retrieves all logs in the database. This is only used for testing.
-//
-//nolint:golint, revive, stylecheck
-func (s Store) RetrieveAllLogs_Test(ctx context.Context) (logs []*types.Log, err error) {
+// UnsafeRetrieveAllLogs retrieves all logs in the database. When true, `specific` lets
+// you specify a chainID and contract address to specifically search for. This is only used for testing.
+func (s Store) UnsafeRetrieveAllLogs(ctx context.Context, specific bool, chainID uint32, address common.Address) (logs []*types.Log, err error) {
 	dbLogs := []Log{}
-	dbTx := s.DB().WithContext(ctx).
-		Model(&Log{}).
-		Find(&dbLogs)
+	var dbTx *gorm.DB
+	if specific {
+		dbTx = s.DB().WithContext(ctx).
+			Model(&Log{}).
+			Where(&Log{
+				ChainID:         chainID,
+				ContractAddress: address.String(),
+			}).
+			Find(&dbLogs)
+	} else {
+		dbTx = s.DB().WithContext(ctx).
+			Model(&Log{}).
+			Find(&dbLogs)
+	}
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {

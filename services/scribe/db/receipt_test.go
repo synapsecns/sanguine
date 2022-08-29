@@ -1,12 +1,13 @@
 package db_test
 
 import (
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/scribe/db"
-	"math/big"
 )
 
 func (t *DBSuite) TestStoreRetrieveReceipt() {
@@ -46,6 +47,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 				&randomLogsA[1],
 			},
 			TxHash:           txHashA,
+			ContractAddress:  common.BigToAddress(big.NewInt(gofakeit.Int64())),
 			GasUsed:          gofakeit.Uint64(),
 			BlockNumber:      big.NewInt(int64(gofakeit.Uint32())),
 			TransactionIndex: uint(gofakeit.Uint64()),
@@ -64,6 +66,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 				&randomLogsB[1],
 			},
 			TxHash:           txHashB,
+			ContractAddress:  common.BigToAddress(big.NewInt(gofakeit.Int64())),
 			GasUsed:          gofakeit.Uint64(),
 			BlockNumber:      big.NewInt(int64(gofakeit.Uint32())),
 			TransactionIndex: uint(gofakeit.Uint64()),
@@ -91,7 +94,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 		Equal(t.T(), resA, resB)
 
 		// Ensure RetrieveAllReceipts gets all receipts.
-		allReceipts, err := testDB.RetrieveAllReceipts_Test(t.GetTestContext())
+		allReceipts, err := testDB.UnsafeRetrieveAllReceipts(t.GetTestContext(), false, 0)
 		Nil(t.T(), err)
 		Equal(t.T(), 2, len(allReceipts))
 	})

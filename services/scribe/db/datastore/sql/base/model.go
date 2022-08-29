@@ -16,6 +16,7 @@ func init() {
 	ChainIDFieldName = namer.GetConsistentName("ChainID")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	ContractAddressFieldName = namer.GetConsistentName("ContractAddress")
+	IndexFieldName = namer.GetConsistentName("Index")
 }
 
 var (
@@ -27,6 +28,8 @@ var (
 	BlockNumberFieldName string
 	// ContractAddressFieldName is the address of the contract.
 	ContractAddressFieldName string
+	// IndexFieldName is the index field name.
+	IndexFieldName string
 )
 
 // Log stores the log of an event.
@@ -34,7 +37,7 @@ type Log struct {
 	// ContractAddress is the address of the contract that generated the event
 	ContractAddress string `gorm:"column:contract_address;primaryKey"`
 	// ChainID is the chain id of the contract that generated the event
-	ChainID uint32 `gorm:"chain_id"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
 	// PrimaryTopic is the primary topic of the event. Topics[0]
 	PrimaryTopic sql.NullString `gorm:"primary_topic"`
 	// TopicA is the first topic. Topics[1]
@@ -46,7 +49,7 @@ type Log struct {
 	// Data is the data provided by the contract
 	Data []byte `gorm:"data"`
 	// BlockNumber is the block in which the transaction was included
-	BlockNumber uint64 `gorm:"block_number"`
+	BlockNumber uint64 `gorm:"column:block_number"`
 	// TxHash is the hash of the transaction
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// TxIndex is the index of the transaction in the block
@@ -76,7 +79,7 @@ type Receipt struct {
 	// TxHash is the hash of the transaction
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// ContractAddress is the address of the contract
-	ContractAddress string `gorm:"contract_address"`
+	ContractAddress string `gorm:"column:contract_address"`
 	// GasUsed is the amount of gas used by this transaction alone
 	GasUsed uint64 `gorm:"gas_used"`
 	// BlockHash is the hash of the block in which this transaction was included

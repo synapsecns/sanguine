@@ -1,9 +1,9 @@
 package db_test
 
 import (
-	"github.com/synapsecns/sanguine/services/scribe/db"
 	"math/big"
-	"time"
+
+	"github.com/synapsecns/sanguine/services/scribe/db"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -30,7 +30,6 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		logC := t.MakeRandomLog(txHashC)
 		err = testDB.StoreLog(t.GetTestContext(), logC, chainID+1)
 		Nil(t.T(), err)
-		time.Sleep(1 * time.Second)
 
 		// Ensure the logs from the database match the ones stored.
 		// Check the logs for the two with the same txHash.
@@ -60,7 +59,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		Equal(t.T(), resA, resB)
 
 		// Check if `RetrieveAllLogs` returns all the logs.
-		allLogs, err := testDB.RetrieveAllLogs_Test(t.GetTestContext())
+		allLogs, err := testDB.UnsafeRetrieveAllLogs(t.GetTestContext(), false, 0, common.Address{})
 		Nil(t.T(), err)
 		Equal(t.T(), len(allLogs), 3)
 	})
