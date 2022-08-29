@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	lru "github.com/hashicorp/golang-lru"
-	"github.com/synapsecns/sanguine/ethergo/contracts"
+	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/synapse-node/pkg/evm/client"
 	"golang.org/x/sync/errgroup"
@@ -15,8 +17,12 @@ import (
 
 // ContractBackfiller is a backfiller that fetches logs for a specific contract.
 type ContractBackfiller struct {
-	// contract is the contract to get logs for
-	contract contracts.DeployedContract
+	// mapName is the name used in the config for name->contract
+	mapName string
+	// chainID is the chainID of the chain the contract is deployed on
+	chainID uint32
+	// address is the contract address to get logs for
+	address string
 	// eventDB is the database to store event data in
 	eventDB db.EventDB
 	// client is the client for filtering
@@ -26,7 +32,7 @@ type ContractBackfiller struct {
 }
 
 // NewContractBackfiller creates a new backfiller for a contract.
-func NewContractBackfiller(contract contracts.DeployedContract, eventDB db.EventDB, client client.EVMClient) (*ContractBackfiller, error) {
+func NewContractBackfiller(mapName string, chainID uint32, address string, eventDB db.EventDB, client client.EVMClient) (*ContractBackfiller, error) {
 	// initialize the cache for the txHashes
 	cache, err := lru.New(500)
 	if err != nil {
@@ -34,10 +40,12 @@ func NewContractBackfiller(contract contracts.DeployedContract, eventDB db.Event
 	}
 
 	return &ContractBackfiller{
-		contract: contract,
-		eventDB:  eventDB,
-		client:   client,
-		cache:    cache,
+		mapName: mapName,
+		chainID: chainID,
+		address: address,
+		eventDB: eventDB,
+		client:  client,
+		cache:   cache,
 	}, nil
 }
 
@@ -60,19 +68,36 @@ func (c ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, end
 	// start listening for logs
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
+		// backoff in the case of an error
+		b := &backoff.Backoff{
+			Factor: 2,
+			Jitter: true,
+			Min:    1 * time.Second,
+			Max:    30 * time.Second,
+		}
+		// timeout should always be 0 on the first attempt
+		timeout := time.Duration(0)
 		for {
 			select {
 			case <-ctx.Done():
 				return nil
 			case log := <-logChan:
+				// TODO: add a notification for failure to store
+				// wait the timeout (will be 0 on first attempt)
+				time.Sleep(timeout)
 				// check if the txHash has already been stored in the cache
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
 				}
 				err = c.Store(ctx, log)
 				if err != nil {
-					return fmt.Errorf("could not store data: %w", err)
+					timeout = b.Duration()
+					logger.Warnf("could not store data: %w", err)
+					continue
 				}
+				// if everything works properly, restore timeout to 0
+				timeout = time.Duration(0)
+				b.Reset()
 			case err := <-errChan:
 				return fmt.Errorf("could not get logs: %w", err)
 			case <-doneChan:
@@ -109,7 +134,7 @@ func (c ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
-			err = c.eventDB.StoreLog(groupCtx, *log, uint32(c.contract.ChainID().Uint64()))
+			err = c.eventDB.StoreLog(groupCtx, *log, c.chainID)
 			if err != nil {
 				return fmt.Errorf("could not store log: %w", err)
 			}
@@ -119,7 +144,7 @@ func (c ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 
 	g.Go(func() error {
 		// store the receipt in the db
-		err = c.eventDB.StoreReceipt(groupCtx, *receipt, uint32(c.contract.ChainID().Uint64()))
+		err = c.eventDB.StoreReceipt(groupCtx, *receipt, c.chainID)
 		if err != nil {
 			return fmt.Errorf("could not store receipt: %w", err)
 		}
@@ -135,7 +160,7 @@ func (c ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 		if isPending {
 			return fmt.Errorf("transaction is pending")
 		}
-		err = c.eventDB.StoreEthTx(groupCtx, txn, uint32(c.contract.ChainID().Uint64()))
+		err = c.eventDB.StoreEthTx(groupCtx, txn, c.chainID)
 		if err != nil {
 			return fmt.Errorf("could not store transaction: %w", err)
 		}
@@ -148,7 +173,7 @@ func (c ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 	}
 
 	// store the last indexed block in the db
-	err = c.eventDB.StoreLastIndexed(ctx, c.contract.Address(), uint32(c.contract.ChainID().Uint64()), receipt.BlockNumber.Uint64())
+	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainID, receipt.BlockNumber.Uint64())
 	if err != nil {
 		return fmt.Errorf("could not store last indexed block: %w", err)
 	}
@@ -170,7 +195,7 @@ func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight 
 	doneChan := make(chan bool)
 
 	// start the filterer. This filters the range and sends the logs to the logChan.
-	rangeFilter := NewRangeFilter(c.contract.Address(), c.client, big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
+	rangeFilter := NewRangeFilter(common.HexToAddress(c.address), c.client, big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
 		// start the range filterer, return any errors to an error channel
@@ -212,7 +237,7 @@ func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight 
 // StartHeightForBackfill gets the startHeight for backfilling. This is the maximum
 // of the most recent block for the contract and the startHeight given in the config.
 func (c ContractBackfiller) StartHeightForBackfill(ctx context.Context, givenStart uint64) (startHeight uint64, err error) {
-	lastBlock, err := c.eventDB.RetrieveLastIndexed(ctx, c.contract.Address(), uint32(c.contract.ChainID().Uint64()))
+	lastBlock, err := c.eventDB.RetrieveLastIndexed(ctx, common.HexToAddress(c.address), c.chainID)
 	if err != nil {
 		return 0, fmt.Errorf("could not retrieve last indexed block for contract: %w", err)
 	}

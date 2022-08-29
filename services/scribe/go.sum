@@ -1,4 +1,5 @@
 bazil.org/fuse v0.0.0-20200407214033-5883e5a4b512/go.mod h1:FbcW6z/2VytnFDhZfumh8Ss8zxHE6qpMP5sHTRe0EaM=
+bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a h1:6QCkYok6wNGonv0ya01Ay5uV8zT412p4wm2stFZsUQM=
 bou.ke/monkey v1.0.1/go.mod h1:FgHuK96Rv2Nlf+0u1OOVDpCMdsWyOFmeeketDHE7LIg=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.31.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
@@ -1715,8 +1716,8 @@ github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PK
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/subosito/gotenv v1.2.0 h1:Slr1R9HxAlEKefgq5jn9U+DnETlIUa6HfgEzj0g5d7s=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
-github.com/synapsecns/sanguine/agents v0.0.0-20220824000943-9abcce41dac4 h1:9V1cPBSqJgo5QoZ5Gcx32TmVFEXz1JPAugKQqEIJJ+w=
-github.com/synapsecns/sanguine/agents v0.0.0-20220824000943-9abcce41dac4/go.mod h1:ZIkfPy/nmw5sPvGIX1/D3FF5bDPPha5xjiY9r0FOzBE=
+github.com/synapsecns/sanguine/agents v0.0.2 h1:/LhQNaYfW5RopjyfepAC+0EMDrkdi+n3JDyU/H+9C0A=
+github.com/synapsecns/sanguine/agents v0.0.2/go.mod h1:24YFRxTwdBrHOUV0PWNYfTku1xyCUrF+ikPjKLQfTqw=
 github.com/synapsecns/synapse-node v0.242.1-0.20220523175312-65a2f2613b1f h1:F2+tY8Y1n1Qn77mROlRcqV+k987FJNTwL4k48s4pck0=
 github.com/synapsecns/synapse-node v0.242.1-0.20220523175312-65a2f2613b1f/go.mod h1:5YlKLpGdk5NpjbEguajL2BA8xFvY4EqL1asSpUm8+4o=
 github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
@@ -1939,6 +1940,7 @@ golang.org/x/exp v0.0.0-20200119233911-0405dc783f0a/go.mod h1:2RIsYlXP63K8oxa1u0
 golang.org/x/exp v0.0.0-20200207192155-f17229e696bd/go.mod h1:J/WKrq2StrnmMY6+EHIKF9dgMWnmCNThgcyBT1FY9mM=
 golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6/go.mod h1:3jZMyOhIsHpP37uCMkUooju7aAi5cS1Q23tOzKc+0MU=
 golang.org/x/exp v0.0.0-20200331195152-e8c3332aa8e5/go.mod h1:4M0jN8W1tt0AVLNr8HDosyJCDCDuyL9N9+3m7wDWgKw=
+golang.org/x/exp v0.0.0-20220823124025-807a23277127 h1:S4NrSKDfihhl3+4jSTgwoIevKxX9p7Iv9x++OEIptDo=
 golang.org/x/image v0.0.0-20180708004352-c73c2afc3b81/go.mod h1:ux5Hcp/YLpHSI86hEcLt0YII63i6oz57MZXIpbrjZUs=
 golang.org/x/image v0.0.0-20190227222117-0694c2d4d067/go.mod h1:kZ7UVZpmo3dzQBMxlp+ypCbDeSB+sBbTgSJuh5dn5js=
 golang.org/x/image v0.0.0-20190802002840-cff245a6509b/go.mod h1:FeLwcggjj3mMvU+oOTbSwawSJRM1uh48EjtB4UJZlP0=
