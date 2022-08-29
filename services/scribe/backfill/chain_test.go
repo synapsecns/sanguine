@@ -132,18 +132,6 @@ func (b BackfillSuite) TestChainBackfill() {
 			StartBlock: startBlocks[i],
 		})
 	}
-	// contractConfigs["TestContractA"] = config.ContractConfig{
-	// 	Address:    contracts[0].Address().String(),
-	// 	StartBlock: startBlocks[0],
-	// }
-	// contractConfigs["TestContractB"] = config.ContractConfig{
-	// 	Address:    contracts[1].Address().String(),
-	// 	StartBlock: startBlocks[1],
-	// }
-	// contractConfigs["TestContractC"] = config.ContractConfig{
-	// 	Address:    contracts[2].Address().String(),
-	// 	StartBlock: startBlocks[2],
-	// }
 	chainConfig := config.ChainConfig{
 		ChainID:               chainID,
 		RPCUrl:                "an rpc url is not needed for simulated backends",
