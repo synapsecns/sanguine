@@ -16,8 +16,8 @@ type ContractConfig struct {
 	StartBlock uint64 `toml:"StartBlock"`
 }
 
-// ContractConfigs contains a map of name->contract config.
-type ContractConfigs map[string]ContractConfig
+// ContractConfigs contains a list of ContractConfigs.
+type ContractConfigs []ContractConfig
 
 // IsValid validates the contract configs by asserting no two contracts appear twice.
 // It also calls IsValid on each individual ContractConfig.

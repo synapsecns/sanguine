@@ -3,6 +3,7 @@ package backfill_test
 import (
 	"math/big"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/contracts/testcontract"
@@ -29,11 +30,11 @@ func (b BackfillSuite) TestConfirmations() {
 	receipt, err := simulatedChain.TransactionReceipt(b.GetTestContext(), deployTxHash)
 	Nil(b.T(), err)
 	startBlock := receipt.BlockNumber.Uint64()
-	contractConfigs := make(config.ContractConfigs)
-	contractConfigs["TestContract"] = config.ContractConfig{
+	contractConfigs := config.ContractConfigs{}
+	contractConfigs = append(contractConfigs, config.ContractConfig{
 		Address:    testContract.Address().String(),
 		StartBlock: startBlock,
-	}
+	})
 	chainConfig := config.ChainConfig{
 		ChainID:               4,
 		RPCUrl:                "an rpc url is not needed for simulated backends",
@@ -42,7 +43,7 @@ func (b BackfillSuite) TestConfirmations() {
 	}
 
 	// Set up the ChainBackfiller.
-	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, simulatedChain, chainConfig)
+	chainBackfiller, err := backfill.NewChainBackfiller(4, b.testDB, simulatedChain, chainConfig)
 	Nil(b.T(), err)
 
 	// Emit three events from two transactions.
@@ -97,23 +98,57 @@ func (b BackfillSuite) TestConfirmations() {
 	Equal(b.T(), 2, len(receipts))
 }
 
-// TestChainBackfill tests the ChainBackfiller's ability to backfill a chain.
+// TestChainBackfill tests that the ChainBackfiller can backfill events from a chain.
 func (b BackfillSuite) TestChainBackfill() {
+	chainID := gofakeit.Uint32()
 	// We need to set up multiple deploy managers, one for each contract. We will use
 	// b.manager for the first contract, and create a new ones for the next two.
 	managerB := testutil.NewDeployManager(b.T())
 	managerC := testutil.NewDeployManager(b.T())
 	// Get simulated blockchain, deploy three test contracts, and set up test variables.
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(1))
+	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
 	testContractA, testRefA := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	testContractB, testRefB := managerB.GetTestContract(b.GetTestContext(), simulatedChain)
 	testContractC, testRefC := managerC.GetTestContract(b.GetTestContext(), simulatedChain)
-	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 	// Put the contracts into a slice so we can iterate over them.
 	contracts := []contracts.DeployedContract{testContractA, testContractB, testContractC}
 	// Put the test refs into a slice so we can iterate over them.
 	testRefs := []*testcontract.TestContractRef{testRefA, testRefB, testRefC}
+
+	startBlocks := make([]uint64, len(contracts))
+	for i, contract := range contracts {
+		deployTxHash := contract.DeployTx().Hash()
+		receipt, err := simulatedChain.TransactionReceipt(b.GetTestContext(), deployTxHash)
+		Nil(b.T(), err)
+		startBlocks[i] = receipt.BlockNumber.Uint64()
+	}
+	// Set up the ChainConfig for the backfiller.
+	// contractConfigs := make(config.ContractConfigs)
+	contractConfigs := config.ContractConfigs{}
+	for i, contract := range contracts {
+		contractConfigs = append(contractConfigs, config.ContractConfig{
+			Address:    contract.Address().String(),
+			StartBlock: startBlocks[i],
+		})
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:               chainID,
+		RPCUrl:                "an rpc url is not needed for simulated backends",
+		ConfirmationThreshold: 0,
+		Contracts:             contractConfigs,
+	}
+
+	// Set up the ChainBackfiller.
+	chainBackfiller, err := backfill.NewChainBackfiller(1, b.testDB, simulatedChain, chainConfig)
+	Nil(b.T(), err)
+
+	ChainBackfillTest(b, chainID, contracts, testRefs, simulatedChain, chainBackfiller, chainConfig)
+}
+
+// ChainBackfillTest tests the ChainBackfiller's ability to backfill a chain.
+func ChainBackfillTest(b BackfillSuite, chainID uint32, contracts []contracts.DeployedContract, testRefs []*testcontract.TestContractRef, simulatedChain *simulated.Backend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig) {
+	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 	// Emit events from each contract.
 	for _, testRef := range testRefs {
 		tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
@@ -127,37 +162,6 @@ func (b BackfillSuite) TestChainBackfill() {
 		simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
 	}
 
-	startBlocks := make([]uint64, len(contracts))
-	for i, contract := range contracts {
-		deployTxHash := contract.DeployTx().Hash()
-		receipt, err := simulatedChain.TransactionReceipt(b.GetTestContext(), deployTxHash)
-		Nil(b.T(), err)
-		startBlocks[i] = receipt.BlockNumber.Uint64()
-	}
-	// Set up the ChainConfig for the backfiller.
-	contractConfigs := make(config.ContractConfigs)
-	contractConfigs["TestContractA"] = config.ContractConfig{
-		Address:    testContractA.Address().String(),
-		StartBlock: startBlocks[0],
-	}
-	contractConfigs["TestContractB"] = config.ContractConfig{
-		Address:    testContractB.Address().String(),
-		StartBlock: startBlocks[1],
-	}
-	contractConfigs["TestContractC"] = config.ContractConfig{
-		Address:    testContractC.Address().String(),
-		StartBlock: startBlocks[2],
-	}
-	chainConfig := config.ChainConfig{
-		ChainID:               1,
-		RPCUrl:                "an rpc url is not needed for simulated backends",
-		ConfirmationThreshold: 0,
-		Contracts:             contractConfigs,
-	}
-
-	// Set up the ChainBackfiller.
-	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, simulatedChain, chainConfig)
-	Nil(b.T(), err)
 	// Backfill the chain.
 	lastBlock, err := simulatedChain.BlockNumber(b.GetTestContext())
 	Nil(b.T(), err)

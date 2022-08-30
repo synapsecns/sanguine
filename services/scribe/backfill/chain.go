@@ -13,33 +13,41 @@ import (
 // ChainBackfiller is a backfiller that fetches logs for a chain. It aggregates logs
 // from a slice of ContractBackfillers.
 type ChainBackfiller struct {
+	// chainID is the chain ID of the chain
+	chainID uint32
 	// eventDB is the database to store event data in
 	eventDB db.EventDB
 	// client is the client for filtering
 	client client.EVMClient
 	// contractBackfillers is the list of contract backfillers
 	contractBackfillers []*ContractBackfiller
+	// startHeights is a map from address -> start height
+	startHeights map[string]uint64
 	// chainConfig is the config for the backfiller
 	chainConfig config.ChainConfig
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(eventDB db.EventDB, client client.EVMClient, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
+func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client client.EVMClient, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
 	// initialize the list of contract backfillers
 	contractBackfillers := []*ContractBackfiller{}
-	// initialize each contract backfiller
-	for name, contract := range chainConfig.Contracts {
-		contractBackfiller, err := NewContractBackfiller(name, chainConfig.ChainID, contract.Address, eventDB, client)
+	// initialize each contract backfiller and start heights
+	startHeights := make(map[string]uint64)
+	for _, contract := range chainConfig.Contracts {
+		contractBackfiller, err := NewContractBackfiller(chainConfig.ChainID, contract.Address, eventDB, client)
 		if err != nil {
 			return nil, fmt.Errorf("could not create contract backfiller: %w", err)
 		}
 		contractBackfillers = append(contractBackfillers, contractBackfiller)
+		startHeights[contract.Address] = contract.StartBlock
 	}
 
 	return &ChainBackfiller{
+		chainID:             chainID,
 		eventDB:             eventDB,
 		client:              client,
 		contractBackfillers: contractBackfillers,
+		startHeights:        startHeights,
 		chainConfig:         chainConfig,
 	}, nil
 }
@@ -53,7 +61,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64) error {
 		// capture func literal
 		contractBackfiller := contractBackfiller
 		// get the start height for the backfill
-		startHeight := c.chainConfig.Contracts[contractBackfiller.mapName].StartBlock
+		startHeight := c.startHeights[contractBackfiller.address]
 		// call Backfill concurrently
 		g.Go(func() error {
 			err := contractBackfiller.Backfill(ctx, startHeight, endHeight)
