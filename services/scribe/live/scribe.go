@@ -45,18 +45,18 @@ func (s Scribe) Start(ctx context.Context) error {
 	currentBlocks := make(map[uint32]uint64)
 
 	// backfill each chain
-	g, ctx := errgroup.WithContext(ctx)
+	g, groupCtx := errgroup.WithContext(ctx)
 	for _, chainConfig := range s.config.Chains {
 		// capture func literal
 		chainConfig := chainConfig
 		// start the chain backfiller
-		currentBlock, err := s.clients[chainConfig.ChainID].BlockNumber(ctx)
+		currentBlock, err := s.clients[chainConfig.ChainID].BlockNumber(groupCtx)
 		currentBlocks[chainConfig.ChainID] = currentBlock
 		if err != nil {
 			return fmt.Errorf("could not get current block number: %w", err)
 		}
 		g.Go(func() error {
-			err = s.scribeBackfiller.ChainBackfillers[chainConfig.ChainID].Backfill(ctx, currentBlock)
+			err = s.scribeBackfiller.ChainBackfillers[chainConfig.ChainID].Backfill(groupCtx, currentBlock)
 			if err != nil {
 				return fmt.Errorf("could not backfill: %w", err)
 			}
@@ -66,6 +66,33 @@ func (s Scribe) Start(ctx context.Context) error {
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
+
+	g, groupCtx = errgroup.WithContext(ctx)
+	// start listening for new blocks and backfilling
+	for _, chainConfig := range s.config.Chains {
+		// capture func literal
+		chainConfig := chainConfig
+		g.Go(func() error {
+			for {
+				newBlock, err := s.clients[chainConfig.ChainID].BlockNumber(groupCtx)
+				if err != nil {
+					return fmt.Errorf("could not get current block number: %w", err)
+				}
+				if newBlock > currentBlocks[chainConfig.ChainID] {
+					err = s.scribeBackfiller.ChainBackfillers[chainConfig.ChainID].Backfill(groupCtx, newBlock)
+					if err != nil {
+						return fmt.Errorf("could not backfill: %w", err)
+					}
+					currentBlocks[chainConfig.ChainID] = newBlock
+				}
+			}
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("could not backfill: %w", err)
+	}
+	fmt.Println("never")
 
 	return nil
 }

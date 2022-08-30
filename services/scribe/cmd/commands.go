@@ -4,6 +4,8 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+	"os"
+
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jftuga/termsize"
@@ -12,7 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql"
 	"github.com/urfave/cli/v2"
-	"os"
 )
 
 //go:embed cmd.md
@@ -52,6 +53,9 @@ var backfillCommand = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("could not create temp dir: %w", err)
 		}
+
+		fmt.Println("temp:")
+		fmt.Println(tempDir)
 
 		db, err := sql.NewStoreFromConfig(c.Context, dbcommon.Sqlite, tempDir)
 		if err != nil {

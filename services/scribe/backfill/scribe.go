@@ -58,22 +58,22 @@ func NewScribeBackfiller(eventDB db.EventDB, clients map[uint32]ScribeBackend, c
 }
 
 // Backfill iterates over each chain backfiller and calls Backfill concurrently on each one.
-func (s ScribeBackfiller) Backfill(ctx context.Context) error {
+func (s ScribeBackfiller) Backfill(groupCtx context.Context) error {
 	// initialize the errgroup
-	g, ctx := errgroup.WithContext(ctx)
+	g, groupCtx := errgroup.WithContext(groupCtx)
 
 	// iterate over each chain backfiller
 	for _, chainBackfiller := range s.ChainBackfillers {
 		// capture func literal
 		chainBackfiller := chainBackfiller
 		// get the end height for the backfill
-		currentBlock, err := s.clients[chainBackfiller.chainID].BlockNumber(ctx)
+		currentBlock, err := s.clients[chainBackfiller.chainID].BlockNumber(groupCtx)
 		if err != nil {
 			return fmt.Errorf("could not get current block number: %w", err)
 		}
 		// call Backfill concurrently
 		g.Go(func() error {
-			err := chainBackfiller.Backfill(ctx, currentBlock)
+			err := chainBackfiller.Backfill(groupCtx, currentBlock)
 			if err != nil {
 				return fmt.Errorf("could not backfill chain: %w", err)
 			}

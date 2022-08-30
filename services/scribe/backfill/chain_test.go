@@ -40,7 +40,6 @@ func (b BackfillSuite) TestChainBackfill() {
 		startBlocks[i] = receipt.BlockNumber.Uint64()
 	}
 	// Set up the ChainConfig for the backfiller.
-	// contractConfigs := make(config.ContractConfigs)
 	contractConfigs := config.ContractConfigs{}
 	for i, contract := range contracts {
 		contractConfigs = append(contractConfigs, config.ContractConfig{

@@ -14,12 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 )
 
-// TestScribeConfirmations tests that data will not be added if a specified amount of blocks
-// have not passed before the block that the data belongs to.
-func (b BackfillSuite) TestScribeConfirmations() {
-	b.T().Skip("TODO")
-}
-
 // TestScribeBackfill tests backfilling data from all chains.
 func (b BackfillSuite) TestScribeBackfill() {
 	// Set up 3 chains, and the simulated backends for each.

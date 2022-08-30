@@ -52,9 +52,9 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 }
 
 // Backfill iterates over each contract backfiller and calls Backfill concurrently on each one.
-func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64) error {
+func (c ChainBackfiller) Backfill(groupCtx context.Context, endHeight uint64) error {
 	// initialize the errgroup
-	g, ctx := errgroup.WithContext(ctx)
+	g, groupCtx := errgroup.WithContext(groupCtx)
 	// iterate over each contract backfiller
 	for _, contractBackfiller := range c.contractBackfillers {
 		// capture func literal
@@ -63,7 +63,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64) error {
 		startHeight := c.startHeights[contractBackfiller.address]
 		// call Backfill concurrently
 		g.Go(func() error {
-			err := contractBackfiller.Backfill(ctx, startHeight, endHeight)
+			err := contractBackfiller.Backfill(groupCtx, startHeight, endHeight)
 			if err != nil {
 				return fmt.Errorf("could not backfill contract: %w", err)
 			}

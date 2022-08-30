@@ -50,9 +50,9 @@ func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, c
 // receipt, and the last indexed block for hte contract in the EventDB.
 //
 //nolint:gocognit, cyclop
-func (c ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, endHeight uint64) error {
+func (c ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint64, endHeight uint64) error {
 	// initialize the channel for the logs
-	startHeight, err := c.StartHeightForBackfill(ctx, givenStart)
+	startHeight, err := c.StartHeightForBackfill(groupCtx, givenStart)
 	if err != nil {
 		return fmt.Errorf("could not get start height: %w", err)
 	}
@@ -60,9 +60,9 @@ func (c ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, end
 	if startHeight != 0 {
 		startHeight--
 	}
-	logChan, errChan, doneChan := c.GetLogs(ctx, startHeight, endHeight)
+	logChan, errChan, doneChan := c.GetLogs(groupCtx, startHeight, endHeight)
 	// start listening for logs
-	g, ctx := errgroup.WithContext(ctx)
+	g, groupCtx := errgroup.WithContext(groupCtx)
 	g.Go(func() error {
 		// backoff in the case of an error
 		b := &backoff.Backoff{
@@ -75,7 +75,7 @@ func (c ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, end
 		timeout := time.Duration(0)
 		for {
 			select {
-			case <-ctx.Done():
+			case <-groupCtx.Done():
 				return nil
 			case log := <-logChan:
 				// TODO: add a notification for failure to store
@@ -85,7 +85,7 @@ func (c ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, end
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
 				}
-				err = c.Store(ctx, log)
+				err = c.Store(groupCtx, log)
 				if err != nil {
 					timeout = b.Duration()
 					logger.Warnf("could not store data: %w", err)
