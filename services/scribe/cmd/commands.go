@@ -1,0 +1,85 @@
+package cmd
+
+import (
+	// used to embed markdown.
+	_ "embed"
+	"fmt"
+	markdown "github.com/MichaelMure/go-term-markdown"
+	"github.com/jftuga/termsize"
+	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql"
+	"github.com/synapsecns/synapse-node/pkg/evm"
+	"github.com/synapsecns/synapse-node/pkg/evm/client"
+	"github.com/urfave/cli/v2"
+	"os"
+)
+
+//go:embed cmd.md
+var help string
+
+// infoComand gets info about using the scribe service.
+var infoCommand = &cli.Command{
+	Name:        "info",
+	Description: "learn how to use scribe cli",
+	Action: func(c *cli.Context) error {
+		fmt.Println(string(markdown.Render(help, termsize.Width(), 6)))
+		return nil
+	},
+}
+
+var configFlag = &cli.StringFlag{
+	Name:      "config",
+	Usage:     "--config /Users/synapsecns/config.toml",
+	TakesFile: true,
+}
+
+var backfillCommand = &cli.Command{
+	Name:        "backfill",
+	Description: "backfills up to a block and then halts",
+	Usage:       "backfill --config /path/to/config.toml",
+	Flags:       []cli.Flag{configFlag},
+	Action: func(c *cli.Context) error {
+		decodeConfig, err := config.DecodeConfig(c.String(configFlag.Name))
+		if err != nil {
+			return fmt.Errorf("could not decode config: %w", err)
+
+		}
+
+		// TODO: this should be done in a node folder
+		// temporary for now, TODO add a full config
+		tempDir, err := os.MkdirTemp("", "")
+		if err != nil {
+			return fmt.Errorf("could not create temp dir: %w", err)
+		}
+
+		db, err := sql.NewStoreFromConfig(c.Context, dbcommon.Sqlite, tempDir)
+		if err != nil {
+			return fmt.Errorf("could not create store: %w", err)
+		}
+
+		var clients []client.EVMClient
+		// TODO: should be resistant to errors on startup from a single chain
+		for _, client := range decodeConfig.Chains {
+			evmClient, err := evm.NewFromURL(c.Context, client.RPCUrl)
+			if err != nil {
+				return fmt.Errorf("could not start client for %s", client.RPCUrl)
+			}
+
+			clients = append(clients, evmClient)
+		}
+
+		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, *decodeConfig)
+		if err != nil {
+			return fmt.Errorf("could not create scribe backfiller: %w", err)
+		}
+
+		err = scribeBackfiller.Backfill(c.Context)
+		if err != nil {
+			return fmt.Errorf("could not backfill backfiller: %w", err)
+		}
+
+		return nil
+	},
+}
