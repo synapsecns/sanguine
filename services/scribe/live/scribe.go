@@ -38,29 +38,33 @@ func NewScribe(eventDB db.EventDB, clients map[uint32]backfill.ScribeBackend, co
 	}, nil
 }
 
-// Start starts the scribe.
+// Start starts the scribe. This works by starting a backfill and recording what the
+// current block, which it will backfill to. Then, each chain will listen for new block
+// heights and backfill to that height.
 func (s Scribe) Start(ctx context.Context) error {
-	for _, chainConfig := range s.config.Chains {
-		g, ctx := errgroup.WithContext(ctx)
-		// start the chain backfiller
-		g.Go(func() error {
-			currentBlock, err := s.clients[chainConfig.ChainID].BlockNumber(ctx)
-			if err != nil {
-				return fmt.Errorf("could not get current block number: %w", err)
-			}
-			err = s.scribeBackfiller.chainBackfillers[chainConfig.ChainID].Backfill(ctx, currentBlock)
-		})
-
-	}
-
-	// for each chain, get the current block
 	currentBlocks := make(map[uint32]uint64)
+
+	// backfill each chain
+	g, ctx := errgroup.WithContext(ctx)
 	for _, chainConfig := range s.config.Chains {
+		// capture func literal
+		chainConfig := chainConfig
+		// start the chain backfiller
 		currentBlock, err := s.clients[chainConfig.ChainID].BlockNumber(ctx)
-		if err != nil {
-			return fmt.Errorf("could not get current block number %w", err)
-		}
 		currentBlocks[chainConfig.ChainID] = currentBlock
+		if err != nil {
+			return fmt.Errorf("could not get current block number: %w", err)
+		}
+		g.Go(func() error {
+			err = s.scribeBackfiller.ChainBackfillers[chainConfig.ChainID].Backfill(ctx, currentBlock)
+			if err != nil {
+				return fmt.Errorf("could not backfill: %w", err)
+			}
+			return nil
+		})
+	}
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("could not backfill: %w", err)
 	}
 
 	return nil

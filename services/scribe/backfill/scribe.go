@@ -21,8 +21,8 @@ type ScribeBackfiller struct {
 	eventDB db.EventDB
 	// clients is a mapping of chain IDs -> clients
 	clients map[uint32]ScribeBackend
-	// chainBackfillers is a mapping of chain IDs -> chain backfillers
-	chainBackfillers map[uint32]*ChainBackfiller
+	// ChainBackfillers is a mapping of chain IDs -> chain backfillers
+	ChainBackfillers map[uint32]*ChainBackfiller
 	// config is the config for the backfiller
 	config config.Config
 }
@@ -52,7 +52,7 @@ func NewScribeBackfiller(eventDB db.EventDB, clients map[uint32]ScribeBackend, c
 	return &ScribeBackfiller{
 		eventDB:          eventDB,
 		clients:          clientsMap,
-		chainBackfillers: chainBackfillers,
+		ChainBackfillers: chainBackfillers,
 		config:           config,
 	}, nil
 }
@@ -63,7 +63,7 @@ func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	// iterate over each chain backfiller
-	for _, chainBackfiller := range s.chainBackfillers {
+	for _, chainBackfiller := range s.ChainBackfillers {
 		// capture func literal
 		chainBackfiller := chainBackfiller
 		// get the end height for the backfill
