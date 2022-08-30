@@ -11,7 +11,6 @@ import (
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/db"
-	"github.com/synapsecns/synapse-node/pkg/evm/client"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -24,13 +23,13 @@ type ContractBackfiller struct {
 	// eventDB is the database to store event data in
 	eventDB db.EventDB
 	// client is the client for filtering
-	client client.EVMClient
+	client ScribeBackend
 	// cache is a cache for txHashes
 	cache *lru.Cache
 }
 
 // NewContractBackfiller creates a new backfiller for a contract.
-func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client client.EVMClient) (*ContractBackfiller, error) {
+func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client ScribeBackend) (*ContractBackfiller, error) {
 	// initialize the cache for the txHashes
 	cache, err := lru.New(500)
 	if err != nil {
