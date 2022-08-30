@@ -124,7 +124,6 @@ func (b BackfillSuite) TestChainBackfill() {
 		startBlocks[i] = receipt.BlockNumber.Uint64()
 	}
 	// Set up the ChainConfig for the backfiller.
-	// contractConfigs := make(config.ContractConfigs)
 	contractConfigs := config.ContractConfigs{}
 	for i, contract := range contracts {
 		contractConfigs = append(contractConfigs, config.ContractConfig{
@@ -140,7 +139,7 @@ func (b BackfillSuite) TestChainBackfill() {
 	}
 
 	// Set up the ChainBackfiller.
-	chainBackfiller, err := backfill.NewChainBackfiller(1, b.testDB, simulatedChain, chainConfig)
+	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChain, chainConfig)
 	Nil(b.T(), err)
 
 	ChainBackfillTest(b, chainID, contracts, testRefs, simulatedChain, chainBackfiller, chainConfig)
