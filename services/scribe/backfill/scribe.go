@@ -3,6 +3,7 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum"
@@ -114,3 +115,5 @@ type ScribeBackend interface {
 	// a subscription immediately, which can be used to stream the found events.
 	SubscribeFilterLogs(ctx context.Context, query ethereum.FilterQuery, ch chan<- types.Log) (ethereum.Subscription, error)
 }
+
+var _ ScribeBackend = simulated.Backend{}

@@ -98,8 +98,13 @@ func (b BackfillSuite) TestScribeBackfill() {
 		chainBackfillers = append(chainBackfillers, chainBackfiller)
 	}
 
+	scribeBackends := make([]backfill.ScribeBackend, len(simulatedBackends))
+	for i, backend := range simulatedBackends {
+		scribeBackends[i] = backend
+	}
+
 	// Set up the scribe backfiller.
-	scribeBackfiller, err := backfill.NewScribeBackfiller(b.testDB, simulatedBackends, scribeConfig)
+	scribeBackfiller, err := backfill.NewScribeBackfiller(b.testDB, scribeBackends, scribeConfig)
 
 	// Run the backfill test for each chain.
 	for i, chainBackfiller := range chainBackfillers {
