@@ -34,7 +34,7 @@ func NewContractLivefiller(chainID uint32, address string, eventDB db.EventDB, c
 	// initialize the cache for the txHashes
 	cache, err := lru.New(500)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not create cache: %w", err)
 	}
 
 	return &ContractLivefiller{
