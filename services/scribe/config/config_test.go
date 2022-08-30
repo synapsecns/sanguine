@@ -14,9 +14,8 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 	testConfig := config.Config{
 		Chains: config.ChainConfigs{
 			config.ChainConfig{
-				ChainID:               chainID,
-				RPCUrl:                gofakeit.URL(),
-				ConfirmationThreshold: gofakeit.Uint32(),
+				ChainID: chainID,
+				RPCUrl:  gofakeit.URL(),
 				Contracts: config.ContractConfigs{
 					config.ContractConfig{
 						Address:    utils.NewMockAddress().String(),
@@ -29,9 +28,8 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 				},
 			},
 			config.ChainConfig{
-				ChainID:               chainID + 1,
-				RPCUrl:                gofakeit.URL(),
-				ConfirmationThreshold: gofakeit.Uint32(),
+				ChainID: chainID + 1,
+				RPCUrl:  gofakeit.URL(),
 				Contracts: config.ContractConfigs{
 					config.ContractConfig{
 						Address:    utils.NewMockAddress().String(),

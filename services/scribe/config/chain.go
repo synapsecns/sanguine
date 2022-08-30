@@ -13,8 +13,6 @@ type ChainConfig struct {
 	ChainID uint32 `toml:"ChainID"`
 	// RPCUrl is the URL of the chain's RPC server.
 	RPCUrl string `toml:"RPCUrl"`
-	// ConfirmationThreshold is the number of blocks to wait before indexing events.
-	ConfirmationThreshold uint32 `toml:"ConfirmationThreshold"`
 	// Contracts stores all the contract information for the chain.
 	Contracts ContractConfigs `toml:"Contracts"`
 }

@@ -3,8 +3,9 @@ package backfill
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -27,7 +28,7 @@ type ScribeBackfiller struct {
 }
 
 // NewScribeBackfiller creates a new backfiller for the scribe.
-func NewScribeBackfiller(eventDB db.EventDB, clients []ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
+func NewScribeBackfiller(eventDB db.EventDB, clients map[uint32]ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
 	// set up the clients mapping
 	clientsMap := make(map[uint32]ScribeBackend)
 	for _, client := range clients {
@@ -70,13 +71,9 @@ func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("could not get current block number: %w", err)
 		}
-		confirmationThreshold := s.config.Chains[chainBackfiller.chainID].ConfirmationThreshold
-		if uint32(currentBlock) < confirmationThreshold {
-			return fmt.Errorf("current block number %d is less than confirmation threshold %d", currentBlock, s.config.Chains[chainBackfiller.chainID].ConfirmationThreshold)
-		}
 		// call Backfill concurrently
 		g.Go(func() error {
-			err := chainBackfiller.Backfill(ctx, currentBlock-uint64(confirmationThreshold))
+			err := chainBackfiller.Backfill(ctx, currentBlock)
 			if err != nil {
 				return fmt.Errorf("could not backfill chain: %w", err)
 			}
