@@ -88,6 +88,7 @@ func (s ScribeBackfiller) Backfill(groupCtx context.Context) error {
 	return nil
 }
 
+// ScribeBackend is the set of functions that the scribe needs from a client.
 type ScribeBackend interface {
 	// ChainID gets the chain id from the rpc server
 	ChainID(ctx context.Context) (*big.Int, error)

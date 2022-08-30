@@ -30,19 +30,19 @@ func NewLiveSuite(tb testing.TB) *LiveSuite {
 	}
 }
 
-func (b *LiveSuite) SetupTest() {
-	b.TestSuite.SetupTest()
+func (l *LiveSuite) SetupTest() {
+	l.TestSuite.SetupTest()
 
-	sqliteStore, err := sqlite.NewSqliteStore(b.GetTestContext(), filet.TmpDir(b.T(), ""))
-	Nil(b.T(), err)
+	sqliteStore, err := sqlite.NewSqliteStore(l.GetTestContext(), filet.TmpDir(l.T(), ""))
+	Nil(l.T(), err)
 
-	b.testDB = sqliteStore
+	l.testDB = sqliteStore
 
-	b.manager = testutil.NewDeployManager(b.T())
+	l.manager = testutil.NewDeployManager(l.T())
 
-	b.wallet, err = wallet.FromRandom()
-	Nil(b.T(), err)
-	b.signer = localsigner.NewSigner(b.wallet.PrivateKey())
+	l.wallet, err = wallet.FromRandom()
+	Nil(l.T(), err)
+	l.signer = localsigner.NewSigner(l.wallet.PrivateKey())
 }
 
 // TestLiveSuite tests the live suite.

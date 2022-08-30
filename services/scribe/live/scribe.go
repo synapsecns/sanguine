@@ -41,6 +41,8 @@ func NewScribe(eventDB db.EventDB, clients map[uint32]backfill.ScribeBackend, co
 // Start starts the scribe. This works by starting a backfill and recording what the
 // current block, which it will backfill to. Then, each chain will listen for new block
 // heights and backfill to that height.
+//
+//nolint:cyclop
 func (s Scribe) Start(ctx context.Context) error {
 	currentBlocks := make(map[uint32]uint64)
 
