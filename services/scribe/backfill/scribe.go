@@ -42,7 +42,7 @@ func NewScribeBackfiller(eventDB db.EventDB, clients map[uint32]ScribeBackend, c
 	chainBackfillers := map[uint32]*ChainBackfiller{}
 	// initialize each chain backfiller
 	for _, chainConfig := range config.Chains {
-		chainBackfiller, err := NewChainBackfiller(chainConfig.ChainID, eventDB, clients[chainConfig.ChainID], chainConfig)
+		chainBackfiller, err := NewChainBackfiller(chainConfig.ChainID, eventDB, clientsMap[chainConfig.ChainID], chainConfig)
 		if err != nil {
 			return nil, fmt.Errorf("could not create chain backfiller: %w", err)
 		}
