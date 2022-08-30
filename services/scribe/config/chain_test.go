@@ -13,7 +13,7 @@ func chainConfigFixture() config.ChainConfig {
 		RPCUrl:                gofakeit.URL(),
 		ConfirmationThreshold: gofakeit.Uint32(),
 		Contracts: config.ContractConfigs{
-			"a": config.ContractConfig{
+			config.ContractConfig{
 				Address:    utils.NewMockAddress().String(),
 				StartBlock: gofakeit.Uint64(),
 			},

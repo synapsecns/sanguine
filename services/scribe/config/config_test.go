@@ -18,11 +18,11 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 				RPCUrl:                gofakeit.URL(),
 				ConfirmationThreshold: gofakeit.Uint32(),
 				Contracts: config.ContractConfigs{
-					"a": config.ContractConfig{
+					config.ContractConfig{
 						Address:    utils.NewMockAddress().String(),
 						StartBlock: gofakeit.Uint64(),
 					},
-					"b": config.ContractConfig{
+					config.ContractConfig{
 						Address:    utils.NewMockAddress().String(),
 						StartBlock: gofakeit.Uint64(),
 					},
@@ -33,7 +33,7 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 				RPCUrl:                gofakeit.URL(),
 				ConfirmationThreshold: gofakeit.Uint32(),
 				Contracts: config.ContractConfigs{
-					"a": config.ContractConfig{
+					config.ContractConfig{
 						Address:    utils.NewMockAddress().String(),
 						StartBlock: gofakeit.Uint64(),
 					},

@@ -30,7 +30,7 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 		StartBlock: 0,
 	}
 
-	backfiller, err := backfill.NewContractBackfiller("test", 3, contractConfig.Address, b.testDB, simulatedChain)
+	backfiller, err := backfill.NewContractBackfiller(3, contractConfig.Address, b.testDB, simulatedChain)
 	Nil(b.T(), err)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
@@ -111,7 +111,7 @@ func (b BackfillSuite) TestContractBackfill() {
 		StartBlock: 0,
 	}
 
-	backfiller, err := backfill.NewContractBackfiller("test", 142, contractConfig.Address, b.testDB, simulatedChain)
+	backfiller, err := backfill.NewContractBackfiller(142, contractConfig.Address, b.testDB, simulatedChain)
 	Nil(b.T(), err)
 
 	// Emit events for the backfiller to read.
