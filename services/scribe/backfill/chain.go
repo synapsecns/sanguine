@@ -6,7 +6,6 @@ import (
 
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
-	"github.com/synapsecns/synapse-node/pkg/evm/client"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -18,7 +17,7 @@ type ChainBackfiller struct {
 	// eventDB is the database to store event data in
 	eventDB db.EventDB
 	// client is the client for filtering
-	client client.EVMClient
+	client ScribeBackend
 	// contractBackfillers is the list of contract backfillers
 	contractBackfillers []*ContractBackfiller
 	// startHeights is a map from address -> start height
@@ -28,7 +27,7 @@ type ChainBackfiller struct {
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client client.EVMClient, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
+func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
 	// initialize the list of contract backfillers
 	contractBackfillers := []*ContractBackfiller{}
 	// initialize each contract backfiller and start heights

@@ -140,7 +140,7 @@ func (b BackfillSuite) TestChainBackfill() {
 	}
 
 	// Set up the ChainBackfiller.
-	chainBackfiller, err := backfill.NewChainBackfiller(1, b.testDB, simulatedChain, chainConfig)
+	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChain, chainConfig)
 	Nil(b.T(), err)
 
 	ChainBackfillTest(b, chainID, contracts, testRefs, simulatedChain, chainBackfiller, chainConfig)

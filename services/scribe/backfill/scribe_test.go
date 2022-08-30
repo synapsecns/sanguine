@@ -86,6 +86,9 @@ func (b BackfillSuite) TestScribeBackfill() {
 		}
 		allChainConfigs = append(allChainConfigs, chainConfig)
 	}
+	scribeConfig := config.Config{
+		Chains: allChainConfigs,
+	}
 
 	// Set up all chain backfillers.
 	chainBackfillers := []*backfill.ChainBackfiller{}
@@ -94,6 +97,9 @@ func (b BackfillSuite) TestScribeBackfill() {
 		Nil(b.T(), err)
 		chainBackfillers = append(chainBackfillers, chainBackfiller)
 	}
+
+	// Set up the scribe backfiller.
+	scribeBackfiller, err := backfill.NewScribeBackfiller(b.testDB, simulatedBackends, scribeConfig)
 
 	// Run the backfill test for each chain.
 	for i, chainBackfiller := range chainBackfillers {
