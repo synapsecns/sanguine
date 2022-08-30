@@ -5,13 +5,12 @@ import (
 	_ "embed"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jftuga/termsize"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql"
-	"github.com/synapsecns/synapse-node/pkg/evm"
-	"github.com/synapsecns/synapse-node/pkg/evm/client"
 	"github.com/urfave/cli/v2"
 	"os"
 )
@@ -59,15 +58,15 @@ var backfillCommand = &cli.Command{
 			return fmt.Errorf("could not create store: %w", err)
 		}
 
-		var clients []client.EVMClient
+		clients := make(map[uint32]backfill.ScribeBackend)
 		// TODO: should be resistant to errors on startup from a single chain
 		for _, client := range decodeConfig.Chains {
-			evmClient, err := evm.NewFromURL(c.Context, client.RPCUrl)
+			backendClient, err := ethclient.DialContext(c.Context, client.RPCUrl)
 			if err != nil {
 				return fmt.Errorf("could not start client for %s", client.RPCUrl)
 			}
 
-			clients = append(clients, evmClient)
+			clients[client.ChainID] = backendClient
 		}
 
 		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, *decodeConfig)
