@@ -59,15 +59,17 @@ func (l LiveSuite) TestLive() {
 	scribe, err := live.NewScribe(l.testDB, clients, scribeConfig)
 	Nil(l.T(), err)
 
-	// Start the scribe.
-	go func() {
-		err := scribe.Start(l.GetTestContext())
-		Nil(l.T(), err)
-	}()
+	// // Start the scribe.
+	// go func() {
+	// 	err := scribe.Start(l.GetTestContext())
+	// 	Nil(l.T(), err)
+	// }()
 
-	time.Sleep(3 * time.Second)
-	_ = transactOpts
-	_ = testRefs
+	// time.Sleep(3 * time.Second)
+
+	err = scribe.ProcessRange(l.GetTestContext(), chainID)
+	Nil(l.T(), err)
+
 	// Produce events for the live scribe to record.
 	for _, testRef := range testRefs {
 		tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))

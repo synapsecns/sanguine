@@ -101,11 +101,10 @@ func (b BackfillSuite) TestScribeBackfill() {
 	// Set up the scribe backfiller.
 	scribeBackfiller, err := backfill.NewScribeBackfiller(b.testDB, scribeBackends, scribeConfig)
 	Nil(b.T(), err)
-	_ = scribeBackfiller
 
 	// Run the backfill test for each chain.
 	for i, chainBackfiller := range chainBackfillers {
-		ChainBackfillTest(b, chains[i], allDeployedContracts[i], allContractRefs[i], simulatedBackends[i], chainBackfiller, allChainConfigs[i], false)
+		EmitEventsForAChain(b, chains[i], allDeployedContracts[i], allContractRefs[i], simulatedBackends[i], chainBackfiller, allChainConfigs[i], false)
 	}
 
 	// Run the scribe's backfill.

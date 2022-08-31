@@ -117,7 +117,6 @@ func (c ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 	if err != nil {
 		return fmt.Errorf("could not get transaction receipt for txHash: %w", err)
 	}
-
 	// parallelize storing logs, receipts, and transactions
 	g, groupCtx := errgroup.WithContext(ctx)
 	if err != nil {

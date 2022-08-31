@@ -57,11 +57,12 @@ func (b BackfillSuite) TestChainBackfill() {
 	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChain, chainConfig)
 	Nil(b.T(), err)
 
-	ChainBackfillTest(b, chainID, contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)
+	EmitEventsForAChain(b, chainID, contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)
 }
 
-// ChainBackfillTest tests the ChainBackfiller's ability to backfill a chain.
-func ChainBackfillTest(b BackfillSuite, chainID uint32, contracts []contracts.DeployedContract, testRefs []*testcontract.TestContractRef, simulatedChain *simulated.Backend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig, backfill bool) {
+// EmitEventsForAChain emits events for a chain, and if `backfill` is set to true,
+// will store the events and check their existence in the database.
+func EmitEventsForAChain(b BackfillSuite, chainID uint32, contracts []contracts.DeployedContract, testRefs []*testcontract.TestContractRef, simulatedChain *simulated.Backend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig, backfill bool) {
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 	// Emit events from each contract.
 	for _, testRef := range testRefs {

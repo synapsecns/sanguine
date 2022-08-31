@@ -108,10 +108,6 @@ type ScribeBackend interface {
 	//
 	// TODO(karalabe): Deprecate when the subscription one can return past data too.
 	FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error)
-
-	// SubscribeFilterLogs creates a background log filtering operation, returning
-	// a subscription immediately, which can be used to stream the found events.
-	SubscribeFilterLogs(ctx context.Context, query ethereum.FilterQuery, ch chan<- types.Log) (ethereum.Subscription, error)
 }
 
 var _ ScribeBackend = simulated.Backend{}

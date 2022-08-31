@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
@@ -32,11 +31,19 @@ type RangeFilter struct {
 	logs chan *LogInfo
 	// filterer contains the interface used to fetch logs for the given contract. Logs are fteched
 	// for contractAddress
-	filterer bind.ContractFilterer
+	filterer FilterLogs
 	// contractAddress is the contractAddress that logs are fetched for
 	contractAddress ethCommon.Address
 	// done is whether or not the RangeFilter has completed. It cannot be restarted and the object must be recreated
 	done bool
+}
+
+type FilterLogs interface {
+	// FilterLogs executes a log filter operation, blocking during execution and
+	// returning all the results in one batch.
+	//
+	// TODO(karalabe): Deprecate when the subscription one can return past data too.
+	FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error)
 }
 
 // bufferSize is how many ranges ahead should be fetched.
@@ -52,7 +59,7 @@ var minBackoff = 1 * time.Second
 var maxBackoff = 30 * time.Second
 
 // NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
-func NewRangeFilter(address ethCommon.Address, filterer bind.ContractFilterer, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
+func NewRangeFilter(address ethCommon.Address, filterer FilterLogs, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
 	return &RangeFilter{
 		iterator:        common.NewChunkIterator(startBlock, endBlock, chunkSize, reverse),
 		logs:            make(chan *LogInfo, bufferSize),

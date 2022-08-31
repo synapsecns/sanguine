@@ -3,7 +3,9 @@ package live
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
@@ -44,48 +46,38 @@ func NewScribe(eventDB db.EventDB, clients map[uint32]backfill.ScribeBackend, co
 //
 //nolint:cyclop
 func (s Scribe) Start(ctx context.Context) error {
-	currentBlocks := make(map[uint32]uint64)
-
+	refreshRate := s.config.RefreshRate
+	if refreshRate == 0 {
+		refreshRate = 1
+	}
 	// backfill each chain
 	g, groupCtx := errgroup.WithContext(ctx)
 	for _, chainConfig := range s.config.Chains {
 		// capture func literal
 		chainConfig := chainConfig
-		// start the chain backfiller
-		currentBlock, err := s.clients[chainConfig.ChainID].BlockNumber(groupCtx)
-		currentBlocks[chainConfig.ChainID] = currentBlock
-		if err != nil {
-			return fmt.Errorf("could not get current block number: %w", err)
-		}
 		g.Go(func() error {
-			err = s.scribeBackfiller.ChainBackfillers[chainConfig.ChainID].Backfill(groupCtx, currentBlock)
-			if err != nil {
-				return fmt.Errorf("could not backfill: %w", err)
+			// backoff in case of an error
+			b := &backoff.Backoff{
+				Factor: 2,
+				Jitter: true,
+				Min:    1 * time.Second,
+				Max:    30 * time.Second,
 			}
-			return nil
-		})
-	}
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("could not backfill: %w", err)
-	}
-
-	g, groupCtx = errgroup.WithContext(ctx)
-	// start listening for new blocks and backfilling
-	for _, chainConfig := range s.config.Chains {
-		// capture func literal
-		chainConfig := chainConfig
-		g.Go(func() error {
+			// timeout should always be 0 on the first attempt
+			timeout := time.Duration(0)
 			for {
-				newBlock, err := s.clients[chainConfig.ChainID].BlockNumber(groupCtx)
-				if err != nil {
-					return fmt.Errorf("could not get current block number: %w", err)
-				}
-				if newBlock > currentBlocks[chainConfig.ChainID] {
-					err = s.scribeBackfiller.ChainBackfillers[chainConfig.ChainID].Backfill(groupCtx, newBlock)
+				select {
+				case <-groupCtx.Done():
+					return groupCtx.Err()
+				case <-time.After(timeout):
+					err := s.processRange(groupCtx, chainConfig.ChainID)
 					if err != nil {
-						return fmt.Errorf("could not backfill: %w", err)
+						timeout = b.Duration()
+						logger.Warnf("could not get current block number: %v", err)
+						continue
 					}
-					currentBlocks[chainConfig.ChainID] = newBlock
+					b.Reset()
+					timeout = time.Duration(refreshRate) * time.Second
 				}
 			}
 		})
@@ -94,7 +86,19 @@ func (s Scribe) Start(ctx context.Context) error {
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
-	fmt.Println("never")
 
+	return nil
+}
+
+func (s Scribe) processRange(ctx context.Context, chainID uint32) error {
+	newBlock, err := s.clients[chainID].BlockNumber(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get current block number: %w", err)
+	}
+
+	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, newBlock)
+	if err != nil {
+		return fmt.Errorf("could not backfill: %w", err)
+	}
 	return nil
 }
