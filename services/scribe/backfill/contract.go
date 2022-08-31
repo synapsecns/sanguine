@@ -124,7 +124,7 @@ func (c *ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint6
 
 // Store stores the logs, receipts, and transactions for a tx hash.
 //
-//nolint:cyclop
+//nolint:cyclop, gocognit
 func (c *ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 	receipt, err := c.client.TransactionReceipt(ctx, log.TxHash)
 	if err != nil {
@@ -132,7 +132,7 @@ func (c *ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 	}
 
 	// use db transaction to make storing the data atomic
-	c.eventDB.DB().Transaction(func(tx *gorm.DB) error {
+	err = c.eventDB.DB().Transaction(func(tx *gorm.DB) error {
 		// parallelize storing logs, receipts, and transactions
 		g, groupCtx := errgroup.WithContext(ctx)
 		if err != nil {
@@ -194,6 +194,9 @@ func (c *ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 
 		return nil
 	})
+	if err != nil {
+		return fmt.Errorf("could not store data: %w", err)
+	}
 
 	return nil
 }
