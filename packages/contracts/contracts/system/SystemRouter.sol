@@ -9,6 +9,20 @@ import { Tips } from "../libs/Tips.sol";
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
+/**
+ * @notice Sends and receives system messages:
+ * an internal messaging channel between system contracts.
+ * This makes it possible to send message to any system contract (e.g. Origin) on another chain
+ * without knowing its address in advance, making easy cross-chain setups possible.
+ * What is more, knowing System Router address on destination chain is also
+ * not required. Instead, a special SYSTEM_ROUTER value is used as sender/recipient
+ * for the system messages (see SystemMessage.sol for more details).
+ *
+ * SystemRouter keeps track of all system contracts deployed on current chain,
+ * and routes messages to/from them. System contracts are supposed to have
+ * external methods, guarded by onlySystemRouter modifier. These methods could
+ * be called cross-chain from any of the system contracts.
+ */
 contract SystemRouter is Client, ISystemRouter {
     using Address for address;
     using TypedMemView for bytes;
@@ -26,11 +40,8 @@ contract SystemRouter is Client, ISystemRouter {
      */
     uint32 internal _optimisticPeriod;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             UPGRADE GAP                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    uint256[49] private __GAP;
+    // gap for upgrade safety
+    uint256[49] private __GAP; //solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -54,11 +65,13 @@ contract SystemRouter is Client, ISystemRouter {
         // TODO: Do we ever want to adjust this?
         // (the value should be the same across all chains)
         // Or could it be converted into immutable?
+
+        // TODO: Do we ever want to have "faster" system messages
+        // for "smaller" rapid adjustments?
         _optimisticPeriod = _optimisticSeconds;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
