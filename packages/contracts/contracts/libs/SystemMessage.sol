@@ -14,7 +14,7 @@ library SystemMessage {
      *
      * - MessageFlag.Call indicates a system contract needs
      * to be called on destination chain.
-     * - MessageFlag.Adjust indicates the SystemMessenger contract
+     * - MessageFlag.Adjust indicates the SystemRouter contract
      * needs to adjust some of its values on destination chain.
      *
      * - MessageFlag.Last is used for tracking the last flag value
@@ -27,14 +27,14 @@ library SystemMessage {
 
     /**
      * @dev Custom address, used for sending and receiving system messages.
-     *      Origin is supposed to dispatch messages from SystemMessenger
+     *      Origin is supposed to dispatch messages from SystemRouter
      *      as if they were sent by this address.
-     *      Destination is supposed to reroute messages for this address to SystemMessenger.
+     *      Destination is supposed to reroute messages for this address to SystemRouter.
      *
      *      Note: all bits except for lower 20 bytes are set to 1.
-     *      Note: TypeCasts.bytes32ToAddress(SYSTEM_SENDER) == address(0)
+     *      Note: TypeCasts.bytes32ToAddress(SYSTEM_ROUTER) == address(0)
      */
-    bytes32 internal constant SYSTEM_SENDER = bytes32(type(uint256).max << 160);
+    bytes32 internal constant SYSTEM_ROUTER = bytes32(type(uint256).max << 160);
 
     /**
      * @dev SystemMessage memory layout
@@ -95,7 +95,7 @@ library SystemMessage {
     /**
      * @notice Returns a formatted System Call payload with provided fields
      * @param _systemRecipient  System Contract to receive message
-     *                          (see ISystemMessenger.SystemContracts)
+     *                          (see ISystemRouter.SystemContracts)
      * @param _payload          Payload for call on destination chain
      * @return Formatted System Call
      **/
@@ -169,7 +169,7 @@ library SystemMessage {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns System Call's recipient (see ISystemMessenger.SystemContracts).
+     * @notice Returns System Call's recipient (see ISystemRouter.SystemContracts).
      */
     function callRecipient(bytes29 _view)
         internal

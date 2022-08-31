@@ -33,7 +33,7 @@ contract SystemMessageHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function systemSender() public pure returns (bytes32) {
-        return SystemMessage.SYSTEM_SENDER;
+        return SystemMessage.SYSTEM_ROUTER;
     }
 
     function offsetFlag() public pure returns (uint256) {

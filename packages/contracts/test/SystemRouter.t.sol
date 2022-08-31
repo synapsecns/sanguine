@@ -3,7 +3,7 @@
 pragma solidity 0.8.13;
 
 import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
-import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
+import { ISystemRouter } from "../contracts/interfaces/ISystemRouter.sol";
 import { SystemMessage } from "../contracts/libs/SystemMessage.sol";
 import { Message } from "../contracts/libs/Message.sol";
 import { Header } from "../contracts/libs/Header.sol";
@@ -12,10 +12,10 @@ import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
 import { OriginHarness } from "./harnesses/OriginHarness.sol";
 import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
-import { SystemMessengerHarness } from "./harnesses/SystemMessengerHarness.sol";
+import { SystemRouterHarness } from "./harnesses/SystemRouterHarness.sol";
 
-contract SystemMessengerTest is SynapseTestWithNotaryManager {
-    SystemMessengerHarness internal systemMessenger;
+contract SystemRouterTest is SynapseTestWithNotaryManager {
+    SystemRouterHarness internal systemRouter;
     OriginHarness internal origin;
     DestinationHarness internal destination;
 
@@ -23,7 +23,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
     uint256 internal secretValue = 1337;
     bytes payload = abi.encodeWithSelector(origin.setSensitiveValue.selector, secretValue);
 
-    bytes32 internal constant SYSTEM_SENDER =
+    bytes32 internal constant SYSTEM_ROUTER =
         0xFFFFFFFF_FFFFFFFF_FFFFFFFF_00000000_00000000_00000000_00000000_00000000;
 
     uint32 internal constant NONCE = 420;
@@ -47,23 +47,23 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         destination = new DestinationHarness(localDomain);
         destination.initialize(remoteDomain, notary);
 
-        systemMessenger = new SystemMessengerHarness(
+        systemRouter = new SystemRouterHarness(
             address(origin),
             address(destination),
             optimisticPeriod
         );
-        origin.setSystemMessenger(systemMessenger);
-        destination.setSystemMessenger(systemMessenger);
+        origin.setSystemRouter(systemRouter);
+        destination.setSystemRouter(systemRouter);
     }
 
     function test_constructor() public {
-        assertEq(systemMessenger.origin(), address(origin));
-        assertEq(systemMessenger.destination(), address(destination));
-        assertEq(systemMessenger.optimisticSeconds(), optimisticPeriod);
+        assertEq(systemRouter.origin(), address(origin));
+        assertEq(systemRouter.destination(), address(destination));
+        assertEq(systemRouter.optimisticSeconds(), optimisticPeriod);
     }
 
     function test_trustedSender() public {
-        assertEq(systemMessenger.trustedSender(0), SYSTEM_SENDER);
+        assertEq(systemRouter.trustedSender(0), SYSTEM_ROUTER);
     }
 
     function test_sendSystemMessage_origin() public {
@@ -76,11 +76,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
 
     function test_sendSystemMessage_notSystemSender() public {
         vm.expectRevert("Unauthorized caller");
-        systemMessenger.sendSystemMessage(
-            remoteDomain,
-            ISystemMessenger.SystemContracts(0),
-            payload
-        );
+        systemRouter.sendSystemMessage(remoteDomain, ISystemRouter.SystemContracts(0), payload);
     }
 
     function test_receiveSystemMessage_origin() public {
@@ -136,8 +132,8 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
     }
 
     /**
-     * Anyone can send a "usual message" to SystemMessenger, using its address.
-     * Such messages should be rejected by SystemMessenger upon receiving.
+     * Anyone can send a "usual message" to SystemRouter, using its address.
+     * Such messages should be rejected by SystemRouter upon receiving.
      */
     function test_rejectUsualReceivedMessage() public {
         bytes memory message = _prepareReceiveTest(
@@ -164,11 +160,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
                 message
             );
             vm.prank(_sender);
-            systemMessenger.sendSystemMessage(
-                remoteDomain,
-                ISystemMessenger.SystemContracts(t),
-                payload
-            );
+            systemRouter.sendSystemMessage(remoteDomain, ISystemRouter.SystemContracts(t), payload);
         }
     }
 
@@ -195,10 +187,10 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         return
             _createSystemMessage(
                 localDomain,
-                SYSTEM_SENDER,
+                SYSTEM_ROUTER,
                 _nonce,
                 remoteDomain,
-                SYSTEM_SENDER,
+                SYSTEM_ROUTER,
                 optimisticPeriod,
                 _recipient
             );
@@ -212,10 +204,10 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
         return
             _createSystemMessage(
                 remoteDomain,
-                SYSTEM_SENDER,
+                SYSTEM_ROUTER,
                 _nonce,
                 localDomain,
-                SYSTEM_SENDER,
+                SYSTEM_ROUTER,
                 _optimisticSeconds,
                 _recipient
             );
@@ -232,7 +224,7 @@ contract SystemMessengerTest is SynapseTestWithNotaryManager {
                 addressToBytes32(fakeSigner),
                 _nonce,
                 localDomain,
-                addressToBytes32(address(systemMessenger)),
+                addressToBytes32(address(systemRouter)),
                 _optimisticSeconds,
                 _recipient
             );

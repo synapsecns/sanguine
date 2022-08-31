@@ -5,7 +5,7 @@ import "forge-std/console2.sol";
 import { OriginHarness } from "./harnesses/OriginHarness.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
-import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
+import { ISystemRouter } from "../contracts/interfaces/ISystemRouter.sol";
 import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
@@ -13,7 +13,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
     OriginHarness origin;
     uint32 optimisticSeconds;
 
-    ISystemMessenger internal systemMessenger;
+    ISystemRouter internal systemRouter;
 
     function setUp() public override {
         super.setUp();
@@ -21,8 +21,8 @@ contract OriginTest is SynapseTestWithNotaryManager {
         origin = new OriginHarness(localDomain);
         origin.initialize(INotaryManager(notaryManager));
         notaryManager.setOrigin(address(origin));
-        systemMessenger = ISystemMessenger(address(1234567890));
-        origin.setSystemMessenger(systemMessenger);
+        systemRouter = ISystemRouter(address(1234567890));
+        origin.setSystemRouter(systemRouter);
     }
 
     // ============ STATE AND PERMISSIONING ============
@@ -207,14 +207,14 @@ contract OriginTest is SynapseTestWithNotaryManager {
         assertEq(uint256(origin.state()), 1);
     }
 
-    function test_onlySystemMessenger() public {
-        vm.prank(address(systemMessenger));
+    function test_onlySystemRouter() public {
+        vm.prank(address(systemRouter));
         origin.setSensitiveValue(1337);
         assertEq(origin.sensitiveValue(), 1337);
     }
 
-    function test_onlySystemMessenger_rejectOthers() public {
-        vm.expectRevert("!systemMessenger");
+    function test_onlySystemRouter_rejectOthers() public {
+        vm.expectRevert("!systemRouter");
         origin.setSensitiveValue(1337);
     }
 }

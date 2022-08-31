@@ -84,7 +84,7 @@ contract SystemMessageTest is Bytes29Test {
     }
 
     function test_systemSender() public {
-        bytes32 systemSender = SystemMessage.SYSTEM_SENDER;
+        bytes32 systemSender = SystemMessage.SYSTEM_ROUTER;
         emit log_bytes32(systemSender);
         // Check last 20 bytes
         assertEq(TypeCasts.bytes32ToAddress(systemSender), address(0));
