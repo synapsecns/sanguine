@@ -83,13 +83,13 @@ contract SystemMessageTest is Bytes29Test {
         assertFalse(_view.isSystemMessage());
     }
 
-    function test_systemSender() public {
-        bytes32 systemSender = SystemMessage.SYSTEM_ROUTER;
-        emit log_bytes32(systemSender);
+    function test_systemRouter() public {
+        bytes32 systemRouter = SystemMessage.SYSTEM_ROUTER;
+        emit log_bytes32(systemRouter);
         // Check last 20 bytes
-        assertEq(TypeCasts.bytes32ToAddress(systemSender), address(0));
+        assertEq(TypeCasts.bytes32ToAddress(systemRouter), address(0));
         // Shift 20 bytes left, should be 0xFFFF_FFFF_FFFF
-        assertEq(uint256(systemSender) >> (20 * 8), 2**96 - 1);
+        assertEq(uint256(systemRouter) >> (20 * 8), 2**96 - 1);
     }
 
     function _createTestView() internal view override returns (bytes29) {

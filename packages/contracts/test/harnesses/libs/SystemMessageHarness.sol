@@ -32,7 +32,7 @@ contract SystemMessageHarness {
     ▏*║                           CONSTANT GETTERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function systemSender() public pure returns (bytes32) {
+    function systemRouter() public pure returns (bytes32) {
         return SystemMessage.SYSTEM_ROUTER;
     }
 

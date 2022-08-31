@@ -74,7 +74,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         _testSendSystemMessage(address(destination));
     }
 
-    function test_sendSystemMessage_notSystemSender() public {
+    function test_sendSystemMessage_notSystemRouter() public {
         vm.expectRevert("Unauthorized caller");
         systemRouter.sendSystemMessage(remoteDomain, ISystemRouter.SystemContracts(0), payload);
     }
