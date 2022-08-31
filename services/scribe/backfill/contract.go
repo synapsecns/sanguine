@@ -67,15 +67,11 @@ func (c *ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint6
 	}
 	// start listening for logs
 	g, groupCtx := errgroup.WithContext(groupCtx)
-	//logChan := make(chan types.Log)
-	//doneChan := make(chan bool)
-	// g.Go(func() error {
+
 	logsChan, doneChan, err := c.GetLogs(groupCtx, startHeight, endHeight)
 	if err != nil {
 		return fmt.Errorf("could not getLogs from %d to %d: %w", startHeight, endHeight, err)
 	}
-	// return nil
-	// })
 	g.Go(func() error {
 		// backoff in the case of an error
 		b := &backoff.Backoff{
@@ -239,12 +235,6 @@ func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight 
 		}
 		return nil
 	})
-
-	// // return errors to the channel when done filtering
-	// err := g.Wait()
-	// if err != nil {
-	// 	return nil, nil, err
-	// }
 
 	return logsChan, doneChan, nil
 }

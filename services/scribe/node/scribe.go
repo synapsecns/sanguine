@@ -68,7 +68,7 @@ func (s Scribe) Start(ctx context.Context) error {
 			for {
 				select {
 				case <-groupCtx.Done():
-					return groupCtx.Err()
+					return fmt.Errorf("context finished: %w", groupCtx.Err())
 				case <-time.After(timeout):
 					err := s.processRange(groupCtx, chainConfig.ChainID)
 					if err != nil {
