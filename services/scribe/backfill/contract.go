@@ -58,7 +58,7 @@ func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, c
 //nolint:gocognit, cyclop
 func (c *ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint64, endHeight uint64) error {
 	// initialize the channel for the logs
-	startHeight, err := c.StartHeightForBackfill(groupCtx, givenStart)
+	startHeight, err := c.startHeightForBackfill(groupCtx, givenStart)
 	if err != nil {
 		return fmt.Errorf("could not get start height: %w", err)
 	}
@@ -69,10 +69,7 @@ func (c *ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint6
 	// start listening for logs
 	g, groupCtx := errgroup.WithContext(groupCtx)
 
-	logsChan, doneChan, err := c.GetLogs(groupCtx, startHeight, endHeight)
-	if err != nil {
-		return fmt.Errorf("could not getLogs from %d to %d: %w", startHeight, endHeight, err)
-	}
+	logsChan, doneChan := c.getLogs(groupCtx, startHeight, endHeight)
 	g.Go(func() error {
 		// backoff in the case of an error
 		b := &backoff.Backoff{
@@ -100,7 +97,7 @@ func (c *ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint6
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
 				}
-				err = c.Store(groupCtx, log)
+				err = c.store(groupCtx, log)
 				if err != nil {
 					timeout = b.Duration()
 					logger.Warnf("could not store data: %w", err)
@@ -122,10 +119,10 @@ func (c *ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint6
 	return nil
 }
 
-// Store stores the logs, receipts, and transactions for a tx hash.
+// store stores the logs, receipts, and transactions for a tx hash.
 //
 //nolint:cyclop, gocognit
-func (c *ContractBackfiller) Store(ctx context.Context, log types.Log) error {
+func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	receipt, err := c.client.TransactionReceipt(ctx, log.TxHash)
 	if err != nil {
 		return fmt.Errorf("could not get transaction receipt for txHash: %w", err)
@@ -204,8 +201,8 @@ func (c *ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 // chunkSize is how big to make the chunks when fetching.
 const chunkSize = 1024
 
-// GetLogs gets all logs for the contract.
-func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool, error) {
+// getLogs gets all logs for the contract.
+func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
 	// start the filterer. This filters the range and sends the logs to the logChan.
 	rangeFilter := NewRangeFilter(common.HexToAddress(c.address), c.client, big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
 	g, ctx := errgroup.WithContext(ctx)
@@ -246,12 +243,12 @@ func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight 
 		return nil
 	})
 
-	return logsChan, doneChan, nil
+	return logsChan, doneChan
 }
 
-// StartHeightForBackfill gets the startHeight for backfilling. This is the maximum
+// startHeightForBackfill gets the startHeight for backfilling. This is the maximum
 // of the most recent block for the contract and the startHeight given in the config.
-func (c ContractBackfiller) StartHeightForBackfill(ctx context.Context, givenStart uint64) (startHeight uint64, err error) {
+func (c ContractBackfiller) startHeightForBackfill(ctx context.Context, givenStart uint64) (startHeight uint64, err error) {
 	lastBlock, err := c.eventDB.RetrieveLastIndexed(ctx, common.HexToAddress(c.address), c.chainID)
 	if err != nil {
 		return 0, fmt.Errorf("could not retrieve last indexed block for contract: %w", err)

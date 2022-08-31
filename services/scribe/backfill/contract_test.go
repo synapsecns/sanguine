@@ -60,8 +60,7 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 
 	// Get the logs for the first two events.
 	collectedLogs := []types.Log{}
-	logs, done, err := backfiller.GetLogs(b.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
-	Nil(b.T(), err)
+	logs, done := backfiller.GetLogs(b.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
 	for {
 		select {
 		case <-b.GetTestContext().Done():
@@ -78,8 +77,7 @@ Next:
 
 	// Get the logs for the last three events.
 	collectedLogs = []types.Log{}
-	logs, done, err = backfiller.GetLogs(b.GetTestContext(), txBlockNumberA+1, txBlockNumberB)
-	Nil(b.T(), err)
+	logs, done = backfiller.GetLogs(b.GetTestContext(), txBlockNumberA+1, txBlockNumberB)
 	for {
 		select {
 		case <-b.GetTestContext().Done():
