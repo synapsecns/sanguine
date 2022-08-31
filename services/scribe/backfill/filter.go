@@ -38,7 +38,7 @@ type RangeFilter struct {
 	done bool
 }
 
-// FilteredLogs is the interface for filtering logs.
+// FilterLogs is the interface for filtering logs.
 type FilterLogs interface {
 	// FilterLogs executes a log filter operation, blocking during execution and
 	// returning all the results in one batch.

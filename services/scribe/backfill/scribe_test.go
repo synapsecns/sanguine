@@ -26,7 +26,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 		simulatedBackends = append(simulatedBackends, simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chain))))
 	}
 	type deployedContracts []contracts.DeployedContract
-	type contractRefs []*testcontract.TestContractRef
+	type contractRefs []*testcontract.Ref
 	type startBlocks []uint64
 	allDeployedContracts := []deployedContracts{}
 	allContractRefs := []contractRefs{}
@@ -42,7 +42,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 		testContractB, testRefB := managerB.GetTestContract(b.GetTestContext(), backend)
 		testContractC, testRefC := managerC.GetTestContract(b.GetTestContext(), backend)
 		testContracts := []contracts.DeployedContract{testContractA, testContractB, testContractC}
-		testRefs := []*testcontract.TestContractRef{testRefA, testRefB, testRefC}
+		testRefs := []*testcontract.Ref{testRefA, testRefB, testRefC}
 		// Set the start blocks for each chain.
 		var startBlocks startBlocks
 		for _, contract := range testContracts {
