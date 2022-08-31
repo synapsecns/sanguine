@@ -12,6 +12,7 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"golang.org/x/sync/errgroup"
+	"gorm.io/gorm"
 )
 
 // ContractBackfiller is a backfiller that fetches logs for a specific contract.
@@ -129,64 +130,70 @@ func (c *ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 	if err != nil {
 		return fmt.Errorf("could not get transaction receipt for txHash: %w", err)
 	}
-	// parallelize storing logs, receipts, and transactions
-	g, groupCtx := errgroup.WithContext(ctx)
-	if err != nil {
-		return fmt.Errorf("could not create errgroup: %w", err)
-	}
 
-	g.Go(func() error {
-		// get the logs from the receipt and store them in the db
-		for _, log := range receipt.Logs {
-			if log == nil {
-				return fmt.Errorf("log is nil")
+	// use db transaction to make storing the data atomic
+	c.eventDB.DB().Transaction(func(tx *gorm.DB) error {
+		// parallelize storing logs, receipts, and transactions
+		g, groupCtx := errgroup.WithContext(ctx)
+		if err != nil {
+			return fmt.Errorf("could not create errgroup: %w", err)
+		}
+
+		g.Go(func() error {
+			// get the logs from the receipt and store them in the db
+			for _, log := range receipt.Logs {
+				if log == nil {
+					return fmt.Errorf("log is nil")
+				}
+				err = c.eventDB.StoreLog(groupCtx, *log, c.chainID)
+				if err != nil {
+					return fmt.Errorf("could not store log: %w", err)
+				}
 			}
-			err = c.eventDB.StoreLog(groupCtx, *log, c.chainID)
+			return nil
+		})
+
+		g.Go(func() error {
+			// store the receipt in the db
+			err = c.eventDB.StoreReceipt(groupCtx, *receipt, c.chainID)
 			if err != nil {
-				return fmt.Errorf("could not store log: %w", err)
+				return fmt.Errorf("could not store receipt: %w", err)
 			}
+			return nil
+		})
+
+		g.Go(func() error {
+			// store the transaction in the db
+			txn, isPending, err := c.client.TransactionByHash(groupCtx, receipt.TxHash)
+			if err != nil {
+				return fmt.Errorf("could not get transaction by hash: %w", err)
+			}
+			if isPending {
+				return fmt.Errorf("transaction is pending")
+			}
+			err = c.eventDB.StoreEthTx(groupCtx, txn, c.chainID)
+			if err != nil {
+				return fmt.Errorf("could not store transaction: %w", err)
+			}
+			return nil
+		})
+
+		err = g.Wait()
+		if err != nil {
+			return fmt.Errorf("could not store data: %w", err)
 		}
+
+		// store the last indexed block in the db
+		err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainID, receipt.BlockNumber.Uint64())
+		if err != nil {
+			return fmt.Errorf("could not store last indexed block: %w", err)
+		}
+
+		// store the txHash in the cache
+		c.cache.Add(log.TxHash, true)
+
 		return nil
 	})
-
-	g.Go(func() error {
-		// store the receipt in the db
-		err = c.eventDB.StoreReceipt(groupCtx, *receipt, c.chainID)
-		if err != nil {
-			return fmt.Errorf("could not store receipt: %w", err)
-		}
-		return nil
-	})
-
-	g.Go(func() error {
-		// store the transaction in the db
-		txn, isPending, err := c.client.TransactionByHash(groupCtx, receipt.TxHash)
-		if err != nil {
-			return fmt.Errorf("could not get transaction by hash: %w", err)
-		}
-		if isPending {
-			return fmt.Errorf("transaction is pending")
-		}
-		err = c.eventDB.StoreEthTx(groupCtx, txn, c.chainID)
-		if err != nil {
-			return fmt.Errorf("could not store transaction: %w", err)
-		}
-		return nil
-	})
-
-	err = g.Wait()
-	if err != nil {
-		return fmt.Errorf("could not store data: %w", err)
-	}
-
-	// store the last indexed block in the db
-	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainID, receipt.BlockNumber.Uint64())
-	if err != nil {
-		return fmt.Errorf("could not store last indexed block: %w", err)
-	}
-
-	// store the txHash in the cache
-	c.cache.Add(log.TxHash, true)
 
 	return nil
 }

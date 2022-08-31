@@ -5,6 +5,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"gorm.io/gorm"
 )
 
 // EventDB stores events.
@@ -29,4 +30,6 @@ type EventDB interface {
 	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error
 	// RetrieveLastIndexed retrieves the last indexed for a contract address
 	RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32) (uint64, error)
+	// DB gets the database.
+	DB() *gorm.DB
 }
