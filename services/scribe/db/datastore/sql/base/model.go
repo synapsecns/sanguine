@@ -96,6 +96,8 @@ type EthTx struct {
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// ChainID is the chain id of the transaction
 	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	// BlockNumber is the block in which the transaction was included
+	BlockNumber uint64 `gorm:"column:block_number"`
 	// RawTx is the raw serialized transaction
 	RawTx []byte `gorm:"column:raw_tx"`
 	// GasFeeCap contains the gas fee cap stored in wei

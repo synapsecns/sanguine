@@ -25,7 +25,7 @@ type EventDB interface {
 	// a chainID to specifically search for. This is only used for testing.
 	UnsafeRetrieveAllReceipts(ctx context.Context, specific bool, chainID uint32) (receipts []*types.Receipt, err error)
 	// StoreEthTx stores a processed transaction
-	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32) error
+	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockNumber uint64) error
 	// StoreLastIndexed stores the last indexed for a contract address
 	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error
 	// RetrieveLastIndexed retrieves the last indexed for a contract address
