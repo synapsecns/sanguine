@@ -126,6 +126,10 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *common.Chunk) (*Log
 				Addresses: []ethCommon.Address{f.contractAddress},
 			})
 
+			if len(logs) > 0 {
+				fmt.Println(logs)
+			}
+
 			if err != nil {
 				timeout = b.Duration()
 				logger.Warnf("could not filter logs for range %d to %d: %v", chunk.MinBlock(), chunk.MaxBlock(), err)
@@ -152,6 +156,8 @@ func (f *RangeFilter) Drain(ctx context.Context) (filteredLogs []types.Log, err 
 			if f.done {
 				return filteredLogs, nil
 			}
+		default:
+			return filteredLogs, nil
 		}
 	}
 }

@@ -6,12 +6,12 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/contracts/testcontract"
-	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/testutil"
+	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 )
 
 // TestChainBackfill tests that the ChainBackfiller can backfill events from a chain.

@@ -1,19 +1,18 @@
-package live_test
+package node_test
 
 import (
 	"math/big"
-	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/contracts/testcontract"
-	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/sanguine/services/scribe/live"
+	"github.com/synapsecns/sanguine/services/scribe/node"
+	"github.com/synapsecns/sanguine/services/scribe/testutil"
+	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 )
 
 // TestLive tests live recording of events.
@@ -56,21 +55,9 @@ func (l LiveSuite) TestLive() {
 	clients[chainID] = simulatedChain
 
 	// Set up the scribe.
-	scribe, err := live.NewScribe(l.testDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig)
 	Nil(l.T(), err)
 
-	// // Start the scribe.
-	// go func() {
-	// 	err := scribe.Start(l.GetTestContext())
-	// 	Nil(l.T(), err)
-	// }()
-
-	// time.Sleep(3 * time.Second)
-
-	err = scribe.ProcessRange(l.GetTestContext(), chainID)
-	Nil(l.T(), err)
-
-	// Produce events for the live scribe to record.
 	for _, testRef := range testRefs {
 		tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
 		Nil(l.T(), err)
@@ -82,7 +69,9 @@ func (l LiveSuite) TestLive() {
 		Nil(l.T(), err)
 		simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
 	}
-	time.Sleep(3 * time.Second)
+
+	err = scribe.ProcessRange(l.GetTestContext(), chainID)
+	Nil(l.T(), err)
 
 	// Check that the events were recorded.
 	for _, contract := range contracts {

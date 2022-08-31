@@ -1,4 +1,4 @@
-package live_test
+package node_test
 
 import (
 	"testing"
@@ -6,12 +6,12 @@ import (
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/services/scribe/testutil"
 )
 
 type LiveSuite struct {

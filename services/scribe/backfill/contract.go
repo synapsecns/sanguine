@@ -26,6 +26,9 @@ type ContractBackfiller struct {
 	client ScribeBackend
 	// cache is a cache for txHashes
 	cache *lru.Cache
+
+	logChan  chan types.Log
+	doneChan chan bool
 }
 
 // NewContractBackfiller creates a new backfiller for a contract.
@@ -37,11 +40,13 @@ func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, c
 	}
 
 	return &ContractBackfiller{
-		chainID: chainID,
-		address: address,
-		eventDB: eventDB,
-		client:  client,
-		cache:   cache,
+		chainID:  chainID,
+		address:  address,
+		eventDB:  eventDB,
+		client:   client,
+		cache:    cache,
+		logChan:  make(chan types.Log),
+		doneChan: make(chan bool),
 	}, nil
 }
 
@@ -50,7 +55,7 @@ func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, c
 // receipt, and the last indexed block for hte contract in the EventDB.
 //
 //nolint:gocognit, cyclop
-func (c ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint64, endHeight uint64) error {
+func (c *ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint64, endHeight uint64) error {
 	// initialize the channel for the logs
 	startHeight, err := c.StartHeightForBackfill(groupCtx, givenStart)
 	if err != nil {
@@ -60,9 +65,17 @@ func (c ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint64
 	if startHeight != 0 {
 		startHeight--
 	}
-	logChan, errChan, doneChan := c.GetLogs(groupCtx, startHeight, endHeight)
 	// start listening for logs
 	g, groupCtx := errgroup.WithContext(groupCtx)
+	//logChan := make(chan types.Log)
+	//doneChan := make(chan bool)
+	// g.Go(func() error {
+	logsChan, doneChan, err := c.GetLogs(groupCtx, startHeight, endHeight)
+	if err != nil {
+		return fmt.Errorf("could not getLogs from %d to %d: %w", startHeight, endHeight, err)
+	}
+	// return nil
+	// })
 	g.Go(func() error {
 		// backoff in the case of an error
 		b := &backoff.Backoff{
@@ -77,10 +90,15 @@ func (c ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint64
 			select {
 			case <-groupCtx.Done():
 				return nil
-			case log := <-logChan:
+			case log := <-logsChan:
 				// TODO: add a notification for failure to store
 				// wait the timeout (will be 0 on first attempt)
-				time.Sleep(timeout)
+				select {
+				case <-groupCtx.Done():
+					return nil
+				case <-time.After(timeout):
+					//
+				}
 				// check if the txHash has already been stored in the cache
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
@@ -94,8 +112,6 @@ func (c ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint64
 				// if everything works properly, restore timeout to 0
 				timeout = time.Duration(0)
 				b.Reset()
-			case err := <-errChan:
-				return fmt.Errorf("could not get logs: %w", err)
 			case <-doneChan:
 				return nil
 			}
@@ -112,7 +128,7 @@ func (c ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint64
 // Store stores the logs, receipts, and transactions for a tx hash.
 //
 //nolint:cyclop
-func (c ContractBackfiller) Store(ctx context.Context, log types.Log) error {
+func (c *ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 	receipt, err := c.client.TransactionReceipt(ctx, log.TxHash)
 	if err != nil {
 		return fmt.Errorf("could not get transaction receipt for txHash: %w", err)
@@ -183,12 +199,7 @@ func (c ContractBackfiller) Store(ctx context.Context, log types.Log) error {
 const chunkSize = 1024
 
 // GetLogs gets all logs for the contract.
-func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight uint64) (logsChan <-chan types.Log, errsChan <-chan error, completeChan <-chan bool) {
-	// initialize the channel
-	logChan := make(chan types.Log)
-	errChan := make(chan error)
-	doneChan := make(chan bool)
-
+func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool, error) {
 	// start the filterer. This filters the range and sends the logs to the logChan.
 	rangeFilter := NewRangeFilter(common.HexToAddress(c.address), c.client, big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
 	g, ctx := errgroup.WithContext(ctx)
@@ -201,32 +212,41 @@ func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight 
 		return nil
 	})
 
+	logsChan := make(chan types.Log)
+	doneChan := make(chan bool)
+
 	// take the logs and put them in the log channel
 	g.Go(func() error {
+	OUTER:
 		for {
 			select {
 			case <-ctx.Done():
 				return nil
 			case logInfos := <-rangeFilter.GetLogChan():
 				for _, log := range logInfos.logs {
-					logChan <- log
+					logsChan <- log
 				}
+			default:
 				if rangeFilter.Done() {
+					finLogs, _ := rangeFilter.Drain(ctx)
+					for _, log := range finLogs {
+						logsChan <- log
+					}
 					doneChan <- true
+					break OUTER
 				}
 			}
 		}
+		return nil
 	})
 
-	// return errors to the channel when done filtering
-	go func() {
-		err := g.Wait()
-		if err != nil {
-			errChan <- err
-		}
-	}()
+	// // return errors to the channel when done filtering
+	// err := g.Wait()
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
 
-	return logChan, errChan, doneChan
+	return logsChan, doneChan, nil
 }
 
 // StartHeightForBackfill gets the startHeight for backfilling. This is the maximum

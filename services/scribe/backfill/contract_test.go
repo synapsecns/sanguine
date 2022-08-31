@@ -60,13 +60,12 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 
 	// Get the logs for the first two events.
 	collectedLogs := []types.Log{}
-	logs, errors, done := backfiller.GetLogs(b.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
+	logs, done, err := backfiller.GetLogs(b.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
+	Nil(b.T(), err)
 	for {
 		select {
 		case <-b.GetTestContext().Done():
 			b.T().Error("test timed out")
-		case e := <-errors:
-			b.T().Error(e)
 		case log := <-logs:
 			collectedLogs = append(collectedLogs, log)
 		case <-done:
@@ -79,13 +78,12 @@ Next:
 
 	// Get the logs for the last three events.
 	collectedLogs = []types.Log{}
-	logs, errors, done = backfiller.GetLogs(b.GetTestContext(), txBlockNumberA+1, txBlockNumberB)
+	logs, done, err = backfiller.GetLogs(b.GetTestContext(), txBlockNumberA+1, txBlockNumberB)
+	Nil(b.T(), err)
 	for {
 		select {
 		case <-b.GetTestContext().Done():
 			b.T().Error("test timed out")
-		case e := <-errors:
-			b.T().Error(e)
 		case log := <-logs:
 			collectedLogs = append(collectedLogs, log)
 		case <-done:
