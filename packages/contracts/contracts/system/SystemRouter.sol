@@ -98,6 +98,21 @@ contract SystemRouter is Client, ISystemRouter {
         _send(_destination, Tips.emptyTips(), message);
     }
 
+    /**
+     * @notice  Call a System Contract on the local chain.
+     * @dev     Only System contracts are allowed to call this function.
+     *          Note that knowledge of recipient address is not required,
+     *          routing will be done by SystemRouter on the local chain.
+     * @param _recipient    System contract type of the recipient
+     * @param _payload      Data for calling recipient on destination chain
+     */
+    function systemCall(SystemContracts _recipient, bytes memory _payload)
+        external
+        onlySystemContract
+    {
+        _systemCall(uint8(_recipient), _payload);
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           PUBLIC FUNCTIONS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -148,16 +163,23 @@ contract SystemRouter is Client, ISystemRouter {
         (SystemMessage.MessageFlag messageType, bytes29 body) = message.unpackMessage();
 
         if (messageType == SystemMessage.MessageFlag.Call) {
-            address recipient = _getSystemRecipient(body.callRecipient());
-            require(recipient != address(0), "System Contract not set");
-            bytes29 payload = body.callPayload();
-            // this will call recipient and bubble the revert from the external call
-            recipient.functionCall(payload.clone());
+            _systemCall(body.callRecipient(), body.callPayload().clone());
         } else if (messageType == SystemMessage.MessageFlag.Adjust) {
             // TODO: handle messages with instructions
             // to adjust some of the SystemRouter parameters
         }
     }
+
+    function _systemCall(uint8 _recipient, bytes memory _payload) internal {
+        address recipient = _getSystemRecipient(_recipient);
+        require(recipient != address(0), "System Contract not set");
+        // this will call recipient and bubble the revert from the external call
+        recipient.functionCall(_payload);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL VIEWS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function _getSystemRecipient(uint8 _recipient) internal view returns (address) {
         if (_recipient == uint8(SystemContracts.Origin)) return origin;
