@@ -1,0 +1,6 @@
+query GetLogs {
+    response: logs {
+      BlockNumber
+      BlockHash
+    }
+}

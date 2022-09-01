@@ -4,6 +4,8 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+	"github.com/hashicorp/consul/sdk/freeport"
+	"github.com/synapsecns/sanguine/services/scribe/server"
 	"os"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -84,5 +86,20 @@ var backfillCommand = &cli.Command{
 		}
 
 		return nil
+	},
+}
+
+var portFlag = &cli.UintFlag{
+	Name:  "port",
+	Usage: "--port 5121",
+	Value: uint(freeport.Get(1)[0]),
+}
+
+var serverCommand = &cli.Command{
+	Name:        "server",
+	Description: "starts a graphql server",
+	Flags:       []cli.Flag{portFlag},
+	Action: func(c *cli.Context) error {
+		return server.Start(uint16(c.Uint(portFlag.Name)))
 	},
 }

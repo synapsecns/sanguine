@@ -1,0 +1,4 @@
+type Query {
+  # returns all logs for an address
+  logs(address: String): [Log]
+}
