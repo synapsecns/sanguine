@@ -143,14 +143,14 @@ contract SystemRouter is Client, ISystemRouter {
         bytes32,
         bytes memory _message
     ) internal override {
-        bytes29 messageView = _message.castToSystemMessage();
-        require(messageView.isSystemMessage(), "Not a system message");
-        (SystemMessage.MessageFlag messageType, bytes29 bodyView) = messageView.unpackMessage();
+        bytes29 message = _message.castToSystemMessage();
+        require(message.isSystemMessage(), "Not a system message");
+        (SystemMessage.MessageFlag messageType, bytes29 body) = message.unpackMessage();
 
         if (messageType == SystemMessage.MessageFlag.Call) {
-            address recipient = _getSystemRecipient(bodyView.callRecipient());
+            address recipient = _getSystemRecipient(body.callRecipient());
             require(recipient != address(0), "System Contract not set");
-            bytes29 payload = bodyView.callPayload();
+            bytes29 payload = body.callPayload();
             // this will call recipient and bubble the revert from the external call
             recipient.functionCall(payload.clone());
         } else if (messageType == SystemMessage.MessageFlag.Adjust) {
