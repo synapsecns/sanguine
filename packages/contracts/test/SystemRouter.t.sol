@@ -14,6 +14,7 @@ import { OriginHarness } from "./harnesses/OriginHarness.sol";
 import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
 import { SystemRouterHarness } from "./harnesses/SystemRouterHarness.sol";
 
+// solhint-disable func-name-mixedcase
 contract SystemRouterTest is SynapseTestWithNotaryManager {
     SystemRouterHarness internal systemRouter;
     OriginHarness internal origin;
@@ -21,7 +22,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
 
     uint32 internal optimisticPeriod = 420;
     uint256 internal secretValue = 1337;
-    bytes payload = abi.encodeWithSelector(origin.setSensitiveValue.selector, secretValue);
+    bytes internal payload = abi.encodeWithSelector(origin.setSensitiveValue.selector, secretValue);
 
     bytes32 internal constant SYSTEM_ROUTER =
         0xFFFFFFFF_FFFFFFFF_FFFFFFFF_00000000_00000000_00000000_00000000_00000000;
@@ -56,6 +57,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         destination.setSystemRouter(systemRouter);
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             TEST: SETUP                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     function test_constructor() public {
         assertEq(systemRouter.origin(), address(origin));
         assertEq(systemRouter.destination(), address(destination));
@@ -66,6 +71,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         assertEq(systemRouter.trustedSender(0), SYSTEM_ROUTER);
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                      TEST: SEND SYSTEM MESSAGE                       ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     function test_sendSystemMessage_origin() public {
         _testSendSystemMessage(address(origin));
     }
@@ -74,10 +83,14 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         _testSendSystemMessage(address(destination));
     }
 
-    function test_sendSystemMessage_notSystemRouter() public {
+    function test_sendSystemMessage_notSystemContract() public {
         vm.expectRevert("Unauthorized caller");
         systemRouter.sendSystemMessage(remoteDomain, ISystemRouter.SystemContracts(0), payload);
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                     TEST: RECEIVE SYSTEM MESSAGE                     ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_receiveSystemMessage_origin() public {
         bytes memory message = _prepareReceiveTest(
@@ -146,6 +159,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         destination.execute(message);
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           INTERNAL HELPERS                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     function _testSendSystemMessage(address _sender) internal {
         for (uint8 t = 0; t <= 1; ++t) {
             bytes memory message = _createSentSystemMessage(t + 1, t);
@@ -178,6 +195,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
 
         assert(origin.sensitiveValue() != secretValue);
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL VIEWS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function _createSentSystemMessage(uint32 _nonce, uint8 _recipient)
         internal
