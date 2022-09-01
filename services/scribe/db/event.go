@@ -8,6 +8,8 @@ import (
 )
 
 // EventDB stores events.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name EventDB --output ./mocks --case=underscore
 type EventDB interface {
 	// StoreLog stores a log
 	StoreLog(ctx context.Context, log types.Log, chainID uint32) error

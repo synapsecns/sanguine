@@ -4,15 +4,70 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/db/mocks"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 )
+
+// TestFailedStore tests that the ChainBackfiller continues backfilling after a failed store.
+func (b BackfillSuite) TestFailedStore() {
+	mockDB := new(mocks.EventDB)
+	mockDB.
+		// on a store receipt call
+		On("StoreReceipt", mock.Anything, mock.Anything, mock.Anything).
+		// return an error
+		Return(fmt.Errorf("failed to store receipt"))
+	mockDB.
+		// on a store transaction call
+		On("StoreEthTx", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		// return an error
+		Return(fmt.Errorf("failed to store transaction"))
+	mockDB.
+		// on a store log call
+		On("StoreLog", mock.Anything, mock.Anything, mock.Anything).
+		// return an error
+		Return(fmt.Errorf("failed to store log"))
+	mockDB.
+		// on retrieve last indexed call
+		On("RetrieveLastIndexed", mock.Anything, mock.Anything, mock.Anything).
+		// return 0
+		Return(uint64(0), nil)
+	chainID := gofakeit.Uint32()
+	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
+	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
+	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
+	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
+
+	// Set config.
+	contractConfig := config.ContractConfig{
+		Address:    testContract.Address().String(),
+		StartBlock: 0,
+	}
+
+	backfiller, err := backfill.NewContractBackfiller(chainID, contractConfig.Address, mockDB, simulatedChain)
+	Nil(b.T(), err)
+
+	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+	// Get the block that the last transaction was executed in.
+	txBlockNumber, err := b.getTxBlockNumber(simulatedChain, tx)
+	Nil(b.T(), err)
+
+	err = backfiller.Backfill(b.GetTestContext(), contractConfig.StartBlock, txBlockNumber)
+	NotNil(b.T(), err)
+
+	// Check to ensure that StoreLastIndexed was never called.
+	mockDB.AssertNotCalled(b.T(), "StoreLastIndexed", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+}
 
 // TestGetLogsSimulated tests the GetLogs function using a simulated blockchain.
 //
