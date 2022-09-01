@@ -13,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/notarymanager"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
-	"github.com/synapsecns/sanguine/agents/contracts/testcontract"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 )
@@ -157,23 +156,4 @@ func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 // Dependencies gets a list of dependencies used to deploy the destination contract.
 func (d DestinationDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{OriginType, NotaryManagerType}
-}
-
-// TestContractDeployer deploys a test contract.
-type TestContractDeployer struct {
-	*deployer.BaseDeployer
-}
-
-// NewTestContractDeployer creates a new test contract deployer.
-func NewTestContractDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return TestContractDeployer{deployer.NewSimpleDeployer(registry, backend, TestContractType)}
-}
-
-// Deploy deploys the test contract.
-func (t TestContractDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	return t.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return testcontract.DeployTestContract(transactOps, backend)
-	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return testcontract.NewTestContractRef(address, backend)
-	})
 }
