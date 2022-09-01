@@ -32,7 +32,7 @@ func (l LiveSuite) TestLive() {
 	// Put the contracts into a slice so we can iterate over them.
 	contracts := []contracts.DeployedContract{testContractA, testContractB, testContractC}
 	// Put the test refs into a slice so we can iterate over them.
-	testRefs := []*testcontract.Ref{testRefA, testRefB, testRefC}
+	testRefs := []*testcontract.TestContractRef{testRefA, testRefB, testRefC}
 
 	// Set up the config.
 	contractConfigs := config.ContractConfigs{}

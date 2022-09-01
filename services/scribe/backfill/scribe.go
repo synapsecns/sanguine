@@ -58,9 +58,9 @@ func NewScribeBackfiller(eventDB db.EventDB, clients map[uint32]ScribeBackend, c
 }
 
 // Backfill iterates over each chain backfiller and calls Backfill concurrently on each one.
-func (s ScribeBackfiller) Backfill(groupCtx context.Context) error {
+func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 	// initialize the errgroup
-	g, groupCtx := errgroup.WithContext(groupCtx)
+	g, groupCtx := errgroup.WithContext(ctx)
 
 	// iterate over each chain backfiller
 	for _, chainBackfiller := range s.ChainBackfillers {

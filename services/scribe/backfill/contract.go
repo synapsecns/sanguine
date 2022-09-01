@@ -4,15 +4,12 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	lru "github.com/hashicorp/golang-lru"
-	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"golang.org/x/sync/errgroup"
-	"gorm.io/gorm"
 )
 
 // ContractBackfiller is a backfiller that fetches logs for a specific contract.
@@ -27,9 +24,6 @@ type ContractBackfiller struct {
 	client ScribeBackend
 	// cache is a cache for txHashes
 	cache *lru.Cache
-
-	logChan  chan types.Log
-	doneChan chan bool
 }
 
 // NewContractBackfiller creates a new backfiller for a contract.
@@ -41,13 +35,11 @@ func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, c
 	}
 
 	return &ContractBackfiller{
-		chainID:  chainID,
-		address:  address,
-		eventDB:  eventDB,
-		client:   client,
-		cache:    cache,
-		logChan:  make(chan types.Log),
-		doneChan: make(chan bool),
+		chainID: chainID,
+		address: address,
+		eventDB: eventDB,
+		client:  client,
+		cache:   cache,
 	}, nil
 }
 
@@ -56,9 +48,9 @@ func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, c
 // receipt, and the last indexed block for hte contract in the EventDB.
 //
 //nolint:gocognit, cyclop
-func (c *ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint64, endHeight uint64) error {
+func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, endHeight uint64) error {
 	// initialize the channel for the logs
-	startHeight, err := c.startHeightForBackfill(groupCtx, givenStart)
+	startHeight, err := c.startHeightForBackfill(ctx, givenStart)
 	if err != nil {
 		return fmt.Errorf("could not get start height: %w", err)
 	}
@@ -67,45 +59,23 @@ func (c *ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint6
 		startHeight--
 	}
 	// start listening for logs
-	g, groupCtx := errgroup.WithContext(groupCtx)
+	g, groupCtx := errgroup.WithContext(ctx)
 
 	logsChan, doneChan := c.getLogs(groupCtx, startHeight, endHeight)
 	g.Go(func() error {
-		// backoff in the case of an error
-		b := &backoff.Backoff{
-			Factor: 2,
-			Jitter: true,
-			Min:    1 * time.Second,
-			Max:    30 * time.Second,
-		}
-		// timeout should always be 0 on the first attempt
-		timeout := time.Duration(0)
 		for {
 			select {
 			case <-groupCtx.Done():
 				return nil
 			case log := <-logsChan:
-				// TODO: add a notification for failure to store
-				// wait the timeout (will be 0 on first attempt)
-				select {
-				case <-groupCtx.Done():
-					return nil
-				case <-time.After(timeout):
-					//
-				}
 				// check if the txHash has already been stored in the cache
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
 				}
 				err = c.store(groupCtx, log)
 				if err != nil {
-					timeout = b.Duration()
-					logger.Warnf("could not store data: %w", err)
-					continue
+					return fmt.Errorf("could not store log: %w", err)
 				}
-				// if everything works properly, restore timeout to 0
-				timeout = time.Duration(0)
-				b.Reset()
 			case <-doneChan:
 				return nil
 			}
@@ -123,77 +93,85 @@ func (c *ContractBackfiller) Backfill(groupCtx context.Context, givenStart uint6
 //
 //nolint:cyclop, gocognit
 func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
-	receipt, err := c.client.TransactionReceipt(ctx, log.TxHash)
-	if err != nil {
-		return fmt.Errorf("could not get transaction receipt for txHash: %w", err)
-	}
+	// parallelize storing logs, receipts, and transactions
+	g, groupCtx := errgroup.WithContext(ctx)
 
-	// use db transaction to make storing the data atomic
-	err = c.eventDB.DB().Transaction(func(tx *gorm.DB) error {
-		// parallelize storing logs, receipts, and transactions
-		g, groupCtx := errgroup.WithContext(ctx)
+	var returnedReceipt types.Receipt
+	doneChan := make(chan bool)
+	g.Go(func() error {
+		// make getting receipt a channel in parallel
+		receipt, err := c.client.TransactionReceipt(ctx, log.TxHash)
 		if err != nil {
-			return fmt.Errorf("could not create errgroup: %w", err)
+			return fmt.Errorf("could not get transaction receipt for txHash: %w", err)
 		}
 
-		g.Go(func() error {
+		returnedReceipt = *receipt
+		doneChan <- true
+		doneChan <- true
+		return nil
+	})
+
+	g.Go(func() error {
+		select {
+		case <-groupCtx.Done():
+			return fmt.Errorf("context canceled")
+		case <-doneChan:
 			// get the logs from the receipt and store them in the db
-			for _, log := range receipt.Logs {
+			for _, log := range returnedReceipt.Logs {
 				if log == nil {
 					return fmt.Errorf("log is nil")
 				}
-				err = c.eventDB.StoreLog(groupCtx, *log, c.chainID)
+				err := c.eventDB.StoreLog(groupCtx, *log, c.chainID)
 				if err != nil {
 					return fmt.Errorf("could not store log: %w", err)
 				}
 			}
 			return nil
-		})
+		}
+	})
 
-		g.Go(func() error {
+	g.Go(func() error {
+		select {
+		case <-groupCtx.Done():
+			return fmt.Errorf("context canceled")
+		case <-doneChan:
 			// store the receipt in the db
-			err = c.eventDB.StoreReceipt(groupCtx, *receipt, c.chainID)
+			err := c.eventDB.StoreReceipt(groupCtx, returnedReceipt, c.chainID)
 			if err != nil {
 				return fmt.Errorf("could not store receipt: %w", err)
 			}
 			return nil
-		})
-
-		g.Go(func() error {
-			// store the transaction in the db
-			txn, isPending, err := c.client.TransactionByHash(groupCtx, receipt.TxHash)
-			if err != nil {
-				return fmt.Errorf("could not get transaction by hash: %w", err)
-			}
-			if isPending {
-				return fmt.Errorf("transaction is pending")
-			}
-			err = c.eventDB.StoreEthTx(groupCtx, txn, c.chainID, receipt.BlockNumber.Uint64())
-			if err != nil {
-				return fmt.Errorf("could not store transaction: %w", err)
-			}
-			return nil
-		})
-
-		err = g.Wait()
-		if err != nil {
-			return fmt.Errorf("could not store data: %w", err)
 		}
+	})
 
-		// store the last indexed block in the db
-		err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainID, receipt.BlockNumber.Uint64())
+	g.Go(func() error {
+		// store the transaction in the db
+		txn, isPending, err := c.client.TransactionByHash(groupCtx, log.TxHash)
 		if err != nil {
-			return fmt.Errorf("could not store last indexed block: %w", err)
+			return fmt.Errorf("could not get transaction by hash: %w", err)
 		}
-
-		// store the txHash in the cache
-		c.cache.Add(log.TxHash, true)
-
+		if isPending {
+			return fmt.Errorf("transaction is pending")
+		}
+		err = c.eventDB.StoreEthTx(groupCtx, txn, c.chainID, log.BlockNumber)
+		if err != nil {
+			return fmt.Errorf("could not store transaction: %w", err)
+		}
 		return nil
 	})
+
+	err := g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not store data: %w", err)
 	}
+
+	// store the last indexed block in the db
+	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainID, returnedReceipt.BlockNumber.Uint64())
+	if err != nil {
+		return fmt.Errorf("could not store last indexed block: %w", err)
+	}
+	// store the txHash in the cache
+	c.cache.Add(log.TxHash, true)
 
 	return nil
 }

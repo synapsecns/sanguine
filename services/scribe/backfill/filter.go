@@ -31,15 +31,15 @@ type RangeFilter struct {
 	logs chan *LogInfo
 	// filterer contains the interface used to fetch logs for the given contract. Logs are fteched
 	// for contractAddress
-	filterer FilterLogs
+	filterer LogFilterer
 	// contractAddress is the contractAddress that logs are fetched for
 	contractAddress ethCommon.Address
 	// done is whether or not the RangeFilter has completed. It cannot be restarted and the object must be recreated
 	done bool
 }
 
-// FilterLogs is the interface for filtering logs.
-type FilterLogs interface {
+// LogFilterer is the interface for filtering logs.
+type LogFilterer interface {
 	// FilterLogs executes a log filter operation, blocking during execution and
 	// returning all the results in one batch.
 	//
@@ -60,7 +60,7 @@ var minBackoff = 1 * time.Second
 var maxBackoff = 30 * time.Second
 
 // NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
-func NewRangeFilter(address ethCommon.Address, filterer FilterLogs, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
+func NewRangeFilter(address ethCommon.Address, filterer LogFilterer, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
 	return &RangeFilter{
 		iterator:        common.NewChunkIterator(startBlock, endBlock, chunkSize, reverse),
 		logs:            make(chan *LogInfo, bufferSize),
@@ -146,7 +146,6 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *common.Chunk) (*Log
 }
 
 // Drain fetches all logs and concatenated them into a single slice.
-// Deprecated: use the channel.
 func (f *RangeFilter) Drain(ctx context.Context) (filteredLogs []types.Log, err error) {
 	for {
 		select {

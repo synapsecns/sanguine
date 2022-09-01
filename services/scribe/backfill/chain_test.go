@@ -30,7 +30,7 @@ func (b BackfillSuite) TestChainBackfill() {
 	// Put the contracts into a slice so we can iterate over them.
 	contracts := []contracts.DeployedContract{testContractA, testContractB, testContractC}
 	// Put the test refs into a slice so we can iterate over them.
-	testRefs := []*testcontract.Ref{testRefA, testRefB, testRefC}
+	testRefs := []*testcontract.TestContractRef{testRefA, testRefB, testRefC}
 
 	startBlocks := make([]uint64, len(contracts))
 	for i, contract := range contracts {
@@ -57,12 +57,12 @@ func (b BackfillSuite) TestChainBackfill() {
 	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChain, chainConfig)
 	Nil(b.T(), err)
 
-	EmitEventsForAChain(b, chainID, contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)
+	b.EmitEventsForAChain(chainID, contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)
 }
 
 // EmitEventsForAChain emits events for a chain, and if `backfill` is set to true,
 // will store the events and check their existence in the database.
-func EmitEventsForAChain(b BackfillSuite, chainID uint32, contracts []contracts.DeployedContract, testRefs []*testcontract.Ref, simulatedChain *simulated.Backend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig, backfill bool) {
+func (b BackfillSuite) EmitEventsForAChain(chainID uint32, contracts []contracts.DeployedContract, testRefs []*testcontract.TestContractRef, simulatedChain *simulated.Backend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig, backfill bool) {
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 	// Emit events from each contract.
 	for _, testRef := range testRefs {

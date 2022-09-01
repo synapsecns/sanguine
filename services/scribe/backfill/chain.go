@@ -3,7 +3,9 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"golang.org/x/sync/errgroup"
@@ -52,9 +54,9 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 }
 
 // Backfill iterates over each contract backfiller and calls Backfill concurrently on each one.
-func (c ChainBackfiller) Backfill(groupCtx context.Context, endHeight uint64) error {
+func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64) error {
 	// initialize the errgroup
-	g, groupCtx := errgroup.WithContext(groupCtx)
+	g, groupCtx := errgroup.WithContext(ctx)
 	// iterate over each contract backfiller
 	for _, contractBackfiller := range c.contractBackfillers {
 		// capture func literal
@@ -63,11 +65,30 @@ func (c ChainBackfiller) Backfill(groupCtx context.Context, endHeight uint64) er
 		startHeight := c.startHeights[contractBackfiller.address]
 		// call Backfill concurrently
 		g.Go(func() error {
-			err := contractBackfiller.Backfill(groupCtx, startHeight, endHeight)
-			if err != nil {
-				return fmt.Errorf("could not backfill contract: %w", err)
+			// backoff in the case of an error
+			b := &backoff.Backoff{
+				Factor: 2,
+				Jitter: true,
+				Min:    1 * time.Second,
+				Max:    30 * time.Second,
 			}
-			return nil
+			// timeout should always be 0 on the first attempt
+			timeout := time.Duration(0)
+			for {
+				// TODO: add a notification for failure to store
+				select {
+				case <-groupCtx.Done():
+					return fmt.Errorf("context canceled: %w", groupCtx.Err())
+				case <-time.After(timeout):
+					err := contractBackfiller.Backfill(groupCtx, startHeight, endHeight)
+					if err != nil {
+						timeout = b.Duration()
+						logger.Warnf("could not backfill data: %w", err)
+						continue
+					}
+					return nil
+				}
+			}
 		})
 	}
 	// wait for all of the backfillers to finish

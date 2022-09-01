@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
+// GetLogs exports logs for testing.
 func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
-	logsChan, doneChan := c.getLogs(ctx, startHeight, endHeight)
-	return logsChan, doneChan
+	return c.getLogs(ctx, startHeight, endHeight)
 }

@@ -26,7 +26,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 		simulatedBackends = append(simulatedBackends, simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chain))))
 	}
 	type deployedContracts []contracts.DeployedContract
-	type contractRefs []*testcontract.Ref
+	type contractRefs []*testcontract.TestContractRef
 	type startBlocks []uint64
 	allDeployedContracts := []deployedContracts{}
 	allContractRefs := []contractRefs{}
@@ -42,7 +42,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 		testContractB, testRefB := managerB.GetTestContract(b.GetTestContext(), backend)
 		testContractC, testRefC := managerC.GetTestContract(b.GetTestContext(), backend)
 		testContracts := []contracts.DeployedContract{testContractA, testContractB, testContractC}
-		testRefs := []*testcontract.Ref{testRefA, testRefB, testRefC}
+		testRefs := []*testcontract.TestContractRef{testRefA, testRefB, testRefC}
 		// Set the start blocks for each chain.
 		var startBlocks startBlocks
 		for _, contract := range testContracts {
@@ -104,7 +104,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 
 	// Run the backfill test for each chain.
 	for i, chainBackfiller := range chainBackfillers {
-		EmitEventsForAChain(b, chains[i], allDeployedContracts[i], allContractRefs[i], simulatedBackends[i], chainBackfiller, allChainConfigs[i], false)
+		b.EmitEventsForAChain(chains[i], allDeployedContracts[i], allContractRefs[i], simulatedBackends[i], chainBackfiller, allChainConfigs[i], false)
 	}
 
 	// Run the scribe's backfill.

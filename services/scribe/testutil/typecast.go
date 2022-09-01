@@ -11,11 +11,11 @@ import (
 )
 
 // GetTestContract gets the test contract.
-func (d *DeployManager) GetTestContract(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testcontract.Ref) {
+func (d *DeployManager) GetTestContract(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testcontract.TestContractRef) {
 	d.T().Helper()
 
 	testContract := d.GetContractRegistry(backend).Get(ctx, TestContractType)
-	testContractHandle, ok := testContract.ContractHandle().(*testcontract.Ref)
+	testContractHandle, ok := testContract.ContractHandle().(*testcontract.TestContractRef)
 	assert.True(d.T(), ok)
 
 	return testContract, testContractHandle
