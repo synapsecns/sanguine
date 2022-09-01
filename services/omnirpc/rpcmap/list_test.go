@@ -3,7 +3,7 @@ package rpcmap_test
 import (
 	"github.com/jarcoal/httpmock"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/serivces/omnirpc/rpcmap"
+	"github.com/synapsecns/sanguine/services/omnirpc/rpcmap"
 	"golang.org/x/exp/slices"
 	"net/http"
 	"testing"

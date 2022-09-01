@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/jftuga/ellipsis"
 	"github.com/olekukonko/tablewriter"
-	"github.com/synapsecns/sanguine/serivces/omnirpc/latency"
+	"github.com/synapsecns/sanguine/services/omnirpc/latency"
 	"os"
 	"sort"
 )

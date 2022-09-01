@@ -3,10 +3,10 @@ package cmd
 import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/commandline"
-	rpcConfig "github.com/synapsecns/sanguine/serivces/omnirpc/config"
-	"github.com/synapsecns/sanguine/serivces/omnirpc/latency"
-	"github.com/synapsecns/sanguine/serivces/omnirpc/proxy"
-	"github.com/synapsecns/sanguine/serivces/omnirpc/rpcmap"
+	rpcConfig "github.com/synapsecns/sanguine/services/omnirpc/config"
+	"github.com/synapsecns/sanguine/services/omnirpc/latency"
+	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
+	"github.com/synapsecns/sanguine/services/omnirpc/rpcmap"
 	"github.com/synapsecns/synapse-node/config"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -48,7 +48,7 @@ func Start(args []string) {
 					return fmt.Errorf("could not get rpc map: %w", err)
 				}
 
-				server := proxy.NewProxy(uint32(c.Int("port")), rpcMap)
+				server := proxy.NewProxy(rpcMap, rpcConfig.Config{})
 
 				server.Run(c.Context)
 
@@ -97,7 +97,7 @@ func Start(args []string) {
 					return fmt.Errorf("could not unmarshall config: %w", err)
 				}
 
-				server := proxy.NewProxy(uint32(c.Int("port")), rpcMap)
+				server := proxy.NewProxy(rpcMap, rpcConfig.Config{})
 
 				server.Run(c.Context)
 

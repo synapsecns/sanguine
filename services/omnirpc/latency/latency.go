@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bradhe/stopwatch"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
@@ -19,6 +18,8 @@ type Result struct {
 	URL string
 	// Latency is the latency time in seconds
 	Latency time.Duration
+	// BlockAge is the age of the block
+	BlockAge time.Duration
 	// HasError is wether or not the result has an error
 	HasError bool
 	// Error is the error recevied when trying to establish latency
@@ -67,7 +68,7 @@ func getLatency(ctx context.Context, rpcURL string) (l Result) {
 		return l
 	}
 
-	timer := stopwatch.Start()
+	startTime := time.Now()
 
 	client, err := ethclient.DialContext(ctx, rpcURL)
 	if err != nil {
@@ -75,13 +76,18 @@ func getLatency(ctx context.Context, rpcURL string) (l Result) {
 		return l
 	}
 
-	_, err = client.ChainID(ctx)
+	latestHeader, err := client.HeaderByNumber(ctx, nil)
 	if err != nil {
-		l.Error = fmt.Errorf("could not get chainid: %w", err)
+		l.Error = fmt.Errorf("could not get header from %s: %w", rpcURL, err)
 		return l
 	}
 
-	l.Latency = timer.Stop().Milliseconds()
+	endTime := time.Now()
+
+	l.Latency = endTime.Sub(startTime)
+
+	l.BlockAge = endTime.Sub(time.Unix(int64(latestHeader.Time), 0))
+
 	l.HasError = false
 	return l
 }
