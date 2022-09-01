@@ -6,19 +6,13 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/contracts/testcontract"
-	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/testutil"
+	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 )
-
-// TestScribeConfirmations tests that data will not be added if a specified amount of blocks
-// have not passed before the block that the data belongs to.
-func (b BackfillSuite) TestScribeConfirmations() {
-	b.T().Skip("TODO")
-}
 
 // TestScribeBackfill tests backfilling data from all chains.
 func (b BackfillSuite) TestScribeBackfill() {
@@ -79,12 +73,14 @@ func (b BackfillSuite) TestScribeBackfill() {
 	allChainConfigs := []config.ChainConfig{}
 	for i, chain := range chains {
 		chainConfig := config.ChainConfig{
-			ChainID:               chain,
-			RPCUrl:                "an rpc url is not needed for simulated backends",
-			ConfirmationThreshold: 0,
-			Contracts:             allContractConfigs[i],
+			ChainID:   chain,
+			RPCUrl:    "an rpc url is not needed for simulated backends",
+			Contracts: allContractConfigs[i],
 		}
 		allChainConfigs = append(allChainConfigs, chainConfig)
+	}
+	scribeConfig := config.Config{
+		Chains: allChainConfigs,
 	}
 
 	// Set up all chain backfillers.
@@ -95,10 +91,25 @@ func (b BackfillSuite) TestScribeBackfill() {
 		chainBackfillers = append(chainBackfillers, chainBackfiller)
 	}
 
+	scribeBackends := make(map[uint32]backfill.ScribeBackend)
+	for _, backend := range simulatedBackends {
+		chainID, err := backend.ChainID(b.GetTestContext())
+		Nil(b.T(), err)
+		scribeBackends[uint32(chainID.Uint64())] = backend
+	}
+
+	// Set up the scribe backfiller.
+	scribeBackfiller, err := backfill.NewScribeBackfiller(b.testDB, scribeBackends, scribeConfig)
+	Nil(b.T(), err)
+
 	// Run the backfill test for each chain.
 	for i, chainBackfiller := range chainBackfillers {
-		ChainBackfillTest(b, chains[i], allDeployedContracts[i], allContractRefs[i], simulatedBackends[i], chainBackfiller, allChainConfigs[i])
+		b.EmitEventsForAChain(chains[i], allDeployedContracts[i], allContractRefs[i], simulatedBackends[i], chainBackfiller, allChainConfigs[i], false)
 	}
+
+	// Run the scribe's backfill.
+	err = scribeBackfiller.Backfill(b.GetTestContext())
+	Nil(b.T(), err)
 
 	// Check that the data was added to the database.
 	logs, err := b.testDB.UnsafeRetrieveAllLogs(b.GetTestContext(), false, 0, common.Address{})

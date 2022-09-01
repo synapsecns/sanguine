@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/synapsecns/sanguine/agents/db"
+	"github.com/synapsecns/sanguine/services/scribe/db"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"

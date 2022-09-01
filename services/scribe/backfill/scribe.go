@@ -3,10 +3,15 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"math/big"
 
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
-	"github.com/synapsecns/synapse-node/pkg/evm/client"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -14,18 +19,18 @@ import (
 type ScribeBackfiller struct {
 	// eventDB is the database to store event data in
 	eventDB db.EventDB
-	// clients are a mapping of chain IDs -> clients
-	clients map[uint32]client.EVMClient
-	// chainBackfillers is the list of chain backfillers
-	chainBackfillers []*ChainBackfiller
+	// clients is a mapping of chain IDs -> clients
+	clients map[uint32]ScribeBackend
+	// ChainBackfillers is a mapping of chain IDs -> chain backfillers
+	ChainBackfillers map[uint32]*ChainBackfiller
 	// config is the config for the backfiller
 	config config.Config
 }
 
 // NewScribeBackfiller creates a new backfiller for the scribe.
-func NewScribeBackfiller(eventDB db.EventDB, clients []client.EVMClient, config config.Config) (*ScribeBackfiller, error) {
+func NewScribeBackfiller(eventDB db.EventDB, clients map[uint32]ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
 	// set up the clients mapping
-	clientsMap := make(map[uint32]client.EVMClient)
+	clientsMap := make(map[uint32]ScribeBackend)
 	for _, client := range clients {
 		chainID, err := client.ChainID(context.Background())
 		if err != nil {
@@ -34,20 +39,20 @@ func NewScribeBackfiller(eventDB db.EventDB, clients []client.EVMClient, config 
 		clientsMap[uint32(chainID.Uint64())] = client
 	}
 	// initialize the list of chain backfillers
-	chainBackfillers := []*ChainBackfiller{}
+	chainBackfillers := map[uint32]*ChainBackfiller{}
 	// initialize each chain backfiller
 	for _, chainConfig := range config.Chains {
-		chainBackfiller, err := NewChainBackfiller(chainConfig.ChainID, eventDB, clients[chainConfig.ChainID], chainConfig)
+		chainBackfiller, err := NewChainBackfiller(chainConfig.ChainID, eventDB, clientsMap[chainConfig.ChainID], chainConfig)
 		if err != nil {
 			return nil, fmt.Errorf("could not create chain backfiller: %w", err)
 		}
-		chainBackfillers = append(chainBackfillers, chainBackfiller)
+		chainBackfillers[chainConfig.ChainID] = chainBackfiller
 	}
 
 	return &ScribeBackfiller{
 		eventDB:          eventDB,
 		clients:          clientsMap,
-		chainBackfillers: chainBackfillers,
+		ChainBackfillers: chainBackfillers,
 		config:           config,
 	}, nil
 }
@@ -55,24 +60,20 @@ func NewScribeBackfiller(eventDB db.EventDB, clients []client.EVMClient, config 
 // Backfill iterates over each chain backfiller and calls Backfill concurrently on each one.
 func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 	// initialize the errgroup
-	g, ctx := errgroup.WithContext(ctx)
+	g, groupCtx := errgroup.WithContext(ctx)
 
 	// iterate over each chain backfiller
-	for _, chainBackfiller := range s.chainBackfillers {
+	for _, chainBackfiller := range s.ChainBackfillers {
 		// capture func literal
 		chainBackfiller := chainBackfiller
 		// get the end height for the backfill
-		currentBlock, err := s.clients[chainBackfiller.chainID].BlockNumber(ctx)
+		currentBlock, err := s.clients[chainBackfiller.chainID].BlockNumber(groupCtx)
 		if err != nil {
 			return fmt.Errorf("could not get current block number: %w", err)
 		}
-		confirmationThreshold := s.config.Chains[chainBackfiller.chainID].ConfirmationThreshold
-		if uint32(currentBlock) < confirmationThreshold {
-			return fmt.Errorf("current block number %d is less than confirmation threshold %d", currentBlock, s.config.Chains[chainBackfiller.chainID].ConfirmationThreshold)
-		}
 		// call Backfill concurrently
 		g.Go(func() error {
-			err := chainBackfiller.Backfill(ctx, currentBlock-uint64(confirmationThreshold))
+			err := chainBackfiller.Backfill(groupCtx, currentBlock)
 			if err != nil {
 				return fmt.Errorf("could not backfill chain: %w", err)
 			}
@@ -86,3 +87,27 @@ func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 
 	return nil
 }
+
+// ScribeBackend is the set of functions that the scribe needs from a client.
+type ScribeBackend interface {
+	// ChainID gets the chain id from the rpc server
+	ChainID(ctx context.Context) (*big.Int, error)
+	// TransactionByHash checks the pool of pending transactions in addition to the
+	// blockchain. The isPending return value indicates whether the transaction has been
+	// mined yet. Note that the transaction may not be part of the canonical chain even if
+	// it's not pending.
+	TransactionByHash(ctx context.Context, txHash common.Hash) (tx *types.Transaction, isPending bool, err error)
+	// TransactionReceipt returns the receipt of a mined transaction. Note that the
+	// transaction may not be included in the current canonical chain even if a receipt
+	// exists.
+	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
+	// BlockNumber gets the latest block number
+	BlockNumber(ctx context.Context) (uint64, error)
+	// FilterLogs executes a log filter operation, blocking during execution and
+	// returning all the results in one batch.
+	//
+	// TODO(karalabe): Deprecate when the subscription one can return past data too.
+	FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error)
+}
+
+var _ ScribeBackend = simulated.Backend{}

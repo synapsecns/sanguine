@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
@@ -32,11 +31,20 @@ type RangeFilter struct {
 	logs chan *LogInfo
 	// filterer contains the interface used to fetch logs for the given contract. Logs are fteched
 	// for contractAddress
-	filterer bind.ContractFilterer
+	filterer LogFilterer
 	// contractAddress is the contractAddress that logs are fetched for
 	contractAddress ethCommon.Address
 	// done is whether or not the RangeFilter has completed. It cannot be restarted and the object must be recreated
 	done bool
+}
+
+// LogFilterer is the interface for filtering logs.
+type LogFilterer interface {
+	// FilterLogs executes a log filter operation, blocking during execution and
+	// returning all the results in one batch.
+	//
+	// TODO(karalabe): Deprecate when the subscription one can return past data too.
+	FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error)
 }
 
 // bufferSize is how many ranges ahead should be fetched.
@@ -52,7 +60,7 @@ var minBackoff = 1 * time.Second
 var maxBackoff = 30 * time.Second
 
 // NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
-func NewRangeFilter(address ethCommon.Address, filterer bind.ContractFilterer, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
+func NewRangeFilter(address ethCommon.Address, filterer LogFilterer, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
 	return &RangeFilter{
 		iterator:        common.NewChunkIterator(startBlock, endBlock, chunkSize, reverse),
 		logs:            make(chan *LogInfo, bufferSize),
@@ -119,6 +127,10 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *common.Chunk) (*Log
 				Addresses: []ethCommon.Address{f.contractAddress},
 			})
 
+			if len(logs) > 0 {
+				fmt.Println(logs)
+			}
+
 			if err != nil {
 				timeout = b.Duration()
 				logger.Warnf("could not filter logs for range %d to %d: %v", chunk.MinBlock(), chunk.MaxBlock(), err)
@@ -134,7 +146,6 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *common.Chunk) (*Log
 }
 
 // Drain fetches all logs and concatenated them into a single slice.
-// Deprecated: use the channel.
 func (f *RangeFilter) Drain(ctx context.Context) (filteredLogs []types.Log, err error) {
 	for {
 		select {
@@ -145,6 +156,8 @@ func (f *RangeFilter) Drain(ctx context.Context) (filteredLogs []types.Log, err 
 			if f.done {
 				return filteredLogs, nil
 			}
+		default:
+			return filteredLogs, nil
 		}
 	}
 }
