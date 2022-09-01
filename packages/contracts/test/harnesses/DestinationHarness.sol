@@ -25,7 +25,7 @@ contract DestinationHarness is Destination {
         return _isNotary(_domain, _notary);
     }
 
-    function setSensitiveValue(uint256 _newValue) external onlySystemMessenger {
+    function setSensitiveValue(uint256 _newValue) external onlySystemRouter {
         sensitiveValue = _newValue;
     }
 

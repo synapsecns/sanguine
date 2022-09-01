@@ -346,27 +346,27 @@ contract Origin is
     /**
      * @notice  Returns "adjusted" sender address.
      * @dev     By default, "sender address" is msg.sender.
-     *          However, if SystemMessenger sends a message, specifying SYSTEM_SENDER as the recipient,
-     *          SYSTEM_SENDER is used as "sender address" on origin chain.
-     *          Note that transaction will revert if anyone but SystemMessenger uses SYSTEM_SENDER as the recipient.
+     *          However, if SystemRouter sends a message, specifying SYSTEM_ROUTER as the recipient,
+     *          SYSTEM_ROUTER is used as "sender address" on origin chain.
+     *          Note that transaction will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
      */
     function _checkForSystemMessage(bytes32 _recipientAddress)
         internal
         view
         returns (bytes32 sender)
     {
-        if (_recipientAddress != SystemMessage.SYSTEM_SENDER) {
+        if (_recipientAddress != SystemMessage.SYSTEM_ROUTER) {
             sender = TypeCasts.addressToBytes32(msg.sender);
             /**
-             * @dev Note: SYSTEM_SENDER has highest 12 bytes set,
+             * @dev Note: SYSTEM_ROUTER has highest 12 bytes set,
              *      whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
-             *      Thus, in this branch: sender != SystemMessage.SYSTEM_SENDER
+             *      Thus, in this branch: sender != SystemMessage.SYSTEM_ROUTER
              */
         } else {
-            // Check that SystemMessenger specified SYSTEM_SENDER as recipient, revert otherwise.
-            _assertSystemMessenger();
+            // Check that SystemRouter specified SYSTEM_ROUTER as recipient, revert otherwise.
+            _assertSystemRouter();
             // Adjust "sender address" for correct processing on remote chain.
-            sender = SystemMessage.SYSTEM_SENDER;
+            sender = SystemMessage.SYSTEM_ROUTER;
         }
     }
 }

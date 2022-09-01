@@ -970,13 +970,13 @@ func (_m *IOrigin) SetNotaryManager(opts *bind.TransactOpts, _notaryManager comm
 	return r0, r1
 }
 
-// SetSystemMessenger provides a mock function with given fields: opts, _systemMessenger
-func (_m *IOrigin) SetSystemMessenger(opts *bind.TransactOpts, _systemMessenger common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, _systemMessenger)
+// SetSystemRouter provides a mock function with given fields: opts, _systemRouter
+func (_m *IOrigin) SetSystemRouter(opts *bind.TransactOpts, _systemRouter common.Address) (*types.Transaction, error) {
+	ret := _m.Called(opts, _systemRouter)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, _systemMessenger)
+		r0 = rf(opts, _systemRouter)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -985,7 +985,7 @@ func (_m *IOrigin) SetSystemMessenger(opts *bind.TransactOpts, _systemMessenger 
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
-		r1 = rf(opts, _systemMessenger)
+		r1 = rf(opts, _systemRouter)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1047,8 +1047,8 @@ func (_m *IOrigin) SuggestAttestation(opts *bind.CallOpts) (struct {
 	return r0, r1
 }
 
-// SystemMessenger provides a mock function with given fields: opts
-func (_m *IOrigin) SystemMessenger(opts *bind.CallOpts) (common.Address, error) {
+// SystemRouter provides a mock function with given fields: opts
+func (_m *IOrigin) SystemRouter(opts *bind.CallOpts) (common.Address, error) {
 	ret := _m.Called(opts)
 
 	var r0 common.Address

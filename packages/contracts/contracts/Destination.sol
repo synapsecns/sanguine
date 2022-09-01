@@ -332,14 +332,14 @@ contract Destination is Version0, SystemContract, GlobalNotaryRegistry, GuardReg
     }
 
     function _checkForSystemMessage(bytes32 _recipient) internal view returns (address recipient) {
-        // Check if SYSTEM_SENDER was specified as message recipient
-        if (_recipient == SystemMessage.SYSTEM_SENDER) {
+        // Check if SYSTEM_ROUTER was specified as message recipient
+        if (_recipient == SystemMessage.SYSTEM_ROUTER) {
             /**
-             * @dev Route message to SystemMessenger.
-             *      Note: Only SystemMessenger contract on origin chain
+             * @dev Route message to SystemRouter.
+             *      Note: Only SystemRouter contract on origin chain
              *      can send such a message (enforced in Origin.sol).
              */
-            recipient = address(systemMessenger);
+            recipient = address(systemRouter);
         } else {
             // Cast bytes32 to address otherwise
             recipient = TypeCasts.bytes32ToAddress(_recipient);
