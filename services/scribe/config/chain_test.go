@@ -9,9 +9,8 @@ import (
 
 func chainConfigFixture() config.ChainConfig {
 	return config.ChainConfig{
-		ChainID:               gofakeit.Uint32(),
-		RPCUrl:                gofakeit.URL(),
-		ConfirmationThreshold: gofakeit.Uint32(),
+		ChainID: gofakeit.Uint32(),
+		RPCUrl:  gofakeit.URL(),
 		Contracts: config.ContractConfigs{
 			config.ContractConfig{
 				Address:    utils.NewMockAddress().String(),

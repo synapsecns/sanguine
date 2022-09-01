@@ -1,4 +1,4 @@
-package backfill_test
+package node_test
 
 import (
 	"testing"
@@ -14,7 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 )
 
-type BackfillSuite struct {
+type LiveSuite struct {
 	*testsuite.TestSuite
 	testDB  db.EventDB
 	manager *testutil.DeployManager
@@ -22,30 +22,30 @@ type BackfillSuite struct {
 	signer  *localsigner.Signer
 }
 
-// NewBackfillSuite creates a new backfill test suite.
-func NewBackfillSuite(tb testing.TB) *BackfillSuite {
+// NewLiveSuite creates a new live test suite.
+func NewLiveSuite(tb testing.TB) *LiveSuite {
 	tb.Helper()
-	return &BackfillSuite{
+	return &LiveSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 
-func (b *BackfillSuite) SetupTest() {
-	b.TestSuite.SetupTest()
+func (l *LiveSuite) SetupTest() {
+	l.TestSuite.SetupTest()
 
-	sqliteStore, err := sqlite.NewSqliteStore(b.GetTestContext(), filet.TmpDir(b.T(), ""))
-	Nil(b.T(), err)
+	sqliteStore, err := sqlite.NewSqliteStore(l.GetTestContext(), filet.TmpDir(l.T(), ""))
+	Nil(l.T(), err)
 
-	b.testDB = sqliteStore
+	l.testDB = sqliteStore
 
-	b.manager = testutil.NewDeployManager(b.T())
+	l.manager = testutil.NewDeployManager(l.T())
 
-	b.wallet, err = wallet.FromRandom()
-	Nil(b.T(), err)
-	b.signer = localsigner.NewSigner(b.wallet.PrivateKey())
+	l.wallet, err = wallet.FromRandom()
+	Nil(l.T(), err)
+	l.signer = localsigner.NewSigner(l.wallet.PrivateKey())
 }
 
-// TestBackfillSuite tests the backfill suite.
-func TestBackfillSuite(t *testing.T) {
-	suite.Run(t, NewBackfillSuite(t))
+// TestLiveSuite tests the live suite.
+func TestLiveSuite(t *testing.T) {
+	suite.Run(t, NewLiveSuite(t))
 }

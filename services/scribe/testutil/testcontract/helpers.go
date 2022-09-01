@@ -7,7 +7,7 @@ import (
 )
 
 // TestContractRef is a bound destination contract that returns the address of the destination contract.
-// nolint: golint
+// nolint: golint, revive
 type TestContractRef struct {
 	*TestContract
 	address common.Address

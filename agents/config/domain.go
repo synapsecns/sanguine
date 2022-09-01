@@ -39,7 +39,7 @@ type DomainConfig struct {
 	// Type of the chain (e.g. evm)
 	Type string `toml:"Type"`
 	// RequiredConfirmations is the number of confirmations to way
-	RequiredConfirmations uint32 `toml:"Checks"`
+	RequiredConfirmations uint32 `toml:"Confirmations"`
 	// OriginAddress gets origin contract address
 	OriginAddress string `toml:"OriginAddress"`
 	// AttesationCollectorAddress contains the attestation collector address (if present)
