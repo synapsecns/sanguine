@@ -17,6 +17,28 @@ abstract contract AbstractNotaryRegistry {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                EVENTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Emitted when a new Notary is added.
+     * @param domain    Domain where a Notary was added
+     * @param notary    Address of the added notary
+     */
+    event NotaryAdded(uint32 indexed domain, address notary);
+
+    /**
+     * @notice Emitted when a new Notary is removed.
+     * @param domain    Domain where a Notary was removed
+     * @param notary    Address of the removed notary
+     */
+    event NotaryRemoved(uint32 indexed domain, address notary);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     /**
      * @notice Adds a new Notary to Registry.
      * @dev Child contracts should implement this depending on how Notaries are stored.

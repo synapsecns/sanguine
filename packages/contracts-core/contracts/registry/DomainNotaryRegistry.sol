@@ -29,22 +29,6 @@ contract DomainNotaryRegistry is AbstractNotaryRegistry {
     uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Emitted when a new Notary is added.
-     * @param notary    Address of the added notary
-     */
-    event DomainNotaryAdded(address notary);
-
-    /**
-     * @notice Emitted when a new Notary is removed.
-     * @param notary    Address of the removed notary
-     */
-    event DomainNotaryRemoved(address notary);
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -115,7 +99,7 @@ contract DomainNotaryRegistry is AbstractNotaryRegistry {
     function _addNotary(address _notary) internal returns (bool notaryAdded) {
         notaryAdded = notaries.add(_notary);
         if (notaryAdded) {
-            emit DomainNotaryAdded(_notary);
+            emit NotaryAdded(trackedDomain, _notary);
         }
     }
 
@@ -138,7 +122,7 @@ contract DomainNotaryRegistry is AbstractNotaryRegistry {
     function _removeNotary(address _notary) internal returns (bool notaryRemoved) {
         notaryRemoved = notaries.remove(_notary);
         if (notaryRemoved) {
-            emit DomainNotaryRemoved(_notary);
+            emit NotaryRemoved(trackedDomain, _notary);
         }
     }
 

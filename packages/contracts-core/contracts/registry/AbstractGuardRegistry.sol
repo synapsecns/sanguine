@@ -16,6 +16,26 @@ abstract contract AbstractGuardRegistry {
     using Report for bytes29;
     using TypedMemView for bytes29;
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                EVENTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Emitted when a new Guard is added.
+     * @param guard    Address of the added guard
+     */
+    event GuardAdded(address guard);
+
+    /**
+     * @notice Emitted when a Guard is removed.
+     * @param guard    Address of the removed guard
+     */
+    event GuardRemoved(address guard);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     /**
      * @notice Adds a new Guard to Registry.
      * @dev Child contracts should implement this depending on how Guards are stored.
