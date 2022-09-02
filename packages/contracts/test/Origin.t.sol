@@ -26,7 +26,6 @@ contract OriginTest is SynapseTestWithNotaryManager {
         systemRouter = ISystemRouter(address(1234567890));
         origin.setSystemRouter(systemRouter);
         origin.addGuard(guard);
-
     }
 
     // ============ STATE AND PERMISSIONING ============
