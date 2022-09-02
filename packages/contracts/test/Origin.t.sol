@@ -23,7 +23,6 @@ contract OriginTest is SynapseTestWithNotaryManager {
         origin = new OriginHarness(localDomain);
         origin.initialize(INotaryManager(notaryManager));
         notaryManager.setOrigin(address(origin));
-
         systemRouter = ISystemRouter(address(1234567890));
         origin.setSystemRouter(systemRouter);
         origin.addGuard(guard);

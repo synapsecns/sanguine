@@ -41,7 +41,6 @@ contract DestinationTest is SynapseTest {
         destination = new DestinationHarness(localDomain);
         destination.initialize(remoteDomain, notary);
         dApp = new AppHarness(OPTIMISTIC_PERIOD);
-
         systemRouter = ISystemRouter(address(1234567890));
         destination.setSystemRouter(systemRouter);
         destination.addGuard(guard);
