@@ -1,7 +1,6 @@
 package proxy_test
 
 import (
-	"encoding/json"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -32,13 +31,6 @@ func (p *ProxySuite) TestServeRequestNoRPCs() {
 
 	prxy.ServeRPCReq(c, 1)
 	Equal(p.T(), w.Code, http.StatusBadRequest)
-}
-
-func (p *ProxySuite) MustMarshall(v any) []byte {
-	res, err := json.Marshal(v)
-	Nil(p.T(), err)
-
-	return res
 }
 
 // checkRequest is a helper method for checking requests.
