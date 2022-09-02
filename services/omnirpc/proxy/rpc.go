@@ -55,7 +55,6 @@ func isFilterArgConfirmable(arg json.RawMessage) (bool, error) {
 	return !usesLatest, nil
 }
 
-// nolint: cyclop
 func isConfirmable(body []byte) (bool, error) {
 	payload, err := parseRPCPayload(body)
 	if err != nil {
@@ -65,33 +64,18 @@ func isConfirmable(body []byte) (bool, error) {
 	// TODO: handle batch methods
 	// TODO: should we error on default?
 	switch payload.Method {
-	case "eth_getBlockByNumber":
+	case "eth_getBlockByNumber", "eth_getBlockTransactionCountByNumber":
 		return isBlockNumConfirmable(payload.Params[0]), nil
-	case "eth_blockNumber":
+	case "eth_blockNumber", "eth_syncing", "eth_gasPrice", "eth_maxPriorityFeePerGas", "eth_estimateGas":
 		return false, nil
-	case "eth_syncing":
-		return false, nil
-	case "eth_getBlockTransactionCountByNumber":
-		return isBlockNumConfirmable(payload.Params[0]), nil
-	case "eth_getBalance":
+	case "eth_getBalance", "eth_getCode", "eth_getTransactionCount", "eth_call":
 		return isBlockNumConfirmable(payload.Params[1]), nil
 	case "eth_getStorageAt":
 		return isBlockNumConfirmable(payload.Params[2]), nil
-	case "eth_getCode":
-		return isBlockNumConfirmable(payload.Params[1]), nil
-	case "eth_getTransactionCount":
-		return isBlockNumConfirmable(payload.Params[1]), nil
 	case "eth_getLogs":
 		return isFilterArgConfirmable(payload.Params[0])
-	case "eth_call":
-		return isBlockNumConfirmable(payload.Params[1]), nil
-	case "eth_gasPrice":
-		return false, nil
-	case "eth_maxPriorityFeePerGas":
-		return false, nil
-	case "eth_estimateGas":
-		return false, nil
 	// not confirmable because tx could be pending. We might want to handle w/ omnicast though
+	// left seperate for comment
 	case "eth_sendRawTransaction":
 		return false, nil
 	}
