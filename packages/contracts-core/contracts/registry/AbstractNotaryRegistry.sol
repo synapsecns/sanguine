@@ -5,6 +5,12 @@ import { TypedMemView } from "../libs/TypedMemView.sol";
 import { Attestation } from "../libs/Attestation.sol";
 import { Auth } from "../libs/Auth.sol";
 
+/**
+ * @notice Registry used for verifying Attestations signed by Notaries.
+ * This is done agnostic of how the Notaries are actually stored.
+ * The child contract is responsible for implementing the Notaries storage.
+ * @dev It is assumed that the Notary signature is only valid for a subset of origins.
+ */
 abstract contract AbstractNotaryRegistry {
     using Attestation for bytes;
     using Attestation for bytes29;

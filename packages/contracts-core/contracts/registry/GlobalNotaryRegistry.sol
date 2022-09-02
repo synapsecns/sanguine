@@ -6,8 +6,11 @@ import { AbstractNotaryRegistry } from "./AbstractNotaryRegistry.sol";
 /**
  * @notice A Registry to keep track of Notaries on all domains.
  *
- * @dev Modified OZ's EnumerableSet. This enables mapping into EnumerableSet.
+ * @dev Modified OZ's EnumerableSet.
+ * This enables mapping(uint32 => EnumerableSet), which is not supported by Solidity natively.
  * https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/structs/EnumerableSet.sol
+ *
+ * It is assumed that the Notary signature is only valid for a subset of origins.
  */
 contract GlobalNotaryRegistry is AbstractNotaryRegistry {
     /*╔══════════════════════════════════════════════════════════════════════╗*\

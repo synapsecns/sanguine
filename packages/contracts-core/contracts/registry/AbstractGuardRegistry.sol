@@ -5,6 +5,12 @@ import { TypedMemView } from "../libs/TypedMemView.sol";
 import { Report } from "../libs/Report.sol";
 import { Auth } from "../libs/Auth.sol";
 
+/**
+ * @notice Registry used for verifying Reports signed by Guards.
+ * This is done agnostic of how the Guards are actually stored.
+ * The child contract is responsible for implementing the Guards storage.
+ * @dev It is assumed that the Guard signature is valid on all chains.
+ */
 abstract contract AbstractGuardRegistry {
     using Report for bytes;
     using Report for bytes29;

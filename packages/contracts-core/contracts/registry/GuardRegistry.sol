@@ -6,7 +6,8 @@ import { AbstractGuardRegistry } from "./AbstractGuardRegistry.sol";
 import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 /**
- * @notice A Registry to keep track of all Guards.
+ * @notice A Registry to keep track of Guards on all domains.
+ * @dev It is assumed that the Guard signature is valid on all chains.
  */
 contract GuardRegistry is AbstractGuardRegistry {
     using EnumerableSet for EnumerableSet.AddressSet;

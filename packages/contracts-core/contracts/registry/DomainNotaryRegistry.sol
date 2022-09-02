@@ -6,7 +6,7 @@ import { AbstractNotaryRegistry } from "./AbstractNotaryRegistry.sol";
 import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 /**
- * @notice A Registry to keep track of all Notaries on a single domain.
+ * @notice A Registry to keep track of Notaries on a single domain.
  */
 contract DomainNotaryRegistry is AbstractNotaryRegistry {
     using EnumerableSet for EnumerableSet.AddressSet;
