@@ -16,6 +16,7 @@ contract DestinationHarness is Destination, GuardRegistryHarness {
     using Tips for bytes29;
 
     event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);
+    event LogSystemCall(uint32 origin, uint8 caller);
 
     constructor(uint32 _localDomain) Destination(_localDomain) {}
 
@@ -27,8 +28,13 @@ contract DestinationHarness is Destination, GuardRegistryHarness {
         return _isNotary(_domain, _notary);
     }
 
-    function setSensitiveValue(uint256 _newValue) external onlySystemRouter {
+    function setSensitiveValue(
+        uint32 _origin,
+        uint8 _caller,
+        uint256 _newValue
+    ) external onlySystemRouter {
         sensitiveValue = _newValue;
+        emit LogSystemCall(_origin, _caller);
     }
 
     function setMessageStatus(

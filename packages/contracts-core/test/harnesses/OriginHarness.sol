@@ -8,14 +8,21 @@ import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
 contract OriginHarness is Origin, GuardRegistryHarness {
     uint256 public sensitiveValue;
 
+    event LogSystemCall(uint32 origin, uint8 caller);
+
     constructor(uint32 _domain) Origin(_domain) {}
 
     function isNotary(address _notary) public view returns (bool) {
         return _isNotary(localDomain, _notary);
     }
 
-    function setSensitiveValue(uint256 _newValue) external onlySystemRouter {
+    function setSensitiveValue(
+        uint32 _origin,
+        uint8 _caller,
+        uint256 _newValue
+    ) external onlySystemRouter {
         sensitiveValue = _newValue;
+        emit LogSystemCall(_origin, _caller);
     }
 
     function setFailed(address _notary) public {

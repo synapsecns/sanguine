@@ -26,7 +26,8 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
 
     uint32 internal optimisticPeriod = 420;
     uint256 internal secretValue = 1337;
-    bytes internal payload = abi.encodeWithSelector(origin.setSensitiveValue.selector, secretValue);
+    bytes4 internal selector = origin.setSensitiveValue.selector;
+    bytes internal data = abi.encode(secretValue);
 
     bytes32 internal constant SYSTEM_ROUTER =
         0xFFFFFFFF_FFFFFFFF_FFFFFFFF_00000000_00000000_00000000_00000000_00000000;
@@ -42,6 +43,8 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes message
     );
 
+    event LogSystemCall(uint32 origin, uint8 caller);
+
     function setUp() public override {
         super.setUp();
 
@@ -53,6 +56,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         destination.initialize(remoteDomain, notary);
 
         systemRouter = new SystemRouterHarness(
+            localDomain,
             address(origin),
             address(destination),
             optimisticPeriod
@@ -123,7 +127,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
 
     function test_remoteSystemCall_notSystemContract() public {
         vm.expectRevert("Unauthorized caller");
-        systemRouter.remoteSystemCall(remoteDomain, ISystemRouter.SystemContracts(0), payload);
+        systemRouter.remoteSystemCall(
+            remoteDomain,
+            ISystemRouter.SystemContracts(0),
+            selector,
+            data
+        );
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -150,6 +159,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(
             optimisticPeriod,
             0,
+            0,
             _createReceivedSystemMessage
         );
         skip(optimisticPeriod - 1);
@@ -159,7 +169,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
 
     function test_receiveSystemMessage_optimisticPeriodForged() public {
         uint32 fakePeriod = 1;
-        bytes memory message = _prepareReceiveTest(fakePeriod, 0, _createReceivedSystemMessage);
+        bytes memory message = _prepareReceiveTest(fakePeriod, 0, 0, _createReceivedSystemMessage);
         skip(fakePeriod);
         vm.expectRevert("Client: !optimisticSeconds");
         destination.execute(message);
@@ -168,6 +178,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     function test_receiveSystemMessage_unknownRecipient() public {
         bytes memory message = _prepareReceiveTest(
             optimisticPeriod,
+            0,
             2,
             _createReceivedSystemMessage
         );
@@ -183,6 +194,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     function test_rejectUsualReceivedMessage() public {
         bytes memory message = _prepareReceiveTest(
             optimisticPeriod,
+            0,
             0,
             _createUsualReceivedMessage
         );
@@ -207,16 +219,20 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         if (!_expectSuccess && _revertMessage.length > 0) {
             vm.expectRevert(_revertMessage);
         }
+        if (_expectSuccess) {
+            vm.expectEmit(true, true, true, true);
+            emit LogSystemCall(localDomain, uint8(_getCaller(_sender)));
+        }
         vm.prank(_sender);
         // Send system call to update sensitive value
-        systemRouter.localSystemCall(_recipient, payload);
+        systemRouter.localSystemCall(_recipient, selector, data);
         // Check for success
         assertEq(recipient.sensitiveValue() == secretValue, _expectSuccess);
     }
 
     function _checkRemoteSystemCall(address _sender) internal {
         for (uint8 t = 0; t <= 1; ++t) {
-            bytes memory message = _createSentSystemMessage(t + 1, t);
+            bytes memory message = _createSentSystemMessage(t + 1, uint8(_getCaller(_sender)), t);
             bytes32 messageHash = keccak256(message);
 
             vm.expectEmit(true, true, true, true);
@@ -228,7 +244,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                 message
             );
             vm.prank(_sender);
-            systemRouter.remoteSystemCall(remoteDomain, ISystemRouter.SystemContracts(t), payload);
+            systemRouter.remoteSystemCall(
+                remoteDomain,
+                ISystemRouter.SystemContracts(t),
+                selector,
+                data
+            );
         }
     }
 
@@ -243,19 +264,24 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             _createReceivedSystemMessage
         );
         skip(optimisticPeriod);
+        vm.expectEmit(true, true, true, true);
+        emit LogSystemCall(remoteDomain, uint8(_caller));
         destination.execute(message);
         assertEq(ISystemMockContract(_getRecipient(_recipient)).sensitiveValue(), secretValue);
     }
 
     function _prepareReceiveTest(
         uint32 _optimisticSeconds,
+        uint8 _caller,
         uint8 _recipient,
-        function(uint32, uint32, uint8) internal returns (bytes memory) _createReceivedMessage
+        function(uint32, uint32, uint8, uint8)
+            internal
+            returns (bytes memory) _createReceivedMessage
     ) internal returns (bytes memory message) {
         (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
         destination.submitAttestation(attestation);
 
-        message = _createReceivedMessage(69, _optimisticSeconds, _recipient);
+        message = _createReceivedMessage(69, _optimisticSeconds, _caller, _recipient);
         bytes32 messageHash = keccak256(message);
         destination.setMessageStatus(remoteDomain, messageHash, ROOT);
 
@@ -266,11 +292,11 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _createSentSystemMessage(uint32 _nonce, uint8 _recipient)
-        internal
-        view
-        returns (bytes memory)
-    {
+    function _createSentSystemMessage(
+        uint32 _nonce,
+        uint8 _caller,
+        uint8 _recipient
+    ) internal view returns (bytes memory) {
         return
             _createSystemMessage(
                 localDomain,
@@ -279,6 +305,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                 remoteDomain,
                 SYSTEM_ROUTER,
                 optimisticPeriod,
+                _caller,
                 _recipient
             );
     }
@@ -286,6 +313,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     function _createReceivedSystemMessage(
         uint32 _nonce,
         uint32 _optimisticSeconds,
+        uint8 _caller,
         uint8 _recipient
     ) internal view returns (bytes memory) {
         return
@@ -296,6 +324,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                 localDomain,
                 SYSTEM_ROUTER,
                 _optimisticSeconds,
+                _caller,
                 _recipient
             );
     }
@@ -303,6 +332,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     function _createUsualReceivedMessage(
         uint32 _optimisticSeconds,
         uint32 _nonce,
+        uint8 _caller,
         uint8 _recipient
     ) internal view returns (bytes memory) {
         return
@@ -313,6 +343,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                 localDomain,
                 addressToBytes32(address(systemRouter)),
                 _optimisticSeconds,
+                _caller,
                 _recipient
             );
     }
@@ -324,8 +355,11 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         uint32 _destination,
         bytes32 _receiver,
         uint32 _optimisticSeconds,
+        uint8 _caller,
         uint8 _recipient
     ) internal view returns (bytes memory) {
+        // Reconstruct payload in the brute force way
+        bytes memory payload = abi.encodePacked(selector, uint256(_origin), uint256(_caller), data);
         return
             Message.formatMessage(
                 Header.formatHeader(
@@ -339,6 +373,20 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                 Tips.emptyTips(),
                 SystemMessage.formatSystemCall(_recipient, payload)
             );
+    }
+
+    function _getCaller(address _caller)
+        internal
+        view
+        returns (ISystemRouter.SystemContracts caller)
+    {
+        if (_caller == address(origin)) {
+            caller = ISystemRouter.SystemContracts.Origin;
+        } else if (_caller == address(destination)) {
+            caller = ISystemRouter.SystemContracts.Destination;
+        } else {
+            revert("Unknown caller");
+        }
     }
 
     function _getRecipient(ISystemRouter.SystemContracts _recipient)

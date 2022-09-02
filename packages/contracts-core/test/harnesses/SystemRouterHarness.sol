@@ -6,8 +6,9 @@ import { SystemRouter } from "../../contracts/system/SystemRouter.sol";
 
 contract SystemRouterHarness is SystemRouter {
     constructor(
+        uint32 _localDomain,
         address _origin,
         address _destination,
         uint32 _optimisticSeconds
-    ) SystemRouter(_origin, _destination, _optimisticSeconds) {}
+    ) SystemRouter(_localDomain, _origin, _destination, _optimisticSeconds) {}
 }
