@@ -1,15 +1,32 @@
 package proxy
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	resty "github.com/go-resty/resty/v2"
+	"github.com/pkg/errors"
 	"golang.org/x/exp/slices"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 )
+
+func parseRPCPayload(body []byte) (method string, err error) {
+	rpcPayload := struct {
+		ID     json.RawMessage   `json:"id"`
+		Method string            `json:"method"`
+		Params []json.RawMessage `json:"params"`
+	}{}
+
+	err = json.Unmarshal(body, &rpcPayload)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to parse json RPC payload")
+	}
+
+	return rpcPayload.Method, nil
+}
 
 func (r *RPCProxy) serveRPCReq(c *gin.Context, chainID int) {
 	rpcList := r.rpcMap.ChainID(chainID)

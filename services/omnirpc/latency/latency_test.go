@@ -34,7 +34,7 @@ func (r *LatencySuite) TestRPCLatency() {
 	}
 }
 
-var statsuCodes = []int{
+var statusCodes = []int{
 	http.StatusBadRequest,
 	http.StatusUnauthorized,
 	http.StatusPaymentRequired,
@@ -69,7 +69,7 @@ func (r *LatencySuite) TestGetLatencyError() {
 
 	wg := &sync.WaitGroup{}
 
-	for _, status := range statsuCodes {
+	for _, status := range statusCodes {
 		// capture func literal
 		status := status
 
