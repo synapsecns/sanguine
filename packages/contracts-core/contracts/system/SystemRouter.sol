@@ -76,15 +76,16 @@ contract SystemRouter is Client, ISystemRouter {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice  Send System Message to one of the System Contracts on origin chain
+     * @notice  Call a system contract on a remote chain by sending a System Message
+     *          to SystemRouter on destination chain.
      * @dev     Only System contracts are allowed to call this function.
-     *          Note that knowledge of recipient address is not required,
+     *          Note: knowledge of contract address on destination chain is not required,
      *          routing will be done by SystemRouter on the destination chain.
      * @param _destination  Domain of destination chain
      * @param _recipient    System contract type of the recipient
      * @param _payload      Data for calling recipient on destination chain
      */
-    function sendSystemMessage(
+    function remoteSystemCall(
         uint32 _destination,
         SystemContracts _recipient,
         bytes memory _payload
@@ -101,16 +102,16 @@ contract SystemRouter is Client, ISystemRouter {
     /**
      * @notice  Call a System Contract on the local chain.
      * @dev     Only System contracts are allowed to call this function.
-     *          Note that knowledge of recipient address is not required,
+     *          Note: knowledge of recipient address is not required,
      *          routing will be done by SystemRouter on the local chain.
      * @param _recipient    System contract type of the recipient
      * @param _payload      Data for calling recipient on destination chain
      */
-    function systemCall(SystemContracts _recipient, bytes memory _payload)
+    function localSystemCall(SystemContracts _recipient, bytes memory _payload)
         external
         onlySystemContract
     {
-        _systemCall(uint8(_recipient), _payload);
+        _localSystemCall(uint8(_recipient), _payload);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -162,14 +163,14 @@ contract SystemRouter is Client, ISystemRouter {
         (SystemMessage.MessageFlag messageType, bytes29 body) = message.unpackMessage();
 
         if (messageType == SystemMessage.MessageFlag.Call) {
-            _systemCall(body.callRecipient(), body.callPayload().clone());
+            _localSystemCall(body.callRecipient(), body.callPayload().clone());
         } else if (messageType == SystemMessage.MessageFlag.Adjust) {
             // TODO: handle messages with instructions
             // to adjust some of the SystemRouter parameters
         }
     }
 
-    function _systemCall(uint8 _recipient, bytes memory _payload) internal {
+    function _localSystemCall(uint8 _recipient, bytes memory _payload) internal {
         address recipient = _getSystemRecipient(_recipient);
         require(recipient != address(0), "System Contract not set");
         // this will call recipient and bubble the revert from the external call

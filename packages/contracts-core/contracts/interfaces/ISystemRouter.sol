@@ -16,7 +16,7 @@ interface ISystemRouter {
      * @param _recipient    System contract type of the recipient
      * @param _payload      Data for calling recipient on destination chain
      */
-    function sendSystemMessage(
+    function remoteSystemCall(
         uint32 _destination,
         SystemContracts _recipient,
         bytes memory _payload
@@ -30,5 +30,5 @@ interface ISystemRouter {
      * @param _recipient    System contract type of the recipient
      * @param _payload      Data for calling recipient on destination chain
      */
-    function systemCall(SystemContracts _recipient, bytes memory _payload) external;
+    function localSystemCall(SystemContracts _recipient, bytes memory _payload) external;
 }

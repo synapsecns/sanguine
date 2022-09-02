@@ -79,14 +79,14 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     ▏*║                       TEST: LOCAL SYSTEM CALL                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_systemCall_toOrigin() public {
+    function test_localSystemCall_toOrigin() public {
         // Destination calls Origin
-        _checkSystemCall(address(destination), ISystemRouter.SystemContracts.Origin, true, "");
+        _checkLocalSystemCall(address(destination), ISystemRouter.SystemContracts.Origin, true, "");
     }
 
-    function test_systemCall_toOrigin_notSystemContract() public {
+    function test_localSystemCall_toOrigin_notSystemContract() public {
         // Impostor calls Origin -> should revert
-        _checkSystemCall(
+        _checkLocalSystemCall(
             address(this),
             ISystemRouter.SystemContracts.Origin,
             false,
@@ -94,14 +94,14 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         );
     }
 
-    function test_systemCall_toDestination() public {
+    function test_localSystemCall_toDestination() public {
         // Origin calls Destination
-        _checkSystemCall(address(origin), ISystemRouter.SystemContracts.Destination, true, "");
+        _checkLocalSystemCall(address(origin), ISystemRouter.SystemContracts.Destination, true, "");
     }
 
-    function test_systemCall_toDestination_notSystemContract() public {
+    function test_localSystemCall_toDestination_notSystemContract() public {
         // Impostor calls Destination -> should revert
-        _checkSystemCall(
+        _checkLocalSystemCall(
             address(this),
             ISystemRouter.SystemContracts.Destination,
             false,
@@ -113,17 +113,17 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     ▏*║                      TEST: SEND SYSTEM MESSAGE                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_sendSystemMessage_origin() public {
-        _testSendSystemMessage(address(origin));
+    function test_remoteSystemCall_origin() public {
+        _checkRemoteSystemCall(address(origin));
     }
 
-    function test_sendSystemMessage_destination() public {
-        _testSendSystemMessage(address(destination));
+    function test_remoteSystemCall_destination() public {
+        _checkRemoteSystemCall(address(destination));
     }
 
-    function test_sendSystemMessage_notSystemContract() public {
+    function test_remoteSystemCall_notSystemContract() public {
         vm.expectRevert("Unauthorized caller");
-        systemRouter.sendSystemMessage(remoteDomain, ISystemRouter.SystemContracts(0), payload);
+        systemRouter.remoteSystemCall(remoteDomain, ISystemRouter.SystemContracts(0), payload);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -201,7 +201,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     ▏*║                           INTERNAL HELPERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _checkSystemCall(
+    function _checkLocalSystemCall(
         address _sender,
         ISystemRouter.SystemContracts _recipient,
         bool _expectSuccess,
@@ -215,12 +215,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         }
         vm.prank(_sender);
         // Send system call to update sensitive value
-        systemRouter.systemCall(_recipient, payload);
+        systemRouter.localSystemCall(_recipient, payload);
         // Check for success
         assertEq(recipient.sensitiveValue() == secretValue, _expectSuccess);
     }
 
-    function _testSendSystemMessage(address _sender) internal {
+    function _checkRemoteSystemCall(address _sender) internal {
         for (uint8 t = 0; t <= 1; ++t) {
             bytes memory message = _createSentSystemMessage(t + 1, t);
             bytes32 messageHash = keccak256(message);
@@ -234,7 +234,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                 message
             );
             vm.prank(_sender);
-            systemRouter.sendSystemMessage(remoteDomain, ISystemRouter.SystemContracts(t), payload);
+            systemRouter.remoteSystemCall(remoteDomain, ISystemRouter.SystemContracts(t), payload);
         }
     }
 
