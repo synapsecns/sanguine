@@ -15,7 +15,7 @@ func (r *RPCProxy) ServeRPCReq(c *gin.Context, chainID int) {
 	r.serveRPCReq(c, chainID)
 }
 
-// ParseRPCPayload exports parseRPCPayload for testing
-func ParseRPCPayload(body []byte) (method string, err error) {
-	return parseRPCPayload(body)
+// IsConfirmable exports isConfirmable for testing.
+func IsConfirmable(body []byte) (bool, error) {
+	return isConfirmable(body)
 }
