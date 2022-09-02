@@ -44,24 +44,22 @@ contract SystemRouter is Client, ISystemRouter {
     uint256[49] private __GAP; //solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
+    ▏*║                              IMMUTABLES                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @notice Allows calls only from any of the System Contracts
-    modifier onlySystemContract() {
-        require(msg.sender == origin || msg.sender == destination, "Unauthorized caller");
-        _;
-    }
+    uint32 public immutable localDomain;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     constructor(
+        uint32 _localDomain,
         address _origin,
         address _destination,
         uint32 _optimisticSeconds
     ) Client(_origin, _destination) {
+        localDomain = _localDomain;
         // TODO: Do we ever want to adjust this?
         // (the value should be the same across all chains)
         // Or could it be converted into immutable?
@@ -76,21 +74,31 @@ contract SystemRouter is Client, ISystemRouter {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice  Call a system contract on a remote chain by sending a System Message
-     *          to SystemRouter on destination chain.
-     * @dev     Only System contracts are allowed to call this function.
-     *          Note: knowledge of contract address on destination chain is not required,
-     *          routing will be done by SystemRouter on the destination chain.
+     * @notice  Send System Message to one of the System Contracts on origin chain
+     * @dev     Note: knowledge of recipient address is not required,
+     *          routing will be done by SystemRouter on destination chain.
+     *          Following call will be made on destination chain:
+     *              recipient.func(originDomain, originSender, _data)
+     *          Allowing recipient to check:
+     *          - domain where remote system call originated
+     *          - System contract type of the sender
      * @param _destination  Domain of destination chain
      * @param _recipient    System contract type of the recipient
-     * @param _payload      Data for calling recipient on destination chain
+     * @param _selector     Function to call on destination chain
+     * @param _data         Data for calling recipient on destination chain
      */
     function remoteSystemCall(
         uint32 _destination,
         SystemContracts _recipient,
-        bytes memory _payload
-    ) external onlySystemContract {
-        bytes memory message = SystemMessage.formatSystemCall(uint8(_recipient), _payload);
+        bytes4 _selector,
+        bytes memory _data
+    ) external {
+        /// @dev This will revert if msg.sender is not a system contract
+        SystemContracts caller = _getSystemCaller(msg.sender);
+        bytes memory message = SystemMessage.formatSystemCall(
+            uint8(_recipient),
+            _formatCalldata(caller, _selector, _data)
+        );
         /**
          * @dev Origin should recognize SystemRouter as the "true sender"
          *      and use SYSTEM_ROUTER address as "sender" instead. This enables not
@@ -104,14 +112,23 @@ contract SystemRouter is Client, ISystemRouter {
      * @dev     Only System contracts are allowed to call this function.
      *          Note: knowledge of recipient address is not required,
      *          routing will be done by SystemRouter on the local chain.
+     *          Following call will be made on local chain:
+     *              recipient.func(localDomain, localSender, _data)
+     *          Allowing recipient to check:
+     *          - domain where system call originated (local domain in this case)
+     *          - System contract type of the sender
      * @param _recipient    System contract type of the recipient
-     * @param _payload      Data for calling recipient on destination chain
+     * @param _selector     Function to call on destination chain
+     * @param _data         Data for calling recipient on destination chain
      */
-    function localSystemCall(SystemContracts _recipient, bytes memory _payload)
-        external
-        onlySystemContract
-    {
-        _localSystemCall(uint8(_recipient), _payload);
+    function localSystemCall(
+        SystemContracts _recipient,
+        bytes4 _selector,
+        bytes memory _data
+    ) external {
+        /// @dev This will revert if msg.sender is not a system contract
+        SystemContracts caller = _getSystemCaller(msg.sender);
+        _localSystemCall(uint8(_recipient), _formatCalldata(caller, _selector, _data));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -180,6 +197,26 @@ contract SystemRouter is Client, ISystemRouter {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function _formatCalldata(
+        SystemContracts _caller,
+        bytes4 _selector,
+        bytes memory _data
+    ) internal view returns (bytes memory) {
+        /**
+         * @dev Payload for contract call is:
+         * 1. Function selector
+         * 2. (domain, caller) are first two arguments
+         * 3. data is remaining arguments, abi-encoded
+         */
+        return abi.encodePacked(_selector, abi.encode(localDomain, _caller), _data);
+    }
+
+    function _getSystemCaller(address _caller) internal view returns (SystemContracts) {
+        if (_caller == origin) return SystemContracts.Origin;
+        if (_caller == destination) return SystemContracts.Destination;
+        revert("Unauthorized caller");
+    }
 
     function _getSystemRecipient(uint8 _recipient) internal view returns (address) {
         if (_recipient == uint8(SystemContracts.Origin)) return origin;

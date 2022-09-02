@@ -28,8 +28,13 @@ abstract contract SystemContract is OwnableUpgradeable {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @dev Modifier for functions that are supposed to be called from
-     * System Contracts on other chains.
+     * @dev Modifier for functions that are supposed to be called only from
+     * System Contracts on all chains (either local or remote).
+     * Note: any function protected by this modifier should have first two params:
+     * - uint32 _originDomain
+     * - SystemContracts _caller
+     * Make sure to check domain/caller, if a function should be only called
+     * from a given domain / by a given caller.
      */
     modifier onlySystemRouter() {
         _assertSystemRouter();
