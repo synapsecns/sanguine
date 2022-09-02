@@ -30,10 +30,10 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function setNotaryManager(address _notaryManager) returns()
 	SetNotaryManager(opts *bind.TransactOpts, _notaryManager common.Address) (*types.Transaction, error)
-	// SetSystemMessenger is a paid mutator transaction binding the contract method 0xb7bc563e.
+	// SetSystemRouter is a paid mutator transaction binding the contract method 0xfbde22f7.
 	//
-	// Solidity: function setSystemMessenger(address _systemMessenger) returns()
-	SetSystemMessenger(opts *bind.TransactOpts, _systemMessenger common.Address) (*types.Transaction, error)
+	// Solidity: function setSystemRouter(address _systemRouter) returns()
+	SetSystemRouter(opts *bind.TransactOpts, _systemRouter common.Address) (*types.Transaction, error)
 	// SubmitReport is a paid mutator transaction binding the contract method 0x5815869d.
 	//
 	// Solidity: function submitReport(bytes _report) returns(bool)

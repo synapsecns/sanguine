@@ -82,10 +82,10 @@ type IOriginCaller interface {
 		Nonce uint32
 		Root  [32]byte
 	}, error)
-	// SystemMessenger is a free data retrieval call binding the contract method 0xccbdf9c9.
+	// SystemRouter is a free data retrieval call binding the contract method 0x529d1549.
 	//
-	// Solidity: function systemMessenger() view returns(address)
-	SystemMessenger(opts *bind.CallOpts) (common.Address, error)
+	// Solidity: function systemRouter() view returns(address)
+	SystemRouter(opts *bind.CallOpts) (common.Address, error)
 	// Tree is a free data retrieval call binding the contract method 0xfd54b228.
 	//
 	// Solidity: function tree() view returns(uint256 count)

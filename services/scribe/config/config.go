@@ -14,6 +14,8 @@ import (
 type Config struct {
 	// Chains stores all chain information
 	Chains ChainConfigs `toml:"Chains"`
+	// RefreshRate is the rate at which the scribe will refresh the last block height in seconds.
+	RefreshRate uint `toml:"RefreshRate"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
