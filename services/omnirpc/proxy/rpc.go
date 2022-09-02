@@ -75,7 +75,7 @@ func isConfirmable(body []byte) (bool, error) {
 	case "eth_getLogs":
 		return isFilterArgConfirmable(payload.Params[0])
 	// not confirmable because tx could be pending. We might want to handle w/ omnicast though
-	// left seperate for comment
+	// left separate for comment
 	case "eth_sendRawTransaction":
 		return false, nil
 	}
