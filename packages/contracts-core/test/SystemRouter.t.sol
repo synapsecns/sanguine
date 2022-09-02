@@ -131,25 +131,19 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_receiveSystemMessage_origin() public {
-        bytes memory message = _prepareReceiveTest(
-            optimisticPeriod,
-            0,
-            _createReceivedSystemMessage
+        // remote Destination -> local Origin
+        _checkReceiveSystemMessage(
+            ISystemRouter.SystemContracts.Destination,
+            ISystemRouter.SystemContracts.Origin
         );
-        skip(optimisticPeriod);
-        destination.execute(message);
-        assertEq(origin.sensitiveValue(), secretValue);
     }
 
     function test_receiveSystemMessage_destination() public {
-        bytes memory message = _prepareReceiveTest(
-            optimisticPeriod,
-            1,
-            _createReceivedSystemMessage
+        // remote Origin -> local Destination
+        _checkReceiveSystemMessage(
+            ISystemRouter.SystemContracts.Origin,
+            ISystemRouter.SystemContracts.Destination
         );
-        skip(optimisticPeriod);
-        destination.execute(message);
-        assertEq(destination.sensitiveValue(), secretValue);
     }
 
     function test_receiveSystemMessage_optimisticPeriodNotOver() public {
@@ -236,6 +230,21 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             vm.prank(_sender);
             systemRouter.remoteSystemCall(remoteDomain, ISystemRouter.SystemContracts(t), payload);
         }
+    }
+
+    function _checkReceiveSystemMessage(
+        ISystemRouter.SystemContracts _caller,
+        ISystemRouter.SystemContracts _recipient
+    ) internal {
+        bytes memory message = _prepareReceiveTest(
+            optimisticPeriod,
+            uint8(_caller),
+            uint8(_recipient),
+            _createReceivedSystemMessage
+        );
+        skip(optimisticPeriod);
+        destination.execute(message);
+        assertEq(ISystemMockContract(_getRecipient(_recipient)).sensitiveValue(), secretValue);
     }
 
     function _prepareReceiveTest(
