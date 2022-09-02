@@ -6,9 +6,9 @@ import (
 	"github.com/pkg/errors"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/synapse-node/pkg/common"
 	"github.com/synapsecns/synapse-node/pkg/evm/client/mocks"
-	"github.com/synapsecns/synapse-node/pkg/teller/backfiller"
 	"github.com/synapsecns/synapse-node/testutils/utils"
 )
 
@@ -18,7 +18,7 @@ func (b BackfillSuite) TestFilterLogsMaxAttempts() {
 	contractAddress := utils.NewMockAddress()
 
 	// create a range filterer so we can test the filter logs method
-	rangeFilter := backfiller.NewRangeFilter(contractAddress, mockFilterer, big.NewInt(1), big.NewInt(10), 1, true)
+	rangeFilter := backfill.NewRangeFilter(contractAddress, mockFilterer, big.NewInt(1), big.NewInt(10), 1, true)
 
 	mockFilterer.
 		// on a filter logs call

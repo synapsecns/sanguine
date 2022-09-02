@@ -11,7 +11,7 @@ import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
 import { MirrorLib } from "../contracts/libs/Mirror.sol";
-import { ISystemMessenger } from "../contracts/interfaces/ISystemMessenger.sol";
+import { ISystemRouter } from "../contracts/interfaces/ISystemRouter.sol";
 import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
 
 import { AppHarness } from "./harnesses/AppHarness.sol";
@@ -30,7 +30,7 @@ contract DestinationTest is SynapseTest {
     uint256 processGas;
     uint256 reserveGas;
 
-    ISystemMessenger internal systemMessenger;
+    ISystemRouter internal systemRouter;
 
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -41,8 +41,9 @@ contract DestinationTest is SynapseTest {
         destination = new DestinationHarness(localDomain);
         destination.initialize(remoteDomain, notary);
         dApp = new AppHarness(OPTIMISTIC_PERIOD);
-        systemMessenger = ISystemMessenger(address(1234567890));
-        destination.setSystemMessenger(systemMessenger);
+
+        systemRouter = ISystemRouter(address(1234567890));
+        destination.setSystemRouter(systemRouter);
         destination.addGuard(guard);
     }
 
@@ -239,14 +240,14 @@ contract DestinationTest is SynapseTest {
         destination.execute(message);
     }
 
-    function test_onlySystemMessenger() public {
-        vm.prank(address(systemMessenger));
+    function test_onlySystemRouter() public {
+        vm.prank(address(systemRouter));
         destination.setSensitiveValue(1337);
         assertEq(destination.sensitiveValue(), 1337);
     }
 
-    function test_onlySystemMessenger_rejectOthers() public {
-        vm.expectRevert("!systemMessenger");
+    function test_onlySystemRouter_rejectOthers() public {
+        vm.expectRevert("!systemRouter");
         destination.setSensitiveValue(1337);
     }
 
