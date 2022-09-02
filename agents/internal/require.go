@@ -6,6 +6,7 @@ package internal
 import (
 	"github.com/BurntSushi/toml"
 
+	"github.com/dgraph-io/ristretto"
 	"github.com/ugorji/go/codec"
 	"github.com/vburenin/ifacemaker/maker"
 	"golang.org/x/exp/rand"
@@ -21,3 +22,4 @@ var _ = toml.Unmarshal
 
 // required by abigen.
 var _ = rand.Int
+var _ = ristretto.Config{}

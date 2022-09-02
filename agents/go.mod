@@ -10,6 +10,7 @@ require (
 	github.com/aws/smithy-go v1.11.3
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/coinbase/rosetta-sdk-go v0.7.0
+	github.com/dgraph-io/ristretto v0.1.0
 	github.com/ethereum/go-ethereum v1.10.11
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
@@ -77,7 +78,6 @@ require (
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/decred/dcrd/dcrec/edwards/v2 v2.0.0 // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.2 // indirect
-	github.com/dgraph-io/ristretto v0.1.0 // indirect
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/dvsekhvalnov/jose2go v0.0.0-20200901110807-248326c1351b // indirect
