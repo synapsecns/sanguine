@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import { ISystemMessenger } from "../interfaces/ISystemMessenger.sol";
+import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
 
 import {
     OwnableUpgradeable
@@ -21,7 +21,7 @@ abstract contract SystemContract is OwnableUpgradeable {
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    ISystemMessenger public systemMessenger;
+    ISystemRouter public systemRouter;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -31,8 +31,8 @@ abstract contract SystemContract is OwnableUpgradeable {
      * @dev Modifier for functions that are supposed to be called from
      * System Contracts on other chains.
      */
-    modifier onlySystemMessenger() {
-        _assertSystemMessenger();
+    modifier onlySystemRouter() {
+        _assertSystemRouter();
         _;
     }
 
@@ -57,8 +57,8 @@ abstract contract SystemContract is OwnableUpgradeable {
     ▏*║                              OWNER ONLY                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function setSystemMessenger(ISystemMessenger _systemMessenger) external onlyOwner {
-        systemMessenger = _systemMessenger;
+    function setSystemRouter(ISystemRouter _systemRouter) external onlyOwner {
+        systemRouter = _systemRouter;
     }
 
     /**
@@ -72,7 +72,7 @@ abstract contract SystemContract is OwnableUpgradeable {
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _assertSystemMessenger() internal view {
-        require(msg.sender == address(systemMessenger), "!systemMessenger");
+    function _assertSystemRouter() internal view {
+        require(msg.sender == address(systemRouter), "!systemRouter");
     }
 }
