@@ -44,6 +44,7 @@ contract DestinationTest is SynapseTest {
         systemRouter = ISystemRouter(address(1234567890));
         destination.setSystemRouter(systemRouter);
         destination.addGuard(guard);
+
     }
 
     // ============ INITIAL STATE ============
