@@ -5,10 +5,7 @@ import "forge-std/console2.sol";
 import { OriginHarness } from "./harnesses/OriginHarness.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
-<<<<<<< HEAD
 import { Report } from "../contracts/libs/Report.sol";
-=======
->>>>>>> master
 import { ISystemRouter } from "../contracts/interfaces/ISystemRouter.sol";
 import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
