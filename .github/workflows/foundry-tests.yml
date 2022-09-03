@@ -40,8 +40,9 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: e947899dd210550e608bf3d234b845d966134bc9
+        run: |
+          curl -L https://foundry.paradigm.xyz | bash
+          foundryup -C e947899dd210550e608bf3d234b845d966134bc9
 
       - name: Run Foundry Tests
         working-directory: ./packages/contracts
