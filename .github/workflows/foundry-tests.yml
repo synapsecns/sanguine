@@ -42,10 +42,11 @@ jobs:
         run: |
           curl -L https://foundry.paradigm.xyz | bash
           cat  /home/runner/.bashrc
+          ls
 
       - name: Install Foundry
         run: |
-          foundryup -C e947899dd210550e608bf3d234b845d966134bc9
+          ~/.foundry/bin/foundryup -C e947899dd210550e608bf3d234b845d966134bc9
 
       - name: Run Foundry Tests
         working-directory: ./packages/contracts
