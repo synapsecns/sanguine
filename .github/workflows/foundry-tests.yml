@@ -38,10 +38,13 @@ jobs:
         working-directory: ./packages/contracts
         run: yarn install --frozen-lockfile --check-files
 
-      - name: Install Foundry
+      - name: Install FoundryUp
         run: |
           curl -L https://foundry.paradigm.xyz | bash
-          ./foundryup -C e947899dd210550e608bf3d234b845d966134bc9
+
+      - name: Install Foundry
+        run: |
+          foundryup -C e947899dd210550e608bf3d234b845d966134bc9
 
       - name: Run Foundry Tests
         working-directory: ./packages/contracts
