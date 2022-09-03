@@ -16,7 +16,7 @@ func (r *RPCProxy) serveRPCReq(c *gin.Context, chainID int) {
 
 	if len(rpcList) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("no endpoint for chain %d", chainID),
+			"error": fmt.Sprintf("not enough endpoint for chain %d: found %d needed %s", chainID, len(rpcList), r.config.Chains[uint32(chainID)].Checks),
 		})
 		return
 	}
