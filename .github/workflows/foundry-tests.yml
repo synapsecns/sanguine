@@ -39,7 +39,6 @@ jobs:
         run: yarn install --frozen-lockfile --check-files
 
       - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
         run: |
           curl -L https://foundry.paradigm.xyz | bash
           foundryup -C e947899dd210550e608bf3d234b845d966134bc9
