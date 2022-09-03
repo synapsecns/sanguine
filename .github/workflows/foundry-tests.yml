@@ -41,12 +41,13 @@ jobs:
       - name: Install FoundryUp
         run: |
           curl -L https://foundry.paradigm.xyz | bash
-          cat  /home/runner/.bashrc
-          ls
 
       - name: Install Foundry
         run: |
           ~/.foundry/bin/foundryup -C e947899dd210550e608bf3d234b845d966134bc9
+
+
+      - uses: Swatinem/rust-cache@v2
 
       - name: Run Foundry Tests
         working-directory: ./packages/contracts
