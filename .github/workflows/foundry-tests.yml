@@ -50,11 +50,11 @@ jobs:
 
       - name: Run Foundry Tests
         working-directory: ./packages/contracts
-        run: forge coverage -vvv --report=lcov
+        run: /home/runner/.foundry/bin/forge coverage -vvv --report=lcov
 
       - name: Run snapshot
         working-directory: ./packages/contracts
-        run: forge snapshot >> $GITHUB_STEP_SUMMARY
+        run: /home/runner/.foundry/bin/forge snapshot >> $GITHUB_STEP_SUMMARY
 
       - uses: codecov/codecov-action@v3
         name: Send Coverage (Codecov)
