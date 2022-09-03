@@ -46,7 +46,7 @@ jobs:
 
       - name: Install Foundry
         run: |
-          ~/.foundry/bin/foundryup -C 1c415857dd7b617190834dbcb361506f6143fed4
+          ~/.foundry/bin/foundryup -C e947899dd210550e608bf3d234b845d966134bc9
 
       - name: Run Foundry Tests
         working-directory: ./packages/contracts
