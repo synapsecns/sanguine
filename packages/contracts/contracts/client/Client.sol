@@ -49,7 +49,8 @@ abstract contract Client is IMessageRecipient {
             block.timestamp >= _rootTimestamp + optimisticSeconds(),
             "Client: !optimisticSeconds"
         );
-        _handle(_origin, _nonce, _sender, _message);
+        // No need to pass both _origin and _sender: _sender == trustedSender(_origin)
+        _handle(_origin, _nonce, _message);
     }
 
     // ============ Virtual Functions  ============
@@ -58,7 +59,6 @@ abstract contract Client is IMessageRecipient {
     function _handle(
         uint32 _origin,
         uint32 _nonce,
-        bytes32 _sender,
         bytes memory _message
     ) internal virtual;
 
