@@ -35,6 +35,8 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     MessageContext internal receivedSystemMessage;
     MessageContext internal receivedUsualMessage;
 
+    uint32[] internal domains;
+
     uint32 internal nonce = 1;
     uint32 internal optimisticSeconds = ROUTER_OPTIMISTIC_PERIOD;
 
@@ -98,6 +100,9 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             destination: localDomain,
             recipient: addressToBytes32(address(systemRouter))
         });
+        domains = new uint32[](2);
+        domains[0] = localDomain;
+        domains[1] = remoteDomain;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -115,47 +120,40 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       TEST: LOCAL SYSTEM CALL                        ║*▕
+    ▏*║                          TEST: SYSTEM CALL                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_localSystemCall_toOrigin() public {
+    function test_systemCall_local_toOrigin() public {
         systemCaller = uint8(ISystemRouter.SystemContracts.Destination);
         systemRecipient = uint8(ISystemRouter.SystemContracts.Origin);
         // Destination calls Origin
         _checkLocalSystemCall();
     }
 
-    function test_localSystemCall_toDestination() public {
+    function test_systemCall_local_toDestination() public {
         // Origin calls Destination (default setup)
         _checkLocalSystemCall();
     }
 
-    function test_localSystemCall_notSystemContract() public {
-        vm.expectRevert("Unauthorized caller");
-        systemRouter.localSystemCall(ISystemRouter.SystemContracts.Origin, selector, data);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      TEST: SEND SYSTEM MESSAGE                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_remoteSystemCall_origin() public {
+    function test_systemCall_remote_origin() public {
         _checkRemoteSystemCall();
     }
 
-    function test_remoteSystemCall_destination() public {
+    function test_systemCall_remote_destination() public {
         systemCaller = uint8(ISystemRouter.SystemContracts.Destination);
         _checkRemoteSystemCall();
     }
 
-    function test_remoteSystemCall_notSystemContract() public {
-        vm.expectRevert("Unauthorized caller");
-        systemRouter.remoteSystemCall(
-            remoteDomain,
-            ISystemRouter.SystemContracts(0),
-            selector,
-            data
-        );
+    function test_systemCall_notSystemContract() public {
+        for (uint256 i = 0; i < domains.length; ++i) {
+            vm.expectRevert("Unauthorized caller");
+            systemRouter.systemCall(
+                domains[i],
+                ISystemRouter.SystemContracts.Origin,
+                selector,
+                data
+            );
+        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -221,7 +219,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         assertFalse(recipientMock.sensitiveValue() == secretValue);
         vm.prank(sender);
         // Send system call to update sensitive value
-        systemRouter.localSystemCall(recipient, selector, data);
+        systemRouter.systemCall(localDomain, recipient, selector, data);
         // Check for success
         assertTrue(recipientMock.sensitiveValue() == secretValue);
     }
@@ -243,7 +241,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                 message
             );
             vm.prank(sender);
-            systemRouter.remoteSystemCall(remoteDomain, recipient, selector, data);
+            systemRouter.systemCall(remoteDomain, recipient, selector, data);
         }
     }
 

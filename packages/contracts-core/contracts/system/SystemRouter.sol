@@ -74,20 +74,22 @@ contract SystemRouter is Client, ISystemRouter {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice  Send System Message to one of the System Contracts on origin chain
-     * @dev     Note: knowledge of recipient address is not required,
-     *          routing will be done by SystemRouter on destination chain.
+     * @notice  Call a System Contract on the destination chain.
+     *          Note: use `localDomain` to call a contract on local chain.
+     * @dev     Only System contracts are allowed to call this function.
+     *          Note: knowledge of recipient address is not required,
+     *          routing will be done by SystemRouter on the destination chain.
      *          Following call will be made on destination chain:
      *              recipient.func(originDomain, originSender, _data)
      *          Allowing recipient to check:
-     *          - domain where remote system call originated
-     *          - System contract type of the sender
+     *          - domain where system call originated (local domain in this case)
+     *          - System contract type of the sender (msg.sender on local chain)
      * @param _destination  Domain of destination chain
      * @param _recipient    System contract type of the recipient
      * @param _selector     Function to call on destination chain
      * @param _data         Data for calling recipient on destination chain
      */
-    function remoteSystemCall(
+    function systemCall(
         uint32 _destination,
         SystemContracts _recipient,
         bytes4 _selector,
@@ -95,36 +97,14 @@ contract SystemRouter is Client, ISystemRouter {
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemContracts caller = _getSystemCaller(msg.sender);
-        bytes[] memory systemCalls = new bytes[](1);
-        systemCalls[0] = SystemMessage.formatSystemCall(
-            uint8(_recipient),
-            _formatCalldata(caller, _selector, _data)
-        );
-        _remoteSystemCall(_destination, systemCalls);
-    }
-
-    /**
-     * @notice  Call a System Contract on the local chain.
-     * @dev     Only System contracts are allowed to call this function.
-     *          Note: knowledge of recipient address is not required,
-     *          routing will be done by SystemRouter on the local chain.
-     *          Following call will be made on local chain:
-     *              recipient.func(localDomain, localSender, _data)
-     *          Allowing recipient to check:
-     *          - domain where system call originated (local domain in this case)
-     *          - System contract type of the sender
-     * @param _recipient    System contract type of the recipient
-     * @param _selector     Function to call on destination chain
-     * @param _data         Data for calling recipient on destination chain
-     */
-    function localSystemCall(
-        SystemContracts _recipient,
-        bytes4 _selector,
-        bytes memory _data
-    ) external {
-        /// @dev This will revert if msg.sender is not a system contract
-        SystemContracts caller = _getSystemCaller(msg.sender);
-        _localSystemCall(uint8(_recipient), _formatCalldata(caller, _selector, _data));
+        bytes memory payload = _formatCalldata(caller, _selector, _data);
+        if (_destination == localDomain) {
+            _localSystemCall(uint8(_recipient), payload);
+        } else {
+            bytes[] memory systemCalls = new bytes[](1);
+            systemCalls[0] = SystemMessage.formatSystemCall(uint8(_recipient), payload);
+            _remoteSystemCall(_destination, systemCalls);
+        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
