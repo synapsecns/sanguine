@@ -1,66 +1,85 @@
 package proxy
 
 import (
+	"bytes"
+	"context"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	resty "github.com/go-resty/resty/v2"
 	"golang.org/x/exp/slices"
-	"io"
-	"net/http"
-	"net/url"
+	urlParser "net/url"
 	"strings"
 )
 
-func (r *RPCProxy) serveRPCReq(c *gin.Context, chainID int) {
-	rpcList := r.rpcMap.ChainID(chainID)
+type rawResponse struct {
+	// body is the raw body returned by the request
+	body []byte
+	// url is the request url
+	url string
+	// hash is a unique hash of the raw response.
+	// we use this to check for equality
+	hash [32]byte
+}
 
-	if len(rpcList) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("not enough endpoint for chain %d: found %d needed %d", chainID, len(rpcList), r.config.Chains[uint32(chainID)].Checks),
-		})
-		return
-	}
+// newRawResponse produces a response with a unique hash based on json
+// regardless of formatting.
+func newRawResponse(body []byte, url string) (*rawResponse, error) {
+	var unmarshalled interface{}
 
-	body, err := io.ReadAll(c.Request.Body)
+	// unmarshall and remarshall
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	err := decoder.Decode(&unmarshalled)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{
-			"error": err,
-		})
-		return
+		return nil, fmt.Errorf("could not decode json: %w", err)
 	}
 
-	for _, endpoint := range rpcList {
-		endpointURL, err := url.Parse(endpoint)
-		if err != nil {
-			continue
-		}
-
-		// websockets not yet supported
-		if !slices.Contains([]string{"http", "https"}, endpointURL.Scheme) {
-			continue
-		}
-
-		client := resty.New()
-		resp, err := client.R().
-			SetContext(c).
-			SetBody(body).
-			Post(endpoint)
-
-		if err != nil {
-			// continue until we exhaust endpoints
-			continue
-		}
-
-		if resp.StatusCode() < 200 || resp.StatusCode() > 400 {
-			// error
-			continue
-		}
-
-		c.Header("x-forwarded-from", endpoint)
-		c.Data(http.StatusOK, gin.MIMEJSON, resp.Body())
-		return
+	remarshalled, err := json.Marshal(unmarshalled)
+	if err != nil {
+		return nil, fmt.Errorf("could not re-encode json: %w", err)
 	}
-	c.JSON(http.StatusBadRequest, gin.H{
-		"error": fmt.Sprintf("no rpc online for chain %d, attempted: %s", chainID, strings.Join(rpcList, ",")),
-	})
+
+	return &rawResponse{
+		body: body,
+		url:  url,
+		hash: sha256.Sum256(remarshalled),
+	}, nil
+}
+
+const (
+	httpSchema  = "http"
+	httpsSchema = "https"
+)
+
+func forwardRequest(ctx context.Context, body []byte, endpoint, header string) (*rawResponse, error) {
+	endpointURL, err := urlParser.Parse(endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse endpoint (%s): %w", endpointURL, err)
+	}
+
+	allowedProtocols := []string{httpSchema, httpsSchema}
+
+	// websockets not yet supported
+	if !slices.Contains(allowedProtocols, endpointURL.Scheme) {
+		return nil, fmt.Errorf("schema must be one of %s, got %s", strings.Join(allowedProtocols, ","), endpointURL.Scheme)
+	}
+
+	client := resty.New()
+	resp, err := client.R().
+		SetContext(ctx).
+		SetBody(body).
+		SetHeader("x-forwarded-for", "omnirpc").
+		SetHeader(requestIDKey, header).
+		Post(endpoint)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not get response from %s: %w", endpoint, err)
+	}
+
+	rawResp, err := newRawResponse(resp.Body(), endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("invalid response: %w", err)
+	}
+
+	return rawResp, nil
 }

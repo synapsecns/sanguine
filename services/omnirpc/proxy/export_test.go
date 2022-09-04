@@ -1,21 +1,31 @@
 package proxy
 
-import (
-	"context"
-	"github.com/gin-gonic/gin"
-)
-
-// ReorderRPCs exports reorderRPCS for testing.
-func (r *RPCProxy) ReorderRPCs(ctx context.Context, chainID int) {
-	r.reorderRPCs(ctx, chainID)
-}
-
-// ServeRPCReq exports serveRPCReq for testing.
-func (r *RPCProxy) ServeRPCReq(c *gin.Context, chainID int) {
-	r.serveRPCReq(c, chainID)
-}
-
 // IsConfirmable exports isConfirmable for testing.
 func IsConfirmable(body []byte) (bool, error) {
 	return isConfirmable(body)
+}
+
+// RawResponse exports rawResponse for testing.
+type RawResponse interface {
+	Body() []byte
+	URL() string
+	Hash() [32]byte
+}
+
+func (r rawResponse) Body() []byte {
+	return r.body
+}
+
+func (r rawResponse) URL() string {
+	return r.url
+}
+
+func (r rawResponse) Hash() [32]byte {
+	return r.hash
+}
+
+var _ RawResponse = rawResponse{}
+
+func NewRawResponse(body []byte, url string) (RawResponse, error) {
+	return newRawResponse(body, url)
 }

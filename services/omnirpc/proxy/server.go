@@ -3,9 +3,11 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
-	"github.com/synapsecns/sanguine/services/omnirpc/rpcmap"
 	"net/http"
 	"strconv"
 	"sync"
@@ -14,26 +16,37 @@ import (
 
 // RPCProxy proxies rpc request to the fastest endpoint. Requests fallback in cases where data is not available.
 type RPCProxy struct {
-	// rpcMap contains a list of [chainid]->[]hosts in order of altency
-	// this list may not be updated at
-	rpcMap *rpcmap.RPCMap
+	// chainManager contains a list of chains and latency ordered rpcs
+	chainManager chainmanager.ChainManager
 	// config contains the config for each chain
-	config config.Config
+	refreshInterval time.Duration
+	// port is the por the server is run on
+	port uint16
 }
 
 // NewProxy creates a new rpc proxy.
-func NewProxy(rpcMap *rpcmap.RPCMap, config config.Config) *RPCProxy {
+func NewProxy(config config.Config) *RPCProxy {
 	return &RPCProxy{
-		rpcMap: rpcMap,
-		config: config,
+		chainManager:    chainmanager.NewChainManagerFromConfig(config),
+		refreshInterval: time.Second * time.Duration(config.RefreshInterval),
+		port:            config.Port,
 	}
 }
+
+// requestIDKey is the header for request id, these are
+// forwarded to rpc's we use for tracing.
+const requestIDKey = "X-Request-ID"
 
 // Run runs the rpc server until context cancellation.
 func (r *RPCProxy) Run(ctx context.Context) {
 	go r.startProxyLoop(ctx)
 
 	router := gin.Default()
+	router.Use(requestid.New(
+		requestid.WithCustomHeaderStrKey(requestIDKey),
+		requestid.WithGenerator(func() string {
+			return uuid.New().String()
+		})))
 
 	router.POST("/rpc/:id", func(c *gin.Context) {
 		chainID, err := strconv.Atoi(c.Param("id"))
@@ -42,18 +55,15 @@ func (r *RPCProxy) Run(ctx context.Context) {
 				"error": fmt.Sprintf("chainid must be a number: %d", chainID),
 			})
 		}
-		r.serveRPCReq(c, chainID)
+		r.Forward(c, uint32(chainID))
 	})
 
-	logger.Infof("running on port %d", r.config.Port)
-	err := router.Run(fmt.Sprintf("0.0.0.0:%d", r.config.Port))
+	logger.Infof("running on port %d", r.port)
+	err := router.Run(fmt.Sprintf("0.0.0.0:%d", r.port))
 	if err != nil {
 		logger.Warn(err)
 	}
 }
-
-// rpcTimeout is how long to wait for a response.
-const rpcTimeout = time.Second * 5
 
 // scanInterval is how long to wait between latency scans.
 const scanInterval = time.Second * 60
@@ -70,11 +80,11 @@ func (r *RPCProxy) startProxyLoop(ctx context.Context) {
 		case <-time.After(waitTime):
 			var wg sync.WaitGroup
 
-			for _, chainID := range r.rpcMap.GetChainIDs() {
+			for _, chainID := range r.chainManager.GetChainIDs() {
 				wg.Add(1)
 
-				go func(chainID int) {
-					r.reorderRPCs(ctx, chainID)
+				go func(chainID uint32) {
+					r.chainManager.RefreshRPCInfo(ctx, chainID)
 
 					wg.Done()
 				}(chainID)

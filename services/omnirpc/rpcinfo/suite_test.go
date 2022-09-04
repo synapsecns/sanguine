@@ -1,4 +1,4 @@
-package latency_test
+package rpcinfo_test
 
 import (
 	"github.com/stretchr/testify/suite"

@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
-	"github.com/synapsecns/sanguine/services/omnirpc/rpcmap"
-	"gopkg.in/yaml.v2"
-	"os"
+	"gopkg.in/yaml.v3"
 )
 
 // Config holds the config for the chain.
@@ -25,7 +23,7 @@ type ChainConfig struct {
 	// RPCS is a list of rpcs to use
 	RPCs []string `yaml:"rpcs"`
 	// Checks is how many rpcs must return the same result for it to be used. This does not apply to height/status absed methods
-	Checks int `yaml:"confirmations,omitempty"`
+	Checks uint16 `yaml:"confirmations,omitempty"`
 }
 
 // UnmarshallConfig unmarshalls a config.
@@ -44,33 +42,4 @@ func (c Config) Marshall() ([]byte, error) {
 		return nil, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(spew.Sdump(c), 20), err)
 	}
 	return output, nil
-}
-
-// UnmarshallRPCMap unmarshalls an rpc config from an input.
-func UnmarshallRPCMap(input string) (*rpcmap.RPCMap, error) {
-	var rawMap map[int][]string
-	err := yaml.Unmarshal([]byte(input), &rawMap)
-	if err != nil {
-		return nil, fmt.Errorf("could not unmarshall rpc map: %w", err)
-	}
-	return rpcmap.NewRPCMapFromMap(rawMap), nil
-}
-
-// UnmarshallConfigFromFile gets a config from a file.
-func UnmarshallConfigFromFile(file string) (*rpcmap.RPCMap, error) {
-	//nolint: gosec
-	contents, err := os.ReadFile(file)
-	if err != nil {
-		return nil, fmt.Errorf("could not read file: %w", err)
-	}
-
-	return UnmarshallRPCMap(string(contents))
-}
-
-// MarshallFromMap marshalls a config from an rpc map.
-func MarshallFromMap(rpcMap *rpcmap.RPCMap) string {
-	// errors are impossible here
-	output, _ := yaml.Marshal(rpcMap.RawMap())
-
-	return string(output)
 }

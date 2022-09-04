@@ -10,8 +10,11 @@ replace (
 
 require (
 	github.com/BurntSushi/toml v1.1.0
+	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54
+	github.com/Soft/iter v0.1.0
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/c-bata/go-prompt v0.2.6
+	github.com/ethereum/go-ethereum v1.10.11
 	github.com/fatih/structtag v1.2.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/pkg/errors v0.9.1
@@ -33,7 +36,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
-	github.com/ethereum/go-ethereum v1.10.11 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
 	github.com/go-kit/log v0.2.0 // indirect

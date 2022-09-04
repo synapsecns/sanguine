@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/eth/filters"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/hedzr/cmdr/tool"
-	"github.com/pkg/errors"
+	"github.com/invopop/jsonschema"
 	"golang.org/x/exp/slices"
 	"math/big"
 )
@@ -18,11 +18,23 @@ type RPCRequest struct {
 	Params []json.RawMessage `json:"params"`
 }
 
+func init() {
+	schema := jsonschema.Reflect(&RPCRequest{})
+	rawSchema, err := schema.MarshalJSON()
+	if err != nil {
+		panic(fmt.Errorf("could not reflect rpc schema: %w", err))
+	}
+	rpcReqSchema = string(rawSchema)
+}
+
+// rpcReqSchema contains the raw rpc request schema.
+var rpcReqSchema string
+
 func parseRPCPayload(body []byte) (request RPCRequest, err error) {
 	rpcPayload := RPCRequest{}
 	err = json.Unmarshal(body, &rpcPayload)
 	if err != nil {
-		return RPCRequest{}, errors.Wrap(err, "failed to parse json RPC payload")
+		return RPCRequest{}, fmt.Errorf("could not parse json payload: %w, must conform to: %s", err, rpcReqSchema)
 	}
 
 	return rpcPayload, nil

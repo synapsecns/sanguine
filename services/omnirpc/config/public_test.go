@@ -1,33 +1,33 @@
-package rpcmap_test
+package config_test
 
 import (
+	"context"
 	"github.com/jarcoal/httpmock"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/services/omnirpc/rpcmap"
+	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	"golang.org/x/exp/slices"
 	"net/http"
 	"testing"
 )
 
-func (r *RPCSuite) TestGetRPCMap() {
+func TestGetPublicConfig(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder(http.MethodGet, rpcmap.PublicRPCMapURL, httpmock.NewStringResponder(http.StatusOK, testData))
-
-	res, err := rpcmap.GetPublicRPCMap(r.GetTestContext())
-	Nil(r.T(), err)
-
-	True(r.T(), slices.Contains(res.ChainID(1), "https://api.mycryptoapi.com/eth"))
-}
-
-func TestGetChainRPCS(t *testing.T) {
-	rpcMap, err := rpcmap.ParseRPCMap([]byte(testData))
+	httpmock.RegisterResponder(http.MethodGet, config.PublicRPCMapURL, httpmock.NewStringResponder(http.StatusOK, testData))
+	res, err := config.GetPublicRPCConfig(context.Background())
 	Nil(t, err)
 
-	True(t, slices.Contains(rpcMap.RawMap()[1], "https://api.mycryptoapi.com/eth"))
-	True(t, slices.Contains(rpcMap.ChainID(1), "https://cloudflare-eth.com/"))
-	True(t, slices.Contains(rpcMap.ChainID(2), "https://node.eggs.cool"))
+	True(t, slices.Contains(res.Chains[1].RPCs, "https://api.mycryptoapi.com/eth"))
+}
+
+func TestPublicConfig(t *testing.T) {
+	rpcMap, err := config.ParseConfig([]byte(testData))
+	Nil(t, err)
+
+	True(t, slices.Contains(rpcMap.Chains[1].RPCs, "https://api.mycryptoapi.com/eth"))
+	True(t, slices.Contains(rpcMap.Chains[1].RPCs, "https://cloudflare-eth.com/"))
+	True(t, slices.Contains(rpcMap.Chains[2].RPCs, "https://node.eggs.cool"))
 }
 
 // first two rpcs from https://raw.githubusercontent.com/DefiLlama/chainlist/main/constants/extraRpcs.json

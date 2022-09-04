@@ -1,35 +1,112 @@
 package proxy_test
 
 import (
+	"bytes"
+	"errors"
+	"github.com/Soft/iter"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
-	"github.com/hashicorp/consul/sdk/freeport"
+	"github.com/nsf/jsondiff"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
-	"github.com/synapsecns/sanguine/services/omnirpc/rpcmap"
+	"github.com/synapsecns/sanguine/services/omnirpc/proxy/mocks"
+	"github.com/tidwall/pretty"
 	"io"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 )
 
-func (p *ProxySuite) TestServeRequestNoRPCs() {
-	rpcMap := rpcmap.NewRPCMap()
-	cfg := config.Config{
-		//nolint: staticcheck
-		Port: uint16(freeport.GetT(p.T(), 1)[0]),
-	}
-
-	prxy := proxy.NewProxy(rpcMap, cfg)
+func (p *ProxySuite) TestServeRequestNoChain() {
+	prxy := proxy.NewProxy(config.Config{})
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	prxy.ServeRPCReq(c, 1)
+	prxy.Forward(c, 1)
+	Equal(p.T(), w.Code, http.StatusBadRequest)
+}
+
+func (p *ProxySuite) TestCannotReadBody() {
+	prxy := proxy.NewProxy(config.Config{})
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	mockBody := new(mocks.BodyReader)
+	mockBody.On("Read").Return(0, errors.New("could not read body"))
+
+	prxy.Forward(c, 1)
+	Equal(p.T(), w.Code, http.StatusBadRequest)
+}
+
+func (p *ProxySuite) TestJsonHash() {
+	options := jsondiff.DefaultJSONOptions()
+	for i := 0; i < 50; i++ {
+		randomJSON := p.generateFakeJSON()
+		url := gofakeit.URL()
+
+		json1, err := proxy.NewRawResponse(fuzzFormatJSON(randomJSON), url)
+		Nil(p.T(), err)
+
+		json2, err := proxy.NewRawResponse(fuzzFormatJSON(randomJSON), url)
+		Nil(p.T(), err)
+
+		// make sure we confirm uniqueness in json diff
+		// this will save us some time writing nonsense tests
+		diff, _ := jsondiff.Compare(json1.Body(), json2.Body(), &options)
+		Equal(p.T(), diff, jsondiff.FullMatch)
+		Equal(p.T(), json1.Hash(), json2.Hash())
+	}
+}
+
+// fuzzFormatJSON randomly formats json.
+func fuzzFormatJSON(rawBody []byte) []byte {
+	formatSetting := gofakeit.Number(0, 2)
+	switch formatSetting {
+	case 0:
+		rawBody = pretty.Pretty(rawBody)
+	case 1:
+		rawBody = pretty.Ugly(rawBody)
+	case 2:
+		rawBody = pretty.PrettyOptions(rawBody, &pretty.Options{
+			Width: gofakeit.Number(1, 200),
+			// random indentation between 1 and 50
+			Indent:   strings.Join(iter.ToSlice(iter.Take(iter.Repeat(" "), uint(gofakeit.Number(0, 50)))), ""),
+			SortKeys: gofakeit.Bool(),
+		})
+	}
+	return rawBody
+}
+
+func (p *ProxySuite) generateFakeJSON() []byte {
+	rawBody, err := gofakeit.JSON(&gofakeit.JSONOptions{
+		Type: "array",
+		Fields: []gofakeit.Field{
+			{Name: "id", Function: "autoincrement"},
+			{Name: "first_name", Function: "firstname"},
+		},
+		RowCount: gofakeit.Number(5, 20),
+		Indent:   true,
+	})
+	Nil(p.T(), err)
+
+	return rawBody
+}
+
+func (p *ProxySuite) TestMalformedRequestBody() {
+	prxy := proxy.NewProxy(config.Config{})
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	c.Request, _ = http.NewRequest(http.MethodPost, "/", bytes.NewReader(p.generateFakeJSON()))
+
+	prxy.Forward(c, 1)
 	Equal(p.T(), w.Code, http.StatusBadRequest)
 }
 

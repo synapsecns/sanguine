@@ -1,11 +1,11 @@
-package latency_test
+package rpcinfo_test
 
 import (
 	"context"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"
-	"github.com/synapsecns/sanguine/services/omnirpc/latency"
+	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
 	"golang.org/x/sync/errgroup"
 	"net/http"
 	"net/http/httptest"
@@ -26,7 +26,7 @@ func (r *LatencySuite) TestRPCLatency() {
 	})
 	Nil(r.T(), g.Wait())
 
-	latencySlice := latency.GetRPCLatency(r.GetTestContext(), time.Second*3, []string{bsc.HTTPEndpoint(), avalanche.HTTPEndpoint()})
+	latencySlice := rpcinfo.GetRPCLatency(r.GetTestContext(), time.Second*3, []string{bsc.HTTPEndpoint(), avalanche.HTTPEndpoint()})
 	NotEqual(r.T(), latencySlice[0].URL, latencySlice[1].URL)
 	for _, latencyData := range latencySlice {
 		False(r.T(), latencyData.HasError)
@@ -80,7 +80,7 @@ func (r *LatencySuite) TestGetLatencyError() {
 				w.WriteHeader(status)
 			}))
 
-			res := latency.GetLatency(ctx, server.URL)
+			res := rpcinfo.GetLatency(ctx, server.URL)
 
 			// there's an error, these should be nil
 			Equal(r.T(), res.Latency, time.Duration(0))

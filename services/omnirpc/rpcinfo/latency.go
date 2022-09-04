@@ -1,4 +1,4 @@
-package latency
+package rpcinfo
 
 import (
 	"context"
