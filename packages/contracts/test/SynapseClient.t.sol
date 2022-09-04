@@ -104,12 +104,12 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
 
-    function test_handleNotMirror(address _notMirror) public {
-        vm.assume(_notMirror != destination);
+    function test_handleNotDestination(address _notDestination) public {
+        vm.assume(_notDestination != destination);
         test_setTrustedSender();
 
-        vm.prank(_notMirror);
-        vm.expectRevert("Client: !mirror");
+        vm.prank(_notDestination);
+        vm.expectRevert("Client: !destination");
         client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
 

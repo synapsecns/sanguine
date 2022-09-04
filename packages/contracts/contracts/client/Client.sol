@@ -39,7 +39,7 @@ abstract contract Client is IMessageRecipient {
         uint256 _rootTimestamp,
         bytes memory _message
     ) external {
-        require(msg.sender == destination, "Client: !mirror");
+        require(msg.sender == destination, "Client: !destination");
         require(
             _sender == trustedSender(_origin) && _sender != bytes32(0),
             "Client: !trustedSender"
