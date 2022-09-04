@@ -6,7 +6,7 @@ import (
 )
 
 // ThreadSafe is a threadsafe iterator adapator used for iterators
-// accessed in parallell
+// accessed in parallell.
 func ThreadSafe[T any](underlyingIter iter.Iterator[T]) iter.Iterator[T] {
 	return &threadSafeIter[T]{
 		parentIter: underlyingIter,
@@ -19,8 +19,8 @@ type threadSafeIter[T any] struct {
 	mux        sync.Mutex
 }
 
-// Next gets the next item in a thread safe manner
-func (t threadSafeIter[T]) Next() iter.Option[T] {
+// Next gets the next item in a thread safe manner.
+func (t *threadSafeIter[T]) Next() iter.Option[T] {
 	t.mux.Lock()
 	defer t.mux.Unlock()
 

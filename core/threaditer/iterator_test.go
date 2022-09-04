@@ -8,7 +8,7 @@ import (
 )
 
 func TestSlice(t *testing.T) {
-	// TOOD: test thread safety
+	// TODO: test thread safety
 	it := threaditer.ThreadSafe(iter.Slice([]int{1, 2, 3}))
 
 	Equal(t, it.Next().Unwrap(), 1)
