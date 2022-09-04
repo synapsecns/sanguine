@@ -2,11 +2,12 @@ package integration_test
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/phayes/freeport"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/server"
-	"net/http"
 )
 
 func (i IntegrationSuite) TestGqlServer() {

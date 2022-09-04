@@ -43,8 +43,62 @@ func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID 
 	return nil
 }
 
-// RetrieveReceipt retrieves a receipt by tx hash and chain id.
-func (s Store) RetrieveReceipt(ctx context.Context, txHash common.Hash, chainID uint32) (receipt types.Receipt, err error) {
+func receiptFilterToQuery(receiptFilter db.ReceiptFilter) Receipt {
+	return Receipt{
+		ChainID:          receiptFilter.ChainID,
+		TxHash:           receiptFilter.TxHash,
+		ContractAddress:  receiptFilter.ContractAddress,
+		BlockHash:        receiptFilter.BlockHash,
+		BlockNumber:      receiptFilter.BlockNumber,
+		TransactionIndex: receiptFilter.TransactionIndex,
+	}
+}
+
+// RetrieveReceiptsWithFilter retrieves receipts with a filter.
+func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.ReceiptFilter) (receipts []types.Receipt, err error) {
+	dbReceipts := []Receipt{}
+	query := receiptFilterToQuery(receiptFilter)
+	dbTx := s.DB().WithContext(ctx).Model(&Receipt{}).Where(&query).Find(&dbReceipts)
+
+	if dbTx.Error != nil {
+		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
+			return []types.Receipt{}, fmt.Errorf("could not find receipts with filter %+v: %w", receiptFilter, db.ErrNotFound)
+		}
+		return []types.Receipt{}, fmt.Errorf("could not store receipt: %w", dbTx.Error)
+	}
+
+	parsedReceipts, err := s.buildReceiptsFromDBReceipts(ctx, dbReceipts, receiptFilter.ChainID)
+	if err != nil {
+		return []types.Receipt{}, fmt.Errorf("could not build receipts from db receipts: %w", err)
+	}
+
+	return parsedReceipts, nil
+}
+
+// RetrieveReceiptsInRange retrieves receipts in a range.
+func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.ReceiptFilter, startBlock, endBlock uint64) (receipts []types.Receipt, err error) {
+	dbReceipts := []Receipt{}
+	query := receiptFilterToQuery(receiptFilter)
+	rangeQuery := BlockNumberFieldName + " BETWEEN ? AND ?"
+	dbTx := s.DB().WithContext(ctx).Model(&Receipt{}).Where(&query).Where(rangeQuery, startBlock, endBlock).Find(&dbReceipts)
+
+	if dbTx.Error != nil {
+		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
+			return []types.Receipt{}, fmt.Errorf("could not find receipts with filter %+v: %w", receiptFilter, db.ErrNotFound)
+		}
+		return []types.Receipt{}, fmt.Errorf("could not store receipt: %w", dbTx.Error)
+	}
+
+	parsedReceipts, err := s.buildReceiptsFromDBReceipts(ctx, dbReceipts, receiptFilter.ChainID)
+	if err != nil {
+		return []types.Receipt{}, fmt.Errorf("could not build receipts from db receipts: %w", err)
+	}
+
+	return parsedReceipts, nil
+}
+
+// RetrieveReceiptByTxHash retrieves a receipt by tx hash and chain id.
+func (s Store) RetrieveReceiptByTxHash(ctx context.Context, txHash common.Hash, chainID uint32) (receipt types.Receipt, err error) {
 	dbReceipt := Receipt{}
 	dbTx := s.DB().WithContext(ctx).Model(&Receipt{}).Where(&Receipt{
 		ChainID: chainID,
@@ -59,7 +113,7 @@ func (s Store) RetrieveReceipt(ctx context.Context, txHash common.Hash, chainID 
 	}
 
 	// Retrieve Logs that match the receipt's tx hash in order to add them to the Receipt.
-	logs, err := s.RetrieveLogs(ctx, txHash, chainID)
+	logs, err := s.RetrieveLogsByTxHash(ctx, txHash, chainID)
 	if err != nil {
 		return types.Receipt{}, fmt.Errorf("could not retrieve logs with tx hash %s and chain id %d: %w", txHash.String(), chainID, err)
 	}
@@ -82,6 +136,29 @@ func (s Store) RetrieveReceipt(ctx context.Context, txHash common.Hash, chainID 
 	return parsedReceipt, nil
 }
 
+// RetrieveReceiptsByContractAddress retrieves all receipts with a given contract address and chain id.
+func (s Store) RetrieveReceiptsByContractAddress(ctx context.Context, contractAddress common.Address, chainID uint32) (receipts []types.Receipt, err error) {
+	dbReceipts := []Receipt{}
+	dbTx := s.DB().WithContext(ctx).Model(&Receipt{}).Where(&Receipt{
+		ChainID:         chainID,
+		ContractAddress: contractAddress.String(),
+	}).Find(&dbReceipts)
+
+	if dbTx.Error != nil {
+		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
+			return []types.Receipt{}, fmt.Errorf("could not find receipts with contract address %s: %w", contractAddress.String(), db.ErrNotFound)
+		}
+		return []types.Receipt{}, fmt.Errorf("could not store receipt: %w", dbTx.Error)
+	}
+
+	parsedReceipts, err := s.buildReceiptsFromDBReceipts(ctx, dbReceipts, chainID)
+	if err != nil {
+		return []types.Receipt{}, fmt.Errorf("could not build receipts from db receipts: %w", err)
+	}
+
+	return parsedReceipts, nil
+}
+
 // UnsafeRetrieveAllReceipts retrieves all receipts in the database. When `specific` is true, you can specify
 // a chainID to specifically search for. This is only used for testing.
 func (s Store) UnsafeRetrieveAllReceipts(ctx context.Context, specific bool, chainID uint32) (receipts []*types.Receipt, err error) {
@@ -101,12 +178,42 @@ func (s Store) UnsafeRetrieveAllReceipts(ctx context.Context, specific bool, cha
 
 	for _, dbReceipt := range dbReceipts {
 		// Retrieve Logs that match the receipt's tx hash in order to add them to the Receipt.
-		logs, err := s.RetrieveLogs(ctx, common.HexToHash(dbReceipt.TxHash), dbReceipt.ChainID)
+		logs, err := s.RetrieveLogsByTxHash(ctx, common.HexToHash(dbReceipt.TxHash), dbReceipt.ChainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not retrieve logs with tx hash %s and chain id %d: %w", dbReceipt.TxHash, dbReceipt.ChainID, err)
 		}
 
 		parsedReceipt := &types.Receipt{
+			Type:              dbReceipt.Type,
+			PostState:         dbReceipt.PostState,
+			Status:            dbReceipt.Status,
+			CumulativeGasUsed: dbReceipt.CumulativeGasUsed,
+			Bloom:             types.BytesToBloom(dbReceipt.Bloom),
+			Logs:              logs,
+			TxHash:            common.HexToHash(dbReceipt.TxHash),
+			ContractAddress:   common.HexToAddress(dbReceipt.ContractAddress),
+			GasUsed:           dbReceipt.GasUsed,
+			BlockHash:         common.HexToHash(dbReceipt.BlockHash),
+			BlockNumber:       big.NewInt(int64(dbReceipt.BlockNumber)),
+			TransactionIndex:  uint(dbReceipt.TransactionIndex),
+		}
+
+		receipts = append(receipts, parsedReceipt)
+	}
+
+	return receipts, nil
+}
+
+func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Receipt, chainID uint32) ([]types.Receipt, error) {
+	receipts := []types.Receipt{}
+	for _, dbReceipt := range dbReceipts {
+		// Retrieve Logs that match the receipt's tx hash in order to add them to the Receipt.
+		logs, err := s.RetrieveLogsByTxHash(ctx, common.HexToHash(dbReceipt.TxHash), chainID)
+		if err != nil {
+			return []types.Receipt{}, fmt.Errorf("could not retrieve logs with tx hash %s and chain id %d: %w", dbReceipt.TxHash, chainID, err)
+		}
+
+		parsedReceipt := types.Receipt{
 			Type:              dbReceipt.Type,
 			PostState:         dbReceipt.PostState,
 			Status:            dbReceipt.Status,

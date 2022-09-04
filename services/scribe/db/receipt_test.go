@@ -75,7 +75,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 		Nil(t.T(), err)
 
 		// Ensure the receipts from the database match the ones stored.
-		retrievedReceiptA, err := testDB.RetrieveReceipt(t.GetTestContext(), txHashA, chainID)
+		retrievedReceiptA, err := testDB.RetrieveReceiptByTxHash(t.GetTestContext(), txHashA, chainID)
 		Nil(t.T(), err)
 
 		resA, err := receiptA.MarshalJSON()
@@ -84,7 +84,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 		Nil(t.T(), err)
 		Equal(t.T(), resA, resB)
 
-		retrievedReceiptB, err := testDB.RetrieveReceipt(t.GetTestContext(), txHashB, chainID+1)
+		retrievedReceiptB, err := testDB.RetrieveReceiptByTxHash(t.GetTestContext(), txHashB, chainID+1)
 		Nil(t.T(), err)
 
 		resA, err = receiptB.MarshalJSON()

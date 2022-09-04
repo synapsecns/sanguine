@@ -17,6 +17,27 @@ type EventDB struct {
 	mock.Mock
 }
 
+// RetrieveEthTxByTxHash provides a mock function with given fields: ctx, txHash, chainID
+func (_m *EventDB) RetrieveEthTxByTxHash(ctx context.Context, txHash string, chainID uint32) (types.Transaction, error) {
+	ret := _m.Called(ctx, txHash, chainID)
+
+	var r0 types.Transaction
+	if rf, ok := ret.Get(0).(func(context.Context, string, uint32) types.Transaction); ok {
+		r0 = rf(ctx, txHash, chainID)
+	} else {
+		r0 = ret.Get(0).(types.Transaction)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, uint32) error); ok {
+		r1 = rf(ctx, txHash, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // RetrieveLastIndexed provides a mock function with given fields: ctx, contractAddress, chainID
 func (_m *EventDB) RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32) (uint64, error) {
 	ret := _m.Called(ctx, contractAddress, chainID)
@@ -38,8 +59,31 @@ func (_m *EventDB) RetrieveLastIndexed(ctx context.Context, contractAddress comm
 	return r0, r1
 }
 
-// RetrieveLogs provides a mock function with given fields: ctx, txHash, chainID
-func (_m *EventDB) RetrieveLogs(ctx context.Context, txHash common.Hash, chainID uint32) ([]*types.Log, error) {
+// RetrieveLogsByContractAddress provides a mock function with given fields: ctx, contractAddress, chainID
+func (_m *EventDB) RetrieveLogsByContractAddress(ctx context.Context, contractAddress common.Address, chainID uint32) ([]*types.Log, error) {
+	ret := _m.Called(ctx, contractAddress, chainID)
+
+	var r0 []*types.Log
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32) []*types.Log); ok {
+		r0 = rf(ctx, contractAddress, chainID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*types.Log)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, uint32) error); ok {
+		r1 = rf(ctx, contractAddress, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// RetrieveLogsByTxHash provides a mock function with given fields: ctx, txHash, chainID
+func (_m *EventDB) RetrieveLogsByTxHash(ctx context.Context, txHash common.Hash, chainID uint32) ([]*types.Log, error) {
 	ret := _m.Called(ctx, txHash, chainID)
 
 	var r0 []*types.Log
@@ -61,8 +105,8 @@ func (_m *EventDB) RetrieveLogs(ctx context.Context, txHash common.Hash, chainID
 	return r0, r1
 }
 
-// RetrieveReceipt provides a mock function with given fields: ctx, txHash, chainID
-func (_m *EventDB) RetrieveReceipt(ctx context.Context, txHash common.Hash, chainID uint32) (types.Receipt, error) {
+// RetrieveReceiptByTxHash provides a mock function with given fields: ctx, txHash, chainID
+func (_m *EventDB) RetrieveReceiptByTxHash(ctx context.Context, txHash common.Hash, chainID uint32) (types.Receipt, error) {
 	ret := _m.Called(ctx, txHash, chainID)
 
 	var r0 types.Receipt
@@ -75,6 +119,29 @@ func (_m *EventDB) RetrieveReceipt(ctx context.Context, txHash common.Hash, chai
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, common.Hash, uint32) error); ok {
 		r1 = rf(ctx, txHash, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// RetrieveReceiptsByContractAddress provides a mock function with given fields: ctx, contractAddress, chainID
+func (_m *EventDB) RetrieveReceiptsByContractAddress(ctx context.Context, contractAddress common.Address, chainID uint32) ([]types.Receipt, error) {
+	ret := _m.Called(ctx, contractAddress, chainID)
+
+	var r0 []types.Receipt
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32) []types.Receipt); ok {
+		r0 = rf(ctx, contractAddress, chainID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]types.Receipt)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, uint32) error); ok {
+		r1 = rf(ctx, contractAddress, chainID)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -1,0 +1,83 @@
+type Query {
+  # returns all logs that match the given filter
+  logs(
+    ContractAddress: String
+    ChainID: Int!
+    BlockNumber: Int
+    TxHash: String
+    TxIndex: Int
+    BlockHash: String
+    Index: Int
+  ): [Log]
+  # returns all logs that match the given filter and range
+  logsRange(
+    ContractAddress: String
+    ChainID: Int!
+    BlockNumber: Int
+    TxHash: String
+    TxIndex: Int
+    BlockHash: String
+    Index: Int
+    StartBlock: Int!
+    EndBlock: Int!
+  ): [Log]
+  # returns all logs for an address
+  logsFromAddress(
+    ContractAddress: String!
+    ChainID: Int!
+    ): [Log]
+  # returns all receipts that match the given filter
+  receipts(
+    ChainID: Int!
+    TxHash: String
+    ContractAddress: String
+    BlockHash: String
+    BlockNumber: Int
+    TxIndex: Int
+  ): [Receipt]
+  # returns all receipts that match the given filter and range
+  receiptsRange(
+    ChainID: Int!
+    TxHash: String
+    ContractAddress: String
+    BlockHash: String
+    BlockNumber: Int
+    TxIndex: Int
+    StartBlock: Int!
+    EndBlock: Int!
+  ): [Receipt]
+  # returns all logs for a transaction hash
+  logsFromTxHash(
+    TransactionHash: String!
+    ChainID: Int!
+    ): [Log]
+  # returns all receipts for an address
+  receiptsFromAddress(
+    ContractAddress: String!
+    ChainID: Int!
+    ): [Receipt]
+  # returns the receipt for a transaction hash
+  receiptFromTxHash(
+    txHash: String!
+    ChainID: Int!
+    ): Receipt
+  # returns all transactions that match the given filter
+  transactions(
+    TxHash: String
+    ChainID: Int!
+    BlockNumber: Int
+  ): [Transaction]
+  # returns all transactions that match the given filter and range
+  transactionsRange(
+    TxHash: String
+    ChainID: Int!
+    BlockNumber: Int
+    StartBlock: Int!
+    EndBlock: Int!
+  ): [Transaction]
+  # returns the transaction for a transaction hash
+  transactionFromTxHash(
+    txHash: String!
+    ChainID: Int!
+    ): Transaction
+}

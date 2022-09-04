@@ -33,7 +33,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 
 		// Ensure the logs from the database match the ones stored.
 		// Check the logs for the two with the same txHash.
-		retrievedLogSame, err := testDB.RetrieveLogs(t.GetTestContext(), txHashA, chainID)
+		retrievedLogSame, err := testDB.RetrieveLogsByTxHash(t.GetTestContext(), txHashA, chainID)
 		Nil(t.T(), err)
 
 		resA, err := logA.MarshalJSON()
@@ -49,7 +49,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		Equal(t.T(), resA, resB)
 
 		// Check the logs for the one with a different txHash.
-		retrievedLog, err := testDB.RetrieveLogs(t.GetTestContext(), txHashC, chainID+1)
+		retrievedLog, err := testDB.RetrieveLogsByTxHash(t.GetTestContext(), txHashC, chainID+1)
 		Nil(t.T(), err)
 
 		resA, err = logC.MarshalJSON()

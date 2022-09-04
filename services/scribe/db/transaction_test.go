@@ -31,7 +31,7 @@ var testTxes = []*types.Transaction{
 		Data:     []byte(gofakeit.Paragraph(1, 2, 3, " ")),
 	}),
 	types.NewTx(&types.AccessListTx{
-		ChainID:  big.NewInt(int64(gofakeit.Uint32())),
+		ChainID:  big.NewInt(2),
 		Nonce:    gofakeit.Uint64(),
 		GasPrice: new(big.Int).SetUint64(gofakeit.Uint64()),
 		Gas:      gofakeit.Uint64(),
@@ -46,7 +46,7 @@ var testTxes = []*types.Transaction{
 		},
 	}),
 	types.NewTx(&types.DynamicFeeTx{
-		ChainID:   big.NewInt(int64(gofakeit.Uint32())),
+		ChainID:   big.NewInt(3),
 		Nonce:     gofakeit.Uint64(),
 		GasTipCap: new(big.Int).Mul(new(big.Int).SetInt64(int64(gofakeit.Float32Range(1, 10))), big.NewInt(params.GWei)),
 		GasFeeCap: new(big.Int).Mul(new(big.Int).SetInt64(int64(gofakeit.Float32Range(10, 100))), big.NewInt(params.GWei)),
@@ -63,7 +63,7 @@ var testTxes = []*types.Transaction{
 	}),
 }
 
-func (t *DBSuite) TestTxInsertion() {
+func (t *DBSuite) TestStoreAndRetrieveEthTx() {
 	testWallet, err := wallet.FromRandom()
 	Nil(t.T(), err)
 
@@ -80,6 +80,14 @@ func (t *DBSuite) TestTxInsertion() {
 			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, uint32(testTx.ChainId().Uint64()), gofakeit.Uint64())
 			Nil(t.T(), err)
 			// TODO: retrieve the processed tx
+
+			tx, err := testDB.RetrieveEthTxByTxHash(t.GetTestContext(), signedTx.Hash().String(), uint32(testTx.ChainId().Uint64()))
+			Nil(t.T(), err)
+			resA, err := tx.MarshalJSON()
+			Nil(t.T(), err)
+			resB, err := signedTx.MarshalJSON()
+			Nil(t.T(), err)
+			Equal(t.T(), resA, resB)
 		}
 	})
 }

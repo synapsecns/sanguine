@@ -4,9 +4,10 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+	"os"
+
 	"github.com/hashicorp/consul/sdk/freeport"
 	"github.com/synapsecns/sanguine/services/scribe/server"
-	"os"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -95,11 +96,23 @@ var portFlag = &cli.UintFlag{
 	Value: uint(freeport.Get(1)[0]),
 }
 
+var dbFlag = &cli.StringFlag{
+	Name:  "db",
+	Usage: "--db <sqlite> or <mysql>",
+	Value: "sqlite",
+}
+
+var pathFlag = &cli.StringFlag{
+	Name:  "path",
+	Usage: "--path <path/to/database> or <database url>",
+	Value: "",
+}
+
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag},
+	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag},
 	Action: func(c *cli.Context) error {
-		return server.Start(uint16(c.Uint(portFlag.Name)))
+		return server.Start(uint16(c.Uint(portFlag.Name)), c.String(dbFlag.Name), c.String(pathFlag.Name))
 	},
 }

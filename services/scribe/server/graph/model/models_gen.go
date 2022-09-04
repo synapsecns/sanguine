@@ -6,33 +6,59 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/synapsecns/sanguine/services/scribe/server/types"
 )
 
 type Log struct {
-	ID          string       `json:"id"`
-	Topics      []string     `json:"topics"`
-	Data        string       `json:"data"`
-	BlockNumber int          `json:"BlockNumber"`
-	TxHash      string       `json:"TxHash"`
-	TxIndex     int          `json:"TxIndex"`
-	BlockHash   string       `json:"BlockHash"`
-	Index       int          `json:"Index"`
-	Removed     *bool        `json:"Removed"`
-	Transaction *Transaction `json:"Transaction"`
+	ContractAddress string       `json:"ContractAddress"`
+	ChainID         int          `json:"ChainID"`
+	Topics          []string     `json:"Topics"`
+	Data            string       `json:"Data"`
+	BlockNumber     int          `json:"BlockNumber"`
+	TxHash          string       `json:"TxHash"`
+	TxIndex         int          `json:"TxIndex"`
+	BlockHash       string       `json:"BlockHash"`
+	Index           int          `json:"Index"`
+	Removed         bool         `json:"Removed"`
+	Transaction     *Transaction `json:"Transaction"`
+	Receipt         *Receipt     `json:"Receipt"`
+	JSON            types.JSON   `json:"JSON"`
+}
+
+type Receipt struct {
+	ChainID           int          `json:"ChainID"`
+	Type              TxType       `json:"Type"`
+	PostState         string       `json:"PostState"`
+	Status            int          `json:"Status"`
+	CumulativeGasUsed int          `json:"CumulativeGasUsed"`
+	Bloom             string       `json:"Bloom"`
+	TxHash            string       `json:"TxHash"`
+	ContractAddress   string       `json:"ContractAddress"`
+	GasUsed           int          `json:"GasUsed"`
+	BlockNumber       int          `json:"BlockNumber"`
+	TransactionIndex  int          `json:"TransactionIndex"`
+	Logs              []*Log       `json:"Logs"`
+	Transaction       *Transaction `json:"Transaction"`
+	JSON              types.JSON   `json:"JSON"`
 }
 
 type Transaction struct {
-	Protected *bool   `json:"Protected"`
-	Type      *TxType `json:"Type"`
-	Data      string  `json:"Data"`
-	Gas       int     `json:"Gas"`
-	GasPrice  int     `json:"GasPrice"`
-	GasTipCap string  `json:"GasTipCap"`
-	GasFeeCap string  `json:"GasFeeCap"`
-	Value     string  `json:"Value"`
-	Nonce     int     `json:"Nonce"`
-	To        string  `json:"To"`
-	Logs      []*Log  `json:"Logs"`
+	ChainID   int        `json:"ChainID"`
+	TxHash    string     `json:"TxHash"`
+	Protected bool       `json:"Protected"`
+	Type      TxType     `json:"Type"`
+	Data      string     `json:"Data"`
+	Gas       int        `json:"Gas"`
+	GasPrice  int        `json:"GasPrice"`
+	GasTipCap string     `json:"GasTipCap"`
+	GasFeeCap string     `json:"GasFeeCap"`
+	Value     string     `json:"Value"`
+	Nonce     int        `json:"Nonce"`
+	To        string     `json:"To"`
+	Logs      []*Log     `json:"Logs"`
+	Receipt   *Receipt   `json:"Receipt"`
+	JSON      types.JSON `json:"JSON"`
 }
 
 type TxType string

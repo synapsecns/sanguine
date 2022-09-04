@@ -3,8 +3,9 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"os"
+
+	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	"gorm.io/driver/sqlite"
@@ -25,6 +26,8 @@ func NewSqliteStore(ctx context.Context, dbPath string) (*Store, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not create sqlite store")
 	}
+
+	fmt.Println("database is at ", fmt.Sprintf("%s/%s", dbPath, "synapse.db"))
 
 	gdb, err := gorm.Open(sqlite.Open(fmt.Sprintf("%s/%s", dbPath, "synapse.db")), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
