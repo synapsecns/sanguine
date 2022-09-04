@@ -16,18 +16,9 @@ func (r Resolver) receiptsToModelReceipts(receipts []types.Receipt, chainID uint
 }
 
 func (r Resolver) receiptToModelReceipt(receipt types.Receipt, chainID uint32) *model.Receipt {
-	var txType model.TxType
-	switch receipt.Type {
-	case 1:
-		txType = model.TxTypeLegacyTx
-	case 2:
-		txType = model.TxTypeAccessListTx
-	case 3:
-		txType = model.TxTypeDynamicFeeTx
-	}
 	return &model.Receipt{
 		ChainID:           int(chainID),
-		Type:              txType,
+		Type:              int(receipt.Type),
 		PostState:         string(receipt.PostState),
 		Status:            int(receipt.Status),
 		CumulativeGasUsed: int(receipt.CumulativeGasUsed),
@@ -76,21 +67,12 @@ func (r Resolver) ethTxsToModelTransactions(ethTxs []types.Transaction, chainID 
 }
 
 func (r Resolver) ethTxToModelTransaction(ethTx types.Transaction, chainID uint32) *model.Transaction {
-	var txType model.TxType
-	switch ethTx.Type() {
-	case 1:
-		txType = model.TxTypeLegacyTx
-	case 2:
-		txType = model.TxTypeAccessListTx
-	case 3:
-		txType = model.TxTypeDynamicFeeTx
-	}
 	protected := ethTx.Protected()
 	return &model.Transaction{
 		ChainID:   int(chainID),
 		TxHash:    ethTx.Hash().String(),
 		Protected: protected,
-		Type:      txType,
+		Type:      int(ethTx.Type()),
 		Data:      common.BytesToHash(ethTx.Data()).String(),
 		Gas:       int(ethTx.Gas()),
 		GasPrice:  int(ethTx.GasPrice().Uint64()),

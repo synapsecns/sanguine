@@ -63,17 +63,12 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Logs                  func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int) int
-		LogsFromAddress       func(childComplexity int, contractAddress string, chainID int) int
-		LogsFromTxHash        func(childComplexity int, transactionHash string, chainID int) int
-		LogsRange             func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, startBlock int, endBlock int) int
-		ReceiptFromTxHash     func(childComplexity int, txHash string, chainID int) int
-		Receipts              func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int) int
-		ReceiptsFromAddress   func(childComplexity int, contractAddress string, chainID int) int
-		ReceiptsRange         func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, startBlock int, endBlock int) int
-		TransactionFromTxHash func(childComplexity int, txHash string, chainID int) int
-		Transactions          func(childComplexity int, txHash *string, chainID int, blockNumber *int) int
-		TransactionsRange     func(childComplexity int, txHash *string, chainID int, blockNumber *int, startBlock int, endBlock int) int
+		Logs              func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int) int
+		LogsRange         func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, startBlock int, endBlock int) int
+		Receipts          func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int) int
+		ReceiptsRange     func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, startBlock int, endBlock int) int
+		Transactions      func(childComplexity int, txHash *string, chainID int, blockNumber *int) int
+		TransactionsRange func(childComplexity int, txHash *string, chainID int, blockNumber *int, startBlock int, endBlock int) int
 	}
 
 	Receipt struct {
@@ -120,15 +115,10 @@ type LogResolver interface {
 type QueryResolver interface {
 	Logs(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int) ([]*model.Log, error)
 	LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, startBlock int, endBlock int) ([]*model.Log, error)
-	LogsFromAddress(ctx context.Context, contractAddress string, chainID int) ([]*model.Log, error)
 	Receipts(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int) ([]*model.Receipt, error)
 	ReceiptsRange(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, startBlock int, endBlock int) ([]*model.Receipt, error)
-	LogsFromTxHash(ctx context.Context, transactionHash string, chainID int) ([]*model.Log, error)
-	ReceiptsFromAddress(ctx context.Context, contractAddress string, chainID int) ([]*model.Receipt, error)
-	ReceiptFromTxHash(ctx context.Context, txHash string, chainID int) (*model.Receipt, error)
 	Transactions(ctx context.Context, txHash *string, chainID int, blockNumber *int) ([]*model.Transaction, error)
 	TransactionsRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, startBlock int, endBlock int) ([]*model.Transaction, error)
-	TransactionFromTxHash(ctx context.Context, txHash string, chainID int) (*model.Transaction, error)
 }
 type ReceiptResolver interface {
 	Logs(ctx context.Context, obj *model.Receipt) ([]*model.Log, error)
@@ -156,91 +146,91 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Log.BlockHash":
+	case "Log.block_hash":
 		if e.complexity.Log.BlockHash == nil {
 			break
 		}
 
 		return e.complexity.Log.BlockHash(childComplexity), true
 
-	case "Log.BlockNumber":
+	case "Log.block_number":
 		if e.complexity.Log.BlockNumber == nil {
 			break
 		}
 
 		return e.complexity.Log.BlockNumber(childComplexity), true
 
-	case "Log.ChainID":
+	case "Log.chain_id":
 		if e.complexity.Log.ChainID == nil {
 			break
 		}
 
 		return e.complexity.Log.ChainID(childComplexity), true
 
-	case "Log.ContractAddress":
+	case "Log.contract_address":
 		if e.complexity.Log.ContractAddress == nil {
 			break
 		}
 
 		return e.complexity.Log.ContractAddress(childComplexity), true
 
-	case "Log.Data":
+	case "Log.data":
 		if e.complexity.Log.Data == nil {
 			break
 		}
 
 		return e.complexity.Log.Data(childComplexity), true
 
-	case "Log.Index":
+	case "Log.index":
 		if e.complexity.Log.Index == nil {
 			break
 		}
 
 		return e.complexity.Log.Index(childComplexity), true
 
-	case "Log.JSON":
+	case "Log.json":
 		if e.complexity.Log.JSON == nil {
 			break
 		}
 
 		return e.complexity.Log.JSON(childComplexity), true
 
-	case "Log.Receipt":
+	case "Log.receipt":
 		if e.complexity.Log.Receipt == nil {
 			break
 		}
 
 		return e.complexity.Log.Receipt(childComplexity), true
 
-	case "Log.Removed":
+	case "Log.removed":
 		if e.complexity.Log.Removed == nil {
 			break
 		}
 
 		return e.complexity.Log.Removed(childComplexity), true
 
-	case "Log.Topics":
+	case "Log.topics":
 		if e.complexity.Log.Topics == nil {
 			break
 		}
 
 		return e.complexity.Log.Topics(childComplexity), true
 
-	case "Log.Transaction":
+	case "Log.transaction":
 		if e.complexity.Log.Transaction == nil {
 			break
 		}
 
 		return e.complexity.Log.Transaction(childComplexity), true
 
-	case "Log.TxHash":
+	case "Log.tx_hash":
 		if e.complexity.Log.TxHash == nil {
 			break
 		}
 
 		return e.complexity.Log.TxHash(childComplexity), true
 
-	case "Log.TxIndex":
+	case "Log.tx_index":
 		if e.complexity.Log.TxIndex == nil {
 			break
 		}
@@ -257,31 +247,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Logs(childComplexity, args["ContractAddress"].(*string), args["ChainID"].(int), args["BlockNumber"].(*int), args["TxHash"].(*string), args["TxIndex"].(*int), args["BlockHash"].(*string), args["Index"].(*int)), true
-
-	case "Query.logsFromAddress":
-		if e.complexity.Query.LogsFromAddress == nil {
-			break
-		}
-
-		args, err := ec.field_Query_logsFromAddress_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.LogsFromAddress(childComplexity, args["ContractAddress"].(string), args["ChainID"].(int)), true
-
-	case "Query.logsFromTxHash":
-		if e.complexity.Query.LogsFromTxHash == nil {
-			break
-		}
-
-		args, err := ec.field_Query_logsFromTxHash_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.LogsFromTxHash(childComplexity, args["TransactionHash"].(string), args["ChainID"].(int)), true
+		return e.complexity.Query.Logs(childComplexity, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int)), true
 
 	case "Query.logsRange":
 		if e.complexity.Query.LogsRange == nil {
@@ -293,19 +259,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.LogsRange(childComplexity, args["ContractAddress"].(*string), args["ChainID"].(int), args["BlockNumber"].(*int), args["TxHash"].(*string), args["TxIndex"].(*int), args["BlockHash"].(*string), args["Index"].(*int), args["StartBlock"].(int), args["EndBlock"].(int)), true
-
-	case "Query.receiptFromTxHash":
-		if e.complexity.Query.ReceiptFromTxHash == nil {
-			break
-		}
-
-		args, err := ec.field_Query_receiptFromTxHash_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.ReceiptFromTxHash(childComplexity, args["txHash"].(string), args["ChainID"].(int)), true
+		return e.complexity.Query.LogsRange(childComplexity, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int), args["start_block"].(int), args["end_block"].(int)), true
 
 	case "Query.receipts":
 		if e.complexity.Query.Receipts == nil {
@@ -317,19 +271,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Receipts(childComplexity, args["ChainID"].(int), args["TxHash"].(*string), args["ContractAddress"].(*string), args["BlockHash"].(*string), args["BlockNumber"].(*int), args["TxIndex"].(*int)), true
-
-	case "Query.receiptsFromAddress":
-		if e.complexity.Query.ReceiptsFromAddress == nil {
-			break
-		}
-
-		args, err := ec.field_Query_receiptsFromAddress_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.ReceiptsFromAddress(childComplexity, args["ContractAddress"].(string), args["ChainID"].(int)), true
+		return e.complexity.Query.Receipts(childComplexity, args["chain_id"].(int), args["tx_hash"].(*string), args["contract_address"].(*string), args["block_hash"].(*string), args["block_number"].(*int), args["tx_index"].(*int)), true
 
 	case "Query.receiptsRange":
 		if e.complexity.Query.ReceiptsRange == nil {
@@ -341,19 +283,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.ReceiptsRange(childComplexity, args["ChainID"].(int), args["TxHash"].(*string), args["ContractAddress"].(*string), args["BlockHash"].(*string), args["BlockNumber"].(*int), args["TxIndex"].(*int), args["StartBlock"].(int), args["EndBlock"].(int)), true
-
-	case "Query.transactionFromTxHash":
-		if e.complexity.Query.TransactionFromTxHash == nil {
-			break
-		}
-
-		args, err := ec.field_Query_transactionFromTxHash_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.TransactionFromTxHash(childComplexity, args["txHash"].(string), args["ChainID"].(int)), true
+		return e.complexity.Query.ReceiptsRange(childComplexity, args["chain_id"].(int), args["tx_hash"].(*string), args["contract_address"].(*string), args["block_hash"].(*string), args["block_number"].(*int), args["tx_index"].(*int), args["start_block"].(int), args["end_block"].(int)), true
 
 	case "Query.transactions":
 		if e.complexity.Query.Transactions == nil {
@@ -365,7 +295,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Transactions(childComplexity, args["TxHash"].(*string), args["ChainID"].(int), args["BlockNumber"].(*int)), true
+		return e.complexity.Query.Transactions(childComplexity, args["tx_hash"].(*string), args["chain_id"].(int), args["block_number"].(*int)), true
 
 	case "Query.transactionsRange":
 		if e.complexity.Query.TransactionsRange == nil {
@@ -377,205 +307,205 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.TransactionsRange(childComplexity, args["TxHash"].(*string), args["ChainID"].(int), args["BlockNumber"].(*int), args["StartBlock"].(int), args["EndBlock"].(int)), true
+		return e.complexity.Query.TransactionsRange(childComplexity, args["tx_hash"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["start_block"].(int), args["end_block"].(int)), true
 
-	case "Receipt.BlockNumber":
+	case "Receipt.block_number":
 		if e.complexity.Receipt.BlockNumber == nil {
 			break
 		}
 
 		return e.complexity.Receipt.BlockNumber(childComplexity), true
 
-	case "Receipt.Bloom":
+	case "Receipt.bloom":
 		if e.complexity.Receipt.Bloom == nil {
 			break
 		}
 
 		return e.complexity.Receipt.Bloom(childComplexity), true
 
-	case "Receipt.ChainID":
+	case "Receipt.chain_id":
 		if e.complexity.Receipt.ChainID == nil {
 			break
 		}
 
 		return e.complexity.Receipt.ChainID(childComplexity), true
 
-	case "Receipt.ContractAddress":
+	case "Receipt.contract_address":
 		if e.complexity.Receipt.ContractAddress == nil {
 			break
 		}
 
 		return e.complexity.Receipt.ContractAddress(childComplexity), true
 
-	case "Receipt.CumulativeGasUsed":
+	case "Receipt.cumulative_gas_used":
 		if e.complexity.Receipt.CumulativeGasUsed == nil {
 			break
 		}
 
 		return e.complexity.Receipt.CumulativeGasUsed(childComplexity), true
 
-	case "Receipt.GasUsed":
+	case "Receipt.gas_used":
 		if e.complexity.Receipt.GasUsed == nil {
 			break
 		}
 
 		return e.complexity.Receipt.GasUsed(childComplexity), true
 
-	case "Receipt.JSON":
+	case "Receipt.json":
 		if e.complexity.Receipt.JSON == nil {
 			break
 		}
 
 		return e.complexity.Receipt.JSON(childComplexity), true
 
-	case "Receipt.Logs":
+	case "Receipt.logs":
 		if e.complexity.Receipt.Logs == nil {
 			break
 		}
 
 		return e.complexity.Receipt.Logs(childComplexity), true
 
-	case "Receipt.PostState":
+	case "Receipt.post_state":
 		if e.complexity.Receipt.PostState == nil {
 			break
 		}
 
 		return e.complexity.Receipt.PostState(childComplexity), true
 
-	case "Receipt.Status":
+	case "Receipt.status":
 		if e.complexity.Receipt.Status == nil {
 			break
 		}
 
 		return e.complexity.Receipt.Status(childComplexity), true
 
-	case "Receipt.Transaction":
+	case "Receipt.transaction":
 		if e.complexity.Receipt.Transaction == nil {
 			break
 		}
 
 		return e.complexity.Receipt.Transaction(childComplexity), true
 
-	case "Receipt.TransactionIndex":
+	case "Receipt.transaction_index":
 		if e.complexity.Receipt.TransactionIndex == nil {
 			break
 		}
 
 		return e.complexity.Receipt.TransactionIndex(childComplexity), true
 
-	case "Receipt.TxHash":
+	case "Receipt.tx_hash":
 		if e.complexity.Receipt.TxHash == nil {
 			break
 		}
 
 		return e.complexity.Receipt.TxHash(childComplexity), true
 
-	case "Receipt.Type":
+	case "Receipt.type":
 		if e.complexity.Receipt.Type == nil {
 			break
 		}
 
 		return e.complexity.Receipt.Type(childComplexity), true
 
-	case "Transaction.ChainID":
+	case "Transaction.chain_id":
 		if e.complexity.Transaction.ChainID == nil {
 			break
 		}
 
 		return e.complexity.Transaction.ChainID(childComplexity), true
 
-	case "Transaction.Data":
+	case "Transaction.data":
 		if e.complexity.Transaction.Data == nil {
 			break
 		}
 
 		return e.complexity.Transaction.Data(childComplexity), true
 
-	case "Transaction.Gas":
+	case "Transaction.gas":
 		if e.complexity.Transaction.Gas == nil {
 			break
 		}
 
 		return e.complexity.Transaction.Gas(childComplexity), true
 
-	case "Transaction.GasFeeCap":
+	case "Transaction.gas_fee_Cap":
 		if e.complexity.Transaction.GasFeeCap == nil {
 			break
 		}
 
 		return e.complexity.Transaction.GasFeeCap(childComplexity), true
 
-	case "Transaction.GasPrice":
+	case "Transaction.gas_price":
 		if e.complexity.Transaction.GasPrice == nil {
 			break
 		}
 
 		return e.complexity.Transaction.GasPrice(childComplexity), true
 
-	case "Transaction.GasTipCap":
+	case "Transaction.gas_tip_cap":
 		if e.complexity.Transaction.GasTipCap == nil {
 			break
 		}
 
 		return e.complexity.Transaction.GasTipCap(childComplexity), true
 
-	case "Transaction.JSON":
+	case "Transaction.json":
 		if e.complexity.Transaction.JSON == nil {
 			break
 		}
 
 		return e.complexity.Transaction.JSON(childComplexity), true
 
-	case "Transaction.Logs":
+	case "Transaction.logs":
 		if e.complexity.Transaction.Logs == nil {
 			break
 		}
 
 		return e.complexity.Transaction.Logs(childComplexity), true
 
-	case "Transaction.Nonce":
+	case "Transaction.nonce":
 		if e.complexity.Transaction.Nonce == nil {
 			break
 		}
 
 		return e.complexity.Transaction.Nonce(childComplexity), true
 
-	case "Transaction.Protected":
+	case "Transaction.protected":
 		if e.complexity.Transaction.Protected == nil {
 			break
 		}
 
 		return e.complexity.Transaction.Protected(childComplexity), true
 
-	case "Transaction.Receipt":
+	case "Transaction.receipt":
 		if e.complexity.Transaction.Receipt == nil {
 			break
 		}
 
 		return e.complexity.Transaction.Receipt(childComplexity), true
 
-	case "Transaction.To":
+	case "Transaction.to":
 		if e.complexity.Transaction.To == nil {
 			break
 		}
 
 		return e.complexity.Transaction.To(childComplexity), true
 
-	case "Transaction.TxHash":
+	case "Transaction.tx_hash":
 		if e.complexity.Transaction.TxHash == nil {
 			break
 		}
 
 		return e.complexity.Transaction.TxHash(childComplexity), true
 
-	case "Transaction.Type":
+	case "Transaction.type":
 		if e.complexity.Transaction.Type == nil {
 			break
 		}
 
 		return e.complexity.Transaction.Type(childComplexity), true
 
-	case "Transaction.Value":
+	case "Transaction.value":
 		if e.complexity.Transaction.Value == nil {
 			break
 		}
@@ -645,145 +575,224 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
 	{Name: "server/graph/schema/queries.graphql", Input: `type Query {
   # returns all logs that match the given filter
   logs(
-    ContractAddress: String
-    ChainID: Int!
-    BlockNumber: Int
-    TxHash: String
-    TxIndex: Int
-    BlockHash: String
-    Index: Int
+    contract_address: String
+    chain_id: Int!
+    block_number: Int
+    tx_hash: String
+    tx_index: Int
+    block_hash: String
+    index: Int
   ): [Log]
   # returns all logs that match the given filter and range
   logsRange(
-    ContractAddress: String
-    ChainID: Int!
-    BlockNumber: Int
-    TxHash: String
-    TxIndex: Int
-    BlockHash: String
-    Index: Int
-    StartBlock: Int!
-    EndBlock: Int!
+    contract_address: String
+    chain_id: Int!
+    block_number: Int
+    tx_hash: String
+    tx_index: Int
+    block_hash: String
+    index: Int
+    start_block: Int!
+    end_block: Int!
   ): [Log]
-  # returns all logs for an address
-  logsFromAddress(
-    ContractAddress: String!
-    ChainID: Int!
-    ): [Log]
   # returns all receipts that match the given filter
   receipts(
-    ChainID: Int!
-    TxHash: String
-    ContractAddress: String
-    BlockHash: String
-    BlockNumber: Int
-    TxIndex: Int
+    chain_id: Int!
+    tx_hash: String
+    contract_address: String
+    block_hash: String
+    block_number: Int
+    tx_index: Int
   ): [Receipt]
   # returns all receipts that match the given filter and range
   receiptsRange(
-    ChainID: Int!
-    TxHash: String
-    ContractAddress: String
-    BlockHash: String
-    BlockNumber: Int
-    TxIndex: Int
-    StartBlock: Int!
-    EndBlock: Int!
+    chain_id: Int!
+    tx_hash: String
+    contract_address: String
+    block_hash: String
+    block_number: Int
+    tx_index: Int
+    start_block: Int!
+    end_block: Int!
   ): [Receipt]
-  # returns all logs for a transaction hash
-  logsFromTxHash(
-    TransactionHash: String!
-    ChainID: Int!
-    ): [Log]
-  # returns all receipts for an address
-  receiptsFromAddress(
-    ContractAddress: String!
-    ChainID: Int!
-    ): [Receipt]
-  # returns the receipt for a transaction hash
-  receiptFromTxHash(
-    txHash: String!
-    ChainID: Int!
-    ): Receipt
   # returns all transactions that match the given filter
   transactions(
-    TxHash: String
-    ChainID: Int!
-    BlockNumber: Int
+    tx_hash: String
+    chain_id: Int!
+    block_number: Int
   ): [Transaction]
   # returns all transactions that match the given filter and range
   transactionsRange(
-    TxHash: String
-    ChainID: Int!
-    BlockNumber: Int
-    StartBlock: Int!
-    EndBlock: Int!
+    tx_hash: String
+    chain_id: Int!
+    block_number: Int
+    start_block: Int!
+    end_block: Int!
   ): [Transaction]
-  # returns the transaction for a transaction hash
-  transactionFromTxHash(
-    txHash: String!
-    ChainID: Int!
-    ): Transaction
 }
+# type Query {
+#   # returns all logs that match the given filter
+#   logs(
+#     ContractAddress: String
+#     ChainID: Int!
+#     BlockNumber: Int
+#     TxHash: String
+#     TxIndex: Int
+#     BlockHash: String
+#     Index: Int
+#   ): [Log]
+#   # returns all logs that match the given filter and range
+#   logsRange(
+#     ContractAddress: String
+#     ChainID: Int!
+#     BlockNumber: Int
+#     TxHash: String
+#     TxIndex: Int
+#     BlockHash: String
+#     Index: Int
+#     StartBlock: Int!
+#     EndBlock: Int!
+#   ): [Log]
+#   # returns all receipts that match the given filter
+#   receipts(
+#     ChainID: Int!
+#     TxHash: String
+#     ContractAddress: String
+#     BlockHash: String
+#     BlockNumber: Int
+#     TxIndex: Int
+#   ): [Receipt]
+#   # returns all receipts that match the given filter and range
+#   receiptsRange(
+#     ChainID: Int!
+#     TxHash: String
+#     ContractAddress: String
+#     BlockHash: String
+#     BlockNumber: Int
+#     TxIndex: Int
+#     StartBlock: Int!
+#     EndBlock: Int!
+#   ): [Receipt]
+#   # returns all transactions that match the given filter
+#   transactions(
+#     TxHash: String
+#     ChainID: Int!
+#     BlockNumber: Int
+#   ): [Transaction]
+#   # returns all transactions that match the given filter and range
+#   transactionsRange(
+#     TxHash: String
+#     ChainID: Int!
+#     BlockNumber: Int
+#     StartBlock: Int!
+#     EndBlock: Int!
+#   ): [Transaction]
+# }
 `, BuiltIn: false},
 	{Name: "server/graph/schema/types.graphql", Input: `scalar JSON
 
 type Receipt {
-  ChainID: Int!
-  Type: TxType!
-  PostState: String!
-  Status: Int!
-  CumulativeGasUsed: Int!
-  Bloom: String!
-  TxHash: String!
-  ContractAddress: String!
-  GasUsed: Int!
-  BlockNumber: Int!
-  TransactionIndex: Int!
-  Logs: [Log!] @goField(forceResolver:true)
-  Transaction: Transaction! @goField(forceResolver:true)
-  JSON: JSON! @goField(forceResolver:true)
+  chain_id: Int!
+  type: Int!
+  post_state: String!
+  status: Int!
+  cumulative_gas_used: Int!
+  bloom: String!
+  tx_hash: String!
+  contract_address: String!
+  gas_used: Int!
+  block_number: Int!
+  transaction_index: Int!
+  logs: [Log!] @goField(forceResolver:true)
+  transaction: Transaction! @goField(forceResolver:true)
+  json: JSON! @goField(forceResolver:true)
 }
 
 type Transaction {
-  ChainID: Int!
-  TxHash: String!
-  Protected: Boolean!
-  Type:  TxType!
-  Data: String!
-  Gas: Int!
-  GasPrice: Int!
-  GasTipCap: String!
-  GasFeeCap: String!
-  Value: String!
-  Nonce: Int!
-  To: String!
-  Logs: [Log!] @goField(forceResolver: true)
-  Receipt: Receipt! @goField(forceResolver: true)
-  JSON: JSON! @goField(forceResolver:true)
+  chain_id: Int!
+  tx_hash: String!
+  protected: Boolean!
+  type:  Int!
+  data: String!
+  gas: Int!
+  gas_price: Int!
+  gas_tip_cap: String!
+  gas_fee_Cap: String!
+  value: String!
+  nonce: Int!
+  to: String!
+  logs: [Log!] @goField(forceResolver: true)
+  receipt: Receipt! @goField(forceResolver: true)
+  json: JSON! @goField(forceResolver:true)
 }
 
 type Log {
-  ContractAddress: String!
-  ChainID: Int!
-  Topics: [String!]!
-  Data: String!
-  BlockNumber: Int!
-  TxHash: String!
-  TxIndex: Int!
-  BlockHash: String!
-  Index: Int!
-  Removed: Boolean!
-  Transaction: Transaction! @goField(forceResolver: true)
-  Receipt: Receipt! @goField(forceResolver: true)
-  JSON: JSON! @goField(forceResolver:true)
+  contract_address: String!
+  chain_id: Int!
+  topics: [String!]!
+  data: String!
+  block_number: Int!
+  tx_hash: String!
+  tx_index: Int!
+  block_hash: String!
+  index: Int!
+  removed: Boolean!
+  transaction: Transaction! @goField(forceResolver: true)
+  receipt: Receipt! @goField(forceResolver: true)
+  json: JSON! @goField(forceResolver:true)
 }
+# scalar JSON
 
-enum TxType {
-  LegacyTx
-  AccessListTx
-  DynamicFeeTx
-}
+# type Receipt {
+#   chain_id: Int!
+#   type: Int!
+#   PostState: String!
+#   Status: Int!
+#   CumulativeGasUsed: Int!
+#   Bloom: String!
+#   TxHash: String!
+#   ContractAddress: String!
+#   GasUsed: Int!
+#   BlockNumber: Int!
+#   TransactionIndex: Int!
+#   Logs: [Log!] @goField(forceResolver:true)
+#   Transaction: Transaction! @goField(forceResolver:true)
+#   JSON: JSON! @goField(forceResolver:true)
+# }
+
+# type Transaction {
+#   ChainID: Int!
+#   TxHash: String!
+#   Protected: Boolean!
+#   Type:  Int!
+#   Data: String!
+#   Gas: Int!
+#   GasPrice: Int!
+#   GasTipCap: String!
+#   GasFeeCap: String!
+#   Value: String!
+#   Nonce: Int!
+#   To: String!
+#   Logs: [Log!] @goField(forceResolver: true)
+#   Receipt: Receipt! @goField(forceResolver: true)
+#   JSON: JSON! @goField(forceResolver:true)
+# }
+
+# type Log {
+#   ContractAddress: String!
+#   ChainID: Int!
+#   Topics: [String!]!
+#   Data: String!
+#   BlockNumber: Int!
+#   TxHash: String!
+#   TxIndex: Int!
+#   BlockHash: String!
+#   Index: Int!
+#   Removed: Boolean!
+#   Transaction: Transaction! @goField(forceResolver: true)
+#   Receipt: Receipt! @goField(forceResolver: true)
+#   JSON: JSON! @goField(forceResolver:true)
+# }
 
 # scalar JSON
 
@@ -864,138 +873,90 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_logsFromAddress_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["ContractAddress"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ContractAddress"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["ContractAddress"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["ChainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ChainID"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["ChainID"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_logsFromTxHash_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["TransactionHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TransactionHash"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["TransactionHash"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["ChainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ChainID"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["ChainID"] = arg1
-	return args, nil
-}
-
 func (ec *executionContext) field_Query_logsRange_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *string
-	if tmp, ok := rawArgs["ContractAddress"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ContractAddress"))
+	if tmp, ok := rawArgs["contract_address"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contract_address"))
 		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["ContractAddress"] = arg0
+	args["contract_address"] = arg0
 	var arg1 int
-	if tmp, ok := rawArgs["ChainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ChainID"))
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
 		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["ChainID"] = arg1
+	args["chain_id"] = arg1
 	var arg2 *int
-	if tmp, ok := rawArgs["BlockNumber"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("BlockNumber"))
+	if tmp, ok := rawArgs["block_number"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_number"))
 		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["BlockNumber"] = arg2
+	args["block_number"] = arg2
 	var arg3 *string
-	if tmp, ok := rawArgs["TxHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TxHash"))
+	if tmp, ok := rawArgs["tx_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_hash"))
 		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["TxHash"] = arg3
+	args["tx_hash"] = arg3
 	var arg4 *int
-	if tmp, ok := rawArgs["TxIndex"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TxIndex"))
+	if tmp, ok := rawArgs["tx_index"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_index"))
 		arg4, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["TxIndex"] = arg4
+	args["tx_index"] = arg4
 	var arg5 *string
-	if tmp, ok := rawArgs["BlockHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("BlockHash"))
+	if tmp, ok := rawArgs["block_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_hash"))
 		arg5, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["BlockHash"] = arg5
+	args["block_hash"] = arg5
 	var arg6 *int
-	if tmp, ok := rawArgs["Index"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Index"))
+	if tmp, ok := rawArgs["index"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("index"))
 		arg6, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["Index"] = arg6
+	args["index"] = arg6
 	var arg7 int
-	if tmp, ok := rawArgs["StartBlock"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("StartBlock"))
+	if tmp, ok := rawArgs["start_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
 		arg7, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["StartBlock"] = arg7
+	args["start_block"] = arg7
 	var arg8 int
-	if tmp, ok := rawArgs["EndBlock"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("EndBlock"))
+	if tmp, ok := rawArgs["end_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
 		arg8, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["EndBlock"] = arg8
+	args["end_block"] = arg8
 	return args, nil
 }
 
@@ -1003,116 +964,68 @@ func (ec *executionContext) field_Query_logs_args(ctx context.Context, rawArgs m
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *string
-	if tmp, ok := rawArgs["ContractAddress"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ContractAddress"))
+	if tmp, ok := rawArgs["contract_address"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contract_address"))
 		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["ContractAddress"] = arg0
+	args["contract_address"] = arg0
 	var arg1 int
-	if tmp, ok := rawArgs["ChainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ChainID"))
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
 		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["ChainID"] = arg1
+	args["chain_id"] = arg1
 	var arg2 *int
-	if tmp, ok := rawArgs["BlockNumber"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("BlockNumber"))
+	if tmp, ok := rawArgs["block_number"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_number"))
 		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["BlockNumber"] = arg2
+	args["block_number"] = arg2
 	var arg3 *string
-	if tmp, ok := rawArgs["TxHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TxHash"))
+	if tmp, ok := rawArgs["tx_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_hash"))
 		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["TxHash"] = arg3
+	args["tx_hash"] = arg3
 	var arg4 *int
-	if tmp, ok := rawArgs["TxIndex"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TxIndex"))
+	if tmp, ok := rawArgs["tx_index"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_index"))
 		arg4, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["TxIndex"] = arg4
+	args["tx_index"] = arg4
 	var arg5 *string
-	if tmp, ok := rawArgs["BlockHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("BlockHash"))
+	if tmp, ok := rawArgs["block_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_hash"))
 		arg5, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["BlockHash"] = arg5
+	args["block_hash"] = arg5
 	var arg6 *int
-	if tmp, ok := rawArgs["Index"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Index"))
+	if tmp, ok := rawArgs["index"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("index"))
 		arg6, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["Index"] = arg6
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_receiptFromTxHash_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["txHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txHash"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["txHash"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["ChainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ChainID"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["ChainID"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_receiptsFromAddress_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["ContractAddress"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ContractAddress"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["ContractAddress"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["ChainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ChainID"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["ChainID"] = arg1
+	args["index"] = arg6
 	return args, nil
 }
 
@@ -1120,77 +1033,77 @@ func (ec *executionContext) field_Query_receiptsRange_args(ctx context.Context, 
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
-	if tmp, ok := rawArgs["ChainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ChainID"))
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
 		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["ChainID"] = arg0
+	args["chain_id"] = arg0
 	var arg1 *string
-	if tmp, ok := rawArgs["TxHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TxHash"))
+	if tmp, ok := rawArgs["tx_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_hash"))
 		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["TxHash"] = arg1
+	args["tx_hash"] = arg1
 	var arg2 *string
-	if tmp, ok := rawArgs["ContractAddress"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ContractAddress"))
+	if tmp, ok := rawArgs["contract_address"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contract_address"))
 		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["ContractAddress"] = arg2
+	args["contract_address"] = arg2
 	var arg3 *string
-	if tmp, ok := rawArgs["BlockHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("BlockHash"))
+	if tmp, ok := rawArgs["block_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_hash"))
 		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["BlockHash"] = arg3
+	args["block_hash"] = arg3
 	var arg4 *int
-	if tmp, ok := rawArgs["BlockNumber"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("BlockNumber"))
+	if tmp, ok := rawArgs["block_number"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_number"))
 		arg4, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["BlockNumber"] = arg4
+	args["block_number"] = arg4
 	var arg5 *int
-	if tmp, ok := rawArgs["TxIndex"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TxIndex"))
+	if tmp, ok := rawArgs["tx_index"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_index"))
 		arg5, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["TxIndex"] = arg5
+	args["tx_index"] = arg5
 	var arg6 int
-	if tmp, ok := rawArgs["StartBlock"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("StartBlock"))
+	if tmp, ok := rawArgs["start_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
 		arg6, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["StartBlock"] = arg6
+	args["start_block"] = arg6
 	var arg7 int
-	if tmp, ok := rawArgs["EndBlock"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("EndBlock"))
+	if tmp, ok := rawArgs["end_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
 		arg7, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["EndBlock"] = arg7
+	args["end_block"] = arg7
 	return args, nil
 }
 
@@ -1198,83 +1111,59 @@ func (ec *executionContext) field_Query_receipts_args(ctx context.Context, rawAr
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
-	if tmp, ok := rawArgs["ChainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ChainID"))
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
 		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["ChainID"] = arg0
+	args["chain_id"] = arg0
 	var arg1 *string
-	if tmp, ok := rawArgs["TxHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TxHash"))
+	if tmp, ok := rawArgs["tx_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_hash"))
 		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["TxHash"] = arg1
+	args["tx_hash"] = arg1
 	var arg2 *string
-	if tmp, ok := rawArgs["ContractAddress"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ContractAddress"))
+	if tmp, ok := rawArgs["contract_address"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contract_address"))
 		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["ContractAddress"] = arg2
+	args["contract_address"] = arg2
 	var arg3 *string
-	if tmp, ok := rawArgs["BlockHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("BlockHash"))
+	if tmp, ok := rawArgs["block_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_hash"))
 		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["BlockHash"] = arg3
+	args["block_hash"] = arg3
 	var arg4 *int
-	if tmp, ok := rawArgs["BlockNumber"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("BlockNumber"))
+	if tmp, ok := rawArgs["block_number"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_number"))
 		arg4, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["BlockNumber"] = arg4
+	args["block_number"] = arg4
 	var arg5 *int
-	if tmp, ok := rawArgs["TxIndex"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TxIndex"))
+	if tmp, ok := rawArgs["tx_index"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_index"))
 		arg5, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["TxIndex"] = arg5
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_transactionFromTxHash_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["txHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txHash"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["txHash"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["ChainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ChainID"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["ChainID"] = arg1
+	args["tx_index"] = arg5
 	return args, nil
 }
 
@@ -1282,50 +1171,50 @@ func (ec *executionContext) field_Query_transactionsRange_args(ctx context.Conte
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *string
-	if tmp, ok := rawArgs["TxHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TxHash"))
+	if tmp, ok := rawArgs["tx_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_hash"))
 		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["TxHash"] = arg0
+	args["tx_hash"] = arg0
 	var arg1 int
-	if tmp, ok := rawArgs["ChainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ChainID"))
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
 		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["ChainID"] = arg1
+	args["chain_id"] = arg1
 	var arg2 *int
-	if tmp, ok := rawArgs["BlockNumber"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("BlockNumber"))
+	if tmp, ok := rawArgs["block_number"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_number"))
 		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["BlockNumber"] = arg2
+	args["block_number"] = arg2
 	var arg3 int
-	if tmp, ok := rawArgs["StartBlock"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("StartBlock"))
+	if tmp, ok := rawArgs["start_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
 		arg3, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["StartBlock"] = arg3
+	args["start_block"] = arg3
 	var arg4 int
-	if tmp, ok := rawArgs["EndBlock"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("EndBlock"))
+	if tmp, ok := rawArgs["end_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
 		arg4, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["EndBlock"] = arg4
+	args["end_block"] = arg4
 	return args, nil
 }
 
@@ -1333,32 +1222,32 @@ func (ec *executionContext) field_Query_transactions_args(ctx context.Context, r
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *string
-	if tmp, ok := rawArgs["TxHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TxHash"))
+	if tmp, ok := rawArgs["tx_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_hash"))
 		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["TxHash"] = arg0
+	args["tx_hash"] = arg0
 	var arg1 int
-	if tmp, ok := rawArgs["ChainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ChainID"))
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
 		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["ChainID"] = arg1
+	args["chain_id"] = arg1
 	var arg2 *int
-	if tmp, ok := rawArgs["BlockNumber"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("BlockNumber"))
+	if tmp, ok := rawArgs["block_number"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_number"))
 		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["BlockNumber"] = arg2
+	args["block_number"] = arg2
 	return args, nil
 }
 
@@ -1400,7 +1289,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Log_ContractAddress(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_contract_address(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1435,7 +1324,7 @@ func (ec *executionContext) _Log_ContractAddress(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_ChainID(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_chain_id(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1470,7 +1359,7 @@ func (ec *executionContext) _Log_ChainID(ctx context.Context, field graphql.Coll
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_Topics(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_topics(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1505,7 +1394,7 @@ func (ec *executionContext) _Log_Topics(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_Data(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_data(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1540,7 +1429,7 @@ func (ec *executionContext) _Log_Data(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_BlockNumber(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_block_number(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1575,7 +1464,7 @@ func (ec *executionContext) _Log_BlockNumber(ctx context.Context, field graphql.
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_TxHash(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_tx_hash(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1610,7 +1499,7 @@ func (ec *executionContext) _Log_TxHash(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_TxIndex(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_tx_index(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1645,7 +1534,7 @@ func (ec *executionContext) _Log_TxIndex(ctx context.Context, field graphql.Coll
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_BlockHash(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_block_hash(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1680,7 +1569,7 @@ func (ec *executionContext) _Log_BlockHash(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_Index(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_index(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1715,7 +1604,7 @@ func (ec *executionContext) _Log_Index(ctx context.Context, field graphql.Collec
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_Removed(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_removed(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1750,7 +1639,7 @@ func (ec *executionContext) _Log_Removed(ctx context.Context, field graphql.Coll
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_Transaction(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_transaction(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1785,7 +1674,7 @@ func (ec *executionContext) _Log_Transaction(ctx context.Context, field graphql.
 	return ec.marshalNTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐTransaction(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_Receipt(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_receipt(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1820,7 +1709,7 @@ func (ec *executionContext) _Log_Receipt(ctx context.Context, field graphql.Coll
 	return ec.marshalNReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Log_JSON(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+func (ec *executionContext) _Log_json(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1880,7 +1769,7 @@ func (ec *executionContext) _Query_logs(ctx context.Context, field graphql.Colle
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Logs(rctx, args["ContractAddress"].(*string), args["ChainID"].(int), args["BlockNumber"].(*int), args["TxHash"].(*string), args["TxIndex"].(*int), args["BlockHash"].(*string), args["Index"].(*int))
+		return ec.resolvers.Query().Logs(rctx, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1919,46 +1808,7 @@ func (ec *executionContext) _Query_logsRange(ctx context.Context, field graphql.
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().LogsRange(rctx, args["ContractAddress"].(*string), args["ChainID"].(int), args["BlockNumber"].(*int), args["TxHash"].(*string), args["TxIndex"].(*int), args["BlockHash"].(*string), args["Index"].(*int), args["StartBlock"].(int), args["EndBlock"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Log)
-	fc.Result = res
-	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐLog(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_logsFromAddress(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_logsFromAddress_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().LogsFromAddress(rctx, args["ContractAddress"].(string), args["ChainID"].(int))
+		return ec.resolvers.Query().LogsRange(rctx, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int), args["start_block"].(int), args["end_block"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1997,7 +1847,7 @@ func (ec *executionContext) _Query_receipts(ctx context.Context, field graphql.C
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Receipts(rctx, args["ChainID"].(int), args["TxHash"].(*string), args["ContractAddress"].(*string), args["BlockHash"].(*string), args["BlockNumber"].(*int), args["TxIndex"].(*int))
+		return ec.resolvers.Query().Receipts(rctx, args["chain_id"].(int), args["tx_hash"].(*string), args["contract_address"].(*string), args["block_hash"].(*string), args["block_number"].(*int), args["tx_index"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2036,7 +1886,7 @@ func (ec *executionContext) _Query_receiptsRange(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ReceiptsRange(rctx, args["ChainID"].(int), args["TxHash"].(*string), args["ContractAddress"].(*string), args["BlockHash"].(*string), args["BlockNumber"].(*int), args["TxIndex"].(*int), args["StartBlock"].(int), args["EndBlock"].(int))
+		return ec.resolvers.Query().ReceiptsRange(rctx, args["chain_id"].(int), args["tx_hash"].(*string), args["contract_address"].(*string), args["block_hash"].(*string), args["block_number"].(*int), args["tx_index"].(*int), args["start_block"].(int), args["end_block"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2048,123 +1898,6 @@ func (ec *executionContext) _Query_receiptsRange(ctx context.Context, field grap
 	res := resTmp.([]*model.Receipt)
 	fc.Result = res
 	return ec.marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_logsFromTxHash(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_logsFromTxHash_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().LogsFromTxHash(rctx, args["TransactionHash"].(string), args["ChainID"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Log)
-	fc.Result = res
-	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐLog(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_receiptsFromAddress(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_receiptsFromAddress_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ReceiptsFromAddress(rctx, args["ContractAddress"].(string), args["ChainID"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Receipt)
-	fc.Result = res
-	return ec.marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_receiptFromTxHash(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_receiptFromTxHash_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ReceiptFromTxHash(rctx, args["txHash"].(string), args["ChainID"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Receipt)
-	fc.Result = res
-	return ec.marshalOReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_transactions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2192,7 +1925,7 @@ func (ec *executionContext) _Query_transactions(ctx context.Context, field graph
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Transactions(rctx, args["TxHash"].(*string), args["ChainID"].(int), args["BlockNumber"].(*int))
+		return ec.resolvers.Query().Transactions(rctx, args["tx_hash"].(*string), args["chain_id"].(int), args["block_number"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2231,7 +1964,7 @@ func (ec *executionContext) _Query_transactionsRange(ctx context.Context, field 
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().TransactionsRange(rctx, args["TxHash"].(*string), args["ChainID"].(int), args["BlockNumber"].(*int), args["StartBlock"].(int), args["EndBlock"].(int))
+		return ec.resolvers.Query().TransactionsRange(rctx, args["tx_hash"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["start_block"].(int), args["end_block"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2243,45 +1976,6 @@ func (ec *executionContext) _Query_transactionsRange(ctx context.Context, field 
 	res := resTmp.([]*model.Transaction)
 	fc.Result = res
 	return ec.marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐTransaction(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_transactionFromTxHash(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_transactionFromTxHash_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().TransactionFromTxHash(rctx, args["txHash"].(string), args["ChainID"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Transaction)
-	fc.Result = res
-	return ec.marshalOTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐTransaction(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2355,7 +2049,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_ChainID(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_chain_id(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2390,7 +2084,7 @@ func (ec *executionContext) _Receipt_ChainID(ctx context.Context, field graphql.
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_Type(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_type(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2420,12 +2114,12 @@ func (ec *executionContext) _Receipt_Type(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.TxType)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNTxType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐTxType(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_PostState(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_post_state(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2460,7 +2154,7 @@ func (ec *executionContext) _Receipt_PostState(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_Status(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_status(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2495,7 +2189,7 @@ func (ec *executionContext) _Receipt_Status(ctx context.Context, field graphql.C
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_CumulativeGasUsed(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_cumulative_gas_used(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2530,7 +2224,7 @@ func (ec *executionContext) _Receipt_CumulativeGasUsed(ctx context.Context, fiel
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_Bloom(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_bloom(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2565,7 +2259,7 @@ func (ec *executionContext) _Receipt_Bloom(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_TxHash(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_tx_hash(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2600,7 +2294,7 @@ func (ec *executionContext) _Receipt_TxHash(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_ContractAddress(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_contract_address(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2635,7 +2329,7 @@ func (ec *executionContext) _Receipt_ContractAddress(ctx context.Context, field 
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_GasUsed(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_gas_used(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2670,7 +2364,7 @@ func (ec *executionContext) _Receipt_GasUsed(ctx context.Context, field graphql.
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_BlockNumber(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_block_number(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2705,7 +2399,7 @@ func (ec *executionContext) _Receipt_BlockNumber(ctx context.Context, field grap
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_TransactionIndex(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_transaction_index(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2740,7 +2434,7 @@ func (ec *executionContext) _Receipt_TransactionIndex(ctx context.Context, field
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_Logs(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_logs(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2772,7 +2466,7 @@ func (ec *executionContext) _Receipt_Logs(ctx context.Context, field graphql.Col
 	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐLogᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_Transaction(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_transaction(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2807,7 +2501,7 @@ func (ec *executionContext) _Receipt_Transaction(ctx context.Context, field grap
 	return ec.marshalNTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐTransaction(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Receipt_JSON(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receipt_json(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2842,7 +2536,7 @@ func (ec *executionContext) _Receipt_JSON(ctx context.Context, field graphql.Col
 	return ec.marshalNJSON2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋtypesᚐJSON(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_ChainID(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_chain_id(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2877,7 +2571,7 @@ func (ec *executionContext) _Transaction_ChainID(ctx context.Context, field grap
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_TxHash(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_tx_hash(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2912,7 +2606,7 @@ func (ec *executionContext) _Transaction_TxHash(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_Protected(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_protected(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2947,7 +2641,7 @@ func (ec *executionContext) _Transaction_Protected(ctx context.Context, field gr
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_Type(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_type(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2977,12 +2671,12 @@ func (ec *executionContext) _Transaction_Type(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.TxType)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNTxType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐTxType(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_Data(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_data(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3017,7 +2711,7 @@ func (ec *executionContext) _Transaction_Data(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_Gas(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_gas(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3052,7 +2746,7 @@ func (ec *executionContext) _Transaction_Gas(ctx context.Context, field graphql.
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_GasPrice(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_gas_price(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3087,7 +2781,7 @@ func (ec *executionContext) _Transaction_GasPrice(ctx context.Context, field gra
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_GasTipCap(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_gas_tip_cap(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3122,7 +2816,7 @@ func (ec *executionContext) _Transaction_GasTipCap(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_GasFeeCap(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_gas_fee_Cap(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3157,7 +2851,7 @@ func (ec *executionContext) _Transaction_GasFeeCap(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_Value(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_value(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3192,7 +2886,7 @@ func (ec *executionContext) _Transaction_Value(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_Nonce(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_nonce(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3227,7 +2921,7 @@ func (ec *executionContext) _Transaction_Nonce(ctx context.Context, field graphq
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_To(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_to(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3262,7 +2956,7 @@ func (ec *executionContext) _Transaction_To(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_Logs(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_logs(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3294,7 +2988,7 @@ func (ec *executionContext) _Transaction_Logs(ctx context.Context, field graphql
 	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐLogᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_Receipt(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_receipt(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3329,7 +3023,7 @@ func (ec *executionContext) _Transaction_Receipt(ctx context.Context, field grap
 	return ec.marshalNReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_JSON(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_json(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4470,57 +4164,57 @@ func (ec *executionContext) _Log(ctx context.Context, sel ast.SelectionSet, obj 
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Log")
-		case "ContractAddress":
-			out.Values[i] = ec._Log_ContractAddress(ctx, field, obj)
+		case "contract_address":
+			out.Values[i] = ec._Log_contract_address(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "ChainID":
-			out.Values[i] = ec._Log_ChainID(ctx, field, obj)
+		case "chain_id":
+			out.Values[i] = ec._Log_chain_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Topics":
-			out.Values[i] = ec._Log_Topics(ctx, field, obj)
+		case "topics":
+			out.Values[i] = ec._Log_topics(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Data":
-			out.Values[i] = ec._Log_Data(ctx, field, obj)
+		case "data":
+			out.Values[i] = ec._Log_data(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "BlockNumber":
-			out.Values[i] = ec._Log_BlockNumber(ctx, field, obj)
+		case "block_number":
+			out.Values[i] = ec._Log_block_number(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "TxHash":
-			out.Values[i] = ec._Log_TxHash(ctx, field, obj)
+		case "tx_hash":
+			out.Values[i] = ec._Log_tx_hash(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "TxIndex":
-			out.Values[i] = ec._Log_TxIndex(ctx, field, obj)
+		case "tx_index":
+			out.Values[i] = ec._Log_tx_index(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "BlockHash":
-			out.Values[i] = ec._Log_BlockHash(ctx, field, obj)
+		case "block_hash":
+			out.Values[i] = ec._Log_block_hash(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Index":
-			out.Values[i] = ec._Log_Index(ctx, field, obj)
+		case "index":
+			out.Values[i] = ec._Log_index(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Removed":
-			out.Values[i] = ec._Log_Removed(ctx, field, obj)
+		case "removed":
+			out.Values[i] = ec._Log_removed(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Transaction":
+		case "transaction":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -4528,13 +4222,13 @@ func (ec *executionContext) _Log(ctx context.Context, sel ast.SelectionSet, obj 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Log_Transaction(ctx, field, obj)
+				res = ec._Log_transaction(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
-		case "Receipt":
+		case "receipt":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -4542,13 +4236,13 @@ func (ec *executionContext) _Log(ctx context.Context, sel ast.SelectionSet, obj 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Log_Receipt(ctx, field, obj)
+				res = ec._Log_receipt(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
-		case "JSON":
+		case "json":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -4556,7 +4250,7 @@ func (ec *executionContext) _Log(ctx context.Context, sel ast.SelectionSet, obj 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Log_JSON(ctx, field, obj)
+				res = ec._Log_json(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -4610,17 +4304,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_logsRange(ctx, field)
 				return res
 			})
-		case "logsFromAddress":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_logsFromAddress(ctx, field)
-				return res
-			})
 		case "receipts":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -4643,39 +4326,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_receiptsRange(ctx, field)
 				return res
 			})
-		case "logsFromTxHash":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_logsFromTxHash(ctx, field)
-				return res
-			})
-		case "receiptsFromAddress":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_receiptsFromAddress(ctx, field)
-				return res
-			})
-		case "receiptFromTxHash":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_receiptFromTxHash(ctx, field)
-				return res
-			})
 		case "transactions":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -4696,17 +4346,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_transactionsRange(ctx, field)
-				return res
-			})
-		case "transactionFromTxHash":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_transactionFromTxHash(ctx, field)
 				return res
 			})
 		case "__type":
@@ -4735,62 +4374,62 @@ func (ec *executionContext) _Receipt(ctx context.Context, sel ast.SelectionSet, 
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Receipt")
-		case "ChainID":
-			out.Values[i] = ec._Receipt_ChainID(ctx, field, obj)
+		case "chain_id":
+			out.Values[i] = ec._Receipt_chain_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Type":
-			out.Values[i] = ec._Receipt_Type(ctx, field, obj)
+		case "type":
+			out.Values[i] = ec._Receipt_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "PostState":
-			out.Values[i] = ec._Receipt_PostState(ctx, field, obj)
+		case "post_state":
+			out.Values[i] = ec._Receipt_post_state(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Status":
-			out.Values[i] = ec._Receipt_Status(ctx, field, obj)
+		case "status":
+			out.Values[i] = ec._Receipt_status(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "CumulativeGasUsed":
-			out.Values[i] = ec._Receipt_CumulativeGasUsed(ctx, field, obj)
+		case "cumulative_gas_used":
+			out.Values[i] = ec._Receipt_cumulative_gas_used(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Bloom":
-			out.Values[i] = ec._Receipt_Bloom(ctx, field, obj)
+		case "bloom":
+			out.Values[i] = ec._Receipt_bloom(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "TxHash":
-			out.Values[i] = ec._Receipt_TxHash(ctx, field, obj)
+		case "tx_hash":
+			out.Values[i] = ec._Receipt_tx_hash(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "ContractAddress":
-			out.Values[i] = ec._Receipt_ContractAddress(ctx, field, obj)
+		case "contract_address":
+			out.Values[i] = ec._Receipt_contract_address(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "GasUsed":
-			out.Values[i] = ec._Receipt_GasUsed(ctx, field, obj)
+		case "gas_used":
+			out.Values[i] = ec._Receipt_gas_used(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "BlockNumber":
-			out.Values[i] = ec._Receipt_BlockNumber(ctx, field, obj)
+		case "block_number":
+			out.Values[i] = ec._Receipt_block_number(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "TransactionIndex":
-			out.Values[i] = ec._Receipt_TransactionIndex(ctx, field, obj)
+		case "transaction_index":
+			out.Values[i] = ec._Receipt_transaction_index(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Logs":
+		case "logs":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -4798,10 +4437,10 @@ func (ec *executionContext) _Receipt(ctx context.Context, sel ast.SelectionSet, 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Receipt_Logs(ctx, field, obj)
+				res = ec._Receipt_logs(ctx, field, obj)
 				return res
 			})
-		case "Transaction":
+		case "transaction":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -4809,13 +4448,13 @@ func (ec *executionContext) _Receipt(ctx context.Context, sel ast.SelectionSet, 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Receipt_Transaction(ctx, field, obj)
+				res = ec._Receipt_transaction(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
-		case "JSON":
+		case "json":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -4823,7 +4462,7 @@ func (ec *executionContext) _Receipt(ctx context.Context, sel ast.SelectionSet, 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Receipt_JSON(ctx, field, obj)
+				res = ec._Receipt_json(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -4851,67 +4490,67 @@ func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionS
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Transaction")
-		case "ChainID":
-			out.Values[i] = ec._Transaction_ChainID(ctx, field, obj)
+		case "chain_id":
+			out.Values[i] = ec._Transaction_chain_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "TxHash":
-			out.Values[i] = ec._Transaction_TxHash(ctx, field, obj)
+		case "tx_hash":
+			out.Values[i] = ec._Transaction_tx_hash(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Protected":
-			out.Values[i] = ec._Transaction_Protected(ctx, field, obj)
+		case "protected":
+			out.Values[i] = ec._Transaction_protected(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Type":
-			out.Values[i] = ec._Transaction_Type(ctx, field, obj)
+		case "type":
+			out.Values[i] = ec._Transaction_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Data":
-			out.Values[i] = ec._Transaction_Data(ctx, field, obj)
+		case "data":
+			out.Values[i] = ec._Transaction_data(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Gas":
-			out.Values[i] = ec._Transaction_Gas(ctx, field, obj)
+		case "gas":
+			out.Values[i] = ec._Transaction_gas(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "GasPrice":
-			out.Values[i] = ec._Transaction_GasPrice(ctx, field, obj)
+		case "gas_price":
+			out.Values[i] = ec._Transaction_gas_price(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "GasTipCap":
-			out.Values[i] = ec._Transaction_GasTipCap(ctx, field, obj)
+		case "gas_tip_cap":
+			out.Values[i] = ec._Transaction_gas_tip_cap(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "GasFeeCap":
-			out.Values[i] = ec._Transaction_GasFeeCap(ctx, field, obj)
+		case "gas_fee_Cap":
+			out.Values[i] = ec._Transaction_gas_fee_Cap(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Value":
-			out.Values[i] = ec._Transaction_Value(ctx, field, obj)
+		case "value":
+			out.Values[i] = ec._Transaction_value(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Nonce":
-			out.Values[i] = ec._Transaction_Nonce(ctx, field, obj)
+		case "nonce":
+			out.Values[i] = ec._Transaction_nonce(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "To":
-			out.Values[i] = ec._Transaction_To(ctx, field, obj)
+		case "to":
+			out.Values[i] = ec._Transaction_to(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "Logs":
+		case "logs":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -4919,10 +4558,10 @@ func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionS
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Transaction_Logs(ctx, field, obj)
+				res = ec._Transaction_logs(ctx, field, obj)
 				return res
 			})
-		case "Receipt":
+		case "receipt":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -4930,13 +4569,13 @@ func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionS
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Transaction_Receipt(ctx, field, obj)
+				res = ec._Transaction_receipt(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
-		case "JSON":
+		case "json":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -4944,7 +4583,7 @@ func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionS
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Transaction_JSON(ctx, field, obj)
+				res = ec._Transaction_json(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -5338,16 +4977,6 @@ func (ec *executionContext) marshalNTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋs
 		return graphql.Null
 	}
 	return ec._Transaction(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNTxType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐTxType(ctx context.Context, v interface{}) (model.TxType, error) {
-	var res model.TxType
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNTxType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋserverᚋgraphᚋmodelᚐTxType(ctx context.Context, sel ast.SelectionSet, v model.TxType) graphql.Marshaler {
-	return v
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

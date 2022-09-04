@@ -3,103 +3,56 @@
 package model
 
 import (
-	"fmt"
-	"io"
-	"strconv"
-
 	"github.com/synapsecns/sanguine/services/scribe/server/types"
 )
 
 type Log struct {
-	ContractAddress string       `json:"ContractAddress"`
-	ChainID         int          `json:"ChainID"`
-	Topics          []string     `json:"Topics"`
-	Data            string       `json:"Data"`
-	BlockNumber     int          `json:"BlockNumber"`
-	TxHash          string       `json:"TxHash"`
-	TxIndex         int          `json:"TxIndex"`
-	BlockHash       string       `json:"BlockHash"`
-	Index           int          `json:"Index"`
-	Removed         bool         `json:"Removed"`
-	Transaction     *Transaction `json:"Transaction"`
-	Receipt         *Receipt     `json:"Receipt"`
-	JSON            types.JSON   `json:"JSON"`
+	ContractAddress string       `json:"contract_address"`
+	ChainID         int          `json:"chain_id"`
+	Topics          []string     `json:"topics"`
+	Data            string       `json:"data"`
+	BlockNumber     int          `json:"block_number"`
+	TxHash          string       `json:"tx_hash"`
+	TxIndex         int          `json:"tx_index"`
+	BlockHash       string       `json:"block_hash"`
+	Index           int          `json:"index"`
+	Removed         bool         `json:"removed"`
+	Transaction     *Transaction `json:"transaction"`
+	Receipt         *Receipt     `json:"receipt"`
+	JSON            types.JSON   `json:"json"`
 }
 
 type Receipt struct {
-	ChainID           int          `json:"ChainID"`
-	Type              TxType       `json:"Type"`
-	PostState         string       `json:"PostState"`
-	Status            int          `json:"Status"`
-	CumulativeGasUsed int          `json:"CumulativeGasUsed"`
-	Bloom             string       `json:"Bloom"`
-	TxHash            string       `json:"TxHash"`
-	ContractAddress   string       `json:"ContractAddress"`
-	GasUsed           int          `json:"GasUsed"`
-	BlockNumber       int          `json:"BlockNumber"`
-	TransactionIndex  int          `json:"TransactionIndex"`
-	Logs              []*Log       `json:"Logs"`
-	Transaction       *Transaction `json:"Transaction"`
-	JSON              types.JSON   `json:"JSON"`
+	ChainID           int          `json:"chain_id"`
+	Type              int          `json:"type"`
+	PostState         string       `json:"post_state"`
+	Status            int          `json:"status"`
+	CumulativeGasUsed int          `json:"cumulative_gas_used"`
+	Bloom             string       `json:"bloom"`
+	TxHash            string       `json:"tx_hash"`
+	ContractAddress   string       `json:"contract_address"`
+	GasUsed           int          `json:"gas_used"`
+	BlockNumber       int          `json:"block_number"`
+	TransactionIndex  int          `json:"transaction_index"`
+	Logs              []*Log       `json:"logs"`
+	Transaction       *Transaction `json:"transaction"`
+	JSON              types.JSON   `json:"json"`
 }
 
 type Transaction struct {
-	ChainID   int        `json:"ChainID"`
-	TxHash    string     `json:"TxHash"`
-	Protected bool       `json:"Protected"`
-	Type      TxType     `json:"Type"`
-	Data      string     `json:"Data"`
-	Gas       int        `json:"Gas"`
-	GasPrice  int        `json:"GasPrice"`
-	GasTipCap string     `json:"GasTipCap"`
-	GasFeeCap string     `json:"GasFeeCap"`
-	Value     string     `json:"Value"`
-	Nonce     int        `json:"Nonce"`
-	To        string     `json:"To"`
-	Logs      []*Log     `json:"Logs"`
-	Receipt   *Receipt   `json:"Receipt"`
-	JSON      types.JSON `json:"JSON"`
-}
-
-type TxType string
-
-const (
-	TxTypeLegacyTx     TxType = "LegacyTx"
-	TxTypeAccessListTx TxType = "AccessListTx"
-	TxTypeDynamicFeeTx TxType = "DynamicFeeTx"
-)
-
-var AllTxType = []TxType{
-	TxTypeLegacyTx,
-	TxTypeAccessListTx,
-	TxTypeDynamicFeeTx,
-}
-
-func (e TxType) IsValid() bool {
-	switch e {
-	case TxTypeLegacyTx, TxTypeAccessListTx, TxTypeDynamicFeeTx:
-		return true
-	}
-	return false
-}
-
-func (e TxType) String() string {
-	return string(e)
-}
-
-func (e *TxType) UnmarshalGQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = TxType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid TxType", str)
-	}
-	return nil
-}
-
-func (e TxType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	ChainID   int        `json:"chain_id"`
+	TxHash    string     `json:"tx_hash"`
+	Protected bool       `json:"protected"`
+	Type      int        `json:"type"`
+	Data      string     `json:"data"`
+	Gas       int        `json:"gas"`
+	GasPrice  int        `json:"gas_price"`
+	GasTipCap string     `json:"gas_tip_cap"`
+	GasFeeCap string     `json:"gas_fee_Cap"`
+	Value     string     `json:"value"`
+	Nonce     int        `json:"nonce"`
+	To        string     `json:"to"`
+	Logs      []*Log     `json:"logs"`
+	Receipt   *Receipt   `json:"receipt"`
+	JSON      types.JSON `json:"json"`
 }
