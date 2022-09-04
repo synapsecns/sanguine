@@ -95,16 +95,12 @@ contract SystemRouter is Client, ISystemRouter {
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemContracts caller = _getSystemCaller(msg.sender);
-        bytes memory message = SystemMessage.formatSystemCall(
+        bytes[] memory systemCalls = new bytes[](1);
+        systemCalls[0] = SystemMessage.formatSystemCall(
             uint8(_recipient),
             _formatCalldata(caller, _selector, _data)
         );
-        /**
-         * @dev Origin should recognize SystemRouter as the "true sender"
-         *      and use SYSTEM_ROUTER address as "sender" instead. This enables not
-         *      knowing SystemRouter address on remote chain in advance.
-         */
-        _send(_destination, Tips.emptyTips(), message);
+        _remoteSystemCall(_destination, systemCalls);
     }
 
     /**
@@ -175,15 +171,19 @@ contract SystemRouter is Client, ISystemRouter {
         uint32,
         bytes memory _message
     ) internal override {
-        bytes29 message = _message.castToSystemMessage();
-        require(message.isSystemMessage(), "Not a system message");
-        (SystemMessage.MessageFlag messageType, bytes29 body) = message.unpackMessage();
+        bytes[] memory systemMessages = abi.decode(_message, (bytes[]));
+        uint256 amount = systemMessages.length;
+        for (uint256 i = 0; i < amount; ++i) {
+            bytes29 message = systemMessages[i].castToSystemMessage();
+            require(message.isSystemMessage(), "Not a system message");
+            (SystemMessage.MessageFlag messageType, bytes29 body) = message.unpackMessage();
 
-        if (messageType == SystemMessage.MessageFlag.Call) {
-            _localSystemCall(body.callRecipient(), body.callPayload().clone());
-        } else if (messageType == SystemMessage.MessageFlag.Adjust) {
-            // TODO: handle messages with instructions
-            // to adjust some of the SystemRouter parameters
+            if (messageType == SystemMessage.MessageFlag.Call) {
+                _localSystemCall(body.callRecipient(), body.callPayload().clone());
+            } else if (messageType == SystemMessage.MessageFlag.Adjust) {
+                // TODO: handle messages with instructions
+                // to adjust some of the SystemRouter parameters
+            }
         }
     }
 
@@ -192,6 +192,16 @@ contract SystemRouter is Client, ISystemRouter {
         require(recipient != address(0), "System Contract not set");
         // this will call recipient and bubble the revert from the external call
         recipient.functionCall(_payload);
+    }
+
+    function _remoteSystemCall(uint32 _destination, bytes[] memory _systemCalls) internal {
+        bytes memory message = abi.encode(_systemCalls);
+        /**
+         * @dev Origin should recognize SystemRouter as the "true sender"
+         *      and use SYSTEM_ROUTER address as "sender" instead. This enables not
+         *      knowing SystemRouter address on remote chain in advance.
+         */
+        _send(_destination, Tips.emptyTips(), message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

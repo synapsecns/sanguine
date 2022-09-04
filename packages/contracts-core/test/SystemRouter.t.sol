@@ -288,6 +288,8 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             uint256(systemCaller),
             data
         );
+        bytes[] memory systemCalls = new bytes[](1);
+        systemCalls[0] = SystemMessage.formatSystemCall(systemRecipient, payload);
         return
             Message.formatMessage(
                 Header.formatHeader(
@@ -299,7 +301,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                     optimisticSeconds
                 ),
                 Tips.emptyTips(),
-                SystemMessage.formatSystemCall(systemRecipient, payload)
+                abi.encode(systemCalls)
             );
     }
 
