@@ -6,6 +6,7 @@ import { Destination } from "../../contracts/Destination.sol";
 
 import { MirrorLib } from "../../contracts/libs/Mirror.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
+import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
 
 import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
 
@@ -34,8 +35,38 @@ contract DestinationHarness is Destination, GuardRegistryHarness {
         uint8 _caller,
         uint256 _rootSubmittedAt
     ) external onlySystemRouter {
-        sensitiveValue = _newValue;
-        emit LogSystemCall(_origin, _caller, _rootSubmittedAt);
+        _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
+    }
+
+    function setSensitiveValueOnlyLocal(
+        uint256 _newValue,
+        uint32 _origin,
+        uint8 _caller,
+        uint256 _rootSubmittedAt
+    ) external onlySystemRouter onlyLocalCalls(_origin) {
+        _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
+    }
+
+    function setSensitiveValueOnlyOrigin(
+        uint256 _newValue,
+        uint32 _origin,
+        uint8 _caller,
+        uint256 _rootSubmittedAt
+    )
+        external
+        onlySystemRouter
+        onlyCaller(ISystemRouter.SystemEntity(_caller), ISystemRouter.SystemEntity.Origin)
+    {
+        _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
+    }
+
+    function setSensitiveValueOnlyTwoHours(
+        uint256 _newValue,
+        uint32 _origin,
+        uint8 _caller,
+        uint256 _rootSubmittedAt
+    ) external onlySystemRouter onlyOptimisticPeriodOver(_rootSubmittedAt, 2 hours) {
+        _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
     }
 
     function setMessageStatus(
@@ -53,5 +84,15 @@ contract DestinationHarness is Destination, GuardRegistryHarness {
             _tips.proverTip(),
             _tips.executorTip()
         );
+    }
+
+    function _setSensitiveValue(
+        uint256 _newValue,
+        uint32 _origin,
+        uint8 _caller,
+        uint256 _rootSubmittedAt
+    ) internal {
+        sensitiveValue = _newValue;
+        emit LogSystemCall(_origin, _caller, _rootSubmittedAt);
     }
 }

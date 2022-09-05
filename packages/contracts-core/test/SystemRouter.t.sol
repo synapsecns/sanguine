@@ -197,6 +197,102 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                   TEST: SYSTEM CONTRACT MODIFIERS                    ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // TODO: this should be in a SystemContract mock test.
+    // Move over once a reusable testing suite is established.
+
+    function test_systemCall_local_onlyCaller() public {
+        // Local Origin calls Destination: setSensitiveValueOnlyOrigin
+        data = abi.encodeWithSelector(
+            destination.setSensitiveValueOnlyOrigin.selector,
+            secretValue
+        );
+        _checkLocalSystemCall();
+    }
+
+    function test_systemCall_local_onlyCaller_wrongCaller() public {
+        // Local Destination calls Destination (aka itself): setSensitiveValueOnlyOrigin
+        systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
+        data = abi.encodeWithSelector(
+            destination.setSensitiveValueOnlyOrigin.selector,
+            secretValue
+        );
+        vm.prank(address(destination));
+        vm.expectRevert("!systemCaller");
+        systemRouter.systemCall(localDomain, 0, ISystemRouter.SystemEntity.Destination, data);
+    }
+
+    function test_systemCall_local_onlyLocal() public {
+        // Local Origin calls Destination: setSensitiveValueOnlyLocal
+        data = abi.encodeWithSelector(destination.setSensitiveValueOnlyLocal.selector, secretValue);
+        _checkLocalSystemCall();
+    }
+
+    function test_systemCall_local_onlyOptimisticPeriodOver() public {
+        // optimistic period check always fails on local calls
+        data = abi.encodeWithSelector(
+            destination.setSensitiveValueOnlyTwoHours.selector,
+            secretValue
+        );
+        vm.prank(address(destination));
+        vm.expectRevert("!optimisticPeriod");
+        systemRouter.systemCall(localDomain, 0, ISystemRouter.SystemEntity.Destination, data);
+    }
+
+    function test_systemCall_remote_onlyCaller() public {
+        // Remote Origin calls Destination: setSensitiveValueOnlyOrigin
+        data = abi.encodeWithSelector(
+            destination.setSensitiveValueOnlyOrigin.selector,
+            secretValue
+        );
+        _checkReceiveSystemMessage();
+    }
+
+    function test_systemCall_remote_onlyCaller_wrongCaller() public {
+        // Remote Destination calls Destination: setSensitiveValueOnlyOrigin
+        systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
+        data = abi.encodeWithSelector(
+            destination.setSensitiveValueOnlyOrigin.selector,
+            secretValue
+        );
+        bytes memory message = _prepareReceiveTest(receivedSystemMessage);
+        skip(optimisticSeconds);
+        vm.expectRevert("!systemCaller");
+        destination.execute(message);
+    }
+
+    function test_systemCall_remote_onlyLocal() public {
+        // onlyLocal check always fails on remote calls (such wisdom much wow)
+        data = abi.encodeWithSelector(destination.setSensitiveValueOnlyLocal.selector, secretValue);
+        bytes memory message = _prepareReceiveTest(receivedSystemMessage);
+        skip(optimisticSeconds);
+        vm.expectRevert("!localDomain");
+        destination.execute(message);
+    }
+
+    function test_systemCall_remote_onlyOptimisticPeriodOver() public {
+        data = abi.encodeWithSelector(
+            destination.setSensitiveValueOnlyTwoHours.selector,
+            secretValue
+        );
+        optimisticSeconds = 2 hours;
+        _checkReceiveSystemMessage();
+    }
+
+    function test_systemCall_remote_onlyOptimisticPeriodOver_periodReduced() public {
+        data = abi.encodeWithSelector(
+            destination.setSensitiveValueOnlyTwoHours.selector,
+            secretValue
+        );
+        optimisticSeconds = 2 hours - 1;
+        bytes memory message = _prepareReceiveTest(receivedSystemMessage);
+        skip(optimisticSeconds);
+        vm.expectRevert("!optimisticPeriod");
+        destination.execute(message);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           INTERNAL HELPERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 

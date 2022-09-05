@@ -30,14 +30,32 @@ abstract contract SystemContract is OwnableUpgradeable {
     /**
      * @dev Modifier for functions that are supposed to be called only from
      * System Contracts on all chains (either local or remote).
-     * Note: any function protected by this modifier should have first two params:
+     * Note: any function protected by this modifier should have last three params:
      * - uint32 _originDomain
      * - SystemEntity _caller
+     * - uint256 _rootSubmittedAt
      * Make sure to check domain/caller, if a function should be only called
      * from a given domain / by a given caller.
+     * Make sure to check that a needed amount of time has passed since
+     * root submission for the cross-chain calls.
      */
     modifier onlySystemRouter() {
         _assertSystemRouter();
+        _;
+    }
+
+    modifier onlyLocalCalls(uint32 _originDomain) {
+        require(_originDomain == localDomain, "!localDomain");
+        _;
+    }
+
+    modifier onlyCaller(ISystemRouter.SystemEntity _caller, ISystemRouter.SystemEntity _allowed) {
+        require(_caller == _allowed, "!systemCaller");
+        _;
+    }
+
+    modifier onlyOptimisticPeriodOver(uint256 _rootSubmittedAt, uint256 _optimisticSeconds) {
+        _assertOptimisticPeriodOver(_rootSubmittedAt, _optimisticSeconds);
         _;
     }
 
@@ -79,5 +97,12 @@ abstract contract SystemContract is OwnableUpgradeable {
 
     function _assertSystemRouter() internal view {
         require(msg.sender == address(systemRouter), "!systemRouter");
+    }
+
+    function _assertOptimisticPeriodOver(uint256 _rootSubmittedAt, uint256 _optimisticSeconds)
+        internal
+        view
+    {
+        require(block.timestamp >= _rootSubmittedAt + _optimisticSeconds, "!optimisticPeriod");
     }
 }
