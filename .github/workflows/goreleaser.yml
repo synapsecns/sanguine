@@ -9,6 +9,7 @@ jobs:
   # the next run since build-goreleaser and run-goreleaser are run concurrently. We expect github actions
   # to fix this n a future verison
   build-goreleaser:
+    if: false
     runs-on: ubuntu-latest
     outputs:
       goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
