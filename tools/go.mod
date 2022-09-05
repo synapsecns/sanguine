@@ -77,7 +77,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gin-gonic/gin v1.8.1 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
-	github.com/go-kit/log v0.2.0 // indirect
+	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
@@ -128,6 +128,7 @@ require (
 	github.com/ipfs/go-ipns v0.0.2 // indirect
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
+	github.com/jarcoal/httpmock v1.2.0 // indirect
 	github.com/jbenet/go-temp-err-catcher v0.1.0 // indirect
 	github.com/jbenet/goprocess v0.1.4 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
@@ -217,9 +218,9 @@ require (
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_golang v1.12.1 // indirect
+	github.com/prometheus/client_golang v1.12.2 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.32.1 // indirect
+	github.com/prometheus/common v0.34.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/prometheus/tsdb v0.10.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect

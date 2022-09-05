@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated/multibackend"
-	"github.com/synapsecns/synapse-node/pkg/evm/client"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"golang.org/x/sync/errgroup"
 	"math/big"
 )

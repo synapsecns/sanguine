@@ -15,7 +15,7 @@ require (
 	github.com/hedzr/cmdr v1.10.49
 	github.com/invopop/jsonschema v0.6.0
 	github.com/ipfs/go-log v1.0.5
-	github.com/jarcoal/httpmock v1.1.0
+	github.com/jarcoal/httpmock v1.2.0
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/jpillora/backoff v1.0.0
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
@@ -97,7 +97,7 @@ require (
 	github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
-	github.com/go-kit/log v0.2.0 // indirect
+	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
@@ -249,9 +249,9 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_golang v1.12.1 // indirect
+	github.com/prometheus/client_golang v1.12.2 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.32.1 // indirect
+	github.com/prometheus/common v0.34.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/prometheus/tsdb v0.10.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect

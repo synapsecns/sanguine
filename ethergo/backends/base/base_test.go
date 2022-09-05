@@ -5,15 +5,15 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
-	"github.com/synapsecns/sanguine/ethergo/backends/base/mocks"
-	"github.com/synapsecns/synapse-node/testutils/utils/eth"
+	confirmationMocks "github.com/synapsecns/sanguine/ethergo/backends/base/mocks"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"time"
 )
 
 func (b *BaseSuite) TestWaitForConfirmation() {
-	mockClient := new(mocks.ConfirmationClient)
+	mockClient := new(confirmationMocks.ConfirmationClient)
 
-	mockTx := eth.GetMockTxes(b.GetTestContext(), b.T(), 1, types.LegacyTxType)[0]
+	mockTx := mocks.GetMockTxes(b.GetTestContext(), b.T(), 1, types.LegacyTxType)[0]
 
 	const minConfirmTime = 60 * time.Millisecond
 	confirmStart := time.Now()

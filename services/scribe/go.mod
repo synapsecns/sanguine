@@ -90,15 +90,14 @@ require (
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
+	github.com/gin-gonic/gin v1.8.1 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
-	github.com/go-kit/log v0.2.0 // indirect
+	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
-	github.com/go-playground/validator/v10 v10.10.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
-	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/gogo/gateway v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
@@ -124,6 +123,7 @@ require (
 	github.com/hashicorp/go-bexpr v0.1.10 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/go-version v1.2.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hdevalence/ed25519consensus v0.0.0-20210204194344-59a8610d2b87 // indirect
@@ -151,6 +151,7 @@ require (
 	github.com/keep-network/keep-core v1.3.2-0.20211005093647-8e5d036364fa // indirect
 	github.com/keep-network/keep-ecdsa v1.8.1 // indirect
 	github.com/keybase/go-keychain v0.0.0-20190712205309-48d3d31d256d // indirect
+	github.com/klauspost/compress v1.15.0 // indirect
 	github.com/koron/go-ssdp v0.0.0-20191105050749-2e1c40ed0b5d // indirect
 	github.com/kyokomi/emoji/v2 v2.2.8 // indirect
 	github.com/libp2p/go-addr-util v0.0.2 // indirect
@@ -232,14 +233,13 @@ require (
 	github.com/otiai10/primes v0.0.0-20180210170552-f6d2a1ba97c4 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
-	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_golang v1.12.1 // indirect
+	github.com/prometheus/client_golang v1.12.2 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.32.1 // indirect
+	github.com/prometheus/common v0.34.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/prometheus/tsdb v0.10.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
@@ -249,6 +249,7 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/rs/cors v1.8.2 // indirect
+	github.com/rs/zerolog v1.26.1 // indirect
 	github.com/rung/go-safecast v1.0.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sasha-s/go-deadlock v0.2.1-0.20190427202633-1595213edefa // indirect
@@ -283,7 +284,6 @@ require (
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tklauser/numcpus v0.2.2 // indirect
 	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
-	github.com/ugorji/go/codec v1.2.7 // indirect
 	github.com/whyrusleeping/go-keyspace v0.0.0-20160322163242-5b898ac5add1 // indirect
 	github.com/whyrusleeping/multiaddr-filter v0.0.0-20160516205228-e903e4adabd7 // indirect
 	github.com/whyrusleeping/timecache v0.0.0-20160911033111-cfcb2f1abfee // indirect
