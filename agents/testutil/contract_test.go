@@ -3,13 +3,13 @@ package testutil_test
 import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/testutil"
-	contracts2 "github.com/synapsecns/sanguine/ethergo/contracts"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 )
 
 // GetDeployedContractsFromRegistry gets any registered contract types that are present in the registry.
-func (s *SimulatedSuite) GetDeployedContractsFromRegistry(registry deployer.ContractRegistry) (deployedContracts map[int]contracts2.ContractType) {
-	deployedContracts = make(map[int]contracts2.ContractType)
+func (s *SimulatedSuite) GetDeployedContractsFromRegistry(registry deployer.ContractRegistry) (deployedContracts map[int]contracts.ContractType) {
+	deployedContracts = make(map[int]contracts.ContractType)
 
 	for _, contractType := range testutil.AllContractTypes {
 		if registry.IsContractDeployed(contractType) {

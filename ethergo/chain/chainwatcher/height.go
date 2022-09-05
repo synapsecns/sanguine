@@ -63,7 +63,7 @@ func NewBlockHeightWatcher(ctx context.Context, chainID uint64, reader BlockSubs
 			for {
 				select {
 				case block := <-blocks:
-					logger.Debugf("got new block %s on chain %d", block, chainID)
+					logger.Debugf("got new block %d on chain %d", block, chainID)
 					bls.Emit(block)
 				case <-ctx.Done():
 					logger.Debugf("context ended on chain: %d", chainID)

@@ -267,6 +267,14 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 			logger.Warnf("waiting for tx %s", transaction.Hash())
 		})
 		if !isPending && tx != nil {
+			receipt, err := client.TransactionReceipt(ctx, tx.Hash())
+			if err != nil {
+				if receipt.Status == types.ReceiptStatusFailed {
+					rawJSON, _ := transaction.MarshalJSON()
+					logger.Errorf("transaction %s with body %s reverted", transaction, string(rawJSON))
+				}
+			}
+
 			cancel()
 		} else if !isPending {
 			_ = client.SendTransaction(ctx, transaction)
