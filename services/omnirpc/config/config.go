@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
 	"gopkg.in/yaml.v3"
@@ -22,7 +23,7 @@ type Config struct {
 type ChainConfig struct {
 	// RPCS is a list of rpcs to use
 	RPCs []string `yaml:"rpcs"`
-	// Checks is how many rpcs must return the same result for it to be used. This does not apply to height/status absed methods
+	// Checks is how many rpcs must return the same result for it to be used. This does not apply to height/status based methods
 	Checks uint16 `yaml:"confirmations,omitempty"`
 }
 
