@@ -8,9 +8,9 @@ import (
 	"fmt"
 
 	"github.com/synapsecns/sanguine/services/scribe/db"
-	"github.com/synapsecns/sanguine/services/scribe/server/graph/model"
-	resolvers "github.com/synapsecns/sanguine/services/scribe/server/graph/resolver"
-	"github.com/synapsecns/sanguine/services/scribe/server/types"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
+	resolvers "github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/resolver"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server/types"
 )
 
 func (r *logResolver) Transaction(ctx context.Context, obj *model.Log) (*model.Transaction, error) {

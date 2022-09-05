@@ -10,10 +10,10 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
-	"github.com/synapsecns/sanguine/services/scribe/server"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/client"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server"
 	"go.uber.org/atomic"
 )
 

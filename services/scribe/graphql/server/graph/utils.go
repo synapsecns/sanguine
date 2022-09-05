@@ -4,7 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/db"
-	"github.com/synapsecns/sanguine/services/scribe/server/graph/model"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
 )
 
 func (r Resolver) receiptsToModelReceipts(receipts []types.Receipt, chainID uint32) []*model.Receipt {

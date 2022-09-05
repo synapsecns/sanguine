@@ -13,8 +13,8 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
-	"github.com/synapsecns/sanguine/services/scribe/server/graph"
-	resolvers "github.com/synapsecns/sanguine/services/scribe/server/graph/resolver"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph"
+	resolvers "github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/resolver"
 )
 
 const (

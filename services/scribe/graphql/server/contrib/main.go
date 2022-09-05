@@ -24,12 +24,12 @@ func main() {
 
 	log.SetOutput(ioutil.Discard)
 
-	cfg, err := config.LoadConfig(filepath.Join(root.Path, "services/scribe/gqlgen.yaml"))
+	cfg, err := config.LoadConfig(filepath.Join(root.Path, "services/scribe/graphql/gqlgen.yaml"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
 		os.Exit(2)
 	}
-	gqlgencConfig, err := clientConfig.LoadConfig(filepath.Join(root.Path, "services/scribe/.gqlgenc.yaml"))
+	gqlgencConfig, err := clientConfig.LoadConfig(filepath.Join(root.Path, "services/scribe/graphql/.gqlgenc.yaml"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to load client config", err.Error())
 		os.Exit(2)

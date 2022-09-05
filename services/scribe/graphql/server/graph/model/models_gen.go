@@ -3,7 +3,7 @@
 package model
 
 import (
-	"github.com/synapsecns/sanguine/services/scribe/server/types"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server/types"
 )
 
 type Log struct {

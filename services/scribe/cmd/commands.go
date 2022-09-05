@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/consul/sdk/freeport"
-	"github.com/synapsecns/sanguine/services/scribe/server"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/ethereum/go-ethereum/ethclient"

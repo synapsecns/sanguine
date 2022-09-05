@@ -29,6 +29,7 @@ require (
 	github.com/synapsecns/synapse-node v0.242.0
 	github.com/urfave/cli/v2 v2.11.2
 	github.com/vektah/gqlparser/v2 v2.1.0
+	go.uber.org/atomic v1.9.0
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 	gorm.io/driver/mysql v1.1.2
 	gorm.io/driver/sqlite v1.1.5
@@ -308,7 +309,6 @@ require (
 	github.com/zondax/hid v0.9.0 // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect
 	go.opencensus.io v0.23.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.22.0 // indirect
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect

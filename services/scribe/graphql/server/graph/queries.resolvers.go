@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/synapsecns/sanguine/services/scribe/server/graph/model"
-	resolvers "github.com/synapsecns/sanguine/services/scribe/server/graph/resolver"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
+	resolvers "github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/resolver"
 )
 
 func (r *queryResolver) Logs(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int) ([]*model.Log, error) {
