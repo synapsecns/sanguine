@@ -10,6 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/ugorji/go/codec"
 	"github.com/vburenin/ifacemaker/maker"
+	"github.com/vektra/mockery/v2/pkg"
 	"golang.org/x/exp/rand"
 )
 
@@ -25,3 +26,6 @@ var _ = toml.Unmarshal
 var _ = rand.Int
 var _ = ristretto.Config{}
 var _ = validator.Validate{}
+
+// required by mockery.
+var _ = pkg.Method{}
