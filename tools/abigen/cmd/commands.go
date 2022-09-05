@@ -79,6 +79,6 @@ var EtherscanCommand = &cli.Command{
 	// TODO this needs to embed optimizations, etc from the real deployed contract.
 	Action: func(context *cli.Context) error {
 		//nolint: wrapcheck
-		return internal.GenerateABIFromEtherscan(context.Context, uint(context.Int(chainIDFlag.Name)), context.String(urlFlag.Name), common.HexToAddress(context.String(addressFlag.Name)), context.String(filenameFlag.String()), context.String(solVersionFlag.Name), context.String(pkgFlag.Name))
+		return internal.GenerateABIFromEtherscan(context.Context, uint32(context.Int(chainIDFlag.Name)), context.String(urlFlag.Name), common.HexToAddress(context.String(addressFlag.Name)), context.String(filenameFlag.String()), context.String(solVersionFlag.Name), context.String(pkgFlag.Name))
 	},
 }
