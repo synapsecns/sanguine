@@ -48,7 +48,7 @@ type Transaction struct {
 	Gas       int        `json:"gas"`
 	GasPrice  int        `json:"gas_price"`
 	GasTipCap string     `json:"gas_tip_cap"`
-	GasFeeCap string     `json:"gas_fee_Cap"`
+	GasFeeCap string     `json:"gas_fee_cap"`
 	Value     string     `json:"value"`
 	Nonce     int        `json:"nonce"`
 	To        string     `json:"to"`

@@ -29,12 +29,6 @@ func (r *logResolver) Transaction(ctx context.Context, obj *model.Log) (*model.T
 		return nil, fmt.Errorf("multiple transactions found for log")
 	}
 	return r.ethTxToModelTransaction(transactions[0], uint32(obj.ChainID)), nil
-
-	// receipt, err := r.DB.RetrieveEthTxByTxHash(ctx, common.HexToHash(obj.TxHash).String(), uint32(obj.ChainID))
-	// if err != nil {
-	// 	return nil, fmt.Errorf("error retrieving transaction: %w", err)
-	// }
-	// return r.ethTxToModelTransaction(receipt, uint32(obj.ChainID)), nil
 }
 
 func (r *logResolver) Receipt(ctx context.Context, obj *model.Log) (*model.Receipt, error) {
@@ -53,12 +47,6 @@ func (r *logResolver) Receipt(ctx context.Context, obj *model.Log) (*model.Recei
 		return nil, fmt.Errorf("multiple receipts found for log")
 	}
 	return r.receiptToModelReceipt(receipts[0], uint32(obj.ChainID)), nil
-
-	// receipt, err := r.DB.RetrieveReceiptByTxHash(ctx, common.HexToHash(obj.TxHash), uint32(obj.ChainID))
-	// if err != nil {
-	// 	return nil, fmt.Errorf("error retrieving receipt: %w", err)
-	// }
-	// return r.receiptToModelReceipt(receipt, uint32(obj.ChainID)), nil
 }
 
 func (r *logResolver) JSON(ctx context.Context, obj *model.Log) (types.JSON, error) {
@@ -79,12 +67,6 @@ func (r *receiptResolver) Logs(ctx context.Context, obj *model.Receipt) ([]*mode
 		return nil, fmt.Errorf("error retrieving logs: %w", err)
 	}
 	return r.logsToModelLogs(logs, uint32(obj.ChainID)), nil
-
-	// logs, err := r.DB.RetrieveLogsByTxHash(ctx, common.HexToHash(obj.TxHash), uint32(obj.ChainID))
-	// if err != nil {
-	// 	return nil, fmt.Errorf("error retrieving logs: %w", err)
-	// }
-	// return r.logsToModelLogs(logs, uint32(obj.ChainID)), nil
 }
 
 func (r *receiptResolver) Transaction(ctx context.Context, obj *model.Receipt) (*model.Transaction, error) {
@@ -103,14 +85,6 @@ func (r *receiptResolver) Transaction(ctx context.Context, obj *model.Receipt) (
 		return nil, fmt.Errorf("multiple transactions found for receipt")
 	}
 	return r.ethTxToModelTransaction(transactions[0], uint32(obj.ChainID)), nil
-
-	// transaction, err := r.DB.RetrieveEthTxByTxHash(ctx, common.HexToHash(obj.TxHash).String(), uint32(obj.ChainID))
-	//
-	//	if err != nil {
-	//		return nil, fmt.Errorf("error retrieving transaction: %w", err)
-	//	}
-	//
-	// return r.ethTxToModelTransaction(transaction, uint32(obj.ChainID)), nil
 }
 
 func (r *receiptResolver) JSON(ctx context.Context, obj *model.Receipt) (types.JSON, error) {
@@ -131,12 +105,6 @@ func (r *transactionResolver) Logs(ctx context.Context, obj *model.Transaction) 
 		return nil, fmt.Errorf("error retrieving logs: %w", err)
 	}
 	return r.logsToModelLogs(logs, uint32(obj.ChainID)), nil
-
-	// logs, err := r.DB.RetrieveLogsByTxHash(ctx, common.HexToHash(obj.TxHash), uint32(obj.ChainID))
-	// if err != nil {
-	// 	return nil, fmt.Errorf("error retrieving logs: %w", err)
-	// }
-	// return r.logsToModelLogs(logs, uint32(obj.ChainID)), nil
 }
 
 func (r *transactionResolver) Receipt(ctx context.Context, obj *model.Transaction) (*model.Receipt, error) {
@@ -155,12 +123,6 @@ func (r *transactionResolver) Receipt(ctx context.Context, obj *model.Transactio
 		return nil, fmt.Errorf("multiple receipts found for transaction")
 	}
 	return r.receiptToModelReceipt(receipts[0], uint32(obj.ChainID)), nil
-
-	// receipt, err := r.DB.RetrieveReceiptByTxHash(ctx, common.HexToHash(obj.TxHash), uint32(obj.ChainID))
-	// if err != nil {
-	// 	return nil, fmt.Errorf("error retrieving receipt: %w", err)
-	// }
-	// return r.receiptToModelReceipt(receipt, uint32(obj.ChainID)), nil
 }
 
 func (r *transactionResolver) JSON(ctx context.Context, obj *model.Transaction) (types.JSON, error) {

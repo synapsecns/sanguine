@@ -428,7 +428,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Transaction.Gas(childComplexity), true
 
-	case "Transaction.gas_fee_Cap":
+	case "Transaction.gas_fee_cap":
 		if e.complexity.Transaction.GasFeeCap == nil {
 			break
 		}
@@ -630,64 +630,6 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     end_block: Int!
   ): [Transaction]
 }
-# type Query {
-#   # returns all logs that match the given filter
-#   logs(
-#     ContractAddress: String
-#     ChainID: Int!
-#     BlockNumber: Int
-#     TxHash: String
-#     TxIndex: Int
-#     BlockHash: String
-#     Index: Int
-#   ): [Log]
-#   # returns all logs that match the given filter and range
-#   logsRange(
-#     ContractAddress: String
-#     ChainID: Int!
-#     BlockNumber: Int
-#     TxHash: String
-#     TxIndex: Int
-#     BlockHash: String
-#     Index: Int
-#     StartBlock: Int!
-#     EndBlock: Int!
-#   ): [Log]
-#   # returns all receipts that match the given filter
-#   receipts(
-#     ChainID: Int!
-#     TxHash: String
-#     ContractAddress: String
-#     BlockHash: String
-#     BlockNumber: Int
-#     TxIndex: Int
-#   ): [Receipt]
-#   # returns all receipts that match the given filter and range
-#   receiptsRange(
-#     ChainID: Int!
-#     TxHash: String
-#     ContractAddress: String
-#     BlockHash: String
-#     BlockNumber: Int
-#     TxIndex: Int
-#     StartBlock: Int!
-#     EndBlock: Int!
-#   ): [Receipt]
-#   # returns all transactions that match the given filter
-#   transactions(
-#     TxHash: String
-#     ChainID: Int!
-#     BlockNumber: Int
-#   ): [Transaction]
-#   # returns all transactions that match the given filter and range
-#   transactionsRange(
-#     TxHash: String
-#     ChainID: Int!
-#     BlockNumber: Int
-#     StartBlock: Int!
-#     EndBlock: Int!
-#   ): [Transaction]
-# }
 `, BuiltIn: false},
 	{Name: "server/graph/schema/types.graphql", Input: `scalar JSON
 
@@ -717,7 +659,7 @@ type Transaction {
   gas: Int!
   gas_price: Int!
   gas_tip_cap: String!
-  gas_fee_Cap: String!
+  gas_fee_cap: String!
   value: String!
   nonce: Int!
   to: String!
@@ -741,115 +683,6 @@ type Log {
   receipt: Receipt! @goField(forceResolver: true)
   json: JSON! @goField(forceResolver:true)
 }
-# scalar JSON
-
-# type Receipt {
-#   chain_id: Int!
-#   type: Int!
-#   PostState: String!
-#   Status: Int!
-#   CumulativeGasUsed: Int!
-#   Bloom: String!
-#   TxHash: String!
-#   ContractAddress: String!
-#   GasUsed: Int!
-#   BlockNumber: Int!
-#   TransactionIndex: Int!
-#   Logs: [Log!] @goField(forceResolver:true)
-#   Transaction: Transaction! @goField(forceResolver:true)
-#   JSON: JSON! @goField(forceResolver:true)
-# }
-
-# type Transaction {
-#   ChainID: Int!
-#   TxHash: String!
-#   Protected: Boolean!
-#   Type:  Int!
-#   Data: String!
-#   Gas: Int!
-#   GasPrice: Int!
-#   GasTipCap: String!
-#   GasFeeCap: String!
-#   Value: String!
-#   Nonce: Int!
-#   To: String!
-#   Logs: [Log!] @goField(forceResolver: true)
-#   Receipt: Receipt! @goField(forceResolver: true)
-#   JSON: JSON! @goField(forceResolver:true)
-# }
-
-# type Log {
-#   ContractAddress: String!
-#   ChainID: Int!
-#   Topics: [String!]!
-#   Data: String!
-#   BlockNumber: Int!
-#   TxHash: String!
-#   TxIndex: Int!
-#   BlockHash: String!
-#   Index: Int!
-#   Removed: Boolean!
-#   Transaction: Transaction! @goField(forceResolver: true)
-#   Receipt: Receipt! @goField(forceResolver: true)
-#   JSON: JSON! @goField(forceResolver:true)
-# }
-
-# scalar JSON
-
-# type Receipt {
-#   chain_id: Int!
-#   type: TxType!
-#   post_state: String!
-#   status: Int!
-#   cumulative_gas_used: Int!
-#   bloom: String!
-#   tx_hash: String!
-#   contract_address: String!
-#   gas_used: Int!
-#   block_number: Int!
-#   transaction_index: Int!
-#   logs: [Log!] @goField(forceResolver:true)
-#   transaction: Transaction! @goField(forceResolver:true)
-# }
-
-# type Transaction {
-#   chain_id: Int!
-#   tx_hash: String!
-#   protected: Boolean!
-#   type:  TxType
-#   data: String!
-#   gas: Int!
-#   gas_price: Int!
-#   gas_tip_cap: String!
-#   gas_fee_cap: String!
-#   value: String!
-#   nonce: Int!
-#   to: String!
-#   logs: [Log!] @goField(forceResolver: true)
-#   receipt: Receipt! @goField(forceResolver: true)
-# }
-
-# type Log {
-#   contract_address: String!
-#   chain_id: Int!
-#   topics: [String!]!
-#   data: String!
-#   block_number: Int!
-#   tx_hash: String!
-#   tx_index: Int!
-#   block_hash: String!
-#   index: Int!
-#   removed: Boolean!
-#   transaction: Transaction! @goField(forceResolver: true)
-#   receipt: Receipt! @goField(forceResolver: true)
-# }
-
-# enum TxType {
-#   LegacyTx
-#   AccessListTx
-#   DynamicFeeTx
-# }
-
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -2816,7 +2649,7 @@ func (ec *executionContext) _Transaction_gas_tip_cap(ctx context.Context, field 
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Transaction_gas_fee_Cap(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+func (ec *executionContext) _Transaction_gas_fee_cap(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4530,8 +4363,8 @@ func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "gas_fee_Cap":
-			out.Values[i] = ec._Transaction_gas_fee_Cap(ctx, field, obj)
+		case "gas_fee_cap":
+			out.Values[i] = ec._Transaction_gas_fee_cap(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}

@@ -1,6 +1,96 @@
-query GetLogs {
-    response: logs {
-      BlockNumber
-      BlockHash
+query GetLogs ($chain_id: Int!) {
+    response: logs (chain_id: $chain_id) {
+        contract_address
+        chain_id
+        topics
+        data
+        block_number
+        tx_hash
+        tx_index
+        block_hash
+        index
+        removed
     }
 }
+
+query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
+    response: logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block) {
+        contract_address
+        chain_id
+        topics
+        data
+        block_number
+        tx_hash
+        tx_index
+        block_hash
+        index
+        removed
+    }
+}
+
+query GetReceipts ($chain_id: Int!) {
+    response: receipts (chain_id: $chain_id) {
+        chain_id
+        type
+        post_state
+        status
+        cumulative_gas_used
+        bloom
+        tx_hash
+        contract_address
+        gas_used
+        block_number
+        transaction_index
+    }
+}
+
+query GetReceiptsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
+    response: receiptsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block) {
+        chain_id
+        type
+        post_state
+        status
+        cumulative_gas_used
+        bloom
+        tx_hash
+        contract_address
+        gas_used
+        block_number
+        transaction_index
+    }
+}
+
+query GetTransactions ($chain_id: Int!) {
+    response: transactions (chain_id: $chain_id) {
+        chain_id
+        tx_hash
+        protected
+        type
+        data
+        gas
+        gas_price
+        gas_tip_cap
+        gas_fee_cap
+        value
+        nonce
+        to
+    }
+}
+
+query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
+    response: transactionsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block) {
+        chain_id
+        tx_hash
+        protected
+        type
+        data
+        gas
+        gas_price
+        gas_tip_cap
+        gas_fee_cap
+        value
+        nonce
+        to
+    }
+}
+
