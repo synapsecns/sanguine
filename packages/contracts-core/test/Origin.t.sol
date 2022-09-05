@@ -342,12 +342,12 @@ contract OriginTest is SynapseTestWithNotaryManager {
         vm.expectEmit(true, true, true, true);
         emit LogSystemCall(1, 2);
         vm.prank(address(systemRouter));
-        origin.setSensitiveValue(1, 2, 1337);
+        origin.setSensitiveValue(1337, 1, 2);
         assertEq(origin.sensitiveValue(), 1337);
     }
 
     function test_onlySystemRouter_rejectOthers() public {
         vm.expectRevert("!systemRouter");
-        origin.setSensitiveValue(0, 0, 1337);
+        origin.setSensitiveValue(1337, 0, 0);
     }
 }

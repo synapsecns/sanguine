@@ -15,19 +15,18 @@ interface ISystemRouter {
      *          Note: knowledge of recipient address is not required,
      *          routing will be done by SystemRouter on the destination chain.
      *          Following call will be made on destination chain:
-     *              recipient.func(originDomain, originSender, _data)
-     *          Allowing recipient to check:
+     *              recipient.call(_data, originDomain, originSender}
+     *          Note: effectively extending payload with abi encoded (domain, sender)
+     *          This allows recipient to check:
      *          - domain where system call originated (local domain in this case)
      *          - System contract type of the sender (msg.sender on local chain)
      * @param _destination  Domain of destination chain
      * @param _recipient    System contract type of the recipient
-     * @param _selector     Function to call on destination chain
      * @param _data         Data for calling recipient on destination chain
      */
     function systemCall(
         uint32 _destination,
         SystemContracts _recipient,
-        bytes4 _selector,
         bytes memory _data
     ) external;
 }

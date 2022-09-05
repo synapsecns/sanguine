@@ -43,8 +43,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     uint8 internal systemCaller = uint8(ISystemRouter.SystemContracts.Origin);
     uint8 internal systemRecipient = uint8(ISystemRouter.SystemContracts.Destination);
     uint256 internal secretValue = 1337;
-    bytes4 internal selector = origin.setSensitiveValue.selector;
-    bytes internal data = abi.encode(secretValue);
+    bytes internal data;
 
     bytes32 internal constant SYSTEM_ROUTER =
         0xFFFFFFFF_FFFFFFFF_FFFFFFFF_00000000_00000000_00000000_00000000_00000000;
@@ -103,6 +102,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         domains = new uint32[](2);
         domains[0] = localDomain;
         domains[1] = remoteDomain;
+        data = _createData(secretValue);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -147,12 +147,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     function test_systemCall_notSystemContract() public {
         for (uint256 i = 0; i < domains.length; ++i) {
             vm.expectRevert("Unauthorized caller");
-            systemRouter.systemCall(
-                domains[i],
-                ISystemRouter.SystemContracts.Origin,
-                selector,
-                data
-            );
+            systemRouter.systemCall(domains[i], ISystemRouter.SystemContracts.Origin, data);
         }
     }
 
@@ -219,7 +214,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         assertFalse(recipientMock.sensitiveValue() == secretValue);
         vm.prank(sender);
         // Send system call to update sensitive value
-        systemRouter.systemCall(localDomain, recipient, selector, data);
+        systemRouter.systemCall(localDomain, recipient, data);
         // Check for success
         assertTrue(recipientMock.sensitiveValue() == secretValue);
     }
@@ -241,7 +236,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                 message
             );
             vm.prank(sender);
-            systemRouter.systemCall(remoteDomain, recipient, selector, data);
+            systemRouter.systemCall(remoteDomain, recipient, data);
         }
     }
 
@@ -274,6 +269,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    function _createData(uint256 _secretValue) internal view returns (bytes memory) {
+        return abi.encodeWithSelector(origin.setSensitiveValue.selector, _secretValue);
+    }
+
     function _createSystemMessage(MessageContext memory context)
         internal
         view
@@ -281,10 +280,9 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     {
         // Reconstruct payload in the brute force way
         bytes memory payload = abi.encodePacked(
-            selector,
+            data,
             uint256(context.origin),
-            uint256(systemCaller),
-            data
+            uint256(systemCaller)
         );
         bytes[] memory systemCalls = new bytes[](1);
         systemCalls[0] = SystemMessage.formatSystemCall(systemRecipient, payload);

@@ -245,13 +245,13 @@ contract DestinationTest is SynapseTest {
         vm.expectEmit(true, true, true, true);
         emit LogSystemCall(1, 2);
         vm.prank(address(systemRouter));
-        destination.setSensitiveValue(1, 2, 1337);
+        destination.setSensitiveValue(1337, 1, 2);
         assertEq(destination.sensitiveValue(), 1337);
     }
 
     function test_onlySystemRouter_rejectOthers() public {
         vm.expectRevert("!systemRouter");
-        destination.setSensitiveValue(0, 0, 1337);
+        destination.setSensitiveValue(1337, 0, 0);
     }
 
     function _prepareExecuteTest(uint32 optimisticPeriod) internal returns (bytes memory message) {

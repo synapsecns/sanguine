@@ -17,9 +17,9 @@ contract OriginHarness is Origin, GuardRegistryHarness {
     }
 
     function setSensitiveValue(
+        uint256 _newValue,
         uint32 _origin,
-        uint8 _caller,
-        uint256 _newValue
+        uint8 _caller
     ) external onlySystemRouter {
         sensitiveValue = _newValue;
         emit LogSystemCall(_origin, _caller);

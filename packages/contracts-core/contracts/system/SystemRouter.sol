@@ -80,24 +80,23 @@ contract SystemRouter is Client, ISystemRouter {
      *          Note: knowledge of recipient address is not required,
      *          routing will be done by SystemRouter on the destination chain.
      *          Following call will be made on destination chain:
-     *              recipient.func(originDomain, originSender, _data)
-     *          Allowing recipient to check:
+     *              recipient.call(_data, originDomain, originSender)
+     *          Note: effectively extending payload with abi encoded (domain, sender)
+     *          This allows recipient to check:
      *          - domain where system call originated (local domain in this case)
      *          - System contract type of the sender (msg.sender on local chain)
      * @param _destination  Domain of destination chain
      * @param _recipient    System contract type of the recipient
-     * @param _selector     Function to call on destination chain
      * @param _data         Data for calling recipient on destination chain
      */
     function systemCall(
         uint32 _destination,
         SystemContracts _recipient,
-        bytes4 _selector,
         bytes memory _data
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemContracts caller = _getSystemCaller(msg.sender);
-        bytes memory payload = _formatCalldata(caller, _selector, _data);
+        bytes memory payload = _formatCalldata(caller, _data);
         if (_destination == localDomain) {
             _localSystemCall(uint8(_recipient), payload);
         } else {
@@ -188,18 +187,17 @@ contract SystemRouter is Client, ISystemRouter {
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _formatCalldata(
-        SystemContracts _caller,
-        bytes4 _selector,
-        bytes memory _data
-    ) internal view returns (bytes memory) {
+    function _formatCalldata(SystemContracts _caller, bytes memory _data)
+        internal
+        view
+        returns (bytes memory)
+    {
         /**
          * @dev Payload for contract call is:
-         * 1. Function selector
-         * 2. (domain, caller) are first two arguments
-         * 3. data is remaining arguments, abi-encoded
+         * 1. Function selector and params (_data)
+         * 2. (domain, caller) are the last two arguments
          */
-        return abi.encodePacked(_selector, abi.encode(localDomain, _caller), _data);
+        return abi.encodePacked(_data, abi.encode(localDomain, _caller));
     }
 
     function _getSystemCaller(address _caller) internal view returns (SystemContracts) {
