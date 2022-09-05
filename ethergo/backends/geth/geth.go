@@ -32,11 +32,13 @@ import (
 	"time"
 )
 
+const gasLimit = 10000000
+
 // NewEmbeddedBackendForChainID gets the embedded backend for a specific chain id.
 func NewEmbeddedBackendForChainID(ctx context.Context, t *testing.T, chainID *big.Int) *Backend {
 	t.Helper()
 	// get the default config
-	config := ethCore.DeveloperGenesisBlock(0, 5000000, common.Address{}).Config
+	config := ethCore.DeveloperGenesisBlock(0, gasLimit, common.Address{}).Config
 	config.ChainID = chainID
 	return NewEmbeddedBackendWithConfig(ctx, t, config)
 }
@@ -215,7 +217,7 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	err = f.Chain.GasSetter().SetGasFee(ctx, auth, latestBlock.NumberU64(), core.CopyBigInt(gasprice.DefaultMaxPrice))
 	assert.Nil(f.T(), err)
 
-	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, 5000000, f.faucetAddr.Address).GasLimit / 2
+	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, gasLimit, f.faucetAddr.Address).GasLimit / 2
 
 	return backends.AuthType{
 		TransactOpts: auth,
@@ -277,7 +279,7 @@ func (f *Backend) getFaucetTxContext(ctx context.Context) *bind.TransactOpts {
 	gasPrice, err := f.Client().SuggestGasPrice(ctx)
 	assert.Nil(f.T(), err)
 
-	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, 5000000, f.faucetAddr.Address).GasLimit / 2
+	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, gasLimit, f.faucetAddr.Address).GasLimit / 2
 	auth.GasPrice = gasPrice
 
 	return auth
