@@ -3,6 +3,7 @@ package testsuite
 
 import (
 	"context"
+	"fmt"
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/suite"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -111,6 +112,8 @@ func (s *TestSuite) TearDownSuite() {
 func (s *TestSuite) SetupTest() {
 	s.runAfterTest = nil
 	s.testContext = newCancellableContext(s.suiteContext.ctx)
+
+	fmt.Printf("running test %s with id %d \n", s.T().Name(), s.testID)
 }
 
 // GetTestID gets the unique test id for the current test.
@@ -125,6 +128,8 @@ func (s *TestSuite) TearDownTest() {
 	runDeferredFunctions(s.runAfterTest)
 	// this will panic if you failed to call SetupTest() from an inheriting suite
 	s.testContext.cancelFunc()
+
+	fmt.Printf("finished running test %s with id %d \n", s.T().Name(), s.testID)
 }
 
 // DeferAfterTest runs a function after the test. This will run before context cancellation
