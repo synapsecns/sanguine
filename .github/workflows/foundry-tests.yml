@@ -38,23 +38,18 @@ jobs:
         working-directory: ./packages/contracts
         run: yarn install --frozen-lockfile --check-files
 
-      - name: Install FoundryUp
-        run: |
-          curl -L https://foundry.paradigm.xyz | bash
-
-      - uses: Swatinem/rust-cache@v2
-
       - name: Install Foundry
-        run: |
-          ~/.foundry/bin/foundryup -C 1c415857dd7b617190834dbcb361506f6143fed4
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
 
       - name: Run Foundry Tests
         working-directory: ./packages/contracts
-        run: /home/runner/.foundry/bin/forge coverage -vvv --report=lcov
+        run: forge coverage -vvv --report=lcov
 
       - name: Run snapshot
         working-directory: ./packages/contracts
-        run: /home/runner/.foundry/bin/forge snapshot >> $GITHUB_STEP_SUMMARY
+        run: forge snapshot >> $GITHUB_STEP_SUMMARY
 
       - uses: codecov/codecov-action@v3
         name: Send Coverage (Codecov)
