@@ -55,6 +55,7 @@ jobs:
           credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
 
       - name: Setup upterm session
+        if: false
         uses: lhotari/action-upterm@v1
 
       - name: Install Go
