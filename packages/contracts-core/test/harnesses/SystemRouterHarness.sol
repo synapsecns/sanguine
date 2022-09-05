@@ -8,7 +8,6 @@ contract SystemRouterHarness is SystemRouter {
     constructor(
         uint32 _localDomain,
         address _origin,
-        address _destination,
-        uint32 _optimisticSeconds
-    ) SystemRouter(_localDomain, _origin, _destination, _optimisticSeconds) {}
+        address _destination
+    ) SystemRouter(_localDomain, _origin, _destination) {}
 }

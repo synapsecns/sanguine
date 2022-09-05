@@ -36,7 +36,7 @@ contract DestinationTest is SynapseTest {
     using TypedMemView for bytes29;
     using Message for bytes29;
 
-    event LogSystemCall(uint32 origin, uint8 caller);
+    event LogSystemCall(uint32 origin, uint8 caller, uint256 rootSubmittedAt);
 
     function setUp() public override {
         super.setUp();
@@ -243,15 +243,15 @@ contract DestinationTest is SynapseTest {
 
     function test_onlySystemRouter() public {
         vm.expectEmit(true, true, true, true);
-        emit LogSystemCall(1, 2);
+        emit LogSystemCall(1, 2, 3);
         vm.prank(address(systemRouter));
-        destination.setSensitiveValue(1337, 1, 2);
+        destination.setSensitiveValue(1337, 1, 2, 3);
         assertEq(destination.sensitiveValue(), 1337);
     }
 
     function test_onlySystemRouter_rejectOthers() public {
         vm.expectRevert("!systemRouter");
-        destination.setSensitiveValue(1337, 0, 0);
+        destination.setSensitiveValue(1337, 0, 0, 0);
     }
 
     function _prepareExecuteTest(uint32 optimisticPeriod) internal returns (bytes memory message) {

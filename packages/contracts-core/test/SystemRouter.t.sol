@@ -38,7 +38,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     uint32[] internal domains;
 
     uint32 internal nonce = 1;
-    uint32 internal optimisticSeconds = ROUTER_OPTIMISTIC_PERIOD;
+    uint32 internal optimisticSeconds = OPTIMISTIC_PERIOD;
 
     uint8 internal systemCaller = uint8(ISystemRouter.SystemContracts.Origin);
     uint8 internal systemRecipient = uint8(ISystemRouter.SystemContracts.Destination);
@@ -48,7 +48,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     bytes32 internal constant SYSTEM_ROUTER =
         0xFFFFFFFF_FFFFFFFF_FFFFFFFF_00000000_00000000_00000000_00000000_00000000;
 
-    uint32 internal constant ROUTER_OPTIMISTIC_PERIOD = 420;
+    uint32 internal constant OPTIMISTIC_PERIOD = 420;
     uint32 internal constant NONCE = 69;
     bytes32 internal constant ROOT = "root";
 
@@ -60,7 +60,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes message
     );
 
-    event LogSystemCall(uint32 origin, uint8 caller);
+    event LogSystemCall(uint32 origin, uint8 caller, uint256 rootSubmittedAt);
 
     function setUp() public override {
         super.setUp();
@@ -72,12 +72,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         destination = new DestinationHarness(localDomain);
         destination.initialize(remoteDomain, notary);
 
-        systemRouter = new SystemRouterHarness(
-            localDomain,
-            address(origin),
-            address(destination),
-            ROUTER_OPTIMISTIC_PERIOD
-        );
+        systemRouter = new SystemRouterHarness(localDomain, address(origin), address(destination));
         origin.setSystemRouter(systemRouter);
         destination.setSystemRouter(systemRouter);
 
@@ -112,7 +107,6 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     function test_constructor() public {
         assertEq(systemRouter.origin(), address(origin));
         assertEq(systemRouter.destination(), address(destination));
-        assertEq(systemRouter.optimisticSeconds(), ROUTER_OPTIMISTIC_PERIOD);
     }
 
     function test_trustedSender() public {
@@ -147,7 +141,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     function test_systemCall_notSystemContract() public {
         for (uint256 i = 0; i < domains.length; ++i) {
             vm.expectRevert("Unauthorized caller");
-            systemRouter.systemCall(domains[i], ISystemRouter.SystemContracts.Origin, data);
+            systemRouter.systemCall(domains[i], 0, ISystemRouter.SystemContracts.Origin, data);
         }
     }
 
@@ -167,18 +161,18 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         _checkReceiveSystemMessage();
     }
 
+    function test_receiveSystemMessage_optimisticPeriodZero() public {
+        // Test harnesses don't block system messages with a small (or even zero)
+        // optimistic period.
+        // TODO: introduce and test "force optimistic period" modifiers in system contracts
+        optimisticSeconds = 0;
+        _checkReceiveSystemMessage();
+    }
+
     function test_receiveSystemMessage_optimisticPeriodNotOver() public {
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds - 1);
         vm.expectRevert("!optimisticSeconds");
-        destination.execute(message);
-    }
-
-    function test_receiveSystemMessage_optimisticPeriodForged() public {
-        optimisticSeconds = 1;
-        bytes memory message = _prepareReceiveTest(receivedSystemMessage);
-        skip(optimisticSeconds);
-        vm.expectRevert("Client: !optimisticSeconds");
         destination.execute(message);
     }
 
@@ -214,7 +208,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         assertFalse(recipientMock.sensitiveValue() == secretValue);
         vm.prank(sender);
         // Send system call to update sensitive value
-        systemRouter.systemCall(localDomain, recipient, data);
+        systemRouter.systemCall(localDomain, 0, recipient, data);
         // Check for success
         assertTrue(recipientMock.sensitiveValue() == secretValue);
     }
@@ -236,15 +230,16 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                 message
             );
             vm.prank(sender);
-            systemRouter.systemCall(remoteDomain, recipient, data);
+            systemRouter.systemCall(remoteDomain, optimisticSeconds, recipient, data);
         }
     }
 
     function _checkReceiveSystemMessage() internal {
+        uint256 rootSubmittedAt = block.timestamp;
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds);
         vm.expectEmit(true, true, true, true);
-        emit LogSystemCall(remoteDomain, systemCaller);
+        emit LogSystemCall(remoteDomain, systemCaller, rootSubmittedAt);
         destination.execute(message);
         assertEq(
             ISystemMockContract(_getSystemAddress(systemRecipient)).sensitiveValue(),
