@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/nanmu42/etherscan-api"
-	"github.com/synapsecns/synapse-node/config"
-	"github.com/synapsecns/synapse-node/pkg/common"
+	"github.com/synapsecns/sanguine/core/config"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -25,18 +24,18 @@ type Client struct {
 const timeout = time.Second * 30
 
 // newEtherscanABIClient creates a new etherscan client.
-func newEtherscanABIClient(parentCtx context.Context, chain *common.Chain, api common.API, disableRateLimiter bool) (*Client, error) {
+func newEtherscanABIClient(parentCtx context.Context, chainID uint32, url string, disableRateLimiter bool) (*Client, error) {
 	var client Client
 	ctx, cancel := context.WithCancel(parentCtx)
 
-	apiKeyEnv := strings.ToUpper(fmt.Sprintf("%s_%s_KEY", chain.Name, common.EtherscanAPIStandard))
+	apiKeyEnv := strings.ToUpper(fmt.Sprintf("%d_KEY", chainID))
 	apiKey := os.Getenv(apiKeyEnv)
 
 	customization := etherscan.Customization{
 		Client: &http.Client{
 			Timeout: timeout,
 		},
-		BaseURL: api.URL,
+		BaseURL: url,
 	}
 
 	// waitBetweenRequest is how long to wait between requests. If an analytics key is enabled, rate limiting is disabled
@@ -50,7 +49,7 @@ func newEtherscanABIClient(parentCtx context.Context, chain *common.Chain, api c
 			return nil, fmt.Errorf("could not create file rate limiter: %w", err)
 		}
 
-		rateLimitDir := filepath.Join(configDir, strconv.Itoa(chain.ChainID))
+		rateLimitDir := filepath.Join(configDir, strconv.Itoa(int(chainID)))
 
 		client.rateLimiter, err = newFileRateLimiter(ctx, rateLimitDir, waitBetweenRequests)
 		if err != nil {

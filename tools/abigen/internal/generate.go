@@ -20,8 +20,8 @@ import (
 )
 
 // GenerateABIFromEtherscan generates the abi for an etherscan file.
-func GenerateABIFromEtherscan(ctx context.Context, chainID uint, contractAddress common.Address, fileName, solVersion, pkgName string) error {
-	client, err := etherscan.NewEtherscanAbiGenClientFromChain(ctx, chainID)
+func GenerateABIFromEtherscan(ctx context.Context, chainID uint32, url string, contractAddress common.Address, fileName, solVersion, pkgName string) error {
+	client, err := etherscan.NewEtherscanAbiGenClientFromChain(ctx, chainID, url)
 	if err != nil {
 		return fmt.Errorf("could not etherscan client for chain %d", chainID)
 	}

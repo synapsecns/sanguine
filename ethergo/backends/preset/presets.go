@@ -2,8 +2,8 @@ package preset
 
 import (
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/synapsecns/synapse-node/pkg/common"
-	"github.com/synapsecns/synapse-node/pkg/evm/client"
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"os"
 )
 
@@ -14,7 +14,7 @@ func GetRinkeby() Backend {
 
 	return Backend{
 		config:     &chainConfig,
-		rpcURL:     common.GetEnv("RINEKBY_RPC_URL", "ws://0.0.0.0:8045"),
+		rpcURL:     core.GetEnv("RINEKBY_RPC_URL", "ws://0.0.0.0:8045"),
 		name:       "Rinkeby",
 		privateKey: os.Getenv("EXPORT_KEY"),
 	}
@@ -29,7 +29,7 @@ func GetBSCTestnet() Backend {
 
 	return Backend{
 		config:     &chainConfig,
-		rpcURL:     common.GetEnv("BSC_TESTNET_RPC_URL", "ws://0.0.0.0:8046"),
+		rpcURL:     core.GetEnv("BSC_TESTNET_RPC_URL", "ws://0.0.0.0:8046"),
 		name:       "BSC Testnet",
 		privateKey: os.Getenv("EXPORT_KEY"),
 	}
@@ -44,7 +44,7 @@ func GetMaticMumbai() Backend {
 
 	return Backend{
 		config:     &chainConfig,
-		rpcURL:     common.GetEnv("MATIC_RPC_URL", "ws://0.0.0.0:8047"),
+		rpcURL:     core.GetEnv("MATIC_RPC_URL", "ws://0.0.0.0:8047"),
 		name:       "Matic",
 		privateKey: os.Getenv("EXPORT_KEY"),
 	}
@@ -57,7 +57,7 @@ func GetAvalancheLocal() Backend {
 
 	return Backend{
 		config:     &chainConfig,
-		rpcURL:     common.GetEnv("MATIC_RPC_URL", "ws://0.0.0.0:8048"),
+		rpcURL:     core.GetEnv("MATIC_RPC_URL", "ws://0.0.0.0:8048"),
 		name:       "Avalanche",
 		privateKey: os.Getenv("EXPORT_KEY"),
 	}

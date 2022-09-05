@@ -5,7 +5,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/types"
-	legacyTypes "github.com/synapsecns/synapse-node/pkg/types"
 )
 
 // Parser parses events from the origin contract.
@@ -41,7 +40,7 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 		return *eventType, true
 	}
 	// return an unknown event to avoid cases where user failed to check the event type
-	return EventType(len(legacyTypes.AllEventTypes()) + 2), false
+	return EventType(len(topicMap()) + 2), false
 }
 
 // ParseDispatch parses an update event.

@@ -7,17 +7,16 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/eth/gasprice"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/assert"
 	commonBackend "github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated/multibackend"
+	"github.com/synapsecns/sanguine/ethergo/chain"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"github.com/synapsecns/synapse-node/pkg/evm"
-	"github.com/synapsecns/synapse-node/pkg/evm/client"
-	"github.com/synapsecns/synapse-node/pkg/evm/gas"
-	"github.com/synapsecns/synapse-node/testutils/utils"
 	"github.com/teivah/onecontext"
 	"math/big"
 	"testing"
@@ -124,8 +123,7 @@ func (s *Backend) ChainConfig() *params.ChainConfig {
 // GetFundedAccount returns an account with the requested balance. (Note: if genesis acount has an insufficient
 // balance, blocks may be mined here).
 func (s *Backend) GetFundedAccount(ctx context.Context, requestBalance *big.Int) *keystore.Key {
-	key, err := utils.NewMockAuthConfig(s.T()).Key()
-	assert.Nil(s.T(), err)
+	key := s.MockAccount()
 
 	s.store.Store(key)
 
@@ -193,7 +191,7 @@ func (s *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	assert.Nil(s.T(), err)
 
 	//nolint: ineffassign
-	err = s.Chain.GasSetter().SetGasFee(ctx, auth, gasBlock.NumberU64(), gas.GetConfig().MaxPrice)
+	err = s.Chain.GasSetter().SetGasFee(ctx, auth, gasBlock.NumberU64(), gasprice.DefaultMaxPrice)
 	assert.Nil(s.T(), err)
 
 	return commonBackend.AuthType{
@@ -225,9 +223,7 @@ func NewSimulatedBackendWithConfig(ctx context.Context, t *testing.T, config *pa
 	t.Helper()
 	// 100 million ether
 	balance := big.NewInt(0).Mul(big.NewInt(params.Ether), big.NewInt(100000000))
-	authConfig := utils.NewMockAuthConfig(t)
-	key, err := authConfig.Key()
-	assert.Nil(t, err)
+	key := base.MockAccount(t)
 
 	genesisAlloc := map[common.Address]core.GenesisAccount{
 		key.Address: {
@@ -238,7 +234,7 @@ func NewSimulatedBackendWithConfig(ctx context.Context, t *testing.T, config *pa
 	simulatedBackend := multibackend.NewSimulatedBackendWithConfig(genesisAlloc, BlockGasLimit, config)
 	baseClient := Client{simulatedBackend}
 
-	chn, err := evm.NewFromClient(ctx, &client.Config{
+	chn, err := chain.NewFromClient(ctx, &client.Config{
 		RPCUrl:  []string{""},
 		ChainID: int(config.ChainID.Uint64()),
 	}, baseClient)

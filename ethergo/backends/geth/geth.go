@@ -3,12 +3,15 @@ package geth
 import (
 	"context"
 	"github.com/Flaque/filet"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/cmd/utils"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
+	ethCore "github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/eth"
+	"github.com/ethereum/go-ethereum/eth/gasprice"
 	"github.com/ethereum/go-ethereum/eth/tracers"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/graphql"
@@ -16,12 +19,11 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
-	"github.com/synapsecns/synapse-node/pkg/evm"
-	"github.com/synapsecns/synapse-node/pkg/evm/client"
-	"github.com/synapsecns/synapse-node/pkg/evm/gas"
-	"github.com/synapsecns/synapse-node/testutils/utils"
+	"github.com/synapsecns/sanguine/ethergo/chain"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/teivah/onecontext"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"math/big"
@@ -30,11 +32,13 @@ import (
 	"time"
 )
 
+const gasLimit = 10000000
+
 // NewEmbeddedBackendForChainID gets the embedded backend for a specific chain id.
 func NewEmbeddedBackendForChainID(ctx context.Context, t *testing.T, chainID *big.Int) *Backend {
 	t.Helper()
 	// get the default config
-	config := core.DeveloperGenesisBlock(0, common.Address{}).Config
+	config := ethCore.DeveloperGenesisBlock(0, gasLimit, common.Address{}).Config
 	config.ChainID = chainID
 	return NewEmbeddedBackendWithConfig(ctx, t, config)
 }
@@ -61,9 +65,19 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 	embedded := Backend{}
 
 	logger.Debug("creating eth node")
-	authConfig := utils.NewMockAuthConfig(t)
-	var err error
-	embedded.faucetAddr, err = authConfig.Key()
+
+	kstr := keystore.NewKeyStore(filet.TmpDir(t, ""), veryLightScryptN, veryLightScryptP)
+	password := gofakeit.Password(true, true, true, false, false, 10)
+	acct, err := kstr.NewAccount(password)
+	assert.Nil(t, err)
+
+	data, err := os.ReadFile(acct.URL.Path)
+	assert.Nil(t, err)
+
+	key, err := keystore.DecryptKey(data, password)
+	assert.Nil(t, err)
+
+	embedded.faucetAddr = key
 	assert.Nil(t, err)
 
 	embedded.Node, err = node.New(makeNodeConfig(t))
@@ -76,8 +90,11 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 
 	embedded.Node.RegisterAPIs(toPublic(tracers.APIs(embedded.ethBackend.APIBackend)))
 
+	// Configure log filter RPC API.
+	filterSystem := utils.RegisterFilterAPI(embedded.Node, embedded.ethBackend.APIBackend, ethConfig)
+
 	// TODO: this service should be optional. We use it enough in debugging right now to enable globally
-	err = graphql.New(embedded.Node, embedded.ethBackend.APIBackend, embedded.Node.Config().GraphQLCors, embedded.Node.Config().GraphQLVirtualHosts)
+	err = graphql.New(embedded.Node, embedded.ethBackend.APIBackend, filterSystem, embedded.Node.Config().GraphQLCors, embedded.Node.Config().GraphQLVirtualHosts)
 	assert.Nil(t, err)
 
 	assert.Nil(t, embedded.Node.Start())
@@ -86,11 +103,13 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 	// add the scrypt test backend
 	keystoreBackend := keystore.NewKeyStore(filet.TmpDir(t, ""), veryLightScryptN, veryLightScryptP)
 
-	file, err := os.ReadFile(authConfig.OperatorKeyFile)
+	file, err := os.ReadFile(acct.URL.Path)
 	assert.Nil(t, err)
-	acct, err := keystoreBackend.Import(file, authConfig.OperatorKeyPassword, authConfig.OperatorKeyPassword)
+
+	acct, err = keystoreBackend.Import(file, password, password)
 	assert.Nil(t, err)
-	assert.Nil(t, keystoreBackend.Unlock(acct, authConfig.OperatorKeyPassword))
+
+	assert.Nil(t, keystoreBackend.Unlock(acct, password))
 
 	// set the backend
 	embedded.ethBackend.AccountManager().AddBackend(keystoreBackend)
@@ -125,7 +144,7 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 
 	baseClient := embedded.makeClient(t)
 
-	chn, err := evm.NewFromClient(ctx, &client.Config{ChainID: int(config.ChainID.Int64()), RPCUrl: []string{embedded.Node.WSEndpoint()}}, baseClient)
+	chn, err := chain.NewFromClient(ctx, &client.Config{ChainID: int(config.ChainID.Int64()), RPCUrl: []string{embedded.Node.WSEndpoint()}}, baseClient)
 
 	assert.Nil(t, err)
 	chn.SetChainConfig(config)
@@ -195,20 +214,15 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	latestBlock, err := f.BlockByNumber(ctx, nil)
 	assert.Nil(f.T(), err)
 
-	err = f.Chain.GasSetter().SetGasFee(ctx, auth, latestBlock.NumberU64(), gas.GetConfig().MaxPrice)
+	err = f.Chain.GasSetter().SetGasFee(ctx, auth, latestBlock.NumberU64(), core.CopyBigInt(gasprice.DefaultMaxPrice))
 	assert.Nil(f.T(), err)
 
-	auth.GasLimit = core.DeveloperGenesisBlock(0, f.faucetAddr.Address).GasLimit / 2
+	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, gasLimit, f.faucetAddr.Address).GasLimit / 2
 
 	return backends.AuthType{
 		TransactOpts: auth,
 		PrivateKey:   acct.PrivateKey,
 	}
-}
-
-// Config gets the chain config. This is done to avoid an ambiguous call.
-func (f *Backend) Config() *client.Config {
-	return f.Chain.Config()
 }
 
 // wrappedClient wraps the client in one that contains a chain config.
@@ -265,7 +279,7 @@ func (f *Backend) getFaucetTxContext(ctx context.Context) *bind.TransactOpts {
 	gasPrice, err := f.Client().SuggestGasPrice(ctx)
 	assert.Nil(f.T(), err)
 
-	auth.GasLimit = core.DeveloperGenesisBlock(0, f.faucetAddr.Address).GasLimit / 2
+	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, gasLimit, f.faucetAddr.Address).GasLimit / 2
 	auth.GasPrice = gasPrice
 
 	return auth
@@ -298,8 +312,7 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 // GetFundedAccount returns an account with the requested balance. (Note: if genesis acount has an insufficient
 // balance, blocks may be mined here).
 func (f *Backend) GetFundedAccount(ctx context.Context, requestBalance *big.Int) *keystore.Key {
-	key, err := utils.NewMockAuthConfig(f.T()).Key()
-	assert.Nil(f.T(), err)
+	key := f.MockAccount()
 
 	f.store.Store(key)
 

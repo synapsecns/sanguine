@@ -8,8 +8,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/synapse-node/testutils/utils"
 	"github.com/tyler-smith/go-bip39"
 	"os"
 	"path"
@@ -125,14 +125,14 @@ func (s WalletSuite) makeKeyFileTests() (tests []KeyFileTest) {
 
 	// fuzz
 	tests = append(tests, KeyFileTest{
-		address:     utils.NewMockAddress(),
+		address:     mocks.MockAddress(),
 		shouldErr:   true,
 		contents:    nil,
 		description: "no file contents",
 	})
 
 	tests = append(tests, KeyFileTest{
-		address:     utils.NewMockAddress(),
+		address:     mocks.MockAddress(),
 		shouldErr:   true,
 		contents:    []byte(strings.Join(bip39.GetWordList(), " ")),
 		description: "long word list",

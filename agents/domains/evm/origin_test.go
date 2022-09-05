@@ -7,7 +7,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/synapse-node/testutils/utils"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"math/big"
 )
 
@@ -26,7 +26,7 @@ type TestDispatch struct {
 func NewTestDispatch() TestDispatch {
 	return TestDispatch{
 		domain:            gofakeit.Uint32(),
-		recipientAddress:  common.BytesToHash(utils.NewMockAddress().Bytes()),
+		recipientAddress:  common.BytesToHash(mocks.MockAddress().Bytes()),
 		message:           []byte(gofakeit.Paragraph(4, 1, 4, " ")),
 		optimisticSeconds: gofakeit.Uint32(),
 	}

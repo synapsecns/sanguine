@@ -9,8 +9,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"github.com/synapsecns/synapse-node/pkg/evm"
 	"math/big"
 )
 
@@ -46,7 +46,8 @@ type SimulatedTestBackend interface {
 	// GetFundedAccount gets a funded account with requestBalance
 	GetFundedAccount(ctx context.Context, requestBalance *big.Int) *keystore.Key
 	// Chain is the Chain
-	evm.Chain
+	//nolint:staticcheck
+	chain.Chain
 	// Signer is the signer for the chain
 	Signer() types.Signer
 }
