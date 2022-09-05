@@ -5,10 +5,10 @@ package internal
 
 import (
 	"github.com/BurntSushi/toml"
-
 	"github.com/dgraph-io/ristretto"
 	"github.com/go-playground/validator/v10"
 	"github.com/ugorji/go/codec"
+	"github.com/urfave/cli/v2"
 	"github.com/vburenin/ifacemaker/maker"
 	"github.com/vektra/mockery/v2/pkg"
 	"golang.org/x/exp/rand"
@@ -26,6 +26,7 @@ var _ = toml.Unmarshal
 var _ = rand.Int
 var _ = ristretto.Config{}
 var _ = validator.Validate{}
+var _ = cli.StringFlag{}
 
 // required by mockery.
 var _ = pkg.Method{}
