@@ -18,6 +18,7 @@ import { AppHarness } from "./harnesses/AppHarness.sol";
 
 import { SynapseTest } from "./utils/SynapseTest.sol";
 
+// solhint-disable func-name-mixedcase
 contract DestinationTest is SynapseTest {
     DestinationHarness destination;
     AppHarness dApp;
@@ -42,6 +43,7 @@ contract DestinationTest is SynapseTest {
         dApp = new AppHarness(OPTIMISTIC_PERIOD);
         systemRouter = ISystemRouter(address(1234567890));
         destination.setSystemRouter(systemRouter);
+        destination.addGuard(guard);
     }
 
     // ============ INITIAL STATE ============
@@ -93,6 +95,66 @@ contract DestinationTest is SynapseTest {
         destination.setConfirmation(remoteDomain, ROOT, _confirmAt);
         assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), _confirmAt);
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            SUBMIT REPORT                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    event NotaryBlacklisted(
+        address indexed notary,
+        address indexed guard,
+        address indexed reporter,
+        bytes report
+    );
+
+    function test_submitReport() public {
+        uint32 nonce = 42;
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, ROOT);
+        (bytes memory report, ) = signFraudReport(guardPK, attestation);
+        vm.expectEmit(true, true, true, true);
+        emit NotaryBlacklisted(notary, guard, address(this), report);
+        assertTrue(destination.submitReport(report));
+    }
+
+    function test_submitReport_valid() public {
+        uint32 nonce = 42;
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, ROOT);
+        (bytes memory report, ) = signValidReport(guardPK, attestation);
+        vm.expectRevert("Not a fraud report");
+        destination.submitReport(report);
+    }
+
+    function test_submitReport_notGuard() public {
+        uint32 nonce = 42;
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, ROOT);
+        (bytes memory report, ) = signFraudReport(fakeGuardPK, attestation);
+        vm.expectRevert("Signer is not a guard");
+        destination.submitReport(report);
+    }
+
+    function test_submitReport_notNotary() public {
+        uint32 nonce = 42;
+        (bytes memory attestation, ) = signRemoteAttestation(fakeNotaryPK, nonce, ROOT);
+        (bytes memory report, ) = signFraudReport(guardPK, attestation);
+        vm.expectRevert("Signer is not a notary");
+        destination.submitReport(report);
+    }
+
+    function test_submitReport_twice() public {
+        test_submitReport();
+        uint32 nonce = 69;
+        bytes32 root = "another fraud attestation";
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, root);
+        (bytes memory report, ) = signFraudReport(guardPK, attestation);
+        // Reporting already blacklisted Notary will lead to reverting,
+        // as Notary is blacklisted
+        vm.expectRevert("Signer is not a notary");
+        destination.submitReport(report);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SUBMIT ATTESTATION                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     event AttestationAccepted(
         uint32 indexed origin,

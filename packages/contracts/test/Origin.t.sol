@@ -5,10 +5,12 @@ import "forge-std/console2.sol";
 import { OriginHarness } from "./harnesses/OriginHarness.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
+import { Report } from "../contracts/libs/Report.sol";
 import { ISystemRouter } from "../contracts/interfaces/ISystemRouter.sol";
 import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
+// solhint-disable func-name-mixedcase
 contract OriginTest is SynapseTestWithNotaryManager {
     OriginHarness origin;
     uint32 optimisticSeconds;
@@ -23,6 +25,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         notaryManager.setOrigin(address(origin));
         systemRouter = ISystemRouter(address(1234567890));
         origin.setSystemRouter(systemRouter);
+        origin.addGuard(guard);
     }
 
     // ============ STATE AND PERMISSIONING ============
@@ -141,54 +144,179 @@ contract OriginTest is SynapseTestWithNotaryManager {
         origin.dispatch(remoteDomain, recipient, optimisticSeconds, getEmptyTips(), messageBody);
     }
 
-    // ============ UPDATING MESSAGES ============
-    event ImproperAttestation(address notary, bytes attestation);
+    // ============ REPORTS ============
+    event CorrectFraudReport(address indexed guard, bytes report);
+    event IncorrectReport(address indexed guard, bytes report);
+    event FraudAttestation(address indexed notary, bytes attestation);
+    event GuardSlashed(address indexed guard, address indexed reporter);
+    event NotarySlashed(address indexed notary, address indexed guard, address indexed reporter);
 
-    function test_improperAttestation_wrongDomain() public {
+    function test_submitReport_wrongDomain() public {
         uint32 nonce = 42;
         bytes32 root = "very real much wow";
         // Any signed attestation from another chain should be rejected
         (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, root);
+        (bytes memory report, ) = signFraudReport(guardPK, attestation);
         vm.expectRevert("Wrong domain");
-        origin.improperAttestation(attestation);
+        origin.submitReport(report);
     }
 
-    function test_improperAttestation_fraud_invalidNonce() public {
+    function test_submitReport_notNotary() public {
+        uint32 nonce = 42;
+        bytes32 root = "very real much wow";
+        (bytes memory attestation, ) = signOriginAttestation(fakeNotaryPK, nonce, root);
+        (bytes memory report, ) = signFraudReport(guardPK, attestation);
+        vm.expectRevert("Signer is not a notary");
+        origin.submitReport(report);
+    }
+
+    function test_submitReport_notGuard() public {
+        uint32 nonce = 42;
+        bytes32 root = "very real much wow";
+        (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
+        (bytes memory report, ) = signFraudReport(fakeGuardPK, attestation);
+        vm.expectRevert("Signer is not a guard");
+        origin.submitReport(report);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                         CORRECT FRAUD REPORT                         ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_submitReport_fraud_bigNonce() public {
         test_dispatch();
         uint32 nonce = 2;
         bytes32 root = origin.root();
         // This root exists, but with nonce = 1
-        // Nonce = 0 doesn't exists yet
-        _checkImproperAttestation(nonce, root);
+        // Nonce = 2 doesn't exist yet
+        _checkFraudAttestation(nonce, root);
     }
 
-    function test_improperAttestation_fraud_correctRootWrongNonce() public {
+    function test_submitReport_fraud_incorrectNonce() public {
         test_dispatch();
         test_dispatch();
-        uint32 nonce = 0;
+        uint32 nonce = 1;
         bytes32 root = origin.root();
-        // This root exists, but with nonce = 1
-        // nonce = 2 exists, with a different Merkle root
-        _checkImproperAttestation(nonce, root);
+        // This root exists, but with nonce = 2
+        // nonce = 1 exists, with a different Merkle root
+        _checkFraudAttestation(nonce, root);
     }
 
-    function test_improperAttestation_fraud_validNonceWrongRoot() public {
+    function test_submitReport_fraud_incorrectRoot() public {
         test_dispatch();
-        uint32 nonce = 0;
+        uint32 nonce = 1;
         bytes32 root = "this is clearly fraud";
-        // nonce = 0 exists, with a different Merkle root
-        _checkImproperAttestation(nonce, root);
+        // nonce = 1 exists, with a different Merkle root
+        _checkFraudAttestation(nonce, root);
     }
 
-    /// @dev Signs improper (nonce, root) attestation and presents it to Origin.
-    function _checkImproperAttestation(uint32 nonce, bytes32 root) internal {
+    /// @dev Signs fraud report on fraud (nonce, root) attestation and presents it to Origin.
+    function _checkFraudAttestation(uint32 nonce, bytes32 root) internal {
         (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
+        (bytes memory report, ) = signFraudReport(guardPK, attestation);
         vm.expectEmit(true, true, true, true);
-        emit ImproperAttestation(notary, attestation);
-        // Origin should recognize this as improper attestation
-        assertTrue(origin.improperAttestation(attestation));
+        emit CorrectFraudReport(guard, report);
+        vm.expectEmit(true, true, true, true);
+        emit FraudAttestation(notary, attestation);
+        vm.expectEmit(true, true, true, true);
+        emit NotarySlashed(notary, guard, address(this));
+        // Origin should recognize this as a correct report on fraud attestation
+        assertTrue(origin.submitReport(report));
         // Origin should be in Failed state
         assertEq(uint256(origin.state()), 2);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        INCORRECT FRAUD REPORT                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_submitReport_fraud_incorrectReport() public {
+        test_dispatch();
+        uint32 nonce = 1;
+        bytes32 root = origin.root();
+        _checkIncorrectReport(Report.Flag.Fraud, nonce, root);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                         CORRECT VALID REPORT                         ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_submitReport_valid() public {
+        test_dispatch();
+        uint32 nonce = 1;
+        bytes32 root = origin.root();
+        // valid attestation
+        (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
+        // this makes the report incorrect
+        (bytes memory report, ) = signValidReport(guardPK, attestation);
+        // Origin should recognize this as a correct report on valid attestation
+        assertTrue(origin.submitReport(report));
+        // Origin should be in Active state
+        assertEq(uint256(origin.state()), 1);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        INCORRECT VALID REPORT                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_submitReport_valid_bigNonce() public {
+        test_dispatch();
+        uint32 nonce = 2;
+        bytes32 root = origin.root();
+        // This root exists, but with nonce = 1
+        // Nonce = 2 doesn't exist yet
+        _checkIncorrectReport(Report.Flag.Valid, nonce, root);
+    }
+
+    function test_submitReport_valid_incorrectNonce() public {
+        test_dispatch();
+        test_dispatch();
+        uint32 nonce = 1;
+        bytes32 root = origin.root();
+        // This root exists, but with nonce = 2
+        // nonce = 1 exists, with a different Merkle root
+        _checkIncorrectReport(Report.Flag.Valid, nonce, root);
+    }
+
+    function test_submitReport_valid_incorrectRoot() public {
+        test_dispatch();
+        uint32 nonce = 1;
+        bytes32 root = "this is clearly fraud";
+        // nonce = 1 exists, with a different Merkle root
+        _checkIncorrectReport(Report.Flag.Valid, nonce, root);
+    }
+
+    /// @dev Signs incorrect report on (nonce, root) attestation and presents it to Origin.
+    function _checkIncorrectReport(
+        Report.Flag flag,
+        uint32 nonce,
+        bytes32 root
+    ) internal {
+        (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
+        (bytes memory report, ) = signReport(guardPK, flag, attestation);
+        vm.expectEmit(true, true, true, true);
+        emit IncorrectReport(guard, report);
+        vm.expectEmit(true, true, true, true);
+        emit GuardSlashed(guard, address(this));
+        if (flag == Report.Flag.Valid) {
+            // Incorrect Valid Report means reported attestation is in fact fraud
+            vm.expectEmit(true, true, true, true);
+            emit FraudAttestation(notary, attestation);
+            vm.expectEmit(true, true, true, true);
+            // Guard doesn't get a reward for incorrect report
+            emit NotarySlashed(notary, address(0), address(this));
+        }
+        // Origin should recognize this as an incorrect report on the attestation
+        assertFalse(origin.submitReport(report));
+        if (flag == Report.Flag.Valid) {
+            // Incorrect Valid Report means reported attestation is in fact fraud
+            // Origin should be in Failed state
+            assertEq(uint256(origin.state()), 2);
+        } else {
+            // Incorrect Fraud Report means reported attestation is in fact valid
+            // Origin should be in Active state
+            assertEq(uint256(origin.state()), 1);
+        }
     }
 
     // Dispatches 4 messages, and then Notary signs latest new roots
@@ -202,8 +330,9 @@ contract OriginTest is SynapseTestWithNotaryManager {
         assertEq(nonce, 4);
         assertEq(root, origin.historicalRoots(nonce));
         (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
+        (bytes memory report, ) = signFraudReport(guardPK, attestation);
         // Should not be an improper attestation
-        assertFalse(origin.improperAttestation(attestation));
+        assertFalse(origin.submitReport(report));
         assertEq(uint256(origin.state()), 1);
     }
 

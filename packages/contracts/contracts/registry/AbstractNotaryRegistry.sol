@@ -12,10 +12,12 @@ abstract contract AbstractNotaryRegistry {
     using TypedMemView for bytes29;
 
     /**
-     * @notice  Checks if the passed payload is a valid Attestation message,
-     *          if the signature is valid and if the signer is an authorized notary.
-     * @param _attestation  Attestation of Origin merkle root. Needs to be valid, revert otherwise.
-     * @return _notary     Notary that signed the Attestation
+     * @notice  Checks all following statements are true:
+     *          - `_attestation` is a formatted Attestation payload
+     *          - `_attestation` contains a signature
+     *          - such signature belongs to an authorized Notary
+     * @param _attestation  Attestation of Origin merkle root
+     * @return _notary      Notary that signed the Attestation
      * @return _view        Memory view on attestation
      */
     function _checkNotaryAuth(bytes memory _attestation)
@@ -24,6 +26,18 @@ abstract contract AbstractNotaryRegistry {
         returns (address _notary, bytes29 _view)
     {
         _view = _attestation.castToAttestation();
+        _notary = _checkNotaryAuth(_view);
+    }
+
+    /**
+     * @notice  Checks all following statements are true:
+     *          - `_view` is a memory view on a formatted Attestation payload
+     *          - `_view` contains a signature
+     *          - such signature belongs to an authorized Notary
+     * @param _view     Memory view on Attestation of Origin merkle root
+     * @return _notary  Notary that signed the Attestation
+     */
+    function _checkNotaryAuth(bytes29 _view) internal view returns (address _notary) {
         require(_view.isAttestation(), "Not an attestation");
         _notary = Auth.recoverSigner(_view.attestationData(), _view.notarySignature().clone());
         require(_isNotary(_view.attestedDomain(), _notary), "Signer is not a notary");
