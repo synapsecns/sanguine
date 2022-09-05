@@ -7,7 +7,7 @@ monorepo:
 
 builds:
   # Linux AMD64
-  - id: omnirpc-amd64
+  - id: omnirpc
     binary: omnirpc
     env:
       - CGO_CFLAGS=-I/usr/local/include
@@ -60,3 +60,5 @@ dockers:
       - 'ghcr.io/synapsecns/sanguine/omnirpc:latest'
       - 'ghcr.io/synapsecns/sanguine/omnirpc:{{ .Tag }}'
     dockerfile: ../../docker/omnirpc.Dockerfile
+    binaries:
+      - omnirpc
