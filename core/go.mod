@@ -26,10 +26,10 @@ require (
 	github.com/prometheus/pushgateway v1.4.3
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
 	github.com/stretchr/testify v1.8.0
-	github.com/urfave/cli/v2 v2.14.0
+	github.com/urfave/cli/v2 v2.14.1
 	go.uber.org/zap v1.22.0
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
-	gorm.io/gorm v1.21.15
+	gorm.io/gorm v1.23.8
 	k8s.io/apimachinery v0.22.2
 )
 
@@ -47,7 +47,7 @@ require (
 	github.com/gosimple/slug v1.1.1 // indirect
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.3 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/julienschmidt/httprouter v1.3.0 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
@@ -75,7 +75,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
-	golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664 // indirect
+	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
