@@ -40,8 +40,8 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     uint32 internal nonce = 1;
     uint32 internal optimisticSeconds = OPTIMISTIC_PERIOD;
 
-    uint8 internal systemCaller = uint8(ISystemRouter.SystemContracts.Origin);
-    uint8 internal systemRecipient = uint8(ISystemRouter.SystemContracts.Destination);
+    uint8 internal systemCaller = uint8(ISystemRouter.SystemEntity.Origin);
+    uint8 internal systemRecipient = uint8(ISystemRouter.SystemEntity.Destination);
     uint256 internal secretValue = 1337;
     bytes internal data;
 
@@ -118,8 +118,8 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_systemCall_local_toOrigin() public {
-        systemCaller = uint8(ISystemRouter.SystemContracts.Destination);
-        systemRecipient = uint8(ISystemRouter.SystemContracts.Origin);
+        systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
+        systemRecipient = uint8(ISystemRouter.SystemEntity.Origin);
         // Destination calls Origin
         _checkLocalSystemCall();
     }
@@ -134,14 +134,14 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     }
 
     function test_systemCall_remote_destination() public {
-        systemCaller = uint8(ISystemRouter.SystemContracts.Destination);
+        systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
         _checkRemoteSystemCall();
     }
 
     function test_systemCall_notSystemContract() public {
         for (uint256 i = 0; i < domains.length; ++i) {
             vm.expectRevert("Unauthorized caller");
-            systemRouter.systemCall(domains[i], 0, ISystemRouter.SystemContracts.Origin, data);
+            systemRouter.systemCall(domains[i], 0, ISystemRouter.SystemEntity.Origin, data);
         }
     }
 
@@ -151,8 +151,8 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
 
     function test_receiveSystemMessage_origin() public {
         // remote Destination -> local Origin
-        systemCaller = uint8(ISystemRouter.SystemContracts.Destination);
-        systemRecipient = uint8(ISystemRouter.SystemContracts.Origin);
+        systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
+        systemRecipient = uint8(ISystemRouter.SystemEntity.Origin);
         _checkReceiveSystemMessage();
     }
 
@@ -202,7 +202,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
 
     function _checkLocalSystemCall() internal {
         address sender = _getSystemAddress(systemCaller);
-        ISystemRouter.SystemContracts recipient = ISystemRouter.SystemContracts(systemRecipient);
+        ISystemRouter.SystemEntity recipient = ISystemRouter.SystemEntity(systemRecipient);
         ISystemMockContract recipientMock = ISystemMockContract(_getSystemAddress(systemRecipient));
         // Sanity check
         assertFalse(recipientMock.sensitiveValue() == secretValue);
@@ -217,9 +217,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         address sender = _getSystemAddress(systemCaller);
         // Send messages from sender to every system contract on remote chain
         for (systemRecipient = 0; systemRecipient <= 1; (++systemRecipient, ++nonce)) {
-            ISystemRouter.SystemContracts recipient = ISystemRouter.SystemContracts(
-                systemRecipient
-            );
+            ISystemRouter.SystemEntity recipient = ISystemRouter.SystemEntity(systemRecipient);
             bytes memory message = _createSystemMessage(sentSystemMessage);
             vm.expectEmit(true, true, true, true);
             emit Dispatch(
@@ -299,21 +297,21 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     function _getSystemContract(address _account)
         internal
         view
-        returns (ISystemRouter.SystemContracts systemContract)
+        returns (ISystemRouter.SystemEntity systemContract)
     {
         if (_account == address(origin)) {
-            systemContract = ISystemRouter.SystemContracts.Origin;
+            systemContract = ISystemRouter.SystemEntity.Origin;
         } else if (_account == address(destination)) {
-            systemContract = ISystemRouter.SystemContracts.Destination;
+            systemContract = ISystemRouter.SystemEntity.Destination;
         } else {
             revert("Unknown caller");
         }
     }
 
     function _getSystemAddress(uint8 _systemContract) internal view returns (address account) {
-        if (_systemContract == uint8(ISystemRouter.SystemContracts.Origin)) {
+        if (_systemContract == uint8(ISystemRouter.SystemEntity.Origin)) {
             account = address(origin);
-        } else if (_systemContract == uint8(ISystemRouter.SystemContracts.Destination)) {
+        } else if (_systemContract == uint8(ISystemRouter.SystemEntity.Destination)) {
             account = address(destination);
         } else {
             // Sanity check

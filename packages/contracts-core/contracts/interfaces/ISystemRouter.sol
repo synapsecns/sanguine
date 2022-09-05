@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 interface ISystemRouter {
     /// @dev Potential senders/recipients of a system message
-    enum SystemContracts {
+    enum SystemEntity {
         Origin,
         Destination
     }
@@ -21,17 +21,17 @@ interface ISystemRouter {
      * Note: data payload is extended with abi encoded (domain, sender, rootTimestamp)
      * This allows recipient to check:
      * - domain where a system call originated (local domain in this case)
-     * - system contract type of the sender (msg.sender on local chain)
+     * - system entity, who initiated the call (msg.sender on local chain)
      * - timestamp when merkle root was submitted and optimistic timer started ticking
      * @param _destination          Domain of destination chain
      * @param _optimisticSeconds    Optimistic period for the message
-     * @param _recipient            System contract type of the recipient
+     * @param _recipient            System entity to receive the call on destination chain
      * @param _data                 Data for calling recipient on destination chain
      */
     function systemCall(
         uint32 _destination,
         uint32 _optimisticSeconds,
-        SystemContracts _recipient,
+        SystemEntity _recipient,
         bytes memory _data
     ) external;
 }

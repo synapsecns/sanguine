@@ -95,7 +95,7 @@ library SystemMessage {
     /**
      * @notice Returns a formatted System Call payload with provided fields
      * @param _systemRecipient  System Contract to receive message
-     *                          (see ISystemRouter.SystemContracts)
+     *                          (see ISystemRouter.SystemEntity)
      * @param _payload          Payload for call on destination chain
      * @return Formatted System Call
      **/
@@ -169,7 +169,7 @@ library SystemMessage {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns System Call's recipient (see ISystemRouter.SystemContracts).
+     * @notice Returns System Call's recipient (see ISystemRouter.SystemEntity).
      */
     function callRecipient(bytes29 _view)
         internal

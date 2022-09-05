@@ -32,7 +32,7 @@ abstract contract SystemContract is OwnableUpgradeable {
      * System Contracts on all chains (either local or remote).
      * Note: any function protected by this modifier should have first two params:
      * - uint32 _originDomain
-     * - SystemContracts _caller
+     * - SystemEntity _caller
      * Make sure to check domain/caller, if a function should be only called
      * from a given domain / by a given caller.
      */

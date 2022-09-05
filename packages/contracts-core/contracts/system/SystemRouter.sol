@@ -65,21 +65,21 @@ contract SystemRouter is BasicClient, ISystemRouter {
      * Note: data payload is extended with abi encoded (domain, sender, rootTimestamp)
      * This allows recipient to check:
      * - domain where a system call originated (local domain in this case)
-     * - system contract type of the sender (msg.sender on local chain)
+     * - system entity, who initiated the call (msg.sender on local chain)
      * - timestamp when merkle root was submitted and optimistic timer started ticking
      * @param _destination          Domain of destination chain
      * @param _optimisticSeconds    Optimistic period for the message
-     * @param _recipient            System contract type of the recipient
+     * @param _recipient            System entity to receive the call on destination chain
      * @param _data                 Data for calling recipient on destination chain
      */
     function systemCall(
         uint32 _destination,
         uint32 _optimisticSeconds,
-        SystemContracts _recipient,
+        SystemEntity _recipient,
         bytes memory _data
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
-        SystemContracts caller = _getSystemCaller(msg.sender);
+        SystemEntity caller = _getSystemEntity(msg.sender);
         bytes memory payload = _formatCalldata(caller, _data);
         if (_destination == localDomain) {
             /// @dev Passing current timestamp for consistency
@@ -155,7 +155,7 @@ contract SystemRouter is BasicClient, ISystemRouter {
         bytes memory _payload,
         uint256 _rootSubmittedAt
     ) internal {
-        address recipient = _getSystemRecipient(_recipient);
+        address recipient = _getSystemAddress(_recipient);
         require(recipient != address(0), "System Contract not set");
         // this will call recipient and bubble the revert from the external call
         recipient.functionCall(abi.encodePacked(_payload, _rootSubmittedAt));
@@ -181,7 +181,7 @@ contract SystemRouter is BasicClient, ISystemRouter {
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _formatCalldata(SystemContracts _caller, bytes memory _data)
+    function _formatCalldata(SystemEntity _caller, bytes memory _data)
         internal
         view
         returns (bytes memory)
@@ -198,15 +198,15 @@ contract SystemRouter is BasicClient, ISystemRouter {
         return abi.encodePacked(_data, abi.encode(localDomain, _caller));
     }
 
-    function _getSystemCaller(address _caller) internal view returns (SystemContracts) {
-        if (_caller == origin) return SystemContracts.Origin;
-        if (_caller == destination) return SystemContracts.Destination;
+    function _getSystemEntity(address _caller) internal view returns (SystemEntity) {
+        if (_caller == origin) return SystemEntity.Origin;
+        if (_caller == destination) return SystemEntity.Destination;
         revert("Unauthorized caller");
     }
 
-    function _getSystemRecipient(uint8 _recipient) internal view returns (address) {
-        if (_recipient == uint8(SystemContracts.Origin)) return origin;
-        if (_recipient == uint8(SystemContracts.Destination)) return destination;
+    function _getSystemAddress(uint8 _recipient) internal view returns (address) {
+        if (_recipient == uint8(SystemEntity.Origin)) return origin;
+        if (_recipient == uint8(SystemEntity.Destination)) return destination;
         revert("Unknown recipient");
     }
 }
