@@ -7,6 +7,6 @@ LABEL org.label-schema.vcs-url="https://github.com/synapsecns/sanguine"
 LABEL org.opencontainers.image.source="https://github.com/synapsecns/sanguine"
 
 WORKDIR /app
-COPY / /app/
+COPY omnirpc /app/omnirpc
 
 ENTRYPOINT ["/app/omnirpc"]
