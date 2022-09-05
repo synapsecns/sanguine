@@ -18,7 +18,7 @@ func TestMockAccount(t *testing.T) {
 
 func TestNewMockAddress(t *testing.T) {
 	// make sure addresses are unique
-	stringSet := collection.NewStringSet()
+	stringSet := collection.Set[string]{}
 
 	const genCount = 100
 
@@ -34,8 +34,8 @@ func TestGetMockTxes(t *testing.T) {
 	mockTxes := mocks.GetMockTxes(context.Background(), t, testTxCount, 0)
 
 	// make sure txes are unique
-	txSet := collection.NewStringSet()
-	jsonSet := collection.NewStringSet()
+	txSet := collection.Set[string]{}
+	jsonSet := collection.Set[string]{}
 
 	for _, tx := range mockTxes {
 		raw, err := tx.MarshalJSON()

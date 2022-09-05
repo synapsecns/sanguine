@@ -26,6 +26,11 @@ var solVersionFlag = &cli.StringFlag{
 	Usage: "version of solidity to use to compile the abi. This is pulled from https://hub.docker.com/r/ethereum/solc so version must be present there",
 }
 
+var urlFlag = &cli.StringFlag{
+	Name:  "url",
+	Usage: "url of the etherscan api to use",
+}
+
 var optimizerRunsFlags = &cli.IntFlag{
 	Name:  "optimizer-runs",
 	Usage: "number of optimizations to run.",
@@ -69,10 +74,11 @@ var EtherscanCommand = &cli.Command{
 		pkgFlag,
 		filenameFlag,
 		solVersionFlag,
+		urlFlag,
 	},
 	// TODO this needs to embed optimizations, etc from the real deployed contract.
 	Action: func(context *cli.Context) error {
 		//nolint: wrapcheck
-		return internal.GenerateABIFromEtherscan(context.Context, uint(context.Int(chainIDFlag.Name)), common.HexToAddress(context.String(addressFlag.Name)), context.String(filenameFlag.String()), context.String(solVersionFlag.Name), context.String(pkgFlag.Name))
+		return internal.GenerateABIFromEtherscan(context.Context, uint(context.Int(chainIDFlag.Name)), context.String(urlFlag.Name), common.HexToAddress(context.String(addressFlag.Name)), context.String(filenameFlag.String()), context.String(solVersionFlag.Name), context.String(pkgFlag.Name))
 	},
 }

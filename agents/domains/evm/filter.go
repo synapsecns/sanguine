@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
 	"github.com/pkg/errors"
-	"github.com/synapsecns/synapse-node/pkg/common"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 	"time"
 )
@@ -19,13 +19,13 @@ type LogInfo struct {
 	// logs are logs
 	logs []types.Log
 	// chunk are chunks
-	chunk *common.Chunk
+	chunk *util.Chunk
 }
 
 // RangeFilter pre-fetches filter logs into a channel in deterministic order.
 type RangeFilter struct {
 	// iterator is the chunk iterator used for the range
-	iterator common.ChunkIterator
+	iterator util.ChunkIterator
 	// logs is a channel with the filtered ahead logs. This channel is not closed
 	// and the user can rely on the garbage collection behavior of RangeFilter to remove it.
 	logs chan *LogInfo
@@ -53,7 +53,7 @@ var maxBackoff = 30 * time.Second
 // NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
 func NewRangeFilter(address ethCommon.Address, filterer bind.ContractFilterer, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
 	return &RangeFilter{
-		iterator:        common.NewChunkIterator(startBlock, endBlock, chunkSize, reverse),
+		iterator:        util.NewChunkIterator(startBlock, endBlock, chunkSize, reverse),
 		logs:            make(chan *LogInfo, bufferSize),
 		filterer:        filterer,
 		contractAddress: address,
@@ -91,7 +91,7 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 
 // FilterLogs safely calls FilterLogs with the filtering implementing a backoff in the case of
 // rate limiting and respecting context cancellation.
-func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *common.Chunk) (*LogInfo, error) {
+func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogInfo, error) {
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,

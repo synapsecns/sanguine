@@ -6,6 +6,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/cmd/utils"
 	"github.com/ethereum/go-ethereum/common"
 	ethCore "github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -35,7 +36,7 @@ import (
 func NewEmbeddedBackendForChainID(ctx context.Context, t *testing.T, chainID *big.Int) *Backend {
 	t.Helper()
 	// get the default config
-	config := ethCore.DeveloperGenesisBlock(0, common.Address{}).Config
+	config := ethCore.DeveloperGenesisBlock(0, 5000000, common.Address{}).Config
 	config.ChainID = chainID
 	return NewEmbeddedBackendWithConfig(ctx, t, config)
 }
@@ -87,8 +88,11 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 
 	embedded.Node.RegisterAPIs(toPublic(tracers.APIs(embedded.ethBackend.APIBackend)))
 
+	// Configure log filter RPC API.
+	filterSystem := utils.RegisterFilterAPI(embedded.Node, embedded.ethBackend.APIBackend, ethConfig)
+
 	// TODO: this service should be optional. We use it enough in debugging right now to enable globally
-	err = graphql.New(embedded.Node, embedded.ethBackend.APIBackend, embedded.Node.Config().GraphQLCors, embedded.Node.Config().GraphQLVirtualHosts)
+	err = graphql.New(embedded.Node, embedded.ethBackend.APIBackend, filterSystem, embedded.Node.Config().GraphQLCors, embedded.Node.Config().GraphQLVirtualHosts)
 	assert.Nil(t, err)
 
 	assert.Nil(t, embedded.Node.Start())
@@ -211,7 +215,7 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	err = f.Chain.GasSetter().SetGasFee(ctx, auth, latestBlock.NumberU64(), core.CopyBigInt(gasprice.DefaultMaxPrice))
 	assert.Nil(f.T(), err)
 
-	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, f.faucetAddr.Address).GasLimit / 2
+	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, 5000000, f.faucetAddr.Address).GasLimit / 2
 
 	return backends.AuthType{
 		TransactOpts: auth,
@@ -273,7 +277,7 @@ func (f *Backend) getFaucetTxContext(ctx context.Context) *bind.TransactOpts {
 	gasPrice, err := f.Client().SuggestGasPrice(ctx)
 	assert.Nil(f.T(), err)
 
-	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, f.faucetAddr.Address).GasLimit / 2
+	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, 5000000, f.faucetAddr.Address).GasLimit / 2
 	auth.GasPrice = gasPrice
 
 	return auth

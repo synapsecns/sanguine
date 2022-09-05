@@ -8,13 +8,13 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"github.com/synapsecns/synapse-node/pkg/evm"
 	"math/big"
 )
 
 // NewOriginContract returns a new bound origin contract.
-func NewOriginContract(ctx context.Context, client evm.Chain, originAddress common.Address) (domains.OriginContract, error) {
+func NewOriginContract(ctx context.Context, client chain.Chain, originAddress common.Address) (domains.OriginContract, error) {
 	boundContract, err := origin.NewOriginRef(originAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &origin.OriginRef{}, err)
@@ -35,7 +35,7 @@ type originContract struct {
 	// contract contains the contract handle
 	contract origin.IOrigin
 	// client is the client
-	client evm.Chain
+	client chain.Chain
 	// nonceManager is the nonce manager used for transacting
 	nonceManager nonce.Manager
 }

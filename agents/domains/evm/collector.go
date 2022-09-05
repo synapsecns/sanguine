@@ -8,13 +8,14 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"github.com/synapsecns/synapse-node/pkg/evm"
 )
 
 // NewAttestationCollectorContract returns a bound attestation collector contract.
-func NewAttestationCollectorContract(ctx context.Context, client evm.Chain, attestationAddress common.Address) (domains.AttestationCollectorContract, error) {
+// nolint: staticcheck
+func NewAttestationCollectorContract(ctx context.Context, client chain.Chain, attestationAddress common.Address) (domains.AttestationCollectorContract, error) {
 	boundCountract, err := attestationcollector.NewAttestationCollectorRef(attestationAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &attestationcollector.AttestationCollectorRef{}, err)
@@ -32,7 +33,7 @@ type attestationCollectorContract struct {
 	// contract contains the conract handle
 	contract *attestationcollector.AttestationCollectorRef
 	// client contains the evm client
-	client evm.Chain
+	client chain.Chain
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager
 }

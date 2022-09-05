@@ -241,7 +241,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # see: https://github.com/golangci/golangci-lint/issues/337#issuecomment-510136513
           GOGC: 20
-          GOPRIVATE: 'GOPRIVATE=github.com/synapsecns/synapse-node'
 
   # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
   check-generation:

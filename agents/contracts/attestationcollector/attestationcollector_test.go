@@ -36,7 +36,7 @@ func (a AttestationCollectorSuite) TestAttestationCollectorSuite() {
 	a.testBackendOrigin.WaitForConfirmation(a.GetTestContext(), tx)
 
 	// Create an attestation
-	localDomain := uint32(a.testBackendOrigin.Config().ChainID)
+	localDomain := uint32(a.testBackendOrigin.ChainConfig().ChainID.Uint64())
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	unsignedAttestation := types.NewAttestation(localDomain, nonce, root)

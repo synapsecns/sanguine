@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 	"github.com/gen2brain/beeep"
+	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/tools/modulecopier/internal"
-	"github.com/synapsecns/synapse-node/config"
 	"github.com/urfave/cli/v2"
 	"os"
 )
