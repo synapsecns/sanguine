@@ -57,12 +57,25 @@ func (g *GQLSuite) SetupTest() {
 
 	g.gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
 
+	// var request *http.Request
 	g.Eventually(func() bool {
 		request, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)
 		Nil(g.T(), err)
-		_, err = g.gqlClient.Client.Client.Do(request)
-		return err == nil
+		res, err := g.gqlClient.Client.Client.Do(request)
+		if err == nil {
+			defer func() {
+				_ = res.Body.Close()
+			}()
+			return true
+		}
+		return false
 	})
+
+	// go func() {
+	// 	<-g.GetSuiteContext().Done()
+	// 	err = request.Body.Close()
+	// 	Nil(g.T(), err)
+	// }()
 }
 
 func TestGQLSuite(t *testing.T) {
