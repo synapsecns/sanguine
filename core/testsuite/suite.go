@@ -116,6 +116,19 @@ func (s *TestSuite) SetupTest() {
 	fmt.Printf("running test %s with id %d \n", s.T().Name(), s.testID)
 }
 
+// SetTestTimeout will create a test timout override for the context.
+// this will wrap s.testContext.
+func (s *TestSuite) SetTestTimeout(timeout time.Duration) {
+	ctx, cancel := context.WithTimeout(s.testContext.ctx, timeout)
+	oldCancel := s.testContext.cancelFunc
+	s.testContext = cancellableContext{ctx: ctx, cancelFunc: func() {
+		// cancel parent
+		cancel()
+		// then underlying
+		oldCancel()
+	}}
+}
+
 // GetTestID gets the unique test id for the current test.
 // uniqueness is per-suite.
 func (s *TestSuite) GetTestID() int {
