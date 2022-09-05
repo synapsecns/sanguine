@@ -49,11 +49,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: authenticate with github for private go modules
-        uses: fusion-engineering/setup-git-credentials@v2
-        with:
-          credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
-
       - name: Install Go
         uses: actions/setup-go@v2
         with:
@@ -176,10 +171,7 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
-      - name: authenticate with github for private go modules
-        uses: fusion-engineering/setup-git-credentials@v2
-        with:
-          credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
+
       - name: Go modules cache
         uses: actions/cache@v2
         with:
@@ -216,11 +208,6 @@ jobs:
         with:
           fetch-depth: 0
           submodules: 'recursive'
-
-      - name: authenticate with github for private go modules
-        uses: fusion-engineering/setup-git-credentials@v2
-        with:
-          credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
 
       # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
       - name: Setup cache key
@@ -296,11 +283,6 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.19
-
-      - name: authenticate with github for private go modules
-        uses: fusion-engineering/setup-git-credentials@v2
-        with:
-          credentials: https://0xnero:${{secrets.GIT_TOKEN }}@github.com/
 
       - name: Go modules cache
         uses: actions/cache@v2
