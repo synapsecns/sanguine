@@ -94,7 +94,7 @@ var portFlag = &cli.UintFlag{
 	Name:  "port",
 	Usage: "--port 5121",
 	//nolint:staticcheck
-	Value: uint(freeport.Get(1)[0]),
+	Value: 0,
 }
 
 var dbFlag = &cli.StringFlag{
@@ -121,4 +121,11 @@ var serverCommand = &cli.Command{
 
 		return nil
 	},
+}
+
+func init() {
+	ports := freeport.Get(1)
+	if len(ports) > 0 {
+		portFlag.Value = uint(ports[0])
+	}
 }

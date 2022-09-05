@@ -3,13 +3,13 @@ package server
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	syn_server "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
@@ -75,9 +75,10 @@ func Start(ctx context.Context, port uint16, database string, path string) error
 
 	fmt.Printf("started graphiql server on port: http://localhost:%d/graphiql\n", port)
 
-	// TODO: respect context cancellation
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), router); err != nil {
-		return fmt.Errorf("failed to start server: %w", err)
+	connection := syn_server.Server{}
+	err = connection.ListenAndServe(ctx, fmt.Sprintf(":%d", port), router)
+	if err != nil {
+		return fmt.Errorf("could not start server: %w", err)
 	}
 
 	return nil
