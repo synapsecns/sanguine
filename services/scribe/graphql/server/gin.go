@@ -18,9 +18,9 @@ import (
 )
 
 const (
-	// GraphqlEndpoint is the base endpoint for graphql and the endpoint for post requests to the graphql service
+	// GraphqlEndpoint is the base endpoint for graphql and the endpoint for post requests to the graphql service.
 	GraphqlEndpoint string = "/graphql"
-	// GraphiqlEndpoint is the endpoint for the graphql user interface
+	// GraphiqlEndpoint is the endpoint for the graphql user interface.
 	GraphiqlEndpoint string = "/graphiql"
 )
 
@@ -43,8 +43,7 @@ func initDB(database string, path string) (db.EventDB, error) {
 	}
 }
 
-// Start starts the server
-// other scribe stuff in here
+// Start starts the server and initializes the database.
 func Start(port uint16, database string, path string) error {
 	// initialize the database
 	db, err := initDB(database, path)
@@ -72,11 +71,11 @@ func Start(port uint16, database string, path string) error {
 
 	router.GET(GraphqlEndpoint, graphqlHandler(server))
 	router.POST(GraphqlEndpoint, graphqlHandler(server))
-	router.GET(GraphiqlEndpoint, graphiqlHandler(server))
+	router.GET(GraphiqlEndpoint, graphiqlHandler())
 
 	fmt.Printf("started graphiql server on port: http://localhost:%d/graphiql\n", port)
 
-	// TODO: respect context cancellations
+	// TODO: respect context cancellation
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), router); err != nil {
 		return fmt.Errorf("failed to start server: %w", err)
 	}

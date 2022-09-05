@@ -3,15 +3,16 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/99designs/gqlgen/graphql"
 	"io"
 	"log"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
+// JSON is a generic JSON type.
 type JSON map[string]interface{}
 
-// TODO: clean this up
-// TODO: Test
+// MarshalJSON implements the graphql.Marshaler interface.
 func MarshalJSON(b JSON) graphql.Marshaler {
 	return graphql.WriterFunc(func(w io.Writer) {
 		byteData, err := json.Marshal(b)
@@ -25,6 +26,7 @@ func MarshalJSON(b JSON) graphql.Marshaler {
 	})
 }
 
+// UnmarshalJSON converts an object to a JSON type.
 func UnmarshalJSON(v interface{}) (JSON, error) {
 	byteData, err := json.Marshal(v)
 	if err != nil {

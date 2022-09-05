@@ -93,6 +93,7 @@ var backfillCommand = &cli.Command{
 var portFlag = &cli.UintFlag{
 	Name:  "port",
 	Usage: "--port 5121",
+	//nolint:staticcheck
 	Value: uint(freeport.Get(1)[0]),
 }
 
@@ -113,6 +114,11 @@ var serverCommand = &cli.Command{
 	Description: "starts a graphql server",
 	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag},
 	Action: func(c *cli.Context) error {
-		return server.Start(uint16(c.Uint(portFlag.Name)), c.String(dbFlag.Name), c.String(pathFlag.Name))
+		err := server.Start(uint16(c.Uint(portFlag.Name)), c.String(dbFlag.Name), c.String(pathFlag.Name))
+		if err != nil {
+			return fmt.Errorf("could not start server: %w", err)
+		}
+
+		return nil
 	},
 }

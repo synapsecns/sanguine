@@ -55,13 +55,14 @@ func (i *IntegrationSuite) SetupTest() {
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", port)
 
+	i.gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
+
 	i.Eventually(func() bool {
-		// TODO: use context here
-		_, err := http.Get(fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint))
+		request, err := http.NewRequestWithContext(i.GetTestContext(), http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)
+		Nil(i.T(), err)
+		_, err = i.gqlClient.Client.Client.Do(request)
 		return err == nil
 	})
-
-	i.gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
 }
 
 func TestIntegrationSuite(t *testing.T) {

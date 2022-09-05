@@ -40,7 +40,7 @@ import (
 func (i IntegrationSuite) TestRetrieveData() {
 	contractAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-	chainID := uint32(gofakeit.Uint32())
+	chainID := gofakeit.Uint32()
 
 	// create and store logs, receipts, and txs
 	var log types.Log
@@ -49,24 +49,24 @@ func (i IntegrationSuite) TestRetrieveData() {
 	var err error
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
 		// create and store logs
-		log = i.buildLog(contractAddressA, uint64(blockNumber), chainID)
+		log = i.buildLog(contractAddressA, uint64(blockNumber))
 		err = i.db.StoreLog(i.GetTestContext(), log, chainID)
 		Nil(i.T(), err)
-		log = i.buildLog(contractAddressB, uint64(blockNumber), chainID)
+		log = i.buildLog(contractAddressB, uint64(blockNumber))
 		err = i.db.StoreLog(i.GetTestContext(), log, chainID)
 		Nil(i.T(), err)
 		// create and store receipts
-		receipt = i.buildReceipt(contractAddressA, uint64(blockNumber), chainID)
+		receipt = i.buildReceipt(contractAddressA, uint64(blockNumber))
 		err = i.db.StoreReceipt(i.GetTestContext(), receipt, chainID)
 		Nil(i.T(), err)
-		receipt = i.buildReceipt(contractAddressB, uint64(blockNumber), chainID)
+		receipt = i.buildReceipt(contractAddressB, uint64(blockNumber))
 		err = i.db.StoreReceipt(i.GetTestContext(), receipt, chainID)
 		Nil(i.T(), err)
 		// create and store txs
-		tx = i.buildEthTx(uint64(blockNumber), chainID)
+		tx = i.buildEthTx()
 		err = i.db.StoreEthTx(i.GetTestContext(), tx, chainID, uint64(blockNumber))
 		Nil(i.T(), err)
-		tx = i.buildEthTx(uint64(blockNumber), chainID)
+		tx = i.buildEthTx()
 		err = i.db.StoreEthTx(i.GetTestContext(), tx, chainID, uint64(blockNumber))
 		Nil(i.T(), err)
 	}
@@ -104,8 +104,8 @@ func (i IntegrationSuite) TestRetrieveData() {
 
 func (i IntegrationSuite) TestLogDataEquality() {
 	// create a log
-	chainID := uint32(gofakeit.Uint32())
-	log := i.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()), chainID)
+	chainID := gofakeit.Uint32()
+	log := i.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()))
 
 	// store it
 	err := i.db.StoreLog(i.GetTestContext(), log, chainID)
@@ -126,7 +126,7 @@ func (i IntegrationSuite) TestLogDataEquality() {
 	Equal(i.T(), retrievedLog.ContractAddress, log.Address.String())
 	Equal(i.T(), retrievedLog.ChainID, int(chainID))
 	Equal(i.T(), retrievedLog.Topics, topics)
-	Equal(i.T(), []byte(retrievedLog.Data), log.Data)
+	Equal(i.T(), retrievedLog.Data, common.BytesToHash(log.Data).String())
 	Equal(i.T(), retrievedLog.BlockNumber, int(log.BlockNumber))
 	Equal(i.T(), retrievedLog.TxHash, log.TxHash.String())
 	Equal(i.T(), retrievedLog.TxIndex, int(log.TxIndex))
@@ -137,8 +137,8 @@ func (i IntegrationSuite) TestLogDataEquality() {
 
 func (i IntegrationSuite) TestReceiptDataEquality() {
 	// create a receipt
-	chainID := uint32(gofakeit.Uint32())
-	receipt := i.buildReceipt(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()), chainID)
+	chainID := gofakeit.Uint32()
+	receipt := i.buildReceipt(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()))
 
 	// store it
 	err := i.db.StoreReceipt(i.GetTestContext(), receipt, chainID)
@@ -155,7 +155,7 @@ func (i IntegrationSuite) TestReceiptDataEquality() {
 	Equal(i.T(), retrievedReceipt.PostState, string(receipt.PostState))
 	Equal(i.T(), retrievedReceipt.Status, int(receipt.Status))
 	Equal(i.T(), retrievedReceipt.CumulativeGasUsed, int(receipt.CumulativeGasUsed))
-	Equal(i.T(), retrievedReceipt.Bloom, string(receipt.Bloom.Bytes()))
+	Equal(i.T(), retrievedReceipt.Bloom, common.BytesToHash(receipt.Bloom.Bytes()).String())
 	Equal(i.T(), retrievedReceipt.TxHash, receipt.TxHash.String())
 	Equal(i.T(), retrievedReceipt.ContractAddress, receipt.ContractAddress.String())
 	Equal(i.T(), retrievedReceipt.GasUsed, int(receipt.GasUsed))
@@ -165,9 +165,9 @@ func (i IntegrationSuite) TestReceiptDataEquality() {
 
 func (i IntegrationSuite) TestTransactionDataEquality() {
 	// create a transaction
-	chainID := uint32(gofakeit.Uint32())
+	chainID := gofakeit.Uint32()
 	blockNumber := uint64(gofakeit.Uint32())
-	tx := i.buildEthTx(blockNumber, chainID)
+	tx := i.buildEthTx()
 
 	// store it
 	err := i.db.StoreEthTx(i.GetTestContext(), tx, chainID, blockNumber)
@@ -193,7 +193,7 @@ func (i IntegrationSuite) TestTransactionDataEquality() {
 	Equal(i.T(), retrievedTx.To, tx.To().String())
 }
 
-func (i *IntegrationSuite) buildLog(contractAddress common.Address, blockNumber uint64, chainID uint32) types.Log {
+func (i *IntegrationSuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {
 	currentIndex := i.logIndex.Load()
 	// increment next index
 	i.logIndex.Add(1)
@@ -212,16 +212,16 @@ func (i *IntegrationSuite) buildLog(contractAddress common.Address, blockNumber 
 	return log
 }
 
-func (i *IntegrationSuite) buildReceipt(contractAddress common.Address, blockNumber uint64, chainID uint32) types.Receipt {
+func (i *IntegrationSuite) buildReceipt(contractAddress common.Address, blockNumber uint64) types.Receipt {
 	receipt := types.Receipt{
 		Type:              gofakeit.Uint8(),
 		PostState:         []byte(gofakeit.Sentence(10)),
 		Status:            gofakeit.Uint64(),
-		CumulativeGasUsed: uint64(gofakeit.Uint64()),
+		CumulativeGasUsed: gofakeit.Uint64(),
 		Bloom:             types.BytesToBloom([]byte(gofakeit.Sentence(10))),
 		TxHash:            common.BigToHash(big.NewInt(gofakeit.Int64())),
 		ContractAddress:   contractAddress,
-		GasUsed:           uint64(gofakeit.Uint64()),
+		GasUsed:           gofakeit.Uint64(),
 		BlockNumber:       big.NewInt(int64(blockNumber)),
 		BlockHash:         common.BigToHash(big.NewInt(gofakeit.Int64())),
 		TransactionIndex:  uint(gofakeit.Uint64()),
@@ -230,7 +230,7 @@ func (i *IntegrationSuite) buildReceipt(contractAddress common.Address, blockNum
 	return receipt
 }
 
-func (i *IntegrationSuite) buildEthTx(blockNumber uint64, chainID uint32) *types.Transaction {
+func (i *IntegrationSuite) buildEthTx() *types.Transaction {
 	ethTx := types.NewTx(&types.LegacyTx{
 		Nonce:    gofakeit.Uint64(),
 		GasPrice: new(big.Int).SetUint64(gofakeit.Uint64()),

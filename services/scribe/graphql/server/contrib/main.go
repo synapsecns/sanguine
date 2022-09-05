@@ -3,7 +3,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -22,7 +22,7 @@ func main() {
 		log.Fatalf("Error: %s", err.Error())
 	}
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	cfg, err := config.LoadConfig(filepath.Join(root.Path, "services/scribe/graphql/gqlgen.yaml"))
 	if err != nil {

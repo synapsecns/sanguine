@@ -12,7 +12,7 @@ func graphqlHandler(server *handler.Server) gin.HandlerFunc {
 	}
 }
 
-func graphiqlHandler(server *handler.Server) gin.HandlerFunc {
+func graphiqlHandler() gin.HandlerFunc {
 	h, _ := graphiql.NewGraphiqlHandler(GraphqlEndpoint)
 
 	return func(c *gin.Context) {
