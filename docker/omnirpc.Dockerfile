@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM ubuntu:latest
 
 LABEL org.label-schema.description="Omnirpc Docker file"
 LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine/omnirpc"
