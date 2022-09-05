@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/coinbase/rosetta-sdk-go/utils"
 	"github.com/richardwilkes/toolbox/collection"
-	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/synapse-node/pkg/common"
 )
 
 // DomainConfigs contains a map of name->domain config.
@@ -73,4 +73,4 @@ func (d DomainConfig) IsValid(_ context.Context) (ok bool, err error) {
 	return true, nil
 }
 
-var _ core.Validator = DomainConfig{}
+var _ common.Validator = DomainConfig{}

@@ -18,7 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/sanguine/ethergo/utils/chainwatcher"
+	"github.com/synapsecns/synapse-node/pkg/chainwatcher"
 	"math/big"
 	"testing"
 	"time"

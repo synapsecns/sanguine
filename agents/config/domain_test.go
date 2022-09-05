@@ -2,11 +2,10 @@ package config_test
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/types"
-	"math/big"
+	"github.com/synapsecns/synapse-node/testutils/utils"
 )
 
 func domainConfigFixture() config.DomainConfig {
@@ -14,7 +13,7 @@ func domainConfigFixture() config.DomainConfig {
 		DomainID:              gofakeit.Uint32(),
 		Type:                  types.AllChainTypes()[0].String(),
 		RequiredConfirmations: gofakeit.Uint32(),
-		OriginAddress:         common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())).String(),
+		OriginAddress:         utils.NewMockAddress().String(),
 		RPCUrl:                gofakeit.URL(),
 	}
 }
