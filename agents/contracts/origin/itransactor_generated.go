@@ -14,10 +14,6 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function dispatch(uint32 _destination, bytes32 _recipientAddress, uint32 _optimisticSeconds, bytes _tips, bytes _messageBody) payable returns()
 	Dispatch(opts *bind.TransactOpts, _destination uint32, _recipientAddress [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) (*types.Transaction, error)
-	// ImproperAttestation is a paid mutator transaction binding the contract method 0x0afe7f90.
-	//
-	// Solidity: function improperAttestation(bytes _attestation) returns(bool)
-	ImproperAttestation(opts *bind.TransactOpts, _attestation []byte) (*types.Transaction, error)
 	// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
 	//
 	// Solidity: function initialize(address _notaryManager) returns()
@@ -38,6 +34,10 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function setSystemRouter(address _systemRouter) returns()
 	SetSystemRouter(opts *bind.TransactOpts, _systemRouter common.Address) (*types.Transaction, error)
+	// SubmitReport is a paid mutator transaction binding the contract method 0x5815869d.
+	//
+	// Solidity: function submitReport(bytes _report) returns(bool)
+	SubmitReport(opts *bind.TransactOpts, _report []byte) (*types.Transaction, error)
 	// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()
