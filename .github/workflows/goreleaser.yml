@@ -2,7 +2,7 @@ name: Go Releaser
 on:
   push:
     branches:
-      - master
+      - feat/omnirpc-confirmations-release
 
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
@@ -118,7 +118,7 @@ jobs:
     strategy:
       matrix:
         # list of packages, if you update this update changes as well
-        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        package: ['services/omnirpc']
     container:
       image: ${{ needs.build-goreleaser.outputs.goreleaser-image }}
       volumes: [ /repo ]
