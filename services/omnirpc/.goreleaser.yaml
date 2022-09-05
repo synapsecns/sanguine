@@ -60,3 +60,5 @@ dockers:
       - 'ghcr.io/synapsecns/sanguine/omnirpc:latest'
       - 'ghcr.io/synapsecns/sanguine/omnirpc:{{ .Tag }}'
     dockerfile: ../../docker/omnirpc.Dockerfile
+    ids:
+      - omnirpc
