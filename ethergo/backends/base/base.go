@@ -259,6 +259,9 @@ type ConfirmationClient interface {
 // WaitForConfirmation is a helper that can be called by various inheriting funcs.
 // it blocks until the transaction is confirmed.
 func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transaction *types.Transaction, timeout time.Duration) {
+	// if tx is nil , we should panic here so we can see the call context
+	_ = transaction.Hash()
+
 	txConfirmedCtx, cancel := context.WithCancel(ctx)
 	var logOnce sync.Once
 	wait.UntilWithContext(txConfirmedCtx, func(ctx context.Context) {
