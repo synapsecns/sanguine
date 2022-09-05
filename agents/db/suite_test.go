@@ -9,8 +9,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/synapse-node/pkg/common"
 	"gorm.io/gorm/schema"
 	"os"
 	"sync"
@@ -44,7 +44,7 @@ func (t *DBSuite) SetupTest() {
 
 // connString gets the connection string.
 func (t *DBSuite) connString(dbname string) string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", common.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), common.GetEnv("MYSQL_HOST", "127.0.0.1"), common.GetEnvInt("MYSQL_PORT", 3306), dbname)
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
 }
 
 func (t *DBSuite) setupMysqlDB() {

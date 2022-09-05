@@ -22,7 +22,7 @@ type ContractConfigs []ContractConfig
 // IsValid validates the contract configs by asserting no two contracts appear twice.
 // It also calls IsValid on each individual ContractConfig.
 func (c ContractConfigs) IsValid(ctx context.Context) (ok bool, err error) {
-	addressSet := collection.NewStringSet()
+	addressSet := collection.Set[string]{}
 
 	for _, cfg := range c {
 		address := common.HexToAddress(cfg.Address).String()

@@ -1,12 +1,12 @@
 package dbcommon
 
 import (
+	"github.com/synapsecns/sanguine/core"
 	goLog "log"
 	"os"
 	"time"
 
 	"github.com/ipfs/go-log"
-	"github.com/synapsecns/synapse-node/pkg/common"
 	"go.uber.org/zap/zapcore"
 	gormLogger "gorm.io/gorm/logger"
 )
@@ -29,7 +29,7 @@ func GetGormLogger(zapLogger *log.ZapEventLogger) gormLogger.Interface {
 // GetGormLogger converts the ipfs subsystem logger log level
 // to a gorm level.
 func getGormLogLevel(zapLogger *log.ZapEventLogger) gormLogger.LogLevel {
-	for _, level := range common.LogLevels {
+	for _, level := range core.LogLevels {
 		if zapLogger.Desugar().Core().Enabled(level) {
 			switch level {
 			case zapcore.DebugLevel, zapcore.InfoLevel:

@@ -15,10 +15,10 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"
+	"github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/synapse-node/pkg/chainwatcher"
 	"math/big"
 	"testing"
 	"time"
@@ -58,7 +58,7 @@ func (u *NotarySuite) SetupTest() {
 
 	var err error
 	u.domainClient, err = evm.NewEVM(u.GetTestContext(), "notary", config.DomainConfig{
-		DomainID:                   uint32(u.testBackend.Config().ChainID),
+		DomainID:                   uint32(u.testBackend.ChainConfig().ChainID.Uint64()),
 		Type:                       types.EVM.String(),
 		OriginAddress:              u.originContract.Address().String(),
 		AttesationCollectorAddress: u.attestationContract.Address().String(),

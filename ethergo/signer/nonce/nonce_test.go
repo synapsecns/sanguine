@@ -7,10 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	evmMocks "github.com/synapsecns/sanguine/ethergo/chain/mocks"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"github.com/synapsecns/synapse-node/pkg/auth"
-	"github.com/synapsecns/synapse-node/pkg/evm/mocks"
-	"github.com/synapsecns/synapse-node/testutils/utils"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"math/big"
 	"sync"
@@ -19,8 +18,6 @@ import (
 
 // MockAccount implements some methods to make testing easier.
 type MockAccount struct {
-	// Config is the config used to generate the mock account
-	*auth.Config
 	// Key is the account key
 	*keystore.Key
 	// nonceManager is the nonce manager, used for testing in methods
@@ -37,11 +34,9 @@ type MockAccount struct {
 
 // NewMockAccount gets a new mock account.
 func (n NonceSuite) NewMockAccount(nonceManager nonce.TestManager) *MockAccount {
-	acct := utils.NewMockAuthConfig(n.T())
-	key, err := acct.Key()
-	Nil(n.T(), err)
+	key := mocks.MockAccount(n.T())
+
 	return &MockAccount{
-		Config:       acct,
 		nonceManager: nonceManager,
 		tb:           n.T(),
 		Key:          key,
@@ -101,7 +96,7 @@ func (m *MockAccount) GetSignedTx() {
 }
 
 func (n NonceSuite) TestNonceManager() {
-	mockChain := mocks.Chain{}
+	mockChain := evmMocks.Chain{}
 	// since this should only be alled on the first try, this always returns 0
 	mockChain.On("PendingNonceAt", mock.Anything, mock.Anything).Return(uint64(0), nil)
 	mockChain.On("ChainConfig").Return(params.MainnetChainConfig)

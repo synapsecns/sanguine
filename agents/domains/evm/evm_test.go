@@ -11,9 +11,9 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/synapse-node/pkg/common"
-	"github.com/synapsecns/synapse-node/pkg/evm/client/mocks"
-	"github.com/synapsecns/synapse-node/testutils/utils"
+	"github.com/synapsecns/sanguine/ethergo/chain/client/mocks"
+	etherMocks "github.com/synapsecns/sanguine/ethergo/mocks"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"golang.org/x/sync/errgroup"
 	"math/big"
 	"os"
@@ -52,7 +52,7 @@ func (e *RPCSuite) TestFilterLogsMaxAttempts() {
 	evm.SetMinBackoff(time.Duration(0))
 
 	mockFilterer := new(mocks.EVMClient)
-	contractAddress := utils.NewMockAddress()
+	contractAddress := etherMocks.MockAddress()
 
 	// create a range filterer so we can test the filter logs method
 	rangeFilter := evm.NewRangeFilter(contractAddress, mockFilterer, big.NewInt(1), big.NewInt(10), 1, true)
@@ -63,7 +63,7 @@ func (e *RPCSuite) TestFilterLogsMaxAttempts() {
 		// return an error
 		Return(nil, errors.New("I'm a test error"))
 
-	logInfo, err := rangeFilter.FilterLogs(e.GetTestContext(), &common.Chunk{
+	logInfo, err := rangeFilter.FilterLogs(e.GetTestContext(), &util.Chunk{
 		StartBlock: big.NewInt(1),
 		EndBlock:   big.NewInt(10),
 	})
@@ -82,7 +82,7 @@ type Dispatch struct {
 
 // GenerateDispatch generates a mock dispatch for testing.
 func GenerateDispatch() Dispatch {
-	newAddress := utils.NewMockAddress().Bytes()
+	newAddress := etherMocks.MockAddress().Bytes()
 	var recipient [32]byte
 
 	copy(recipient[:], newAddress)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/coinbase/rosetta-sdk-go/utils"
 	"github.com/richardwilkes/toolbox/collection"
-	"github.com/synapsecns/synapse-node/pkg/common"
 )
 
 // DomainConfigs contains a map of name->domain config.
@@ -14,7 +13,7 @@ type DomainConfigs map[string]DomainConfig
 // IsValid validates the domain configs by asserting no two domains appear twice
 // it also calls IsValid on each individual DomainConfig.
 func (d DomainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
-	intSet := collection.NewUint32Set()
+	intSet := collection.NewSet[uint32]()
 
 	for _, cfg := range d {
 		if intSet.Contains(cfg.DomainID) {
@@ -72,5 +71,3 @@ func (d DomainConfig) IsValid(_ context.Context) (ok bool, err error) {
 
 	return true, nil
 }
-
-var _ common.Validator = DomainConfig{}

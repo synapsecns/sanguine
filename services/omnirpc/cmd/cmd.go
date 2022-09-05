@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/synapsecns/sanguine/core/commandline"
-	"github.com/synapsecns/synapse-node/config"
+	"github.com/synapsecns/sanguine/core/config"
 	"github.com/urfave/cli/v2"
 )
 
