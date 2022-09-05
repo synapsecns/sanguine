@@ -62,12 +62,14 @@ jobs:
           sleep 1
           done
 
+      # this would be nice
+      # TODO: either get rid of flakes or support some kind of reporting here, this is going to get out of hand
       - name: Test
         uses: nick-fields/retry@v2
         with:
           command: go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
-          max_attempts: 4
-          timeout_minutes: 20
+          max_attempts: 6
+          timeout_minutes: 15
         env:
           ENABLE_MYSQL_TEST: true
           MYSQL_HOST: 0.0.0.0
