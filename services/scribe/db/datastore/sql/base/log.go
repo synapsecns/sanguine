@@ -66,6 +66,8 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 	return nil
 }
 
+// logFilterToQuery takes in a LogFilter and converts it to a database-type Log.
+// This is used to query with `WHERE` based on the filter.
 func logFilterToQuery(logFilter db.LogFilter) Log {
 	return Log{
 		ContractAddress: logFilter.ContractAddress,
@@ -101,7 +103,7 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, startBlock, endBlock uint64) (logs []*types.Log, err error) {
 	dbLogs := []Log{}
 	queryFilter := logFilterToQuery(logFilter)
-	rangeQuery := BlockNumberFieldName + " BETWEEN ? AND ?"
+	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
 		Where(&queryFilter).
@@ -116,116 +118,6 @@ func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, 
 	}
 
 	return buildLogsFromDBLogs(dbLogs), nil
-}
-
-// RetrieveLogs retrieves all logs that match an inputted filter.
-func (s Store) RetrieveLogs(ctx context.Context, log Log) (logs []*types.Log, err error) {
-	dbLogs := []Log{}
-	dbTx := s.DB().WithContext(ctx).
-		Model(&Log{}).
-		Where(&log).
-		Find(&dbLogs)
-
-	if dbTx.Error != nil {
-		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return []*types.Log{}, fmt.Errorf("could not find logs with filter %v: %w", log, db.ErrNotFound)
-		}
-		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
-	}
-
-	return buildLogsFromDBLogs(dbLogs), nil
-}
-
-// RetrieveLogsByTxHash retrieves all logs that match a tx hash and chain id.
-func (s Store) RetrieveLogsByTxHash(ctx context.Context, txHash common.Hash, chainID uint32) (logs []*types.Log, err error) {
-	dbLogs := []Log{}
-	dbTx := s.DB().WithContext(ctx).
-		Model(&Log{}).
-		Where(&Log{
-			ChainID: chainID,
-			TxHash:  txHash.String(),
-		}).
-		Find(&dbLogs)
-
-	if dbTx.Error != nil {
-		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return []*types.Log{}, fmt.Errorf("could not find logs with tx hash %s and chain id %d: %w", txHash.String(), chainID, db.ErrNotFound)
-		}
-		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
-	}
-
-	return buildLogsFromDBLogs(dbLogs), nil
-}
-
-// RetrieveLogsByContractAddress retrieves all logs that match a contract address and chain id.
-func (s Store) RetrieveLogsByContractAddress(ctx context.Context, contractAddress common.Address, chainID uint32) (logs []*types.Log, err error) {
-	dbLogs := []Log{}
-	dbTx := s.DB().WithContext(ctx).
-		Model(&Log{}).
-		Where(&Log{
-			ChainID:         chainID,
-			ContractAddress: contractAddress.String(),
-		}).
-		Find(&dbLogs)
-
-	if dbTx.Error != nil {
-		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return []*types.Log{}, fmt.Errorf("could not find logs with contract address %s and chain id %d: %w", contractAddress.String(), chainID, db.ErrNotFound)
-		}
-		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
-	}
-
-	return buildLogsFromDBLogs(dbLogs), nil
-}
-
-// RetrieveLogsByRange retrieves all logs that match a block range and chain id.
-
-// UnsafeRetrieveAllLogs retrieves all logs in the database. When true, `specific` lets
-// you specify a chainID and contract address to specifically search for. This is only used for testing.
-func (s Store) UnsafeRetrieveAllLogs(ctx context.Context, specific bool, chainID uint32, address common.Address) (logs []*types.Log, err error) {
-	dbLogs := []Log{}
-	var dbTx *gorm.DB
-	if specific {
-		dbTx = s.DB().WithContext(ctx).
-			Model(&Log{}).
-			Where(&Log{
-				ChainID:         chainID,
-				ContractAddress: address.String(),
-			}).
-			Find(&dbLogs)
-	} else {
-		dbTx = s.DB().WithContext(ctx).
-			Model(&Log{}).
-			Find(&dbLogs)
-	}
-
-	if dbTx.Error != nil {
-		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return []*types.Log{}, fmt.Errorf("could not find logs: %w", db.ErrNotFound)
-		}
-		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
-	}
-
-	// Format the topics list, only including existing topics.
-	for _, dbLog := range dbLogs {
-		topics := buildTopics(dbLog)
-
-		parsedLog := &types.Log{
-			Address:     common.HexToAddress(dbLog.ContractAddress),
-			Topics:      topics,
-			Data:        dbLog.Data,
-			BlockNumber: dbLog.BlockNumber,
-			TxHash:      common.HexToHash(dbLog.TxHash),
-			TxIndex:     uint(dbLog.TxIndex),
-			BlockHash:   common.HexToHash(dbLog.BlockHash),
-			Index:       uint(dbLog.Index),
-			Removed:     dbLog.Removed,
-		}
-
-		logs = append(logs, parsedLog)
-	}
-
-	return logs, nil
 }
 
 func buildLogsFromDBLogs(dbLogs []Log) []*types.Log {

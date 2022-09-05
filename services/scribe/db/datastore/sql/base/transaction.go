@@ -39,6 +39,8 @@ func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID ui
 	return nil
 }
 
+// ethTxFilterToQuery converts an ethTxFilter to a database-type EthTx.
+// This is used to query with `WHERE` based on the filter.
 func ethTxFilterToQuery(ethTxFilter db.EthTxFilter) EthTx {
 	return EthTx{
 		ChainID:     ethTxFilter.ChainID,
@@ -75,7 +77,7 @@ func (s Store) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthT
 func (s Store) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock, endBlock uint64) ([]types.Transaction, error) {
 	dbEthTxs := []EthTx{}
 	query := ethTxFilterToQuery(ethTxFilter)
-	rangeQuery := BlockNumberFieldName + " BETWEEN ? AND ?"
+	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&EthTx{}).
 		Where(&query).
@@ -95,29 +97,6 @@ func (s Store) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFi
 	}
 
 	return parsedEthTxs, nil
-}
-
-// RetrieveEthTxByTxHash retrieves a processed transaction by tx hash and chain id.
-func (s Store) RetrieveEthTxByTxHash(ctx context.Context, txHash string, chainID uint32) (types.Transaction, error) {
-	dbEthTx := EthTx{}
-	dbTx := s.DB().WithContext(ctx).Model(&EthTx{}).Where(&EthTx{
-		ChainID: chainID,
-		TxHash:  txHash,
-	}).First(&dbEthTx)
-
-	if dbTx.Error != nil {
-		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return types.Transaction{}, fmt.Errorf("could not find raw tx with tx hash %s: %w", txHash, db.ErrNotFound)
-		}
-		return types.Transaction{}, fmt.Errorf("could not retrieve raw tx: %w", dbTx.Error)
-	}
-
-	tx := types.Transaction{}
-	if err := tx.UnmarshalBinary(dbEthTx.RawTx); err != nil {
-		return types.Transaction{}, fmt.Errorf("could not unmarshall raw tx: %w", err)
-	}
-
-	return tx, nil
 }
 
 func buildEthTxsFromDBEthTxs(dbEthTxs []EthTx) ([]types.Transaction, error) {

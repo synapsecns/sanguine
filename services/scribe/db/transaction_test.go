@@ -31,7 +31,7 @@ var testTxes = []*types.Transaction{
 		Data:     []byte(gofakeit.Paragraph(1, 2, 3, " ")),
 	}),
 	types.NewTx(&types.AccessListTx{
-		ChainID:  big.NewInt(2),
+		ChainID:  big.NewInt(int64(gofakeit.Uint32())),
 		Nonce:    gofakeit.Uint64(),
 		GasPrice: new(big.Int).SetUint64(gofakeit.Uint64()),
 		Gas:      gofakeit.Uint64(),
@@ -46,7 +46,7 @@ var testTxes = []*types.Transaction{
 		},
 	}),
 	types.NewTx(&types.DynamicFeeTx{
-		ChainID:   big.NewInt(3),
+		ChainID:   big.NewInt(int64(gofakeit.Uint32())),
 		Nonce:     gofakeit.Uint64(),
 		GasTipCap: new(big.Int).Mul(new(big.Int).SetInt64(int64(gofakeit.Float32Range(1, 10))), big.NewInt(params.GWei)),
 		GasFeeCap: new(big.Int).Mul(new(big.Int).SetInt64(int64(gofakeit.Float32Range(10, 100))), big.NewInt(params.GWei)),
@@ -79,11 +79,14 @@ func (t *DBSuite) TestStoreAndRetrieveEthTx() {
 
 			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, uint32(testTx.ChainId().Uint64()), gofakeit.Uint64())
 			Nil(t.T(), err)
-			// TODO: retrieve the processed tx
 
-			tx, err := testDB.RetrieveEthTxByTxHash(t.GetTestContext(), signedTx.Hash().String(), uint32(testTx.ChainId().Uint64()))
+			ethTxFilter := db.EthTxFilter{
+				ChainID: uint32(testTx.ChainId().Uint64()),
+				TxHash:  signedTx.Hash().String(),
+			}
+			tx, err := testDB.RetrieveEthTxsWithFilter(t.GetTestContext(), ethTxFilter)
 			Nil(t.T(), err)
-			resA, err := tx.MarshalJSON()
+			resA, err := tx[0].MarshalJSON()
 			Nil(t.T(), err)
 			resB, err := signedTx.MarshalJSON()
 			Nil(t.T(), err)

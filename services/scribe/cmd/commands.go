@@ -114,7 +114,7 @@ var serverCommand = &cli.Command{
 	Description: "starts a graphql server",
 	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag},
 	Action: func(c *cli.Context) error {
-		err := server.Start(uint16(c.Uint(portFlag.Name)), c.String(dbFlag.Name), c.String(pathFlag.Name))
+		err := server.Start(c.Context, uint16(c.Uint(portFlag.Name)), c.String(dbFlag.Name), c.String(pathFlag.Name))
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)
 		}

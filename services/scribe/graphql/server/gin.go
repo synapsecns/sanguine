@@ -24,16 +24,16 @@ const (
 	GraphiqlEndpoint string = "/graphiql"
 )
 
-func initDB(database string, path string) (db.EventDB, error) {
+func initDB(ctx context.Context, database string, path string) (db.EventDB, error) {
 	switch {
 	case database == "sqlite":
-		sqliteStore, err := sqlite.NewSqliteStore(context.TODO(), path)
+		sqliteStore, err := sqlite.NewSqliteStore(ctx, path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
 		}
 		return sqliteStore, nil
 	case database == "mysql":
-		mysqlStore, err := mysql.NewMysqlStore(context.TODO(), path)
+		mysqlStore, err := mysql.NewMysqlStore(ctx, path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}
@@ -44,9 +44,9 @@ func initDB(database string, path string) (db.EventDB, error) {
 }
 
 // Start starts the server and initializes the database.
-func Start(port uint16, database string, path string) error {
+func Start(ctx context.Context, port uint16, database string, path string) error {
 	// initialize the database
-	db, err := initDB(database, path)
+	db, err := initDB(ctx, database, path)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
