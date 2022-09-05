@@ -4,21 +4,24 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/Flaque/filet"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hashicorp/go-multierror"
 	"github.com/ipfs/go-log"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/ethergo/chain"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
+	"github.com/synapsecns/sanguine/ethergo/debug"
+	"github.com/synapsecns/sanguine/ethergo/debug/tenderly"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	synapseCommon "github.com/synapsecns/synapse-node/pkg/common"
-	"github.com/synapsecns/synapse-node/pkg/evm"
-	"github.com/synapsecns/synapse-node/pkg/evm/client"
-	"github.com/synapsecns/synapse-node/testutils/debug/stacktrace"
-	tenderly "github.com/synapsecns/synapse-node/testutils/debug/tenderly"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"github.com/teivah/onecontext"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"math/big"
@@ -33,7 +36,7 @@ var logger = log.Logger("backend-base-logger")
 // Backend contains common functions across backends and can be used to extend a backend.
 type Backend struct {
 	// chain is the chain to be used by the backend
-	evm.Chain
+	chain.Chain
 	// Manager is the nonce manager
 	nonce.Manager
 	// ctx is the context of the backend
@@ -44,7 +47,7 @@ type Backend struct {
 	// tenderly is the tenderly backend
 	tenderly *tenderly.Tenderly
 	// provider is the stack trace provider
-	provider *stacktrace.Provider
+	provider *debug.Provider
 }
 
 // T returns the testing object.
@@ -59,7 +62,8 @@ func (b *Backend) SetT(t *testing.T) {
 }
 
 // NewBaseBackend creates a new base backend.
-func NewBaseBackend(ctx context.Context, t *testing.T, chn evm.Chain) (*Backend, error) {
+// nolint: staticcheck
+func NewBaseBackend(ctx context.Context, t *testing.T, chn chain.Chain) (*Backend, error) {
 	t.Helper()
 
 	b := &Backend{
@@ -67,7 +71,7 @@ func NewBaseBackend(ctx context.Context, t *testing.T, chn evm.Chain) (*Backend,
 		ctx:      ctx,
 		t:        t,
 		Manager:  nonce.NewNonceManager(ctx, chn, chn.GetBigChainID()),
-		provider: stacktrace.NewStackTraceProvider(),
+		provider: debug.NewStackTraceProvider(),
 	}
 
 	return b, nil
@@ -96,6 +100,36 @@ func (b *Backend) EnableTenderly() bool {
 // Client fetches an eth client fro the backend.
 func (b *Backend) Client() client.EVMClient {
 	return b.Chain
+}
+
+// see: https://git.io/JGsC1
+// taken from geth, used to speed up tests.
+const (
+	veryLightScryptN = 2
+	veryLightScryptP = 1
+)
+
+// MockAccount creates a new mock account.
+// TODO: dry this up w/ mocks.
+func MockAccount(t *testing.T) *keystore.Key {
+	t.Helper()
+
+	kstr := keystore.NewKeyStore(filet.TmpDir(t, ""), veryLightScryptN, veryLightScryptP)
+	password := gofakeit.Password(true, true, true, false, false, 10)
+	acct, err := kstr.NewAccount(password)
+	assert.Nil(t, err)
+
+	data, err := os.ReadFile(acct.URL.Path)
+	assert.Nil(t, err)
+
+	key, err := keystore.DecryptKey(data, password)
+	assert.Nil(t, err)
+	return key
+}
+
+// MockAccount creates a new mock account.
+func (b *Backend) MockAccount() *keystore.Key {
+	return MockAccount(b.t)
 }
 
 var logOnce sync.Once
@@ -172,7 +206,7 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 			return
 		}
 
-		callMessage, err := synapseCommon.TxToCall(transaction)
+		callMessage, err := util.TxToCall(transaction)
 		if err != nil {
 			logger.Warnf("could not convert tx to call: %w", err)
 			return
@@ -225,14 +259,25 @@ type ConfirmationClient interface {
 // WaitForConfirmation is a helper that can be called by various inheriting funcs.
 // it blocks until the transaction is confirmed.
 func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transaction *types.Transaction, timeout time.Duration) {
+	// if tx is nil , we should panic here so we can see the call context
+	_ = transaction.Hash()
+
 	txConfirmedCtx, cancel := context.WithCancel(ctx)
 	var logOnce sync.Once
 	wait.UntilWithContext(txConfirmedCtx, func(ctx context.Context) {
 		tx, isPending, _ := client.TransactionByHash(txConfirmedCtx, transaction.Hash())
 		logOnce.Do(func() {
-			logger.Warnf("waiting for tx %s", synapseCommon.GetChainEventLogText(transaction.ChainId(), transaction))
+			logger.Warnf("waiting for tx %s", transaction.Hash())
 		})
 		if !isPending && tx != nil {
+			receipt, err := client.TransactionReceipt(ctx, tx.Hash())
+			if err != nil {
+				if receipt.Status == types.ReceiptStatusFailed {
+					rawJSON, _ := transaction.MarshalJSON()
+					logger.Errorf("transaction %s with body %s reverted", transaction, string(rawJSON))
+				}
+			}
+
 			cancel()
 		} else if !isPending {
 			_ = client.SendTransaction(ctx, transaction)
@@ -240,5 +285,6 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 	}, timeout)
 }
 
-var _ evm.Chain = &Backend{}
+// nolint: staticcheck
+var _ chain.Chain = &Backend{}
 var _ suite.TestingSuite = &Backend{}

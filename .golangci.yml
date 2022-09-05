@@ -108,4 +108,8 @@ issues:
     - path: testutil/*
       linters:
         - wrapcheck
+    - path: ethergo/*
+      linters:
+        - staticcheck
+      text: 'SA1019'
   exclude-use-default: false

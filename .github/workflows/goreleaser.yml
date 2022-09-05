@@ -158,12 +158,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_DOCKER }}
 
-
-      - name: authenticate with github for private go modules
-        uses: fusion-engineering/setup-git-credentials@v2
-        with:
-          credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
-
       - name: Run GoReleaser
         run: goreleaser --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yaml
         env:
@@ -171,4 +165,3 @@ jobs:
           GONOSUM: '.*'
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           GOGC: 20
-          GOPRIVATE: 'GOPRIVATE=github.com/synapsecns/synapse-node'

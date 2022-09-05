@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/synapse-node/pkg/common/mapmutex"
+	"github.com/synapsecns/sanguine/core/mapmutex"
 	"math/big"
 	"sync"
 )

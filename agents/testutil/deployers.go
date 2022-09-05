@@ -38,6 +38,7 @@ func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract,
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
+		d.Backend().WaitForConfirmation(ctx, tx)
 
 		// initialize the origin contract
 		initializationTx, err := rawHandle.Initialize(transactOps, notaryManagerContract.Address())

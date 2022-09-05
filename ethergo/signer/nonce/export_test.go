@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/synapse-node/pkg/evm"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 	"math/big"
 	"testing"
 )
@@ -31,7 +31,8 @@ func (t *testManagerImpl) GetChainID() *big.Int {
 }
 
 // NewTestNonceManger wraps NewNonceManager w/ newly exported methods for testing.
-func NewTestNonceManger(ctx context.Context, tb testing.TB, chain evm.Chain) TestManager {
+// nolint: staticcheck
+func NewTestNonceManger(ctx context.Context, tb testing.TB, chain chain.Chain) TestManager {
 	tb.Helper()
 	manager := NewNonceManager(ctx, chain, chain.ChainConfig().ChainID)
 	castManager, ok := manager.(*nonceManagerImp)

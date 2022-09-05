@@ -4,7 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/ganache"
-	"github.com/synapsecns/synapse-node/testutils/utils"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"math/big"
 	"os"
 )
@@ -16,7 +16,7 @@ func (g *GanacheSuite) TestGanacheE2E() {
 	}
 	ganacheBe := ganache.NewGanacheBackend(g.GetTestContext(), g.T(), params.RinkebyChainConfig, os.Getenv("GANACHE_RPC_URL"), "rinkeby", os.Getenv("GANACHE_KEYS"))
 	// WaitForConfirmation makes sure this worked
-	newAddress := utils.NewMockAddress()
+	newAddress := mocks.MockAddress()
 
 	balance := big.NewInt(params.Ether)
 	ganacheBe.FundAccount(g.GetTestContext(), newAddress, *balance)

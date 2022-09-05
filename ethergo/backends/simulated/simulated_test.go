@@ -4,8 +4,8 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"github.com/synapsecns/synapse-node/pkg/evm/client"
-	"github.com/synapsecns/synapse-node/testutils/utils"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"math/big"
 )
 
@@ -20,7 +20,7 @@ func (g *SimulatedSuite) TestGetSimulatedBackend() {
 	False(g.T(), be.EnableTenderly())
 
 	// generate a new mock address
-	testAddress := utils.NewMockAddress()
+	testAddress := mocks.MockAddress()
 
 	// deposit 50 eth
 	funding := big.NewInt(0).Mul(big.NewInt(params.Ether), big.NewInt(50))
