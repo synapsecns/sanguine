@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"go.uber.org/atomic"
+	"os"
 	"time"
 )
 
@@ -15,6 +16,9 @@ import (
 // we're specifically testing if our rehup process breaks any existing subscriptions if the connection didn't break
 // this stands in for all other types of one off requests.
 func (c *ClientSuite) TestAttemptReconnect() {
+	if os.Getenv("ATTEMPT_CONNECT_ENABLED") != "" {
+		c.T().Skip("deprecated")
+	}
 	testBackend := preset.GetRinkeby().Geth(c.GetTestContext(), c.T())
 
 	// make sure the client doesn't reset on us during the test

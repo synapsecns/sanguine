@@ -14,6 +14,7 @@ import (
 )
 
 // NewOriginContract returns a new bound origin contract.
+// nolint: staticcheck
 func NewOriginContract(ctx context.Context, client chain.Chain, originAddress common.Address) (domains.OriginContract, error) {
 	boundContract, err := origin.NewOriginRef(originAddress, client)
 	if err != nil {
@@ -35,6 +36,7 @@ type originContract struct {
 	// contract contains the contract handle
 	contract origin.IOrigin
 	// client is the client
+	//nolint: staticcheck
 	client chain.Chain
 	// nonceManager is the nonce manager used for transacting
 	nonceManager nonce.Manager

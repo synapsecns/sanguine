@@ -72,7 +72,7 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 	data, err := os.ReadFile(acct.URL.Path)
 	assert.Nil(t, err)
 
-	key, err := keystore.DecryptKey(data, acct.URL.Path)
+	key, err := keystore.DecryptKey(data, password)
 	assert.Nil(t, err)
 
 	embedded.faucetAddr = key

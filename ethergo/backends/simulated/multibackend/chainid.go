@@ -15,23 +15,30 @@ import (
 // we need to do this because params are global.
 func NewConfigWithChainID(chainID *big.Int) *params.ChainConfig {
 	return &params.ChainConfig{
-		ChainID:             chainID,
-		HomesteadBlock:      params.AllEthashProtocolChanges.HomesteadBlock,
-		DAOForkBlock:        params.AllEthashProtocolChanges.DAOForkBlock,
-		DAOForkSupport:      params.AllEthashProtocolChanges.DAOForkSupport,
-		EIP150Block:         params.AllEthashProtocolChanges.EIP150Block,
-		EIP150Hash:          params.AllEthashProtocolChanges.EIP150Hash,
-		EIP155Block:         params.AllEthashProtocolChanges.EIP155Block,
-		EIP158Block:         params.AllEthashProtocolChanges.EIP158Block,
-		ByzantiumBlock:      params.AllEthashProtocolChanges.ByzantiumBlock,
-		ConstantinopleBlock: params.AllEthashProtocolChanges.ConstantinopleBlock,
-		PetersburgBlock:     params.AllEthashProtocolChanges.PetersburgBlock,
-		IstanbulBlock:       params.AllEthashProtocolChanges.IstanbulBlock,
-		MuirGlacierBlock:    params.AllEthashProtocolChanges.MuirGlacierBlock,
-		BerlinBlock:         params.AllEthashProtocolChanges.BerlinBlock,
-		LondonBlock:         params.AllEthashProtocolChanges.LondonBlock,
-		Ethash:              params.AllEthashProtocolChanges.Ethash,
-		Clique:              params.AllEthashProtocolChanges.Clique,
+		ChainID:                       chainID,
+		HomesteadBlock:                params.AllEthashProtocolChanges.HomesteadBlock,
+		DAOForkBlock:                  params.AllEthashProtocolChanges.DAOForkBlock,
+		DAOForkSupport:                params.AllEthashProtocolChanges.DAOForkSupport,
+		EIP150Block:                   params.AllEthashProtocolChanges.EIP150Block,
+		EIP150Hash:                    params.AllEthashProtocolChanges.EIP150Hash,
+		EIP155Block:                   params.AllEthashProtocolChanges.EIP155Block,
+		EIP158Block:                   params.AllEthashProtocolChanges.EIP158Block,
+		ByzantiumBlock:                params.AllEthashProtocolChanges.ByzantiumBlock,
+		ConstantinopleBlock:           params.AllEthashProtocolChanges.ConstantinopleBlock,
+		PetersburgBlock:               params.AllEthashProtocolChanges.PetersburgBlock,
+		IstanbulBlock:                 params.AllEthashProtocolChanges.IstanbulBlock,
+		MuirGlacierBlock:              params.AllEthashProtocolChanges.MuirGlacierBlock,
+		BerlinBlock:                   params.AllEthashProtocolChanges.BerlinBlock,
+		LondonBlock:                   params.AllEthashProtocolChanges.LondonBlock,
+		ArrowGlacierBlock:             params.AllEthashProtocolChanges.ArrowGlacierBlock,
+		GrayGlacierBlock:              params.AllEthashProtocolChanges.GrayGlacierBlock,
+		MergeNetsplitBlock:            params.AllEthashProtocolChanges.MergeNetsplitBlock,
+		ShanghaiBlock:                 params.AllEthashProtocolChanges.ShanghaiBlock,
+		CancunBlock:                   params.AllEthashProtocolChanges.CancunBlock,
+		TerminalTotalDifficulty:       params.AllEthashProtocolChanges.TerminalTotalDifficulty,
+		TerminalTotalDifficultyPassed: params.AllEthashProtocolChanges.TerminalTotalDifficultyPassed,
+		Ethash:                        params.AllEthashProtocolChanges.Ethash,
+		Clique:                        params.AllEthashProtocolChanges.Clique,
 	}
 }
 
@@ -47,8 +54,12 @@ func NewSimulatedBackendWithConfig(alloc core.GenesisAlloc, gasLimit uint64, con
 		database:   database,
 		blockchain: blockchain,
 		config:     genesis.Config,
-		events:     filters.NewEventSystem(&filterBackend{database, blockchain}, false),
 	}
+
+	filterBackend := &filterBackend{database, blockchain, backend}
+	backend.filterSystem = filters.NewFilterSystem(filterBackend, filters.Config{})
+	backend.events = filters.NewEventSystem(backend.filterSystem, false)
+
 	backend.rollback(blockchain.CurrentBlock())
 	return backend
 }

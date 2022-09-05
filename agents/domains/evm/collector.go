@@ -33,6 +33,7 @@ type attestationCollectorContract struct {
 	// contract contains the conract handle
 	contract *attestationcollector.AttestationCollectorRef
 	// client contains the evm client
+	//nolint: staticcheck
 	client chain.Chain
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager

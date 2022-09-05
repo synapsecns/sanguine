@@ -62,7 +62,7 @@ func TestSortInfoList(t *testing.T) {
 func TestGetChainIDs(t *testing.T) {
 	cm := chainmanager.NewChainManager()
 
-	chainIDs := collection.NewUint32Set()
+	chainIDs := collection.Set[uint32]{}
 
 	for i := 0; i < 40; i++ {
 		testChainID := gofakeit.Uint32()

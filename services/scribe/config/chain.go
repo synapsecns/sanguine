@@ -23,7 +23,7 @@ type ChainConfigs []ChainConfig
 // IsValid validates the chain config by asserting no two chains appear twice.
 // It also calls IsValid on each individual ContractConfig.
 func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
-	intSet := collection.NewUint32Set()
+	intSet := collection.Set[uint32]{}
 
 	for _, cfg := range c {
 		if intSet.Contains(cfg.ChainID) {
