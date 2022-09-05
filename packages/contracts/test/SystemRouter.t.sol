@@ -299,7 +299,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         return
             _createSystemMessage(
                 remoteDomain,
-                addressToBytes32(fakeSigner),
+                addressToBytes32(fakeGuard),
                 _nonce,
                 localDomain,
                 addressToBytes32(address(systemRouter)),
