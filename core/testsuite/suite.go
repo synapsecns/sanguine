@@ -5,7 +5,6 @@ import (
 	"context"
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/synapse-node/pkg/chainwatcher"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sync"
 	"testing"
@@ -91,8 +90,6 @@ func (s *TestSuite) Eventually(willBeTrue func() bool) {
 
 // SetupSuite sets up the test suite.
 func (s *TestSuite) SetupSuite() {
-	chainwatcher.PollInterval = time.Millisecond * 50
-
 	s.runAfterSuite = nil
 	s.suiteContext = newCancellableContext(s.context)
 }
