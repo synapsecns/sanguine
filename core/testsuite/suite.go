@@ -118,6 +118,7 @@ func (s *TestSuite) SetupTest() {
 
 // SetTestTimeout will create a test timout override for the context.
 // this will wrap s.testContext.
+// TODO: consider enabling a value by default.
 func (s *TestSuite) SetTestTimeout(timeout time.Duration) {
 	ctx, cancel := context.WithTimeout(s.testContext.ctx, timeout)
 	oldCancel := s.testContext.cancelFunc
