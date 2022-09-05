@@ -3,8 +3,8 @@ package config_test
 import (
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/synapse-node/testutils/utils"
 )
 
 func chainConfigFixture() config.ChainConfig {
@@ -13,7 +13,7 @@ func chainConfigFixture() config.ChainConfig {
 		RPCUrl:  gofakeit.URL(),
 		Contracts: config.ContractConfigs{
 			config.ContractConfig{
-				Address:    utils.NewMockAddress().String(),
+				Address:    mocks.MockAddress().String(),
 				StartBlock: gofakeit.Uint64(),
 			},
 		},

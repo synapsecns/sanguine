@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains"
-	"github.com/synapsecns/synapse-node/pkg/evm"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 )
 
 type evmClient struct {
@@ -16,7 +16,8 @@ type evmClient struct {
 	// config is the config of the evm client
 	config config.DomainConfig
 	// client uses the old synapse client for now
-	client evm.Chain
+	//nolint: staticcheck
+	client chain.Chain
 	// origin contains the origin contract
 	origin domains.OriginContract
 	// attestationCollecotr contains the attestation collector contract
@@ -27,7 +28,7 @@ var _ domains.DomainClient = &evmClient{}
 
 // NewEVM creates a new evm client.
 func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domains.DomainClient, error) {
-	underlyingClient, err := evm.NewFromURL(ctx, domain.RPCUrl)
+	underlyingClient, err := chain.NewFromURL(ctx, domain.RPCUrl)
 	if err != nil {
 		return nil, fmt.Errorf("could not get evm: %w", err)
 	}

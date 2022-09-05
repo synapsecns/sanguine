@@ -7,7 +7,9 @@ import { Destination } from "../../contracts/Destination.sol";
 import { MirrorLib } from "../../contracts/libs/Mirror.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
 
-contract DestinationHarness is Destination {
+import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
+
+contract DestinationHarness is Destination, GuardRegistryHarness {
     using MirrorLib for MirrorLib.Mirror;
 
     uint256 public sensitiveValue;
@@ -25,7 +27,7 @@ contract DestinationHarness is Destination {
         return _isNotary(_domain, _notary);
     }
 
-    function setSensitiveValue(uint256 _newValue) external onlySystemMessenger {
+    function setSensitiveValue(uint256 _newValue) external onlySystemRouter {
         sensitiveValue = _newValue;
     }
 

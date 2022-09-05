@@ -6,8 +6,9 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated/multibackend"
-	"github.com/synapsecns/synapse-node/testutils/utils"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"gotest.tools/assert"
 	"math/big"
 )
@@ -24,7 +25,7 @@ func (s MultiBackendSuite) TestNewConfigWithChainID() {
 
 	// now use the right chain id and make sure everything is the same
 	newConfig.ChainID = params.AllEthashProtocolChanges.ChainID
-	assert.DeepEqual(s.T(), newConfig, params.AllEthashProtocolChanges, utils.BigIntComparer())
+	assert.DeepEqual(s.T(), newConfig, params.AllEthashProtocolChanges, testsuite.BigIntComparer())
 
 	// make sure we didn't mutate the chain id, which is always 1337
 	Equal(s.T(), params.AllEthashProtocolChanges.ChainID.Int64(), int64(1337))
@@ -36,9 +37,7 @@ func (s MultiBackendSuite) TestNewSimulatedBackendWithChainID() {
 
 	// 100 million ether
 	balance := big.NewInt(0).Mul(big.NewInt(params.Ether), big.NewInt(100000000))
-	authConfig := utils.NewMockAuthConfig(s.T())
-	key, err := authConfig.Key()
-	Nil(s.T(), err)
+	key := mocks.MockAccount(s.T())
 
 	genesisAlloc := map[common.Address]core.GenesisAccount{
 		key.Address: {

@@ -5,7 +5,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/synapse-node/testutils/utils"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 )
 
 func domainConfigFixture() config.DomainConfig {
@@ -13,7 +13,7 @@ func domainConfigFixture() config.DomainConfig {
 		DomainID:              gofakeit.Uint32(),
 		Type:                  types.AllChainTypes()[0].String(),
 		RequiredConfirmations: gofakeit.Uint32(),
-		OriginAddress:         utils.NewMockAddress().String(),
+		OriginAddress:         mocks.MockAddress().String(),
 		RPCUrl:                gofakeit.URL(),
 	}
 }

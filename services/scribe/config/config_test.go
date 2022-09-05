@@ -4,8 +4,8 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
+	etherMocks "github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/synapse-node/testutils/utils"
 )
 
 func (c ConfigSuite) TestConfigEncodeDecode() {
@@ -18,11 +18,11 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 				RPCUrl:  gofakeit.URL(),
 				Contracts: config.ContractConfigs{
 					config.ContractConfig{
-						Address:    utils.NewMockAddress().String(),
+						Address:    etherMocks.MockAddress().String(),
 						StartBlock: gofakeit.Uint64(),
 					},
 					config.ContractConfig{
-						Address:    utils.NewMockAddress().String(),
+						Address:    etherMocks.MockAddress().String(),
 						StartBlock: gofakeit.Uint64(),
 					},
 				},
@@ -32,7 +32,7 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 				RPCUrl:  gofakeit.URL(),
 				Contracts: config.ContractConfigs{
 					config.ContractConfig{
-						Address:    utils.NewMockAddress().String(),
+						Address:    etherMocks.MockAddress().String(),
 						StartBlock: gofakeit.Uint64(),
 					},
 				},

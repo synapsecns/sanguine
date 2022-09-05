@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/synapsecns/sanguine/serivces/omnirpc/cmd"
+	"github.com/synapsecns/sanguine/services/omnirpc/cmd"
 	"os"
 )
 

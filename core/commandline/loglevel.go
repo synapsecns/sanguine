@@ -3,7 +3,7 @@ package commandline
 import (
 	"fmt"
 	"github.com/ipfs/go-log"
-	"github.com/synapsecns/synapse-node/pkg/common"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap/zapcore"
 	"strings"
@@ -21,7 +21,7 @@ var LogLevel = cli.StringFlag{
 
 // LogLevelOptions generates log level options and returns them as a string.
 func LogLevelOptions() (res string) {
-	for _, level := range common.LogLevels {
+	for _, level := range core.LogLevels {
 		res += fmt.Sprintf("\"%s\" ", level.String())
 	}
 	return res
@@ -34,7 +34,7 @@ func IsValidLogLevel(level string) bool {
 		return false
 	}
 
-	for _, level := range common.LogLevels {
+	for _, level := range core.LogLevels {
 		if parsedLevel == log.LogLevel(level) {
 			return true
 		}

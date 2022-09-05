@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
-	"github.com/synapsecns/synapse-node/pkg/evm"
-	"github.com/synapsecns/synapse-node/pkg/evm/client"
+	"github.com/synapsecns/sanguine/ethergo/chain"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/teivah/onecontext"
 	"math/big"
 	"testing"
@@ -37,7 +37,7 @@ func (b *Backend) Signer() types.Signer {
 func NewGanacheBackend(ctx context.Context, t *testing.T, chainConfig *params.ChainConfig, rpcURL, chainName, keyPath string) *Backend {
 	t.Helper()
 
-	chn, err := evm.New(ctx, &client.Config{
+	chn, err := chain.New(ctx, &client.Config{
 		RPCUrl:  []string{rpcURL},
 		ChainID: int(chainConfig.ChainID.Uint64()),
 	})

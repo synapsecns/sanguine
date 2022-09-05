@@ -5,7 +5,7 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-isatty"
-	"github.com/synapsecns/synapse-node/pkg/common"
+	"github.com/synapsecns/sanguine/core"
 	"go.uber.org/zap/zapcore"
 	"io"
 	"os"
@@ -21,7 +21,7 @@ func init() {
 }
 
 func getEthLogLevel() gethLog.Lvl {
-	for _, level := range common.LogLevels {
+	for _, level := range core.LogLevels {
 		if logger.Desugar().Core().Enabled(level) {
 			switch level {
 			case zapcore.DebugLevel:

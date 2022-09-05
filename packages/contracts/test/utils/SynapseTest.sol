@@ -6,6 +6,7 @@ import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 import "../../contracts/NotaryManager.sol";
 import { Attestation } from "../../contracts/libs/Attestation.sol";
+import { Report } from "../../contracts/libs/Report.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
 
 contract SynapseTest is Test {
@@ -13,10 +14,12 @@ contract SynapseTest is Test {
 
     uint256 notaryPK = 1;
     uint256 fakeNotaryPK = 2;
+    uint256 guardPK = 3;
+    uint256 fakeGuardPK = 4;
     address notary = vm.addr(notaryPK);
     address fakeNotary = vm.addr(fakeNotaryPK);
-    address signer = vm.addr(3);
-    address fakeSigner = vm.addr(4);
+    address guard = vm.addr(guardPK);
+    address fakeGuard = vm.addr(fakeGuardPK);
 
     uint32 localDomain = 1500;
     uint32 remoteDomain = 1000;
@@ -30,8 +33,8 @@ contract SynapseTest is Test {
     function setUp() public virtual {
         vm.label(notary, "notary");
         vm.label(fakeNotary, "fake notary");
-        vm.label(signer, "signer");
-        vm.label(fakeSigner, "fake signer");
+        vm.label(guard, "guard");
+        vm.label(fakeGuard, "fake guard");
     }
 
     function getDefaultTips() internal pure returns (bytes memory) {
@@ -69,6 +72,30 @@ contract SynapseTest is Test {
         bytes memory data = Attestation.formatAttestationData(remoteDomain, nonce, root);
         signature = signMessage(privKey, data);
         attestation = Attestation.formatAttestation(data, signature);
+    }
+
+    function signReport(
+        uint256 privKey,
+        Report.Flag flag,
+        bytes memory attestation
+    ) public returns (bytes memory report, bytes memory signature) {
+        bytes memory data = Report.formatReportData(flag, attestation);
+        signature = signMessage(privKey, data);
+        report = Report.formatReport(flag, attestation, signature);
+    }
+
+    function signFraudReport(uint256 privKey, bytes memory attestation)
+        public
+        returns (bytes memory report, bytes memory signature)
+    {
+        return signReport(privKey, Report.Flag.Fraud, attestation);
+    }
+
+    function signValidReport(uint256 privKey, bytes memory attestation)
+        public
+        returns (bytes memory report, bytes memory signature)
+    {
+        return signReport(privKey, Report.Flag.Valid, attestation);
     }
 
     function signMessage(uint256 privKey, bytes memory message)
