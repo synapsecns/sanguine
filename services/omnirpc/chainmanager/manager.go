@@ -77,7 +77,12 @@ func (c *chainManager) GetChain(chainID uint32) Chain {
 	c.mux.RLock()
 	defer c.mux.RUnlock()
 
-	return c.chainList[chainID]
+	res, ok := c.chainList[chainID]
+	if !ok {
+		return nil
+	}
+
+	return res
 }
 
 func (c *chainManager) GetChainIDs() (chainIDs []uint32) {

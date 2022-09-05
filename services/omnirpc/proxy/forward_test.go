@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nsf/jsondiff"
 	. "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy/mocks"
@@ -38,7 +39,11 @@ func (p *ProxySuite) TestCannotReadBody() {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	mockBody := new(mocks.BodyReader)
-	mockBody.On("Read").Return(0, errors.New("could not read body"))
+	mockBody.On("Read", mock.Anything).Return(0, errors.New("could not read body"))
+
+	c.Request = &http.Request{
+		Body: mockBody,
+	}
 
 	prxy.Forward(c, 1)
 	Equal(p.T(), w.Code, http.StatusBadRequest)

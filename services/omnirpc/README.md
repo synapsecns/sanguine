@@ -99,3 +99,8 @@ This is also verifiable in the headers. A successful response will have the foll
 | X-Json-Hash              | Sha256 hash of the minified json response.                                                                                                                                              | 17b9f3ec9687bb9ea7771d919cb19889b617868102a217b6761f86f4209f8d1f                                                                                                                         |
 | X-Request-Id             | Request id used for tracing. This is a random-uuid if not passed by the user in the request                                                                                             | a75026e6-c8d6-46ac-a168-16163220765f                                                                                                                                                     |
 | X-Required-Confirmations | Number of confirmations the request was checked against, always 1 if confirmable is false                                                                                               | 5                                                                                                                                                                                        |
+
+# Chainlist
+
+You can also quickly start a server running against all public chainlist rpcs with a confirmation threshold of 1. Just run `./omnirpc chainlist-server`
+
