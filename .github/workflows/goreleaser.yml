@@ -2,7 +2,7 @@ name: Go Releaser
 on:
   push:
     branches:
-      - feat/omnirpc-confirmations-release
+      - master
 
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
@@ -118,7 +118,7 @@ jobs:
     strategy:
       matrix:
         # list of packages, if you update this update changes as well
-        package: ['services/omnirpc']
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
     container:
       image: ${{ needs.build-goreleaser.outputs.goreleaser-image }}
       volumes: [ /repo ]
@@ -157,12 +157,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_DOCKER }}
-
-
-      - name: authenticate with github for private go modules
-        uses: fusion-engineering/setup-git-credentials@v2
-        with:
-          credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
 
       - name: Run GoReleaser
         run: goreleaser --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yaml
