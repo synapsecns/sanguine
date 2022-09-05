@@ -2,24 +2,25 @@ package nonce_test
 
 import (
 	"fmt"
-	"github.com/Flaque/filet"
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
+	"github.com/synapsecns/synapse-node/pkg/auth"
 	"github.com/synapsecns/synapse-node/pkg/evm/mocks"
+	"github.com/synapsecns/synapse-node/testutils/utils"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"math/big"
-	"os"
 	"sync"
 	"testing"
 )
 
 // MockAccount implements some methods to make testing easier.
 type MockAccount struct {
+	// Config is the config used to generate the mock account
+	*auth.Config
 	// Key is the account key
 	*keystore.Key
 	// nonceManager is the nonce manager, used for testing in methods
@@ -34,25 +35,13 @@ type MockAccount struct {
 	muxSet sync.Mutex
 }
 
-// see: https://git.io/JGsC1
-// taken from geth, used to speed up tests.
-const (
-	veryLightScryptN = 2
-	veryLightScryptP = 1
-)
-
 // NewMockAccount gets a new mock account.
 func (n NonceSuite) NewMockAccount(nonceManager nonce.TestManager) *MockAccount {
-	kstr := keystore.NewKeyStore(filet.TmpDir(n.T(), ""), veryLightScryptN, veryLightScryptP)
-	password := gofakeit.Password(true, true, true, false, false, 10)
-	acct, err := kstr.NewAccount(password)
+	acct := utils.NewMockAuthConfig(n.T())
+	key, err := acct.Key()
 	Nil(n.T(), err)
-
-	file, err := os.ReadFile(acct.URL.Path)
-	Nil(n.T(), err)
-
-	key, err := keystore.DecryptKey(file, password)
 	return &MockAccount{
+		Config:       acct,
 		nonceManager: nonceManager,
 		tb:           n.T(),
 		Key:          key,
