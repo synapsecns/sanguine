@@ -424,7 +424,7 @@ jobs:
       # ethergo generation is currently non-deterministic. TODO FIX"
       - name: Try Go Generate
         working-directory: ${{matrix.package}}/
-        if: !contains('ethergo', '${{matrix.package}}')
+        if: !contains('ethergo', matrix.package)
         run: |
           go generate ./...
 
