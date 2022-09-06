@@ -302,6 +302,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-generate-${{matrix.package}}
 
+      # TODO: remove
+      - name: authenticate with github for private go modules
+        if: ${{github.event.repository.private}}
+        uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
+
       # See if we need to rerun go generate
       # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
       - name: Try Go Generate
@@ -404,6 +411,13 @@ jobs:
           key: ${{ runner.os }}-go-generate-${{matrix.package}}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-generate-${{matrix.package}}
+
+      # TODO: remove
+      - name: authenticate with github for private go modules
+        if: ${{github.event.repository.private}}
+        uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
 
       # See if we need to rerun go generate
       # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
