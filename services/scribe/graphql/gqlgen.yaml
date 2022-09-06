@@ -20,7 +20,7 @@ resolver:
 struct_tag: json
 
 autobind:
-  - "github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
+  - 'github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model'
 
 models:
   JSON:
