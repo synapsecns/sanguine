@@ -5,6 +5,7 @@ package internal
 
 import (
 	"github.com/BurntSushi/toml"
+	"github.com/aws/smithy-go/sync"
 	"github.com/dgraph-io/ristretto"
 	"github.com/go-playground/validator/v10"
 	"github.com/ugorji/go/codec"
@@ -27,6 +28,7 @@ var _ = rand.Int
 var _ = ristretto.Config{}
 var _ = validator.Validate{}
 var _ = cli.StringFlag{}
+var _ = sync.NewOnceErr
 
 // required by mockery.
 var _ = pkg.Method{}
