@@ -193,7 +193,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             _createUsualReceivedMessage
         );
         skip(optimisticPeriod);
-        vm.expectRevert("Client: !trustedSender");
+        vm.expectRevert("BasicClient: !trustedSender");
         destination.execute(message);
     }
 

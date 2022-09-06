@@ -10,7 +10,6 @@ contract SynapseClientHarness is SynapseClient {
     function _handle(
         uint32,
         uint32,
-        bytes32,
         bytes memory
     ) internal override {}
 
