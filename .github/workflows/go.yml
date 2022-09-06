@@ -425,8 +425,6 @@ jobs:
         working-directory: ${{matrix.package}}/
         run: |
           go generate ./...
-          # go generate might require relinting after
-          make lint
 
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v10.1
@@ -440,7 +438,7 @@ jobs:
 
         # Fail if files need regeneration
       - name: Add Label
-        # ethergo generation is currently non-deterministic
+        # ethergo generation is currently non-deterministic. TODO FIX"
         if: steps.verify-changed-files.outputs.files_changed == 'true' && {{matrix.package}} != 'ethergo'
         uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
