@@ -9,10 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Server is a way to access a server listener.
 type Server struct {
 	listener net.Listener
 }
 
+// ListenAndServe provides a way to listen and serve a server with context.
 func (s Server) ListenAndServe(ctx context.Context, port string, handler *gin.Engine) error {
 	var err error
 	var lc net.ListenConfig
@@ -22,14 +24,13 @@ func (s Server) ListenAndServe(ctx context.Context, port string, handler *gin.En
 	}
 
 	go func() {
+		//nolint:gosec
 		err := http.Serve(s.listener, handler)
 		if err != nil {
 			logger.Errorf(fmt.Sprintf("rpc server got error: %v", err))
 		}
 	}()
 
-	select {
-	case <-ctx.Done():
-		return nil
-	}
+	<-ctx.Done()
+	return nil
 }
