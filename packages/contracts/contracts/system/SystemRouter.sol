@@ -155,7 +155,6 @@ contract SystemRouter is Client, ISystemRouter {
     function _handle(
         uint32,
         uint32,
-        bytes32,
         bytes memory _message
     ) internal override {
         bytes29 message = _message.castToSystemMessage();

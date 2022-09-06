@@ -2,26 +2,19 @@ module github.com/synapsecns/sanguine/tools
 
 go 1.19
 
-replace (
-	github.com/CosmWasm/wasmvm => github.com/CosmWasm/wasmvm v0.16.6
-	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/synapsecns/sanguine/core => ../core
-	github.com/synapsecns/synapse-node => github.com/synapsecns/synapse-node v0.242.1-0.20220523175312-65a2f2613b1f
-)
-
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/brianvoe/gofakeit/v6 v6.18.0
 	github.com/ethereum/go-ethereum v1.10.23
-	github.com/gen2brain/beeep v0.0.0-20220518085355-d7852edf42fc
+	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
 	github.com/gofrs/flock v0.8.1
 	github.com/ipfs/go-log v1.0.5
 	github.com/markbates/pkger v0.17.1
-	github.com/nanmu42/etherscan-api v1.8.0
+	github.com/nanmu42/etherscan-api v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.0
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
-	github.com/thoas/go-funk v0.9.2
+	github.com/thoas/go-funk v0.9.0
 	github.com/urfave/cli/v2 v2.14.1
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
 	golang.org/x/tools v0.1.12
@@ -41,10 +34,12 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4 // indirect
 	github.com/gobuffalo/here v0.6.0 // indirect
-	github.com/godbus/dbus/v5 v5.1.0 // indirect
+	github.com/godbus/dbus/v5 v5.0.6 // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
+	github.com/gopherjs/gopherwasm v1.1.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
@@ -62,7 +57,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
-	github.com/spf13/afero v1.8.0 // indirect
+	github.com/spf13/afero v1.8.2 // indirect
 	github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tklauser/numcpus v0.2.2 // indirect
@@ -78,4 +73,9 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apimachinery v0.22.2 // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect
+)
+
+replace (
+	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+	github.com/synapsecns/sanguine/core => ../core
 )

@@ -307,6 +307,24 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 
 	// wait for tx confirmation
 	f.WaitForConfirmation(ctx, tx)
+
+	// wait for value of account to be  > 0
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			// attempt to get around insufficient funds for gas * price + value
+			newBalance, err := f.Client().BalanceAt(ctx, address, nil)
+			if err != nil {
+				continue
+			}
+
+			if newBalance.Cmp(big.NewInt(0)) != 0 {
+				return
+			}
+		}
+	}
 }
 
 // GetFundedAccount returns an account with the requested balance. (Note: if genesis acount has an insufficient
