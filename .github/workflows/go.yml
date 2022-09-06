@@ -335,7 +335,7 @@ jobs:
           issue-number: ${{ steps.find_pr.outputs.pr }}
 
   check-generation:
-    name: Go Generate (Solidity Only)
+    name: Go Generate (Module Changes)
     runs-on: ubuntu-latest
     needs: changes
     if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.package_count > 0 }}
