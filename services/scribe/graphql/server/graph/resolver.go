@@ -6,11 +6,9 @@ import "github.com/synapsecns/sanguine/services/scribe/db"
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
-//go:generate go run github.com/synapsecns/sanguine/services/scribe/graphql/server/contrib
-
 // Resolver is the root resolver.
 //
-// go:generate go run github.com/99designs/gqlgen generate
+//go:generate go run github.com/synapsecns/sanguine/services/scribe/graphql/server/contrib
 type Resolver struct {
 	DB db.EventDB
 }

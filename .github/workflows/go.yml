@@ -239,8 +239,8 @@ jobs:
     if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes }}
     strategy:
       matrix:
-        # only do on agents for now
-        package: ['agents']
+        # only do on agents and scribe for now
+        package: ['agents', 'services/scribe']
     steps:
       - uses: actions/checkout@v2
         with:
