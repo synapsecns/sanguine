@@ -20,8 +20,8 @@ require (
 	github.com/urfave/cli/v2 v2.14.1
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
 	gorm.io/driver/mysql v1.1.2
-	gorm.io/driver/sqlite v1.1.5
-	gorm.io/gorm v1.21.15
+	gorm.io/driver/sqlite v1.3.6
+	gorm.io/gorm v1.23.4
 )
 
 require (
@@ -85,7 +85,7 @@ require (
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.3 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
 	github.com/keep-network/keep-common v1.7.1-0.20211012131917-7102d7b9c6a0 // indirect
 	github.com/kyokomi/emoji/v2 v2.2.8 // indirect
