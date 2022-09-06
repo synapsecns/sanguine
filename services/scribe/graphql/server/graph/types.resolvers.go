@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/types"
 )
 
+// Transaction is the resolver for the transaction field.
 func (r *logResolver) Transaction(ctx context.Context, obj *model.Log) (*model.Transaction, error) {
 	transactionFilter := db.EthTxFilter{
 		ChainID: uint32(obj.ChainID),
@@ -31,6 +32,7 @@ func (r *logResolver) Transaction(ctx context.Context, obj *model.Log) (*model.T
 	return r.ethTxToModelTransaction(transactions[0], uint32(obj.ChainID)), nil
 }
 
+// Receipt is the resolver for the receipt field.
 func (r *logResolver) Receipt(ctx context.Context, obj *model.Log) (*model.Receipt, error) {
 	receiptFilter := db.ReceiptFilter{
 		ChainID: uint32(obj.ChainID),
@@ -49,6 +51,7 @@ func (r *logResolver) Receipt(ctx context.Context, obj *model.Log) (*model.Recei
 	return r.receiptToModelReceipt(receipts[0], uint32(obj.ChainID)), nil
 }
 
+// JSON is the resolver for the json field.
 func (r *logResolver) JSON(ctx context.Context, obj *model.Log) (types.JSON, error) {
 	json, err := types.UnmarshalJSON(obj)
 	if err != nil {
@@ -57,6 +60,7 @@ func (r *logResolver) JSON(ctx context.Context, obj *model.Log) (types.JSON, err
 	return json, nil
 }
 
+// Logs is the resolver for the logs field.
 func (r *receiptResolver) Logs(ctx context.Context, obj *model.Receipt) ([]*model.Log, error) {
 	logFilter := db.LogFilter{
 		ChainID: uint32(obj.ChainID),
@@ -69,6 +73,7 @@ func (r *receiptResolver) Logs(ctx context.Context, obj *model.Receipt) ([]*mode
 	return r.logsToModelLogs(logs, uint32(obj.ChainID)), nil
 }
 
+// Transaction is the resolver for the transaction field.
 func (r *receiptResolver) Transaction(ctx context.Context, obj *model.Receipt) (*model.Transaction, error) {
 	transactionFilter := db.EthTxFilter{
 		ChainID: uint32(obj.ChainID),
@@ -87,6 +92,7 @@ func (r *receiptResolver) Transaction(ctx context.Context, obj *model.Receipt) (
 	return r.ethTxToModelTransaction(transactions[0], uint32(obj.ChainID)), nil
 }
 
+// JSON is the resolver for the json field.
 func (r *receiptResolver) JSON(ctx context.Context, obj *model.Receipt) (types.JSON, error) {
 	json, err := types.UnmarshalJSON(obj)
 	if err != nil {
@@ -95,6 +101,7 @@ func (r *receiptResolver) JSON(ctx context.Context, obj *model.Receipt) (types.J
 	return json, nil
 }
 
+// Logs is the resolver for the logs field.
 func (r *transactionResolver) Logs(ctx context.Context, obj *model.Transaction) ([]*model.Log, error) {
 	logFilter := db.LogFilter{
 		ChainID: uint32(obj.ChainID),
@@ -107,6 +114,7 @@ func (r *transactionResolver) Logs(ctx context.Context, obj *model.Transaction) 
 	return r.logsToModelLogs(logs, uint32(obj.ChainID)), nil
 }
 
+// Receipt is the resolver for the receipt field.
 func (r *transactionResolver) Receipt(ctx context.Context, obj *model.Transaction) (*model.Receipt, error) {
 	receiptFilter := db.ReceiptFilter{
 		ChainID: uint32(obj.ChainID),
@@ -125,6 +133,7 @@ func (r *transactionResolver) Receipt(ctx context.Context, obj *model.Transactio
 	return r.receiptToModelReceipt(receipts[0], uint32(obj.ChainID)), nil
 }
 
+// JSON is the resolver for the json field.
 func (r *transactionResolver) JSON(ctx context.Context, obj *model.Transaction) (types.JSON, error) {
 	json, err := types.UnmarshalJSON(obj)
 	if err != nil {

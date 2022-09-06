@@ -11,6 +11,7 @@ import (
 	resolvers "github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/resolver"
 )
 
+// Logs is the resolver for the logs field.
 func (r *queryResolver) Logs(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int) ([]*model.Log, error) {
 	logsFilter := r.buildLogFilter(contractAddress, blockNumber, txHash, txIndex, blockHash, index)
 	logsFilter.ChainID = uint32(chainID)
@@ -21,6 +22,7 @@ func (r *queryResolver) Logs(ctx context.Context, contractAddress *string, chain
 	return r.logsToModelLogs(logs, logsFilter.ChainID), nil
 }
 
+// LogsRange is the resolver for the logsRange field.
 func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, startBlock int, endBlock int) ([]*model.Log, error) {
 	logsFilter := r.buildLogFilter(contractAddress, blockNumber, txHash, txIndex, blockHash, index)
 	logsFilter.ChainID = uint32(chainID)
@@ -31,6 +33,7 @@ func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, 
 	return r.logsToModelLogs(logs, logsFilter.ChainID), nil
 }
 
+// Receipts is the resolver for the receipts field.
 func (r *queryResolver) Receipts(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int) ([]*model.Receipt, error) {
 	receiptsFilter := r.buildReceiptFilter(txHash, contractAddress, blockHash, blockNumber, txIndex)
 	receiptsFilter.ChainID = uint32(chainID)
@@ -41,6 +44,7 @@ func (r *queryResolver) Receipts(ctx context.Context, chainID int, txHash *strin
 	return r.receiptsToModelReceipts(receipts, receiptsFilter.ChainID), nil
 }
 
+// ReceiptsRange is the resolver for the receiptsRange field.
 func (r *queryResolver) ReceiptsRange(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, startBlock int, endBlock int) ([]*model.Receipt, error) {
 	receiptsFilter := r.buildReceiptFilter(txHash, contractAddress, blockHash, blockNumber, txIndex)
 	receiptsFilter.ChainID = uint32(chainID)
@@ -51,6 +55,7 @@ func (r *queryResolver) ReceiptsRange(ctx context.Context, chainID int, txHash *
 	return r.receiptsToModelReceipts(receipts, receiptsFilter.ChainID), nil
 }
 
+// Transactions is the resolver for the transactions field.
 func (r *queryResolver) Transactions(ctx context.Context, txHash *string, chainID int, blockNumber *int) ([]*model.Transaction, error) {
 	transactionsFilter := r.buildEthTxFilter(txHash, blockNumber)
 	transactionsFilter.ChainID = uint32(chainID)
@@ -61,6 +66,7 @@ func (r *queryResolver) Transactions(ctx context.Context, txHash *string, chainI
 	return r.ethTxsToModelTransactions(transactions, transactionsFilter.ChainID), nil
 }
 
+// TransactionsRange is the resolver for the transactionsRange field.
 func (r *queryResolver) TransactionsRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, startBlock int, endBlock int) ([]*model.Transaction, error) {
 	transactionsFilter := r.buildEthTxFilter(txHash, blockNumber)
 	transactionsFilter.ChainID = uint32(chainID)
