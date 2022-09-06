@@ -104,12 +104,12 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
 
-    function test_handleNotMirror(address _notMirror) public {
-        vm.assume(_notMirror != destination);
+    function test_handleNotDestination(address _notDestination) public {
+        vm.assume(_notDestination != destination);
         test_setTrustedSender();
 
-        vm.prank(_notMirror);
-        vm.expectRevert("Client: !mirror");
+        vm.prank(_notDestination);
+        vm.expectRevert("BasicClient: !destination");
         client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
 
@@ -119,7 +119,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         test_setTrustedSender();
 
         vm.prank(destination);
-        vm.expectRevert("Client: !trustedSender");
+        vm.expectRevert("BasicClient: !trustedSender");
         client.handle(_notRemote, 0, trustedSender, block.timestamp, bytes(""));
     }
 
@@ -129,7 +129,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         test_setTrustedSender();
 
         vm.prank(destination);
-        vm.expectRevert("Client: !trustedSender");
+        vm.expectRevert("BasicClient: !trustedSender");
         client.handle(remoteDomain, 0, _notSender, block.timestamp, bytes(""));
     }
 
@@ -139,7 +139,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         test_setTrustedSender();
 
         vm.prank(destination);
-        vm.expectRevert("Client: !trustedSender");
+        vm.expectRevert("BasicClient: !trustedSender");
         // trustedSender for unknown remote is bytes32(0),
         // but this still has to revert
         client.handle(_notRemote, 0, bytes32(0), block.timestamp, bytes(""));
@@ -182,7 +182,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
     function test_sendNoRecipient() public {
         bytes memory messageBody = hex"01030307";
-        vm.expectRevert("Client: !recipient");
+        vm.expectRevert("BasicClient: !recipient");
         client.send(remoteDomain, getEmptyTips(), messageBody);
     }
 }
