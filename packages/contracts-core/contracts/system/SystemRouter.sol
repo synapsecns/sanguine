@@ -143,9 +143,9 @@ contract SystemRouter is BasicClient, ISystemRouter {
                     body.callPayload().clone(),
                     _rootSubmittedAt
                 );
-            } else if (messageType == SystemMessage.MessageFlag.Adjust) {
-                // TODO: handle messages with instructions
-                // to adjust some of the SystemRouter parameters
+            } else {
+                // Sanity check: no other MessageFlag values exist
+                assert(false);
             }
         }
     }

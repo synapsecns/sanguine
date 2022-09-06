@@ -72,17 +72,6 @@ contract SystemMessageTest is Bytes29Test {
         assertFalse(_view.isSystemMessage());
     }
 
-    function test_isSystemMessage_invalidAdjust() public {
-        bytes memory message = SystemMessage.formatSystemMessage(
-            SystemMessage.MessageFlag.Adjust,
-            bytes("")
-        );
-        bytes29 _view = message.castToSystemMessage();
-        (, bytes29 _bodyView) = _view.unpackMessage();
-        assert(!_bodyView.isSystemAdjust());
-        assertFalse(_view.isSystemMessage());
-    }
-
     function test_systemRouter() public {
         bytes32 systemRouter = SystemMessage.SYSTEM_ROUTER;
         emit log_bytes32(systemRouter);
