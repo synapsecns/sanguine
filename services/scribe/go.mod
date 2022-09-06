@@ -12,11 +12,11 @@ replace (
 )
 
 require (
-	github.com/99designs/gqlgen v0.17.16
+	github.com/99designs/gqlgen v0.14.0
 	github.com/BurntSushi/toml v1.1.0
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/MichaelMure/go-term-markdown v0.1.4
-	github.com/Yamashou/gqlgenc v0.10.0
+	github.com/Yamashou/gqlgenc v0.0.2
 	github.com/brianvoe/gofakeit/v6 v6.18.0
 	github.com/danielkov/gin-helmet v0.0.0-20171108135313-1387e224435e
 	github.com/ethereum/go-ethereum v1.10.23
