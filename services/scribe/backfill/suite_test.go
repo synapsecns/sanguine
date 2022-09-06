@@ -2,6 +2,7 @@ package backfill_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -32,6 +33,7 @@ func NewBackfillSuite(tb testing.TB) *BackfillSuite {
 
 func (b *BackfillSuite) SetupTest() {
 	b.TestSuite.SetupTest()
+	b.SetTestTimeout(time.Minute * 3)
 
 	sqliteStore, err := sqlite.NewSqliteStore(b.GetTestContext(), filet.TmpDir(b.T(), ""))
 	Nil(b.T(), err)
