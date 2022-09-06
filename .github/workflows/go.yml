@@ -407,6 +407,7 @@ jobs:
         working-directory: ${{matrix.package}}/
         run: |
           go generate ./...
+          make lint
 
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v10.1
