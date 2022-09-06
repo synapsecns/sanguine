@@ -407,6 +407,7 @@ jobs:
         working-directory: ${{matrix.package}}/
         run: |
           go generate ./...
+          # go generate might require relinting after
           make lint
 
       - name: Verify Changed files
