@@ -54,6 +54,37 @@ type GetLogsRange struct {
 		Removed         bool     "json:\"removed\" graphql:\"removed\""
 	} "json:\"response\" graphql:\"response\""
 }
+type GetLogsResolvers struct {
+	Response []*struct {
+		Receipt struct {
+			ChainID           int    "json:\"chain_id\" graphql:\"chain_id\""
+			Type              int    "json:\"type\" graphql:\"type\""
+			PostState         string "json:\"post_state\" graphql:\"post_state\""
+			Status            int    "json:\"status\" graphql:\"status\""
+			CumulativeGasUsed int    "json:\"cumulative_gas_used\" graphql:\"cumulative_gas_used\""
+			Bloom             string "json:\"bloom\" graphql:\"bloom\""
+			TxHash            string "json:\"tx_hash\" graphql:\"tx_hash\""
+			ContractAddress   string "json:\"contract_address\" graphql:\"contract_address\""
+			GasUsed           int    "json:\"gas_used\" graphql:\"gas_used\""
+			BlockNumber       int    "json:\"block_number\" graphql:\"block_number\""
+			TransactionIndex  int    "json:\"transaction_index\" graphql:\"transaction_index\""
+		} "json:\"receipt\" graphql:\"receipt\""
+		Transaction struct {
+			ChainID   int    "json:\"chain_id\" graphql:\"chain_id\""
+			TxHash    string "json:\"tx_hash\" graphql:\"tx_hash\""
+			Protected bool   "json:\"protected\" graphql:\"protected\""
+			Type      int    "json:\"type\" graphql:\"type\""
+			Data      string "json:\"data\" graphql:\"data\""
+			Gas       int    "json:\"gas\" graphql:\"gas\""
+			GasPrice  int    "json:\"gas_price\" graphql:\"gas_price\""
+			GasTipCap string "json:\"gas_tip_cap\" graphql:\"gas_tip_cap\""
+			GasFeeCap string "json:\"gas_fee_cap\" graphql:\"gas_fee_cap\""
+			Value     string "json:\"value\" graphql:\"value\""
+			Nonce     int    "json:\"nonce\" graphql:\"nonce\""
+			To        string "json:\"to\" graphql:\"to\""
+		} "json:\"transaction\" graphql:\"transaction\""
+	} "json:\"response\" graphql:\"response\""
+}
 type GetReceipts struct {
 	Response []*struct {
 		ChainID           int    "json:\"chain_id\" graphql:\"chain_id\""
@@ -82,6 +113,36 @@ type GetReceiptsRange struct {
 		GasUsed           int    "json:\"gas_used\" graphql:\"gas_used\""
 		BlockNumber       int    "json:\"block_number\" graphql:\"block_number\""
 		TransactionIndex  int    "json:\"transaction_index\" graphql:\"transaction_index\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetReceiptsResolvers struct {
+	Response []*struct {
+		Logs []*struct {
+			ContractAddress string   "json:\"contract_address\" graphql:\"contract_address\""
+			ChainID         int      "json:\"chain_id\" graphql:\"chain_id\""
+			Topics          []string "json:\"topics\" graphql:\"topics\""
+			Data            string   "json:\"data\" graphql:\"data\""
+			BlockNumber     int      "json:\"block_number\" graphql:\"block_number\""
+			TxHash          string   "json:\"tx_hash\" graphql:\"tx_hash\""
+			TxIndex         int      "json:\"tx_index\" graphql:\"tx_index\""
+			BlockHash       string   "json:\"block_hash\" graphql:\"block_hash\""
+			Index           int      "json:\"index\" graphql:\"index\""
+			Removed         bool     "json:\"removed\" graphql:\"removed\""
+		} "json:\"logs\" graphql:\"logs\""
+		Transaction struct {
+			ChainID   int    "json:\"chain_id\" graphql:\"chain_id\""
+			TxHash    string "json:\"tx_hash\" graphql:\"tx_hash\""
+			Protected bool   "json:\"protected\" graphql:\"protected\""
+			Type      int    "json:\"type\" graphql:\"type\""
+			Data      string "json:\"data\" graphql:\"data\""
+			Gas       int    "json:\"gas\" graphql:\"gas\""
+			GasPrice  int    "json:\"gas_price\" graphql:\"gas_price\""
+			GasTipCap string "json:\"gas_tip_cap\" graphql:\"gas_tip_cap\""
+			GasFeeCap string "json:\"gas_fee_cap\" graphql:\"gas_fee_cap\""
+			Value     string "json:\"value\" graphql:\"value\""
+			Nonce     int    "json:\"nonce\" graphql:\"nonce\""
+			To        string "json:\"to\" graphql:\"to\""
+		} "json:\"transaction\" graphql:\"transaction\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetTransactions struct {
@@ -114,6 +175,35 @@ type GetTransactionsRange struct {
 		Value     string "json:\"value\" graphql:\"value\""
 		Nonce     int    "json:\"nonce\" graphql:\"nonce\""
 		To        string "json:\"to\" graphql:\"to\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetTransactionsResolvers struct {
+	Response []*struct {
+		Receipt struct {
+			ChainID           int    "json:\"chain_id\" graphql:\"chain_id\""
+			Type              int    "json:\"type\" graphql:\"type\""
+			PostState         string "json:\"post_state\" graphql:\"post_state\""
+			Status            int    "json:\"status\" graphql:\"status\""
+			CumulativeGasUsed int    "json:\"cumulative_gas_used\" graphql:\"cumulative_gas_used\""
+			Bloom             string "json:\"bloom\" graphql:\"bloom\""
+			TxHash            string "json:\"tx_hash\" graphql:\"tx_hash\""
+			ContractAddress   string "json:\"contract_address\" graphql:\"contract_address\""
+			GasUsed           int    "json:\"gas_used\" graphql:\"gas_used\""
+			BlockNumber       int    "json:\"block_number\" graphql:\"block_number\""
+			TransactionIndex  int    "json:\"transaction_index\" graphql:\"transaction_index\""
+		} "json:\"receipt\" graphql:\"receipt\""
+		Logs []*struct {
+			ContractAddress string   "json:\"contract_address\" graphql:\"contract_address\""
+			ChainID         int      "json:\"chain_id\" graphql:\"chain_id\""
+			Topics          []string "json:\"topics\" graphql:\"topics\""
+			Data            string   "json:\"data\" graphql:\"data\""
+			BlockNumber     int      "json:\"block_number\" graphql:\"block_number\""
+			TxHash          string   "json:\"tx_hash\" graphql:\"tx_hash\""
+			TxIndex         int      "json:\"tx_index\" graphql:\"tx_index\""
+			BlockHash       string   "json:\"block_hash\" graphql:\"block_hash\""
+			Index           int      "json:\"index\" graphql:\"index\""
+			Removed         bool     "json:\"removed\" graphql:\"removed\""
+		} "json:\"logs\" graphql:\"logs\""
 	} "json:\"response\" graphql:\"response\""
 }
 
@@ -171,6 +261,52 @@ func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, 
 
 	var res GetLogsRange
 	if err := c.Client.Post(ctx, "GetLogsRange", GetLogsRangeDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetLogsResolversDocument = `query GetLogsResolvers ($chain_id: Int!) {
+	response: logs(chain_id: $chain_id) {
+		receipt {
+			chain_id
+			type
+			post_state
+			status
+			cumulative_gas_used
+			bloom
+			tx_hash
+			contract_address
+			gas_used
+			block_number
+			transaction_index
+		}
+		transaction {
+			chain_id
+			tx_hash
+			protected
+			type
+			data
+			gas
+			gas_price
+			gas_tip_cap
+			gas_fee_cap
+			value
+			nonce
+			to
+		}
+	}
+}
+`
+
+func (c *Client) GetLogsResolvers(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsResolvers, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+	}
+
+	var res GetLogsResolvers
+	if err := c.Client.Post(ctx, "GetLogsResolvers", GetLogsResolversDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
@@ -239,6 +375,51 @@ func (c *Client) GetReceiptsRange(ctx context.Context, chainID int, startBlock i
 	return &res, nil
 }
 
+const GetReceiptsResolversDocument = `query GetReceiptsResolvers ($chain_id: Int!) {
+	response: receipts(chain_id: $chain_id) {
+		logs {
+			contract_address
+			chain_id
+			topics
+			data
+			block_number
+			tx_hash
+			tx_index
+			block_hash
+			index
+			removed
+		}
+		transaction {
+			chain_id
+			tx_hash
+			protected
+			type
+			data
+			gas
+			gas_price
+			gas_tip_cap
+			gas_fee_cap
+			value
+			nonce
+			to
+		}
+	}
+}
+`
+
+func (c *Client) GetReceiptsResolvers(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceiptsResolvers, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+	}
+
+	var res GetReceiptsResolvers
+	if err := c.Client.Post(ctx, "GetReceiptsResolvers", GetReceiptsResolversDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 const GetTransactionsDocument = `query GetTransactions ($chain_id: Int!) {
 	response: transactions(chain_id: $chain_id) {
 		chain_id
@@ -297,6 +478,50 @@ func (c *Client) GetTransactionsRange(ctx context.Context, chainID int, startBlo
 
 	var res GetTransactionsRange
 	if err := c.Client.Post(ctx, "GetTransactionsRange", GetTransactionsRangeDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetTransactionsResolversDocument = `query GetTransactionsResolvers ($chain_id: Int!) {
+	response: transactions(chain_id: $chain_id) {
+		receipt {
+			chain_id
+			type
+			post_state
+			status
+			cumulative_gas_used
+			bloom
+			tx_hash
+			contract_address
+			gas_used
+			block_number
+			transaction_index
+		}
+		logs {
+			contract_address
+			chain_id
+			topics
+			data
+			block_number
+			tx_hash
+			tx_index
+			block_hash
+			index
+			removed
+		}
+	}
+}
+`
+
+func (c *Client) GetTransactionsResolvers(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetTransactionsResolvers, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+	}
+
+	var res GetTransactionsResolvers
+	if err := c.Client.Post(ctx, "GetTransactionsResolvers", GetTransactionsResolversDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

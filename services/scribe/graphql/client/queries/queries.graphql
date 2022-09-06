@@ -28,6 +28,38 @@ query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
     }
 }
 
+query GetLogsResolvers ($chain_id: Int!) {
+    response: logs (chain_id: $chain_id) {
+        receipt {
+            chain_id
+            type
+            post_state
+            status
+            cumulative_gas_used
+            bloom
+            tx_hash
+            contract_address
+            gas_used
+            block_number
+            transaction_index
+        }
+        transaction {
+            chain_id
+            tx_hash
+            protected
+            type
+            data
+            gas
+            gas_price
+            gas_tip_cap
+            gas_fee_cap
+            value
+            nonce
+            to
+        }
+    }
+}
+
 query GetReceipts ($chain_id: Int!) {
     response: receipts (chain_id: $chain_id) {
         chain_id
@@ -57,6 +89,37 @@ query GetReceiptsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
         gas_used
         block_number
         transaction_index
+    }
+}
+
+query GetReceiptsResolvers ($chain_id: Int!) {
+    response: receipts (chain_id: $chain_id) {
+        logs {
+            contract_address
+            chain_id
+            topics
+            data
+            block_number
+            tx_hash
+            tx_index
+            block_hash
+            index
+            removed
+        }
+        transaction {
+            chain_id
+            tx_hash
+            protected
+            type
+            data
+            gas
+            gas_price
+            gas_tip_cap
+            gas_fee_cap
+            value
+            nonce
+            to
+        }
     }
 }
 
@@ -94,3 +157,32 @@ query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int
     }
 }
 
+query GetTransactionsResolvers ($chain_id: Int!) {
+    response: transactions (chain_id: $chain_id) {
+        receipt {
+            chain_id
+            type
+            post_state
+            status
+            cumulative_gas_used
+            bloom
+            tx_hash
+            contract_address
+            gas_used
+            block_number
+            transaction_index
+        }
+        logs {
+            contract_address
+            chain_id
+            topics
+            data
+            block_number
+            tx_hash
+            tx_index
+            block_hash
+            index
+            removed
+        }
+    }
+}
