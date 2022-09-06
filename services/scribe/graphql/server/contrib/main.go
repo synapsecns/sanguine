@@ -24,6 +24,8 @@ func main() {
 
 	log.SetOutput(io.Discard)
 
+	os.Chdir(filepath.Join(root.Path, "services/scribe/graphql/"))
+
 	cfg, err := config.LoadConfig(filepath.Join(root.Path, "services/scribe/graphql/gqlgen.yaml"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
