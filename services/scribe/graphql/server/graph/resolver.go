@@ -8,7 +8,7 @@ import "github.com/synapsecns/sanguine/services/scribe/db"
 
 // Resolver is the root resolver.
 //
-//go:generate go run github.com/synapsecns/sanguine/services/scribe/graphql/server/contrib
+//go:generate go run github.com/synapsecns/sanguine/services/scribe/graphql/contrib
 type Resolver struct {
 	DB db.EventDB
 }
