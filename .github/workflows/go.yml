@@ -296,9 +296,11 @@ jobs:
             ~/.cache/go-build
             ~/Library/Caches/go-build
             %LocalAppData%\go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          # use seperate cache for generate, builds less stuff
+          # TODO: consider scoping to package
+          key: ${{ runner.os }}-go-generate-${{matrix.package}}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-generate-${{matrix.package}}
 
       # See if we need to rerun go generate
       # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
@@ -397,9 +399,11 @@ jobs:
             ~/.cache/go-build
             ~/Library/Caches/go-build
             %LocalAppData%\go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          # use seperate cache for generate, builds less stuff
+          # TODO: consider scoping to package
+          key: ${{ runner.os }}-go-generate-${{matrix.package}}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-generate-${{matrix.package}}
 
       # See if we need to rerun go generate
       # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
