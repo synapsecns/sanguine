@@ -421,6 +421,7 @@ jobs:
 
       # See if we need to rerun go generate
       # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
+      # ethergo generation is currently non-deterministic. TODO FIX"
       - name: Try Go Generate
         working-directory: ${{matrix.package}}/
         if: ${{matrix.package}} != 'ethergo/'
@@ -439,7 +440,6 @@ jobs:
 
         # Fail if files need regeneration
       - name: Add Label
-        # ethergo generation is currently non-deterministic. TODO FIX"
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
