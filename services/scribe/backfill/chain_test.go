@@ -1,6 +1,7 @@
 package backfill_test
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -14,6 +15,32 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 )
+
+func (b BackfillSuite) TestParser() {
+	chainID := gofakeit.Uint32()
+	// Get simulated blockchain, deploy three test contracts, and set up test variables.
+	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
+	_, testRefA := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
+
+	txContext := simulatedChain.GetTxContext(b.GetTestContext(), nil)
+	tx, err := testRefA.EmitEventB(txContext.TransactOpts, []byte(gofakeit.Sentence(10)), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	Nil(b.T(), err)
+
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+
+	receipt, err := simulatedChain.TransactionReceipt(b.GetTestContext(), tx.Hash())
+
+	for _, log := range receipt.Logs {
+		filterer, err := testcontract.NewTestContractFilterer(testRefA.Address(), simulatedChain)
+		Nil(b.T(), err)
+
+		// TODO: check topic
+		res, err := filterer.ParseEventB(*log)
+		fmt.Println(res.Sender.String())
+		Nil(b.T(), err)
+		NotNil(b.T(), res)
+	}
+}
 
 // TestChainBackfill tests that the ChainBackfiller can backfill events from a chain.
 func (b BackfillSuite) TestChainBackfill() {
