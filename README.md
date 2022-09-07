@@ -16,7 +16,7 @@ root
 ├── <a href="./core">core</a>: The Go core library with common utilities for use across the monorepo
 ├── <a href="./ethergo">ethergo</a>: Go-based ethereum testing + common library
 ├── <a href="./packages">packages</a>
-│   ├── <a href="./packages/contracts">contracts</a>: Contracts used for synapse, powered by <a href="https://github.com/foundry-rs/foundry">Foundry</a>
+│   ├── <a href="./packages/contracts-core">contracts-core</a>: Core contracts used for synapse, powered by <a href="https://github.com/foundry-rs/foundry">Foundry</a>
 ├── <a href="./tools">services</a>
 │   ├── <a href="./services/omnirpc">omnirpc</a>: Latency aware RPC Client used across multiple-chains at once
 │   ├── <a href="./services/scribe">scribe</a>: Generalized ethereum event logger
