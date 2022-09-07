@@ -97,7 +97,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	var returnedReceipt types.Receipt
-	doneChan := make(chan bool, 2)
+	doneChan := make(chan bool)
 	g.Go(func() error {
 		// make getting receipt a channel in parallel
 		receipt, err := c.client.TransactionReceipt(ctx, log.TxHash)
@@ -106,8 +106,13 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		}
 
 		returnedReceipt = *receipt
-		doneChan <- true
-		doneChan <- true
+		for i := 0; i < 2; i++ {
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("cancelled: %w", ctx.Err())
+			case doneChan <- true:
+			}
+		}
 		return nil
 	})
 
