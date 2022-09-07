@@ -34,4 +34,17 @@ interface ISystemRouter {
         SystemEntity _recipient,
         bytes memory _data
     ) external;
+
+    /**
+     * @notice Calls a few system contracts with the given calldata.
+     * See `systemCall` for details on system calls.
+     * Note: tx will revert of any of the calls revert, guaranteeing
+     * that either all calls succeed or none.
+     */
+    function systemMultiCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        SystemEntity[] memory _recipients,
+        bytes[] memory _dataArray
+    ) external;
 }

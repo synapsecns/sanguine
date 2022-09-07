@@ -94,6 +94,28 @@ contract SystemRouter is BasicClient, ISystemRouter {
         }
     }
 
+    /**
+     * @notice Calls a few system contracts with the given calldata.
+     * See `systemCall` for details on system calls.
+     * Note: tx will revert of any of the calls revert, guaranteeing
+     * that either all calls succeed or none.
+     */
+    function systemMultiCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        SystemEntity[] memory _recipients,
+        bytes[] memory _dataArray
+    ) external {
+        /// @dev This will revert if msg.sender is not a system contract
+        SystemEntity caller = _getSystemEntity(msg.sender);
+        uint256 amount = _recipients.length;
+        bytes[] memory payloads = new bytes[](amount);
+        for (uint256 i = 0; i < amount; ++i) {
+            payloads[i] = _formatCalldata(caller, _dataArray[i]);
+        }
+        _multiCall(_destination, _optimisticSeconds, _recipients, payloads);
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           PUBLIC FUNCTIONS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -175,6 +197,30 @@ contract SystemRouter is BasicClient, ISystemRouter {
          *      knowing SystemRouter address on remote chain in advance.
          */
         _send(_destination, _optimisticSeconds, Tips.emptyTips(), message);
+    }
+
+    function _multiCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        SystemEntity[] memory _recipients,
+        bytes[] memory _payloads
+    ) internal {
+        uint256 amount = _recipients.length;
+        if (_destination == localDomain) {
+            for (uint256 i = 0; i < amount; ++i) {
+                /// @dev Passing current timestamp for consistency, see systemCall() for details
+                _localSystemCall(uint8(_recipients[i]), _payloads[i], block.timestamp);
+            }
+        } else {
+            bytes[] memory systemCalls = new bytes[](amount);
+            for (uint256 i = 0; i < amount; ++i) {
+                systemCalls[i] = SystemMessage.formatSystemCall(
+                    uint8(_recipients[i]),
+                    _payloads[i]
+                );
+            }
+            _remoteSystemCall(_destination, _optimisticSeconds, systemCalls);
+        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
