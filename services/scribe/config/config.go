@@ -3,7 +3,8 @@ package config
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
+	"path/filepath"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
@@ -39,8 +40,8 @@ func (c Config) Encode() ([]byte, error) {
 }
 
 // DecodeConfig parses in a config from a file.
-func DecodeConfig(filepath string) (cfg Config, err error) {
-	input, err := ioutil.ReadFile(filepath)
+func DecodeConfig(filePath string) (cfg Config, err error) {
+	input, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		return Config{}, fmt.Errorf("failed to read file: %w", err)
 	}
