@@ -9,8 +9,8 @@ ignore:
   - '**/*_generated.go'
   - '**/*.abigen.go'
   - '**/*_string.go'
-# solidity test files
+  # solidity test files
   - '*/test/*.sol'
   - '*/lib/*.sol'
-  - 'packages/contracts/contracts/libs/*.sol'
-  - 'packages/contracts/test/*.sol'
+  - 'packages/contracts-core/contracts/libs/*.sol'
+  - 'packages/contracts-core/test/*.sol'
