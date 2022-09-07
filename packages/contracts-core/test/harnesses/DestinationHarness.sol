@@ -9,16 +9,15 @@ import { Tips } from "../../contracts/libs/Tips.sol";
 import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
 
 import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
+import { SystemContractHarness } from "./SystemContractHarness.sol";
 
-contract DestinationHarness is Destination, GuardRegistryHarness {
+contract DestinationHarness is Destination, SystemContractHarness, GuardRegistryHarness {
     using MirrorLib for MirrorLib.Mirror;
-
-    uint256 public sensitiveValue;
     using Tips for bytes29;
 
     event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);
-    event LogSystemCall(uint32 origin, uint8 caller, uint256 rootSubmittedAt);
 
+    //solhint-disable-next-line no-empty-blocks
     constructor(uint32 _localDomain) Destination(_localDomain) {}
 
     function addNotary(uint32 _domain, address _notary) public {
@@ -27,46 +26,6 @@ contract DestinationHarness is Destination, GuardRegistryHarness {
 
     function isNotary(uint32 _domain, address _notary) public view returns (bool) {
         return _isNotary(_domain, _notary);
-    }
-
-    function setSensitiveValue(
-        uint256 _newValue,
-        uint32 _origin,
-        uint8 _caller,
-        uint256 _rootSubmittedAt
-    ) external onlySystemRouter {
-        _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
-    }
-
-    function setSensitiveValueOnlyLocal(
-        uint256 _newValue,
-        uint32 _origin,
-        uint8 _caller,
-        uint256 _rootSubmittedAt
-    ) external onlySystemRouter onlyLocalCalls(_origin) {
-        _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
-    }
-
-    function setSensitiveValueOnlyOrigin(
-        uint256 _newValue,
-        uint32 _origin,
-        uint8 _caller,
-        uint256 _rootSubmittedAt
-    )
-        external
-        onlySystemRouter
-        onlyCaller(ISystemRouter.SystemEntity(_caller), ISystemRouter.SystemEntity.Origin)
-    {
-        _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
-    }
-
-    function setSensitiveValueOnlyTwoHours(
-        uint256 _newValue,
-        uint32 _origin,
-        uint8 _caller,
-        uint256 _rootSubmittedAt
-    ) external onlySystemRouter onlyOptimisticPeriodOver(_rootSubmittedAt, 2 hours) {
-        _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
     }
 
     function setMessageStatus(
@@ -84,15 +43,5 @@ contract DestinationHarness is Destination, GuardRegistryHarness {
             _tips.proverTip(),
             _tips.executorTip()
         );
-    }
-
-    function _setSensitiveValue(
-        uint256 _newValue,
-        uint32 _origin,
-        uint8 _caller,
-        uint256 _rootSubmittedAt
-    ) internal {
-        sensitiveValue = _newValue;
-        emit LogSystemCall(_origin, _caller, _rootSubmittedAt);
     }
 }

@@ -4,26 +4,14 @@ pragma solidity 0.8.13;
 
 import { Origin } from "../../contracts/Origin.sol";
 import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
+import { SystemContractHarness } from "./SystemContractHarness.sol";
 
-contract OriginHarness is Origin, GuardRegistryHarness {
-    uint256 public sensitiveValue;
-
-    event LogSystemCall(uint32 origin, uint8 caller, uint256 rootSubmittedAt);
-
+contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
+    //solhint-disable-next-line no-empty-blocks
     constructor(uint32 _domain) Origin(_domain) {}
 
     function isNotary(address _notary) public view returns (bool) {
         return _isNotary(localDomain, _notary);
-    }
-
-    function setSensitiveValue(
-        uint256 _newValue,
-        uint32 _origin,
-        uint8 _caller,
-        uint256 _rootSubmittedAt
-    ) external onlySystemRouter {
-        sensitiveValue = _newValue;
-        emit LogSystemCall(_origin, _caller, _rootSubmittedAt);
     }
 
     function setFailed(address _notary) public {
