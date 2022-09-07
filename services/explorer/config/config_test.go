@@ -3,7 +3,7 @@ package config_test
 import (
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/services/omnirpc/config"
+	"github.com/synapsecns/sanguine/services/explorer/config"
 	"golang.org/x/exp/slices"
 	"testing"
 )

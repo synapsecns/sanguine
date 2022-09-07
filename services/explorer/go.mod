@@ -2,25 +2,7 @@ module github.com/synapsecns/sanguine/services/explorer
 
 go 1.19
 
-replace (
-	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/synapsecns/sanguine/core => ../../core
-	github.com/synapsecns/synapse-contracts v0.0.0-20220822000752-397774c0ecad => ./external/synapse-contracts
-)
-
-require (
-	github.com/MichaelMure/go-term-markdown v0.1.4
-	github.com/brianvoe/gofakeit/v6 v6.18.0
-	github.com/davecgh/go-spew v1.1.1
-	github.com/ethereum/go-ethereum v1.10.23
-	github.com/hashicorp/consul/sdk v0.1.1
-	github.com/jftuga/ellipsis v1.0.0
-	github.com/jftuga/termsize v1.0.2
-	github.com/stretchr/testify v1.8.0
-	github.com/urfave/cli/v2 v2.14.1
-	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
-	gopkg.in/yaml.v3 v3.0.1
-)
+require github.com/ethereum/go-ethereum v1.10.23
 
 require (
 	github.com/MichaelMure/go-term-text v0.3.1 // indirect
