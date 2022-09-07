@@ -13,18 +13,15 @@ import (
 func (t *DBSuite) TestPagination() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		// allLogs := []*types.Log{}
 		// Store 100 logs.
 		for i := 0; i < 100; i++ {
 			log := t.MakeRandomLog(txHash)
 			log.BlockNumber = uint64(i)
-			// allLogs = append(allLogs, &log)
 			err := testDB.StoreLog(t.GetTestContext(), log, 1)
 			Nil(t.T(), err)
 		}
 		// Store another log that should be on the second page.
 		log := t.MakeRandomLog(txHash)
-		// allLogs = append(allLogs, &log)
 		log.BlockNumber = 100
 		err := testDB.StoreLog(t.GetTestContext(), log, 1)
 		Nil(t.T(), err)
@@ -49,11 +46,10 @@ func (t *DBSuite) TestPagination() {
 			CumulativeGasUsed: gofakeit.Uint64(),
 			Bloom:             types.BytesToBloom([]byte(gofakeit.Sentence(10))),
 			TxHash:            txHash,
-			//Logs:              allLogs,
-			ContractAddress:  common.BigToAddress(big.NewInt(gofakeit.Int64())),
-			GasUsed:          gofakeit.Uint64(),
-			BlockNumber:      big.NewInt(int64(gofakeit.Uint32())),
-			TransactionIndex: uint(gofakeit.Uint64()),
+			ContractAddress:   common.BigToAddress(big.NewInt(gofakeit.Int64())),
+			GasUsed:           gofakeit.Uint64(),
+			BlockNumber:       big.NewInt(int64(gofakeit.Uint32())),
+			TransactionIndex:  uint(gofakeit.Uint64()),
 		}
 		err = testDB.StoreReceipt(t.GetTestContext(), receipt, 1)
 		Nil(t.T(), err)
