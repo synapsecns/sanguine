@@ -3,6 +3,7 @@ package bridgeconfig
 import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/vm"
 )
 
 // BridgeConfigSwapRef is a bound synapse bridge config v2 contract that returns the address of that contract
