@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"fmt"
 
-
 	"github.com/hashicorp/consul/sdk/freeport"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -26,8 +25,7 @@ var infoCommand = &cli.Command{
 	},
 }
 
-
-//placeholder
+// placeholder.
 var placeholderCommand = &cli.Command{
 	Name:        "gm",
 	Description: "gm",

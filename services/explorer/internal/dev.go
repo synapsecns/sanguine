@@ -3,9 +3,9 @@
 // being imported. Dependencies here are not included in produced binaries and won't affect the dev build
 package dev
 
-// import (
-// 	_ "github.com/synapsecns/sanguine/tools/abigen"
-// )
+import (
+	_ "github.com/synapsecns/sanguine/tools/abigen"
+)
 
 func init() {
 	panic("could not import dev package: this package is meant to define dependencies, not be imported.")

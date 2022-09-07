@@ -1,4 +1,4 @@
-//parses the input config.yaml file
+// parses the input config.yaml file
 package config
 
 import (

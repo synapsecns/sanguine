@@ -17,7 +17,6 @@ func Start(args []string) {
 	// commands
 	app.Commands = cli.Commands{infoCommand, placeholderCommand}
 
-
 	err := app.Run(args)
 	if err != nil {
 		panic(err)

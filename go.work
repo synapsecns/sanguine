@@ -4,8 +4,8 @@ use (
 	./agents
 	./core
 	./ethergo
+	./services/explorer
 	./services/omnirpc
 	./services/scribe
-	./services/explorer
 	./tools
 )
