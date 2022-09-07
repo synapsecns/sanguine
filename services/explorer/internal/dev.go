@@ -4,7 +4,7 @@
 package dev
 
 import (
-	_"github.com/synapsecns/sanguine/tools/abigen"
+	_ "github.com/synapsecns/sanguine/tools/abigen"
 )
 
 func init() {

@@ -6,5 +6,6 @@ use (
 	./ethergo
 	./services/omnirpc
 	./services/scribe
+	./services/explorer
 	./tools
 )
