@@ -19,13 +19,13 @@ type EventDB struct {
 	mock.Mock
 }
 
-// RetrieveEthTxsInRange provides a mock function with given fields: ctx, ethTxFilter, startBlock, endBlock
-func (_m *EventDB) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock uint64, endBlock uint64) ([]types.Transaction, error) {
-	ret := _m.Called(ctx, ethTxFilter, startBlock, endBlock)
+// RetrieveEthTxsInRange provides a mock function with given fields: ctx, ethTxFilter, startBlock, endBlock, page
+func (_m *EventDB) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock uint64, endBlock uint64, page int) ([]types.Transaction, error) {
+	ret := _m.Called(ctx, ethTxFilter, startBlock, endBlock, page)
 
 	var r0 []types.Transaction
-	if rf, ok := ret.Get(0).(func(context.Context, db.EthTxFilter, uint64, uint64) []types.Transaction); ok {
-		r0 = rf(ctx, ethTxFilter, startBlock, endBlock)
+	if rf, ok := ret.Get(0).(func(context.Context, db.EthTxFilter, uint64, uint64, int) []types.Transaction); ok {
+		r0 = rf(ctx, ethTxFilter, startBlock, endBlock, page)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]types.Transaction)
@@ -33,8 +33,8 @@ func (_m *EventDB) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.Eth
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, db.EthTxFilter, uint64, uint64) error); ok {
-		r1 = rf(ctx, ethTxFilter, startBlock, endBlock)
+	if rf, ok := ret.Get(1).(func(context.Context, db.EthTxFilter, uint64, uint64, int) error); ok {
+		r1 = rf(ctx, ethTxFilter, startBlock, endBlock, page)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -42,13 +42,13 @@ func (_m *EventDB) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.Eth
 	return r0, r1
 }
 
-// RetrieveEthTxsWithFilter provides a mock function with given fields: ctx, ethTxFilter
-func (_m *EventDB) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthTxFilter) ([]types.Transaction, error) {
-	ret := _m.Called(ctx, ethTxFilter)
+// RetrieveEthTxsWithFilter provides a mock function with given fields: ctx, ethTxFilter, page
+func (_m *EventDB) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthTxFilter, page int) ([]types.Transaction, error) {
+	ret := _m.Called(ctx, ethTxFilter, page)
 
 	var r0 []types.Transaction
-	if rf, ok := ret.Get(0).(func(context.Context, db.EthTxFilter) []types.Transaction); ok {
-		r0 = rf(ctx, ethTxFilter)
+	if rf, ok := ret.Get(0).(func(context.Context, db.EthTxFilter, int) []types.Transaction); ok {
+		r0 = rf(ctx, ethTxFilter, page)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]types.Transaction)
@@ -56,8 +56,8 @@ func (_m *EventDB) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, db.EthTxFilter) error); ok {
-		r1 = rf(ctx, ethTxFilter)
+	if rf, ok := ret.Get(1).(func(context.Context, db.EthTxFilter, int) error); ok {
+		r1 = rf(ctx, ethTxFilter, page)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -86,13 +86,13 @@ func (_m *EventDB) RetrieveLastIndexed(ctx context.Context, contractAddress comm
 	return r0, r1
 }
 
-// RetrieveLogsInRange provides a mock function with given fields: ctx, logFilter, startBlock, endBlock
-func (_m *EventDB) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, startBlock uint64, endBlock uint64) ([]*types.Log, error) {
-	ret := _m.Called(ctx, logFilter, startBlock, endBlock)
+// RetrieveLogsInRange provides a mock function with given fields: ctx, logFilter, startBlock, endBlock, page
+func (_m *EventDB) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, startBlock uint64, endBlock uint64, page int) ([]*types.Log, error) {
+	ret := _m.Called(ctx, logFilter, startBlock, endBlock, page)
 
 	var r0 []*types.Log
-	if rf, ok := ret.Get(0).(func(context.Context, db.LogFilter, uint64, uint64) []*types.Log); ok {
-		r0 = rf(ctx, logFilter, startBlock, endBlock)
+	if rf, ok := ret.Get(0).(func(context.Context, db.LogFilter, uint64, uint64, int) []*types.Log); ok {
+		r0 = rf(ctx, logFilter, startBlock, endBlock, page)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*types.Log)
@@ -100,8 +100,8 @@ func (_m *EventDB) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilt
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, db.LogFilter, uint64, uint64) error); ok {
-		r1 = rf(ctx, logFilter, startBlock, endBlock)
+	if rf, ok := ret.Get(1).(func(context.Context, db.LogFilter, uint64, uint64, int) error); ok {
+		r1 = rf(ctx, logFilter, startBlock, endBlock, page)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -109,13 +109,13 @@ func (_m *EventDB) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilt
 	return r0, r1
 }
 
-// RetrieveLogsWithFilter provides a mock function with given fields: ctx, logFilter
-func (_m *EventDB) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilter) ([]*types.Log, error) {
-	ret := _m.Called(ctx, logFilter)
+// RetrieveLogsWithFilter provides a mock function with given fields: ctx, logFilter, page
+func (_m *EventDB) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilter, page int) ([]*types.Log, error) {
+	ret := _m.Called(ctx, logFilter, page)
 
 	var r0 []*types.Log
-	if rf, ok := ret.Get(0).(func(context.Context, db.LogFilter) []*types.Log); ok {
-		r0 = rf(ctx, logFilter)
+	if rf, ok := ret.Get(0).(func(context.Context, db.LogFilter, int) []*types.Log); ok {
+		r0 = rf(ctx, logFilter, page)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*types.Log)
@@ -123,8 +123,8 @@ func (_m *EventDB) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogF
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, db.LogFilter) error); ok {
-		r1 = rf(ctx, logFilter)
+	if rf, ok := ret.Get(1).(func(context.Context, db.LogFilter, int) error); ok {
+		r1 = rf(ctx, logFilter, page)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -132,13 +132,13 @@ func (_m *EventDB) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogF
 	return r0, r1
 }
 
-// RetrieveReceiptsInRange provides a mock function with given fields: ctx, receiptFilter, startBlock, endBlock
-func (_m *EventDB) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.ReceiptFilter, startBlock uint64, endBlock uint64) ([]types.Receipt, error) {
-	ret := _m.Called(ctx, receiptFilter, startBlock, endBlock)
+// RetrieveReceiptsInRange provides a mock function with given fields: ctx, receiptFilter, startBlock, endBlock, page
+func (_m *EventDB) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.ReceiptFilter, startBlock uint64, endBlock uint64, page int) ([]types.Receipt, error) {
+	ret := _m.Called(ctx, receiptFilter, startBlock, endBlock, page)
 
 	var r0 []types.Receipt
-	if rf, ok := ret.Get(0).(func(context.Context, db.ReceiptFilter, uint64, uint64) []types.Receipt); ok {
-		r0 = rf(ctx, receiptFilter, startBlock, endBlock)
+	if rf, ok := ret.Get(0).(func(context.Context, db.ReceiptFilter, uint64, uint64, int) []types.Receipt); ok {
+		r0 = rf(ctx, receiptFilter, startBlock, endBlock, page)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]types.Receipt)
@@ -146,8 +146,8 @@ func (_m *EventDB) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, db.ReceiptFilter, uint64, uint64) error); ok {
-		r1 = rf(ctx, receiptFilter, startBlock, endBlock)
+	if rf, ok := ret.Get(1).(func(context.Context, db.ReceiptFilter, uint64, uint64, int) error); ok {
+		r1 = rf(ctx, receiptFilter, startBlock, endBlock, page)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -155,13 +155,13 @@ func (_m *EventDB) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db
 	return r0, r1
 }
 
-// RetrieveReceiptsWithFilter provides a mock function with given fields: ctx, receiptFilter
-func (_m *EventDB) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.ReceiptFilter) ([]types.Receipt, error) {
-	ret := _m.Called(ctx, receiptFilter)
+// RetrieveReceiptsWithFilter provides a mock function with given fields: ctx, receiptFilter, page
+func (_m *EventDB) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.ReceiptFilter, page int) ([]types.Receipt, error) {
+	ret := _m.Called(ctx, receiptFilter, page)
 
 	var r0 []types.Receipt
-	if rf, ok := ret.Get(0).(func(context.Context, db.ReceiptFilter) []types.Receipt); ok {
-		r0 = rf(ctx, receiptFilter)
+	if rf, ok := ret.Get(0).(func(context.Context, db.ReceiptFilter, int) []types.Receipt); ok {
+		r0 = rf(ctx, receiptFilter, page)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]types.Receipt)
@@ -169,8 +169,8 @@ func (_m *EventDB) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, db.ReceiptFilter) error); ok {
-		r1 = rf(ctx, receiptFilter)
+	if rf, ok := ret.Get(1).(func(context.Context, db.ReceiptFilter, int) error); ok {
+		r1 = rf(ctx, receiptFilter, page)
 	} else {
 		r1 = ret.Error(1)
 	}
