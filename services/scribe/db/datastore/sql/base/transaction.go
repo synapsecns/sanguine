@@ -49,7 +49,7 @@ func ethTxFilterToQuery(ethTxFilter db.EthTxFilter) EthTx {
 	}
 }
 
-// RetrieveEthTxsWithFilter retrieves eth transactions with a filter.
+// RetrieveEthTxsWithFilter retrieves eth transactions with a filter given a page.
 func (s Store) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthTxFilter, page int) ([]types.Transaction, error) {
 	if page < 1 {
 		page = 1
@@ -78,7 +78,7 @@ func (s Store) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthT
 	return parsedEthTxs, nil
 }
 
-// RetrieveEthTxsInRange retrieves eth transactions in a range.
+// RetrieveEthTxsInRange retrieves eth transactions that match an inputted filter and are within a range given a page.
 func (s Store) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock, endBlock uint64, page int) ([]types.Transaction, error) {
 	if page < 1 {
 		page = 1

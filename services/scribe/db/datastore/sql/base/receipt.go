@@ -56,7 +56,7 @@ func receiptFilterToQuery(receiptFilter db.ReceiptFilter) Receipt {
 	}
 }
 
-// RetrieveReceiptsWithFilter retrieves receipts with a filter.
+// RetrieveReceiptsWithFilter retrieves receipts with a filter given a page.
 func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.ReceiptFilter, page int) (receipts []types.Receipt, err error) {
 	if page < 1 {
 		page = 1
@@ -85,7 +85,7 @@ func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.
 	return parsedReceipts, nil
 }
 
-// RetrieveReceiptsInRange retrieves receipts in a range.
+// RetrieveReceiptsInRange retrieves receipts that match an inputted filter and are within a range given a page.
 func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.ReceiptFilter, startBlock, endBlock uint64, page int) (receipts []types.Receipt, err error) {
 	if page < 1 {
 		page = 1

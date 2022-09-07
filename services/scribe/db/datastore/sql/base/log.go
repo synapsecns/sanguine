@@ -80,7 +80,7 @@ func logFilterToQuery(logFilter db.LogFilter) Log {
 	}
 }
 
-// RetrieveLogsWithFilter retrieves all logs that match a filter.
+// RetrieveLogsWithFilter retrieves all logs that match a filter given a page.
 func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilter, page int) (logs []*types.Log, err error) {
 	if page < 1 {
 		page = 1
@@ -104,7 +104,7 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 	return buildLogsFromDBLogs(dbLogs), nil
 }
 
-// RetrieveLogsInRange retrieves all logs that match an inputted filter, and are within a range.
+// RetrieveLogsInRange retrieves all logs that match an inputted filter and are within a range given a page.
 func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, startBlock, endBlock uint64, page int) (logs []*types.Log, err error) {
 	if page < 1 {
 		page = 1
