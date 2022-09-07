@@ -62,6 +62,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
 
     event LogSystemCall(uint32 origin, uint8 caller, uint256 rootSubmittedAt);
 
+    event UsualCall(address recipient, uint256 newValue);
+    event OnlyLocalCall(address recipient, uint256 newValue);
+    event OnlyOriginCall(address recipient, uint256 newValue);
+    event OnlyDestinationCall(address recipient, uint256 newValue);
+    event OnlyTwoHoursCall(address recipient, uint256 newValue);
+
     function setUp() public override {
         super.setUp();
 
@@ -194,6 +200,31 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         skip(optimisticSeconds);
         vm.expectRevert("BasicClient: !trustedSender");
         destination.execute(message);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        TEST: LOCAL MULTICALL                         ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_systemMultiCall_local() public {
+        (
+            ISystemRouter.SystemEntity[] memory recipients,
+            bytes[] memory dataArray
+        ) = _prepareMultiCallTest(true, true);
+        vm.prank(address(origin));
+        systemRouter.systemMultiCall(localDomain, 0, recipients, dataArray);
+    }
+
+    function test_systemMultiCall_local_failedCall() public {
+        systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
+        (
+            ISystemRouter.SystemEntity[] memory recipients,
+            bytes[] memory dataArray
+        ) = _prepareMultiCallTest(true, false);
+        vm.prank(address(destination));
+        vm.expectRevert("!systemCaller");
+        // Multicall includes onlyOrigin call, meaning multicall will fail
+        systemRouter.systemMultiCall(localDomain, 0, recipients, dataArray);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -354,6 +385,60 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         assert(origin.sensitiveValue() != secretValue);
     }
 
+    function _prepareMultiCallTest(bool _isLocalTest, bool _isSuccessTest)
+        internal
+        returns (ISystemRouter.SystemEntity[] memory recipients, bytes[] memory dataArray)
+    {
+        uint256 amount = 3;
+        recipients = new ISystemRouter.SystemEntity[](amount);
+        dataArray = new bytes[](amount);
+        {
+            uint256 value = _getSecretValue(0);
+            recipients[0] = ISystemRouter.SystemEntity.Origin;
+            dataArray[0] = abi.encodeWithSelector(origin.setSensitiveValue.selector, value);
+            if (_isSuccessTest) {
+                vm.expectEmit(true, true, true, true);
+                emit UsualCall(address(origin), value);
+            }
+        }
+        {
+            uint256 value = _getSecretValue(1);
+            recipients[1] = ISystemRouter.SystemEntity.Destination;
+            dataArray[1] = abi.encodeWithSelector(
+                _isLocalTest
+                    ? destination.setSensitiveValueOnlyLocal.selector
+                    : destination.setSensitiveValueOnlyTwoHours.selector,
+                value
+            );
+            if (_isSuccessTest) {
+                vm.expectEmit(true, true, true, true);
+                if (_isLocalTest) {
+                    emit OnlyLocalCall(address(destination), value);
+                } else {
+                    emit OnlyTwoHoursCall(address(destination), value);
+                }
+            }
+        }
+        {
+            uint256 value = _getSecretValue(2);
+            recipients[2] = ISystemRouter.SystemEntity.Destination;
+            dataArray[2] = abi.encodeWithSelector(
+                _isLocalTest
+                    ? destination.setSensitiveValueOnlyOrigin.selector
+                    : destination.setSensitiveValueOnlyDestination.selector,
+                value
+            );
+            if (_isSuccessTest) {
+                vm.expectEmit(true, true, true, true);
+                if (_isLocalTest) {
+                    emit OnlyOriginCall(address(destination), value);
+                } else {
+                    emit OnlyDestinationCall(address(destination), value);
+                }
+            }
+        }
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -375,6 +460,32 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         );
         bytes[] memory systemCalls = new bytes[](1);
         systemCalls[0] = SystemMessage.formatSystemCall(systemRecipient, payload);
+        return _createSystemMessage(context, systemCalls);
+    }
+
+    function _createSystemMessage(
+        MessageContext memory context,
+        ISystemRouter.SystemEntity[] memory recipients,
+        bytes[] memory dataArray
+    ) internal view returns (bytes memory) {
+        uint256 amount = recipients.length;
+        bytes[] memory systemCalls = new bytes[](amount);
+        for (uint256 i = 0; i < amount; ++i) {
+            bytes memory payload = abi.encodePacked(
+                dataArray[i],
+                uint256(context.origin),
+                uint256(systemCaller)
+            );
+            systemCalls[i] = SystemMessage.formatSystemCall(systemRecipient, payload);
+        }
+        return _createSystemMessage(context, systemCalls);
+    }
+
+    function _createSystemMessage(MessageContext memory context, bytes[] memory systemCalls)
+        internal
+        view
+        returns (bytes memory)
+    {
         return
             Message.formatMessage(
                 Header.formatHeader(
@@ -388,6 +499,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                 Tips.emptyTips(),
                 abi.encode(systemCalls)
             );
+    }
+
+    function _getSecretValue(uint256 _testIndex) internal view returns (uint256) {
+        return secretValue * (_testIndex + 1);
     }
 
     function _getSystemContract(address _account)
