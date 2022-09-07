@@ -20,10 +20,14 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 			t.MakeRandomLog(txHashA),
 			t.MakeRandomLog(txHashA),
 		}
+		randomLogsA[0].BlockNumber = 1
+		randomLogsA[1].BlockNumber = 2
 		randomLogsB := []types.Log{
 			t.MakeRandomLog(txHashB),
 			t.MakeRandomLog(txHashB),
 		}
+		randomLogsB[0].BlockNumber = 3
+		randomLogsB[1].BlockNumber = 4
 
 		// Store all random logs, since `RetrieveReceipt` needs to query them to build the Receipt.
 		for _, log := range randomLogsA {
@@ -49,7 +53,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 			TxHash:           txHashA,
 			ContractAddress:  common.BigToAddress(big.NewInt(gofakeit.Int64())),
 			GasUsed:          gofakeit.Uint64(),
-			BlockNumber:      big.NewInt(int64(gofakeit.Uint32())),
+			BlockNumber:      big.NewInt(1),
 			TransactionIndex: uint(gofakeit.Uint64()),
 		}
 		err := testDB.StoreReceipt(t.GetTestContext(), receiptA, chainID)
@@ -68,7 +72,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 			TxHash:           txHashB,
 			ContractAddress:  common.BigToAddress(big.NewInt(gofakeit.Int64())),
 			GasUsed:          gofakeit.Uint64(),
-			BlockNumber:      big.NewInt(int64(gofakeit.Uint32())),
+			BlockNumber:      big.NewInt(2),
 			TransactionIndex: uint(gofakeit.Uint64()),
 		}
 		err = testDB.StoreReceipt(t.GetTestContext(), receiptB, chainID+1)

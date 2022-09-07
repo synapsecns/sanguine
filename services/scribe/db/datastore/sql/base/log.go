@@ -89,7 +89,7 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
 		Where(&query).
-		Order(fmt.Sprintf("%s, %s", BlockIndexFieldName, BlockIndexFieldName)).
+		Order(fmt.Sprintf("%s, %s", BlockNumberFieldName, BlockIndexFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbLogs)
@@ -116,7 +116,7 @@ func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, 
 		Model(&Log{}).
 		Where(&queryFilter).
 		Where(rangeQuery, startBlock, endBlock).
-		Order(fmt.Sprintf("%s, %s", BlockIndexFieldName, BlockIndexFieldName)).
+		Order(fmt.Sprintf("%s, %s", BlockNumberFieldName, BlockIndexFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbLogs)
