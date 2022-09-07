@@ -79,7 +79,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 			TxHash:  txHashA.String(),
 			ChainID: chainID,
 		}
-		retrievedReceiptA, err := testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), receiptFilter)
+		retrievedReceiptA, err := testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), receiptFilter, 1)
 		Nil(t.T(), err)
 
 		resA, err := receiptA.MarshalJSON()
@@ -92,7 +92,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 			TxHash:  txHashB.String(),
 			ChainID: chainID + 1,
 		}
-		retrievedReceiptB, err := testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), receiptFilter)
+		retrievedReceiptB, err := testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), receiptFilter, 1)
 		Nil(t.T(), err)
 
 		resA, err = receiptB.MarshalJSON()
@@ -102,7 +102,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 		Equal(t.T(), resA, resB)
 
 		// Ensure RetrieveAllReceipts gets all receipts.
-		allReceipts, err := testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), db.ReceiptFilter{})
+		allReceipts, err := testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), db.ReceiptFilter{}, 1)
 		Nil(t.T(), err)
 		Equal(t.T(), 2, len(allReceipts))
 	})

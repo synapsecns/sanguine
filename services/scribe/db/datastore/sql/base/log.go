@@ -81,12 +81,17 @@ func logFilterToQuery(logFilter db.LogFilter) Log {
 }
 
 // RetrieveLogsWithFilter retrieves all logs that match a filter.
-func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilter) (logs []*types.Log, err error) {
+func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilter, page int) (logs []*types.Log, err error) {
+	if page < 1 {
+		page = 1
+	}
 	dbLogs := []Log{}
 	query := logFilterToQuery(logFilter)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
 		Where(&query).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
 		Find(&dbLogs)
 
 	if dbTx.Error != nil {
@@ -100,7 +105,10 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 }
 
 // RetrieveLogsInRange retrieves all logs that match an inputted filter, and are within a range.
-func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, startBlock, endBlock uint64) (logs []*types.Log, err error) {
+func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, startBlock, endBlock uint64, page int) (logs []*types.Log, err error) {
+	if page < 1 {
+		page = 1
+	}
 	dbLogs := []Log{}
 	queryFilter := logFilterToQuery(logFilter)
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
@@ -108,6 +116,8 @@ func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, 
 		Model(&Log{}).
 		Where(&queryFilter).
 		Where(rangeQuery, startBlock, endBlock).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
 		Find(&dbLogs)
 
 	if dbTx.Error != nil {

@@ -50,12 +50,17 @@ func ethTxFilterToQuery(ethTxFilter db.EthTxFilter) EthTx {
 }
 
 // RetrieveEthTxsWithFilter retrieves eth transactions with a filter.
-func (s Store) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthTxFilter) ([]types.Transaction, error) {
+func (s Store) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthTxFilter, page int) ([]types.Transaction, error) {
+	if page < 1 {
+		page = 1
+	}
 	dbEthTxs := []EthTx{}
 	query := ethTxFilterToQuery(ethTxFilter)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&EthTx{}).
 		Where(&query).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
 		Find(&dbEthTxs)
 
 	if dbTx.Error != nil {
@@ -74,7 +79,10 @@ func (s Store) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthT
 }
 
 // RetrieveEthTxsInRange retrieves eth transactions in a range.
-func (s Store) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock, endBlock uint64) ([]types.Transaction, error) {
+func (s Store) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock, endBlock uint64, page int) ([]types.Transaction, error) {
+	if page < 1 {
+		page = 1
+	}
 	dbEthTxs := []EthTx{}
 	query := ethTxFilterToQuery(ethTxFilter)
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
@@ -82,6 +90,8 @@ func (s Store) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFi
 		Model(&EthTx{}).
 		Where(&query).
 		Where(rangeQuery, startBlock, endBlock).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
 		Find(&dbEthTxs)
 
 	if dbTx.Error != nil {

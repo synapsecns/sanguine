@@ -32,6 +32,9 @@ var (
 	IndexFieldName string
 )
 
+// PageSize is the amount of entries per page of logs.
+var PageSize = 100
+
 // Log stores the log of an event.
 type Log struct {
 	// ContractAddress is the address of the contract that generated the event

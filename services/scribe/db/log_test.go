@@ -37,7 +37,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 			TxHash:  txHashA.String(),
 			ChainID: chainID,
 		}
-		retrievedLogSame, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), txHashFilter)
+		retrievedLogSame, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), txHashFilter, 1)
 		Nil(t.T(), err)
 
 		resA, err := logA.MarshalJSON()
@@ -57,7 +57,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 			TxHash:  txHashC.String(),
 			ChainID: chainID + 1,
 		}
-		retrievedLog, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), txHashFilter)
+		retrievedLog, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), txHashFilter, 1)
 		Nil(t.T(), err)
 
 		resA, err = logC.MarshalJSON()
