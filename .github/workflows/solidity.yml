@@ -87,7 +87,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-
       - name: Install Node Dependencies
         run: yarn install --frozen-lockfile --check-files
 
@@ -117,4 +116,4 @@ jobs:
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: ./packages/contracts/results.sarif
+          sarif_file: ./packages/contracts-core/results.sarif

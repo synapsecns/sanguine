@@ -1,4 +1,4 @@
-on: [push,pull_request]
+on: [push, pull_request]
 
 name: Foundry Tests
 
@@ -10,7 +10,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-
 
       - name: Read .nvmrc
         run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
@@ -57,13 +56,12 @@ jobs:
           token: ${{ secrets.CODECOV }}
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
-          working-directory: ./packages/contracts/
-
+          working-directory: ./packages/contracts-core/
 
       - name: Send Coverage (Coveralls)
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.github_token }}
-          path-to-lcov: ./packages/contracts/lcov.info
-          base-path: ./packages/contracts/
+          path-to-lcov: ./packages/contracts-core/lcov.info
+          base-path: ./packages/contracts-core/
           flag-name: foundry

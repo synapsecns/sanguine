@@ -1,5 +1,5 @@
 2-reviewers:
-  - 'packages/contracts/**/*'
+  - 'packages/contracts-core/**/*'
 
 M-ci:
   - any: ['\.github/**/*']
@@ -14,10 +14,10 @@ M-integration:
   - any: ['integration-tests/**/*']
 
 M-contracts:
-  - any: ['packages/contracts/**/*']
+  - any: ['packages/contracts-core/**/*']
 
 C-Protocol-Critical:
-  - 'packages/contracts/**/*.sol'
+  - 'packages/contracts-core/**/*.sol'
 
 Go:
   - '**/*.go'
