@@ -59,6 +59,7 @@ func (s Store) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthT
 	dbTx := s.DB().WithContext(ctx).
 		Model(&EthTx{}).
 		Where(&query).
+		Order(fmt.Sprintf("%s, %s", BlockIndexFieldName, BlockIndexFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbEthTxs)
@@ -90,6 +91,7 @@ func (s Store) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFi
 		Model(&EthTx{}).
 		Where(&query).
 		Where(rangeQuery, startBlock, endBlock).
+		Order(fmt.Sprintf("%s, %s", BlockIndexFieldName, BlockIndexFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbEthTxs)

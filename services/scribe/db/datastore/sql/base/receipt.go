@@ -66,6 +66,7 @@ func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Receipt{}).
 		Where(&query).
+		Order(fmt.Sprintf("%s, %s", BlockIndexFieldName, BlockIndexFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbReceipts)
@@ -97,6 +98,7 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 		Model(&Receipt{}).
 		Where(&query).
 		Where(rangeQuery, startBlock, endBlock).
+		Order(fmt.Sprintf("%s, %s", BlockIndexFieldName, BlockIndexFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbReceipts)

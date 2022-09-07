@@ -16,7 +16,7 @@ func init() {
 	ChainIDFieldName = namer.GetConsistentName("ChainID")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	ContractAddressFieldName = namer.GetConsistentName("ContractAddress")
-	IndexFieldName = namer.GetConsistentName("Index")
+	BlockIndexFieldName = namer.GetConsistentName("BlockIndex")
 }
 
 var (
@@ -28,8 +28,8 @@ var (
 	BlockNumberFieldName string
 	// ContractAddressFieldName is the address of the contract.
 	ContractAddressFieldName string
-	// IndexFieldName is the index field name.
-	IndexFieldName string
+	// BlockIndexFieldName is the index field name.
+	BlockIndexFieldName string
 )
 
 // PageSize is the amount of entries per page of logs.
@@ -60,7 +60,7 @@ type Log struct {
 	// BlockHash is the hash of the block in which the transaction was included
 	BlockHash string `gorm:"block_hash"`
 	// Index is the index of the log in the block
-	Index uint64 `gorm:"column:index;primaryKey;auto_increment:false"`
+	BlockIndex uint64 `gorm:"column:block_index;primaryKey;auto_increment:false"`
 	// Removed is true if this log was reverted due to a chain re-organization
 	Removed bool `gorm:"removed"`
 }
