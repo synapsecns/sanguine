@@ -3,7 +3,6 @@ package cmd
 import (
 	// used to embed markdown.
 	_ "embed"
-	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/urfave/cli/v2"
 )
 
