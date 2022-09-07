@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hashicorp/consul/sdk/freeport"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server"
+
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jftuga/termsize"
@@ -85,4 +88,44 @@ var backfillCommand = &cli.Command{
 
 		return nil
 	},
+}
+
+var portFlag = &cli.UintFlag{
+	Name:  "port",
+	Usage: "--port 5121",
+	//nolint:staticcheck
+	Value: 0,
+}
+
+var dbFlag = &cli.StringFlag{
+	Name:  "db",
+	Usage: "--db <sqlite> or <mysql>",
+	Value: "sqlite",
+}
+
+var pathFlag = &cli.StringFlag{
+	Name:  "path",
+	Usage: "--path <path/to/database> or <database url>",
+	Value: "",
+}
+
+var serverCommand = &cli.Command{
+	Name:        "server",
+	Description: "starts a graphql server",
+	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag},
+	Action: func(c *cli.Context) error {
+		err := server.Start(c.Context, uint16(c.Uint(portFlag.Name)), c.String(dbFlag.Name), c.String(pathFlag.Name))
+		if err != nil {
+			return fmt.Errorf("could not start server: %w", err)
+		}
+
+		return nil
+	},
+}
+
+func init() {
+	ports := freeport.Get(1)
+	if len(ports) > 0 {
+		portFlag.Value = uint(ports[0])
+	}
 }

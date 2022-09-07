@@ -63,7 +63,7 @@ var testTxes = []*types.Transaction{
 	}),
 }
 
-func (t *DBSuite) TestTxInsertion() {
+func (t *DBSuite) TestStoreAndRetrieveEthTx() {
 	testWallet, err := wallet.FromRandom()
 	Nil(t.T(), err)
 
@@ -79,7 +79,18 @@ func (t *DBSuite) TestTxInsertion() {
 
 			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, uint32(testTx.ChainId().Uint64()), gofakeit.Uint64())
 			Nil(t.T(), err)
-			// TODO: retrieve the processed tx
+
+			ethTxFilter := db.EthTxFilter{
+				ChainID: uint32(testTx.ChainId().Uint64()),
+				TxHash:  signedTx.Hash().String(),
+			}
+			tx, err := testDB.RetrieveEthTxsWithFilter(t.GetTestContext(), ethTxFilter)
+			Nil(t.T(), err)
+			resA, err := tx[0].MarshalJSON()
+			Nil(t.T(), err)
+			resB, err := signedTx.MarshalJSON()
+			Nil(t.T(), err)
+			Equal(t.T(), resA, resB)
 		}
 	})
 }

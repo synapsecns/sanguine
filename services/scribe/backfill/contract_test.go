@@ -7,9 +7,9 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/mocks"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
@@ -184,12 +184,12 @@ func (b BackfillSuite) TestContractBackfill() {
 	err = backfiller.Backfill(b.GetTestContext(), contractConfig.StartBlock, txBlockNumber)
 	Nil(b.T(), err)
 	// Get all receipts.
-	receipts, err := b.testDB.UnsafeRetrieveAllReceipts(b.GetTestContext(), false, 0)
+	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{})
 	Nil(b.T(), err)
 	// Check to see if 3 receipts were collected.
 	Equal(b.T(), 3, len(receipts))
 	// Get all logs.
-	logs, err := b.testDB.UnsafeRetrieveAllLogs(b.GetTestContext(), false, 0, common.Address{})
+	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{})
 	Nil(b.T(), err)
 	// Check to see if 4 logs were collected.
 	Equal(b.T(), 4, len(logs))

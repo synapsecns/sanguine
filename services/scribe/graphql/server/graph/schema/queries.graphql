@@ -1,0 +1,58 @@
+type Query {
+  # returns all logs that match the given filter
+  logs(
+    contract_address: String
+    chain_id: Int!
+    block_number: Int
+    tx_hash: String
+    tx_index: Int
+    block_hash: String
+    index: Int
+  ): [Log]
+  # returns all logs that match the given filter and range
+  logsRange(
+    contract_address: String
+    chain_id: Int!
+    block_number: Int
+    tx_hash: String
+    tx_index: Int
+    block_hash: String
+    index: Int
+    start_block: Int!
+    end_block: Int!
+  ): [Log]
+  # returns all receipts that match the given filter
+  receipts(
+    chain_id: Int!
+    tx_hash: String
+    contract_address: String
+    block_hash: String
+    block_number: Int
+    tx_index: Int
+  ): [Receipt]
+  # returns all receipts that match the given filter and range
+  receiptsRange(
+    chain_id: Int!
+    tx_hash: String
+    contract_address: String
+    block_hash: String
+    block_number: Int
+    tx_index: Int
+    start_block: Int!
+    end_block: Int!
+  ): [Receipt]
+  # returns all transactions that match the given filter
+  transactions(
+    tx_hash: String
+    chain_id: Int!
+    block_number: Int
+  ): [Transaction]
+  # returns all transactions that match the given filter and range
+  transactionsRange(
+    tx_hash: String
+    chain_id: Int!
+    block_number: Int
+    start_block: Int!
+    end_block: Int!
+  ): [Transaction]
+}

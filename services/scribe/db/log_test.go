@@ -33,7 +33,11 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 
 		// Ensure the logs from the database match the ones stored.
 		// Check the logs for the two with the same txHash.
-		retrievedLogSame, err := testDB.RetrieveLogs(t.GetTestContext(), txHashA, chainID)
+		txHashFilter := db.LogFilter{
+			TxHash:  txHashA.String(),
+			ChainID: chainID,
+		}
+		retrievedLogSame, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), txHashFilter)
 		Nil(t.T(), err)
 
 		resA, err := logA.MarshalJSON()
@@ -49,7 +53,11 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		Equal(t.T(), resA, resB)
 
 		// Check the logs for the one with a different txHash.
-		retrievedLog, err := testDB.RetrieveLogs(t.GetTestContext(), txHashC, chainID+1)
+		txHashFilter = db.LogFilter{
+			TxHash:  txHashC.String(),
+			ChainID: chainID + 1,
+		}
+		retrievedLog, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), txHashFilter)
 		Nil(t.T(), err)
 
 		resA, err = logC.MarshalJSON()
@@ -57,11 +65,6 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		resB, err = retrievedLog[0].MarshalJSON()
 		Nil(t.T(), err)
 		Equal(t.T(), resA, resB)
-
-		// Check if `RetrieveAllLogs` returns all the logs.
-		allLogs, err := testDB.UnsafeRetrieveAllLogs(t.GetTestContext(), false, 0, common.Address{})
-		Nil(t.T(), err)
-		Equal(t.T(), len(allLogs), 3)
 	})
 }
 

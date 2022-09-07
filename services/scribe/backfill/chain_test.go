@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 )
@@ -87,14 +88,21 @@ func (b BackfillSuite) EmitEventsForAChain(chainID uint32, contracts []contracts
 		// Check that the events were written to the database.
 		for _, contract := range contracts {
 			// Check the storage of logs.
-			logs, err := b.testDB.UnsafeRetrieveAllLogs(b.GetTestContext(), true, chainConfig.ChainID, contract.Address())
+			logFilter := db.LogFilter{
+				ChainID:         chainConfig.ChainID,
+				ContractAddress: contract.Address().String(),
+			}
+			logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), logFilter)
 			Nil(b.T(), err)
 			// There should be 4 logs. One from `EmitEventA`, one from `EmitEventB`, and two
 			// from `EmitEventAandB`.
 			Equal(b.T(), 4, len(logs))
 		}
 		// Check the storage of receipts.
-		receipts, err := b.testDB.UnsafeRetrieveAllReceipts(b.GetTestContext(), true, chainConfig.ChainID)
+		receiptFilter := db.ReceiptFilter{
+			ChainID: chainConfig.ChainID,
+		}
+		receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), receiptFilter)
 		Nil(b.T(), err)
 		// There should be 9 receipts. One from `EmitEventA`, one from `EmitEventB`, and
 		// one from `EmitEventAandB`, for each contract.
