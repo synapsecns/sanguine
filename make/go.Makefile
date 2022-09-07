@@ -17,7 +17,7 @@ golangci-install:
 	@#Github Actions
 	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(GITHUB_WORKFLOW)" != "" ]; then curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b $(go env GOPATH)/bin; fi;
 	@#Brew - MacOS
-	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(shell which brew)" != "" ]; then brew install golangci-lint; fi;
+	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(shell which brew)" != "" ] && ![ "$(GITHUB_WORKFLOW)" != "" ]; then brew install golangci-lint; fi;
 
 
 help: ## This help dialog.

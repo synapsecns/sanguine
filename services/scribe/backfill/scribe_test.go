@@ -4,12 +4,12 @@ import (
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 )
@@ -112,11 +112,11 @@ func (b BackfillSuite) TestScribeBackfill() {
 	Nil(b.T(), err)
 
 	// Check that the data was added to the database.
-	logs, err := b.testDB.UnsafeRetrieveAllLogs(b.GetTestContext(), false, 0, common.Address{})
+	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{})
 	Nil(b.T(), err)
 	// There are 4 logs per contract, and 3 contracts per chain. Since there are 3 chains, 4*3*3 = 36 logs.
 	Equal(b.T(), 36, len(logs))
-	receipts, err := b.testDB.UnsafeRetrieveAllReceipts(b.GetTestContext(), false, 0)
+	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{})
 	Nil(b.T(), err)
 	// There are 9 receipts per chain. Since there are 3 chains, 9*3 = 27 receipts.
 	Equal(b.T(), 27, len(receipts))
