@@ -34,7 +34,7 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Installing dependencies
-        working-directory: ./packages/contracts
+        working-directory: ./packages/contracts-core
         run: yarn install --frozen-lockfile --check-files
 
       - name: Install Foundry
@@ -43,11 +43,11 @@ jobs:
           version: nightly
 
       - name: Run Foundry Tests
-        working-directory: ./packages/contracts
+        working-directory: ./packages/contracts-core
         run: forge coverage -vvv --report=lcov
 
       - name: Run snapshot
-        working-directory: ./packages/contracts
+        working-directory: ./packages/contracts-core
         run: forge snapshot >> $GITHUB_STEP_SUMMARY
 
       - uses: codecov/codecov-action@v3
