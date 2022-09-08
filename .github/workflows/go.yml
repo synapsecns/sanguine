@@ -31,6 +31,9 @@ jobs:
         with:
           fetch-depth: 0
           submodules: 'recursive'
+          
+      - name: Init clickhouse
+        run: docker run --name clickhouse -p 9000:9000 -p 8123:8123 -d yandex/clickhouse-server
 
       # todo: consider making this a service. You'd need another way to expose the private keys for the test
       - name: Run rinkeby
