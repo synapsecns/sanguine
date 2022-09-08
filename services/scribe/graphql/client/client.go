@@ -207,8 +207,8 @@ type GetTransactionsResolvers struct {
 	} "json:\"response\" graphql:\"response\""
 }
 
-const GetLogsDocument = `query GetLogs ($chain_id: Int!) {
-	response: logs(chain_id: $chain_id) {
+const GetLogsDocument = `query GetLogs ($chain_id: Int!, $page: Int!) {
+	response: logs(chain_id: $chain_id, page: $page) {
 		contract_address
 		chain_id
 		topics
@@ -223,9 +223,10 @@ const GetLogsDocument = `query GetLogs ($chain_id: Int!) {
 }
 `
 
-func (c *Client) GetLogs(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetLogs, error) {
+func (c *Client) GetLogs(ctx context.Context, chainID int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetLogs, error) {
 	vars := map[string]interface{}{
 		"chain_id": chainID,
+		"page":     page,
 	}
 
 	var res GetLogs
@@ -236,8 +237,8 @@ func (c *Client) GetLogs(ctx context.Context, chainID int, httpRequestOptions ..
 	return &res, nil
 }
 
-const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
-	response: logsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block) {
+const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+	response: logsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
 		contract_address
 		chain_id
 		topics
@@ -252,11 +253,12 @@ const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block:
 }
 `
 
-func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, endBlock int, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsRange, error) {
+func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsRange, error) {
 	vars := map[string]interface{}{
 		"chain_id":    chainID,
 		"start_block": startBlock,
 		"end_block":   endBlock,
+		"page":        page,
 	}
 
 	var res GetLogsRange
@@ -267,8 +269,8 @@ func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, 
 	return &res, nil
 }
 
-const GetLogsResolversDocument = `query GetLogsResolvers ($chain_id: Int!) {
-	response: logs(chain_id: $chain_id) {
+const GetLogsResolversDocument = `query GetLogsResolvers ($chain_id: Int!, $page: Int!) {
+	response: logs(chain_id: $chain_id, page: $page) {
 		receipt {
 			chain_id
 			type
@@ -300,9 +302,10 @@ const GetLogsResolversDocument = `query GetLogsResolvers ($chain_id: Int!) {
 }
 `
 
-func (c *Client) GetLogsResolvers(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsResolvers, error) {
+func (c *Client) GetLogsResolvers(ctx context.Context, chainID int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsResolvers, error) {
 	vars := map[string]interface{}{
 		"chain_id": chainID,
+		"page":     page,
 	}
 
 	var res GetLogsResolvers
@@ -313,8 +316,8 @@ func (c *Client) GetLogsResolvers(ctx context.Context, chainID int, httpRequestO
 	return &res, nil
 }
 
-const GetReceiptsDocument = `query GetReceipts ($chain_id: Int!) {
-	response: receipts(chain_id: $chain_id) {
+const GetReceiptsDocument = `query GetReceipts ($chain_id: Int!, $page: Int!) {
+	response: receipts(chain_id: $chain_id, page: $page) {
 		chain_id
 		type
 		post_state
@@ -330,9 +333,10 @@ const GetReceiptsDocument = `query GetReceipts ($chain_id: Int!) {
 }
 `
 
-func (c *Client) GetReceipts(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceipts, error) {
+func (c *Client) GetReceipts(ctx context.Context, chainID int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceipts, error) {
 	vars := map[string]interface{}{
 		"chain_id": chainID,
+		"page":     page,
 	}
 
 	var res GetReceipts
@@ -343,8 +347,8 @@ func (c *Client) GetReceipts(ctx context.Context, chainID int, httpRequestOption
 	return &res, nil
 }
 
-const GetReceiptsRangeDocument = `query GetReceiptsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
-	response: receiptsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block) {
+const GetReceiptsRangeDocument = `query GetReceiptsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+	response: receiptsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
 		chain_id
 		type
 		post_state
@@ -360,11 +364,12 @@ const GetReceiptsRangeDocument = `query GetReceiptsRange ($chain_id: Int!, $star
 }
 `
 
-func (c *Client) GetReceiptsRange(ctx context.Context, chainID int, startBlock int, endBlock int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceiptsRange, error) {
+func (c *Client) GetReceiptsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceiptsRange, error) {
 	vars := map[string]interface{}{
 		"chain_id":    chainID,
 		"start_block": startBlock,
 		"end_block":   endBlock,
+		"page":        page,
 	}
 
 	var res GetReceiptsRange
@@ -375,8 +380,8 @@ func (c *Client) GetReceiptsRange(ctx context.Context, chainID int, startBlock i
 	return &res, nil
 }
 
-const GetReceiptsResolversDocument = `query GetReceiptsResolvers ($chain_id: Int!) {
-	response: receipts(chain_id: $chain_id) {
+const GetReceiptsResolversDocument = `query GetReceiptsResolvers ($chain_id: Int!, $page: Int!) {
+	response: receipts(chain_id: $chain_id, page: $page) {
 		logs {
 			contract_address
 			chain_id
@@ -407,9 +412,10 @@ const GetReceiptsResolversDocument = `query GetReceiptsResolvers ($chain_id: Int
 }
 `
 
-func (c *Client) GetReceiptsResolvers(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceiptsResolvers, error) {
+func (c *Client) GetReceiptsResolvers(ctx context.Context, chainID int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceiptsResolvers, error) {
 	vars := map[string]interface{}{
 		"chain_id": chainID,
+		"page":     page,
 	}
 
 	var res GetReceiptsResolvers
@@ -420,8 +426,8 @@ func (c *Client) GetReceiptsResolvers(ctx context.Context, chainID int, httpRequ
 	return &res, nil
 }
 
-const GetTransactionsDocument = `query GetTransactions ($chain_id: Int!) {
-	response: transactions(chain_id: $chain_id) {
+const GetTransactionsDocument = `query GetTransactions ($chain_id: Int!, $page: Int!) {
+	response: transactions(chain_id: $chain_id, page: $page) {
 		chain_id
 		tx_hash
 		protected
@@ -438,9 +444,10 @@ const GetTransactionsDocument = `query GetTransactions ($chain_id: Int!) {
 }
 `
 
-func (c *Client) GetTransactions(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetTransactions, error) {
+func (c *Client) GetTransactions(ctx context.Context, chainID int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetTransactions, error) {
 	vars := map[string]interface{}{
 		"chain_id": chainID,
+		"page":     page,
 	}
 
 	var res GetTransactions
@@ -451,8 +458,8 @@ func (c *Client) GetTransactions(ctx context.Context, chainID int, httpRequestOp
 	return &res, nil
 }
 
-const GetTransactionsRangeDocument = `query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
-	response: transactionsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block) {
+const GetTransactionsRangeDocument = `query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+	response: transactionsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
 		chain_id
 		tx_hash
 		protected
@@ -469,11 +476,12 @@ const GetTransactionsRangeDocument = `query GetTransactionsRange ($chain_id: Int
 }
 `
 
-func (c *Client) GetTransactionsRange(ctx context.Context, chainID int, startBlock int, endBlock int, httpRequestOptions ...client.HTTPRequestOption) (*GetTransactionsRange, error) {
+func (c *Client) GetTransactionsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetTransactionsRange, error) {
 	vars := map[string]interface{}{
 		"chain_id":    chainID,
 		"start_block": startBlock,
 		"end_block":   endBlock,
+		"page":        page,
 	}
 
 	var res GetTransactionsRange
@@ -484,8 +492,8 @@ func (c *Client) GetTransactionsRange(ctx context.Context, chainID int, startBlo
 	return &res, nil
 }
 
-const GetTransactionsResolversDocument = `query GetTransactionsResolvers ($chain_id: Int!) {
-	response: transactions(chain_id: $chain_id) {
+const GetTransactionsResolversDocument = `query GetTransactionsResolvers ($chain_id: Int!, $page: Int!) {
+	response: transactions(chain_id: $chain_id, page: $page) {
 		receipt {
 			chain_id
 			type
@@ -515,9 +523,10 @@ const GetTransactionsResolversDocument = `query GetTransactionsResolvers ($chain
 }
 `
 
-func (c *Client) GetTransactionsResolvers(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetTransactionsResolvers, error) {
+func (c *Client) GetTransactionsResolvers(ctx context.Context, chainID int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetTransactionsResolvers, error) {
 	vars := map[string]interface{}{
 		"chain_id": chainID,
+		"page":     page,
 	}
 
 	var res GetTransactionsResolvers

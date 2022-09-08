@@ -184,12 +184,12 @@ func (b BackfillSuite) TestContractBackfill() {
 	err = backfiller.Backfill(b.GetTestContext(), contractConfig.StartBlock, txBlockNumber)
 	Nil(b.T(), err)
 	// Get all receipts.
-	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{})
+	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
 	Nil(b.T(), err)
 	// Check to see if 3 receipts were collected.
 	Equal(b.T(), 3, len(receipts))
 	// Get all logs.
-	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{})
+	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
 	Nil(b.T(), err)
 	// Check to see if 4 logs were collected.
 	Equal(b.T(), 4, len(logs))
