@@ -228,6 +228,49 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        TEST: REMOTE MULTICALL                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_systemMultiCall_remote() public {
+        systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
+        (
+            ISystemRouter.SystemEntity[] memory recipients,
+            bytes[] memory dataArray
+        ) = _prepareMultiCallTest(true, false);
+        bytes memory message = _createSystemMessage(sentSystemMessage, recipients, dataArray);
+        _expectSystemMessage(message);
+        vm.prank(address(destination));
+        systemRouter.systemMultiCall(remoteDomain, optimisticSeconds, recipients, dataArray);
+    }
+
+    function test_receiveSystemMessage_multicall() public {
+        systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
+        optimisticSeconds = 2 hours;
+        (
+            ISystemRouter.SystemEntity[] memory recipients,
+            bytes[] memory dataArray
+        ) = _prepareMultiCallTest(false, true);
+        bytes memory message = _createSystemMessage(receivedSystemMessage, recipients, dataArray);
+        _prepareReceiveTest(message);
+        skip(optimisticSeconds);
+        destination.execute(message);
+    }
+
+    function test_receiveSystemMessage_multicall_failedCall() public {
+        systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
+        optimisticSeconds = 2 hours - 1;
+        (
+            ISystemRouter.SystemEntity[] memory recipients,
+            bytes[] memory dataArray
+        ) = _prepareMultiCallTest(false, false);
+        bytes memory message = _createSystemMessage(receivedSystemMessage, recipients, dataArray);
+        _prepareReceiveTest(message);
+        skip(optimisticSeconds);
+        vm.expectRevert("!optimisticPeriod");
+        destination.execute(message);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                   TEST: SYSTEM CONTRACT MODIFIERS                    ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
     // TODO: this should be in a SystemContract mock test.
@@ -346,17 +389,21 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         for (systemRecipient = 0; systemRecipient <= 1; (++systemRecipient, ++nonce)) {
             ISystemRouter.SystemEntity recipient = ISystemRouter.SystemEntity(systemRecipient);
             bytes memory message = _createSystemMessage(sentSystemMessage);
-            vm.expectEmit(true, true, true, true);
-            emit Dispatch(
-                keccak256(message),
-                nonce - 1,
-                (uint64(remoteDomain) << 32) | nonce,
-                Tips.emptyTips(),
-                message
-            );
+            _expectSystemMessage(message);
             vm.prank(sender);
             systemRouter.systemCall(remoteDomain, optimisticSeconds, recipient, data);
         }
+    }
+
+    function _expectSystemMessage(bytes memory _message) internal {
+        vm.expectEmit(true, true, true, true);
+        emit Dispatch(
+            keccak256(_message),
+            nonce - 1,
+            (uint64(remoteDomain) << 32) | nonce,
+            Tips.emptyTips(),
+            _message
+        );
     }
 
     function _checkReceiveSystemMessage() internal {
@@ -377,12 +424,14 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         returns (bytes memory message)
     {
         message = _createSystemMessage(context);
+        _prepareReceiveTest(message);
+    }
+
+    function _prepareReceiveTest(bytes memory _message) internal {
         // Mark message as proved against ROOT
         (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
         destination.submitAttestation(attestation);
-        destination.setMessageStatus(remoteDomain, keccak256(message), ROOT);
-        // Sanity check
-        assert(origin.sensitiveValue() != secretValue);
+        destination.setMessageStatus(remoteDomain, keccak256(_message), ROOT);
     }
 
     function _prepareMultiCallTest(bool _isLocalTest, bool _isSuccessTest)
@@ -476,7 +525,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
                 uint256(context.origin),
                 uint256(systemCaller)
             );
-            systemCalls[i] = SystemMessage.formatSystemCall(systemRecipient, payload);
+            systemCalls[i] = SystemMessage.formatSystemCall(uint8(recipients[i]), payload);
         }
         return _createSystemMessage(context, systemCalls);
     }
