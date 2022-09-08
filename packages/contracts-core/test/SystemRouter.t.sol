@@ -40,6 +40,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     uint32 internal nonce = 1;
     uint32 internal optimisticSeconds = OPTIMISTIC_PERIOD;
 
+    /// @notice Default test setup is Origin calling Destination
     uint8 internal systemCaller = uint8(ISystemRouter.SystemEntity.Origin);
     uint8 internal systemRecipient = uint8(ISystemRouter.SystemEntity.Destination);
     uint256 internal secretValue = 1337;
@@ -123,27 +124,40 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     ▏*║                          TEST: SYSTEM CALL                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @notice System call on local chain: Destination to Origin.
+     */
     function test_systemCall_local_toOrigin() public {
         systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
         systemRecipient = uint8(ISystemRouter.SystemEntity.Origin);
-        // Destination calls Origin
         _checkLocalSystemCall();
     }
 
+    /**
+     * @notice System call on local chain: Origin to Destination.
+     */
     function test_systemCall_local_toDestination() public {
-        // Origin calls Destination (default setup)
         _checkLocalSystemCall();
     }
 
+    /**
+     * @notice Send system call from local to remote chain: Origin to Destination.
+     */
     function test_systemCall_remote_origin() public {
         _checkRemoteSystemCall();
     }
 
+    /**
+     * @notice Send system call from local to remote chain: Destination to Destination.
+     */
     function test_systemCall_remote_destination() public {
         systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
         _checkRemoteSystemCall();
     }
 
+    /**
+     * @notice System call (both local and remote), when invoked by NOT a system contract.
+     */
     function test_systemCall_notSystemContract() public {
         for (uint256 i = 0; i < domains.length; ++i) {
             vm.expectRevert("Unauthorized caller");
@@ -155,26 +169,37 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     ▏*║                     TEST: RECEIVE SYSTEM MESSAGE                     ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @notice Receive system call from remote to local chain: Destination to Origin.
+     */
     function test_receiveSystemMessage_origin() public {
-        // remote Destination -> local Origin
         systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
         systemRecipient = uint8(ISystemRouter.SystemEntity.Origin);
         _checkReceiveSystemMessage();
     }
 
+    /**
+     * @notice Receive system call from remote to local chain: Origin to Destination.
+     */
     function test_receiveSystemMessage_destination() public {
-        // remote Origin -> local Destination (default setup)
         _checkReceiveSystemMessage();
     }
 
+    /**
+     * @notice Receive system call from remote to local chain: Origin to Destination.
+     * Optimistic period is zero, unprotected function is called, meaning test is successful.
+     */
     function test_receiveSystemMessage_optimisticPeriodZero() public {
         // Test harnesses don't block system messages with a small (or even zero)
         // optimistic period.
-        // TODO: introduce and test "force optimistic period" modifiers in system contracts
         optimisticSeconds = 0;
         _checkReceiveSystemMessage();
     }
 
+    /**
+     * @notice Receive system call from remote to local chain: Origin to Destination.
+     * Called before optimistic period is over, should fail.
+     */
     function test_receiveSystemMessage_optimisticPeriodNotOver() public {
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds - 1);
@@ -182,6 +207,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         destination.execute(message);
     }
 
+    /**
+     * @notice Receive system call from remote to local chain: ??? to Destination.
+     * Specified recipient does not exist, should fail.
+     */
     function test_receiveSystemMessage_unknownRecipient() public {
         // recipient = 2 does not exist
         systemRecipient = 2;
@@ -192,8 +221,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     }
 
     /**
-     * Anyone can send a "usual message" to SystemRouter, using its address.
-     * Such messages should be rejected by SystemRouter upon receiving.
+     * @notice SystemRouter receives a plain message send via Destination directly
+     * on the remote chain, specifying SystemRouter address as the recipient (anyone could do that).
+     * SystemRouter should reject such messages: only special value of SYSTEM_ROUTER
+     * is accepted as recipient.
      */
     function test_rejectUsualReceivedMessage() public {
         bytes memory message = _prepareReceiveTest(receivedUsualMessage);
@@ -206,6 +237,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     ▏*║                        TEST: LOCAL MULTICALL                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @notice System multicall on local chain. Origin invokes:
+     * 1. origin.setSensitiveValue(1337)
+     * 2. destination.setSensitiveValueOnlyLocal(1337 * 2)
+     * 3. destination.setSensitiveValueOnlyOrigin(1337 * 3)
+     */
     function test_systemMultiCall_local() public {
         (
             ISystemRouter.SystemEntity[] memory recipients,
@@ -213,8 +250,16 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         ) = _prepareMultiCallTest(true, true);
         vm.prank(address(origin));
         systemRouter.systemMultiCall(localDomain, 0, recipients, dataArray);
+        // TODO: check execution order
     }
 
+    /**
+     * @notice System multicall on local chain. Destination invokes:
+     * 1. origin.setSensitiveValue(1337)
+     * 2. destination.setSensitiveValueOnlyLocal(1337 * 2)
+     * 3. destination.setSensitiveValueOnlyOrigin(1337 * 3)
+     * Call #3 fails meaning the whole transaction is reverted.
+     */
     function test_systemMultiCall_local_failedCall() public {
         systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
         (
@@ -231,6 +276,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     ▏*║                        TEST: REMOTE MULTICALL                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @notice Send system multicall from local chain to remote chain. Destination invokes:
+     * 1. origin.setSensitiveValue(1337)
+     * 2. destination.setSensitiveValueOnlyTwoHours(1337 * 2)
+     * 3. destination.setSensitiveValueOnlyDestination(1337 * 3)
+     */
     function test_systemMultiCall_remote() public {
         systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
         (
@@ -243,6 +294,13 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         systemRouter.systemMultiCall(remoteDomain, optimisticSeconds, recipients, dataArray);
     }
 
+    /**
+     * @notice Receive system multicall from remote chain to local chain.
+     * Remote Destination invoked:
+     * 1. origin.setSensitiveValue(1337)
+     * 2. destination.setSensitiveValueOnlyTwoHours(1337 * 2)
+     * 3. destination.setSensitiveValueOnlyDestination(1337 * 3)
+     */
     function test_receiveSystemMessage_multicall() public {
         systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
         optimisticSeconds = 2 hours;
@@ -254,8 +312,18 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         _prepareReceiveTest(message);
         skip(optimisticSeconds);
         destination.execute(message);
+        // TODO: check execution order
     }
 
+    /**
+     * @notice Receive system multicall from remote chain to local chain.
+     * Remote Destination invoked:
+     * 1. origin.setSensitiveValue(1337)
+     * 2. destination.setSensitiveValueOnlyTwoHours(1337 * 2)
+     * 3. destination.setSensitiveValueOnlyDestination(1337 * 3)
+     * Optimistic period is set to (2 hours - 1 second)
+     * Call #2 fails meaning the whole transaction is reverted.
+     */
     function test_receiveSystemMessage_multicall_failedCall() public {
         systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
         optimisticSeconds = 2 hours - 1;
@@ -276,8 +344,11 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     // TODO: this should be in a SystemContract mock test.
     // Move over once a reusable testing suite is established.
 
+    /**
+     * @notice System call on local chain. Origin invokes:
+     *  destination.setSensitiveValueOnlyOrigin(1337)
+     */
     function test_systemCall_local_onlyCaller() public {
-        // Local Origin calls Destination: setSensitiveValueOnlyOrigin
         data = abi.encodeWithSelector(
             destination.setSensitiveValueOnlyOrigin.selector,
             secretValue
@@ -285,9 +356,14 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         _checkLocalSystemCall();
     }
 
+    /**
+     * @notice System call on local chain. Destination invokes:
+     *  origin.setSensitiveValueOnlyOrigin(1337)
+     * Should fail due to the wrong caller.
+     */
     function test_systemCall_local_onlyCaller_wrongCaller() public {
-        // Local Destination calls Destination (aka itself): setSensitiveValueOnlyOrigin
         systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
+        systemRecipient = uint8(ISystemRouter.SystemEntity.Origin);
         data = abi.encodeWithSelector(
             destination.setSensitiveValueOnlyOrigin.selector,
             secretValue
@@ -297,14 +373,21 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         systemRouter.systemCall(localDomain, 0, ISystemRouter.SystemEntity.Destination, data);
     }
 
+    /**
+     * @notice System call on local chain. Origin invokes:
+     *  destination.setSensitiveValueOnlyLocal(1337)
+     */
     function test_systemCall_local_onlyLocal() public {
-        // Local Origin calls Destination: setSensitiveValueOnlyLocal
         data = abi.encodeWithSelector(destination.setSensitiveValueOnlyLocal.selector, secretValue);
         _checkLocalSystemCall();
     }
 
+    /**
+     * @notice System call on local chain. Origin invokes:
+     *  destination.setSensitiveValueOnlyTwoHours(1337)
+     * Should fail: optimistic period check always fails on local calls
+     */
     function test_systemCall_local_onlyOptimisticPeriodOver() public {
-        // optimistic period check always fails on local calls
         data = abi.encodeWithSelector(
             destination.setSensitiveValueOnlyTwoHours.selector,
             secretValue
@@ -314,8 +397,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         systemRouter.systemCall(localDomain, 0, ISystemRouter.SystemEntity.Destination, data);
     }
 
+    /**
+     * @notice Receive system call from remote chain to local chain.
+     * Remote Origin invokes:
+     *  destination.setSensitiveValueOnlyOrigin(1337)
+     */
     function test_systemCall_remote_onlyCaller() public {
-        // Remote Origin calls Destination: setSensitiveValueOnlyOrigin
         data = abi.encodeWithSelector(
             destination.setSensitiveValueOnlyOrigin.selector,
             secretValue
@@ -323,8 +410,13 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         _checkReceiveSystemMessage();
     }
 
+    /**
+     * @notice Receive system call from remote chain to local chain.
+     * Remote Destination invokes:
+     *  destination.setSensitiveValueOnlyOrigin(1337)
+     * Should fail due to the wrong caller.
+     */
     function test_systemCall_remote_onlyCaller_wrongCaller() public {
-        // Remote Destination calls Destination: setSensitiveValueOnlyOrigin
         systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
         data = abi.encodeWithSelector(
             destination.setSensitiveValueOnlyOrigin.selector,
@@ -336,8 +428,13 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         destination.execute(message);
     }
 
+    /**
+     * @notice Receive system call from remote chain to local chain.
+     * Remote Origin invokes:
+     *  destination.setSensitiveValueOnlyLocal(1337)
+     * Should fail as this is a cross-chain call, not the local one.
+     */
     function test_systemCall_remote_onlyLocal() public {
-        // onlyLocal check always fails on remote calls (such wisdom much wow)
         data = abi.encodeWithSelector(destination.setSensitiveValueOnlyLocal.selector, secretValue);
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds);
@@ -345,6 +442,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         destination.execute(message);
     }
 
+    /**
+     * @notice Receive system call from remote chain to local chain.
+     * Remote Origin invokes:
+     *  destination.setSensitiveValueOnlyTwoHours(1337)
+     * Optimistic period is set to 2 hours.
+     */
     function test_systemCall_remote_onlyOptimisticPeriodOver() public {
         data = abi.encodeWithSelector(
             destination.setSensitiveValueOnlyTwoHours.selector,
@@ -354,6 +457,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         _checkReceiveSystemMessage();
     }
 
+    /**
+     * @notice Receive system call from remote chain to local chain.
+     * Remote Origin invokes:
+     *  destination.setSensitiveValueOnlyTwoHours(1337)
+     * Optimistic period is set to (2 hours - 1 second) causing recipient to reject the call.
+     */
     function test_systemCall_remote_onlyOptimisticPeriodOver_periodReduced() public {
         data = abi.encodeWithSelector(
             destination.setSensitiveValueOnlyTwoHours.selector,
@@ -370,6 +479,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     ▏*║                           INTERNAL HELPERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @dev Local system call is triggered.
+     * `systemCaller` is calling `systemRecipient`:
+     *      setSensitiveValue(1337)
+     * The sensitive value is checked to have been updated.
+     */
     function _checkLocalSystemCall() internal {
         address sender = _getSystemAddress(systemCaller);
         ISystemRouter.SystemEntity recipient = ISystemRouter.SystemEntity(systemRecipient);
@@ -383,6 +498,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         assertTrue(recipientMock.sensitiveValue() == secretValue);
     }
 
+    /**
+     * @dev Remote system call is triggered.
+     * `systemCaller` is calling every possible recipient (one by one)
+     *      setSensitiveValue(1337)
+     * Every dispatched message is checked to contain needed information.
+     */
     function _checkRemoteSystemCall() internal {
         address sender = _getSystemAddress(systemCaller);
         // Send messages from sender to every system contract on remote chain
@@ -395,6 +516,9 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         }
     }
 
+    /**
+     * @dev Expect Dispatch event to remote chain for a given (nonce, message)
+     */
     function _expectSystemMessage(bytes memory _message) internal {
         vm.expectEmit(true, true, true, true);
         emit Dispatch(
@@ -406,6 +530,11 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         );
     }
 
+    /**
+     * @dev System call message (from the remote chain) is executed on local chain.
+     * (domain, caller, timestamp) are checked on the recipient side.
+     * Secret value is checked to have been updated.
+     */
     function _checkReceiveSystemMessage() internal {
         uint256 rootSubmittedAt = block.timestamp;
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
@@ -419,6 +548,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         );
     }
 
+    /**
+     * @dev Constructs a message for "receive message" test given the test context.
+     * Then marks this message as being ready for the execution with the given optimistic period.
+     */
     function _prepareReceiveTest(MessageContext memory context)
         internal
         returns (bytes memory message)
@@ -427,6 +560,9 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         _prepareReceiveTest(message);
     }
 
+    /**
+     * @dev Marks given message as being ready for the execution with the given optimistic period.
+     */
     function _prepareReceiveTest(bytes memory _message) internal {
         // Mark message as proved against ROOT
         (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
@@ -434,6 +570,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         destination.setMessageStatus(remoteDomain, keccak256(_message), ROOT);
     }
 
+    /**
+     * @dev Constructs recipient and data arrays for the multicall test.
+     * Emits events if a test assumes successful message execution.
+     */
     function _prepareMultiCallTest(bool _sentFromLocal, bool _emitEvents)
         internal
         returns (ISystemRouter.SystemEntity[] memory recipients, bytes[] memory dataArray)
@@ -492,10 +632,17 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @dev Creates payload for setSensitiveValue(_secretValue) call
+     */
     function _createData(uint256 _secretValue) internal view returns (bytes memory) {
         return abi.encodeWithSelector(origin.setSensitiveValue.selector, _secretValue);
     }
 
+    /**
+     * @dev Constructs a system message for a system call given the test context.
+     * `systemCaller` is calling `systemRecipient` with `data` payload.
+     */
     function _createSystemMessage(MessageContext memory context)
         internal
         view
@@ -512,6 +659,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         return _createSystemMessage(context, systemCalls);
     }
 
+    /**
+     * @dev Constructs a system message for a system multicall given the test context.
+     * `systemCaller` is calling `recipients[i]` with `dataArray[i]` payload.
+     */
     function _createSystemMessage(
         MessageContext memory context,
         ISystemRouter.SystemEntity[] memory recipients,
@@ -530,6 +681,10 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         return _createSystemMessage(context, systemCalls);
     }
 
+    /**
+     * @dev Constructs a system message for a system multicall given the test context.
+     * `systemCaller` is doing following calls: `systemCalls`
+     */
     function _createSystemMessage(MessageContext memory context, bytes[] memory systemCalls)
         internal
         view
@@ -550,10 +705,17 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             );
     }
 
+    /**
+     * @dev Gets secret value for a multicall test, given the system call index.
+     * All calls are done with different values to check that needed payloads are used.
+     */
     function _getSecretValue(uint256 _testIndex) internal view returns (uint256) {
         return secretValue * (_testIndex + 1);
     }
 
+    /**
+     * @dev Gets system contract's respective SystemEntity value.
+     */
     function _getSystemContract(address _account)
         internal
         view
@@ -568,6 +730,9 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         }
     }
 
+    /**
+     * @dev Gets system contract's address by its SystemEntity value.
+     */
     function _getSystemAddress(uint8 _systemContract) internal view returns (address account) {
         if (_systemContract == uint8(ISystemRouter.SystemEntity.Origin)) {
             account = address(origin);
