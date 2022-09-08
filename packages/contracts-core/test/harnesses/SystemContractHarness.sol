@@ -16,6 +16,7 @@ abstract contract SystemContractHarness is SystemContract {
     event OnlyOriginCall(address recipient, uint256 newValue);
     event OnlyDestinationCall(address recipient, uint256 newValue);
     event OnlyTwoHoursCall(address recipient, uint256 newValue);
+    event OnlySynapseChainCall(address recipient, uint256 newValue);
 
     function setSensitiveValue(
         uint256 _newValue,
@@ -73,6 +74,16 @@ abstract contract SystemContractHarness is SystemContract {
     ) external onlySystemRouter onlyOptimisticPeriodOver(_rootSubmittedAt, 2 hours) {
         _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
         emit OnlyTwoHoursCall(address(this), _newValue);
+    }
+
+    function setSensitiveValueOnlySynapseChain(
+        uint256 _newValue,
+        uint32 _origin,
+        uint8 _caller,
+        uint256 _rootSubmittedAt
+    ) external onlySystemRouter onlySynapseChain(_origin) {
+        _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
+        emit OnlySynapseChainCall(address(this), _newValue);
     }
 
     function _setSensitiveValue(

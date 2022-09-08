@@ -34,6 +34,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     MessageContext internal sentSystemMessage;
     MessageContext internal receivedSystemMessage;
     MessageContext internal receivedUsualMessage;
+    MessageContext internal synapseSystemMessage;
 
     uint32[] internal domains;
 
@@ -48,6 +49,8 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
 
     bytes32 internal constant SYSTEM_ROUTER =
         0xFFFFFFFF_FFFFFFFF_FFFFFFFF_00000000_00000000_00000000_00000000_00000000;
+
+    uint32 internal constant SYNAPSE_DOMAIN = 42;
 
     uint32 internal constant OPTIMISTIC_PERIOD = 420;
     uint32 internal constant NONCE = 69;
@@ -100,6 +103,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             sender: addressToBytes32(address(this)),
             destination: localDomain,
             recipient: addressToBytes32(address(systemRouter))
+        });
+        synapseSystemMessage = MessageContext({
+            origin: SYNAPSE_DOMAIN,
+            sender: SYSTEM_ROUTER,
+            destination: localDomain,
+            recipient: SYSTEM_ROUTER
         });
         domains = new uint32[](2);
         domains[0] = localDomain;
@@ -475,6 +484,36 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         destination.execute(message);
     }
 
+    /**
+     * @notice Receive system call from Synapse chain to local chain.
+     * Remote Origin invokes:
+     *  destination.setSensitiveValueOnlySynapseChain(1337)
+     */
+    function test_systemCall_remote_onlySynapseChain() public {
+        data = abi.encodeWithSelector(
+            destination.setSensitiveValueOnlySynapseChain.selector,
+            secretValue
+        );
+        _checkReceiveSystemMessage(synapseSystemMessage);
+    }
+
+    /**
+     * @notice Receive system call from remote chain to local chain.
+     * Remote Origin invokes:
+     *  destination.setSensitiveValueOnlySynapseChain(1337)
+     * Calls comes not from the Synapse chain making transaction fail
+     */
+    function test_systemCall_remote_onlySynapseChain_wrongChain() public {
+        data = abi.encodeWithSelector(
+            destination.setSensitiveValueOnlySynapseChain.selector,
+            secretValue
+        );
+        bytes memory message = _prepareReceiveTest(receivedSystemMessage);
+        skip(optimisticSeconds);
+        vm.expectRevert("!synapseDomain");
+        destination.execute(message);
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           INTERNAL HELPERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -536,11 +575,15 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
      * Secret value is checked to have been updated.
      */
     function _checkReceiveSystemMessage() internal {
+        _checkReceiveSystemMessage(receivedSystemMessage);
+    }
+
+    function _checkReceiveSystemMessage(MessageContext memory context) internal {
         uint256 rootSubmittedAt = block.timestamp;
-        bytes memory message = _prepareReceiveTest(receivedSystemMessage);
+        bytes memory message = _prepareReceiveTest(context);
         skip(optimisticSeconds);
         vm.expectEmit(true, true, true, true);
-        emit LogSystemCall(remoteDomain, systemCaller, rootSubmittedAt);
+        emit LogSystemCall(context.origin, systemCaller, rootSubmittedAt);
         destination.execute(message);
         assertEq(
             ISystemMockContract(_getSystemAddress(systemRecipient)).sensitiveValue(),
@@ -557,7 +600,15 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         returns (bytes memory message)
     {
         message = _createSystemMessage(context);
-        _prepareReceiveTest(message);
+        if (context.origin != remoteDomain) {
+            uint32 _prevRemoteDomainValue = remoteDomain;
+            remoteDomain = context.origin;
+            destination.addNotary(SYNAPSE_DOMAIN, notary);
+            _prepareReceiveTest(message);
+            remoteDomain = _prevRemoteDomainValue;
+        } else {
+            _prepareReceiveTest(message);
+        }
     }
 
     /**

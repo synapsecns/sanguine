@@ -12,10 +12,15 @@ import {
  */
 abstract contract SystemContract is OwnableUpgradeable {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              IMMUTABLES                              ║*▕
+    ▏*║                        IMMUTABLES & CONSTANTS                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // domain of the chain where a system contract is deployed
     uint32 public immutable localDomain;
+    // domain of the Synapse Chain
+    // Answer to the Ultimate Question of Life, the Universe, and Everything
+    uint32 public constant SYNAPSE_DOMAIN = 42;
+    // TODO: replace the placeholder with actual value
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
@@ -46,6 +51,11 @@ abstract contract SystemContract is OwnableUpgradeable {
 
     modifier onlyLocalCalls(uint32 _originDomain) {
         require(_originDomain == localDomain, "!localDomain");
+        _;
+    }
+
+    modifier onlySynapseChain(uint32 _originDomain) {
+        require(_originDomain == SYNAPSE_DOMAIN, "!synapseDomain");
         _;
     }
 
