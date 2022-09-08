@@ -434,7 +434,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         destination.setMessageStatus(remoteDomain, keccak256(_message), ROOT);
     }
 
-    function _prepareMultiCallTest(bool _isLocalTest, bool _isSuccessTest)
+    function _prepareMultiCallTest(bool _sentFromLocal, bool _emitEvents)
         internal
         returns (ISystemRouter.SystemEntity[] memory recipients, bytes[] memory dataArray)
     {
@@ -445,7 +445,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             uint256 value = _getSecretValue(0);
             recipients[0] = ISystemRouter.SystemEntity.Origin;
             dataArray[0] = abi.encodeWithSelector(origin.setSensitiveValue.selector, value);
-            if (_isSuccessTest) {
+            if (_emitEvents) {
                 vm.expectEmit(true, true, true, true);
                 emit UsualCall(address(origin), value);
             }
@@ -454,14 +454,14 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             uint256 value = _getSecretValue(1);
             recipients[1] = ISystemRouter.SystemEntity.Destination;
             dataArray[1] = abi.encodeWithSelector(
-                _isLocalTest
+                _sentFromLocal
                     ? destination.setSensitiveValueOnlyLocal.selector
                     : destination.setSensitiveValueOnlyTwoHours.selector,
                 value
             );
-            if (_isSuccessTest) {
+            if (_emitEvents) {
                 vm.expectEmit(true, true, true, true);
-                if (_isLocalTest) {
+                if (_sentFromLocal) {
                     emit OnlyLocalCall(address(destination), value);
                 } else {
                     emit OnlyTwoHoursCall(address(destination), value);
@@ -472,14 +472,14 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             uint256 value = _getSecretValue(2);
             recipients[2] = ISystemRouter.SystemEntity.Destination;
             dataArray[2] = abi.encodeWithSelector(
-                _isLocalTest
+                _sentFromLocal
                     ? destination.setSensitiveValueOnlyOrigin.selector
                     : destination.setSensitiveValueOnlyDestination.selector,
                 value
             );
-            if (_isSuccessTest) {
+            if (_emitEvents) {
                 vm.expectEmit(true, true, true, true);
-                if (_isLocalTest) {
+                if (_sentFromLocal) {
                     emit OnlyOriginCall(address(destination), value);
                 } else {
                     emit OnlyDestinationCall(address(destination), value);
