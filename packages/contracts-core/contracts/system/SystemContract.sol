@@ -52,21 +52,51 @@ abstract contract SystemContract is OwnableUpgradeable {
         _;
     }
 
+    /**
+     * @dev Modifier for functions that are supposed to be called only from
+     * System Contracts on local chain.
+     * Note: has to be used alongside with `onlySystemRouter`
+     * See `onlySystemRouter` for details about the functions protected by such modifiers.
+     */
     modifier onlyLocalCalls(uint32 _originDomain) {
         require(_originDomain == localDomain, "!localDomain");
         _;
     }
 
+    /**
+     * @dev Modifier for functions that are supposed to be called only from
+     * System Contracts on Synapse chain.
+     * Note: has to be used alongside with `onlySystemRouter`
+     * See `onlySystemRouter` for details about the functions protected by such modifiers.
+     */
     modifier onlySynapseChain(uint32 _originDomain) {
         require(_originDomain == SYNAPSE_DOMAIN, "!synapseDomain");
         _;
     }
 
+    /**
+     * @dev Modifier for functions that are supposed to be called only from
+     * a set of System Contracts on any chain.
+     * Note: has to be used alongside with `onlySystemRouter`
+     * See `onlySystemRouter` for details about the functions protected by such modifiers.
+     * Note: check constants section for existing mask constants
+     * E.g. to restrict the set of callers to three allowed system callers:
+     *  onlyCallers(MASK_0 | MASK_1 | MASK_2, _caller)
+     */
     modifier onlyCallers(uint256 _allowedMask, ISystemRouter.SystemEntity _caller) {
         require(_entityAllowed(_allowedMask, _caller), "!allowedCaller");
         _;
     }
 
+    /**
+     * @dev Modifier for functions that are supposed to be called only from
+     * System Contracts on remote chain with a defined minimum optimistic period.
+     * Note: has to be used alongside with `onlySystemRouter`
+     * See `onlySystemRouter` for details about the functions protected by such modifiers.
+     * Note: message could be sent with a period lower than that, but will be executed
+     * only when `_optimisticSeconds` have passed.
+     * Note: _optimisticSeconds=0 will allow calls from a local chain as well
+     */
     modifier onlyOptimisticPeriodOver(uint256 _rootSubmittedAt, uint256 _optimisticSeconds) {
         _assertOptimisticPeriodOver(_rootSubmittedAt, _optimisticSeconds);
         _;
