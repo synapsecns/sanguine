@@ -50,7 +50,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     bytes32 internal constant SYSTEM_ROUTER =
         0xFFFFFFFF_FFFFFFFF_FFFFFFFF_00000000_00000000_00000000_00000000_00000000;
 
-    uint32 internal constant SYNAPSE_DOMAIN = 42;
+    uint32 internal constant SYNAPSE_DOMAIN = 4269;
 
     uint32 internal constant OPTIMISTIC_PERIOD = 420;
     uint32 internal constant NONCE = 69;

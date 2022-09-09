@@ -19,7 +19,8 @@ abstract contract SystemContract is OwnableUpgradeable {
     uint32 public immutable localDomain;
     // domain of the Synapse Chain
     // Answer to the Ultimate Question of Life, the Universe, and Everything
-    uint32 public constant SYNAPSE_DOMAIN = 42;
+    // And answer to less important questions wink wink
+    uint32 public constant SYNAPSE_DOMAIN = 4269;
     // TODO: replace the placeholder with actual value
 
     uint256 internal constant ORIGIN = 1 << uint8(ISystemRouter.SystemEntity.Origin);
