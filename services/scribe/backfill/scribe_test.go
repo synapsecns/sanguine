@@ -112,11 +112,11 @@ func (b BackfillSuite) TestScribeBackfill() {
 	Nil(b.T(), err)
 
 	// Check that the data was added to the database.
-	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{})
+	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
 	Nil(b.T(), err)
 	// There are 4 logs per contract, and 3 contracts per chain. Since there are 3 chains, 4*3*3 = 36 logs.
 	Equal(b.T(), 36, len(logs))
-	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{})
+	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
 	Nil(b.T(), err)
 	// There are 9 receipts per chain. Since there are 3 chains, 9*3 = 27 receipts.
 	Equal(b.T(), 27, len(receipts))

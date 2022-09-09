@@ -81,7 +81,7 @@ func (l LiveSuite) TestLive() {
 			ChainID:         chainConfig.ChainID,
 			ContractAddress: contract.Address().String(),
 		}
-		logs, err := l.testDB.RetrieveLogsWithFilter(l.GetTestContext(), logFilter)
+		logs, err := l.testDB.RetrieveLogsWithFilter(l.GetTestContext(), logFilter, 1)
 		Nil(l.T(), err)
 		// There should be 4 logs. One from `EmitEventA`, one from `EmitEventB`, and two
 		// from `EmitEventAandB`.
@@ -91,7 +91,7 @@ func (l LiveSuite) TestLive() {
 	receiptFilter := db.ReceiptFilter{
 		ChainID: chainConfig.ChainID,
 	}
-	receipts, err := l.testDB.RetrieveReceiptsWithFilter(l.GetTestContext(), receiptFilter)
+	receipts, err := l.testDB.RetrieveReceiptsWithFilter(l.GetTestContext(), receiptFilter, 1)
 	Nil(l.T(), err)
 	// There should be 9 receipts. One from `EmitEventA`, one from `EmitEventB`, and
 	// one from `EmitEventAandB`, for each contract.

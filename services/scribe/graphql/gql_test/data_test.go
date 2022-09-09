@@ -44,31 +44,31 @@ func (g GQLSuite) TestRetrieveData() {
 	}
 
 	// test get logs and get logs in a range
-	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID))
+	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	// there were 20 logs created (2 per loop, in a loop of 10)
 	Equal(g.T(), len(logs.Response), 20)
-	logsRange, err := g.gqlClient.GetLogsRange(g.GetTestContext(), int(chainID), 2, 5)
+	logsRange, err := g.gqlClient.GetLogsRange(g.GetTestContext(), int(chainID), 2, 5, 1)
 	Nil(g.T(), err)
 	// from 2-5, there were 8 logs created (2 per loop, in a range of 4)
 	Equal(g.T(), len(logsRange.Response), 8)
 
 	// test get receipts and get receipts in a range
-	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID))
+	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	// there were 20 receipts created (2 per loop, in a loop of 10)
 	Equal(g.T(), len(receipts.Response), 20)
-	receiptsRange, err := g.gqlClient.GetReceiptsRange(g.GetTestContext(), int(chainID), 1, 7)
+	receiptsRange, err := g.gqlClient.GetReceiptsRange(g.GetTestContext(), int(chainID), 1, 7, 1)
 	Nil(g.T(), err)
 	// from 1-7, there were 14 receipts created (2 per loop, in a range of 7)
 	Equal(g.T(), len(receiptsRange.Response), 14)
 
 	// test get transactions and get transactions in a range
-	txs, err := g.gqlClient.GetTransactions(g.GetTestContext(), int(chainID))
+	txs, err := g.gqlClient.GetTransactions(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	// there were 20 txs created (2 per loop, in a loop of 10)
 	Equal(g.T(), len(txs.Response), 20)
-	txsRange, err := g.gqlClient.GetTransactionsRange(g.GetTestContext(), int(chainID), 3, 8)
+	txsRange, err := g.gqlClient.GetTransactionsRange(g.GetTestContext(), int(chainID), 3, 8, 1)
 	Nil(g.T(), err)
 	// from 3-8, there were 12 txs created (2 per loop, in a range of 6)
 	Equal(g.T(), len(txsRange.Response), 12)
@@ -84,7 +84,7 @@ func (g GQLSuite) TestLogDataEquality() {
 	Nil(g.T(), err)
 
 	// retrieve it
-	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID))
+	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	retrievedLog := logs.Response[0]
 
@@ -117,7 +117,7 @@ func (g GQLSuite) TestReceiptDataEquality() {
 	Nil(g.T(), err)
 
 	// retrieve it
-	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID))
+	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	retrievedReceipt := receipts.Response[0]
 
@@ -146,7 +146,7 @@ func (g GQLSuite) TestTransactionDataEquality() {
 	Nil(g.T(), err)
 
 	// retrieve it
-	txs, err := g.gqlClient.GetTransactions(g.GetTestContext(), int(chainID))
+	txs, err := g.gqlClient.GetTransactions(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	retrievedTx := txs.Response[0]
 

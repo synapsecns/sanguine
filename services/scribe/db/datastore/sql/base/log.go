@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"sort"
 
 	"github.com/synapsecns/sanguine/services/scribe/db"
 
@@ -39,7 +38,7 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: TxHashFieldName}, {Name: IndexFieldName},
+				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: TxHashFieldName}, {Name: BlockIndexFieldName},
 			},
 			DoNothing: true,
 		}).
@@ -55,7 +54,7 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 			TxHash:          log.TxHash.String(),
 			TxIndex:         uint64(log.TxIndex),
 			BlockHash:       log.BlockHash.String(),
-			Index:           uint64(log.Index),
+			BlockIndex:      uint64(log.Index),
 			Removed:         log.Removed,
 		})
 
@@ -76,17 +75,23 @@ func logFilterToQuery(logFilter db.LogFilter) Log {
 		TxHash:          logFilter.TxHash,
 		TxIndex:         logFilter.TxIndex,
 		BlockHash:       logFilter.BlockHash,
-		Index:           logFilter.Index,
+		BlockIndex:      logFilter.Index,
 	}
 }
 
-// RetrieveLogsWithFilter retrieves all logs that match a filter.
-func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilter) (logs []*types.Log, err error) {
+// RetrieveLogsWithFilter retrieves all logs that match a filter given a page.
+func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilter, page int) (logs []*types.Log, err error) {
+	if page < 1 {
+		page = 1
+	}
 	dbLogs := []Log{}
 	query := logFilterToQuery(logFilter)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
 		Where(&query).
+		Order(fmt.Sprintf("%s, %s", BlockNumberFieldName, BlockIndexFieldName)).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
 		Find(&dbLogs)
 
 	if dbTx.Error != nil {
@@ -99,8 +104,11 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 	return buildLogsFromDBLogs(dbLogs), nil
 }
 
-// RetrieveLogsInRange retrieves all logs that match an inputted filter, and are within a range.
-func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, startBlock, endBlock uint64) (logs []*types.Log, err error) {
+// RetrieveLogsInRange retrieves all logs that match an inputted filter and are within a range given a page.
+func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, startBlock, endBlock uint64, page int) (logs []*types.Log, err error) {
+	if page < 1 {
+		page = 1
+	}
 	dbLogs := []Log{}
 	queryFilter := logFilterToQuery(logFilter)
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
@@ -108,6 +116,9 @@ func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, 
 		Model(&Log{}).
 		Where(&queryFilter).
 		Where(rangeQuery, startBlock, endBlock).
+		Order(fmt.Sprintf("%s, %s", BlockNumberFieldName, BlockIndexFieldName)).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
 		Find(&dbLogs)
 
 	if dbTx.Error != nil {
@@ -133,15 +144,12 @@ func buildLogsFromDBLogs(dbLogs []Log) []*types.Log {
 			TxHash:      common.HexToHash(dbLog.TxHash),
 			TxIndex:     uint(dbLog.TxIndex),
 			BlockHash:   common.HexToHash(dbLog.BlockHash),
-			Index:       uint(dbLog.Index),
+			Index:       uint(dbLog.BlockIndex),
 			Removed:     dbLog.Removed,
 		}
 
 		logs = append(logs, parsedLog)
 	}
-	sort.Slice(logs, func(i, j int) bool {
-		return logs[i].Index < logs[j].Index
-	})
 	return logs
 }
 

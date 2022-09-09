@@ -12,10 +12,10 @@ import (
 )
 
 // Logs is the resolver for the logs field.
-func (r *queryResolver) Logs(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int) ([]*model.Log, error) {
+func (r *queryResolver) Logs(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, page int) ([]*model.Log, error) {
 	logsFilter := r.buildLogFilter(contractAddress, blockNumber, txHash, txIndex, blockHash, index)
 	logsFilter.ChainID = uint32(chainID)
-	logs, err := r.DB.RetrieveLogsWithFilter(ctx, logsFilter)
+	logs, err := r.DB.RetrieveLogsWithFilter(ctx, logsFilter, page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving logs: %w", err)
 	}
@@ -23,10 +23,10 @@ func (r *queryResolver) Logs(ctx context.Context, contractAddress *string, chain
 }
 
 // LogsRange is the resolver for the logsRange field.
-func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, startBlock int, endBlock int) ([]*model.Log, error) {
+func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, startBlock int, endBlock int, page int) ([]*model.Log, error) {
 	logsFilter := r.buildLogFilter(contractAddress, blockNumber, txHash, txIndex, blockHash, index)
 	logsFilter.ChainID = uint32(chainID)
-	logs, err := r.DB.RetrieveLogsInRange(ctx, logsFilter, uint64(startBlock), uint64(endBlock))
+	logs, err := r.DB.RetrieveLogsInRange(ctx, logsFilter, uint64(startBlock), uint64(endBlock), page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving logs: %w", err)
 	}
@@ -34,10 +34,10 @@ func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, 
 }
 
 // Receipts is the resolver for the receipts field.
-func (r *queryResolver) Receipts(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int) ([]*model.Receipt, error) {
+func (r *queryResolver) Receipts(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, page int) ([]*model.Receipt, error) {
 	receiptsFilter := r.buildReceiptFilter(txHash, contractAddress, blockHash, blockNumber, txIndex)
 	receiptsFilter.ChainID = uint32(chainID)
-	receipts, err := r.DB.RetrieveReceiptsWithFilter(ctx, receiptsFilter)
+	receipts, err := r.DB.RetrieveReceiptsWithFilter(ctx, receiptsFilter, page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving receipts: %w", err)
 	}
@@ -45,10 +45,10 @@ func (r *queryResolver) Receipts(ctx context.Context, chainID int, txHash *strin
 }
 
 // ReceiptsRange is the resolver for the receiptsRange field.
-func (r *queryResolver) ReceiptsRange(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, startBlock int, endBlock int) ([]*model.Receipt, error) {
+func (r *queryResolver) ReceiptsRange(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, startBlock int, endBlock int, page int) ([]*model.Receipt, error) {
 	receiptsFilter := r.buildReceiptFilter(txHash, contractAddress, blockHash, blockNumber, txIndex)
 	receiptsFilter.ChainID = uint32(chainID)
-	receipts, err := r.DB.RetrieveReceiptsInRange(ctx, receiptsFilter, uint64(startBlock), uint64(endBlock))
+	receipts, err := r.DB.RetrieveReceiptsInRange(ctx, receiptsFilter, uint64(startBlock), uint64(endBlock), page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving receipts: %w", err)
 	}
@@ -56,10 +56,10 @@ func (r *queryResolver) ReceiptsRange(ctx context.Context, chainID int, txHash *
 }
 
 // Transactions is the resolver for the transactions field.
-func (r *queryResolver) Transactions(ctx context.Context, txHash *string, chainID int, blockNumber *int) ([]*model.Transaction, error) {
+func (r *queryResolver) Transactions(ctx context.Context, txHash *string, chainID int, blockNumber *int, page int) ([]*model.Transaction, error) {
 	transactionsFilter := r.buildEthTxFilter(txHash, blockNumber)
 	transactionsFilter.ChainID = uint32(chainID)
-	transactions, err := r.DB.RetrieveEthTxsWithFilter(ctx, transactionsFilter)
+	transactions, err := r.DB.RetrieveEthTxsWithFilter(ctx, transactionsFilter, page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving transactions: %w", err)
 	}
@@ -67,10 +67,10 @@ func (r *queryResolver) Transactions(ctx context.Context, txHash *string, chainI
 }
 
 // TransactionsRange is the resolver for the transactionsRange field.
-func (r *queryResolver) TransactionsRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, startBlock int, endBlock int) ([]*model.Transaction, error) {
+func (r *queryResolver) TransactionsRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, startBlock int, endBlock int, page int) ([]*model.Transaction, error) {
 	transactionsFilter := r.buildEthTxFilter(txHash, blockNumber)
 	transactionsFilter.ChainID = uint32(chainID)
-	transactions, err := r.DB.RetrieveEthTxsInRange(ctx, transactionsFilter, uint64(startBlock), uint64(endBlock))
+	transactions, err := r.DB.RetrieveEthTxsInRange(ctx, transactionsFilter, uint64(startBlock), uint64(endBlock), page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving transactions: %w", err)
 	}
