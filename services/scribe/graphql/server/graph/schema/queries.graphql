@@ -8,6 +8,7 @@ type Query {
     tx_index: Int
     block_hash: String
     index: Int
+    page: Int!
   ): [Log]
   # returns all logs that match the given filter and range
   logsRange(
@@ -20,6 +21,7 @@ type Query {
     index: Int
     start_block: Int!
     end_block: Int!
+    page: Int!
   ): [Log]
   # returns all receipts that match the given filter
   receipts(
@@ -29,6 +31,7 @@ type Query {
     block_hash: String
     block_number: Int
     tx_index: Int
+    page: Int!
   ): [Receipt]
   # returns all receipts that match the given filter and range
   receiptsRange(
@@ -40,12 +43,14 @@ type Query {
     tx_index: Int
     start_block: Int!
     end_block: Int!
+    page: Int!
   ): [Receipt]
   # returns all transactions that match the given filter
   transactions(
     tx_hash: String
     chain_id: Int!
     block_number: Int
+    page: Int!
   ): [Transaction]
   # returns all transactions that match the given filter and range
   transactionsRange(
@@ -54,5 +59,6 @@ type Query {
     block_number: Int
     start_block: Int!
     end_block: Int!
+    page: Int!
   ): [Transaction]
 }

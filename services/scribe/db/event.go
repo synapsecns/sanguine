@@ -23,18 +23,18 @@ type EventDBWriter interface {
 //
 //nolint:interfacebloat
 type EventDBReader interface {
-	// RetrieveLogsWithFilter retrieves all logs that match a filter.
-	RetrieveLogsWithFilter(ctx context.Context, logFilter LogFilter) (logs []*types.Log, err error)
-	// RetrieveLogsInRange retrieves all logs that match an inputted filter, and are within a range.
-	RetrieveLogsInRange(ctx context.Context, logFilter LogFilter, startBlock, endBlock uint64) (logs []*types.Log, err error)
-	// RetrieveReceiptsInRange retrieves receipts in a range.
-	RetrieveReceiptsInRange(ctx context.Context, receiptFilter ReceiptFilter, startBlock, endBlock uint64) (receipts []types.Receipt, err error)
-	// RetrieveReceiptsWithFilter retrieves receipts with a filter.
-	RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter ReceiptFilter) (receipts []types.Receipt, err error)
-	// RetrieveEthTxsWithFilter retrieves eth transactions with a filter.
-	RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter EthTxFilter) ([]types.Transaction, error)
-	// RetrieveEthTxsInRange retrieves eth transactions in a range.
-	RetrieveEthTxsInRange(ctx context.Context, ethTxFilter EthTxFilter, startBlock, endBlock uint64) ([]types.Transaction, error)
+	// RetrieveLogsWithFilter retrieves all logs that match a filter given a page.
+	RetrieveLogsWithFilter(ctx context.Context, logFilter LogFilter, page int) (logs []*types.Log, err error)
+	// RetrieveLogsInRange retrieves all logs that match an inputted filter and are within a range given a page.
+	RetrieveLogsInRange(ctx context.Context, logFilter LogFilter, startBlock, endBlock uint64, page int) (logs []*types.Log, err error)
+	// RetrieveReceiptsWithFilter retrieves receipts with a filter given a page.
+	RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter ReceiptFilter, page int) (receipts []types.Receipt, err error)
+	// RetrieveReceiptsInRange retrieves receipts that match an inputted filter and are within a range given a page.
+	RetrieveReceiptsInRange(ctx context.Context, receiptFilter ReceiptFilter, startBlock, endBlock uint64, page int) (receipts []types.Receipt, err error)
+	// RetrieveEthTxsWithFilter retrieves eth transactions with a filter given a page.
+	RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter EthTxFilter, page int) ([]types.Transaction, error)
+	// RetrieveEthTxsInRange retrieves eth transactions that match an inputted filter and are within a range given a page.
+	RetrieveEthTxsInRange(ctx context.Context, ethTxFilter EthTxFilter, startBlock, endBlock uint64, page int) ([]types.Transaction, error)
 	// RetrieveLastIndexed retrieves the last indexed for a contract address
 	RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32) (uint64, error)
 }

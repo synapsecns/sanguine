@@ -1,5 +1,5 @@
-query GetLogs ($chain_id: Int!) {
-    response: logs (chain_id: $chain_id) {
+query GetLogs ($chain_id: Int!, $page: Int!) {
+    response: logs (chain_id: $chain_id, page: $page) {
         contract_address
         chain_id
         topics
@@ -13,8 +13,8 @@ query GetLogs ($chain_id: Int!) {
     }
 }
 
-query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
-    response: logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block) {
+query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+    response: logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
         contract_address
         chain_id
         topics
@@ -28,8 +28,8 @@ query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
     }
 }
 
-query GetLogsResolvers ($chain_id: Int!) {
-    response: logs (chain_id: $chain_id) {
+query GetLogsResolvers ($chain_id: Int!, $page: Int!) {
+    response: logs (chain_id: $chain_id, page: $page) {
         receipt {
             chain_id
             type
@@ -60,8 +60,8 @@ query GetLogsResolvers ($chain_id: Int!) {
     }
 }
 
-query GetReceipts ($chain_id: Int!) {
-    response: receipts (chain_id: $chain_id) {
+query GetReceipts ($chain_id: Int!, $page: Int!) {
+    response: receipts (chain_id: $chain_id, page: $page) {
         chain_id
         type
         post_state
@@ -76,8 +76,8 @@ query GetReceipts ($chain_id: Int!) {
     }
 }
 
-query GetReceiptsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
-    response: receiptsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block) {
+query GetReceiptsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+    response: receiptsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
         chain_id
         type
         post_state
@@ -92,8 +92,8 @@ query GetReceiptsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
     }
 }
 
-query GetReceiptsResolvers ($chain_id: Int!) {
-    response: receipts (chain_id: $chain_id) {
+query GetReceiptsResolvers ($chain_id: Int!, $page: Int!) {
+    response: receipts (chain_id: $chain_id, page: $page) {
         logs {
             contract_address
             chain_id
@@ -123,8 +123,8 @@ query GetReceiptsResolvers ($chain_id: Int!) {
     }
 }
 
-query GetTransactions ($chain_id: Int!) {
-    response: transactions (chain_id: $chain_id) {
+query GetTransactions ($chain_id: Int!, $page: Int!) {
+    response: transactions (chain_id: $chain_id, page: $page) {
         chain_id
         tx_hash
         protected
@@ -140,8 +140,8 @@ query GetTransactions ($chain_id: Int!) {
     }
 }
 
-query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
-    response: transactionsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block) {
+query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+    response: transactionsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
         chain_id
         tx_hash
         protected
@@ -157,8 +157,8 @@ query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int
     }
 }
 
-query GetTransactionsResolvers ($chain_id: Int!) {
-    response: transactions (chain_id: $chain_id) {
+query GetTransactionsResolvers ($chain_id: Int!, $page: Int!) {
+    response: transactions (chain_id: $chain_id, page: $page) {
         receipt {
             chain_id
             type

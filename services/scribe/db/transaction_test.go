@@ -84,7 +84,7 @@ func (t *DBSuite) TestStoreAndRetrieveEthTx() {
 				ChainID: uint32(testTx.ChainId().Uint64()),
 				TxHash:  signedTx.Hash().String(),
 			}
-			tx, err := testDB.RetrieveEthTxsWithFilter(t.GetTestContext(), ethTxFilter)
+			tx, err := testDB.RetrieveEthTxsWithFilter(t.GetTestContext(), ethTxFilter, 1)
 			Nil(t.T(), err)
 			resA, err := tx[0].MarshalJSON()
 			Nil(t.T(), err)
