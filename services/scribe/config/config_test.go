@@ -38,12 +38,13 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 				},
 			},
 		},
+		RefreshRate: uint(gofakeit.Uint8()),
 	}
 
 	encodedConfig, err := testConfig.Encode()
 	Nil(c.T(), err)
 
-	file := filet.TmpFile(c.T(), "", encodedConfig)
+	file := filet.TmpFile(c.T(), "", string(encodedConfig))
 	decodedConfig, err := config.DecodeConfig(file.Name())
 	Nil(c.T(), err)
 

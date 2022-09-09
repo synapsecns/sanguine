@@ -34,14 +34,14 @@ var infoCommand = &cli.Command{
 
 var configFlag = &cli.StringFlag{
 	Name:      "config",
-	Usage:     "--config /Users/synapsecns/config.toml",
+	Usage:     "--config /Users/synapsecns/config.yaml",
 	TakesFile: true,
 }
 
 var backfillCommand = &cli.Command{
 	Name:        "backfill",
 	Description: "backfills up to a block and then halts",
-	Usage:       "backfill --config /path/to/config.toml",
+	Usage:       "backfill --config /path/to/config.yaml",
 	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
 		decodeConfig, err := config.DecodeConfig(c.String(configFlag.Name))
@@ -76,7 +76,7 @@ var backfillCommand = &cli.Command{
 			clients[client.ChainID] = backendClient
 		}
 
-		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, *decodeConfig)
+		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
 		if err != nil {
 			return fmt.Errorf("could not create scribe backfiller: %w", err)
 		}
