@@ -43,11 +43,7 @@ abstract contract SystemContractHarness is SystemContract {
         uint32 _origin,
         uint8 _caller,
         uint256 _rootSubmittedAt
-    )
-        external
-        onlySystemRouter
-        onlyCaller(ISystemRouter.SystemEntity(_caller), ISystemRouter.SystemEntity.Origin)
-    {
+    ) external onlySystemRouter onlyCallers(ORIGIN, ISystemRouter.SystemEntity(_caller)) {
         _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
         emit OnlyOriginCall(address(this), _newValue);
     }
@@ -57,10 +53,20 @@ abstract contract SystemContractHarness is SystemContract {
         uint32 _origin,
         uint8 _caller,
         uint256 _rootSubmittedAt
+    ) external onlySystemRouter onlyCallers(DESTINATION, ISystemRouter.SystemEntity(_caller)) {
+        _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
+        emit OnlyDestinationCall(address(this), _newValue);
+    }
+
+    function setSensitiveValueOnlyOriginDestination(
+        uint256 _newValue,
+        uint32 _origin,
+        uint8 _caller,
+        uint256 _rootSubmittedAt
     )
         external
         onlySystemRouter
-        onlyCaller(ISystemRouter.SystemEntity(_caller), ISystemRouter.SystemEntity.Destination)
+        onlyCallers(ORIGIN | DESTINATION, ISystemRouter.SystemEntity(_caller))
     {
         _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
         emit OnlyDestinationCall(address(this), _newValue);

@@ -22,6 +22,9 @@ abstract contract SystemContract is OwnableUpgradeable {
     uint32 public constant SYNAPSE_DOMAIN = 42;
     // TODO: replace the placeholder with actual value
 
+    uint256 internal constant ORIGIN = 1 << uint8(ISystemRouter.SystemEntity.Origin);
+    uint256 internal constant DESTINATION = 1 << uint8(ISystemRouter.SystemEntity.Destination);
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -59,8 +62,8 @@ abstract contract SystemContract is OwnableUpgradeable {
         _;
     }
 
-    modifier onlyCaller(ISystemRouter.SystemEntity _caller, ISystemRouter.SystemEntity _allowed) {
-        require(_caller == _allowed, "!systemCaller");
+    modifier onlyCallers(uint256 _allowedMask, ISystemRouter.SystemEntity _caller) {
+        require(_entityAllowed(_allowedMask, _caller), "!allowedCaller");
         _;
     }
 
@@ -114,5 +117,17 @@ abstract contract SystemContract is OwnableUpgradeable {
         view
     {
         require(block.timestamp >= _rootSubmittedAt + _optimisticSeconds, "!optimisticPeriod");
+    }
+
+    function _entityAllowed(uint256 _systemMask, ISystemRouter.SystemEntity _entity)
+        internal
+        pure
+        returns (bool)
+    {
+        return _systemMask & _getSystemMask(_entity) != 0;
+    }
+
+    function _getSystemMask(ISystemRouter.SystemEntity _entity) internal pure returns (uint256) {
+        return 1 << uint8(_entity);
     }
 }

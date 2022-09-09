@@ -276,7 +276,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             bytes[] memory dataArray
         ) = _prepareMultiCallTest(true, false);
         vm.prank(address(destination));
-        vm.expectRevert("!systemCaller");
+        vm.expectRevert("!allowedCaller");
         // Multicall includes onlyOrigin call, meaning multicall will fail
         systemRouter.systemMultiCall(localDomain, 0, recipients, dataArray);
     }
@@ -354,12 +354,23 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     // Move over once a reusable testing suite is established.
 
     /**
-     * @notice System call on local chain. Origin invokes:
+     * @notice System call on local chain.
+     * Origin invokes:
      *  destination.setSensitiveValueOnlyOrigin(1337)
+     * Destination invokes:
+     *  origin.setSensitiveValueOnlyDestination(1337)
      */
     function test_systemCall_local_onlyCaller() public {
         data = abi.encodeWithSelector(
             destination.setSensitiveValueOnlyOrigin.selector,
+            secretValue
+        );
+        _checkLocalSystemCall();
+
+        systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
+        systemRecipient = uint8(ISystemRouter.SystemEntity.Origin);
+        data = abi.encodeWithSelector(
+            origin.setSensitiveValueOnlyDestination.selector,
             secretValue
         );
         _checkLocalSystemCall();
@@ -378,8 +389,31 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             secretValue
         );
         vm.prank(address(destination));
-        vm.expectRevert("!systemCaller");
+        vm.expectRevert("!allowedCaller");
         systemRouter.systemCall(localDomain, 0, ISystemRouter.SystemEntity.Destination, data);
+    }
+
+    /**
+     * @notice System call on local chain.
+     * Origin invokes:
+     *  destination.setSensitiveValueOnlyOriginDestination(1337)
+     * Destination invokes:
+     *  origin.setSensitiveValueOnlyOriginDestination(1337)
+     */
+    function test_systemCall_local_onlyCallers() public {
+        data = abi.encodeWithSelector(
+            destination.setSensitiveValueOnlyOriginDestination.selector,
+            secretValue
+        );
+        _checkLocalSystemCall();
+
+        systemCaller = uint8(ISystemRouter.SystemEntity.Destination);
+        systemRecipient = uint8(ISystemRouter.SystemEntity.Origin);
+        data = abi.encodeWithSelector(
+            origin.setSensitiveValueOnlyOriginDestination.selector,
+            secretValue
+        );
+        _checkLocalSystemCall();
     }
 
     /**
@@ -433,7 +467,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         );
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds);
-        vm.expectRevert("!systemCaller");
+        vm.expectRevert("!allowedCaller");
         destination.execute(message);
     }
 
