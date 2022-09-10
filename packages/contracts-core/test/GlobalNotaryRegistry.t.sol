@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 
 import { GlobalNotaryRegistryHarness } from "./harnesses/GlobalNotaryRegistryHarness.sol";
 
+// solhint-disable func-name-mixedcase
 contract GlobalNotaryRegistryTest is Test {
     event NotaryAdded(uint32 indexed domain, address notary);
     event NotaryRemoved(uint32 indexed domain, address notary);
@@ -25,7 +26,22 @@ contract GlobalNotaryRegistryTest is Test {
 
     function test_addNotary_multipleDomains() public {
         _checkAddNotary(DOMAIN_1, NOTARY_1, true);
+        _checkAddNotary(DOMAIN_2, NOTARY_1, false);
+
+        _checkAddNotary(DOMAIN_2, NOTARY_2, true);
+        _checkAddNotary(DOMAIN_1, NOTARY_2, false);
+    }
+
+    function test_addNotary_afterDeleting() public {
+        test_addNotary_multipleDomains();
+        _checkRemoveNotary(DOMAIN_1, NOTARY_1, true);
+        _checkRemoveNotary(DOMAIN_2, NOTARY_2, true);
+
         _checkAddNotary(DOMAIN_2, NOTARY_1, true);
+        _checkAddNotary(DOMAIN_1, NOTARY_1, false);
+
+        _checkAddNotary(DOMAIN_1, NOTARY_2, true);
+        _checkAddNotary(DOMAIN_2, NOTARY_1, false);
     }
 
     function test_addNotary_multipleNotaries() public {
@@ -73,7 +89,9 @@ contract GlobalNotaryRegistryTest is Test {
             emit NotaryAdded(_domain, _notary);
         }
         assertEq(registry.addNotary(_domain, _notary), _added);
-        assertTrue(registry.isNotary(_domain, _notary));
+        if (_added) {
+            assertTrue(registry.isNotary(_domain, _notary));
+        }
     }
 
     function _checkRemoveNotary(
