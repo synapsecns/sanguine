@@ -24,7 +24,6 @@ root
 │   ├── <a href="./tools/abigen">abigen</a>: Used to generate abigen bindings for go
 │   ├── <a href="./tools/modulecopier">module copier</a>: Used to copy internal modules and export methods for testing
 ├── <a href="./agents">agents</a>: agents contain all the agents used in optimistic messaging
-├── <a href="services/scribe">scribe</a>: scribe is a generalized event indexer
 </pre>
 
 
