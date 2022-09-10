@@ -188,14 +188,14 @@ contract Origin is
     ) external payable haveActiveNotary {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         require(_tips.castToTips().totalTips() == msg.value, "!tips");
-        // get the message nonce: current nonce plus 1
-        uint32 messageNonce = nonce() + 1;
+        // get the latest nonce; new message nonce is latest nonce plus 1
+        uint32 latestNonce = nonce();
         bytes32 sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
         bytes memory _header = Header.formatHeader(
             _localDomain(),
             sender,
-            messageNonce,
+            latestNonce + 1,
             _destination,
             _recipientAddress,
             _optimisticSeconds
@@ -205,10 +205,10 @@ contract Origin is
         // insert the hashed message into the Merkle tree
         bytes32 messageHash = keccak256(message);
         // new root is added to the historical roots
-        _insertHash(messageHash);
+        _insertHash(latestNonce, messageHash);
         // Emit Dispatch event with message information
-        // note: leaf index in the tree is messageNonce - 1, meaning we don't need to emit that
-        emit Dispatch(messageHash, messageNonce, _destination, _tips, message);
+        // note: leaf index in the tree is latestNonce, meaning we don't need to emit that
+        emit Dispatch(messageHash, latestNonce + 1, _destination, _tips, message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

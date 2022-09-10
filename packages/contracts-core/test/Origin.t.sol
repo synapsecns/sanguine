@@ -110,7 +110,6 @@ contract OriginTest is SynapseTestWithNotaryManager {
             bytes memory tips
         ) = _prepareTestMessage(sender);
         bytes32 messageHash = keccak256(message);
-        uint256 count = origin.count();
         vm.expectEmit(true, true, true, true);
         emit Dispatch(messageHash, nonce, remoteDomain, tips, message);
         hoax(sender);
@@ -121,7 +120,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
             tips,
             messageBody
         );
-        assertTrue(origin.historicalRoots(count + 1) == origin.root());
+        assertTrue(origin.historicalRoots(nonce) == origin.root());
     }
 
     // Rejects messages over a set size

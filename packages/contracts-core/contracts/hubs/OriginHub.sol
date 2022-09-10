@@ -28,7 +28,7 @@ abstract contract OriginHub is AttestationHub, ReportHub {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // Merkle Tree containing all hashes of sent messages
-    MerkleLib.Tree public tree;
+    MerkleLib.Tree internal tree;
     // Merkle tree roots after inserting a sent message
     bytes32[] public historicalRoots;
 
@@ -79,26 +79,18 @@ abstract contract OriginHub is AttestationHub, ReportHub {
     }
 
     /**
-     * @notice Returns nonce of the last inserted Merkle root.
+     * @notice Returns nonce of the last inserted Merkle root, which is also
+     * the number of inserted leaves in the tree (current index).
      */
     function nonce() public view returns (uint32 latestNonce) {
-        // historicalRoots has length of 1 upon initializing,
-        // so this never underflows assuming contract was initialized
-        latestNonce = uint32(historicalRoots.length - 1);
+        latestNonce = uint32(_getTreeCount());
     }
 
     /**
-     * @notice Returns the number of inserted leaves in the tree (current index)
-     */
-    function count() public view returns (uint256) {
-        return tree.count;
-    }
-
-    /**
-     * @notice Returns the number of inserted leaves in the tree (current index)
+     * @notice Calculates and returns tree's current root.
      */
     function root() public view returns (bytes32) {
-        return tree.root();
+        return tree.root(_getTreeCount());
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -253,9 +245,10 @@ abstract contract OriginHub is AttestationHub, ReportHub {
     /**
      * @notice Inserts _hash into the Merkle tree and stores the new merkle root.
      */
-    function _insertHash(bytes32 _hash) internal {
-        tree.insert(_hash);
-        historicalRoots.push(tree.root());
+    function _insertHash(uint32 _count, bytes32 _hash) internal {
+        tree.insert(_count, _hash);
+        // Amount of leafs increased after the insertion
+        historicalRoots.push(tree.root(_count + 1));
     }
 
     /**
@@ -287,5 +280,18 @@ abstract contract OriginHub is AttestationHub, ReportHub {
         // Check if nonce is valid, if not => attestation is fraud
         // Check if root the same as the historical one, if not => attestation is fraud
         return (_nonce < historicalRoots.length && _root == historicalRoots[_nonce]);
+    }
+
+    /**
+     * @notice Returns amount of leaves in the merkle tree.
+     * @dev Every inserted leaf leads to adding a historical root,
+     * removing the necessity to store amount of leaves separately.
+     * Historical roots array is initialized with a root of an empty Sparse Merkle tree,
+     * thus actual amount of leaves is lower by one.
+     */
+    function _getTreeCount() internal view returns (uint256) {
+        // historicalRoots has length of 1 upon initializing,
+        // so this never underflows assuming contract was initialized
+        return historicalRoots.length - 1;
     }
 }
