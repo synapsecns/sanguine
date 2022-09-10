@@ -21,8 +21,4 @@ contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
             _removeNotary(getNotary(0));
         }
     }
-
-    function destinationAndNonce(uint32 _destination, uint32 _nonce) public pure returns (uint64) {
-        return _destinationAndNonce(_destination, _nonce);
-    }
 }

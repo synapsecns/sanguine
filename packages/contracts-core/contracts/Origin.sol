@@ -69,16 +69,15 @@ contract Origin is
      * @notice Emitted when a new message is dispatched
      * @param messageHash Hash of message; the leaf inserted to the Merkle tree
      *        for the message
-     * @param leafIndex Index of message's leaf in merkle tree
-     * @param destinationAndNonce Destination and destination-specific
-     *        nonce combined in single field ((destination << 32) & nonce)
+     * @param nonce Nonce of sent message (starts from 1)
+     * @param destination Destination domain
      * @param tips Tips paid for the remote off-chain agents
      * @param message Raw bytes of message
      */
     event Dispatch(
         bytes32 indexed messageHash,
-        uint256 indexed leafIndex,
-        uint64 indexed destinationAndNonce,
+        uint32 indexed nonce,
+        uint32 indexed destination,
         bytes tips,
         bytes message
     );
@@ -208,14 +207,8 @@ contract Origin is
         // new root is added to the historical roots
         _insertHash(messageHash);
         // Emit Dispatch event with message information
-        // note: leafIndex is messageNonce - 1 since nonces start from 1 rather than from 0
-        emit Dispatch(
-            messageHash,
-            messageNonce - 1,
-            _destinationAndNonce(_destination, messageNonce),
-            _tips,
-            message
-        );
+        // note: leaf index in the tree is messageNonce - 1, meaning we don't need to emit that
+        emit Dispatch(messageHash, messageNonce, _destination, _tips, message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -285,21 +278,5 @@ contract Origin is
             // Adjust "sender address" for correct processing on remote chain.
             sender = SystemMessage.SYSTEM_ROUTER;
         }
-    }
-
-    /**
-     * @notice Internal utility function that combines
-     * `_destination` and `_nonce`.
-     * @dev Both destination and nonce should be less than 2^32 - 1
-     * @param _destination Domain of destination chain
-     * @param _nonce Current nonce for given destination chain
-     * @return Returns (`_destination` << 32) & `_nonce`
-     */
-    function _destinationAndNonce(uint32 _destination, uint32 _nonce)
-        internal
-        pure
-        returns (uint64)
-    {
-        return (uint64(_destination) << 32) | _nonce;
     }
 }

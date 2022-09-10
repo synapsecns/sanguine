@@ -93,8 +93,8 @@ contract OriginTest is SynapseTestWithNotaryManager {
 
     event Dispatch(
         bytes32 indexed messageHash,
-        uint256 indexed leafIndex,
-        uint64 indexed destinationAndNonce,
+        uint32 indexed nonce,
+        uint32 indexed destination,
         bytes tips,
         bytes message
     );
@@ -112,13 +112,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         bytes32 messageHash = keccak256(message);
         uint256 count = origin.count();
         vm.expectEmit(true, true, true, true);
-        emit Dispatch(
-            messageHash,
-            origin.count(),
-            (uint64(remoteDomain) << 32) | nonce,
-            tips,
-            message
-        );
+        emit Dispatch(messageHash, nonce, remoteDomain, tips, message);
         hoax(sender);
         origin.dispatch{ value: TOTAL_TIPS }(
             remoteDomain,
