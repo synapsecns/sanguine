@@ -38,7 +38,7 @@ interface ISystemRouter {
     /**
      * @notice Calls a few system contracts with the given calldata.
      * See `systemCall` for details on system calls.
-     * Note: tx will revert of any of the calls revert, guaranteeing
+     * Note: tx will revert if any of the calls revert, guaranteeing
      * that either all calls succeed or none.
      */
     function systemMultiCall(
