@@ -636,8 +636,9 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         message = _createSystemMessage(context);
         if (context.origin != remoteDomain) {
             uint32 _prevRemoteDomainValue = remoteDomain;
+            destination.removeNotary(remoteDomain, notary);
             remoteDomain = context.origin;
-            destination.addNotary(SYNAPSE_DOMAIN, notary);
+            destination.addNotary(context.origin, notary);
             _prepareReceiveTest(message);
             remoteDomain = _prevRemoteDomainValue;
         } else {
