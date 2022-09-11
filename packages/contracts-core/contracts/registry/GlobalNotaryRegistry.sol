@@ -6,73 +6,88 @@ import { AbstractNotaryRegistry } from "./AbstractNotaryRegistry.sol";
 /**
  * @notice A Registry to keep track of Notaries on all domains.
  *
- * @dev Modified OZ's EnumerableSet. This enables mapping into EnumerableSet.
+ * @dev Modified OZ's EnumerableSet.
+ * This enables mapping(uint32 => EnumerableSet), which is not supported by Solidity natively.
  * https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/structs/EnumerableSet.sol
+ *
+ * It is assumed that the Notary is active on a single chain.
  */
 contract GlobalNotaryRegistry is AbstractNotaryRegistry {
+    /**
+     * @notice Information about an active Notary, optimized for fir in one word of storage.
+     * @dev Since we're storing both domain and index, we can store the actual notary position
+     * in domainNotaries[domain] instead of using the OZ approach of storing (position + 1).
+     * @param domain    Domain where Notary is active (domain 0 means notary is not active)
+     * @param index     Notary position in domainNotaries[domain] array
+     */
+    struct NotaryInfo {
+        uint32 domain;
+        uint224 index;
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // Array of active Notaries for every domain
     // [domain => [notaries]]
     mapping(uint32 => address[]) internal domainNotaries;
 
-    // [domain => [notary => position in the above array plus 1]]
-    // (index 0 means notary is not in the array)
-    mapping(uint32 => mapping(address => uint256)) private notariesIndexes;
+    // [notary => notary info]
+    mapping(address => NotaryInfo) internal notariesInfo;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             UPGRADE GAP                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // solhint-disable-next-line var-name-mixedcase
-    uint256[48] private __GAP;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    event NotaryAdded(uint32 indexed domain, address notary);
-
-    event NotaryRemoved(uint32 indexed domain, address notary);
+    // gap for upgrade safety
+    uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _addNotary(uint32 _domain, address _notary) internal returns (bool) {
-        if (_isNotary(_domain, _notary)) return false;
+    /**
+     * @notice Tries to add a new notary, emits an event only if notary was added.
+     * @dev Notary will not be added, if it's active on ANY domain.
+     */
+    function _addNotary(uint32 _domain, address _notary) internal override returns (bool) {
+        if (notariesInfo[_notary].domain != 0) return false;
+        notariesInfo[_notary] = NotaryInfo({
+            domain: _domain,
+            index: uint224(domainNotaries[_domain].length)
+        });
         domainNotaries[_domain].push(_notary);
-        notariesIndexes[_domain][_notary] = domainNotaries[_domain].length;
         emit NotaryAdded(_domain, _notary);
         return true;
     }
 
-    function _removeNotary(uint32 _domain, address _notary) internal returns (bool) {
-        uint256 valueIndex = notariesIndexes[_domain][_notary];
-        if (valueIndex == 0) return false;
+    /**
+     * @notice Tries to remove a notary, emits an event only if notary was removed.
+     */
+    function _removeNotary(uint32 _domain, address _notary) internal override returns (bool) {
+        NotaryInfo memory info = notariesInfo[_notary];
+        if (info.domain != _domain) return false;
         // To delete a Notary from the array in O(1),
         // we swap the Notary to delete with the last one in the array,
         // and then remove the last Notary (sometimes called as 'swap and pop').
         address[] storage notaries = domainNotaries[_domain];
-        uint256 toDeleteIndex = valueIndex - 1;
         uint256 lastIndex = notaries.length - 1;
-        if (lastIndex != toDeleteIndex) {
+        if (lastIndex != info.index) {
             address lastNotary = notaries[lastIndex];
             // Move the last Notary to the index where the Notary to delete is
-            notaries[toDeleteIndex] = lastNotary;
+            notaries[info.index] = lastNotary;
             // Update the index for the moved Notary
-            notariesIndexes[_domain][lastNotary] = valueIndex;
+            notariesInfo[lastNotary].index = info.index;
         }
         // Delete the slot where the moved Notary was stored
         notaries.pop();
         // Delete the index for the deleted slot
-        delete notariesIndexes[_domain][_notary];
+        delete notariesInfo[_notary];
         emit NotaryRemoved(_domain, _notary);
         return true;
     }
 
-    function _isNotary(uint32 _domain, address _notary) internal view override returns (bool) {
-        return notariesIndexes[_domain][_notary] != 0;
+    /**
+     * @notice Returns whether a given address is a notary for a given domain.
+     */
+    function _isNotary(uint32 _domain, address _account) internal view override returns (bool) {
+        return notariesInfo[_account].domain == _domain;
     }
 }

@@ -11,9 +11,9 @@ import (
 // ContractConfig defines the config for a specific contract.
 type ContractConfig struct {
 	// Address is the address of the contract.
-	Address string `toml:"Address"`
+	Address string `yaml:"address"`
 	// StartBlock is the block number to start indexing events from.
-	StartBlock uint64 `toml:"StartBlock"`
+	StartBlock uint64 `yaml:"start_block"`
 }
 
 // ContractConfigs contains a list of ContractConfigs.

@@ -19,15 +19,18 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		// Store two logs with the same txHash, and one with a different txHash.
 		txHashA := common.BigToHash(big.NewInt(txHashRandom))
 		logA := t.MakeRandomLog(txHashA)
+		logA.BlockNumber = 1
 		err := testDB.StoreLog(t.GetTestContext(), logA, chainID)
 		Nil(t.T(), err)
 
 		logB := t.MakeRandomLog(txHashA)
+		logB.BlockNumber = 2
 		err = testDB.StoreLog(t.GetTestContext(), logB, chainID)
 		Nil(t.T(), err)
 
 		txHashC := common.BigToHash(big.NewInt(txHashRandom + 1))
 		logC := t.MakeRandomLog(txHashC)
+		logC.BlockNumber = 3
 		err = testDB.StoreLog(t.GetTestContext(), logC, chainID+1)
 		Nil(t.T(), err)
 
@@ -37,7 +40,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 			TxHash:  txHashA.String(),
 			ChainID: chainID,
 		}
-		retrievedLogSame, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), txHashFilter)
+		retrievedLogSame, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), txHashFilter, 1)
 		Nil(t.T(), err)
 
 		resA, err := logA.MarshalJSON()
@@ -57,7 +60,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 			TxHash:  txHashC.String(),
 			ChainID: chainID + 1,
 		}
-		retrievedLog, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), txHashFilter)
+		retrievedLog, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), txHashFilter, 1)
 		Nil(t.T(), err)
 
 		resA, err = logC.MarshalJSON()

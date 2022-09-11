@@ -12,6 +12,7 @@ type Receipt {
   gas_used: Int!
   block_number: Int!
   transaction_index: Int!
+  page: Int!
   logs: [Log!] @goField(forceResolver:true)
   transaction: Transaction! @goField(forceResolver:true)
   json: JSON! @goField(forceResolver:true)
@@ -30,6 +31,7 @@ type Transaction {
   value: String!
   nonce: Int!
   to: String!
+  page: Int!
   logs: [Log!] @goField(forceResolver: true)
   receipt: Receipt! @goField(forceResolver: true)
   json: JSON! @goField(forceResolver:true)
@@ -46,6 +48,7 @@ type Log {
   block_hash: String!
   index: Int!
   removed: Boolean!
+  page: Int!
   transaction: Transaction! @goField(forceResolver: true)
   receipt: Receipt! @goField(forceResolver: true)
   json: JSON! @goField(forceResolver:true)
