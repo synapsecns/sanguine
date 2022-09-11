@@ -174,6 +174,16 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         }
     }
 
+    /**
+     * @notice System call to Destination, when Destination address is not set in the SystemRouter.
+     */
+    function test_systemCall_systemRouterNotConfigured() public {
+        systemRouter = new SystemRouterHarness(localDomain, address(origin), address(0));
+        vm.prank(address(origin));
+        vm.expectRevert("System Contract not set");
+        systemRouter.systemCall(localDomain, 0, ISystemRouter.SystemEntity.Destination, data);
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                     TEST: RECEIVE SYSTEM MESSAGE                     ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
