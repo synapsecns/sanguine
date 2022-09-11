@@ -66,10 +66,8 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         assertEq(client.trustedSender(remoteDomain), trustedSender);
     }
 
-    function test_setTrustedSenderAsNotOwner(address _notOwner) public {
-        vm.assume(_notOwner != owner);
+    function test_setTrustedSenderAsNotOwner() public {
         vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(_notOwner);
         client.setTrustedSender(remoteDomain, trustedSender);
     }
 
@@ -100,12 +98,10 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         }
     }
 
-    function test_setTrustedSendersAsNotOwner(address _notOwner) public {
-        vm.assume(_notOwner != owner);
+    function test_setTrustedSendersAsNotOwner() public {
         uint32[] memory domains = new uint32[](1);
         bytes32[] memory senders = new bytes32[](1);
         vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(_notOwner);
         client.setTrustedSenders(domains, senders);
     }
 
@@ -119,18 +115,12 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
     function test_handle() public {
         test_setTrustedSender();
-
         vm.prank(destination);
         client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
 
-    function test_handleNotDestination(address _notDestination) public {
-        vm.assume(_notDestination != destination);
-        // exclude calls from proxy's admin
-        vm.assume(_notDestination != address(1337));
+    function test_handleNotDestination() public {
         test_setTrustedSender();
-
-        vm.prank(_notDestination);
         vm.expectRevert("BasicClient: !destination");
         client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
