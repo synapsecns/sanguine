@@ -15,8 +15,8 @@ contract DomainNotaryRegistryTest is Test {
     address internal constant NOTARY_3 = address(3);
     address internal constant NOTARY_4 = address(4);
 
-    event DomainNotaryAdded(address notary);
-    event DomainNotaryRemoved(address notary);
+    event NotaryAdded(uint32 indexed domain, address notary);
+    event NotaryRemoved(uint32 indexed domain, address notary);
 
     function setUp() public {
         registry = new DomainNotaryRegistryHarness(DOMAIN);
@@ -132,7 +132,7 @@ contract DomainNotaryRegistryTest is Test {
     function _checkAddNotary(address _notary, bool _added) internal {
         if (_added) {
             vm.expectEmit(true, true, true, true);
-            emit DomainNotaryAdded(_notary);
+            emit NotaryAdded(DOMAIN, _notary);
         }
         assertEq(registry.addNotary(_notary), _added);
         assertTrue(registry.isNotary(DOMAIN, _notary));
@@ -141,7 +141,7 @@ contract DomainNotaryRegistryTest is Test {
     function _checkRemoveNotary(address _notary, bool _removed) internal {
         if (_removed) {
             vm.expectEmit(true, true, true, true);
-            emit DomainNotaryRemoved(_notary);
+            emit NotaryRemoved(DOMAIN, _notary);
         }
         assertEq(registry.removeNotary(_notary), _removed);
         assertFalse(registry.isNotary(DOMAIN, _notary));

@@ -5,11 +5,57 @@ import { TypedMemView } from "../libs/TypedMemView.sol";
 import { Attestation } from "../libs/Attestation.sol";
 import { Auth } from "../libs/Auth.sol";
 
+/**
+ * @notice Registry used for verifying Attestations signed by Notaries.
+ * This is done agnostic of how the Notaries are actually stored.
+ * The child contract is responsible for implementing the Notaries storage.
+ * @dev It is assumed that the Notary signature is only valid for a subset of origins.
+ */
 abstract contract AbstractNotaryRegistry {
     using Attestation for bytes;
     using Attestation for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                EVENTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Emitted when a new Notary is added.
+     * @param domain    Domain where a Notary was added
+     * @param notary    Address of the added notary
+     */
+    event NotaryAdded(uint32 indexed domain, address notary);
+
+    /**
+     * @notice Emitted when a new Notary is removed.
+     * @param domain    Domain where a Notary was removed
+     * @param notary    Address of the removed notary
+     */
+    event NotaryRemoved(uint32 indexed domain, address notary);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Adds a new Notary to Registry.
+     * @dev Child contracts should implement this depending on how Notaries are stored.
+     * @param _origin   Origin domain where Notary is added
+     * @param _notary   New Notary to add
+     * @return TRUE if a notary was added
+     */
+    function _addNotary(uint32 _origin, address _notary) internal virtual returns (bool);
+
+    /**
+     * @notice Removes a Notary from Registry.
+     * @dev Child contracts should implement this depending on how Notaries are stored.
+     * @param _origin   Origin domain where Notary is removed
+     * @param _notary   Notary to remove
+     * @return TRUE if a notary was removed
+     */
+    function _removeNotary(uint32 _origin, address _notary) internal virtual returns (bool);
 
     /**
      * @notice  Checks all following statements are true:
@@ -43,5 +89,12 @@ abstract contract AbstractNotaryRegistry {
         require(_isNotary(_view.attestedDomain(), _notary), "Signer is not a notary");
     }
 
-    function _isNotary(uint32 _origin, address _notary) internal view virtual returns (bool);
+    /**
+     * @notice Checks whether a given account in an authorized Notary.
+     * @dev Child contracts should implement this depending on how Notaries are stored.
+     * @param _origin   Origin domain to check
+     * @param _account  Address to check for being a Notary
+     * @return TRUE if the account is an authorized Notary.
+     */
+    function _isNotary(uint32 _origin, address _account) internal view virtual returns (bool);
 }
