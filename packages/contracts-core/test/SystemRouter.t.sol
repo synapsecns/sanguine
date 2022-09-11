@@ -230,6 +230,18 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     }
 
     /**
+     * @notice Receive system call from remote to local chain: Origin to Destination.
+     * System call with empty payload, should be rejected as badly formatted system message.
+     */
+    function test_receiveSystemMessage_badlyFormattedMessage() public {
+        bytes memory message = _createSystemMessage(receivedSystemMessage, "");
+        _prepareReceiveTest(message);
+        skip(optimisticSeconds);
+        vm.expectRevert("Not a system message");
+        destination.execute(message);
+    }
+
+    /**
      * @notice SystemRouter receives a plain message send via Destination directly
      * on the remote chain, specifying SystemRouter address as the recipient (anyone could do that).
      * SystemRouter should reject such messages: only special value of SYSTEM_ROUTER
@@ -740,6 +752,18 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             uint256(context.origin),
             uint256(systemCaller)
         );
+        return _createSystemMessage(context, payload);
+    }
+
+    /**
+     * @dev Constructs a system message for a system call given the test context.
+     * `systemCaller` is calling `systemRecipient` with a given payload.
+     */
+    function _createSystemMessage(MessageContext memory context, bytes memory payload)
+        internal
+        view
+        returns (bytes memory)
+    {
         bytes[] memory systemCalls = new bytes[](1);
         systemCalls[0] = SystemMessage.formatSystemCall(systemRecipient, payload);
         return _createSystemMessage(context, systemCalls);
