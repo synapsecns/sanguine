@@ -121,65 +121,45 @@ contract Destination is
     // ============ External Functions ============
 
     /**
-     * @notice First attempts to prove the validity of provided formatted
-     * `message`. If the message is successfully proven, then tries to execute
-     * message.
-     * @dev Reverts if `prove` call returns false
-     * @param _message Formatted message (refer to Message library)
-     * @param _proof Merkle proof of inclusion for message's leaf
-     * @param _index Index of leaf in origin's merkle tree
-     */
-    function proveAndExecute(
-        uint32 _remoteDomain,
-        bytes memory _message,
-        bytes32[32] calldata _proof,
-        uint256 _index
-    ) external {
-        require(prove(_remoteDomain, _message, _proof, _index), "!prove");
-        execute(_message);
-    }
-
-    /**
      * @notice Given formatted message, attempts to dispatch
      * message payload to end recipient.
      * @dev Recipient must implement a `handle` method (refer to IMessageRecipient.sol)
-     * Reverts if formatted message's destination domain is not the Mirror's domain,
-     * if message has not been proven,
-     * or if recipient reverted upon receiving the message.
-     * @param _message Formatted message
+     * Reverts if formatted message's destination domain is not the Destination's domain,
+     * if message proof is invalid, or its optimistic period not yet passed.
+     * Also reverts if the recipient reverted upon receiving the message.
+     * @param _message  Formatted message
+     * @param _proof    Merkle proof of inclusion for message's leaf
+     * @param _index    Index of leaf in origin's merkle tree
      */
-    function execute(bytes memory _message) public {
-        bytes29 messageView = _message.castToMessage();
-        bytes29 header = messageView.header();
+    function execute(
+        bytes memory _message,
+        bytes32[32] calldata _proof,
+        uint256 _index
+    ) public {
+        bytes29 message = _message.castToMessage();
+        bytes29 header = message.header();
         uint32 originDomain = header.origin();
         // ensure message was meant for this domain
         require(header.destination() == _localDomain(), "!destination");
-        // ensure message has been proven
-        bytes32 messageHash = messageView.keccak();
-        bytes32 root = messageStatus[originDomain][messageHash];
-        require(
-            root != MESSAGE_STATUS_NONE && root != MESSAGE_STATUS_EXECUTED,
-            "!exists || executed"
-        );
-        require(
-            acceptableRoot(originDomain, header.optimisticSeconds(), root),
-            "!optimisticSeconds"
-        );
+        bytes32 leaf = message.keccak();
+        // ensure message can be proven against a confirmed root,
+        // and that message's optimistic period has passed
+        bytes32 root = _prove(originDomain, leaf, _proof, _index, header.optimisticSeconds());
         // check re-entrancy guard
         require(entered == 1, "!reentrant");
         entered = 0;
-        _storeTips(messageView.tips());
+        _storeTips(message.tips());
         // update message status as executed
-        messageStatus[originDomain][messageHash] = MESSAGE_STATUS_EXECUTED;
+        messageStatus[originDomain][leaf] = MESSAGE_STATUS_EXECUTED;
         address recipient = _checkForSystemMessage(header.recipient());
         IMessageRecipient(recipient).handle(
             originDomain,
             header.nonce(),
             header.sender(),
             mirrorRoots[originDomain][root].submittedAt,
-            messageView.body().clone()
+            message.body().clone()
         );
-        emit Executed(originDomain, messageHash);
+        emit Executed(originDomain, leaf);
         // reset re-entrancy guard
         entered = 1;
     }
@@ -223,30 +203,28 @@ contract Destination is
      * already proven or executed)
      * @dev For convenience, we allow proving against any previous root.
      * This means that witnesses never need to be updated for the new root
-     * @param _message Formatted message
-     * @param _proof Merkle proof of inclusion for leaf
-     * @param _index Index of leaf in origin's merkle tree
-     * @return Returns true if proof was valid and `prove` call succeeded
+     * @param _originDomain         Domain of Origin
+     * @param _leaf                 Leaf (hash) of the message
+     * @param _proof                Merkle proof of inclusion for leaf
+     * @param _index                Index of leaf in Origin's merkle tree
+     * @param _optimisticSeconds    Optimistic period of the message
+     * @return root                 Merkle root used for proving message inclusion
      **/
-    function prove(
+    function _prove(
         uint32 _originDomain,
-        bytes memory _message,
+        bytes32 _leaf,
         bytes32[32] calldata _proof,
-        uint256 _index
-    ) public returns (bool) {
-        bytes32 _leaf = keccak256(_message);
+        uint256 _index,
+        uint32 _optimisticSeconds
+    ) internal view returns (bytes32 root) {
         // ensure that mirror is active
         require(mirrors[_originDomain].latestNonce != 0, "Mirror not active");
         // ensure that message has not been proven or executed
         require(messageStatus[_originDomain][_leaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
         // calculate the expected root based on the proof
-        bytes32 _calculatedRoot = MerkleLib.branchRoot(_leaf, _proof, _index);
-        // if the root is valid, save it for later optimistic period checking
-        if (mirrorRoots[_originDomain][_calculatedRoot].submittedAt != 0) {
-            messageStatus[_originDomain][_leaf] = _calculatedRoot;
-            return true;
-        }
-        return false;
+        root = MerkleLib.branchRoot(_leaf, _proof, _index);
+        // Sanity check: this either returns true or reverts
+        assert(acceptableRoot(_originDomain, _optimisticSeconds, root));
     }
 
     // ============ Internal Functions ============

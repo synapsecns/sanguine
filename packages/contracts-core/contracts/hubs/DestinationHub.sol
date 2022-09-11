@@ -77,6 +77,7 @@ abstract contract DestinationHub is DomainContext, AttestationHub, ReportHub {
      * @notice Check that the root has been submitted
      * and that the root's optimistic timeout period has expired,
      * meaning message proven against the root can be executed.
+     * @dev This will revert if any of the checks fail.
      * @param _originDomain         Domain of Origin
      * @param _optimisticSeconds    Optimistic period for a message
      * @param _root                 The Merkle root from Origin to check
@@ -92,11 +93,12 @@ abstract contract DestinationHub is DomainContext, AttestationHub, ReportHub {
     ) public view returns (bool) {
         Root memory rootInfo = mirrorRoots[_originDomain][_root];
         // Check if root has been submitted
-        if (rootInfo.submittedAt == 0) return false;
+        require(rootInfo.submittedAt != 0, "Invalid root");
         // Check if Notary is an active Notary
-        if (!_isNotary(_originDomain, rootInfo.notary)) return false;
+        require(_isNotary(_originDomain, rootInfo.notary), "Inactive notary");
         // Check if optimistic period has passed
-        return block.timestamp >= rootInfo.submittedAt + _optimisticSeconds;
+        require(block.timestamp >= rootInfo.submittedAt + _optimisticSeconds, "!optimisticSeconds");
+        return true;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
