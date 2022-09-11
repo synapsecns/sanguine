@@ -126,6 +126,8 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
     function test_handleNotDestination(address _notDestination) public {
         vm.assume(_notDestination != destination);
+        // exclude calls from proxy's admin
+        vm.assume(_notDestination != address(1337));
         test_setTrustedSender();
 
         vm.prank(_notDestination);
