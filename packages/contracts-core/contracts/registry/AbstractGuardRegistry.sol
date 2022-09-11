@@ -5,10 +5,52 @@ import { TypedMemView } from "../libs/TypedMemView.sol";
 import { Report } from "../libs/Report.sol";
 import { Auth } from "../libs/Auth.sol";
 
+/**
+ * @notice Registry used for verifying Reports signed by Guards.
+ * This is done agnostic of how the Guards are actually stored.
+ * The child contract is responsible for implementing the Guards storage.
+ * @dev It is assumed that the Guard signature is valid on all chains.
+ */
 abstract contract AbstractGuardRegistry {
     using Report for bytes;
     using Report for bytes29;
     using TypedMemView for bytes29;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                EVENTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Emitted when a new Guard is added.
+     * @param guard    Address of the added guard
+     */
+    event GuardAdded(address guard);
+
+    /**
+     * @notice Emitted when a Guard is removed.
+     * @param guard    Address of the removed guard
+     */
+    event GuardRemoved(address guard);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Adds a new Guard to Registry.
+     * @dev Child contracts should implement this depending on how Guards are stored.
+     * @param _guard    New Guard to add
+     * @return TRUE if a guard was added
+     */
+    function _addGuard(address _guard) internal virtual returns (bool);
+
+    /**
+     * @notice Removes a Guard from Registry.
+     * @dev Child contracts should implement this depending on how Guards are stored.
+     * @param _guard    Guard to remove
+     * @return TRUE if a guard was removed
+     */
+    function _removeGuard(address _guard) internal virtual returns (bool);
 
     /**
      * @notice  Checks all following statements are true:
