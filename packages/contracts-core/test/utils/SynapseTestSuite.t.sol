@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "../../contracts/libs/SystemMessage.sol";
+import "../../contracts/libs/Report.sol";
 import "./SynapseTestStorage.t.sol";
 import "./SynapseUtilities.t.sol";
 
@@ -119,6 +121,85 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         chains[domain].systemRouter = systemRouter;
         chains[domain].notaryManager = notaryManager;
         chains[domain].app = app;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             ATTESTATIONS                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Attestation signed by the chain's default Notary.
+     */
+    function signAttestation(
+        uint32 domain,
+        uint32 nonce,
+        bytes32 root
+    ) public returns (bytes memory attestation, bytes memory signature) {
+        return signAttestation(domain, nonce, root, suiteNotary(domain));
+    }
+
+    /**
+     * @notice Attestation signed by a chain's given Notary.
+     */
+    function signAttestation(
+        uint32 domain,
+        uint32 nonce,
+        bytes32 root,
+        uint256 notaryIndex
+    ) public returns (bytes memory attestation, bytes memory signature) {
+        return signAttestation(domain, nonce, root, suiteNotary(domain, notaryIndex));
+    }
+
+    /**
+     * @notice Attestation signed by a given signer.
+     */
+    function signAttestation(
+        uint32 domain,
+        uint32 nonce,
+        bytes32 root,
+        address signer
+    ) public returns (bytes memory attestation, bytes memory signature) {
+        bytes memory data = Attestation.formatAttestationData(domain, nonce, root);
+        signature = signMessage(signer, data);
+        attestation = Attestation.formatAttestation(data, signature);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               REPORTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Report signed by the default Guard.
+     */
+    function signReport(Report.Flag flag, bytes memory attestation)
+        public
+        returns (bytes memory report, bytes memory signature)
+    {
+        return signReport(flag, attestation, suiteGuard());
+    }
+
+    /**
+     * @notice Report signed by a given Guard.
+     */
+    function signReport(
+        Report.Flag flag,
+        bytes memory attestation,
+        uint256 guardIndex
+    ) public returns (bytes memory report, bytes memory signature) {
+        return signReport(flag, attestation, suiteGuard(guardIndex));
+    }
+
+    /**
+     * @notice Report signed by a given signer.
+     */
+    function signReport(
+        Report.Flag flag,
+        bytes memory attestation,
+        address signer
+    ) public returns (bytes memory report, bytes memory signature) {
+        bytes memory data = Report.formatReportData(flag, attestation);
+        signature = signMessage(signer, data);
+        report = Report.formatReport(flag, attestation, signature);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
