@@ -9,7 +9,9 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
-runCommand: ./sanguine server
+runCommand:
+  - /app/scribe
+  - server
 
 imagePullSecrets: []
 nameOverride: ''
