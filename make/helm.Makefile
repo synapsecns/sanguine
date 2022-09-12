@@ -26,6 +26,13 @@ yq-install:
 	@#Brew - MacOS
 	@if [ "$(shell which yq)" = "" ] && [ "$(shell which brew)" != "" ] && [ "$(GITHUB_WORKFLOW)" == "" ]; then brew install yq; fi;
 
+ct-install:
+	@#Brew - MacOS
+	@if [ "$(shell which ct)" = "" ] && [ "$(shell which brew)" != "" ] && [ "$(GITHUB_WORKFLOW)" == "" ]; then brew install chart-testing; fi;
+
 dependencies: yq-install helm-install ## install dependencies for all helm charts
 	cd $(GIT_ROOT)
 	$(GIT_ROOT)/make/scripts/helm_dependency.sh
+
+lint: ct-install dependencies ## lints helm charts
+	cd $(GIT_ROOT);	ct lint --all --validate-maintainers=false

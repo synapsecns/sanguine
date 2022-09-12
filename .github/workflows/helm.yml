@@ -29,7 +29,6 @@ jobs:
 
       - name: Run chart-testing (list-changed)
         id: list-changed
-#        working-directory: charts/
         run: |
           changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }})
           if [[ -n "$changed" ]]; then
@@ -37,8 +36,7 @@ jobs:
           fi
 
       - name: Run chart-testing (lint)
-#        working-directory: charts/
-        run: ct lint --target-branch ${{ github.event.repository.default_branch }}
+        run: ct lint --target-branch ${{ github.event.repository.default_branch }} --validate-maintainers=false
 
       - name: Create kind cluster
         uses: helm/kind-action@v1.2.0
