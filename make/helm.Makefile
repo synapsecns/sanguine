@@ -43,5 +43,5 @@ lint: ct-install dependencies ## lints helm charts
 
 test-install: ct-install kind-install## test chart installs on a local kubernetes cluster
 	@if [ "$(shell kind get clusters)" = "" ]; then kind create cluster; fi;
-	@eval $$(cd $(GIT_ROOT)); ct install --all --debug --charts $(CHART_DIRS)
+	@eval $$(cd $(GIT_ROOT)); ct install --debug --chart-dirs $(CHART_DIRS) --charts $(CHART_DIRS)
 
