@@ -5,9 +5,11 @@
 replicaCount: 1
 
 image:
-  repository: busybox
+  repository: ghcr.io/synapsecns/sanguine/scribe
   tag: latest
   pullPolicy: IfNotPresent
+
+runCommand: ./sanguine server
 
 imagePullSecrets: []
 nameOverride: ''
