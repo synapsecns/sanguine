@@ -12,7 +12,7 @@ for filename in *; do
       continue
     fi
 
-    cd $filename || exit 1
+    cd "$filename" || exit 1
 
     # auto add https://github.com/helm/helm/issues/8036#issuecomment-1126959239
     if [ ! -f "./Chart.yaml" ]; then
@@ -27,4 +27,4 @@ do
     OUT=$I,${OUT:+$OUT }
 done
 
-echo $OUT  | rev | cut -c2- | rev
+echo "$OUT"  | rev | cut -c2- | rev

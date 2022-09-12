@@ -10,7 +10,7 @@ for filename in *; do
       continue
     fi
 
-    cd $filename || exit 1
+    cd "$filename" || exit 1
 
     # auto add https://github.com/helm/helm/issues/8036#issuecomment-1126959239
     if [ -f "./Chart.lock" ]; then
