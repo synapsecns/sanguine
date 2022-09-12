@@ -35,13 +35,6 @@ jobs:
           echo "::set-output name=changed::true"
           fi
 
-
-      - name: Run chart-testing (list-changed)
-        id: list-changed
-        run: |
-          CHANGED=$(make list-chart-dirs)
-          echo "##[set-output name=CHANGED;]$(echo $CHANGED)"
-
       - name: Run chart-testing (lint)
         run: ct lint --target-branch ${{ github.event.repository.default_branch }} --validate-maintainers=false
         env:
