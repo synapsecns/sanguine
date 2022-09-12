@@ -29,15 +29,6 @@ jobs:
         working-directory: charts/
         run: make dependencies
 
-      - name: List Chart Dirs
-        id: list_charts
-        working-directory: charts/
-        run: |
-          chart_dirs=$(make list-chart-dirs)
-          echo $chart_dirs
-          echo "##[set-output name=chart-dirs;]$(echo $chart_dirs)"
-
-
       - name: Run chart-testing (list-changed)
         id: list-changed
         run: |
