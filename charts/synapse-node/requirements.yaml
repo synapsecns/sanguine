@@ -1,0 +1,6 @@
+dependencies:
+- name: mysql
+  version: 8.6.3
+  repository: https://charts.bitnami.com/bitnami
+  condition: mysql.enabled
+  alias: mysql

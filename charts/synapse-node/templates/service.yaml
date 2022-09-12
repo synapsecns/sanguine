@@ -1,0 +1,25 @@
+{{- if .Values.service.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "synapse-node.fullname" . }}
+  labels: {{ include "synapse-node.svcLabels" . | indent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+{{ include "synapse-node.svcSpec" . | indent 2 }}
+---
+{{- end -}}
+{{- if .Values.headless.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  {{- if .Values.headless.name }}
+  name: {{ .Values.headless.name | trunc 63 | trimSuffix "-" }}
+  {{- else }}
+  name: {{ include "synapse-node.fullname" . }}-headless
+  {{- end }}
+  labels: {{ include "synapse-node.svcLabels" . | indent 4 }}
+spec:
+  clusterIP: None
+{{ include "synapse-node.svcSpec" . | indent 2 }}
+{{- end -}}
