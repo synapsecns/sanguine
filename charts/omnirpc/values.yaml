@@ -5,14 +5,16 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
+  repository: ghcr.io/synapsecns/sanguine/omnirpc
+  # should be changed to if not present if we're not using the latest tag
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+args: ["chainlist-server", "--port 80"]
 
 serviceAccount:
   # Specifies whether a service account should be created

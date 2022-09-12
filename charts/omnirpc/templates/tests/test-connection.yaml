@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "omnirpc.fullname" . }}:{{ .Values.service.port }}']
+      args: ['{{ include "omnirpc.fullname" . }}:{{ .Values.service.port }}/health-check']
   restartPolicy: Never
