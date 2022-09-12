@@ -30,7 +30,7 @@ jobs:
       - name: List Chart Dirs
         working-directory: charts/
         run: |
-          chart_dirs=$(make )
+          chart_dirs=$(make list-chart-dirs)
           if [[ -n "$changed" ]]; then
           echo "::set-output name=changed::true"
           fi
