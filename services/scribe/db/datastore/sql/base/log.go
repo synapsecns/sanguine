@@ -65,6 +65,20 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 	return nil
 }
 
+// ConfirmLog confirms a log.
+func (s Store) ConfirmLog(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Log{}).
+		Where(&Log{BlockHash: blockHash.String(), ChainID: chainID}).
+		Update("confirmed", true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm log: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
 // logFilterToQuery takes in a LogFilter and converts it to a database-type Log.
 // This is used to query with `WHERE` based on the filter.
 func logFilterToQuery(logFilter db.LogFilter) Log {

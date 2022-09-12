@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/jpillora/backoff"
@@ -70,7 +71,7 @@ func (s Scribe) Start(ctx context.Context) error {
 				case <-groupCtx.Done():
 					return fmt.Errorf("context finished: %w", groupCtx.Err())
 				case <-time.After(timeout):
-					err := s.processRange(groupCtx, chainConfig.ChainID)
+					err := s.processRange(groupCtx, chainConfig.ChainID, chainConfig.RequiredConfirmations)
 					if err != nil {
 						timeout = b.Duration()
 						logger.Warnf("could not get current block number: %v", err)
@@ -90,13 +91,81 @@ func (s Scribe) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s Scribe) processRange(ctx context.Context, chainID uint32) error {
+func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfirmations uint32) error {
 	newBlock, err := s.clients[chainID].BlockNumber(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get current block number: %w", err)
 	}
 
-	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, newBlock)
+	// in the range (last confirmed block number, current block number - required confirmations],
+	// check the validity of the blocks, and modify the database accordingly
+	lastBlockNumber, err := s.eventDB.RetrieveLastConfirmedBlock(ctx, chainID)
+	if err != nil {
+		return fmt.Errorf("could not retrieve last confirmed block: %w", err)
+	}
+	for i := lastBlockNumber + 1; i <= newBlock-uint64(requiredConfirmations); i++ {
+		// check the validity of the block
+		block, err := s.clients[chainID].BlockByNumber(ctx, big.NewInt(int64(i)))
+		if err != nil {
+			return fmt.Errorf("could not get block by number: %w", err)
+		}
+		// get the block hash of the stored block, using a receipt
+		receiptFilter := db.ReceiptFilter{
+			ChainID:     chainID,
+			BlockNumber: i,
+		}
+		receipts, err := s.eventDB.RetrieveReceiptsWithFilter(ctx, receiptFilter, 1)
+		if err != nil {
+			return fmt.Errorf("could not retrieve receipts with filter: %w", err)
+		}
+		if len(receipts) == 0 {
+			return fmt.Errorf("no receipts found for block %d", i)
+		}
+
+		// if the block hash is not the same, then the block is invalid. otherwise, mark the block as valid
+		if block.Hash() != receipts[0].BlockHash {
+			// cascade delete
+
+			// get the data for the block and backfill
+			err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, i, true)
+		} else {
+			g, groupCtx := errgroup.WithContext(ctx)
+			// mark each receipt, log, and transaction belonging to block i to be confirmed
+			g.Go(func() error {
+				err := s.eventDB.ConfirmLog(groupCtx, block.Hash(), chainID)
+				if err != nil {
+					return fmt.Errorf("could not confirm log: %w", err)
+				}
+				return nil
+			})
+			g.Go(func() error {
+				err := s.eventDB.ConfirmReceipt(groupCtx, block.Hash(), chainID)
+				if err != nil {
+					return fmt.Errorf("could not confirm transaction: %w", err)
+				}
+				return nil
+			})
+			g.Go(func() error {
+				err := s.eventDB.ConfirmEthTx(groupCtx, block.Hash(), chainID)
+				if err != nil {
+					return fmt.Errorf("could not confirm transaction: %w", err)
+				}
+				return nil
+			})
+
+			if err := g.Wait(); err != nil {
+				return fmt.Errorf("could not confirm block: %w", err)
+			}
+		}
+
+		// update the last confirmed block number
+		err = s.eventDB.StoreLastConfirmedBlock(ctx, chainID, i)
+		if err != nil {
+			return fmt.Errorf("could not store last confirmed block: %w", err)
+		}
+	}
+
+	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, newBlock, false)
 	if err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}

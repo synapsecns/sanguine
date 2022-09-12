@@ -77,7 +77,7 @@ func (t *DBSuite) TestStoreAndRetrieveEthTx() {
 			signedTx, err := transactor.Signer(signer.Address(), testTx)
 			Nil(t.T(), err)
 
-			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, uint32(testTx.ChainId().Uint64()), gofakeit.Uint64())
+			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, uint32(testTx.ChainId().Uint64()), common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint64())
 			Nil(t.T(), err)
 
 			ethTxFilter := db.EthTxFilter{

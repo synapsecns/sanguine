@@ -43,6 +43,23 @@ func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID 
 	return nil
 }
 
+// ConfirmReceipt confirms a receipt.
+func (s Store) ConfirmReceipt(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Receipt{}).
+		Where(&Receipt{
+			BlockHash: blockHash.String(),
+			ChainID:   chainID,
+		}).
+		Update(ConfirmedFieldName, true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm receipt: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
 // receiptFilterToQuery takes in a ReceiptFilter and converts it to a database-type Receipt.
 // This is used to query with `WHERE` based on the filter.
 func receiptFilterToQuery(receiptFilter db.ReceiptFilter) Receipt {

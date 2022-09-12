@@ -14,9 +14,13 @@ type EventDBWriter interface {
 	// StoreReceipt stores a receipt
 	StoreReceipt(ctx context.Context, receipt types.Receipt, chainID uint32) error
 	// StoreEthTx stores a processed transaction
-	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockNumber uint64) error
+	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64) error
 	// StoreLastIndexed stores the last indexed for a contract address
 	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error
+	// StoreLastConfirmedBlock stores the last block number that has been confirmed.
+	// It updates the value if there is a previous last block confirmed value, and creates a new
+	// entry if there is no previous value.
+	StoreLastConfirmedBlock(ctx context.Context, chainID uint32, blockNumber uint64) error
 }
 
 // EventDBReader is an interface for reading events from a database.
@@ -27,16 +31,28 @@ type EventDBReader interface {
 	RetrieveLogsWithFilter(ctx context.Context, logFilter LogFilter, page int) (logs []*types.Log, err error)
 	// RetrieveLogsInRange retrieves all logs that match an inputted filter and are within a range given a page.
 	RetrieveLogsInRange(ctx context.Context, logFilter LogFilter, startBlock, endBlock uint64, page int) (logs []*types.Log, err error)
+	// ConfirmReceipt confirms a receipt.
+	ConfirmReceipt(ctx context.Context, blockHash common.Hash, chainID uint32) error
+
 	// RetrieveReceiptsWithFilter retrieves receipts with a filter given a page.
 	RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter ReceiptFilter, page int) (receipts []types.Receipt, err error)
 	// RetrieveReceiptsInRange retrieves receipts that match an inputted filter and are within a range given a page.
 	RetrieveReceiptsInRange(ctx context.Context, receiptFilter ReceiptFilter, startBlock, endBlock uint64, page int) (receipts []types.Receipt, err error)
+	// ConfirmLog confirms a log.
+	ConfirmLog(ctx context.Context, blockHash common.Hash, chainID uint32) error
+
 	// RetrieveEthTxsWithFilter retrieves eth transactions with a filter given a page.
 	RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter EthTxFilter, page int) ([]types.Transaction, error)
 	// RetrieveEthTxsInRange retrieves eth transactions that match an inputted filter and are within a range given a page.
 	RetrieveEthTxsInRange(ctx context.Context, ethTxFilter EthTxFilter, startBlock, endBlock uint64, page int) ([]types.Transaction, error)
+	// ConfirmEthTx confirms an eth tx.
+	ConfirmEthTx(ctx context.Context, blockHash common.Hash, chainID uint32) error
+
 	// RetrieveLastIndexed retrieves the last indexed for a contract address
 	RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32) (uint64, error)
+
+	// RetrieveLastConfirmedBlock retrieves the last block number that has been confirmed.
+	RetrieveLastConfirmedBlock(ctx context.Context, chainID uint32) (uint64, error)
 }
 
 // EventDB stores events.

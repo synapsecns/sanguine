@@ -54,7 +54,8 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 }
 
 // Backfill iterates over each contract backfiller and calls Backfill concurrently on each one.
-func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64) error {
+// If `onlyOneBlock` is true, the backfiller will only backfill the block at `endHeight`.
+func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64, onlyOneBlock bool) error {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
 	// iterate over each contract backfiller
@@ -80,6 +81,9 @@ func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64) error {
 				case <-groupCtx.Done():
 					return fmt.Errorf("context canceled: %w", groupCtx.Err())
 				case <-time.After(timeout):
+					if onlyOneBlock {
+						startHeight = endHeight
+					}
 					err := contractBackfiller.Backfill(groupCtx, startHeight, endHeight)
 					if err != nil {
 						timeout = b.Duration()

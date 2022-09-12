@@ -71,7 +71,7 @@ func (l LiveSuite) TestLive() {
 		simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
 	}
 
-	err = scribe.ProcessRange(l.GetTestContext(), chainID)
+	err = scribe.ProcessRange(l.GetTestContext(), chainID, 0)
 	Nil(l.T(), err)
 
 	// Check that the events were recorded.

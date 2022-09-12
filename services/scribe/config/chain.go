@@ -13,6 +13,8 @@ type ChainConfig struct {
 	ChainID uint32 `yaml:"chain_id"`
 	// RPCUrl is the URL of the chain's RPC server.
 	RPCUrl string `yaml:"rpc_url"`
+	// RequiredConfirmations is the number of confirmations required for a block to be valid.
+	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// Contracts stores all the contract information for the chain.
 	Contracts ContractConfigs `yaml:"contracts"`
 }
