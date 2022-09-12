@@ -8,6 +8,8 @@ import (
 )
 
 // EventDBWriter is an interface for writing events to a database.
+//
+//nolint:interfacebloat
 type EventDBWriter interface {
 	// StoreLog stores a log
 	StoreLog(ctx context.Context, log types.Log, chainID uint32) error

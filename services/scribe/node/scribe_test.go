@@ -133,7 +133,6 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 		tx, err := testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
 		Nil(l.T(), err)
 		simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
-
 	}
 	// Process the events.
 	err = scribe.ProcessRange(l.GetTestContext(), chainID, chainConfig.RequiredConfirmations)
@@ -197,5 +196,4 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 	Nil(l.T(), err)
 	// There should be 4 transactions, one for each transaction over three blocks.
 	Equal(l.T(), 3, len(txs))
-
 }

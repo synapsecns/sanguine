@@ -91,6 +91,7 @@ func (s Scribe) Start(ctx context.Context) error {
 	return nil
 }
 
+//nolint:gocognit, cyclop
 func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfirmations uint32) error {
 	newBlock, err := s.clients[chainID].BlockNumber(ctx)
 	fmt.Println("Current block number: ", newBlock)
@@ -146,6 +147,7 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 		}
 
 		// if the block hash is not the same, then the block is invalid. otherwise, mark the block as valid
+		//nolint:nestif
 		if block.Hash() != receipts[0].BlockHash {
 			g, groupCtx := errgroup.WithContext(ctx)
 			g.Go(func() error {
