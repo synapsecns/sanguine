@@ -19,6 +19,10 @@ helm-install:
 	@#Brew - MacOS
 	@if [ "$(shell which helm)" = "" ] && [ "$(shell which brew)" != "" ] && [ "$(GITHUB_WORKFLOW)" == "" ]; then brew install helm; fi;
 
+kind-install:
+	@#Brew - MacOS
+	@if [ "$(shell which kind)" = "" ] && [ "$(shell which brew)" != "" ] && [ "$(GITHUB_WORKFLOW)" == "" ]; then brew install kind; fi;
+
 # used for parsing yaml
 yq-install:
 	@#Github Actions
@@ -36,6 +40,10 @@ dependencies: yq-install helm-install ## install dependencies for all helm chart
 
 lint: ct-install dependencies ## lints helm charts
 	cd $(GIT_ROOT);	ct lint --all --validate-maintainers=false
+
+test-install: ct-install kind-install## test chart installs on a local kubernetes cluster
+
+
 
 # list helm charts, used for: https://github.com/helm/chart-testing/issues/226
 list-chart-dirs: ## list all chart directories
