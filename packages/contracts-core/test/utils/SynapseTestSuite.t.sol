@@ -6,6 +6,122 @@ import "./SynapseUtilities.t.sol";
 
 contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                SETUP                                 ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function setUp() public virtual {
+        setupAgents();
+        for (uint256 d = 0; d < DOMAINS; ++d) {
+            setupChain(domains[d], domainNames[d]);
+        }
+        setupContext();
+    }
+
+    function setupAgents() public {
+        domains = new uint32[](DOMAINS);
+        domainNames = new string[](DOMAINS);
+        domains[0] = DOMAIN_SYNAPSE;
+        domains[1] = DOMAIN_LOCAL;
+        domains[2] = DOMAIN_REMOTE;
+        domainNames[0] = "SynChain";
+        domainNames[1] = "Local";
+        domainNames[2] = "Remote";
+        // Create notaries
+        for (uint256 domainIndex = 0; domainIndex < DOMAINS; ++domainIndex) {
+            for (uint256 notaryIndex = 0; notaryIndex < NOTARIES_PER_CHAIN; ++notaryIndex) {
+                uint32 domain = domains[domainIndex];
+                uint256 notaryPK = generatePrivateKey(
+                    abi.encode("notary", domainIndex, notaryIndex)
+                );
+                address notary = registerPK(notaryPK);
+                vm.label(
+                    notary,
+                    string.concat("Notary ", domainNames[domainIndex], getActorSuffix(notaryIndex))
+                );
+                chains[domain].notaries.push(notary);
+            }
+        }
+        // Create guards
+        for (uint256 guardIndex = 0; guardIndex < GUARDS; ++guardIndex) {
+            uint256 guardPK = generatePrivateKey(abi.encode("guard", guardIndex));
+            address guard = registerPK(guardPK);
+            vm.label(guard, string.concat("Guard", getActorSuffix(guardIndex)));
+            guards.push(guard);
+        }
+        // Create owner
+        owner = registerActor("Owner");
+        // Create proxy admin
+        proxyAdmin = registerActor("Proxy admin");
+        // Create attacker
+        attacker = registerActor("The Attackooor");
+        // Create user
+        user = registerActor("The Bridgooor");
+        // Create broadcaster
+        broadcaster = registerActor("Broadcaster");
+        // Deploy proof generator
+        proofGen = new ProofGenerator();
+    }
+
+    // All contracts are deployed by this contract, the ownership is then transferred to `owner`
+    // solhint-disable-next-line code-complexity
+    function setupChain(uint32 domain, string memory chainName) public {
+        address domainNotary = suiteNotary(domain);
+        // Deploy messaging contracts
+        DestinationHarness destination = new DestinationHarness(domain);
+        OriginHarness origin = new OriginHarness(domain);
+        SystemRouterHarness systemRouter = new SystemRouterHarness(
+            domain,
+            address(origin),
+            address(destination)
+        );
+        NotaryManager notaryManager = new NotaryManager(domainNotary);
+        notaryManager.setOrigin(address(origin));
+        // Setup destination
+        destination.initialize();
+        destination.setSystemRouter(systemRouter);
+        // Add notaries to Destination
+        for (uint256 i = 0; i < DOMAINS; ++i) {
+            uint32 domainToAdd = domains[i];
+            if (domainToAdd != domain) {
+                for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
+                    destination.addNotary(domainToAdd, suiteNotary(domainToAdd, j));
+                }
+            }
+        }
+        // Setup origin
+        origin.initialize(notaryManager);
+        origin.setSystemRouter(systemRouter);
+        // Add domain notaries to Origin
+        for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
+            origin.addNotary(suiteNotary(domain, i));
+        }
+        // Add guards
+        for (uint256 i = 0; i < GUARDS; ++i) {
+            address guard = guards[i];
+            destination.addGuard(guard);
+            origin.addGuard(guard);
+        }
+        // Deploy app
+        AppHarness app = new AppHarness(APP_OPTIMISTIC_SECONDS);
+        // Transfer ownership everywhere
+        destination.transferOwnership(owner);
+        origin.transferOwnership(owner);
+        notaryManager.transferOwnership(owner);
+        // Label deployments
+        vm.label(address(destination), string.concat("Destination ", chainName));
+        vm.label(address(origin), string.concat("Origin ", chainName));
+        vm.label(address(systemRouter), string.concat("SystemRouter ", chainName));
+        vm.label(address(notaryManager), string.concat("NotaryManager ", chainName));
+        vm.label(address(app), string.concat("App ", chainName));
+        // Save deployments
+        chains[domain].destination = destination;
+        chains[domain].origin = origin;
+        chains[domain].systemRouter = systemRouter;
+        chains[domain].notaryManager = notaryManager;
+        chains[domain].app = app;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               SIGNING                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
