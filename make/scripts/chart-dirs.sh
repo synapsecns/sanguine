@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-# assumes that we're in the charts dir
+dirs=()
+
+# list all chart dirs
 for filename in *; do
     # skip files
     [ -e "$filename" ] || continue
@@ -13,9 +15,16 @@ for filename in *; do
     cd $filename || exit 1
 
     # auto add https://github.com/helm/helm/issues/8036#issuecomment-1126959239
-    if [ -f "./Chart.lock" ]; then
-      yq --indent 0 '.dependencies | map(["helm", "repo", "add", .name, .repository] | join(" ")) | .[]' "./Chart.lock"  | sh --;
+    if [ ! -f "./Chart.yaml" ]; then
+      continue
     fi
 
-    helm dependency update
+    dirs+=("charts/$filename")
 done
+
+for I in "${dirs[@]}"
+do
+    OUT=$I,${OUT:+$OUT }
+done
+
+echo $OUT  | rev | cut -c2- | rev

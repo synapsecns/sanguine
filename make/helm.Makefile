@@ -36,3 +36,7 @@ dependencies: yq-install helm-install ## install dependencies for all helm chart
 
 lint: ct-install dependencies ## lints helm charts
 	cd $(GIT_ROOT);	ct lint --all --validate-maintainers=false
+
+# list helm charts, used for: https://github.com/helm/chart-testing/issues/226
+list-chart-dirs: ## list all chart directories
+	@eval $$(cd $(GIT_ROOT)/charts);	$(GIT_ROOT)/make/scripts/chart-dirs.sh
