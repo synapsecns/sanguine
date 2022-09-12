@@ -18,6 +18,9 @@ import (
 )
 
 // Backend is the ganache backend.
+// TODO: either deprecate or https://github.com/ory/dockertest
+// considering the docker image is over 2 years old, the latter might make more sense
+// see: https://hub.docker.com/r/trufflesuite/ganache-cli/
 type Backend struct {
 	*base.Backend
 	// wsURL is the websocket url of the ganache chain
