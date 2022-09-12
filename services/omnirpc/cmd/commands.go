@@ -44,7 +44,7 @@ var chainListCommand = &cli.Command{
 		}
 
 		if c.Int(portFlag.Name) != 0 {
-			rConfig.Port = uint16(freeport.GetPort())
+			rConfig.Port = uint16(c.Int(portFlag.Name))
 		}
 
 		if rConfig.Port == 0 {
