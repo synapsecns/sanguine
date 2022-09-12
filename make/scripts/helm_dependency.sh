@@ -3,7 +3,9 @@
 # assumes that we're in the charts dir
 for filename in *; do
     # skip files
-    [ -e "$filename" ] || continue
+    if [[ -f "$filename" ]]; then
+      continue
+    fi
 
     # skip symbolic links
     if [[ -L "$filename" ]]; then
