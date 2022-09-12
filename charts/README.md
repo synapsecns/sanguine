@@ -9,3 +9,7 @@ This contains helm charts for running sanguine-related services. Charts are test
 ## Linting
 
 `make lint`
+
+## Testing Locally
+
+`make test-install`
