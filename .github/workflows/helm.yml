@@ -31,6 +31,9 @@ jobs:
         working-directory: charts/
         run: |
           chart_dirs=$(make list-chart-dirs)
+          echo $chart_dirs
+          echo "new"
+          make list-chart-dirs
           echo "##[set-output name=chart-dirs;]$(echo $chart-dirs)"
 
       - name: Run chart-testing (lint)
