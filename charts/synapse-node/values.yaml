@@ -9,9 +9,13 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
+# TODO(@maxplanck): this should use mysql by default
 runCommand:
   - /app/scribe
   - server
+  - --port=80
+  - --db=sqlite
+  - --path=/tmp/test.db
 
 imagePullSecrets: []
 nameOverride: ''
