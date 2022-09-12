@@ -1,4 +1,4 @@
-name: "Helm Charts"
+name: 'Helm Charts'
 
 on: [push, pull_request]
 
@@ -32,9 +32,6 @@ jobs:
         working-directory: charts/
         run: |
           chart_dirs=$(make list-chart-dirs)
-          echo $chart_dirs
-          echo "new"
-          make list-chart-dirs
           echo "##[set-output name=chart-dirs;]$(echo $chart-dirs)"
 
 
@@ -43,7 +40,7 @@ jobs:
         working-directory: charts/
         run: |
           changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }})
-          if [[ -n "$changed" ]]; then
+          if [[ -n '$changed' ]]; then
             echo "::set-output name=changed::true"
           fi
         env:
