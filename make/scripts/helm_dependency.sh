@@ -11,5 +11,11 @@ for filename in *; do
     fi
 
     cd $filename
+
+    # auto add https://github.com/helm/helm/issues/8036#issuecomment-1126959239
+    if [ -f "./Chart.lock" ]; then
+      yq --indent 0 '.dependencies | map(["helm", "repo", "add", .name, .repository] | join(" ")) | .[]' "./Chart.lock"  | sh --;
+    fi
+
     helm dependency update
 done
