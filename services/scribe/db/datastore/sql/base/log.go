@@ -79,6 +79,35 @@ func (s Store) ConfirmLog(ctx context.Context, blockHash common.Hash, chainID ui
 	return nil
 }
 
+// ConfirmLogsInRange confirms logs in a range.
+func (s Store) ConfirmLogsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
+	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Log{}).
+		Order(BlockNumberFieldName).
+		Where(rangeQuery, startBlock, endBlock).
+		Update("confirmed", true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm logs: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// DeleteLogs deletes logs with a given block hash.
+func (s Store) DeleteLogs(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Where(&Log{BlockHash: blockHash.String(), ChainID: chainID}).
+		Delete(&Log{})
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not delete logs: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
 // logFilterToQuery takes in a LogFilter and converts it to a database-type Log.
 // This is used to query with `WHERE` based on the filter.
 func logFilterToQuery(logFilter db.LogFilter) Log {

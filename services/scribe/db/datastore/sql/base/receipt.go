@@ -60,6 +60,38 @@ func (s Store) ConfirmReceipt(ctx context.Context, blockHash common.Hash, chainI
 	return nil
 }
 
+// ConfirmReceiptsInRange confirms receipts in a range.
+func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
+	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Receipt{}).
+		Order(BlockNumberFieldName).
+		Where(rangeQuery, startBlock, endBlock).
+		Update("confirmed", true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm receipts: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// DeleteReceipts deletes receipts with a given block hash.
+func (s Store) DeleteReceipts(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Where(&Receipt{
+			BlockHash: blockHash.String(),
+			ChainID:   chainID,
+		}).
+		Delete(&Receipt{})
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not delete receipts: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
 // receiptFilterToQuery takes in a ReceiptFilter and converts it to a database-type Receipt.
 // This is used to query with `WHERE` based on the filter.
 func receiptFilterToQuery(receiptFilter db.ReceiptFilter) Receipt {

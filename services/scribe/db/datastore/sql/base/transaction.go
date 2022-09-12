@@ -58,6 +58,38 @@ func (s Store) ConfirmEthTx(ctx context.Context, blockHash common.Hash, chainID 
 	return nil
 }
 
+// ConfirmEthTxsInRange confirms eth txs in a range.
+func (s Store) ConfirmEthTxsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
+	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&EthTx{}).
+		Order(BlockNumberFieldName).
+		Where(rangeQuery, startBlock, endBlock).
+		Update("confirmed", true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm eth txs: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// DeleteEthTxs deletes eth txs with a given block hash.
+func (s Store) DeleteEthTxs(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Where(&EthTx{
+			ChainID:   chainID,
+			BlockHash: blockHash.String(),
+		}).
+		Delete(&EthTx{})
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not delete eth tx: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
 // ethTxFilterToQuery converts an ethTxFilter to a database-type EthTx.
 // This is used to query with `WHERE` based on the filter.
 func ethTxFilterToQuery(ethTxFilter db.EthTxFilter) EthTx {
