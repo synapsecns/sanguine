@@ -42,8 +42,7 @@ lint: ct-install dependencies ## lints helm charts
 	cd $(GIT_ROOT);	ct lint --all --validate-maintainers=false
 
 test-install: ct-install kind-install## test chart installs on a local kubernetes cluster
-
-
+	kind create cluster
 
 # list helm charts, used for: https://github.com/helm/chart-testing/issues/226
 list-chart-dirs: ## list all chart directories

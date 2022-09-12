@@ -81,14 +81,14 @@ affinity: {}
 podAnnotations: {}
 
 service:
-  enabled: false
+  enabled: true
   type: ClusterIP
 
   ports:
     - name: porter
       protocol: TCP
-      port: 8888
-      targetPort: 8888
+      port: 80
+      targetPort: 80
 
   headless:
     enabled: false

@@ -2,6 +2,8 @@ name: 'Helm Charts'
 
 on: [push, pull_request]
 
+# TODO: it'd be nice to eventually work this into release process on new images
+# definitely not a right now thing
 jobs:
   lint-test:
     runs-on: ubuntu-latest
