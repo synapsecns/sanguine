@@ -32,6 +32,7 @@ func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID ui
 			RawTx:       marshalledTx,
 			GasFeeCap:   tx.GasFeeCap().Uint64(),
 			GasTipCap:   tx.GasTipCap().Uint64(),
+			Confirmed:   false,
 		})
 
 	if dbTx.Error != nil {
@@ -65,7 +66,7 @@ func (s Store) ConfirmEthTxsInRange(ctx context.Context, startBlock, endBlock ui
 		Model(&EthTx{}).
 		Order(BlockNumberFieldName).
 		Where(rangeQuery, startBlock, endBlock).
-		Update("confirmed", true)
+		Update(ConfirmedFieldName, true)
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not confirm eth txs: %w", dbTx.Error)
@@ -98,6 +99,7 @@ func ethTxFilterToQuery(ethTxFilter db.EthTxFilter) EthTx {
 		TxHash:      ethTxFilter.TxHash,
 		BlockHash:   ethTxFilter.BlockHash,
 		BlockNumber: ethTxFilter.BlockNumber,
+		Confirmed:   ethTxFilter.Confirmed,
 	}
 }
 

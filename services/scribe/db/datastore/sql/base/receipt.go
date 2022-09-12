@@ -34,6 +34,7 @@ func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID 
 			BlockHash:         receipt.BlockHash.String(),
 			BlockNumber:       receipt.BlockNumber.Uint64(),
 			TransactionIndex:  uint64(receipt.TransactionIndex),
+			Confirmed:         false,
 		})
 
 	if dbTx.Error != nil {
@@ -67,7 +68,7 @@ func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock 
 		Model(&Receipt{}).
 		Order(BlockNumberFieldName).
 		Where(rangeQuery, startBlock, endBlock).
-		Update("confirmed", true)
+		Update(ConfirmedFieldName, true)
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not confirm receipts: %w", dbTx.Error)
@@ -102,6 +103,7 @@ func receiptFilterToQuery(receiptFilter db.ReceiptFilter) Receipt {
 		BlockHash:        receiptFilter.BlockHash,
 		BlockNumber:      receiptFilter.BlockNumber,
 		TransactionIndex: receiptFilter.TransactionIndex,
+		Confirmed:        receiptFilter.Confirmed,
 	}
 }
 

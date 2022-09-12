@@ -33,6 +33,20 @@ func (_m *EventDB) ConfirmEthTx(ctx context.Context, blockHash common.Hash, chai
 	return r0
 }
 
+// ConfirmEthTxsInRange provides a mock function with given fields: ctx, startBlock, endBlock, chainID
+func (_m *EventDB) ConfirmEthTxsInRange(ctx context.Context, startBlock uint64, endBlock uint64, chainID uint32) error {
+	ret := _m.Called(ctx, startBlock, endBlock, chainID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uint64, uint64, uint32) error); ok {
+		r0 = rf(ctx, startBlock, endBlock, chainID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // ConfirmLog provides a mock function with given fields: ctx, blockHash, chainID
 func (_m *EventDB) ConfirmLog(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	ret := _m.Called(ctx, blockHash, chainID)
@@ -47,8 +61,78 @@ func (_m *EventDB) ConfirmLog(ctx context.Context, blockHash common.Hash, chainI
 	return r0
 }
 
+// ConfirmLogsInRange provides a mock function with given fields: ctx, startBlock, endBlock, chainID
+func (_m *EventDB) ConfirmLogsInRange(ctx context.Context, startBlock uint64, endBlock uint64, chainID uint32) error {
+	ret := _m.Called(ctx, startBlock, endBlock, chainID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uint64, uint64, uint32) error); ok {
+		r0 = rf(ctx, startBlock, endBlock, chainID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // ConfirmReceipt provides a mock function with given fields: ctx, blockHash, chainID
 func (_m *EventDB) ConfirmReceipt(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	ret := _m.Called(ctx, blockHash, chainID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, common.Hash, uint32) error); ok {
+		r0 = rf(ctx, blockHash, chainID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// ConfirmReceiptsInRange provides a mock function with given fields: ctx, startBlock, endBlock, chainID
+func (_m *EventDB) ConfirmReceiptsInRange(ctx context.Context, startBlock uint64, endBlock uint64, chainID uint32) error {
+	ret := _m.Called(ctx, startBlock, endBlock, chainID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uint64, uint64, uint32) error); ok {
+		r0 = rf(ctx, startBlock, endBlock, chainID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DeleteEthTxs provides a mock function with given fields: ctx, blockHash, chainID
+func (_m *EventDB) DeleteEthTxs(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	ret := _m.Called(ctx, blockHash, chainID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, common.Hash, uint32) error); ok {
+		r0 = rf(ctx, blockHash, chainID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DeleteLogs provides a mock function with given fields: ctx, blockHash, chainID
+func (_m *EventDB) DeleteLogs(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	ret := _m.Called(ctx, blockHash, chainID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, common.Hash, uint32) error); ok {
+		r0 = rf(ctx, blockHash, chainID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DeleteReceipts provides a mock function with given fields: ctx, blockHash, chainID
+func (_m *EventDB) DeleteReceipts(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	ret := _m.Called(ctx, blockHash, chainID)
 
 	var r0 error

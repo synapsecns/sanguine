@@ -103,7 +103,7 @@ type Receipt struct {
 	Confirmed bool `gorm:"confirmed"`
 }
 
-// EthTx contains a processed ethereum transact	ion.
+// EthTx contains a processed ethereum transaction.
 type EthTx struct {
 	// TxHash is the hash of the transaction
 	TxHash string `gorm:"column:tx_hash;primaryKey"`

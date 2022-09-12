@@ -93,8 +93,14 @@ func (s Scribe) Start(ctx context.Context) error {
 
 func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfirmations uint32) error {
 	newBlock, err := s.clients[chainID].BlockNumber(ctx)
+	fmt.Println("Current block number: ", newBlock)
 	if err != nil {
 		return fmt.Errorf("could not get current block number: %w", err)
+	}
+
+	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, newBlock, false)
+	if err != nil {
+		return fmt.Errorf("could not backfill: %w", err)
 	}
 
 	// in the range (last confirmed block number, current block number - required confirmations],
@@ -106,8 +112,11 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 
 	// if the last block number is 0 and current block - required confirmations is greater than 0,
 	// then set all blocks up to current block - required confirmations to confirmed
+	fmt.Println("Last block number: ", lastBlockNumber)
 	if lastBlockNumber == 0 && newBlock > uint64(requiredConfirmations) {
+		fmt.Println("Setting all blocks up to current block - required confirmations to confirmed")
 		err := s.confirmToBlockNumber(ctx, newBlock-uint64(requiredConfirmations), chainID)
+		fmt.Println("ah", newBlock-uint64(requiredConfirmations))
 		if err != nil {
 			return fmt.Errorf("could not confirm blocks: %w", err)
 		}
@@ -140,21 +149,21 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 		if block.Hash() != receipts[0].BlockHash {
 			g, groupCtx := errgroup.WithContext(ctx)
 			g.Go(func() error {
-				err := s.eventDB.DeleteLogs(ctx, receipts[0].BlockHash, chainID)
+				err := s.eventDB.DeleteLogs(groupCtx, receipts[0].BlockHash, chainID)
 				if err != nil {
 					return fmt.Errorf("could not delete logs: %w", err)
 				}
 				return nil
 			})
 			g.Go(func() error {
-				err := s.eventDB.DeleteReceipts(ctx, receipts[0].BlockHash, chainID)
+				err := s.eventDB.DeleteReceipts(groupCtx, receipts[0].BlockHash, chainID)
 				if err != nil {
 					return fmt.Errorf("could not delete receipts: %w", err)
 				}
 				return nil
 			})
 			g.Go(func() error {
-				err := s.eventDB.DeleteEthTxs(ctx, receipts[0].BlockHash, chainID)
+				err := s.eventDB.DeleteEthTxs(groupCtx, receipts[0].BlockHash, chainID)
 				if err != nil {
 					return fmt.Errorf("could not delete eth txs: %w", err)
 				}
@@ -206,10 +215,6 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 		}
 	}
 
-	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, newBlock, false)
-	if err != nil {
-		return fmt.Errorf("could not backfill: %w", err)
-	}
 	return nil
 }
 
