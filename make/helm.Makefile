@@ -2,7 +2,7 @@ default: help
 
 GIT_ROOT := $(shell git rev-parse --show-toplevel)
 YQ_VERSION := "v4.27.5"
-
+CHART_DIRS := $(shell cd $(GIT_ROOT)/charts && $(GIT_ROOT)/make/scripts/chart-dirs.sh)
 
 help: ## This help dialog.
 	@IFS=$$'\n' ; \
@@ -42,8 +42,6 @@ lint: ct-install dependencies ## lints helm charts
 	cd $(GIT_ROOT);	ct lint --all --validate-maintainers=false
 
 test-install: ct-install kind-install## test chart installs on a local kubernetes cluster
-	kind create cluster
+	@if [ "$(shell kind get clusters)" = "" ]; then kind create cluster; fi;
+	@eval $$(cd $(GIT_ROOT)); ct install --debug --chart-dirs $(CHART_DIRS) --charts $(CHART_DIRS)
 
-# list helm charts, used for: https://github.com/helm/chart-testing/issues/226
-list-chart-dirs: ## list all chart directories
-	@eval $$(cd $(GIT_ROOT)/charts);	$(GIT_ROOT)/make/scripts/chart-dirs.sh

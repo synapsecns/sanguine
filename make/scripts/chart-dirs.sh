@@ -19,7 +19,7 @@ for filename in *; do
       continue
     fi
 
-    dirs+=("charts/$filename")
+    dirs+=("$filename")
 done
 
 for I in "${dirs[@]}"
