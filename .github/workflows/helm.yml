@@ -32,7 +32,8 @@ jobs:
         working-directory: charts/
         run: |
           chart_dirs=$(make list-chart-dirs)
-          echo "##[set-output name=chart-dirs;]$(echo $chart-dirs)"
+          echo $chart_dirs
+          echo "##[set-output name=chart-dirs;]$(echo $chart_dirs)"
 
 
       - name: Run chart-testing (list-changed)
@@ -44,7 +45,7 @@ jobs:
             echo "::set-output name=changed::true"
           fi
         env:
-          CHART_DIRS: ${{ steps.list_charts.outputs.chart-dirs }}
+          CHART_DIRS: '${{ steps.list_charts.outputs.chart-dirs }}'
 
       - name: Run chart-testing (lint)
         run: ct lint --target-branch ${{ github.event.repository.default_branch }} --validate-maintainers=false
