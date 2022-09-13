@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import { Client } from "../client/Client.sol";
+import { BasicClient } from "../client/BasicClient.sol";
 import { TypedMemView } from "../libs/TypedMemView.sol";
 import { SystemMessage } from "../libs/SystemMessage.sol";
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
@@ -23,7 +23,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * external methods, guarded by onlySystemRouter modifier. These methods could
  * be called cross-chain from any of the system contracts.
  */
-contract SystemRouter is Client, ISystemRouter {
+contract SystemRouter is BasicClient, ISystemRouter {
     using Address for address;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -31,44 +31,21 @@ contract SystemRouter is Client, ISystemRouter {
     using SystemMessage for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
+    ▏*║                              IMMUTABLES                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @dev Should be set to a reasonably high value to prevent forging of a system message.
-     *      Optimistic period is enforced in the base contract: Client.handle()
-     */
-    uint32 internal _optimisticPeriod;
-
-    // gap for upgrade safety
-    uint256[49] private __GAP; //solhint-disable-line var-name-mixedcase
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @notice Allows calls only from any of the System Contracts
-    modifier onlySystemContract() {
-        require(msg.sender == origin || msg.sender == destination, "Unauthorized caller");
-        _;
-    }
+    uint32 public immutable localDomain;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     constructor(
+        uint32 _localDomain,
         address _origin,
-        address _destination,
-        uint32 _optimisticSeconds
-    ) Client(_origin, _destination) {
-        // TODO: Do we ever want to adjust this?
-        // (the value should be the same across all chains)
-        // Or could it be converted into immutable?
-
-        // TODO: Do we ever want to have "faster" system messages
-        // for "smaller" rapid adjustments?
-        _optimisticPeriod = _optimisticSeconds;
+        address _destination
+    ) BasicClient(_origin, _destination) {
+        localDomain = _localDomain;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -76,57 +53,72 @@ contract SystemRouter is Client, ISystemRouter {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice  Send System Message to one of the System Contracts on origin chain
-     * @dev     Only System contracts are allowed to call this function.
-     *          Note that knowledge of recipient address is not required,
-     *          routing will be done by SystemRouter on the destination chain.
-     * @param _destination  Domain of destination chain
-     * @param _recipient    System contract type of the recipient
-     * @param _payload      Data for calling recipient on destination chain
+     * @notice Call a System Contract on the destination chain with a given data payload.
+     * Note: for system calls on the local chain
+     * - use `destination = localDomain`
+     * - `_optimisticSeconds` value will be ignored
+     *
+     * @dev Only System contracts are allowed to call this function.
+     * Note: knowledge of recipient address is not required, routing will be done by SystemRouter
+     * on the destination chain. Following call will be made on destination chain:
+     * - recipient.call(_data, originDomain, originSender, rootSubmittedAt)
+     * Note: data payload is extended with abi encoded (domain, sender, rootTimestamp)
+     * This allows recipient to check:
+     * - domain where a system call originated (local domain in this case)
+     * - system entity, who initiated the call (msg.sender on local chain)
+     * - timestamp when merkle root was submitted and optimistic timer started ticking
+     * @param _destination          Domain of destination chain
+     * @param _optimisticSeconds    Optimistic period for the message
+     * @param _recipient            System entity to receive the call on destination chain
+     * @param _data                 Data for calling recipient on destination chain
      */
-    function sendSystemMessage(
+    function systemCall(
         uint32 _destination,
-        SystemContracts _recipient,
-        bytes memory _payload
-    ) external onlySystemContract {
-        bytes memory message = SystemMessage.formatSystemCall(uint8(_recipient), _payload);
-        /**
-         * @dev Origin should recognize SystemRouter as the "true sender"
-         *      and use SYSTEM_ROUTER address as "sender" instead. This enables not
-         *      knowing SystemRouter address on remote chain in advance.
-         */
-        _send(_destination, Tips.emptyTips(), message);
+        uint32 _optimisticSeconds,
+        SystemEntity _recipient,
+        bytes memory _data
+    ) external {
+        /// @dev This will revert if msg.sender is not a system contract
+        SystemEntity caller = _getSystemEntity(msg.sender);
+        bytes memory payload = _formatCalldata(caller, _data);
+        if (_destination == localDomain) {
+            /// @dev Passing current timestamp for consistency
+            /// Functions that could be called both from a local chain,
+            /// as well as from a remote chain with an optimistic period
+            /// will have to check `origin` and `rootSubmittedAt` to ensure validity.
+            _localSystemCall(uint8(_recipient), payload, block.timestamp);
+        } else {
+            bytes[] memory systemCalls = new bytes[](1);
+            systemCalls[0] = SystemMessage.formatSystemCall(uint8(_recipient), payload);
+            _remoteSystemCall(_destination, _optimisticSeconds, systemCalls);
+        }
     }
 
     /**
-     * @notice  Call a System Contract on the local chain.
-     * @dev     Only System contracts are allowed to call this function.
-     *          Note that knowledge of recipient address is not required,
-     *          routing will be done by SystemRouter on the local chain.
-     * @param _recipient    System contract type of the recipient
-     * @param _payload      Data for calling recipient on destination chain
+     * @notice Calls a few system contracts with the given calldata.
+     * See `systemCall` for details on system calls.
+     * Note: tx will revert if any of the calls revert, guaranteeing
+     * that either all calls succeed or none.
      */
-    function systemCall(SystemContracts _recipient, bytes memory _payload)
-        external
-        onlySystemContract
-    {
-        _systemCall(uint8(_recipient), _payload);
+    function systemMultiCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        SystemEntity[] memory _recipients,
+        bytes[] memory _dataArray
+    ) external {
+        /// @dev This will revert if msg.sender is not a system contract
+        SystemEntity caller = _getSystemEntity(msg.sender);
+        uint256 amount = _recipients.length;
+        bytes[] memory payloads = new bytes[](amount);
+        for (uint256 i = 0; i < amount; ++i) {
+            payloads[i] = _formatCalldata(caller, _dataArray[i]);
+        }
+        _multiCall(_destination, _optimisticSeconds, _recipients, payloads);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           PUBLIC FUNCTIONS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice  Returns optimistic period of the merkle root, used for
-     *          proving messages to SystemRouter.
-     *          All messages to remote chains will be sent with this period.
-     *          Merkle root is checked to be at least this old (from time of submission)
-     *          for all incoming messages: see Client.handle()
-     */
-    function optimisticSeconds() public view override returns (uint32) {
-        return _optimisticPeriod;
-    }
 
     /**
      * @notice Returns eligible address of sender/receiver on given remote chain.
@@ -150,39 +142,117 @@ contract SystemRouter is Client, ISystemRouter {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @dev Handles an incoming message. All security checks are done in Client.handle()
+     * @dev Handles an incoming message. Security checks are done in BasicClient.handle()
+     * Optimistic period could be anything at this point.
      */
-    function _handle(
+    function _handleUnsafe(
         uint32,
         uint32,
+        uint256 _rootSubmittedAt,
         bytes memory _message
     ) internal override {
-        bytes29 message = _message.castToSystemMessage();
-        require(message.isSystemMessage(), "Not a system message");
-        (SystemMessage.MessageFlag messageType, bytes29 body) = message.unpackMessage();
-
-        if (messageType == SystemMessage.MessageFlag.Call) {
-            _systemCall(body.callRecipient(), body.callPayload().clone());
-        } else if (messageType == SystemMessage.MessageFlag.Adjust) {
-            // TODO: handle messages with instructions
-            // to adjust some of the SystemRouter parameters
+        bytes[] memory systemMessages = abi.decode(_message, (bytes[]));
+        uint256 amount = systemMessages.length;
+        for (uint256 i = 0; i < amount; ++i) {
+            bytes29 message = systemMessages[i].castToSystemMessage();
+            require(message.isSystemMessage(), "Not a system message");
+            (SystemMessage.MessageFlag messageType, bytes29 body) = message.unpackMessage();
+            if (messageType == SystemMessage.MessageFlag.Call) {
+                /// @dev System Contract has to check root submission time
+                /// to confirm that optimistic period for given function has passed.
+                _localSystemCall(
+                    body.callRecipient(),
+                    body.callPayload().clone(),
+                    _rootSubmittedAt
+                );
+            } else {
+                // Sanity check: no other MessageFlag values exist
+                assert(false);
+            }
         }
     }
 
-    function _systemCall(uint8 _recipient, bytes memory _payload) internal {
-        address recipient = _getSystemRecipient(_recipient);
+    function _localSystemCall(
+        uint8 _recipient,
+        bytes memory _payload,
+        uint256 _rootSubmittedAt
+    ) internal {
+        address recipient = _getSystemAddress(_recipient);
         require(recipient != address(0), "System Contract not set");
         // this will call recipient and bubble the revert from the external call
-        recipient.functionCall(_payload);
+        recipient.functionCall(abi.encodePacked(_payload, _rootSubmittedAt));
+        /// @dev add root timestamp as the last argument
+        /// uint256 type allows us to use encodePacked w/o casting
+    }
+
+    function _remoteSystemCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        bytes[] memory _systemCalls
+    ) internal {
+        bytes memory message = abi.encode(_systemCalls);
+        /**
+         * @dev Origin should recognize SystemRouter as the "true sender"
+         *      and use SYSTEM_ROUTER address as "sender" instead. This enables not
+         *      knowing SystemRouter address on remote chain in advance.
+         */
+        _send(_destination, _optimisticSeconds, Tips.emptyTips(), message);
+    }
+
+    function _multiCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        SystemEntity[] memory _recipients,
+        bytes[] memory _payloads
+    ) internal {
+        uint256 amount = _recipients.length;
+        if (_destination == localDomain) {
+            for (uint256 i = 0; i < amount; ++i) {
+                /// @dev Passing current timestamp for consistency, see systemCall() for details
+                _localSystemCall(uint8(_recipients[i]), _payloads[i], block.timestamp);
+            }
+        } else {
+            bytes[] memory systemCalls = new bytes[](amount);
+            for (uint256 i = 0; i < amount; ++i) {
+                systemCalls[i] = SystemMessage.formatSystemCall(
+                    uint8(_recipients[i]),
+                    _payloads[i]
+                );
+            }
+            _remoteSystemCall(_destination, _optimisticSeconds, systemCalls);
+        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _getSystemRecipient(uint8 _recipient) internal view returns (address) {
-        if (_recipient == uint8(SystemContracts.Origin)) return origin;
-        if (_recipient == uint8(SystemContracts.Destination)) return destination;
+    function _formatCalldata(SystemEntity _caller, bytes memory _data)
+        internal
+        view
+        returns (bytes memory)
+    {
+        /**
+         * @dev Payload for contract call is:
+         * ====== ENCODED ON ORIGIN CHAIN ======
+         * 1. Function selector and params (_data)
+         * 2. (domain, caller) are the following two arguments
+         * ====== ENCODED ON REMOTE CHAIN ======
+         * 3. Root timestamp is the last argument,
+         * and will be appended before the call on destination chain.
+         */
+        return abi.encodePacked(_data, abi.encode(localDomain, _caller));
+    }
+
+    function _getSystemEntity(address _caller) internal view returns (SystemEntity) {
+        if (_caller == origin) return SystemEntity.Origin;
+        if (_caller == destination) return SystemEntity.Destination;
+        revert("Unauthorized caller");
+    }
+
+    function _getSystemAddress(uint8 _recipient) internal view returns (address) {
+        if (_recipient == uint8(SystemEntity.Origin)) return origin;
+        if (_recipient == uint8(SystemEntity.Destination)) return destination;
         revert("Unknown recipient");
     }
 }

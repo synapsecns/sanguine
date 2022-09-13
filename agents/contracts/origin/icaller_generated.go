@@ -15,6 +15,10 @@ type IOriginCaller interface {
 	//
 	// Solidity: function MAX_MESSAGE_BODY_BYTES() view returns(uint256)
 	MAXMESSAGEBODYBYTES(opts *bind.CallOpts) (*big.Int, error)
+	// SYNAPSEDOMAIN is a free data retrieval call binding the contract method 0xbf61e67e.
+	//
+	// Solidity: function SYNAPSE_DOMAIN() view returns(uint32)
+	SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error)
 	// VERSION is a free data retrieval call binding the contract method 0xffa1ad74.
 	//
 	// Solidity: function VERSION() view returns(uint8)

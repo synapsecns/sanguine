@@ -17,6 +17,8 @@ contract OriginTest is SynapseTestWithNotaryManager {
 
     ISystemRouter internal systemRouter;
 
+    event LogSystemCall(uint32 origin, uint8 caller, uint256 rootSubmittedAt);
+
     function setUp() public override {
         super.setUp();
         optimisticSeconds = 10;
@@ -157,7 +159,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         // Any signed attestation from another chain should be rejected
         (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, root);
         (bytes memory report, ) = signFraudReport(guardPK, attestation);
-        vm.expectRevert("Wrong domain");
+        vm.expectRevert("!localDomain");
         origin.submitReport(report);
     }
 
@@ -339,7 +341,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         bytes32 root = "very real much wow";
         // Any signed attestation from another chain should be rejected
         (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, root);
-        vm.expectRevert("Wrong domain");
+        vm.expectRevert("!localDomain");
         origin.submitAttestation(attestation);
     }
 
@@ -408,13 +410,15 @@ contract OriginTest is SynapseTestWithNotaryManager {
     }
 
     function test_onlySystemRouter() public {
+        vm.expectEmit(true, true, true, true);
+        emit LogSystemCall(1, 2, 3);
         vm.prank(address(systemRouter));
-        origin.setSensitiveValue(1337);
+        origin.setSensitiveValue(1337, 1, 2, 3);
         assertEq(origin.sensitiveValue(), 1337);
     }
 
     function test_onlySystemRouter_rejectOthers() public {
         vm.expectRevert("!systemRouter");
-        origin.setSensitiveValue(1337);
+        origin.setSensitiveValue(1337, 0, 0, 0);
     }
 }
