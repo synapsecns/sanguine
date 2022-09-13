@@ -159,7 +159,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         // Any signed attestation from another chain should be rejected
         (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, root);
         (bytes memory report, ) = signFraudReport(guardPK, attestation);
-        vm.expectRevert("Wrong domain");
+        vm.expectRevert("!localDomain");
         origin.submitReport(report);
     }
 
@@ -341,7 +341,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         bytes32 root = "very real much wow";
         // Any signed attestation from another chain should be rejected
         (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, root);
-        vm.expectRevert("Wrong domain");
+        vm.expectRevert("!localDomain");
         origin.submitAttestation(attestation);
     }
 

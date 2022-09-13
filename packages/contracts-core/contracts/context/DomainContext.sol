@@ -6,7 +6,7 @@ abstract contract DomainContext {
      * @notice Ensures that a domain matches the local domain.
      */
     modifier onlyLocalDomain(uint32 _domain) {
-        require(_domain == _localDomain(), "Wrong domain");
+        require(_domain == _localDomain(), "!localDomain");
         _;
     }
 

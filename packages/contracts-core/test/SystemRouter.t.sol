@@ -530,7 +530,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         data = abi.encodeWithSelector(destination.setSensitiveValueOnlyLocal.selector, secretValue);
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds);
-        vm.expectRevert("Wrong domain");
+        vm.expectRevert("!localDomain");
         destination.execute(message);
     }
 
