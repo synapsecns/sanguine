@@ -118,19 +118,8 @@ func (t *DBSuite) TestConfirmReceiptsInRange() {
 
 		// Store five receipts.
 		for i := 0; i < 5; i++ {
-			receipt := types.Receipt{
-				Type:              gofakeit.Uint8(),
-				PostState:         []byte(gofakeit.Sentence(10)),
-				Status:            gofakeit.Uint64(),
-				CumulativeGasUsed: gofakeit.Uint64(),
-				Bloom:             types.BytesToBloom([]byte(gofakeit.Sentence(10))),
-				Logs:              []*types.Log{},
-				TxHash:            common.BigToHash(big.NewInt(gofakeit.Int64())),
-				ContractAddress:   common.BigToAddress(big.NewInt(gofakeit.Int64())),
-				GasUsed:           gofakeit.Uint64(),
-				BlockNumber:       big.NewInt(int64(i)),
-				TransactionIndex:  uint(gofakeit.Uint64()),
-			}
+			receipt := t.MakeRandomReceipt(common.BigToHash(big.NewInt(gofakeit.Int64())))
+			receipt.BlockNumber = big.NewInt(int64(i))
 			err := testDB.StoreReceipt(t.GetTestContext(), receipt, chainID)
 			Nil(t.T(), err)
 		}
@@ -150,4 +139,50 @@ func (t *DBSuite) TestConfirmReceiptsInRange() {
 		Equal(t.T(), retrievedReceipts[0].BlockNumber, big.NewInt(0))
 		Equal(t.T(), retrievedReceipts[1].BlockNumber, big.NewInt(1))
 	})
+}
+
+func (t *DBSuite) TestDeleteReceiptsForBlockHash() {
+	t.RunOnAllDBs(func(testDB db.EventDB) {
+		chainID := gofakeit.Uint32()
+
+		// Store a receipt.
+		receipt := t.MakeRandomReceipt(common.BigToHash(big.NewInt(gofakeit.Int64())))
+		receipt.BlockHash = common.BigToHash(big.NewInt(5))
+		err := testDB.StoreReceipt(t.GetTestContext(), receipt, chainID)
+		Nil(t.T(), err)
+
+		// Ensure the receipt is in the database.
+		receiptFilter := db.ReceiptFilter{
+			ChainID:   chainID,
+			BlockHash: receipt.BlockHash.String(),
+		}
+		retrievedReceipts, err := testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), receiptFilter, 1)
+		Nil(t.T(), err)
+		Equal(t.T(), 1, len(retrievedReceipts))
+
+		// Delete the receipt.
+		err = testDB.DeleteReceiptsForBlockHash(t.GetTestContext(), receipt.BlockHash, chainID)
+		Nil(t.T(), err)
+
+		// Ensure the receipt is not in the database.
+		retrievedReceipts, err = testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), receiptFilter, 1)
+		Nil(t.T(), err)
+		Equal(t.T(), 0, len(retrievedReceipts))
+	})
+}
+
+func (t *DBSuite) MakeRandomReceipt(txHash common.Hash) types.Receipt {
+	return types.Receipt{
+		Type:              gofakeit.Uint8(),
+		PostState:         []byte(gofakeit.Sentence(10)),
+		Status:            gofakeit.Uint64(),
+		CumulativeGasUsed: gofakeit.Uint64(),
+		Bloom:             types.BytesToBloom([]byte(gofakeit.Sentence(10))),
+		Logs:              []*types.Log{},
+		TxHash:            txHash,
+		ContractAddress:   common.BigToAddress(big.NewInt(gofakeit.Int64())),
+		GasUsed:           gofakeit.Uint64(),
+		BlockNumber:       big.NewInt(int64(gofakeit.Uint32())),
+		TransactionIndex:  uint(gofakeit.Uint64()),
+	}
 }
