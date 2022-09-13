@@ -56,10 +56,54 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 			BlockHash:       log.BlockHash.String(),
 			BlockIndex:      uint64(log.Index),
 			Removed:         log.Removed,
+			Confirmed:       false,
 		})
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store log: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// ConfirmLogsForBlockHash confirms logs for a given block hash.
+func (s Store) ConfirmLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Log{}).
+		Where(&Log{BlockHash: blockHash.String(), ChainID: chainID}).
+		Update("confirmed", true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm log: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// ConfirmLogsInRange confirms logs in a range.
+func (s Store) ConfirmLogsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
+	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Log{}).
+		Order(BlockNumberFieldName).
+		Where(rangeQuery, startBlock, endBlock).
+		Update(ConfirmedFieldName, true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm logs: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// DeleteLogsForBlockHash deletes logs with a given block hash.
+func (s Store) DeleteLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Where(&Log{BlockHash: blockHash.String(), ChainID: chainID}).
+		Delete(&Log{})
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not delete logs: %w", dbTx.Error)
 	}
 
 	return nil
@@ -76,6 +120,7 @@ func logFilterToQuery(logFilter db.LogFilter) Log {
 		TxIndex:         logFilter.TxIndex,
 		BlockHash:       logFilter.BlockHash,
 		BlockIndex:      logFilter.Index,
+		Confirmed:       logFilter.Confirmed,
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/db"
@@ -12,7 +13,7 @@ import (
 )
 
 // StoreEthTx stores a processed text.
-func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockNumber uint64) error {
+func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64) error {
 	marshalledTx, err := tx.MarshalBinary()
 	if err != nil {
 		return fmt.Errorf("could not marshall tx to binary: %w", err)
@@ -26,14 +27,65 @@ func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID ui
 		Create(&EthTx{
 			TxHash:      tx.Hash().String(),
 			ChainID:     chainID,
+			BlockHash:   blockHash.String(),
 			BlockNumber: blockNumber,
 			RawTx:       marshalledTx,
 			GasFeeCap:   tx.GasFeeCap().Uint64(),
 			GasTipCap:   tx.GasTipCap().Uint64(),
+			Confirmed:   false,
 		})
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not create raw tx: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// ConfirmEthTxsForBlockHash confirms eth txs for a given block hash.
+func (s Store) ConfirmEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Model(&EthTx{}).
+		Where(&EthTx{
+			ChainID:   chainID,
+			BlockHash: blockHash.String(),
+		}).
+		Update("confirmed", true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm eth tx: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// ConfirmEthTxsInRange confirms eth txs in a range.
+func (s Store) ConfirmEthTxsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
+	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&EthTx{}).
+		Order(BlockNumberFieldName).
+		Where(rangeQuery, startBlock, endBlock).
+		Update(ConfirmedFieldName, true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm eth txs: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// DeleteEthTxsForBlockHash deletes eth txs with a given block hash.
+func (s Store) DeleteEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Where(&EthTx{
+			ChainID:   chainID,
+			BlockHash: blockHash.String(),
+		}).
+		Delete(&EthTx{})
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not delete eth tx: %w", dbTx.Error)
 	}
 
 	return nil
@@ -45,7 +97,9 @@ func ethTxFilterToQuery(ethTxFilter db.EthTxFilter) EthTx {
 	return EthTx{
 		ChainID:     ethTxFilter.ChainID,
 		TxHash:      ethTxFilter.TxHash,
+		BlockHash:   ethTxFilter.BlockHash,
 		BlockNumber: ethTxFilter.BlockNumber,
+		Confirmed:   ethTxFilter.Confirmed,
 	}
 }
 

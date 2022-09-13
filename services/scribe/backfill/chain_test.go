@@ -82,7 +82,7 @@ func (b BackfillSuite) EmitEventsForAChain(chainID uint32, contracts []contracts
 		// Backfill the chain.
 		lastBlock, err := simulatedChain.BlockNumber(b.GetTestContext())
 		Nil(b.T(), err)
-		err = chainBackfiller.Backfill(b.GetTestContext(), lastBlock)
+		err = chainBackfiller.Backfill(b.GetTestContext(), lastBlock, false)
 		Nil(b.T(), err)
 
 		// Check that the events were written to the database.

@@ -27,7 +27,7 @@ func (b BackfillSuite) TestFailedStore() {
 		Return(fmt.Errorf("failed to store receipt"))
 	mockDB.
 		// on a store transaction call
-		On("StoreEthTx", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		On("StoreEthTx", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		// return an error
 		Return(fmt.Errorf("failed to store transaction"))
 	mockDB.

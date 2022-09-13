@@ -13,7 +13,7 @@ func (g GQLSuite) TestLogResolvers() {
 	chainID := gofakeit.Uint32()
 	// store a transaction
 	tx := g.buildEthTx()
-	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, gofakeit.Uint64())
+	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint64())
 	Nil(g.T(), err)
 	// store a log
 	log := g.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint64())
