@@ -5,8 +5,6 @@ pragma solidity 0.8.13;
 import { LocalDomainContext } from "./context/LocalDomainContext.sol";
 import { Version0 } from "./Version0.sol";
 import { OriginHub } from "./hubs/OriginHub.sol";
-import { DomainNotaryRegistry } from "./registry/DomainNotaryRegistry.sol";
-import { GuardRegistry } from "./registry/GuardRegistry.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
@@ -31,14 +29,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Origin accepts submissions of fraudulent signatures by the Guard in the form
  * of a Guard's report with said signature and slashes Guard in that case.
  */
-contract Origin is
-    Version0,
-    SystemContract,
-    LocalDomainContext,
-    OriginHub,
-    DomainNotaryRegistry,
-    GuardRegistry
-{
+contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
     using Tips for bytes;
     using Tips for bytes29;
 
