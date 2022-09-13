@@ -9,7 +9,7 @@ import (
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	parentManager := manager.NewDeployerManager(t, NewBridgeConfigV3Deployer)
+	parentManager := manager.NewDeployerManager(t, NewBridgeConfigV3Deployer, NewSynapseBridgeDeployer, NewSwapFlashLoanDeployer)
 	return &DeployManager{parentManager}
 }
 

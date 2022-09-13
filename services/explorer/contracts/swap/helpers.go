@@ -9,7 +9,7 @@ import (
 // SwapRef is a bound synapse bridge config v2 contract that returns the address of that contract
 // nolint: golint
 type SwapRef struct {
-	*Swap
+	*SwapFlashLoan
 	address common.Address
 }
 
@@ -21,14 +21,14 @@ func (s SwapRef) Address() common.Address {
 // NewSwapRef gets a bound synapse bridge config contract that returns the address of the contract
 // nolint: golint
 func NewSwapRef(address common.Address, backend bind.ContractBackend) (*SwapRef, error) {
-	bridgeConfigV3, err := NewSwap(address, backend)
+	swap, err := NewSwapFlashLoan(address, backend)
 	if err != nil {
 		return nil, err
 	}
 	return &SwapRef{
-		Swap:    bridgeConfigV3,
-		address: address,
+		SwapFlashLoan: swap,
+		address:       address,
 	}, nil
 }
 
-var _ vm.ContractRef = &NewSwapRef{}
+var _ vm.ContractRef = &SwapRef{}

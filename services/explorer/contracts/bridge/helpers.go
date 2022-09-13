@@ -21,12 +21,12 @@ func (s BridgeRef) Address() common.Address {
 // NewBridgeRef gets a bound synapse bridge config contract that returns the address of the contract
 // nolint: golint
 func NewBridgeRef(address common.Address, backend bind.ContractBackend) (*BridgeRef, error) {
-	bridgeConfigV3, err := NewSynapseBridge(address, backend)
+	bridge, err := NewSynapseBridge(address, backend)
 	if err != nil {
 		return nil, err
 	}
 	return &BridgeRef{
-		SynapseBridge: bridgeConfigV3,
+		SynapseBridge: bridge,
 		address:       address,
 	}, nil
 }

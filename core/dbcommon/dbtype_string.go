@@ -10,6 +10,7 @@ func _() {
 	var x [1]struct{}
 	_ = x[Mysql-0]
 	_ = x[Sqlite-1]
+	_ = x[Clickhouse-2]
 }
 
 const _DBType_name = "mysqlsqlite"
