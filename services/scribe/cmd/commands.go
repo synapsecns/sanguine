@@ -4,13 +4,12 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/scribe/api"
 	"os"
-
-	"github.com/hashicorp/consul/sdk/freeport"
-	"github.com/synapsecns/sanguine/services/scribe/graphql/server"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/hashicorp/consul/sdk/freeport"
 	"github.com/jftuga/termsize"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -116,7 +115,7 @@ var serverCommand = &cli.Command{
 	Description: "starts a graphql server",
 	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag},
 	Action: func(c *cli.Context) error {
-		err := server.Start(c.Context, uint16(c.Uint(portFlag.Name)), c.String(dbFlag.Name), c.String(pathFlag.Name))
+		err := api.Start(c.Context, uint16(c.Uint(portFlag.Name)), c.String(dbFlag.Name), c.String(pathFlag.Name))
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)
 		}

@@ -1,1 +1,31 @@
-../../make/go.Makefile
+include ../../make/go.Makefile
+
+setup-go-path:
+	@eval $(export PATH="$PATH:$(go env GOPATH)/bin")
+
+protoc-install:
+	@#Github Actions
+	@if [ "$(shell which protoc)" = "" ] && [ "$(GITHUB_WORKFLOW)" != "" ]; then apt install -y protobuf-compiler; fi;
+	@#Brew - MacOS
+	@if [ "$(shell which protoc)" = "" ] && [ "$(shell which brew)" != "" ] && [ "$(GITHUB_WORKFLOW)" == "" ]; then brew install protobuf; fi;
+
+
+protoc-gen-install: setup-go-path
+	@if [ "$(shell which protoc-gen-go)" = "" ]; then go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1; fi;
+
+	@if [ "$(shell which protoc-gen-go)" = "" ]; then echo "could not find protoc-gen-go even after installing, you might need to add your gopath to bash. You can also rerun the command in a new tab"; exit 1; fi;
+
+	@if [ "$(shell protoc-gen-go --version)" != "protoc-gen-go v1.28.1" ]; then echo "Wrong version of protoc-gen-go installed, needed: v1.28.1"; exit 1; fi;
+
+
+grpc-install: setup-go-path
+	@if [ "$(shell which protoc-gen-go-grpc)" = "" ]; then go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2; fi;
+
+	@if [ "$(shell which protoc-gen-go-grpc)" = "" ]; then echo "could not find protoc-gen-go-grpc even after installing, you might need to add your gopath to bash. You can also rerun the command in a new tab"; exit 1; fi;
+
+	@if [ "$(shell  protoc-gen-go-grpc --version)" != "protoc-gen-go-grpc 1.2.0" ]; then echo "Wrong version of protoc-gen-go installed, needed: v1.2.0"; exit 1; fi;
+
+# TODO: should be replaced w/ https://github.com/bufbuild/buf
+# (see: https://github.com/grpc-ecosystem/grpc-gateway)
+protoc-gen: protoc-install grpc-install protoc-gen-install  ## generate protobufs
+	@eval $$(cd $(GIT_ROOT)/services/scribe); $(shell ./scripts/protobuf.sh)

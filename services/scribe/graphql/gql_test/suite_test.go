@@ -2,6 +2,7 @@ package gql_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/services/scribe/api"
 	"net/http"
 	"testing"
 
@@ -50,7 +51,7 @@ func (g *GQLSuite) SetupTest() {
 	port := freeport.GetPort()
 
 	go func() {
-		Nil(g.T(), server.Start(g.GetSuiteContext(), uint16(port), "sqlite", g.dbPath))
+		Nil(g.T(), api.Start(g.GetSuiteContext(), uint16(port), "sqlite", g.dbPath))
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", port)
