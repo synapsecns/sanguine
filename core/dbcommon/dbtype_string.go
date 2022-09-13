@@ -13,9 +13,9 @@ func _() {
 	_ = x[Clickhouse-2]
 }
 
-const _DBType_name = "mysqlsqlite"
+const _DBType_name = "mysqlsqlitesqlite"
 
-var _DBType_index = [...]uint8{0, 5, 11}
+var _DBType_index = [...]uint8{0, 5, 11, 17}
 
 func (i DBType) String() string {
 	if i < 0 || i >= DBType(len(_DBType_index)-1) {
