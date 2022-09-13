@@ -1039,27 +1039,6 @@ func (_m *IOrigin) Root(opts *bind.CallOpts) ([32]byte, error) {
 	return r0, r1
 }
 
-// SYNAPSEDOMAIN provides a mock function with given fields: opts
-func (_m *IOrigin) SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error) {
-	ret := _m.Called(opts)
-
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint32); ok {
-		r0 = rf(opts)
-	} else {
-		r0 = ret.Get(0).(uint32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // SetNotary provides a mock function with given fields: opts, _notary
 func (_m *IOrigin) SetNotary(opts *bind.TransactOpts, _notary common.Address) (*types.Transaction, error) {
 	ret := _m.Called(opts, _notary)
