@@ -1,21 +1,21 @@
-package test
+package base
 
 import (
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"gorm.io/gorm"
 )
 
-// Store is the sqlite store. It extends the base store for sqlite specific queries.
+// Store implements service.
 type Store struct {
 	db *gorm.DB
 }
 
-// NewStore creates a new store.
+// NewStore creates a new store from a gorm db.
 func NewStore(db *gorm.DB) *Store {
 	return &Store{db: db}
 }
 
-// DB gets the database.
+// DB gets the underlying gorm db.
 func (s Store) DB() *gorm.DB {
 	return s.db
 }
@@ -24,7 +24,8 @@ func (s Store) DB() *gorm.DB {
 // see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels,
-		&Log{}, &Receipt{}, &EthTx{}, &LastIndexedInfo{},
+		&BridgeModel{},
+		&SwapModel{},
 	)
 	return allModels
 }

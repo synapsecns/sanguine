@@ -6,7 +6,7 @@ import (
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/services/explorer/db/datastore/sql/test"
+	"github.com/synapsecns/sanguine/services/explorer/db/sql/base"
 	gormClickhouse "gorm.io/driver/clickhouse"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -17,7 +17,7 @@ import (
 
 // Store is the clickhouse store. It extends the base store for sqlite specific queries.
 type Store struct {
-	*test.Store
+	*base.Store
 }
 
 // NamingStrategy is exported here for testing.
@@ -99,12 +99,12 @@ func openGormClickhouse(ctx context.Context, address string) (*Store, error) {
 
 	clickhouseDB.SetMaxIdleConns(0)
 
-	err = gdb.WithContext(ctx).AutoMigrate(test.GetAllModels()...)
+	err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on clickhouse: %w", err)
 	}
-	return &Store{test.NewStore(gdb)}, nil
+	return &Store{base.NewStore(gdb)}, nil
 }
 
 // var _ db.Service = &Store{}

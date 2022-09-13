@@ -1,11 +1,11 @@
-package datastore
+package db
 
 import (
 	"context"
 	"errors"
+	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/services/explorer/db/datastore/sql/clickhouse"
-	"github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/explorer/db/sql/clickhouse"
 )
 
 // NewStoreFromConfig creates a new database from a config file.
