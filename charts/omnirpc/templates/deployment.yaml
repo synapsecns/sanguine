@@ -27,6 +27,17 @@ spec:
       serviceAccountName: {{ include "omnirpc.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+    {{- if .Values.files }}
+      initContainers:
+        - name: copy-{{ .Release.Name }}-config
+          image: busybox
+          command: ['sh', '-c', 'cp /configmap/* /config/']
+          volumeMounts:
+            - name: configmap
+              mountPath: /configmap
+            - name: {{ .Release.Name }}-config
+              mountPath: /config
+    {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -49,6 +60,9 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: configmap
+              mountPath: /config
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -61,3 +75,11 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        {{- if .Values.files }}
+        - name: {{ .Release.Name }}-config
+          emptyDir: {}
+        - name: configmap
+          configMap:
+            name: {{ include "omnirpc.fullname" . }}-{{ .Release.Name }}
+        {{- end }}

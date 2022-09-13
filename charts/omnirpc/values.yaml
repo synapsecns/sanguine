@@ -82,3 +82,9 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+files:
+  # this is an example, this is not required for the test above
+  # files listed here will be copied into /config/ and mounted into the application container
+  config.yml: |-
+    test: true

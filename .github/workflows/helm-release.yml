@@ -3,8 +3,7 @@ name: Release Charts
 on:
   push:
     branches:
-      # TODO: should be master
-      - helmer
+      - master
 
 jobs:
   release:
