@@ -125,7 +125,7 @@ contract DomainNotaryRegistryTest is Test {
 
     function test_isNotary_wrongDomain() public {
         _checkAddNotary(NOTARY_1, true);
-        vm.expectRevert("Wrong domain");
+        vm.expectRevert("!localDomain");
         registry.isNotary(DOMAIN + 1, NOTARY_1);
     }
 

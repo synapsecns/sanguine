@@ -6,17 +6,18 @@ import { Destination } from "../../contracts/Destination.sol";
 
 import { MirrorLib } from "../../contracts/libs/Mirror.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
+import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
 
 import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
+import { SystemContractHarness } from "./SystemContractHarness.sol";
 
-contract DestinationHarness is Destination, GuardRegistryHarness {
+contract DestinationHarness is Destination, SystemContractHarness, GuardRegistryHarness {
     using MirrorLib for MirrorLib.Mirror;
-
-    uint256 public sensitiveValue;
     using Tips for bytes29;
 
     event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);
 
+    //solhint-disable-next-line no-empty-blocks
     constructor(uint32 _localDomain) Destination(_localDomain) {}
 
     function addNotary(uint32 _domain, address _notary) public {
@@ -29,10 +30,6 @@ contract DestinationHarness is Destination, GuardRegistryHarness {
 
     function isNotary(uint32 _domain, address _notary) public view returns (bool) {
         return _isNotary(_domain, _notary);
-    }
-
-    function setSensitiveValue(uint256 _newValue) external onlySystemRouter {
-        sensitiveValue = _newValue;
     }
 
     function setMessageStatus(
