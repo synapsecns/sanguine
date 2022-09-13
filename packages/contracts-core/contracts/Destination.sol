@@ -2,6 +2,7 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
+import { LocalDomainContext } from "./context/LocalDomainContext.sol";
 import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
 import { GuardRegistry } from "./registry/GuardRegistry.sol";
 import { ReportHub } from "./hubs/ReportHub.sol";
@@ -29,6 +30,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
 contract Destination is
     Version0,
     SystemContract,
+    LocalDomainContext,
     AttestationHub,
     ReportHub,
     GlobalNotaryRegistry,
@@ -105,7 +107,7 @@ contract Destination is
     // ============ Constructor ============
 
     //solhint-disable-next-line no-empty-blocks
-    constructor(uint32 _localDomain) SystemContract(_localDomain) {}
+    constructor(uint32 _localDomain) LocalDomainContext(_localDomain) {}
 
     // ============ Initializer ============
 
@@ -190,7 +192,7 @@ contract Destination is
         uint32 remoteDomain = header.origin();
         MirrorLib.Mirror storage mirror = allMirrors[activeMirrors[remoteDomain]];
         // ensure message was meant for this domain
-        require(header.destination() == localDomain, "!destination");
+        require(header.destination() == _localDomain(), "!destination");
         // ensure message has been proven
         bytes32 messageHash = messageView.keccak();
         bytes32 root = mirror.messageStatus[messageHash];
@@ -358,7 +360,7 @@ contract Destination is
         bytes memory
     ) internal override returns (bool) {
         uint32 remoteDomain = _attestationView.attestedDomain();
-        require(remoteDomain != localDomain, "Attestation refers to local chain");
+        require(remoteDomain != _localDomain(), "Attestation refers to local chain");
         uint32 nonce = _attestationView.attestedNonce();
         MirrorLib.Mirror storage mirror = allMirrors[activeMirrors[remoteDomain]];
         require(nonce > mirror.nonce, "Attestation older than current state");

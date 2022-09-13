@@ -2,11 +2,12 @@
 
 pragma solidity 0.8.13;
 
+import { LocalDomainContext } from "../../contracts/context/LocalDomainContext.sol";
 import { DomainNotaryRegistry } from "../../contracts/registry/DomainNotaryRegistry.sol";
 
-contract DomainNotaryRegistryHarness is DomainNotaryRegistry {
+contract DomainNotaryRegistryHarness is LocalDomainContext, DomainNotaryRegistry {
     // solhint-disable-next-line no-empty-blocks
-    constructor(uint32 _trackedDomain) DomainNotaryRegistry(_trackedDomain) {}
+    constructor(uint32 _trackedDomain) LocalDomainContext(_trackedDomain) {}
 
     function addNotary(address _notary) public returns (bool) {
         return _addNotary(_notary);
