@@ -1,4 +1,4 @@
-package gql_test
+package api_test
 
 import (
 	"math/big"
@@ -9,7 +9,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 )
 
-func (g GQLSuite) TestLogResolvers() {
+func (g APISuite) TestLogResolvers() {
 	chainID := gofakeit.Uint32()
 	// store a transaction
 	tx := g.buildEthTx()

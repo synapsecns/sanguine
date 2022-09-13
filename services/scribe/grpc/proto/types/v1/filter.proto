@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package types.v1;
+
+option go_package = "github.com/synapsecns/sanguine/services/scribe/grpc/types;pbscribe";
+
+import "types/v1/types.proto";
+
+message LogFilter {
+  NullableString contract_address = 1;
+  NullableUint32 chain_id = 2;
+  NullableUint64  block_number = 3;
+  NullableString tx_hash = 4;
+  NullableUint64 tx_index = 5;
+  NullableUint64 index = 6;
+  bool confirmed = 7;
+}

@@ -1,5 +1,8 @@
 include ../../make/go.Makefile
 
+BUF_VERSION := "1.7.0"
+BIN="/usr/local/bin"
+
 setup-go-path:
 	@eval $(export PATH="$PATH:$(go env GOPATH)/bin")
 
@@ -17,6 +20,11 @@ protoc-gen-install: setup-go-path
 
 	@if [ "$(shell protoc-gen-go --version)" != "protoc-gen-go v1.28.1" ]; then echo "Wrong version of protoc-gen-go installed, needed: v1.28.1"; exit 1; fi;
 
+protoc-gen-grpc-gateway-install: setup-go-path
+	@if [ "$(shell which protoc-gen-grpc-gateway)" = "" ]; then go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.11.3; fi;
+
+	@if [ "$(shell which protoc-gen-grpc-gateway)" = "" ]; then echo "could not find protoc-gen-grpc-gateway even after installing, you might need to add your gopath to bash. You can also rerun the command in a new tab"; exit 1; fi;
+
 
 grpc-install: setup-go-path
 	@if [ "$(shell which protoc-gen-go-grpc)" = "" ]; then go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2; fi;
@@ -25,7 +33,16 @@ grpc-install: setup-go-path
 
 	@if [ "$(shell  protoc-gen-go-grpc --version)" != "protoc-gen-go-grpc 1.2.0" ]; then echo "Wrong version of protoc-gen-go installed, needed: v1.2.0"; exit 1; fi;
 
+openapi-install: setup-go-path
+	@if [ "$(shell which protoc-gen-openapiv2)" = "" ]; then go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.11.3; fi;
+
+	@if [ "$(shell which protoc-gen-openapiv2)" = "" ]; then echo "could not find protoc-gen-openapiv2 even after installing, you might need to add your gopath to bash. You can also rerun the command in a new tab"; exit 1; fi;
+
+
+buf-install:
+	@if [ "$(shell which buf)" = "" ]; then ./scripts/install-buf.sh $(BUF_VERSION); fi;
+
 # TODO: should be replaced w/ https://github.com/bufbuild/buf
 # (see: https://github.com/grpc-ecosystem/grpc-gateway)
-protoc-gen: protoc-install grpc-install protoc-gen-install  ## generate protobufs
-	@eval $$(cd $(GIT_ROOT)/services/scribe); $(shell ./scripts/protobuf.sh)
+generate: openapi-install buf-install protoc-gen-grpc-gateway-install protoc-install grpc-install protoc-gen-install  ## generate protobufs
+	buf generate

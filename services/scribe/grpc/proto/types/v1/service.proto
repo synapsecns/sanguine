@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package types.v1;
+
+option go_package = "github.com/synapsecns/sanguine/services/scribe/grpc/types;pbscribe";
+
+import "google/api/annotations.proto";
+import "types/v1/filter.proto";
+import "types/v1/log.proto";
+
+
+message FilterLogsRequest {
+  LogFilter filter = 1;
+  uint32  page = 2;
+}
+
+message FilterLogsResponse {
+  repeated Log logs = 1;
+}
+
+service LogService {
+  rpc FilterLogs(FilterLogsRequest) returns (FilterLogsResponse) {
+    option (google.api.http) = {
+      post: "/grpc/v1/filter_logs"
+      body: "*"
+    };
+  }
+}

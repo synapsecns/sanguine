@@ -1,4 +1,4 @@
-package gql_test
+package api_test
 
 import (
 	"fmt"
@@ -18,8 +18,8 @@ import (
 	"go.uber.org/atomic"
 )
 
-// GQLSuite defines the basic test suite.
-type GQLSuite struct {
+// APISuite defines the basic test suite.
+type APISuite struct {
 	*testsuite.TestSuite
 	db        db.EventDB
 	dbPath    string
@@ -29,15 +29,15 @@ type GQLSuite struct {
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
 // Every test suite in the synapse library should inherit from this suite and override where necessary.
-func NewTestSuite(tb testing.TB) *GQLSuite {
+func NewTestSuite(tb testing.TB) *APISuite {
 	tb.Helper()
-	return &GQLSuite{
+	return &APISuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 		logIndex:  atomic.Int64{},
 	}
 }
 
-func (g *GQLSuite) SetupTest() {
+func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 	g.dbPath = filet.TmpDir(g.T(), "")
 
@@ -84,6 +84,6 @@ func (g *GQLSuite) SetupTest() {
 	// }()
 }
 
-func TestGQLSuite(t *testing.T) {
+func TestAPISuite(t *testing.T) {
 	suite.Run(t, NewTestSuite(t))
 }

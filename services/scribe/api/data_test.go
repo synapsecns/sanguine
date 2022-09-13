@@ -1,4 +1,4 @@
-package gql_test
+package api_test
 
 import (
 	"math/big"
@@ -9,7 +9,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 )
 
-func (g GQLSuite) TestRetrieveData() {
+func (g APISuite) TestRetrieveData() {
 	contractAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	chainID := gofakeit.Uint32()
@@ -74,7 +74,7 @@ func (g GQLSuite) TestRetrieveData() {
 	Equal(g.T(), len(txsRange.Response), 12)
 }
 
-func (g GQLSuite) TestLogDataEquality() {
+func (g APISuite) TestLogDataEquality() {
 	// create a log
 	chainID := gofakeit.Uint32()
 	log := g.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()))
@@ -83,7 +83,7 @@ func (g GQLSuite) TestLogDataEquality() {
 	err := g.db.StoreLog(g.GetTestContext(), log, chainID)
 	Nil(g.T(), err)
 
-	// retrieve it
+	// retrieve it using gql
 	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	retrievedLog := logs.Response[0]
@@ -107,7 +107,7 @@ func (g GQLSuite) TestLogDataEquality() {
 	Equal(g.T(), retrievedLog.Removed, log.Removed)
 }
 
-func (g GQLSuite) TestReceiptDataEquality() {
+func (g APISuite) TestReceiptDataEquality() {
 	// create a receipt
 	chainID := gofakeit.Uint32()
 	receipt := g.buildReceipt(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()))
@@ -135,7 +135,7 @@ func (g GQLSuite) TestReceiptDataEquality() {
 	Equal(g.T(), retrievedReceipt.TransactionIndex, int(receipt.TransactionIndex))
 }
 
-func (g GQLSuite) TestTransactionDataEquality() {
+func (g APISuite) TestTransactionDataEquality() {
 	// create a transaction
 	chainID := gofakeit.Uint32()
 	blockNumber := uint64(gofakeit.Uint32())
@@ -165,7 +165,7 @@ func (g GQLSuite) TestTransactionDataEquality() {
 	Equal(g.T(), retrievedTx.To, tx.To().String())
 }
 
-func (g *GQLSuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {
+func (g *APISuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {
 	currentIndex := g.logIndex.Load()
 	// increment next index
 	g.logIndex.Add(1)
@@ -184,7 +184,7 @@ func (g *GQLSuite) buildLog(contractAddress common.Address, blockNumber uint64) 
 	return log
 }
 
-func (g *GQLSuite) buildReceipt(contractAddress common.Address, blockNumber uint64) types.Receipt {
+func (g *APISuite) buildReceipt(contractAddress common.Address, blockNumber uint64) types.Receipt {
 	receipt := types.Receipt{
 		Type:              gofakeit.Uint8(),
 		PostState:         []byte(gofakeit.Sentence(10)),
@@ -202,7 +202,7 @@ func (g *GQLSuite) buildReceipt(contractAddress common.Address, blockNumber uint
 	return receipt
 }
 
-func (g *GQLSuite) buildEthTx() *types.Transaction {
+func (g *APISuite) buildEthTx() *types.Transaction {
 	ethTx := types.NewTx(&types.LegacyTx{
 		Nonce:    gofakeit.Uint64(),
 		GasPrice: new(big.Int).SetUint64(gofakeit.Uint64()),

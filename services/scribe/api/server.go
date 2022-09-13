@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/gin-contrib/cors"
@@ -14,11 +15,15 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/grpc/server"
 	"golang.org/x/sync/errgroup"
 	"net"
+	"net/http"
 	"time"
 )
 
 // HealthCheck is the health check endpoint.
 const HealthCheck string = "/health-check"
+
+//go:embed static
+var static embed.FS
 
 // Config contains the config for the api.
 type Config struct {
@@ -54,13 +59,18 @@ func Start(ctx context.Context, cfg Config) error {
 	}
 
 	gqlServer.EnableGraphql(router, eventDB)
-	grpcServer := server.SetupGRPCServer()
+	grpcServer, err := server.SetupGRPCServer(ctx, router)
+	if err != nil {
+		return fmt.Errorf("could not create grpc server: %w", err)
+	}
 
 	router.GET(HealthCheck, func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status": "UP",
 		})
 	})
+
+	router.GET("static", gin.WrapH(http.FileServer(http.FS(static))))
 
 	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.HTTPPort)
 
