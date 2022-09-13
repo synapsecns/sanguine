@@ -25,6 +25,7 @@ require (
 	github.com/prometheus/common v0.34.0
 	github.com/prometheus/exporter-toolkit v0.7.1
 	github.com/prometheus/pushgateway v1.4.3
+	github.com/rung/go-safecast v1.0.1
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
 	github.com/stretchr/testify v1.8.0
 	github.com/urfave/cli/v2 v2.14.1

@@ -39,7 +39,7 @@ func NewSwapFlashLoanDeployer(registry deployer.GetOnlyContractRegistry, backend
 	return SwapFlashLoanDeployer{deployer.NewSimpleDeployer(registry, backend, SwapFlashLoanType)}
 }
 
-//this is actually so disgusting im going to puke
+// this is actually so disgusting im going to puke
 
 // Deploy deploys bridge config v3
 // nolint: dupl

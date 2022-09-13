@@ -35,12 +35,10 @@ var NamingStrategy = schema.NamingStrategy{}
 
 // NewClickhouseStore creates a new mysql store for a given data store.
 func NewClickhouseStore(ctx context.Context, dbURL string) (db.ConsumerDB, error) {
-
 	pool, err := dockertest.NewPool("")
 
 	if err != nil {
 		fmt.Printf("fail")
-
 	}
 	// pulls an image, creates a container based on it and runs it
 	fmt.Printf("2")
@@ -70,7 +68,7 @@ func NewClickhouseStore(ctx context.Context, dbURL string) (db.ConsumerDB, error
 	}
 
 	// Fetch port assigned to container
-	//address := fmt.Sprintf("%s:%s", "localhost", resource.GetPort("9000/tcp"))
+	// address := fmt.Sprintf("%s:%s", "localhost", resource.GetPort("9000/tcp"))
 	address := dbURL
 	cleanup := func() {
 		if err := pool.Purge(resource); err != nil {
@@ -82,7 +80,7 @@ func NewClickhouseStore(ctx context.Context, dbURL string) (db.ConsumerDB, error
 		db, err = openGormClickhouse(ctx, address)
 		return nil
 	}); err != nil {
-		//destroy container
+		// destroy container
 		cleanup()
 		return nil, err
 	}
