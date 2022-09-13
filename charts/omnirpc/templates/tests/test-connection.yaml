@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "omnirpc.fullname" . }}-test-connection"
+  labels:
+    {{- include "omnirpc.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "omnirpc.fullname" . }}:{{ .Values.service.port }}/health-check']
+  restartPolicy: Never
