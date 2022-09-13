@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/synapse-node/pkg/types"
+	"github.com/synapsecns/sanguine/agents/types"
 	"strings"
 )
 
 func init() {
 	var err error
-	parsedBridge, err := abi.JSON(strings.NewReader(SynapseBridgeABI))
+	parsedBridge, err := abi.JSON(strings.NewReader(SynapseBridgeMetaData.ABI))
 	if err != nil {
 		panic(err)
 	}

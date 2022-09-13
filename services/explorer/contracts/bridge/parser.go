@@ -11,7 +11,7 @@ import (
 // TODO: consider moving this into a separate package.
 type Parser interface {
 	// EventType determines if an event was initiated by the bridge or the user.
-	// note: this currently will not handle multiple topics that coorespond to events (think a multicall)
+	// note: this currently will not handle multiple topics that corespond to events (think a multicall)
 	// support for this will need to be added for multi-call style rollups, etc
 	EventType(log ethTypes.Log) (_ types.EventType, ok bool)
 	// GetCrossChainUserEvent parses a cross chain user event from a log.
@@ -41,7 +41,7 @@ func (p *parserImpl) EventType(log ethTypes.Log) (_ types.EventType, ok bool) {
 			continue
 		}
 
-		return *eventType, true
+		return types.EventType(*eventType), true
 	}
 	// return an unknown event to avoid cases where user failed to check the event type
 	return types.EventType(len(types.AllEventTypes()) + 2), false
