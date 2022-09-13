@@ -94,7 +94,6 @@ func (s Scribe) Start(ctx context.Context) error {
 //nolint:gocognit, cyclop
 func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfirmations uint32) error {
 	newBlock, err := s.clients[chainID].BlockNumber(ctx)
-	fmt.Println("Current block number: ", newBlock)
 	if err != nil {
 		return fmt.Errorf("could not get current block number: %w", err)
 	}
@@ -113,11 +112,8 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 
 	// if the last block number is 0 and current block - required confirmations is greater than 0,
 	// then set all blocks up to current block - required confirmations to confirmed
-	fmt.Println("Last block number: ", lastBlockNumber)
 	if lastBlockNumber == 0 && newBlock > uint64(requiredConfirmations) {
-		fmt.Println("Setting all blocks up to current block - required confirmations to confirmed")
 		err := s.confirmToBlockNumber(ctx, newBlock-uint64(requiredConfirmations), chainID)
-		fmt.Println("ah", newBlock-uint64(requiredConfirmations))
 		if err != nil {
 			return fmt.Errorf("could not confirm blocks: %w", err)
 		}
