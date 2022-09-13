@@ -13,7 +13,7 @@ import (
 // IndexerSuite tests the indexer.
 type IndexerSuite struct {
 	*testsuite.TestSuite
-	testBackend    backends.SimulatedTestBackend
+	testBackend    backends.TestBackend
 	deployManager  *testutil.DeployManager
 	originContract *origin.OriginRef
 }
