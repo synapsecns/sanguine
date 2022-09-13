@@ -3,19 +3,20 @@ package config
 import (
 	"context"
 	"fmt"
-	"reflect"
-	"strings"
+	"os"
+	"path/filepath"
 
-	"github.com/BurntSushi/toml"
-	tomlCommon "github.com/synapsecns/sanguine/core/toml"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/jftuga/ellipsis"
+	"gopkg.in/yaml.v2"
 )
 
 // Config is used to configure a Scribe instance and information about chains and contracts.
 type Config struct {
 	// Chains stores all chain information
-	Chains ChainConfigs `toml:"Chains"`
+	Chains ChainConfigs `yaml:"chains"`
 	// RefreshRate is the rate at which the scribe will refresh the last block height in seconds.
-	RefreshRate uint `toml:"RefreshRate"`
+	RefreshRate uint `yaml:"refresh_rate"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -30,42 +31,23 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 }
 
 // Encode gets the encoded config.toml file.
-func (c *Config) Encode() (string, error) {
-	marshalledConfig := struct {
-		Chains ChainConfigs `toml:"Chains"`
-	}{
-		Chains: c.Chains,
-	}
-	file, err := tomlCommon.Encode(marshalledConfig)
+func (c Config) Encode() ([]byte, error) {
+	output, err := yaml.Marshal(&c)
 	if err != nil {
-		return "", fmt.Errorf("could not encode file: %w", err)
+		return nil, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(spew.Sdump(c), 20), err)
 	}
-	// currently, there's a bug in the parser that requires maps to be on the same level as the parent.
-	// TODO: fix
-	splitFile := strings.Split(file, "\n")
-	var newLines []string
-	for _, line := range splitFile {
-		// get rid of double spacing on maps
-		indentLen := len(tomlCommon.Indent) * 2
-		newLines = append(newLines, strings.ReplaceAll(line, getStringOfLength(indentLen), getStringOfLength(indentLen-2)))
-	}
-	return strings.Join(newLines, "\n"), nil
-}
-
-// getStringOfLength generates a blank string of length.
-func getStringOfLength(length int) (res string) {
-	for i := 0; i < length; i++ {
-		res += " "
-	}
-	return res
+	return output, nil
 }
 
 // DecodeConfig parses in a config from a file.
-func DecodeConfig(filepath string) (cfg *Config, err error) {
-	cfg = &Config{}
-	_, err = toml.DecodeFile(filepath, cfg)
+func DecodeConfig(filePath string) (cfg Config, err error) {
+	input, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
-		return nil, fmt.Errorf("could not parse config at path %s into %s: %w", filepath, reflect.TypeOf(cfg), err)
+		return Config{}, fmt.Errorf("failed to read file: %w", err)
+	}
+	err = yaml.Unmarshal(input, &cfg)
+	if err != nil {
+		return Config{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
 	}
 	return cfg, nil
 }

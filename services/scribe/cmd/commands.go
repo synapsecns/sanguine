@@ -34,14 +34,15 @@ var infoCommand = &cli.Command{
 
 var configFlag = &cli.StringFlag{
 	Name:      "config",
-	Usage:     "--config /Users/synapsecns/config.toml",
+	Usage:     "--config /Users/synapsecns/config.yaml",
 	TakesFile: true,
+	Required:  true,
 }
 
 var backfillCommand = &cli.Command{
 	Name:        "backfill",
 	Description: "backfills up to a block and then halts",
-	Usage:       "backfill --config /path/to/config.toml",
+	Usage:       "backfill --config /path/to/config.yaml",
 	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
 		decodeConfig, err := config.DecodeConfig(c.String(configFlag.Name))
@@ -76,7 +77,7 @@ var backfillCommand = &cli.Command{
 			clients[client.ChainID] = backendClient
 		}
 
-		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, *decodeConfig)
+		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
 		if err != nil {
 			return fmt.Errorf("could not create scribe backfiller: %w", err)
 		}
@@ -93,20 +94,21 @@ var backfillCommand = &cli.Command{
 var portFlag = &cli.UintFlag{
 	Name:  "port",
 	Usage: "--port 5121",
-	//nolint:staticcheck
 	Value: 0,
 }
 
 var dbFlag = &cli.StringFlag{
-	Name:  "db",
-	Usage: "--db <sqlite> or <mysql>",
-	Value: "sqlite",
+	Name:     "db",
+	Usage:    "--db <sqlite> or <mysql>",
+	Value:    "sqlite",
+	Required: true,
 }
 
 var pathFlag = &cli.StringFlag{
-	Name:  "path",
-	Usage: "--path <path/to/database> or <database url>",
-	Value: "",
+	Name:     "path",
+	Usage:    "--path <path/to/database> or <database url>",
+	Value:    "",
+	Required: true,
 }
 
 var serverCommand = &cli.Command{

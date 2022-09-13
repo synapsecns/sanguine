@@ -82,7 +82,7 @@ func (b BackfillSuite) EmitEventsForAChain(chainID uint32, contracts []contracts
 		// Backfill the chain.
 		lastBlock, err := simulatedChain.BlockNumber(b.GetTestContext())
 		Nil(b.T(), err)
-		err = chainBackfiller.Backfill(b.GetTestContext(), lastBlock)
+		err = chainBackfiller.Backfill(b.GetTestContext(), lastBlock, false)
 		Nil(b.T(), err)
 
 		// Check that the events were written to the database.
@@ -92,7 +92,7 @@ func (b BackfillSuite) EmitEventsForAChain(chainID uint32, contracts []contracts
 				ChainID:         chainConfig.ChainID,
 				ContractAddress: contract.Address().String(),
 			}
-			logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), logFilter)
+			logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), logFilter, 1)
 			Nil(b.T(), err)
 			// There should be 4 logs. One from `EmitEventA`, one from `EmitEventB`, and two
 			// from `EmitEventAandB`.
@@ -102,7 +102,7 @@ func (b BackfillSuite) EmitEventsForAChain(chainID uint32, contracts []contracts
 		receiptFilter := db.ReceiptFilter{
 			ChainID: chainConfig.ChainID,
 		}
-		receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), receiptFilter)
+		receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), receiptFilter, 1)
 		Nil(b.T(), err)
 		// There should be 9 receipts. One from `EmitEventA`, one from `EmitEventB`, and
 		// one from `EmitEventAandB`, for each contract.

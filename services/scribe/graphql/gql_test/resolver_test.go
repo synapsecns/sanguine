@@ -13,7 +13,7 @@ func (g GQLSuite) TestLogResolvers() {
 	chainID := gofakeit.Uint32()
 	// store a transaction
 	tx := g.buildEthTx()
-	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, gofakeit.Uint64())
+	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint64())
 	Nil(g.T(), err)
 	// store a log
 	log := g.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint64())
@@ -28,7 +28,7 @@ func (g GQLSuite) TestLogResolvers() {
 	Nil(g.T(), err)
 
 	// test the log's resolver for the transaction and receipt
-	logResolver, err := g.gqlClient.GetLogsResolvers(g.GetTestContext(), int(chainID))
+	logResolver, err := g.gqlClient.GetLogsResolvers(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	retrievedTx := logResolver.Response[0].Transaction
 	Equal(g.T(), retrievedTx.ChainID, int(chainID))
@@ -57,7 +57,7 @@ func (g GQLSuite) TestLogResolvers() {
 	Equal(g.T(), retrievedReceipt.TransactionIndex, int(receipt.TransactionIndex))
 
 	// test the receipt's resolver for the transaction and logs
-	receiptResolver, err := g.gqlClient.GetReceiptsResolvers(g.GetTestContext(), int(chainID))
+	receiptResolver, err := g.gqlClient.GetReceiptsResolvers(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	retrievedTx = receiptResolver.Response[0].Transaction
 	Equal(g.T(), retrievedTx.ChainID, int(chainID))
@@ -90,7 +90,7 @@ func (g GQLSuite) TestLogResolvers() {
 	Equal(g.T(), retrievedLog.Removed, log.Removed)
 
 	// test the transaction's resolver for the receipt and logs
-	txResolver, err := g.gqlClient.GetTransactionsResolvers(g.GetTestContext(), int(chainID))
+	txResolver, err := g.gqlClient.GetTransactionsResolvers(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	retrievedReceipt = txResolver.Response[0].Receipt
 	Equal(g.T(), retrievedReceipt.ChainID, int(chainID))

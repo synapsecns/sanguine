@@ -9,6 +9,7 @@ type LogFilter struct {
 	TxIndex         uint64
 	BlockHash       string
 	Index           uint64
+	Confirmed       bool
 }
 
 // ReceiptFilter is a filter to use when querying the database for receipts.
@@ -19,11 +20,14 @@ type ReceiptFilter struct {
 	BlockHash        string
 	BlockNumber      uint64
 	TransactionIndex uint64
+	Confirmed        bool
 }
 
 // EthTxFilter is a filter to use when querying the database for eth transactions.
 type EthTxFilter struct {
 	TxHash      string
 	ChainID     uint32
+	BlockHash   string
 	BlockNumber uint64
+	Confirmed   bool
 }

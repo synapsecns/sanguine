@@ -1,0 +1,40 @@
+{
+  "name": "@synapsecns/contracts-core",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
+    "build:go": "rimraf ./flattened/* && yarn sol-merger \"./contracts/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin && yarn sol-merger \"./test/harnesses/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin && yarn sol-merger \"./test/harnesses/libs/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin",
+    "build:contracts": "forge build",
+    "build:slither": "hardhat compile",
+    "build:typescript": "typechain --target ethers-v5 'artifacts/**/*json'",
+    "test": "forge test",
+    "lint:contracts:fix": "yarn prettier --write '{contracts,test}/**/*.sol' && solhint --fix -c .solhint.json --ignore-path .prettierignore contracts/**/*.sol test/**/*.sol",
+    "lint:fix": "yarn lint:contracts:fix",
+    "lint": "yarn prettier '{contracts,test}/**/*.sol'",
+    "ci:lint": "yarn prettier '{contracts,test}/**/*.sol' --check && solhint -c .solhint.json --ignore-path .prettierignore contracts/**/*.sol test/**/*.sol"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@typechain/ethers-v5": "10.0.0",
+    "hardhat": "2.9.7",
+    "prettier": "2.7.1",
+    "prettier-plugin-solidity": "1.0.0-dev.23",
+    "rimraf": "3.0.2",
+    "solhint": "3.3.7",
+    "solhint-plugin-prettier": "0.0.5",
+    "typechain": "8.0.0",
+    "typescript": "4.7.3"
+  },
+  "dependencies": {
+    "@nodelib/fs.walk": "1.2.8",
+    "@openzeppelin/contracts": "4.7.3",
+    "@openzeppelin/contracts-upgradeable": "4.6.0",
+    "dotenv": "16.0.1",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-prettier": "3.4.1",
+    "sol-merger": "4.1.1",
+    "solidity-coverage": "0.7.21",
+    "ts-node": "10.8.1"
+  }
+}

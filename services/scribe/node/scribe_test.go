@@ -1,8 +1,6 @@
 package node_test
 
 import (
-	"math/big"
-
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
@@ -14,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/node"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
+	"math/big"
 )
 
 // TestLive tests live recording of events.
@@ -71,7 +70,7 @@ func (l LiveSuite) TestLive() {
 		simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
 	}
 
-	err = scribe.ProcessRange(l.GetTestContext(), chainID)
+	err = scribe.ProcessRange(l.GetTestContext(), chainID, 0)
 	Nil(l.T(), err)
 
 	// Check that the events were recorded.
@@ -81,7 +80,7 @@ func (l LiveSuite) TestLive() {
 			ChainID:         chainConfig.ChainID,
 			ContractAddress: contract.Address().String(),
 		}
-		logs, err := l.testDB.RetrieveLogsWithFilter(l.GetTestContext(), logFilter)
+		logs, err := l.testDB.RetrieveLogsWithFilter(l.GetTestContext(), logFilter, 1)
 		Nil(l.T(), err)
 		// There should be 4 logs. One from `EmitEventA`, one from `EmitEventB`, and two
 		// from `EmitEventAandB`.
@@ -91,9 +90,110 @@ func (l LiveSuite) TestLive() {
 	receiptFilter := db.ReceiptFilter{
 		ChainID: chainConfig.ChainID,
 	}
-	receipts, err := l.testDB.RetrieveReceiptsWithFilter(l.GetTestContext(), receiptFilter)
+	receipts, err := l.testDB.RetrieveReceiptsWithFilter(l.GetTestContext(), receiptFilter, 1)
 	Nil(l.T(), err)
 	// There should be 9 receipts. One from `EmitEventA`, one from `EmitEventB`, and
 	// one from `EmitEventAandB`, for each contract.
 	Equal(l.T(), 9, len(receipts))
+}
+
+func (l LiveSuite) TestRequiredConfirmationSetting() {
+	chainID := gofakeit.Uint32()
+
+	// Emit some events on the simulated blockchain.
+	simulatedChain := simulated.NewSimulatedBackendWithChainID(l.GetTestContext(), l.T(), big.NewInt(int64(chainID)))
+	simulatedChain.FundAccount(l.GetTestContext(), l.wallet.Address(), *big.NewInt(params.Ether))
+	testContract, testRef := l.manager.GetTestContract(l.GetTestContext(), simulatedChain)
+	transactOpts := simulatedChain.GetTxContext(l.GetTestContext(), nil)
+
+	// Set up the config.
+	contractConfig := config.ContractConfig{
+		Address:    testContract.Address().String(),
+		StartBlock: 0,
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:               chainID,
+		RPCUrl:                "an rpc url is not needed for simulated backends",
+		RequiredConfirmations: 3,
+		Contracts:             []config.ContractConfig{contractConfig},
+	}
+	scribeConfig := config.Config{
+		Chains: []config.ChainConfig{chainConfig},
+	}
+
+	clients := make(map[uint32]backfill.ScribeBackend)
+	clients[chainID] = simulatedChain
+
+	// Set up the scribe.
+	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig)
+	Nil(l.T(), err)
+
+	// Emit 5 events.
+	for i := 0; i < 5; i++ {
+		tx, err := testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+		Nil(l.T(), err)
+		simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
+	}
+	// Process the events.
+	err = scribe.ProcessRange(l.GetTestContext(), chainID, chainConfig.RequiredConfirmations)
+	Nil(l.T(), err)
+
+	// The first 2 events should be confirmed, but the last 3 should not.
+	// Check logs.
+	logFilter := db.LogFilter{
+		ChainID:         chainConfig.ChainID,
+		ContractAddress: testContract.Address().String(),
+		Confirmed:       true,
+	}
+	logs, err := l.testDB.RetrieveLogsWithFilter(l.GetTestContext(), logFilter, 1)
+	Nil(l.T(), err)
+	// There should be 4 logs, two for each event over two blocks.
+	Equal(l.T(), 4, len(logs))
+
+	// Check receipts.
+	receiptFilter := db.ReceiptFilter{
+		ChainID:   chainConfig.ChainID,
+		Confirmed: true,
+	}
+	receipts, err := l.testDB.RetrieveReceiptsWithFilter(l.GetTestContext(), receiptFilter, 1)
+	Nil(l.T(), err)
+	// There should be 2 receipts, one for each transaction over two blocks.
+	Equal(l.T(), 2, len(receipts))
+
+	// Check transactions.
+	txFilter := db.EthTxFilter{
+		ChainID:   chainConfig.ChainID,
+		Confirmed: true,
+	}
+	txs, err := l.testDB.RetrieveEthTxsWithFilter(l.GetTestContext(), txFilter, 1)
+	Nil(l.T(), err)
+	// There should be 2 transactions, one for each transaction over two blocks.
+	Equal(l.T(), 2, len(txs))
+
+	// Add one more block to the chain by emitting another event.
+	tx, err := testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	Nil(l.T(), err)
+	simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
+
+	// Process the events.
+	err = scribe.ProcessRange(l.GetTestContext(), chainID, chainConfig.RequiredConfirmations)
+	Nil(l.T(), err)
+
+	// Check logs.
+	logs, err = l.testDB.RetrieveLogsWithFilter(l.GetTestContext(), logFilter, 1)
+	Nil(l.T(), err)
+	// There should be 6 logs, two for each event over three blocks.
+	Equal(l.T(), 6, len(logs))
+
+	// Check receipts.
+	receipts, err = l.testDB.RetrieveReceiptsWithFilter(l.GetTestContext(), receiptFilter, 1)
+	Nil(l.T(), err)
+	// There should be 4 receipts, one for each transaction over three blocks.
+	Equal(l.T(), 3, len(receipts))
+
+	// Check transactions.
+	txs, err = l.testDB.RetrieveEthTxsWithFilter(l.GetTestContext(), txFilter, 1)
+	Nil(l.T(), err)
+	// There should be 4 transactions, one for each transaction over three blocks.
+	Equal(l.T(), 3, len(txs))
 }

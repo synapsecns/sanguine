@@ -55,6 +55,7 @@ type ComplexityRoot struct {
 		Data            func(childComplexity int) int
 		Index           func(childComplexity int) int
 		JSON            func(childComplexity int) int
+		Page            func(childComplexity int) int
 		Receipt         func(childComplexity int) int
 		Removed         func(childComplexity int) int
 		Topics          func(childComplexity int) int
@@ -64,12 +65,12 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Logs              func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int) int
-		LogsRange         func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, startBlock int, endBlock int) int
-		Receipts          func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int) int
-		ReceiptsRange     func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, startBlock int, endBlock int) int
-		Transactions      func(childComplexity int, txHash *string, chainID int, blockNumber *int) int
-		TransactionsRange func(childComplexity int, txHash *string, chainID int, blockNumber *int, startBlock int, endBlock int) int
+		Logs              func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, page int) int
+		LogsRange         func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) int
+		Receipts          func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, page int) int
+		ReceiptsRange     func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) int
+		Transactions      func(childComplexity int, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, page int) int
+		TransactionsRange func(childComplexity int, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, page int) int
 	}
 
 	Receipt struct {
@@ -81,6 +82,7 @@ type ComplexityRoot struct {
 		GasUsed           func(childComplexity int) int
 		JSON              func(childComplexity int) int
 		Logs              func(childComplexity int) int
+		Page              func(childComplexity int) int
 		PostState         func(childComplexity int) int
 		Status            func(childComplexity int) int
 		Transaction       func(childComplexity int) int
@@ -99,6 +101,7 @@ type ComplexityRoot struct {
 		JSON      func(childComplexity int) int
 		Logs      func(childComplexity int) int
 		Nonce     func(childComplexity int) int
+		Page      func(childComplexity int) int
 		Protected func(childComplexity int) int
 		Receipt   func(childComplexity int) int
 		To        func(childComplexity int) int
@@ -114,12 +117,12 @@ type LogResolver interface {
 	JSON(ctx context.Context, obj *model.Log) (types.JSON, error)
 }
 type QueryResolver interface {
-	Logs(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int) ([]*model.Log, error)
-	LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, startBlock int, endBlock int) ([]*model.Log, error)
-	Receipts(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int) ([]*model.Receipt, error)
-	ReceiptsRange(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, startBlock int, endBlock int) ([]*model.Receipt, error)
-	Transactions(ctx context.Context, txHash *string, chainID int, blockNumber *int) ([]*model.Transaction, error)
-	TransactionsRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, startBlock int, endBlock int) ([]*model.Transaction, error)
+	Logs(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, page int) ([]*model.Log, error)
+	LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Log, error)
+	Receipts(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, page int) ([]*model.Receipt, error)
+	ReceiptsRange(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Receipt, error)
+	Transactions(ctx context.Context, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, page int) ([]*model.Transaction, error)
+	TransactionsRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Transaction, error)
 }
 type ReceiptResolver interface {
 	Logs(ctx context.Context, obj *model.Receipt) ([]*model.Log, error)
@@ -196,6 +199,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Log.JSON(childComplexity), true
 
+	case "Log.page":
+		if e.complexity.Log.Page == nil {
+			break
+		}
+
+		return e.complexity.Log.Page(childComplexity), true
+
 	case "Log.receipt":
 		if e.complexity.Log.Receipt == nil {
 			break
@@ -248,7 +258,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Logs(childComplexity, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int)), true
+		return e.complexity.Query.Logs(childComplexity, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int), args["confirmed"].(*bool), args["page"].(int)), true
 
 	case "Query.logsRange":
 		if e.complexity.Query.LogsRange == nil {
@@ -260,7 +270,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.LogsRange(childComplexity, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int), args["start_block"].(int), args["end_block"].(int)), true
+		return e.complexity.Query.LogsRange(childComplexity, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int), args["confirmed"].(*bool), args["start_block"].(int), args["end_block"].(int), args["page"].(int)), true
 
 	case "Query.receipts":
 		if e.complexity.Query.Receipts == nil {
@@ -272,7 +282,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Receipts(childComplexity, args["chain_id"].(int), args["tx_hash"].(*string), args["contract_address"].(*string), args["block_hash"].(*string), args["block_number"].(*int), args["tx_index"].(*int)), true
+		return e.complexity.Query.Receipts(childComplexity, args["chain_id"].(int), args["tx_hash"].(*string), args["contract_address"].(*string), args["block_hash"].(*string), args["block_number"].(*int), args["tx_index"].(*int), args["confirmed"].(*bool), args["page"].(int)), true
 
 	case "Query.receiptsRange":
 		if e.complexity.Query.ReceiptsRange == nil {
@@ -284,7 +294,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.ReceiptsRange(childComplexity, args["chain_id"].(int), args["tx_hash"].(*string), args["contract_address"].(*string), args["block_hash"].(*string), args["block_number"].(*int), args["tx_index"].(*int), args["start_block"].(int), args["end_block"].(int)), true
+		return e.complexity.Query.ReceiptsRange(childComplexity, args["chain_id"].(int), args["tx_hash"].(*string), args["contract_address"].(*string), args["block_hash"].(*string), args["block_number"].(*int), args["tx_index"].(*int), args["confirmed"].(*bool), args["start_block"].(int), args["end_block"].(int), args["page"].(int)), true
 
 	case "Query.transactions":
 		if e.complexity.Query.Transactions == nil {
@@ -296,7 +306,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Transactions(childComplexity, args["tx_hash"].(*string), args["chain_id"].(int), args["block_number"].(*int)), true
+		return e.complexity.Query.Transactions(childComplexity, args["tx_hash"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["block_hash"].(*string), args["confirmed"].(*bool), args["page"].(int)), true
 
 	case "Query.transactionsRange":
 		if e.complexity.Query.TransactionsRange == nil {
@@ -308,7 +318,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.TransactionsRange(childComplexity, args["tx_hash"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["start_block"].(int), args["end_block"].(int)), true
+		return e.complexity.Query.TransactionsRange(childComplexity, args["tx_hash"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["block_hash"].(*string), args["confirmed"].(*bool), args["start_block"].(int), args["end_block"].(int), args["page"].(int)), true
 
 	case "Receipt.block_number":
 		if e.complexity.Receipt.BlockNumber == nil {
@@ -365,6 +375,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Receipt.Logs(childComplexity), true
+
+	case "Receipt.page":
+		if e.complexity.Receipt.Page == nil {
+			break
+		}
+
+		return e.complexity.Receipt.Page(childComplexity), true
 
 	case "Receipt.post_state":
 		if e.complexity.Receipt.PostState == nil {
@@ -470,6 +487,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Transaction.Nonce(childComplexity), true
+
+	case "Transaction.page":
+		if e.complexity.Transaction.Page == nil {
+			break
+		}
+
+		return e.complexity.Transaction.Page(childComplexity), true
 
 	case "Transaction.protected":
 		if e.complexity.Transaction.Protected == nil {
@@ -585,6 +609,8 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     tx_index: Int
     block_hash: String
     index: Int
+    confirmed: Boolean
+    page: Int!
   ): [Log]
   # returns all logs that match the given filter and range
   logsRange(
@@ -595,8 +621,10 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     tx_index: Int
     block_hash: String
     index: Int
+    confirmed: Boolean
     start_block: Int!
     end_block: Int!
+    page: Int!
   ): [Log]
   # returns all receipts that match the given filter
   receipts(
@@ -606,6 +634,8 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     block_hash: String
     block_number: Int
     tx_index: Int
+    confirmed: Boolean
+    page: Int!
   ): [Receipt]
   # returns all receipts that match the given filter and range
   receiptsRange(
@@ -615,22 +645,30 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     block_hash: String
     block_number: Int
     tx_index: Int
+    confirmed: Boolean
     start_block: Int!
     end_block: Int!
+    page: Int!
   ): [Receipt]
   # returns all transactions that match the given filter
   transactions(
     tx_hash: String
     chain_id: Int!
     block_number: Int
+    block_hash: String
+    confirmed: Boolean
+    page: Int!
   ): [Transaction]
   # returns all transactions that match the given filter and range
   transactionsRange(
     tx_hash: String
     chain_id: Int!
     block_number: Int
+    block_hash: String
+    confirmed: Boolean
     start_block: Int!
     end_block: Int!
+    page: Int!
   ): [Transaction]
 }
 `, BuiltIn: false},
@@ -648,6 +686,7 @@ type Receipt {
   gas_used: Int!
   block_number: Int!
   transaction_index: Int!
+  page: Int!
   logs: [Log!] @goField(forceResolver:true)
   transaction: Transaction! @goField(forceResolver:true)
   json: JSON! @goField(forceResolver:true)
@@ -666,6 +705,7 @@ type Transaction {
   value: String!
   nonce: Int!
   to: String!
+  page: Int!
   logs: [Log!] @goField(forceResolver: true)
   receipt: Receipt! @goField(forceResolver: true)
   json: JSON! @goField(forceResolver:true)
@@ -682,6 +722,7 @@ type Log {
   block_hash: String!
   index: Int!
   removed: Boolean!
+  page: Int!
   transaction: Transaction! @goField(forceResolver: true)
   receipt: Receipt! @goField(forceResolver: true)
   json: JSON! @goField(forceResolver:true)
@@ -775,24 +816,42 @@ func (ec *executionContext) field_Query_logsRange_args(ctx context.Context, rawA
 		}
 	}
 	args["index"] = arg6
-	var arg7 int
-	if tmp, ok := rawArgs["start_block"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
-		arg7, err = ec.unmarshalNInt2int(ctx, tmp)
+	var arg7 *bool
+	if tmp, ok := rawArgs["confirmed"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confirmed"))
+		arg7, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["start_block"] = arg7
+	args["confirmed"] = arg7
 	var arg8 int
-	if tmp, ok := rawArgs["end_block"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
+	if tmp, ok := rawArgs["start_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
 		arg8, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["end_block"] = arg8
+	args["start_block"] = arg8
+	var arg9 int
+	if tmp, ok := rawArgs["end_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
+		arg9, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["end_block"] = arg9
+	var arg10 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg10, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg10
 	return args, nil
 }
 
@@ -862,6 +921,24 @@ func (ec *executionContext) field_Query_logs_args(ctx context.Context, rawArgs m
 		}
 	}
 	args["index"] = arg6
+	var arg7 *bool
+	if tmp, ok := rawArgs["confirmed"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confirmed"))
+		arg7, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["confirmed"] = arg7
+	var arg8 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg8, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg8
 	return args, nil
 }
 
@@ -922,24 +999,42 @@ func (ec *executionContext) field_Query_receiptsRange_args(ctx context.Context, 
 		}
 	}
 	args["tx_index"] = arg5
-	var arg6 int
-	if tmp, ok := rawArgs["start_block"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
-		arg6, err = ec.unmarshalNInt2int(ctx, tmp)
+	var arg6 *bool
+	if tmp, ok := rawArgs["confirmed"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confirmed"))
+		arg6, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["start_block"] = arg6
+	args["confirmed"] = arg6
 	var arg7 int
-	if tmp, ok := rawArgs["end_block"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
+	if tmp, ok := rawArgs["start_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
 		arg7, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["end_block"] = arg7
+	args["start_block"] = arg7
+	var arg8 int
+	if tmp, ok := rawArgs["end_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
+		arg8, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["end_block"] = arg8
+	var arg9 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg9, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg9
 	return args, nil
 }
 
@@ -1000,6 +1095,24 @@ func (ec *executionContext) field_Query_receipts_args(ctx context.Context, rawAr
 		}
 	}
 	args["tx_index"] = arg5
+	var arg6 *bool
+	if tmp, ok := rawArgs["confirmed"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confirmed"))
+		arg6, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["confirmed"] = arg6
+	var arg7 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg7, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg7
 	return args, nil
 }
 
@@ -1033,24 +1146,51 @@ func (ec *executionContext) field_Query_transactionsRange_args(ctx context.Conte
 		}
 	}
 	args["block_number"] = arg2
-	var arg3 int
+	var arg3 *string
+	if tmp, ok := rawArgs["block_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_hash"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["block_hash"] = arg3
+	var arg4 *bool
+	if tmp, ok := rawArgs["confirmed"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confirmed"))
+		arg4, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["confirmed"] = arg4
+	var arg5 int
 	if tmp, ok := rawArgs["start_block"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
-		arg3, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg5, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["start_block"] = arg3
-	var arg4 int
+	args["start_block"] = arg5
+	var arg6 int
 	if tmp, ok := rawArgs["end_block"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
-		arg4, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg6, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["end_block"] = arg4
+	args["end_block"] = arg6
+	var arg7 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg7, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg7
 	return args, nil
 }
 
@@ -1084,6 +1224,33 @@ func (ec *executionContext) field_Query_transactions_args(ctx context.Context, r
 		}
 	}
 	args["block_number"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["block_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_hash"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["block_hash"] = arg3
+	var arg4 *bool
+	if tmp, ok := rawArgs["confirmed"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confirmed"))
+		arg4, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["confirmed"] = arg4
+	var arg5 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg5, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg5
 	return args, nil
 }
 
@@ -1565,6 +1732,50 @@ func (ec *executionContext) fieldContext_Log_removed(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Log_page(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Log_page(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Page, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Log_page(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Log",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Log_transaction(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Log_transaction(ctx, field)
 	if err != nil {
@@ -1628,6 +1839,8 @@ func (ec *executionContext) fieldContext_Log_transaction(ctx context.Context, fi
 				return ec.fieldContext_Transaction_nonce(ctx, field)
 			case "to":
 				return ec.fieldContext_Transaction_to(ctx, field)
+			case "page":
+				return ec.fieldContext_Transaction_page(ctx, field)
 			case "logs":
 				return ec.fieldContext_Transaction_logs(ctx, field)
 			case "receipt":
@@ -1702,6 +1915,8 @@ func (ec *executionContext) fieldContext_Log_receipt(ctx context.Context, field 
 				return ec.fieldContext_Receipt_block_number(ctx, field)
 			case "transaction_index":
 				return ec.fieldContext_Receipt_transaction_index(ctx, field)
+			case "page":
+				return ec.fieldContext_Receipt_page(ctx, field)
 			case "logs":
 				return ec.fieldContext_Receipt_logs(ctx, field)
 			case "transaction":
@@ -1773,7 +1988,7 @@ func (ec *executionContext) _Query_logs(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Logs(rctx, fc.Args["contract_address"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["tx_hash"].(*string), fc.Args["tx_index"].(*int), fc.Args["block_hash"].(*string), fc.Args["index"].(*int))
+		return ec.resolvers.Query().Logs(rctx, fc.Args["contract_address"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["tx_hash"].(*string), fc.Args["tx_index"].(*int), fc.Args["block_hash"].(*string), fc.Args["index"].(*int), fc.Args["confirmed"].(*bool), fc.Args["page"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1815,6 +2030,8 @@ func (ec *executionContext) fieldContext_Query_logs(ctx context.Context, field g
 				return ec.fieldContext_Log_index(ctx, field)
 			case "removed":
 				return ec.fieldContext_Log_removed(ctx, field)
+			case "page":
+				return ec.fieldContext_Log_page(ctx, field)
 			case "transaction":
 				return ec.fieldContext_Log_transaction(ctx, field)
 			case "receipt":
@@ -1853,7 +2070,7 @@ func (ec *executionContext) _Query_logsRange(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().LogsRange(rctx, fc.Args["contract_address"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["tx_hash"].(*string), fc.Args["tx_index"].(*int), fc.Args["block_hash"].(*string), fc.Args["index"].(*int), fc.Args["start_block"].(int), fc.Args["end_block"].(int))
+		return ec.resolvers.Query().LogsRange(rctx, fc.Args["contract_address"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["tx_hash"].(*string), fc.Args["tx_index"].(*int), fc.Args["block_hash"].(*string), fc.Args["index"].(*int), fc.Args["confirmed"].(*bool), fc.Args["start_block"].(int), fc.Args["end_block"].(int), fc.Args["page"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1895,6 +2112,8 @@ func (ec *executionContext) fieldContext_Query_logsRange(ctx context.Context, fi
 				return ec.fieldContext_Log_index(ctx, field)
 			case "removed":
 				return ec.fieldContext_Log_removed(ctx, field)
+			case "page":
+				return ec.fieldContext_Log_page(ctx, field)
 			case "transaction":
 				return ec.fieldContext_Log_transaction(ctx, field)
 			case "receipt":
@@ -1933,7 +2152,7 @@ func (ec *executionContext) _Query_receipts(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Receipts(rctx, fc.Args["chain_id"].(int), fc.Args["tx_hash"].(*string), fc.Args["contract_address"].(*string), fc.Args["block_hash"].(*string), fc.Args["block_number"].(*int), fc.Args["tx_index"].(*int))
+		return ec.resolvers.Query().Receipts(rctx, fc.Args["chain_id"].(int), fc.Args["tx_hash"].(*string), fc.Args["contract_address"].(*string), fc.Args["block_hash"].(*string), fc.Args["block_number"].(*int), fc.Args["tx_index"].(*int), fc.Args["confirmed"].(*bool), fc.Args["page"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1977,6 +2196,8 @@ func (ec *executionContext) fieldContext_Query_receipts(ctx context.Context, fie
 				return ec.fieldContext_Receipt_block_number(ctx, field)
 			case "transaction_index":
 				return ec.fieldContext_Receipt_transaction_index(ctx, field)
+			case "page":
+				return ec.fieldContext_Receipt_page(ctx, field)
 			case "logs":
 				return ec.fieldContext_Receipt_logs(ctx, field)
 			case "transaction":
@@ -2015,7 +2236,7 @@ func (ec *executionContext) _Query_receiptsRange(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ReceiptsRange(rctx, fc.Args["chain_id"].(int), fc.Args["tx_hash"].(*string), fc.Args["contract_address"].(*string), fc.Args["block_hash"].(*string), fc.Args["block_number"].(*int), fc.Args["tx_index"].(*int), fc.Args["start_block"].(int), fc.Args["end_block"].(int))
+		return ec.resolvers.Query().ReceiptsRange(rctx, fc.Args["chain_id"].(int), fc.Args["tx_hash"].(*string), fc.Args["contract_address"].(*string), fc.Args["block_hash"].(*string), fc.Args["block_number"].(*int), fc.Args["tx_index"].(*int), fc.Args["confirmed"].(*bool), fc.Args["start_block"].(int), fc.Args["end_block"].(int), fc.Args["page"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2059,6 +2280,8 @@ func (ec *executionContext) fieldContext_Query_receiptsRange(ctx context.Context
 				return ec.fieldContext_Receipt_block_number(ctx, field)
 			case "transaction_index":
 				return ec.fieldContext_Receipt_transaction_index(ctx, field)
+			case "page":
+				return ec.fieldContext_Receipt_page(ctx, field)
 			case "logs":
 				return ec.fieldContext_Receipt_logs(ctx, field)
 			case "transaction":
@@ -2097,7 +2320,7 @@ func (ec *executionContext) _Query_transactions(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Transactions(rctx, fc.Args["tx_hash"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int))
+		return ec.resolvers.Query().Transactions(rctx, fc.Args["tx_hash"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["block_hash"].(*string), fc.Args["confirmed"].(*bool), fc.Args["page"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2143,6 +2366,8 @@ func (ec *executionContext) fieldContext_Query_transactions(ctx context.Context,
 				return ec.fieldContext_Transaction_nonce(ctx, field)
 			case "to":
 				return ec.fieldContext_Transaction_to(ctx, field)
+			case "page":
+				return ec.fieldContext_Transaction_page(ctx, field)
 			case "logs":
 				return ec.fieldContext_Transaction_logs(ctx, field)
 			case "receipt":
@@ -2181,7 +2406,7 @@ func (ec *executionContext) _Query_transactionsRange(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().TransactionsRange(rctx, fc.Args["tx_hash"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["start_block"].(int), fc.Args["end_block"].(int))
+		return ec.resolvers.Query().TransactionsRange(rctx, fc.Args["tx_hash"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["block_hash"].(*string), fc.Args["confirmed"].(*bool), fc.Args["start_block"].(int), fc.Args["end_block"].(int), fc.Args["page"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2227,6 +2452,8 @@ func (ec *executionContext) fieldContext_Query_transactionsRange(ctx context.Con
 				return ec.fieldContext_Transaction_nonce(ctx, field)
 			case "to":
 				return ec.fieldContext_Transaction_to(ctx, field)
+			case "page":
+				return ec.fieldContext_Transaction_page(ctx, field)
 			case "logs":
 				return ec.fieldContext_Transaction_logs(ctx, field)
 			case "receipt":
@@ -2864,6 +3091,50 @@ func (ec *executionContext) fieldContext_Receipt_transaction_index(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _Receipt_page(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Receipt_page(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Page, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Receipt_page(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Receipt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Receipt_logs(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Receipt_logs(ctx, field)
 	if err != nil {
@@ -2920,6 +3191,8 @@ func (ec *executionContext) fieldContext_Receipt_logs(ctx context.Context, field
 				return ec.fieldContext_Log_index(ctx, field)
 			case "removed":
 				return ec.fieldContext_Log_removed(ctx, field)
+			case "page":
+				return ec.fieldContext_Log_page(ctx, field)
 			case "transaction":
 				return ec.fieldContext_Log_transaction(ctx, field)
 			case "receipt":
@@ -2996,6 +3269,8 @@ func (ec *executionContext) fieldContext_Receipt_transaction(ctx context.Context
 				return ec.fieldContext_Transaction_nonce(ctx, field)
 			case "to":
 				return ec.fieldContext_Transaction_to(ctx, field)
+			case "page":
+				return ec.fieldContext_Transaction_page(ctx, field)
 			case "logs":
 				return ec.fieldContext_Transaction_logs(ctx, field)
 			case "receipt":
@@ -3581,6 +3856,50 @@ func (ec *executionContext) fieldContext_Transaction_to(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Transaction_page(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_page(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Page, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_page(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Transaction_logs(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Transaction_logs(ctx, field)
 	if err != nil {
@@ -3637,6 +3956,8 @@ func (ec *executionContext) fieldContext_Transaction_logs(ctx context.Context, f
 				return ec.fieldContext_Log_index(ctx, field)
 			case "removed":
 				return ec.fieldContext_Log_removed(ctx, field)
+			case "page":
+				return ec.fieldContext_Log_page(ctx, field)
 			case "transaction":
 				return ec.fieldContext_Log_transaction(ctx, field)
 			case "receipt":
@@ -3711,6 +4032,8 @@ func (ec *executionContext) fieldContext_Transaction_receipt(ctx context.Context
 				return ec.fieldContext_Receipt_block_number(ctx, field)
 			case "transaction_index":
 				return ec.fieldContext_Receipt_transaction_index(ctx, field)
+			case "page":
+				return ec.fieldContext_Receipt_page(ctx, field)
 			case "logs":
 				return ec.fieldContext_Receipt_logs(ctx, field)
 			case "transaction":
@@ -5629,6 +5952,13 @@ func (ec *executionContext) _Log(ctx context.Context, sel ast.SelectionSet, obj 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "page":
+
+			out.Values[i] = ec._Log_page(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "transaction":
 			field := field
 
@@ -5949,6 +6279,13 @@ func (ec *executionContext) _Receipt(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "page":
+
+			out.Values[i] = ec._Receipt_page(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "logs":
 			field := field
 
@@ -6107,6 +6444,13 @@ func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionS
 		case "to":
 
 			out.Values[i] = ec._Transaction_to(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "page":
+
+			out.Values[i] = ec._Transaction_page(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)

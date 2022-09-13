@@ -34,10 +34,60 @@ func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID 
 			BlockHash:         receipt.BlockHash.String(),
 			BlockNumber:       receipt.BlockNumber.Uint64(),
 			TransactionIndex:  uint64(receipt.TransactionIndex),
+			Confirmed:         false,
 		})
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store receipt: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// ConfirmReceiptsForBlockHash confirms receipts for a given block hash.
+func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Receipt{}).
+		Where(&Receipt{
+			BlockHash: blockHash.String(),
+			ChainID:   chainID,
+		}).
+		Update(ConfirmedFieldName, true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm receipt: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// ConfirmReceiptsInRange confirms receipts in a range.
+func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
+	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Receipt{}).
+		Order(BlockNumberFieldName).
+		Where(rangeQuery, startBlock, endBlock).
+		Update(ConfirmedFieldName, true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm receipts: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// DeleteReceiptsForBlockHash deletes receipts with a given block hash.
+func (s Store) DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Where(&Receipt{
+			BlockHash: blockHash.String(),
+			ChainID:   chainID,
+		}).
+		Delete(&Receipt{})
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not delete receipts: %w", dbTx.Error)
 	}
 
 	return nil
@@ -53,14 +103,24 @@ func receiptFilterToQuery(receiptFilter db.ReceiptFilter) Receipt {
 		BlockHash:        receiptFilter.BlockHash,
 		BlockNumber:      receiptFilter.BlockNumber,
 		TransactionIndex: receiptFilter.TransactionIndex,
+		Confirmed:        receiptFilter.Confirmed,
 	}
 }
 
-// RetrieveReceiptsWithFilter retrieves receipts with a filter.
-func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.ReceiptFilter) (receipts []types.Receipt, err error) {
+// RetrieveReceiptsWithFilter retrieves receipts with a filter given a page.
+func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.ReceiptFilter, page int) (receipts []types.Receipt, err error) {
+	if page < 1 {
+		page = 1
+	}
 	dbReceipts := []Receipt{}
 	query := receiptFilterToQuery(receiptFilter)
-	dbTx := s.DB().WithContext(ctx).Model(&Receipt{}).Where(&query).Find(&dbReceipts)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Receipt{}).
+		Where(&query).
+		Order(BlockNumberFieldName).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
+		Find(&dbReceipts)
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
@@ -77,12 +137,22 @@ func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.
 	return parsedReceipts, nil
 }
 
-// RetrieveReceiptsInRange retrieves receipts in a range.
-func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.ReceiptFilter, startBlock, endBlock uint64) (receipts []types.Receipt, err error) {
+// RetrieveReceiptsInRange retrieves receipts that match an inputted filter and are within a range given a page.
+func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.ReceiptFilter, startBlock, endBlock uint64, page int) (receipts []types.Receipt, err error) {
+	if page < 1 {
+		page = 1
+	}
 	dbReceipts := []Receipt{}
 	query := receiptFilterToQuery(receiptFilter)
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
-	dbTx := s.DB().WithContext(ctx).Model(&Receipt{}).Where(&query).Where(rangeQuery, startBlock, endBlock).Find(&dbReceipts)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Receipt{}).
+		Where(&query).
+		Where(rangeQuery, startBlock, endBlock).
+		Order(BlockNumberFieldName).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
+		Find(&dbReceipts)
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
@@ -107,9 +177,18 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 			TxHash:  dbReceipt.TxHash,
 			ChainID: chainID,
 		}
-		logs, err := s.RetrieveLogsWithFilter(ctx, logFilter)
-		if err != nil {
-			return []types.Receipt{}, fmt.Errorf("could not retrieve logs with tx hash %s and chain id %d: %w", dbReceipt.TxHash, chainID, err)
+		logs := []*types.Log{}
+		page := 1
+		for {
+			logGroup, err := s.RetrieveLogsWithFilter(ctx, logFilter, page)
+			if err != nil {
+				return []types.Receipt{}, fmt.Errorf("could not retrieve logs with tx hash %s and chain id %d: %w", dbReceipt.TxHash, chainID, err)
+			}
+			if len(logGroup) == 0 {
+				break
+			}
+			page++
+			logs = append(logs, logGroup...)
 		}
 
 		parsedReceipt := types.Receipt{
