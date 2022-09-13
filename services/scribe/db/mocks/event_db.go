@@ -19,7 +19,7 @@ type EventDB struct {
 	mock.Mock
 }
 
-// ConfirmEthTx provides a mock function with given fields: ctx, blockHash, chainID
+// ConfirmEthTxsForBlockHash provides a mock function with given fields: ctx, blockHash, chainID
 func (_m *EventDB) ConfirmEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	ret := _m.Called(ctx, blockHash, chainID)
 
@@ -47,7 +47,7 @@ func (_m *EventDB) ConfirmEthTxsInRange(ctx context.Context, startBlock uint64, 
 	return r0
 }
 
-// ConfirmLog provides a mock function with given fields: ctx, blockHash, chainID
+// ConfirmLogsForBlockHash provides a mock function with given fields: ctx, blockHash, chainID
 func (_m *EventDB) ConfirmLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	ret := _m.Called(ctx, blockHash, chainID)
 
@@ -75,7 +75,7 @@ func (_m *EventDB) ConfirmLogsInRange(ctx context.Context, startBlock uint64, en
 	return r0
 }
 
-// ConfirmReceipt provides a mock function with given fields: ctx, blockHash, chainID
+// ConfirmReceiptsForBlockHash provides a mock function with given fields: ctx, blockHash, chainID
 func (_m *EventDB) ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	ret := _m.Called(ctx, blockHash, chainID)
 
@@ -103,7 +103,7 @@ func (_m *EventDB) ConfirmReceiptsInRange(ctx context.Context, startBlock uint64
 	return r0
 }
 
-// DeleteEthTxs provides a mock function with given fields: ctx, blockHash, chainID
+// DeleteEthTxsForBlockHash provides a mock function with given fields: ctx, blockHash, chainID
 func (_m *EventDB) DeleteEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	ret := _m.Called(ctx, blockHash, chainID)
 
@@ -117,7 +117,7 @@ func (_m *EventDB) DeleteEthTxsForBlockHash(ctx context.Context, blockHash commo
 	return r0
 }
 
-// DeleteLogs provides a mock function with given fields: ctx, blockHash, chainID
+// DeleteLogsForBlockHash provides a mock function with given fields: ctx, blockHash, chainID
 func (_m *EventDB) DeleteLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	ret := _m.Called(ctx, blockHash, chainID)
 
@@ -131,7 +131,7 @@ func (_m *EventDB) DeleteLogsForBlockHash(ctx context.Context, blockHash common.
 	return r0
 }
 
-// DeleteReceipts provides a mock function with given fields: ctx, blockHash, chainID
+// DeleteReceiptsForBlockHash provides a mock function with given fields: ctx, blockHash, chainID
 func (_m *EventDB) DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	ret := _m.Called(ctx, blockHash, chainID)
 
