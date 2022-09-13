@@ -13,29 +13,30 @@ import (
 type EventDBWriter interface {
 	// StoreLog stores a log
 	StoreLog(ctx context.Context, log types.Log, chainID uint32) error
-	// ConfirmLog confirms a log.
-	ConfirmLog(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	// ConfirmLogsForBlockHash confirms logs for a given block hash.
+	ConfirmLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 	// ConfirmLogsInRange confirms logs in a range.
 	ConfirmLogsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error
-	// DeleteLogs deletes logs with a given block hash.
-	DeleteLogs(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	// DeleteLogsForBlockHash deletes logs with a given block hash.
+	DeleteLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 
 	// StoreReceipt stores a receipt
 	StoreReceipt(ctx context.Context, receipt types.Receipt, chainID uint32) error
-	// ConfirmReceipt confirms a receipt.
-	ConfirmReceipt(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	// ConfirmReceiptsForBlockHash confirms receipts for a given block hash.
+	ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 	// ConfirmReceiptsInRange confirms receipts in a range.
 	ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error
-	// DeleteReceipts deletes receipts with a given block hash.
-	DeleteReceipts(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	// DeleteReceiptsForBlockHash deletes receipts with a given block hash.
+	DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 
 	// StoreEthTx stores a processed transaction
-	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64) error // ConfirmEthTx confirms an eth tx.
-	ConfirmEthTx(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64) error
+	// ConfirmEthTxsForBlockHash confirms eth txs for a given block hash.
+	ConfirmEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 	// ConfirmEthTxsInRange confirms eth txs in a range.
 	ConfirmEthTxsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error
-	// DeleteEthTxs deletes eth txs with a given block hash.
-	DeleteEthTxs(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	// DeleteEthTxsForBlockHash deletes eth txs with a given block hash.
+	DeleteEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 
 	// StoreLastIndexed stores the last indexed for a contract address
 	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error

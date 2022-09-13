@@ -42,8 +42,8 @@ func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID ui
 	return nil
 }
 
-// ConfirmEthTx confirms an eth tx.
-func (s Store) ConfirmEthTx(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+// ConfirmEthTxsForBlockHash confirms eth txs for a given block hash.
+func (s Store) ConfirmEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	dbTx := s.DB().WithContext(ctx).
 		Model(&EthTx{}).
 		Where(&EthTx{
@@ -75,8 +75,8 @@ func (s Store) ConfirmEthTxsInRange(ctx context.Context, startBlock, endBlock ui
 	return nil
 }
 
-// DeleteEthTxs deletes eth txs with a given block hash.
-func (s Store) DeleteEthTxs(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+// DeleteEthTxsForBlockHash deletes eth txs with a given block hash.
+func (s Store) DeleteEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	dbTx := s.DB().WithContext(ctx).
 		Where(&EthTx{
 			ChainID:   chainID,

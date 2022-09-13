@@ -44,8 +44,8 @@ func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID 
 	return nil
 }
 
-// ConfirmReceipt confirms a receipt.
-func (s Store) ConfirmReceipt(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+// ConfirmReceiptsForBlockHash confirms receipts for a given block hash.
+func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Receipt{}).
 		Where(&Receipt{
@@ -77,8 +77,8 @@ func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock 
 	return nil
 }
 
-// DeleteReceipts deletes receipts with a given block hash.
-func (s Store) DeleteReceipts(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+// DeleteReceiptsForBlockHash deletes receipts with a given block hash.
+func (s Store) DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	dbTx := s.DB().WithContext(ctx).
 		Where(&Receipt{
 			BlockHash: blockHash.String(),

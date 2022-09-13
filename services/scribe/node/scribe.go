@@ -147,21 +147,21 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 		if block.Hash() != receipts[0].BlockHash {
 			g, groupCtx := errgroup.WithContext(ctx)
 			g.Go(func() error {
-				err := s.eventDB.DeleteLogs(groupCtx, receipts[0].BlockHash, chainID)
+				err := s.eventDB.DeleteLogsForBlockHash(groupCtx, receipts[0].BlockHash, chainID)
 				if err != nil {
 					return fmt.Errorf("could not delete logs: %w", err)
 				}
 				return nil
 			})
 			g.Go(func() error {
-				err := s.eventDB.DeleteReceipts(groupCtx, receipts[0].BlockHash, chainID)
+				err := s.eventDB.DeleteReceiptsForBlockHash(groupCtx, receipts[0].BlockHash, chainID)
 				if err != nil {
 					return fmt.Errorf("could not delete receipts: %w", err)
 				}
 				return nil
 			})
 			g.Go(func() error {
-				err := s.eventDB.DeleteEthTxs(groupCtx, receipts[0].BlockHash, chainID)
+				err := s.eventDB.DeleteEthTxsForBlockHash(groupCtx, receipts[0].BlockHash, chainID)
 				if err != nil {
 					return fmt.Errorf("could not delete eth txs: %w", err)
 				}
@@ -180,21 +180,21 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 			g, groupCtx := errgroup.WithContext(ctx)
 			// mark each receipt, log, and transaction belonging to block i to be confirmed
 			g.Go(func() error {
-				err := s.eventDB.ConfirmLog(groupCtx, block.Hash(), chainID)
+				err := s.eventDB.ConfirmLogsForBlockHash(groupCtx, block.Hash(), chainID)
 				if err != nil {
 					return fmt.Errorf("could not confirm log: %w", err)
 				}
 				return nil
 			})
 			g.Go(func() error {
-				err := s.eventDB.ConfirmReceipt(groupCtx, block.Hash(), chainID)
+				err := s.eventDB.ConfirmReceiptsForBlockHash(groupCtx, block.Hash(), chainID)
 				if err != nil {
 					return fmt.Errorf("could not confirm transaction: %w", err)
 				}
 				return nil
 			})
 			g.Go(func() error {
-				err := s.eventDB.ConfirmEthTx(groupCtx, block.Hash(), chainID)
+				err := s.eventDB.ConfirmEthTxsForBlockHash(groupCtx, block.Hash(), chainID)
 				if err != nil {
 					return fmt.Errorf("could not confirm transaction: %w", err)
 				}

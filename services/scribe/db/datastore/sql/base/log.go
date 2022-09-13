@@ -66,8 +66,8 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 	return nil
 }
 
-// ConfirmLog confirms a log.
-func (s Store) ConfirmLog(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+// ConfirmLogsForBlockHash confirms logs for a given block hash.
+func (s Store) ConfirmLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
 		Where(&Log{BlockHash: blockHash.String(), ChainID: chainID}).
@@ -96,8 +96,8 @@ func (s Store) ConfirmLogsInRange(ctx context.Context, startBlock, endBlock uint
 	return nil
 }
 
-// DeleteLogs deletes logs with a given block hash.
-func (s Store) DeleteLogs(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+// DeleteLogsForBlockHash deletes logs with a given block hash.
+func (s Store) DeleteLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	dbTx := s.DB().WithContext(ctx).
 		Where(&Log{BlockHash: blockHash.String(), ChainID: chainID}).
 		Delete(&Log{})

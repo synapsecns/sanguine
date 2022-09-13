@@ -94,3 +94,47 @@ func (t *DBSuite) TestStoreAndRetrieveEthTx() {
 		}
 	})
 }
+
+func (t *DBSuite) TestConfirmEthTxsInRange() {
+	testWallet, err := wallet.FromRandom()
+	Nil(t.T(), err)
+
+	signer := localsigner.NewSigner(testWallet.PrivateKey())
+
+	t.RunOnAllDBs(func(testDB db.EventDB) {
+		chainID := gofakeit.Uint32()
+
+		// Store five txs.
+		for i := 0; i < 5; i++ {
+			testTx := types.NewTx(&types.LegacyTx{
+				Nonce:    uint64(i),
+				GasPrice: new(big.Int).SetUint64(gofakeit.Uint64()),
+				Gas:      gofakeit.Uint64(),
+				To:       addressPtr(common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64()))),
+				Value:    new(big.Int).SetUint64(gofakeit.Uint64()),
+				Data:     []byte(gofakeit.Paragraph(1, 2, 3, " ")),
+			})
+			transactor, err := localsigner.NewSigner(testWallet.PrivateKey()).GetTransactor(testTx.ChainId())
+			Nil(t.T(), err)
+
+			signedTx, err := transactor.Signer(signer.Address(), testTx)
+			Nil(t.T(), err)
+
+			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(i))
+			Nil(t.T(), err)
+		}
+
+		// Confirm the first two txs.
+		err = testDB.ConfirmEthTxsInRange(t.GetTestContext(), 0, 1, chainID)
+		Nil(t.T(), err)
+
+		// Ensure the first two receipts are confirmed.
+		ethTxFilter := db.EthTxFilter{
+			ChainID:   chainID,
+			Confirmed: true,
+		}
+		retrievedTxs, err := testDB.RetrieveEthTxsWithFilter(t.GetTestContext(), ethTxFilter, 1)
+		Nil(t.T(), err)
+		Equal(t.T(), 2, len(retrievedTxs))
+	})
+}
