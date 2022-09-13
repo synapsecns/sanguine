@@ -36,6 +36,7 @@ var configFlag = &cli.StringFlag{
 	Name:      "config",
 	Usage:     "--config /Users/synapsecns/config.yaml",
 	TakesFile: true,
+	Required:  true,
 }
 
 var backfillCommand = &cli.Command{
@@ -93,20 +94,21 @@ var backfillCommand = &cli.Command{
 var portFlag = &cli.UintFlag{
 	Name:  "port",
 	Usage: "--port 5121",
-	//nolint:staticcheck
 	Value: 0,
 }
 
 var dbFlag = &cli.StringFlag{
-	Name:  "db",
-	Usage: "--db <sqlite> or <mysql>",
-	Value: "sqlite",
+	Name:     "db",
+	Usage:    "--db <sqlite> or <mysql>",
+	Value:    "sqlite",
+	Required: true,
 }
 
 var pathFlag = &cli.StringFlag{
-	Name:  "path",
-	Usage: "--path <path/to/database> or <database url>",
-	Value: "",
+	Name:     "path",
+	Usage:    "--path <path/to/database> or <database url>",
+	Value:    "",
+	Required: true,
 }
 
 var serverCommand = &cli.Command{

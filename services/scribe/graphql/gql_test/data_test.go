@@ -36,10 +36,10 @@ func (g GQLSuite) TestRetrieveData() {
 		Nil(g.T(), err)
 		// create and store txs
 		tx = g.buildEthTx()
-		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, uint64(blockNumber))
+		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(blockNumber))
 		Nil(g.T(), err)
 		tx = g.buildEthTx()
-		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, uint64(blockNumber))
+		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(blockNumber))
 		Nil(g.T(), err)
 	}
 
@@ -142,7 +142,7 @@ func (g GQLSuite) TestTransactionDataEquality() {
 	tx := g.buildEthTx()
 
 	// store it
-	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, blockNumber)
+	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), blockNumber)
 	Nil(g.T(), err)
 
 	// retrieve it

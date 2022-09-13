@@ -187,6 +187,8 @@ contract DestinationTest is SynapseTest {
     }
 
     function test_submitAttestation_localDomain() public {
+        // Make Notary active on localDomain
+        destination.removeNotary(remoteDomain, notary);
         destination.addNotary(localDomain, notary);
         uint32 nonce = 42;
         (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, ROOT);
