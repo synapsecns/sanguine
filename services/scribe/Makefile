@@ -42,7 +42,12 @@ openapi-install: setup-go-path
 buf-install:
 	@if [ "$(shell which buf)" = "" ]; then ./scripts/install-buf.sh $(BUF_VERSION); fi;
 
+
+swagger-codegen-install:
+	@#Brew - MacOS
+	@if [ "$(shell which swagger-codegen)" = "" ] && [ "$(shell which brew)" != "" ] && [ "$(GITHUB_WORKFLOW)" == "" ]; then brew install swagger-codegen; fi;
+
 # TODO: should be replaced w/ https://github.com/bufbuild/buf
 # (see: https://github.com/grpc-ecosystem/grpc-gateway)
-generate: openapi-install buf-install protoc-gen-grpc-gateway-install protoc-install grpc-install protoc-gen-install  ## generate protobufs
+generate: openapi-install swagger-codegen-install buf-install protoc-gen-grpc-gateway-install protoc-install grpc-install protoc-gen-install  ## generate protobufs
 	buf generate
