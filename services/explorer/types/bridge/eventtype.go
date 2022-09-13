@@ -1,5 +1,11 @@
 package bridge
 
+import (
+	"database/sql/driver"
+	"fmt"
+	synapseCommon "github.com/synapsecns/sanguine/core"
+)
+
 // EventType is the type of the bridge event.
 //
 //go:generate stringer -type=EventType
@@ -38,4 +44,37 @@ func AllEventTypes() []EventType {
 // Int gets the int value of the event type.
 func (i EventType) Int() uint8 {
 	return uint8(i)
+}
+
+// BridgeInitiated determines whether or not the event type is initiated by the bridge
+// (as opposed to the user).
+func (i EventType) BridgeInitiated() bool {
+	switch i {
+	case DepositEvent, RedeemEvent, RedeemAndRemoveEvent, DepositAndSwapEvent, RedeemAndSwapEvent, RedeemV2Event:
+		return false
+	case WithdrawEvent, MintEvent, MintAndSwapEvent, WithdrawAndRemoveEvent:
+		return true
+	}
+	panic("unknown event")
+}
+
+// GormDataType gets the data type to use for gorm.
+func (i EventType) GormDataType() string {
+	return synapseCommon.EnumDataType
+}
+
+// Scan gets the type to insert into the db.
+func (i *EventType) Scan(src interface{}) error {
+	res, err := synapseCommon.EnumScan(src)
+	if err != nil {
+		return fmt.Errorf("could not scan value: %w", err)
+	}
+	newEventType := EventType(res)
+	*i = newEventType
+	return nil
+}
+
+// Value gets the value to use for the db.
+func (i EventType) Value() (driver.Value, error) {
+	return synapseCommon.EnumValue(i)
 }
