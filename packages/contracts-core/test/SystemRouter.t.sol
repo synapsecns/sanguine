@@ -33,6 +33,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
 
     MessageContext internal sentSystemMessage;
     MessageContext internal receivedSystemMessage;
+    MessageContext internal receivedFakeSystemMessage;
     MessageContext internal receivedUsualMessage;
     MessageContext internal synapseSystemMessage;
 
@@ -86,24 +87,37 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         origin.setSystemRouter(systemRouter);
         destination.setSystemRouter(systemRouter);
 
+        // System Router on local chain sends a system message to remote
         sentSystemMessage = MessageContext({
             origin: localDomain,
             sender: SYSTEM_ROUTER,
             destination: remoteDomain,
             recipient: SYSTEM_ROUTER
         });
+        // System Router on remote chain sends a system message to local
         receivedSystemMessage = MessageContext({
             origin: remoteDomain,
             sender: SYSTEM_ROUTER,
             destination: localDomain,
             recipient: SYSTEM_ROUTER
         });
+        // Arbitrary address on remote sends a message to local, specifying
+        //  System Router address as the recipient
         receivedUsualMessage = MessageContext({
             origin: remoteDomain,
             sender: addressToBytes32(address(this)),
             destination: localDomain,
             recipient: addressToBytes32(address(systemRouter))
         });
+        // Arbitrary address on remote sends a message to local, specifying
+        // SYSTEM_ROUTER as the recipient
+        receivedFakeSystemMessage = MessageContext({
+            origin: remoteDomain,
+            sender: addressToBytes32(address(this)),
+            destination: localDomain,
+            recipient: SYSTEM_ROUTER
+        });
+        // System Router on Synapse chain sends a system message to local
         synapseSystemMessage = MessageContext({
             origin: SYNAPSE_DOMAIN,
             sender: SYSTEM_ROUTER,
@@ -252,13 +266,26 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     }
 
     /**
-     * @notice SystemRouter receives a plain message send via Destination directly
+     * @notice SystemRouter receives a plain message sent via Destination directly
      * on the remote chain, specifying SystemRouter address as the recipient (anyone could do that).
      * SystemRouter should reject such messages: only special value of SYSTEM_ROUTER
-     * is accepted as recipient.
+     * is accepted as sender for the system messages.
      */
     function test_rejectUsualReceivedMessage() public {
         bytes memory message = _prepareReceiveTest(receivedUsualMessage);
+        skip(optimisticSeconds);
+        vm.expectRevert("BasicClient: !trustedSender");
+        destination.execute(message);
+    }
+
+    /**
+     * @notice SystemRouter receives a plain message sent via Destination directly
+     * on the remote chain, specifying SYSTEM_ROUTER value as the recipient (anyone could do that).
+     * SystemRouter should reject such messages: only special value of SYSTEM_ROUTER
+     * is accepted as sender for the system messages.
+     */
+    function test_rejectFakeSystemMessage() public {
+        bytes memory message = _prepareReceiveTest(receivedFakeSystemMessage);
         skip(optimisticSeconds);
         vm.expectRevert("BasicClient: !trustedSender");
         destination.execute(message);
