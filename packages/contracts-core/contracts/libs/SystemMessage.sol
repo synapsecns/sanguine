@@ -14,14 +14,12 @@ library SystemMessage {
      *
      * - MessageFlag.Call indicates a system contract needs
      * to be called on destination chain.
-     * - MessageFlag.Adjust indicates the SystemRouter contract
-     * needs to adjust some of its values on destination chain.
      *
-     * - MessageFlag.Last is used for tracking the last flag value
+     * - MessageFlag.Last is used for tracking the last flag value,
+     * i.e. a non-meaningful value.
      */
     enum MessageFlag {
         Call,
-        Adjust,
         Last
     }
 
@@ -53,9 +51,6 @@ library SystemMessage {
 
     uint256 internal constant OFFSET_CALL_RECIPIENT = 0;
     uint256 internal constant OFFSET_CALL_PAYLOAD = 1;
-
-    // TODO: memory layout for MessageFlag.Adjust
-    // when Adjust structure is finalized.
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -95,7 +90,7 @@ library SystemMessage {
     /**
      * @notice Returns a formatted System Call payload with provided fields
      * @param _systemRecipient  System Contract to receive message
-     *                          (see ISystemRouter.SystemContracts)
+     *                          (see ISystemRouter.SystemEntity)
      * @param _payload          Payload for call on destination chain
      * @return Formatted System Call
      **/
@@ -106,8 +101,6 @@ library SystemMessage {
     {
         return formatSystemMessage(MessageFlag.Call, abi.encodePacked(_systemRecipient, _payload));
     }
-
-    // TODO: formatSystemAdjust when Adjust structure is finalized.
 
     /**
      * @notice Checks that a payload is a formatted System Message.
@@ -120,10 +113,8 @@ library SystemMessage {
         (MessageFlag messageFlag, bytes29 bodyView) = unpackMessage(_view);
         if (messageFlag == MessageFlag.Call) {
             return isSystemCall(bodyView);
-        } else if (messageFlag == MessageFlag.Adjust) {
-            return isSystemAdjust(bodyView);
         }
-        // Unknown messageFlag
+        // Unknown messageFlag: should be unreachable
         return false;
     }
 
@@ -133,14 +124,6 @@ library SystemMessage {
     function isSystemCall(bytes29 _view) internal pure returns (bool) {
         // Payload needs to exist (system calls are never done via fallback function)
         return _view.len() > OFFSET_CALL_PAYLOAD;
-    }
-
-    /**
-     * @notice Checks that a payload is a formatted System Adjust.
-     */
-    function isSystemAdjust(bytes29 _view) internal pure returns (bool) {
-        // TODO: proper check when Adjust structure is finalized.
-        return _view.len() > 0;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -169,7 +152,7 @@ library SystemMessage {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns System Call's recipient (see ISystemRouter.SystemContracts).
+     * @notice Returns System Call's recipient (see ISystemRouter.SystemEntity).
      */
     function callRecipient(bytes29 _view)
         internal
@@ -204,8 +187,6 @@ library SystemMessage {
     function _getFlagType(MessageFlag _messageFlag) private pure returns (uint40 _type) {
         if (_messageFlag == MessageFlag.Call) {
             _type = SynapseTypes.SYSTEM_MESSAGE_CALL;
-        } else if (_messageFlag == MessageFlag.Adjust) {
-            _type = SynapseTypes.SYSTEM_MESSAGE_ADJUST;
         }
     }
 
