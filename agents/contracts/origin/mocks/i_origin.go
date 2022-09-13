@@ -1129,6 +1129,29 @@ func (_m *IOrigin) State(opts *bind.CallOpts) (uint8, error) {
 	return r0, r1
 }
 
+// SubmitAttestation provides a mock function with given fields: opts, _attestation
+func (_m *IOrigin) SubmitAttestation(opts *bind.TransactOpts, _attestation []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, _attestation)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte) *types.Transaction); ok {
+		r0 = rf(opts, _attestation)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte) error); ok {
+		r1 = rf(opts, _attestation)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // SubmitReport provides a mock function with given fields: opts, _report
 func (_m *IOrigin) SubmitReport(opts *bind.TransactOpts, _report []byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, _report)

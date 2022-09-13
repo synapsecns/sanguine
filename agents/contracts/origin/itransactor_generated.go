@@ -34,6 +34,10 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function setSystemRouter(address _systemRouter) returns()
 	SetSystemRouter(opts *bind.TransactOpts, _systemRouter common.Address) (*types.Transaction, error)
+	// SubmitAttestation is a paid mutator transaction binding the contract method 0xf646a512.
+	//
+	// Solidity: function submitAttestation(bytes _attestation) returns(bool)
+	SubmitAttestation(opts *bind.TransactOpts, _attestation []byte) (*types.Transaction, error)
 	// SubmitReport is a paid mutator transaction binding the contract method 0x5815869d.
 	//
 	// Solidity: function submitReport(bytes _report) returns(bool)

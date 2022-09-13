@@ -111,3 +111,43 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 		Equal(t.T(), 2, len(allReceipts))
 	})
 }
+
+func (t *DBSuite) TestConfirmReceiptsInRange() {
+	t.RunOnAllDBs(func(testDB db.EventDB) {
+		chainID := gofakeit.Uint32()
+
+		// Store five receipts.
+		for i := 0; i < 5; i++ {
+			receipt := types.Receipt{
+				Type:              gofakeit.Uint8(),
+				PostState:         []byte(gofakeit.Sentence(10)),
+				Status:            gofakeit.Uint64(),
+				CumulativeGasUsed: gofakeit.Uint64(),
+				Bloom:             types.BytesToBloom([]byte(gofakeit.Sentence(10))),
+				Logs:              []*types.Log{},
+				TxHash:            common.BigToHash(big.NewInt(gofakeit.Int64())),
+				ContractAddress:   common.BigToAddress(big.NewInt(gofakeit.Int64())),
+				GasUsed:           gofakeit.Uint64(),
+				BlockNumber:       big.NewInt(int64(i)),
+				TransactionIndex:  uint(gofakeit.Uint64()),
+			}
+			err := testDB.StoreReceipt(t.GetTestContext(), receipt, chainID)
+			Nil(t.T(), err)
+		}
+
+		// Confirm the first two receipts.
+		err := testDB.ConfirmReceiptsInRange(t.GetTestContext(), 0, 1, chainID)
+		Nil(t.T(), err)
+
+		// Ensure the first two receipts are confirmed.
+		receiptFilter := db.ReceiptFilter{
+			ChainID:   chainID,
+			Confirmed: true,
+		}
+		retrievedReceipts, err := testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), receiptFilter, 1)
+		Nil(t.T(), err)
+		Equal(t.T(), 2, len(retrievedReceipts))
+		Equal(t.T(), retrievedReceipts[0].BlockNumber, big.NewInt(0))
+		Equal(t.T(), retrievedReceipts[1].BlockNumber, big.NewInt(1))
+	})
+}

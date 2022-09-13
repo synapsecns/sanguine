@@ -34,10 +34,60 @@ func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID 
 			BlockHash:         receipt.BlockHash.String(),
 			BlockNumber:       receipt.BlockNumber.Uint64(),
 			TransactionIndex:  uint64(receipt.TransactionIndex),
+			Confirmed:         false,
 		})
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store receipt: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// ConfirmReceiptsForBlockHash confirms receipts for a given block hash.
+func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Receipt{}).
+		Where(&Receipt{
+			BlockHash: blockHash.String(),
+			ChainID:   chainID,
+		}).
+		Update(ConfirmedFieldName, true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm receipt: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// ConfirmReceiptsInRange confirms receipts in a range.
+func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
+	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Receipt{}).
+		Order(BlockNumberFieldName).
+		Where(rangeQuery, startBlock, endBlock).
+		Update(ConfirmedFieldName, true)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not confirm receipts: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// DeleteReceiptsForBlockHash deletes receipts with a given block hash.
+func (s Store) DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Where(&Receipt{
+			BlockHash: blockHash.String(),
+			ChainID:   chainID,
+		}).
+		Delete(&Receipt{})
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not delete receipts: %w", dbTx.Error)
 	}
 
 	return nil
@@ -53,6 +103,7 @@ func receiptFilterToQuery(receiptFilter db.ReceiptFilter) Receipt {
 		BlockHash:        receiptFilter.BlockHash,
 		BlockNumber:      receiptFilter.BlockNumber,
 		TransactionIndex: receiptFilter.TransactionIndex,
+		Confirmed:        receiptFilter.Confirmed,
 	}
 }
 

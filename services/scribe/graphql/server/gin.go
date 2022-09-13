@@ -22,6 +22,8 @@ const (
 	GraphqlEndpoint string = "/graphql"
 	// GraphiqlEndpoint is the endpoint for the graphql user interface.
 	GraphiqlEndpoint string = "/graphiql"
+	// HealthCheck is the health check endpoint.
+	HealthCheck string = "/health-check"
 )
 
 func initDB(ctx context.Context, database string, path string) (db.EventDB, error) {
@@ -72,6 +74,11 @@ func Start(ctx context.Context, port uint16, database string, path string) error
 	router.GET(GraphqlEndpoint, graphqlHandler(server))
 	router.POST(GraphqlEndpoint, graphqlHandler(server))
 	router.GET(GraphiqlEndpoint, graphiqlHandler())
+	router.GET(HealthCheck, func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "UP",
+		})
+	})
 
 	fmt.Printf("started graphiql server on port: http://localhost:%d/graphiql\n", port)
 

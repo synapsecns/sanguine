@@ -11,7 +11,7 @@ contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
     constructor(uint32 _domain) Origin(_domain) {}
 
     function isNotary(address _notary) public view returns (bool) {
-        return _isNotary(localDomain, _notary);
+        return _isNotary(_localDomain(), _notary);
     }
 
     function setFailed(address _notary) public {

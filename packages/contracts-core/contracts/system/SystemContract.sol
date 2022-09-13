@@ -2,6 +2,7 @@
 pragma solidity 0.8.13;
 
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
+import { DomainContext } from "../context/DomainContext.sol";
 
 import {
     OwnableUpgradeable
@@ -10,13 +11,11 @@ import {
 /**
  * @notice Shared utilities between Synapse System Contracts: Origin, Destination, etc.
  */
-abstract contract SystemContract is OwnableUpgradeable {
+abstract contract SystemContract is DomainContext, OwnableUpgradeable {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                        IMMUTABLES & CONSTANTS                        ║*▕
+    ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // domain of the chain where a system contract is deployed
-    uint32 public immutable localDomain;
     // domain of the Synapse Chain
     // Answer to the Ultimate Question of Life, the Universe, and Everything
     // And answer to less important questions wink wink
@@ -50,17 +49,6 @@ abstract contract SystemContract is OwnableUpgradeable {
      */
     modifier onlySystemRouter() {
         _assertSystemRouter();
-        _;
-    }
-
-    /**
-     * @dev Modifier for functions that are supposed to be called only from
-     * System Contracts on local chain.
-     * Note: has to be used alongside with `onlySystemRouter`
-     * See `onlySystemRouter` for details about the functions protected by such modifiers.
-     */
-    modifier onlyLocalCalls(uint32 _originDomain) {
-        require(_originDomain == localDomain, "!localDomain");
         _;
     }
 
@@ -101,14 +89,6 @@ abstract contract SystemContract is OwnableUpgradeable {
     modifier onlyOptimisticPeriodOver(uint256 _rootSubmittedAt, uint256 _optimisticSeconds) {
         _assertOptimisticPeriodOver(_rootSubmittedAt, _optimisticSeconds);
         _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             CONSTRUCTOR                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    constructor(uint32 _localDomain) {
-        localDomain = _localDomain;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

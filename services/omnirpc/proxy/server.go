@@ -48,6 +48,12 @@ func (r *RPCProxy) Run(ctx context.Context) {
 			return uuid.New().String()
 		})))
 
+	router.GET("/health-check", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "UP",
+		})
+	})
+
 	router.POST("/rpc/:id", func(c *gin.Context) {
 		chainID, err := strconv.Atoi(c.Param("id"))
 		if err != nil {

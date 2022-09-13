@@ -2,6 +2,7 @@
 pragma solidity 0.8.13;
 
 import { Attestation } from "./libs/Attestation.sol";
+import { AttestationHub } from "./hubs/AttestationHub.sol";
 import { TypedMemView } from "./libs/TypedMemView.sol";
 import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
 
@@ -9,7 +10,7 @@ import {
     OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract AttestationCollector is GlobalNotaryRegistry, OwnableUpgradeable {
+contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUpgradeable {
     using Attestation for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -167,22 +168,6 @@ contract AttestationCollector is GlobalNotaryRegistry, OwnableUpgradeable {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function submitAttestation(bytes memory _attestation)
-        external
-        returns (bool attestationStored)
-    {
-        (address _notary, bytes29 _view) = _checkNotaryAuth(_attestation);
-        attestationStored = _storeAttestation(_notary, _view);
-        if (attestationStored) {
-            // Emit Event only if the Attestation was stored
-            emit AttestationSubmitted(_notary, _attestation);
-        }
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -206,18 +191,32 @@ contract AttestationCollector is GlobalNotaryRegistry, OwnableUpgradeable {
         return signatures[_domain][_nonce][_root].length > 0;
     }
 
-    function _storeAttestation(address _notary, bytes29 _view) internal returns (bool) {
-        uint32 domain = _view.attestedDomain();
-        uint32 nonce = _view.attestedNonce();
-        bytes32 root = _view.attestedRoot();
+    /**
+     * @dev Both Notary and Guard signatures
+     * have been checked at this point (see ReportHub.sol).
+     *
+     * @param _notary           Notary address (signature&role already verified)
+     * @param _attestationView  Memory view over reported Attestation for convenience
+     * @param _attestation      Payload with Attestation data and signature
+     * @return TRUE if Attestation was stored.
+     */
+    function _handleAttestation(
+        address _notary,
+        bytes29 _attestationView,
+        bytes memory _attestation
+    ) internal override returns (bool) {
+        uint32 domain = _attestationView.attestedDomain();
+        uint32 nonce = _attestationView.attestedNonce();
+        bytes32 root = _attestationView.attestedRoot();
         require(nonce > latestNonce[domain][_notary], "Outdated attestation");
         // Don't store Attestation, if another Notary
         // have submitted the same (domain, nonce, root) before.
-        if (_signatureExists(domain, nonce, root)) return false;
+        require(!_signatureExists(domain, nonce, root), "Duplicated attestation");
         latestNonce[domain][_notary] = nonce;
         latestRoot[domain][_notary] = root;
-        signatures[domain][nonce][root] = _view.notarySignature().clone();
+        signatures[domain][nonce][root] = _attestationView.notarySignature().clone();
         attestedRoots[domain][nonce].push(root);
+        emit AttestationSubmitted(_notary, _attestation);
         return true;
     }
 }

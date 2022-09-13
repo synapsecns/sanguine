@@ -33,7 +33,7 @@ abstract contract SystemContractHarness is SystemContract {
         uint32 _origin,
         uint8 _caller,
         uint256 _rootSubmittedAt
-    ) external onlySystemRouter onlyLocalCalls(_origin) {
+    ) external onlySystemRouter onlyLocalDomain(_origin) {
         _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
         emit OnlyLocalCall(address(this), _newValue);
     }

@@ -124,7 +124,8 @@ contract AttestationCollectorTest is SynapseTest {
         test_addNotaries();
         (bytes memory attestation, ) = signOriginAttestation(notariesPK[0], nonce, root);
         // duplicate attestation should not be stored
-        assertFalse(collector.submitAttestation(attestation));
+        vm.expectRevert("Duplicated attestation");
+        collector.submitAttestation(attestation);
     }
 
     function test_submitAttestations() public {
@@ -259,6 +260,8 @@ contract AttestationCollectorTest is SynapseTest {
             attestedNonces[_notaryIndex].push(_nonce);
             attestedRoots[_notaryIndex].push(_root);
             ++rootsAmount[_nonce];
+        } else {
+            vm.expectRevert("Duplicated attestation");
         }
         // Use potentially another notary index for signing
         assertEq(collector.submitAttestation(attestation), _stored);
