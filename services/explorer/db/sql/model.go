@@ -73,7 +73,7 @@ type BridgeEvent struct {
 	// DestinationChainID is the chain id of the chain to send the tokens to
 	DestinationChainID uint32 `gorm:"column:destination_chain_id"`
 	// Token is the address of the token
-	// TODO
+	Token string `gorm:"column:token"`
 	// Amount is the amount of tokens
 	Amount big.Int `gorm:"column:amount"`
 	// Fee is the fee

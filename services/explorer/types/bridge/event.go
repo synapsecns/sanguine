@@ -9,81 +9,32 @@ import (
 type EventLog interface {
 	// GetContractAddress returns the contract address of the log.
 	GetContractAddress() common.Address
-	// GetChainID returns the chain id of the log.
-	GetChainID() uint32
 	// GetBlockNumber returns the block number of the log.
 	GetBlockNumber() uint64
+	// GetTxHash returns the transaction hash of the log.
+	GetTxHash() common.Hash
+	// GetToken returns the token of the event.
+	GetToken() common.Address
+	// GetRecipient returns the recipient of the event.
+	GetRecipient() common.Address
+	// GetAmount returns the amount of the event.
+	GetAmount() *big.Int
 	// GetEventType returns the event type of the log.
 	GetEventType() EventType
 }
 
-// TokenDepositLog is the interface for the token deposit event.
-type TokenDepositLog interface {
+// DepositLog is the interface for the token deposit event.
+type DepositLog interface {
 	EventLog
-	// GetTo returns the recipient of the token deposit.
-	GetTo() *common.Address
-	// GetChainId returns the chain id of the token deposit.
-	GetChainId() *big.Int
-	// GetToken returns the token of the token deposit.
-	// TODO
-	// GetAmount returns the amount of the token deposit.
-	GetAmount() *big.Int
+	// GetDestinationChainID returns the chain id of the token deposit.
+	GetDestinationChainID() *big.Int
 }
 
-// TokenRedeemLog is the interface for the token redeem event.
-type TokenRedeemLog interface {
+// DepositAndSwapLog is the interface for the token deposit and swap event.
+type DepositAndSwapLog interface {
 	EventLog
-	// GetTo returns the recipient of the token redeem.
-	GetTo() *common.Address
-	// GetChainId returns the chain id of the token redeem.
-	GetChainId() *big.Int
-	// GetToken returns the token of the token redeem.
-	// TODO
-	// GetAmount returns the amount of the token redeem.
-	GetAmount() *big.Int
-}
-
-// TokenWithdrawLog is the interface for the token withdraw event.
-type TokenWithdrawLog interface {
-	EventLog
-	// GetTo returns the recipient of the token withdraw.
-	GetTo() *common.Address
-	// GetToken returns the token of the token withdraw.
-	// TODO
-	// GetAmount returns the amount of the token withdraw.
-	GetAmount() *big.Int
-	// GetFee returns the fee of the token withdraw.
-	GetFee() *big.Int
-	// GetKappa returns the kappa of the token withdraw.
-	GetKappa() [32]byte
-}
-
-// TokenMintLog is the interface for the token mint event.
-type TokenMintLog interface {
-	EventLog
-	// GetTo returns the recipient of the token mint.
-	GetTo() *common.Address
-	// GetToken returns the token of the token mint.
-	// TODO
-	// GetAmount returns the amount of the token mint.
-	GetAmount() *big.Int
-	// GetFee returns the fee of the token mint.
-	GetFee() *big.Int
-	// GetKappa returns the kappa of the token mint.
-	GetKappa() [32]byte
-}
-
-// TokenDepositAndSwapLog is the interface for the token deposit and swap event.
-type TokenDepositAndSwapLog interface {
-	EventLog
-	// GetTo returns the recipient of the token deposit and swap.
-	GetTo() *common.Address
-	// GetChainId returns the chain id of the token deposit and swap.
-	GetChainId() *big.Int
-	// GetToken returns the token of the token deposit and swap.
-	// TODO
-	// GetAmount returns the amount of the token deposit and swap.
-	GetAmount() *big.Int
+	// GetDestinationChainID returns the chain id of the token deposit and swap.
+	GetDestinationChainID() *big.Int
 	// GetTokenIndexFrom returns the token index of the token deposit and swap.
 	GetTokenIndexFrom() uint8
 	// GetTokenIndexTo returns the token index of the token deposit and swap.
@@ -94,42 +45,18 @@ type TokenDepositAndSwapLog interface {
 	GetDeadline() *big.Int
 }
 
-// TokenMintAndSwapLog is the interface for the token mint and swap event.
-type TokenMintAndSwapLog interface {
+// RedeemLog is the interface for the token redeem event.
+type RedeemLog interface {
 	EventLog
-	// GetTo returns the recipient of the token mint and swap.
-	GetTo() *common.Address
-	// GetToken returns the token of the token mint and swap.
-	// TODO
-	// GetAmount returns the amount of the token mint and swap.
-	GetAmount() *big.Int
-	// GetFee returns the fee of the token mint and swap.
-	GetFee() *big.Int
-	// GetTokenIndexFrom returns the token index of the token mint and swap.
-	GetTokenIndexFrom() uint8
-	// GetTokenIndexTo returns the token index of the token mint and swap.
-	GetTokenIndexTo() uint8
-	// GetMinDy returns the min dy of the token mint and swap.
-	GetMinDy() *big.Int
-	// GetDeadline returns the deadline of the token mint and swap.
-	GetDeadline() *big.Int
-	// GetSwapSuccess returns the swap success of the token mint and swap.
-	GetSwapSuccess() bool
-	// GetKappa returns the kappa of the token mint and swap.
-	GetKappa() [32]byte
+	// GetDestinationChainID returns the chain id of the token redeem.
+	GetDestinationChainID() *big.Int
 }
 
-// TokenRedeemAndSwapLog is the interface for the token redeem and swap event.
-type TokenRedeemAndSwapLog interface {
+// RedeemAndSwapLog is the interface for the token redeem and swap event.
+type RedeemAndSwapLog interface {
 	EventLog
-	// GetTo returns the recipient of the token redeem and swap.
-	GetTo() *common.Address
-	// GetChainId returns the chain id of the token redeem and swap.
-	GetChainId() *big.Int
-	// GetToken returns the token of the token redeem and swap.
-	// TODO
-	// GetAmount returns the amount of the token redeem and swap.
-	GetAmount() *big.Int
+	// GetDestinationChainID returns the chain id of the token redeem and swap.
+	GetDestinationChainID() *big.Int
 	// GetTokenIndexFrom returns the token index of the token redeem and swap.
 	GetTokenIndexFrom() uint8
 	// GetTokenIndexTo returns the token index of the token redeem and swap.
@@ -140,17 +67,11 @@ type TokenRedeemAndSwapLog interface {
 	GetDeadline() *big.Int
 }
 
-// TokenRedeemAndRemoveLog is the interface for the token redeem and remove event.
-type TokenRedeemAndRemoveLog interface {
+// RedeemAndRemoveLog is the interface for the token redeem and remove event.
+type RedeemAndRemoveLog interface {
 	EventLog
-	// GetTo returns the recipient of the token redeem and remove.
-	GetTo() *common.Address
-	// GetChainId returns the chain id of the token redeem and remove.
-	GetChainId() *big.Int
-	// GetToken returns the token of the token redeem and remove.
-	// TODO
-	// GetAmount returns the amount of the token redeem and remove.
-	GetAmount() *big.Int
+	// GetDestinationChainID returns the chain id of the token redeem and remove.
+	GetDestinationChainID() *big.Int
 	// GetSwapTokenIndex returns the swap token index of the token redeem and remove.
 	GetSwapTokenIndex() uint8
 	// GetSwapMinAmount returns the swap min amount of the token redeem and remove.
@@ -159,15 +80,38 @@ type TokenRedeemAndRemoveLog interface {
 	GetSwapDeadline() *big.Int
 }
 
-// TokenWithdrawAndRemoveLog is the interface for the token withdraw and remove event.
-type TokenWithdrawAndRemoveLog interface {
-	EventLog
-	// GetTo returns the recipient of the token withdraw and remove.
-	GetTo() *common.Address
-	// GetToken returns the token of the token withdraw and remove.
-	// TODO
-	// GetAmount returns the amount of the token withdraw and remove.
+// RedeemV2Log is the interface for the token redeem v2 event.
+type RedeemV2Log interface {
+	// GetContractAddress returns the contract address of the log.
+	GetContractAddress() common.Address
+	// GetBlockNumber returns the block number of the log.
+	GetBlockNumber() uint64
+	// GetTxHash returns the transaction hash of the log.
+	GetTxHash() common.Hash
+	// GetToken returns the token of the event.
+	GetToken() common.Address
+	// GetRecipient returns the recipient of the event.
+	GetRecipient() [32]byte
+	// GetAmount returns the amount of the event.
 	GetAmount() *big.Int
+	// GetEventType returns the event type of the log.
+	GetEventType() EventType
+	// GetDestinationChainID returns the chain id of the token redeem v2.
+	GetDestinationChainID() *big.Int
+}
+
+// WithdrawLog is the interface for the token withdraw event.
+type WithdrawLog interface {
+	EventLog
+	// GetFee returns the fee of the token withdraw.
+	GetFee() *big.Int
+	// GetKappa returns the kappa of the token withdraw.
+	GetKappa() [32]byte
+}
+
+// WithdrawAndRemoveLog is the interface for the token withdraw and remove event.
+type WithdrawAndRemoveLog interface {
+	EventLog
 	// GetFee returns the fee of the token withdraw and remove.
 	GetFee() *big.Int
 	// GetSwapTokenIndex returns the swap token index of the token withdraw and remove.
@@ -182,15 +126,30 @@ type TokenWithdrawAndRemoveLog interface {
 	GetKappa() [32]byte
 }
 
-// TokenRedeemV2Log is the interface for the token redeem v2 event.
-type TokenRedeemV2Log interface {
+// MintLog is the interface for the token mint event.
+type MintLog interface {
 	EventLog
-	// GetTo returns the recipient of the token redeem v2.
-	GetTo() *common.Address
-	// GetChainId returns the chain id of the token redeem v2.
-	GetChainId() *big.Int
-	// GetToken returns the token of the token redeem v2.
-	// TODO
-	// GetAmount returns the amount of the token redeem v2.
-	GetAmount() *big.Int
+	// GetFee returns the fee of the token mint.
+	GetFee() *big.Int
+	// GetKappa returns the kappa of the token mint.
+	GetKappa() [32]byte
+}
+
+// MintAndSwapLog is the interface for the token mint and swap event.
+type MintAndSwapLog interface {
+	EventLog
+	// GetFee returns the fee of the token mint and swap.
+	GetFee() *big.Int
+	// GetTokenIndexFrom returns the token index of the token mint and swap.
+	GetTokenIndexFrom() uint8
+	// GetTokenIndexTo returns the token index of the token mint and swap.
+	GetTokenIndexTo() uint8
+	// GetMinDy returns the min dy of the token mint and swap.
+	GetMinDy() *big.Int
+	// GetDeadline returns the deadline of the token mint and swap.
+	GetDeadline() *big.Int
+	// GetSwapSuccess returns the swap success of the token mint and swap.
+	GetSwapSuccess() bool
+	// GetKappa returns the kappa of the token mint and swap.
+	GetKappa() [32]byte
 }

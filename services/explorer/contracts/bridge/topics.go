@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"strings"
 )
 
@@ -69,24 +69,24 @@ var TokenRedeemV2Topic common.Hash
 
 // topicMap maps events to topics.
 // this is returned as a function to assert immutability.
-func topicMap() map[types.EventType]common.Hash {
-	return map[types.EventType]common.Hash{
-		types.DepositEvent:         TokenDepositTopic,
-		types.RedeemEvent:          TokenRedeemTopic,
-		types.WithdrawEvent:        TokenWithdrawTopic,
-		types.MintEvent:            TokenMintTopic,
-		types.DepositAndSwapEvent:  TokenDepositAndSwap,
-		types.RedeemAndSwapEvent:   TokenRedeemAndSwapTopic,
-		types.RedeemAndRemoveEvent: TokenRedeemAndRemoveTopic,
-		types.MintAndSwap:          TokenMintAndSwapTopic,
-		types.WithdrawAndRemove:    TokenWithdrawAndRemoveTopic,
-		types.RedeemV2Event:        TokenRedeemV2Topic,
+func topicMap() map[bridge.EventType]common.Hash {
+	return map[bridge.EventType]common.Hash{
+		bridge.DepositEvent:           TokenDepositTopic,
+		bridge.RedeemEvent:            TokenRedeemTopic,
+		bridge.WithdrawEvent:          TokenWithdrawTopic,
+		bridge.MintEvent:              TokenMintTopic,
+		bridge.DepositAndSwapEvent:    TokenDepositAndSwap,
+		bridge.MintAndSwapEvent:       TokenRedeemAndSwapTopic,
+		bridge.RedeemAndSwapEvent:     TokenRedeemAndRemoveTopic,
+		bridge.RedeemAndRemoveEvent:   TokenMintAndSwapTopic,
+		bridge.WithdrawAndRemoveEvent: TokenWithdrawAndRemoveTopic,
+		bridge.RedeemV2Event:          TokenRedeemV2Topic,
 	}
 }
 
 // eventTypeFromTopic gets the event type from the topic
 // returns nil if the topic is not found.
-func eventTypeFromTopic(ogTopic common.Hash) *types.EventType {
+func eventTypeFromTopic(ogTopic common.Hash) *bridge.EventType {
 	for eventType, topic := range topicMap() {
 		if bytes.Equal(ogTopic.Bytes(), topic.Bytes()) {
 			return &eventType
@@ -96,8 +96,8 @@ func eventTypeFromTopic(ogTopic common.Hash) *types.EventType {
 }
 
 // Topic gets the topic from the event type.
-func Topic(eventType types.EventType) common.Hash {
-	topicHash, ok := topicMap()[types.EventType(eventType.Int())]
+func Topic(eventType bridge.EventType) common.Hash {
+	topicHash, ok := topicMap()[bridge.EventType(eventType.Int())]
 	if !ok {
 		panic("unknown event")
 	}

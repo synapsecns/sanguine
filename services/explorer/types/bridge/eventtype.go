@@ -6,33 +6,33 @@ package bridge
 type EventType uint8
 
 const (
-	// TokenDepositEvent is the token deposit event.
-	TokenDepositEvent EventType = iota
-	// TokenRedeemEvent is the token redeem event.
-	TokenRedeemEvent
-	// TokenWithdrawEvent is the token withdraw event.
-	TokenWithdrawEvent
-	// TokenMintEvent is the token mint event.
-	TokenMintEvent
-	// TokenDepositAndSwapEvent is the token deposit and swap event.
-	TokenDepositAndSwapEvent
-	// TokenMintAndSwapEvent is the token mint and swap event.
-	TokenMintAndSwapEvent
-	// TokenRedeemAndSwapEvent is the token redeem and swap event.
-	TokenRedeemAndSwapEvent
-	// TokenRedeemAndRemoveEvent is the token redeem and remove event.
-	TokenRedeemAndRemoveEvent
-	// TokenWithdrawAndRemoveEvent is the token withdraw and remove event.
-	TokenWithdrawAndRemoveEvent
-	// TokenRedeemV2Event is the token redeem v2 event.
-	TokenRedeemV2Event
+	// DepositEvent is the token deposit event.
+	DepositEvent EventType = iota
+	// RedeemEvent is the token redeem event.
+	RedeemEvent
+	// WithdrawEvent is the token withdraw event.
+	WithdrawEvent
+	// MintEvent is the token mint event.
+	MintEvent
+	// DepositAndSwapEvent is the token deposit and swap event.
+	DepositAndSwapEvent
+	// MintAndSwapEvent is the token mint and swap event.
+	MintAndSwapEvent
+	// RedeemAndSwapEvent is the token redeem and swap event.
+	RedeemAndSwapEvent
+	// RedeemAndRemoveEvent is the token redeem and remove event.
+	RedeemAndRemoveEvent
+	// WithdrawAndRemoveEvent is the token withdraw and remove event.
+	WithdrawAndRemoveEvent
+	// RedeemV2Event is the token redeem v2 event.
+	RedeemV2Event
 )
 
 // AllEventTypes is a list of the event types.
 func AllEventTypes() []EventType {
-	return []EventType{TokenDepositEvent, TokenRedeemEvent, TokenWithdrawEvent, TokenMintEvent,
-		TokenDepositAndSwapEvent, TokenMintAndSwapEvent, TokenRedeemAndSwapEvent, TokenRedeemAndRemoveEvent,
-		TokenWithdrawAndRemoveEvent, TokenRedeemV2Event}
+	return []EventType{DepositEvent, RedeemEvent, WithdrawEvent, MintEvent,
+		DepositAndSwapEvent, MintAndSwapEvent, RedeemAndSwapEvent, RedeemAndRemoveEvent,
+		WithdrawAndRemoveEvent, RedeemV2Event}
 }
 
 // Int gets the int value of the event type.

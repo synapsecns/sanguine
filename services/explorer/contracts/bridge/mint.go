@@ -3,8 +3,9 @@ package bridge
 //nolint: dupl
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"math/big"
 )
 
@@ -14,8 +15,8 @@ func (s SynapseBridgeTokenMint) GetRaw() ethTypes.Log {
 }
 
 // GetToken gets the destination chain id from the mint.
-func (s SynapseBridgeTokenMint) GetToken() string {
-	return s.Token.String()
+func (s SynapseBridgeTokenMint) GetToken() common.Address {
+	return s.Token
 }
 
 // GetAmount gets the token amount.
@@ -24,13 +25,13 @@ func (s SynapseBridgeTokenMint) GetAmount() *big.Int {
 }
 
 // GetEventType gets the type of the redeem event.
-func (s SynapseBridgeTokenMint) GetEventType() types.EventType {
-	return types.MintEvent
+func (s SynapseBridgeTokenMint) GetEventType() bridge.EventType {
+	return bridge.MintEvent
 }
 
-// GetIdentifier gets the unique identifier (txhash) for the mint.
-func (s SynapseBridgeTokenMint) GetIdentifier() string {
-	return s.Raw.TxHash.String()
+// GetTxHash gets the unique identifier (txhash) for the mint.
+func (s SynapseBridgeTokenMint) GetTxHash() common.Hash {
+	return s.Raw.TxHash
 }
 
 // GetBlockNumber gets the block number for the event.
@@ -39,8 +40,8 @@ func (s SynapseBridgeTokenMint) GetBlockNumber() uint64 {
 }
 
 // GetContractAddress gets the contract address the event occurred on.
-func (s SynapseBridgeTokenMint) GetContractAddress() string {
-	return s.Raw.Address.String()
+func (s SynapseBridgeTokenMint) GetContractAddress() common.Address {
+	return s.Raw.Address
 }
 
 // GetFee gets the fee for the token mint.
@@ -53,11 +54,16 @@ func (s SynapseBridgeTokenMint) GetKappa() [32]byte {
 	return s.Kappa
 }
 
-var _ types.CrossChainBridgeEventLog = &SynapseBridgeTokenMint{}
+// GetRecipient gets the recipient for the mint.
+func (s SynapseBridgeTokenMint) GetRecipient() common.Address {
+	return s.To
+}
+
+var _ bridge.MintLog = &SynapseBridgeTokenMint{}
 
 // GetToken gets the token for the mint and remove operation.
-func (s SynapseBridgeTokenMintAndSwap) GetToken() string {
-	return s.Token.String()
+func (s SynapseBridgeTokenMintAndSwap) GetToken() common.Address {
+	return s.Token
 }
 
 // GetAmount gets the amount fo the mint.
@@ -66,8 +72,8 @@ func (s SynapseBridgeTokenMintAndSwap) GetAmount() *big.Int {
 }
 
 // GetEventType gets the mint and remove event type.
-func (s SynapseBridgeTokenMintAndSwap) GetEventType() types.EventType {
-	return types.MintAndSwap
+func (s SynapseBridgeTokenMintAndSwap) GetEventType() bridge.EventType {
+	return bridge.MintAndSwapEvent
 }
 
 // GetRaw gets the raw logs.
@@ -85,9 +91,9 @@ func (s SynapseBridgeTokenMintAndSwap) GetKappa() [32]byte {
 	return s.Kappa
 }
 
-// GetIdentifier gets the unique identifier (txhash) for the mint.
-func (s SynapseBridgeTokenMintAndSwap) GetIdentifier() string {
-	return s.Raw.TxHash.String()
+// GetTxHash gets the unique identifier (txhash) for the mint.
+func (s SynapseBridgeTokenMintAndSwap) GetTxHash() common.Hash {
+	return s.Raw.TxHash
 }
 
 // GetBlockNumber gets the block number for the event.
@@ -96,8 +102,38 @@ func (s SynapseBridgeTokenMintAndSwap) GetBlockNumber() uint64 {
 }
 
 // GetContractAddress gets the contract address the event occurred on.
-func (s SynapseBridgeTokenMintAndSwap) GetContractAddress() string {
-	return s.Raw.Address.String()
+func (s SynapseBridgeTokenMintAndSwap) GetContractAddress() common.Address {
+	return s.Raw.Address
 }
 
-var _ types.CrossChainBridgeEventLog = &SynapseBridgeTokenMintAndSwap{}
+// GetRecipient gets the recipient for the mint and swap.
+func (s SynapseBridgeTokenMintAndSwap) GetRecipient() common.Address {
+	return s.To
+}
+
+// GetTokenIndexFrom gets the index of the `from` token.
+func (s SynapseBridgeTokenMintAndSwap) GetTokenIndexFrom() uint8 {
+	return s.TokenIndexFrom
+}
+
+// GetTokenIndexTo gets the index of the `to` token.
+func (s SynapseBridgeTokenMintAndSwap) GetTokenIndexTo() uint8 {
+	return s.TokenIndexTo
+}
+
+// GetMinDy gets the minimum amount to receive.
+func (s SynapseBridgeTokenMintAndSwap) GetMinDy() *big.Int {
+	return s.MinDy
+}
+
+// GetDeadline gets the deadline for the swap.
+func (s SynapseBridgeTokenMintAndSwap) GetDeadline() *big.Int {
+	return s.Deadline
+}
+
+// GetSwapSuccess gets if the swap was successful.
+func (s SynapseBridgeTokenMintAndSwap) GetSwapSuccess() bool {
+	return s.SwapSuccess
+}
+
+var _ bridge.MintAndSwapLog = &SynapseBridgeTokenMintAndSwap{}
