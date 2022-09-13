@@ -24,6 +24,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
     address public constant destination = address(1234567890);
     address public constant owner = address(9876543210);
     bytes32 public constant trustedSender = bytes32(uint256(1234554321));
+    address public constant PROXY_ADMIN = address(13377331);
 
     function setUp() public override {
         super.setUp();
@@ -42,7 +43,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
         TransparentUpgradeableProxy proxy = new TransparentUpgradeableProxy(
             address(impl),
-            address(1337),
+            PROXY_ADMIN,
             bytes("")
         );
         client = SynapseClientUpgradeableHarness(address(proxy));
@@ -68,6 +69,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
     function test_setTrustedSenderAsNotOwner(address _notOwner) public {
         vm.assume(_notOwner != owner);
+        vm.assume(_notOwner != PROXY_ADMIN);
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_notOwner);
         client.setTrustedSender(remoteDomain, trustedSender);
@@ -102,6 +104,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
     function test_setTrustedSendersAsNotOwner(address _notOwner) public {
         vm.assume(_notOwner != owner);
+        vm.assume(_notOwner != PROXY_ADMIN);
         uint32[] memory domains = new uint32[](1);
         bytes32[] memory senders = new bytes32[](1);
         vm.expectRevert("Ownable: caller is not the owner");
@@ -126,6 +129,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
     function test_handleNotDestination(address _notDestination) public {
         vm.assume(_notDestination != destination);
+        vm.assume(_notDestination != PROXY_ADMIN);
         test_setTrustedSender();
 
         vm.prank(_notDestination);
