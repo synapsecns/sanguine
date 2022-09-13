@@ -18,88 +18,190 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// LogServiceClient is the client API for LogService service.
+// ScribeServiceClient is the client API for ScribeService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type LogServiceClient interface {
+type ScribeServiceClient interface {
+	// see: https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+	Check(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
+	Watch(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (ScribeService_WatchClient, error)
 	FilterLogs(ctx context.Context, in *FilterLogsRequest, opts ...grpc.CallOption) (*FilterLogsResponse, error)
 }
 
-type logServiceClient struct {
+type scribeServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewLogServiceClient(cc grpc.ClientConnInterface) LogServiceClient {
-	return &logServiceClient{cc}
+func NewScribeServiceClient(cc grpc.ClientConnInterface) ScribeServiceClient {
+	return &scribeServiceClient{cc}
 }
 
-func (c *logServiceClient) FilterLogs(ctx context.Context, in *FilterLogsRequest, opts ...grpc.CallOption) (*FilterLogsResponse, error) {
-	out := new(FilterLogsResponse)
-	err := c.cc.Invoke(ctx, "/types.v1.LogService/FilterLogs", in, out, opts...)
+func (c *scribeServiceClient) Check(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
+	out := new(HealthCheckResponse)
+	err := c.cc.Invoke(ctx, "/types.v1.ScribeService/Check", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// LogServiceServer is the server API for LogService service.
-// All implementations must embed UnimplementedLogServiceServer
+func (c *scribeServiceClient) Watch(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (ScribeService_WatchClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ScribeService_ServiceDesc.Streams[0], "/types.v1.ScribeService/Watch", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &scribeServiceWatchClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ScribeService_WatchClient interface {
+	Recv() (*HealthCheckResponse, error)
+	grpc.ClientStream
+}
+
+type scribeServiceWatchClient struct {
+	grpc.ClientStream
+}
+
+func (x *scribeServiceWatchClient) Recv() (*HealthCheckResponse, error) {
+	m := new(HealthCheckResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *scribeServiceClient) FilterLogs(ctx context.Context, in *FilterLogsRequest, opts ...grpc.CallOption) (*FilterLogsResponse, error) {
+	out := new(FilterLogsResponse)
+	err := c.cc.Invoke(ctx, "/types.v1.ScribeService/FilterLogs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ScribeServiceServer is the server API for ScribeService service.
+// All implementations must embed UnimplementedScribeServiceServer
 // for forward compatibility
-type LogServiceServer interface {
+type ScribeServiceServer interface {
+	// see: https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+	Check(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
+	Watch(*HealthCheckRequest, ScribeService_WatchServer) error
 	FilterLogs(context.Context, *FilterLogsRequest) (*FilterLogsResponse, error)
-	mustEmbedUnimplementedLogServiceServer()
+	mustEmbedUnimplementedScribeServiceServer()
 }
 
-// UnimplementedLogServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedLogServiceServer struct {
+// UnimplementedScribeServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedScribeServiceServer struct {
 }
 
-func (UnimplementedLogServiceServer) FilterLogs(context.Context, *FilterLogsRequest) (*FilterLogsResponse, error) {
+func (UnimplementedScribeServiceServer) Check(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Check not implemented")
+}
+func (UnimplementedScribeServiceServer) Watch(*HealthCheckRequest, ScribeService_WatchServer) error {
+	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
+}
+func (UnimplementedScribeServiceServer) FilterLogs(context.Context, *FilterLogsRequest) (*FilterLogsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FilterLogs not implemented")
 }
-func (UnimplementedLogServiceServer) mustEmbedUnimplementedLogServiceServer() {}
+func (UnimplementedScribeServiceServer) mustEmbedUnimplementedScribeServiceServer() {}
 
-// UnsafeLogServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to LogServiceServer will
+// UnsafeScribeServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ScribeServiceServer will
 // result in compilation errors.
-type UnsafeLogServiceServer interface {
-	mustEmbedUnimplementedLogServiceServer()
+type UnsafeScribeServiceServer interface {
+	mustEmbedUnimplementedScribeServiceServer()
 }
 
-func RegisterLogServiceServer(s grpc.ServiceRegistrar, srv LogServiceServer) {
-	s.RegisterService(&LogService_ServiceDesc, srv)
+func RegisterScribeServiceServer(s grpc.ServiceRegistrar, srv ScribeServiceServer) {
+	s.RegisterService(&ScribeService_ServiceDesc, srv)
 }
 
-func _LogService_FilterLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ScribeService_Check_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HealthCheckRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ScribeServiceServer).Check(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/types.v1.ScribeService/Check",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ScribeServiceServer).Check(ctx, req.(*HealthCheckRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ScribeService_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(HealthCheckRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ScribeServiceServer).Watch(m, &scribeServiceWatchServer{stream})
+}
+
+type ScribeService_WatchServer interface {
+	Send(*HealthCheckResponse) error
+	grpc.ServerStream
+}
+
+type scribeServiceWatchServer struct {
+	grpc.ServerStream
+}
+
+func (x *scribeServiceWatchServer) Send(m *HealthCheckResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _ScribeService_FilterLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FilterLogsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LogServiceServer).FilterLogs(ctx, in)
+		return srv.(ScribeServiceServer).FilterLogs(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/types.v1.LogService/FilterLogs",
+		FullMethod: "/types.v1.ScribeService/FilterLogs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LogServiceServer).FilterLogs(ctx, req.(*FilterLogsRequest))
+		return srv.(ScribeServiceServer).FilterLogs(ctx, req.(*FilterLogsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// LogService_ServiceDesc is the grpc.ServiceDesc for LogService service.
+// ScribeService_ServiceDesc is the grpc.ServiceDesc for ScribeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var LogService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "types.v1.LogService",
-	HandlerType: (*LogServiceServer)(nil),
+var ScribeService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "types.v1.ScribeService",
+	HandlerType: (*ScribeServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "Check",
+			Handler:    _ScribeService_Check_Handler,
+		},
+		{
 			MethodName: "FilterLogs",
-			Handler:    _LogService_FilterLogs_Handler,
+			Handler:    _ScribeService_FilterLogs_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Watch",
+			Handler:       _ScribeService_Watch_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "types/v1/service.proto",
 }

@@ -31,7 +31,66 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-func request_LogService_FilterLogs_0(ctx context.Context, marshaler runtime.Marshaler, client LogServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_ScribeService_Check_0(ctx context.Context, marshaler runtime.Marshaler, client ScribeServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq HealthCheckRequest
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.Check(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_ScribeService_Check_0(ctx context.Context, marshaler runtime.Marshaler, server ScribeServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq HealthCheckRequest
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.Check(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_ScribeService_Watch_0(ctx context.Context, marshaler runtime.Marshaler, client ScribeServiceClient, req *http.Request, pathParams map[string]string) (ScribeService_WatchClient, runtime.ServerMetadata, error) {
+	var protoReq HealthCheckRequest
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	stream, err := client.Watch(ctx, &protoReq)
+	if err != nil {
+		return nil, metadata, err
+	}
+	header, err := stream.Header()
+	if err != nil {
+		return nil, metadata, err
+	}
+	metadata.HeaderMD = header
+	return stream, metadata, nil
+
+}
+
+func request_ScribeService_FilterLogs_0(ctx context.Context, marshaler runtime.Marshaler, client ScribeServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq FilterLogsRequest
 	var metadata runtime.ServerMetadata
 
@@ -48,7 +107,7 @@ func request_LogService_FilterLogs_0(ctx context.Context, marshaler runtime.Mars
 
 }
 
-func local_request_LogService_FilterLogs_0(ctx context.Context, marshaler runtime.Marshaler, server LogServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_ScribeService_FilterLogs_0(ctx context.Context, marshaler runtime.Marshaler, server ScribeServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq FilterLogsRequest
 	var metadata runtime.ServerMetadata
 
@@ -65,13 +124,13 @@ func local_request_LogService_FilterLogs_0(ctx context.Context, marshaler runtim
 
 }
 
-// RegisterLogServiceHandlerServer registers the http handlers for service LogService to "mux".
-// UnaryRPC     :call LogServiceServer directly.
+// RegisterScribeServiceHandlerServer registers the http handlers for service ScribeService to "mux".
+// UnaryRPC     :call ScribeServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterLogServiceHandlerFromEndpoint instead.
-func RegisterLogServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server LogServiceServer) error {
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterScribeServiceHandlerFromEndpoint instead.
+func RegisterScribeServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ScribeServiceServer) error {
 
-	mux.Handle("POST", pattern_LogService_FilterLogs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_ScribeService_Check_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -79,12 +138,12 @@ func RegisterLogServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/types.v1.LogService/FilterLogs", runtime.WithHTTPPathPattern("/grpc/v1/filter_logs"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/types.v1.ScribeService/Check", runtime.WithHTTPPathPattern("/grpc/v1/health_check"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_LogService_FilterLogs_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_ScribeService_Check_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
@@ -92,16 +151,48 @@ func RegisterLogServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			return
 		}
 
-		forward_LogService_FilterLogs_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_ScribeService_Check_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_ScribeService_Watch_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
+		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+		return
+	})
+
+	mux.Handle("POST", pattern_ScribeService_FilterLogs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/types.v1.ScribeService/FilterLogs", runtime.WithHTTPPathPattern("/grpc/v1/filter_logs"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_ScribeService_FilterLogs_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_ScribeService_FilterLogs_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterLogServiceHandlerFromEndpoint is same as RegisterLogServiceHandler but
+// RegisterScribeServiceHandlerFromEndpoint is same as RegisterScribeServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterLogServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterScribeServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -121,41 +212,85 @@ func RegisterLogServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.Ser
 		}()
 	}()
 
-	return RegisterLogServiceHandler(ctx, mux, conn)
+	return RegisterScribeServiceHandler(ctx, mux, conn)
 }
 
-// RegisterLogServiceHandler registers the http handlers for service LogService to "mux".
+// RegisterScribeServiceHandler registers the http handlers for service ScribeService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterLogServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterLogServiceHandlerClient(ctx, mux, NewLogServiceClient(conn))
+func RegisterScribeServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterScribeServiceHandlerClient(ctx, mux, NewScribeServiceClient(conn))
 }
 
-// RegisterLogServiceHandlerClient registers the http handlers for service LogService
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "LogServiceClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "LogServiceClient"
+// RegisterScribeServiceHandlerClient registers the http handlers for service ScribeService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ScribeServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ScribeServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "LogServiceClient" to call the correct interceptors.
-func RegisterLogServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client LogServiceClient) error {
+// "ScribeServiceClient" to call the correct interceptors.
+func RegisterScribeServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ScribeServiceClient) error {
 
-	mux.Handle("POST", pattern_LogService_FilterLogs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_ScribeService_Check_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/types.v1.LogService/FilterLogs", runtime.WithHTTPPathPattern("/grpc/v1/filter_logs"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/types.v1.ScribeService/Check", runtime.WithHTTPPathPattern("/grpc/v1/health_check"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_LogService_FilterLogs_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_ScribeService_Check_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_LogService_FilterLogs_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_ScribeService_Check_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_ScribeService_Watch_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/types.v1.ScribeService/Watch", runtime.WithHTTPPathPattern("/grpc/v1/health_watch"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_ScribeService_Watch_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_ScribeService_Watch_0(annotatedContext, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_ScribeService_FilterLogs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/types.v1.ScribeService/FilterLogs", runtime.WithHTTPPathPattern("/grpc/v1/filter_logs"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_ScribeService_FilterLogs_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_ScribeService_FilterLogs_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -163,9 +298,17 @@ func RegisterLogServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 }
 
 var (
-	pattern_LogService_FilterLogs_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"grpc", "v1", "filter_logs"}, ""))
+	pattern_ScribeService_Check_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"grpc", "v1", "health_check"}, ""))
+
+	pattern_ScribeService_Watch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"grpc", "v1", "health_watch"}, ""))
+
+	pattern_ScribeService_FilterLogs_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"grpc", "v1", "filter_logs"}, ""))
 )
 
 var (
-	forward_LogService_FilterLogs_0 = runtime.ForwardResponseMessage
+	forward_ScribeService_Check_0 = runtime.ForwardResponseMessage
+
+	forward_ScribeService_Watch_0 = runtime.ForwardResponseStream
+
+	forward_ScribeService_FilterLogs_0 = runtime.ForwardResponseMessage
 )

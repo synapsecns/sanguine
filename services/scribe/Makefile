@@ -51,3 +51,4 @@ swagger-codegen-install:
 # (see: https://github.com/grpc-ecosystem/grpc-gateway)
 generate: openapi-install swagger-codegen-install buf-install protoc-gen-grpc-gateway-install protoc-install grpc-install protoc-gen-install  ## generate protobufs
 	buf generate
+	@eval $$(cd $(GIT_ROOT)/services/scribe); ./scripts/codegen.sh

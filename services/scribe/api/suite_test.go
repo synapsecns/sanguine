@@ -3,6 +3,7 @@ package api_test
 import (
 	"fmt"
 	"github.com/synapsecns/sanguine/services/scribe/api"
+	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
 	"net/http"
 	"testing"
 
@@ -21,10 +22,11 @@ import (
 // APISuite defines the basic test suite.
 type APISuite struct {
 	*testsuite.TestSuite
-	db        db.EventDB
-	dbPath    string
-	gqlClient *client.Client
-	logIndex  atomic.Int64
+	db         db.EventDB
+	dbPath     string
+	gqlClient  *client.Client
+	grpcClient *rest.APIClient
+	logIndex   atomic.Int64
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -63,6 +65,11 @@ func (g *APISuite) SetupTest() {
 
 	g.gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
 
+	config := rest.NewConfiguration()
+	config.BasePath = baseURL
+	config.Host = baseURL
+	g.grpcClient = rest.NewAPIClient(config)
+
 	// var request *http.Request
 	g.Eventually(func() bool {
 		request, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)
@@ -75,6 +82,15 @@ func (g *APISuite) SetupTest() {
 			return true
 		}
 		return false
+	})
+
+	g.Eventually(func() bool {
+		res, _, err := g.grpcClient.ScribeServiceApi.ScribeServiceCheck(g.GetTestContext(), rest.V1HealthCheckRequest{
+			Service: "any",
+		})
+		Nil(g.T(), err)
+
+		return *res.Status == rest.SERVING_HealthCheckResponseServingStatus
 	})
 
 	// go func() {
