@@ -51,7 +51,12 @@ func (g *GQLSuite) SetupTest() {
 	port := freeport.GetPort()
 
 	go func() {
-		Nil(g.T(), api.Start(g.GetSuiteContext(), uint16(port), "sqlite", g.dbPath))
+		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
+			HTTPPort: uint16(port),
+			Database: "sqlite",
+			Path:     g.dbPath,
+			GRPCPort: uint16(freeport.GetPort()),
+		}))
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", port)
