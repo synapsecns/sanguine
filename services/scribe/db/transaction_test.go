@@ -138,3 +138,50 @@ func (t *DBSuite) TestConfirmEthTxsInRange() {
 		Equal(t.T(), 2, len(retrievedTxs))
 	})
 }
+
+func (t *DBSuite) TestDeleteEthTxsForBlockHash() {
+	testWallet, err := wallet.FromRandom()
+	Nil(t.T(), err)
+
+	signer := localsigner.NewSigner(testWallet.PrivateKey())
+
+	t.RunOnAllDBs(func(testDB db.EventDB) {
+		chainID := gofakeit.Uint32()
+
+		// Store a tx.
+		testTx := types.NewTx(&types.LegacyTx{
+			Nonce:    uint64(0),
+			GasPrice: new(big.Int).SetUint64(gofakeit.Uint64()),
+			Gas:      gofakeit.Uint64(),
+			To:       addressPtr(common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64()))),
+			Value:    new(big.Int).SetUint64(gofakeit.Uint64()),
+			Data:     []byte(gofakeit.Paragraph(1, 2, 3, " ")),
+		})
+		transactor, err := localsigner.NewSigner(testWallet.PrivateKey()).GetTransactor(testTx.ChainId())
+		Nil(t.T(), err)
+
+		signedTx, err := transactor.Signer(signer.Address(), testTx)
+		Nil(t.T(), err)
+
+		err = testDB.StoreEthTx(t.GetTestContext(), signedTx, chainID, common.BigToHash(big.NewInt(5)), uint64(0))
+		Nil(t.T(), err)
+
+		// Ensure the tx is in the database,
+		ethTxFilter := db.EthTxFilter{
+			ChainID:   chainID,
+			BlockHash: common.BigToHash(big.NewInt(5)).String(),
+		}
+		retrievedTxs, err := testDB.RetrieveEthTxsWithFilter(t.GetTestContext(), ethTxFilter, 1)
+		Nil(t.T(), err)
+		Equal(t.T(), 1, len(retrievedTxs))
+
+		// Delete the tx.
+		err = testDB.DeleteEthTxsForBlockHash(t.GetTestContext(), common.BigToHash(big.NewInt(5)), chainID)
+		Nil(t.T(), err)
+
+		// Ensure the tx is not in the database.
+		retrievedTxs, err = testDB.RetrieveEthTxsWithFilter(t.GetTestContext(), ethTxFilter, 1)
+		Nil(t.T(), err)
+		Equal(t.T(), 0, len(retrievedTxs))
+	})
+}

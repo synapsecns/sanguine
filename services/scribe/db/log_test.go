@@ -101,6 +101,37 @@ func (t *DBSuite) TestConfirmLogsInRange() {
 	})
 }
 
+func (t *DBSuite) TestDeleteLogsForBlockHash() {
+	t.RunOnAllDBs(func(testDB db.EventDB) {
+		chainID := gofakeit.Uint32()
+
+		// Store a log.
+		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		log := t.MakeRandomLog(txHash)
+		log.BlockHash = common.BigToHash(big.NewInt(5))
+		err := testDB.StoreLog(t.GetTestContext(), log, chainID)
+		Nil(t.T(), err)
+
+		// Ensure the log is in the database.
+		logFilter := db.LogFilter{
+			ChainID:   chainID,
+			BlockHash: log.BlockHash.String(),
+		}
+		retrievedLogs, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), logFilter, 1)
+		Nil(t.T(), err)
+		Equal(t.T(), 1, len(retrievedLogs))
+
+		// Delete the log.
+		err = testDB.DeleteLogsForBlockHash(t.GetTestContext(), log.BlockHash, chainID)
+		Nil(t.T(), err)
+
+		// Make sure the log is not in the database.
+		retrievedLogs, err = testDB.RetrieveLogsWithFilter(t.GetTestContext(), logFilter, 1)
+		Nil(t.T(), err)
+		Equal(t.T(), 0, len(retrievedLogs))
+	})
+}
+
 func (t *DBSuite) MakeRandomLog(txHash common.Hash) types.Log {
 	currentIndex := t.logIndex.Load()
 	// increment next index
