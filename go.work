@@ -7,4 +7,5 @@ use (
 	./services/omnirpc
 	./services/scribe
 	./tools
+	services/consumer
 )
