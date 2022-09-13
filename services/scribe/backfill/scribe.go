@@ -73,7 +73,7 @@ func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 		}
 		// call Backfill concurrently
 		g.Go(func() error {
-			err := chainBackfiller.Backfill(groupCtx, currentBlock)
+			err := chainBackfiller.Backfill(groupCtx, currentBlock, false)
 			if err != nil {
 				return fmt.Errorf("could not backfill chain: %w", err)
 			}
@@ -92,6 +92,9 @@ func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 type ScribeBackend interface {
 	// ChainID gets the chain id from the rpc server
 	ChainID(ctx context.Context) (*big.Int, error)
+	// BlockByNumber retrieves a block from the database by number, caching it
+	// (associated with its hash) if found.
+	BlockByNumber(ctx context.Context, number *big.Int) (*types.Block, error)
 	// TransactionByHash checks the pool of pending transactions in addition to the
 	// blockchain. The isPending return value indicates whether the transaction has been
 	// mined yet. Note that the transaction may not be part of the canonical chain even if

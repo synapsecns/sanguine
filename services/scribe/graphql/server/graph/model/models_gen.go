@@ -17,6 +17,7 @@ type Log struct {
 	BlockHash       string       `json:"block_hash"`
 	Index           int          `json:"index"`
 	Removed         bool         `json:"removed"`
+	Page            int          `json:"page"`
 	Transaction     *Transaction `json:"transaction"`
 	Receipt         *Receipt     `json:"receipt"`
 	JSON            types.JSON   `json:"json"`
@@ -34,6 +35,7 @@ type Receipt struct {
 	GasUsed           int          `json:"gas_used"`
 	BlockNumber       int          `json:"block_number"`
 	TransactionIndex  int          `json:"transaction_index"`
+	Page              int          `json:"page"`
 	Logs              []*Log       `json:"logs"`
 	Transaction       *Transaction `json:"transaction"`
 	JSON              types.JSON   `json:"json"`
@@ -52,6 +54,7 @@ type Transaction struct {
 	Value     string     `json:"value"`
 	Nonce     int        `json:"nonce"`
 	To        string     `json:"to"`
+	Page      int        `json:"page"`
 	Logs      []*Log     `json:"logs"`
 	Receipt   *Receipt   `json:"receipt"`
 	JSON      types.JSON `json:"json"`

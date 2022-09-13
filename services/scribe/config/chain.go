@@ -10,11 +10,13 @@ import (
 // ChainConfig defines the config for a specific chain.
 type ChainConfig struct {
 	// ChainID is the ID of the chain.
-	ChainID uint32 `toml:"ChainID"`
+	ChainID uint32 `yaml:"chain_id"`
 	// RPCUrl is the URL of the chain's RPC server.
-	RPCUrl string `toml:"RPCUrl"`
+	RPCUrl string `yaml:"rpc_url"`
+	// RequiredConfirmations is the number of confirmations required for a block to be finalized.
+	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// Contracts stores all the contract information for the chain.
-	Contracts ContractConfigs `toml:"Contracts"`
+	Contracts ContractConfigs `yaml:"contracts"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

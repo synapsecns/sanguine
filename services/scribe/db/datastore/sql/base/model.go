@@ -16,7 +16,9 @@ func init() {
 	ChainIDFieldName = namer.GetConsistentName("ChainID")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	ContractAddressFieldName = namer.GetConsistentName("ContractAddress")
-	IndexFieldName = namer.GetConsistentName("Index")
+	BlockIndexFieldName = namer.GetConsistentName("BlockIndex")
+	BlockHashFieldName = namer.GetConsistentName("BlockHash")
+	ConfirmedFieldName = namer.GetConsistentName("Confirmed")
 }
 
 var (
@@ -28,9 +30,16 @@ var (
 	BlockNumberFieldName string
 	// ContractAddressFieldName is the address of the contract.
 	ContractAddressFieldName string
-	// IndexFieldName is the index field name.
-	IndexFieldName string
+	// BlockIndexFieldName is the index field name.
+	BlockIndexFieldName string
+	// BlockHashFieldName is the block hash field name.
+	BlockHashFieldName string
+	// ConfirmedFieldName is the confirmed field name.
+	ConfirmedFieldName string
 )
+
+// PageSize is the amount of entries per page of logs.
+var PageSize = 100
 
 // Log stores the log of an event.
 type Log struct {
@@ -57,9 +66,11 @@ type Log struct {
 	// BlockHash is the hash of the block in which the transaction was included
 	BlockHash string `gorm:"block_hash"`
 	// Index is the index of the log in the block
-	Index uint64 `gorm:"column:index;primaryKey;auto_increment:false"`
+	BlockIndex uint64 `gorm:"column:block_index;primaryKey;auto_increment:false"`
 	// Removed is true if this log was reverted due to a chain re-organization
 	Removed bool `gorm:"removed"`
+	// Confirmed is true if this log has been confirmed by the chain
+	Confirmed bool `gorm:"confirmed"`
 }
 
 // Receipt stores the receipt of a transaction.
@@ -88,6 +99,8 @@ type Receipt struct {
 	BlockNumber uint64 `gorm:"block_number"`
 	// TransactionIndex is the index of the transaction in the block
 	TransactionIndex uint64 `gorm:"transaction_index"`
+	// Confirmed is true if this log has been confirmed by the chain
+	Confirmed bool `gorm:"confirmed"`
 }
 
 // EthTx contains a processed ethereum transaction.
@@ -96,6 +109,8 @@ type EthTx struct {
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// ChainID is the chain id of the transaction
 	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	// BlockHash is the hash of the block in which the transaction was included
+	BlockHash string `gorm:"block_hash"`
 	// BlockNumber is the block in which the transaction was included
 	BlockNumber uint64 `gorm:"column:block_number"`
 	// RawTx is the raw serialized transaction
@@ -104,6 +119,8 @@ type EthTx struct {
 	GasFeeCap uint64
 	// GasTipCap contains the gas tip cap stored in wei
 	GasTipCap uint64
+	// Confirmed is true if this log has been confirmed by the chain
+	Confirmed bool `gorm:"confirmed"`
 }
 
 // LastIndexedInfo contains information on when a contract was last indexed.
@@ -111,6 +128,16 @@ type LastIndexedInfo struct {
 	gorm.Model
 	// ContractAddress is the contract address
 	ContractAddress string `gorm:"column:contract_address"`
+	// ChainID is the chain id of the contract
+	ChainID uint32 `gorm:"column:chain_id"`
+	// BlockNumber is the last block number indexed
+	BlockNumber uint64 `gorm:"column:block_number;auto_increment:false"`
+}
+
+// LastConfirmedBlockInfo contains information on when a chain last had a block pass the required confirmation
+// threshold and was validated.
+type LastConfirmedBlockInfo struct {
+	gorm.Model
 	// ChainID is the chain id of the contract
 	ChainID uint32 `gorm:"column:chain_id"`
 	// BlockNumber is the last block number indexed
