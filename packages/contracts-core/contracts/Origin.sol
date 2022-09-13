@@ -2,6 +2,7 @@
 pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
+import { LocalDomainContext } from "./context/LocalDomainContext.sol";
 import { Version0 } from "./Version0.sol";
 import { DomainNotaryRegistry } from "./registry/DomainNotaryRegistry.sol";
 import { GuardRegistry } from "./registry/GuardRegistry.sol";
@@ -36,6 +37,7 @@ contract Origin is
     Version0,
     MerkleTreeManager,
     SystemContract,
+    LocalDomainContext,
     AttestationHub,
     ReportHub,
     DomainNotaryRegistry,
@@ -152,10 +154,8 @@ contract Origin is
 
     // ============ Constructor ============
 
-    constructor(uint32 _localDomain)
-        SystemContract(_localDomain)
-        DomainNotaryRegistry(_localDomain)
-    {} // solhint-disable-line no-empty-blocks
+    // solhint-disable-next-line no-empty-blocks
+    constructor(uint32 _localDomain) LocalDomainContext(_localDomain) {}
 
     // ============ Initializer ============
 
@@ -245,7 +245,7 @@ contract Origin is
         bytes32 _sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
         bytes memory _header = Header.formatHeader(
-            localDomain,
+            _localDomain(),
             _sender,
             nonce,
             _destination,

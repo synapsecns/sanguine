@@ -2,6 +2,7 @@
 pragma solidity 0.8.13;
 
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
+import { DomainContext } from "../context/DomainContext.sol";
 
 import {
     OwnableUpgradeable
@@ -10,13 +11,7 @@ import {
 /**
  * @notice Shared utilities between Synapse System Contracts: Origin, Destination, etc.
  */
-abstract contract SystemContract is OwnableUpgradeable {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              IMMUTABLES                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    uint32 public immutable localDomain;
-
+abstract contract SystemContract is DomainContext, OwnableUpgradeable {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -34,14 +29,6 @@ abstract contract SystemContract is OwnableUpgradeable {
     modifier onlySystemRouter() {
         _assertSystemRouter();
         _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             CONSTRUCTOR                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    constructor(uint32 _localDomain) {
-        localDomain = _localDomain;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
