@@ -1,15 +1,15 @@
-package configfetcher_test
+package bridgeconfig_test
 
 import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/services/explorer/configfetcher"
+	"github.com/synapsecns/sanguine/services/explorer/db/consumer/bridgeconfig"
 )
 
 func (c *ConfigSuite) TestToken() {
 	_, bridgeConfigContract := c.deployManager.GetBridgeConfigV3(c.GetTestContext(), c.testBackend)
 
-	fetcher, err := configfetcher.NewFetcher(bridgeConfigContract.Address(), c.testBackend)
+	fetcher, err := bridgeconfig.NewFetcher(bridgeConfigContract.Address(), c.testBackend)
 	Nil(c.T(), err)
 
 	curentBlockNumber, err := c.testBackend.BlockNumber(c.GetTestContext())

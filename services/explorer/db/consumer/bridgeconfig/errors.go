@@ -1,4 +1,4 @@
-package configfetcher
+package bridgeconfig
 
 import "errors"
 

@@ -1,4 +1,4 @@
-package configfetcher_test
+package bridgeconfig_test
 
 import (
 	"fmt"
