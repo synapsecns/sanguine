@@ -50,9 +50,7 @@ func (p parserImpl) ParseDispatch(log ethTypes.Log) (_ types.CommittedMessage, o
 		return nil, false
 	}
 
-	leafIndex := uint32(dispatch.LeafIndex.Int64())
-
-	commitedMessage := types.NewCommittedMessage(leafIndex, dispatch.Message)
+	commitedMessage := types.NewCommittedMessage(dispatch.Message)
 
 	return commitedMessage, true
 }

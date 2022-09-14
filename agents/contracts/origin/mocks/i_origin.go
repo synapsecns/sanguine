@@ -84,29 +84,6 @@ func (_m *IOrigin) AllNotaries(opts *bind.CallOpts) ([]common.Address, error) {
 	return r0, r1
 }
 
-// Count provides a mock function with given fields: opts
-func (_m *IOrigin) Count(opts *bind.CallOpts) (*big.Int, error) {
-	ret := _m.Called(opts)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) *big.Int); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Dispatch provides a mock function with given fields: opts, _destination, _recipientAddress, _optimisticSeconds, _tips, _messageBody
 func (_m *IOrigin) Dispatch(opts *bind.TransactOpts, _destination uint32, _recipientAddress [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, _destination, _recipientAddress, _optimisticSeconds, _tips, _messageBody)
@@ -153,13 +130,13 @@ func (_m *IOrigin) FilterCorrectFraudReport(opts *bind.FilterOpts, guard []commo
 	return r0, r1
 }
 
-// FilterDispatch provides a mock function with given fields: opts, messageHash, leafIndex, destinationAndNonce
-func (_m *IOrigin) FilterDispatch(opts *bind.FilterOpts, messageHash [][32]byte, leafIndex []*big.Int, destinationAndNonce []uint64) (*origin.OriginDispatchIterator, error) {
-	ret := _m.Called(opts, messageHash, leafIndex, destinationAndNonce)
+// FilterDispatch provides a mock function with given fields: opts, messageHash, nonce, destination
+func (_m *IOrigin) FilterDispatch(opts *bind.FilterOpts, messageHash [][32]byte, nonce []uint32, destination []uint32) (*origin.OriginDispatchIterator, error) {
+	ret := _m.Called(opts, messageHash, nonce, destination)
 
 	var r0 *origin.OriginDispatchIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, [][32]byte, []*big.Int, []uint64) *origin.OriginDispatchIterator); ok {
-		r0 = rf(opts, messageHash, leafIndex, destinationAndNonce)
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, [][32]byte, []uint32, []uint32) *origin.OriginDispatchIterator); ok {
+		r0 = rf(opts, messageHash, nonce, destination)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*origin.OriginDispatchIterator)
@@ -167,8 +144,8 @@ func (_m *IOrigin) FilterDispatch(opts *bind.FilterOpts, messageHash [][32]byte,
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, [][32]byte, []*big.Int, []uint64) error); ok {
-		r1 = rf(opts, messageHash, leafIndex, destinationAndNonce)
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, [][32]byte, []uint32, []uint32) error); ok {
+		r1 = rf(opts, messageHash, nonce, destination)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1129,27 +1106,6 @@ func (_m *IOrigin) SetSystemRouter(opts *bind.TransactOpts, _systemRouter common
 	return r0, r1
 }
 
-// State provides a mock function with given fields: opts
-func (_m *IOrigin) State(opts *bind.CallOpts) (uint8, error) {
-	ret := _m.Called(opts)
-
-	var r0 uint8
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint8); ok {
-		r0 = rf(opts)
-	} else {
-		r0 = ret.Get(0).(uint8)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // SubmitAttestation provides a mock function with given fields: opts, _attestation
 func (_m *IOrigin) SubmitAttestation(opts *bind.TransactOpts, _attestation []byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, _attestation)
@@ -1198,24 +1154,24 @@ func (_m *IOrigin) SubmitReport(opts *bind.TransactOpts, _report []byte) (*types
 
 // SuggestAttestation provides a mock function with given fields: opts
 func (_m *IOrigin) SuggestAttestation(opts *bind.CallOpts) (struct {
-	Nonce uint32
-	Root  [32]byte
+	LatestNonce uint32
+	LatestRoot  [32]byte
 }, error) {
 	ret := _m.Called(opts)
 
 	var r0 struct {
-		Nonce uint32
-		Root  [32]byte
+		LatestNonce uint32
+		LatestRoot  [32]byte
 	}
 	if rf, ok := ret.Get(0).(func(*bind.CallOpts) struct {
-		Nonce uint32
-		Root  [32]byte
+		LatestNonce uint32
+		LatestRoot  [32]byte
 	}); ok {
 		r0 = rf(opts)
 	} else {
 		r0 = ret.Get(0).(struct {
-			Nonce uint32
-			Root  [32]byte
+			LatestNonce uint32
+			LatestRoot  [32]byte
 		})
 	}
 
@@ -1275,29 +1231,6 @@ func (_m *IOrigin) TransferOwnership(opts *bind.TransactOpts, newOwner common.Ad
 	return r0, r1
 }
 
-// Tree provides a mock function with given fields: opts
-func (_m *IOrigin) Tree(opts *bind.CallOpts) (*big.Int, error) {
-	ret := _m.Called(opts)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) *big.Int); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // VERSION provides a mock function with given fields: opts
 func (_m *IOrigin) VERSION(opts *bind.CallOpts) (uint8, error) {
 	ret := _m.Called(opts)
@@ -1342,13 +1275,13 @@ func (_m *IOrigin) WatchCorrectFraudReport(opts *bind.WatchOpts, sink chan<- *or
 	return r0, r1
 }
 
-// WatchDispatch provides a mock function with given fields: opts, sink, messageHash, leafIndex, destinationAndNonce
-func (_m *IOrigin) WatchDispatch(opts *bind.WatchOpts, sink chan<- *origin.OriginDispatch, messageHash [][32]byte, leafIndex []*big.Int, destinationAndNonce []uint64) (event.Subscription, error) {
-	ret := _m.Called(opts, sink, messageHash, leafIndex, destinationAndNonce)
+// WatchDispatch provides a mock function with given fields: opts, sink, messageHash, nonce, destination
+func (_m *IOrigin) WatchDispatch(opts *bind.WatchOpts, sink chan<- *origin.OriginDispatch, messageHash [][32]byte, nonce []uint32, destination []uint32) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, messageHash, nonce, destination)
 
 	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginDispatch, [][32]byte, []*big.Int, []uint64) event.Subscription); ok {
-		r0 = rf(opts, sink, messageHash, leafIndex, destinationAndNonce)
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginDispatch, [][32]byte, []uint32, []uint32) event.Subscription); ok {
+		r0 = rf(opts, sink, messageHash, nonce, destination)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(event.Subscription)
@@ -1356,8 +1289,8 @@ func (_m *IOrigin) WatchDispatch(opts *bind.WatchOpts, sink chan<- *origin.Origi
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginDispatch, [][32]byte, []*big.Int, []uint64) error); ok {
-		r1 = rf(opts, sink, messageHash, leafIndex, destinationAndNonce)
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginDispatch, [][32]byte, []uint32, []uint32) error); ok {
+		r1 = rf(opts, sink, messageHash, nonce, destination)
 	} else {
 		r1 = ret.Error(1)
 	}
