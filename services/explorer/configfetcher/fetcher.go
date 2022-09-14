@@ -12,6 +12,8 @@ import (
 type Fetcher interface {
 	// GetTokenID gets the token id for the bridge config at a given block number
 	GetTokenID(ctx context.Context, chainID, block uint32, tokenAddress common.Address) (tokenID string, err error)
+	// GetToken gets the token for the bridge config at a given block number
+	GetToken(ctx context.Context, chainID, block uint32, tokenId string) (token bridgeconfig.BridgeConfigV3Token, err error)
 }
 
 type fetcher struct {
@@ -32,6 +34,18 @@ func (f fetcher) GetTokenID(ctx context.Context, chainID, block uint32, tokenAdd
 	}
 
 	return tokenID, nil
+}
+
+func (f fetcher) GetToken(ctx context.Context, chainID, block uint32, tokenId string) (token bridgeconfig.BridgeConfigV3Token, err error) {
+	tok, err := f.bridgeConfig.GetToken(&bind.CallOpts{
+		BlockNumber: big.NewInt(int64(block)),
+		Context:     ctx,
+	}, tokenId, big.NewInt(int64(chainID)))
+	if err != nil {
+		var none bridgeconfig.BridgeConfigV3Token
+		return none, fmt.Errorf("could not get token id: %w", err)
+	}
+	return tok, nil
 }
 
 var _ Fetcher = &fetcher{}

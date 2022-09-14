@@ -6,7 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/configfetcher"
 )
 
-func (c *ConfigSuite) TestGetTokenID() {
+func (c *ConfigSuite) TestToken() {
 	_, bridgeConfigContract := c.deployManager.GetBridgeConfigV3(c.GetTestContext(), c.testBackend)
 
 	fetcher, err := configfetcher.NewFetcher(bridgeConfigContract.Address(), c.testBackend)
@@ -17,7 +17,13 @@ func (c *ConfigSuite) TestGetTokenID() {
 
 	for _, testToken := range testTokens {
 		tokenID, err := fetcher.GetTokenID(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), uint32(curentBlockNumber), common.HexToAddress(testToken.TokenAddress))
+
 		Nil(c.T(), err)
 		Equal(c.T(), tokenID, testToken.tokenID)
+		token, err := fetcher.GetToken(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), uint32(curentBlockNumber), tokenID)
+		Nil(c.T(), err)
+		Equal(c.T(), common.HexToAddress(testToken.TokenAddress).String(), common.HexToAddress(token.TokenAddress).String())
+		Equal(c.T(), testToken.SwapFee, token.SwapFee)
+		Equal(c.T(), testToken.IsUnderlying, token.IsUnderlying)
 	}
 }

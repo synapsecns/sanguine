@@ -4,12 +4,23 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
-	"math/big"
 )
-
 
 // StoreSwapEvent stores a deposit event.
 func (s *Store) StoreSwapEvent(ctx context.Context, data swap.EventLog, chainID uint32) error {
+
+	var provider *string
+	if data.GetBuyer() != nil {
+		r := data.GetProvider().String()
+		provider = &r
+	}
+
+	var buyer *string
+	if data.GetBuyer() != nil {
+		r := data.GetBuyer().String()
+		buyer = &r
+	}
+
 	dbTx := s.DB().WithContext(ctx).
 		Create(&SwapEvent{
 			ContractAddress: data.GetContractAddress().String(),
@@ -17,12 +28,12 @@ func (s *Store) StoreSwapEvent(ctx context.Context, data swap.EventLog, chainID 
 			EventType:       data.GetEventType().Int(),
 			BlockNumber:     data.GetBlockNumber(),
 			TxHash:          data.GetTxHash().String(),
-		    Buyer:           data.GetBuyer(),
+			Buyer:           buyer,
 			TokensSold:      data.GetTokensSold(),
 			TokensBought:    data.GetTokensBought(),
 			SoldID:          data.GetSoldId(),
 			BoughtID:        data.GetBoughtId(),
-			Provider:        data.GetProvider(),
+			Provider:        provider,
 			TokenAmounts:    data.GetTokenAmounts(),
 			Fees:            data.GetFees(),
 			Invariant:       data.GetInvariant(),
@@ -39,8 +50,7 @@ func (s *Store) StoreSwapEvent(ctx context.Context, data swap.EventLog, chainID 
 			InitialTime:     data.GetInitialTime(),
 			FutureTime:      data.GetFutureTime(),
 			CurrentA:        data.GetCurrentA(),
-			Time:            data.GetTime()
-
+			Time:            data.GetTime(),
 		})
 
 	if dbTx.Error != nil {
