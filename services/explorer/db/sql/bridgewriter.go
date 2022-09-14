@@ -8,7 +8,7 @@ import (
 )
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
-func (s Store) StoreEvent(ctx context.Context, event bridge.EventLog, chainID uint32) error {
+func (s *Store) StoreEvent(ctx context.Context, event bridge.EventLog, chainID uint32) error {
 	dbTx := s.DB().WithContext(ctx).
 		Create(s.eventToBridgeEvent(event, chainID))
 
@@ -19,7 +19,7 @@ func (s Store) StoreEvent(ctx context.Context, event bridge.EventLog, chainID ui
 	return nil
 }
 
-func (s Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32) BridgeEvent {
+func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32) BridgeEvent {
 	var recipient *string
 	if event.GetRecipient() != nil {
 		r := event.GetRecipient().String()

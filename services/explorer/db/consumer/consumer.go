@@ -1,8 +1,6 @@
 package consumer
 
 import (
-	"context"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/consumer/bridge"
 )
@@ -18,6 +16,6 @@ func NewConsumer(consumerDB db.ConsumerDB, bridgeParser bridge.Parser) *Consumer
 	return &Consumer{consumerDB, bridgeParser}
 }
 
-func (c Consumer) getLogsRange(ctx context.Context, chainID uint32, fromBlock, toBlock uint64) ([]ethTypes.Log, error) {
-
-}
+//func (c Consumer) getLogsRange(ctx context.Context, chainID uint32, fromBlock, toBlock uint64) ([]ethTypes.Log, error) {
+//
+//}
