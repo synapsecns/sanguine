@@ -33,15 +33,14 @@ func (s Store) DB() *gorm.DB {
 // NamingStrategy is exported here for testing.
 var NamingStrategy = schema.NamingStrategy{}
 
-// NewClickhouseStore creates a new mysql store for a given data store.
+// NewClickhouseStore creates a new clickhouse store for a given data store.
 func NewClickhouseStore(ctx context.Context, dbURL string) (db.ConsumerDB, error) {
 	pool, err := dockertest.NewPool("")
 
 	if err != nil {
-		fmt.Printf("fail")
+		return nil, fmt.Errorf("could not create docker pool: %w", err)
 	}
 	// pulls an image, creates a container based on it and runs it
-	fmt.Printf("2")
 	runOptions := &dockertest.RunOptions{
 		Repository: "clickhouse/clickhouse-server",
 		Tag:        "latest",
@@ -51,7 +50,7 @@ func NewClickhouseStore(ctx context.Context, dbURL string) (db.ConsumerDB, error
 			"CLICKHOUSE_PASSWORD=" + "clickhouse",
 			"CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=" + "1",
 		},
-		Labels:       map[string]string{"goose_test": "1"},
+		Labels:       map[string]string{"clickhouse_test": "1"},
 		PortBindings: make(map[docker.Port][]docker.PortBinding),
 	}
 	runOptions.PortBindings[docker.Port("9000/tcp")] = []docker.PortBinding{
@@ -64,12 +63,12 @@ func NewClickhouseStore(ctx context.Context, dbURL string) (db.ConsumerDB, error
 	})
 
 	if err != nil {
-		fmt.Printf("fail")
+		return nil, fmt.Errorf("could not run resource: %w", err)
 	}
 
 	// Fetch port assigned to container
 	// address := fmt.Sprintf("%s:%s", "localhost", resource.GetPort("9000/tcp"))
-	address := dbURL
+	address := fmt.Sprintf("clickhouse://clickhouseUser:clickhouse@localhost:9000/clickhouse")
 	cleanup := func() {
 		if err := pool.Purge(resource); err != nil {
 			logger.Debug("failed to purge resource: %v", err)
@@ -89,6 +88,7 @@ func NewClickhouseStore(ctx context.Context, dbURL string) (db.ConsumerDB, error
 }
 
 func openGormClickhouse(ctx context.Context, address string) (*Store, error) {
+	fmt.Println("SOME", gormClickhouse.Open(address))
 	gdb, err := gorm.Open(gormClickhouse.Open(address), &gorm.Config{
 		Logger:               dbcommon.GetGormLogger(logger),
 		FullSaveAssociations: true,
