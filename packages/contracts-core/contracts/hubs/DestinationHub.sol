@@ -6,13 +6,22 @@ import { AttestationHub } from "./AttestationHub.sol";
 import { Report } from "../libs/Report.sol";
 import { ReportHub } from "./ReportHub.sol";
 import { DomainContext } from "../context/DomainContext.sol";
+import { GlobalNotaryRegistry } from "../registry/GlobalNotaryRegistry.sol";
+import { GuardRegistry } from "../registry/GuardRegistry.sol";
+
 import { TypedMemView } from "../libs/TypedMemView.sol";
 
 /**
  * @notice Keeps track of remote Origins by storing each Origin
  * merkle state in a separate Mirror.
  */
-abstract contract DestinationHub is DomainContext, AttestationHub, ReportHub {
+abstract contract DestinationHub is
+    DomainContext,
+    AttestationHub,
+    ReportHub,
+    GlobalNotaryRegistry,
+    GuardRegistry
+{
     using Attestation for bytes29;
     using Report for bytes29;
     using TypedMemView for bytes29;

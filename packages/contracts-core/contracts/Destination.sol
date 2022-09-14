@@ -3,8 +3,6 @@ pragma solidity 0.8.13;
 
 // ============ Internal Imports ============
 import { LocalDomainContext } from "./context/LocalDomainContext.sol";
-import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
-import { GuardRegistry } from "./registry/GuardRegistry.sol";
 import { DestinationHub } from "./hubs/DestinationHub.sol";
 import { SystemContract } from "./system/SystemContract.sol";
 import { Version0 } from "./Version0.sol";
@@ -23,14 +21,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * @notice Track merkle root state of Origin contracts on other chains,
  * prove and dispatch messages to end recipients.
  */
-contract Destination is
-    Version0,
-    SystemContract,
-    LocalDomainContext,
-    DestinationHub,
-    GlobalNotaryRegistry,
-    GuardRegistry
-{
+contract Destination is Version0, SystemContract, LocalDomainContext, DestinationHub {
     // ============ Libraries ============
 
     using Message for bytes;
