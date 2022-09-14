@@ -10,19 +10,6 @@ import (
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 )
 
-//// Parser parses bridge events
-//// TODO: consider moving this into a separate package.
-//type Parser interface {
-//	// EventType determines if an event was initiated by the bridge or the user.
-//	// note: this currently will not handle multiple topics that corespond to events (think a multicall)
-//	// support for this will need to be added for multi-call style rollups, etc
-//	EventType(log ethTypes.Log) (_ types.EventType, ok bool)
-//	// GetCrossChainUserEvent parses a cross chain user event from a log.
-//	GetCrossChainUserEvent(log ethTypes.Log) (_ types.CrossChainUserEventLog, err error)
-//	// GetCrossChainBridgeEvent gets a bridge event log.
-//	GetCrossChainBridgeEvent(logs ethTypes.Log) (_ types.CrossChainBridgeEventLog, err error)
-//}
-
 type Parser struct {
 	// consumerDB is the database to store parsed data in
 	consumerDB db.ConsumerDB
@@ -52,46 +39,181 @@ func (p *Parser) EventType(log ethTypes.Log) (_ bridgeTypes.EventType, ok bool) 
 	return bridgeTypes.EventType(len(bridgeTypes.AllEventTypes()) + 2), false
 }
 
-func (p *Parser) GetCrossChainUserEvent(log ethTypes.Log) error {
+func (p *Parser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	for _, logTopic := range log.Topics {
 		switch logTopic {
-		case bridge.Topic(bridgeTypes.RedeemAndSwapEvent):
-			p.filterer.ParseTokenRedeemAndSwap(log)
-		case bridge.Topic(bridgeTypes.DepositAndSwapEvent):
-			p.filterer.ParseTokenDepositAndSwap(log)
-		case bridge.Topic(bridgeTypes.RedeemAndRemoveEvent):
-			p.filterer.ParseTokenRedeemAndRemove(log)
-		case bridge.Topic(bridgeTypes.RedeemEvent):
-			p.filterer.ParseTokenRedeem(log)
 		case bridge.Topic(bridgeTypes.DepositEvent):
-			iface, err := p.filterer.ParseTokenDeposit(log)
+			err := p.parseAndStoreDeposit(ctx, log, chainID)
 			if err != nil {
-				return fmt.Errorf("could not parse token deposit: %w", err)
+				return fmt.Errorf("could not parse and store deposit: %w", err)
 			}
-			err = p.consumerDB.StoreDeposit(context.TODO(), iface, 1)
+		case bridge.Topic(bridgeTypes.RedeemEvent):
+			err := p.parseAndStoreRedeem(ctx, log, chainID)
 			if err != nil {
-				return fmt.Errorf("could not store deposit: %w", err)
+				return fmt.Errorf("could not parse and store redeem: %w", err)
 			}
-			return nil
+		case bridge.Topic(bridgeTypes.WithdrawEvent):
+			err := p.parseAndStoreWithdraw(ctx, log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not parse and store withdraw: %w", err)
+			}
+		case bridge.Topic(bridgeTypes.MintEvent):
+			err := p.parseAndStoreMint(ctx, log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not parse and store mint: %w", err)
+			}
+		case bridge.Topic(bridgeTypes.DepositAndSwapEvent):
+			err := p.parseAndStoreDepositAndSwap(ctx, log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not parse and store deposit and swap: %w", err)
+			}
+		case bridge.Topic(bridgeTypes.MintAndSwapEvent):
+			err := p.parseAndStoreMintAndSwap(ctx, log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not parse and store mint and swap: %w", err)
+			}
+		case bridge.Topic(bridgeTypes.RedeemAndSwapEvent):
+			err := p.parseAndStoreRedeemAndSwap(ctx, log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not parse and store redeem and swap: %w", err)
+			}
+		case bridge.Topic(bridgeTypes.RedeemAndRemoveEvent):
+			err := p.parseAndStoreRedeemAndRemove(ctx, log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not parse and store redeem and remove: %w", err)
+			}
+		case bridge.Topic(bridgeTypes.WithdrawAndRemoveEvent):
+			err := p.parseAndStoreWithdrawAndRemove(ctx, log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not parse and store withdraw and remove: %w", err)
+			}
 		case bridge.Topic(bridgeTypes.RedeemV2Event):
-			p.filterer.ParseTokenRedeemV2(log)
+			err := p.parseAndStoreRedeemV2(ctx, log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not parse and store redeem v2: %w", err)
+			}
 		}
 	}
-	return fmt.Errorf("did not find event type for log")
+
+	return nil
 }
 
-func (p *Parser) GetCrossChainBridgeEvent(log ethTypes.Log) error {
-	for _, logTopic := range log.Topics {
-		switch logTopic {
-		case bridge.Topic(bridgeTypes.WithdrawEvent):
-			p.filterer.ParseTokenWithdraw(log)
-		case bridge.Topic(bridgeTypes.MintEvent):
-			p.filterer.ParseTokenMint(log)
-		case bridge.Topic(bridgeTypes.MintAndSwapEvent):
-			p.filterer.ParseTokenMintAndSwap(log)
-		case bridge.Topic(bridgeTypes.WithdrawAndRemoveEvent):
-			p.filterer.ParseTokenWithdrawAndRemove(log)
-		}
+func (p *Parser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	iface, err := p.filterer.ParseTokenDeposit(log)
+	if err != nil {
+		return fmt.Errorf("could not parse token deposit: %w", err)
 	}
-	return fmt.Errorf("could not get cross chain event log: %w", err)
+	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	if err != nil {
+		return fmt.Errorf("could not store deposit: %w", err)
+	}
+	return nil
+}
+
+func (p *Parser) parseAndStoreRedeem(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	iface, err := p.filterer.ParseTokenRedeem(log)
+	if err != nil {
+		return fmt.Errorf("could not parse token redeem: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	if err != nil {
+		return fmt.Errorf("could not store redeem: %w", err)
+	}
+	return nil
+}
+
+func (p *Parser) parseAndStoreWithdraw(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	iface, err := p.filterer.ParseTokenWithdraw(log)
+	if err != nil {
+		return fmt.Errorf("could not parse token withdraw: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	if err != nil {
+		return fmt.Errorf("could not store withdraw: %w", err)
+	}
+	return nil
+}
+
+func (p *Parser) parseAndStoreMint(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	iface, err := p.filterer.ParseTokenMint(log)
+	if err != nil {
+		return fmt.Errorf("could not parse token mint: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	if err != nil {
+		return fmt.Errorf("could not store mint: %w", err)
+	}
+	return nil
+}
+
+func (p *Parser) parseAndStoreDepositAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	iface, err := p.filterer.ParseTokenDepositAndSwap(log)
+	if err != nil {
+		return fmt.Errorf("could not parse token deposit and swap: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	if err != nil {
+		return fmt.Errorf("could not store deposit and swap: %w", err)
+	}
+	return nil
+}
+
+func (p *Parser) parseAndStoreMintAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	iface, err := p.filterer.ParseTokenMintAndSwap(log)
+	if err != nil {
+		return fmt.Errorf("could not parse token mint and swap: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	if err != nil {
+		return fmt.Errorf("could not store mint and swap: %w", err)
+	}
+	return nil
+}
+
+func (p *Parser) parseAndStoreRedeemAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	iface, err := p.filterer.ParseTokenRedeemAndSwap(log)
+	if err != nil {
+		return fmt.Errorf("could not parse token redeem and swap: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	if err != nil {
+		return fmt.Errorf("could not store redeem and swap: %w", err)
+	}
+	return nil
+}
+
+func (p *Parser) parseAndStoreRedeemAndRemove(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	iface, err := p.filterer.ParseTokenRedeemAndRemove(log)
+	if err != nil {
+		return fmt.Errorf("could not parse token redeem and remove: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	if err != nil {
+		return fmt.Errorf("could not store redeem and remove: %w", err)
+	}
+	return nil
+}
+
+func (p *Parser) parseAndStoreWithdrawAndRemove(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	iface, err := p.filterer.ParseTokenWithdrawAndRemove(log)
+	if err != nil {
+		return fmt.Errorf("could not parse token withdraw and remove: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	if err != nil {
+		return fmt.Errorf("could not store withdraw and remove: %w", err)
+	}
+	return nil
+}
+
+func (p *Parser) parseAndStoreRedeemV2(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	iface, err := p.filterer.ParseTokenRedeemV2(log)
+	if err != nil {
+		return fmt.Errorf("could not parse token redeem v2: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	if err != nil {
+		return fmt.Errorf("could not store redeem v2: %w", err)
+	}
+	return nil
 }

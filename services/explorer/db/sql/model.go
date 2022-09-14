@@ -74,6 +74,8 @@ type BridgeEvent struct {
 	BlockNumber uint64 `gorm:"column:block_number;primaryKey;auto_increment:false"`
 	// TxHash is the transaction hash of the event
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
+	// Token is the address of the token
+	Token string `gorm:"column:token"`
 	// Amount is the amount of tokens
 	Amount big.Int `gorm:"column:amount"`
 
@@ -81,8 +83,6 @@ type BridgeEvent struct {
 	Recipient *string `gorm:"column:recipient"`
 	// DestinationChainID is the chain id of the chain to send the tokens to
 	DestinationChainID *uint32 `gorm:"column:destination_chain_id"`
-	// Token is the address of the token
-	Token *string `gorm:"column:token"`
 	// Fee is the fee
 	Fee *big.Int `gorm:"column:fee"`
 	// Kappa is the keccak256 hash of the transaction
