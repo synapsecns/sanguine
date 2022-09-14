@@ -122,7 +122,6 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
 
     function test_handle() public {
         test_setTrustedSender();
-
         vm.prank(destination);
         client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
     }
