@@ -8,55 +8,58 @@ type SwapEvent struct {
 	ContractAddress string `gorm:"column:contract_address;primaryKey"`
 	// ChainID is the chain id of the contract that generated the event
 	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	// BlockNumber is the block number of the event
+	BlockNumber uint64 `gorm:"column:block_number;primaryKey;auto_increment:false"`
+	// TxHash is the transaction hash of the event
+	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// EventType is the type of the event
 	EventType uint8 `gorm:"column:event_type;primaryKey;auto_increment:false"`
-
-	// Buyer is the address of the buyer
-	Buyer string `gorm:"column:buyer"`
-	// TokensSold is the amount of tokens sold
-	TokensSold big.Int `gorm:"column:tokens_sold"`
-	// TokensBought is the amount of tokens bought
-	TokensBought big.Int `gorm:"column:tokens_bought"`
-	// SoldID is the id of the token sold
-	SoldID big.Int `gorm:"column:sold_id"`
-	// BoughtID is the id of the token bought
-	BoughtID big.Int `gorm:"column:bought_id"`
-	// Provider is the address of the provider
-	Provider string `gorm:"column:provider"`
-	// TokenAmounts is the amounts of each token to transact
-	TokenAmounts []big.Int `gorm:"column:token_amounts"`
-	// Fees is the fees for each token
-	Fees []big.Int `gorm:"column:fees"`
-	// Invariant is the invariant of the pool
-	Invariant big.Int `gorm:"column:invariant"`
-	// LPTokenSupply is the supply of the LP token
-	LPTokenSupply big.Int `gorm:"column:lp_token_supply"`
-	// LPTokenAmount is the amount of LP tokens
-	LPTokenAmount big.Int `gorm:"column:lp_token_amount"`
-	// NewAdminFee is the new admin fee
-	NewAdminFee big.Int `gorm:"column:new_admin_fee"`
-	// NewSwapFee is the new swap fee
-	NewSwapFee big.Int `gorm:"column:new_swap_fee"`
 	// TokenIndex is the index of the token in the pool
-	TokenIndex uint8 `gorm:"column:token_index"`
+	TokenIndex *uint8 `gorm:"column:token_index"`
 	// Amount is the amount of tokens
-	Amount big.Int `gorm:"column:amount"`
+	Amount *big.Int `gorm:"column:amount"`
 	// AmountFee is the amount of fees
-	AmountFee big.Int `gorm:"column:amount_fee"`
+	AmountFee *big.Int `gorm:"column:amount_fee"`
 	// ProtocolFee is the protocol fee
-	ProtocolFee big.Int `gorm:"column:protocol_fee"`
+	ProtocolFee *big.Int `gorm:"column:protocol_fee"`
+	// Buyer is the address of the buyer
+	Buyer *string `gorm:"column:buyer"`
+	// TokensSold is the amount of tokens sold
+	TokensSold *big.Int `gorm:"column:tokens_sold"`
+	// SoldID is the id of the token sold
+	SoldID *big.Int `gorm:"column:sold_id"`
+	// TokensBought is the amount of tokens bought
+	TokensBought *big.Int `gorm:"column:tokens_bought"`
+	// BoughtID is the id of the token bought
+	BoughtID *big.Int `gorm:"column:bought_id"`
+	// Provider is the address of the provider
+	Provider *string `gorm:"column:provider"`
+	// TokenAmounts is the amounts of each token to transact
+	TokenAmounts []*big.Int `gorm:"column:token_amounts"`
+	// Fees is the fees for each token
+	Fees []*big.Int `gorm:"column:fees"`
+	// Invariant is the invariant of the pool
+	Invariant *big.Int `gorm:"column:invariant"`
+	// LPTokenAmount is the amount of LP tokens
+	LPTokenAmount *big.Int `gorm:"column:lp_token_amount"`
+	// LPTokenSupply is the supply of the LP token
+	LPTokenSupply *big.Int `gorm:"column:lp_token_supply"`
+	// NewAdminFee is the new admin fee
+	NewAdminFee *big.Int `gorm:"column:new_admin_fee"`
+	// NewSwapFee is the new swap fee
+	NewSwapFee *big.Int `gorm:"column:new_swap_fee"`
 	// OldA is the old A value
-	OldA big.Int `gorm:"column:old_a"`
+	OldA *big.Int `gorm:"column:old_a"`
 	// NewA is the new A value
-	NewA big.Int `gorm:"column:new_a"`
+	NewA *big.Int `gorm:"column:new_a"`
 	// InitialTime is the initial time
-	InitialTime big.Int `gorm:"column:initial_time"`
+	InitialTime *big.Int `gorm:"column:initial_time"`
 	// FutureTime is the future time
-	FutureTime big.Int `gorm:"column:future_time"`
+	FutureTime *big.Int `gorm:"column:future_time"`
 	// CurrentA is the current A value
-	CurrentA big.Int `gorm:"column:current_a"`
+	CurrentA *big.Int `gorm:"column:current_a"`
 	// Time is the time
-	Time big.Int `gorm:"column:time"`
+	Time *big.Int `gorm:"column:time"`
 }
 
 // BridgeEvent stores data for emitted events from the Bridge contract.
