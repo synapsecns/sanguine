@@ -8,8 +8,7 @@
  */
 package rest
 
-type RpcStatus struct {
-	Code int32 `json:"code,omitempty"`
-	Message string `json:"message,omitempty"`
-	Details []map[string]interface{} `json:"details,omitempty"`
+type V1NullableBool struct {
+	Null string `json:"null,omitempty"`
+	Data bool `json:"data,omitempty"`
 }

@@ -10,5 +10,5 @@ package rest
 
 type V1FilterLogsRequest struct {
 	Filter *V1LogFilter `json:"filter,omitempty"`
-	Page   int64        `json:"page,omitempty"`
+	Page int64 `json:"page,omitempty"`
 }

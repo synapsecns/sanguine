@@ -12,6 +12,7 @@ message LogFilter {
   NullableUint64  block_number = 3;
   NullableString tx_hash = 4;
   NullableUint64 tx_index = 5;
-  NullableUint64 index = 6;
-  bool confirmed = 7;
+  NullableString block_hash = 6;
+  NullableUint64 index = 7;
+  NullableBool confirmed = 8;
 }

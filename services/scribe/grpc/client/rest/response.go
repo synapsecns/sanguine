@@ -30,11 +30,13 @@ type APIResponse struct {
 }
 
 func NewAPIResponse(r *http.Response) *APIResponse {
+
 	response := &APIResponse{Response: r}
 	return response
 }
 
 func NewAPIResponseWithError(errorMessage string) *APIResponse {
+
 	response := &APIResponse{Message: errorMessage}
 	return response
 }

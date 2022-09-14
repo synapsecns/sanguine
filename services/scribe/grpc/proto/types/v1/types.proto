@@ -39,3 +39,10 @@ message NullableUint64 {
     uint64 data = 2;
   }
 }
+
+message NullableBool {
+  oneof kind {
+    google.protobuf.NullValue null = 1;
+    bool data = 2;
+  }
+}

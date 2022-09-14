@@ -85,12 +85,18 @@ func (g *APISuite) SetupTest() {
 	})
 
 	g.Eventually(func() bool {
-		res, _, err := g.grpcClient.ScribeServiceApi.ScribeServiceCheck(g.GetTestContext(), rest.V1HealthCheckRequest{
+		res, realRes, err := g.grpcClient.ScribeServiceApi.ScribeServiceCheck(g.GetTestContext(), rest.V1HealthCheckRequest{
 			Service: "any",
 		})
-		Nil(g.T(), err)
+		if err == nil {
+			defer func() {
+				_ = realRes.Body.Close()
+			}()
 
-		return *res.Status == rest.SERVING_HealthCheckResponseServingStatus
+			return *res.Status == rest.SERVING_HealthCheckResponseServingStatus
+		}
+
+		return false
 	})
 
 	// go func() {

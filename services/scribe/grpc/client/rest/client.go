@@ -83,7 +83,7 @@ func selectHeaderContentType(contentTypes []string) string {
 	return contentTypes[0] // use the first content type specified in 'consumes'
 }
 
-// selectHeaderAccept join all accept types and return.
+// selectHeaderAccept join all accept types and return
 func selectHeaderAccept(accepts []string) string {
 	if len(accepts) == 0 {
 		return ""
@@ -96,7 +96,7 @@ func selectHeaderAccept(accepts []string) string {
 	return strings.Join(accepts, ",")
 }
 
-// contains is a case insenstive match, finding needle in a haystack.
+// contains is a case insenstive match, finding needle in a haystack
 func contains(haystack []string, needle string) bool {
 	for _, a := range haystack {
 		if strings.ToLower(a) == strings.ToLower(needle) {
@@ -147,12 +147,12 @@ func (c *APIClient) callAPI(request *http.Request) (*http.Response, error) {
 	return c.cfg.HTTPClient.Do(request)
 }
 
-// Change base path to allow switching to mocks.
+// Change base path to allow switching to mocks
 func (c *APIClient) ChangeBasePath(path string) {
 	c.cfg.BasePath = path
 }
 
-// prepareRequest build the request.
+// prepareRequest build the request
 func (c *APIClient) prepareRequest(
 	ctx context.Context,
 	path string, method string,
@@ -162,6 +162,7 @@ func (c *APIClient) prepareRequest(
 	formParams url.Values,
 	fileName string,
 	fileBytes []byte) (localVarRequest *http.Request, err error) {
+
 	var body *bytes.Buffer
 
 	// Detect postBody type and post.
@@ -200,7 +201,7 @@ func (c *APIClient) prepareRequest(
 		}
 		if len(fileBytes) > 0 && fileName != "" {
 			w.Boundary()
-			// _, fileNm := filepath.Split(fileName)
+			//_, fileNm := filepath.Split(fileName)
 			part, err := w.CreateFormFile("file", filepath.Base(fileName))
 			if err != nil {
 				return nil, err
@@ -308,21 +309,21 @@ func (c *APIClient) prepareRequest(
 }
 
 func (c *APIClient) decode(v interface{}, b []byte, contentType string) (err error) {
-	if strings.Contains(contentType, "application/xml") {
-		if err = xml.Unmarshal(b, v); err != nil {
-			return err
+		if strings.Contains(contentType, "application/xml") {
+			if err = xml.Unmarshal(b, v); err != nil {
+				return err
+			}
+			return nil
+		} else if strings.Contains(contentType, "application/json") {
+			if err = json.Unmarshal(b, v); err != nil {
+				return err
+			}
+			return nil
 		}
-		return nil
-	} else if strings.Contains(contentType, "application/json") {
-		if err = json.Unmarshal(b, v); err != nil {
-			return err
-		}
-		return nil
-	}
 	return errors.New("undefined response type")
 }
 
-// Add a file to the multipart request.
+// Add a file to the multipart request
 func addFile(w *multipart.Writer, fieldName, path string) error {
 	file, err := os.Open(path)
 	if err != nil {
@@ -339,12 +340,12 @@ func addFile(w *multipart.Writer, fieldName, path string) error {
 	return err
 }
 
-// Prevent trying to import "fmt".
+// Prevent trying to import "fmt"
 func reportError(format string, a ...interface{}) error {
 	return fmt.Errorf(format, a...)
 }
 
-// Set request body from an interface{}.
+// Set request body from an interface{}
 func setBody(body interface{}, contentType string) (bodyBuf *bytes.Buffer, err error) {
 	if bodyBuf == nil {
 		bodyBuf = &bytes.Buffer{}
@@ -375,7 +376,7 @@ func setBody(body interface{}, contentType string) (bodyBuf *bytes.Buffer, err e
 	return bodyBuf, nil
 }
 
-// detectContentType method is used to figure out `Request.Body` content type for request header.
+// detectContentType method is used to figure out `Request.Body` content type for request header
 func detectContentType(body interface{}) string {
 	contentType := "text/plain; charset=utf-8"
 	kind := reflect.TypeOf(body).Kind()
@@ -461,12 +462,12 @@ func (e GenericSwaggerError) Error() string {
 	return e.error
 }
 
-// Body returns the raw bytes of the response.
+// Body returns the raw bytes of the response
 func (e GenericSwaggerError) Body() []byte {
 	return e.body
 }
 
-// Model returns the unpacked model of the error.
+// Model returns the unpacked model of the error
 func (e GenericSwaggerError) Model() interface{} {
 	return e.model
 }

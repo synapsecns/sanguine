@@ -1,6 +1,7 @@
 package api_test
 
 import (
+	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -43,7 +44,7 @@ func (g APISuite) TestRetrieveData() {
 		Nil(g.T(), err)
 	}
 
-	// test get logs and get logs in a range
+	// test get logs and get logs in a range (Graphql)
 	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	// there were 20 logs created (2 per loop, in a loop of 10)
@@ -52,6 +53,20 @@ func (g APISuite) TestRetrieveData() {
 	Nil(g.T(), err)
 	// from 2-5, there were 8 logs created (2 per loop, in a range of 4)
 	Equal(g.T(), len(logsRange.Response), 8)
+
+	// test get logs and get logs in a range (GRPC)
+	grpcLogs, res, err := g.grpcClient.ScribeServiceApi.ScribeServiceFilterLogs(g.GetTestContext(), rest.V1FilterLogsRequest{
+		Filter: &rest.V1LogFilter{
+			ChainId: &rest.V1NullableUint32{
+				Data: int64(chainID),
+			},
+		},
+		Page: 1,
+	})
+
+	Nil(g.T(), err)
+	Equal(g.T(), len(grpcLogs.Logs), 20)
+	_ = res.Body.Close()
 
 	// test get receipts and get receipts in a range
 	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1)

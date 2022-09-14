@@ -32,17 +32,17 @@ var (
 	// ContextAccessToken takes a string oauth2 access token as authentication for the request.
 	ContextAccessToken = contextKey("accesstoken")
 
-	// ContextAPIKey takes an APIKey as authentication for the request.
+	// ContextAPIKey takes an APIKey as authentication for the request
 	ContextAPIKey = contextKey("apikey")
 )
 
-// BasicAuth provides basic http authentication to a request passed via context using ContextBasicAuth.
+// BasicAuth provides basic http authentication to a request passed via context using ContextBasicAuth
 type BasicAuth struct {
 	UserName string `json:"userName,omitempty"`
 	Password string `json:"password,omitempty"`
 }
 
-// APIKey provides API key based authentication to a request passed via context using ContextAPIKey.
+// APIKey provides API key based authentication to a request passed via context using ContextAPIKey
 type APIKey struct {
 	Key    string
 	Prefix string

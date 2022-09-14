@@ -10,10 +10,10 @@ package rest
 
 type HealthCheckResponseServingStatus string
 
-// List of HealthCheckResponseServingStatus.
+// List of HealthCheckResponseServingStatus
 const (
-	UNKNOWN_HealthCheckResponseServingStatus         HealthCheckResponseServingStatus = "UNKNOWN"
-	SERVING_HealthCheckResponseServingStatus         HealthCheckResponseServingStatus = "SERVING"
-	NOT_SERVING_HealthCheckResponseServingStatus     HealthCheckResponseServingStatus = "NOT_SERVING"
+	UNKNOWN_HealthCheckResponseServingStatus HealthCheckResponseServingStatus = "UNKNOWN"
+	SERVING_HealthCheckResponseServingStatus HealthCheckResponseServingStatus = "SERVING"
+	NOT_SERVING_HealthCheckResponseServingStatus HealthCheckResponseServingStatus = "NOT_SERVING"
 	SERVICE_UNKNOWN_HealthCheckResponseServingStatus HealthCheckResponseServingStatus = "SERVICE_UNKNOWN"
 )

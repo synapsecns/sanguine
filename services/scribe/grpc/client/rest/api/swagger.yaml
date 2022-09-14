@@ -256,9 +256,18 @@ components:
           $ref: '#/components/schemas/v1NullableString'
         txIndex:
           $ref: '#/components/schemas/v1NullableUint64'
+        blockHash:
+          $ref: '#/components/schemas/v1NullableString'
         index:
           $ref: '#/components/schemas/v1NullableUint64'
         confirmed:
+          $ref: '#/components/schemas/v1NullableBool'
+    v1NullableBool:
+      type: object
+      properties:
+        "null":
+          type: string
+        data:
           type: boolean
     v1NullableString:
       type: object
