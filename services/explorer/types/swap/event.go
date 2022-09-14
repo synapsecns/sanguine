@@ -20,13 +20,13 @@ type EventLog interface {
 // FlashLoanLog is the interface for the flash loan event.
 type FlashLoanLog interface {
 	EventLog
-	// GetTokenIndex returns the token index of the flash loan.
+	// GetTokenIndex returns the token index of the tx.
 	GetTokenIndex() uint8
-	// GetAmount returns the amount of the flash loan.
+	// GetAmount returns the amount of the tx.
 	GetAmount() *big.Int
-	// GetAmountFee returns the amount fee of the flash loan.
+	// GetAmountFee returns the amount fee of the tx.
 	GetAmountFee() *big.Int
-	// GetProtocolFee returns the protocol fee of the flash loan.
+	// GetProtocolFee returns the protocol fee from the tx.
 	GetProtocolFee() *big.Int
 }
 

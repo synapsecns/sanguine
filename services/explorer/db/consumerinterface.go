@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
+	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 )
 
 // ConsumerBridgeDBWriter is the interface for writing bridge events to the ConsumerDB.
@@ -13,6 +14,7 @@ type ConsumerBridgeDBWriter interface {
 
 // ConsumerSwapDBWriter is the interface for writing swap events to the ConsumerDB.
 type ConsumerSwapDBWriter interface {
+	StoreSwapEvent(ctx context.Context, data swap.EventLog, chainID uint32) error
 }
 
 // ConsumerBridgeDBReader is the interface for reading bridge events from the ConsumerDB.
