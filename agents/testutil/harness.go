@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -51,7 +52,20 @@ func NewOriginHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend
 // Deploy deploys the origin harness.
 func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return originharness.DeployOriginHarness(transactOps, backend, OriginHarnessDomain)
+		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, OriginHarnessDomain)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", o.ContractType().ContractName(), err)
+		}
+		o.Backend().WaitForConfirmation(ctx, tx)
+
+		initializeOpts := o.Backend().GetTxContext(ctx, &transactOps.From)
+		initializeTx, err := rawHandle.Initialize(initializeOpts.TransactOpts, transactOps.From)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not set notary (%s) on %s: %w", transactOps.From, o.ContractType().ContractName(), err)
+		}
+		o.Backend().WaitForConfirmation(ctx, initializeTx)
+
+		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return originharness.NewOriginHarnessRef(address, backend)
 	})
