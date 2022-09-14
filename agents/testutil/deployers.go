@@ -51,12 +51,12 @@ func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract,
 		notaryTransactOps := d.Backend().GetTxContext(ctx, notaryManagerContract.OwnerPtr())
 
 		// set the notary contract on the notary manager
-		notaryManager, ok := notaryManagerContract.ContractHandle().(*notarymanager.NotaryManagerRef)
+		updateManager, ok := notaryManagerContract.ContractHandle().(*notarymanager.NotaryManagerRef)
 		if !ok {
 			return common.Address{}, nil, nil, fmt.Errorf("could not update contract: %w", err)
 		}
 
-		setTx, err := notaryManager.SetOrigin(notaryTransactOps.TransactOpts, address)
+		setTx, err := updateManager.SetOrigin(notaryTransactOps.TransactOpts, address)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not set origin: %w", err)
 		}
@@ -86,20 +86,7 @@ func NewNotaryManagerDeployer(registry deployer.GetOnlyContractRegistry, backend
 // Deploy deploys the notary contract.
 func (n NotaryManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := notarymanager.DeployNotaryManager(transactOps, backend, transactOps.From)
-		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not notary manager %s: %w", n.ContractType().ContractName(), err)
-		}
-
-		notaryTransactOps := n.Backend().GetTxContext(ctx, &transactOps.From)
-
-		setNotaryTx, err := rawHandle.SetNotary(notaryTransactOps.TransactOpts, transactOps.From)
-		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not set notary: %w", err)
-		}
-		n.Backend().WaitForConfirmation(ctx, setNotaryTx)
-
-		return address, tx, rawHandle, nil
+		return notarymanager.DeployNotaryManager(transactOps, backend, transactOps.From)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return notarymanager.NewNotaryManagerRef(address, backend)
 	})
