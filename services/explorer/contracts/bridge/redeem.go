@@ -23,8 +23,8 @@ func (s SynapseBridgeTokenRedeemAndSwap) GetToken() common.Address {
 }
 
 // GetAmount gets the destination chain id from the redeem and swap log.
-func (s SynapseBridgeTokenRedeemAndSwap) GetAmount() *big.Int {
-	return s.Amount
+func (s SynapseBridgeTokenRedeemAndSwap) GetAmount() big.Int {
+	return *s.Amount
 }
 
 // GetEventType gets the type of the redeem and swap event.
@@ -48,18 +48,18 @@ func (s SynapseBridgeTokenRedeemAndSwap) GetContractAddress() common.Address {
 }
 
 // GetRecipient gets the recipient address.
-func (s SynapseBridgeTokenRedeemAndSwap) GetRecipient() common.Address {
-	return s.To
+func (s SynapseBridgeTokenRedeemAndSwap) GetRecipient() *common.Address {
+	return &s.To
 }
 
 // GetTokenIndexFrom gets the index of the `from` token.
-func (s SynapseBridgeTokenRedeemAndSwap) GetTokenIndexFrom() uint8 {
-	return s.TokenIndexFrom
+func (s SynapseBridgeTokenRedeemAndSwap) GetTokenIndexFrom() *uint8 {
+	return &s.TokenIndexFrom
 }
 
 // GetTokenIndexTo gets the index of the `to` token.
-func (s SynapseBridgeTokenRedeemAndSwap) GetTokenIndexTo() uint8 {
-	return s.TokenIndexTo
+func (s SynapseBridgeTokenRedeemAndSwap) GetTokenIndexTo() *uint8 {
+	return &s.TokenIndexTo
 }
 
 // GetMinDy gets the minimum amount to receive.
@@ -72,7 +72,35 @@ func (s SynapseBridgeTokenRedeemAndSwap) GetDeadline() *big.Int {
 	return s.Deadline
 }
 
-var _ bridge.RedeemAndSwapLog = &SynapseBridgeTokenRedeemAndSwap{}
+func (s SynapseBridgeTokenRedeemAndSwap) GetSwapTokenIndex() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndSwap) GetSwapMinAmount() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndSwap) GetSwapDeadline() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndSwap) GetRecipientBytes() *[32]byte {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndSwap) GetFee() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndSwap) GetKappa() *[32]byte {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndSwap) GetSwapSuccess() *bool {
+	return nil
+}
+
+var _ bridge.EventLog = &SynapseBridgeTokenRedeemAndSwap{}
 
 // GetRaw gets the raw event logs from the redeem event.
 func (s SynapseBridgeTokenRedeem) GetRaw() ethTypes.Log {
@@ -90,8 +118,8 @@ func (s SynapseBridgeTokenRedeem) GetToken() common.Address {
 }
 
 // GetAmount gets the token amount.
-func (s SynapseBridgeTokenRedeem) GetAmount() *big.Int {
-	return s.Amount
+func (s SynapseBridgeTokenRedeem) GetAmount() big.Int {
+	return *s.Amount
 }
 
 // GetEventType gets the type of the redeem event.
@@ -115,11 +143,55 @@ func (s SynapseBridgeTokenRedeem) GetContractAddress() common.Address {
 }
 
 // GetRecipient gets the recipient address.
-func (s SynapseBridgeTokenRedeem) GetRecipient() common.Address {
-	return s.To
+func (s SynapseBridgeTokenRedeem) GetRecipient() *common.Address {
+	return &s.To
 }
 
-var _ bridge.RedeemLog = &SynapseBridgeTokenRedeem{}
+func (s SynapseBridgeTokenRedeem) GetTokenIndexFrom() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeem) GetTokenIndexTo() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeem) GetMinDy() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeem) GetDeadline() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeem) GetSwapTokenIndex() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeem) GetSwapMinAmount() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeem) GetSwapDeadline() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeem) GetRecipientBytes() *[32]byte {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeem) GetFee() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeem) GetKappa() *[32]byte {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeem) GetSwapSuccess() *bool {
+	return nil
+}
+
+var _ bridge.EventLog = &SynapseBridgeTokenRedeem{}
 
 // GetRaw gets the raw event logs from the redeem and remove event.
 func (s SynapseBridgeTokenRedeemAndRemove) GetRaw() ethTypes.Log {
@@ -137,8 +209,8 @@ func (s SynapseBridgeTokenRedeemAndRemove) GetToken() common.Address {
 }
 
 // GetAmount gets the token amount.
-func (s SynapseBridgeTokenRedeemAndRemove) GetAmount() *big.Int {
-	return s.Amount
+func (s SynapseBridgeTokenRedeemAndRemove) GetAmount() big.Int {
+	return *s.Amount
 }
 
 // GetEventType gets the type of the redeem event.
@@ -162,13 +234,13 @@ func (s SynapseBridgeTokenRedeemAndRemove) GetContractAddress() common.Address {
 }
 
 // GetRecipient gets the recipient address.
-func (s SynapseBridgeTokenRedeemAndRemove) GetRecipient() common.Address {
-	return s.To
+func (s SynapseBridgeTokenRedeemAndRemove) GetRecipient() *common.Address {
+	return &s.To
 }
 
 // GetSwapTokenIndex gets the index of the swap token.
-func (s SynapseBridgeTokenRedeemAndRemove) GetSwapTokenIndex() uint8 {
-	return s.SwapTokenIndex
+func (s SynapseBridgeTokenRedeemAndRemove) GetSwapTokenIndex() *uint8 {
+	return &s.SwapTokenIndex
 }
 
 // GetSwapMinAmount gets the minimum amount to receive.
@@ -181,7 +253,39 @@ func (s SynapseBridgeTokenRedeemAndRemove) GetSwapDeadline() *big.Int {
 	return s.SwapDeadline
 }
 
-var _ bridge.RedeemAndRemoveLog = &SynapseBridgeTokenRedeemAndRemove{}
+func (s SynapseBridgeTokenRedeemAndRemove) GetTokenIndexFrom() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndRemove) GetTokenIndexTo() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndRemove) GetMinDy() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndRemove) GetDeadline() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndRemove) GetRecipientBytes() *[32]byte {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndRemove) GetFee() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndRemove) GetKappa() *[32]byte {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemAndRemove) GetSwapSuccess() *bool {
+	return nil
+}
+
+var _ bridge.EventLog = &SynapseBridgeTokenRedeemAndRemove{}
 
 // GetRaw gets the raw event logs from the redeem event.
 func (s SynapseBridgeTokenRedeemV2) GetRaw() ethTypes.Log {
@@ -199,8 +303,8 @@ func (s SynapseBridgeTokenRedeemV2) GetToken() common.Address {
 }
 
 // GetAmount gets the token amount.
-func (s SynapseBridgeTokenRedeemV2) GetAmount() *big.Int {
-	return s.Amount
+func (s SynapseBridgeTokenRedeemV2) GetAmount() big.Int {
+	return *s.Amount
 }
 
 // GetEventType gets the redeem event type.
@@ -224,8 +328,53 @@ func (s SynapseBridgeTokenRedeemV2) GetContractAddress() common.Address {
 }
 
 // GetRecipient gets the recipient address.
-func (s SynapseBridgeTokenRedeemV2) GetRecipient() [32]byte {
-	return s.To
+func (s SynapseBridgeTokenRedeemV2) GetRecipient() *common.Address {
+	return nil
 }
 
-var _ bridge.RedeemV2Log = &SynapseBridgeTokenRedeemV2{}
+// GetRecipientBytes gets the recipient address.
+func (s SynapseBridgeTokenRedeemV2) GetRecipientBytes() *[32]byte {
+	return &s.To
+}
+
+func (s SynapseBridgeTokenRedeemV2) GetTokenIndexFrom() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemV2) GetTokenIndexTo() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemV2) GetMinDy() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemV2) GetDeadline() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemV2) GetSwapTokenIndex() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemV2) GetSwapMinAmount() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemV2) GetSwapDeadline() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemV2) GetFee() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemV2) GetKappa() *[32]byte {
+	return nil
+}
+
+func (s SynapseBridgeTokenRedeemV2) GetSwapSuccess() *bool {
+	return nil
+}
+
+var _ bridge.EventLog = &SynapseBridgeTokenRedeemV2{}

@@ -18,8 +18,8 @@ func (s SynapseBridgeTokenWithdraw) GetToken() common.Address {
 }
 
 // GetAmount gets the token amount.
-func (s SynapseBridgeTokenWithdraw) GetAmount() *big.Int {
-	return s.Amount
+func (s SynapseBridgeTokenWithdraw) GetAmount() big.Int {
+	return *s.Amount
 }
 
 // GetEventType gets the type of the redeem event.
@@ -33,8 +33,8 @@ func (s SynapseBridgeTokenWithdraw) GetFee() *big.Int {
 }
 
 // GetKappa gets the gappa for the token withdraw.
-func (s SynapseBridgeTokenWithdraw) GetKappa() [32]byte {
-	return s.Kappa
+func (s SynapseBridgeTokenWithdraw) GetKappa() *[32]byte {
+	return &s.Kappa
 }
 
 // GetTxHash gets the unique identifier (txhash) for the withdraw.
@@ -53,11 +53,50 @@ func (s SynapseBridgeTokenWithdraw) GetContractAddress() common.Address {
 }
 
 // GetRecipient gets the recipient of the withdrawal.
-func (s SynapseBridgeTokenWithdraw) GetRecipient() common.Address {
-	return s.To
+func (s SynapseBridgeTokenWithdraw) GetRecipient() *common.Address {
+	return &s.To
 }
 
-var _ bridge.WithdrawLog = &SynapseBridgeTokenWithdraw{}
+func (s SynapseBridgeTokenWithdraw) GetDestinationChainID() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdraw) GetTokenIndexFrom() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdraw) GetTokenIndexTo() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdraw) GetMinDy() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdraw) GetDeadline() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdraw) GetSwapTokenIndex() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdraw) GetSwapMinAmount() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdraw) GetSwapDeadline() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdraw) GetRecipientBytes() *[32]byte {
+	return nil
+}
+func (s SynapseBridgeTokenWithdraw) GetSwapSuccess() *bool {
+	return nil
+}
+
+var _ bridge.EventLog = &SynapseBridgeTokenWithdraw{}
 
 // GetToken gets the token for the withdraw and remove operation.
 func (s SynapseBridgeTokenWithdrawAndRemove) GetToken() common.Address {
@@ -65,8 +104,8 @@ func (s SynapseBridgeTokenWithdrawAndRemove) GetToken() common.Address {
 }
 
 // GetAmount gets the amount fo the withdraw.
-func (s SynapseBridgeTokenWithdrawAndRemove) GetAmount() *big.Int {
-	return s.Amount
+func (s SynapseBridgeTokenWithdrawAndRemove) GetAmount() big.Int {
+	return *s.Amount
 }
 
 // GetEventType gets the withdraw and remove event type.
@@ -100,18 +139,18 @@ func (s SynapseBridgeTokenWithdrawAndRemove) GetFee() *big.Int {
 }
 
 // GetKappa gets the kappa value for the withdraw and remove.
-func (s SynapseBridgeTokenWithdrawAndRemove) GetKappa() [32]byte {
-	return s.Kappa
+func (s SynapseBridgeTokenWithdrawAndRemove) GetKappa() *[32]byte {
+	return &s.Kappa
 }
 
 // GetRecipient gets the recipient of the withdraw and remove.
-func (s SynapseBridgeTokenWithdrawAndRemove) GetRecipient() common.Address {
-	return s.To
+func (s SynapseBridgeTokenWithdrawAndRemove) GetRecipient() *common.Address {
+	return &s.To
 }
 
 // GetSwapTokenIndex gets the index of the token to swap.
-func (s SynapseBridgeTokenWithdrawAndRemove) GetSwapTokenIndex() uint8 {
-	return s.SwapTokenIndex
+func (s SynapseBridgeTokenWithdrawAndRemove) GetSwapTokenIndex() *uint8 {
+	return &s.SwapTokenIndex
 }
 
 // GetSwapMinAmount gets the minimum amount to swap.
@@ -125,8 +164,32 @@ func (s SynapseBridgeTokenWithdrawAndRemove) GetSwapDeadline() *big.Int {
 }
 
 // GetSwapSuccess gets the swap success.
-func (s SynapseBridgeTokenWithdrawAndRemove) GetSwapSuccess() bool {
-	return s.SwapSuccess
+func (s SynapseBridgeTokenWithdrawAndRemove) GetSwapSuccess() *bool {
+	return &s.SwapSuccess
 }
 
-var _ bridge.WithdrawAndRemoveLog = &SynapseBridgeTokenWithdrawAndRemove{}
+func (s SynapseBridgeTokenWithdrawAndRemove) GetDestinationChainID() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdrawAndRemove) GetTokenIndexFrom() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdrawAndRemove) GetTokenIndexTo() *uint8 {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdrawAndRemove) GetMinDy() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdrawAndRemove) GetDeadline() *big.Int {
+	return nil
+}
+
+func (s SynapseBridgeTokenWithdrawAndRemove) GetRecipientBytes() *[32]byte {
+	return nil
+}
+
+var _ bridge.EventLog = &SynapseBridgeTokenWithdrawAndRemove{}

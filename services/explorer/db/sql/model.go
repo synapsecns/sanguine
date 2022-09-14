@@ -71,33 +71,33 @@ type BridgeEvent struct {
 	BlockNumber uint64 `gorm:"column:block_number;primaryKey;auto_increment:false"`
 	// TxHash is the transaction hash of the event
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
-
-	// Recipient is the address to send the tokens to
-	Recipient string `gorm:"column:recipient"`
-	// DestinationChainID is the chain id of the chain to send the tokens to
-	DestinationChainID uint32 `gorm:"column:destination_chain_id"`
-	// Token is the address of the token
-	Token string `gorm:"column:token"`
 	// Amount is the amount of tokens
 	Amount big.Int `gorm:"column:amount"`
+
+	// Recipient is the address to send the tokens to
+	Recipient *string `gorm:"column:recipient"`
+	// DestinationChainID is the chain id of the chain to send the tokens to
+	DestinationChainID *uint32 `gorm:"column:destination_chain_id"`
+	// Token is the address of the token
+	Token *string `gorm:"column:token"`
 	// Fee is the fee
-	Fee big.Int `gorm:"column:fee"`
+	Fee *big.Int `gorm:"column:fee"`
 	// Kappa is the keccak256 hash of the transaction
-	Kappa string `gorm:"column:kappa"`
+	Kappa *string `gorm:"column:kappa"`
 	// TokenIndexFrom is the index of the from token in the pool
-	TokenIndexFrom uint8 `gorm:"column:token_index_from"`
+	TokenIndexFrom *uint8 `gorm:"column:token_index_from"`
 	// TokenIndexTo is the index of the to token in the pool
-	TokenIndexTo uint8 `gorm:"column:token_index_to"`
+	TokenIndexTo *uint8 `gorm:"column:token_index_to"`
 	// MinDy is the minimum amount of tokens to receive
-	MinDy big.Int `gorm:"column:min_dy"`
+	MinDy *big.Int `gorm:"column:min_dy"`
 	// Deadline is the deadline of the transaction
-	Deadline big.Int `gorm:"column:deadline"`
+	Deadline *big.Int `gorm:"column:deadline"`
 	// SwapSuccess is whether the swap was successful
-	SwapSuccess bool `gorm:"column:swap_success"`
+	SwapSuccess *bool `gorm:"column:swap_success"`
 	// SwapTokenIndex is the index of the token in the pool
-	SwapTokenIndex uint8 `gorm:"column:swap_token_index"`
+	SwapTokenIndex *uint8 `gorm:"column:swap_token_index"`
 	// SwapMinAmount is the minimum amount of tokens to receive
-	SwapMinAmount big.Int `gorm:"column:swap_min_amount"`
+	SwapMinAmount *big.Int `gorm:"column:swap_min_amount"`
 	// SwapDeadline is the deadline of the swap transaction
-	SwapDeadline big.Int `gorm:"column:swap_deadline"`
+	SwapDeadline *big.Int `gorm:"column:swap_deadline"`
 }
