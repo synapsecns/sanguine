@@ -24,12 +24,14 @@ const (
 	RampAEvent
 	// StopRampAEvent is the stop ramp A event.
 	StopRampAEvent
+	//FlashLoanLogEvent is a flash loan event
+	FlashLoanLogEvent
 )
 
 // AllEventTypes is a list of the event types.
 func AllEventTypes() []EventType {
 	return []EventType{TokenSwapEvent, AddLiquidityEvent, RemoveLiquidityEvent, RemoveLiquidityOneEvent,
-		RemoveLiquidityImbalanceEvent, NewAdminFeeEvent, NewSwapFeeEvent, RampAEvent, StopRampAEvent}
+		RemoveLiquidityImbalanceEvent, NewAdminFeeEvent, NewSwapFeeEvent, RampAEvent, StopRampAEvent, FlashLoanLogEvent}
 }
 
 // Int gets the int value of the event type.
