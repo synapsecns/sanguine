@@ -9,10 +9,10 @@ import (
 type EventLog interface {
 	// GetContractAddress returns the contract address of the log.
 	GetContractAddress() common.Address
-	// GetChainID returns the chain id of the log.
-	GetChainID() uint32
-	// GetBlockNumber returns the block number of the log.
+	// GetBlockNumber returns the block number of the log.'
 	GetBlockNumber() uint64
+	// GetTxHash returns the transaction hash of the log.
+	GetTxHash() common.Hash
 	// GetEventType returns the event type of the log.
 	GetEventType() EventType
 }
@@ -20,8 +20,6 @@ type EventLog interface {
 // FlashLoanLog is the interface for the flash loan event.
 type FlashLoanLog interface {
 	EventLog
-	// GetReceiver returns the receiver of the flash loan.
-	GetReceiver() *common.Address
 	// GetTokenIndex returns the token index of the flash loan.
 	GetTokenIndex() uint8
 	// GetAmount returns the amount of the flash loan.
@@ -36,7 +34,7 @@ type FlashLoanLog interface {
 type TokenSwapLog interface {
 	EventLog
 	// GetBuyer returns the buyer of the token swap.
-	GetBuyer() *common.Address
+	GetBuyer() common.Address
 	// GetTokensSold returns the amount of tokens sold.
 	GetTokensSold() *big.Int
 	// GetTokensBought returns the amount of tokens bought.
@@ -51,7 +49,7 @@ type TokenSwapLog interface {
 type AddLiquidityLog interface {
 	EventLog
 	// GetProvider returns the provider adding liquidity.
-	GetProvider() *common.Address
+	GetProvider() common.Address
 	// GetTokenAmounts returns the amount of tokens added.
 	GetTokenAmounts() []*big.Int
 	// GetFees returns the fees for each token.
@@ -66,7 +64,7 @@ type AddLiquidityLog interface {
 type RemoveLiquidityLog interface {
 	EventLog
 	// GetProvider returns the provider removing liquidity.
-	GetProvider() *common.Address
+	GetProvider() common.Address
 	// GetTokenAmounts returns the amount of tokens removed.
 	GetTokenAmounts() []*big.Int
 	// GetLPTokenSupply returns the LP token supply.
@@ -77,7 +75,7 @@ type RemoveLiquidityLog interface {
 type RemoveLiquidityOneLog interface {
 	EventLog
 	// GetProvider returns the provider removing liquidity.
-	GetProvider() *common.Address
+	GetProvider() common.Address
 	// GetLPTokenAmount returns the LP token amount.
 	GetLPTokenAmount() *big.Int
 	// GetLPTokenSupply returns the LP token supply.
@@ -92,7 +90,7 @@ type RemoveLiquidityOneLog interface {
 type RemoveLiquidityImbalanceLog interface {
 	EventLog
 	// GetProvider returns the provider removing liquidity.
-	GetProvider() *common.Address
+	GetProvider() common.Address
 	// GetTokenAmounts returns the amount of tokens removed.
 	GetTokenAmounts() []*big.Int
 	// GetFees returns the fees for each token.
