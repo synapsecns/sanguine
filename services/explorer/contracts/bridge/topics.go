@@ -84,9 +84,9 @@ func topicMap() map[bridge.EventType]common.Hash {
 	}
 }
 
-// eventTypeFromTopic gets the event type from the topic
+// EventTypeFromTopic gets the event type from the topic
 // returns nil if the topic is not found.
-func eventTypeFromTopic(ogTopic common.Hash) *bridge.EventType {
+func EventTypeFromTopic(ogTopic common.Hash) *bridge.EventType {
 	for eventType, topic := range topicMap() {
 		if bytes.Equal(ogTopic.Bytes(), topic.Bytes()) {
 			return &eventType

@@ -27,7 +27,7 @@ func (s SynapseBridgeTokenDeposit) GetAmount() *big.Int {
 	return s.Amount
 }
 
-// GetEventType gets the type of the tokend eposit event.
+// GetEventType gets the type of the token deposit event.
 func (s SynapseBridgeTokenDeposit) GetEventType() bridge.EventType {
 	return bridge.DepositEvent
 }

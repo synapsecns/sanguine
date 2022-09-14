@@ -67,9 +67,13 @@ type BridgeEvent struct {
 	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
 	// EventType is the type of the event
 	EventType uint8 `gorm:"column:event_type;primaryKey;auto_increment:false"`
+	// BlockNumber is the block number of the event
+	BlockNumber uint64 `gorm:"column:block_number;primaryKey;auto_increment:false"`
+	// TxHash is the transaction hash of the event
+	TxHash string `gorm:"column:tx_hash;primaryKey"`
 
-	// To is the address to send the tokens to
-	To string `gorm:"column:to"`
+	// Recipient is the address to send the tokens to
+	Recipient string `gorm:"column:recipient"`
 	// DestinationChainID is the chain id of the chain to send the tokens to
 	DestinationChainID uint32 `gorm:"column:destination_chain_id"`
 	// Token is the address of the token
