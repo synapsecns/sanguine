@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// NewClickhouseStore creates a new clickhouse db hosted at localhost:xxxx with ory/dockertest
+// NewClickhouseStore creates a new clickhouse db hosted at localhost:xxxx with ory/dockertest.
 func NewClickhouseStore(src string) (func(), *int, error) {
 	timeout := time.Second
 	port := freeport.GetPort()

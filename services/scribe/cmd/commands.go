@@ -4,13 +4,12 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/scribe/api"
 	"os"
-
-	"github.com/hashicorp/consul/sdk/freeport"
-	"github.com/synapsecns/sanguine/services/scribe/graphql/server"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/hashicorp/consul/sdk/freeport"
 	"github.com/jftuga/termsize"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -97,6 +96,12 @@ var portFlag = &cli.UintFlag{
 	Value: 0,
 }
 
+var grpcPortFlag = &cli.UintFlag{
+	Name:  "grpc-port",
+	Usage: "--port 5121",
+	Value: 0,
+}
+
 var dbFlag = &cli.StringFlag{
 	Name:     "db",
 	Usage:    "--db <sqlite> or <mysql>",
@@ -116,7 +121,12 @@ var serverCommand = &cli.Command{
 	Description: "starts a graphql server",
 	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag},
 	Action: func(c *cli.Context) error {
-		err := server.Start(c.Context, uint16(c.Uint(portFlag.Name)), c.String(dbFlag.Name), c.String(pathFlag.Name))
+		err := api.Start(c.Context, api.Config{
+			HTTPPort: uint16(c.Uint(portFlag.Name)),
+			Database: c.String(dbFlag.Name),
+			Path:     c.String(pathFlag.Name),
+			GRPCPort: uint16(c.Uint(grpcPortFlag.Name)),
+		})
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)
 		}

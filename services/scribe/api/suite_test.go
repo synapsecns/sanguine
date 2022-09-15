@@ -1,7 +1,9 @@
-package gql_test
+package api_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/services/scribe/api"
+	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
 	"net/http"
 	"testing"
 
@@ -17,26 +19,27 @@ import (
 	"go.uber.org/atomic"
 )
 
-// GQLSuite defines the basic test suite.
-type GQLSuite struct {
+// APISuite defines the basic test suite.
+type APISuite struct {
 	*testsuite.TestSuite
-	db        db.EventDB
-	dbPath    string
-	gqlClient *client.Client
-	logIndex  atomic.Int64
+	db         db.EventDB
+	dbPath     string
+	gqlClient  *client.Client
+	grpcClient *rest.APIClient
+	logIndex   atomic.Int64
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
 // Every test suite in the synapse library should inherit from this suite and override where necessary.
-func NewTestSuite(tb testing.TB) *GQLSuite {
+func NewTestSuite(tb testing.TB) *APISuite {
 	tb.Helper()
-	return &GQLSuite{
+	return &APISuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 		logIndex:  atomic.Int64{},
 	}
 }
 
-func (g *GQLSuite) SetupTest() {
+func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 	g.dbPath = filet.TmpDir(g.T(), "")
 
@@ -50,12 +53,22 @@ func (g *GQLSuite) SetupTest() {
 	port := freeport.GetPort()
 
 	go func() {
-		Nil(g.T(), server.Start(g.GetSuiteContext(), uint16(port), "sqlite", g.dbPath))
+		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
+			HTTPPort: uint16(port),
+			Database: "sqlite",
+			Path:     g.dbPath,
+			GRPCPort: uint16(freeport.GetPort()),
+		}))
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", port)
 
 	g.gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
+
+	config := rest.NewConfiguration()
+	config.BasePath = baseURL
+	config.Host = baseURL
+	g.grpcClient = rest.NewAPIClient(config)
 
 	// var request *http.Request
 	g.Eventually(func() bool {
@@ -71,13 +84,22 @@ func (g *GQLSuite) SetupTest() {
 		return false
 	})
 
-	// go func() {
-	// 	<-g.GetSuiteContext().Done()
-	// 	err = request.Body.Close()
-	// 	Nil(g.T(), err)
-	// }()
+	g.Eventually(func() bool {
+		res, realRes, err := g.grpcClient.ScribeServiceApi.ScribeServiceCheck(g.GetTestContext(), rest.V1HealthCheckRequest{
+			Service: "any",
+		})
+		if err == nil {
+			defer func() {
+				_ = realRes.Body.Close()
+			}()
+
+			return *res.Status == rest.SERVING_HealthCheckResponseServingStatus
+		}
+
+		return false
+	})
 }
 
-func TestGQLSuite(t *testing.T) {
+func TestAPISuite(t *testing.T) {
 	suite.Run(t, NewTestSuite(t))
 }

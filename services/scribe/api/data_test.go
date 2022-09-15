@@ -1,6 +1,8 @@
-package gql_test
+package api_test
 
 import (
+	"github.com/synapsecns/sanguine/services/scribe/graphql"
+	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -9,7 +11,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 )
 
-func (g GQLSuite) TestRetrieveData() {
+func (g APISuite) TestRetrieveData() {
 	contractAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	chainID := gofakeit.Uint32()
@@ -43,7 +45,7 @@ func (g GQLSuite) TestRetrieveData() {
 		Nil(g.T(), err)
 	}
 
-	// test get logs and get logs in a range
+	// test get logs and get logs in a range (Graphql)
 	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	// there were 20 logs created (2 per loop, in a loop of 10)
@@ -52,6 +54,18 @@ func (g GQLSuite) TestRetrieveData() {
 	Nil(g.T(), err)
 	// from 2-5, there were 8 logs created (2 per loop, in a range of 4)
 	Equal(g.T(), len(logsRange.Response), 8)
+
+	// test get logs and get logs in a range (GRPC)
+	grpcLogs, res, err := g.grpcClient.ScribeServiceApi.ScribeServiceFilterLogs(g.GetTestContext(), rest.V1FilterLogsRequest{
+		Filter: &rest.V1LogFilter{
+			ChainId: int64(chainID),
+		},
+		Page: 1,
+	})
+
+	Nil(g.T(), err)
+	Equal(g.T(), len(grpcLogs.Logs), 20)
+	_ = res.Body.Close()
 
 	// test get receipts and get receipts in a range
 	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1)
@@ -74,7 +88,7 @@ func (g GQLSuite) TestRetrieveData() {
 	Equal(g.T(), len(txsRange.Response), 12)
 }
 
-func (g GQLSuite) TestLogDataEquality() {
+func (g APISuite) TestLogDataEquality() {
 	// create a log
 	chainID := gofakeit.Uint32()
 	log := g.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()))
@@ -83,31 +97,18 @@ func (g GQLSuite) TestLogDataEquality() {
 	err := g.db.StoreLog(g.GetTestContext(), log, chainID)
 	Nil(g.T(), err)
 
-	// retrieve it
+	// retrieve it using gql
 	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
-	retrievedLog := logs.Response[0]
 
-	// convert topics
-	var topics []string
-	for _, topic := range log.Topics {
-		topics = append(topics, topic.String())
-	}
+	parsedLog, err := graphql.ParseLog(*logs.Response[0])
+	Nil(g.T(), err)
 
-	// check that the data is equal
-	Equal(g.T(), retrievedLog.ContractAddress, log.Address.String())
-	Equal(g.T(), retrievedLog.ChainID, int(chainID))
-	Equal(g.T(), retrievedLog.Topics, topics)
-	Equal(g.T(), retrievedLog.Data, common.BytesToHash(log.Data).String())
-	Equal(g.T(), retrievedLog.BlockNumber, int(log.BlockNumber))
-	Equal(g.T(), retrievedLog.TxHash, log.TxHash.String())
-	Equal(g.T(), retrievedLog.TxIndex, int(log.TxIndex))
-	Equal(g.T(), retrievedLog.BlockHash, log.BlockHash.String())
-	Equal(g.T(), retrievedLog.Index, int(log.Index))
-	Equal(g.T(), retrievedLog.Removed, log.Removed)
+	// check equality
+	Equal(g.T(), *parsedLog, log)
 }
 
-func (g GQLSuite) TestReceiptDataEquality() {
+func (g APISuite) TestReceiptDataEquality() {
 	// create a receipt
 	chainID := gofakeit.Uint32()
 	receipt := g.buildReceipt(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()))
@@ -127,7 +128,7 @@ func (g GQLSuite) TestReceiptDataEquality() {
 	Equal(g.T(), retrievedReceipt.PostState, string(receipt.PostState))
 	Equal(g.T(), retrievedReceipt.Status, int(receipt.Status))
 	Equal(g.T(), retrievedReceipt.CumulativeGasUsed, int(receipt.CumulativeGasUsed))
-	Equal(g.T(), retrievedReceipt.Bloom, common.BytesToHash(receipt.Bloom.Bytes()).String())
+	Equal(g.T(), retrievedReceipt.Bloom, common.Bytes2Hex(receipt.Bloom.Bytes()))
 	Equal(g.T(), retrievedReceipt.TxHash, receipt.TxHash.String())
 	Equal(g.T(), retrievedReceipt.ContractAddress, receipt.ContractAddress.String())
 	Equal(g.T(), retrievedReceipt.GasUsed, int(receipt.GasUsed))
@@ -135,7 +136,7 @@ func (g GQLSuite) TestReceiptDataEquality() {
 	Equal(g.T(), retrievedReceipt.TransactionIndex, int(receipt.TransactionIndex))
 }
 
-func (g GQLSuite) TestTransactionDataEquality() {
+func (g APISuite) TestTransactionDataEquality() {
 	// create a transaction
 	chainID := gofakeit.Uint32()
 	blockNumber := uint64(gofakeit.Uint32())
@@ -155,7 +156,7 @@ func (g GQLSuite) TestTransactionDataEquality() {
 	Equal(g.T(), retrievedTx.TxHash, tx.Hash().String())
 	Equal(g.T(), retrievedTx.Protected, tx.Protected())
 	Equal(g.T(), retrievedTx.Type, int(tx.Type()))
-	Equal(g.T(), retrievedTx.Data, common.BytesToHash(tx.Data()).String())
+	Equal(g.T(), retrievedTx.Data, common.Bytes2Hex(tx.Data()))
 	Equal(g.T(), retrievedTx.Gas, int(tx.Gas()))
 	Equal(g.T(), retrievedTx.GasPrice, int(tx.GasPrice().Uint64()))
 	Equal(g.T(), retrievedTx.GasTipCap, tx.GasTipCap().String())
@@ -165,7 +166,7 @@ func (g GQLSuite) TestTransactionDataEquality() {
 	Equal(g.T(), retrievedTx.To, tx.To().String())
 }
 
-func (g *GQLSuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {
+func (g *APISuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {
 	currentIndex := g.logIndex.Load()
 	// increment next index
 	g.logIndex.Add(1)
@@ -184,7 +185,7 @@ func (g *GQLSuite) buildLog(contractAddress common.Address, blockNumber uint64) 
 	return log
 }
 
-func (g *GQLSuite) buildReceipt(contractAddress common.Address, blockNumber uint64) types.Receipt {
+func (g *APISuite) buildReceipt(contractAddress common.Address, blockNumber uint64) types.Receipt {
 	receipt := types.Receipt{
 		Type:              gofakeit.Uint8(),
 		PostState:         []byte(gofakeit.Sentence(10)),
@@ -202,7 +203,7 @@ func (g *GQLSuite) buildReceipt(contractAddress common.Address, blockNumber uint
 	return receipt
 }
 
-func (g *GQLSuite) buildEthTx() *types.Transaction {
+func (g *APISuite) buildEthTx() *types.Transaction {
 	ethTx := types.NewTx(&types.LegacyTx{
 		Nonce:    gofakeit.Uint64(),
 		GasPrice: new(big.Int).SetUint64(gofakeit.Uint64()),

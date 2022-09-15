@@ -50,7 +50,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
 
@@ -171,7 +171,7 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
 
@@ -413,12 +413,44 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-generate-${{matrix.package}}
 
+
+      - name: Cache Linuxbrew
+        uses: actions/cache@v3
+        if: ${{ contains(matrix.package, 'scribe') }}
+        with:
+          path: |
+            ~/.cache/Homebrew
+            /home/linuxbrew/.linuxbrew/
+          key: ${{ runner.os }}-linuxbrew-${{ hashFiles('**/Makefile') }}
+
       # TODO: remove
       - name: authenticate with github for private go modules
         if: ${{github.event.repository.private}}
         uses: fusion-engineering/setup-git-credentials@v2
         with:
           credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
+
+      - name: setup env
+        run: |
+          echo "::set-env name=GOPATH::$(go env GOPATH)"
+          echo "::add-path::$(go env GOPATH)/bin"
+        shell: bash
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+      - name: Run Make Generate CI Deps (Scribe)
+        working-directory: ${{matrix.package}}/
+        if:  ${{ contains(matrix.package, 'scribe') }}
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          make generate-ci || exit 0
+
+      - name: Run Make Generate CI (Scribe)
+        working-directory: ${{matrix.package}}/
+        if:  ${{ contains(matrix.package, 'scribe') }}
+        run: |
+          make generate-ci
+
 
       # See if we need to rerun go generate
       # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible

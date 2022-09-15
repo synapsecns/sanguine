@@ -1,0 +1,14 @@
+version: v1
+lint:
+  use:
+    - DEFAULT
+  ignore:
+    - google/protobuf/timestamp.proto
+    - google/protobuf/struct.proto
+
+breaking:
+  use:
+    - FILE
+
+deps:
+  - buf.build/googleapis/googleapis

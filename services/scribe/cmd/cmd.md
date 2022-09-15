@@ -20,3 +20,7 @@ scribe
 ├── <a href="./internal">internal</a>: Internal packages for the Scribe
 └── <a href="./node">node</a>: The new block listener that calls backfill
 </pre>
+
+## Regenerating protobuf definitions:
+
+`make generate`
