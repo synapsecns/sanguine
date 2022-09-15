@@ -428,7 +428,7 @@ jobs:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
       - name: setup swagger codegen
-      - uses: supplypike/setup-bin@v1
+        uses: supplypike/setup-bin@v1
         with:
           uri: 'https://oss.sonatype.org/content/repositories/releases/io/swagger/swagger-codegen-cli/2.2.1/swagger-codegen-cli-2.2.1.jar'
           name: 'swagger-codegen'
