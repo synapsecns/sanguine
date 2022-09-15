@@ -105,7 +105,7 @@ func (p *Parser) parseTokenSwap(ctx context.Context, log ethTypes.Log, chainID u
 	if err != nil {
 		return fmt.Errorf("could not parse token swap: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, nil, iface, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store token swap: %w", err)
 	}
@@ -117,7 +117,7 @@ func (p *Parser) parseAddLiquidity(ctx context.Context, log ethTypes.Log, chainI
 	if err != nil {
 		return fmt.Errorf("could not parse add liquidity: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, nil, iface, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store add liquidity: %w", err)
 	}
@@ -129,7 +129,7 @@ func (p *Parser) parseRemoveLiquidity(ctx context.Context, log ethTypes.Log, cha
 	if err != nil {
 		return fmt.Errorf("could not parse remove liquidity: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, nil, iface, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store remove liquidity: %w", err)
 	}
@@ -141,7 +141,7 @@ func (p *Parser) parseRemoveLiquidityOne(ctx context.Context, log ethTypes.Log, 
 	if err != nil {
 		return fmt.Errorf("could not parse remove liquidity one: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, nil, iface, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store remove liquidity one: %w", err)
 	}
@@ -152,7 +152,7 @@ func (p *Parser) parseRemoveLiquidityImbalance(ctx context.Context, log ethTypes
 	if err != nil {
 		return fmt.Errorf("could not parse remove liquidity imbalance: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, nil, iface, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store remove liquidity imbalance: %w", err)
 	}
@@ -164,7 +164,7 @@ func (p *Parser) parseNewAdminFee(ctx context.Context, log ethTypes.Log, chainID
 	if err != nil {
 		return fmt.Errorf("could not parse new admin fee: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, nil, iface, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store new admin fee: %w", err)
 	}
@@ -176,7 +176,7 @@ func (p *Parser) parseNewSwapFee(ctx context.Context, log ethTypes.Log, chainID 
 	if err != nil {
 		return fmt.Errorf("could not parse new swap fee: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, nil, iface, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store new swap fee: %w", err)
 	}
@@ -188,7 +188,7 @@ func (p *Parser) parseRampA(ctx context.Context, log ethTypes.Log, chainID uint3
 	if err != nil {
 		return fmt.Errorf("could not parse Ramp A: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, nil, iface, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store Ramp A: %w", err)
 	}
@@ -199,7 +199,7 @@ func (p *Parser) parseStopRampA(ctx context.Context, log ethTypes.Log, chainID u
 	if err != nil {
 		return fmt.Errorf("could not parse stop Ramp A: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, nil, iface, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store stop Ramp A: %w", err)
 	}
@@ -211,7 +211,7 @@ func (p *Parser) parseFlashLoan(ctx context.Context, log ethTypes.Log, chainID u
 	if err != nil {
 		return fmt.Errorf("could not parse flash loan: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, nil, iface, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store flash loan: %w", err)
 	}

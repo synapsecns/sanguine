@@ -103,7 +103,7 @@ func (p *Parser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Log, cha
 	if err != nil {
 		return fmt.Errorf("could not parse token deposit: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store deposit: %w", err)
 	}
@@ -115,7 +115,7 @@ func (p *Parser) parseAndStoreRedeem(ctx context.Context, log ethTypes.Log, chai
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store redeem: %w", err)
 	}
@@ -127,7 +127,7 @@ func (p *Parser) parseAndStoreWithdraw(ctx context.Context, log ethTypes.Log, ch
 	if err != nil {
 		return fmt.Errorf("could not parse token withdraw: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store withdraw: %w", err)
 	}
@@ -139,7 +139,7 @@ func (p *Parser) parseAndStoreMint(ctx context.Context, log ethTypes.Log, chainI
 	if err != nil {
 		return fmt.Errorf("could not parse token mint: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store mint: %w", err)
 	}
@@ -151,7 +151,7 @@ func (p *Parser) parseAndStoreDepositAndSwap(ctx context.Context, log ethTypes.L
 	if err != nil {
 		return fmt.Errorf("could not parse token deposit and swap: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store deposit and swap: %w", err)
 	}
@@ -163,7 +163,7 @@ func (p *Parser) parseAndStoreMintAndSwap(ctx context.Context, log ethTypes.Log,
 	if err != nil {
 		return fmt.Errorf("could not parse token mint and swap: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store mint and swap: %w", err)
 	}
@@ -175,7 +175,7 @@ func (p *Parser) parseAndStoreRedeemAndSwap(ctx context.Context, log ethTypes.Lo
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem and swap: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store redeem and swap: %w", err)
 	}
@@ -187,7 +187,7 @@ func (p *Parser) parseAndStoreRedeemAndRemove(ctx context.Context, log ethTypes.
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem and remove: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store redeem and remove: %w", err)
 	}
@@ -199,7 +199,7 @@ func (p *Parser) parseAndStoreWithdrawAndRemove(ctx context.Context, log ethType
 	if err != nil {
 		return fmt.Errorf("could not parse token withdraw and remove: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store withdraw and remove: %w", err)
 	}
@@ -211,7 +211,7 @@ func (p *Parser) parseAndStoreRedeemV2(ctx context.Context, log ethTypes.Log, ch
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem v2: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, chainID)
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
 	if err != nil {
 		return fmt.Errorf("could not store redeem v2: %w", err)
 	}

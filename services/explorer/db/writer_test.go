@@ -30,6 +30,7 @@ func (t *DBSuite) TestBridgeWrite() {
 	}
 	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil, gofakeit.Uint32())
 	Nil(t.T(), err)
+	t.cleanup()
 }
 
 func (t *DBSuite) TestSwapWrite() {
@@ -53,4 +54,6 @@ func (t *DBSuite) TestSwapWrite() {
 	}
 	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent, gofakeit.Uint32())
 	Nil(t.T(), err)
+	t.cleanup()
+
 }

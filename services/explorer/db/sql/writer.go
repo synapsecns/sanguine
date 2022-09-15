@@ -81,6 +81,7 @@ func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32) Bridge
 		SwapMinAmount:      event.GetSwapMinAmount(),
 		SwapDeadline:       event.GetSwapDeadline(),
 	}
+
 }
 
 // eventToSwapEvent stores a swap event.

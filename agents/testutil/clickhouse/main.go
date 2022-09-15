@@ -1,35 +1,33 @@
 package clickhouse
 
 import (
-	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	"github.com/phayes/freeport"
 	"net"
 	"strconv"
 	"time"
 )
 
-// NewClickhouseStore creates a new clickhouse db hosted at localhost:9000 with ory/dockertest
-func NewClickhouseStore() error {
-
+// NewClickhouseStore creates a new clickhouse db hosted at localhost:xxxx with ory/dockertest
+func NewClickhouseStore(src string) (func(), *int, error) {
 	timeout := time.Second
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort("localhost", "9000"), timeout)
-	if err != nil {
-		fmt.Println("Port not open - attempting to create container...")
-	}
+	port := freeport.GetPort()
+	portStr := strconv.Itoa(port)
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort("localhost", portStr), timeout)
 	if conn != nil {
 		defer conn.Close()
-		fmt.Println("Port in user, exiting | ", net.JoinHostPort("localhost", "9000"))
-		return fmt.Errorf("Port is already in use: %w", err)
+		fmt.Println("Connection error to port: " + portStr)
+		return nil, nil, fmt.Errorf("Port %d is already in use: %w", port, err)
 	}
 
 	pool, err := dockertest.NewPool("")
 
 	if err != nil {
-		return fmt.Errorf("could not create docker pool: %w", err)
+		return nil, nil, fmt.Errorf("could not create docker pool: %w", err)
 	}
 	// pulls an image, creates a container based on it and runs it
 	runOptions := &dockertest.RunOptions{
@@ -41,11 +39,12 @@ func NewClickhouseStore() error {
 			"CLICKHOUSE_PASSWORD=" + "clickhouse_test",
 			"CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=" + "1",
 		},
-		Labels:       map[string]string{"clickhouse_test": "1"},
-		PortBindings: make(map[docker.Port][]docker.PortBinding),
-	}
-	runOptions.PortBindings[docker.Port("9000/tcp")] = []docker.PortBinding{
-		{HostPort: strconv.Itoa(9000)},
+
+		// Label format: clickhouse_test_<src of test>_<port running>
+		Labels: map[string]string{"clickhouse_test_" + src + "_" + portStr: "1"},
+		PortBindings: map[docker.Port][]docker.PortBinding{
+			"9000/tcp": {{HostIP: "localhost", HostPort: portStr + "/tcp"}},
+		},
 	}
 	resource, err := pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 		// set AutoRemove to true so that stopped container goes away by itself
@@ -55,31 +54,38 @@ func NewClickhouseStore() error {
 
 	// Fetch port assigned to container
 	address := fmt.Sprintf("%s:%s", "localhost", resource.GetPort("9000/tcp"))
-	fmt.Println(address)
 
 	// Docker will hard kill the container in 60 seconds (this is a test env remember)
 	resource.Expire(60)
 
+	// Teardown function
+	cleanup := func() {
+		fmt.Println("Destroying container")
+		if err := pool.Purge(resource); err != nil {
+			fmt.Errorf("Failed to purge resource: %v", err)
+		}
+	}
+
 	var db *sql.DB
-	fmt.Printf("Pinging new clickhouse db...\n")
+	fmt.Println("Pinging clickhouse db...")
 
 	if err := pool.Retry(func() error {
-		db = clickHouseOpenDB(address, nil)
+		db = clickHouseOpenDB(address)
 		return db.Ping()
 	}); err != nil {
 		fmt.Errorf("could not connect to docker database: %w", err)
 		if err := pool.Purge(resource); err != nil {
-			fmt.Printf("failed to purge resource: %v", err)
+			fmt.Errorf("failed to purge resource: %v", err)
 		}
-		return fmt.Errorf("could not connect to docker database: %w", err)
+		return nil, nil, fmt.Errorf("could not connect to docker database: %w", err)
 	}
 	if err != nil {
-		return fmt.Errorf("could not run resource: %w", err)
+		return nil, nil, fmt.Errorf("could not run resource: %w", err)
 	}
-	return nil
+	return cleanup, &port, nil
 }
 
-func clickHouseOpenDB(address string, tlsConfig *tls.Config) *sql.DB {
+func clickHouseOpenDB(address string) *sql.DB {
 	db := clickhouse.OpenDB(&clickhouse.Options{
 		Addr: []string{address},
 		Auth: clickhouse.Auth{
@@ -87,18 +93,6 @@ func clickHouseOpenDB(address string, tlsConfig *tls.Config) *sql.DB {
 			Username: "clickhouse_test",
 			Password: "clickhouse_test",
 		},
-		TLS: tlsConfig,
-		Settings: clickhouse.Settings{
-			"max_execution_time": 60,
-		},
-		DialTimeout: 5 * time.Second,
-		Compression: &clickhouse.Compression{
-			Method: clickhouse.CompressionLZ4,
-		},
-		Debug: true,
 	})
-	db.SetMaxIdleConns(5)
-	db.SetMaxOpenConns(10)
-	db.SetConnMaxLifetime(time.Hour)
 	return db
 }

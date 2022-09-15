@@ -13,7 +13,8 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	db db.ConsumerDB
+	db      db.ConsumerDB
+	cleanup func()
 }
 
 // NewConsumerDBSuite creates a new ConsumerDBSuite.
@@ -26,16 +27,15 @@ func NewConsumerDBSuite(tb testing.TB) *DBSuite {
 
 func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
-	err := newClickhouse.NewClickhouseStore()
-	if err != nil {
+	cleanup, port, err := newClickhouse.NewClickhouseStore("explorer")
+	if cleanup == nil || *port == 0 || err != nil {
 		return
 	}
+	t.cleanup = cleanup
 	Equal(t.T(), err, nil)
-	dbUrl := "clickhouse://clickhouse_test:clickhouse_test@localhost:9000/clickhouse_test?read_timeout=10s&write_timeout=20s"
+	dbUrl := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test?read_timeout=10s&write_timeout=20s"
 	consumerDB, err := sql.OpenGormClickhouse(t.GetTestContext(), dbUrl)
-	fmt.Printf("DB works")
 	Nil(t.T(), err)
-
 	t.db = consumerDB
 }
 

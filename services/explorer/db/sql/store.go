@@ -24,7 +24,6 @@ func (s Store) DB() *gorm.DB {
 var NamingStrategy = schema.NamingStrategy{}
 
 func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
-	fmt.Println("SOME", gormClickhouse.Open(address))
 	clickhouseDB, err := gorm.Open(gormClickhouse.Open(address), &gorm.Config{
 		Logger:               dbcommon.GetGormLogger(logger),
 		FullSaveAssociations: true,
@@ -36,9 +35,8 @@ func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 		return nil, fmt.Errorf("could not create clickhouse connection: %w", err)
 	}
 
-	//testing just swap
+	// load all models
 	err = clickhouseDB.WithContext(ctx).AutoMigrate(GetAllModels()...)
-	//err = clickhouseDB.AutoMigrate(&SwapEvent{})
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on clickhouse: %w", err)
 	}
