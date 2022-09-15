@@ -45,7 +45,7 @@ buf-install:
 
 swagger-codegen-install:
 	@#Brew - MacOS
-	@if [ "$(shell which swagger-codegen)" = "" ] && [ "$(shell which brew)" != "" ] && [ "$(GITHUB_WORKFLOW)" == "" ]; then brew install swagger-codegen; fi;
+	@if [ "$(shell which swagger-codegen)" = "" ] && [ "$(shell which brew)" != "" ]; then brew install swagger-codegen; fi;
 
 # TODO: should be replaced w/ https://github.com/bufbuild/buf
 # (see: https://github.com/grpc-ecosystem/grpc-gateway)
