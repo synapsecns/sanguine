@@ -14,3 +14,4 @@ ignore:
   - '*/lib/*.sol'
   - 'packages/contracts-core/contracts/libs/*.sol'
   - 'packages/contracts-core/test/*.sol'
+  - 'services/scribe/grpc/client/*'
