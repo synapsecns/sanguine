@@ -8,7 +8,7 @@ setup-go-path:
 
 protoc-install:
 	@#Github Actions
-	@if [ "$(shell which protoc)" = "" ] && [ "$(GITHUB_WORKFLOW)" != "" ]; then apt install -y protobuf-compiler; fi;
+	@if [ "$(shell which protoc)" = "" ] && [ "$(GITHUB_WORKFLOW)" != "" ]; then sudo apt install -y protobuf-compiler; fi;
 	@#Brew - MacOS
 	@if [ "$(shell which protoc)" = "" ] && [ "$(shell which brew)" != "" ] && [ "$(GITHUB_WORKFLOW)" == "" ]; then brew install protobuf; fi;
 
