@@ -412,6 +412,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-generate-${{matrix.package}}
 
+
+      - name: Cache Linuxbrew
+        uses: actions/cache@v3
+        if: ${{ contains(matrix.package, 'scribe') }}
+        with:
+          path: |
+            ~/.cache/Homebrew
+            /home/linuxbrew/.linuxbrew/
+          key: ${{ runner.os }}-linuxbrew-${{ hashFiles('**/Makefile') }}
+
       # TODO: remove
       - name: authenticate with github for private go modules
         if: ${{github.event.repository.private}}
