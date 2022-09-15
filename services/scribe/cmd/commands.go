@@ -96,6 +96,12 @@ var portFlag = &cli.UintFlag{
 	Value: 0,
 }
 
+var grpcPortFlag = &cli.UintFlag{
+	Name:  "grpc-port",
+	Usage: "--port 5121",
+	Value: 0,
+}
+
 var dbFlag = &cli.StringFlag{
 	Name:     "db",
 	Usage:    "--db <sqlite> or <mysql>",
@@ -119,7 +125,7 @@ var serverCommand = &cli.Command{
 			HTTPPort: uint16(c.Uint(portFlag.Name)),
 			Database: c.String(dbFlag.Name),
 			Path:     c.String(pathFlag.Name),
-			GRPCPort: uint16(freeport.Get(1)[0]),
+			GRPCPort: uint16(c.Uint(grpcPortFlag.Name)),
 		})
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)

@@ -98,12 +98,6 @@ func (g *APISuite) SetupTest() {
 
 		return false
 	})
-
-	// go func() {
-	// 	<-g.GetSuiteContext().Done()
-	// 	err = request.Body.Close()
-	// 	Nil(g.T(), err)
-	// }()
 }
 
 func TestAPISuite(t *testing.T) {
