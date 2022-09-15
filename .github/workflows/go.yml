@@ -429,13 +429,13 @@ jobs:
 
       - name: Run Make Generate CI Deps (Scribe)
         working-directory: ${{matrix.package}}/
-        if:  ${{ contains('services/scribe', matrix.package) }}
+        if:  ${{ contains(matrix.package, 'scribe') }}
         run: |
           make generate-ci || exit 0
 
       - name: Run Make Generate CI (Scribe)
         working-directory: ${{matrix.package}}/
-        if:  ${{ contains('services/scribe', matrix.package) }}
+        if:  ${{ contains(matrix.package, 'scribe') }}
         run: |
           make generate-ci
 
