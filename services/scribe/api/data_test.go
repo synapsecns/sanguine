@@ -1,6 +1,7 @@
 package api_test
 
 import (
+	"github.com/synapsecns/sanguine/services/scribe/graphql"
 	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
 	"math/big"
 
@@ -99,25 +100,12 @@ func (g APISuite) TestLogDataEquality() {
 	// retrieve it using gql
 	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
-	retrievedLog := logs.Response[0]
 
-	// convert topics
-	var topics []string
-	for _, topic := range log.Topics {
-		topics = append(topics, topic.String())
-	}
+	parsedLog, err := graphql.ParseLog(*logs.Response[0])
+	Nil(g.T(), err)
 
-	// check that the data is equal
-	Equal(g.T(), retrievedLog.ContractAddress, log.Address.String())
-	Equal(g.T(), retrievedLog.ChainID, int(chainID))
-	Equal(g.T(), retrievedLog.Topics, topics)
-	Equal(g.T(), retrievedLog.Data, common.BytesToHash(log.Data).String())
-	Equal(g.T(), retrievedLog.BlockNumber, int(log.BlockNumber))
-	Equal(g.T(), retrievedLog.TxHash, log.TxHash.String())
-	Equal(g.T(), retrievedLog.TxIndex, int(log.TxIndex))
-	Equal(g.T(), retrievedLog.BlockHash, log.BlockHash.String())
-	Equal(g.T(), retrievedLog.Index, int(log.Index))
-	Equal(g.T(), retrievedLog.Removed, log.Removed)
+	// check equality
+	Equal(g.T(), *parsedLog, log)
 }
 
 func (g APISuite) TestReceiptDataEquality() {
@@ -140,7 +128,7 @@ func (g APISuite) TestReceiptDataEquality() {
 	Equal(g.T(), retrievedReceipt.PostState, string(receipt.PostState))
 	Equal(g.T(), retrievedReceipt.Status, int(receipt.Status))
 	Equal(g.T(), retrievedReceipt.CumulativeGasUsed, int(receipt.CumulativeGasUsed))
-	Equal(g.T(), retrievedReceipt.Bloom, common.BytesToHash(receipt.Bloom.Bytes()).String())
+	Equal(g.T(), retrievedReceipt.Bloom, common.Bytes2Hex(receipt.Bloom.Bytes()))
 	Equal(g.T(), retrievedReceipt.TxHash, receipt.TxHash.String())
 	Equal(g.T(), retrievedReceipt.ContractAddress, receipt.ContractAddress.String())
 	Equal(g.T(), retrievedReceipt.GasUsed, int(receipt.GasUsed))
@@ -168,7 +156,7 @@ func (g APISuite) TestTransactionDataEquality() {
 	Equal(g.T(), retrievedTx.TxHash, tx.Hash().String())
 	Equal(g.T(), retrievedTx.Protected, tx.Protected())
 	Equal(g.T(), retrievedTx.Type, int(tx.Type()))
-	Equal(g.T(), retrievedTx.Data, common.BytesToHash(tx.Data()).String())
+	Equal(g.T(), retrievedTx.Data, common.Bytes2Hex(tx.Data()))
 	Equal(g.T(), retrievedTx.Gas, int(tx.Gas()))
 	Equal(g.T(), retrievedTx.GasPrice, int(tx.GasPrice().Uint64()))
 	Equal(g.T(), retrievedTx.GasTipCap, tx.GasTipCap().String())
