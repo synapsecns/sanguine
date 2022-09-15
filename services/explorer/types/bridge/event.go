@@ -19,7 +19,6 @@ type EventLog interface {
 	GetAmount() big.Int
 	// GetEventType returns the event type of the log.
 	GetEventType() EventType
-
 	// GetRecipient returns the recipient of the event.
 	GetRecipient() *common.Address
 	// GetDestinationChainID returns the chain id of the token deposit.

@@ -1,8 +1,10 @@
 package db_test
 
 import (
+	"fmt"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	newClickhouse "github.com/synapsecns/sanguine/agents/testutil/clickhouse"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -24,8 +26,14 @@ func NewConsumerDBSuite(tb testing.TB) *DBSuite {
 
 func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
-
-	consumerDB, err := sql.NewClickhouseStore(t.GetTestContext(), "localhost:9000/tcp")
+	err := newClickhouse.NewClickhouseStore()
+	if err != nil {
+		return
+	}
+	Equal(t.T(), err, nil)
+	dbUrl := "clickhouse://clickhouse_test:clickhouse_test@localhost:9000/clickhouse_test?read_timeout=10s&write_timeout=20s"
+	consumerDB, err := sql.OpenGormClickhouse(t.GetTestContext(), dbUrl)
+	fmt.Printf("DB works")
 	Nil(t.T(), err)
 
 	t.db = consumerDB
