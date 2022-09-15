@@ -11,7 +11,7 @@ func TestLogPointer(t *testing.T) {
 	mockLogs := mocks.GetMockLogs(t, 2)
 	mockPointerLogs := util.LogsPointer(mockLogs)
 
-	for i, _ := range mockLogs {
+	for i := range mockLogs {
 		Equal(t, mockLogs[i], *mockPointerLogs[i])
 	}
 }
