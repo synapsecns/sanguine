@@ -5,10 +5,14 @@ client:
 query:
   - 'queries/*.graphql' # Where are all the query files located?
 
+model:
+  filename: model/models_gen.go
+  package: model
+
 ####
 # Note: these are ignored and pulled from gqlgen.yml in our generator
 # modifying them will have no effect, but they cannot be removed since
 # they are validated
 ###
 schema:
-  - '../../../../scribe/graphql/server/graph/schema/*.graphql' # Where are all the schema files located?
+  - 'schema/*.graphql' # Where are all the schema files located?
