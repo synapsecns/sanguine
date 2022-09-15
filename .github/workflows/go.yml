@@ -419,6 +419,13 @@ jobs:
         with:
           credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
 
+      - name: Run Make Generate CI
+        working-directory: ${{matrix.package}}/
+        if:  ${{ !contains('ethergo', matrix.package) }}
+        run: |
+          make generate-ci || exit 0
+
+
       # See if we need to rerun go generate
       # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
       # ethergo generation is currently non-deterministic. TODO FIX"
