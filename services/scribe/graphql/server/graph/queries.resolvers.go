@@ -6,8 +6,8 @@ package graph
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/scribe/db"
 
+	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
 	resolvers "github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/resolver"
 )
