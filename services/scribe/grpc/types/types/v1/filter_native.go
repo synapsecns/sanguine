@@ -4,8 +4,11 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/db"
 )
 
+// ToNative converts the log filter to native.
 func (x *LogFilter) ToNative() db.LogFilter {
 	logFilter := db.LogFilter{}
+
+	var txIndex, blockNumber, index *int
 
 	if x.ContractAddress != nil {
 		logFilter.ContractAddress = x.ContractAddress.GetData()
@@ -13,6 +16,8 @@ func (x *LogFilter) ToNative() db.LogFilter {
 
 	if x.BlockNumber != nil {
 		logFilter.BlockNumber = x.BlockNumber.GetData()
+		castedInt := int(logFilter.BlockNumber)
+		blockNumber = &castedInt
 	}
 
 	if x.TxHash != nil {
@@ -21,6 +26,8 @@ func (x *LogFilter) ToNative() db.LogFilter {
 
 	if x.TxIndex != nil {
 		logFilter.TxIndex = x.TxIndex.GetData()
+		castedInt := int(logFilter.TxIndex)
+		txIndex = &castedInt
 	}
 
 	if x.BlockHash != nil {
@@ -29,11 +36,14 @@ func (x *LogFilter) ToNative() db.LogFilter {
 
 	if x.Index != nil {
 		logFilter.Index = x.Index.GetData()
+		castedInt := int(logFilter.Index)
+		index = &castedInt
 	}
 
 	if x.Confirmed != nil {
 		logFilter.Confirmed = x.Confirmed.GetData()
 	}
 
-	return logFilter
+	// we use this function to assure new functionality gets included here
+	return db.BuildLogFilter(&logFilter.ContractAddress, blockNumber, &logFilter.TxHash, txIndex, &logFilter.BlockHash, index, &logFilter.Confirmed)
 }

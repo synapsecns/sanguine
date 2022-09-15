@@ -12,9 +12,11 @@ import (
 )
 
 // SetupGRPCServer sets up the grpc server.
-func SetupGRPCServer(ctx context.Context, engine *gin.Engine) (*grpc.Server, error) {
+func SetupGRPCServer(ctx context.Context, engine *gin.Engine, eventDB db.EventDB) (*grpc.Server, error) {
 	s := grpc.NewServer()
-	sImpl := server{}
+	sImpl := server{
+		db: eventDB,
+	}
 
 	mux := runtime.NewServeMux()
 	pbscribe.RegisterScribeServiceServer(s, &sImpl)
@@ -32,13 +34,23 @@ func SetupGRPCServer(ctx context.Context, engine *gin.Engine) (*grpc.Server, err
 }
 
 type server struct {
+	// db is the db to use for the server
 	db db.EventDB
 	pbscribe.UnimplementedScribeServiceServer
 }
 
 func (s *server) FilterLogs(ctx context.Context, req *pbscribe.FilterLogsRequest) (*pbscribe.FilterLogsResponse, error) {
-	req.Filter.ToNative()
-	panic("")
+	logFilter := req.Filter.ToNative()
+	logFilter.ChainID = req.Filter.ChainId
+
+	logs, err := s.db.RetrieveLogsWithFilter(ctx, logFilter, int(req.Page))
+	if err != nil {
+		return nil, fmt.Errorf("error retreiving logs: %w", err)
+	}
+
+	return &pbscribe.FilterLogsResponse{
+		Logs: pbscribe.FromNativeLogs(logs),
+	}, nil
 }
 
 func (s *server) Check(context.Context, *pbscribe.HealthCheckRequest) (*pbscribe.HealthCheckResponse, error) {
@@ -49,7 +61,11 @@ func (s *server) Watch(a *pbscribe.HealthCheckRequest, res pbscribe.ScribeServic
 	for {
 		select {
 		case <-res.Context().Done():
-			return res.Context().Err()
+			err := res.Context().Err()
+			if err != nil {
+				return fmt.Errorf("context finished: %w", err)
+			}
+			return nil
 		case <-time.After(time.Second):
 			err := res.Send(&pbscribe.HealthCheckResponse{Status: pbscribe.HealthCheckResponse_SERVING})
 			if err != nil {

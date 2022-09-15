@@ -9,13 +9,13 @@
 package rest
 
 type V1Log struct {
-	Address *V1Address `json:"address,omitempty"`
-	Topics []V1Hash `json:"topics,omitempty"`
-	Data string `json:"data,omitempty"`
-	BlockNumber string `json:"blockNumber,omitempty"`
-	TxHash *V1Hash `json:"txHash,omitempty"`
-	TxIndex string `json:"txIndex,omitempty"`
-	BlockHash *V1Hash `json:"blockHash,omitempty"`
-	Index string `json:"index,omitempty"`
-	Removed bool `json:"removed,omitempty"`
+	Address     *V1Address `json:"address,omitempty"`
+	Topics      []V1Hash   `json:"topics,omitempty"`
+	Data        string     `json:"data,omitempty"`
+	BlockNumber string     `json:"blockNumber,omitempty"`
+	TxHash      *V1Hash    `json:"txHash,omitempty"`
+	TxIndex     string     `json:"txIndex,omitempty"`
+	BlockHash   *V1Hash    `json:"blockHash,omitempty"`
+	Index       string     `json:"index,omitempty"`
+	Removed     bool       `json:"removed,omitempty"`
 }

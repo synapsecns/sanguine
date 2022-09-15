@@ -59,7 +59,7 @@ func Start(ctx context.Context, cfg Config) error {
 	}
 
 	gqlServer.EnableGraphql(router, eventDB)
-	grpcServer, err := server.SetupGRPCServer(ctx, router)
+	grpcServer, err := server.SetupGRPCServer(ctx, router, eventDB)
 	if err != nil {
 		return fmt.Errorf("could not create grpc server: %w", err)
 	}

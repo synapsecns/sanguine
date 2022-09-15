@@ -249,7 +249,8 @@ components:
         contractAddress:
           $ref: '#/components/schemas/v1NullableString'
         chainId:
-          $ref: '#/components/schemas/v1NullableUint32'
+          type: integer
+          format: int64
         blockNumber:
           $ref: '#/components/schemas/v1NullableUint64'
         txHash:
@@ -276,14 +277,6 @@ components:
           type: string
         data:
           type: string
-    v1NullableUint32:
-      type: object
-      properties:
-        "null":
-          type: string
-        data:
-          type: integer
-          format: int64
     v1NullableUint64:
       type: object
       properties:

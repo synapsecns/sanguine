@@ -10,5 +10,5 @@ package rest
 
 type V1NullableBool struct {
 	Null string `json:"null,omitempty"`
-	Data bool `json:"data,omitempty"`
+	Data bool   `json:"data,omitempty"`
 }

@@ -10,11 +10,11 @@ package rest
 
 type V1LogFilter struct {
 	ContractAddress *V1NullableString `json:"contractAddress,omitempty"`
-	ChainId *V1NullableUint32 `json:"chainId,omitempty"`
-	BlockNumber *V1NullableUint64 `json:"blockNumber,omitempty"`
-	TxHash *V1NullableString `json:"txHash,omitempty"`
-	TxIndex *V1NullableUint64 `json:"txIndex,omitempty"`
-	BlockHash *V1NullableString `json:"blockHash,omitempty"`
-	Index *V1NullableUint64 `json:"index,omitempty"`
-	Confirmed *V1NullableBool `json:"confirmed,omitempty"`
+	ChainId         int64             `json:"chainId,omitempty"`
+	BlockNumber     *V1NullableUint64 `json:"blockNumber,omitempty"`
+	TxHash          *V1NullableString `json:"txHash,omitempty"`
+	TxIndex         *V1NullableUint64 `json:"txIndex,omitempty"`
+	BlockHash       *V1NullableString `json:"blockHash,omitempty"`
+	Index           *V1NullableUint64 `json:"index,omitempty"`
+	Confirmed       *V1NullableBool   `json:"confirmed,omitempty"`
 }

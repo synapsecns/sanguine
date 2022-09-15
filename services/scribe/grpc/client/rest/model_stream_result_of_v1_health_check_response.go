@@ -10,5 +10,5 @@ package rest
 
 type StreamResultOfV1HealthCheckResponse struct {
 	Result *V1HealthCheckResponse `json:"result,omitempty"`
-	Error_ *RpcStatus `json:"error,omitempty"`
+	Error_ *RpcStatus             `json:"error,omitempty"`
 }

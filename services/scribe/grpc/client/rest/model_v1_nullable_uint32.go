@@ -10,5 +10,5 @@ package rest
 
 type V1NullableUint32 struct {
 	Null string `json:"null,omitempty"`
-	Data int64 `json:"data,omitempty"`
+	Data int64  `json:"data,omitempty"`
 }

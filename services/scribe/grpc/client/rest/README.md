@@ -41,7 +41,6 @@ Class | Method | HTTP request | Description
  - [V1LogFilter](docs/V1LogFilter.md)
  - [V1NullableBool](docs/V1NullableBool.md)
  - [V1NullableString](docs/V1NullableString.md)
- - [V1NullableUint32](docs/V1NullableUint32.md)
  - [V1NullableUint64](docs/V1NullableUint64.md)
 
 ## Documentation For Authorization
