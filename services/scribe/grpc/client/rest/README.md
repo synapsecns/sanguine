@@ -24,6 +24,7 @@ Class | Method | HTTP request | Description
 *ScribeServiceApi* | [**ScribeServiceCheck**](docs/ScribeServiceApi.md#scribeservicecheck) | **Post** /grpc/v1/health_check | see: https://github.com/grpc/grpc/blob/master/doc/health-checking.md
 *ScribeServiceApi* | [**ScribeServiceFilterLogs**](docs/ScribeServiceApi.md#scribeservicefilterlogs) | **Post** /grpc/v1/filter_logs | 
 *ScribeServiceApi* | [**ScribeServiceWatch**](docs/ScribeServiceApi.md#scribeservicewatch) | **Post** /grpc/v1/health_watch | 
+*ScribeServiceApi* | [**ScribeServiceWatchLogs**](docs/ScribeServiceApi.md#scribeservicewatchlogs) | **Post** /grpc/v1/watch_logs | 
 
 ## Documentation For Models
 
@@ -31,6 +32,7 @@ Class | Method | HTTP request | Description
  - [ProtobufNullValue](docs/ProtobufNullValue.md)
  - [RpcStatus](docs/RpcStatus.md)
  - [StreamResultOfV1HealthCheckResponse](docs/StreamResultOfV1HealthCheckResponse.md)
+ - [StreamResultOfV1Log](docs/StreamResultOfV1Log.md)
  - [V1Address](docs/V1Address.md)
  - [V1FilterLogsRequest](docs/V1FilterLogsRequest.md)
  - [V1FilterLogsResponse](docs/V1FilterLogsResponse.md)
@@ -42,6 +44,7 @@ Class | Method | HTTP request | Description
  - [V1NullableBool](docs/V1NullableBool.md)
  - [V1NullableString](docs/V1NullableString.md)
  - [V1NullableUint64](docs/V1NullableUint64.md)
+ - [V1WatchLogsRequest](docs/V1WatchLogsRequest.md)
 
 ## Documentation For Authorization
  Endpoints do not require authorization.

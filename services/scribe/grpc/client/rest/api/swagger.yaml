@@ -83,6 +83,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/rpcStatus'
       x-codegen-request-body-name: body
+  /grpc/v1/watch_logs:
+    post:
+      tags:
+      - ScribeService
+      operationId: ScribeService_WatchLogs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/v1WatchLogsRequest'
+        required: true
+      responses:
+        "200":
+          description: A successful response.(streaming responses)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stream result of v1Log'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/rpcStatus'
+      x-codegen-request-body-name: body
 components:
   schemas:
     HealthCheckResponseServingStatus:
@@ -285,6 +310,14 @@ components:
         data:
           type: string
           format: uint64
+    v1WatchLogsRequest:
+      type: object
+      properties:
+        filter:
+          $ref: '#/components/schemas/v1LogFilter'
+        ChainID:
+          type: string
+          format: uint64
     Stream result of v1HealthCheckResponse:
       title: Stream result of v1HealthCheckResponse
       type: object
@@ -296,6 +329,34 @@ components:
       example:
         result:
           status: UNKNOWN
+        error:
+          code: 0
+          details:
+          - key: {}
+          - key: {}
+          message: message
+    Stream result of v1Log:
+      title: Stream result of v1Log
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/v1Log'
+        error:
+          $ref: '#/components/schemas/rpcStatus'
+      example:
+        result:
+          blockHash: null
+          address:
+            bytes: ""
+          data: ""
+          removed: true
+          topics:
+          - bytes: ""
+          - bytes: ""
+          blockNumber: blockNumber
+          index: index
+          txHash: null
+          txIndex: txIndex
         error:
           code: 0
           details:

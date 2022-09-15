@@ -26,6 +26,7 @@ type ScribeServiceClient interface {
 	Check(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
 	Watch(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (ScribeService_WatchClient, error)
 	FilterLogs(ctx context.Context, in *FilterLogsRequest, opts ...grpc.CallOption) (*FilterLogsResponse, error)
+	WatchLogs(ctx context.Context, in *WatchLogsRequest, opts ...grpc.CallOption) (ScribeService_WatchLogsClient, error)
 }
 
 type scribeServiceClient struct {
@@ -86,6 +87,38 @@ func (c *scribeServiceClient) FilterLogs(ctx context.Context, in *FilterLogsRequ
 	return out, nil
 }
 
+func (c *scribeServiceClient) WatchLogs(ctx context.Context, in *WatchLogsRequest, opts ...grpc.CallOption) (ScribeService_WatchLogsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ScribeService_ServiceDesc.Streams[1], "/types.v1.ScribeService/WatchLogs", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &scribeServiceWatchLogsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ScribeService_WatchLogsClient interface {
+	Recv() (*Log, error)
+	grpc.ClientStream
+}
+
+type scribeServiceWatchLogsClient struct {
+	grpc.ClientStream
+}
+
+func (x *scribeServiceWatchLogsClient) Recv() (*Log, error) {
+	m := new(Log)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ScribeServiceServer is the server API for ScribeService service.
 // All implementations must embed UnimplementedScribeServiceServer
 // for forward compatibility
@@ -94,6 +127,7 @@ type ScribeServiceServer interface {
 	Check(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
 	Watch(*HealthCheckRequest, ScribeService_WatchServer) error
 	FilterLogs(context.Context, *FilterLogsRequest) (*FilterLogsResponse, error)
+	WatchLogs(*WatchLogsRequest, ScribeService_WatchLogsServer) error
 	mustEmbedUnimplementedScribeServiceServer()
 }
 
@@ -109,6 +143,9 @@ func (UnimplementedScribeServiceServer) Watch(*HealthCheckRequest, ScribeService
 }
 func (UnimplementedScribeServiceServer) FilterLogs(context.Context, *FilterLogsRequest) (*FilterLogsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FilterLogs not implemented")
+}
+func (UnimplementedScribeServiceServer) WatchLogs(*WatchLogsRequest, ScribeService_WatchLogsServer) error {
+	return status.Errorf(codes.Unimplemented, "method WatchLogs not implemented")
 }
 func (UnimplementedScribeServiceServer) mustEmbedUnimplementedScribeServiceServer() {}
 
@@ -180,6 +217,27 @@ func _ScribeService_FilterLogs_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ScribeService_WatchLogs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WatchLogsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ScribeServiceServer).WatchLogs(m, &scribeServiceWatchLogsServer{stream})
+}
+
+type ScribeService_WatchLogsServer interface {
+	Send(*Log) error
+	grpc.ServerStream
+}
+
+type scribeServiceWatchLogsServer struct {
+	grpc.ServerStream
+}
+
+func (x *scribeServiceWatchLogsServer) Send(m *Log) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // ScribeService_ServiceDesc is the grpc.ServiceDesc for ScribeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -200,6 +258,11 @@ var ScribeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Watch",
 			Handler:       _ScribeService_Watch_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "WatchLogs",
+			Handler:       _ScribeService_WatchLogs_Handler,
 			ServerStreams: true,
 		},
 	},
