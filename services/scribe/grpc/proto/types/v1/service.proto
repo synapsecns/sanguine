@@ -14,11 +14,6 @@ message FilterLogsRequest {
   uint32  page = 2;
 }
 
-message WatchLogsRequest {
-  LogFilter filter = 1;
-  uint64 ChainID = 2;
-}
-
 message FilterLogsResponse {
   repeated Log logs = 1;
 }
@@ -61,10 +56,5 @@ service ScribeService {
     };
   }
 
-  rpc WatchLogs(WatchLogsRequest) returns (stream Log) {
-    option (google.api.http) = {
-      post: "/grpc/v1/watch_logs"
-      body: "*"
-    };
-  }
+
 }

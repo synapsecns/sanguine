@@ -39,11 +39,6 @@ type server struct {
 	pbscribe.UnimplementedScribeServiceServer
 }
 
-func (s *server) WatchLogs(req *pbscribe.WatchLogsRequest, server *pbscribe.ScribeService_WatchLogsServer) error {
-	logFilter := req.Filter.ToNative()
-	logFilter.ChainID = uint32(req.ChainID)
-}
-
 func (s *server) FilterLogs(ctx context.Context, req *pbscribe.FilterLogsRequest) (*pbscribe.FilterLogsResponse, error) {
 	logFilter := req.Filter.ToNative()
 	logFilter.ChainID = req.Filter.ChainId
