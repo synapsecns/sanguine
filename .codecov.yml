@@ -9,6 +9,7 @@ ignore:
   - '**/*_generated.go'
   - '**/*.abigen.go'
   - '**/*_string.go'
+  - '**/*.pb.go'
   # solidity test files
   - '*/test/*.sol'
   - '*/lib/*.sol'
