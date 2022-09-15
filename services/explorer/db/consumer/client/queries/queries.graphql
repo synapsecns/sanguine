@@ -1,5 +1,5 @@
-query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!, $confirmed: Boolean) {
-  response: logsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page, confirmed: $confirmed) {
+query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+  response: logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
     contract_address
     chain_id
     topics
@@ -10,7 +10,5 @@ query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page
     block_hash
     index
     removed
-    page
-    json
   }
 }

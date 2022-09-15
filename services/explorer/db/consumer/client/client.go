@@ -38,13 +38,11 @@ type GetLogsRange struct {
 		BlockHash       string   "json:\"block_hash\" graphql:\"block_hash\""
 		Index           int      "json:\"index\" graphql:\"index\""
 		Removed         bool     "json:\"removed\" graphql:\"removed\""
-		Page            int      "json:\"page\" graphql:\"page\""
-		JSON            string   "json:\"json\" graphql:\"json\""
 	} "json:\"response\" graphql:\"response\""
 }
 
-const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!, $confirmed: Boolean) {
-	response: logsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page, confirmed: $confirmed) {
+const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+	response: logsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
 		contract_address
 		chain_id
 		topics
@@ -55,19 +53,16 @@ const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block:
 		block_hash
 		index
 		removed
-		page
-		json
 	}
 }
 `
 
-func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, confirmed *bool, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsRange, error) {
+func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsRange, error) {
 	vars := map[string]interface{}{
 		"chain_id":    chainID,
 		"start_block": startBlock,
 		"end_block":   endBlock,
 		"page":        page,
-		"confirmed":   confirmed,
 	}
 
 	var res GetLogsRange
