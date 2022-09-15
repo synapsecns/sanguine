@@ -88,11 +88,11 @@ func (g GQLSuite) TestLogDataEquality() {
 	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 
-	parsedLog, err := graphql.ParseLog(*logs)
+	parsedLog, err := graphql.ParseLog(*logs.Response[0])
 	Nil(g.T(), err)
 
 	// check equality
-	Equal(g.T(), *parsedLog[0], log)
+	Equal(g.T(), *parsedLog, log)
 }
 
 func (g GQLSuite) TestReceiptDataEquality() {

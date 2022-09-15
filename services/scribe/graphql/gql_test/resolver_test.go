@@ -1,6 +1,7 @@
 package gql_test
 
 import (
+	"github.com/synapsecns/sanguine/services/scribe/graphql"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -72,22 +73,9 @@ func (g GQLSuite) TestLogResolvers() {
 	Equal(g.T(), retrievedTx.Value, tx.Value().String())
 	Equal(g.T(), retrievedTx.Nonce, int(tx.Nonce()))
 	Equal(g.T(), retrievedTx.To, tx.To().String())
-	retrievedLog := receiptResolver.Response[0].Logs[0]
-	// convert receiptTopics
-	var receiptTopics []string
-	for _, topic := range log.Topics {
-		receiptTopics = append(receiptTopics, topic.String())
-	}
-	Equal(g.T(), retrievedLog.ContractAddress, log.Address.String())
-	Equal(g.T(), retrievedLog.ChainID, int(chainID))
-	Equal(g.T(), retrievedLog.Topics, receiptTopics)
-	Equal(g.T(), retrievedLog.Data, common.Bytes2Hex(log.Data))
-	Equal(g.T(), retrievedLog.BlockNumber, int(log.BlockNumber))
-	Equal(g.T(), retrievedLog.TxHash, log.TxHash.String())
-	Equal(g.T(), retrievedLog.TxIndex, int(log.TxIndex))
-	Equal(g.T(), retrievedLog.BlockHash, log.BlockHash.String())
-	Equal(g.T(), retrievedLog.Index, int(log.Index))
-	Equal(g.T(), retrievedLog.Removed, log.Removed)
+	parsedLog, err := graphql.ParseLog(*receiptResolver.Response[0].Logs[0])
+	Nil(g.T(), err)
+	Equal(g.T(), *parsedLog, log)
 
 	// test the transaction's resolver for the receipt and logs
 	txResolver, err := g.gqlClient.GetTransactionsResolvers(g.GetTestContext(), int(chainID), 1)
@@ -104,20 +92,7 @@ func (g GQLSuite) TestLogResolvers() {
 	Equal(g.T(), retrievedReceipt.GasUsed, int(receipt.GasUsed))
 	Equal(g.T(), retrievedReceipt.BlockNumber, int(receipt.BlockNumber.Int64()))
 	Equal(g.T(), retrievedReceipt.TransactionIndex, int(receipt.TransactionIndex))
-	retrievedLog = txResolver.Response[0].Logs[0]
-	// convert txTopics
-	var txTopics []string
-	for _, topic := range log.Topics {
-		txTopics = append(txTopics, topic.String())
-	}
-	Equal(g.T(), retrievedLog.ContractAddress, log.Address.String())
-	Equal(g.T(), retrievedLog.ChainID, int(chainID))
-	Equal(g.T(), retrievedLog.Topics, txTopics)
-	Equal(g.T(), retrievedLog.Data, common.Bytes2Hex(log.Data))
-	Equal(g.T(), retrievedLog.BlockNumber, int(log.BlockNumber))
-	Equal(g.T(), retrievedLog.TxHash, log.TxHash.String())
-	Equal(g.T(), retrievedLog.TxIndex, int(log.TxIndex))
-	Equal(g.T(), retrievedLog.BlockHash, log.BlockHash.String())
-	Equal(g.T(), retrievedLog.Index, int(log.Index))
-	Equal(g.T(), retrievedLog.Removed, log.Removed)
+	parsedLog, err = graphql.ParseLog(*txResolver.Response[0].Logs[0])
+	Nil(g.T(), err)
+	Equal(g.T(), *parsedLog, log)
 }
