@@ -2,6 +2,8 @@ run:
   concurrency: 1
   tests: true
   skip-dirs-use-default: false
+  skip-dirs:
+    - grpc/client/rest/*
   timeout: 15m
   skip-files:
     - '.*\\.abigen\\.go$'

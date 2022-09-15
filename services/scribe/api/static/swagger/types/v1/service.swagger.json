@@ -1,0 +1,333 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "types/v1/service.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "ScribeService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/grpc/v1/filter_logs": {
+      "post": {
+        "operationId": "ScribeService_FilterLogs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1FilterLogsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1FilterLogsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ScribeService"
+        ]
+      }
+    },
+    "/grpc/v1/health_check": {
+      "post": {
+        "summary": "see: https://github.com/grpc/grpc/blob/master/doc/health-checking.md",
+        "operationId": "ScribeService_Check",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1HealthCheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1HealthCheckRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ScribeService"
+        ]
+      }
+    },
+    "/grpc/v1/health_watch": {
+      "post": {
+        "operationId": "ScribeService_Watch",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/v1HealthCheckResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of v1HealthCheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1HealthCheckRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ScribeService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "HealthCheckResponseServingStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "SERVING",
+        "NOT_SERVING",
+        "SERVICE_UNKNOWN"
+      ],
+      "default": "UNKNOWN"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1Address": {
+      "type": "object",
+      "properties": {
+        "bytes": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "v1FilterLogsRequest": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/v1LogFilter"
+        },
+        "page": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "v1FilterLogsResponse": {
+      "type": "object",
+      "properties": {
+        "logs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Log"
+          }
+        }
+      }
+    },
+    "v1Hash": {
+      "type": "object",
+      "properties": {
+        "bytes": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "v1HealthCheckRequest": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "type": "string"
+        }
+      }
+    },
+    "v1HealthCheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/HealthCheckResponseServingStatus"
+        }
+      }
+    },
+    "v1Log": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/v1Address"
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Hash"
+          }
+        },
+        "data": {
+          "type": "string",
+          "format": "byte"
+        },
+        "blockNumber": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "txHash": {
+          "$ref": "#/definitions/v1Hash"
+        },
+        "txIndex": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "blockHash": {
+          "$ref": "#/definitions/v1Hash"
+        },
+        "index": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "removed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1LogFilter": {
+      "type": "object",
+      "properties": {
+        "contractAddress": {
+          "$ref": "#/definitions/v1NullableString"
+        },
+        "chainId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "blockNumber": {
+          "$ref": "#/definitions/v1NullableUint64"
+        },
+        "txHash": {
+          "$ref": "#/definitions/v1NullableString"
+        },
+        "txIndex": {
+          "$ref": "#/definitions/v1NullableUint64"
+        },
+        "blockHash": {
+          "$ref": "#/definitions/v1NullableString"
+        },
+        "index": {
+          "$ref": "#/definitions/v1NullableUint64"
+        },
+        "confirmed": {
+          "$ref": "#/definitions/v1NullableBool"
+        }
+      }
+    },
+    "v1NullableBool": {
+      "type": "object",
+      "properties": {
+        "null": {
+          "type": "string"
+        },
+        "data": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1NullableString": {
+      "type": "object",
+      "properties": {
+        "null": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string"
+        }
+      }
+    },
+    "v1NullableUint64": {
+      "type": "object",
+      "properties": {
+        "null": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    }
+  }
+}

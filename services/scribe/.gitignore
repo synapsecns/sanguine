@@ -1,2 +1,4 @@
 # don't push binary
 scribe
+# add swagger files
+!*.swagger.json

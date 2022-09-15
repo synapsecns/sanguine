@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package types.v1;
+
+option go_package = "github.com/synapsecns/sanguine/services/scribe/grpc/types;pbscribe";
+
+import "google/protobuf/struct.proto";
+
+message BigInt {
+  bytes bytes = 1;
+}
+
+message Address {
+  bytes bytes = 1;
+}
+
+message Hash {
+  bytes bytes = 1;
+}
+
+message NullableString {
+  oneof kind {
+    google.protobuf.NullValue null = 1;
+    string data = 2;
+  }
+}
+
+
+message NullableUint32 {
+  oneof kind {
+    google.protobuf.NullValue null = 1;
+    uint32 data = 2;
+  }
+}
+
+message NullableUint64 {
+  oneof kind {
+    google.protobuf.NullValue null = 1;
+    uint64 data = 2;
+  }
+}
+
+message NullableBool {
+  oneof kind {
+    google.protobuf.NullValue null = 1;
+    bool data = 2;
+  }
+}
