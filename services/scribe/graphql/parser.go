@@ -2,6 +2,7 @@ package graphql
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
@@ -11,12 +12,12 @@ import (
 func ParseLog(log interface{}) (*ethTypes.Log, error) {
 	marshalledLog, err := json.Marshal(log)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to marshal log: %v", err)
 	}
 	var unmarshalledLog model.Log
 	err = json.Unmarshal(marshalledLog, &unmarshalledLog)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal log: %v", err)
 	}
 	return buildLogFromModelLogs(unmarshalledLog), nil
 }
