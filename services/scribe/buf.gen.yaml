@@ -1,0 +1,17 @@
+version: v1
+plugins:
+  - name: go
+    out: grpc/types/
+    opt:
+      - paths=source_relative
+  - name: go-grpc
+    out: grpc/types/
+    opt:
+      - paths=source_relative
+  - name: grpc-gateway
+    out: grpc/types/
+    opt:
+      - paths=source_relative
+      - generate_unbound_methods=true
+  - name: openapiv2
+    out: api/static/swagger
