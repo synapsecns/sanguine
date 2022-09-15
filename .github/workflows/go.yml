@@ -419,11 +419,17 @@ jobs:
         with:
           credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
 
-      - name: Run Make Generate CI
+      - name: Run Make Generate CI Deps (Scribe)
         working-directory: ${{matrix.package}}/
-        if:  ${{ !contains('ethergo', matrix.package) }}
+        if:  ${{ contains('scribe', matrix.package) }}
         run: |
           make generate-ci || exit 0
+
+      - name: Run Make Generate CI (Scribe)
+        working-directory: ${{matrix.package}}/
+        if:  ${{ contains('scribe', matrix.package) }}
+        run: |
+          make generate-ci
 
 
       # See if we need to rerun go generate
