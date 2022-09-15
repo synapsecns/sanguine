@@ -427,6 +427,11 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
+
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        if: ${{ contains(matrix.package, 'scribe') }}
+
       - name: Run Make Generate CI Deps (Scribe)
         working-directory: ${{matrix.package}}/
         if:  ${{ contains(matrix.package, 'scribe') }}
