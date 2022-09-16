@@ -1,3 +1,3 @@
-package bridge_test
+package parser_test
 
 // need to implement

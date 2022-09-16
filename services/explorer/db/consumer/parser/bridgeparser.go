@@ -1,4 +1,4 @@
-package bridge
+package parser
 
 import (
 	"context"
@@ -10,23 +10,25 @@ import (
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 )
 
-type Parser struct {
+type BridgeParser struct {
 	// consumerDB is the database to store parsed data in
 	consumerDB db.ConsumerDB
 	// filterer is the bridge filterer we use to parse events
 	filterer *bridge.SynapseBridgeFilterer
+	// bridgeAddress is the address of the bridge
+	bridgeAddress common.Address
 }
 
-// NewParser creates a new parser for a given bridge.
-func NewParser(consumerDB db.ConsumerDB, bridgeAddress common.Address) (*Parser, error) {
+// NewBridgeParser creates a new parser for a given bridge.
+func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address) (*BridgeParser, error) {
 	filterer, err := bridge.NewSynapseBridgeFilterer(bridgeAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
-	return &Parser{consumerDB, filterer}, nil
+	return &BridgeParser{consumerDB, filterer, bridgeAddress}, nil
 }
 
-func (p *Parser) EventType(log ethTypes.Log) (_ bridgeTypes.EventType, ok bool) {
+func (p *BridgeParser) EventType(log ethTypes.Log) (_ bridgeTypes.EventType, ok bool) {
 	for _, logTopic := range log.Topics {
 		eventType := bridge.EventTypeFromTopic(logTopic)
 		if eventType == nil {
@@ -39,7 +41,7 @@ func (p *Parser) EventType(log ethTypes.Log) (_ bridgeTypes.EventType, ok bool) 
 	return bridgeTypes.EventType(len(bridgeTypes.AllEventTypes()) + 2), false
 }
 
-func (p *Parser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	for _, logTopic := range log.Topics {
 		switch logTopic {
 		case bridge.Topic(bridgeTypes.DepositEvent):
@@ -98,7 +100,7 @@ func (p *Parser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID ui
 	return nil
 }
 
-func (p *Parser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseTokenDeposit(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token deposit: %w", err)
@@ -110,7 +112,7 @@ func (p *Parser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Log, cha
 	return nil
 }
 
-func (p *Parser) parseAndStoreRedeem(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) parseAndStoreRedeem(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseTokenRedeem(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem: %w", err)
@@ -122,7 +124,7 @@ func (p *Parser) parseAndStoreRedeem(ctx context.Context, log ethTypes.Log, chai
 	return nil
 }
 
-func (p *Parser) parseAndStoreWithdraw(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) parseAndStoreWithdraw(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseTokenWithdraw(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token withdraw: %w", err)
@@ -134,7 +136,7 @@ func (p *Parser) parseAndStoreWithdraw(ctx context.Context, log ethTypes.Log, ch
 	return nil
 }
 
-func (p *Parser) parseAndStoreMint(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) parseAndStoreMint(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseTokenMint(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token mint: %w", err)
@@ -146,7 +148,7 @@ func (p *Parser) parseAndStoreMint(ctx context.Context, log ethTypes.Log, chainI
 	return nil
 }
 
-func (p *Parser) parseAndStoreDepositAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) parseAndStoreDepositAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseTokenDepositAndSwap(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token deposit and swap: %w", err)
@@ -158,7 +160,7 @@ func (p *Parser) parseAndStoreDepositAndSwap(ctx context.Context, log ethTypes.L
 	return nil
 }
 
-func (p *Parser) parseAndStoreMintAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) parseAndStoreMintAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseTokenMintAndSwap(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token mint and swap: %w", err)
@@ -170,7 +172,7 @@ func (p *Parser) parseAndStoreMintAndSwap(ctx context.Context, log ethTypes.Log,
 	return nil
 }
 
-func (p *Parser) parseAndStoreRedeemAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) parseAndStoreRedeemAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseTokenRedeemAndSwap(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem and swap: %w", err)
@@ -182,7 +184,7 @@ func (p *Parser) parseAndStoreRedeemAndSwap(ctx context.Context, log ethTypes.Lo
 	return nil
 }
 
-func (p *Parser) parseAndStoreRedeemAndRemove(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) parseAndStoreRedeemAndRemove(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseTokenRedeemAndRemove(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem and remove: %w", err)
@@ -194,7 +196,7 @@ func (p *Parser) parseAndStoreRedeemAndRemove(ctx context.Context, log ethTypes.
 	return nil
 }
 
-func (p *Parser) parseAndStoreWithdrawAndRemove(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) parseAndStoreWithdrawAndRemove(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseTokenWithdrawAndRemove(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token withdraw and remove: %w", err)
@@ -206,7 +208,7 @@ func (p *Parser) parseAndStoreWithdrawAndRemove(ctx context.Context, log ethType
 	return nil
 }
 
-func (p *Parser) parseAndStoreRedeemV2(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) parseAndStoreRedeemV2(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseTokenRedeemV2(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem v2: %w", err)

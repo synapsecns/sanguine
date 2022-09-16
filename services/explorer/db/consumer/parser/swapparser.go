@@ -1,4 +1,4 @@
-package swap
+package parser
 
 import (
 	"context"
@@ -11,23 +11,23 @@ import (
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
 )
 
-type Parser struct {
+type SwapParser struct {
 	// consumerDB is the database to store parsed data in
 	consumerDB db.ConsumerDB
 	// filterer is the swap filterer we use to parse events
 	filterer *swap.SwapFlashLoanFilterer
 }
 
-// NewParser creates a new parser for a given bridge.
-func NewParser(consumerDB db.ConsumerDB, swapAddress common.Address) (*Parser, error) {
+// NewSwapParser creates a new parser for a given bridge.
+func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address) (*SwapParser, error) {
 	filterer, err := swap.NewSwapFlashLoanFilterer(swapAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
-	return &Parser{consumerDB, filterer}, nil
+	return &SwapParser{consumerDB, filterer}, nil
 }
 
-func (p *Parser) EventType(log ethTypes.Log) (_ swapTypes.EventType, ok bool) {
+func (p *SwapParser) EventType(log ethTypes.Log) (_ swapTypes.EventType, ok bool) {
 	for _, logTopic := range log.Topics {
 		eventType := swap.EventTypeFromTopic(logTopic)
 		if eventType == nil {
@@ -40,7 +40,7 @@ func (p *Parser) EventType(log ethTypes.Log) (_ swapTypes.EventType, ok bool) {
 	return swapTypes.EventType(len(swapTypes.AllEventTypes()) + 2), false
 }
 
-func (p *Parser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	for _, logTopic := range log.Topics {
 		switch logTopic {
 		case swap.Topic(swapTypes.TokenSwapEvent):
@@ -100,7 +100,7 @@ func (p *Parser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID ui
 	return fmt.Errorf("did not find event type for log")
 }
 
-func (p *Parser) parseTokenSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) parseTokenSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseTokenSwap(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token swap: %w", err)
@@ -112,7 +112,7 @@ func (p *Parser) parseTokenSwap(ctx context.Context, log ethTypes.Log, chainID u
 	return nil
 }
 
-func (p *Parser) parseAddLiquidity(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) parseAddLiquidity(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseAddLiquidity(log)
 	if err != nil {
 		return fmt.Errorf("could not parse add liquidity: %w", err)
@@ -124,7 +124,7 @@ func (p *Parser) parseAddLiquidity(ctx context.Context, log ethTypes.Log, chainI
 	return nil
 }
 
-func (p *Parser) parseRemoveLiquidity(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) parseRemoveLiquidity(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseRemoveLiquidity(log)
 	if err != nil {
 		return fmt.Errorf("could not parse remove liquidity: %w", err)
@@ -136,7 +136,7 @@ func (p *Parser) parseRemoveLiquidity(ctx context.Context, log ethTypes.Log, cha
 	return nil
 }
 
-func (p *Parser) parseRemoveLiquidityOne(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) parseRemoveLiquidityOne(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseRemoveLiquidityOne(log)
 	if err != nil {
 		return fmt.Errorf("could not parse remove liquidity one: %w", err)
@@ -147,7 +147,7 @@ func (p *Parser) parseRemoveLiquidityOne(ctx context.Context, log ethTypes.Log, 
 	}
 	return nil
 }
-func (p *Parser) parseRemoveLiquidityImbalance(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) parseRemoveLiquidityImbalance(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseRemoveLiquidityImbalance(log)
 	if err != nil {
 		return fmt.Errorf("could not parse remove liquidity imbalance: %w", err)
@@ -159,7 +159,7 @@ func (p *Parser) parseRemoveLiquidityImbalance(ctx context.Context, log ethTypes
 	return nil
 }
 
-func (p *Parser) parseNewAdminFee(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) parseNewAdminFee(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseNewAdminFee(log)
 	if err != nil {
 		return fmt.Errorf("could not parse new admin fee: %w", err)
@@ -171,7 +171,7 @@ func (p *Parser) parseNewAdminFee(ctx context.Context, log ethTypes.Log, chainID
 	return nil
 }
 
-func (p *Parser) parseNewSwapFee(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) parseNewSwapFee(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseNewSwapFee(log)
 	if err != nil {
 		return fmt.Errorf("could not parse new swap fee: %w", err)
@@ -183,7 +183,7 @@ func (p *Parser) parseNewSwapFee(ctx context.Context, log ethTypes.Log, chainID 
 	return nil
 }
 
-func (p *Parser) parseRampA(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) parseRampA(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseRampA(log)
 	if err != nil {
 		return fmt.Errorf("could not parse Ramp A: %w", err)
@@ -194,7 +194,7 @@ func (p *Parser) parseRampA(ctx context.Context, log ethTypes.Log, chainID uint3
 	}
 	return nil
 }
-func (p *Parser) parseStopRampA(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) parseStopRampA(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseStopRampA(log)
 	if err != nil {
 		return fmt.Errorf("could not parse stop Ramp A: %w", err)
@@ -206,7 +206,7 @@ func (p *Parser) parseStopRampA(ctx context.Context, log ethTypes.Log, chainID u
 	return nil
 }
 
-func (p *Parser) parseFlashLoan(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) parseFlashLoan(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	iface, err := p.filterer.ParseFlashLoan(log)
 	if err != nil {
 		return fmt.Errorf("could not parse flash loan: %w", err)

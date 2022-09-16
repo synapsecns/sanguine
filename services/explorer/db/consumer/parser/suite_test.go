@@ -1,4 +1,4 @@
-package swap_test
+package parser_test
 
 import (
 	"fmt"
