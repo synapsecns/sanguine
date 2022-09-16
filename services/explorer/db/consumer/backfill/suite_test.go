@@ -1,4 +1,4 @@
-package db_test
+package backfill_test
 
 import (
 	"github.com/stretchr/testify/suite"
@@ -6,36 +6,36 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
-	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
+	eventdb "github.com/synapsecns/sanguine/services/scribe/db"
 	"go.uber.org/atomic"
 	"testing"
 )
 
-type DBSuite struct {
+type BackfillSuite struct {
 	*testsuite.TestSuite
 	db        db.ConsumerDB
-	eventDB   scribedb.EventDB
+	eventDB   eventdb.EventDB
 	gqlClient *client.Client
 	logIndex  atomic.Int64
 	cleanup   func()
 }
 
-// NewDBSuite creates a new ConsumerDBSuite.
-func NewDBSuite(tb testing.TB) *DBSuite {
+// NewBackfillSuite creates a new backfill test suite.
+func NewBackfillSuite(tb testing.TB) *BackfillSuite {
 	tb.Helper()
-	return &DBSuite{
+	return &BackfillSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 		logIndex:  atomic.Int64{},
 	}
 }
 
-func (t *DBSuite) SetupTest() {
+func (t *BackfillSuite) SetupTest() {
 	t.TestSuite.SetupTest()
 
 	t.db, t.eventDB, t.gqlClient, t.logIndex, t.cleanup = testutil.SetupDB(t.TestSuite)
 }
 
-// TestDBSuite tests the db suite.
-func TestDBSuite(t *testing.T) {
-	suite.Run(t, NewDBSuite(t))
+// TestBackfillSuite tests the backfill suite.
+func TestBackfillSuite(t *testing.T) {
+	suite.Run(t, NewBackfillSuite(t))
 }

@@ -25,13 +25,13 @@ type ChainBackfiller struct {
 	// bridgeAddress is the address of the bridge contract.
 	bridgeAddress common.Address
 	// swapParsers is a map from contract address -> parser.
-	swapParsers map[common.Address]*parser.BridgeParser
+	swapParsers map[common.Address]*parser.SwapParser
 	// fetcher is the fetcher to use to fetch logs.
 	fetcher consumer.Fetcher
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncrement uint64, bridgeParser *parser.BridgeParser, bridgeAddress common.Address, fetcher consumer.Fetcher, swapParsers map[common.Address]*parser.BridgeParser) *ChainBackfiller {
+func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncrement uint64, bridgeParser *parser.BridgeParser, bridgeAddress common.Address, swapParsers map[common.Address]*parser.SwapParser, fetcher consumer.Fetcher) *ChainBackfiller {
 	return &ChainBackfiller{
 		consumerDB:          consumerDB,
 		chainID:             chainID,
