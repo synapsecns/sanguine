@@ -62,6 +62,8 @@ type SwapEvent struct {
 	CurrentA *big.Int `gorm:"column:current_a;type:UInt256"`
 	// Time is the time
 	Time *big.Int `gorm:"column:time;type:UInt256"`
+	// TokenID is the token's ID
+	TokenID *string `gorm:"column:token_id"`
 }
 
 // BridgeEvent stores data for emitted events from the Bridge contract.
@@ -105,4 +107,6 @@ type BridgeEvent struct {
 	SwapMinAmount *big.Int `gorm:"column:swap_min_amount;type:UInt256"`
 	// SwapDeadline is the deadline of the swap transaction
 	SwapDeadline *big.Int `gorm:"column:swap_deadline;type:UInt256"`
+	// TokenID is the token's ID
+	TokenID *string `gorm:"column:token_id"`
 }

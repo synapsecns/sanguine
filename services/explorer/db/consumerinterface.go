@@ -7,7 +7,7 @@ import (
 )
 
 type ConsumerDBWriter interface {
-	StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32) error
+	StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenId *string) error
 }
 
 //// ConsumerBridgeDBWriter is the interface for writing bridge events to the ConsumerDB.

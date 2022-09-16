@@ -7,6 +7,7 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/db"
+	"github.com/synapsecns/sanguine/services/explorer/db/consumer/bridgeconfig"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 )
 
@@ -17,15 +18,17 @@ type BridgeParser struct {
 	filterer *bridge.SynapseBridgeFilterer
 	// bridgeAddress is the address of the bridge
 	bridgeAddress common.Address
+	//fetcher is a Bridge Config Fetcher
+	fetcher *bridgeconfig.Fetcher
 }
 
 // NewBridgeParser creates a new parser for a given bridge.
-func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address) (*BridgeParser, error) {
+func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bridgeConfigFetcher *bridgeconfig.Fetcher) (*BridgeParser, error) {
 	filterer, err := bridge.NewSynapseBridgeFilterer(bridgeAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
-	return &BridgeParser{consumerDB, filterer, bridgeAddress}, nil
+	return &BridgeParser{consumerDB, filterer, bridgeAddress, bridgeConfigFetcher}, nil
 }
 
 func (p *BridgeParser) EventType(log ethTypes.Log) (_ bridgeTypes.EventType, ok bool) {
@@ -105,7 +108,14 @@ func (p *BridgeParser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Lo
 	if err != nil {
 		return fmt.Errorf("could not parse token deposit: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
+
+	// get BridgeConfig data
+	tokenId, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
+
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID, tokenId)
 	if err != nil {
 		return fmt.Errorf("could not store deposit: %w", err)
 	}
@@ -117,7 +127,14 @@ func (p *BridgeParser) parseAndStoreRedeem(ctx context.Context, log ethTypes.Log
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
+
+	// get BridgeConfig data
+	tokenId, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
+
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID, tokenId)
 	if err != nil {
 		return fmt.Errorf("could not store redeem: %w", err)
 	}
@@ -129,7 +146,14 @@ func (p *BridgeParser) parseAndStoreWithdraw(ctx context.Context, log ethTypes.L
 	if err != nil {
 		return fmt.Errorf("could not parse token withdraw: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
+
+	// get BridgeConfig data
+	tokenId, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
+
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID, tokenId)
 	if err != nil {
 		return fmt.Errorf("could not store withdraw: %w", err)
 	}
@@ -141,7 +165,14 @@ func (p *BridgeParser) parseAndStoreMint(ctx context.Context, log ethTypes.Log, 
 	if err != nil {
 		return fmt.Errorf("could not parse token mint: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
+
+	// get BridgeConfig data
+	tokenId, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
+
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID, tokenId)
 	if err != nil {
 		return fmt.Errorf("could not store mint: %w", err)
 	}
@@ -153,7 +184,12 @@ func (p *BridgeParser) parseAndStoreDepositAndSwap(ctx context.Context, log ethT
 	if err != nil {
 		return fmt.Errorf("could not parse token deposit and swap: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
+	// get BridgeConfig data
+	tokenId, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID, tokenId)
 	if err != nil {
 		return fmt.Errorf("could not store deposit and swap: %w", err)
 	}
@@ -165,7 +201,13 @@ func (p *BridgeParser) parseAndStoreMintAndSwap(ctx context.Context, log ethType
 	if err != nil {
 		return fmt.Errorf("could not parse token mint and swap: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
+	// get BridgeConfig data
+	tokenId, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
+
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID, tokenId)
 	if err != nil {
 		return fmt.Errorf("could not store mint and swap: %w", err)
 	}
@@ -177,7 +219,13 @@ func (p *BridgeParser) parseAndStoreRedeemAndSwap(ctx context.Context, log ethTy
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem and swap: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
+	// get BridgeConfig data
+	tokenId, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
+
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID, tokenId)
 	if err != nil {
 		return fmt.Errorf("could not store redeem and swap: %w", err)
 	}
@@ -189,7 +237,13 @@ func (p *BridgeParser) parseAndStoreRedeemAndRemove(ctx context.Context, log eth
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem and remove: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
+	// get BridgeConfig data
+	tokenId, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
+
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID, tokenId)
 	if err != nil {
 		return fmt.Errorf("could not store redeem and remove: %w", err)
 	}
@@ -201,7 +255,13 @@ func (p *BridgeParser) parseAndStoreWithdrawAndRemove(ctx context.Context, log e
 	if err != nil {
 		return fmt.Errorf("could not parse token withdraw and remove: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
+	// get BridgeConfig data
+	tokenId, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
+
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID, tokenId)
 	if err != nil {
 		return fmt.Errorf("could not store withdraw and remove: %w", err)
 	}
@@ -213,7 +273,13 @@ func (p *BridgeParser) parseAndStoreRedeemV2(ctx context.Context, log ethTypes.L
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem v2: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID)
+	// get BridgeConfig data
+	tokenId, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
+
+	err = p.consumerDB.StoreEvent(ctx, iface, nil, chainID, tokenId)
 	if err != nil {
 		return fmt.Errorf("could not store redeem v2: %w", err)
 	}

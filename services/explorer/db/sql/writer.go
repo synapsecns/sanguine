@@ -22,17 +22,18 @@ func boolToUint8(input *bool) *uint8 {
 }
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
-func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32) error {
+func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenId *string) error {
+
 	if bridgeEvent != nil {
 		dbTx := s.DB().WithContext(ctx).
-			Create(s.eventToBridgeEvent(bridgeEvent, chainID))
+			Create(s.eventToBridgeEvent(bridgeEvent, chainID, tokenId))
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store bridge event: %w", dbTx.Error)
 		}
 	}
 	if swapEvent != nil {
 		dbTx := s.DB().WithContext(ctx).
-			Create(s.eventToSwapEvent(swapEvent, chainID))
+			Create(s.eventToSwapEvent(swapEvent, chainID, nil))
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store swap event: %w", dbTx.Error)
 		}
@@ -42,7 +43,7 @@ func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swa
 }
 
 // eventToBridgeEvent stores a bridge event.
-func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32) BridgeEvent {
+func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenId *string) BridgeEvent {
 	var recipient *string
 	if event.GetRecipient() != nil {
 		r := event.GetRecipient().String()
@@ -80,12 +81,13 @@ func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32) Bridge
 		SwapTokenIndex:     event.GetSwapTokenIndex(),
 		SwapMinAmount:      event.GetSwapMinAmount(),
 		SwapDeadline:       event.GetSwapDeadline(),
+		TokenID:            tokenId,
 	}
 
 }
 
 // eventToSwapEvent stores a swap event.
-func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32) SwapEvent {
+func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenId *string) SwapEvent {
 
 	var provider *string
 	if event.GetProvider() != nil {
@@ -128,5 +130,6 @@ func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32) SwapEvent 
 		FutureTime:      event.GetFutureTime(),
 		CurrentA:        event.GetCurrentA(),
 		Time:            event.GetTime(),
+		TokenID:         nil,
 	}
 }
