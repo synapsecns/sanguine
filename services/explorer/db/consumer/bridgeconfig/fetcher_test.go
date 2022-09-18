@@ -19,7 +19,7 @@ func (c *ConfigSuite) TestToken() {
 		tokenID, err := fetcher.GetTokenID(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), uint32(curentBlockNumber), common.HexToAddress(testToken.TokenAddress))
 
 		Nil(c.T(), err)
-		Equal(c.T(), tokenID, testToken.tokenID)
+		Equal(c.T(), *tokenID, testToken.tokenID)
 		token, err := fetcher.GetToken(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), uint32(curentBlockNumber), *tokenID)
 		Nil(c.T(), err)
 		Equal(c.T(), common.HexToAddress(testToken.TokenAddress).String(), common.HexToAddress(token.TokenAddress).String())
