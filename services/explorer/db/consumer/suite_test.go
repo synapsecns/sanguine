@@ -1,4 +1,4 @@
-package parser_test
+package consumer_test
 
 import (
 	"fmt"
@@ -13,23 +13,32 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/db"
+	"github.com/synapsecns/sanguine/services/explorer/db/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
+	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
+	"go.uber.org/atomic"
 	"math/big"
 	"testing"
 )
 
-// ConfigSuite is the config test suite.
-type ConfigSuite struct {
+// ConsumerSuite is the config test suite.
+type ConsumerSuite struct {
 	*testsuite.TestSuite
+	db                   db.ConsumerDB
+	eventDB              scribedb.EventDB
+	gqlClient            *client.Client
+	logIndex             atomic.Int64
+	cleanup              func()
 	testBackend          backends.SimulatedTestBackend
 	deployManager        *testutil.DeployManager
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
 }
 
-// NewConfigSuite creates a end-to-end test suite.
-func NewConfigSuite(tb testing.TB) *ConfigSuite {
+// NewConsumerSuite creates a end-to-end test suite.
+func NewConsumerSuite(tb testing.TB) *ConsumerSuite {
 	tb.Helper()
-	return &ConfigSuite{
+	return &ConsumerSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
@@ -66,8 +75,10 @@ var testTokens = []TestToken{{
 },
 }
 
-func (c *ConfigSuite) SetupTest() {
+func (c *ConsumerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
+
+	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup = testutil.SetupDB(c.TestSuite)
 
 	c.testBackend = simulated.NewSimulatedBackend(c.GetTestContext(), c.T())
 	c.deployManager = testutil.NewDeployManager(c.T())
@@ -84,7 +95,7 @@ func (c *ConfigSuite) SetupTest() {
 	}
 }
 
-// TestConfigSuite runs the integration test suite.
-func TestConfigSuite(t *testing.T) {
-	suite.Run(t, NewConfigSuite(t))
+// TestConsumerSuite runs the integration test suite.
+func TestConsumerSuite(t *testing.T) {
+	suite.Run(t, NewConsumerSuite(t))
 }

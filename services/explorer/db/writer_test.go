@@ -28,7 +28,7 @@ func (t *DBSuite) TestBridgeWrite() {
 			Removed:     false,
 		},
 	}
-	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil, gofakeit.Uint32())
+	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil, gofakeit.Uint32(), nil)
 	Nil(t.T(), err)
 	t.cleanup()
 }
@@ -52,7 +52,7 @@ func (t *DBSuite) TestSwapWrite() {
 			Removed:     false,
 		},
 	}
-	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent, gofakeit.Uint32())
+	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent, gofakeit.Uint32(), nil)
 	Nil(t.T(), err)
 	t.cleanup()
 

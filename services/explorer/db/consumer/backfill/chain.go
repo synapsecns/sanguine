@@ -8,7 +8,6 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/consumer"
-	"github.com/synapsecns/sanguine/services/explorer/db/consumer/parser"
 	"golang.org/x/sync/errgroup"
 	"time"
 )
@@ -21,11 +20,11 @@ type ChainBackfiller struct {
 	// fetchBlockIncrement is the number of blocks to fetch at a time.
 	fetchBlockIncrement uint64
 	// bridgeParser is the parser to use to parse bridge events.
-	bridgeParser *parser.BridgeParser
+	bridgeParser *consumer.BridgeParser
 	// bridgeAddress is the address of the bridge contract.
 	bridgeAddress common.Address
 	// swapParsers is a map from contract address -> parser.
-	swapParsers map[common.Address]*parser.SwapParser
+	swapParsers map[common.Address]*consumer.SwapParser
 	// bridgeConfigAddress is the address of the BridgeConfigV3 contract.
 	bridgeConfigAddress common.Address
 	// fetcher is the fetcher to use to fetch logs.
@@ -33,7 +32,7 @@ type ChainBackfiller struct {
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncrement uint64, bridgeParser *parser.BridgeParser, bridgeAddress common.Address, swapParsers map[common.Address]*parser.SwapParser, fetcher consumer.Fetcher, bridgeConfigAddress common.Address) *ChainBackfiller {
+func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncrement uint64, bridgeParser *consumer.BridgeParser, bridgeAddress common.Address, swapParsers map[common.Address]*consumer.SwapParser, fetcher consumer.Fetcher, bridgeConfigAddress common.Address) *ChainBackfiller {
 	return &ChainBackfiller{
 		consumerDB:          consumerDB,
 		chainID:             chainID,
@@ -110,7 +109,7 @@ func (c ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) e
 			}
 			// timeout should always be 0 on the first attempt
 			timeout := time.Duration(0)
-			var eventParser parser.Parser
+			var eventParser consumer.Parser
 			if log.Address == c.bridgeAddress {
 				eventParser = c.bridgeParser
 			} else {
