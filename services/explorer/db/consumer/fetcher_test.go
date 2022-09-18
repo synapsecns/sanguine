@@ -28,9 +28,7 @@ func (c *ConsumerSuite) TestFetchLogsInRange() {
 }
 
 func (c *ConsumerSuite) TestToken() {
-	_, bridgeConfigContract := c.deployManager.GetBridgeConfigV3(c.GetTestContext(), c.testBackend)
-
-	fetcher, err := consumer.NewBridgeConfigFetcher(bridgeConfigContract.Address(), c.testBackend)
+	fetcher, err := consumer.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.testBackend)
 	Nil(c.T(), err)
 
 	curentBlockNumber, err := c.testBackend.BlockNumber(c.GetTestContext())

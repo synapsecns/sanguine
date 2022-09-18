@@ -5,12 +5,9 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -78,21 +75,7 @@ var testTokens = []TestToken{{
 func (c *ConsumerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
-	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup = testutil.SetupDB(c.TestSuite)
-
-	c.testBackend = simulated.NewSimulatedBackend(c.GetTestContext(), c.T())
-	c.deployManager = testutil.NewDeployManager(c.T())
-
-	var deployInfo contracts.DeployedContract
-	deployInfo, c.bridgeConfigContract = c.deployManager.GetBridgeConfigV3(c.GetTestContext(), c.testBackend)
-
-	for _, token := range testTokens {
-		auth := c.testBackend.GetTxContext(c.GetTestContext(), deployInfo.OwnerPtr())
-		tx, err := token.SetTokenConfig(c.bridgeConfigContract, auth)
-		Nil(c.T(), err)
-
-		c.testBackend.WaitForConfirmation(c.GetTestContext(), tx)
-	}
+	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup, c.testBackend, c.deployManager, c.bridgeConfigContract = testutil.SetupDB(c.TestSuite)
 }
 
 // TestConsumerSuite runs the integration test suite.
