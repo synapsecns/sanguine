@@ -6,6 +6,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/explorer/db/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/db/consumer/backfill"
+	"github.com/synapsecns/sanguine/services/explorer/db/consumer/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db/consumer/parser"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"math/big"
@@ -27,6 +28,7 @@ func (t *BackfillSuite) TestBackfill() {
 	}
 
 	// setup a ChainBackfiller
+	bcf, err := bridgeconfig.NewFetcher()
 	bp, err := parser.NewBridgeParser(t.db, contractAddressA)
 	Nil(t.T(), err)
 	sp, err := parser.NewSwapParser(t.db, contractAddressB)
@@ -39,4 +41,7 @@ func (t *BackfillSuite) TestBackfill() {
 	// backfill the blocks
 	err = chainBackfiller.Backfill(t.GetTestContext(), 0, 9)
 	Nil(t.T(), err)
+
+	// check that the blocks were backfilled
+	// TODO: check that the blocks were backfilled
 }

@@ -16,6 +16,7 @@ type SwapEvent struct {
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// EventType is the type of the event
 	EventType uint8 `gorm:"column:event_type;primaryKey;auto_increment:false"`
+
 	// TokenIndex is the index of the token in the pool
 	TokenIndex *uint8 `gorm:"column:token_index"`
 	// Amount is the amount of tokens
