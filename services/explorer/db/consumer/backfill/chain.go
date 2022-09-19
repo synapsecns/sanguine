@@ -49,8 +49,11 @@ func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncr
 func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight uint64) error {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
-	currentHeight := startHeight
-	for currentHeight < endHeight {
+	//currentHeight := startHeight
+	//for currentHeight < endHeight {
+	for currentHeight := startHeight; currentHeight < endHeight; currentHeight += c.fetchBlockIncrement - 1 {
+		funcHeight := currentHeight
+		fmt.Println("current height", currentHeight)
 		g.Go(func() error {
 			// backoff in the case of an error
 			b := &backoff.Backoff{
@@ -68,7 +71,12 @@ func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight ui
 					return fmt.Errorf("context canceled: %w", groupCtx.Err())
 				case <-time.After(timeout):
 					// fetch the logs
-					logs, err := c.fetcher.FetchLogsInRange(groupCtx, c.chainID, currentHeight+1, currentHeight+c.fetchBlockIncrement)
+					fmt.Println("fetching logs")
+					rangeEnd := funcHeight + c.fetchBlockIncrement - 1
+					if rangeEnd > endHeight {
+						rangeEnd = endHeight
+					}
+					logs, err := c.fetcher.FetchLogsInRange(groupCtx, c.chainID, funcHeight, rangeEnd)
 					if err != nil {
 						timeout = b.Duration()
 						logger.Warnf("could not fetch logs for chain %d: %s. Retrying in %s", c.chainID, err, timeout)
@@ -85,7 +93,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight ui
 				}
 			}
 		})
-		currentHeight += c.fetchBlockIncrement
+		//currentHeight += c.fetchBlockIncrement
 	}
 
 	if err := g.Wait(); err != nil {

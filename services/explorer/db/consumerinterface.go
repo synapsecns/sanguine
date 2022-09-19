@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
+	"gorm.io/gorm"
 )
 
 type ConsumerDBWriter interface {
@@ -20,12 +21,10 @@ type ConsumerDBWriter interface {
 //	StoreSwapEvent(ctx context.Context, data swap.EventLog, chainID uint32) error
 //}
 
-// ConsumerBridgeDBReader is the interface for reading bridge events from the ConsumerDB.
-type ConsumerBridgeDBReader interface {
-}
-
-// ConsumerSwapDBReader is the interface for reading swap events from the ConsumerDB.
-type ConsumerSwapDBReader interface {
+// ConsumerDBReader is the interface for reading bridge events from the ConsumerDB.
+type ConsumerDBReader interface {
+	// DB gets the underlying gorm db.
+	DB() *gorm.DB
 }
 
 // ConsumerDB is the interface for the ConsumerDB.
@@ -33,6 +32,5 @@ type ConsumerSwapDBReader interface {
 //go:generate go run github.com/vektra/mockery/v2 --name=ConsumerDB --output=mocks --case=underscore
 type ConsumerDB interface {
 	ConsumerDBWriter
-	ConsumerBridgeDBReader
-	ConsumerSwapDBReader
+	ConsumerDBReader
 }

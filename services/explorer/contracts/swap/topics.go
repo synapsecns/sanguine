@@ -67,9 +67,9 @@ var StopRampATopic common.Hash
 // FlashLoanTopic is the topic used for Flash Loans.
 var FlashLoanTopic common.Hash
 
-// topicMap maps events to topics.
+// TopicMap maps events to topics.
 // this is returned as a function to assert immutability.
-func topicMap() map[swap.EventType]common.Hash {
+func TopicMap() map[swap.EventType]common.Hash {
 	return map[swap.EventType]common.Hash{
 		swap.TokenSwapEvent:                TokenSwapTopic,
 		swap.AddLiquidityEvent:             AddLiquidityTopic,
@@ -87,7 +87,7 @@ func topicMap() map[swap.EventType]common.Hash {
 // EventTypeFromTopic gets the event type from the topic
 // returns nil if the topic is not found.
 func EventTypeFromTopic(ogTopic common.Hash) *swap.EventType {
-	for eventType, topic := range topicMap() {
+	for eventType, topic := range TopicMap() {
 		if bytes.Equal(ogTopic.Bytes(), topic.Bytes()) {
 			return &eventType
 		}
@@ -97,7 +97,7 @@ func EventTypeFromTopic(ogTopic common.Hash) *swap.EventType {
 
 // Topic gets the topic from the event type.
 func Topic(eventType swap.EventType) common.Hash {
-	topicHash, ok := topicMap()[swap.EventType(eventType.Int())]
+	topicHash, ok := TopicMap()[swap.EventType(eventType.Int())]
 	if !ok {
 		panic("unknown event")
 	}

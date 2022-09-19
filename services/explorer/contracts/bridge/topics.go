@@ -16,25 +16,25 @@ func init() {
 	}
 
 	// we do this here to throw a compile error if the event is not found
-	DepositTopic = parsedBridge.Events["Deposit"].ID
+	DepositTopic = parsedBridge.Events["TokenDeposit"].ID
 
-	RedeemTopic = parsedBridge.Events["Redeem"].ID
+	RedeemTopic = parsedBridge.Events["TokenRedeem"].ID
 
-	WithdrawTopic = parsedBridge.Events["Withdraw"].ID
+	WithdrawTopic = parsedBridge.Events["TokenWithdraw"].ID
 
-	MintTopic = parsedBridge.Events["Mint"].ID
+	MintTopic = parsedBridge.Events["TokenMint"].ID
 
-	DepositAndSwap = parsedBridge.Events["DepositAndSwap"].ID
+	DepositAndSwap = parsedBridge.Events["TokenDepositAndSwap"].ID
 
-	RedeemAndSwapTopic = parsedBridge.Events["RedeemAndSwap"].ID
+	RedeemAndSwapTopic = parsedBridge.Events["TokenRedeemAndSwap"].ID
 
-	RedeemAndRemoveTopic = parsedBridge.Events["RedeemAndRemove"].ID
+	RedeemAndRemoveTopic = parsedBridge.Events["TokenRedeemAndRemove"].ID
 
-	MintAndSwapTopic = parsedBridge.Events["MintAndSwap"].ID
+	MintAndSwapTopic = parsedBridge.Events["TokenMintAndSwap"].ID
 
-	WithdrawAndRemoveTopic = parsedBridge.Events["WithdrawAndRemove"].ID
+	WithdrawAndRemoveTopic = parsedBridge.Events["TokenWithdrawAndRemove"].ID
 
-	RedeemV2Topic = parsedBridge.Events["RedeemV2"].ID
+	RedeemV2Topic = parsedBridge.Events["TokenRedeemV2"].ID
 }
 
 // DepositTopic is the topic used for token deposits.
@@ -67,9 +67,9 @@ var WithdrawAndRemoveTopic common.Hash
 // RedeemV2Topic is the topic used for redeems to a non-evm chain.
 var RedeemV2Topic common.Hash
 
-// topicMap maps events to topics.
+// TopicMap maps events to topics.
 // this is returned as a function to assert immutability.
-func topicMap() map[bridge.EventType]common.Hash {
+func TopicMap() map[bridge.EventType]common.Hash {
 	return map[bridge.EventType]common.Hash{
 		bridge.DepositEvent:           DepositTopic,
 		bridge.RedeemEvent:            RedeemTopic,
@@ -87,7 +87,7 @@ func topicMap() map[bridge.EventType]common.Hash {
 // EventTypeFromTopic gets the event type from the topic
 // returns nil if the topic is not found.
 func EventTypeFromTopic(ogTopic common.Hash) *bridge.EventType {
-	for eventType, topic := range topicMap() {
+	for eventType, topic := range TopicMap() {
 		if bytes.Equal(ogTopic.Bytes(), topic.Bytes()) {
 			return &eventType
 		}
@@ -97,7 +97,7 @@ func EventTypeFromTopic(ogTopic common.Hash) *bridge.EventType {
 
 // Topic gets the topic from the event type.
 func Topic(eventType bridge.EventType) common.Hash {
-	topicHash, ok := topicMap()[bridge.EventType(eventType.Int())]
+	topicHash, ok := TopicMap()[bridge.EventType(eventType.Int())]
 	if !ok {
 		panic("unknown event")
 	}
