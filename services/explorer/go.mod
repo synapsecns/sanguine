@@ -14,6 +14,7 @@ replace (
 
 require (
 	github.com/99designs/gqlgen v0.17.20
+	github.com/ClickHouse/clickhouse-go/v2 v2.3.0
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/MichaelMure/go-term-markdown v0.1.4
 	github.com/Yamashou/gqlgenc v0.10.0
@@ -24,9 +25,9 @@ require (
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/jftuga/termsize v1.0.2
+	github.com/ory/dockertest/v3 v3.9.1
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/stretchr/testify v1.8.0
-	github.com/synapsecns/sanguine/agents v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/core v0.0.0-20220823193711-904c560fc7d3
 	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/services/scribe v0.0.19
@@ -40,7 +41,6 @@ require (
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/ClickHouse/ch-go v0.47.3 // indirect
-	github.com/ClickHouse/clickhouse-go/v2 v2.3.0 // indirect
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/MichaelMure/go-term-text v0.3.1 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
@@ -150,7 +150,6 @@ require (
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/opencontainers/runc v1.1.2 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
-	github.com/ory/dockertest/v3 v3.9.1 // indirect
 	github.com/paulmach/orb v0.7.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
