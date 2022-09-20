@@ -7,7 +7,7 @@ import (
 )
 
 // ExpandOrReturnPath expands a homedir path, if it can't be expanded, the original dir is returned
-// since on these systems homedir cannot be used anyway
+// since on these systems homedir cannot be used anyway.
 func ExpandOrReturnPath(path string) string {
 	expanded, err := homedir.Expand(path)
 	if err != nil {
