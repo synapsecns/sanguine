@@ -6,9 +6,9 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	resty "github.com/go-resty/resty/v2"
+	"github.com/ImVexed/fasturl"
+	"github.com/synapsecns/sanguine/services/omnirpc/http"
 	"golang.org/x/exp/slices"
-	urlParser "net/url"
 	"strings"
 )
 
@@ -19,14 +19,16 @@ type rawResponse struct {
 	url string
 	// hash is a unique hash of the raw response.
 	// we use this to check for equality
-	hash [32]byte
+	hash string
 }
 
 // newRawResponse produces a response with a unique hash based on json
 // regardless of formatting.
 func newRawResponse(body []byte, url string) (*rawResponse, error) {
+	// TODO: consider using a syncpool here
 	var unmarshalled interface{}
 
+	// TODO: see if there's a faster way to do this. Canonical json?
 	// unmarshall and remarshall
 	decoder := json.NewDecoder(bytes.NewReader(body))
 	err := decoder.Decode(&unmarshalled)
@@ -42,7 +44,7 @@ func newRawResponse(body []byte, url string) (*rawResponse, error) {
 	return &rawResponse{
 		body: body,
 		url:  url,
-		hash: sha256.Sum256(remarshalled),
+		hash: fmt.Sprintf("%x", sha256.Sum256(remarshalled)),
 	}, nil
 }
 
@@ -51,8 +53,8 @@ const (
 	httpsSchema = "https"
 )
 
-func forwardRequest(ctx context.Context, body []byte, endpoint, header string) (*rawResponse, error) {
-	endpointURL, err := urlParser.Parse(endpoint)
+func (f *Forwarder) forwardRequest(ctx context.Context, endpoint, requestID string) (*rawResponse, error) {
+	endpointURL, err := fasturl.ParseURL(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse endpoint (%s): %w", endpointURL, err)
 	}
@@ -60,17 +62,20 @@ func forwardRequest(ctx context.Context, body []byte, endpoint, header string) (
 	allowedProtocols := []string{httpSchema, httpsSchema}
 
 	// websockets not yet supported
-	if !slices.Contains(allowedProtocols, endpointURL.Scheme) {
-		return nil, fmt.Errorf("schema must be one of %s, got %s", strings.Join(allowedProtocols, ","), endpointURL.Scheme)
+	if !slices.Contains(allowedProtocols, endpointURL.Protocol) {
+		return nil, fmt.Errorf("schema must be one of %s, got %s", strings.Join(allowedProtocols, ","), endpointURL.Protocol)
 	}
 
-	client := resty.New()
-	resp, err := client.R().
+	req := f.client.NewRequest()
+	resp, err := req.
 		SetContext(ctx).
-		SetBody(body).
-		SetHeader("x-forwarded-for", "omnirpc").
-		SetHeader(requestIDKey, header).
-		Post(endpoint)
+		SetRequestURI(endpoint).
+		SetBody(f.body).
+		SetHeaderBytes(http.XRequestID, []byte(requestID)).
+		SetHeaderBytes(http.XForwardedFor, http.OmniRPCValue).
+		SetHeaderBytes(http.ContentType, http.JSONType).
+		SetHeaderBytes(http.Accept, http.JSONType).
+		Do()
 
 	if err != nil {
 		return nil, fmt.Errorf("could not get response from %s: %w", endpoint, err)
