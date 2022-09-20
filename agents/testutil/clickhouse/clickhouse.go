@@ -19,9 +19,11 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 	portStr := strconv.Itoa(port)
 	conn, err := net.DialTimeout("tcp", net.JoinHostPort("localhost", portStr), timeout)
 	if conn != nil {
-		defer conn.Close()
 		fmt.Println("Connection error to port: " + portStr)
-		return nil, nil, fmt.Errorf("Port %d is already in use: %w", port, err)
+		if conn.Close() != nil {
+			return nil, nil, err
+		}
+		return nil, nil, fmt.Errorf("port %d is already in use: %w", port, err)
 	}
 
 	pool, err := dockertest.NewPool("")
@@ -55,14 +57,16 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 	// Fetch port assigned to container
 	address := fmt.Sprintf("%s:%s", "localhost", resource.GetPort("9000/tcp"))
 
-	// Docker will hard kill the container in 60 seconds (this is a test env remember)
-	resource.Expire(60)
+	// Docker will hard kill the container in 60 seconds (this is a test env)
+	if resource.Expire(60) != nil {
+		return nil, nil, err
+	}
 
 	// Teardown function
 	cleanup := func() {
 		fmt.Println("Destroying container")
 		if err := pool.Purge(resource); err != nil {
-			fmt.Errorf("Failed to purge resource: %v", err)
+			fmt.Printf("failed to purge resource: %v \n", err)
 		}
 	}
 
@@ -73,9 +77,9 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 		db = clickHouseOpenDB(address)
 		return db.Ping()
 	}); err != nil {
-		fmt.Errorf("could not connect to docker database: %w", err)
+		fmt.Printf("Could not connect to docker database: %v \n", err)
 		if err := pool.Purge(resource); err != nil {
-			fmt.Errorf("failed to purge resource: %v", err)
+			fmt.Printf("failed to purge resource: %v\n", err)
 		}
 		return nil, nil, fmt.Errorf("could not connect to docker database: %w", err)
 	}
