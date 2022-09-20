@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/services/explorer/db"
 	gormClickhouse "gorm.io/driver/clickhouse"
 	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 	"time"
 )
 
@@ -20,15 +20,11 @@ func (s Store) DB() *gorm.DB {
 	return s.db
 }
 
-// NamingStrategy is exported here for testing.
-var NamingStrategy = schema.NamingStrategy{}
-
 // OpenGormClickhouse opens a gorm connection to clickhouse.
 func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 	clickhouseDB, err := gorm.Open(gormClickhouse.Open(address), &gorm.Config{
 		Logger:               dbcommon.GetGormLogger(logger),
 		FullSaveAssociations: true,
-		NamingStrategy:       NamingStrategy,
 		NowFunc:              time.Now,
 	})
 
@@ -52,4 +48,4 @@ func GetAllModels() (allModels []interface{}) {
 	return allModels
 }
 
-// var _ db.Service = &Store{}
+var _ db.ConsumerDB = &Store{}

@@ -11,8 +11,3 @@ type Consumer struct {
 	// bridgeParser is the parser to use to parse bridge events
 	bridgeParser BridgeParser
 }
-
-// NewConsumer creates a new consumer.
-func NewConsumer(consumerDB db.ConsumerDB, bridgeParser BridgeParser) *Consumer {
-	return &Consumer{consumerDB, bridgeParser}
-}

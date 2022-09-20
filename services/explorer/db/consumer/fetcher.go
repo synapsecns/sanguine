@@ -46,9 +46,10 @@ func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBloc
 type BridgeConfigFetcher struct {
 	bridgeConfig        *bridgeconfig.BridgeConfigRef
 	bridgeConfigAddress common.Address
-}
+} //TODO switch bridge config based on block number
 
 // NewBridgeConfigFetcher creates a new config fetcher.
+// Backend must be an archive backend.
 func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, backend bind.ContractBackend) (*BridgeConfigFetcher, error) {
 	bridgeConfig, err := bridgeconfig.NewBridgeConfigRef(bridgeConfigAddress, backend)
 	if err != nil {
@@ -75,14 +76,14 @@ func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID, block uin
 }
 
 // GetToken gets the token from the bridge config contract.
-func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID, block uint32, tokenID string) (token bridgeconfig.BridgeConfigV3Token, err error) {
+func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID, block uint32, tokenID string) (token *bridgeconfig.BridgeConfigV3Token, err error) {
 	tok, err := b.bridgeConfig.GetToken(&bind.CallOpts{
 		BlockNumber: big.NewInt(int64(block)),
 		Context:     ctx,
 	}, tokenID, big.NewInt(int64(chainID)))
 	if err != nil {
-		var none bridgeconfig.BridgeConfigV3Token
-		return none, fmt.Errorf("could not get token id: %w", err)
+		//var none bridgeconfig.BridgeConfigV3Token
+		return nil, fmt.Errorf("could not get token id: %w", err)
 	}
-	return tok, nil
+	return &tok, nil
 }

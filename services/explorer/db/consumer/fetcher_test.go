@@ -41,7 +41,8 @@ func (c *ConsumerSuite) TestToken() {
 		Equal(c.T(), *tokenID, testToken.tokenID)
 		token, err := fetcher.GetToken(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), uint32(curentBlockNumber), *tokenID)
 		Nil(c.T(), err)
-		Equal(c.T(), common.HexToAddress(testToken.TokenAddress).String(), common.HexToAddress(token.TokenAddress).String())
+		tokenOut := *token
+		Equal(c.T(), common.HexToAddress(testToken.TokenAddress).String(), common.HexToAddress(tokenOut.TokenAddress).String())
 		Equal(c.T(), testToken.SwapFee, token.SwapFee)
 		Equal(c.T(), testToken.IsUnderlying, token.IsUnderlying)
 	}
