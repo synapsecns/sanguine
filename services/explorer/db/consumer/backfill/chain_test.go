@@ -4,13 +4,13 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/db/consumer/backfill"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
+	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"math/big"
 )
 
@@ -33,12 +33,7 @@ import (
 func (b *BackfillSuite) TestBackfill() {
 	chainID := gofakeit.Uint32()
 
-	manager := testutil.NewDeployManager(b.T())
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
-	_, _ = manager.GetSynapseBridge(b.GetTestContext(), simulatedChain)
-	//bridgeContract, bridgeRef := b.deployManager.GetSynapseBridge(b.GetTestContext(), b.testBackend)
-	//_ = bridgeContract
-	//_ = bridgeRef
+	bridgeContract, bridgeRef := b.deployManager.GetSynapseBridge(b.GetTestContext(), b.testBackend)
 
 	//_, _ = b.deployManager.GetSwapFlashLoan(b.GetTestContext(), b.testBackend)
 
@@ -50,21 +45,23 @@ func (b *BackfillSuite) TestBackfill() {
 	swapTopicsMap := swap.TopicMap()
 	_ = swapTopicsMap
 
-	//transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
-	//tx, err := bridgeRef.Deposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()))
-	//Nil(b.T(), err)
-	//b.testBackend.WaitForConfirmation(b.GetTestContext(), tx)
+	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
+	tx, err := bridgeRef.Deposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()))
+	//tx, err := bridgeRef.SynapseBridge.SynapseBridgeTransactor.Deposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()))
+
+	Nil(b.T(), err)
+	b.testBackend.WaitForConfirmation(b.GetTestContext(), tx)
 	//
-	//txData := tx.Data()
+	txData := tx.Data()
 	//_ = txData
 
-	//storeLog := testutil.BuildLog(bridgeContract.Address(), 0, &b.logIndex)
-	//storeLog.Topics[0] = bridgeTopicsMap[bridgeTypes.DepositEvent]
-	//storeLog.Data = txData
-	//testChainID, err := b.testBackend.ChainID(b.GetTestContext())
-	//Nil(b.T(), err)
-	//err = b.eventDB.StoreLog(b.GetTestContext(), storeLog, uint32(testChainID.Uint64()))
-	//Nil(b.T(), err)
+	storeLog := testutil.BuildLog(bridgeContract.Address(), 0, &b.logIndex)
+	storeLog.Topics[0] = bridgeTopicsMap[bridgeTypes.DepositEvent]
+	storeLog.Data = txData
+	testChainID, err := b.testBackend.ChainID(b.GetTestContext())
+	Nil(b.T(), err)
+	err = b.eventDB.StoreLog(b.GetTestContext(), storeLog, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
 
 	//// Store 20 logs
 	//for blockNumber := 0; blockNumber < 10; blockNumber++ {

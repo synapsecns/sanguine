@@ -64,9 +64,9 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case BridgeConfigTypeV3:
 		return bridgeconfig.Contracts["/solidity/BridgeConfigV3_flat.sol:BridgeConfigV3"]
 	case SynapseBridgeType:
-		return bridge.Contracts["/solidity/BridgeConfigV1_flat.sol:SynapseBridge"]
+		return bridge.Contracts["/solidity/SynapseBridgeV1_flat.sol:SynapseBridge"]
 	case SwapFlashLoanType:
-		return swap.Contracts["/solidity/SwapFlashLoanV1_flat.sol:SwapFlash"]
+		return swap.Contracts["/solidity/SwapFlashLoanV1_flat.sol:SwapFlashLoan"]
 
 	default:
 		panic("gm, not yet implemented")

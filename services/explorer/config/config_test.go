@@ -1,75 +1,54 @@
 package config_test
 
 import (
+	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/services/explorer/config"
-	"golang.org/x/exp/slices"
+	"math/big"
 	"testing"
 )
 
-func TestConfig(t *testing.T) {
+// ConfigSuite is the config test suite.
+type ConfigSuite struct {
+	*testsuite.TestSuite
+}
+
+// NewConfigSuite creates a end-to-end test suite.
+func NewConfigSuite(tb testing.TB) *ConfigSuite {
+	tb.Helper()
+	return &ConfigSuite{
+		TestSuite: testsuite.NewTestSuite(tb),
+	}
+}
+
+func (c ConfigSuite) SetupTest() {
+	c.TestSuite.SetupTest()
+}
+
+// TestConfigSuite runs the integration test suite.
+func TestConfigSuite(t *testing.T) {
+	suite.Run(t, NewConfigSuite(t))
+}
+
+func (c ConfigSuite) TestConfig() {
 	testConfig := config.Config{
-		Chains: map[uint32]config.ChainConfig{
-			1: {
-				RPCs:   []string{gofakeit.URL(), gofakeit.URL(), gofakeit.URL()},
-				Checks: gofakeit.Uint16(),
-			},
-			2: {
-				RPCs:   []string{gofakeit.URL(), gofakeit.URL(), gofakeit.URL()},
-				Checks: gofakeit.Uint16(),
-			},
-		},
-		Port:            gofakeit.Uint16(),
-		RefreshInterval: gofakeit.Second(),
+		SynapseBridgeAddress:  common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		BridgeConfigV3Address: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		SwapFlashLoanAddress:  common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
 	}
 
-	out, err := testConfig.Marshall()
-	Nil(t, err)
+	encodedConfig, err := testConfig.Encode()
+	Nil(c.T(), err)
 
-	unmarshalledConfig, err := config.UnmarshallConfig(out)
-	Nil(t, err)
+	file := filet.TmpFile(c.T(), "", string(encodedConfig))
+	decodedConfig, err := config.DecodeConfig(file.Name())
+	Nil(c.T(), err)
 
-	Equal(t, testConfig, unmarshalledConfig)
+	ok, err := decodedConfig.IsValid(c.GetTestContext())
+	True(c.T(), ok)
+	Nil(c.T(), err)
 }
-
-func TestUnmarshallMarshall(t *testing.T) {
-	rpcConf, err := config.UnmarshallConfig([]byte(testYaml))
-	Nil(t, err)
-
-	True(t, slices.Contains(rpcConf.Chains[1].RPCs, "https://api.mycryptoapi.com/eth"))
-	True(t, slices.Contains(rpcConf.Chains[1].RPCs, "https://api.bitstack.com/v1/wNFxbiJyQsSeLrX8RRCHi7NpRxrlErZk/DjShIqLishPCTB9HiMkPHXjUM9CNM9Na/ETH/mainnet"))
-	True(t, slices.Contains(rpcConf.Chains[2].RPCs, "https://node.eggs.cool"))
-}
-
-const testYaml = `
-chains:
-    0:
-        rpcs:
-            - https://rpc.kardiachain.io/
-        confirmations: 1
-    1:
-        rpcs:
-            - https://api.mycryptoapi.com/eth
-            - https://rpc.flashbots.net/
-            - https://eth-mainnet.gateway.pokt.network/v1/5f3453978e354ab992c4da79
-            - https://cloudflare-eth.com/
-            - https://mainnet-nethermind.blockscout.com/
-            - https://nodes.mewapi.io/rpc/eth
-            - https://main-rpc.linkpool.io/
-            - https://mainnet.eth.cloud.ava.do/
-            - https://ethereumnodelight.app.runonflux.io
-            - https://rpc.ankr.com/eth
-            - https://eth-rpc.gateway.pokt.network
-            - https://main-light.eth.linkpool.io
-            - https://eth-mainnet.public.blastapi.io
-            - http://18.211.207.34:8545
-            - https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7
-            - wss://eth-mainnet.nodereal.io/ws/v1/1659dfb40aa24bbb8153a677b98064d7
-            - https://api.bitstack.com/v1/wNFxbiJyQsSeLrX8RRCHi7NpRxrlErZk/DjShIqLishPCTB9HiMkPHXjUM9CNM9Na/ETH/mainnet
-        confirmations: 1
-    2:
-        rpcs:
-            - https://node.eggs.cool
-            - https://node.expanse.tech
-        confirmations: 1`
