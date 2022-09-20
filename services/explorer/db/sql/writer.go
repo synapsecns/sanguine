@@ -21,6 +21,29 @@ func boolToUint8(input *bool) *uint8 {
 	return &zero
 }
 
+// ReadEvent provides an easy-to-use interface to validate database data from a recent write event.
+func (s *Store) ReadEvent(ctx context.Context, eventType int8, chainID uint32) error {
+	// If reading a bridge event
+	if eventType == 0 {
+		dbTx := s.DB().WithContext(ctx).
+			Find(BridgeEvent{}, "ChainID = ?", chainID)
+		fmt.Println("dbTx", dbTx)
+		if dbTx.Error != nil {
+			return fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+		}
+	}
+	// If reading a swap event
+	if eventType == 1 {
+		dbTx := s.DB().WithContext(ctx).
+			Find(SwapEvent{}, "ChainID = ?", chainID)
+		fmt.Println("dbTx", dbTx)
+		if dbTx.Error != nil {
+			return fmt.Errorf("failed to store read event: %w", dbTx.Error)
+		}
+	}
+	return nil
+}
+
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
 func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenID *string) error {
 	if bridgeEvent != nil {

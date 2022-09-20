@@ -55,6 +55,7 @@ func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
 
 	t.db, t.eventDB, t.gqlClient, t.logIndex, t.cleanup, t.testBackend, t.deployManager, t.bridgeConfigContract = testutil.SetupDB(t.TestSuite)
+
 }
 
 // TestDBSuite tests the db suite.
