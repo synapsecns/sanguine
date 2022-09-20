@@ -5,6 +5,7 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
 	rpcConfig "github.com/synapsecns/sanguine/services/omnirpc/config"
+	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
 	"github.com/urfave/cli/v2"
@@ -56,7 +57,7 @@ var chainListCommand = &cli.Command{
 			rConfig.Port = uint16(freeport.GetPort())
 		}
 
-		server := proxy.NewProxy(rConfig)
+		server := proxy.NewProxy(rConfig, omniHTTP.ClientTypeFromString(rConfig.ClientType))
 
 		server.Run(c.Context)
 
@@ -127,7 +128,7 @@ var serverCommand = &cli.Command{
 			rConfig.Port = uint16(freeport.GetPort())
 		}
 
-		server := proxy.NewProxy(rConfig)
+		server := proxy.NewProxy(rConfig, omniHTTP.ClientTypeFromString(rConfig.ClientType))
 
 		server.Run(c.Context)
 
