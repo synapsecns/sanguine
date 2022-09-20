@@ -84,9 +84,7 @@ func (c *ConsumerSuite) SetupTest() {
 	for _, token := range testTokens {
 		auth := c.testBackend.GetTxContext(c.GetTestContext(), deployInfo.OwnerPtr())
 		tx, err := token.SetTokenConfig(c.bridgeConfigContract, auth)
-		if err != nil {
-			fmt.Errorf("could not set Token")
-		}
+		c.Require().NoError(err)
 		c.testBackend.WaitForConfirmation(c.GetTestContext(), tx)
 	}
 }

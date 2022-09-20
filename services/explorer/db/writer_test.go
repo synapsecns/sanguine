@@ -28,11 +28,11 @@ func (t *DBSuite) TestBridgeWrite() {
 			Removed:     false,
 		},
 	}
-	chainId := gofakeit.Uint32()
+	chainID := gofakeit.Uint32()
 	testTokenID := "testid"
-	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil, chainId, &testTokenID)
+	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil, chainID, &testTokenID)
 	Nil(t.T(), err)
-	err = t.db.ReadEvent(t.GetTestContext(), 0, chainId)
+	err = t.db.ReadEvent(t.GetTestContext(), 0, chainID)
 	Nil(t.T(), err)
 	t.cleanup()
 }
@@ -56,10 +56,10 @@ func (t *DBSuite) TestSwapWrite() {
 			Removed:     false,
 		},
 	}
-	chainId := gofakeit.Uint32()
-	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent, chainId, nil)
+	chainID := gofakeit.Uint32()
+	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent, chainID, nil)
 	Nil(t.T(), err)
-	err = t.db.ReadEvent(t.GetTestContext(), 1, chainId)
+	err = t.db.ReadEvent(t.GetTestContext(), 1, chainID)
 	Nil(t.T(), err)
 	t.cleanup()
 }
