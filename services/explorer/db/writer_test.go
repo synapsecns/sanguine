@@ -55,5 +55,4 @@ func (t *DBSuite) TestSwapWrite() {
 	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent, gofakeit.Uint32(), nil)
 	Nil(t.T(), err)
 	t.cleanup()
-
 }

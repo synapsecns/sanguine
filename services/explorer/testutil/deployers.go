@@ -14,12 +14,17 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
 
+// BridgeConfigV3Deployer is the type of the bridge config v3 deployer.
 type BridgeConfigV3Deployer struct {
 	*deployer.BaseDeployer
 }
+
+// SynapseBridgeDeployer is the type of the bridge deployer.
 type SynapseBridgeDeployer struct {
 	*deployer.BaseDeployer
 }
+
+// SwapFlashLoanDeployer is the type of the swap flash loan deployer.
 type SwapFlashLoanDeployer struct {
 	*deployer.BaseDeployer
 }
@@ -34,7 +39,7 @@ func NewSynapseBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend
 	return SynapseBridgeDeployer{deployer.NewSimpleDeployer(registry, backend, SynapseBridgeType)}
 }
 
-// NewSwapFlashLoanTypeDeployer creates a new bridge config v2 client.
+// NewSwapFlashLoanDeployer creates a new bridge config v2 client.
 func NewSwapFlashLoanDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return SwapFlashLoanDeployer{deployer.NewSimpleDeployer(registry, backend, SwapFlashLoanType)}
 }

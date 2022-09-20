@@ -37,10 +37,11 @@ type contractTypeImpl int
 
 const (
 	// BridgeConfigTypeV3 is the bridge config contract type.
-	BridgeConfigTypeV3 contractTypeImpl = 0 // BridgeConfigV3
-	SynapseBridgeType  contractTypeImpl = 1 // SynapseBridge
-	SwapFlashLoanType  contractTypeImpl = 2 // SwapFlashLoan
-
+	BridgeConfigTypeV3 contractTypeImpl = 0
+	// SynapseBridgeType is the bridge contract type.
+	SynapseBridgeType contractTypeImpl = 1
+	// SwapFlashLoanType is the swap contract type.
+	SwapFlashLoanType contractTypeImpl = 2
 )
 
 // ID gets the contract type as an id.

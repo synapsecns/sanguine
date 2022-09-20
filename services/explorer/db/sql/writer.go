@@ -8,7 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 )
 
-// Helper function to handle bool to uint8 conversion for clickhouse
+// Helper function to handle bool to uint8 conversion for clickhouse.
 func boolToUint8(input *bool) *uint8 {
 	if input == nil {
 		return nil
@@ -22,11 +22,10 @@ func boolToUint8(input *bool) *uint8 {
 }
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
-func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenId *string) error {
-
+func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenID *string) error {
 	if bridgeEvent != nil {
 		dbTx := s.DB().WithContext(ctx).
-			Create(s.eventToBridgeEvent(bridgeEvent, chainID, tokenId))
+			Create(s.eventToBridgeEvent(bridgeEvent, chainID, tokenID))
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store bridge event: %w", dbTx.Error)
 		}
@@ -43,7 +42,7 @@ func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swa
 }
 
 // eventToBridgeEvent stores a bridge event.
-func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenId *string) BridgeEvent {
+func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenID *string) BridgeEvent {
 	var recipient *string
 	if event.GetRecipient() != nil {
 		r := event.GetRecipient().String()
@@ -57,8 +56,8 @@ func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenI
 	var kappa *string
 	if event.GetKappa() != nil {
 		k := event.GetKappa()
-		kHash := common.BytesToHash(k[:]).String()
-		kappa = &kHash
+		hash := common.BytesToHash(k[:]).String()
+		kappa = &hash
 	}
 
 	return BridgeEvent{
@@ -77,18 +76,16 @@ func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenI
 		TokenIndexTo:       event.GetTokenIndexTo(),
 		MinDy:              event.GetMinDy(),
 		Deadline:           event.GetDeadline(),
-		SwapSuccess:        boolToUint8(event.GetSwapSuccess()), //clickhouse stores boolean values as an uint8
+		SwapSuccess:        boolToUint8(event.GetSwapSuccess()), // clickhouse stores boolean values as an uint8
 		SwapTokenIndex:     event.GetSwapTokenIndex(),
 		SwapMinAmount:      event.GetSwapMinAmount(),
 		SwapDeadline:       event.GetSwapDeadline(),
-		TokenID:            tokenId,
+		TokenID:            tokenID,
 	}
-
 }
 
 // eventToSwapEvent stores a swap event.
-func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenId *string) SwapEvent {
-
+func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenID *string) SwapEvent {
 	var provider *string
 	if event.GetProvider() != nil {
 		r := event.GetProvider().String()
@@ -130,6 +127,6 @@ func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenId *s
 		FutureTime:      event.GetFutureTime(),
 		CurrentA:        event.GetCurrentA(),
 		Time:            event.GetTime(),
-		TokenID:         nil,
+		TokenID:         tokenID,
 	}
 }

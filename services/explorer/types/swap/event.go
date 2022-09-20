@@ -6,6 +6,8 @@ import (
 )
 
 // EventLog is the interface for all swap events.
+//
+//nolint:interfacebloat
 type EventLog interface {
 	// GetContractAddress returns the contract address of the log.
 	GetContractAddress() common.Address

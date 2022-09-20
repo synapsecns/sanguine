@@ -1,3 +1,4 @@
+//nolint:revive,golint,stylecheck
 package swap
 
 import (
@@ -42,7 +43,7 @@ func (s SwapFlashLoanAddLiquidity) GetInvariant() *big.Int {
 	return s.Invariant
 }
 
-// GetProvider gets the provider
+// GetProvider gets the provider.
 func (s SwapFlashLoanAddLiquidity) GetProvider() *common.Address {
 	return &s.Provider
 }

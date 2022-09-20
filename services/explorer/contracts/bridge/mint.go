@@ -1,6 +1,5 @@
+//nolint:golint,revive,dupl
 package bridge
-
-//nolint: dupl
 
 import (
 	"github.com/ethereum/go-ethereum/common"
@@ -182,22 +181,18 @@ func (s SynapseBridgeTokenMintAndSwap) GetDestinationChainID() *big.Int {
 
 func (s SynapseBridgeTokenMintAndSwap) GetSwapTokenIndex() *uint8 {
 	return nil
-
 }
 
 func (s SynapseBridgeTokenMintAndSwap) GetSwapMinAmount() *big.Int {
 	return nil
-
 }
 
 func (s SynapseBridgeTokenMintAndSwap) GetSwapDeadline() *big.Int {
 	return nil
-
 }
 
 func (s SynapseBridgeTokenMintAndSwap) GetRecipientBytes() *[32]byte {
 	return nil
-
 }
 
 var _ bridge.EventLog = &SynapseBridgeTokenMintAndSwap{}

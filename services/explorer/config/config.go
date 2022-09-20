@@ -1,4 +1,3 @@
-// parses the input config.yaml file
 package config
 
 import (
@@ -21,7 +20,10 @@ type Config struct {
 	SwapFlashLoanAddress string `yaml:"swap_flash_loan_address"`
 }
 
-// TODO: add more checks
+// IsValid makes sure the config is valid. This is done by calling IsValid() on each
+// submodule. If any method returns an error that is returned here and the entirety
+// of IsValid returns false. Any warnings are logged by the submodules respective loggers.
+// TODO: add more checks.
 func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 	if c.SynapseBridgeAddress != c.BridgeConfigV3Address && c.SynapseBridgeAddress != c.SwapFlashLoanAddress {
 		return true, nil

@@ -8,6 +8,7 @@ import (
 	"math/big"
 )
 
+// BuildLog builds a log.
 func BuildLog(contractAddress common.Address, blockNumber uint64, logIndex *atomic.Int64) types.Log {
 	currentIndex := logIndex.Load()
 	// increment next index

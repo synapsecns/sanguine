@@ -7,21 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
+// ConsumerDBWriter is the interface for writing to the ConsumerDB.
 type ConsumerDBWriter interface {
-	StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenId *string) error
+	StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenID *string) error
 }
 
-//// ConsumerBridgeDBWriter is the interface for writing bridge events to the ConsumerDB.
-//type ConsumerBridgeDBWriter interface {
-//	StoreEvent(ctx context.Context, deposit bridge.EventLog, chainID uint32) error
-//}
-//
-//// ConsumerSwapDBWriter is the interface for writing swap events to the ConsumerDB.
-//type ConsumerSwapDBWriter interface {
-//	StoreSwapEvent(ctx context.Context, data swap.EventLog, chainID uint32) error
-//}
-
-// ConsumerDBReader is the interface for reading bridge events from the ConsumerDB.
+// ConsumerDBReader is the interface for reading events from the ConsumerDB.
 type ConsumerDBReader interface {
 	// DB gets the underlying gorm db.
 	DB() *gorm.DB

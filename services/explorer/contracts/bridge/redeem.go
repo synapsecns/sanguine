@@ -1,3 +1,4 @@
+//nolint:golint,revive
 package bridge
 
 import (

@@ -76,5 +76,9 @@ func (i *EventType) Scan(src interface{}) error {
 
 // Value gets the value to use for the db.
 func (i EventType) Value() (driver.Value, error) {
-	return synapseCommon.EnumValue(i)
+	driver, err := synapseCommon.EnumValue(i)
+	if err != nil {
+		return nil, fmt.Errorf("could not get value: %w", err)
+	}
+	return driver, nil
 }

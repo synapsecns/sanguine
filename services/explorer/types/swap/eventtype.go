@@ -24,7 +24,7 @@ const (
 	RampAEvent
 	// StopRampAEvent is the stop ramp A event.
 	StopRampAEvent
-	//FlashLoanEvent is a flash loan event
+	// FlashLoanEvent is the flash loan event.
 	FlashLoanEvent
 )
 

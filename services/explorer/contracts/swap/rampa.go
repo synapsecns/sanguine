@@ -1,3 +1,4 @@
+//nolint:revive,golint,stylecheck
 package swap
 
 import (

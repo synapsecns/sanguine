@@ -1,3 +1,4 @@
+// Package main generates a GQL client.
 package main
 
 import (

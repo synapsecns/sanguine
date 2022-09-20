@@ -1,3 +1,4 @@
+//nolint:revive,golint,stylecheck
 package swap
 
 import (
@@ -32,7 +33,7 @@ func (s SwapFlashLoanTokenSwap) GetEventType() swap.EventType {
 	return swap.TokenSwapEvent
 }
 
-// GetBuyer gets the buyer
+// GetBuyer gets the buyer.
 func (s SwapFlashLoanTokenSwap) GetBuyer() *common.Address {
 	return &s.Buyer
 }
@@ -47,7 +48,7 @@ func (s SwapFlashLoanTokenSwap) GetTokensBought() *big.Int {
 	return s.TokensBought
 }
 
-// GetSoldId gets the solid id
+// GetSoldId gets the solid id.
 func (s SwapFlashLoanTokenSwap) GetSoldId() *big.Int {
 	return s.SoldId
 }

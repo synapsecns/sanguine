@@ -12,16 +12,19 @@ import (
 	"math/big"
 )
 
+// Fetcher is the fetcher for the events. It uses GQL.
 type Fetcher struct {
 	fetchClient *client.Client
 }
 
+// NewFetcher creates a new fetcher.
 func NewFetcher(fetchClient *client.Client) *Fetcher {
 	return &Fetcher{
 		fetchClient: fetchClient,
 	}
 }
 
+// FetchLogsInRange fetches logs in a range with the GQL client.
 func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64) ([]ethTypes.Log, error) {
 	logs, err := f.fetchClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), 1)
 	if err != nil {
@@ -39,6 +42,7 @@ func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBloc
 	return parsedLogs, nil
 }
 
+// BridgeConfigFetcher is the fetcher for the bridge config contract.
 type BridgeConfigFetcher struct {
 	bridgeConfig        *bridgeconfig.BridgeConfigRef
 	bridgeConfigAddress common.Address
@@ -53,6 +57,7 @@ func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, backend bind.Con
 	return &BridgeConfigFetcher{bridgeConfig, bridgeConfigAddress}, nil
 }
 
+// GetTokenID gets the token id from the bridge config contract.
 func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID, block uint32, tokenAddress common.Address) (tokenID *string, err error) {
 	tokenIDStr, err := b.bridgeConfig.GetTokenID(&bind.CallOpts{
 		BlockNumber: big.NewInt(int64(block)),
@@ -69,11 +74,12 @@ func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID, block uin
 	return &tokenIDStr, nil
 }
 
-func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID, block uint32, tokenId string) (token bridgeconfig.BridgeConfigV3Token, err error) {
+// GetToken gets the token from the bridge config contract.
+func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID, block uint32, tokenID string) (token bridgeconfig.BridgeConfigV3Token, err error) {
 	tok, err := b.bridgeConfig.GetToken(&bind.CallOpts{
 		BlockNumber: big.NewInt(int64(block)),
 		Context:     ctx,
-	}, tokenId, big.NewInt(int64(chainID)))
+	}, tokenID, big.NewInt(int64(chainID)))
 	if err != nil {
 		var none bridgeconfig.BridgeConfigV3Token
 		return none, fmt.Errorf("could not get token id: %w", err)

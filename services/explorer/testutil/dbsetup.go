@@ -7,8 +7,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/phayes/freeport"
-	. "github.com/stretchr/testify/assert"
-	newClickhouse "github.com/synapsecns/sanguine/agents/testutil/clickhouse"
+	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/agents/testutil/clickhouse"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
@@ -27,6 +27,7 @@ import (
 	"net/http"
 )
 
+// TestToken is a test token.
 type TestToken struct {
 	tokenID string
 	bridgeconfig.BridgeConfigV3Token
@@ -50,6 +51,7 @@ var testTokens = []TestToken{{
 },
 }
 
+// SetTokenConfig sets the token config.
 func (c *TestToken) SetTokenConfig(bridgeConfigContract *bridgeconfig.BridgeConfigRef, opts backends.AuthType) (*ethTypes.Transaction, error) {
 	tx, err := bridgeConfigContract.SetTokenConfig(opts.TransactOpts, c.tokenID, c.ChainId, common.HexToAddress(c.TokenAddress),
 		c.TokenDecimals, c.MaxSwap, c.MinSwap, c.SwapFee, c.MaxSwapFee, c.MinSwapFee, c.HasUnderlying, c.IsUnderlying)
@@ -59,11 +61,12 @@ func (c *TestToken) SetTokenConfig(bridgeConfigContract *bridgeconfig.BridgeConf
 	return tx, nil
 }
 
+// SetupDB sets up the db.
 func SetupDB(t *testsuite.TestSuite) (db db.ConsumerDB, eventDB scribedb.EventDB, gqlClient *client.Client, logIndex atomic.Int64, cleanup func(), testBackend backends.SimulatedTestBackend, deployManager *DeployManager, bridgeConfigContract *bridgeconfig.BridgeConfigRef) {
 	dbPath := filet.TmpDir(t.T(), "")
 
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), dbPath)
-	Nil(t.T(), err)
+	assert.Nil(t.T(), err)
 
 	eventDB = sqliteStore
 
@@ -72,7 +75,7 @@ func SetupDB(t *testsuite.TestSuite) (db db.ConsumerDB, eventDB scribedb.EventDB
 	freePort := freeport.GetPort()
 
 	go func() {
-		Nil(t.T(), api.Start(t.GetSuiteContext(), api.Config{
+		assert.Nil(t.T(), api.Start(t.GetSuiteContext(), api.Config{
 			HTTPPort: uint16(freePort),
 			Database: "sqlite",
 			Path:     dbPath,
@@ -87,7 +90,7 @@ func SetupDB(t *testsuite.TestSuite) (db db.ConsumerDB, eventDB scribedb.EventDB
 	// var request *http.Request
 	t.Eventually(func() bool {
 		request, err := http.NewRequestWithContext(t.GetTestContext(), http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)
-		Nil(t.T(), err)
+		assert.Nil(t.T(), err)
 		res, err := gqlClient.Client.Client.Do(request)
 		if err == nil {
 			defer func() {
@@ -98,15 +101,14 @@ func SetupDB(t *testsuite.TestSuite) (db db.ConsumerDB, eventDB scribedb.EventDB
 		return false
 	})
 
-	cleanup, port, err := newClickhouse.NewClickhouseStore("explorer")
+	cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 	if cleanup == nil || *port == 0 || err != nil {
 		return
 	}
-	cleanup = cleanup
-	Equal(t.T(), err, nil)
-	dbUrl := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test?read_timeout=10s&write_timeout=20s"
-	consumerDB, err := sql.OpenGormClickhouse(t.GetTestContext(), dbUrl)
-	Nil(t.T(), err)
+	assert.Equal(t.T(), err, nil)
+	dbURL := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test?read_timeout=10s&write_timeout=20s"
+	consumerDB, err := sql.OpenGormClickhouse(t.GetTestContext(), dbURL)
+	assert.Nil(t.T(), err)
 	db = consumerDB
 
 	// maybe newSimulatedBackendWithChainID?
@@ -119,7 +121,7 @@ func SetupDB(t *testsuite.TestSuite) (db db.ConsumerDB, eventDB scribedb.EventDB
 	for _, token := range testTokens {
 		auth := testBackend.GetTxContext(t.GetTestContext(), deployInfo.OwnerPtr())
 		tx, err := token.SetTokenConfig(bridgeConfigContract, auth)
-		Nil(t.T(), err)
+		assert.Nil(t.T(), err)
 
 		testBackend.WaitForConfirmation(t.GetTestContext(), tx)
 	}

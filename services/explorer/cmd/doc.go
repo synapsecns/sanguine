@@ -1,2 +1,2 @@
-// Package cmd: CLI infra
+// Package cmd CLI infra
 package cmd

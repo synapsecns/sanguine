@@ -23,6 +23,7 @@ func (s Store) DB() *gorm.DB {
 // NamingStrategy is exported here for testing.
 var NamingStrategy = schema.NamingStrategy{}
 
+// OpenGormClickhouse opens a gorm connection to clickhouse.
 func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 	clickhouseDB, err := gorm.Open(gormClickhouse.Open(address), &gorm.Config{
 		Logger:               dbcommon.GetGormLogger(logger),

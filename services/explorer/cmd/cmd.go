@@ -15,7 +15,7 @@ func Start(args []string) {
 	app.EnableBashCompletion = true
 
 	// commands
-	app.Commands = cli.Commands{infoCommand, placeholderCommand}
+	app.Commands = cli.Commands{infoCommand}
 
 	err := app.Run(args)
 	if err != nil {
