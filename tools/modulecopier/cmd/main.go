@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/gen2brain/beeep"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/tools/modulecopier/internal"
 	"github.com/urfave/cli/v2"
@@ -29,7 +30,7 @@ func Run(args []string) {
 		}
 
 		modulePath := c.String(modulePathFlag.Name)
-		filePath := c.String(filePathFlag.Name)
+		filePath := core.ExpandOrReturnPath(c.String(filePathFlag.Name))
 		packageName := c.String(packageFlag.Name)
 
 		// return an error if neither is specified or both are specified
