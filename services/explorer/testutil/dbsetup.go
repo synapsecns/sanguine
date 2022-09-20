@@ -65,7 +65,7 @@ func SetupDB(t *testsuite.TestSuite) (db db.ConsumerDB, eventDB scribedb.EventDB
 		return
 	}
 	assert.Equal(t.T(), err, nil)
-	dbURL := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test?read_timeout=10s&write_timeout=20s"
+	dbURL := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
 	consumerDB, err := sql.OpenGormClickhouse(t.GetTestContext(), dbURL)
 	assert.Nil(t.T(), err)
 	db = consumerDB
