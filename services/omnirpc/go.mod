@@ -26,15 +26,15 @@ require (
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
-	github.com/richardwilkes/toolbox v1.73.0
+	github.com/richardwilkes/toolbox v1.74.0
 	github.com/stretchr/testify v1.8.0
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
 	github.com/tidwall/pretty v1.2.0
 	github.com/urfave/cli/v2 v2.16.3
 	gitlab.com/1f320/x v0.3.0
-	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
-	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
+	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b
+	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -68,7 +68,7 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/go-playground/validator/v10 v10.10.0 // indirect
+	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
@@ -156,7 +156,7 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.7.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.22.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect

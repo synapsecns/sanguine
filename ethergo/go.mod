@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.16.5
 	github.com/aws/aws-sdk-go-v2/config v1.1.1
 	github.com/aws/aws-sdk-go-v2/service/kms v1.17.3
-	github.com/aws/smithy-go v1.11.3
+	github.com/aws/smithy-go v1.13.3
 	github.com/brianvoe/gofakeit/v6 v6.18.0
 	github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1
 	github.com/dgraph-io/ristretto v0.1.0
@@ -26,7 +26,7 @@ require (
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.12.2
-	github.com/richardwilkes/toolbox v1.73.0
+	github.com/richardwilkes/toolbox v1.74.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cast v1.5.0
 	github.com/stretchr/testify v1.8.0
@@ -38,7 +38,7 @@ require (
 	github.com/viant/toolbox v0.24.0
 	go.uber.org/atomic v1.10.0
 	go.uber.org/zap v1.22.0
-	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
+	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
@@ -156,7 +156,7 @@ require (
 	github.com/urfave/cli/v2 v2.16.3 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
-	go.uber.org/multierr v1.7.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/sys v0.0.0-20220913175220-63ea55921009 // indirect
