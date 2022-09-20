@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	resty "github.com/go-resty/resty/v2"
 	"golang.org/x/exp/slices"
 	urlParser "net/url"
@@ -70,6 +71,7 @@ func forwardRequest(ctx context.Context, body []byte, endpoint, header string) (
 		SetBody(body).
 		SetHeader("x-forwarded-for", "omnirpc").
 		SetHeader(requestIDKey, header).
+		SetHeader("Content-Type", gin.MIMEJSON).
 		Post(endpoint)
 
 	if err != nil {
