@@ -136,6 +136,7 @@ var serverCommand = &cli.Command{
 }
 
 func init() {
+	//nolint:staticcheck
 	ports := freeport.Get(1)
 	if len(ports) > 0 {
 		portFlag.Value = uint(ports[0])

@@ -11,6 +11,7 @@ import (
 
 // NewStoreFromConfig creates a new database from a config file.
 func NewStoreFromConfig(ctx context.Context, dbType dbcommon.DBType, connString string) (db.EventDB, error) {
+	//nolint:exhaustive
 	switch dbType {
 	case dbcommon.Mysql:
 		//nolint:wrapcheck
