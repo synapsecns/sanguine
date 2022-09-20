@@ -180,6 +180,7 @@ func (f *fastHTTPRequest) Do() (Response, error) {
 
 	hostClient := f.client.GetClient(f.Request.URI().String())
 	f.Request.Header.SetBytesKV(Encoding, EncodingTypes)
+	f.Request.Header.SetMethodBytes(PostType)
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)

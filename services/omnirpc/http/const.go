@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-http-utils/headers"
+	"net/http"
 )
 
 // Headers:.
@@ -27,6 +28,12 @@ var (
 	JsonType = []byte(gin.MIMEJSON)
 	// EncodingTypes are encoding headers.
 	EncodingTypes = []byte("gzip, br, deflate")
+)
+
+// Method types.
+var (
+	// PostType is used for posting.
+	PostType = []byte(http.MethodPost)
 )
 
 // Constant Strings.

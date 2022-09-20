@@ -52,9 +52,11 @@ type Forwarder struct {
 	requestID string
 	// client is the client used for fasthttp
 	client omniHTTP.Client
+	// resMap is the res map
+	resMap map[[32]byte][]rawResponse
 }
 
-// Reset resets the forwarder so it can be reused
+// Reset resets the forwarder so it can be reused.
 func (f *Forwarder) Reset() {
 	// client and forwarder can stay the same
 	f.c = nil
@@ -65,7 +67,7 @@ func (f *Forwarder) Reset() {
 }
 
 // AcquireForwarder allocates a forwarder and allows it to be released when not in use
-// this allows forwarder cycling reducing GC overhead
+// this allows forwarder cycling reducing GC overhead.
 func (r *RPCProxy) AcquireForwarder() *Forwarder {
 	v := r.forwarderPool.Get()
 	if v == nil {
@@ -77,7 +79,7 @@ func (r *RPCProxy) AcquireForwarder() *Forwarder {
 	return v.(*Forwarder)
 }
 
-// ReleaseForwarder releases a forwarder object for reuse
+// ReleaseForwarder releases a forwarder object for reuse.
 func (r *RPCProxy) ReleaseForwarder(f *Forwarder) {
 	f.Reset()
 	r.forwarderPool.Put(f)
@@ -146,6 +148,7 @@ func (f *Forwarder) attemptForwardAndValidate() {
 				}
 			}
 		case res := <-resChan:
+			totalResponses++
 			prevResponses = append(prevResponses, res)
 			// if we've checked every url or the number of non-error responses is greater than or equal to the
 			// number of confirmations
