@@ -29,7 +29,8 @@ func (t *DBSuite) TestBridgeWrite() {
 		},
 	}
 	chainId := gofakeit.Uint32()
-	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil, chainId, nil)
+	testTokenID := "testid"
+	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil, chainId, &testTokenID)
 	Nil(t.T(), err)
 	err = t.db.ReadEvent(t.GetTestContext(), 0, chainId)
 	Nil(t.T(), err)

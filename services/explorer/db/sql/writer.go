@@ -26,8 +26,7 @@ func (s *Store) ReadEvent(ctx context.Context, eventType int8, chainID uint32) e
 	// If reading a bridge event
 	if eventType == 0 {
 		dbTx := s.DB().WithContext(ctx).
-			Find(BridgeEvent{}, "ChainID = ?", chainID)
-		fmt.Println("dbTx", dbTx)
+			Find(&BridgeEvent{}, "chain_id = ?", chainID)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
@@ -35,8 +34,7 @@ func (s *Store) ReadEvent(ctx context.Context, eventType int8, chainID uint32) e
 	// If reading a swap event
 	if eventType == 1 {
 		dbTx := s.DB().WithContext(ctx).
-			Find(SwapEvent{}, "ChainID = ?", chainID)
-		fmt.Println("dbTx", dbTx)
+			Find(&SwapEvent{}, "chain_id = ?", chainID)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store read event: %w", dbTx.Error)
 		}
