@@ -10,7 +10,6 @@ replace (
 	github.com/synapsecns/sanguine/agents => ./../../agents
 	github.com/synapsecns/sanguine/core => ./../../core
 	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
-	github.com/synapsecns/sanguine/tools => ./../../tools
 )
 
 require (
