@@ -9,11 +9,32 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/threaditer"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
+	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"github.com/valyala/fasthttp"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
+
+var client *fasthttp.Client
+
+func init() {
+	client = &fasthttp.Client{
+		Name:                          "forward-client",
+		NoDefaultUserAgentHeader:      true,
+		ReadTimeout:                   time.Second * 30,
+		WriteTimeout:                  time.Second * 30,
+		DisableHeaderNamesNormalizing: true,
+		DisablePathNormalizing:        true,
+		// decreaes DNS cache time to an hour instead of default minute
+		Dial: (&fasthttp.TCPDialer{
+			Concurrency:      4096,
+			DNSCacheDuration: time.Hour,
+		}).Dial,
+	}
+}
 
 // Forwarder creates a request forwarder.
 type Forwarder struct {
@@ -29,14 +50,45 @@ type Forwarder struct {
 	requiredConfirmations uint16
 	// requestID is the request id
 	requestID string
+	// client is the client used for fasthttp
+	client omniHTTP.Client
+}
+
+// Reset resets the forwarder so it can be reused
+func (f *Forwarder) Reset() {
+	// client and forwarder can stay the same
+	f.c = nil
+	f.chain = nil
+	f.body = nil
+	f.requiredConfirmations = 0
+	f.requestID = ""
+}
+
+// AcquireForwarder allocates a forwarder and allows it to be released when not in use
+// this allows forwarder cycling reducing GC overhead
+func (r *RPCProxy) AcquireForwarder() *Forwarder {
+	v := r.forwarderPool.Get()
+	if v == nil {
+		return &Forwarder{
+			r:      r,
+			client: r.client,
+		}
+	}
+	return v.(*Forwarder)
+}
+
+// ReleaseForwarder releases a forwarder object for reuse
+func (r *RPCProxy) ReleaseForwarder(f *Forwarder) {
+	f.Reset()
+	r.forwarderPool.Put(f)
 }
 
 // Forward forwards the rpc request to the servers and makes assertions around confirmation thresholds.
 func (r *RPCProxy) Forward(c *gin.Context, chainID uint32) {
-	forwarder := &Forwarder{
-		r: r,
-		c: c,
-	}
+	forwarder := r.AcquireForwarder()
+	defer r.ReleaseForwarder(forwarder)
+
+	forwarder.c = c
 
 	if ok := forwarder.fillAndValidate(chainID); !ok {
 		return
@@ -112,7 +164,7 @@ const urlConfirmationsHeader = "x-checked-urls"
 // jsonHashHeader is the hash of the returned json.
 const jsonHashHeader = "x-json-hash"
 
-// forwardedFrom the actual url the json was forwared from.
+// forwardedFrom the actual url the json was forwarded from.
 const forwardedFrom = "x-forwarded-from"
 
 func (f *Forwarder) checkResponses(responseCount int, prevResponses []rawResponse) (done bool) {
@@ -164,7 +216,7 @@ func (f *Forwarder) attemptForward(ctx context.Context, errChan chan error, resC
 
 	url := nextURL.Unwrap()
 
-	res, err := forwardRequest(ctx, f.body, url, f.requestID)
+	res, err := f.forwardRequest(ctx, url, f.requestID)
 	if err != nil {
 		// check if we're done, otherwise add to errchan
 		select {
@@ -204,7 +256,7 @@ func (f *Forwarder) fillAndValidate(chainID uint32) (ok bool) {
 		return false
 	}
 
-	f.requestID = f.c.GetHeader(requestIDKey)
+	f.requestID = f.c.GetHeader(omniHTTP.XRequestIDString)
 
 	if ok := f.checkAndSetConfirmability(); !ok {
 		return false
