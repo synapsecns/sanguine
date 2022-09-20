@@ -4,6 +4,7 @@
 package internal
 
 import (
+	"github.com/synapsecns/sanguine/tools"
 	"github.com/vektra/mockery/v2/pkg"
 )
 
@@ -13,3 +14,6 @@ func init() {
 
 // required by mockery.
 var _ = pkg.Method{}
+
+// required by abigen.
+var _ = tools.Importable{}
