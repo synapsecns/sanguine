@@ -13,9 +13,9 @@ func _() {
 	_ = x[SwapFlashLoanType-2]
 }
 
-const _contractTypeImpl_name = "BridgeConfigV3SynapseBridgeSwapFlashLoan"
+const _contractTypeImpl_name = "BridgeConfigTypeV3SynapseBridgeTypeSwapFlashLoanType"
 
-var _contractTypeImpl_index = [...]uint8{0, 14, 27, 40}
+var _contractTypeImpl_index = [...]uint8{0, 18, 35, 52}
 
 func (i contractTypeImpl) String() string {
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {

@@ -17,13 +17,27 @@ type ConsumerDB struct {
 	mock.Mock
 }
 
-// StoreEvent provides a mock function with given fields: ctx, bridgeEvent, swapEvent, chainID
-func (_m *ConsumerDB) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32) error {
-	ret := _m.Called(ctx, bridgeEvent, swapEvent, chainID)
+// ReadEvent provides a mock function with given fields: ctx, eventType, chainID
+func (_m *ConsumerDB) ReadEvent(ctx context.Context, eventType int8, chainID uint32) error {
+	ret := _m.Called(ctx, eventType, chainID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, bridge.EventLog, swap.EventLog, uint32) error); ok {
-		r0 = rf(ctx, bridgeEvent, swapEvent, chainID)
+	if rf, ok := ret.Get(0).(func(context.Context, int8, uint32) error); ok {
+		r0 = rf(ctx, eventType, chainID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// StoreEvent provides a mock function with given fields: ctx, bridgeEvent, swapEvent, chainID, tokenID
+func (_m *ConsumerDB) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenID *string) error {
+	ret := _m.Called(ctx, bridgeEvent, swapEvent, chainID, tokenID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, bridge.EventLog, swap.EventLog, uint32, *string) error); ok {
+		r0 = rf(ctx, bridgeEvent, swapEvent, chainID, tokenID)
 	} else {
 		r0 = ret.Error(0)
 	}
