@@ -17,9 +17,6 @@ func NewStoreFromConfig(ctx context.Context, dbType dbcommon.DBType, connString 
 		return mysql.NewMysqlStore(ctx, connString)
 	case dbcommon.Sqlite:
 		return sqlite.NewSqliteStore(ctx, connString)
-	case dbcommon.Clickhouse:
-		// NewClickhouseStore returns a port number instead of a db.
-		return nil, nil
 	default:
 		return nil, ErrNoSuchDriver
 	}
