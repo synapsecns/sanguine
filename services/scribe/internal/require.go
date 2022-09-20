@@ -4,7 +4,7 @@
 package internal
 
 import (
-	"github.com/go-playground/validator/v10"
+	"github.com/synapsecns/sanguine/tools"
 	"github.com/vektra/mockery/v2/pkg"
 )
 
@@ -16,4 +16,4 @@ func init() {
 var _ = pkg.Method{}
 
 // required by abigen.
-var _ = validator.Validate{}
+var _ = tools.Importable{}

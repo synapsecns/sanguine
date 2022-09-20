@@ -2,14 +2,6 @@ module github.com/synapsecns/sanguine/agents
 
 go 1.19
 
-replace (
-	// later versions give errors on uint64 being too high.
-	github.com/brianvoe/gofakeit/v6 => github.com/brianvoe/gofakeit/v6 v6.9.0
-	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/synapsecns/sanguine/core => ../core
-	github.com/synapsecns/sanguine/ethergo => ../ethergo
-)
-
 require (
 	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a
 	github.com/BurntSushi/toml v1.2.0
@@ -18,9 +10,7 @@ require (
 	github.com/aws/smithy-go v1.13.3
 	github.com/brianvoe/gofakeit/v6 v6.19.0
 	github.com/coinbase/rosetta-sdk-go v0.8.0
-	github.com/dgraph-io/ristretto v0.1.0
 	github.com/ethereum/go-ethereum v1.10.25
-	github.com/go-playground/validator/v10 v10.11.1
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
 	github.com/libs4go/crypto v0.0.1
@@ -30,11 +20,10 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
+	github.com/synapsecns/sanguine/tools v0.0.0-00010101000000-000000000000
 	github.com/ugorji/go/codec v1.2.7
-	github.com/urfave/cli/v2 v2.16.3
 	github.com/vburenin/ifacemaker v1.2.0
 	github.com/vektra/mockery/v2 v2.14.0
-	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b
 	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
 	gorm.io/driver/mysql v1.3.6
 	gorm.io/driver/sqlite v1.3.6
@@ -62,7 +51,6 @@ require (
 	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
-	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
@@ -74,13 +62,10 @@ require (
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/go-playground/locales v0.14.0 // indirect
-	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
 	github.com/golang-jwt/jwt/v4 v4.3.0 // indirect
-	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
@@ -108,7 +93,6 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
 	github.com/keep-network/keep-common v1.7.1-0.20211012131917-7102d7b9c6a0 // indirect
-	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/libs4go/errors v0.0.3 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
@@ -161,12 +145,14 @@ require (
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/tklauser/numcpus v0.4.0 // indirect
 	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
+	github.com/urfave/cli/v2 v2.16.3 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
+	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/sys v0.0.0-20220913175220-63ea55921009 // indirect
@@ -182,4 +168,13 @@ require (
 	k8s.io/apimachinery v0.25.1 // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
+)
+
+replace (
+	// later versions give erros on uint64 being too high.
+	github.com/brianvoe/gofakeit/v6 => github.com/brianvoe/gofakeit/v6 v6.9.0
+	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+	github.com/synapsecns/sanguine/core => ../core
+	github.com/synapsecns/sanguine/ethergo => ../ethergo
+	github.com/synapsecns/sanguine/tools => ../tools
 )

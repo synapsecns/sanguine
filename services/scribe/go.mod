@@ -9,6 +9,7 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/synapsecns/sanguine/core => ./../../core
 	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
+	github.com/synapsecns/sanguine/tools => ./../../tools
 )
 
 require (
@@ -23,7 +24,6 @@ require (
 	github.com/friendsofgo/graphiql v0.2.2
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.8.1
-	github.com/go-playground/validator/v10 v10.11.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/hashicorp/consul/sdk v0.11.0
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d
@@ -38,6 +38,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
+	github.com/synapsecns/sanguine/tools v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/vektah/gqlparser/v2 v2.5.1
 	github.com/vektra/mockery/v2 v2.14.0
@@ -92,6 +93,7 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
+	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
