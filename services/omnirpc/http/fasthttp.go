@@ -17,7 +17,7 @@ var dialer = &fasthttp.TCPDialer{
 	DNSCacheDuration: time.Hour,
 }
 
-type FastHTTPClient struct {
+type fastHTTPClient struct {
 	// defaultClient is used when host client cannot be used
 	defaultClient *fasthttp.Client
 
@@ -38,8 +38,12 @@ type FastClient interface {
 var _ FastClient = &fasthttp.Client{}
 var _ FastClient = &fasthttp.HostClient{}
 
+// NewFastHTTPClient creates a new fasthttp client.
+// while substantially faster than resty, this can be a bad choice in certain cases:
+//   - Context Cancellation not respected: fasthttp does not support context cancellation, so we hardcode a timeout here
+//     this is less than ideal and puts additional load on both the application and rpc servers since we pessimistically fetch
 func NewFastHTTPClient() Client {
-	return &FastHTTPClient{clients: xsync.NewMapOf[FastClient](), defaultClient: &fasthttp.Client{
+	return &fastHTTPClient{clients: xsync.NewMapOf[FastClient](), defaultClient: &fasthttp.Client{
 		NoDefaultUserAgentHeader:      true,
 		Dial:                          dialer.Dial,
 		DialDualStack:                 false,
@@ -70,7 +74,7 @@ func (r *rawResponse) Body() []byte {
 // this is important to note because fasthttp client level rate limiters are not enforcable
 // one other note: in order to avoid url parsing every time (another struct alloc), we
 // use the full endpoint url as the key here. This could result in multiple clients per host.
-func (f *FastHTTPClient) GetClient(url string) FastClient {
+func (f *fastHTTPClient) GetClient(url string) FastClient {
 	res, ok := f.clients.Load(url)
 	if ok {
 		return res
@@ -116,7 +120,7 @@ func (f *FastHTTPClient) GetClient(url string) FastClient {
 
 // AcquireRequest acquires a fasthttp request.
 // this allows request cycling reducing GC overhead.
-func (f *FastHTTPClient) AcquireRequest() *fastHTTPRequest {
+func (f *fastHTTPClient) AcquireRequest() *fastHTTPRequest {
 	v := f.reqPool.Get()
 	if v == nil {
 		return &fastHTTPRequest{
@@ -124,11 +128,12 @@ func (f *FastHTTPClient) AcquireRequest() *fastHTTPRequest {
 			f,
 		}
 	}
+	//nolint: forcetypeassert
 	return v.(*fastHTTPRequest)
 }
 
 // ReleaseRequest releases a request object for re-use.
-func (f *FastHTTPClient) ReleaseRequest(req *fastHTTPRequest) {
+func (f *fastHTTPClient) ReleaseRequest(req *fastHTTPRequest) {
 	req.Reset()
 	f.reqPool.Put(req)
 }
@@ -136,7 +141,7 @@ func (f *FastHTTPClient) ReleaseRequest(req *fastHTTPRequest) {
 // fastHTTPRequest wraps fasthttp request for new methods.
 type fastHTTPRequest struct {
 	*fasthttp.Request
-	client *FastHTTPClient
+	client *fastHTTPClient
 }
 
 // Reset clears request contents.
@@ -185,7 +190,7 @@ func (f *fastHTTPRequest) Do() (Response, error) {
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
 
-	err := hostClient.Do(f.Request, resp)
+	err := hostClient.DoTimeout(f.Request, resp, time.Second*10)
 	if err != nil {
 		return nil, fmt.Errorf("could not get response: %w", err)
 	}
@@ -198,7 +203,7 @@ func (f *fastHTTPRequest) Do() (Response, error) {
 	return newRawResponse(realResponse), nil
 }
 
-func (f *FastHTTPClient) NewRequest() Request {
+func (f *fastHTTPClient) NewRequest() Request {
 	req := f.AcquireRequest()
 	return req
 }

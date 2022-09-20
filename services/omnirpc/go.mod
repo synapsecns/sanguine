@@ -37,11 +37,13 @@ require (
 	github.com/tidwall/pretty v1.2.0
 	github.com/urfave/cli/v2 v2.14.1
 	github.com/valyala/fasthttp v1.40.0
+	github.com/valyala/fastjson v1.6.3
 	gitlab.com/1f320/x v0.3.0
 	go.uber.org/automaxprocs v1.5.1
 	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
 	gopkg.in/yaml.v3 v3.0.1
+	k8s.io/apimachinery v0.22.2
 )
 
 require (
@@ -178,6 +180,5 @@ require (
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/apimachinery v0.22.2 // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect
 )

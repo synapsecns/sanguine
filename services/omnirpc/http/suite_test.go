@@ -26,10 +26,9 @@ func NewClientSuite(tb testing.TB) *HTTPSuite {
 func (c *HTTPSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
-	restyClient := http.NewRestyClient()
-	fastClient := http.NewFastHTTPClient()
-
-	c.clients = []http.Client{restyClient, fastClient}
+	for _, clientType := range http.AllClientTypes {
+		c.clients = append(c.clients, http.NewClient(clientType))
+	}
 }
 
 func TestCommonSuite(t *testing.T) {

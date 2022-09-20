@@ -9,7 +9,7 @@ func IsConfirmable(body []byte) (bool, error) {
 type RawResponse interface {
 	Body() []byte
 	URL() string
-	Hash() [32]byte
+	Hash() string
 }
 
 func (r rawResponse) Body() []byte {
@@ -20,7 +20,7 @@ func (r rawResponse) URL() string {
 	return r.url
 }
 
-func (r rawResponse) Hash() [32]byte {
+func (r rawResponse) Hash() string {
 	return r.hash
 }
 

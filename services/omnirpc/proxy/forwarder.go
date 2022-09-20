@@ -2,39 +2,21 @@ package proxy
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/Soft/iter"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
-	"github.com/synapsecns/sanguine/core"
+	"github.com/puzpuzpuz/xsync"
 	"github.com/synapsecns/sanguine/core/threaditer"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
-	"github.com/valyala/fasthttp"
+	"github.com/valyala/fastjson"
 	"io"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 )
-
-var client *fasthttp.Client
-
-func init() {
-	client = &fasthttp.Client{
-		Name:                          "forward-client",
-		NoDefaultUserAgentHeader:      true,
-		ReadTimeout:                   time.Second * 30,
-		WriteTimeout:                  time.Second * 30,
-		DisableHeaderNamesNormalizing: true,
-		DisablePathNormalizing:        true,
-		// decreaes DNS cache time to an hour instead of default minute
-		Dial: (&fasthttp.TCPDialer{
-			Concurrency:      4096,
-			DNSCacheDuration: time.Hour,
-		}).Dial,
-	}
-}
 
 // Forwarder creates a request forwarder.
 type Forwarder struct {
@@ -53,7 +35,8 @@ type Forwarder struct {
 	// client is the client used for fasthttp
 	client omniHTTP.Client
 	// resMap is the res map
-	resMap map[[32]byte][]rawResponse
+	// Note: because we use an array here, this is not thread safe for writes
+	resMap *xsync.MapOf[[]rawResponse]
 }
 
 // Reset resets the forwarder so it can be reused.
@@ -64,6 +47,7 @@ func (f *Forwarder) Reset() {
 	f.body = nil
 	f.requiredConfirmations = 0
 	f.requestID = ""
+	f.resMap = nil
 }
 
 // AcquireForwarder allocates a forwarder and allows it to be released when not in use
@@ -76,6 +60,7 @@ func (r *RPCProxy) AcquireForwarder() *Forwarder {
 			client: r.client,
 		}
 	}
+	//nolint: forcetypeassert
 	return v.(*Forwarder)
 }
 
@@ -91,6 +76,7 @@ func (r *RPCProxy) Forward(c *gin.Context, chainID uint32) {
 	defer r.ReleaseForwarder(forwarder)
 
 	forwarder.c = c
+	forwarder.resMap = xsync.NewMapOf[[]rawResponse]()
 
 	if ok := forwarder.fillAndValidate(chainID); !ok {
 		return
@@ -132,7 +118,6 @@ func (f *Forwarder) attemptForwardAndValidate() {
 	}
 
 	totalResponses := 0
-	var prevResponses []rawResponse
 
 	for {
 		select {
@@ -143,17 +128,21 @@ func (f *Forwarder) attemptForwardAndValidate() {
 			totalResponses++
 			// if we've checked every url
 			if totalResponses == len(f.chain.URLs()) {
-				if done := f.checkResponses(totalResponses, prevResponses); done {
+				if done := f.checkResponses(totalResponses); done {
 					return
 				}
 			}
 		case res := <-resChan:
 			totalResponses++
-			prevResponses = append(prevResponses, res)
+			// add the response to resmap
+			responses, _ := f.resMap.Load(res.hash)
+			responses = append(responses, res)
+			f.resMap.Store(res.hash, responses)
+
 			// if we've checked every url or the number of non-error responses is greater than or equal to the
 			// number of confirmations
-			if totalResponses == len(f.chain.URLs()) || uint16(len(prevResponses)) >= f.requiredConfirmations {
-				if done := f.checkResponses(totalResponses, prevResponses); done {
+			if totalResponses == len(f.chain.URLs()) || uint16(f.resMap.Size()) >= f.requiredConfirmations {
+				if done := f.checkResponses(totalResponses); done {
 					return
 				}
 			}
@@ -170,37 +159,88 @@ const jsonHashHeader = "x-json-hash"
 // forwardedFrom the actual url the json was forwarded from.
 const forwardedFrom = "x-forwarded-from"
 
-func (f *Forwarder) checkResponses(responseCount int, prevResponses []rawResponse) (done bool) {
-	// hash-> rawResponse
-	resMap := make(map[[32]byte][]rawResponse)
+// ErroredRPCResponse contains an errored rpc response
+// thisis mostly used for debugging.
+type ErroredRPCResponse struct {
+	Raw json.RawMessage `json:"json_response"`
+	// NonJSONResponse, used in cases where json cannot be
+	NonJSONResponse string `json:"non_json_response"`
+	URL             string `json:"url"`
+}
 
-	for _, res := range prevResponses {
-		resMap[res.hash] = append(resMap[res.hash], res)
-	}
+// ErrorResponse contains error response used for debugging.
+type ErrorResponse struct {
+	Hashes map[string][]ErroredRPCResponse `json:"hashes"`
+	Error  string                          `json:"error"`
+	// ErroredURLS returned no response at all
+	ErroredURLS []string `json:"errored_urls"`
+}
 
-	// check for a valid response
-	for key, responses := range resMap {
+func (f *Forwarder) checkResponses(responseCount int) (done bool) {
+	var valid bool
+
+	f.resMap.Range(func(key string, responses []rawResponse) bool {
 		if uint16(len(responses)) >= f.requiredConfirmations {
-			var responseUrls []string
-			for _, url := range responses {
-				responseUrls = append(responseUrls, url.url)
+			responseURLS := make([]string, len(responses))
+
+			for i, url := range responses {
+				responseURLS[i] = url.url
 			}
 
-			// use the first response, they're both the same
-			f.c.Header(urlConfirmationsHeader, strings.Join(responseUrls, ","))
-			f.c.Header(jsonHashHeader, common.Bytes2Hex(core.BytesToSlice(key)))
+			f.c.Header(urlConfirmationsHeader, strings.Join(responseURLS, ","))
+			f.c.Header(jsonHashHeader, responses[0].hash)
 			f.c.Header(forwardedFrom, responses[0].url)
-
 			f.c.Data(http.StatusOK, gin.MIMEJSON, responses[0].body)
-			return true
+			valid = true
+
+			return false
 		}
+
+		return true
+	})
+
+	if valid {
+		return true
 	}
 
 	// every urls been checked, we need to error
 	if responseCount == len(f.chain.URLs()) {
-		f.c.JSON(http.StatusBadGateway, gin.H{
-			"error": "could not get consistent response",
+		erroredUrls := sets.NewString(f.chain.URLs()...)
+
+		errResponse := ErrorResponse{
+			Error:  "could not get consistent response",
+			Hashes: make(map[string][]ErroredRPCResponse),
+		}
+
+		f.resMap.Range(func(key string, responses []rawResponse) bool {
+			// if json isn't valid, we can't marshall to raw json
+			validJSON := true
+
+			if validErr := fastjson.Validate(string(responses[0].body)); validErr != nil {
+				validJSON = false
+			}
+
+			for _, response := range responses {
+				erroredUrls.Delete(response.url)
+
+				rpcErr := ErroredRPCResponse{
+					URL: response.url,
+				}
+
+				if validJSON {
+					rpcErr.Raw = response.body
+				} else {
+					rpcErr.NonJSONResponse = string(response.body)
+				}
+
+				errResponse.Hashes[key] = append(errResponse.Hashes[key], rpcErr)
+			}
+			return true
 		})
+
+		errResponse.ErroredURLS = erroredUrls.List()
+
+		f.c.JSON(http.StatusBadGateway, errResponse)
 
 		return true
 	}

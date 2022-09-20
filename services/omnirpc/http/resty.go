@@ -11,6 +11,7 @@ type RestyClient struct {
 }
 
 // NewRestyClient creates a resty client.
+// while much slower than fasthttp, this client requests context cancellation.
 func NewRestyClient() Client {
 	return &RestyClient{client: resty.New()}
 }
@@ -20,6 +21,7 @@ type restyRequest struct {
 	endpoint string
 }
 
+// NewRequest create a new request.
 func (r RestyClient) NewRequest() Request {
 	return &restyRequest{
 		Request: r.client.R(),
@@ -53,7 +55,7 @@ func (r *restyRequest) SetRequestURI(uri string) Request {
 }
 
 func (r *restyRequest) Do() (Response, error) {
-	//nolint: errwrap
+	//nolint: wrapcheck
 	return r.Request.Post(r.endpoint)
 }
 

@@ -30,12 +30,12 @@ type RPCProxy struct {
 }
 
 // NewProxy creates a new rpc proxy.
-func NewProxy(config config.Config) *RPCProxy {
+func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
 	return &RPCProxy{
 		chainManager:    chainmanager.NewChainManagerFromConfig(config),
 		refreshInterval: time.Second * time.Duration(config.RefreshInterval),
 		port:            config.Port,
-		client:          omniHTTP.NewFastHTTPClient(),
+		client:          omniHTTP.NewClient(clientType),
 	}
 }
 

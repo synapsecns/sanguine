@@ -24,8 +24,8 @@ var (
 
 // Mime types.
 var (
-	// JsonType is a byte encoded json type.
-	JsonType = []byte(gin.MIMEJSON)
+	// JSONType is a byte encoded json type.
+	JSONType = []byte(gin.MIMEJSON)
 	// EncodingTypes are encoding headers.
 	EncodingTypes = []byte("gzip, br, deflate")
 )

@@ -19,7 +19,7 @@ type rawResponse struct {
 	url string
 	// hash is a unique hash of the raw response.
 	// we use this to check for equality
-	hash [32]byte
+	hash string
 }
 
 // newRawResponse produces a response with a unique hash based on json
@@ -44,7 +44,7 @@ func newRawResponse(body []byte, url string) (*rawResponse, error) {
 	return &rawResponse{
 		body: body,
 		url:  url,
-		hash: sha256.Sum256(remarshalled),
+		hash: fmt.Sprintf("%x", sha256.Sum256(remarshalled)),
 	}, nil
 }
 
@@ -73,8 +73,8 @@ func (f *Forwarder) forwardRequest(ctx context.Context, endpoint, requestID stri
 		SetBody(f.body).
 		SetHeaderBytes(http.XRequestID, []byte(requestID)).
 		SetHeaderBytes(http.XForwardedFor, http.OmniRPCValue).
-		SetHeaderBytes(http.ContentType, http.JsonType).
-		SetHeaderBytes(http.Accept, http.JsonType).
+		SetHeaderBytes(http.ContentType, http.JSONType).
+		SetHeaderBytes(http.Accept, http.JSONType).
 		Do()
 
 	if err != nil {
