@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/phayes/freeport"
+	"github.com/synapsecns/sanguine/core"
 	rpcConfig "github.com/synapsecns/sanguine/services/omnirpc/config"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
@@ -74,7 +75,7 @@ var publicConfigCommand = &cli.Command{
 			return fmt.Errorf("could not get rpc map: %w", err)
 		}
 
-		outputConfig, err := os.Create(c.String(outputFlag.Name))
+		outputConfig, err := os.Create(core.ExpandOrReturnPath(c.String(outputFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not create config file: %w", err)
 		}
@@ -101,7 +102,7 @@ var serverCommand = &cli.Command{
 		portFlag,
 	},
 	Action: func(c *cli.Context) error {
-		fileContents, err := os.ReadFile(c.String(configFlag.Name))
+		fileContents, err := os.ReadFile(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not read file %s: %w", c.String(configFlag.Name), err)
 		}
