@@ -16,7 +16,7 @@ const (
 	// Sqlite file based db.
 	Sqlite DBType = iota // sqlite
 	// Clickhouse performant db by yandex.
-	Clickhouse DBType = iota // sqlite
+	Clickhouse DBType = iota // clickhouse
 )
 
 // DBTypeFromString parses a database type from a string.
