@@ -963,8 +963,6 @@ github.com/subosito/gotenv v1.4.0 h1:yAzM1+SmVcz5R4tXGsNMu1jUl2aOJXoiWUCEwwnGrvs
 github.com/subosito/gotenv v1.4.0/go.mod h1:mZd6rFysKEcUhUHXJk0C/08wAgyDBFuwEYL7vWWGaGo=
 github.com/synapsecns/gqlgenc v0.10.0-hotfix h1:EkxocO6V/xRcHJ+1sNY+fwDY5l1/jL9qooPEpWzrbLg=
 github.com/synapsecns/gqlgenc v0.10.0-hotfix/go.mod h1:OeQhghEgvGWvRwzx9XjMeg3FUQOHnTo5/12iuJSJxLg=
-github.com/synapsecns/sanguine/services/scribe v0.0.19 h1:O29+G/tGnhkxVWLydsbscuVCyO6L/jUN6eI1tK6Xjh8=
-github.com/synapsecns/sanguine/services/scribe v0.0.19/go.mod h1:yTLuia3pcmIyVNKPyaTJB8EOFDDOaSkPl2cTq1EyY20=
 github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d/go.mod h1:9OrXJhf154huy1nPWmuSrkgjPUtUNhA+Zmy+6AESzuA=
 github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954/go.mod h1:u2MKkTVTVJWe5D1rCvame8WqhBd88EuIwODJZ1VHCPM=
