@@ -9,6 +9,7 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/synapsecns/sanguine/core => ./../../core
 	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
+	github.com/synapsecns/sanguine/tools => ./../../tools
 )
 
 require (
@@ -37,6 +38,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
+	github.com/synapsecns/sanguine/tools v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v2 v2.14.1
 	github.com/vektah/gqlparser/v2 v2.5.0
 	github.com/vektra/mockery/v2 v2.14.0
