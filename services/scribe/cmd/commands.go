@@ -4,6 +4,7 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/scribe/api"
 	"os"
 
@@ -44,7 +45,7 @@ var backfillCommand = &cli.Command{
 	Usage:       "backfill --config /path/to/config.yaml",
 	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
-		decodeConfig, err := config.DecodeConfig(c.String(configFlag.Name))
+		decodeConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not decode config: %w", err)
 
