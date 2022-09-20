@@ -8,7 +8,7 @@ import (
 
 // EventType is the type of the bridge event.
 //
-//go:generate stringer -type=EventType
+//go:generate go run golang.org/x/tools/cmd/stringer -type=EventType
 type EventType uint8
 
 const (

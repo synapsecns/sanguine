@@ -2,7 +2,7 @@ package swap
 
 // EventType is the type of the swap event.
 //
-//go:generate stringer -type=EventType
+//go:generate go run golang.org/x/tools/cmd/stringer -type=EventType
 type EventType uint8
 
 const (
