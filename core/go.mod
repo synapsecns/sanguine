@@ -19,6 +19,7 @@ require (
 	github.com/google/go-cmp v0.5.8
 	github.com/grafana-tools/sdk v0.0.0-20210921191058-888ef9d18611
 	github.com/ipfs/go-log v1.0.5
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.12.2
