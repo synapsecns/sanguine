@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
@@ -77,9 +76,7 @@ var testTokens = []TestToken{{
 func (c *ConsumerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
-	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup, c.testBackend, c.deployManager, c.bridgeConfigContract = testutil.SetupDB(c.TestSuite)
-	c.testBackend = simulated.NewSimulatedBackend(c.GetTestContext(), c.T())
-	c.deployManager = testutil.NewDeployManager(c.T())
+	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup, c.testBackend, c.deployManager = testutil.SetupDB(c.TestSuite)
 
 	var deployInfo contracts.DeployedContract
 	deployInfo, c.bridgeConfigContract = c.deployManager.GetBridgeConfigV3(c.GetTestContext(), c.testBackend)
