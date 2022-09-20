@@ -72,7 +72,7 @@ func forwardRequest(ctx context.Context, body []byte, endpoint, header string) (
 		SetHeader("x-forwarded-for", "omnirpc").
 		SetHeader(requestIDKey, header).
 		SetHeader("Content-Type", gin.MIMEJSON).
-		SetHeader("Accept", "*/*").
+		SetHeader("Accept", gin.MIMEJSON).
 		Post(endpoint)
 
 	if err != nil {
