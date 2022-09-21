@@ -93,9 +93,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 
 	scribeBackends := make(map[uint32]backfill.ScribeBackend)
 	for _, backend := range simulatedBackends {
-		chainID, err := backend.ChainID(b.GetTestContext())
-		Nil(b.T(), err)
-		scribeBackends[uint32(chainID.Uint64())] = backend
+		scribeBackends[uint32(backend.GetChainID())] = backend
 	}
 
 	// Set up the scribe backfiller.
