@@ -137,8 +137,8 @@ var serverCommand = &cli.Command{
 }
 
 func init() {
-	ports := freeport.Get(1)
-	if len(ports) > 0 {
+	ports, err := freeport.Take(1)
+	if len(ports) > 0 && err != nil {
 		portFlag.Value = uint(ports[0])
 	}
 }

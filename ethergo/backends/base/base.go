@@ -78,6 +78,7 @@ func NewBaseBackend(ctx context.Context, t *testing.T, chn chain.Chain) (*Backen
 }
 
 // EnableTenderly turns on tenderly on the full chain.
+// Note: tenderly must be installed and you must be logged in.
 func (b *Backend) EnableTenderly() bool {
 	if b.tenderly != nil {
 		return true
