@@ -24,7 +24,7 @@ type rawResponse struct {
 
 // newRawResponse produces a response with a unique hash based on json
 // regardless of formatting.
-func newRawResponse(body []byte, url string) (*rawResponse, error) {
+func (f *Forwarder) newRawResponse(body []byte, url string) (*rawResponse, error) {
 	// TODO: consider using a syncpool here
 	var unmarshalled interface{}
 
@@ -81,7 +81,7 @@ func (f *Forwarder) forwardRequest(ctx context.Context, endpoint, requestID stri
 		return nil, fmt.Errorf("could not get response from %s: %w", endpoint, err)
 	}
 
-	rawResp, err := newRawResponse(resp.Body(), endpoint)
+	rawResp, err := f.newRawResponse(resp.Body(), endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("invalid response: %w", err)
 	}
