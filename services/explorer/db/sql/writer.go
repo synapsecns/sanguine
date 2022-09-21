@@ -35,6 +35,7 @@ func boolToUint8(input *bool) *uint8 {
 // data from a recent write event via chain id.
 func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error) {
 	// If reading a bridge event
+	var blockNumber uint64
 	switch eventType {
 	case Bridge:
 		var resp BridgeEvent
@@ -43,7 +44,7 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 		if dbTx.Error != nil {
 			return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
-		return &resp.BlockNumber, nil
+		blockNumber = resp.BlockNumber
 
 	// If reading a swap event
 	case Swap:
@@ -53,9 +54,9 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 		if dbTx.Error != nil {
 			return nil, fmt.Errorf("failed to store read event: %w", dbTx.Error)
 		}
-		return &resp.BlockNumber, nil
+		blockNumber = resp.BlockNumber
 	}
-	return nil, nil
+	return &blockNumber, nil
 }
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
