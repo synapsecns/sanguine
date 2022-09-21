@@ -8,6 +8,16 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 )
 
+// EventType is an enum for event types.
+type EventType int8
+
+const (
+	// Bridge - SynapseBridge event.
+	Bridge int8 = 0
+	// Swap - SwapFlashLoan event.
+	Swap int8 = iota
+)
+
 // Helper function to handle bool to uint8 conversion for clickhouse.
 func boolToUint8(input *bool) *uint8 {
 	if input == nil {
@@ -21,25 +31,32 @@ func boolToUint8(input *bool) *uint8 {
 	return &zero
 }
 
-// ReadEvent provides an easy-to-use interface to validate database data from a recent write event.
-func (s *Store) ReadEvent(ctx context.Context, eventType int8, chainID uint32) error {
+// ReadBlockNumberByChainID provides an easy-to-use interface to validate database
+// data from a recent write event via chain id.
+func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error) {
 	// If reading a bridge event
-	if eventType == 0 {
+	var blockNumber uint64
+	switch eventType {
+	case Bridge:
+		var resp BridgeEvent
 		dbTx := s.DB().WithContext(ctx).
-			Find(&BridgeEvent{}, "chain_id = ?", chainID)
+			Find(&resp, "chain_id = ?", chainID)
 		if dbTx.Error != nil {
-			return fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+			return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
-	}
+		blockNumber = resp.BlockNumber
+
 	// If reading a swap event
-	if eventType == 1 {
+	case Swap:
+		var resp SwapEvent
 		dbTx := s.DB().WithContext(ctx).
-			Find(&SwapEvent{}, "chain_id = ?", chainID)
+			Find(&resp, "chain_id = ?", chainID)
 		if dbTx.Error != nil {
-			return fmt.Errorf("failed to store read event: %w", dbTx.Error)
+			return nil, fmt.Errorf("failed to store read event: %w", dbTx.Error)
 		}
+		blockNumber = resp.BlockNumber
 	}
-	return nil
+	return &blockNumber, nil
 }
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.

@@ -32,8 +32,9 @@ func (t *DBSuite) TestBridgeWrite() {
 	testTokenID := "testid"
 	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil, chainID, &testTokenID)
 	Nil(t.T(), err)
-	err = t.db.ReadEvent(t.GetTestContext(), 0, chainID)
+	blockNumber, err := t.db.ReadBlockNumberByChainID(t.GetTestContext(), 0, chainID)
 	Nil(t.T(), err)
+	Equal(t.T(), *blockNumber, bridgeEvent.Raw.BlockNumber, "Returned data from bridge write incorrect.")
 	t.cleanup()
 }
 
@@ -59,7 +60,9 @@ func (t *DBSuite) TestSwapWrite() {
 	chainID := gofakeit.Uint32()
 	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent, chainID, nil)
 	Nil(t.T(), err)
-	err = t.db.ReadEvent(t.GetTestContext(), 1, chainID)
+	blockNumber, err := t.db.ReadBlockNumberByChainID(t.GetTestContext(), 1, chainID)
+	Nil(t.T(), err)
+	Equal(t.T(), *blockNumber, swapEvent.Raw.BlockNumber, "Returned data from swap write incorrect.")
 	Nil(t.T(), err)
 	t.cleanup()
 }

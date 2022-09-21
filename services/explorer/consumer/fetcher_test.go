@@ -4,19 +4,22 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/services/explorer/db/consumer"
+	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"math/big"
 )
 
 func (c *ConsumerSuite) TestFetchLogsInRange() {
 	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
 	chainID := gofakeit.Uint32()
 
 	// Store 10 logs
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
 		storeLog := testutil.BuildLog(contractAddress, uint64(blockNumber), &c.logIndex)
+
 		err := c.eventDB.StoreLog(c.GetTestContext(), storeLog, chainID)
+
 		Nil(c.T(), err)
 	}
 
@@ -25,12 +28,12 @@ func (c *ConsumerSuite) TestFetchLogsInRange() {
 	logs, err := fetcher.FetchLogsInRange(c.GetTestContext(), chainID, 4, 8)
 	Nil(c.T(), err)
 	Equal(c.T(), 5, len(logs))
+	c.cleanup()
 }
 
 func (c *ConsumerSuite) TestToken() {
 	fetcher, err := consumer.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.testBackend)
 	Nil(c.T(), err)
-
 	curentBlockNumber, err := c.testBackend.BlockNumber(c.GetTestContext())
 	Nil(c.T(), err)
 
@@ -46,4 +49,5 @@ func (c *ConsumerSuite) TestToken() {
 		Equal(c.T(), testToken.SwapFee, token.SwapFee)
 		Equal(c.T(), testToken.IsUnderlying, token.IsUnderlying)
 	}
+	c.cleanup()
 }

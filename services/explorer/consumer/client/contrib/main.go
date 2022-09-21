@@ -21,12 +21,12 @@ func main() {
 		log.Fatalf("Error: %s", err.Error())
 	}
 	ctx := context.Background()
-	err = os.Chdir(filepath.Join(root.Path, "services/explorer/db/consumer/client/"))
+	err = os.Chdir(filepath.Join(root.Path, "services/explorer/consumer/client/"))
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
 
-	cfg, err := clientConfig.LoadConfig(filepath.Join(root.Path, "services/explorer/db/consumer/client/.gqlgenc.yaml"))
+	cfg, err := clientConfig.LoadConfig(filepath.Join(root.Path, "services/explorer/consumer/client/.gqlgenc.yaml"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%+v", err.Error())
 		os.Exit(2)

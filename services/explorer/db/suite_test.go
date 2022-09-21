@@ -4,8 +4,8 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/db"
-	"github.com/synapsecns/sanguine/services/explorer/db/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	"go.uber.org/atomic"
@@ -35,7 +35,7 @@ func NewDBSuite(tb testing.TB) *DBSuite {
 func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
 
-	t.db, t.eventDB, t.gqlClient, t.logIndex, t.cleanup, t.testBackend, t.deployManager = testutil.SetupDB(t.TestSuite)
+	t.db, t.eventDB, t.gqlClient, t.logIndex, t.cleanup, t.testBackend, t.deployManager = testutil.NewTestEnvDB(t.T())
 }
 
 // TestDBSuite tests the db suite.
