@@ -18,7 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
-	//ctx := context.Background()
+	// ctx := context.Background()
 	err = os.Chdir(filepath.Join(root.Path, "services/explorer/consumer/client/"))
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
@@ -39,9 +39,8 @@ func main() {
 	err = api.Generate(cfg,
 		api.AddPlugin(clientGen),
 	)
-
-	//if err := generator.Generate(ctx, cfgGqlgenc, clientGen); err != nil {
-	//	fmt.Fprintf(os.Stderr, "%+v", err.Error())
-	//	os.Exit(4)
-	//}
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(3)
+	}
 }
