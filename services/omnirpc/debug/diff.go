@@ -3,13 +3,11 @@ package debug
 import (
 	"encoding/json"
 	"fmt"
+	jd "github.com/josephburnett/jd/lib"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
-	diff "github.com/yudai/gojsondiff"
-	"github.com/yudai/gojsondiff/formatter"
-	"runtime/debug"
 )
 
-// HashDiff generates a diff
+// HashDiff generates a diff.
 func HashDiff(fileContents []byte) error {
 	var errResp proxy.ErrorResponse
 
@@ -26,13 +24,15 @@ func HashDiff(fileContents []byte) error {
 		fmt.Printf("found %d hashes, only comparing the first 2", len(errResp.Hashes))
 	}
 
-	uniqueResponses := make([]json.RawMessage, 2)
+	uniqueResponses := make([]jd.JsonNode, 2)
 	i := 0
-
 	// get first two responses
 OUTER:
 	for _, resps := range errResp.Hashes {
-		uniqueResponses[i] = resps[0].Raw
+		uniqueResponses[i], err = jd.ReadJsonString(string(resps[0].Raw))
+		if err != nil {
+			return fmt.Errorf("could not make json string: %w", err)
+		}
 		i++
 
 		if i >= 2 {
@@ -40,29 +40,8 @@ OUTER:
 		}
 	}
 
-	debug.SetGCPercent(-1)
+	diff := uniqueResponses[0].Diff(uniqueResponses[1])
 
-	differ := diff.New()
-	respDiff, err := differ.Compare(uniqueResponses[0], uniqueResponses[1])
-	if err != nil {
-		return fmt.Errorf("could not compare: %w", err)
-	}
-
-	config := formatter.AsciiFormatterConfig{
-		ShowArrayIndex: true,
-		Coloring:       true,
-	}
-
-	var aJson map[string]interface{}
-	err = json.Unmarshal(uniqueResponses[0], &aJson)
-
-	r := formatter.NewAsciiFormatter(aJson, config)
-	diffString, err := r.Format(respDiff)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(diffString)
-
+	fmt.Println(diff.Render(jd.COLOR))
 	return nil
 }
