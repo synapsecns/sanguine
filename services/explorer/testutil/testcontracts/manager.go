@@ -10,7 +10,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
 	parentManager := manager.NewDeployerManager(t,
-		//NewTestBridgeConfigV3Deployer,
+		NewBridgeConfigV3Deployer,
 		NewTestSwapFlashLoanDeployer,
 		NewTestSynapseBridgeDeployer,
 	)

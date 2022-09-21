@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 )
 
@@ -36,11 +37,11 @@ type contractTypeImpl int
 
 const (
 	// TestBridgeConfigTypeV3 is the bridge config contract type.
-	//TestBridgeConfigTypeV3 contractTypeImpl = 0
+	TestBridgeConfigTypeV3 contractTypeImpl = iota
 	// TestSynapseBridgeType is the bridge contract type.
-	TestSynapseBridgeType contractTypeImpl = 0
+	TestSynapseBridgeType
 	// TestSwapFlashLoanType is the swap contract type.
-	TestSwapFlashLoanType contractTypeImpl = 1
+	TestSwapFlashLoanType
 )
 
 // ID gets the contract type as an id.
@@ -61,8 +62,8 @@ func (c contractTypeImpl) Name() string {
 // TODO these should use contract name and maybe come out of the generator.
 func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
-	//case TestBridgeConfigTypeV3:
-	//	return bridgeconfig.Contracts["/solidity/BridgeConfigV3_flat.sol:BridgeConfigV3"]
+	case TestBridgeConfigTypeV3:
+		return bridgeconfig.Contracts["/solidity/BridgeConfigV3_flat.sol:BridgeConfigV3"]
 	case TestSynapseBridgeType:
 		return testbridge.Contracts["/solidity/TestSynapseBridge.sol:TestSynapseBridge"]
 	case TestSwapFlashLoanType:

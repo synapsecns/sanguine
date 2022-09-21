@@ -9,7 +9,6 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -60,8 +59,9 @@ func (c *TestToken) SetTokenConfig(bridgeConfigContract *bridgeconfig.BridgeConf
 var testTokens = []TestToken{{
 	tokenID: gofakeit.FirstName(),
 	BridgeConfigV3Token: bridgeconfig.BridgeConfigV3Token{
-		ChainId:       big.NewInt(int64(gofakeit.Uint32())),
-		TokenAddress:  mocks.MockAddress().String(),
+		ChainId:      big.NewInt(1337),
+		TokenAddress: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		//TokenAddress:  mocks.MockAddress().String(),
 		TokenDecimals: gofakeit.Uint8(),
 		MaxSwap:       new(big.Int).SetUint64(gofakeit.Uint64()),
 		// TODO: this should probably be smaller than maxswap
@@ -83,7 +83,7 @@ func (b *BackfillSuite) SetupTest() {
 	b.testDeployManager = testcontracts.NewDeployManager(b.T())
 
 	var deployInfo contracts.DeployedContract
-	deployInfo, b.bridgeConfigContract = b.deployManager.GetBridgeConfigV3(b.GetTestContext(), b.testBackend)
+	deployInfo, b.bridgeConfigContract = b.testDeployManager.GetBridgeConfigV3(b.GetTestContext(), b.testBackend)
 
 	for _, token := range testTokens {
 		auth := b.testBackend.GetTxContext(b.GetTestContext(), deployInfo.OwnerPtr())

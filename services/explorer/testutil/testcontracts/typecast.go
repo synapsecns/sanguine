@@ -6,20 +6,22 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
+	"github.com/synapsecns/sanguine/services/explorer/testutil"
 )
 
-//// GetBridgeConfigV3 gets a typecast bridgeconfig contract.
-//func (d *DeployManager) GetBridgeConfigV3(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *bridgeconfig.BridgeConfigRef) {
-//	d.T().Helper()
-//
-//	bridgeConfigContract := d.GetContractRegistry(backend).Get(ctx, BridgeConfigTypeV3)
-//
-//	bridgeConfigHandle, ok := bridgeConfigContract.ContractHandle().(*bridgeconfig.BridgeConfigRef)
-//	assert.True(d.T(), ok)
-//
-//	return bridgeConfigContract, bridgeConfigHandle
-//}
+// GetBridgeConfigV3 gets a typecast bridgeconfig contract.
+func (d *DeployManager) GetBridgeConfigV3(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *bridgeconfig.BridgeConfigRef) {
+	d.T().Helper()
+
+	bridgeConfigContract := d.GetContractRegistry(backend).Get(ctx, testutil.BridgeConfigTypeV3)
+
+	bridgeConfigHandle, ok := bridgeConfigContract.ContractHandle().(*bridgeconfig.BridgeConfigRef)
+	assert.True(d.T(), ok)
+
+	return bridgeConfigContract, bridgeConfigHandle
+}
 
 // GetTestSynapseBridge gets a typecast test bridge contract.
 func (d *DeployManager) GetTestSynapseBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testbridge.BridgeRef) {

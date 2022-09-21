@@ -8,13 +8,14 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[TestSynapseBridgeType-0]
-	_ = x[TestSwapFlashLoanType-1]
+	_ = x[TestBridgeConfigTypeV3-0]
+	_ = x[TestSynapseBridgeType-1]
+	_ = x[TestSwapFlashLoanType-2]
 }
 
-const _contractTypeImpl_name = "TestSynapseBridgeTypeTestSwapFlashLoanType"
+const _contractTypeImpl_name = "TestBridgeConfigTypeV3TestSynapseBridgeTypeTestSwapFlashLoanType"
 
-var _contractTypeImpl_index = [...]uint8{0, 21, 42}
+var _contractTypeImpl_index = [...]uint8{0, 22, 43, 64}
 
 func (i contractTypeImpl) String() string {
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {

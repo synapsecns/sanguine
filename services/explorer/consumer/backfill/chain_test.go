@@ -1,6 +1,7 @@
 package backfill_test
 
 import (
+	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -48,16 +49,18 @@ func (b *BackfillSuite) TestBackfill() {
 
 	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
 	transactOpts.TransactOpts.GasLimit = uint64(200000)
-	tx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()))
+	recipient := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+	tx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, recipient, big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(gofakeit.Int64()))
+	fmt.Println("RECIP", recipient)
 	Nil(b.T(), err)
+	fmt.Println(common.HexToAddress(testTokens[0].TokenAddress).String())
 	b.testBackend.WaitForConfirmation(b.GetTestContext(), tx)
 
 	txData := tx.Data()
-	_ = txData
-
 	storeLog := testutil.BuildLog(bridgeContract.Address(), 0, &b.logIndex)
 	storeLog.Topics = []common.Hash{bridgeTopicsMap[bridgeTypes.DepositEvent], common.BigToHash(big.NewInt(gofakeit.Int64()))}
 	storeLog.Data = txData
+	fmt.Println(common.Bytes2Hex(txData))
 	testChainID, err := b.testBackend.ChainID(b.GetTestContext())
 	Nil(b.T(), err)
 	err = b.eventDB.StoreLog(b.GetTestContext(), storeLog, uint32(testChainID.Uint64()))
@@ -79,6 +82,9 @@ func (b *BackfillSuite) TestBackfill() {
 	//}
 
 	// setup a ChainBackfiller
+	fmt.Println(testTokens[0].TokenAddress, testTokens[0].ChainId)
+	fmt.Println(testTokens[0].TokenAddress, testTokens[0].ChainId)
+
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
 	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf)
 	Nil(b.T(), err)
