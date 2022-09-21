@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
+OG_DIR=$(pwd)
+
 # assumes that we're in the charts dir
 for filename in *; do
+    # go back to the beginning after cding below
+    cd $OG_DIR || exit 1
+
     # skip files
     if [[ -f "$filename" ]]; then
       continue
