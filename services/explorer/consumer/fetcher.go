@@ -6,8 +6,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
-	"github.com/synapsecns/sanguine/services/explorer/db/consumer/client"
 	"github.com/synapsecns/sanguine/services/scribe/graphql"
 	"math/big"
 )
@@ -26,11 +26,15 @@ func NewFetcher(fetchClient *client.Client) *Fetcher {
 
 // FetchLogsInRange fetches logs in a range with the GQL client.
 func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64) ([]ethTypes.Log, error) {
+
 	logs, err := f.fetchClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), 1)
+
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch logs: %w", err)
 	}
+
 	var parsedLogs []ethTypes.Log
+
 	for _, log := range logs.Response {
 		parsedLog, err := graphql.ParseLog(*log)
 		if err != nil {
@@ -46,7 +50,7 @@ func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBloc
 type BridgeConfigFetcher struct {
 	bridgeConfig        *bridgeconfig.BridgeConfigRef
 	bridgeConfigAddress common.Address
-} //TODO switch bridge config based on block number
+} // TODO switch bridge config based on block number
 
 // NewBridgeConfigFetcher creates a new config fetcher.
 // Backend must be an archive backend.
@@ -82,7 +86,7 @@ func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID, block uint3
 		Context:     ctx,
 	}, tokenID, big.NewInt(int64(chainID)))
 	if err != nil {
-		//var none bridgeconfig.BridgeConfigV3Token
+		// var none bridgeconfig.BridgeConfigV3Token
 		return nil, fmt.Errorf("could not get token id: %w", err)
 	}
 	return &tok, nil

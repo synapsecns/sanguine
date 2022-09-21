@@ -4,10 +4,10 @@ package client
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/client/model"
 	"net/http"
 
 	"github.com/Yamashou/gqlgenc/client"
-	"github.com/synapsecns/sanguine/services/explorer/db/consumer/client/model"
 )
 
 type Client struct {

@@ -10,9 +10,9 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
-	"github.com/synapsecns/sanguine/services/explorer/db/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	"go.uber.org/atomic"
@@ -33,7 +33,7 @@ type ConsumerSuite struct {
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
 }
 
-// NewConsumerSuite creates a end-to-end test suite.
+// NewConsumerSuite creates an end-to-end test suite.
 func NewConsumerSuite(tb testing.TB) *ConsumerSuite {
 	tb.Helper()
 	return &ConsumerSuite{
