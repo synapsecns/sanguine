@@ -59,7 +59,11 @@ type rawResponse struct {
 }
 
 func newRawResponse(body []byte) *rawResponse {
-	return &rawResponse{body: body}
+	newBody := make([]byte, len(body))
+	// copy to avoid a reallocation
+	copy(newBody, body)
+
+	return &rawResponse{body: newBody}
 }
 
 func (r *rawResponse) Body() []byte {

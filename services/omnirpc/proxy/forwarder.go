@@ -10,7 +10,6 @@ import (
 	"github.com/synapsecns/sanguine/core/threaditer"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
-	"github.com/valyala/fastjson"
 	"io"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"net/http"
@@ -134,6 +133,7 @@ func (f *Forwarder) attemptForwardAndValidate() {
 			}
 		case res := <-resChan:
 			totalResponses++
+
 			// add the response to resmap
 			responses, _ := f.resMap.Load(res.hash)
 			responses = append(responses, res)
@@ -163,9 +163,7 @@ const forwardedFrom = "x-forwarded-from"
 // thisis mostly used for debugging.
 type ErroredRPCResponse struct {
 	Raw json.RawMessage `json:"json_response"`
-	// NonJSONResponse, used in cases where json cannot be
-	NonJSONResponse string `json:"non_json_response"`
-	URL             string `json:"url"`
+	URL string          `json:"url"`
 }
 
 // ErrorResponse contains error response used for debugging.
@@ -190,6 +188,7 @@ func (f *Forwarder) checkResponses(responseCount int) (done bool) {
 			f.c.Header(urlConfirmationsHeader, strings.Join(responseURLS, ","))
 			f.c.Header(jsonHashHeader, responses[0].hash)
 			f.c.Header(forwardedFrom, responses[0].url)
+
 			f.c.Data(http.StatusOK, gin.MIMEJSON, responses[0].body)
 			valid = true
 
@@ -213,24 +212,12 @@ func (f *Forwarder) checkResponses(responseCount int) (done bool) {
 		}
 
 		f.resMap.Range(func(key string, responses []rawResponse) bool {
-			// if json isn't valid, we can't marshall to raw json
-			validJSON := true
-
-			if validErr := fastjson.Validate(string(responses[0].body)); validErr != nil {
-				validJSON = false
-			}
-
 			for _, response := range responses {
 				erroredUrls.Delete(response.url)
 
 				rpcErr := ErroredRPCResponse{
 					URL: response.url,
-				}
-
-				if validJSON {
-					rpcErr.Raw = response.body
-				} else {
-					rpcErr.NonJSONResponse = string(response.body)
+					Raw: response.body,
 				}
 
 				errResponse.Hashes[key] = append(errResponse.Hashes[key], rpcErr)
