@@ -2,13 +2,11 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/99designs/gqlgen/api"
+	"github.com/99designs/gqlgen/codegen/config"
 	"github.com/Yamashou/gqlgenc/clientgen"
-	"github.com/Yamashou/gqlgenc/clientgenv2"
 	clientConfig "github.com/Yamashou/gqlgenc/config"
-	"github.com/Yamashou/gqlgenc/generator"
 	"github.com/integralist/go-findroot/find"
 	"log"
 	"os"
@@ -20,27 +18,30 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
-	ctx := context.Background()
+	//ctx := context.Background()
 	err = os.Chdir(filepath.Join(root.Path, "services/explorer/consumer/client/"))
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
 
-	cfg, err := clientConfig.LoadConfig(filepath.Join(root.Path, "services/explorer/consumer/client/.gqlgenc.yaml"))
+	cfg, err := config.LoadConfig(filepath.Join(root.Path, "services/scribe/graphql/gqlgen.yaml"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
+		os.Exit(2)
+	}
+	gqlgencConfig, err := clientConfig.LoadConfig(filepath.Join(root.Path, "services/explorer/consumer/client/.gqlgenc.yaml"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%+v", err.Error())
 		os.Exit(2)
 	}
 
-	clientGen := api.AddPlugin(clientgen.New(cfg.Query, cfg.Client, cfg.Generate))
-	if cfg.Generate != nil {
-		if cfg.Generate.ClientV2 {
-			clientGen = api.AddPlugin(clientgenv2.New(cfg.Query, cfg.Client, cfg.Generate))
-		}
-	}
+	clientGen := clientgen.New(gqlgencConfig.Query, gqlgencConfig.Client, gqlgencConfig.Generate)
+	err = api.Generate(cfg,
+		api.AddPlugin(clientGen),
+	)
 
-	if err := generator.Generate(ctx, cfg, clientGen); err != nil {
-		fmt.Fprintf(os.Stderr, "%+v", err.Error())
-		os.Exit(4)
-	}
+	//if err := generator.Generate(ctx, cfgGqlgenc, clientGen); err != nil {
+	//	fmt.Fprintf(os.Stderr, "%+v", err.Error())
+	//	os.Exit(4)
+	//}
 }

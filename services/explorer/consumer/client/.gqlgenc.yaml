@@ -5,9 +5,7 @@ client:
 query:
   - 'queries/*.graphql' # Where are all the query files located?
 
-model:
-  filename: model/models_gen.go
-  package: model
+
 
 ####
 # Note: these are ignored and pulled from gqlgen.yml in our generator
