@@ -20,8 +20,8 @@ import (
 	"net/http"
 )
 
-// SetupDB sets up the db.
-func SetupDB(t *testsuite.TestSuite) (db db.ConsumerDB, eventDB scribedb.EventDB, gqlClient *client.Client, logIndex atomic.Int64, cleanup func(), testBackend backends.SimulatedTestBackend, deployManager *DeployManager) {
+// NewTestEnvDB sets up the test env with a database.
+func NewTestEnvDB(t *testsuite.TestSuite) (db db.ConsumerDB, eventDB scribedb.EventDB, gqlClient *client.Client, logIndex atomic.Int64, cleanup func(), testBackend backends.SimulatedTestBackend, deployManager *DeployManager) {
 	dbPath := filet.TmpDir(t.T(), "")
 
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), dbPath)

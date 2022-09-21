@@ -8,6 +8,13 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 )
 
+type EventType int8
+
+const (
+	Bridge int8 = 0
+	Swap   int8 = iota
+)
+
 // Helper function to handle bool to uint8 conversion for clickhouse.
 func boolToUint8(input *bool) *uint8 {
 	if input == nil {
@@ -24,15 +31,16 @@ func boolToUint8(input *bool) *uint8 {
 // ReadEvent provides an easy-to-use interface to validate database data from a recent write event.
 func (s *Store) ReadEvent(ctx context.Context, eventType int8, chainID uint32) error {
 	// If reading a bridge event
-	if eventType == 0 {
+	switch eventType {
+	case Bridge:
 		dbTx := s.DB().WithContext(ctx).
 			Find(&BridgeEvent{}, "chain_id = ?", chainID)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
-	}
+
 	// If reading a swap event
-	if eventType == 1 {
+	case Swap:
 		dbTx := s.DB().WithContext(ctx).
 			Find(&SwapEvent{}, "chain_id = ?", chainID)
 		if dbTx.Error != nil {

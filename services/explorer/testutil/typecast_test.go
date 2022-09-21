@@ -2,7 +2,8 @@ package testutil_test
 
 import . "github.com/stretchr/testify/assert"
 
-func (s SimulatedSuite) TestTypecastOrigin() {
+// TestTypecast tests the typecast
+func (s SimulatedSuite) TestTypecast() {
 	NotPanics(s.T(), func() {
 		_, bridgeConfigHandle := s.deployManager.GetBridgeConfigV3(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), bridgeConfigHandle)

@@ -42,18 +42,12 @@ openapi-install: setup-go-path
 buf-install:
 	@if [ "$(shell which buf)" = "" ]; then ./scripts/install-buf.sh $(BUF_VERSION); fi;
 
-helm-install:
-	@#Brew - MacOS
-	@if [ "$(shell which helm)" = "" ] && [ "$(shell which brew)" != "" ]; then brew install helm; fi;
-
 swagger-codegen-install:
 	@#Brew - MacOS
 	@if [ "$(shell which swagger-codegen)" = "" ] && [ "$(shell which brew)" != "" ]; then brew install swagger-codegen; fi;
 
 # TODO: should be replaced w/ https://github.com/bufbuild/buf
 # (see: https://github.com/grpc-ecosystem/grpc-gateway)
-generate: helm-install openapi-install swagger-codegen-install buf-install protoc-gen-grpc-gateway-install protoc-install grpc-install protoc-gen-install  ## generate protobufs
-	buf generate
-	@eval $$(cd $(GIT_ROOT)/services/scribe); ./scripts/codegen.sh
+
 
 generate-ci: generate ## CI only command for generate prereqs
