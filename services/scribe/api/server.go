@@ -7,6 +7,7 @@ import (
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/synapsecns/sanguine/core"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
@@ -16,6 +17,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"net"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -53,7 +55,7 @@ func Start(ctx context.Context, cfg Config) error {
 	}))
 
 	// initialize the database
-	eventDB, err := initDB(ctx, cfg.Database, cfg.Path)
+	eventDB, err := InitDB(ctx, cfg.Database, cfg.Path)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
@@ -113,7 +115,8 @@ func Start(ctx context.Context, cfg Config) error {
 	return nil
 }
 
-func initDB(ctx context.Context, database string, path string) (db.EventDB, error) {
+// InitDB initializes a database given a database type and path.
+func InitDB(ctx context.Context, database string, path string) (db.EventDB, error) {
 	switch {
 	case database == "sqlite":
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path)
@@ -122,6 +125,15 @@ func initDB(ctx context.Context, database string, path string) (db.EventDB, erro
 		}
 		return sqliteStore, nil
 	case database == "mysql":
+		if os.Getenv("OVERRIDE_MYSQL") != "" {
+			dbname := os.Getenv("MYSQL_DATABASE")
+			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
+			mysqlStore, err := mysql.NewMysqlStore(ctx, connString)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create mysql store: %w", err)
+			}
+			return mysqlStore, nil
+		}
 		mysqlStore, err := mysql.NewMysqlStore(ctx, path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
