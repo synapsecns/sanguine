@@ -50,6 +50,13 @@ func (r *RPCProxy) Run(ctx context.Context) {
 			return uuid.New().String()
 		})))
 
+	router.Use(func(c *gin.Context) {
+		// set on request as well
+		if c.Request.Header.Get(omniHTTP.XRequestIDString) == "" {
+			c.Request.Header.Set(omniHTTP.XRequestIDString, c.Writer.Header().Get(omniHTTP.XRequestIDString))
+		}
+	})
+
 	router.GET("/health-check", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status": "UP",
