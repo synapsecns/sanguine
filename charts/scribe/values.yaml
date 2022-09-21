@@ -69,8 +69,8 @@ indexer:
   args: ["server", "--port=80", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql-primary:3306)/scribe?parseTime=true"]
   #  args: ["backfill", "--config=/config/config.yaml"]
   podAnnotations: {}
-  nodeSelector: { }
-  podSecurityContext: { }
+  nodeSelector: {}
+  podSecurityContext: {}
   affinity: {}
   tolerations: {}
 
@@ -88,7 +88,7 @@ server:
     # targetMemoryUtilizationPercentage: 80
   podAnnotations: {}
   nodeSelector: {}
-  podSecurityContext: { }
+  podSecurityContext: {}
   affinity: {}
   tolerations: []
 
