@@ -31,26 +31,31 @@ func boolToUint8(input *bool) *uint8 {
 	return &zero
 }
 
-// ReadEvent provides an easy-to-use interface to validate database data from a recent write event.
-func (s *Store) ReadEvent(ctx context.Context, eventType int8, chainID uint32) error {
+// ReadBlockNumberByChainID provides an easy-to-use interface to validate database
+// data from a recent write event via chain id.
+func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error) {
 	// If reading a bridge event
 	switch eventType {
 	case Bridge:
+		var resp BridgeEvent
 		dbTx := s.DB().WithContext(ctx).
-			Find(&BridgeEvent{}, "chain_id = ?", chainID)
+			Find(&resp, "chain_id = ?", chainID)
 		if dbTx.Error != nil {
-			return fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+			return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
+		return &resp.BlockNumber, nil
 
 	// If reading a swap event
 	case Swap:
+		var resp SwapEvent
 		dbTx := s.DB().WithContext(ctx).
-			Find(&SwapEvent{}, "chain_id = ?", chainID)
+			Find(&resp, "chain_id = ?", chainID)
 		if dbTx.Error != nil {
-			return fmt.Errorf("failed to store read event: %w", dbTx.Error)
+			return nil, fmt.Errorf("failed to store read event: %w", dbTx.Error)
 		}
+		return &resp.BlockNumber, nil
 	}
-	return nil
+	return nil, nil
 }
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.

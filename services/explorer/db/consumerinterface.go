@@ -14,8 +14,8 @@ type ConsumerDBWriter interface {
 
 // ConsumerDBReader is the interface for reading events from the ConsumerDB.
 type ConsumerDBReader interface {
-	// ReadEvent reads an event from the database.
-	ReadEvent(ctx context.Context, eventType int8, chainID uint32) error
+	// ReadBlockNumberByChainID reads an event from the database by chainID.
+	ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.
