@@ -9,6 +9,10 @@ model:
   filename: model/models_gen.go
   package: model
 
+models:
+  JSON:
+    model: github.com/synapsecns/sanguine/services/explorer/consumer/client/types.JSON
+
 ####
 # Note: these are ignored and pulled from gqlgen.yml in our generator
 # modifying them will have no effect, but they cannot be removed since
