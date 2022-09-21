@@ -94,8 +94,8 @@ server:
 
 mysql:
   # use a constant here to build a connection to the service
-  fullnameOverride: scribe-mysql
   enabled: true
+  fullnameOverride: scribe-mysql
   architecture: replication
   secondary:
     replicaCount: 1
@@ -109,8 +109,13 @@ mysql:
     # existingSecret: mysql-password
     rootPassword: MysqlPassword
 
+omnirpc:
+  # this can be remote in production, we just want to use the public rpc servers here
+  enabled: true
+  fullnameOverride: scribe-omnirpc
 
 files:
   config.yaml: |-
     # Config contents go here
     # These will be copied to both server and indexer containers
+    # http://scribe-omnirpc:80/x

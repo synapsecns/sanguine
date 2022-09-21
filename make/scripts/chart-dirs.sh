@@ -2,8 +2,12 @@
 
 dirs=()
 
+OG_DIR=$(pwd)
+
 # list all chart dirs
 for filename in *; do
+    # go back to the beginning after cding below
+    cd $OG_DIR || exit 1
     # skip files
     if [[ -f "$filename" ]]; then
       continue
@@ -29,4 +33,4 @@ do
     OUT=$I,${OUT:+$OUT }
 done
 
-echo "$OUT"  | rev | cut -c2- | rev
+echo "$OUT"  | rev | cut -c3- | rev
