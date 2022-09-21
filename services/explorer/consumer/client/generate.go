@@ -1,3 +1,3 @@
 package client
 
-//go:generate go run github.com/synapsecns/sanguine/services/explorer/db/consumer/client/contrib
+//go:generate go run github.com/synapsecns/sanguine/services/explorer/consumer/client/contrib
