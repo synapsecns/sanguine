@@ -2,21 +2,25 @@
 
 package model
 
+import (
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server/types"
+)
+
 type Log struct {
-	ContractAddress string      `json:"contract_address"`
-	ChainID         int         `json:"chain_id"`
-	Topics          []string    `json:"topics"`
-	Data            string      `json:"data"`
-	BlockNumber     int         `json:"block_number"`
-	TxHash          string      `json:"tx_hash"`
-	TxIndex         int         `json:"tx_index"`
-	BlockHash       string      `json:"block_hash"`
-	Index           int         `json:"index"`
-	Removed         bool        `json:"removed"`
-	Page            int         `json:"page"`
-	Transaction     Transaction `json:"transaction"`
-	Receipt         Receipt     `json:"receipt"`
-	JSON            string      `json:"json"`
+	ContractAddress string       `json:"contract_address"`
+	ChainID         int          `json:"chain_id"`
+	Topics          []string     `json:"topics"`
+	Data            string       `json:"data"`
+	BlockNumber     int          `json:"block_number"`
+	TxHash          string       `json:"tx_hash"`
+	TxIndex         int          `json:"tx_index"`
+	BlockHash       string       `json:"block_hash"`
+	Index           int          `json:"index"`
+	Removed         bool         `json:"removed"`
+	Page            int          `json:"page"`
+	Transaction     *Transaction `json:"transaction"`
+	Receipt         *Receipt     `json:"receipt"`
+	JSON            types.JSON   `json:"json"`
 }
 
 type Receipt struct {
@@ -34,24 +38,24 @@ type Receipt struct {
 	Page              int          `json:"page"`
 	Logs              []*Log       `json:"logs"`
 	Transaction       *Transaction `json:"transaction"`
-	JSON              string       `json:"json"`
+	JSON              types.JSON   `json:"json"`
 }
 
 type Transaction struct {
-	ChainID   int      `json:"chain_id"`
-	TxHash    string   `json:"tx_hash"`
-	Protected bool     `json:"protected"`
-	Type      int      `json:"type"`
-	Data      string   `json:"data"`
-	Gas       int      `json:"gas"`
-	GasPrice  int      `json:"gas_price"`
-	GasTipCap string   `json:"gas_tip_cap"`
-	GasFeeCap string   `json:"gas_fee_cap"`
-	Value     string   `json:"value"`
-	Nonce     int      `json:"nonce"`
-	To        string   `json:"to"`
-	Page      int      `json:"page"`
-	Logs      []*Log   `json:"logs"`
-	Receipt   *Receipt `json:"receipt"`
-	JSON      string   `json:"json"`
+	ChainID   int        `json:"chain_id"`
+	TxHash    string     `json:"tx_hash"`
+	Protected bool       `json:"protected"`
+	Type      int        `json:"type"`
+	Data      string     `json:"data"`
+	Gas       int        `json:"gas"`
+	GasPrice  int        `json:"gas_price"`
+	GasTipCap string     `json:"gas_tip_cap"`
+	GasFeeCap string     `json:"gas_fee_cap"`
+	Value     string     `json:"value"`
+	Nonce     int        `json:"nonce"`
+	To        string     `json:"to"`
+	Page      int        `json:"page"`
+	Logs      []*Log     `json:"logs"`
+	Receipt   *Receipt   `json:"receipt"`
+	JSON      types.JSON `json:"json"`
 }
