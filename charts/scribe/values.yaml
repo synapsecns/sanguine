@@ -65,6 +65,8 @@ resources: {}
   #   memory: 128Mi
 
 indexer:
+  enabled: true
+  args: ["backfill", "--port=80", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql-primary:3306)/scribe?parseTime=true"]
   podAnnotations: {}
   nodeSelector: { }
   podSecurityContext: { }
@@ -73,6 +75,7 @@ indexer:
 
 
 server:
+  enabled: true
   # this should use a secret in production, for testing only
   args: ["server", "--port=80", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql-primary:3306)/scribe?parseTime=true"]
   replicaCount: 1
