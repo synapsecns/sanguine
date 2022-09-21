@@ -8,13 +8,13 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 )
 
-// EventType is an enum for event types
+// EventType is an enum for event types.
 type EventType int8
 
 const (
-	// Bridge - SynapseBridge event
+	// Bridge - SynapseBridge event.
 	Bridge int8 = 0
-	// Swap - SwapFlashLoan event
+	// Swap - SwapFlashLoan event.
 	Swap int8 = iota
 )
 

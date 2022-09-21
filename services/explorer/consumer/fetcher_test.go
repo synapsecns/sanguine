@@ -10,14 +10,12 @@ import (
 )
 
 func (c *ConsumerSuite) TestFetchLogsInRange() {
-
 	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
 	chainID := gofakeit.Uint32()
 
 	// Store 10 logs
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
-
 		storeLog := testutil.BuildLog(contractAddress, uint64(blockNumber), &c.logIndex)
 
 		err := c.eventDB.StoreLog(c.GetTestContext(), storeLog, chainID)
