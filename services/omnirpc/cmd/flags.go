@@ -38,3 +38,8 @@ var configFlag = &cli.StringFlag{
 	Name:  "config",
 	Usage: "path to output the new config file",
 }
+
+var fileFlag = &cli.StringFlag{
+	Name:  "file",
+	Usage: "path to json file to debug",
+}

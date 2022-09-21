@@ -135,3 +135,13 @@ var serverCommand = &cli.Command{
 		return nil
 	},
 }
+
+var debugResponse = &cli.Command{
+	Name: "debug-response",
+	Flags: []cli.Flag{
+		fileFlag,
+	},
+	Action: func(c *cli.Context) error {
+		panic("")
+	},
+}

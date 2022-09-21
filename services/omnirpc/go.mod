@@ -37,6 +37,7 @@ require (
 	github.com/tidwall/pretty v1.2.0
 	github.com/urfave/cli/v2 v2.14.1
 	github.com/valyala/fasthttp v1.40.0
+	github.com/yudai/gojsondiff v1.0.0
 	gitlab.com/1f320/x v0.3.0
 	go.uber.org/automaxprocs v1.5.1
 	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
@@ -143,6 +144,7 @@ require (
 	github.com/rs/cors v1.8.2 // indirect
 	github.com/rs/zerolog v1.27.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
@@ -165,6 +167,8 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fastrand v1.0.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
+	github.com/yudai/pp v2.0.1+incompatible // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.22.0 // indirect
