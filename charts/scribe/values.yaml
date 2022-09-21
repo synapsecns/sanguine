@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
+  repository: ghcr.io/synapsecns/sanguine/scribe
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -23,10 +23,6 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
 
 securityContext: {}
   # capabilities:
@@ -68,15 +64,49 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+indexer:
+  podAnnotations: {}
+  nodeSelector: { }
+  podSecurityContext: { }
+  affinity: {}
+  tolerations: {}
 
-nodeSelector: {}
 
-tolerations: []
+server:
+  # this should use a secret in production, for testing only
+  args: ["server", "--port=80", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql-primary:3306)/scribe?parseTime=true"]
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+  podAnnotations: {}
+  nodeSelector: {}
+  podSecurityContext: { }
+  affinity: {}
+  tolerations: []
 
-affinity: {}
+mysql:
+  # use a constant here to build a connection to the service
+  fullnameOverride: scribe-mysql
+  enabled: true
+  architecture: replication
+  secondary:
+    replicaCount: 1
+  networkPolicy:
+    enabled: true
+  metrics:
+    enabled: true
+  auth:
+    database: scribe
+    # Note: this should be used in production instead of auth.password
+    # existingSecret: mysql-password
+    rootPassword: MysqlPassword
+
+
+files:
+  config.yaml: |-
+    # Config contents go here
+    # These will be copied to both server and indexer containers
