@@ -53,7 +53,7 @@ func Start(ctx context.Context, cfg Config) error {
 	}))
 
 	// initialize the database
-	eventDB, err := initDB(ctx, cfg.Database, cfg.Path)
+	eventDB, err := InitDB(ctx, cfg.Database, cfg.Path)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
@@ -113,7 +113,7 @@ func Start(ctx context.Context, cfg Config) error {
 	return nil
 }
 
-func initDB(ctx context.Context, database string, path string) (db.EventDB, error) {
+func InitDB(ctx context.Context, database string, path string) (db.EventDB, error) {
 	switch {
 	case database == "sqlite":
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path)
