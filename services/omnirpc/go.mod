@@ -37,7 +37,6 @@ require (
 	github.com/tidwall/pretty v1.2.0
 	github.com/urfave/cli/v2 v2.14.1
 	github.com/valyala/fasthttp v1.40.0
-	github.com/valyala/fastjson v1.6.3
 	gitlab.com/1f320/x v0.3.0
 	go.uber.org/automaxprocs v1.5.1
 	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
