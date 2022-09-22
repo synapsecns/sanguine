@@ -7,7 +7,7 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -90,11 +90,7 @@ func NewTestEnvDB(t *testing.T) (db db.ConsumerDB, eventDB scribedb.EventDB, gql
 	db = consumerDB
 
 	// maybe newSimulatedBackendWithChainID?
-	testBackend = geth.NewEmbeddedBackend(ctx, t)
-	ok := testBackend.EnableTenderly()
-	if !ok {
-		panic("s")
-	}
+	testBackend = simulated.NewSimulatedBackend(ctx, t)
 	deployManager = NewDeployManager(t)
 
 	return db, eventDB, gqlClient, logIndex, cleanup, testBackend, deployManager

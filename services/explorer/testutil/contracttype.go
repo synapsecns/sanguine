@@ -70,7 +70,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return swap.Contracts["/solidity/SwapFlashLoanV1_flat.sol:SwapFlashLoan"]
 
 	default:
-		panic("not yet implemented")
+		panic("gm, not yet implemented")
 	}
 }
 

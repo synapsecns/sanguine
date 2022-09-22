@@ -17,18 +17,27 @@ type ConsumerDB struct {
 	mock.Mock
 }
 
-// ReadEvent provides a mock function with given fields: ctx, eventType, chainID
-func (_m *ConsumerDB) ReadEvent(ctx context.Context, eventType int8, chainID uint32) error {
+// ReadBlockNumberByChainID provides a mock function with given fields: ctx, eventType, chainID
+func (_m *ConsumerDB) ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error) {
 	ret := _m.Called(ctx, eventType, chainID)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int8, uint32) error); ok {
+	var r0 *uint64
+	if rf, ok := ret.Get(0).(func(context.Context, int8, uint32) *uint64); ok {
 		r0 = rf(ctx, eventType, chainID)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*uint64)
+		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int8, uint32) error); ok {
+		r1 = rf(ctx, eventType, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // StoreEvent provides a mock function with given fields: ctx, bridgeEvent, swapEvent, chainID, tokenID

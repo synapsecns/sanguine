@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
-	"gorm.io/gorm"
 )
 
 // ConsumerDBWriter is the interface for writing to the ConsumerDB.
@@ -15,8 +14,6 @@ type ConsumerDBWriter interface {
 
 // ConsumerDBReader is the interface for reading events from the ConsumerDB.
 type ConsumerDBReader interface {
-	// DB gets the underlying gorm db.
-	DB() *gorm.DB
 	// ReadBlockNumberByChainID reads an event from the database by chainID.
 	ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error)
 }

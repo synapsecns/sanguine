@@ -1,6 +1,6 @@
 // Package bridge Go interface for synapse-contracts/.../SynapseBridge.sol
 package bridge
 
-//go:generate go run ../../../../tools/abigen generate --sol ../../external/flattened-contracts/SynapseBridgeV1_flat.sol --pkg bridge --sol-version 0.6.12 --filename bridge
+//go:generate go run github.com/synapsecns/sanguine/tools/abigen generate --sol ../../external/flattened-contracts/SynapseBridgeV1_flat.sol --pkg bridge --sol-version 0.6.12 --filename bridge
 
 // ignore this line: go:generate cannot be the last line of a file
