@@ -89,59 +89,60 @@ func (p *SwapParser) EventType(log ethTypes.Log) (_ swapTypes.EventType, ok bool
 // nolint:gocognit,cyclop
 func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	//nolint:dupl
-	for _, logTopic := range log.Topics {
-		switch logTopic {
-		case bridge.Topic(bridgeTypes.DepositEvent):
-			err := p.parseAndStoreDeposit(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store deposit: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.RedeemEvent):
-			err := p.parseAndStoreRedeem(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store redeem: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.WithdrawEvent):
-			err := p.parseAndStoreWithdraw(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store withdraw: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.MintEvent):
-			err := p.parseAndStoreMint(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store mint: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.DepositAndSwapEvent):
-			err := p.parseAndStoreDepositAndSwap(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store deposit and swap: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.MintAndSwapEvent):
-			err := p.parseAndStoreMintAndSwap(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store mint and swap: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.RedeemAndSwapEvent):
-			err := p.parseAndStoreRedeemAndSwap(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store redeem and swap: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.RedeemAndRemoveEvent):
-			err := p.parseAndStoreRedeemAndRemove(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store redeem and remove: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.WithdrawAndRemoveEvent):
-			err := p.parseAndStoreWithdrawAndRemove(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store withdraw and remove: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.RedeemV2Event):
-			err := p.parseAndStoreRedeemV2(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store redeem v2: %w", err)
-			}
+	logTopic := log.Topics[0]
+	switch logTopic {
+	case bridge.Topic(bridgeTypes.DepositEvent):
+		err := p.parseAndStoreDeposit(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store deposit: %w", err)
 		}
+	case bridge.Topic(bridgeTypes.RedeemEvent):
+		err := p.parseAndStoreRedeem(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store redeem: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.WithdrawEvent):
+		err := p.parseAndStoreWithdraw(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store withdraw: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.MintEvent):
+		err := p.parseAndStoreMint(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store mint: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.DepositAndSwapEvent):
+		err := p.parseAndStoreDepositAndSwap(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store deposit and swap: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.MintAndSwapEvent):
+		err := p.parseAndStoreMintAndSwap(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store mint and swap: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.RedeemAndSwapEvent):
+		err := p.parseAndStoreRedeemAndSwap(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store redeem and swap: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.RedeemAndRemoveEvent):
+		err := p.parseAndStoreRedeemAndRemove(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store redeem and remove: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.WithdrawAndRemoveEvent):
+		err := p.parseAndStoreWithdrawAndRemove(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store withdraw and remove: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.RedeemV2Event):
+		err := p.parseAndStoreRedeemV2(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store redeem v2: %w", err)
+		}
+	default:
+		return fmt.Errorf("unknown topic: %s", logTopic.Hex())
 	}
 
 	return nil
@@ -341,61 +342,63 @@ func (p *BridgeParser) parseAndStoreRedeemV2(ctx context.Context, log ethTypes.L
 //nolint:gocognit,cyclop
 func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	//nolint:dupl
-	for _, logTopic := range log.Topics {
-		switch logTopic {
-		case swap.Topic(swapTypes.TokenSwapEvent):
-			err := p.parseTokenSwap(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store token swap: %w", err)
-			}
-		case swap.Topic(swapTypes.AddLiquidityEvent):
-			err := p.parseAddLiquidity(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store add liquidity: %w", err)
-			}
-		case swap.Topic(swapTypes.RemoveLiquidityEvent):
-			err := p.parseRemoveLiquidity(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store remove liquidity: %w", err)
-			}
-		case swap.Topic(swapTypes.RemoveLiquidityOneEvent):
-			err := p.parseRemoveLiquidityOne(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store remove liquidity one: %w", err)
-			}
-		case swap.Topic(swapTypes.RemoveLiquidityImbalanceEvent):
-			err := p.parseRemoveLiquidityImbalance(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store remove liquidity imbalance: %w", err)
-			}
-		case swap.Topic(swapTypes.NewAdminFeeEvent):
-			err := p.parseNewAdminFee(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store new admin fee: %w", err)
-			}
-		case swap.Topic(swapTypes.NewSwapFeeEvent):
-			err := p.parseNewSwapFee(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store new swap fee: %w", err)
-			}
-		case swap.Topic(swapTypes.RampAEvent):
-			err := p.parseRampA(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store ramp a: %w", err)
-			}
-		case swap.Topic(swapTypes.StopRampAEvent):
-			err := p.parseStopRampA(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store stop ramp a: %w", err)
-			}
-		case swap.Topic(swapTypes.FlashLoanEvent):
-			err := p.parseFlashLoan(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store flash loan: %w", err)
-			}
+	logTopic := log.Topics[0]
+	switch logTopic {
+	case swap.Topic(swapTypes.TokenSwapEvent):
+		err := p.parseTokenSwap(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store token swap: %w", err)
 		}
+	case swap.Topic(swapTypes.AddLiquidityEvent):
+		err := p.parseAddLiquidity(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store add liquidity: %w", err)
+		}
+	case swap.Topic(swapTypes.RemoveLiquidityEvent):
+		err := p.parseRemoveLiquidity(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store remove liquidity: %w", err)
+		}
+	case swap.Topic(swapTypes.RemoveLiquidityOneEvent):
+		err := p.parseRemoveLiquidityOne(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store remove liquidity one: %w", err)
+		}
+	case swap.Topic(swapTypes.RemoveLiquidityImbalanceEvent):
+		err := p.parseRemoveLiquidityImbalance(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store remove liquidity imbalance: %w", err)
+		}
+	case swap.Topic(swapTypes.NewAdminFeeEvent):
+		err := p.parseNewAdminFee(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store new admin fee: %w", err)
+		}
+	case swap.Topic(swapTypes.NewSwapFeeEvent):
+		err := p.parseNewSwapFee(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store new swap fee: %w", err)
+		}
+	case swap.Topic(swapTypes.RampAEvent):
+		err := p.parseRampA(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store ramp a: %w", err)
+		}
+	case swap.Topic(swapTypes.StopRampAEvent):
+		err := p.parseStopRampA(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store stop ramp a: %w", err)
+		}
+	case swap.Topic(swapTypes.FlashLoanEvent):
+		err := p.parseFlashLoan(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store flash loan: %w", err)
+		}
+	default:
+		return fmt.Errorf("unknown topic: %s", logTopic.Hex())
 	}
-	return fmt.Errorf("did not find event type for log")
+
+	return nil
 }
 
 func (p *SwapParser) parseTokenSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {

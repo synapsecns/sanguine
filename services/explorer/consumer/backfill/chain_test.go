@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/backfill"
@@ -66,35 +67,58 @@ func (b *BackfillSuite) TestBackfill() {
 	//err = b.eventDB.StoreLog(b.GetTestContext(), storeLog, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 
+	// Store every swap event.
 	swapTx, err := swapRef.TestSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	b.testBackend.WaitForConfirmation(b.GetTestContext(), swapTx)
-
-	swapTxData := swapTx.Data()
-	swapStoreLog := testutil.BuildLog(swapContract.Address(), 0, &b.logIndex)
-	swapStoreLog.Topics = []common.Hash{swapTopicsMap[swapTypes.TokenSwapEvent], common.BigToHash(big.NewInt(gofakeit.Int64()))}
-	swapStoreLog.Data = swapTxData
-	err = b.eventDB.StoreLog(b.GetTestContext(), swapStoreLog, uint32(testChainID.Uint64()))
+	err = b.storeTestLog(swapTx, []common.Hash{swapTopicsMap[swapTypes.TokenSwapEvent], common.BigToHash(big.NewInt(gofakeit.Int64()))}, swapContract.Address(), uint32(testChainID.Uint64()), 0)
+	Nil(b.T(), err)
+	//swapTx, err = swapRef.TestAddLiquidity(transactOpts.TransactOpts, []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	//Nil(b.T(), err)
+	//err = b.storeTestLog(swapTx, swapTopicsMap[swapTypes.AddLiquidityEvent], swapContract.Address(), uint32(testChainID.Uint64()), 1)
+	//Nil(b.T(), err)
+	//swapTx, err = swapRef.TestRemoveLiquidity(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())))
+	//Nil(b.T(), err)
+	//err = b.storeTestLog(swapTx, swapTopicsMap[swapTypes.RemoveLiquidityEvent], swapContract.Address(), uint32(testChainID.Uint64()), 2)
+	//Nil(b.T(), err)
+	swapTx, err = swapRef.TestRemoveLiquidityOne(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	err = b.storeTestLog(swapTx, []common.Hash{swapTopicsMap[swapTypes.RemoveLiquidityOneEvent], common.BigToHash(big.NewInt(gofakeit.Int64()))}, swapContract.Address(), uint32(testChainID.Uint64()), 3)
+	Nil(b.T(), err)
+	// add remove liquidity imbalance
+	swapTx, err = swapRef.TestNewAdminFee(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	err = b.storeTestLog(swapTx, []common.Hash{swapTopicsMap[swapTypes.NewAdminFeeEvent]}, swapContract.Address(), uint32(testChainID.Uint64()), 4)
+	Nil(b.T(), err)
+	swapTx, err = swapRef.TestNewSwapFee(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	err = b.storeTestLog(swapTx, []common.Hash{swapTopicsMap[swapTypes.NewSwapFeeEvent]}, swapContract.Address(), uint32(testChainID.Uint64()), 5)
+	Nil(b.T(), err)
+	swapTx, err = swapRef.TestRampA(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	err = b.storeTestLog(swapTx, []common.Hash{swapTopicsMap[swapTypes.RampAEvent]}, swapContract.Address(), uint32(testChainID.Uint64()), 6)
+	Nil(b.T(), err)
+	swapTx, err = swapRef.TestStopRampA(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	err = b.storeTestLog(swapTx, []common.Hash{swapTopicsMap[swapTypes.StopRampAEvent]}, swapContract.Address(), uint32(testChainID.Uint64()), 7)
+	Nil(b.T(), err)
 
 	//// Store 20 logs
 	//for blockNumber := 0; blockNumber < 10; blockNumber++ {
-	//	bridgeTopicHash := bridgeTopicsMap[bridgeTypes.EventType(uint8(blockNumber%len(bridgeTopicsMap)))]
-	//	fmt.Println("bridgeTopicHash", bridgeTopicHash)
-	//	storeLogA := testutil.BuildLog(contractAddressA, uint64(blockNumber), &b.logIndex)
-	//	storeLogA.Topics[0] = bridgeTopicHash
-	//	err := b.eventDB.StoreLog(b.GetTestContext(), storeLogA, chainID)
-	//	Nil(b.T(), err)
+	//	//bridgeTopicHash := bridgeTopicsMap[bridgeTypes.EventType(uint8(blockNumber%len(bridgeTopicsMap)))]
+	//	//fmt.Println("bridgeTopicHash", bridgeTopicHash)
+	//	//storeLogA := testutil.BuildLog(contractAddressA, uint64(blockNumber), &b.logIndex)
+	//	//storeLogA.Topics[0] = bridgeTopicHash
+	//	//err = b.eventDB.StoreLog(b.GetTestContext(), storeLogA, chainID)
+	//	//Nil(b.T(), err)
 	//	swapTopicHash := swapTopicsMap[swapTypes.EventType(uint8(blockNumber%len(swapTopicsMap)))]
-	//	storeLogB := testutil.BuildLog(contractAddressB, uint64(blockNumber), &b.logIndex)
-	//	storeLogB.Topics[0] = swapTopicHash
-	//	err = b.eventDB.StoreLog(b.GetTestContext(), storeLogB, chainID)
+	//	storeLogB := testutil.BuildLog(swapContract.Address(), uint64(blockNumber), &b.logIndex)
+	//	swapStoreLog.Topics = []common.Hash{swapTopicHash, common.BigToHash(big.NewInt(gofakeit.Int64()))}
+	//	swapStoreLog.Data = swapTxData
+	//	err = b.eventDB.StoreLog(b.GetTestContext(), storeLogB, uint32(testChainID.Uint64()))
 	//	Nil(b.T(), err)
 	//}
 
 	// setup a ChainBackfiller
-	fmt.Println(testTokens[0].TokenAddress, testTokens[0].ChainId)
-	fmt.Println(testTokens[0].TokenAddress, testTokens[0].ChainId)
-
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
 	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf)
 	Nil(b.T(), err)
@@ -111,10 +135,24 @@ func (b *BackfillSuite) TestBackfill() {
 
 	// check that the blocks were backfilled
 	// TODO: check that the blocks were backfilled
-	swapEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{})
+	var count int64
+	swapEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
 	Nil(b.T(), swapEvents.Error)
-	Equal(b.T(), 10, swapEvents.RowsAffected)
+	Equal(b.T(), 10, count)
 	bridgeEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{})
 	Nil(b.T(), bridgeEvents.Error)
 	Equal(b.T(), 10, bridgeEvents.RowsAffected)
+}
+
+func (b *BackfillSuite) storeTestLog(swapTx *types.Transaction, topics []common.Hash, swapAddress common.Address, chainID uint32, blockNumber uint64) error {
+	b.testBackend.WaitForConfirmation(b.GetTestContext(), swapTx)
+	swapTxData := swapTx.Data()
+	swapStoreLog := testutil.BuildLog(swapAddress, blockNumber, &b.logIndex)
+	swapStoreLog.Topics = topics
+	swapStoreLog.Data = swapTxData
+	err := b.eventDB.StoreLog(b.GetTestContext(), swapStoreLog, chainID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

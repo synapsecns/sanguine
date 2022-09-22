@@ -139,6 +139,7 @@ func (c ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) e
 						logger.Warnf("could not parse and store log %s: %s. Retrying in %s", log.TxHash.Hex(), err, timeout)
 						continue
 					}
+					return nil
 				}
 			}
 		})
