@@ -18,7 +18,7 @@ import (
 	"math/big"
 )
 
-//import (
+// import (
 //	"fmt"
 //	"github.com/brianvoe/gofakeit/v6"
 //	"github.com/ethereum/go-ethereum/common"
@@ -35,14 +35,13 @@ import (
 //)
 
 func (b *BackfillSuite) TestBackfill() {
-
 	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
 	swapContractA, swapRefA := b.testDeployManager.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
 	testDeployManagerB := testcontracts.NewDeployManager(b.T())
 	swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
-	//bridgeContract, bridgeRef := b.deployManager.GetSynapseBridge(b.GetTestContext(), b.testBackend)
-	//_ = bridgeContract
-	//_ = bridgeRef
+	// bridgeContract, bridgeRef := b.deployManager.GetSynapseBridge(b.GetTestContext(), b.testBackend)
+	// _ = bridgeContract
+	// _ = bridgeRef
 
 	bridgeTopicsMap := bridge.TopicMap()
 	swapTopicsMap := swap.TopicMap()
@@ -63,7 +62,7 @@ func (b *BackfillSuite) TestBackfill() {
 	fmt.Println(common.Bytes2Hex(txData))
 	testChainID, err := b.testBackend.ChainID(b.GetTestContext())
 	Nil(b.T(), err)
-	//err = b.eventDB.StoreLog(b.GetTestContext(), storeLog, uint32(testChainID.Uint64()))
+	// err = b.eventDB.StoreLog(b.GetTestContext(), storeLog, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 
 	// Store every swap event across two different swap contracts.
@@ -110,11 +109,13 @@ func (b *BackfillSuite) TestBackfill() {
 
 	// setup a ChainBackfiller
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
+	Nil(b.T(), err)
 	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf)
 	Nil(b.T(), err)
 	spA, err := consumer.NewSwapParser(b.db, swapContractA.Address())
 	Nil(b.T(), err)
 	spB, err := consumer.NewSwapParser(b.db, swapContractB.Address())
+	Nil(b.T(), err)
 	spMap := map[common.Address]*consumer.SwapParser{}
 	spMap[swapContractA.Address()] = spA
 	spMap[swapContractB.Address()] = spB
@@ -128,9 +129,9 @@ func (b *BackfillSuite) TestBackfill() {
 	swapEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
 	Nil(b.T(), swapEvents.Error)
 	Equal(b.T(), int64(10), count)
-	//bridgeEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
-	//Nil(b.T(), bridgeEvents.Error)
-	//Equal(b.T(), int64(10), count)
+	// bridgeEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
+	// Nil(b.T(), bridgeEvents.Error)
+	// Equal(b.T(), int64(10), count)
 }
 
 func (b *BackfillSuite) storeTestLog(swapTx *types.Transaction, topics []common.Hash, swapAddress common.Address, chainID uint32, blockNumber uint64) error {
@@ -141,7 +142,7 @@ func (b *BackfillSuite) storeTestLog(swapTx *types.Transaction, topics []common.
 	swapStoreLog.Data = swapTxData
 	err := b.eventDB.StoreLog(b.GetTestContext(), swapStoreLog, chainID)
 	if err != nil {
-		return err
+		return fmt.Errorf("error storing swap log: %w", err)
 	}
 	return nil
 }

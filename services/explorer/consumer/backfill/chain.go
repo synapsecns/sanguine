@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// ChainBackfiller is an explorer backfiller for a chain.
 type ChainBackfiller struct {
 	// consumerDB is the database that the backfiller will use to store the events.
 	consumerDB db.ConsumerDB
@@ -49,8 +50,8 @@ func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncr
 func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight uint64) error {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
-	//currentHeight := startHeight
-	//for currentHeight < endHeight {
+	// currentHeight := startHeight
+	// for currentHeight < endHeight {
 	for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += c.fetchBlockIncrement {
 		funcHeight := currentHeight
 		fmt.Println("current height", currentHeight)
@@ -91,7 +92,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight ui
 				}
 			}
 		})
-		//currentHeight += c.fetchBlockIncrement
+		// currentHeight += c.fetchBlockIncrement
 	}
 
 	if err := g.Wait(); err != nil {
@@ -110,11 +111,11 @@ func (c ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) e
 			if log.Address == c.bridgeAddress {
 				eventParser = c.bridgeParser
 			} else {
-				eventParser = c.swapParsers[log.Address]
-				if eventParser == nil {
+				if c.swapParsers[log.Address] == nil {
 					logger.Warnf("no parser found for contract %s", log.Address.Hex())
 					return nil
 				}
+				eventParser = c.swapParsers[log.Address]
 			}
 			err := eventParser.ParseAndStore(groupCtx, log, c.chainID)
 			if err != nil {

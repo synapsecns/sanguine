@@ -86,9 +86,8 @@ func (p *SwapParser) EventType(log ethTypes.Log) (_ swapTypes.EventType, ok bool
 
 // ParseAndStore parses the bridge logs and stores them in the database.
 //
-// nolint:gocognit,cyclop
+// nolint:gocognit,cyclop,dupl
 func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	//nolint:dupl
 	logTopic := log.Topics[0]
 	switch logTopic {
 	case bridge.Topic(bridgeTypes.DepositEvent):
@@ -339,9 +338,8 @@ func (p *BridgeParser) parseAndStoreRedeemV2(ctx context.Context, log ethTypes.L
 
 // ParseAndStore parses and stores the swap logs.
 //
-//nolint:gocognit,cyclop
+//nolint:gocognit,cyclop,dupl
 func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	//nolint:dupl
 	logTopic := log.Topics[0]
 	switch logTopic {
 	case swap.Topic(swapTypes.TokenSwapEvent):

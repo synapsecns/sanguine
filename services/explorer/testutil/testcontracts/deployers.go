@@ -25,7 +25,7 @@ func NewTestSynapseBridgeDeployer(registry deployer.GetOnlyContractRegistry, bac
 	return TestSynapseBridgeDeployer{deployer.NewSimpleDeployer(registry, backend, TestSynapseBridgeType)}
 }
 
-// Deploy deploys a test bridge
+// Deploy deploys a test bridge.
 func (t TestSynapseBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return t.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return testbridge.DeploySynapseBridge(transactOps, backend)
@@ -46,7 +46,7 @@ func NewTestSwapFlashLoanDeployer(registry deployer.GetOnlyContractRegistry, bac
 	return TestSwapFlashLoanDeployer{deployer.NewSimpleDeployer(registry, backend, TestSwapFlashLoanType)}
 }
 
-// Deploy deploys a test swap
+// Deploy deploys a test swap.
 func (t TestSwapFlashLoanDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return t.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return testswap.DeployTestSwapFlashLoan(transactOps, backend)
