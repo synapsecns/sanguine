@@ -16,6 +16,7 @@ spec:
     metadata:
       {{- with .Values.server.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Chart.Name "/templates/" $.Chart.Name "-configmap.yaml") . | sha256sum }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:

@@ -96,9 +96,7 @@ mysql:
   # use a constant here to build a connection to the service
   enabled: true
   fullnameOverride: scribe-mysql
-  architecture: replication
-  secondary:
-    replicaCount: 1
+  architecture: standalone
   networkPolicy:
     enabled: true
   metrics:
