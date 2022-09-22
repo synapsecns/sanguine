@@ -24,7 +24,7 @@ func main() {
 		log.Fatalf("Error: %s", err.Error())
 	}
 
-	cfg, err := config.LoadConfig(filepath.Join(root.Path, "services/scribe/graphql/gqlgen.yaml"))
+	cfg, err := config.LoadConfig(filepath.Join(root.Path, "services/explorer/consumer/client/gqlgen.yaml"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
 		os.Exit(2)
@@ -34,6 +34,11 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%+v", err.Error())
 		os.Exit(2)
 	}
+
+	// copy over relevant config
+	gqlgencConfig.Models = cfg.Models
+	gqlgencConfig.Model = cfg.Model
+	gqlgencConfig.SchemaFilename = clientConfig.StringList(cfg.SchemaFilename)
 
 	clientGen := clientgen.New(gqlgencConfig.Query, gqlgencConfig.Client, gqlgencConfig.Generate)
 	err = api.Generate(cfg,
