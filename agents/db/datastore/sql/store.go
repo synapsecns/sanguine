@@ -17,6 +17,8 @@ func NewStoreFromConfig(ctx context.Context, dbType dbcommon.DBType, connString 
 		return mysql.NewMysqlStore(ctx, connString)
 	case dbcommon.Sqlite:
 		return sqlite.NewSqliteStore(ctx, connString)
+	case dbcommon.Clickhouse:
+		return nil, ErrNoSuchDriver
 	default:
 		return nil, ErrNoSuchDriver
 	}

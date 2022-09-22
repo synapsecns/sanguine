@@ -41,7 +41,7 @@ type SimulatedTestBackend interface {
 	WaitForConfirmation(ctx context.Context, transaction *types.Transaction)
 	// FundAccount funds an account address with an amount amount
 	FundAccount(ctx context.Context, address common.Address, amount big.Int)
-	// GetTxContext gets a signed transaction
+	// GetTxContext gets a signed transaction. If the address is `nil`, will fund a new account.
 	GetTxContext(ctx context.Context, address *common.Address) (auth AuthType)
 	// GetFundedAccount gets a funded account with requestBalance
 	GetFundedAccount(ctx context.Context, requestBalance *big.Int) *keystore.Key

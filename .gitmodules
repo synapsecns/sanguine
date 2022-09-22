@@ -10,3 +10,6 @@
 [submodule "ethergo/internal/test-data"]
 	path = ethergo/internal/test-data
 	url = https://github.com/synapsecns/synapse-contracts
+[submodule "services/explorer/external/synapse-contracts"]
+	path = services/explorer/external/synapse-contracts
+	url = https://github.com/synapsecns/synapse-contracts.git
