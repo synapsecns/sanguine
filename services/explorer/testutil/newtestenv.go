@@ -24,9 +24,8 @@ import (
 )
 
 // NewTestEnvDB sets up the test env with a database.
-func NewTestEnvDB(t *testing.T) (db db.ConsumerDB, eventDB scribedb.EventDB, gqlClient *client.Client, logIndex atomic.Int64, cleanup func(), testBackend backends.SimulatedTestBackend, deployManager *DeployManager) {
+func NewTestEnvDB(ctx context.Context, t *testing.T) (db db.ConsumerDB, eventDB scribedb.EventDB, gqlClient *client.Client, logIndex atomic.Int64, cleanup func(), testBackend backends.SimulatedTestBackend, deployManager *DeployManager) {
 	t.Helper()
-	ctx := context.Background()
 	dbPath := filet.TmpDir(t, "")
 
 	sqliteStore, err := sqlite.NewSqliteStore(ctx, dbPath)
