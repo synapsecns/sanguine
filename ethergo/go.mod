@@ -14,6 +14,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.23
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d
+	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/ipfs/go-log v1.0.5
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/jpillora/backoff v1.0.0
