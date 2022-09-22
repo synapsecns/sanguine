@@ -51,7 +51,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight ui
 	g, groupCtx := errgroup.WithContext(ctx)
 	//currentHeight := startHeight
 	//for currentHeight < endHeight {
-	for currentHeight := startHeight; currentHeight < endHeight; currentHeight += c.fetchBlockIncrement - 1 {
+	for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += c.fetchBlockIncrement {
 		funcHeight := currentHeight
 		fmt.Println("current height", currentHeight)
 		g.Go(func() error {
@@ -85,9 +85,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight ui
 					// parse and store the logs
 					err = c.processLogs(groupCtx, logs)
 					if err != nil {
-						timeout = b.Duration()
-						logger.Warnf("could not process logs for chain %d: %s. Retrying in %s", c.chainID, err, timeout)
-						continue
+						return fmt.Errorf("could not process logs: %w", err)
 					}
 					return nil
 				}
@@ -108,15 +106,6 @@ func (c ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) e
 	for _, log := range logs {
 		log := log
 		g.Go(func() error {
-			// backoff in the case of an error
-			b := &backoff.Backoff{
-				Factor: 2,
-				Jitter: true,
-				Min:    1 * time.Second,
-				Max:    30 * time.Second,
-			}
-			// timeout should always be 0 on the first attempt
-			timeout := time.Duration(0)
 			var eventParser consumer.Parser
 			if log.Address == c.bridgeAddress {
 				eventParser = c.bridgeParser
@@ -127,21 +116,11 @@ func (c ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) e
 					return nil
 				}
 			}
-			for {
-				select {
-				case <-groupCtx.Done():
-					return fmt.Errorf("context canceled: %w", groupCtx.Err())
-				case <-time.After(timeout):
-					// parse and store the log
-					err := eventParser.ParseAndStore(groupCtx, log, c.chainID)
-					if err != nil {
-						timeout = b.Duration()
-						logger.Warnf("could not parse and store log %s: %s. Retrying in %s", log.TxHash.Hex(), err, timeout)
-						continue
-					}
-					return nil
-				}
+			err := eventParser.ParseAndStore(groupCtx, log, c.chainID)
+			if err != nil {
+				return fmt.Errorf("could not parse and store event: %w", err)
 			}
+			return nil
 		})
 	}
 

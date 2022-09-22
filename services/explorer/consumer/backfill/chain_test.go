@@ -130,7 +130,7 @@ func (b *BackfillSuite) TestBackfill() {
 	chainBackfiller := backfill.NewChainBackfiller(uint32(testChainID.Uint64()), b.db, 3, bp, bridgeContract.Address(), spMap, *f, b.bridgeConfigContract.Address())
 
 	// backfill the blocks
-	err = chainBackfiller.Backfill(b.GetTestContext(), 0, 9)
+	err = chainBackfiller.Backfill(b.GetTestContext(), 0, 10)
 	Nil(b.T(), err)
 
 	// check that the blocks were backfilled
