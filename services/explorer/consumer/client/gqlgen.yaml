@@ -4,7 +4,7 @@ schema:
 
 # Where should the generated server code go?
 exec:
-  filename: resolver/server.go
+  filename: resolver-client/server.go
   package: resolvers
 
 model:
