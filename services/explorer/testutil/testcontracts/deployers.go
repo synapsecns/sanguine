@@ -43,7 +43,7 @@ type TestSwapFlashLoanDeployer struct {
 
 // NewTestSwapFlashLoanDeployer creates a new test swap deployer.
 func NewTestSwapFlashLoanDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return TestSwapFlashLoanDeployer{deployer.NewSimpleDeployer(registry, backend, TestSynapseBridgeType)}
+	return TestSwapFlashLoanDeployer{deployer.NewSimpleDeployer(registry, backend, TestSwapFlashLoanType)}
 }
 
 // Deploy deploys a test swap
