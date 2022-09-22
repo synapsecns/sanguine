@@ -35,7 +35,7 @@ func getNetworks(contract hardhat.HardhatContract, filePath string) (map[string]
 		contract.Networks = make(map[string]providers.ContractNetwork)
 	}
 
-	chainIDPath := filepath.Join(filePath, ".chainID")
+	chainIDPath := filepath.Join(filePath, ".chainId")
 
 	//nolint: gosec
 	chainIDData, err := os.ReadFile(chainIDPath)
