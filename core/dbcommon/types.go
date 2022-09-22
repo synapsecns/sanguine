@@ -15,6 +15,8 @@ const (
 	Mysql DBType = 0 // mysql
 	// Sqlite file based db.
 	Sqlite DBType = iota // sqlite
+	// Clickhouse performant db by yandex.
+	Clickhouse DBType = iota // clickhouse
 )
 
 // DBTypeFromString parses a database type from a string.
@@ -24,6 +26,8 @@ func DBTypeFromString(str string) (DBType, error) {
 		return Mysql, nil
 	case Sqlite.String():
 		return Sqlite, nil
+	case Clickhouse.String():
+		return Clickhouse, nil
 	default:
 		return DBType(-1), fmt.Errorf("could not convert %s to %T, must be one of %s", str, DBType(-1), allDBTypesList())
 	}

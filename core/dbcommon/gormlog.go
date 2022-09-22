@@ -32,7 +32,7 @@ func getGormLogLevel(zapLogger *log.ZapEventLogger) gormLogger.LogLevel {
 	for _, level := range core.LogLevels {
 		if zapLogger.Desugar().Core().Enabled(level) {
 			switch level {
-			case zapcore.DebugLevel, zapcore.InfoLevel:
+			case zapcore.DebugLevel, zapcore.InfoLevel, zapcore.InvalidLevel:
 				return gormLogger.Info
 			case zapcore.WarnLevel:
 				return gormLogger.Warn
