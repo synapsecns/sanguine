@@ -66,7 +66,7 @@ resources: {}
 
 indexer:
   enabled: true
-  args: ["backfill", "--port=80", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql-0:3306)/scribe?parseTime=true", "--config=config/config.yaml"]
+  args: ["backfill", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql-0:3306)/scribe?parseTime=true", "--config=config/config.yaml"]
   #  args: ["backfill", "--config=/config/config.yaml"]
   podAnnotations: {}
   nodeSelector: {}
