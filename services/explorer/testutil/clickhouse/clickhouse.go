@@ -57,10 +57,10 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 	// Fetch port assigned to container
 	address := fmt.Sprintf("%s:%s", "localhost", resource.GetPort("9000/tcp"))
 
-	//// Docker will hard kill the container in 60 seconds (this is a test env)
-	//if resource.Expire(60) != nil {
-	//	return nil, nil, err
-	//}
+	// Docker will hard kill the container in 60 seconds (this is a test env)
+	if resource.Expire(60) != nil {
+		return nil, nil, err
+	}
 
 	// Teardown function
 	cleanup := func() {
@@ -81,10 +81,10 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 		if err := pool.Purge(resource); err != nil {
 			fmt.Printf("failed to purge resource: %v\n", err)
 		}
-		return nil, nil, fmt.Errorf("could not connect to docker database: %w", err)
+		return cleanup, nil, fmt.Errorf("could not connect to docker database: %w", err)
 	}
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not run resource: %w", err)
+		return cleanup, nil, fmt.Errorf("could not run resource: %w", err)
 	}
 	return cleanup, &port, nil
 }
@@ -96,6 +96,13 @@ func clickHouseOpenDB(address string) *sql.DB {
 			Database: "clickhouse_test",
 			Username: "clickhouse_test",
 			Password: "clickhouse_test",
+		},
+		Settings: clickhouse.Settings{
+			"max_execution_time": 60,
+		},
+		DialTimeout: 5 * time.Second,
+		Compression: &clickhouse.Compression{
+			Method: clickhouse.CompressionLZ4,
 		},
 	})
 	return db

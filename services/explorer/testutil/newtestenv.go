@@ -79,7 +79,13 @@ func NewTestEnvDB(ctx context.Context, t *testing.T) (db db.ConsumerDB, eventDB 
 	}
 
 	cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
-	if cleanup == nil || *port == 0 || err != nil {
+	if cleanup == nil {
+		fmt.Println("Clickhouse spin up failure, no open port found.")
+		return
+	}
+	if port == nil || err == nil {
+		fmt.Println("Clickhouse spin up failure, destroying container...")
+		cleanup()
 		return
 	}
 	assert.Equal(t, err, nil)
