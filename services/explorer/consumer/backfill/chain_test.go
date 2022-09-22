@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
+	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"math/big"
 )
 
@@ -34,13 +35,12 @@ import (
 func (b *BackfillSuite) TestBackfill() {
 
 	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
+	swapContract, swapRef := b.testDeployManager.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
 	//bridgeContract, bridgeRef := b.deployManager.GetSynapseBridge(b.GetTestContext(), b.testBackend)
 	//_ = bridgeContract
 	//_ = bridgeRef
 
 	//_, _ = b.deployManager.GetSwapFlashLoan(b.GetTestContext(), b.testBackend)
-
-	contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
 	bridgeTopicsMap := bridge.TopicMap()
 	_ = bridgeTopicsMap
@@ -63,8 +63,18 @@ func (b *BackfillSuite) TestBackfill() {
 	fmt.Println(common.Bytes2Hex(txData))
 	testChainID, err := b.testBackend.ChainID(b.GetTestContext())
 	Nil(b.T(), err)
-	err = b.eventDB.StoreLog(b.GetTestContext(), storeLog, uint32(testChainID.Uint64()))
+	//err = b.eventDB.StoreLog(b.GetTestContext(), storeLog, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
+
+	swapTx, err := swapRef.TestSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	b.testBackend.WaitForConfirmation(b.GetTestContext(), swapTx)
+
+	swapTxData := swapTx.Data()
+	swapStoreLog := testutil.BuildLog(swapContract.Address(), 0, &b.logIndex)
+	swapStoreLog.Topics = []common.Hash{swapTopicsMap[swapTypes.TokenSwapEvent], common.BigToHash(big.NewInt(gofakeit.Int64()))}
+	swapStoreLog.Data = swapTxData
+	err = b.eventDB.StoreLog(b.GetTestContext(), swapStoreLog, uint32(testChainID.Uint64()))
 
 	//// Store 20 logs
 	//for blockNumber := 0; blockNumber < 10; blockNumber++ {
@@ -88,10 +98,10 @@ func (b *BackfillSuite) TestBackfill() {
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
 	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf)
 	Nil(b.T(), err)
-	sp, err := consumer.NewSwapParser(b.db, contractAddressB)
+	sp, err := consumer.NewSwapParser(b.db, swapContract.Address())
 	Nil(b.T(), err)
 	spMap := map[common.Address]*consumer.SwapParser{}
-	spMap[contractAddressB] = sp
+	spMap[swapContract.Address()] = sp
 	f := consumer.NewFetcher(b.gqlClient)
 	chainBackfiller := backfill.NewChainBackfiller(uint32(testChainID.Uint64()), b.db, 3, bp, bridgeContract.Address(), spMap, *f, b.bridgeConfigContract.Address())
 

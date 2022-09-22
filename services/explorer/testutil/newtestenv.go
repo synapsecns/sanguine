@@ -90,6 +90,11 @@ func NewTestEnvDB(t *testing.T) (db db.ConsumerDB, eventDB scribedb.EventDB, gql
 	db = consumerDB
 
 	// maybe newSimulatedBackendWithChainID?
+	//testBackend = geth.NewEmbeddedBackend(ctx, t)
+	//ok := testBackend.EnableTenderly()
+	//if !ok {
+	//	panic("s")
+	//}
 	testBackend = simulated.NewSimulatedBackend(ctx, t)
 	deployManager = NewDeployManager(t)
 
