@@ -148,6 +148,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 }
 
 func (p *BridgeParser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	fmt.Printf("%+v\n", log)
 	iface, err := p.filterer.ParseTokenDeposit(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token deposit: %w", err)
