@@ -22,6 +22,7 @@ type TxQueueDB interface {
 }
 
 // MessageDB stores messages.
+// nolint
 type MessageDB interface {
 	// RetrieveLatestCommittedMessageNonce gets the latest nonce of a committed message
 	// returns ErrNoNonceForDomain if no nonce exists

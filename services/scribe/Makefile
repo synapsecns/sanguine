@@ -42,7 +42,6 @@ openapi-install: setup-go-path
 buf-install:
 	@if [ "$(shell which buf)" = "" ]; then ./scripts/install-buf.sh $(BUF_VERSION); fi;
 
-
 swagger-codegen-install:
 	@#Brew - MacOS
 	@if [ "$(shell which swagger-codegen)" = "" ] && [ "$(shell which brew)" != "" ]; then brew install swagger-codegen; fi;

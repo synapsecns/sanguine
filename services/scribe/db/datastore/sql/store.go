@@ -18,6 +18,8 @@ func NewStoreFromConfig(ctx context.Context, dbType dbcommon.DBType, connString 
 	case dbcommon.Sqlite:
 		//nolint:wrapcheck
 		return sqlite.NewSqliteStore(ctx, connString)
+	case dbcommon.Clickhouse:
+		return nil, ErrNoSuchDriver
 	default:
 		return nil, ErrNoSuchDriver
 	}

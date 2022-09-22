@@ -24,7 +24,7 @@ func getEthLogLevel() gethLog.Lvl {
 	for _, level := range core.LogLevels {
 		if logger.Desugar().Core().Enabled(level) {
 			switch level {
-			case zapcore.DebugLevel:
+			case zapcore.DebugLevel, zapcore.InvalidLevel:
 				return gethLog.LvlDebug
 			case zapcore.InfoLevel:
 				return gethLog.LvlInfo
