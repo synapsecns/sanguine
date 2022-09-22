@@ -46,6 +46,7 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 		PortBindings: map[docker.Port][]docker.PortBinding{
 			"9000/tcp": {{HostIP: "localhost", HostPort: portStr + "/tcp"}},
 		},
+		ExposedPorts: []string{"9000"},
 	}
 	resource, err := pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 		// set AutoRemove to true so that stopped container goes away by itself
