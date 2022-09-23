@@ -33,7 +33,7 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 	}
 	// pulls an image, creates a container based on it and runs it
 	runOptions := &dockertest.RunOptions{
-		Repository: "clickhouse/clickhouse-server",
+		Repository: "yandex/clickhouse-server",
 		Tag:        "latest",
 		Env: []string{
 			"CLICKHOUSE_DB=" + "clickhouse_test",
