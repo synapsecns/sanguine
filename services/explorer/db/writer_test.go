@@ -11,6 +11,7 @@ import (
 )
 
 func (t *DBSuite) TestBridgeWrite() {
+	defer t.cleanup()
 	bridgeEvent := bridge.SynapseBridgeTokenDeposit{
 		To:      common.BigToAddress(big.NewInt(gofakeit.Int64())),
 		ChainId: big.NewInt(int64(gofakeit.Uint64())),
@@ -35,10 +36,10 @@ func (t *DBSuite) TestBridgeWrite() {
 	blockNumber, err := t.db.ReadBlockNumberByChainID(t.GetTestContext(), 0, chainID)
 	Nil(t.T(), err)
 	Equal(t.T(), *blockNumber, bridgeEvent.Raw.BlockNumber, "Returned data from bridge write incorrect.")
-	t.cleanup()
 }
 
 func (t *DBSuite) TestSwapWrite() {
+	defer t.cleanup()
 	swapEvent := swap.SwapFlashLoanTokenSwap{
 		Buyer:        common.BigToAddress(big.NewInt(gofakeit.Int64())),
 		TokensSold:   big.NewInt(int64(gofakeit.Uint64())),
@@ -64,5 +65,4 @@ func (t *DBSuite) TestSwapWrite() {
 	Nil(t.T(), err)
 	Equal(t.T(), *blockNumber, swapEvent.Raw.BlockNumber, "Returned data from swap write incorrect.")
 	Nil(t.T(), err)
-	t.cleanup()
 }

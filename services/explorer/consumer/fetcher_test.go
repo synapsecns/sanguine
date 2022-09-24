@@ -10,6 +10,7 @@ import (
 )
 
 func (c *ConsumerSuite) TestFetchLogsInRange() {
+	defer c.cleanup()
 	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
 	chainID := gofakeit.Uint32()
@@ -28,10 +29,10 @@ func (c *ConsumerSuite) TestFetchLogsInRange() {
 	logs, err := fetcher.FetchLogsInRange(c.GetTestContext(), chainID, 4, 8)
 	Nil(c.T(), err)
 	Equal(c.T(), 5, len(logs))
-	c.cleanup()
 }
 
 func (c *ConsumerSuite) TestToken() {
+	defer c.cleanup()
 	fetcher, err := consumer.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.testBackend)
 	Nil(c.T(), err)
 	curentBlockNumber, err := c.testBackend.BlockNumber(c.GetTestContext())
@@ -49,5 +50,4 @@ func (c *ConsumerSuite) TestToken() {
 		Equal(c.T(), testToken.SwapFee, token.SwapFee)
 		Equal(c.T(), testToken.IsUnderlying, token.IsUnderlying)
 	}
-	c.cleanup()
 }
