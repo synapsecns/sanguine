@@ -76,7 +76,7 @@ var testTokens = []TestToken{{
 func (c *ConsumerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
-	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup, c.testBackend, c.deployManager = testutil.NewTestEnvDB(c.T())
+	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup, c.testBackend, c.deployManager = testutil.NewTestEnvDB(c.GetTestContext(), c.T())
 
 	var deployInfo contracts.DeployedContract
 	deployInfo, c.bridgeConfigContract = c.deployManager.GetBridgeConfigV3(c.GetTestContext(), c.testBackend)
