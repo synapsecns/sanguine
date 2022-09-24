@@ -62,17 +62,6 @@ jobs:
           sleep 1
           done
 
-#      Uncomment this to ssh into ci server and debug
-#      see https://github.com/lhotari/action-upterm for use instructions
-#      - name: Setup upterm session
-#        uses: lhotari/action-upterm@v1
-#        with:
-#          ## limits ssh access and adds the ssh public key for the user which triggered the workflow
-#          limit-access-to-actor: true
-#          ## limits ssh access and adds the ssh public keys of the listed GitHub users
-#          limit-access-to-users: simonmahns,trahan0x
-
-
       - name: Test
         uses: nick-fields/retry@v2
         with:
