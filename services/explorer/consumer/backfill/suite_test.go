@@ -78,7 +78,7 @@ var testTokens = []TestToken{{
 func (b *BackfillSuite) SetupTest() {
 	b.TestSuite.SetupTest()
 
-	b.db, b.eventDB, b.gqlClient, b.logIndex, b.cleanup, b.testBackend, b.deployManager = testutil.NewTestEnvDB(b.T())
+	b.db, b.eventDB, b.gqlClient, b.logIndex, b.cleanup, b.testBackend, b.deployManager = testutil.NewTestEnvDB(b.GetTestContext(), b.T())
 
 	b.testDeployManager = testcontracts.NewDeployManager(b.T())
 
