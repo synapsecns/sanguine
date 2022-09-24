@@ -162,7 +162,7 @@ omnirpc:
   # this can be remote in production, we just want to use the public rpc servers here
   enabled: true
   fullnameOverride: scribe-omnirpc
-  replicaCount: 2
+  replicaCount: 3
 
 files:
   config.yaml: |-
