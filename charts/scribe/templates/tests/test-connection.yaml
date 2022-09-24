@@ -7,11 +7,6 @@ metadata:
   annotations:
     "helm.sh/hook": test
 spec:
-  initContainers:
-    # TODO: we should add a timeout here
-    - name: wait-for-svc
-      image: busybox
-      command: ['sh', '-c', 'until nc -vz {{ include "scribe.fullname" . }} {{ .Values.service.port }}; do echo "Waiting for service..."; sleep 1; done;']
   containers:
     - name: wget
       image: busybox
