@@ -1,0 +1,13 @@
+{{- if .Values.files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "scribe.fullname" . }}-{{ .Release.Name }}
+  labels:
+    app: {{ include "scribe.fullname" . }}
+    chart: "{{ .Chart.Name }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+{{ toYaml .Values.files | indent 2 }}
+{{- end }}

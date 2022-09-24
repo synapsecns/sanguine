@@ -62,8 +62,6 @@ jobs:
           sleep 1
           done
 
-      # this would be nice
-      # TODO: either get rid of flakes or support some kind of reporting here, this is going to get out of hand
       - name: Test
         uses: nick-fields/retry@v2
         with:

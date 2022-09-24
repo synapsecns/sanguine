@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "scribe.fullname" . }}-test-connection"
+  labels:
+    {{- include "scribe.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "scribe.fullname" . }}:{{ .Values.service.port }}/health-check']
+  restartPolicy: Never
