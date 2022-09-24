@@ -66,7 +66,7 @@ resources: {}
 
 indexer:
   enabled: true
-  args: ["backfill", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true", "--config=config/config.yaml"]
+  args: ["backfill", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql-0:3306)/scribe?parseTime=true", "--config=config/config.yaml"]
   #  args: ["backfill", "--config=/config/config.yaml"]
   podAnnotations: {}
   nodeSelector: {}
@@ -78,7 +78,7 @@ indexer:
 server:
   enabled: true
   # this should use a secret in production, for testing only
-  args: ["server", "--port=80", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true"]
+  args: ["server", "--port=80", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql-0:3306)/scribe?parseTime=true"]
   replicaCount: 1
   autoscaling:
     enabled: false
@@ -117,4 +117,3 @@ files:
     # Config contents go here
     # These will be copied to both server and indexer containers
     # http://scribe-omnirpc:80/x
-    omni: dog

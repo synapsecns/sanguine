@@ -37,14 +37,6 @@ spec:
               mountPath: /configmap
             - name: {{ .Release.Name }}-config
               mountPath: /config
-        - name: copy-{{ .Release.Name }}-configurator
-          image: ubuntu
-          command: ['sh', 'sleep 1000']
-          volumeMounts:
-            - name: configmap
-              mountPath: /configmap
-            - name: {{ .Release.Name }}-config
-              mountPath: /config
     {{- end }}
       containers:
         - name: {{ .Chart.Name }}
