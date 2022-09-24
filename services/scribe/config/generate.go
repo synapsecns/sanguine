@@ -16,7 +16,7 @@ import (
 )
 
 // GenerateConfig generates a config using a hardhat deployment and scribe.
-// this requires scribe to be live
+// this requires scribe to be live.
 func GenerateConfig(ctx context.Context, omniRPCUrl, deployPath string, requiredConfirmations uint32, outputPath string, skippedChainIDS []int) error {
 	contracts, err := parser.GetDeployments(deployPath)
 	if err != nil {
