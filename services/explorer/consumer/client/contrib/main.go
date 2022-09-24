@@ -18,7 +18,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
-	// ctx := context.Background()
 	err = os.Chdir(filepath.Join(root.Path, "services/explorer/consumer/client/"))
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
