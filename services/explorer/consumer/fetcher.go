@@ -26,7 +26,7 @@ func NewFetcher(fetchClient *client.Client) *Fetcher {
 
 // FetchLogsInRange fetches logs in a range with the GQL client.
 func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64) ([]ethTypes.Log, error) {
-	//page := 1
+	// page := 1
 	logs, err := f.fetchClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), 1)
 
 	if err != nil {

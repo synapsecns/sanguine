@@ -139,15 +139,12 @@ func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, bloc
 	b.testBackend.WaitForConfirmation(b.GetTestContext(), tx)
 	receipt, err := b.testBackend.TransactionReceipt(b.GetTestContext(), tx.Hash())
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get receipt for transaction %s: %w", tx.Hash().String(), err)
 	}
-	for _, log := range receipt.Logs {
-		log.BlockNumber = blockNumber
-		err = b.eventDB.StoreLog(b.GetTestContext(), *log, chainID)
-		if err != nil {
-			return fmt.Errorf("error storing swap log: %w", err)
-		}
-		return nil
+	receipt.Logs[0].BlockNumber = blockNumber
+	err = b.eventDB.StoreLog(b.GetTestContext(), *receipt.Logs[0], chainID)
+	if err != nil {
+		return fmt.Errorf("error storing swap log: %w", err)
 	}
-	return fmt.Errorf("no logs found for tx %s", tx.Hash().String())
+	return nil
 }
