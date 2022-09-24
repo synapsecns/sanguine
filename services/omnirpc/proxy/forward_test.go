@@ -13,6 +13,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
+	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy/mocks"
 	"github.com/tidwall/pretty"
@@ -24,7 +25,7 @@ import (
 )
 
 func (p *ProxySuite) TestServeRequestNoChain() {
-	prxy := proxy.NewProxy(config.Config{})
+	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -34,7 +35,7 @@ func (p *ProxySuite) TestServeRequestNoChain() {
 }
 
 func (p *ProxySuite) TestCannotReadBody() {
-	prxy := proxy.NewProxy(config.Config{})
+	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -104,7 +105,7 @@ func (p *ProxySuite) generateFakeJSON() []byte {
 }
 
 func (p *ProxySuite) TestMalformedRequestBody() {
-	prxy := proxy.NewProxy(config.Config{})
+	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)

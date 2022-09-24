@@ -144,7 +144,7 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 
 	baseClient := embedded.makeClient(t)
 
-	chn, err := chain.NewFromClient(ctx, &client.Config{ChainID: int(config.ChainID.Int64()), RPCUrl: []string{embedded.Node.WSEndpoint()}}, baseClient)
+	chn, err := chain.NewFromClient(ctx, &client.Config{ChainID: int(config.ChainID.Int64()), RPCUrl: []string{embedded.Node.HTTPEndpoint()}}, baseClient)
 
 	assert.Nil(t, err)
 	chn.SetChainConfig(config)

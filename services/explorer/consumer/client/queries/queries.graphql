@@ -1,0 +1,14 @@
+query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+  response: logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
+    contract_address
+    chain_id
+    topics
+    data
+    block_number
+    tx_hash
+    tx_index
+    block_hash
+    index
+    removed
+  }
+}

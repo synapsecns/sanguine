@@ -1,3 +1,4 @@
+// Package main provides a command line tool for copying modules.
 package main
 
 import (

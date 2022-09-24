@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
+	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"net/http"
 	"strconv"
 	"sync"
@@ -22,20 +23,21 @@ type RPCProxy struct {
 	refreshInterval time.Duration
 	// port is the por the server is run on
 	port uint16
+	// forwarderPool is used for allocating forwarders
+	forwarderPool sync.Pool
+	// client contains the http client
+	client omniHTTP.Client
 }
 
 // NewProxy creates a new rpc proxy.
-func NewProxy(config config.Config) *RPCProxy {
+func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
 	return &RPCProxy{
 		chainManager:    chainmanager.NewChainManagerFromConfig(config),
 		refreshInterval: time.Second * time.Duration(config.RefreshInterval),
 		port:            config.Port,
+		client:          omniHTTP.NewClient(clientType),
 	}
 }
-
-// requestIDKey is the header for request id, these are
-// forwarded to rpc's we use for tracing.
-const requestIDKey = "X-Request-ID"
 
 // Run runs the rpc server until context cancellation.
 func (r *RPCProxy) Run(ctx context.Context) {
@@ -43,10 +45,17 @@ func (r *RPCProxy) Run(ctx context.Context) {
 
 	router := gin.Default()
 	router.Use(requestid.New(
-		requestid.WithCustomHeaderStrKey(requestIDKey),
+		requestid.WithCustomHeaderStrKey(requestid.HeaderStrKey(omniHTTP.XRequestIDString)),
 		requestid.WithGenerator(func() string {
 			return uuid.New().String()
 		})))
+
+	router.Use(func(c *gin.Context) {
+		// set on request as well
+		if c.Request.Header.Get(omniHTTP.XRequestIDString) == "" {
+			c.Request.Header.Set(omniHTTP.XRequestIDString, c.Writer.Header().Get(omniHTTP.XRequestIDString))
+		}
+	})
 
 	router.GET("/health-check", func(c *gin.Context) {
 		c.JSON(200, gin.H{

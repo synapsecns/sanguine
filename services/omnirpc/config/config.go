@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
 	"gopkg.in/yaml.v3"
@@ -17,6 +16,8 @@ type Config struct {
 	// RefreshInterval is the refresh interval of rpc latency
 	// expressed in seconds
 	RefreshInterval int `yaml:"refresh_interval,omitempty"`
+	// ClientType is the client type to use
+	ClientType string `yaml:"client_type,omitempty"`
 }
 
 // ChainConfig is the config for a single chain.
