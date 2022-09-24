@@ -24,8 +24,8 @@ func (s SynapseBridgeTokenRedeemAndSwap) GetToken() common.Address {
 }
 
 // GetAmount gets the destination chain id from the redeem and swap log.
-func (s SynapseBridgeTokenRedeemAndSwap) GetAmount() big.Int {
-	return *s.Amount
+func (s SynapseBridgeTokenRedeemAndSwap) GetAmount() *big.Int {
+	return s.Amount
 }
 
 // GetEventType gets the type of the redeem and swap event.
@@ -119,8 +119,8 @@ func (s SynapseBridgeTokenRedeem) GetToken() common.Address {
 }
 
 // GetAmount gets the token amount.
-func (s SynapseBridgeTokenRedeem) GetAmount() big.Int {
-	return *s.Amount
+func (s SynapseBridgeTokenRedeem) GetAmount() *big.Int {
+	return s.Amount
 }
 
 // GetEventType gets the type of the redeem event.
@@ -210,8 +210,8 @@ func (s SynapseBridgeTokenRedeemAndRemove) GetToken() common.Address {
 }
 
 // GetAmount gets the token amount.
-func (s SynapseBridgeTokenRedeemAndRemove) GetAmount() big.Int {
-	return *s.Amount
+func (s SynapseBridgeTokenRedeemAndRemove) GetAmount() *big.Int {
+	return s.Amount
 }
 
 // GetEventType gets the type of the redeem event.
@@ -304,8 +304,8 @@ func (s SynapseBridgeTokenRedeemV2) GetToken() common.Address {
 }
 
 // GetAmount gets the token amount.
-func (s SynapseBridgeTokenRedeemV2) GetAmount() big.Int {
-	return *s.Amount
+func (s SynapseBridgeTokenRedeemV2) GetAmount() *big.Int {
+	return s.Amount
 }
 
 // GetEventType gets the redeem event type.

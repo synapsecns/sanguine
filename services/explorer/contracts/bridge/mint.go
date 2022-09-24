@@ -19,8 +19,8 @@ func (s SynapseBridgeTokenMint) GetToken() common.Address {
 }
 
 // GetAmount gets the token amount.
-func (s SynapseBridgeTokenMint) GetAmount() big.Int {
-	return *s.Amount
+func (s SynapseBridgeTokenMint) GetAmount() *big.Int {
+	return s.Amount
 }
 
 // GetEventType gets the type of the redeem event.
@@ -106,8 +106,8 @@ func (s SynapseBridgeTokenMintAndSwap) GetToken() common.Address {
 }
 
 // GetAmount gets the amount fo the mint.
-func (s SynapseBridgeTokenMintAndSwap) GetAmount() big.Int {
-	return *s.Amount
+func (s SynapseBridgeTokenMintAndSwap) GetAmount() *big.Int {
+	return s.Amount
 }
 
 // GetEventType gets the mint and remove event type.

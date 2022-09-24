@@ -24,8 +24,8 @@ func (s SynapseBridgeTokenDeposit) GetToken() common.Address {
 }
 
 // GetAmount gets the destination chain id from the deposit log.
-func (s SynapseBridgeTokenDeposit) GetAmount() big.Int {
-	return *s.Amount
+func (s SynapseBridgeTokenDeposit) GetAmount() *big.Int {
+	return s.Amount
 }
 
 // GetEventType gets the type of the token deposit event.
@@ -115,8 +115,8 @@ func (s SynapseBridgeTokenDepositAndSwap) GetToken() common.Address {
 }
 
 // GetAmount gets the destination chain id from the deposit and swap log.
-func (s SynapseBridgeTokenDepositAndSwap) GetAmount() big.Int {
-	return *s.Amount
+func (s SynapseBridgeTokenDepositAndSwap) GetAmount() *big.Int {
+	return s.Amount
 }
 
 // GetEventType gets the type of the deposit and swap event.

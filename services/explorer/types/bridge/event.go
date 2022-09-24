@@ -18,7 +18,7 @@ type EventLog interface {
 	// GetToken returns the token of the event.
 	GetToken() common.Address
 	// GetAmount returns the amount of the event.
-	GetAmount() big.Int
+	GetAmount() *big.Int
 	// GetEventType returns the event type of the log.
 	GetEventType() EventType
 	// GetRecipient returns the recipient of the event.
