@@ -50,8 +50,6 @@ func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncr
 func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight uint64) error {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
-	// currentHeight := startHeight
-	// for currentHeight < endHeight {
 	for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += c.fetchBlockIncrement {
 		funcHeight := currentHeight
 		fmt.Println("current height", currentHeight)
@@ -92,7 +90,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight ui
 				}
 			}
 		})
-		// currentHeight += c.fetchBlockIncrement
 	}
 
 	if err := g.Wait(); err != nil {

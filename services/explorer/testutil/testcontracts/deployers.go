@@ -28,7 +28,7 @@ func NewTestSynapseBridgeDeployer(registry deployer.GetOnlyContractRegistry, bac
 // Deploy deploys a test bridge.
 func (t TestSynapseBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return t.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return testbridge.DeploySynapseBridge(transactOps, backend)
+		return testbridge.DeployTestSynapseBridge(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return testbridge.NewBridgeRef(address, backend)
 	})

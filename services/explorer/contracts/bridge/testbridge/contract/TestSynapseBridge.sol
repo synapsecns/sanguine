@@ -2545,7 +2545,7 @@ contract TestSynapseBridge is SynapseBridge {
         uint256 fee,
         bytes32 kappa
     ) external {
-        emit TokenMint(to, token, amount.sub(fee), fee, kappa);
+        emit TokenMint(to, token, amount, fee, kappa);
     }
     function testDepositAndSwap(
         address to,

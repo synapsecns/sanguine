@@ -148,7 +148,6 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 }
 
 func (p *BridgeParser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	fmt.Printf("%+v\n", log)
 	iface, err := p.filterer.ParseTokenDeposit(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token deposit: %w", err)
@@ -156,11 +155,6 @@ func (p *BridgeParser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Lo
 
 	// get BridgeConfig data
 	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
-	fmt.Println("A")
-	fmt.Println(iface.GetToken())
-	fmt.Println(iface.Token)
-	fmt.Printf("%+v\n", *iface)
-	fmt.Println("to", iface.GetRecipient())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}

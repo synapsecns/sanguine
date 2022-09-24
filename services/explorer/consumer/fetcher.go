@@ -26,6 +26,7 @@ func NewFetcher(fetchClient *client.Client) *Fetcher {
 
 // FetchLogsInRange fetches logs in a range with the GQL client.
 func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64) ([]ethTypes.Log, error) {
+	//page := 1
 	logs, err := f.fetchClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), 1)
 
 	if err != nil {
@@ -64,15 +65,15 @@ func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, backend bind.Con
 // GetTokenID gets the token id from the bridge config contract.
 func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID, block uint32, tokenAddress common.Address) (tokenID *string, err error) {
 	tokenIDStr, err := b.bridgeConfig.GetTokenID(&bind.CallOpts{
-		BlockNumber: big.NewInt(int64(block)),
-		Context:     ctx,
+		//BlockNumber: big.NewInt(int64(block)),
+		Context: ctx,
 	}, tokenAddress, big.NewInt(int64(chainID)))
 	if err != nil {
 		return nil, fmt.Errorf("could not get token id: %w", err)
 	}
 
 	if tokenIDStr == "" {
-		return nil, fmt.Errorf("couldn't find token id for address %s and chain id %d: %w", b.bridgeConfigAddress.String(), chainID, ErrTokenDoesNotExist)
+		return nil, fmt.Errorf("couldn't find token id for address %s and chain id %d: %w", tokenAddress, chainID, ErrTokenDoesNotExist)
 	}
 
 	return &tokenIDStr, nil
