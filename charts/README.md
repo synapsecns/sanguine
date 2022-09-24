@@ -13,4 +13,3 @@ This contains helm charts for running sanguine-related services. Charts are test
 ## Testing Locally
 
 `make test-install`
-
