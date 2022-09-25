@@ -70,7 +70,6 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// Store every swap event across two different swap contracts.
-	var placeholderlog *types.Log
 	swapTx, err := swapRefA.TestSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
 	swapLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
@@ -78,11 +77,10 @@ func (b *BackfillSuite) TestBackfill() {
 	swapTx, err = swapRefB.TestAddLiquidity(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
 	addLiquidityLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
-	_ = addLiquidityLog
 	Nil(b.T(), err)
 	swapTx, err = swapRefB.TestRemoveLiquidity(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	placeholderlog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
+	removeLiquidityLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
 	Nil(b.T(), err)
 	swapTx, err = swapRefA.TestRemoveLiquidityOne(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
@@ -90,7 +88,7 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	swapTx, err = swapRefA.TestRemoveLiquidityImbalance(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	placeholderlog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 1)
+	removeLiquidityImbalanceLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 1)
 	Nil(b.T(), err)
 	swapTx, err = swapRefB.TestNewAdminFee(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
@@ -112,7 +110,6 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	flashLoanLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 9)
 	Nil(b.T(), err)
-	_ = placeholderlog
 
 	// set up a ChainBackfiller
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
@@ -165,12 +162,14 @@ func (b *BackfillSuite) TestBackfill() {
 	// Test swap parity
 	err = b.swapParity(swapLog, spA, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
-	// err = b.addLiquidityParity(addLiquidityLog, spB, uint32(testChainID.Uint64()))
-	//Nil(b.T(), err)
-	//
+	err = b.addLiquidityParity(addLiquidityLog, spB, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	err = b.removeLiquidityParity(removeLiquidityLog, spB, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
 	err = b.removeLiquidityOneParity(removeLiquidityOneLog, spA, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
-	//
+	err = b.removeLiquidityImbalanceParity(removeLiquidityImbalanceLog, spA, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
 	err = b.newAdminFeeParity(newAdminFeeLog, spB, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 	err = b.newSwapFeeParity(newSwapFeeLog, spA, uint32(testChainID.Uint64()))
@@ -197,6 +196,7 @@ func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, bloc
 	return receipt.Logs[0], nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) depositParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenDeposit(*log)
@@ -229,6 +229,7 @@ func (b *BackfillSuite) depositParity(log *types.Log, parser *consumer.BridgePar
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) redeemParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenRedeem(*log)
@@ -260,6 +261,7 @@ func (b *BackfillSuite) redeemParity(log *types.Log, parser *consumer.BridgePars
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) withdrawParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenWithdraw(*log)
@@ -296,6 +298,7 @@ func (b *BackfillSuite) withdrawParity(log *types.Log, parser *consumer.BridgePa
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) mintParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenMint(*log)
@@ -332,6 +335,7 @@ func (b *BackfillSuite) mintParity(log *types.Log, parser *consumer.BridgeParser
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) depositAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenDepositAndSwap(*log)
@@ -366,6 +370,7 @@ func (b *BackfillSuite) depositAndSwapParity(log *types.Log, parser *consumer.Br
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) redeemAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenRedeemAndSwap(*log)
@@ -400,6 +405,7 @@ func (b *BackfillSuite) redeemAndSwapParity(log *types.Log, parser *consumer.Bri
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) redeemAndRemoveParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenRedeemAndRemove(*log)
@@ -433,6 +439,7 @@ func (b *BackfillSuite) redeemAndRemoveParity(log *types.Log, parser *consumer.B
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenMintAndSwap(*log)
@@ -474,6 +481,7 @@ func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.Bridg
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenWithdrawAndRemove(*log)
@@ -513,6 +521,7 @@ func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) redeemV2Parity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenRedeemV2(*log)
@@ -545,6 +554,7 @@ func (b *BackfillSuite) redeemV2Parity(log *types.Log, parser *consumer.BridgePa
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenSwap(*log)
@@ -578,6 +588,7 @@ func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, 
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseAddLiquidity(*log)
@@ -588,7 +599,7 @@ func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.Swap
 		String: parsedLog.Provider.String(),
 		Valid:  true,
 	}
-	var a sql.SwapEvent
+	var storedLog sql.SwapEvent
 	var count int64
 	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
@@ -599,55 +610,55 @@ func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.Swap
 			TxHash:          log.TxHash.String(),
 
 			Provider:      provider,
-			TokenAmounts:  parsedLog.TokenAmounts,
-			Fees:          parsedLog.Fees,
 			Invariant:     parsedLog.Invariant,
 			LPTokenSupply: parsedLog.LpTokenSupply,
 		}).
-		Find(&a).
+		Find(&storedLog).
 		Count(&count)
-	fmt.Println("TOKENAMOUNTS", parsedLog.TokenAmounts)
-	fmt.Println("AHH", a.TokenAmounts)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
+	Equal(b.T(), parsedLog.TokenAmounts, storedLog.TokenAmounts)
+	Equal(b.T(), parsedLog.Fees, storedLog.Fees)
 	return nil
 }
 
-// func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
-//	// parse the log
-//	parsedLog, err := parser.Filterer.ParseRemoveLiquidity(*log)
-//	if err != nil {
-//		return fmt.Errorf("error parsing log: %w", err)
-//	}
-//	provider := gosql.NullString{
-//		String: parsedLog.Provider.String(),
-//		Valid:  true,
-//	}
-//
-//	var count int64
-//	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
-//		Where(&sql.SwapEvent{
-//			ContractAddress: log.Address.String(),
-//			ChainID:         chainID,
-//			EventType:       swapTypes.RemoveLiquidityEvent.Int(),
-//			BlockNumber:     log.BlockNumber,
-//			TxHash:          log.TxHash.String(),
-//
-//			Provider:      provider,
-//			TokenAmounts:  parsedLog.TokenAmounts,
-//			Fees:          parsedLog.Fees,
-//			Invariant:     parsedLog.Invariant,
-//			LPTokenSupply: parsedLog.LpTokenSupply,
-//		}).Count(&count)
-//	if events.Error != nil {
-//		return fmt.Errorf("error querying for event: %w", events.Error)
-//	}
-//	Equal(b.T(), int64(1), count)
-//	return nil
-//}
+//nolint:dupl
+func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseRemoveLiquidity(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+	provider := gosql.NullString{
+		String: parsedLog.Provider.String(),
+		Valid:  true,
+	}
+	var storedLog sql.SwapEvent
+	var count int64
+	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+		Where(&sql.SwapEvent{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			EventType:       swapTypes.RemoveLiquidityEvent.Int(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
 
+			Provider:      provider,
+			LPTokenSupply: parsedLog.LpTokenSupply,
+		}).
+		Find(&storedLog).
+		Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	Equal(b.T(), parsedLog.TokenAmounts, storedLog.TokenAmounts)
+	return nil
+}
+
+//nolint:dupl
 func (b *BackfillSuite) removeLiquidityOneParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseRemoveLiquidityOne(*log)
@@ -681,39 +692,43 @@ func (b *BackfillSuite) removeLiquidityOneParity(log *types.Log, parser *consume
 	return nil
 }
 
-// func (b *BackfillSuite) removeLiquidityImbalance(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
-//	// parse the log
-//	parsedLog, err := parser.Filterer.ParseRemoveLiquidityImbalance(*log)
-//	if err != nil {
-//		return fmt.Errorf("error parsing log: %w", err)
-//	}
-//	provider := gosql.NullString{
-//		String: parsedLog.Provider.String(),
-//		Valid:  true,
-//	}
-//
-//	var count int64
-//	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
-//		Where(&sql.SwapEvent{
-//			ContractAddress: log.Address.String(),
-//			ChainID:         chainID,
-//			EventType:       swapTypes.RemoveLiquidityImbalanceEvent.Int(),
-//			BlockNumber:     log.BlockNumber,
-//			TxHash:          log.TxHash.String(),
-//
-//			Provider:      provider,
-//			TokenAmounts:  parsedLog.TokenAmounts,
-//			Fees:          parsedLog.Fees,
-//			Invariant:     parsedLog.Invariant,
-//			LPTokenSupply: parsedLog.LpTokenSupply,
-//		}).Count(&count)
-//	if events.Error != nil {
-//		return fmt.Errorf("error querying for event: %w", events.Error)
-//	}
-//	Equal(b.T(), int64(1), count)
-//	return nil
-//}
+//nolint:dupl
+func (b *BackfillSuite) removeLiquidityImbalanceParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseRemoveLiquidityImbalance(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+	provider := gosql.NullString{
+		String: parsedLog.Provider.String(),
+		Valid:  true,
+	}
+	var storedLog sql.SwapEvent
+	var count int64
+	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+		Where(&sql.SwapEvent{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			EventType:       swapTypes.RemoveLiquidityImbalanceEvent.Int(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
 
+			Provider:      provider,
+			Invariant:     parsedLog.Invariant,
+			LPTokenSupply: parsedLog.LpTokenSupply,
+		}).
+		Find(&storedLog).
+		Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	Equal(b.T(), parsedLog.TokenAmounts, storedLog.TokenAmounts)
+	Equal(b.T(), parsedLog.Fees, storedLog.Fees)
+	return nil
+}
+
+//nolint:dupl
 func (b *BackfillSuite) newAdminFeeParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseNewAdminFee(*log)
@@ -739,6 +754,7 @@ func (b *BackfillSuite) newAdminFeeParity(log *types.Log, parser *consumer.SwapP
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) newSwapFeeParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseNewSwapFee(*log)
@@ -764,6 +780,7 @@ func (b *BackfillSuite) newSwapFeeParity(log *types.Log, parser *consumer.SwapPa
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) rampAParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseRampA(*log)
@@ -792,6 +809,7 @@ func (b *BackfillSuite) rampAParity(log *types.Log, parser *consumer.SwapParser,
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) stopRampAParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseStopRampA(*log)
@@ -818,6 +836,7 @@ func (b *BackfillSuite) stopRampAParity(log *types.Log, parser *consumer.SwapPar
 	return nil
 }
 
+//nolint:dupl
 func (b *BackfillSuite) flashLoanParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseFlashLoan(*log)

@@ -154,7 +154,7 @@ func (p *BridgeParser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Lo
 	}
 
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -173,7 +173,7 @@ func (p *BridgeParser) parseAndStoreRedeem(ctx context.Context, log ethTypes.Log
 	}
 
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -192,7 +192,7 @@ func (p *BridgeParser) parseAndStoreWithdraw(ctx context.Context, log ethTypes.L
 	}
 
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -211,7 +211,7 @@ func (p *BridgeParser) parseAndStoreMint(ctx context.Context, log ethTypes.Log, 
 	}
 
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -229,7 +229,7 @@ func (p *BridgeParser) parseAndStoreDepositAndSwap(ctx context.Context, log ethT
 		return fmt.Errorf("could not parse token deposit and swap: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -246,7 +246,7 @@ func (p *BridgeParser) parseAndStoreMintAndSwap(ctx context.Context, log ethType
 		return fmt.Errorf("could not parse token mint and swap: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -264,7 +264,7 @@ func (p *BridgeParser) parseAndStoreRedeemAndSwap(ctx context.Context, log ethTy
 		return fmt.Errorf("could not parse token redeem and swap: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -282,7 +282,7 @@ func (p *BridgeParser) parseAndStoreRedeemAndRemove(ctx context.Context, log eth
 		return fmt.Errorf("could not parse token redeem and remove: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -300,7 +300,7 @@ func (p *BridgeParser) parseAndStoreWithdrawAndRemove(ctx context.Context, log e
 		return fmt.Errorf("could not parse token withdraw and remove: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -318,7 +318,7 @@ func (p *BridgeParser) parseAndStoreRedeemV2(ctx context.Context, log ethTypes.L
 		return fmt.Errorf("could not parse token redeem v2: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}

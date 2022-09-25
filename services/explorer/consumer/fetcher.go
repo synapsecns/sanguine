@@ -70,9 +70,8 @@ func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, backend bind.Con
 }
 
 // GetTokenID gets the token id from the bridge config contract.
-func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID, block uint32, tokenAddress common.Address) (tokenID *string, err error) {
+func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID uint32, tokenAddress common.Address) (tokenID *string, err error) {
 	tokenIDStr, err := b.bridgeConfig.GetTokenID(&bind.CallOpts{
-		//BlockNumber: big.NewInt(int64(block)),
 		Context: ctx,
 	}, tokenAddress, big.NewInt(int64(chainID)))
 	if err != nil {
