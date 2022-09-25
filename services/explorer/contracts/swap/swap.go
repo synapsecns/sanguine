@@ -148,4 +148,9 @@ func (s SwapFlashLoanTokenSwap) GetTime() *big.Int {
 	return nil
 }
 
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanTokenSwap) GetReceiver() *common.Address {
+	return nil
+}
+
 var _ swap.EventLog = &SwapFlashLoanTokenSwap{}

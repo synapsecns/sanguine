@@ -148,4 +148,9 @@ func (s SwapFlashLoanFlashLoan) GetBoughtId() *big.Int {
 	return nil
 }
 
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanFlashLoan) GetReceiver() *common.Address {
+	return &s.Receiver
+}
+
 var _ swap.EventLog = &SwapFlashLoanFlashLoan{}

@@ -15,9 +15,9 @@ type EventType int8
 
 const (
 	// Bridge - SynapseBridge event.
-	Bridge int8 = 0
+	Bridge int8 = iota
 	// Swap - SwapFlashLoan event.
-	Swap int8 = iota
+	Swap
 )
 
 // BoolToUint8 is a helper function to handle bool to uint8 conversion for clickhouse.
@@ -159,16 +159,37 @@ func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenI
 
 // eventToSwapEvent stores a swap event.
 func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenID *string) SwapEvent {
-	var provider *string
-	if event.GetProvider() != nil {
-		r := event.GetProvider().String()
-		provider = &r
-	}
-
-	var buyer *string
+	var buyer sql.NullString
 	if event.GetBuyer() != nil {
-		r := event.GetBuyer().String()
-		buyer = &r
+		buyer.Valid = true
+		buyer.String = event.GetBuyer().String()
+	} else {
+		buyer.Valid = false
+	}
+	var provider sql.NullString
+	if event.GetProvider() != nil {
+		provider.Valid = true
+		provider.String = event.GetProvider().String()
+	} else {
+		provider.Valid = false
+	}
+	var tokenIndex *big.Int
+	if event.GetTokenIndex() != nil {
+		tokenIndex = big.NewInt(int64(*event.GetTokenIndex()))
+	}
+	var receiver sql.NullString
+	if event.GetReceiver() != nil {
+		receiver.Valid = true
+		receiver.String = event.GetReceiver().String()
+	} else {
+		receiver.Valid = false
+	}
+	var tokID sql.NullString
+	if tokenID != nil {
+		tokID.Valid = true
+		tokID.String = *tokenID
+	} else {
+		tokID.Valid = false
 	}
 
 	return SwapEvent{
@@ -190,7 +211,7 @@ func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenID *s
 		LPTokenAmount:   event.GetLPTokenAmount(),
 		NewAdminFee:     event.GetNewAdminFee(),
 		NewSwapFee:      event.GetNewSwapFee(),
-		TokenIndex:      event.GetTokenIndex(),
+		TokenIndex:      tokenIndex,
 		Amount:          event.GetAmount(),
 		AmountFee:       event.GetAmountFee(),
 		ProtocolFee:     event.GetProtocolFee(),
@@ -200,6 +221,7 @@ func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenID *s
 		FutureTime:      event.GetFutureTime(),
 		CurrentA:        event.GetCurrentA(),
 		Time:            event.GetTime(),
-		TokenID:         tokenID,
+		Receiver:        receiver,
+		TokenID:         tokID,
 	}
 }

@@ -97,7 +97,7 @@ func NewTestEnvDB(ctx context.Context, t *testing.T) (db db.ConsumerDB, eventDB 
 	// maybe newSimulatedBackendWithChainID?
 	// testBackend = geth.NewEmbeddedBackend(ctx, t)
 	// ok := testBackend.EnableTenderly()
-	//if !ok {
+	// if !ok {
 	//	panic("s")
 	//}
 	testBackend = simulated.NewSimulatedBackend(ctx, t)

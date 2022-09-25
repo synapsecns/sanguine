@@ -59,9 +59,8 @@ func (c *TestToken) SetTokenConfig(bridgeConfigContract *bridgeconfig.BridgeConf
 var testTokens = []TestToken{{
 	tokenID: gofakeit.FirstName(),
 	BridgeConfigV3Token: bridgeconfig.BridgeConfigV3Token{
-		ChainId:      big.NewInt(1337),
-		TokenAddress: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
-		//TokenAddress:  mocks.MockAddress().String(),
+		ChainId:       big.NewInt(1337),
+		TokenAddress:  common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
 		TokenDecimals: gofakeit.Uint8(),
 		MaxSwap:       new(big.Int).SetUint64(gofakeit.Uint64()),
 		// TODO: this should probably be smaller than maxswap

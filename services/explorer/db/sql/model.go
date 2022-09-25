@@ -64,6 +64,8 @@ type SwapEvent struct {
 	CurrentA *big.Int `gorm:"column:current_a;type:UInt256"`
 	// Time is the time
 	Time *big.Int `gorm:"column:time;type:UInt256"`
+	// Receiver is the address of the receiver
+	Receiver sql.NullString `gorm:"column:receiver"`
 	// TokenID is the token's ID
 	TokenID sql.NullString `gorm:"column:token_id"`
 }

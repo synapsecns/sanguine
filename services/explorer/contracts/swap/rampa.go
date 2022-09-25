@@ -148,6 +148,11 @@ func (s SwapFlashLoanRampA) GetTokensSold() *big.Int {
 	return nil
 }
 
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanRampA) GetReceiver() *common.Address {
+	return nil
+}
+
 var _ swap.EventLog = &SwapFlashLoanRampA{}
 
 // GetRaw gets the raw event logs from the redeem and remove event.
@@ -172,7 +177,7 @@ func (s SwapFlashLoanStopRampA) GetContractAddress() common.Address {
 
 // GetEventType gets the type of the redeem event.
 func (s SwapFlashLoanStopRampA) GetEventType() swap.EventType {
-	return swap.RampAEvent
+	return swap.StopRampAEvent
 }
 
 // GetCurrentA gets the current A.
@@ -287,6 +292,11 @@ func (s SwapFlashLoanStopRampA) GetOldA() *big.Int {
 
 // GetNewA gets the new A.
 func (s SwapFlashLoanStopRampA) GetNewA() *big.Int {
+	return nil
+}
+
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanStopRampA) GetReceiver() *common.Address {
 	return nil
 }
 

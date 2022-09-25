@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
+	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"math/big"
 )
 
@@ -69,47 +70,49 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// Store every swap event across two different swap contracts.
+	var placeholderlog *types.Log
 	swapTx, err := swapRefA.TestSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
 	swapLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
 	Nil(b.T(), err)
 	swapTx, err = swapRefB.TestAddLiquidity(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	swapLog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
+	addLiquidityLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
+	_ = addLiquidityLog
 	Nil(b.T(), err)
 	swapTx, err = swapRefB.TestRemoveLiquidity(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	swapLog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
+	placeholderlog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
 	Nil(b.T(), err)
 	swapTx, err = swapRefA.TestRemoveLiquidityOne(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	swapLog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 1)
+	removeLiquidityOneLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 1)
 	Nil(b.T(), err)
 	swapTx, err = swapRefA.TestRemoveLiquidityImbalance(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	swapLog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 1)
+	placeholderlog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 1)
 	Nil(b.T(), err)
 	swapTx, err = swapRefB.TestNewAdminFee(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	swapLog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 5)
+	newAdminFeeLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 5)
 	Nil(b.T(), err)
 	swapTx, err = swapRefA.TestNewSwapFee(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	swapLog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 6)
+	newSwapFeeLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 6)
 	Nil(b.T(), err)
 	swapTx, err = swapRefA.TestRampA(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	swapLog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 7)
+	rampALog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 7)
 	Nil(b.T(), err)
 	swapTx, err = swapRefB.TestStopRampA(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	swapLog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 8)
+	stopRampALog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 8)
 	Nil(b.T(), err)
 	swapTx, err = swapRefA.TestFlashLoan(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	swapLog, err = b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 9)
+	flashLoanLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 9)
 	Nil(b.T(), err)
-	_ = swapLog
+	_ = placeholderlog
 
 	// set up a ChainBackfiller
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
@@ -159,6 +162,25 @@ func (b *BackfillSuite) TestBackfill() {
 	err = b.redeemV2Parity(redeemV2Log, bp, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 
+	// Test swap parity
+	err = b.swapParity(swapLog, spA, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	// err = b.addLiquidityParity(addLiquidityLog, spB, uint32(testChainID.Uint64()))
+	//Nil(b.T(), err)
+	//
+	err = b.removeLiquidityOneParity(removeLiquidityOneLog, spA, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	//
+	err = b.newAdminFeeParity(newAdminFeeLog, spB, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	err = b.newSwapFeeParity(newSwapFeeLog, spA, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	err = b.rampAParity(rampALog, spA, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	err = b.stopRampAParity(stopRampALog, spB, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	err = b.flashLoanParity(flashLoanLog, spA, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
 }
 
 func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, blockNumber uint64) (*types.Log, error) {
@@ -529,5 +551,302 @@ func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, 
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
 	}
+	buyer := gosql.NullString{
+		String: parsedLog.Buyer.String(),
+		Valid:  true,
+	}
 
+	var count int64
+	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+		Where(&sql.SwapEvent{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			EventType:       swapTypes.TokenSwapEvent.Int(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+
+			Buyer:        buyer,
+			TokensSold:   parsedLog.TokensSold,
+			TokensBought: parsedLog.TokensBought,
+			SoldID:       parsedLog.SoldId,
+			BoughtID:     parsedLog.BoughtId,
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseAddLiquidity(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+	provider := gosql.NullString{
+		String: parsedLog.Provider.String(),
+		Valid:  true,
+	}
+	var a sql.SwapEvent
+	var count int64
+	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+		Where(&sql.SwapEvent{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			EventType:       swapTypes.AddLiquidityEvent.Int(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+
+			Provider:      provider,
+			TokenAmounts:  parsedLog.TokenAmounts,
+			Fees:          parsedLog.Fees,
+			Invariant:     parsedLog.Invariant,
+			LPTokenSupply: parsedLog.LpTokenSupply,
+		}).
+		Find(&a).
+		Count(&count)
+	fmt.Println("TOKENAMOUNTS", parsedLog.TokenAmounts)
+	fmt.Println("AHH", a.TokenAmounts)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+// func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+//	// parse the log
+//	parsedLog, err := parser.Filterer.ParseRemoveLiquidity(*log)
+//	if err != nil {
+//		return fmt.Errorf("error parsing log: %w", err)
+//	}
+//	provider := gosql.NullString{
+//		String: parsedLog.Provider.String(),
+//		Valid:  true,
+//	}
+//
+//	var count int64
+//	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+//		Where(&sql.SwapEvent{
+//			ContractAddress: log.Address.String(),
+//			ChainID:         chainID,
+//			EventType:       swapTypes.RemoveLiquidityEvent.Int(),
+//			BlockNumber:     log.BlockNumber,
+//			TxHash:          log.TxHash.String(),
+//
+//			Provider:      provider,
+//			TokenAmounts:  parsedLog.TokenAmounts,
+//			Fees:          parsedLog.Fees,
+//			Invariant:     parsedLog.Invariant,
+//			LPTokenSupply: parsedLog.LpTokenSupply,
+//		}).Count(&count)
+//	if events.Error != nil {
+//		return fmt.Errorf("error querying for event: %w", events.Error)
+//	}
+//	Equal(b.T(), int64(1), count)
+//	return nil
+//}
+
+func (b *BackfillSuite) removeLiquidityOneParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseRemoveLiquidityOne(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+	provider := gosql.NullString{
+		String: parsedLog.Provider.String(),
+		Valid:  true,
+	}
+
+	var count int64
+	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+		Where(&sql.SwapEvent{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			EventType:       swapTypes.RemoveLiquidityOneEvent.Int(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+
+			Provider:      provider,
+			LPTokenAmount: parsedLog.LpTokenAmount,
+			LPTokenSupply: parsedLog.LpTokenSupply,
+			BoughtID:      parsedLog.BoughtId,
+			TokensBought:  parsedLog.TokensBought,
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+// func (b *BackfillSuite) removeLiquidityImbalance(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+//	// parse the log
+//	parsedLog, err := parser.Filterer.ParseRemoveLiquidityImbalance(*log)
+//	if err != nil {
+//		return fmt.Errorf("error parsing log: %w", err)
+//	}
+//	provider := gosql.NullString{
+//		String: parsedLog.Provider.String(),
+//		Valid:  true,
+//	}
+//
+//	var count int64
+//	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+//		Where(&sql.SwapEvent{
+//			ContractAddress: log.Address.String(),
+//			ChainID:         chainID,
+//			EventType:       swapTypes.RemoveLiquidityImbalanceEvent.Int(),
+//			BlockNumber:     log.BlockNumber,
+//			TxHash:          log.TxHash.String(),
+//
+//			Provider:      provider,
+//			TokenAmounts:  parsedLog.TokenAmounts,
+//			Fees:          parsedLog.Fees,
+//			Invariant:     parsedLog.Invariant,
+//			LPTokenSupply: parsedLog.LpTokenSupply,
+//		}).Count(&count)
+//	if events.Error != nil {
+//		return fmt.Errorf("error querying for event: %w", events.Error)
+//	}
+//	Equal(b.T(), int64(1), count)
+//	return nil
+//}
+
+func (b *BackfillSuite) newAdminFeeParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseNewAdminFee(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+
+	var count int64
+	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+		Where(&sql.SwapEvent{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			EventType:       swapTypes.NewAdminFeeEvent.Int(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+
+			NewAdminFee: parsedLog.NewAdminFee,
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+func (b *BackfillSuite) newSwapFeeParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseNewSwapFee(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+
+	var count int64
+	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+		Where(&sql.SwapEvent{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			EventType:       swapTypes.NewSwapFeeEvent.Int(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+
+			NewSwapFee: parsedLog.NewSwapFee,
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+func (b *BackfillSuite) rampAParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseRampA(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+
+	var count int64
+	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+		Where(&sql.SwapEvent{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			EventType:       swapTypes.RampAEvent.Int(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+
+			OldA:        parsedLog.OldA,
+			NewA:        parsedLog.NewA,
+			InitialTime: parsedLog.InitialTime,
+			FutureTime:  parsedLog.FutureTime,
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+func (b *BackfillSuite) stopRampAParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseStopRampA(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+
+	var count int64
+	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+		Where(&sql.SwapEvent{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			EventType:       swapTypes.StopRampAEvent.Int(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+
+			CurrentA: parsedLog.CurrentA,
+			Time:     parsedLog.Time,
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+func (b *BackfillSuite) flashLoanParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseFlashLoan(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+
+	receiver := gosql.NullString{
+		String: parsedLog.Receiver.String(),
+		Valid:  true,
+	}
+	var count int64
+	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+		Where(&sql.SwapEvent{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			EventType:       swapTypes.FlashLoanEvent.Int(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+
+			Receiver:    receiver,
+			TokenIndex:  big.NewInt(int64(parsedLog.TokenIndex)),
+			Amount:      parsedLog.Amount,
+			AmountFee:   parsedLog.AmountFee,
+			ProtocolFee: parsedLog.ProtocolFee,
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
 }

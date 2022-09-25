@@ -52,7 +52,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight ui
 	g, groupCtx := errgroup.WithContext(ctx)
 	for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += c.fetchBlockIncrement {
 		funcHeight := currentHeight
-		fmt.Println("current height", currentHeight)
 		g.Go(func() error {
 			// backoff in the case of an error
 			b := &backoff.Backoff{
@@ -70,7 +69,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight ui
 					return fmt.Errorf("context canceled: %w", groupCtx.Err())
 				case <-time.After(timeout):
 					// fetch the logs
-					fmt.Println("fetching logs")
 					rangeEnd := funcHeight + c.fetchBlockIncrement - 1
 					if rangeEnd > endHeight {
 						rangeEnd = endHeight
