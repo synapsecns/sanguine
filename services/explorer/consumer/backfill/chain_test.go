@@ -16,6 +16,84 @@ import (
 	"math/big"
 )
 
+func (b *BackfillSuite) TestFailedLog() {
+	testChainID, err := b.testBackend.ChainID(b.GetTestContext())
+	Nil(b.T(), err)
+	bridgeContract, _ := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
+	swapContract, _ := b.testDeployManager.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
+
+	// set up a ChainBackfiller
+	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
+	Nil(b.T(), err)
+	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf)
+	Nil(b.T(), err)
+	spA, err := consumer.NewSwapParser(b.db, swapContract.Address())
+	Nil(b.T(), err)
+	spMap := map[common.Address]*consumer.SwapParser{}
+	spMap[swapContract.Address()] = spA
+	f := consumer.NewFetcher(b.gqlClient)
+	chainBackfiller := backfill.NewChainBackfiller(uint32(testChainID.Uint64()), b.db, 3, bp, bridgeContract.Address(), spMap, *f, b.bridgeConfigContract.Address())
+
+	// create a swap and bridge log that will fail to parse
+	failedSwapTxHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	failedSwapTxIndex := uint(gofakeit.Uint32())
+	failedSwapIndex := uint(gofakeit.Uint32())
+	swapLog := &types.Log{
+		Address:     swapContract.Address(),
+		Topics:      []common.Hash{common.BigToHash(big.NewInt(gofakeit.Int64()))},
+		Data:        []byte(gofakeit.Word()),
+		BlockNumber: 1,
+		TxHash:      failedSwapTxHash,
+		TxIndex:     failedSwapTxIndex,
+		BlockHash:   common.BigToHash(big.NewInt(gofakeit.Int64())),
+		Index:       failedSwapIndex,
+	}
+	failedBridgeTxHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	failedBridgeTxIndex := uint(gofakeit.Uint32())
+	failedBridgeIndex := uint(gofakeit.Uint32())
+	bridgeLog := &types.Log{
+		Address:     bridgeContract.Address(),
+		Topics:      []common.Hash{common.BigToHash(big.NewInt(gofakeit.Int64()))},
+		Data:        []byte(gofakeit.Word()),
+		BlockNumber: 2,
+		TxHash:      failedBridgeTxHash,
+		TxIndex:     failedBridgeTxIndex,
+		BlockHash:   common.BigToHash(big.NewInt(gofakeit.Int64())),
+		Index:       failedBridgeIndex,
+	}
+
+	// store the logs
+	err = b.eventDB.StoreLog(b.GetTestContext(), *swapLog, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	err = b.eventDB.StoreLog(b.GetTestContext(), *bridgeLog, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+
+	// backfill the logs
+	err = chainBackfiller.Backfill(b.GetTestContext(), 0, 2)
+	Nil(b.T(), err)
+
+	// check that the logs were not parsed and stored in the FailedLog database
+	failedLogs, err := b.db.RetrieveFailedLogs(b.GetTestContext(), uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	Equal(b.T(), 2, len(failedLogs))
+	Equal(b.T(), uint64(1), failedLogs[0].BlockNumber)
+	Equal(b.T(), failedSwapTxHash, failedLogs[0].TxHash)
+	Equal(b.T(), failedSwapTxIndex, failedLogs[0].TxIndex)
+	Equal(b.T(), failedSwapIndex, failedLogs[0].Index)
+	Equal(b.T(), uint64(2), failedLogs[1].BlockNumber)
+	Equal(b.T(), failedBridgeTxHash, failedLogs[1].TxHash)
+	Equal(b.T(), failedBridgeTxIndex, failedLogs[1].TxIndex)
+	Equal(b.T(), failedBridgeIndex, failedLogs[1].Index)
+	Equal(b.T(), chainBackfiller.FailedLogs.Load(), uint32(2))
+	var count int64
+	bridgeEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
+	Nil(b.T(), bridgeEvents.Error)
+	Equal(b.T(), int64(0), count)
+	swapEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
+	Nil(b.T(), swapEvents.Error)
+	Equal(b.T(), int64(0), count)
+}
+
 func (b *BackfillSuite) TestBackfill() {
 	testChainID, err := b.testBackend.ChainID(b.GetTestContext())
 	Nil(b.T(), err)
@@ -136,6 +214,11 @@ func (b *BackfillSuite) TestBackfill() {
 	swapEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
 	Nil(b.T(), swapEvents.Error)
 	Equal(b.T(), int64(10), count)
+	lastLoggedBlock := &sql.LastLoggedBlockInfo{}
+	dbTx := b.db.DB().WithContext(b.GetTestContext()).Where(&sql.LastLoggedBlockInfo{
+		ChainID: uint32(testChainID.Uint64()),
+	}).Find(lastLoggedBlock)
+	Nil(b.T(), dbTx.Error)
 
 	// Test bridge parity
 	err = b.depositParity(depositLog, bp, uint32(testChainID.Uint64()))

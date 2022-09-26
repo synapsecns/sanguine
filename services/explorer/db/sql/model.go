@@ -2,7 +2,33 @@ package sql
 
 import (
 	"database/sql"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"math/big"
+)
+
+// define common field names. See package docs  for an explanation of why we have to do this.
+// note: some models share names. In cases where they do, we run the check against all names.
+// This is cheap because it's only done at startup.
+func init() {
+	namer := dbcommon.NewNamer(GetAllModels())
+	TxHashFieldName = namer.GetConsistentName("TxHash")
+	ChainIDFieldName = namer.GetConsistentName("ChainID")
+	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
+	ContractAddressFieldName = namer.GetConsistentName("ContractAddress")
+	BlockIndexFieldName = namer.GetConsistentName("BlockIndex")
+}
+
+var (
+	// TxHashFieldName is the field name of the tx hash.
+	TxHashFieldName string
+	// ChainIDFieldName gets the chain id field name.
+	ChainIDFieldName string
+	// BlockNumberFieldName is the name of the block number field.
+	BlockNumberFieldName string
+	// ContractAddressFieldName is the address of the contract.
+	ContractAddressFieldName string
+	// BlockIndexFieldName is the index field name.
+	BlockIndexFieldName string
 )
 
 // SwapEvent stores data for emitted events from the Swap contract.
@@ -115,4 +141,44 @@ type BridgeEvent struct {
 	SwapDeadline *big.Int `gorm:"column:swap_deadline;type:UInt256"`
 	// TokenID is the token's ID
 	TokenID sql.NullString `gorm:"column:token_id"`
+}
+
+// LastLoggedBlockInfo stores the last block number that was logged for a given chain.
+type LastLoggedBlockInfo struct {
+	// ChainID is the chain id of the chain
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	// BlockNumber is the last block number indexed
+	BlockNumber uint64 `gorm:"column:block_number"`
+}
+
+// FailedLog stores the logs that were unsuccessfully parsed and stored.
+type FailedLog struct {
+	// ContractAddress is the address of the contract that generated the event
+	ContractAddress string `gorm:"column:contract_address;primaryKey"`
+	// ChainID is the chain id of the contract that generated the event
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	// PrimaryTopic is the primary topic of the event. Topics[0]
+	PrimaryTopic sql.NullString `gorm:"primary_topic"`
+	// TopicA is the first topic. Topics[1]
+	TopicA sql.NullString `gorm:"topic_a"`
+	// TopicB is the second topic. Topics[2]
+	TopicB sql.NullString `gorm:"topic_b"`
+	// TopicC is the third topic. Topics[3]
+	TopicC sql.NullString `gorm:"topic_c"`
+	// Data is the data provided by the contract
+	Data []byte `gorm:"data"`
+	// BlockNumber is the block in which the transaction was included
+	BlockNumber uint64 `gorm:"column:block_number"`
+	// TxHash is the hash of the transaction
+	TxHash string `gorm:"column:tx_hash;primaryKey"`
+	// TxIndex is the index of the transaction in the block
+	TxIndex uint64 `gorm:"tx_index"`
+	// BlockHash is the hash of the block in which the transaction was included
+	BlockHash string `gorm:"block_hash"`
+	// Index is the index of the log in the block
+	BlockIndex uint64 `gorm:"column:block_index;primaryKey;auto_increment:false"`
+	// Removed is true if this log was reverted due to a chain re-organization
+	Removed bool `gorm:"removed"`
+	// Confirmed is true if this log has been confirmed by the chain
+	Confirmed bool `gorm:"confirmed"`
 }
