@@ -144,35 +144,3 @@ func buildTopics(failedLog FailedLog) []common.Hash {
 
 	return topics
 }
-
-//// StoreFailedLog stores a log that was failed to be parsed and stored.
-// func (s Store) StoreFailedLog(ctx context.Context, log *types.Log, chainID uint32) error {
-//	dbTx := s.DB().WithContext(ctx).
-//		Model(&FailedLog{}).
-//		Create(&FailedLog{
-//			ChainID:     chainID,
-//			BlockNumber: log.BlockNumber,
-//			TxHash:      log.TxHash.String(),
-//			TxIndex:     log.TxIndex,
-//			LogIndex:    log.Index,
-//		})
-//	if dbTx.Error != nil {
-//		return fmt.Errorf("could not store failed log: %w", dbTx.Error)
-//	}
-//	return nil
-//}
-//
-//// RetrieveFailedLogs retrieves all failed logs.
-// func (s Store) RetrieveFailedLogs(ctx context.Context, chainID uint32) ([]*FailedLog, error) {
-//	var entries []*FailedLog
-//	dbTx := s.DB().WithContext(ctx).
-//		Model(&FailedLog{}).
-//		Where(&FailedLog{
-//			ChainID: chainID,
-//		}).
-//		Scan(&entries)
-//	if dbTx.Error != nil {
-//		return nil, fmt.Errorf("could not retrieve failed logs: %w", dbTx.Error)
-//	}
-//	return entries, nil
-//}
