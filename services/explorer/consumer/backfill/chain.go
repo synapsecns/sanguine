@@ -8,6 +8,7 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/db"
+	"go.uber.org/atomic"
 	"golang.org/x/sync/errgroup"
 	"time"
 )
@@ -30,10 +31,14 @@ type ChainBackfiller struct {
 	bridgeConfigAddress common.Address
 	// fetcher is the fetcher to use to fetch logs.
 	fetcher consumer.Fetcher
+	// FailedLogs is how many logs failed to parse.
+	FailedLogs atomic.Uint32
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
 func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncrement uint64, bridgeParser *consumer.BridgeParser, bridgeAddress common.Address, swapParsers map[common.Address]*consumer.SwapParser, fetcher consumer.Fetcher, bridgeConfigAddress common.Address) *ChainBackfiller {
+	failedLogs := atomic.Uint32{}
+	failedLogs.Store(0)
 	return &ChainBackfiller{
 		consumerDB:          consumerDB,
 		chainID:             chainID,
@@ -43,11 +48,12 @@ func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncr
 		swapParsers:         swapParsers,
 		fetcher:             fetcher,
 		bridgeConfigAddress: bridgeConfigAddress,
+		FailedLogs:          failedLogs,
 	}
 }
 
 // Backfill fetches logs from the GraphQL database, parses them, and stores them in the consumer database.
-func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight uint64) error {
+func (c *ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight uint64) error {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
 	for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += c.fetchBlockIncrement {
@@ -82,21 +88,24 @@ func (c ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight ui
 					// parse and store the logs
 					err = c.processLogs(groupCtx, logs)
 					if err != nil {
-						return fmt.Errorf("could not process logs: %w", err)
+						logger.Warnf("could not process logs for chain %d: %s", c.chainID, err)
 					}
 					return nil
 				}
 			}
 		})
 	}
-
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("error while backfilling chain %d: %w", c.chainID, err)
+	}
+	err := c.consumerDB.StoreLastLoggedBlock(ctx, c.chainID, endHeight)
+	if err != nil {
+		return fmt.Errorf("could not store last confirmed block for chain %d: %w", c.chainID, err)
 	}
 	return nil
 }
 
-func (c ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) error {
+func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) error {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
 	for _, log := range logs {
@@ -114,7 +123,11 @@ func (c ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) e
 			}
 			err := eventParser.ParseAndStore(groupCtx, log, c.chainID)
 			if err != nil {
-				return fmt.Errorf("could not parse and store event: %w", err)
+				err = c.consumerDB.StoreFailedLog(ctx, log, c.chainID)
+				if err != nil {
+					logger.Warnf("could not store failed log: %s", err)
+				}
+				c.FailedLogs.Inc()
 			}
 			return nil
 		})
