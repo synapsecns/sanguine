@@ -146,7 +146,7 @@ func buildTopics(failedLog FailedLog) []common.Hash {
 }
 
 //// StoreFailedLog stores a log that was failed to be parsed and stored.
-//func (s Store) StoreFailedLog(ctx context.Context, log *types.Log, chainID uint32) error {
+// func (s Store) StoreFailedLog(ctx context.Context, log *types.Log, chainID uint32) error {
 //	dbTx := s.DB().WithContext(ctx).
 //		Model(&FailedLog{}).
 //		Create(&FailedLog{
@@ -163,7 +163,7 @@ func buildTopics(failedLog FailedLog) []common.Hash {
 //}
 //
 //// RetrieveFailedLogs retrieves all failed logs.
-//func (s Store) RetrieveFailedLogs(ctx context.Context, chainID uint32) ([]*FailedLog, error) {
+// func (s Store) RetrieveFailedLogs(ctx context.Context, chainID uint32) ([]*FailedLog, error) {
 //	var entries []*FailedLog
 //	dbTx := s.DB().WithContext(ctx).
 //		Model(&FailedLog{}).

@@ -105,6 +105,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight u
 	return nil
 }
 
+// RetryFailedLogs gets the logs in the FailedLog table and attempts to parse and store them.
 func (c *ChainBackfiller) RetryFailedLogs(ctx context.Context) error {
 	// get failed logs
 	failedLogs, err := c.consumerDB.RetrieveFailedLogs(ctx, c.chainID)
@@ -122,6 +123,8 @@ func (c *ChainBackfiller) RetryFailedLogs(ctx context.Context) error {
 // processLogs processes the logs and stores them in the consumer database. If `retry` is true,
 // then the logs that are being processed are logs that failed to parse and store the first time,
 // and they should be removed from the failed logs table if they are now stored correctly.
+//
+//nolint:gocognit,cyclop
 func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, retry bool) error {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)

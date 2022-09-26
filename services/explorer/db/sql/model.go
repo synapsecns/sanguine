@@ -143,6 +143,7 @@ type BridgeEvent struct {
 	TokenID sql.NullString `gorm:"column:token_id"`
 }
 
+// LastLoggedBlockInfo stores the last block number that was logged for a given chain.
 type LastLoggedBlockInfo struct {
 	// ChainID is the chain id of the chain
 	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
@@ -150,6 +151,7 @@ type LastLoggedBlockInfo struct {
 	BlockNumber uint64 `gorm:"column:block_number"`
 }
 
+// FailedLog stores the logs that were unsuccessfully parsed and stored.
 type FailedLog struct {
 	// ContractAddress is the address of the contract that generated the event
 	ContractAddress string `gorm:"column:contract_address;primaryKey"`

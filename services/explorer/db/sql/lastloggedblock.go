@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// StoreLastConfirmedBlock stores the last block number that has been confirmed.
+// StoreLastLoggedBlock stores the last block number that has been confirmed.
 // It updates the value if there is a previous last block confirmed value, and creates a new
 // entry if there is no previous value.
 func (s Store) StoreLastLoggedBlock(ctx context.Context, chainID uint32, blockNumber uint64) error {
@@ -43,7 +43,7 @@ func (s Store) StoreLastLoggedBlock(ctx context.Context, chainID uint32, blockNu
 	return nil
 }
 
-// RetrieveLastConfirmedBlock retrieves the last block number that has been confirmed.
+// RetrieveLastLoggedBlock retrieves the last block number that has been confirmed.
 func (s Store) RetrieveLastLoggedBlock(ctx context.Context, chainID uint32) (uint64, error) {
 	entry := LastLoggedBlockInfo{}
 	dbTx := s.DB().WithContext(ctx).
