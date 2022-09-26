@@ -16,6 +16,64 @@ import (
 	"math/big"
 )
 
+func (b *BackfillSuite) TestRetryProcessRange() {
+	testChainID, err := b.testBackend.ChainID(b.GetTestContext())
+	Nil(b.T(), err)
+	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
+	swapContract, swapRef := b.testDeployManager.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
+
+	// set up a ChainBackfiller
+	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
+	Nil(b.T(), err)
+	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf)
+	Nil(b.T(), err)
+	spA, err := consumer.NewSwapParser(b.db, swapContract.Address())
+	Nil(b.T(), err)
+	spMap := map[common.Address]*consumer.SwapParser{}
+	spMap[swapContract.Address()] = spA
+	f := consumer.NewFetcher(b.gqlClient)
+	chainBackfiller := backfill.NewChainBackfiller(uint32(testChainID.Uint64()), b.db, 3, bp, bridgeContract.Address(), spMap, *f, b.bridgeConfigContract.Address())
+
+	// create two valid logs, but insert them into the failed logs table
+	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
+	transactOpts.TransactOpts.GasLimit = uint64(200000)
+	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
+	Nil(b.T(), err)
+	b.testBackend.WaitForConfirmation(b.GetTestContext(), bridgeTx)
+	bridgeReceipt, err := b.testBackend.TransactionReceipt(b.GetTestContext(), bridgeTx.Hash())
+	Nil(b.T(), err)
+	swapTx, err := swapRef.TestSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	b.testBackend.WaitForConfirmation(b.GetTestContext(), swapTx)
+	swapReceipt, err := b.testBackend.TransactionReceipt(b.GetTestContext(), swapTx.Hash())
+	Nil(b.T(), err)
+	bridgeLog := bridgeReceipt.Logs[0]
+	swapLog := swapReceipt.Logs[0]
+	err = b.db.StoreFailedLog(b.GetTestContext(), *bridgeLog, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	err = b.db.StoreFailedLog(b.GetTestContext(), *swapLog, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	chainBackfiller.FailedLogs.Store(2)
+
+	// run retry failed logs
+	err = chainBackfiller.RetryFailedLogs(b.GetTestContext())
+	Nil(b.T(), err)
+	// check that the logs were processed
+	b.Eventually(func() bool {
+		failedLogs, err := b.db.RetrieveFailedLogs(b.GetTestContext(), uint32(testChainID.Uint64()))
+		Nil(b.T(), err)
+		return len(failedLogs) == 0
+	})
+	Equal(b.T(), chainBackfiller.FailedLogs.Load(), uint32(0))
+	var count int64
+	bridgeEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
+	Nil(b.T(), bridgeEvents.Error)
+	Equal(b.T(), int64(1), count)
+	swapEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
+	Nil(b.T(), swapEvents.Error)
+	Equal(b.T(), int64(1), count)
+}
+
 func (b *BackfillSuite) TestFailedLog() {
 	testChainID, err := b.testBackend.ChainID(b.GetTestContext())
 	Nil(b.T(), err)

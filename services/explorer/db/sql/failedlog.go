@@ -21,7 +21,7 @@ func (s Store) StoreFailedLog(ctx context.Context, log types.Log, chainID uint32
 	// If the topic is empty, we set Valid to false.
 	// If the topic is not empty, provide its string value and set Valid to true.
 	for index := 0; index <= indexedTopics+1; index++ {
-		if index < topicsLength {
+		if index < topicsLength && log.Topics[index] != common.HexToHash("") {
 			topics = append(topics, sql.NullString{
 				String: log.Topics[index].String(),
 				Valid:  true,
@@ -132,13 +132,13 @@ func buildTopics(failedLog FailedLog) []common.Hash {
 	if failedLog.PrimaryTopic.Valid {
 		topics = append(topics, common.HexToHash(failedLog.PrimaryTopic.String))
 	}
-	if failedLog.TopicA.Valid {
+	if failedLog.TopicA.Valid && failedLog.TopicA.String != "" {
 		topics = append(topics, common.HexToHash(failedLog.TopicA.String))
 	}
-	if failedLog.TopicB.Valid {
+	if failedLog.TopicB.Valid && failedLog.TopicB.String != "" {
 		topics = append(topics, common.HexToHash(failedLog.TopicB.String))
 	}
-	if failedLog.TopicC.Valid {
+	if failedLog.TopicC.Valid && failedLog.TopicC.String != "" {
 		topics = append(topics, common.HexToHash(failedLog.TopicC.String))
 	}
 
