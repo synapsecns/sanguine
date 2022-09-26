@@ -214,9 +214,11 @@ func (b *BackfillSuite) TestBackfill() {
 	swapEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
 	Nil(b.T(), swapEvents.Error)
 	Equal(b.T(), int64(10), count)
-	//lastLoggedBlock := &sql.LastLoggedBlockInfo{}
-	//dbTx := b.db.DB().WithContext(b.GetTestContext()).Find(lastLoggedBlock)
-	//Nil(b.T(), dbTx.Error)
+	lastLoggedBlock := &sql.LastLoggedBlockInfo{}
+	dbTx := b.db.DB().WithContext(b.GetTestContext()).Where(&sql.LastLoggedBlockInfo{
+		ChainID: uint32(testChainID.Uint64()),
+	}).Find(lastLoggedBlock)
+	Nil(b.T(), dbTx.Error)
 
 	// Test bridge parity
 	err = b.depositParity(depositLog, bp, uint32(testChainID.Uint64()))

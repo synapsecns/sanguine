@@ -63,8 +63,29 @@ func (s Store) StoreFailedLog(ctx context.Context, log types.Log, chainID uint32
 	return nil
 }
 
+// DeleteFailedLog deletes a failed log from the table.
+func (s Store) DeleteFailedLog(ctx context.Context, log types.Log, chainID uint32) error {
+	dbTx := s.DB().WithContext(ctx).
+		Where(&FailedLog{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+			TxIndex:         uint64(log.TxIndex),
+			BlockHash:       log.BlockHash.String(),
+			BlockIndex:      uint64(log.Index),
+		}).
+		Delete(&FailedLog{})
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not delete failed log: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
 // RetrieveFailedLogs stores a log that was failed to be parsed and stored.
-func (s Store) RetrieveFailedLogs(ctx context.Context, chainID uint32) (logs []*types.Log, err error) {
+func (s Store) RetrieveFailedLogs(ctx context.Context, chainID uint32) (logs []types.Log, err error) {
 	dbLogs := []FailedLog{}
 	dbTx := s.DB().WithContext(ctx).
 		Model(&FailedLog{}).
@@ -76,20 +97,20 @@ func (s Store) RetrieveFailedLogs(ctx context.Context, chainID uint32) (logs []*
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return []*types.Log{}, fmt.Errorf("could not find failed logs: %w", dbTx.Error)
+			return []types.Log{}, fmt.Errorf("could not find failed logs: %w", dbTx.Error)
 		}
-		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
+		return []types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
 	}
 
 	return buildLogsFromDBLogs(dbLogs), nil
 }
 
-func buildLogsFromDBLogs(failedLogs []FailedLog) []*types.Log {
-	var logs []*types.Log
+func buildLogsFromDBLogs(failedLogs []FailedLog) []types.Log {
+	var logs []types.Log
 	for _, dbLog := range failedLogs {
 		topics := buildTopics(dbLog)
 
-		parsedLog := &types.Log{
+		parsedLog := types.Log{
 			Address:     common.HexToAddress(dbLog.ContractAddress),
 			Topics:      topics,
 			Data:        dbLog.Data,
