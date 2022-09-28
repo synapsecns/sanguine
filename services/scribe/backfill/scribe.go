@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 
@@ -28,11 +29,14 @@ type ScribeBackfiller struct {
 }
 
 // NewScribeBackfiller creates a new backfiller for the scribe.
-func NewScribeBackfiller(eventDB db.EventDB, clients map[uint32]ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
+func NewScribeBackfiller(ctx context.Context, eventDB db.EventDB, clients map[uint32]ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
 	// set up the clients mapping
 	clientsMap := make(map[uint32]ScribeBackend)
 	for _, client := range clients {
-		chainID, err := client.ChainID(context.Background())
+		chainIDCTX, cancel := context.WithTimeout(ctx, time.Second*5)
+		defer cancel()
+
+		chainID, err := client.ChainID(chainIDCTX)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain ID: %w", err)
 		}

@@ -97,7 +97,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 	}
 
 	// Set up the scribe backfiller.
-	scribeBackfiller, err := backfill.NewScribeBackfiller(b.testDB, scribeBackends, scribeConfig)
+	scribeBackfiller, err := backfill.NewScribeBackfiller(b.GetTestContext(), b.testDB, scribeBackends, scribeConfig)
 	Nil(b.T(), err)
 
 	// Run the backfill test for each chain.
