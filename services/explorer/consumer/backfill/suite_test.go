@@ -15,7 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
-
 	"go.uber.org/atomic"
 	"math/big"
 	"testing"

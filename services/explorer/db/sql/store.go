@@ -22,7 +22,10 @@ func (s Store) DB() *gorm.DB {
 
 // OpenGormClickhouse opens a gorm connection to clickhouse.
 func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
-	clickhouseDB, err := gorm.Open(gormClickhouse.Open(address), &gorm.Config{
+	clickhouseDB, err := gorm.Open(gormClickhouse.New(gormClickhouse.Config{
+		DSN: address,
+		//DefaultTableEngineOpts: "ENGINE=ReplacingMergeTree() ORDER BY tuple()",
+	}), &gorm.Config{
 		Logger:               dbcommon.GetGormLogger(logger),
 		FullSaveAssociations: true,
 		NowFunc:              time.Now,
@@ -33,7 +36,7 @@ func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 	}
 
 	// load all models
-	err = clickhouseDB.WithContext(ctx).AutoMigrate(GetAllModels()...)
+	err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY block_number").AutoMigrate(&SwapEvent{}, &BridgeEvent{})
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on clickhouse: %w", err)
 	}
@@ -41,11 +44,11 @@ func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 }
 
 // GetAllModels gets all models to migrate.
-func GetAllModels() (allModels []interface{}) {
-	allModels = append(allModels,
-		&SwapEvent{}, &BridgeEvent{}, &LastLoggedBlockInfo{}, &FailedLog{},
-	)
-	return allModels
-}
+//func GetAllModels() (allModels []interface{}) {
+//	allModels = append(allModels,
+//		&SwapEvent{}, &BridgeEvent{},
+//	)
+//	return allModels
+//}
 
 var _ db.ConsumerDB = &Store{}
