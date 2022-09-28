@@ -84,7 +84,7 @@ func NewTenderly(ctx context.Context) (_ *Tenderly, err error) {
 	if err != nil || projectsResponse.Error != nil {
 		return nil, userError.NewUserError(err, "Fetching projects for account failed.")
 	}
-	t.projectSlug = core.GetEnv("TENDERLY_PROJECT", "synapse")
+	t.projectSlug = core.GetEnv("TENDERLY_PROJECT", "project")
 	var accountProject *model.Project
 
 	// make sure the project exists

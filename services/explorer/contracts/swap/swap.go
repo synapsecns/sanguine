@@ -4,6 +4,7 @@ package swap
 import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"math/big"
 )
@@ -40,22 +41,22 @@ func (s SwapFlashLoanTokenSwap) GetBuyer() *common.Address {
 
 // GetTokensSold gets the tokens sold.
 func (s SwapFlashLoanTokenSwap) GetTokensSold() *big.Int {
-	return s.TokensSold
+	return core.CopyBigInt(s.TokensSold)
 }
 
 // GetTokensBought gets the tokens bought.
 func (s SwapFlashLoanTokenSwap) GetTokensBought() *big.Int {
-	return s.TokensBought
+	return core.CopyBigInt(s.TokensBought)
 }
 
 // GetSoldId gets the solid id.
 func (s SwapFlashLoanTokenSwap) GetSoldId() *big.Int {
-	return s.SoldId
+	return core.CopyBigInt(s.SoldId)
 }
 
 // GetBoughtId gets the bought id.
 func (s SwapFlashLoanTokenSwap) GetBoughtId() *big.Int {
-	return s.BoughtId
+	return core.CopyBigInt(s.BoughtId)
 }
 
 // GetLPTokenAmount gets the LP token supply.
@@ -145,6 +146,11 @@ func (s SwapFlashLoanTokenSwap) GetCurrentA() *big.Int {
 
 // GetTime gets the current time.
 func (s SwapFlashLoanTokenSwap) GetTime() *big.Int {
+	return nil
+}
+
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanTokenSwap) GetReceiver() *common.Address {
 	return nil
 }
 

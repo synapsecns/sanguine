@@ -43,7 +43,7 @@ func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 // GetAllModels gets all models to migrate.
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels,
-		&SwapEvent{}, &BridgeEvent{},
+		&SwapEvent{}, &BridgeEvent{}, &LastLoggedBlockInfo{}, &FailedLog{},
 	)
 	return allModels
 }

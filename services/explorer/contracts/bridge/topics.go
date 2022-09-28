@@ -24,7 +24,7 @@ func init() {
 
 	MintTopic = parsedBridge.Events["TokenMint"].ID
 
-	DepositAndSwap = parsedBridge.Events["TokenDepositAndSwap"].ID
+	DepositAndSwapTopic = parsedBridge.Events["TokenDepositAndSwap"].ID
 
 	RedeemAndSwapTopic = parsedBridge.Events["TokenRedeemAndSwap"].ID
 
@@ -49,8 +49,8 @@ var WithdrawTopic common.Hash
 // MintTopic is the topic used for token mints (called by bridge).
 var MintTopic common.Hash
 
-// DepositAndSwap is the topic used for token deposits->swaps.
-var DepositAndSwap common.Hash
+// DepositAndSwapTopic is the topic used for token deposits->swaps.
+var DepositAndSwapTopic common.Hash
 
 // RedeemAndSwapTopic is the topic used for redeems->swaps.
 var RedeemAndSwapTopic common.Hash
@@ -75,10 +75,10 @@ func TopicMap() map[bridge.EventType]common.Hash {
 		bridge.RedeemEvent:            RedeemTopic,
 		bridge.WithdrawEvent:          WithdrawTopic,
 		bridge.MintEvent:              MintTopic,
-		bridge.DepositAndSwapEvent:    DepositAndSwap,
-		bridge.MintAndSwapEvent:       RedeemAndSwapTopic,
-		bridge.RedeemAndSwapEvent:     RedeemAndRemoveTopic,
-		bridge.RedeemAndRemoveEvent:   MintAndSwapTopic,
+		bridge.DepositAndSwapEvent:    DepositAndSwapTopic,
+		bridge.MintAndSwapEvent:       MintAndSwapTopic,
+		bridge.RedeemAndSwapEvent:     RedeemAndSwapTopic,
+		bridge.RedeemAndRemoveEvent:   RedeemAndRemoveTopic,
 		bridge.WithdrawAndRemoveEvent: WithdrawAndRemoveTopic,
 		bridge.RedeemV2Event:          RedeemV2Topic,
 	}
