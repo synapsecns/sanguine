@@ -4,6 +4,7 @@ package swap
 import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"math/big"
 )
@@ -35,7 +36,7 @@ func (s SwapFlashLoanNewAdminFee) GetEventType() swap.EventType {
 
 // GetNewAdminFee gets the admin fee.
 func (s SwapFlashLoanNewAdminFee) GetNewAdminFee() *big.Int {
-	return s.NewAdminFee
+	return core.CopyBigInt(s.NewAdminFee)
 }
 
 // GetSoldId gets the solid id.
@@ -182,7 +183,7 @@ func (s SwapFlashLoanNewSwapFee) GetEventType() swap.EventType {
 
 // GetNewSwapFee gets the admin fee.
 func (s SwapFlashLoanNewSwapFee) GetNewSwapFee() *big.Int {
-	return s.NewSwapFee
+	return core.CopyBigInt(s.NewSwapFee)
 }
 
 // GetSoldId gets the solid id.

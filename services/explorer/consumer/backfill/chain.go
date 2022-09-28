@@ -31,8 +31,6 @@ type ChainBackfiller struct {
 	bridgeConfigAddress common.Address
 	// fetcher is the fetcher to use to fetch logs.
 	fetcher consumer.Fetcher
-	// FailedLogs is how many logs failed to parse.
-	FailedLogs atomic.Uint32
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
@@ -48,7 +46,6 @@ func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncr
 		swapParsers:         swapParsers,
 		fetcher:             fetcher,
 		bridgeConfigAddress: bridgeConfigAddress,
-		FailedLogs:          failedLogs,
 	}
 }
 
@@ -86,7 +83,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight u
 						continue
 					}
 					// parse and store the logs
-					err = c.processLogs(groupCtx, logs, false)
+					err = c.processLogs(groupCtx, logs)
 					if err != nil {
 						logger.Warnf("could not process logs for chain %d: %s", c.chainID, err)
 					}
@@ -98,34 +95,14 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, startHeight, endHeight u
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("error while backfilling chain %d: %w", c.chainID, err)
 	}
-	err := c.consumerDB.StoreLastLoggedBlock(ctx, c.chainID, endHeight)
-	if err != nil {
-		return fmt.Errorf("could not store last confirmed block for chain %d: %w", c.chainID, err)
-	}
+
 	return nil
 }
 
-// RetryFailedLogs gets the logs in the FailedLog table and attempts to parse and store them.
-func (c *ChainBackfiller) RetryFailedLogs(ctx context.Context) error {
-	// get failed logs
-	failedLogs, err := c.consumerDB.RetrieveFailedLogs(ctx, c.chainID)
-	if err != nil {
-		return fmt.Errorf("could not retrieve failed logs for chain %d: %w", c.chainID, err)
-	}
-	// process the logs
-	err = c.processLogs(ctx, failedLogs, true)
-	if err != nil {
-		return fmt.Errorf("could not process failed logs for chain %d: %w", c.chainID, err)
-	}
-	return nil
-}
-
-// processLogs processes the logs and stores them in the consumer database. If `retry` is true,
-// then the logs that are being processed are logs that failed to parse and store the first time,
-// and they should be removed from the failed logs table if they are now stored correctly.
+// processLogs processes the logs and stores them in the consumer database.
 //
 //nolint:gocognit,cyclop
-func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, retry bool) error {
+func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) error {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
 	for _, log := range logs {
@@ -143,22 +120,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			}
 			err := eventParser.ParseAndStore(groupCtx, log, c.chainID)
 			if err != nil {
-				if !retry {
-					err = c.consumerDB.StoreFailedLog(ctx, log, c.chainID)
-					if err != nil {
-						return fmt.Errorf("could not store failed log: %w", err)
-					}
-					c.FailedLogs.Inc()
-				} else {
-					logger.Warnf("failed to retry storing the failed log: %s", err)
-				}
-			}
-			if err == nil && retry {
-				err = c.consumerDB.DeleteFailedLog(ctx, log, c.chainID)
-				if err != nil {
-					return fmt.Errorf("could not delete failed log: %w", err)
-				}
-				c.FailedLogs.Dec()
+				return fmt.Errorf("could not parse and store log: %w", err)
 			}
 			return nil
 		})

@@ -30,7 +30,7 @@ func (t TestSynapseBridgeDeployer) Deploy(ctx context.Context) (contracts.Deploy
 	return t.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return testbridge.DeployTestSynapseBridge(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return testbridge.NewBridgeRef(address, backend)
+		return testbridge.NewTestBridgeRef(address, backend)
 	})
 }
 
@@ -51,7 +51,7 @@ func (t TestSwapFlashLoanDeployer) Deploy(ctx context.Context) (contracts.Deploy
 	return t.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return testswap.DeployTestSwapFlashLoan(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return testswap.NewSwapRef(address, backend)
+		return testswap.NewTestSwapRef(address, backend)
 	})
 }
 

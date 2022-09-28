@@ -24,24 +24,24 @@ func (d *DeployManager) GetBridgeConfigV3(ctx context.Context, backend backends.
 }
 
 // GetTestSynapseBridge gets a typecast test bridge contract.
-func (d *DeployManager) GetTestSynapseBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testbridge.BridgeRef) {
+func (d *DeployManager) GetTestSynapseBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testbridge.TestBridgeRef) {
 	d.T().Helper()
 
 	bridgeContract := d.GetContractRegistry(backend).Get(ctx, TestSynapseBridgeType)
 
-	bridgeHandle, ok := bridgeContract.ContractHandle().(*testbridge.BridgeRef)
+	bridgeHandle, ok := bridgeContract.ContractHandle().(*testbridge.TestBridgeRef)
 	assert.True(d.T(), ok)
 
 	return bridgeContract, bridgeHandle
 }
 
 // GetTestSwapFlashLoan gets a typecast test swap contract.
-func (d *DeployManager) GetTestSwapFlashLoan(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testswap.SwapRef) {
+func (d *DeployManager) GetTestSwapFlashLoan(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testswap.TestSwapRef) {
 	d.T().Helper()
 
 	swapContract := d.GetContractRegistry(backend).Get(ctx, TestSwapFlashLoanType)
 
-	swapHandle, ok := swapContract.ContractHandle().(*testswap.SwapRef)
+	swapHandle, ok := swapContract.ContractHandle().(*testswap.TestSwapRef)
 	assert.True(d.T(), ok)
 
 	return swapContract, swapHandle

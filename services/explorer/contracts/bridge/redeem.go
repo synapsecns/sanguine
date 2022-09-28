@@ -4,6 +4,7 @@ package bridge
 import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"math/big"
 )
@@ -15,7 +16,7 @@ func (s SynapseBridgeTokenRedeemAndSwap) GetRaw() ethTypes.Log {
 
 // GetDestinationChainID gets the destination chain id from the redeem and swap log.
 func (s SynapseBridgeTokenRedeemAndSwap) GetDestinationChainID() *big.Int {
-	return s.ChainId
+	return core.CopyBigInt(s.ChainId)
 }
 
 // GetToken gets the destination chain id from the redeem and swap log.
@@ -25,7 +26,7 @@ func (s SynapseBridgeTokenRedeemAndSwap) GetToken() common.Address {
 
 // GetAmount gets the destination chain id from the redeem and swap log.
 func (s SynapseBridgeTokenRedeemAndSwap) GetAmount() *big.Int {
-	return s.Amount
+	return core.CopyBigInt(s.Amount)
 }
 
 // GetEventType gets the type of the redeem and swap event.
@@ -65,12 +66,12 @@ func (s SynapseBridgeTokenRedeemAndSwap) GetTokenIndexTo() *uint8 {
 
 // GetMinDy gets the minimum amount to receive.
 func (s SynapseBridgeTokenRedeemAndSwap) GetMinDy() *big.Int {
-	return s.MinDy
+	return core.CopyBigInt(s.MinDy)
 }
 
 // GetDeadline gets the deadline for the redeem.
 func (s SynapseBridgeTokenRedeemAndSwap) GetDeadline() *big.Int {
-	return s.Deadline
+	return core.CopyBigInt(s.Deadline)
 }
 
 func (s SynapseBridgeTokenRedeemAndSwap) GetSwapTokenIndex() *uint8 {
@@ -110,7 +111,7 @@ func (s SynapseBridgeTokenRedeem) GetRaw() ethTypes.Log {
 
 // GetDestinationChainID gets the destination chain id from the redeem log.
 func (s SynapseBridgeTokenRedeem) GetDestinationChainID() *big.Int {
-	return s.ChainId
+	return core.CopyBigInt(s.ChainId)
 }
 
 // GetToken gets the destination chain id from the redeem log.
@@ -120,7 +121,7 @@ func (s SynapseBridgeTokenRedeem) GetToken() common.Address {
 
 // GetAmount gets the token amount.
 func (s SynapseBridgeTokenRedeem) GetAmount() *big.Int {
-	return s.Amount
+	return core.CopyBigInt(s.Amount)
 }
 
 // GetEventType gets the type of the redeem event.
@@ -201,7 +202,7 @@ func (s SynapseBridgeTokenRedeemAndRemove) GetRaw() ethTypes.Log {
 
 // GetDestinationChainID gets the destination chain id from the redeem and remove log.
 func (s SynapseBridgeTokenRedeemAndRemove) GetDestinationChainID() *big.Int {
-	return s.ChainId
+	return core.CopyBigInt(s.ChainId)
 }
 
 // GetToken gets the destination chain id from the redeem and remove log.
@@ -211,7 +212,7 @@ func (s SynapseBridgeTokenRedeemAndRemove) GetToken() common.Address {
 
 // GetAmount gets the token amount.
 func (s SynapseBridgeTokenRedeemAndRemove) GetAmount() *big.Int {
-	return s.Amount
+	return core.CopyBigInt(s.Amount)
 }
 
 // GetEventType gets the type of the redeem event.
@@ -246,12 +247,12 @@ func (s SynapseBridgeTokenRedeemAndRemove) GetSwapTokenIndex() *uint8 {
 
 // GetSwapMinAmount gets the minimum amount to receive.
 func (s SynapseBridgeTokenRedeemAndRemove) GetSwapMinAmount() *big.Int {
-	return s.SwapMinAmount
+	return core.CopyBigInt(s.SwapMinAmount)
 }
 
 // GetSwapDeadline gets the deadline for the redeem.
 func (s SynapseBridgeTokenRedeemAndRemove) GetSwapDeadline() *big.Int {
-	return s.SwapDeadline
+	return core.CopyBigInt(s.SwapDeadline)
 }
 
 func (s SynapseBridgeTokenRedeemAndRemove) GetTokenIndexFrom() *uint8 {
@@ -295,7 +296,7 @@ func (s SynapseBridgeTokenRedeemV2) GetRaw() ethTypes.Log {
 
 // GetDestinationChainID gets the destination chain id from the redeem log.
 func (s SynapseBridgeTokenRedeemV2) GetDestinationChainID() *big.Int {
-	return s.ChainId
+	return core.CopyBigInt(s.ChainId)
 }
 
 // GetToken gets the destination chain id from the redeem log.
@@ -305,7 +306,7 @@ func (s SynapseBridgeTokenRedeemV2) GetToken() common.Address {
 
 // GetAmount gets the token amount.
 func (s SynapseBridgeTokenRedeemV2) GetAmount() *big.Int {
-	return s.Amount
+	return core.CopyBigInt(s.Amount)
 }
 
 // GetEventType gets the redeem event type.

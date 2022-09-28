@@ -4,6 +4,7 @@ package bridge
 import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"math/big"
 )
@@ -20,7 +21,7 @@ func (s SynapseBridgeTokenWithdraw) GetToken() common.Address {
 
 // GetAmount gets the token amount.
 func (s SynapseBridgeTokenWithdraw) GetAmount() *big.Int {
-	return s.Amount
+	return core.CopyBigInt(s.Amount)
 }
 
 // GetEventType gets the type of the redeem event.
@@ -30,7 +31,7 @@ func (s SynapseBridgeTokenWithdraw) GetEventType() bridge.EventType {
 
 // GetFee gets the fee for the token withdraw.
 func (s SynapseBridgeTokenWithdraw) GetFee() *big.Int {
-	return s.Fee
+	return core.CopyBigInt(s.Fee)
 }
 
 // GetKappa gets the gappa for the token withdraw.
@@ -106,7 +107,7 @@ func (s SynapseBridgeTokenWithdrawAndRemove) GetToken() common.Address {
 
 // GetAmount gets the amount fo the withdraw.
 func (s SynapseBridgeTokenWithdrawAndRemove) GetAmount() *big.Int {
-	return s.Amount
+	return core.CopyBigInt(s.Amount)
 }
 
 // GetEventType gets the withdraw and remove event type.
@@ -136,7 +137,7 @@ func (s SynapseBridgeTokenWithdrawAndRemove) GetRaw() ethTypes.Log {
 
 // GetFee gets the fee for the withdraw and remove.
 func (s SynapseBridgeTokenWithdrawAndRemove) GetFee() *big.Int {
-	return s.Fee
+	return core.CopyBigInt(s.Fee)
 }
 
 // GetKappa gets the kappa value for the withdraw and remove.
@@ -156,12 +157,12 @@ func (s SynapseBridgeTokenWithdrawAndRemove) GetSwapTokenIndex() *uint8 {
 
 // GetSwapMinAmount gets the minimum amount to swap.
 func (s SynapseBridgeTokenWithdrawAndRemove) GetSwapMinAmount() *big.Int {
-	return s.SwapMinAmount
+	return core.CopyBigInt(s.SwapMinAmount)
 }
 
 // GetSwapDeadline gets the swap deadline.
 func (s SynapseBridgeTokenWithdrawAndRemove) GetSwapDeadline() *big.Int {
-	return s.SwapDeadline
+	return core.CopyBigInt(s.SwapDeadline)
 }
 
 // GetSwapSuccess gets the swap success.
