@@ -33,34 +33,6 @@ func BoolToUint8(input *bool) *uint8 {
 	return &zero
 }
 
-// ReadBlockNumberByChainID provides an easy-to-use interface to validate database
-// data from a recent write event via chain id.
-func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error) {
-	// If reading a bridge event
-	var blockNumber uint64
-	switch eventType {
-	case Bridge:
-		var resp BridgeEvent
-		dbTx := s.DB().WithContext(ctx).
-			Find(&resp, "chain_id = ?", chainID)
-		if dbTx.Error != nil {
-			return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-		}
-		blockNumber = resp.BlockNumber
-
-	// If reading a swap event
-	case Swap:
-		var resp SwapEvent
-		dbTx := s.DB().WithContext(ctx).
-			Find(&resp, "chain_id = ?", chainID)
-		if dbTx.Error != nil {
-			return nil, fmt.Errorf("failed to store read event: %w", dbTx.Error)
-		}
-		blockNumber = resp.BlockNumber
-	}
-	return &blockNumber, nil
-}
-
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
 func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenID *string) error {
 	if bridgeEvent != nil {

@@ -1,0 +1,70 @@
+type BridgeTransaction {
+  fromInfo: PartialInfo
+  toInfo:   PartialInfo
+  kappa:        String
+  pending:      Boolean
+  swapSuccess:  Boolean
+  status:       String
+}
+type PartialInfo {
+  chainId: Int
+  address: String
+  txnHash: String
+  value:          String
+  formattedValue: Float
+  USDValue:       Float
+  tokenAddress:   String
+  tokenSymbol:    String
+  time:           Int
+}
+type DateResult {
+  date:   String,
+  total:  Float
+}
+type HistoricalResult {
+  total:        Float
+  dateResults:  [DateResult]
+  type:         HistoricalResultType
+}
+type ScalarResult {
+  value: String
+}
+type ValueResult {
+  USDValue: String
+}
+type TransactionCountResult {
+  chainId:  Int
+  count:    Int
+}
+type TokenCountResult {
+  chainId:      Int
+  tokenAddress: String
+  count:        Int
+}
+type AddressRanking {
+  address:  String
+  count:    Int
+}
+type CSVData {
+  cid:            String
+  ipfsGatewayUrl: String
+}
+enum Duration {
+  PAST_DAY
+  ALL_TIME
+}
+enum Direction {
+  IN
+  OUT
+}
+enum StatisticType {
+  MEAN
+  MEDIAN
+  TOTAL
+  COUNT
+}
+enum HistoricalResultType {
+  BRIDGEVOLUME
+  TRANSACTIONS
+  ADDRESSES
+}
