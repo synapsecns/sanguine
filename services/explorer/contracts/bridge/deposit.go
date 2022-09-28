@@ -4,6 +4,7 @@ package bridge
 import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"math/big"
 )
@@ -15,7 +16,7 @@ func (s SynapseBridgeTokenDeposit) GetRaw() ethTypes.Log {
 
 // GetDestinationChainID gets the destination chain id from the deposit log.
 func (s SynapseBridgeTokenDeposit) GetDestinationChainID() *big.Int {
-	return s.ChainId
+	return core.CopyBigInt(s.ChainId)
 }
 
 // GetToken gets the destination chain id from the deposit and swap log.
@@ -24,8 +25,8 @@ func (s SynapseBridgeTokenDeposit) GetToken() common.Address {
 }
 
 // GetAmount gets the destination chain id from the deposit log.
-func (s SynapseBridgeTokenDeposit) GetAmount() big.Int {
-	return *s.Amount
+func (s SynapseBridgeTokenDeposit) GetAmount() *big.Int {
+	return core.CopyBigInt(s.Amount)
 }
 
 // GetEventType gets the type of the token deposit event.
@@ -106,7 +107,7 @@ func (s SynapseBridgeTokenDepositAndSwap) GetRaw() ethTypes.Log {
 
 // GetDestinationChainID gets the destination chain id from the deposit and swap log.
 func (s SynapseBridgeTokenDepositAndSwap) GetDestinationChainID() *big.Int {
-	return s.ChainId
+	return core.CopyBigInt(s.ChainId)
 }
 
 // GetToken gets the destination chain id from the deposit and swap log.
@@ -115,8 +116,8 @@ func (s SynapseBridgeTokenDepositAndSwap) GetToken() common.Address {
 }
 
 // GetAmount gets the destination chain id from the deposit and swap log.
-func (s SynapseBridgeTokenDepositAndSwap) GetAmount() big.Int {
-	return *s.Amount
+func (s SynapseBridgeTokenDepositAndSwap) GetAmount() *big.Int {
+	return core.CopyBigInt(s.Amount)
 }
 
 // GetEventType gets the type of the deposit and swap event.
@@ -156,12 +157,12 @@ func (s SynapseBridgeTokenDepositAndSwap) GetTokenIndexTo() *uint8 {
 
 // GetMinDy gets the minimum amount to receive.
 func (s SynapseBridgeTokenDepositAndSwap) GetMinDy() *big.Int {
-	return s.MinDy
+	return core.CopyBigInt(s.MinDy)
 }
 
 // GetDeadline gets the deadline for the swap.
 func (s SynapseBridgeTokenDepositAndSwap) GetDeadline() *big.Int {
-	return s.Deadline
+	return core.CopyBigInt(s.Deadline)
 }
 
 func (s SynapseBridgeTokenDepositAndSwap) GetSwapTokenIndex() *uint8 {

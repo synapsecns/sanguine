@@ -50,8 +50,6 @@ func NewTestEnvDB(ctx context.Context, t *testing.T) (db db.ConsumerDB, eventDB 
 
 	gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
 
-	// var request *http.Request
-
 	checkConnection := func() bool {
 		request, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)
 		assert.Nil(t, err)
@@ -94,7 +92,6 @@ func NewTestEnvDB(ctx context.Context, t *testing.T) (db db.ConsumerDB, eventDB 
 	assert.Nil(t, err)
 	db = consumerDB
 
-	// maybe newSimulatedBackendWithChainID?
 	testBackend = simulated.NewSimulatedBackend(ctx, t)
 	deployManager = NewDeployManager(t)
 

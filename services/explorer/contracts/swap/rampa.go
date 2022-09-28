@@ -4,6 +4,7 @@ package swap
 import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"math/big"
 )
@@ -35,22 +36,22 @@ func (s SwapFlashLoanRampA) GetEventType() swap.EventType {
 
 // GetOldA gets the old A.
 func (s SwapFlashLoanRampA) GetOldA() *big.Int {
-	return s.OldA
+	return core.CopyBigInt(s.OldA)
 }
 
 // GetNewA gets the new A.
 func (s SwapFlashLoanRampA) GetNewA() *big.Int {
-	return s.NewA
+	return core.CopyBigInt(s.NewA)
 }
 
 // GetInitialTime gets the initial time.
 func (s SwapFlashLoanRampA) GetInitialTime() *big.Int {
-	return s.InitialTime
+	return core.CopyBigInt(s.InitialTime)
 }
 
 // GetFutureTime gets the future time.
 func (s SwapFlashLoanRampA) GetFutureTime() *big.Int {
-	return s.FutureTime
+	return core.CopyBigInt(s.FutureTime)
 }
 
 // GetBoughtId gets the bought id.
@@ -148,6 +149,11 @@ func (s SwapFlashLoanRampA) GetTokensSold() *big.Int {
 	return nil
 }
 
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanRampA) GetReceiver() *common.Address {
+	return nil
+}
+
 var _ swap.EventLog = &SwapFlashLoanRampA{}
 
 // GetRaw gets the raw event logs from the redeem and remove event.
@@ -172,17 +178,17 @@ func (s SwapFlashLoanStopRampA) GetContractAddress() common.Address {
 
 // GetEventType gets the type of the redeem event.
 func (s SwapFlashLoanStopRampA) GetEventType() swap.EventType {
-	return swap.RampAEvent
+	return swap.StopRampAEvent
 }
 
 // GetCurrentA gets the current A.
 func (s SwapFlashLoanStopRampA) GetCurrentA() *big.Int {
-	return s.CurrentA
+	return core.CopyBigInt(s.CurrentA)
 }
 
 // GetTime gets the time.
 func (s SwapFlashLoanStopRampA) GetTime() *big.Int {
-	return s.Time
+	return core.CopyBigInt(s.Time)
 }
 
 // GetBoughtId gets the bought id.
@@ -287,6 +293,11 @@ func (s SwapFlashLoanStopRampA) GetOldA() *big.Int {
 
 // GetNewA gets the new A.
 func (s SwapFlashLoanStopRampA) GetNewA() *big.Int {
+	return nil
+}
+
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanStopRampA) GetReceiver() *common.Address {
 	return nil
 }
 

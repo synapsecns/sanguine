@@ -22,8 +22,8 @@ type Parser interface {
 type BridgeParser struct {
 	// consumerDB is the database to store parsed data in
 	consumerDB db.ConsumerDB
-	// filterer is the bridge filterer we use to parse events
-	filterer *bridge.SynapseBridgeFilterer
+	// Filterer is the bridge Filterer we use to parse events
+	Filterer *bridge.SynapseBridgeFilterer
 	// bridgeAddress is the address of the bridge
 	bridgeAddress common.Address
 	// fetcher is a Bridge Config Fetcher
@@ -57,8 +57,8 @@ func (p *BridgeParser) EventType(log ethTypes.Log) (_ bridgeTypes.EventType, ok 
 type SwapParser struct {
 	// consumerDB is the database to store parsed data in
 	consumerDB db.ConsumerDB
-	// filterer is the swap filterer we use to parse events
-	filterer *swap.SwapFlashLoanFilterer
+	// Filterer is the swap Filterer we use to parse events
+	Filterer *swap.SwapFlashLoanFilterer
 }
 
 // NewSwapParser creates a new parser for a given bridge.
@@ -86,75 +86,75 @@ func (p *SwapParser) EventType(log ethTypes.Log) (_ swapTypes.EventType, ok bool
 
 // ParseAndStore parses the bridge logs and stores them in the database.
 //
-// nolint:gocognit,cyclop
+// nolint:gocognit,cyclop,dupl
 func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	//nolint:dupl
-	for _, logTopic := range log.Topics {
-		switch logTopic {
-		case bridge.Topic(bridgeTypes.DepositEvent):
-			err := p.parseAndStoreDeposit(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store deposit: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.RedeemEvent):
-			err := p.parseAndStoreRedeem(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store redeem: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.WithdrawEvent):
-			err := p.parseAndStoreWithdraw(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store withdraw: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.MintEvent):
-			err := p.parseAndStoreMint(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store mint: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.DepositAndSwapEvent):
-			err := p.parseAndStoreDepositAndSwap(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store deposit and swap: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.MintAndSwapEvent):
-			err := p.parseAndStoreMintAndSwap(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store mint and swap: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.RedeemAndSwapEvent):
-			err := p.parseAndStoreRedeemAndSwap(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store redeem and swap: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.RedeemAndRemoveEvent):
-			err := p.parseAndStoreRedeemAndRemove(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store redeem and remove: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.WithdrawAndRemoveEvent):
-			err := p.parseAndStoreWithdrawAndRemove(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store withdraw and remove: %w", err)
-			}
-		case bridge.Topic(bridgeTypes.RedeemV2Event):
-			err := p.parseAndStoreRedeemV2(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store redeem v2: %w", err)
-			}
+	logTopic := log.Topics[0]
+	switch logTopic {
+	case bridge.Topic(bridgeTypes.DepositEvent):
+		err := p.parseAndStoreDeposit(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store deposit: %w", err)
 		}
+	case bridge.Topic(bridgeTypes.RedeemEvent):
+		err := p.parseAndStoreRedeem(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store redeem: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.WithdrawEvent):
+		err := p.parseAndStoreWithdraw(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store withdraw: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.MintEvent):
+		err := p.parseAndStoreMint(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store mint: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.DepositAndSwapEvent):
+		err := p.parseAndStoreDepositAndSwap(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store deposit and swap: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.MintAndSwapEvent):
+		err := p.parseAndStoreMintAndSwap(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store mint and swap: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.RedeemAndSwapEvent):
+		err := p.parseAndStoreRedeemAndSwap(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store redeem and swap: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.RedeemAndRemoveEvent):
+		err := p.parseAndStoreRedeemAndRemove(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store redeem and remove: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.WithdrawAndRemoveEvent):
+		err := p.parseAndStoreWithdrawAndRemove(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store withdraw and remove: %w", err)
+		}
+	case bridge.Topic(bridgeTypes.RedeemV2Event):
+		err := p.parseAndStoreRedeemV2(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store redeem v2: %w", err)
+		}
+	default:
+		return fmt.Errorf("unknown topic: %s", logTopic.Hex())
 	}
 
 	return nil
 }
 
 func (p *BridgeParser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseTokenDeposit(log)
+	iface, err := p.Filterer.ParseTokenDeposit(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token deposit: %w", err)
 	}
 
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -167,13 +167,13 @@ func (p *BridgeParser) parseAndStoreDeposit(ctx context.Context, log ethTypes.Lo
 }
 
 func (p *BridgeParser) parseAndStoreRedeem(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseTokenRedeem(log)
+	iface, err := p.Filterer.ParseTokenRedeem(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem: %w", err)
 	}
 
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -186,13 +186,13 @@ func (p *BridgeParser) parseAndStoreRedeem(ctx context.Context, log ethTypes.Log
 }
 
 func (p *BridgeParser) parseAndStoreWithdraw(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseTokenWithdraw(log)
+	iface, err := p.Filterer.ParseTokenWithdraw(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token withdraw: %w", err)
 	}
 
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -205,13 +205,13 @@ func (p *BridgeParser) parseAndStoreWithdraw(ctx context.Context, log ethTypes.L
 }
 
 func (p *BridgeParser) parseAndStoreMint(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseTokenMint(log)
+	iface, err := p.Filterer.ParseTokenMint(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token mint: %w", err)
 	}
 
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -224,12 +224,12 @@ func (p *BridgeParser) parseAndStoreMint(ctx context.Context, log ethTypes.Log, 
 }
 
 func (p *BridgeParser) parseAndStoreDepositAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseTokenDepositAndSwap(log)
+	iface, err := p.Filterer.ParseTokenDepositAndSwap(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token deposit and swap: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -241,12 +241,12 @@ func (p *BridgeParser) parseAndStoreDepositAndSwap(ctx context.Context, log ethT
 }
 
 func (p *BridgeParser) parseAndStoreMintAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseTokenMintAndSwap(log)
+	iface, err := p.Filterer.ParseTokenMintAndSwap(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token mint and swap: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -259,12 +259,12 @@ func (p *BridgeParser) parseAndStoreMintAndSwap(ctx context.Context, log ethType
 }
 
 func (p *BridgeParser) parseAndStoreRedeemAndSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseTokenRedeemAndSwap(log)
+	iface, err := p.Filterer.ParseTokenRedeemAndSwap(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem and swap: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -277,12 +277,12 @@ func (p *BridgeParser) parseAndStoreRedeemAndSwap(ctx context.Context, log ethTy
 }
 
 func (p *BridgeParser) parseAndStoreRedeemAndRemove(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseTokenRedeemAndRemove(log)
+	iface, err := p.Filterer.ParseTokenRedeemAndRemove(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem and remove: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -295,12 +295,12 @@ func (p *BridgeParser) parseAndStoreRedeemAndRemove(ctx context.Context, log eth
 }
 
 func (p *BridgeParser) parseAndStoreWithdrawAndRemove(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseTokenWithdrawAndRemove(log)
+	iface, err := p.Filterer.ParseTokenWithdrawAndRemove(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token withdraw and remove: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -313,12 +313,12 @@ func (p *BridgeParser) parseAndStoreWithdrawAndRemove(ctx context.Context, log e
 }
 
 func (p *BridgeParser) parseAndStoreRedeemV2(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseTokenRedeemV2(log)
+	iface, err := p.Filterer.ParseTokenRedeemV2(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token redeem v2: %w", err)
 	}
 	// get BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, uint32(iface.GetBlockNumber()), iface.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iface.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -332,68 +332,69 @@ func (p *BridgeParser) parseAndStoreRedeemV2(ctx context.Context, log ethTypes.L
 
 // ParseAndStore parses and stores the swap logs.
 //
-//nolint:gocognit,cyclop
+//nolint:gocognit,cyclop,dupl
 func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	//nolint:dupl
-	for _, logTopic := range log.Topics {
-		switch logTopic {
-		case swap.Topic(swapTypes.TokenSwapEvent):
-			err := p.parseTokenSwap(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store token swap: %w", err)
-			}
-		case swap.Topic(swapTypes.AddLiquidityEvent):
-			err := p.parseAddLiquidity(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store add liquidity: %w", err)
-			}
-		case swap.Topic(swapTypes.RemoveLiquidityEvent):
-			err := p.parseRemoveLiquidity(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store remove liquidity: %w", err)
-			}
-		case swap.Topic(swapTypes.RemoveLiquidityOneEvent):
-			err := p.parseRemoveLiquidityOne(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store remove liquidity one: %w", err)
-			}
-		case swap.Topic(swapTypes.RemoveLiquidityImbalanceEvent):
-			err := p.parseRemoveLiquidityImbalance(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store remove liquidity imbalance: %w", err)
-			}
-		case swap.Topic(swapTypes.NewAdminFeeEvent):
-			err := p.parseNewAdminFee(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store new admin fee: %w", err)
-			}
-		case swap.Topic(swapTypes.NewSwapFeeEvent):
-			err := p.parseNewSwapFee(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store new swap fee: %w", err)
-			}
-		case swap.Topic(swapTypes.RampAEvent):
-			err := p.parseRampA(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store ramp a: %w", err)
-			}
-		case swap.Topic(swapTypes.StopRampAEvent):
-			err := p.parseStopRampA(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store stop ramp a: %w", err)
-			}
-		case swap.Topic(swapTypes.FlashLoanEvent):
-			err := p.parseFlashLoan(ctx, log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not store flash loan: %w", err)
-			}
+	logTopic := log.Topics[0]
+	switch logTopic {
+	case swap.Topic(swapTypes.TokenSwapEvent):
+		err := p.parseTokenSwap(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store token swap: %w", err)
 		}
+	case swap.Topic(swapTypes.AddLiquidityEvent):
+		err := p.parseAddLiquidity(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store add liquidity: %w", err)
+		}
+	case swap.Topic(swapTypes.RemoveLiquidityEvent):
+		err := p.parseRemoveLiquidity(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store remove liquidity: %w", err)
+		}
+	case swap.Topic(swapTypes.RemoveLiquidityOneEvent):
+		err := p.parseRemoveLiquidityOne(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store remove liquidity one: %w", err)
+		}
+	case swap.Topic(swapTypes.RemoveLiquidityImbalanceEvent):
+		err := p.parseRemoveLiquidityImbalance(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store remove liquidity imbalance: %w", err)
+		}
+	case swap.Topic(swapTypes.NewAdminFeeEvent):
+		err := p.parseNewAdminFee(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store new admin fee: %w", err)
+		}
+	case swap.Topic(swapTypes.NewSwapFeeEvent):
+		err := p.parseNewSwapFee(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store new swap fee: %w", err)
+		}
+	case swap.Topic(swapTypes.RampAEvent):
+		err := p.parseRampA(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store ramp a: %w", err)
+		}
+	case swap.Topic(swapTypes.StopRampAEvent):
+		err := p.parseStopRampA(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store stop ramp a: %w", err)
+		}
+	case swap.Topic(swapTypes.FlashLoanEvent):
+		err := p.parseFlashLoan(ctx, log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not store flash loan: %w", err)
+		}
+	default:
+		return fmt.Errorf("unknown topic: %s", logTopic.Hex())
 	}
-	return fmt.Errorf("did not find event type for log")
+
+	return nil
 }
 
 func (p *SwapParser) parseTokenSwap(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseTokenSwap(log)
+	iface, err := p.Filterer.ParseTokenSwap(log)
 	if err != nil {
 		return fmt.Errorf("could not parse token swap: %w", err)
 	}
@@ -405,7 +406,7 @@ func (p *SwapParser) parseTokenSwap(ctx context.Context, log ethTypes.Log, chain
 }
 
 func (p *SwapParser) parseAddLiquidity(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseAddLiquidity(log)
+	iface, err := p.Filterer.ParseAddLiquidity(log)
 	if err != nil {
 		return fmt.Errorf("could not parse add liquidity: %w", err)
 	}
@@ -417,7 +418,7 @@ func (p *SwapParser) parseAddLiquidity(ctx context.Context, log ethTypes.Log, ch
 }
 
 func (p *SwapParser) parseRemoveLiquidity(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseRemoveLiquidity(log)
+	iface, err := p.Filterer.ParseRemoveLiquidity(log)
 	if err != nil {
 		return fmt.Errorf("could not parse remove liquidity: %w", err)
 	}
@@ -429,7 +430,7 @@ func (p *SwapParser) parseRemoveLiquidity(ctx context.Context, log ethTypes.Log,
 }
 
 func (p *SwapParser) parseRemoveLiquidityOne(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseRemoveLiquidityOne(log)
+	iface, err := p.Filterer.ParseRemoveLiquidityOne(log)
 	if err != nil {
 		return fmt.Errorf("could not parse remove liquidity one: %w", err)
 	}
@@ -440,7 +441,7 @@ func (p *SwapParser) parseRemoveLiquidityOne(ctx context.Context, log ethTypes.L
 	return nil
 }
 func (p *SwapParser) parseRemoveLiquidityImbalance(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseRemoveLiquidityImbalance(log)
+	iface, err := p.Filterer.ParseRemoveLiquidityImbalance(log)
 	if err != nil {
 		return fmt.Errorf("could not parse remove liquidity imbalance: %w", err)
 	}
@@ -452,7 +453,7 @@ func (p *SwapParser) parseRemoveLiquidityImbalance(ctx context.Context, log ethT
 }
 
 func (p *SwapParser) parseNewAdminFee(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseNewAdminFee(log)
+	iface, err := p.Filterer.ParseNewAdminFee(log)
 	if err != nil {
 		return fmt.Errorf("could not parse new admin fee: %w", err)
 	}
@@ -464,7 +465,7 @@ func (p *SwapParser) parseNewAdminFee(ctx context.Context, log ethTypes.Log, cha
 }
 
 func (p *SwapParser) parseNewSwapFee(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseNewSwapFee(log)
+	iface, err := p.Filterer.ParseNewSwapFee(log)
 	if err != nil {
 		return fmt.Errorf("could not parse new swap fee: %w", err)
 	}
@@ -476,7 +477,7 @@ func (p *SwapParser) parseNewSwapFee(ctx context.Context, log ethTypes.Log, chai
 }
 
 func (p *SwapParser) parseRampA(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseRampA(log)
+	iface, err := p.Filterer.ParseRampA(log)
 	if err != nil {
 		return fmt.Errorf("could not parse Ramp A: %w", err)
 	}
@@ -487,7 +488,7 @@ func (p *SwapParser) parseRampA(ctx context.Context, log ethTypes.Log, chainID u
 	return nil
 }
 func (p *SwapParser) parseStopRampA(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseStopRampA(log)
+	iface, err := p.Filterer.ParseStopRampA(log)
 	if err != nil {
 		return fmt.Errorf("could not parse stop Ramp A: %w", err)
 	}
@@ -499,7 +500,7 @@ func (p *SwapParser) parseStopRampA(ctx context.Context, log ethTypes.Log, chain
 }
 
 func (p *SwapParser) parseFlashLoan(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	iface, err := p.filterer.ParseFlashLoan(log)
+	iface, err := p.Filterer.ParseFlashLoan(log)
 	if err != nil {
 		return fmt.Errorf("could not parse flash loan: %w", err)
 	}

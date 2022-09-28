@@ -4,6 +4,7 @@ package swap
 import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"math/big"
 )
@@ -35,12 +36,16 @@ func (s SwapFlashLoanAddLiquidity) GetEventType() swap.EventType {
 
 // GetFees gets the fees.
 func (s SwapFlashLoanAddLiquidity) GetFees() []*big.Int {
-	return s.Fees
+	var fees []*big.Int
+	for _, fee := range s.Fees {
+		fees = append(fees, core.CopyBigInt(fee))
+	}
+	return fees
 }
 
 // GetInvariant gets the invariant of the swap.
 func (s SwapFlashLoanAddLiquidity) GetInvariant() *big.Int {
-	return s.Invariant
+	return core.CopyBigInt(s.Invariant)
 }
 
 // GetProvider gets the provider.
@@ -50,12 +55,16 @@ func (s SwapFlashLoanAddLiquidity) GetProvider() *common.Address {
 
 // GetTokenAmounts gets the token amounts.
 func (s SwapFlashLoanAddLiquidity) GetTokenAmounts() []*big.Int {
-	return s.TokenAmounts
+	var tokenAmounts []*big.Int
+	for _, tokenAmount := range s.TokenAmounts {
+		tokenAmounts = append(tokenAmounts, core.CopyBigInt(tokenAmount))
+	}
+	return tokenAmounts
 }
 
 // GetLPTokenSupply gets the LP token supply.
 func (s SwapFlashLoanAddLiquidity) GetLPTokenSupply() *big.Int {
-	return s.LpTokenSupply
+	return core.CopyBigInt(s.LpTokenSupply)
 }
 
 // GetBoughtId gets the bought id.
@@ -148,6 +157,11 @@ func (s SwapFlashLoanAddLiquidity) GetTime() *big.Int {
 	return nil
 }
 
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanAddLiquidity) GetReceiver() *common.Address {
+	return nil
+}
+
 var _ swap.EventLog = &SwapFlashLoanAddLiquidity{}
 
 // GetRaw gets the raw event logs from the redeem and remove event.
@@ -182,7 +196,11 @@ func (s SwapFlashLoanRemoveLiquidity) GetProvider() *common.Address {
 
 // GetTokenAmounts gets the invariant of the swap.
 func (s SwapFlashLoanRemoveLiquidity) GetTokenAmounts() []*big.Int {
-	return s.TokenAmounts
+	var tokenAmounts []*big.Int
+	for _, tokenAmount := range s.TokenAmounts {
+		tokenAmounts = append(tokenAmounts, core.CopyBigInt(tokenAmount))
+	}
+	return tokenAmounts
 }
 
 // GetLPTokenSupply gets the LP token supply.
@@ -290,6 +308,11 @@ func (s SwapFlashLoanRemoveLiquidity) GetTime() *big.Int {
 	return nil
 }
 
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanRemoveLiquidity) GetReceiver() *common.Address {
+	return nil
+}
+
 var _ swap.EventLog = &SwapFlashLoanRemoveLiquidity{}
 
 // GetRaw gets the raw event logs from the redeem and remove event.
@@ -324,22 +347,22 @@ func (s SwapFlashLoanRemoveLiquidityOne) GetProvider() *common.Address {
 
 // GetLPTokenAmount gets the LP Token Amount.
 func (s SwapFlashLoanRemoveLiquidityOne) GetLPTokenAmount() *big.Int {
-	return s.LpTokenAmount
+	return core.CopyBigInt(s.LpTokenAmount)
 }
 
 // GetLPTokenSupply gets the LP Token Supply.
 func (s SwapFlashLoanRemoveLiquidityOne) GetLPTokenSupply() *big.Int {
-	return s.LpTokenSupply
+	return core.CopyBigInt(s.LpTokenSupply)
 }
 
 // GetBoughtId gets the bought id.
 func (s SwapFlashLoanRemoveLiquidityOne) GetBoughtId() *big.Int {
-	return s.BoughtId
+	return core.CopyBigInt(s.BoughtId)
 }
 
 // GetTokensBought gets the tokens bought.
 func (s SwapFlashLoanRemoveLiquidityOne) GetTokensBought() *big.Int {
-	return s.TokensBought
+	return core.CopyBigInt(s.TokensBought)
 }
 
 // GetSoldId gets the solid id.
@@ -432,6 +455,11 @@ func (s SwapFlashLoanRemoveLiquidityOne) GetTime() *big.Int {
 	return nil
 }
 
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanRemoveLiquidityOne) GetReceiver() *common.Address {
+	return nil
+}
+
 var _ swap.EventLog = &SwapFlashLoanRemoveLiquidityOne{}
 
 // GetRaw gets the raw event logs from the redeem and remove event.
@@ -466,22 +494,30 @@ func (s SwapFlashLoanRemoveLiquidityImbalance) GetProvider() *common.Address {
 
 // GetTokenAmounts gets the invariant of the swap.
 func (s SwapFlashLoanRemoveLiquidityImbalance) GetTokenAmounts() []*big.Int {
-	return s.TokenAmounts
+	var tokenAmounts []*big.Int
+	for _, tokenAmount := range s.TokenAmounts {
+		tokenAmounts = append(tokenAmounts, core.CopyBigInt(tokenAmount))
+	}
+	return tokenAmounts
 }
 
 // GetFees gets the gets fees.
 func (s SwapFlashLoanRemoveLiquidityImbalance) GetFees() []*big.Int {
-	return s.Fees
+	var fees []*big.Int
+	for _, fee := range s.Fees {
+		fees = append(fees, core.CopyBigInt(fee))
+	}
+	return fees
 }
 
 // GetInvariant gets the invariant.
 func (s SwapFlashLoanRemoveLiquidityImbalance) GetInvariant() *big.Int {
-	return s.Invariant
+	return core.CopyBigInt(s.Invariant)
 }
 
 // GetLPTokenSupply gets the lp token supply.
 func (s SwapFlashLoanRemoveLiquidityImbalance) GetLPTokenSupply() *big.Int {
-	return s.LpTokenSupply
+	return core.CopyBigInt(s.LpTokenSupply)
 }
 
 // GetSoldId gets the solid id.
@@ -571,6 +607,11 @@ func (s SwapFlashLoanRemoveLiquidityImbalance) GetBoughtId() *big.Int {
 
 // GetTokensBought gets the amount of tokens bought.
 func (s SwapFlashLoanRemoveLiquidityImbalance) GetTokensBought() *big.Int {
+	return nil
+}
+
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanRemoveLiquidityImbalance) GetReceiver() *common.Address {
 	return nil
 }
 
