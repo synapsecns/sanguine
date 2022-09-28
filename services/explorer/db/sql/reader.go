@@ -32,3 +32,10 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 	}
 	return &blockNumber, nil
 }
+
+//func (s *Store) ReadBridgeTransactions(ctx context.Context, chainID uint32, address common.Address, txHash, kappa common.Hash, includePending bool, page int, tokenAddress common.Address) BridgeEvent {
+//	var bridgeEvent BridgeEvent
+//	s.db.Raw(
+//		`SELECT `,
+//	).Find(&bridgeEvent)
+//}
