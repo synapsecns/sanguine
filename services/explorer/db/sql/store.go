@@ -44,12 +44,4 @@ func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 	return &Store{clickhouseDB}, nil
 }
 
-// GetAllModels gets all models to migrate.
-func GetAllModels() (allModels []interface{}) {
-	allModels = append(allModels,
-		&SwapEvent{}, &BridgeEvent{},
-	)
-	return allModels
-}
-
 var _ db.ConsumerDB = &Store{}
