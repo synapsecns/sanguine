@@ -21,6 +21,8 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.19.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/ethereum/go-ethereum v1.10.25
+	github.com/friendsofgo/graphiql v0.2.2
+	github.com/gin-gonic/gin v1.8.1
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
@@ -84,11 +86,9 @@ require (
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 // indirect
 	github.com/flynn/json5 v0.0.0-20160717195620-7620272ed633 // indirect
-	github.com/friendsofgo/graphiql v0.2.2 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gin-contrib/cors v1.4.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.8.1 // indirect
 	github.com/go-faster/city v1.0.1 // indirect
 	github.com/go-faster/errors v0.6.1 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
