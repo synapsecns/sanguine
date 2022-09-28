@@ -29,6 +29,9 @@ func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 		FullSaveAssociations: true,
 		NowFunc:              time.Now,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to open gorm clickhouse: %w", err)
+	}
 
 	// load all models
 	err = clickhouseDB.WithContext(ctx).
