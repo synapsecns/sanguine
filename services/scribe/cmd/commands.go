@@ -88,7 +88,7 @@ var backfillCommand = &cli.Command{
 			clients[client.ChainID] = backendClient
 		}
 
-		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
+		scribeBackfiller, err := backfill.NewScribeBackfiller(c.Context, db, clients, decodeConfig)
 		if err != nil {
 			return fmt.Errorf("could not create scribe backfiller: %w", err)
 		}
