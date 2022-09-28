@@ -5,5 +5,5 @@ dependencies:
 - name: omnirpc
   repository: file://../omnirpc/
   version: 0.1.1
-digest: sha256:d8baec451a3c344696bdb867f94e7271ec74bc1b98bf1fda2b01c99939d46ad5
-generated: "2022-09-22T16:20:21.023177-04:00"
+digest: sha256:c100cdcdd26ec438c895e1416333004a8416e6be222268c881331c6b5f004ea4
+generated: "2022-09-28T13:08:37.276991-04:00"
