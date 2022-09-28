@@ -63,4 +63,6 @@ type EventLog interface {
 	GetCurrentA() *big.Int
 	// GetTime returns the time.
 	GetTime() *big.Int
+	// GetReceiver returns the receiver.
+	GetReceiver() *common.Address
 }

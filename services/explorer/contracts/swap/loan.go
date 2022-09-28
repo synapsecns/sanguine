@@ -4,6 +4,7 @@ package swap
 import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"math/big"
 )
@@ -40,17 +41,17 @@ func (s SwapFlashLoanFlashLoan) GetTokenIndex() *uint8 {
 
 // GetAmount gets the amount.
 func (s SwapFlashLoanFlashLoan) GetAmount() *big.Int {
-	return s.Amount
+	return core.CopyBigInt(s.Amount)
 }
 
 // GetAmountFee gets the amount fee.
 func (s SwapFlashLoanFlashLoan) GetAmountFee() *big.Int {
-	return s.AmountFee
+	return core.CopyBigInt(s.AmountFee)
 }
 
 // GetProtocolFee gets the protocol fee.
 func (s SwapFlashLoanFlashLoan) GetProtocolFee() *big.Int {
-	return s.ProtocolFee
+	return core.CopyBigInt(s.ProtocolFee)
 }
 
 // GetLPTokenAmount gets the LP token supply.
@@ -146,6 +147,11 @@ func (s SwapFlashLoanFlashLoan) GetSoldId() *big.Int {
 // GetBoughtId gets the bought id.
 func (s SwapFlashLoanFlashLoan) GetBoughtId() *big.Int {
 	return nil
+}
+
+// GetReceiver gets the receiver.
+func (s SwapFlashLoanFlashLoan) GetReceiver() *common.Address {
+	return &s.Receiver
 }
 
 var _ swap.EventLog = &SwapFlashLoanFlashLoan{}

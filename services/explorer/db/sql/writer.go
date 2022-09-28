@@ -2,10 +2,12 @@ package sql
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
+	"math/big"
 )
 
 // EventType is an enum for event types.
@@ -13,13 +15,13 @@ type EventType int8
 
 const (
 	// Bridge - SynapseBridge event.
-	Bridge int8 = 0
+	Bridge int8 = iota
 	// Swap - SwapFlashLoan event.
-	Swap int8 = iota
+	Swap
 )
 
-// Helper function to handle bool to uint8 conversion for clickhouse.
-func boolToUint8(input *bool) *uint8 {
+// BoolToUint8 is a helper function to handle bool to uint8 conversion for clickhouse.
+func BoolToUint8(input *bool) *uint8 {
 	if input == nil {
 		return nil
 	}
@@ -81,21 +83,53 @@ func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swa
 
 // eventToBridgeEvent stores a bridge event.
 func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenID *string) BridgeEvent {
-	var recipient *string
+	var recipient sql.NullString
 	if event.GetRecipient() != nil {
-		r := event.GetRecipient().String()
-		recipient = &r
+		recipient.Valid = true
+		recipient.String = event.GetRecipient().String()
+	} else {
+		recipient.Valid = false
 	}
-	var destinationChainID *uint32
+	var recipientBytes sql.NullString
+	if event.GetRecipientBytes() != nil {
+		recipientBytes.Valid = true
+		recipientBytes.String = common.Bytes2Hex(event.GetRecipientBytes()[:])
+	} else {
+		recipientBytes.Valid = false
+	}
+	var destinationChainID *big.Int
 	if event.GetDestinationChainID() != nil {
-		d := uint32(event.GetDestinationChainID().Uint64())
-		destinationChainID = &d
+		destinationChainID = big.NewInt(int64(event.GetDestinationChainID().Uint64()))
 	}
-	var kappa *string
+	var tokenIndexFrom *big.Int
+	if event.GetTokenIndexFrom() != nil {
+		tokenIndexFrom = big.NewInt(int64(*event.GetTokenIndexFrom()))
+	}
+	var tokenIndexTo *big.Int
+	if event.GetTokenIndexTo() != nil {
+		tokenIndexTo = big.NewInt(int64(*event.GetTokenIndexTo()))
+	}
+	var swapSuccess *big.Int
+	if event.GetSwapSuccess() != nil {
+		swapSuccess = big.NewInt(int64(*BoolToUint8(event.GetSwapSuccess())))
+	}
+	var swapTokenIndex *big.Int
+	if event.GetSwapTokenIndex() != nil {
+		swapTokenIndex = big.NewInt(int64(*event.GetSwapTokenIndex()))
+	}
+	var kappa sql.NullString
 	if event.GetKappa() != nil {
-		k := event.GetKappa()
-		hash := common.BytesToHash(k[:]).String()
-		kappa = &hash
+		kappa.Valid = true
+		kappa.String = common.Bytes2Hex(event.GetKappa()[:])
+	} else {
+		kappa.Valid = false
+	}
+	var tokID sql.NullString
+	if tokenID != nil {
+		tokID.Valid = true
+		tokID.String = *tokenID
+	} else {
+		tokID.Valid = false
 	}
 
 	return BridgeEvent{
@@ -106,34 +140,56 @@ func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenI
 		TxHash:             event.GetTxHash().String(),
 		Amount:             event.GetAmount(),
 		Recipient:          recipient,
+		RecipientBytes:     recipientBytes,
 		DestinationChainID: destinationChainID,
 		Token:              event.GetToken().String(),
 		Fee:                event.GetFee(),
 		Kappa:              kappa,
-		TokenIndexFrom:     event.GetTokenIndexFrom(),
-		TokenIndexTo:       event.GetTokenIndexTo(),
+		TokenIndexFrom:     tokenIndexFrom,
+		TokenIndexTo:       tokenIndexTo,
 		MinDy:              event.GetMinDy(),
 		Deadline:           event.GetDeadline(),
-		SwapSuccess:        boolToUint8(event.GetSwapSuccess()), // clickhouse stores boolean values as an uint8
-		SwapTokenIndex:     event.GetSwapTokenIndex(),
+		SwapSuccess:        swapSuccess,
+		SwapTokenIndex:     swapTokenIndex,
 		SwapMinAmount:      event.GetSwapMinAmount(),
 		SwapDeadline:       event.GetSwapDeadline(),
-		TokenID:            tokenID,
+		TokenID:            tokID,
 	}
 }
 
 // eventToSwapEvent stores a swap event.
 func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenID *string) SwapEvent {
-	var provider *string
-	if event.GetProvider() != nil {
-		r := event.GetProvider().String()
-		provider = &r
-	}
-
-	var buyer *string
+	var buyer sql.NullString
 	if event.GetBuyer() != nil {
-		r := event.GetBuyer().String()
-		buyer = &r
+		buyer.Valid = true
+		buyer.String = event.GetBuyer().String()
+	} else {
+		buyer.Valid = false
+	}
+	var provider sql.NullString
+	if event.GetProvider() != nil {
+		provider.Valid = true
+		provider.String = event.GetProvider().String()
+	} else {
+		provider.Valid = false
+	}
+	var tokenIndex *big.Int
+	if event.GetTokenIndex() != nil {
+		tokenIndex = big.NewInt(int64(*event.GetTokenIndex()))
+	}
+	var receiver sql.NullString
+	if event.GetReceiver() != nil {
+		receiver.Valid = true
+		receiver.String = event.GetReceiver().String()
+	} else {
+		receiver.Valid = false
+	}
+	var tokID sql.NullString
+	if tokenID != nil {
+		tokID.Valid = true
+		tokID.String = *tokenID
+	} else {
+		tokID.Valid = false
 	}
 
 	return SwapEvent{
@@ -155,7 +211,7 @@ func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenID *s
 		LPTokenAmount:   event.GetLPTokenAmount(),
 		NewAdminFee:     event.GetNewAdminFee(),
 		NewSwapFee:      event.GetNewSwapFee(),
-		TokenIndex:      event.GetTokenIndex(),
+		TokenIndex:      tokenIndex,
 		Amount:          event.GetAmount(),
 		AmountFee:       event.GetAmountFee(),
 		ProtocolFee:     event.GetProtocolFee(),
@@ -165,6 +221,7 @@ func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenID *s
 		FutureTime:      event.GetFutureTime(),
 		CurrentA:        event.GetCurrentA(),
 		Time:            event.GetTime(),
-		TokenID:         tokenID,
+		Receiver:        receiver,
+		TokenID:         tokID,
 	}
 }

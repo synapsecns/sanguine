@@ -15,7 +15,7 @@ func BuildLog(contractAddress common.Address, blockNumber uint64, logIndex *atom
 	logIndex.Add(1)
 	log := types.Log{
 		Address:     contractAddress,
-		Topics:      []common.Hash{common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64()))},
+		Topics:      []common.Hash{common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64()))},
 		Data:        []byte(gofakeit.Sentence(10)),
 		BlockNumber: blockNumber,
 		TxHash:      common.BigToHash(big.NewInt(gofakeit.Int64())),
