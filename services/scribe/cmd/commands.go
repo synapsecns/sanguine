@@ -163,7 +163,7 @@ var generateCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		//nolint: errwrap
 		return config.GenerateConfig(c.Context, c.String(omniRPCFlag.Name), core.ExpandOrReturnPath(c.String(deploymentsPath.Name)),
-			uint32(c.Uint(confirmationsFlag.Name)), core.ExpandOrReturnPath(c.String(outputPathFlag.Name)), c.IntSlice(skippedChainIdsFlag.Name))
+			uint32(c.Uint(confirmationsFlag.Name)), core.ExpandOrReturnPath(c.String(outputPathFlag.Name)), c.IntSlice(skippedChainIdsFlag.Name), config.DefaultClientGenerator)
 	},
 }
 

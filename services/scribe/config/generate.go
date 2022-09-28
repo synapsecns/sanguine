@@ -15,9 +15,27 @@ import (
 	"time"
 )
 
+// ClientGenerator generates an ethclient from a context and a url, this is used so we can override
+// ethclient.DialContext for testing.
+type ClientGenerator func(ctx context.Context, rawUrl string) (ReceiptClient, error)
+
+// ReceiptClient is an client that implements receipt fetching.
+type ReceiptClient interface {
+	// TransactionReceipt returns the receipt of a mined transaction. Note that the
+	// transaction may not be included in the current canonical chain even if a receipt
+	// exists.
+	// TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
+	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
+}
+
+// DefaultClientGenerator generates the deafult ethclient.
+func DefaultClientGenerator(ctx context.Context, rawUrl string) (ReceiptClient, error) {
+	return ethclient.DialContext(ctx, rawUrl)
+}
+
 // GenerateConfig generates a config using a hardhat deployment and scribe.
 // this requires scribe to be live.
-func GenerateConfig(ctx context.Context, omniRPCUrl, deployPath string, requiredConfirmations uint32, outputPath string, skippedChainIDS []int) error {
+func GenerateConfig(ctx context.Context, omniRPCUrl, deployPath string, requiredConfirmations uint32, outputPath string, skippedChainIDS []int, cg ClientGenerator) error {
 	contracts, err := parser.GetDeployments(deployPath)
 	if err != nil {
 		return fmt.Errorf("could not get deployments: %w", err)
