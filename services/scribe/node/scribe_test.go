@@ -55,7 +55,7 @@ func (l LiveSuite) TestLive() {
 	clients[chainID] = simulatedChain
 
 	// Set up the scribe.
-	scribe, err := node.NewScribe(l.GetTestContext(), l.testDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig)
 	Nil(l.T(), err)
 
 	for _, testRef := range testRefs {
@@ -125,7 +125,7 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 	clients[chainID] = simulatedChain
 
 	// Set up the scribe.
-	scribe, err := node.NewScribe(l.GetTestContext(), l.testDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig)
 	Nil(l.T(), err)
 
 	// Emit 5 events.

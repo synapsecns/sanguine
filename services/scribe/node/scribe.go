@@ -26,9 +26,9 @@ type Scribe struct {
 }
 
 // NewScribe creates a new scribe.
-func NewScribe(ctx context.Context, eventDB db.EventDB, clients map[uint32]backfill.ScribeBackend, config config.Config) (*Scribe, error) {
+func NewScribe(eventDB db.EventDB, clients map[uint32]backfill.ScribeBackend, config config.Config) (*Scribe, error) {
 	// initialize the scribe backfiller
-	scribeBackfiller, err := backfill.NewScribeBackfiller(ctx, eventDB, clients, config)
+	scribeBackfiller, err := backfill.NewScribeBackfiller(eventDB, clients, config)
 	if err != nil {
 		return nil, fmt.Errorf("could not create scribe backfiller: %w", err)
 	}
