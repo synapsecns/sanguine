@@ -3,9 +3,8 @@ package backfill
 import (
 	"context"
 	"fmt"
-	"math/big"
-
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -28,16 +27,7 @@ type ScribeBackfiller struct {
 }
 
 // NewScribeBackfiller creates a new backfiller for the scribe.
-func NewScribeBackfiller(eventDB db.EventDB, clients map[uint32]ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
-	// set up the clients mapping
-	clientsMap := make(map[uint32]ScribeBackend)
-	for _, client := range clients {
-		chainID, err := client.ChainID(context.Background())
-		if err != nil {
-			return nil, fmt.Errorf("could not get chain ID: %w", err)
-		}
-		clientsMap[uint32(chainID.Uint64())] = client
-	}
+func NewScribeBackfiller(eventDB db.EventDB, clientsMap map[uint32]ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
 	// initialize the list of chain backfillers
 	chainBackfillers := map[uint32]*ChainBackfiller{}
 	// initialize each chain backfiller
