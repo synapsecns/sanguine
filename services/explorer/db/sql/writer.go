@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"math/big"
+	"time"
 )
 
 // EventType is an enum for event types.
@@ -133,6 +134,7 @@ func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenI
 	}
 
 	return BridgeEvent{
+		InsertTime:         uint64(time.Now().UnixNano()),
 		ContractAddress:    event.GetContractAddress().String(),
 		ChainID:            chainID,
 		EventType:          event.GetEventType().Int(),
@@ -193,6 +195,7 @@ func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenID *s
 	}
 
 	return SwapEvent{
+		InsertTime:      uint64(time.Now().UnixNano()),
 		ContractAddress: event.GetContractAddress().String(),
 		ChainID:         chainID,
 		EventType:       event.GetEventType().Int(),
