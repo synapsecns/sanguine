@@ -34,7 +34,7 @@ spec:
       initContainers:
         - name: copy-{{ .Release.Name }}-config
           image: busybox
-          command: ['sh', '-c', 'cp /configmap/* /config/']
+          command: ['sh', '-c', 'cp -v /configmap/* /config/']
           volumeMounts:
             - name: configmap
               mountPath: /configmap
@@ -64,15 +64,15 @@ spec:
             httpGet:
               path: /health-check
               port: http
+        {{- if .Values.files }}
+          volumeMounts:
+            - name: configmap
+              mountPath: /config
+        {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         {{- if .Values.server.extraContainers }}
         {{- toYaml .Values.server.extraContainers | nindent 8 }}
-        {{- end }}
-    {{- if .Values.files }}
-          volumeMounts:
-            - name: configmap
-              mountPath: /config
         {{- end }}
       {{- with .Values.server.nodeSelector }}
       nodeSelector:
