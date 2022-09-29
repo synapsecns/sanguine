@@ -1,8 +1,21 @@
 package proxy
 
+import "fmt"
+
 // IsConfirmable exports isConfirmable for testing.
 func IsConfirmable(body []byte) (bool, error) {
-	return isConfirmable(body)
+	parsedPayload, err := parseRPCPayload(body)
+	if err != nil {
+		return false, fmt.Errorf("could not parse payload: %w", err)
+	}
+	//nolint: wrapcheck
+	return parsedPayload.isConfirmable()
+}
+
+// ParseRPCPayload exports parseRPCPayload for testing.
+func ParseRPCPayload(body []byte) (_ *RPCRequest, err error) {
+	//nolint: wrapcheck
+	return parseRPCPayload(body)
 }
 
 // RawResponse exports rawResponse for testing.
@@ -25,7 +38,3 @@ func (r rawResponse) Hash() string {
 }
 
 var _ RawResponse = rawResponse{}
-
-func NewRawResponse(body []byte, url string) (RawResponse, error) {
-	return newRawResponse(body, url)
-}
