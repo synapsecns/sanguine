@@ -15,6 +15,8 @@ import (
 )
 
 // TestScribeBackfill tests backfilling data from all chains.
+//
+//nolint:cyclop
 func (b BackfillSuite) TestScribeBackfill() {
 	// Set up 3 chains, and the simulated backends for each.
 	chainA := gofakeit.Uint32()

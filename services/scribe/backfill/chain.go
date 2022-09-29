@@ -63,6 +63,8 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 
 // Backfill iterates over each contract backfiller and calls Backfill concurrently on each one.
 // If `onlyOneBlock` is true, the backfiller will only backfill the block at `endHeight`.
+//
+//nolint:gocognit,cyclop
 func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64, onlyOneBlock bool) error {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
