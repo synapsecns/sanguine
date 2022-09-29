@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bitbucket.org/tentontrain/math"
 	"context"
 	"fmt"
 	awsTime "github.com/aws/smithy-go/time"
@@ -9,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/synapsecns/sanguine/ethergo/parser"
 	"golang.org/x/exp/slices"
-	"io/fs"
 	"os"
 	"strconv"
 	"time"
@@ -17,7 +17,7 @@ import (
 
 // ClientGenerator generates an ethclient from a context and a url, this is used so we can override
 // ethclient.DialContext for testing.
-type ClientGenerator func(ctx context.Context, rawUrl string) (ReceiptClient, error)
+type ClientGenerator func(ctx context.Context, rawURL string) (ReceiptClient, error)
 
 // ReceiptClient is an client that implements receipt fetching.
 type ReceiptClient interface {
@@ -28,20 +28,37 @@ type ReceiptClient interface {
 	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
 }
 
-// DefaultClientGenerator generates the deafult ethclient.
-func DefaultClientGenerator(ctx context.Context, rawUrl string) (ReceiptClient, error) {
-	return ethclient.DialContext(ctx, rawUrl)
+// DefaultClientGenerator generates the default ethclient.
+func DefaultClientGenerator(ctx context.Context, rawURL string) (ReceiptClient, error) {
+	//nolint: wrapcheck
+	return ethclient.DialContext(ctx, rawURL)
+}
+
+type configList map[int]map[string]ContractConfig
+
+// ContractsForChain gets all contraacts for a given chain.
+func (c configList) ContractsForChain(chainID int) (configs []ContractConfig) {
+	chainConfigs, ok := c[chainID]
+	if !ok {
+		return configs
+	}
+
+	for _, contractConfigs := range chainConfigs {
+		configs = append(configs, contractConfigs)
+	}
+	return configs
 }
 
 // GenerateConfig generates a config using a hardhat deployment and scribe.
 // this requires scribe to be live.
+// nolint: cyclop
 func GenerateConfig(ctx context.Context, omniRPCUrl, deployPath string, requiredConfirmations uint32, outputPath string, skippedChainIDS []int, cg ClientGenerator) error {
 	contracts, err := parser.GetDeployments(deployPath)
 	if err != nil {
 		return fmt.Errorf("could not get deployments: %w", err)
 	}
 
-	configList := make(map[int][]ContractConfig)
+	configList := make(configList)
 
 	for _, contract := range contracts {
 		for chainIDStr, network := range contract.Networks {
@@ -55,42 +72,39 @@ func GenerateConfig(ctx context.Context, omniRPCUrl, deployPath string, required
 				continue
 			}
 
-			rpcClient, err := ethclient.DialContext(ctx, fmt.Sprintf("%s/rpc/%d", omniRPCUrl, chainID))
+			deployBlock, err := getDeployBlock(ctx, cg, omniRPCUrl, common.HexToHash(network.TransactionHash), uint32(chainID))
 			if err != nil {
-				return fmt.Errorf("could not get client: %w", err)
+				return fmt.Errorf("could not get deploy block for contract %s on network %d", contract.Name, chainID)
 			}
 
-			var txReceipt *types.Receipt
-
-		OUTER:
-			for attempt := 0; attempt < 20; attempt++ {
-				txReceipt, err = rpcClient.TransactionReceipt(ctx, common.HexToHash(network.TransactionHash))
-				if err != nil {
-					if attempt < 20 {
-						_ = awsTime.SleepWithContext(ctx, time.Second*2)
-						continue
-					} else {
-						return fmt.Errorf("could not get tx receipt: %w", err)
-					}
-				} else {
-					break OUTER
-				}
+			// initialize the chain map
+			_, hasChain := configList[chainID]
+			if !hasChain {
+				configList[chainID] = make(map[string]ContractConfig)
 			}
 
-			configList[chainID] = append(configList[chainID], ContractConfig{
+			chainContract, hasContract := configList[chainID][network.Address]
+			// if the contract already exist, just use lesser of the two start blocks
+			if hasContract {
+				chainContract.StartBlock = math.Min[uint64](deployBlock, chainContract.StartBlock)
+				configList[chainID][network.Address] = chainContract
+				continue
+			}
+
+			configList[chainID][network.Address] = ContractConfig{
 				Address:    network.Address,
-				StartBlock: txReceipt.BlockNumber.Uint64(),
-			})
+				StartBlock: deployBlock,
+			}
 		}
 	}
 
 	config := Config{}
-	for chainID, chainContracts := range configList {
+	for chainID := range configList {
 		config.Chains = append(config.Chains, ChainConfig{
 			ChainID:               uint32(chainID),
 			RPCUrl:                fmt.Sprintf("%s/rpc/%d", omniRPCUrl, chainID),
 			RequiredConfirmations: requiredConfirmations,
-			Contracts:             chainContracts,
+			Contracts:             configList.ContractsForChain(chainID),
 		})
 	}
 
@@ -99,10 +113,36 @@ func GenerateConfig(ctx context.Context, omniRPCUrl, deployPath string, required
 		return fmt.Errorf("could not create encoded config: %w", err)
 	}
 
-	err = os.WriteFile(outputPath, encodedConfig, fs.ModeType)
+	err = os.WriteFile(outputPath, encodedConfig, 0600)
 	if err != nil {
 		return fmt.Errorf("could not write file: %w", err)
 	}
 
 	return nil
+}
+
+func getDeployBlock(ctx context.Context, cg ClientGenerator, omniRPCUrl string, txhash common.Hash, chainID uint32) (block uint64, err error) {
+	rpcClient, err := cg(ctx, fmt.Sprintf("%s/rpc/%d", omniRPCUrl, chainID))
+	if err != nil {
+		return block, fmt.Errorf("could not get client: %w", err)
+	}
+
+	var txReceipt *types.Receipt
+
+OUTER:
+	for attempt := 0; attempt < 20; attempt++ {
+		txReceipt, err = rpcClient.TransactionReceipt(ctx, txhash)
+		if err != nil {
+			if attempt < 20 {
+				_ = awsTime.SleepWithContext(ctx, time.Second*2)
+				continue
+			} else {
+				return block, fmt.Errorf("could not get tx receipt: %w", err)
+			}
+		} else {
+			break OUTER
+		}
+	}
+
+	return txReceipt.BlockNumber.Uint64(), nil
 }

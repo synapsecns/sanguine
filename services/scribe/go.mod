@@ -13,6 +13,7 @@ replace (
 )
 
 require (
+	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a
 	github.com/99designs/gqlgen v0.17.20
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/MichaelMure/go-term-markdown v0.1.4
@@ -40,6 +41,7 @@ require (
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/tools v0.0.0-00010101000000-000000000000
+	github.com/tenderly/tenderly-cli v1.4.6
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/vektah/gqlparser/v2 v2.5.1
 	github.com/vektra/mockery/v2 v2.14.0
@@ -197,7 +199,6 @@ require (
 	github.com/subosito/gotenv v1.4.0 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
 	github.com/teivah/onecontext v1.3.0 // indirect
-	github.com/tenderly/tenderly-cli v1.4.6 // indirect
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/tklauser/numcpus v0.4.0 // indirect
 	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
