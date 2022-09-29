@@ -19,20 +19,21 @@ type JSONRPCMessage struct {
 	Result  json.RawMessage `json:"result,omitempty"`
 }
 
-// JSONError is used to hold a json error
+// JSONError is used to hold a json error.
 type JSONError struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data,omitempty"`
 }
 
-// rpcTransaction is an eth rpc transaction (copied from ethclient)
+// rpcTransaction is an eth rpc transaction (copied from ethclient).
 type rpcTransaction struct {
+	//nolint: unused
 	tx *types.Transaction
 	txExtraInfo
 }
 
-// txExtraInfo contains extra txinfo (Copied from ethclient)
+// txExtraInfo contains extra txinfo (Copied from ethclient).
 type txExtraInfo struct {
 	BlockNumber *string         `json:"blockNumber,omitempty"`
 	BlockHash   *common.Hash    `json:"blockHash,omitempty"`
@@ -45,14 +46,14 @@ type rpcBlock struct {
 	UncleHashes  []common.Hash    `json:"uncles"`
 }
 
-// fullRpcBlock is used to ensure parity by encoding both the header and the block
-type fullRpcBlock struct {
+// fullRPCBlock is used to ensure parity by encoding both the header and the block.
+type fullRPCBlock struct {
 	Block  rpcBlock      `json:"rpc_block"`
 	Header *types.Header `json:"header"`
 }
 
 // rpcProgress is a copy of SyncProgressMethod with hex-encoded fields.
-// copied from ethclient
+// copied from ethclient.
 type rpcProgress struct {
 	StartingBlock hexutil.Uint64
 	CurrentBlock  hexutil.Uint64
@@ -75,6 +76,17 @@ type rpcProgress struct {
 	HealingBytecode     hexutil.Uint64
 }
 
+// feeHistoryResultMarshaling is used for parity checking against fee history
+// copied from ethclient.
+type feeHistoryResultMarshaling struct {
+	OldestBlock  *hexutil.Big     `json:"oldestBlock"`
+	Reward       [][]*hexutil.Big `json:"reward,omitempty"`
+	BaseFee      []*hexutil.Big   `json:"baseFeePerGas,omitempty"`
+	GasUsedRatio []float64        `json:"gasUsedRatio"`
+}
+
+// StandardizeResponse produces a standardized json response for hashing (strips extra fields)
+// nolint: gocognit, cyclop
 func StandardizeResponse(method string, body []byte) (out []byte, err error) {
 	// TODO: use a sync.pool for acquiring/releasing these structs
 	var rpcMessage JSONRPCMessage
@@ -82,60 +94,71 @@ func StandardizeResponse(method string, body []byte) (out []byte, err error) {
 
 OUTER:
 	switch method {
-	case ChainIDMethod, BlockNumberMethod, TransactionCountByHashMethod, GetBalanceMethod:
+	case ChainIDMethod, BlockNumberMethod, TransactionCountByHashMethod, GetBalanceMethod, GasPriceMethod, MaxPriorityMethod:
 		var result hexutil.Big
-		if err := json.Unmarshal(rpcMessage.Result, &result); err != nil {
+		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
 	case StorageAtMethod, CodeAtMethod:
 		var result hexutil.Bytes
-		if err := json.Unmarshal(rpcMessage.Result, &result); err != nil {
+		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case NonceAtMethod:
+	case NonceAtMethod, EstimateGasMethod:
 		var result hexutil.Uint64
-		if err := json.Unmarshal(rpcMessage.Result, &result); err != nil {
+		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
 	case TransactionByHashMethod, TransactionByBlockHashAndIndexMethod:
 		var rpcBody rpcTransaction
-		if err := json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
+		if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(rpcBody)
-
+	case GetLogsMethod:
+		var result []types.Log
+		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
+			return nil, fmt.Errorf("could not parse: %w", err)
+		}
+		out, err = json.Marshal(result)
 	case TransactionReceiptByHashMethod:
 		var rpcBody *types.Receipt
-		if err := json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
+		if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(rpcBody)
 	case SyncProgressMethod:
 		var syncing bool
-		if err := json.Unmarshal(rpcMessage.Result, &syncing); err == nil {
+		if err = json.Unmarshal(rpcMessage.Result, &syncing); err == nil {
 			out, err = json.Marshal(syncing)
 			break OUTER
 		}
 
 		var p rpcProgress
-		if err := json.Unmarshal(rpcMessage.Result, &p); err != nil {
-			return nil, err
+		if err = json.Unmarshal(rpcMessage.Result, &p); err != nil {
+			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 
 		out, err = json.Marshal(p)
+	case FeeHistoryMethod:
+		var rpcBody feeHistoryResultMarshaling
+		if err := json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
+			return nil, fmt.Errorf("could not parse: %w", err)
+		}
+		out, err = json.Marshal(rpcBody)
 
 	case BlockByHashMethod, BlockByNumberMethod:
 		var head *types.Header
 		var rpcBody rpcBlock
 
-		if err := json.Unmarshal(rpcMessage.Result, &head); err != nil {
-			return nil, err
+		if err = json.Unmarshal(rpcMessage.Result, &head); err != nil {
+			return nil, fmt.Errorf("could not parse: %w", err)
 		}
-		if err := json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
-			return nil, err
+		if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
+			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 
 		// Quick-verify transaction and uncle lists. This mostly helps with debugging the server.
@@ -152,7 +175,7 @@ OUTER:
 			return nil, fmt.Errorf("server returned empty transaction list but block header indicates transactions")
 		}
 
-		fullBlock := fullRpcBlock{
+		fullBlock := fullRPCBlock{
 			Block:  rpcBody,
 			Header: head,
 		}
@@ -161,9 +184,13 @@ OUTER:
 		if err != nil {
 			return nil, fmt.Errorf("could not unmarshall full block: %w", err)
 		}
+	// wedon't do anything here, kept for exhaustiveness
+	case CallMethod:
+		return out, nil
 	default:
 		panic("TODO REMOVE ME")
 	}
 
-	return out, nil
+	//nolint: wrapcheck
+	return out, err
 }
