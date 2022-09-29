@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/go-http-utils/headers"
 	. "github.com/stretchr/testify/assert"
@@ -11,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"github.com/valyala/fasthttp"
 	"io"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
@@ -116,7 +119,7 @@ func attemptAddGetBody(req *http.Request, w http.ResponseWriter) (shouldContinue
 	return true
 }
 
-func (p *ProxySuite) TestBlockNumber() {
+func (p *ProxySuite) TestChainID() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
 	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
@@ -129,4 +132,109 @@ func (p *ProxySuite) TestBlockNumber() {
 
 		JSONEq(p.T(), string(standardizedResponse), string(response.Result))
 	})
+}
+
+func (p *ProxySuite) TestBlockNumber() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		_, err := client.BlockNumber(p.GetTestContext())
+		Nil(p.T(), err)
+
+	}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+		standardizedResponse, err := proxy.StandardizeResponse(method, fullResp)
+		Nil(p.T(), err)
+
+		JSONEq(p.T(), string(standardizedResponse), string(response.Result))
+	})
+}
+
+func (p *ProxySuite) TestBlockByHash() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	latestBlock, err := backend.BlockByNumber(p.GetTestContext(), nil)
+	Nil(p.T(), err)
+
+	const respCount = 2
+
+	resps := make([][]byte, respCount)
+
+	for i := 0; i < respCount; i++ {
+		// TODO: we should probably test txes for this as well and mock some
+		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+			_, err := client.BlockByHash(p.GetTestContext(), latestBlock.Hash())
+			Nil(p.T(), err)
+
+		}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+			resps[i], err = proxy.StandardizeResponse(method, fullResp)
+			Nil(p.T(), err)
+		})
+	}
+
+	// ensure response parity after de/re-serialization
+	Equal(p.T(), resps[0], resps[1])
+}
+
+func (p *ProxySuite) TestBlockByNumber() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	latestNumber, err := backend.BlockNumber(p.GetTestContext())
+	Nil(p.T(), err)
+
+	const respCount = 2
+
+	resps := make([][]byte, respCount)
+
+	for i := 0; i < respCount; i++ {
+		// TODO: we should probably test txes for this as well and mock some
+		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+			_, err := client.BlockByNumber(p.GetTestContext(), new(big.Int).SetUint64(latestNumber))
+			Nil(p.T(), err)
+
+		}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+			resps[i], err = proxy.StandardizeResponse(method, fullResp)
+			Nil(p.T(), err)
+		})
+	}
+
+	// ensure response parity after de/re-serialization
+	Equal(p.T(), resps[0], resps[1])
+}
+
+func (p *ProxySuite) TestTranasctionByHash() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	// get gas price
+	gasPrice, err := backend.SuggestGasPrice(p.GetTestContext())
+	Nil(p.T(), err)
+
+	// create a fake tx to send
+	testTx := backend.FaucetSignTx(types.NewTx(&types.LegacyTx{
+		To:       &common.Address{},
+		Value:    big.NewInt(1),
+		Gas:      21000,
+		GasPrice: gasPrice,
+	}))
+
+	err = backend.SendTransaction(p.GetTestContext(), testTx)
+	Nil(p.T(), err)
+
+	const respCount = 2
+
+	resps := make([][]byte, respCount)
+
+	for i := 0; i < respCount; i++ {
+		// TODO: we should probably test txes for this as well and mock some
+		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+			_, _, err := client.TransactionByHash(p.GetTestContext(), testTx.Hash())
+			Nil(p.T(), err)
+
+		}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+			resps[i], err = proxy.StandardizeResponse(method, fullResp)
+			Nil(p.T(), err)
+		})
+	}
+
+	// ensure response parity after de/re-serialization
+	Equal(p.T(), resps[0], resps[1])
 }
