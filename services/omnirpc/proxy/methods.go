@@ -23,10 +23,10 @@ const (
 	GetBalanceMethod = "eth_getBalance"
 	// StorageAtMethod returns the value of key in the contract storage of the given account.
 	StorageAtMethod = "eth_getStorageAt"
-	// CodeAtMethod returns the contract code of the given account.
-	CodeAtMethod = "eth_getCode"
-	// NonceAtMethod returns the account nonce of the given account.
-	NonceAtMethod = "eth_getTransactionCount"
+	// GetCodeMethod returns the contract code of the given account.
+	GetCodeMethod = "eth_getCode"
+	// TransactionCountMethod returns the account nonce of the given account.
+	TransactionCountMethod = "eth_getTransactionCount"
 	// GetLogsMethod filters logs.
 	GetLogsMethod = "eth_getLogs"
 	// CallMethod calls a contract.
@@ -39,4 +39,8 @@ const (
 	FeeHistoryMethod = "eth_feeHistory"
 	// EstimateGasMethod tries to estimate the gas needed to execute a specific transaction.
 	EstimateGasMethod = "eth_estimateGas"
+	// PendingTransactionCountMethod gets the pending transaction count.
+	PendingTransactionCountMethod = "eth_getBlockTransactionCountByNumber"
+	// SendRawTransactionMethod sends a raw tx.
+	SendRawTransactionMethod = "eth_sendRawTransaction"
 )

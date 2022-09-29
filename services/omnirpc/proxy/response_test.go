@@ -258,6 +258,20 @@ func (p *ProxySuite) TestTransactionCount() {
 	})
 }
 
+func (p *ProxySuite) TestPendingTransactionCount() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		_, err := client.PendingTransactionCount(p.GetTestContext())
+		Nil(p.T(), err)
+	}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+		standardizedResponse, err := proxy.StandardizeResponse(method, fullResp)
+		Nil(p.T(), err)
+
+		JSONEq(p.T(), string(standardizedResponse), string(response.Result))
+	})
+}
+
 func (p *ProxySuite) TestBlockNumber() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 

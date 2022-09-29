@@ -71,19 +71,19 @@ func (r RPCRequest) isConfirmable() (bool, error) {
 	// TODO: handle batch methods
 	// TODO: should we error on default?
 	switch r.Method {
-	case "eth_getBlockByNumber", "eth_getBlockTransactionCountByNumber":
+	case BlockByNumberMethod, PendingTransactionCountMethod:
 		return isBlockNumConfirmable(r.Params[0]), nil
-	case "eth_blockNumber", "eth_syncing", "eth_gasPrice", "eth_maxPriorityFeePerGas", "eth_estimateGas":
+	case BlockNumberMethod, SyncProgressMethod, GasPriceMethod, MaxPriorityMethod, EstimateGasMethod:
 		return false, nil
-	case "eth_getBalance", "eth_getCode", "eth_getTransactionCount", "eth_call":
+	case GetBalanceMethod, GetCodeMethod, TransactionCountMethod, CallMethod:
 		return isBlockNumConfirmable(r.Params[1]), nil
-	case "eth_getStorageAt":
+	case StorageAtMethod:
 		return isBlockNumConfirmable(r.Params[2]), nil
-	case "eth_getLogs":
+	case GetLogsMethod:
 		return isFilterArgConfirmable(r.Params[0])
 	// not confirmable because tx could be pending. We might want to handle w/ omnicast though
 	// left separate for comment
-	case "eth_sendRawTransaction":
+	case SendRawTransactionMethod:
 		return false, nil
 	}
 	return true, nil

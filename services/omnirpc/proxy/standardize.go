@@ -100,14 +100,20 @@ OUTER:
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case StorageAtMethod, CodeAtMethod:
+	case StorageAtMethod, GetCodeMethod:
 		var result hexutil.Bytes
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case NonceAtMethod, EstimateGasMethod:
+	case TransactionCountMethod, EstimateGasMethod:
 		var result hexutil.Uint64
+		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
+			return nil, fmt.Errorf("could not parse: %w", err)
+		}
+		out, err = json.Marshal(result)
+	case PendingTransactionCountMethod:
+		var result hexutil.Uint
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
