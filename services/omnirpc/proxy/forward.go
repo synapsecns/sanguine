@@ -1,10 +1,8 @@
 package proxy
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
-	"encoding/json"
 	"fmt"
 	"github.com/ImVexed/fasturl"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
@@ -25,26 +23,17 @@ type rawResponse struct {
 // newRawResponse produces a response with a unique hash based on json
 // regardless of formatting.
 func (f *Forwarder) newRawResponse(body []byte, url string) (*rawResponse, error) {
-	// TODO: consider using a syncpool here
-	var unmarshalled interface{}
-
 	// TODO: see if there's a faster way to do this. Canonical json?
 	// unmarshall and remarshall
-	decoder := json.NewDecoder(bytes.NewReader(body))
-	err := decoder.Decode(&unmarshalled)
+	standardizedResponse, err := StandardizeResponse(f.rpcRequest.Method, body)
 	if err != nil {
-		return nil, fmt.Errorf("could not decode json: %w", err)
-	}
-
-	remarshalled, err := json.Marshal(unmarshalled)
-	if err != nil {
-		return nil, fmt.Errorf("could not re-encode json: %w", err)
+		return nil, fmt.Errorf("could not standardize response: %w", err)
 	}
 
 	return &rawResponse{
 		body: body,
 		url:  url,
-		hash: fmt.Sprintf("%x", sha256.Sum256(remarshalled)),
+		hash: fmt.Sprintf("%x", sha256.Sum256(standardizedResponse)),
 	}, nil
 }
 

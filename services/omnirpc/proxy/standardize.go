@@ -184,11 +184,9 @@ OUTER:
 		if err != nil {
 			return nil, fmt.Errorf("could not unmarshall full block: %w", err)
 		}
-	// wedon't do anything here, kept for exhaustiveness
+	// we don't do anything here, kept for exhaustiveness
 	case CallMethod:
 		return out, nil
-	default:
-		panic("TODO REMOVE ME")
 	}
 
 	//nolint: wrapcheck
