@@ -25,6 +25,7 @@ type Query struct {
 	ReceiptsRange     []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
 	Transactions      []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
 	TransactionsRange []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
+	BlockTime         *int                 "json:\"blockTime\" graphql:\"blockTime\""
 }
 type GetLogs struct {
 	Response []*struct {
@@ -205,6 +206,9 @@ type GetTransactionsResolvers struct {
 			Removed         bool     "json:\"removed\" graphql:\"removed\""
 		} "json:\"logs\" graphql:\"logs\""
 	} "json:\"response\" graphql:\"response\""
+}
+type GetBlockTime struct {
+	Response *int "json:\"response\" graphql:\"response\""
 }
 
 const GetLogsDocument = `query GetLogs ($chain_id: Int!, $page: Int!) {
@@ -531,6 +535,25 @@ func (c *Client) GetTransactionsResolvers(ctx context.Context, chainID int, page
 
 	var res GetTransactionsResolvers
 	if err := c.Client.Post(ctx, "GetTransactionsResolvers", GetTransactionsResolversDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetBlockTimeDocument = `query GetBlockTime ($chain_id: Int!, $block_number: Int!) {
+	response: blockTime(chain_id: $chain_id, block_number: $block_number)
+}
+`
+
+func (c *Client) GetBlockTime(ctx context.Context, chainID int, blockNumber int, httpRequestOptions ...client.HTTPRequestOption) (*GetBlockTime, error) {
+	vars := map[string]interface{}{
+		"chain_id":     chainID,
+		"block_number": blockNumber,
+	}
+
+	var res GetBlockTime
+	if err := c.Client.Post(ctx, "GetBlockTime", GetBlockTimeDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

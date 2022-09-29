@@ -53,3 +53,9 @@ type Log {
   receipt: Receipt! @goField(forceResolver: true)
   json: JSON! @goField(forceResolver:true)
 }
+
+type BlockTime {
+  chain_id: Int!
+  block_number: Int!
+  timestamp: Int!
+}
