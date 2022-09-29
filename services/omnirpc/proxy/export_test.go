@@ -12,6 +12,12 @@ func IsConfirmable(body []byte) (bool, error) {
 	return parsedPayload.isConfirmable()
 }
 
+// ParseRPCPayload exports parseRPCPayload for testing
+func ParseRPCPayload(body []byte) (_ *RPCRequest, err error) {
+	//nolint: wrapcheck
+	return parseRPCPayload(body)
+}
+
 // RawResponse exports rawResponse for testing.
 type RawResponse interface {
 	Body() []byte
