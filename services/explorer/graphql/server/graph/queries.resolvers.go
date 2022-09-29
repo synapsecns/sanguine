@@ -28,7 +28,16 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 
 // CountByChainID is the resolver for the countByChainId field.
 func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error) {
-	panic(fmt.Errorf("not implemented: CountByChainID - countByChainId"))
+	//panic(fmt.Errorf("not implemented: CountByChainID - countByChainId"))
+	cId := 1
+	cnt := 2
+	m := &model.TransactionCountResult{
+		ChainID: &cId,
+		Count:   &cnt,
+	}
+	return []*model.TransactionCountResult{
+		m,
+	}, nil
 }
 
 // CountByTokenAddress is the resolver for the countByTokenAddress field.

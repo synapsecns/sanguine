@@ -3,6 +3,7 @@ package cmd
 import (
 	// used to embed markdown.
 	_ "embed"
+	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/urfave/cli/v2"
 )
 
@@ -15,7 +16,10 @@ func Start(args []string) {
 	app.EnableBashCompletion = true
 
 	// commands
-	app.Commands = cli.Commands{infoCommand}
+	app.Commands = cli.Commands{infoCommand, serverCommand}
+	shellCommand := commandline.GenerateShellCommand(app.Commands)
+	app.Commands = append(app.Commands, shellCommand)
+	app.Action = shellCommand.Action
 
 	err := app.Run(args)
 	if err != nil {
