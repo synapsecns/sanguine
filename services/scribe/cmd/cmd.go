@@ -16,7 +16,7 @@ func Start(args []string) {
 	app.EnableBashCompletion = true
 
 	// commands
-	app.Commands = cli.Commands{infoCommand, backfillCommand, serverCommand}
+	app.Commands = cli.Commands{infoCommand, backfillCommand, serverCommand, generateCommand}
 	shellCommand := commandline.GenerateShellCommand(app.Commands)
 	app.Commands = append(app.Commands, shellCommand)
 	app.Action = shellCommand.Action
