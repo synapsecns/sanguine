@@ -3,6 +3,7 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/jpillora/backoff"
@@ -24,6 +25,8 @@ type ChainBackfiller struct {
 	contractBackfillers []*ContractBackfiller
 	// startHeights is a map from address -> start height
 	startHeights map[string]uint64
+	// minBlockHeight is the minimum block height to store block time for
+	minBlockHeight uint64
 	// chainConfig is the config for the backfiller
 	chainConfig config.ChainConfig
 }
@@ -34,6 +37,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 	contractBackfillers := []*ContractBackfiller{}
 	// initialize each contract backfiller and start heights
 	startHeights := make(map[string]uint64)
+	minBlockHeight := uint64(0)
 	for _, contract := range chainConfig.Contracts {
 		contractBackfiller, err := NewContractBackfiller(chainConfig.ChainID, contract.Address, eventDB, client)
 		if err != nil {
@@ -41,6 +45,9 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 		}
 		contractBackfillers = append(contractBackfillers, contractBackfiller)
 		startHeights[contract.Address] = contract.StartBlock
+		if contract.StartBlock < minBlockHeight {
+			minBlockHeight = contract.StartBlock
+		}
 	}
 
 	return &ChainBackfiller{
@@ -49,6 +56,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 		client:              client,
 		contractBackfillers: contractBackfillers,
 		startHeights:        startHeights,
+		minBlockHeight:      minBlockHeight,
 		chainConfig:         chainConfig,
 	}, nil
 }
@@ -95,10 +103,72 @@ func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64, onlyOne
 			}
 		})
 	}
+	// backfill the block times
+	g.Go(func() error {
+		// backoff in the case of an error
+		b := &backoff.Backoff{
+			Factor: 2,
+			Jitter: true,
+			Min:    1 * time.Second,
+			Max:    30 * time.Second,
+		}
+		// timeout should always be 0 on the first attempt
+		timeout := time.Duration(0)
+	RETRY:
+		// TODO: add a notification for failure to store block time
+		select {
+		case <-groupCtx.Done():
+			return fmt.Errorf("context canceled: %w", groupCtx.Err())
+		case <-time.After(timeout):
+			startHeight, err := c.startHeightForBlockTime(groupCtx)
+			if err != nil {
+				return fmt.Errorf("could not get start height for block time: %w", err)
+			}
+			if startHeight != 0 {
+				startHeight--
+			}
+			for blockNum := startHeight; blockNum <= endHeight; blockNum++ {
+				header, err := c.client.HeaderByNumber(groupCtx, big.NewInt(int64(blockNum)))
+				if err != nil {
+					timeout = b.Duration()
+					logger.Warnf("could not get block time: %w", err)
+					goto RETRY
+				}
+				err = c.eventDB.StoreBlockTime(groupCtx, c.chainID, blockNum, header.Time)
+				if err != nil {
+					timeout = b.Duration()
+					logger.Warnf("could not store block time: %w", err)
+					goto RETRY
+				}
+				// store the last block time
+				err = c.eventDB.StoreLastBlockTime(groupCtx, c.chainID, blockNum)
+				if err != nil {
+					timeout = b.Duration()
+					logger.Warnf("could not store last block time: %w", err)
+					goto RETRY
+				}
+			}
+			return nil
+		}
+	})
+
 	// wait for all of the backfillers to finish
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
 
 	return nil
+}
+
+// startHeightForBlockTime returns the start height for backfilling block times. This is
+// the maximum of the most recent block for the chain and the minBlockHeight.
+func (c ChainBackfiller) startHeightForBlockTime(ctx context.Context) (startHeight uint64, err error) {
+	lastBlock, err := c.eventDB.RetrieveLastBlockTime(ctx, c.chainID)
+	if err != nil {
+		return 0, fmt.Errorf("could not retrieve last block time: %w", err)
+	}
+	if lastBlock > c.minBlockHeight {
+		return lastBlock, nil
+	}
+	return c.minBlockHeight, nil
 }
