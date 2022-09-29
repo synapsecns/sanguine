@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/spf13/cast"
-	"github.com/tenderly/tenderly-cli/commands"
+	"github.com/tenderly/tenderly-cli/commands/export"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/ethereum"
 	"net/url"
@@ -35,7 +35,7 @@ func MakeClient(rpcURL, chainID, projectSlug string, chainConfig *params.ChainCo
 	}
 	config.SetProjectConfig(config.Exports, exports)
 	globHasMux.Unlock()
-	exportNetwork := commands.GetNetwork(chainID)
+	exportNetwork := export.GetNetwork(chainID)
 	client, err := ethereum.Dial(exportNetwork.RpcAddress, exportNetwork.Protocol)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to rpc server: %w", err)

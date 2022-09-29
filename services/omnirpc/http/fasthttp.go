@@ -106,6 +106,7 @@ func (f *fastHTTPClient) GetClient(url string) FastClient {
 	newClient := &fasthttp.HostClient{
 		Addr:                          fmt.Sprintf("%s:%s", parsedURL.Host, parsedURL.Port),
 		NoDefaultUserAgentHeader:      true,
+		IsTLS:                         parsedURL.Port == "443",
 		Dial:                          dialer.Dial,
 		DialDualStack:                 false,
 		ReadTimeout:                   time.Second * 30,

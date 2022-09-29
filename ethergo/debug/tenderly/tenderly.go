@@ -8,9 +8,9 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/debug"
-	tEVM "github.com/tenderly/tenderly-cli/commands/evm"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/ethereum"
+	tEVM "github.com/tenderly/tenderly-cli/ethereum/evm"
 	tenderlyTypes "github.com/tenderly/tenderly-cli/ethereum/types"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/providers"
@@ -58,8 +58,8 @@ type Tenderly struct {
 }
 
 // NewTenderly creates a new tenderly object and sets up the basic config.
-func NewTenderly(ctx context.Context) (t *Tenderly, err error) {
-	t = &Tenderly{}
+func NewTenderly(ctx context.Context) (_ *Tenderly, err error) {
+	t := &Tenderly{}
 	t.ctx = ctx
 	t.ContractSource = debug.NewContractSource()
 
@@ -84,7 +84,7 @@ func NewTenderly(ctx context.Context) (t *Tenderly, err error) {
 	if err != nil || projectsResponse.Error != nil {
 		return nil, userError.NewUserError(err, "Fetching projects for account failed.")
 	}
-	t.projectSlug = core.GetEnv("TENDERLY_PROJECT", "synapse")
+	t.projectSlug = core.GetEnv("TENDERLY_PROJECT", "project")
 	var accountProject *model.Project
 
 	// make sure the project exists
@@ -126,18 +126,22 @@ func (t *Tenderly) StartListener(chn chain.Chain) error {
 	}
 	t.structMux.Unlock()
 
-	go func() {
+	go func(t *Tenderly) {
 		defer watcher.Unsubscribe(heightSubscription)
 		for {
 			select {
 			case <-t.ctx.Done():
 				return
 			case height := <-heightSubscription:
+				if t == nil {
+					fmt.Println("hi")
+				}
+				fmt.Println(t)
 				// wait to add newly mined blocks so that VerifyContracts() can be called
 				t.processBlock(chn, height, client, chainConfig)
 			}
 		}
-	}()
+	}(t)
 	return nil
 }
 
@@ -192,7 +196,7 @@ func (t *Tenderly) processBlock(chn chain.Chain, height uint64, client *ethereum
 
 		res, err := t.rest.Export.ExportTransaction(payloads.ExportTransactionRequest{
 			NetworkData: payloads.NetworkData{
-				Name:        chn.ChainName(),
+				Name:        strconv.Itoa(int(chn.GetChainID())),
 				NetworkId:   strconv.Itoa(int(chn.GetChainID())),
 				ChainConfig: chainConfig,
 			},
@@ -206,12 +210,6 @@ func (t *Tenderly) processBlock(chn chain.Chain, height uint64, client *ethereum
 				Config:    t.getCompilerConfig(tx),
 			},
 		}, t.projectSlug)
-
-		if err != nil {
-			logger.Warn("got error uploading tenderly: %w", err)
-		} else {
-			logger.Debugf("exported transaction %s https://dashboard.tenderly.co/%s/local-transactions/%s", tx.Hash(), t.projectSlug, res.Export.ID)
-		}
 
 		if res.Error != nil || err != nil {
 			logger.Warn(err)
@@ -228,6 +226,7 @@ func (t *Tenderly) setupRest() *rest.Rest {
 		call.NewContractCalls(),
 		call.NewExportCalls(),
 		call.NewNetworkCalls(),
+		call.NewActionCalls(),
 	)
 	return t.rest
 }
