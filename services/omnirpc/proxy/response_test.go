@@ -2,6 +2,7 @@ package proxy_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/go-http-utils/headers"
@@ -17,7 +18,7 @@ import (
 )
 
 // captureResponse captures the response from geth so we can use it for testing
-func (p *ProxySuite) captureResponse(backendURL string, makeReq func(client *ethclient.Client), checkResp func(method string, response []byte)) {
+func (p *ProxySuite) captureResponse(backendURL string, makeReq func(client *ethclient.Client), checkResp func(method string, response proxy.JSONRPCMessage, rawResponse []byte)) {
 	doneChan := make(chan bool)
 
 	parsedURL, err := url.Parse(backendURL)
@@ -38,7 +39,11 @@ func (p *ProxySuite) captureResponse(backendURL string, makeReq func(client *eth
 		rpcReq, err := proxy.ParseRPCPayload(requestBody)
 		Nil(p.T(), err)
 
-		checkResp(rpcReq.Method, fullResp)
+		var rpcMessage proxy.JSONRPCMessage
+		err = json.Unmarshal(fullResp, &rpcMessage)
+		Nil(p.T(), err)
+
+		checkResp(rpcReq.Method, rpcMessage, fullResp)
 		return nil
 	}
 
@@ -118,14 +123,10 @@ func (p *ProxySuite) TestBlockNumber() {
 		_, err := client.ChainID(p.GetTestContext())
 		Nil(p.T(), err)
 
-	}, func(method string, response []byte) {
-		standardizedResponse, err := proxy.StandardizeResponse(method, response)
+	}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+		standardizedResponse, err := proxy.StandardizeResponse(method, fullResp)
 		Nil(p.T(), err)
 
-		_ = standardizedResponse
-		// TODO: compare standardizedResponse against the actual result
-
-		//JSONEq(p.T(), string(standardizedResponse), string(response))
-
+		JSONEq(p.T(), string(standardizedResponse), string(response.Result))
 	})
 }
