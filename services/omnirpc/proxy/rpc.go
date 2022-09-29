@@ -30,14 +30,14 @@ func init() {
 // rpcReqSchema contains the raw rpc request schema.
 var rpcReqSchema string
 
-func parseRPCPayload(body []byte) (request RPCRequest, err error) {
+func parseRPCPayload(body []byte) (_ *RPCRequest, err error) {
 	rpcPayload := RPCRequest{}
 	err = json.Unmarshal(body, &rpcPayload)
 	if err != nil {
-		return RPCRequest{}, fmt.Errorf("could not parse json payload: %w, must conform to: %s", err, rpcReqSchema)
+		return nil, fmt.Errorf("could not parse json payload: %w, must conform to: %s", err, rpcReqSchema)
 	}
 
-	return rpcPayload, nil
+	return &rpcPayload, nil
 }
 
 func isBlockNumConfirmable(arg json.RawMessage) bool {
@@ -67,28 +67,23 @@ func isFilterArgConfirmable(arg json.RawMessage) (bool, error) {
 	return !usesLatest, nil
 }
 
-func isConfirmable(body []byte) (bool, error) {
-	payload, err := parseRPCPayload(body)
-	if err != nil {
-		return false, fmt.Errorf("could not parse payload: %w", err)
-	}
-
+func (r RPCRequest) isConfirmable() (bool, error) {
 	// TODO: handle batch methods
 	// TODO: should we error on default?
-	switch payload.Method {
-	case "eth_getBlockByNumber", "eth_getBlockTransactionCountByNumber":
-		return isBlockNumConfirmable(payload.Params[0]), nil
-	case "eth_blockNumber", "eth_syncing", "eth_gasPrice", "eth_maxPriorityFeePerGas", "eth_estimateGas":
+	switch r.Method {
+	case BlockByNumberMethod, PendingTransactionCountMethod:
+		return isBlockNumConfirmable(r.Params[0]), nil
+	case BlockNumberMethod, SyncProgressMethod, GasPriceMethod, MaxPriorityMethod, EstimateGasMethod:
 		return false, nil
-	case "eth_getBalance", "eth_getCode", "eth_getTransactionCount", "eth_call":
-		return isBlockNumConfirmable(payload.Params[1]), nil
-	case "eth_getStorageAt":
-		return isBlockNumConfirmable(payload.Params[2]), nil
-	case "eth_getLogs":
-		return isFilterArgConfirmable(payload.Params[0])
+	case GetBalanceMethod, GetCodeMethod, TransactionCountMethod, CallMethod:
+		return isBlockNumConfirmable(r.Params[1]), nil
+	case StorageAtMethod:
+		return isBlockNumConfirmable(r.Params[2]), nil
+	case GetLogsMethod:
+		return isFilterArgConfirmable(r.Params[0])
 	// not confirmable because tx could be pending. We might want to handle w/ omnicast though
 	// left separate for comment
-	case "eth_sendRawTransaction":
+	case SendRawTransactionMethod:
 		return false, nil
 	}
 	return true, nil

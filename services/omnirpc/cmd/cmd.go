@@ -14,7 +14,7 @@ func Start(args []string) {
 	app.Name = appName
 	app.Version = config.AppVersion
 	app.Description = "Used for checking the lowest latency rpc endpoint fora given chain"
-	app.Commands = []*cli.Command{latencyCommand, chainListCommand, publicConfigCommand, serverCommand}
+	app.Commands = []*cli.Command{latencyCommand, chainListCommand, publicConfigCommand, serverCommand, debugResponse}
 	shellCommand := commandline.GenerateShellCommand(app.Commands)
 	app.Commands = append(app.Commands, shellCommand)
 	app.Action = shellCommand.Action
