@@ -51,24 +51,81 @@ type fullRpcBlock struct {
 	Header *types.Header `json:"header"`
 }
 
+// rpcProgress is a copy of SyncProgressMethod with hex-encoded fields.
+// copied from ethclient
+type rpcProgress struct {
+	StartingBlock hexutil.Uint64
+	CurrentBlock  hexutil.Uint64
+	HighestBlock  hexutil.Uint64
+
+	PulledStates hexutil.Uint64
+	KnownStates  hexutil.Uint64
+
+	SyncedAccounts      hexutil.Uint64
+	SyncedAccountBytes  hexutil.Uint64
+	SyncedBytecodes     hexutil.Uint64
+	SyncedBytecodeBytes hexutil.Uint64
+	SyncedStorage       hexutil.Uint64
+	SyncedStorageBytes  hexutil.Uint64
+	HealedTrienodes     hexutil.Uint64
+	HealedTrienodeBytes hexutil.Uint64
+	HealedBytecodes     hexutil.Uint64
+	HealedBytecodeBytes hexutil.Uint64
+	HealingTrienodes    hexutil.Uint64
+	HealingBytecode     hexutil.Uint64
+}
+
 func StandardizeResponse(method string, body []byte) (out []byte, err error) {
 	// TODO: use a sync.pool for acquiring/releasing these structs
 	var rpcMessage JSONRPCMessage
 	err = json.Unmarshal(body, &rpcMessage)
 
+OUTER:
 	switch method {
-	case ChainIDMethod, BlockNumberMethod:
+	case ChainIDMethod, BlockNumberMethod, TransactionCountByHashMethod, GetBalanceMethod:
 		var result hexutil.Big
 		if err := json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case TransactionByHashMethod:
+	case StorageAtMethod, CodeAtMethod:
+		var result hexutil.Bytes
+		if err := json.Unmarshal(rpcMessage.Result, &result); err != nil {
+			return nil, fmt.Errorf("could not parse: %w", err)
+		}
+		out, err = json.Marshal(result)
+	case NonceAtMethod:
+		var result hexutil.Uint64
+		if err := json.Unmarshal(rpcMessage.Result, &result); err != nil {
+			return nil, fmt.Errorf("could not parse: %w", err)
+		}
+		out, err = json.Marshal(result)
+	case TransactionByHashMethod, TransactionByBlockHashAndIndexMethod:
 		var rpcBody rpcTransaction
 		if err := json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(rpcBody)
+
+	case TransactionReceiptByHashMethod:
+		var rpcBody *types.Receipt
+		if err := json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
+			return nil, fmt.Errorf("could not parse: %w", err)
+		}
+		out, err = json.Marshal(rpcBody)
+	case SyncProgressMethod:
+		var syncing bool
+		if err := json.Unmarshal(rpcMessage.Result, &syncing); err == nil {
+			out, err = json.Marshal(syncing)
+			break OUTER
+		}
+
+		var p rpcProgress
+		if err := json.Unmarshal(rpcMessage.Result, &p); err != nil {
+			return nil, err
+		}
+
+		out, err = json.Marshal(p)
 
 	case BlockByHashMethod, BlockByNumberMethod:
 		var head *types.Header
@@ -104,6 +161,8 @@ func StandardizeResponse(method string, body []byte) (out []byte, err error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not unmarshall full block: %w", err)
 		}
+	default:
+		panic("TODO REMOVE ME")
 	}
 
 	return out, nil

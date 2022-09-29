@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/go-http-utils/headers"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
@@ -134,6 +135,86 @@ func (p *ProxySuite) TestChainID() {
 	})
 }
 
+func (p *ProxySuite) TestStorageAt() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		_, err := client.StorageAt(p.GetTestContext(), common.Address{}, common.Hash{}, nil)
+		Nil(p.T(), err)
+
+	}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+		standardizedResponse, err := proxy.StandardizeResponse(method, fullResp)
+		Nil(p.T(), err)
+
+		JSONEq(p.T(), string(standardizedResponse), string(response.Result))
+	})
+}
+
+func (p *ProxySuite) TestCodeAt() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		_, err := client.CodeAt(p.GetTestContext(), common.Address{}, nil)
+		Nil(p.T(), err)
+
+	}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+		standardizedResponse, err := proxy.StandardizeResponse(method, fullResp)
+		Nil(p.T(), err)
+
+		JSONEq(p.T(), string(standardizedResponse), string(response.Result))
+	})
+}
+
+func (p *ProxySuite) TestNonceAt() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		_, err := client.NonceAt(p.GetTestContext(), common.Address{}, nil)
+		Nil(p.T(), err)
+
+	}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+		standardizedResponse, err := proxy.StandardizeResponse(method, fullResp)
+		Nil(p.T(), err)
+
+		JSONEq(p.T(), string(standardizedResponse), string(response.Result))
+	})
+}
+
+func (p *ProxySuite) TestBalanceAt() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	fundedAccount := backend.GetFundedAccount(p.GetTestContext(), big.NewInt(params.Ether))
+
+	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		_, err := client.BalanceAt(p.GetTestContext(), fundedAccount.Address, nil)
+		Nil(p.T(), err)
+
+	}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+		standardizedResponse, err := proxy.StandardizeResponse(method, fullResp)
+		Nil(p.T(), err)
+
+		JSONEq(p.T(), string(standardizedResponse), string(response.Result))
+	})
+}
+
+func (p *ProxySuite) TestTransactionCount() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	block, err := backend.BlockByNumber(p.GetTestContext(), nil)
+	Nil(p.T(), err)
+
+	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		_, err := client.TransactionCount(p.GetTestContext(), block.Hash())
+		Nil(p.T(), err)
+
+	}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+		standardizedResponse, err := proxy.StandardizeResponse(method, fullResp)
+		Nil(p.T(), err)
+
+		JSONEq(p.T(), string(standardizedResponse), string(response.Result))
+	})
+}
+
 func (p *ProxySuite) TestBlockNumber() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
@@ -201,7 +282,7 @@ func (p *ProxySuite) TestBlockByNumber() {
 	Equal(p.T(), resps[0], resps[1])
 }
 
-func (p *ProxySuite) TestTranasctionByHash() {
+func (p *ProxySuite) TestTransactionByHash() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
 	// get gas price
@@ -219,6 +300,8 @@ func (p *ProxySuite) TestTranasctionByHash() {
 	err = backend.SendTransaction(p.GetTestContext(), testTx)
 	Nil(p.T(), err)
 
+	backend.WaitForConfirmation(p.GetTestContext(), testTx)
+
 	const respCount = 2
 
 	resps := make([][]byte, respCount)
@@ -230,6 +313,113 @@ func (p *ProxySuite) TestTranasctionByHash() {
 			Nil(p.T(), err)
 
 		}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+			resps[i], err = proxy.StandardizeResponse(method, fullResp)
+			Nil(p.T(), err)
+		})
+	}
+
+	// ensure response parity after de/re-serialization
+	Equal(p.T(), resps[0], resps[1])
+}
+
+func (p *ProxySuite) TestTransactionInBlock() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	// get gas price
+	gasPrice, err := backend.SuggestGasPrice(p.GetTestContext())
+	Nil(p.T(), err)
+
+	// create a fake tx to send
+	testTx := backend.FaucetSignTx(types.NewTx(&types.LegacyTx{
+		To:       &common.Address{},
+		Value:    big.NewInt(1),
+		Gas:      21000,
+		GasPrice: gasPrice,
+	}))
+
+	err = backend.SendTransaction(p.GetTestContext(), testTx)
+	Nil(p.T(), err)
+
+	backend.WaitForConfirmation(p.GetTestContext(), testTx)
+
+	txReceipt, err := backend.TransactionReceipt(p.GetTestContext(), testTx.Hash())
+	Nil(p.T(), err)
+
+	const respCount = 2
+
+	resps := make([][]byte, respCount)
+
+	for i := 0; i < respCount; i++ {
+		// TODO: we should probably test txes for this as well and mock some
+		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+			_, err := client.TransactionInBlock(p.GetTestContext(), txReceipt.BlockHash, txReceipt.TransactionIndex)
+			Nil(p.T(), err)
+
+		}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+			resps[i], err = proxy.StandardizeResponse(method, fullResp)
+			Nil(p.T(), err)
+		})
+	}
+
+	// ensure response parity after de/re-serialization
+	Equal(p.T(), resps[0], resps[1])
+}
+
+func (p *ProxySuite) TestTransactionReceipt() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	// get gas price
+	gasPrice, err := backend.SuggestGasPrice(p.GetTestContext())
+	Nil(p.T(), err)
+
+	// create a fake tx to send
+	testTx := backend.FaucetSignTx(types.NewTx(&types.LegacyTx{
+		To:       &common.Address{},
+		Value:    big.NewInt(1),
+		Gas:      21000,
+		GasPrice: gasPrice,
+	}))
+
+	err = backend.SendTransaction(p.GetTestContext(), testTx)
+	Nil(p.T(), err)
+
+	backend.WaitForConfirmation(p.GetTestContext(), testTx)
+
+	const respCount = 2
+
+	resps := make([][]byte, respCount)
+
+	for i := 0; i < respCount; i++ {
+		// TODO: we should probably test txes for this as well and mock some
+		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+			_, err := client.TransactionReceipt(p.GetTestContext(), testTx.Hash())
+			Nil(p.T(), err)
+
+		}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+			resps[i], err = proxy.StandardizeResponse(method, fullResp)
+			Nil(p.T(), err)
+		})
+	}
+
+	// ensure response parity after de/re-serialization
+	Equal(p.T(), resps[0], resps[1])
+}
+
+func (p *ProxySuite) TestSyncProgress() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	const respCount = 2
+
+	resps := make([][]byte, respCount)
+
+	for i := 0; i < respCount; i++ {
+		// TODO: we should probably test txes for this as well and mock some
+		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+			_, err := client.SyncProgress(p.GetTestContext())
+			Nil(p.T(), err)
+
+		}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+			var err error
 			resps[i], err = proxy.StandardizeResponse(method, fullResp)
 			Nil(p.T(), err)
 		})
