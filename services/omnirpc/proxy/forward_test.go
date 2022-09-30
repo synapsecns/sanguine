@@ -2,15 +2,17 @@ package proxy_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager/mocks"
+	chainManagerMocks "github.com/synapsecns/sanguine/services/omnirpc/chainmanager/mocks"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"github.com/synapsecns/sanguine/services/omnirpc/http/mocks"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	proxyMocks "github.com/synapsecns/sanguine/services/omnirpc/proxy/mocks"
 	"net/http"
@@ -77,7 +79,7 @@ func (p *ProxySuite) TestAcquireReleaseForwarder() {
 	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
 
 	forwarder := prxy.AcquireForwarder()
-	forwarder.SetChain(new(mocks.Chain))
+	forwarder.SetChain(new(chainManagerMocks.Chain))
 	forwarder.SetC(&gin.Context{})
 	forwarder.SetClient(omniHTTP.NewClient(omniHTTP.Resty))
 	forwarder.SetR(prxy)
@@ -128,5 +130,44 @@ func (p *ProxySuite) TestForwardRequestDisallowWS() {
 }
 
 func (p *ProxySuite) TestForwardRequest() {
+	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
 
+	methodName := "test"
+	testRes, err := json.Marshal(proxy.JSONRPCMessage{
+		Version: strconv.Itoa(gofakeit.Number(1, 2)),
+		Method:  methodName,
+		Params:  nil,
+		Error:   nil,
+		Result:  nil,
+	})
+	Nil(p.T(), err)
+
+	captureClient := omniHTTP.NewCaptureClient(func(c *omniHTTP.CapturedRequest) (omniHTTP.Response, error) {
+		bodyRes := new(mocks.Response)
+		bodyRes.On("Body").Return(testRes)
+		return bodyRes, nil
+	})
+	prxy.SetClient(captureClient)
+
+	testURL := gofakeit.URL()
+	testRequestID := gofakeit.UUID()
+	testBody := gofakeit.ImagePng(10, 10)
+	forwarder := prxy.AcquireForwarder()
+	forwarder.SetBody(testBody)
+	forwarder.SetRPCRequest(&proxy.RPCRequest{Method: methodName})
+
+	_, err = forwarder.ForwardRequest(p.GetTestContext(), testURL, testRequestID)
+	Nil(p.T(), err)
+
+	requests := captureClient.Requests()
+	Equal(p.T(), len(requests), 1)
+
+	request := requests[0]
+
+	Equal(p.T(), request.RequestURI, testURL)
+	idHeader, ok := request.ByteHeaders.Get(omniHTTP.XRequestID)
+	True(p.T(), ok)
+
+	Equal(p.T(), idHeader, []byte(testRequestID))
+	Equal(p.T(), request.Body, testBody)
 }

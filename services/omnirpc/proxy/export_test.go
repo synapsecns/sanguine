@@ -25,6 +25,11 @@ func ParseRPCPayload(body []byte) (_ *RPCRequest, err error) {
 	return parseRPCPayload(body)
 }
 
+// SetClient allows overriding the client on the rpc proxy.
+func (r *RPCProxy) SetClient(client omniHTTP.Client) {
+	r.client = client
+}
+
 // RawResponse exports rawResponse for testing.
 type RawResponse interface {
 	Body() []byte
@@ -32,7 +37,7 @@ type RawResponse interface {
 	Hash() string
 }
 
-// ForwardRequest exports forward request for testing
+// ForwardRequest exports forward request for testing.
 func (f *Forwarder) ForwardRequest(ctx context.Context, endpoint, requestID string) (RawResponse, error) {
 	//nolint: wrapcheck
 	return f.forwardRequest(ctx, endpoint, requestID)
