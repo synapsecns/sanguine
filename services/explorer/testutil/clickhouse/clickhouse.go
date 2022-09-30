@@ -57,11 +57,6 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 	// Fetch port assigned to container
 	address := fmt.Sprintf("%s:%s", "localhost", resource.GetPort("9000/tcp"))
 
-	// Docker will hard kill the container in 120 seconds (this is a test env)
-	if resource.Expire(120) != nil {
-		return nil, nil, err
-	}
-	pool.MaxWait = time.Minute * 2
 	// Teardown function
 	cleanup := func() {
 		fmt.Println("Destroying container")

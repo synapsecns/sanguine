@@ -23,7 +23,8 @@ func (s Store) DB() *gorm.DB {
 // OpenGormClickhouse opens a gorm connection to clickhouse.
 func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 	clickhouseDB, err := gorm.Open(gormClickhouse.New(gormClickhouse.Config{
-		DSN: address,
+		DSN:                    address,
+		DefaultTableEngineOpts: "ENGINE=ReplacingMergeTree() ORDER BY tuple()",
 	}), &gorm.Config{
 		Logger:               dbcommon.GetGormLogger(logger),
 		FullSaveAssociations: true,
