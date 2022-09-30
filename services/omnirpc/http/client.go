@@ -28,6 +28,8 @@ type Request interface {
 }
 
 // Response is a standardized response interface.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name Response --output ./mocks --case=underscore
 type Response interface {
 	Body() []byte
 }

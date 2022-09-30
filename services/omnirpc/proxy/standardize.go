@@ -93,7 +93,7 @@ func StandardizeResponse(method string, body []byte) (out []byte, err error) {
 	err = json.Unmarshal(body, &rpcMessage)
 
 OUTER:
-	switch method {
+	switch RPCMethod(method) {
 	case ChainIDMethod, BlockNumberMethod, TransactionCountByHashMethod, GetBalanceMethod, GasPriceMethod, MaxPriorityMethod:
 		var result hexutil.Big
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
@@ -191,7 +191,7 @@ OUTER:
 			return nil, fmt.Errorf("could not unmarshall full block: %w", err)
 		}
 	// we don't do anything here, kept for exhaustiveness
-	case CallMethod:
+	case CallMethod, SendRawTransactionMethod:
 		return out, nil
 	}
 

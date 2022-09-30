@@ -48,7 +48,7 @@ func (f *Forwarder) forwardRequest(ctx context.Context, endpoint, requestID stri
 		return nil, fmt.Errorf("could not parse endpoint (%s): %w", endpointURL, err)
 	}
 
-	allowedProtocols := []string{httpSchema, httpsSchema}
+	allowedProtocols := []string{httpsSchema, httpSchema}
 
 	// websockets not yet supported
 	if !slices.Contains(allowedProtocols, endpointURL.Protocol) {
