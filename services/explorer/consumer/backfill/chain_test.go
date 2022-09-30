@@ -65,7 +65,6 @@ func (b *BackfillSuite) TestBackfill() {
 	bridgeTx, err = bridgeRef.TestRedeemV2(transactOpts.TransactOpts, [32]byte{byte(gofakeit.Uint64())}, big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
 	redeemV2Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 11)
-	fmt.Println("redeemV2Log", bridgeTx)
 	Nil(b.T(), err)
 
 	// Store every swap event across two different swap contracts.
@@ -189,7 +188,6 @@ func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, bloc
 	}
 	receipt.Logs[0].BlockNumber = blockNumber
 	err = b.eventDB.StoreLog(b.GetTestContext(), *receipt.Logs[0], chainID)
-	fmt.Println("blockNumber LOGLEN----", len(receipt.Logs))
 	if err != nil {
 		return nil, fmt.Errorf("error storing swap log: %w", err)
 	}
