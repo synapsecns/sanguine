@@ -23,8 +23,7 @@ func (s Store) DB() *gorm.DB {
 // OpenGormClickhouse opens a gorm connection to clickhouse.
 func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 	clickhouseDB, err := gorm.Open(gormClickhouse.New(gormClickhouse.Config{
-		DSN:                    address,
-		DefaultTableEngineOpts: "ENGINE=ReplacingMergeTree() ORDER BY tuple()",
+		DSN: address,
 	}), &gorm.Config{
 		Logger:               dbcommon.GetGormLogger(logger),
 		FullSaveAssociations: true,
@@ -36,6 +35,10 @@ func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 
 	// load all models
 	err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY block_number").AutoMigrate(&SwapEvent{}, &BridgeEvent{})
+	//err = clickhouseDB.WithContext(ctx).
+	//	// TODO: add ReplacingEngineTree
+	//	// Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY block_number").
+	//	AutoMigrate(&SwapEvent{}, &BridgeEvent{})
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on clickhouse: %w", err)
 	}
