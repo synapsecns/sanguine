@@ -70,7 +70,8 @@ func isFilterArgConfirmable(arg json.RawMessage) (bool, error) {
 func (r RPCRequest) isConfirmable() (bool, error) {
 	// TODO: handle batch methods
 	// TODO: should we error on default?
-	switch r.Method {
+	//nolint: exhaustive
+	switch RPCMethod(r.Method) {
 	case BlockByNumberMethod, PendingTransactionCountMethod:
 		return isBlockNumConfirmable(r.Params[0]), nil
 	case BlockNumberMethod, SyncProgressMethod, GasPriceMethod, MaxPriorityMethod, EstimateGasMethod:
