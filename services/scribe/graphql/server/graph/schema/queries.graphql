@@ -69,4 +69,9 @@ type Query {
     end_block: Int!
     page: Int!
   ): [Transaction]
+  # returns the timestamp of a given block for a chain
+  blockTime(
+    chain_id: Int!
+    block_number: Int!
+  ): Int
 }

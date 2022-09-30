@@ -45,6 +45,13 @@ type EventDBWriter interface {
 	// It updates the value if there is a previous last block confirmed value, and creates a new
 	// entry if there is no previous value.
 	StoreLastConfirmedBlock(ctx context.Context, chainID uint32, blockNumber uint64) error
+
+	// StoreLastBlockTime stores the last block time stored for a chain.
+	// It updates the value if there is a previous last indexed value, and creates a new
+	// entry if there is no previous value.
+	StoreLastBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) error
+	// StoreBlockTime stores a block time for a chain.
+	StoreBlockTime(ctx context.Context, chainID uint32, blockNumber, timestamp uint64) error
 }
 
 // EventDBReader is an interface for reading events from a database.
@@ -71,6 +78,11 @@ type EventDBReader interface {
 
 	// RetrieveLastConfirmedBlock retrieves the last block number that has been confirmed.
 	RetrieveLastConfirmedBlock(ctx context.Context, chainID uint32) (uint64, error)
+
+	// RetrieveLastBlockTime retrieves the last block time stored for a chain.
+	RetrieveLastBlockTime(ctx context.Context, chainID uint32) (uint64, error)
+	// RetrieveBlockTime retrieves a block time for a chain and block number.
+	RetrieveBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) (uint64, error)
 }
 
 // EventDB stores events.

@@ -166,6 +166,24 @@ func (g APISuite) TestTransactionDataEquality() {
 	Equal(g.T(), retrievedTx.To, tx.To().String())
 }
 
+func (g APISuite) TestBlockTimeDataEquality() {
+	// create data for storing a block time
+	chainID := gofakeit.Uint32()
+	blockNumber := uint64(gofakeit.Uint32())
+	blockTime := uint64(gofakeit.Uint32())
+
+	// store it
+	err := g.db.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, blockTime)
+	Nil(g.T(), err)
+
+	// retrieve it
+	retrievedBlockTime, err := g.gqlClient.GetBlockTime(g.GetTestContext(), int(chainID), int(blockNumber))
+	Nil(g.T(), err)
+
+	// check that the data is equal
+	Equal(g.T(), *retrievedBlockTime.Response, int(blockTime))
+}
+
 func (g *APISuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {
 	currentIndex := g.logIndex.Load()
 	// increment next index
