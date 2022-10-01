@@ -154,6 +154,10 @@ func (s SwapFlashLoanRampA) GetReceiver() *common.Address {
 	return nil
 }
 
+func (s SwapFlashLoanRampA) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
+}
+
 var _ swap.EventLog = &SwapFlashLoanRampA{}
 
 // GetRaw gets the raw event logs from the redeem and remove event.
@@ -299,6 +303,10 @@ func (s SwapFlashLoanStopRampA) GetNewA() *big.Int {
 // GetReceiver gets the receiver.
 func (s SwapFlashLoanStopRampA) GetReceiver() *common.Address {
 	return nil
+}
+
+func (s SwapFlashLoanStopRampA) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
 }
 
 var _ swap.EventLog = &SwapFlashLoanStopRampA{}

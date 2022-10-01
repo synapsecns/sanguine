@@ -19,6 +19,8 @@ type SwapEvent struct {
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// EventType is the type of the event
 	EventType uint8 `gorm:"column:event_type;primaryKey;auto_increment:false"`
+	// EventIndex is the index of the log
+	EventIndex uint64 `gorm:"column:event_index"`
 
 	// TokenIndex is the index of the token in the pool
 	TokenIndex *big.Int `gorm:"column:token_index;type:UInt256"`
@@ -90,6 +92,8 @@ type BridgeEvent struct {
 	Token string `gorm:"column:token"`
 	// Amount is the amount of tokens
 	Amount *big.Int `gorm:"column:amount;type:UInt256"`
+	// EventIndex is the index of the log
+	EventIndex uint64 `gorm:"column:event_index"`
 
 	// Recipient is the address to send the tokens to
 	Recipient sql.NullString `gorm:"column:recipient"`
