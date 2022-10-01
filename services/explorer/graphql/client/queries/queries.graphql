@@ -1,0 +1,11 @@
+query GetCountByChainId($chainId: Int!, $address: String!, $direction: Direction, $hours: Int) {
+  response: countByChainId(
+    chainId: $chainId
+    address: $address
+    direction: $direction
+    hours: $hours
+  ) {
+    count
+    chainId
+    }
+}

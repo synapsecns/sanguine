@@ -3,6 +3,7 @@
 package client
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/Yamashou/gqlgenc/client"
@@ -26,4 +27,34 @@ type Query struct {
 	AddressRanking           []*model.AddressRanking         "json:\"addressRanking\" graphql:\"addressRanking\""
 	GetCSV                   *model.CSVData                  "json:\"getCsv\" graphql:\"getCsv\""
 	HistoricalStatistics     *model.HistoricalResult         "json:\"historicalStatistics\" graphql:\"historicalStatistics\""
+}
+type GetCountByChainID struct {
+	Response []*struct {
+		Count   *int "json:\"count\" graphql:\"count\""
+		ChainID *int "json:\"chainId\" graphql:\"chainId\""
+	} "json:\"response\" graphql:\"response\""
+}
+
+const GetCountByChainIDDocument = `query GetCountByChainId ($chainId: Int!, $address: String!, $direction: Direction, $hours: Int) {
+	response: countByChainId(chainId: $chainId, address: $address, direction: $direction, hours: $hours) {
+		count
+		chainId
+	}
+}
+`
+
+func (c *Client) GetCountByChainID(ctx context.Context, chainID int, address string, direction *model.Direction, hours *int, httpRequestOptions ...client.HTTPRequestOption) (*GetCountByChainID, error) {
+	vars := map[string]interface{}{
+		"chainId":   chainID,
+		"address":   address,
+		"direction": direction,
+		"hours":     hours,
+	}
+
+	var res GetCountByChainID
+	if err := c.Client.Post(ctx, "GetCountByChainId", GetCountByChainIDDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
