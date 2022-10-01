@@ -78,6 +78,16 @@ func (r *queryResolver) TransactionsRange(ctx context.Context, txHash *string, c
 	return r.ethTxsToModelTransactions(transactions, transactionsFilter.ChainID), nil
 }
 
+// BlockTime is the resolver for the blockTime field.
+func (r *queryResolver) BlockTime(ctx context.Context, chainID int, blockNumber int) (*int, error) {
+	blockTime, err := r.DB.RetrieveBlockTime(ctx, uint32(chainID), uint64(blockNumber))
+	blockTimeInt := int(blockTime)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving block time: %w", err)
+	}
+	return &blockTimeInt, nil
+}
+
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 

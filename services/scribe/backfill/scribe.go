@@ -101,6 +101,8 @@ type ScribeBackend interface {
 	//
 	// TODO(karalabe): Deprecate when the subscription one can return past data too.
 	FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error)
+	// HeaderByNumber returns the block header with the given block number.
+	HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error)
 }
 
 var _ ScribeBackend = simulated.Backend{}

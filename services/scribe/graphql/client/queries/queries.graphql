@@ -186,3 +186,7 @@ query GetTransactionsResolvers ($chain_id: Int!, $page: Int!) {
         }
     }
 }
+
+query GetBlockTime ($chain_id: Int!, $block_number: Int!) {
+    response: blockTime (chain_id: $chain_id, block_number: $block_number)
+}
