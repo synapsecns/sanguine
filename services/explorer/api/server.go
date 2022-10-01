@@ -47,7 +47,7 @@ func Start(ctx context.Context, cfg Config) error {
 	}
 
 	gqlServer.EnableGraphql(router, consumerDB)
-	//grpcServer, err := server.SetupGRPCServer(ctx, router, consumerDB)
+	// grpcServer, err := server.SetupGRPCServer(ctx, router, consumerDB)
 	//if err != nil {
 	//	return fmt.Errorf("could not create grpc server: %w", err)
 	//}
@@ -58,7 +58,7 @@ func Start(ctx context.Context, cfg Config) error {
 		})
 	})
 
-	//router.GET("static", gin.WrapH(http.FileServer(http.FS(static))))
+	// router.GET("static", gin.WrapH(http.FileServer(http.FS(static))))
 
 	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.HTTPPort)
 
@@ -73,7 +73,7 @@ func Start(ctx context.Context, cfg Config) error {
 		return nil
 	})
 
-	//g.Go(func() error {
+	// g.Go(func() error {
 	//	var lc net.ListenConfig
 	//	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
 	//	if err != nil {

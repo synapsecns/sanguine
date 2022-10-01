@@ -23,7 +23,7 @@ type APISuite struct {
 	*testsuite.TestSuite
 	db        db.ConsumerDB
 	gqlClient *client.Client
-	//grpcClient *rest.APIClient
+	// grpcClient *rest.APIClient
 	logIndex atomic.Int64
 }
 
@@ -49,7 +49,7 @@ func (g *APISuite) SetupTest() {
 	if port == nil || err != nil {
 		cleanup()
 	}
-	//NotN
+	// NotN
 
 	address := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
 	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address)
@@ -66,7 +66,7 @@ func (g *APISuite) SetupTest() {
 
 	g.gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
 
-	//config := rest.NewConfiguration()
+	// config := rest.NewConfiguration()
 	//config.BasePath = baseURL
 	//config.Host = baseURL
 	//g.grpcClient = rest.NewAPIClient(config)
@@ -85,7 +85,7 @@ func (g *APISuite) SetupTest() {
 		return false
 	})
 	//
-	//g.Eventually(func() bool {
+	// g.Eventually(func() bool {
 	//	res, realRes, err := g.grpcClient.ScribeServiceApi.ScribeServiceCheck(g.GetTestContext(), rest.V1HealthCheckRequest{
 	//		Service: "any",
 	//	})

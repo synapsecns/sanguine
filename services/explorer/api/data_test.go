@@ -21,14 +21,16 @@ func (g APISuite) TestSome() {
 			TxHash:          txHash.String(),
 		})
 	}
-	some, err := g.gqlClient.GetCountByChainID(g.GetTestContext(), int(chainID), address.String(), nil, nil)
+	chainIDRef := int(chainID)
+	addressRef := address.String()
+	some, err := g.gqlClient.GetCountByChainID(g.GetTestContext(), &chainIDRef, &addressRef, nil, nil)
 	Nil(g.T(), err)
 	res := *some.Response[0]
 	fmt.Println(*res.Count)
 	fmt.Println(*res.ChainID)
 }
 
-//import (
+// import (
 //	"github.com/synapsecns/sanguine/services/scribe/graphql"
 //	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
 //	"math/big"

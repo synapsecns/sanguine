@@ -34,7 +34,7 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 	return &blockNumber, nil
 }
 
-//func (s *Store) ReadBridgeTransactions(ctx context.Context, chainID uint32, address common.Address, txHash, kappa common.Hash, includePending bool, page int, tokenAddress common.Address) BridgeEvent {
+// func (s *Store) ReadBridgeTransactions(ctx context.Context, chainID uint32, address common.Address, txHash, kappa common.Hash, includePending bool, page int, tokenAddress common.Address) BridgeEvent {
 //	var bridgeEvent BridgeEvent
 //	s.db.Raw(
 //		`SELECT `,
@@ -47,12 +47,12 @@ func (s *Store) BridgeCountByChainID(ctx context.Context, chainID uint32, addres
 		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
 			`SELECT COUNT(DISTINCT tx_hash) FROM bridge_events WHERE destination_chain_id = %d`,
 			chainID,
-			//`SELECT count(*),
+			// `SELECT count(*),
 			//	argMax(destination_chain_id, insert_time) as destination_chain_id,
 			//	argMax(address, insert_time) as address,
 			//	FROM bridge_events WHERE destination_chain_id = ? AND address = ?;`,
 		)).Find(&res)
-		//Count(&res)
+		// Count(&res)
 		if dbTx.Error != nil {
 			return 0, 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
