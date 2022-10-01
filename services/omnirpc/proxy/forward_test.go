@@ -2,26 +2,23 @@ package proxy_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
-	"github.com/Soft/iter"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
-	"github.com/nsf/jsondiff"
+	"github.com/google/uuid"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	chainManagerMocks "github.com/synapsecns/sanguine/services/omnirpc/chainmanager/mocks"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"github.com/synapsecns/sanguine/services/omnirpc/http/mocks"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
-	"github.com/synapsecns/sanguine/services/omnirpc/proxy/mocks"
-	"github.com/tidwall/pretty"
-	"io"
-	"math/big"
+	proxyMocks "github.com/synapsecns/sanguine/services/omnirpc/proxy/mocks"
 	"net/http"
 	"net/http/httptest"
-	"strings"
+	"net/url"
+	"strconv"
 )
 
 func (p *ProxySuite) TestServeRequestNoChain() {
@@ -39,7 +36,7 @@ func (p *ProxySuite) TestCannotReadBody() {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	mockBody := new(mocks.BodyReader)
+	mockBody := new(proxyMocks.BodyReader)
 	mockBody.On("Read", mock.Anything).Return(0, errors.New("could not read body"))
 
 	c.Request = &http.Request{
@@ -48,45 +45,6 @@ func (p *ProxySuite) TestCannotReadBody() {
 
 	prxy.Forward(c, 1)
 	Equal(p.T(), w.Code, http.StatusBadRequest)
-}
-
-func (p *ProxySuite) TestJsonHash() {
-	options := jsondiff.DefaultJSONOptions()
-	for i := 0; i < 50; i++ {
-		randomJSON := p.generateFakeJSON()
-		url := gofakeit.URL()
-
-		json1, err := proxy.NewRawResponse(fuzzFormatJSON(randomJSON), url)
-		Nil(p.T(), err)
-
-		json2, err := proxy.NewRawResponse(fuzzFormatJSON(randomJSON), url)
-		Nil(p.T(), err)
-
-		// make sure we confirm uniqueness in json diff
-		// this will save us some time writing nonsense tests
-		diff, _ := jsondiff.Compare(json1.Body(), json2.Body(), &options)
-		Equal(p.T(), diff, jsondiff.FullMatch)
-		Equal(p.T(), json1.Hash(), json2.Hash())
-	}
-}
-
-// fuzzFormatJSON randomly formats json.
-func fuzzFormatJSON(rawBody []byte) []byte {
-	formatSetting := gofakeit.Number(0, 2)
-	switch formatSetting {
-	case 0:
-		rawBody = pretty.Pretty(rawBody)
-	case 1:
-		rawBody = pretty.Ugly(rawBody)
-	case 2:
-		rawBody = pretty.PrettyOptions(rawBody, &pretty.Options{
-			Width: gofakeit.Number(1, 200),
-			// random indentation between 1 and 50
-			Indent:   strings.Join(iter.ToSlice(iter.Take(iter.Repeat(" "), uint(gofakeit.Number(0, 50)))), ""),
-			SortKeys: gofakeit.Bool(),
-		})
-	}
-	return rawBody
 }
 
 func (p *ProxySuite) generateFakeJSON() []byte {
@@ -116,356 +74,100 @@ func (p *ProxySuite) TestMalformedRequestBody() {
 	Equal(p.T(), w.Code, http.StatusBadRequest)
 }
 
-// checkRequest is a helper method for checking requests.
-// TODO: checkReq can be replaced w/ a confirmable call, we should do this once we're complete.
-func (p *ProxySuite) checkRequest(makeReq func(client *ethclient.Client), checkReq func(body []byte)) {
-	doneChan := make(chan bool)
+// TestAcquireReleaseForwarder makes sure the forwarder is cleared afte r being released.
+func (p *ProxySuite) TestAcquireReleaseForwarder() {
+	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, err := io.ReadAll(r.Body)
-		Nil(p.T(), err)
+	forwarder := prxy.AcquireForwarder()
+	forwarder.SetChain(new(chainManagerMocks.Chain))
+	forwarder.SetC(&gin.Context{})
+	forwarder.SetClient(omniHTTP.NewClient(omniHTTP.Resty))
+	forwarder.SetR(prxy)
+	forwarder.SetBody(gofakeit.ImagePng(5, 5))
+	forwarder.SetRequestID(uuid.New().String())
+	forwarder.SetRequiredConfirmations(gofakeit.Uint16())
+	forwarder.SetBlankResMap()
+	forwarder.SetRPCRequest(&proxy.RPCRequest{
+		ID:     []byte(strconv.Itoa(gofakeit.Number(1, 2))),
+		Method: gofakeit.Word(),
+	})
+	prxy.ReleaseForwarder(forwarder)
 
-		checkReq(body)
-
-		go func() {
-			doneChan <- true
-		}()
-	}))
-
-	defer server.Close()
-
-	client, err := ethclient.DialContext(p.GetTestContext(), server.URL)
-	Nil(p.T(), err)
-
-	makeReq(client)
-
-	<-doneChan
+	forwarder = prxy.AcquireForwarder()
+	// should be set by acquirer or recycled
+	NotNil(p.T(), forwarder.R())
+	Nil(p.T(), forwarder.C())
+	Nil(p.T(), forwarder.Chain())
+	Nil(p.T(), forwarder.Body())
+	Zero(p.T(), forwarder.RequiredConfirmations())
+	// should be set by acquirer
+	NotNil(p.T(), forwarder.Client())
+	Nil(p.T(), forwarder.ResMap())
+	Nil(p.T(), forwarder.RPCRequest())
 }
 
-// Test parsing.
-// nolint: maintidx
-func (p *ProxySuite) TestParseRPCPayload() {
-	/*
-	  CHECK BLOCKS
-	*/
+func (p *ProxySuite) TestForwardRequestDisallowWS() {
+	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
 
-	// check latest block, should not be confirmable since
-	// rpcs might be on different  latest heights
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.BlockByNumber(p.GetTestContext(), nil)
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
+	invalidSchemes := []string{"wss", "ws"}
+	for _, scheme := range invalidSchemes {
+		forwarder := prxy.AcquireForwarder()
+
+		testURL := gofakeit.URL()
+		parsedURL, err := url.Parse(testURL)
 		Nil(p.T(), err)
-		False(p.T(), confirmable)
+
+		// change the scheme to use wss to see if
+		parsedURL.Scheme = scheme
+		testURL = parsedURL.String()
+
+		rawRes, err := forwarder.ForwardRequest(p.GetTestContext(), testURL, gofakeit.UUID())
+		Nil(p.T(), rawRes)
+		NotNil(p.T(), err)
+
+		prxy.ReleaseForwarder(forwarder)
+	}
+}
+
+func (p *ProxySuite) TestForwardRequest() {
+	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
+
+	methodName := "test"
+	testRes, err := json.Marshal(proxy.JSONRPCMessage{
+		Version: strconv.Itoa(gofakeit.Number(1, 2)),
+		Method:  methodName,
+		Params:  nil,
+		Error:   nil,
+		Result:  nil,
 	})
+	Nil(p.T(), err)
 
-	// check non-latest block, should be confirmable
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.BlockByNumber(p.GetTestContext(), new(big.Int).SetUint64(gofakeit.Uint64()))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
+	captureClient := omniHTTP.NewCaptureClient(func(c *omniHTTP.CapturedRequest) (omniHTTP.Response, error) {
+		bodyRes := new(mocks.Response)
+		bodyRes.On("Body").Return(testRes)
+		return bodyRes, nil
 	})
+	prxy.SetClient(captureClient)
 
-	/*
-	  CHECK HEADERS
-	*/
+	testURL := gofakeit.URL()
+	testRequestID := gofakeit.UUID()
+	testBody := gofakeit.ImagePng(10, 10)
+	forwarder := prxy.AcquireForwarder()
+	forwarder.SetBody(testBody)
+	forwarder.SetRPCRequest(&proxy.RPCRequest{Method: methodName})
 
-	// do the same thing, but check headers this time
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.HeaderByNumber(p.GetTestContext(), nil)
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
+	_, err = forwarder.ForwardRequest(p.GetTestContext(), testURL, testRequestID)
+	Nil(p.T(), err)
 
-	// check non-latest block, should be confirmable
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.HeaderByNumber(p.GetTestContext(), new(big.Int).SetUint64(gofakeit.Uint64()))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
+	requests := captureClient.Requests()
+	Equal(p.T(), len(requests), 1)
 
-	// eth_blockNumber should not be confirmable, can differ based on rpc
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.BlockNumber(p.GetTestContext())
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
+	request := requests[0]
 
-	/*
-	  CHECK Transaction Methods
-	*/
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _, _ = client.TransactionByHash(p.GetTestContext(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
+	Equal(p.T(), request.RequestURI, testURL)
+	idHeader, ok := request.ByteHeaders.Get(omniHTTP.XRequestID)
+	True(p.T(), ok)
 
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.TransactionCount(p.GetTestContext(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.PendingTransactionCount(p.GetTestContext())
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.TransactionInBlock(p.GetTestContext(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())), 1)
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.TransactionReceipt(p.GetTestContext(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
-
-	/*
-	  Sync Methods
-	*/
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.SyncProgress(p.GetTestContext())
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.NetworkID(p.GetTestContext())
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
-
-	/*
-	  Accessor Methods
-	*/
-
-	// latest block, should not be confirmable
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.BalanceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), nil)
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	// pending
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.PendingBalanceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	// non-latest block
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.BalanceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), new(big.Int).SetUint64(gofakeit.Uint64()))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
-
-	// latest block, should not be confirmable
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.StorageAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())), nil)
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.PendingStorageAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	// non-latest block
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.StorageAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())), new(big.Int).SetUint64(gofakeit.Uint64()))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.CodeAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), nil)
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.PendingCodeAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	// non-latest block
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.CodeAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), new(big.Int).SetUint64(gofakeit.Uint64()))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
-
-	// storage:
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.NonceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), nil)
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.PendingNonceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	// non-latest block
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.NonceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), new(big.Int).SetUint64(gofakeit.Uint64()))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
-
-	/*
-	  Filter Logs
-	*/
-	// this one's a bit more complicated. It should only return true if fromblock is set and toblock is not set if blockhash is not set
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.FilterLogs(p.GetTestContext(), ethereum.FilterQuery{
-			FromBlock: nil,
-			ToBlock:   nil,
-			Addresses: []common.Address{common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64()))},
-			Topics:    [][]common.Hash{{common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))}},
-		})
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	// set just to block
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.FilterLogs(p.GetTestContext(), ethereum.FilterQuery{
-			FromBlock: nil,
-			ToBlock:   big.NewInt(1),
-			Addresses: []common.Address{common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64()))},
-			Topics:    [][]common.Hash{{common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))}},
-		})
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
-
-	// set only block hash
-	p.checkRequest(func(client *ethclient.Client) {
-		bhash := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-		_, _ = client.FilterLogs(p.GetTestContext(), ethereum.FilterQuery{
-			BlockHash: &bhash,
-			Addresses: []common.Address{common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64()))},
-			Topics:    [][]common.Hash{{common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))}},
-		})
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
-
-	/*
-	  Call Contract
-	*/
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.CallContract(p.GetTestContext(), ethereum.CallMsg{}, nil)
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.CallContract(p.GetTestContext(), ethereum.CallMsg{}, big.NewInt(1))
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		True(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.PendingCallContract(p.GetTestContext(), ethereum.CallMsg{})
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	/*
-	  Gas Pricing
-	*/
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.SuggestGasPrice(p.GetTestContext())
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.SuggestGasTipCap(p.GetTestContext())
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
-
-	p.checkRequest(func(client *ethclient.Client) {
-		_, _ = client.EstimateGas(p.GetTestContext(), ethereum.CallMsg{})
-	}, func(body []byte) {
-		confirmable, err := proxy.IsConfirmable(body)
-		Nil(p.T(), err)
-		False(p.T(), confirmable)
-	})
+	Equal(p.T(), idHeader, []byte(testRequestID))
+	Equal(p.T(), request.Body, testBody)
 }

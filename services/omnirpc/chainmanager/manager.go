@@ -159,6 +159,8 @@ func sortInfoList(rpcInfoList []rpcinfo.Result) []rpcinfo.Result {
 var _ ChainManager = &chainManager{}
 
 // Chain contains the context for a single chain.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name Chain --output ./mocks --case=underscore
 type Chain interface {
 	// ConfirmationsThreshold gets the confirmation count
 	ConfirmationsThreshold() uint16

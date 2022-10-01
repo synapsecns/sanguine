@@ -121,6 +121,52 @@ var serverCommand = &cli.Command{
 	},
 }
 
+var omniRPCFlag = &cli.StringFlag{
+	Name:     "omnirpc",
+	Usage:    "--omnirpc https://omnirpc.url",
+	Required: true,
+}
+
+var deploymentsPath = &cli.StringFlag{
+	Name:     "deployments-dir",
+	Usage:    "--deployments-dir /path/to/contracts/deployments",
+	Required: true,
+}
+
+var confirmationsFlag = &cli.UintFlag{
+	Name:  "confirmations",
+	Value: 50,
+}
+
+var outputPathFlag = &cli.StringFlag{
+	Name:      "output-path",
+	TakesFile: true,
+}
+
+var skippedChainIdsFlag = &cli.IntSliceFlag{
+	Name:  "skipped-chains",
+	Usage: "--skipped-chains 1,2,3",
+	// skip common testnets by default
+	Value: cli.NewIntSlice(5, 335, 43113, 1666700000),
+}
+
+var generateCommand = &cli.Command{
+	Name:        "generate",
+	Description: "generates a config from a hardhat deployment folder",
+	Flags: []cli.Flag{
+		omniRPCFlag,
+		deploymentsPath,
+		confirmationsFlag,
+		skippedChainIdsFlag,
+		outputPathFlag,
+	},
+	Action: func(c *cli.Context) error {
+		//nolint: wrapcheck
+		return config.GenerateConfig(c.Context, c.String(omniRPCFlag.Name), core.ExpandOrReturnPath(c.String(deploymentsPath.Name)),
+			uint32(c.Uint(confirmationsFlag.Name)), core.ExpandOrReturnPath(c.String(outputPathFlag.Name)), c.IntSlice(skippedChainIdsFlag.Name), config.DefaultClientGenerator)
+	},
+}
+
 func init() {
 	ports, err := freeport.Take(1)
 	if len(ports) > 0 && err != nil {

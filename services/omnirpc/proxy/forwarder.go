@@ -36,6 +36,8 @@ type Forwarder struct {
 	// resMap is the res map
 	// Note: because we use an array here, this is not thread safe for writes
 	resMap *xsync.MapOf[[]rawResponse]
+	// rpcRequest is the parsed rpc request
+	rpcRequest *RPCRequest
 }
 
 // Reset resets the forwarder so it can be reused.
@@ -47,6 +49,7 @@ func (f *Forwarder) Reset() {
 	f.requiredConfirmations = 0
 	f.requestID = ""
 	f.resMap = nil
+	f.rpcRequest = nil
 }
 
 // AcquireForwarder allocates a forwarder and allows it to be released when not in use
@@ -300,7 +303,16 @@ func (f *Forwarder) fillAndValidate(chainID uint32) (ok bool) {
 func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 	f.requiredConfirmations = f.chain.ConfirmationsThreshold()
 
-	confirmable, err := isConfirmable(f.body)
+	var err error
+	f.rpcRequest, err = parseRPCPayload(f.body)
+	if err != nil {
+		f.c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return false
+	}
+
+	confirmable, err := f.rpcRequest.isConfirmable()
 	if err != nil {
 		f.c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,

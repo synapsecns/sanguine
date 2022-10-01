@@ -1,3 +1,4 @@
+//nolint:dupl,golint,revive,stylecheck
 package base
 
 import (

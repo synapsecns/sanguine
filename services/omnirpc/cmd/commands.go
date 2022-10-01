@@ -5,6 +5,7 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
 	rpcConfig "github.com/synapsecns/sanguine/services/omnirpc/config"
+	"github.com/synapsecns/sanguine/services/omnirpc/debug"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
@@ -133,5 +134,21 @@ var serverCommand = &cli.Command{
 		server.Run(c.Context)
 
 		return nil
+	},
+}
+
+var debugResponse = &cli.Command{
+	Name:  "debug-response",
+	Usage: "used for debugging responses and finding diff between rpcs",
+	Flags: []cli.Flag{
+		fileFlag,
+	},
+	Action: func(c *cli.Context) error {
+		diffFile, err := os.ReadFile(c.String(fileFlag.Name))
+		if err != nil {
+			return fmt.Errorf("could not read file: %w", err)
+		}
+		// nolint: wrapcheck
+		return debug.HashDiff(diffFile)
 	},
 }
