@@ -25,6 +25,7 @@ type Query struct {
 	ReceiptsRange     []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
 	Transactions      []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
 	TransactionsRange []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
+	BlockTime         *int                 "json:\"blockTime\" graphql:\"blockTime\""
 }
 type GetLogsRange struct {
 	Response []*struct {

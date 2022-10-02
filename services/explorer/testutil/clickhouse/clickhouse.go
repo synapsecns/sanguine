@@ -62,6 +62,7 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 		return nil, nil, err
 	}
 	pool.MaxWait = time.Minute * 2
+
 	// Teardown function
 	cleanup := func() {
 		fmt.Println("Destroying container")

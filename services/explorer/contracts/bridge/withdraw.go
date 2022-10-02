@@ -94,8 +94,13 @@ func (s SynapseBridgeTokenWithdraw) GetSwapDeadline() *big.Int {
 func (s SynapseBridgeTokenWithdraw) GetRecipientBytes() *[32]byte {
 	return nil
 }
+
 func (s SynapseBridgeTokenWithdraw) GetSwapSuccess() *bool {
 	return nil
+}
+
+func (s SynapseBridgeTokenWithdraw) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
 }
 
 var _ bridge.EventLog = &SynapseBridgeTokenWithdraw{}
@@ -192,6 +197,10 @@ func (s SynapseBridgeTokenWithdrawAndRemove) GetDeadline() *big.Int {
 
 func (s SynapseBridgeTokenWithdrawAndRemove) GetRecipientBytes() *[32]byte {
 	return nil
+}
+
+func (s SynapseBridgeTokenWithdrawAndRemove) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
 }
 
 var _ bridge.EventLog = &SynapseBridgeTokenWithdrawAndRemove{}
