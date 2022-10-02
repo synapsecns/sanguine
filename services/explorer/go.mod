@@ -13,6 +13,7 @@ replace (
 )
 
 require (
+	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a
 	github.com/99designs/gqlgen v0.17.20
 	github.com/ClickHouse/clickhouse-go/v2 v2.3.0
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
@@ -221,6 +222,7 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
+	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b // indirect
 	golang.org/x/image v0.0.0-20220902085622-e7cb96979f69 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect

@@ -67,7 +67,7 @@ func (g *APISuite) SetupTest() {
 	g.gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
 
 	// config := rest.NewConfiguration()
-	//config.BasePath = baseURL
+	// config.BasePath = baseURL
 	//config.Host = baseURL
 	//g.grpcClient = rest.NewAPIClient(config)
 
@@ -98,7 +98,7 @@ func (g *APISuite) SetupTest() {
 	//	}
 	//
 	//	return false
-	//})
+	// })
 }
 
 func TestAPISuite(t *testing.T) {

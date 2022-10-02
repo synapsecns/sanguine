@@ -41,7 +41,7 @@ func (g APISuite) TestSome() {
 //	. "github.com/stretchr/testify/assert"
 //)
 //
-//func (g APISuite) TestRetrieveData() {
+// func (g APISuite) TestRetrieveData() {
 //	contractAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 //	contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 //	chainID := gofakeit.Uint32()
