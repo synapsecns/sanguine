@@ -154,4 +154,8 @@ func (s SwapFlashLoanTokenSwap) GetReceiver() *common.Address {
 	return nil
 }
 
+func (s SwapFlashLoanTokenSwap) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
+}
+
 var _ swap.EventLog = &SwapFlashLoanTokenSwap{}

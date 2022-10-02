@@ -8,17 +8,19 @@ import (
 // SwapEvent stores data for emitted events from the Swap contract.
 type SwapEvent struct {
 	// InsertTime is the time the event was inserted into the database
-	InsertTime uint64 `gorm:"column:insert_time;"`
+	InsertTime uint64 `gorm:"column:insert_time"`
 	// ContractAddress is the address of the contract that generated the event
-	ContractAddress string `gorm:"column:contract_address;primaryKey"`
+	ContractAddress string `gorm:"column:contract_address"`
 	// ChainID is the chain id of the contract that generated the event
-	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	ChainID uint32 `gorm:"column:chain_id"`
 	// BlockNumber is the block number of the event
-	BlockNumber uint64 `gorm:"column:block_number;primaryKey;auto_increment:false"`
+	BlockNumber uint64 `gorm:"column:block_number"`
 	// TxHash is the transaction hash of the event
-	TxHash string `gorm:"column:tx_hash;primaryKey"`
+	TxHash string `gorm:"column:tx_hash"`
 	// EventType is the type of the event
-	EventType uint8 `gorm:"column:event_type;primaryKey;auto_increment:false"`
+	EventType uint8 `gorm:"column:event_type"`
+	// EventIndex is the index of the log
+	EventIndex uint64 `gorm:"column:event_index"`
 
 	// TokenIndex is the index of the token in the pool
 	TokenIndex *big.Int `gorm:"column:token_index;type:UInt256"`
@@ -75,21 +77,23 @@ type SwapEvent struct {
 // BridgeEvent stores data for emitted events from the Bridge contract.
 type BridgeEvent struct {
 	// InsertTime is the time the event was inserted into the database
-	InsertTime uint64 `gorm:"column:insert_time;"`
+	InsertTime uint64 `gorm:"column:insert_time"`
 	// ContractAddress is the address of the contract that generated the event
-	ContractAddress string `gorm:"column:contract_address;primaryKey"`
+	ContractAddress string `gorm:"column:contract_address"`
 	// ChainID is the chain id of the contract that generated the event
-	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	ChainID uint32 `gorm:"column:chain_id"`
 	// EventType is the type of the event
-	EventType uint8 `gorm:"column:event_type;primaryKey;auto_increment:false"`
+	EventType uint8 `gorm:"column:event_type"`
 	// BlockNumber is the block number of the event
-	BlockNumber uint64 `gorm:"column:block_number;primaryKey;auto_increment:false"`
+	BlockNumber uint64 `gorm:"column:block_number"`
 	// TxHash is the transaction hash of the event
-	TxHash string `gorm:"column:tx_hash;primaryKey"`
+	TxHash string `gorm:"column:tx_hash"`
 	// Token is the address of the token
 	Token string `gorm:"column:token"`
 	// Amount is the amount of tokens
 	Amount *big.Int `gorm:"column:amount;type:UInt256"`
+	// EventIndex is the index of the log
+	EventIndex uint64 `gorm:"column:event_index"`
 
 	// Recipient is the address to send the tokens to
 	Recipient sql.NullString `gorm:"column:recipient"`

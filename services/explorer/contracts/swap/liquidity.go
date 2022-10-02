@@ -162,6 +162,10 @@ func (s SwapFlashLoanAddLiquidity) GetReceiver() *common.Address {
 	return nil
 }
 
+func (s SwapFlashLoanAddLiquidity) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
+}
+
 var _ swap.EventLog = &SwapFlashLoanAddLiquidity{}
 
 // GetRaw gets the raw event logs from the redeem and remove event.
@@ -313,6 +317,10 @@ func (s SwapFlashLoanRemoveLiquidity) GetReceiver() *common.Address {
 	return nil
 }
 
+func (s SwapFlashLoanRemoveLiquidity) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
+}
+
 var _ swap.EventLog = &SwapFlashLoanRemoveLiquidity{}
 
 // GetRaw gets the raw event logs from the redeem and remove event.
@@ -458,6 +466,10 @@ func (s SwapFlashLoanRemoveLiquidityOne) GetTime() *big.Int {
 // GetReceiver gets the receiver.
 func (s SwapFlashLoanRemoveLiquidityOne) GetReceiver() *common.Address {
 	return nil
+}
+
+func (s SwapFlashLoanRemoveLiquidityOne) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
 }
 
 var _ swap.EventLog = &SwapFlashLoanRemoveLiquidityOne{}
@@ -613,6 +625,10 @@ func (s SwapFlashLoanRemoveLiquidityImbalance) GetTokensBought() *big.Int {
 // GetReceiver gets the receiver.
 func (s SwapFlashLoanRemoveLiquidityImbalance) GetReceiver() *common.Address {
 	return nil
+}
+
+func (s SwapFlashLoanRemoveLiquidityImbalance) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
 }
 
 var _ swap.EventLog = &SwapFlashLoanRemoveLiquidityImbalance{}
