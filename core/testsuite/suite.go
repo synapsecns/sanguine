@@ -178,7 +178,7 @@ func (s *TestSuite) GetSuiteContext() context.Context {
 }
 
 // MustMarshall is a helper method that attempts to marshall, otherwise it
-// fails the test
+// fails the test.
 func (s *TestSuite) MustMarshall(v any) []byte {
 	res, err := json.Marshal(v)
 	assert.Nil(s.T(), err)
