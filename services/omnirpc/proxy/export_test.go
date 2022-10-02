@@ -144,3 +144,8 @@ func StandardizeResponse(method string, body []byte) ([]byte, error) {
 	}
 	return standardizeResponse(method, rpcMessage)
 }
+
+// CheckAndSetConfirmability exports checkAndSetConfirmability for testing.
+func (f *Forwarder) CheckAndSetConfirmability() (ok bool) {
+	return f.checkAndSetConfirmability()
+}

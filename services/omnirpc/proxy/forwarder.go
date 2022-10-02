@@ -73,12 +73,16 @@ func (r *RPCProxy) ReleaseForwarder(f *Forwarder) {
 }
 
 // Forward forwards the rpc request to the servers and makes assertions around confirmation thresholds.
-func (r *RPCProxy) Forward(c *gin.Context, chainID uint32) {
+// required confirmations can be used to override the required confirmations count.
+func (r *RPCProxy) Forward(c *gin.Context, chainID uint32, requiredConfirmationsOverride *uint16) {
 	forwarder := r.AcquireForwarder()
 	defer r.ReleaseForwarder(forwarder)
 
 	forwarder.c = c
 	forwarder.resMap = xsync.NewMapOf[[]rawResponse]()
+	if requiredConfirmationsOverride != nil {
+		forwarder.requiredConfirmations = *requiredConfirmationsOverride
+	}
 
 	if ok := forwarder.fillAndValidate(chainID); !ok {
 		return
@@ -301,7 +305,10 @@ func (f *Forwarder) fillAndValidate(chainID uint32) (ok bool) {
 // checkAndSetConfirmability checks the confirmability of the request body and makes sure
 // we have enough urls to validate the request.
 func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
-	f.requiredConfirmations = f.chain.ConfirmationsThreshold()
+	// if we overrided required confirmations above, use that
+	if f.requiredConfirmations == 0 {
+		f.requiredConfirmations = f.chain.ConfirmationsThreshold()
+	}
 
 	var err error
 	f.rpcRequest, err = parseRPCPayload(f.body)

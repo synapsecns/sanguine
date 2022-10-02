@@ -3,8 +3,10 @@ package testsuite
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/ipfs/go-log"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sync"
@@ -173,4 +175,12 @@ func (s *TestSuite) GetTestContext() context.Context {
 // GetSuiteContext returns the context for the test suite.
 func (s *TestSuite) GetSuiteContext() context.Context {
 	return s.suiteContext.ctx
+}
+
+// MustMarshall is a helper method that attempts to marshall, otherwise it
+// fails the test
+func (s *TestSuite) MustMarshall(v any) []byte {
+	res, err := json.Marshal(v)
+	assert.Nil(s.T(), err)
+	return res
 }

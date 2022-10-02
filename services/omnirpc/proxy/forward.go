@@ -19,6 +19,8 @@ type rawResponse struct {
 	// hash is a unique hash of the raw response.
 	// we use this to check for equality
 	hash string
+	// hasError is wether or not the response could be deserialized
+	hasError bool
 }
 
 // newRawResponse produces a response with a unique hash based on json
@@ -38,9 +40,10 @@ func (f *Forwarder) newRawResponse(body []byte, url string) (*rawResponse, error
 	}
 
 	return &rawResponse{
-		body: body,
-		url:  url,
-		hash: fmt.Sprintf("%x", sha256.Sum256(standardizedResponse)),
+		body:     body,
+		url:      url,
+		hash:     fmt.Sprintf("%x", sha256.Sum256(standardizedResponse)),
+		hasError: rpcMessage.Error != nil,
 	}, nil
 }
 
@@ -72,9 +75,12 @@ func (f *Forwarder) forwardRequest(ctx context.Context, endpoint string) (*rawRe
 		SetHeaderBytes(http.ContentType, http.JSONType).
 		SetHeaderBytes(http.Accept, http.JSONType).
 		Do()
-
 	if err != nil {
 		return nil, fmt.Errorf("could not get response from %s: %w", endpoint, err)
+	}
+
+	if resp.StatusCode() < 200 || resp.StatusCode() > 400 {
+		return nil, fmt.Errorf("invalid response code: %w", err)
 	}
 
 	rawResp, err := f.newRawResponse(resp.Body(), endpoint)

@@ -55,15 +55,20 @@ func NewFastHTTPClient() Client {
 }
 
 type rawResponse struct {
-	body []byte
+	body       []byte
+	statusCode int
 }
 
-func newRawResponse(body []byte) *rawResponse {
+func (r *rawResponse) StatusCode() int {
+	return r.statusCode
+}
+
+func newRawResponse(body []byte, statusCode int) *rawResponse {
 	newBody := make([]byte, len(body))
 	// copy to avoid a reallocation
 	copy(newBody, body)
 
-	return &rawResponse{body: newBody}
+	return &rawResponse{body: newBody, statusCode: statusCode}
 }
 
 func (r *rawResponse) Body() []byte {
@@ -131,6 +136,7 @@ func (f *fastHTTPClient) AcquireRequest() *fastHTTPRequest {
 		return &fastHTTPRequest{
 			&fasthttp.Request{},
 			f,
+			nil,
 		}
 	}
 	//nolint: forcetypeassert
@@ -140,6 +146,7 @@ func (f *fastHTTPClient) AcquireRequest() *fastHTTPRequest {
 // ReleaseRequest releases a request object for re-use.
 func (f *fastHTTPClient) ReleaseRequest(req *fastHTTPRequest) {
 	req.Reset()
+	req.context = nil
 	f.reqPool.Put(req)
 }
 
@@ -147,6 +154,9 @@ func (f *fastHTTPClient) ReleaseRequest(req *fastHTTPRequest) {
 type fastHTTPRequest struct {
 	*fasthttp.Request
 	client *fastHTTPClient
+	// we need to respect context cancellation even after response
+	//nolint: containedctx
+	context context.Context
 }
 
 // Reset clears request contents.
@@ -161,7 +171,8 @@ func (f *fastHTTPRequest) SetBody(body []byte) Request {
 }
 
 // SetContext does nothing on fasthttp request.
-func (f *fastHTTPRequest) SetContext(_ context.Context) Request {
+func (f *fastHTTPRequest) SetContext(ctx context.Context) Request {
+	f.context = ctx
 	return f
 }
 
@@ -205,7 +216,12 @@ func (f *fastHTTPRequest) Do() (Response, error) {
 		return nil, fmt.Errorf("could not get response: %w", err)
 	}
 
-	return newRawResponse(realResponse), nil
+	select {
+	case <-f.context.Done():
+		return nil, fmt.Errorf("could not get context: %w", f.context.Err())
+	default:
+		return newRawResponse(realResponse, resp.StatusCode()), nil
+	}
 }
 
 func (f *fastHTTPClient) NewRequest() Request {

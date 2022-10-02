@@ -1,10 +1,10 @@
 package proxy
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/eth/filters"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/goccy/go-json"
 	"github.com/hedzr/cmdr/tool"
 	"github.com/invopop/jsonschema"
 	"golang.org/x/exp/slices"

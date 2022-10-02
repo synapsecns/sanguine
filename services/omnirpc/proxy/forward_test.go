@@ -27,7 +27,7 @@ func (p *ProxySuite) TestServeRequestNoChain() {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	prxy.Forward(c, 1)
+	prxy.Forward(c, 1, nil)
 	Equal(p.T(), w.Code, http.StatusBadRequest)
 }
 
@@ -43,7 +43,7 @@ func (p *ProxySuite) TestCannotReadBody() {
 		Body: mockBody,
 	}
 
-	prxy.Forward(c, 1)
+	prxy.Forward(c, 1, nil)
 	Equal(p.T(), w.Code, http.StatusBadRequest)
 }
 
@@ -70,7 +70,7 @@ func (p *ProxySuite) TestMalformedRequestBody() {
 
 	c.Request, _ = http.NewRequest(http.MethodPost, "/", bytes.NewReader(p.generateFakeJSON()))
 
-	prxy.Forward(c, 1)
+	prxy.Forward(c, 1, nil)
 	Equal(p.T(), w.Code, http.StatusBadRequest)
 }
 
@@ -133,14 +133,13 @@ func (p *ProxySuite) TestForwardRequest() {
 	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
 
 	methodName := "test"
-	testRes, err := json.Marshal(proxy.JSONRPCMessage{
+	testRes := p.MustMarshall(proxy.JSONRPCMessage{
 		Version: strconv.Itoa(gofakeit.Number(1, 2)),
 		Method:  methodName,
 		Params:  nil,
 		Error:   nil,
 		Result:  nil,
 	})
-	Nil(p.T(), err)
 
 	captureClient := omniHTTP.NewCaptureClient(func(c *omniHTTP.CapturedRequest) (omniHTTP.Response, error) {
 		bodyRes := new(mocks.Response)
@@ -157,7 +156,7 @@ func (p *ProxySuite) TestForwardRequest() {
 	forwarder.SetRequestID([]byte(testRequestID))
 	forwarder.SetRPCRequest(&proxy.RPCRequest{Method: methodName})
 
-	_, err = forwarder.ForwardRequest(p.GetTestContext(), testURL)
+	_, err := forwarder.ForwardRequest(p.GetTestContext(), testURL)
 	Nil(p.T(), err)
 
 	requests := captureClient.Requests()
@@ -171,4 +170,36 @@ func (p *ProxySuite) TestForwardRequest() {
 
 	Equal(p.T(), idHeader, []byte(testRequestID))
 	Equal(p.T(), request.Body, testBody)
+}
+
+func (p *ProxySuite) TestOverrideConfirmability() {
+	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
+	forwarder := prxy.AcquireForwarder()
+
+	const chainConfirmations = uint16(10)
+	const overridedConfirmations = uint16(2)
+	// make the chain require 10 confirmations
+	var urls []string
+	for i := 0; i < int(chainConfirmations); i++ {
+		urls = append(urls, gofakeit.URL())
+	}
+
+	chainManager := new(chainManagerMocks.Chain)
+	chainManager.On("ConfirmationsThreshold").Return(chainConfirmations)
+	chainManager.On("URLs").Return(urls)
+	forwarder.SetChain(chainManager)
+
+	forwarder.SetBody(p.MustMarshall(proxy.RPCRequest{
+		ID:     []byte("\"1\""),
+		Method: string(proxy.BlockByNumberMethod),
+		Params: []json.RawMessage{[]byte("\"1\"")},
+	}))
+	testContext, _ := gin.CreateTestContext(httptest.NewRecorder())
+	forwarder.SetC(testContext)
+
+	// try an override
+	forwarder.SetRequiredConfirmations(overridedConfirmations)
+
+	True(p.T(), forwarder.CheckAndSetConfirmability())
+	Equal(p.T(), forwarder.RequiredConfirmations(), overridedConfirmations)
 }

@@ -47,6 +47,7 @@ func Start(ctx context.Context, cfg Config) error {
 
 	router.Use(helmet.Default())
 	router.Use(gin.Recovery())
+
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
 		AllowHeaders:    []string{"*"},
