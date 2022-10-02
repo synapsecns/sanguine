@@ -39,9 +39,9 @@ type RawResponse interface {
 }
 
 // ForwardRequest exports forward request for testing.
-func (f *Forwarder) ForwardRequest(ctx context.Context, endpoint, requestID string) (RawResponse, error) {
+func (f *Forwarder) ForwardRequest(ctx context.Context, endpoint string) (RawResponse, error) {
 	//nolint: wrapcheck
-	return f.forwardRequest(ctx, endpoint, requestID)
+	return f.forwardRequest(ctx, endpoint)
 }
 
 func (r rawResponse) Body() []byte {
@@ -92,11 +92,11 @@ func (f *Forwarder) SetRequiredConfirmations(requiredConfirmations uint16) {
 	f.requiredConfirmations = requiredConfirmations
 }
 
-func (f *Forwarder) RequestID() string {
+func (f *Forwarder) RequestID() []byte {
 	return f.requestID
 }
 
-func (f *Forwarder) SetRequestID(requestID string) {
+func (f *Forwarder) SetRequestID(requestID []byte) {
 	f.requestID = requestID
 }
 

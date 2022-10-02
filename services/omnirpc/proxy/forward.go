@@ -49,7 +49,7 @@ const (
 	httpsSchema = "https"
 )
 
-func (f *Forwarder) forwardRequest(ctx context.Context, endpoint, requestID string) (*rawResponse, error) {
+func (f *Forwarder) forwardRequest(ctx context.Context, endpoint string) (*rawResponse, error) {
 	endpointURL, err := fasturl.ParseURL(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse endpoint (%s): %w", endpointURL, err)
@@ -67,7 +67,7 @@ func (f *Forwarder) forwardRequest(ctx context.Context, endpoint, requestID stri
 		SetContext(ctx).
 		SetRequestURI(endpoint).
 		SetBody(f.body).
-		SetHeaderBytes(http.XRequestID, []byte(requestID)).
+		SetHeaderBytes(http.XRequestID, f.requestID).
 		SetHeaderBytes(http.XForwardedFor, http.OmniRPCValue).
 		SetHeaderBytes(http.ContentType, http.JSONType).
 		SetHeaderBytes(http.Accept, http.JSONType).

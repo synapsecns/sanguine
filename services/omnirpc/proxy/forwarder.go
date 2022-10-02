@@ -30,7 +30,7 @@ type Forwarder struct {
 	// requiredConfirmations is the number of required confirmations for the request to go through
 	requiredConfirmations uint16
 	// requestID is the request id
-	requestID string
+	requestID []byte
 	// client is the client used for fasthttp
 	client omniHTTP.Client
 	// resMap is the res map
@@ -47,7 +47,7 @@ func (f *Forwarder) Reset() {
 	f.chain = nil
 	f.body = nil
 	f.requiredConfirmations = 0
-	f.requestID = ""
+	f.requestID = nil
 	f.resMap = nil
 	f.rpcRequest = nil
 }
@@ -249,7 +249,7 @@ func (f *Forwarder) attemptForward(ctx context.Context, errChan chan error, resC
 
 	url := nextURL.Unwrap()
 
-	res, err := f.forwardRequest(ctx, url, f.requestID)
+	res, err := f.forwardRequest(ctx, url)
 	if err != nil {
 		// check if we're done, otherwise add to errchan
 		select {
@@ -289,7 +289,7 @@ func (f *Forwarder) fillAndValidate(chainID uint32) (ok bool) {
 		return false
 	}
 
-	f.requestID = f.c.GetHeader(omniHTTP.XRequestIDString)
+	f.requestID = []byte(f.c.GetHeader(omniHTTP.XRequestIDString))
 
 	if ok := f.checkAndSetConfirmability(); !ok {
 		return false
