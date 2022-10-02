@@ -74,4 +74,8 @@ type Query {
     chain_id: Int!
     block_number: Int!
   ): Int
+  # returns the last block number that has a block time for a chain
+  lastBlockTime(
+    chain_id: Int!
+  ): Int
 }

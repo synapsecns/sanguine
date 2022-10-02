@@ -88,6 +88,11 @@ func (r *queryResolver) BlockTime(ctx context.Context, chainID int, blockNumber 
 	return &blockTimeInt, nil
 }
 
+// LastBlockTime is the resolver for the lastBlockTime field.
+func (r *queryResolver) LastBlockTime(ctx context.Context, chainID int) (*int, error) {
+	panic(fmt.Errorf("not implemented: LastBlockTime - lastBlockTime"))
+}
+
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 

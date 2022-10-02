@@ -72,6 +72,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		BlockTime         func(childComplexity int, chainID int, blockNumber int) int
+		LastBlockTime     func(childComplexity int, chainID int) int
 		Logs              func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, page int) int
 		LogsRange         func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) int
 		Receipts          func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, page int) int
@@ -131,6 +132,7 @@ type QueryResolver interface {
 	Transactions(ctx context.Context, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, page int) ([]*model.Transaction, error)
 	TransactionsRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Transaction, error)
 	BlockTime(ctx context.Context, chainID int, blockNumber int) (*int, error)
+	LastBlockTime(ctx context.Context, chainID int) (*int, error)
 }
 type ReceiptResolver interface {
 	Logs(ctx context.Context, obj *model.Receipt) ([]*model.Log, error)
@@ -288,6 +290,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.BlockTime(childComplexity, args["chain_id"].(int), args["block_number"].(int)), true
+
+	case "Query.lastBlockTime":
+		if e.complexity.Query.LastBlockTime == nil {
+			break
+		}
+
+		args, err := ec.field_Query_lastBlockTime_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.LastBlockTime(childComplexity, args["chain_id"].(int)), true
 
 	case "Query.logs":
 		if e.complexity.Query.Logs == nil {
@@ -716,6 +730,10 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     chain_id: Int!
     block_number: Int!
   ): Int
+  # returns the last block number that has a block time for a chain
+  lastBlockTime(
+    chain_id: Int!
+  ): Int
 }
 `, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `scalar JSON
@@ -823,6 +841,21 @@ func (ec *executionContext) field_Query_blockTime_args(ctx context.Context, rawA
 		}
 	}
 	args["block_number"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_lastBlockTime_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chain_id"] = arg0
 	return args, nil
 }
 
@@ -2732,6 +2765,58 @@ func (ec *executionContext) fieldContext_Query_blockTime(ctx context.Context, fi
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_blockTime_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_lastBlockTime(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_lastBlockTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().LastBlockTime(rctx, fc.Args["chain_id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_lastBlockTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_lastBlockTime_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -6481,6 +6566,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_blockTime(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "lastBlockTime":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_lastBlockTime(ctx, field)
 				return res
 			}
 

@@ -26,6 +26,7 @@ type Query struct {
 	Transactions      []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
 	TransactionsRange []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
 	BlockTime         *int                 "json:\"blockTime\" graphql:\"blockTime\""
+	LastBlockTime     *int                 "json:\"lastBlockTime\" graphql:\"lastBlockTime\""
 }
 type GetLogs struct {
 	Response []*struct {
@@ -208,6 +209,9 @@ type GetTransactionsResolvers struct {
 	} "json:\"response\" graphql:\"response\""
 }
 type GetBlockTime struct {
+	Response *int "json:\"response\" graphql:\"response\""
+}
+type GetLastBlockTime struct {
 	Response *int "json:\"response\" graphql:\"response\""
 }
 
@@ -554,6 +558,24 @@ func (c *Client) GetBlockTime(ctx context.Context, chainID int, blockNumber int,
 
 	var res GetBlockTime
 	if err := c.Client.Post(ctx, "GetBlockTime", GetBlockTimeDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetLastBlockTimeDocument = `query GetLastBlockTime ($chain_id: Int!) {
+	response: lastBlockTime(chain_id: $chain_id)
+}
+`
+
+func (c *Client) GetLastBlockTime(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetLastBlockTime, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+	}
+
+	var res GetLastBlockTime
+	if err := c.Client.Post(ctx, "GetLastBlockTime", GetLastBlockTimeDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
