@@ -17,6 +17,8 @@ type EventLog interface {
 	GetTxHash() common.Hash
 	// GetEventType returns the event type of the log.
 	GetEventType() EventType
+	// GetEventIndex returns the index of the log.
+	GetEventIndex() uint64
 	// GetTokenIndex returns the token index of the tx.
 	GetTokenIndex() *uint8
 	// GetAmount returns the amount of the tx.

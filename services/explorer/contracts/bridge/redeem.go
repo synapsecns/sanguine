@@ -102,6 +102,10 @@ func (s SynapseBridgeTokenRedeemAndSwap) GetSwapSuccess() *bool {
 	return nil
 }
 
+func (s SynapseBridgeTokenRedeemAndSwap) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
+}
+
 var _ bridge.EventLog = &SynapseBridgeTokenRedeemAndSwap{}
 
 // GetRaw gets the raw event logs from the redeem event.
@@ -191,6 +195,10 @@ func (s SynapseBridgeTokenRedeem) GetKappa() *[32]byte {
 
 func (s SynapseBridgeTokenRedeem) GetSwapSuccess() *bool {
 	return nil
+}
+
+func (s SynapseBridgeTokenRedeem) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
 }
 
 var _ bridge.EventLog = &SynapseBridgeTokenRedeem{}
@@ -287,6 +295,10 @@ func (s SynapseBridgeTokenRedeemAndRemove) GetSwapSuccess() *bool {
 	return nil
 }
 
+func (s SynapseBridgeTokenRedeemAndRemove) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
+}
+
 var _ bridge.EventLog = &SynapseBridgeTokenRedeemAndRemove{}
 
 // GetRaw gets the raw event logs from the redeem event.
@@ -377,6 +389,10 @@ func (s SynapseBridgeTokenRedeemV2) GetKappa() *[32]byte {
 
 func (s SynapseBridgeTokenRedeemV2) GetSwapSuccess() *bool {
 	return nil
+}
+
+func (s SynapseBridgeTokenRedeemV2) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
 }
 
 var _ bridge.EventLog = &SynapseBridgeTokenRedeemV2{}

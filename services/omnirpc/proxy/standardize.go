@@ -1,11 +1,11 @@
 package proxy
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/goccy/go-json"
 )
 
 // JSONRPCMessage is A value of this type can a JSON-RPC request, notification, successful response or
@@ -87,10 +87,8 @@ type feeHistoryResultMarshaling struct {
 
 // StandardizeResponse produces a standardized json response for hashing (strips extra fields)
 // nolint: gocognit, cyclop
-func StandardizeResponse(method string, body []byte) (out []byte, err error) {
+func standardizeResponse(method string, rpcMessage JSONRPCMessage) (out []byte, err error) {
 	// TODO: use a sync.pool for acquiring/releasing these structs
-	var rpcMessage JSONRPCMessage
-	err = json.Unmarshal(body, &rpcMessage)
 
 OUTER:
 	switch RPCMethod(method) {

@@ -98,6 +98,10 @@ func (s SynapseBridgeTokenDeposit) GetSwapSuccess() *bool {
 	return nil
 }
 
+func (s SynapseBridgeTokenDeposit) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
+}
+
 var _ bridge.EventLog = &SynapseBridgeTokenDeposit{}
 
 // GetRaw gets the raw event logs from the deposit and swap event.
@@ -191,6 +195,10 @@ func (s SynapseBridgeTokenDepositAndSwap) GetKappa() *[32]byte {
 
 func (s SynapseBridgeTokenDepositAndSwap) GetSwapSuccess() *bool {
 	return nil
+}
+
+func (s SynapseBridgeTokenDepositAndSwap) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
 }
 
 var _ bridge.EventLog = &SynapseBridgeTokenDepositAndSwap{}

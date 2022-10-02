@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"github.com/puzpuzpuz/xsync"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
@@ -38,9 +39,9 @@ type RawResponse interface {
 }
 
 // ForwardRequest exports forward request for testing.
-func (f *Forwarder) ForwardRequest(ctx context.Context, endpoint, requestID string) (RawResponse, error) {
+func (f *Forwarder) ForwardRequest(ctx context.Context, endpoint string) (RawResponse, error) {
 	//nolint: wrapcheck
-	return f.forwardRequest(ctx, endpoint, requestID)
+	return f.forwardRequest(ctx, endpoint)
 }
 
 func (r rawResponse) Body() []byte {
@@ -91,11 +92,11 @@ func (f *Forwarder) SetRequiredConfirmations(requiredConfirmations uint16) {
 	f.requiredConfirmations = requiredConfirmations
 }
 
-func (f *Forwarder) RequestID() string {
+func (f *Forwarder) RequestID() []byte {
 	return f.requestID
 }
 
-func (f *Forwarder) SetRequestID(requestID string) {
+func (f *Forwarder) SetRequestID(requestID []byte) {
 	f.requestID = requestID
 }
 
@@ -132,4 +133,14 @@ var _ RawResponse = rawResponse{}
 // SetBlankResMap sets a forwarder to a new res map for testing.
 func (f *Forwarder) SetBlankResMap() {
 	f.SetResMap(xsync.NewMapOf[[]rawResponse]())
+}
+
+func StandardizeResponse(method string, body []byte) ([]byte, error) {
+	var rpcMessage JSONRPCMessage
+	err := json.Unmarshal(body, &rpcMessage)
+	if err != nil {
+		//nolint: wrapcheck
+		return nil, err
+	}
+	return standardizeResponse(method, rpcMessage)
 }

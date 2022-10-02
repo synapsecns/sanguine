@@ -99,6 +99,10 @@ func (s SynapseBridgeTokenMint) GetSwapSuccess() *bool {
 	return nil
 }
 
+func (s SynapseBridgeTokenMint) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
+}
+
 var _ bridge.EventLog = &SynapseBridgeTokenMint{}
 
 // GetToken gets the token for the mint and remove operation.
@@ -194,6 +198,10 @@ func (s SynapseBridgeTokenMintAndSwap) GetSwapDeadline() *big.Int {
 
 func (s SynapseBridgeTokenMintAndSwap) GetRecipientBytes() *[32]byte {
 	return nil
+}
+
+func (s SynapseBridgeTokenMintAndSwap) GetEventIndex() uint64 {
+	return uint64(s.Raw.Index)
 }
 
 var _ bridge.EventLog = &SynapseBridgeTokenMintAndSwap{}

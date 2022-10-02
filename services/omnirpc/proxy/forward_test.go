@@ -84,7 +84,7 @@ func (p *ProxySuite) TestAcquireReleaseForwarder() {
 	forwarder.SetClient(omniHTTP.NewClient(omniHTTP.Resty))
 	forwarder.SetR(prxy)
 	forwarder.SetBody(gofakeit.ImagePng(5, 5))
-	forwarder.SetRequestID(uuid.New().String())
+	forwarder.SetRequestID([]byte(uuid.New().String()))
 	forwarder.SetRequiredConfirmations(gofakeit.Uint16())
 	forwarder.SetBlankResMap()
 	forwarder.SetRPCRequest(&proxy.RPCRequest{
@@ -121,7 +121,7 @@ func (p *ProxySuite) TestForwardRequestDisallowWS() {
 		parsedURL.Scheme = scheme
 		testURL = parsedURL.String()
 
-		rawRes, err := forwarder.ForwardRequest(p.GetTestContext(), testURL, gofakeit.UUID())
+		rawRes, err := forwarder.ForwardRequest(p.GetTestContext(), testURL)
 		Nil(p.T(), rawRes)
 		NotNil(p.T(), err)
 
@@ -154,9 +154,10 @@ func (p *ProxySuite) TestForwardRequest() {
 	testBody := gofakeit.ImagePng(10, 10)
 	forwarder := prxy.AcquireForwarder()
 	forwarder.SetBody(testBody)
+	forwarder.SetRequestID([]byte(testRequestID))
 	forwarder.SetRPCRequest(&proxy.RPCRequest{Method: methodName})
 
-	_, err = forwarder.ForwardRequest(p.GetTestContext(), testURL, testRequestID)
+	_, err = forwarder.ForwardRequest(p.GetTestContext(), testURL)
 	Nil(p.T(), err)
 
 	requests := captureClient.Requests()
