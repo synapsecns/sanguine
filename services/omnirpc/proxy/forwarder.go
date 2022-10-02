@@ -2,10 +2,10 @@ package proxy
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/Soft/iter"
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"github.com/puzpuzpuz/xsync"
 	"github.com/synapsecns/sanguine/core/threaditer"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"github.com/puzpuzpuz/xsync"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
@@ -132,4 +133,14 @@ var _ RawResponse = rawResponse{}
 // SetBlankResMap sets a forwarder to a new res map for testing.
 func (f *Forwarder) SetBlankResMap() {
 	f.SetResMap(xsync.NewMapOf[[]rawResponse]())
+}
+
+func StandardizeResponse(method string, body []byte) ([]byte, error) {
+	var rpcMessage JSONRPCMessage
+	err := json.Unmarshal(body, &rpcMessage)
+	if err != nil {
+		//nolint: wrapcheck
+		return nil, err
+	}
+	return standardizeResponse(method, rpcMessage)
 }

@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"github.com/ImVexed/fasturl"
+	"github.com/goccy/go-json"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
 	"golang.org/x/exp/slices"
 	"strings"
@@ -25,7 +26,13 @@ type rawResponse struct {
 func (f *Forwarder) newRawResponse(body []byte, url string) (*rawResponse, error) {
 	// TODO: see if there's a faster way to do this. Canonical json?
 	// unmarshall and remarshall
-	standardizedResponse, err := StandardizeResponse(f.rpcRequest.Method, body)
+	var rpcMessage JSONRPCMessage
+	err := json.Unmarshal(body, &rpcMessage)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse response: %w", err)
+	}
+
+	standardizedResponse, err := standardizeResponse(f.rpcRequest.Method, rpcMessage)
 	if err != nil {
 		return nil, fmt.Errorf("could not standardize response: %w", err)
 	}
