@@ -1,7 +1,6 @@
 package consumer_test
 
 import (
-	"bitbucket.org/tentontrain/math"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -78,11 +77,18 @@ func (c *ConsumerSuite) TestTimeToBlockNumber() {
 	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
 		blockTime, err := c.eventDB.RetrieveBlockTime(c.GetTestContext(), chainID, blockNumber)
 		Nil(c.T(), err)
-		timeDiff := math.Abs(blockTime - targetTime)
+		timeDiff := abs(int64(blockTime) - int64(targetTime))
 		if closestBlockTime > timeDiff {
 			closestBlockTime = timeDiff
 			closestBlockNumber = blockNumber
 		}
 	}
 	Equal(c.T(), closestBlockNumber, blockNumber)
+}
+
+func abs(a int64) uint64 {
+	if a < 0 {
+		return uint64(-a)
+	}
+	return uint64(a)
 }
