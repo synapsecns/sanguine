@@ -5,9 +5,7 @@
 // test-data is the synapse-contracts repo, used for testing deployments
 package internal
 
-import (
-	"github.com/dgraph-io/ristretto"
-)
+import "github.com/dgraph-io/ristretto"
 
 func init() {
 	panic("could not import dev package: this package is meant to define dependencies, not be imported.")
