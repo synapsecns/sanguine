@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/gin-gonic/gin"
+	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph"
 	resolvers "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/resolver"
@@ -16,11 +17,12 @@ const (
 )
 
 // EnableGraphql enables the scribe graphql service.
-func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB) {
+func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher consumer.Fetcher) {
 	server := handler.NewDefaultServer(
 		resolvers.NewExecutableSchema(
 			resolvers.Config{Resolvers: &graph.Resolver{
-				DB: consumerDB,
+				DB:      consumerDB,
+				Fetcher: fetcher,
 			}},
 		),
 	)

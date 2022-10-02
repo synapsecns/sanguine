@@ -7,11 +7,14 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	baseServer "github.com/synapsecns/sanguine/core/server"
+	"github.com/synapsecns/sanguine/services/explorer/consumer"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	gqlServer "github.com/synapsecns/sanguine/services/explorer/graphql/server"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/clickhouse"
 	"golang.org/x/sync/errgroup"
+	"net/http"
 	"time"
 )
 
@@ -24,6 +27,8 @@ type Config struct {
 	HTTPPort uint16
 	// Address is the address of the database
 	Address string
+	// ScribeURL is the url of the scribe service
+	ScribeURL string
 }
 
 // Start starts the api server.
@@ -46,7 +51,10 @@ func Start(ctx context.Context, cfg Config) error {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
 
-	gqlServer.EnableGraphql(router, consumerDB)
+	// get the fetcher
+	fetcher := consumer.NewFetcher(client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", cfg.ScribeURL, gqlServer.GraphqlEndpoint)))
+
+	gqlServer.EnableGraphql(router, consumerDB, *fetcher)
 	// grpcServer, err := server.SetupGRPCServer(ctx, router, consumerDB)
 	// if err != nil {
 	//	return fmt.Errorf("could not create grpc server: %w", err)

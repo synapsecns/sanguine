@@ -23,7 +23,7 @@ func (g APISuite) TestSome() {
 	}
 	chainIDRef := int(chainID)
 	addressRef := address.String()
-	some, err := g.gqlClient.GetCountByChainID(g.GetTestContext(), &chainIDRef, &addressRef, nil, nil)
+	some, err := g.client.GetCountByChainID(g.GetTestContext(), &chainIDRef, &addressRef, nil, nil)
 	Nil(g.T(), err)
 	res := *some.Response[0]
 	fmt.Println(*res.Count)
@@ -76,11 +76,11 @@ func (g APISuite) TestSome() {
 //	}
 //
 //	// test get logs and get logs in a range (Graphql)
-//	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID), 1)
+//	logs, err := g.client.GetLogs(g.GetTestContext(), int(chainID), 1)
 //	Nil(g.T(), err)
 //	// there were 20 logs created (2 per loop, in a loop of 10)
 //	Equal(g.T(), len(logs.Response), 20)
-//	logsRange, err := g.gqlClient.GetLogsRange(g.GetTestContext(), int(chainID), 2, 5, 1)
+//	logsRange, err := g.client.GetLogsRange(g.GetTestContext(), int(chainID), 2, 5, 1)
 //	Nil(g.T(), err)
 //	// from 2-5, there were 8 logs created (2 per loop, in a range of 4)
 //	Equal(g.T(), len(logsRange.Response), 8)
@@ -98,21 +98,21 @@ func (g APISuite) TestSome() {
 //	_ = res.Body.Close()
 //
 //	// test get receipts and get receipts in a range
-//	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1)
+//	receipts, err := g.client.GetReceipts(g.GetTestContext(), int(chainID), 1)
 //	Nil(g.T(), err)
 //	// there were 20 receipts created (2 per loop, in a loop of 10)
 //	Equal(g.T(), len(receipts.Response), 20)
-//	receiptsRange, err := g.gqlClient.GetReceiptsRange(g.GetTestContext(), int(chainID), 1, 7, 1)
+//	receiptsRange, err := g.client.GetReceiptsRange(g.GetTestContext(), int(chainID), 1, 7, 1)
 //	Nil(g.T(), err)
 //	// from 1-7, there were 14 receipts created (2 per loop, in a range of 7)
 //	Equal(g.T(), len(receiptsRange.Response), 14)
 //
 //	// test get transactions and get transactions in a range
-//	txs, err := g.gqlClient.GetTransactions(g.GetTestContext(), int(chainID), 1)
+//	txs, err := g.client.GetTransactions(g.GetTestContext(), int(chainID), 1)
 //	Nil(g.T(), err)
 //	// there were 20 txs created (2 per loop, in a loop of 10)
 //	Equal(g.T(), len(txs.Response), 20)
-//	txsRange, err := g.gqlClient.GetTransactionsRange(g.GetTestContext(), int(chainID), 3, 8, 1)
+//	txsRange, err := g.client.GetTransactionsRange(g.GetTestContext(), int(chainID), 3, 8, 1)
 //	Nil(g.T(), err)
 //	// from 3-8, there were 12 txs created (2 per loop, in a range of 6)
 //	Equal(g.T(), len(txsRange.Response), 12)
@@ -128,7 +128,7 @@ func (g APISuite) TestSome() {
 //	Nil(g.T(), err)
 //
 //	// retrieve it using gql
-//	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID), 1)
+//	logs, err := g.client.GetLogs(g.GetTestContext(), int(chainID), 1)
 //	Nil(g.T(), err)
 //
 //	parsedLog, err := graphql.ParseLog(*logs.Response[0])
@@ -148,7 +148,7 @@ func (g APISuite) TestSome() {
 //	Nil(g.T(), err)
 //
 //	// retrieve it
-//	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1)
+//	receipts, err := g.client.GetReceipts(g.GetTestContext(), int(chainID), 1)
 //	Nil(g.T(), err)
 //	retrievedReceipt := receipts.Response[0]
 //
@@ -177,7 +177,7 @@ func (g APISuite) TestSome() {
 //	Nil(g.T(), err)
 //
 //	// retrieve it
-//	txs, err := g.gqlClient.GetTransactions(g.GetTestContext(), int(chainID), 1)
+//	txs, err := g.client.GetTransactions(g.GetTestContext(), int(chainID), 1)
 //	Nil(g.T(), err)
 //	retrievedTx := txs.Response[0]
 //

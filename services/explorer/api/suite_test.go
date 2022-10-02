@@ -3,9 +3,14 @@ package api_test
 import (
 	"fmt"
 	"github.com/phayes/freeport"
+	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/services/explorer/api"
+	explorerclient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
+	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/clickhouse"
+	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
+	gqlServer "github.com/synapsecns/sanguine/services/scribe/graphql/server"
 	"net/http"
 	"testing"
 
@@ -21,10 +26,15 @@ import (
 // APISuite defines the basic test suite.
 type APISuite struct {
 	*testsuite.TestSuite
-	db        db.ConsumerDB
-	gqlClient *client.Client
+	db     db.ConsumerDB
+	client *client.Client
 	// grpcClient *rest.APIClient
-	logIndex atomic.Int64
+	eventDB       scribedb.EventDB
+	gqlClient     *explorerclient.Client
+	logIndex      atomic.Int64
+	cleanup       func()
+	testBackend   backends.SimulatedTestBackend
+	deployManager *testutil.DeployManager
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -40,7 +50,9 @@ func NewTestSuite(tb testing.TB) *APISuite {
 func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 
-	g.logIndex.Store(0)
+	//g.logIndex.Store(0)
+
+	g.db, g.eventDB, g.gqlClient, g.logIndex, g.cleanup, g.testBackend, g.deployManager = testutil.NewTestEnvDB(g.GetTestContext(), g.T())
 
 	httpport := freeport.GetPort()
 	cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
@@ -57,14 +69,15 @@ func (g *APISuite) SetupTest() {
 
 	go func() {
 		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
-			HTTPPort: uint16(httpport),
-			Address:  address,
+			HTTPPort:  uint16(httpport),
+			Address:   address,
+			ScribeURL: g.gqlClient.Client.BaseURL,
 		}))
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", httpport)
 
-	g.gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
+	g.client = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, gqlServer.GraphqlEndpoint))
 
 	// config := rest.NewConfiguration()
 	// config.BasePath = baseURL
@@ -75,7 +88,7 @@ func (g *APISuite) SetupTest() {
 	g.Eventually(func() bool {
 		request, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)
 		Nil(g.T(), err)
-		res, err := g.gqlClient.Client.Client.Do(request)
+		res, err := g.client.Client.Client.Do(request)
 		if err == nil {
 			defer func() {
 				_ = res.Body.Close()

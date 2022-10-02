@@ -37,6 +37,12 @@ var addressFlag = &cli.StringFlag{
 	//Required: true,
 }
 
+var scribeURL = &cli.StringFlag{
+	Name:     "scribe-url",
+	Usage:    "--scribe-url <scribe-url>",
+	Required: true,
+}
+
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
@@ -44,8 +50,9 @@ var serverCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		fmt.Println("port", c.Uint("port"))
 		err := api.Start(c.Context, api.Config{
-			HTTPPort: uint16(c.Uint(portFlag.Name)),
-			Address:  c.String(addressFlag.Name),
+			HTTPPort:  uint16(c.Uint(portFlag.Name)),
+			Address:   c.String(addressFlag.Name),
+			ScribeURL: c.String(scribeURL.Name),
 		})
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)

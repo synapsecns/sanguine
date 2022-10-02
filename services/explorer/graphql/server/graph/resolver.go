@@ -1,6 +1,9 @@
 package graph
 
-import "github.com/synapsecns/sanguine/services/explorer/db"
+import (
+	"github.com/synapsecns/sanguine/services/explorer/consumer"
+	"github.com/synapsecns/sanguine/services/explorer/db"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -10,5 +13,6 @@ import "github.com/synapsecns/sanguine/services/explorer/db"
 //
 //go:generate go run github.com/synapsecns/sanguine/services/explorer/graphql/contrib
 type Resolver struct {
-	DB db.ConsumerDB
+	DB      db.ConsumerDB
+	Fetcher consumer.Fetcher
 }

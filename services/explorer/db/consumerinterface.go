@@ -15,8 +15,12 @@ type ConsumerDBWriter interface {
 
 // ConsumerDBReader is the interface for reading events from the ConsumerDB.
 type ConsumerDBReader interface {
+	// GetAllChainIDs gets all chain IDs that have been used in bridge events.
+	GetAllChainIDs(ctx context.Context) ([]uint32, error)
 	// ReadBlockNumberByChainID reads an event from the database by chainID.
 	ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error)
+	// BridgeCountByChainID returns the number of bridge events for a given chain ID.
+	BridgeCountByChainID(ctx context.Context, chainID uint32, address *string, directionIn bool, firstBlock uint64) (count uint64, err error)
 	// DB gets the underlying gorm db.
 	DB() *gorm.DB
 }

@@ -3,7 +3,6 @@ package sql
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 // ReadBlockNumberByChainID provides an easy-to-use interface to validate database
@@ -41,12 +40,44 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 //	).Find(&bridgeEvent)
 //}
 
-func (s *Store) BridgeCountByChainID(ctx context.Context, chainID uint32, address common.Address, directionIn bool, hours uint) (chId uint32, count uint64, err error) {
+// GetAllChainIDs gets all chain IDs that have been used in bridge events.
+func (s *Store) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
+	var resOut []uint32
+	dbTx := s.db.WithContext(ctx).Raw(`SELECT DISTINCT chain_id FROM bridge_events`).Find(&resOut)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+	var resIn []uint32
+	dbTx = s.db.WithContext(ctx).Raw(`SELECT DISTINCT destination_chain_id FROM bridge_events`).Find(&resIn)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+	uniqueChainIDs := make(map[uint32]bool)
+	for _, chainID := range resOut {
+		uniqueChainIDs[chainID] = true
+	}
+	for _, chainID := range resIn {
+		uniqueChainIDs[chainID] = true
+	}
+	var res []uint32
+	for chainID := range uniqueChainIDs {
+		res = append(res, chainID)
+	}
+	return res, nil
+}
+
+// BridgeCountByChainID returns the number of bridge events for a given chain ID.
+func (s *Store) BridgeCountByChainID(ctx context.Context, chainID uint32, address *string, directionIn bool, firstBlock uint64) (count uint64, err error) {
 	var res int64
+	var addressSpecifier string
+	if address != nil {
+		addressSpecifier = fmt.Sprintf(" AND address = '%s'", *address)
+	}
+
 	if directionIn {
 		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT tx_hash) FROM bridge_events WHERE destination_chain_id = %d`,
-			chainID,
+			`SELECT COUNT(DISTINCT ON (tx_hash, event_index)) FROM bridge_events WHERE destination_chain_id = %d AND block_number >= %d%s`,
+			chainID, firstBlock, addressSpecifier,
 			// `SELECT count(*),
 			//	argMax(destination_chain_id, insert_time) as destination_chain_id,
 			//	argMax(address, insert_time) as address,
@@ -54,18 +85,18 @@ func (s *Store) BridgeCountByChainID(ctx context.Context, chainID uint32, addres
 		)).Find(&res)
 		// Count(&res)
 		if dbTx.Error != nil {
-			return 0, 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+			return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
 	} else {
 		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT tx_hash) FROM bridge_events WHERE chain_id = %d`,
-			chainID,
+			`SELECT COUNT(DISTINCT ON (tx_hash, event_index)) FROM bridge_events WHERE chain_id = %d AND block_number >= %d%s`,
+			chainID, firstBlock, addressSpecifier,
 		)).Find(&res)
 		if dbTx.Error != nil {
-			return 0, 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+			return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
 	}
-	return chainID, uint64(res), nil
+	return uint64(res), nil
 }
 
 // SELECT count(*), argMax(tx_hash, insert_time) AS tx_hash FROM bridge_events WHERE chain_id = 1337 AND block_number >= 5;
