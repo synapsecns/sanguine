@@ -16,3 +16,7 @@ query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page
 query GetBlockTime ($chain_id: Int!, $block_number: Int!) {
   response: blockTime (chain_id: $chain_id, block_number: $block_number)
 }
+
+query GetLastStoredBlockNumber ($chain_id: Int!) {
+  response: lastStoredBlockNumber (chain_id: $chain_id)
+}

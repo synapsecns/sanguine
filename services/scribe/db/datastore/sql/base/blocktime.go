@@ -43,19 +43,19 @@ func (s Store) RetrieveBlockTime(ctx context.Context, chainID uint32, blockNumbe
 	return blockTime.Timestamp, nil
 }
 
-// RetrieveLastBlockTime retrieves the last block time for a chain.
-func (s Store) RetrieveLastBlockTime(ctx context.Context, chainID uint32) (uint64, error) {
+// RetrieveLastBlockStored retrieves the last block number that has a stored block time.
+func (s Store) RetrieveLastBlockStored(ctx context.Context, chainID uint32) (uint64, error) {
 	var blockTime BlockTime
 	dbTx := s.DB().WithContext(ctx).
 		Model(&BlockTime{}).
 		Where(&BlockTime{
 			ChainID: chainID,
 		}).
-		Order("block_number DESC").
+		Order(fmt.Sprintf("%s DESC", BlockNumberFieldName)).
 		First(&blockTime)
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("could not retrieve last block time: %w", dbTx.Error)
 	}
 
-	return blockTime.Timestamp, nil
+	return blockTime.BlockNumber, nil
 }

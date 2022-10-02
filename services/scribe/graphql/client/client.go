@@ -19,14 +19,14 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	Logs              []*model.Log         "json:\"logs\" graphql:\"logs\""
-	LogsRange         []*model.Log         "json:\"logsRange\" graphql:\"logsRange\""
-	Receipts          []*model.Receipt     "json:\"receipts\" graphql:\"receipts\""
-	ReceiptsRange     []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
-	Transactions      []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
-	TransactionsRange []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
-	BlockTime         *int                 "json:\"blockTime\" graphql:\"blockTime\""
-	LastBlockTime     *int                 "json:\"lastBlockTime\" graphql:\"lastBlockTime\""
+	Logs                  []*model.Log         "json:\"logs\" graphql:\"logs\""
+	LogsRange             []*model.Log         "json:\"logsRange\" graphql:\"logsRange\""
+	Receipts              []*model.Receipt     "json:\"receipts\" graphql:\"receipts\""
+	ReceiptsRange         []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
+	Transactions          []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
+	TransactionsRange     []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
+	BlockTime             *int                 "json:\"blockTime\" graphql:\"blockTime\""
+	LastStoredBlockNumber *int                 "json:\"lastStoredBlockNumber\" graphql:\"lastStoredBlockNumber\""
 }
 type GetLogs struct {
 	Response []*struct {
@@ -211,7 +211,7 @@ type GetTransactionsResolvers struct {
 type GetBlockTime struct {
 	Response *int "json:\"response\" graphql:\"response\""
 }
-type GetLastBlockTime struct {
+type GetLastStoredBlockNumber struct {
 	Response *int "json:\"response\" graphql:\"response\""
 }
 
@@ -564,18 +564,18 @@ func (c *Client) GetBlockTime(ctx context.Context, chainID int, blockNumber int,
 	return &res, nil
 }
 
-const GetLastBlockTimeDocument = `query GetLastBlockTime ($chain_id: Int!) {
-	response: lastBlockTime(chain_id: $chain_id)
+const GetLastStoredBlockNumberDocument = `query GetLastStoredBlockNumber ($chain_id: Int!) {
+	response: lastStoredBlockNumber(chain_id: $chain_id)
 }
 `
 
-func (c *Client) GetLastBlockTime(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetLastBlockTime, error) {
+func (c *Client) GetLastStoredBlockNumber(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetLastStoredBlockNumber, error) {
 	vars := map[string]interface{}{
 		"chain_id": chainID,
 	}
 
-	var res GetLastBlockTime
-	if err := c.Client.Post(ctx, "GetLastBlockTime", GetLastBlockTimeDocument, &res, vars, httpRequestOptions...); err != nil {
+	var res GetLastStoredBlockNumber
+	if err := c.Client.Post(ctx, "GetLastStoredBlockNumber", GetLastStoredBlockNumberDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

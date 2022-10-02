@@ -19,13 +19,14 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	Logs              []*model.Log         "json:\"logs\" graphql:\"logs\""
-	LogsRange         []*model.Log         "json:\"logsRange\" graphql:\"logsRange\""
-	Receipts          []*model.Receipt     "json:\"receipts\" graphql:\"receipts\""
-	ReceiptsRange     []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
-	Transactions      []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
-	TransactionsRange []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
-	BlockTime         *int                 "json:\"blockTime\" graphql:\"blockTime\""
+	Logs                  []*model.Log         "json:\"logs\" graphql:\"logs\""
+	LogsRange             []*model.Log         "json:\"logsRange\" graphql:\"logsRange\""
+	Receipts              []*model.Receipt     "json:\"receipts\" graphql:\"receipts\""
+	ReceiptsRange         []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
+	Transactions          []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
+	TransactionsRange     []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
+	BlockTime             *int                 "json:\"blockTime\" graphql:\"blockTime\""
+	LastStoredBlockNumber *int                 "json:\"lastStoredBlockNumber\" graphql:\"lastStoredBlockNumber\""
 }
 type GetLogsRange struct {
 	Response []*struct {
@@ -42,6 +43,9 @@ type GetLogsRange struct {
 	} "json:\"response\" graphql:\"response\""
 }
 type GetBlockTime struct {
+	Response *int "json:\"response\" graphql:\"response\""
+}
+type GetLastStoredBlockNumber struct {
 	Response *int "json:\"response\" graphql:\"response\""
 }
 
@@ -90,6 +94,24 @@ func (c *Client) GetBlockTime(ctx context.Context, chainID int, blockNumber int,
 
 	var res GetBlockTime
 	if err := c.Client.Post(ctx, "GetBlockTime", GetBlockTimeDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetLastStoredBlockNumberDocument = `query GetLastStoredBlockNumber ($chain_id: Int!) {
+	response: lastStoredBlockNumber(chain_id: $chain_id)
+}
+`
+
+func (c *Client) GetLastStoredBlockNumber(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetLastStoredBlockNumber, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+	}
+
+	var res GetLastStoredBlockNumber
+	if err := c.Client.Post(ctx, "GetLastStoredBlockNumber", GetLastStoredBlockNumberDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

@@ -191,6 +191,6 @@ query GetBlockTime ($chain_id: Int!, $block_number: Int!) {
     response: blockTime (chain_id: $chain_id, block_number: $block_number)
 }
 
-query GetLastBlockTime ($chain_id: Int!) {
-    response: lastBlockTime (chain_id: $chain_id)
+query GetLastStoredBlockNumber ($chain_id: Int!) {
+    response: lastStoredBlockNumber (chain_id: $chain_id)
 }

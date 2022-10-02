@@ -81,16 +81,21 @@ func (r *queryResolver) TransactionsRange(ctx context.Context, txHash *string, c
 // BlockTime is the resolver for the blockTime field.
 func (r *queryResolver) BlockTime(ctx context.Context, chainID int, blockNumber int) (*int, error) {
 	blockTime, err := r.DB.RetrieveBlockTime(ctx, uint32(chainID), uint64(blockNumber))
-	blockTimeInt := int(blockTime)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving block time: %w", err)
 	}
+	blockTimeInt := int(blockTime)
 	return &blockTimeInt, nil
 }
 
-// LastBlockTime is the resolver for the lastBlockTime field.
-func (r *queryResolver) LastBlockTime(ctx context.Context, chainID int) (*int, error) {
-	panic(fmt.Errorf("not implemented: LastBlockTime - lastBlockTime"))
+// LastStoredBlockNumber is the resolver for the lastStoredBlockNumber field.
+func (r *queryResolver) LastStoredBlockNumber(ctx context.Context, chainID int) (*int, error) {
+	blockNumber, err := r.DB.RetrieveLastBlockStored(ctx, uint32(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving last block: %w", err)
+	}
+	blockNumberInt := int(blockNumber)
+	return &blockNumberInt, nil
 }
 
 // Query returns resolvers.QueryResolver implementation.

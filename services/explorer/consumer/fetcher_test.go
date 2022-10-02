@@ -1,6 +1,7 @@
 package consumer_test
 
 import (
+	"bitbucket.org/tentontrain/math"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -50,4 +51,38 @@ func (c *ConsumerSuite) TestToken() {
 		Equal(c.T(), testToken.SwapFee, token.SwapFee)
 		Equal(c.T(), testToken.IsUnderlying, token.IsUnderlying)
 	}
+}
+
+func (c *ConsumerSuite) TestTimeToBlockNumber() {
+	defer c.cleanup()
+	fetcher := consumer.NewFetcher(c.gqlClient)
+	chainID := gofakeit.Uint32()
+
+	baseTime := uint64(0)
+
+	// Store 10 block numbers and block times.
+	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
+		err := c.eventDB.StoreBlockTime(c.GetTestContext(), chainID, blockNumber, baseTime)
+		Nil(c.T(), err)
+		baseTime += uint64(gofakeit.Uint32())
+	}
+
+	targetTime := uint64(gofakeit.Uint32() * 5)
+
+	blockNumber, err := fetcher.TimeToBlockNumber(c.GetTestContext(), chainID, 1, targetTime)
+	Nil(c.T(), err)
+
+	// Find the block number that is closest to the target time.
+	var closestBlockNumber uint64
+	closestBlockTime := ^uint64(0)
+	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
+		blockTime, err := c.eventDB.RetrieveBlockTime(c.GetTestContext(), chainID, blockNumber)
+		Nil(c.T(), err)
+		timeDiff := math.Abs(blockTime - targetTime)
+		if closestBlockTime > timeDiff {
+			closestBlockTime = timeDiff
+			closestBlockNumber = blockNumber
+		}
+	}
+	Equal(c.T(), closestBlockNumber, blockNumber)
 }
