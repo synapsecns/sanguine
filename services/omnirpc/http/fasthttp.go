@@ -125,6 +125,7 @@ func (f *fastHTTPClient) GetClient(url string) FastClient {
 	}
 
 	f.clients.Store(url, newClient)
+
 	return newClient
 }
 

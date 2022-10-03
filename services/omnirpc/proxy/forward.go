@@ -25,7 +25,7 @@ type rawResponse struct {
 
 // newRawResponse produces a response with a unique hash based on json
 // regardless of formatting.
-func (f *Forwarder) newRawResponse(body []byte, url string) (*rawResponse, error) {
+func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string) (*rawResponse, error) {
 	// TODO: see if there's a faster way to do this. Canonical json?
 	// unmarshall and remarshall
 	var rpcMessage JSONRPCMessage
@@ -34,7 +34,7 @@ func (f *Forwarder) newRawResponse(body []byte, url string) (*rawResponse, error
 		return nil, fmt.Errorf("could not parse response: %w", err)
 	}
 
-	standardizedResponse, err := standardizeResponse(f.rpcRequest.Method, rpcMessage)
+	standardizedResponse, err := standardizeResponse(ctx, f.rpcRequest.Method, rpcMessage)
 	if err != nil {
 		return nil, fmt.Errorf("could not standardize response: %w", err)
 	}
@@ -83,7 +83,7 @@ func (f *Forwarder) forwardRequest(ctx context.Context, endpoint string) (*rawRe
 		return nil, fmt.Errorf("invalid response code: %w", err)
 	}
 
-	rawResp, err := f.newRawResponse(resp.Body(), endpoint)
+	rawResp, err := f.newRawResponse(ctx, resp.Body(), endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("invalid response: %w", err)
 	}

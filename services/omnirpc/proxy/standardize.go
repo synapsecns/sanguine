@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -89,7 +90,7 @@ type feeHistoryResultMarshaling struct {
 
 // StandardizeResponse produces a standardized json response for hashing (strips extra fields)
 // nolint: gocognit, cyclop
-func standardizeResponse(method string, rpcMessage JSONRPCMessage) (out []byte, err error) {
+func standardizeResponse(ctx context.Context, method string, rpcMessage JSONRPCMessage) (out []byte, err error) {
 	// TODO: use a sync.pool for acquiring/releasing these structs
 
 OUTER:
@@ -160,7 +161,7 @@ OUTER:
 		var head *types.Header
 		var rpcBody rpcBlock
 
-		groupCtx, _ := errgroup.WithContext(context.Background())
+		groupCtx, _ := errgroup.WithContext(ctx)
 		groupCtx.Go(func() error {
 			if err = json.Unmarshal(rpcMessage.Result, &head); err != nil {
 				return fmt.Errorf("could not parse: %w", err)
@@ -178,6 +179,10 @@ OUTER:
 		if err != nil {
 			//nolint: wrapcheck
 			return nil, err
+		}
+
+		if head == nil {
+			return nil, errors.New("header was empty")
 		}
 
 		// Quick-verify transaction and uncle lists. This mostly helps with debugging the server.
