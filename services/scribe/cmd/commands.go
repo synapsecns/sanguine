@@ -89,7 +89,7 @@ var backfillCommand = &cli.Command{
 				fmt.Println("The RPCurl", decodeConfig.Chains[i].RPCUrl, "is unreachable, skipping chain id: ", decodeConfig.Chains[i].ChainID)
 				// remove chain from clients
 				delete(clients, decodeConfig.Chains[i].ChainID)
-				//check if resulting list of clients is empty (none of the RPC URLS had a good connection)
+				// check if resulting list of clients is empty (none of the RPC URLS had a good connection)
 				if len(clients) == 0 && i+1 == len(decodeConfig.Chains) {
 					return fmt.Errorf("no rpc url connection successful - %s", "clients returned a zero length array.")
 				}
