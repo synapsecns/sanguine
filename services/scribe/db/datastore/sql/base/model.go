@@ -127,11 +127,11 @@ type EthTx struct {
 type LastIndexedInfo struct {
 	gorm.Model
 	// ContractAddress is the contract address
-	ContractAddress string `gorm:"column:contract_address"`
+	ContractAddress string `gorm:"column:contract_address;index"`
+	// BlockNumber is the last block number indexed
+	BlockNumber uint64 `gorm:"column:block_number;auto_increment:false;index'"`
 	// ChainID is the chain id of the contract
 	ChainID uint32 `gorm:"column:chain_id"`
-	// BlockNumber is the last block number indexed
-	BlockNumber uint64 `gorm:"column:block_number;auto_increment:false"`
 }
 
 // LastConfirmedBlockInfo contains information on when a chain last had a block pass the required confirmation
