@@ -34,13 +34,6 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 	return &blockNumber, nil
 }
 
-// func (s *Store) ReadBridgeTransactions(ctx context.Context, chainID uint32, address common.Address, txHash, kappa common.Hash, includePending bool, page int, tokenAddress common.Address) BridgeEvent {
-//	var bridgeEvent BridgeEvent
-//	s.db.Raw(
-//		`SELECT `,
-//	).Find(&bridgeEvent)
-//}
-
 // GetAllChainIDs gets all chain IDs that have been used in bridge events.
 func (s *Store) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
 	var resOut []uint32
@@ -72,21 +65,21 @@ func (s *Store) BridgeCountByChainID(ctx context.Context, chainID uint32, addres
 	var res int64
 	var addressSpecifier string
 	if address != nil {
-		addressSpecifier = fmt.Sprintf(" AND contract_address = '%s'", *address)
+		addressSpecifier = fmt.Sprintf(" AND %s = '%s'", ContractAddressFieldName, *address)
 	}
 
 	if directionIn {
 		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT (tx_hash, event_index)) FROM bridge_events WHERE destination_chain_id = %d AND block_number >= %d%s`,
-			chainID, firstBlock, addressSpecifier,
+			`SELECT COUNT(DISTINCT (%s, %s)) FROM bridge_events WHERE %s = %d AND %s >= %d%s`,
+			TxHashFieldName, EventIndexFieldName, DestinationChainIDFieldName, chainID, BlockNumberFieldName, firstBlock, addressSpecifier,
 		)).Find(&res)
 		if dbTx.Error != nil {
 			return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
 	} else {
 		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT tx_hash, event_index) FROM bridge_events WHERE chain_id = %d AND block_number >= %d%s`,
-			chainID, firstBlock, addressSpecifier,
+			`SELECT COUNT(DISTINCT %s, %s) FROM bridge_events WHERE %s = %d AND %s >= %d%s`,
+			TxHashFieldName, EventIndexFieldName, ChainIDFieldName, chainID, BlockNumberFieldName, firstBlock, addressSpecifier,
 		)).Find(&res)
 		if dbTx.Error != nil {
 			return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
@@ -94,3 +87,9 @@ func (s *Store) BridgeCountByChainID(ctx context.Context, chainID uint32, addres
 	}
 	return uint64(res), nil
 }
+
+//// BridgeCountByTokenAddress returns the number of bridge events for a given token address.
+// func (s *Store) BridgeCountByTokenAddress(ctx context.Context, chainID uint32, address *string, directionIn bool, firstBlock uint64) (count uint64, err error) {
+//	var res int64
+//	var addressSpec
+//}

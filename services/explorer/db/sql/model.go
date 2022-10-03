@@ -2,7 +2,45 @@ package sql
 
 import (
 	"database/sql"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"math/big"
+)
+
+// define common field names. See package docs  for an explanation of why we have to do this.
+// note: some models share names. In cases where they do, we run the check against all names.
+// This is cheap because it's only done at startup.
+func init() {
+	namer := dbcommon.NewNamer([]interface{}{&SwapEvent{}, &BridgeEvent{}})
+	TxHashFieldName = namer.GetConsistentName("TxHash")
+	ChainIDFieldName = namer.GetConsistentName("ChainID")
+	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
+	ContractAddressFieldName = namer.GetConsistentName("ContractAddress")
+	InsertTimeFieldName = namer.GetConsistentName("InsertTime")
+	EventTypeFieldName = namer.GetConsistentName("EventType")
+	AmountFieldName = namer.GetConsistentName("Amount")
+	EventIndexFieldName = namer.GetConsistentName("EventIndex")
+	DestinationChainIDFieldName = namer.GetConsistentName("DestinationChainID")
+}
+
+var (
+	// TxHashFieldName is the field name of the tx hash.
+	TxHashFieldName string
+	// ChainIDFieldName gets the chain id field name.
+	ChainIDFieldName string
+	// BlockNumberFieldName is the name of the block number field.
+	BlockNumberFieldName string
+	// ContractAddressFieldName is the address of the contract.
+	ContractAddressFieldName string
+	// InsertTimeFieldName is the insert time field name.
+	InsertTimeFieldName string
+	// EventTypeFieldName is the event type field name.
+	EventTypeFieldName string
+	// AmountFieldName is the amount field name.
+	AmountFieldName string
+	// EventIndexFieldName is the event index field name.
+	EventIndexFieldName string
+	// DestinationChainIDFieldName is the destination chain id field name.
+	DestinationChainIDFieldName string
 )
 
 // SwapEvent stores data for emitted events from the Swap contract.
