@@ -142,7 +142,7 @@ func StandardizeResponse(method string, body []byte) ([]byte, error) {
 		//nolint: wrapcheck
 		return nil, err
 	}
-	return standardizeResponse(method, rpcMessage)
+	return standardizeResponse(context.Background(), method, rpcMessage)
 }
 
 // CheckAndSetConfirmability exports checkAndSetConfirmability for testing.
