@@ -82,11 +82,32 @@ var backfillCommand = &cli.Command{
 		// TODO: should be resistant to errors on startup from a single chain
 		for i := 0; i < len(decodeConfig.Chains); i++ {
 			backendClient, errA := ethclient.DialContext(c.Context, decodeConfig.Chains[i].RPCUrl)
+			// errA: Completely invalid RPC URL, fatal connection. Skipping url completely.
 			_, errB := backendClient.NetworkID(c.Context)
-
-			// errA: Completely invalid RPC URL, fatal connection
 			// errB: URL valid, but cannot make valid connection
-			if errA != nil || errB != nil {
+			if errA == nil && errB != nil {
+				// amount of retries for attempting backfill.
+				attempts := 100
+				// initial amount of backoff for each retry
+				sleep := time.Second
+				// retrying connection
+				for i := 0; i < attempts; i++ {
+					if i > 0 {
+						fmt.Println("[RETRY] retrying after error:", err, "\nNet number of retries: ", i+1)
+						time.Sleep(sleep)
+						// increase sleep time by *2
+						sleep *= 2
+					}
+					_, errB = backendClient.NetworkID(c.Context)
+					if errB == nil {
+						// backfill successful
+						break
+					}
+				}
+			}
+
+			// After n attempts, the connection issues persist. Thus, it will be removed from backfill staging and skipped.
+			if errB != nil || errA != nil {
 				fmt.Println("The RPCurl", decodeConfig.Chains[i].RPCUrl, "is unreachable, skipping chain id: ", decodeConfig.Chains[i].ChainID)
 				// remove chain from clients
 				delete(clients, decodeConfig.Chains[i].ChainID)
@@ -106,27 +127,11 @@ var backfillCommand = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("could not create scribe backfiller: %w", err)
 		}
-
-		// amount of retries for attempting backfill.
-		attempts := 1000
-
-		// initial amount of backoff for each retry
-		sleep := time.Second
-		for i := 0; i < attempts; i++ {
-			if i > 0 {
-				fmt.Println("[RETRY] retrying after error:", err, "\nNet number of retries: ", i+1)
-				time.Sleep(sleep)
-				// increase sleep time by *2
-				sleep *= 2
-			}
-			err = scribeBackfiller.Backfill(c.Context)
-			if err == nil {
-				// backfill successful
-				return nil
-			}
+		err = scribeBackfiller.Backfill(c.Context)
+		if err != nil {
+			return fmt.Errorf("could not backfill backfiller: %w", err)
 		}
-		fmt.Println("After", attempts, "attempts, backfilling failed. Last error:", err)
-		return fmt.Errorf("could not backfill backfiller: %w", err)
+		return nil
 	},
 }
 
