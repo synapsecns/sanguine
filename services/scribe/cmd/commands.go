@@ -82,23 +82,24 @@ var backfillCommand = &cli.Command{
 		// TODO: should be resistant to errors on startup from a single chain
 		for i := 0; i < len(decodeConfig.Chains); i++ {
 			backendClient, errA := ethclient.DialContext(c.Context, decodeConfig.Chains[i].RPCUrl)
-			// errA: Completely invalid RPC URL, fatal connection. Skipping url completely.
+			// errA: Completely invalid RPC URL, fatal connection.
 			_, errB := backendClient.BlockNumber(c.Context)
 			// errB: URL valid, but cannot make valid connection
-			if errA == nil && errB != nil {
+			if errA != nil || errB != nil {
 				// amount of retries for attempting backfill.
 				attempts := 100
 				// initial amount of backoff for each retry
 				sleep := time.Second
 				// retrying connection
-				for i := 0; i < attempts; i++ {
-					if i > 0 {
-						fmt.Println("[RETRY] retrying after error:", err, "\nNet number of retries: ", i+1)
-						time.Sleep(sleep)
-						// increase sleep time by *2
-						sleep *= 2
-					}
+				for retryIndex := 0; retryIndex < attempts; retryIndex++ {
+					fmt.Println("[RETRY] retrying after error:", errB, "\nNet number of retries: ", retryIndex+1)
+					time.Sleep(sleep)
+					// increase sleep time by *2
+					sleep *= 2
+
+					// re-try/refresh backendClient connection
 					backendClient, errA = ethclient.DialContext(c.Context, decodeConfig.Chains[i].RPCUrl)
+					// validate connection
 					_, errB = backendClient.BlockNumber(c.Context)
 					if errA == nil && errB == nil {
 						// backfill successful
@@ -108,7 +109,7 @@ var backfillCommand = &cli.Command{
 			}
 
 			// After n attempts, the connection issues persist. Thus, it will be removed from backfill staging and skipped.
-			if errB != nil || errA != nil {
+			if errA != nil || errB != nil {
 				fmt.Println("The RPCurl", decodeConfig.Chains[i].RPCUrl, "is unreachable, skipping chain id: ", decodeConfig.Chains[i].ChainID)
 				// remove chain from clients
 				delete(clients, decodeConfig.Chains[i].ChainID)
@@ -122,6 +123,8 @@ var backfillCommand = &cli.Command{
 				i--
 				continue
 			}
+
+			// RPC url validation successful, client added to list of clients.
 			clients[decodeConfig.Chains[i].ChainID] = backendClient
 		}
 		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
