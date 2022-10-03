@@ -77,20 +77,15 @@ func (s *Store) BridgeCountByChainID(ctx context.Context, chainID uint32, addres
 
 	if directionIn {
 		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT tx_hash) FROM bridge_events WHERE destination_chain_id = %d AND block_number >= %d%s`,
+			`SELECT COUNT(DISTINCT (tx_hash, event_index)) FROM bridge_events WHERE destination_chain_id = %d AND block_number >= %d%s`,
 			chainID, firstBlock, addressSpecifier,
-			// `SELECT count(*),
-			//	argMax(destination_chain_id, insert_time) as destination_chain_id,
-			//	argMax(address, insert_time) as address,
-			//	FROM bridge_events WHERE destination_chain_id = ? AND address = ?;`,
 		)).Find(&res)
-		// Count(&res)
 		if dbTx.Error != nil {
 			return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
 	} else {
 		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT tx_hash) FROM bridge_events WHERE chain_id = %d AND block_number >= %d%s`,
+			`SELECT COUNT(DISTINCT tx_hash, event_index) FROM bridge_events WHERE chain_id = %d AND block_number >= %d%s`,
 			chainID, firstBlock, addressSpecifier,
 		)).Find(&res)
 		if dbTx.Error != nil {
@@ -99,5 +94,3 @@ func (s *Store) BridgeCountByChainID(ctx context.Context, chainID uint32, addres
 	}
 	return uint64(res), nil
 }
-
-// SELECT count(*), argMax(tx_hash, insert_time) AS tx_hash FROM bridge_events WHERE chain_id = 1337 AND block_number >= 5;

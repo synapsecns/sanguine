@@ -6,9 +6,10 @@ package graph
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	resolvers "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/resolver"
-	"time"
 )
 
 // BridgeTransactions is the resolver for the bridgeTransactions field.
@@ -35,9 +36,7 @@ func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, addres
 		if err != nil {
 			return nil, fmt.Errorf("failed to get all chain IDs: %w", err)
 		}
-		for _, chain := range chainIDsInt {
-			chainIDs = append(chainIDs, uint32(chain))
-		}
+		chainIDs = append(chainIDs, chainIDsInt...)
 	} else {
 		chainIDs = append(chainIDs, uint32(*chainID))
 	}
@@ -74,24 +73,6 @@ func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, addres
 	}
 
 	return results, nil
-	//
-	//kill, me := r.Fetcher.FetchClient.GetFirstStoredBlockNumber(ctx, *chainID)
-	//if me != nil {
-	//	return nil, me
-	//}
-	//fmt.Println("kill me", kill)
-	//
-	////// panic(fmt.Errorf("not implemented: CountByChainID - countByChainId"))
-	////
-	//cId := 1
-	//cnt := 2
-	//m := &model.TransactionCountResult{
-	//	ChainID: &cId,
-	//	Count:   &cnt,
-	//}
-	//return []*model.TransactionCountResult{
-	//	m,
-	//}, nil
 }
 
 // CountByTokenAddress is the resolver for the countByTokenAddress field.

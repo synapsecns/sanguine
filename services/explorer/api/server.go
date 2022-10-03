@@ -96,11 +96,11 @@ func Start(ctx context.Context, cfg Config) error {
 	//	return nil
 	// })
 	//
-	//g.Go(func() error {
+	// g.Go(func() error {
 	//	<-ctx.Done()
 	//	grpcServer.Stop()
 	//	return nil
-	//})
+	// })
 
 	err = g.Wait()
 	if err != nil {

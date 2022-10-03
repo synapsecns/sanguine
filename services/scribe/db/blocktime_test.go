@@ -35,5 +35,12 @@ func (t *DBSuite) TestStoreRetrieveBlockTime() {
 		lastBlockB, err := testDB.RetrieveLastBlockStored(t.GetTestContext(), chainIDB)
 		Nil(t.T(), err)
 		Equal(t.T(), lastBlockB, uint64(9))
+
+		firstBlockA, err := testDB.RetrieveFirstBlockStored(t.GetTestContext(), chainIDA)
+		Nil(t.T(), err)
+		Equal(t.T(), firstBlockA, uint64(0))
+		firstBlockB, err := testDB.RetrieveFirstBlockStored(t.GetTestContext(), chainIDB)
+		Nil(t.T(), err)
+		Equal(t.T(), firstBlockB, uint64(0))
 	})
 }

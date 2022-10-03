@@ -77,6 +77,8 @@ func (b *blockRange) EndTime() uint64 {
 }
 
 // TimeToBlockNumber returns the first block number after the given time.
+//
+//nolint:gocognit,cyclop
 func (f Fetcher) TimeToBlockNumber(ctx context.Context, chainID uint32, startHeight, targetTime uint64) (uint64, error) {
 	// get the start and end block
 	searchRange, err := f.getSearchRange(ctx, startHeight, chainID)
@@ -170,6 +172,7 @@ func getClosest(lesser block, greater block, target uint64) block {
 	return lesser
 }
 
+//nolint:cyclop
 func (f Fetcher) getSearchRange(ctx context.Context, startHeight uint64, chainID uint32) (*blockRange, error) {
 	getEndHeight, err := f.FetchClient.GetLastStoredBlockNumber(ctx, int(chainID))
 	if err != nil {

@@ -50,18 +50,17 @@ func NewTestSuite(tb testing.TB) *APISuite {
 func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 
-	//g.logIndex.Store(0)
-
 	g.db, g.eventDB, g.gqlClient, g.logIndex, g.cleanup, g.testBackend, g.deployManager = testutil.NewTestEnvDB(g.GetTestContext(), g.T())
 
 	httpport := freeport.GetPort()
 	cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 	NotNil(g.T(), cleanup)
+	NotNil(g.T(), port)
 	Nil(g.T(), err)
 	if port == nil || err != nil {
 		cleanup()
+		return
 	}
-	// NotN
 
 	address := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
 	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address)
@@ -84,8 +83,8 @@ func (g *APISuite) SetupTest() {
 
 	// config := rest.NewConfiguration()
 	// config.BasePath = baseURL
-	//config.Host = baseURL
-	//g.grpcClient = rest.NewAPIClient(config)
+	// config.Host = baseURL
+	// g.grpcClient = rest.NewAPIClient(config)
 
 	// var request *http.Request
 	g.Eventually(func() bool {
