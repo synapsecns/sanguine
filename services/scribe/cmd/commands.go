@@ -79,15 +79,28 @@ var backfillCommand = &cli.Command{
 
 		clients := make(map[uint32]backfill.ScribeBackend)
 		// TODO: should be resistant to errors on startup from a single chain
-		for _, client := range decodeConfig.Chains {
-			backendClient, err := ethclient.DialContext(c.Context, client.RPCUrl)
-			if err != nil {
-				return fmt.Errorf("could not start client for %s", client.RPCUrl)
+		for i := 0; i < len(decodeConfig.Chains); i++ {
+			backendClient, errA := ethclient.DialContext(c.Context, decodeConfig.Chains[i].RPCUrl)
+			_, errB := backendClient.NetworkID(c.Context)
+
+			// errA: Completely invalid RPC URL, fatal connection
+			// errB: URL valid, but cannot make valid connection
+			if errA != nil || errB != nil {
+				fmt.Println("The RPCurl", decodeConfig.Chains[i].RPCUrl, "is unreachable, skipping chain id: ", decodeConfig.Chains[i].ChainID)
+				// remove chain from clients
+				delete(clients, decodeConfig.Chains[i].ChainID)
+				//check if resulting list of clients is empty (none of the RPC URLS had a good connection)
+				if len(clients) == 0 && i+1 == len(decodeConfig.Chains) {
+					return fmt.Errorf("no rpc url connection successful - %s", "clients returned a zero length array.")
+				}
+				// remove chain from decoded chain config
+				decodeConfig.Chains = append(decodeConfig.Chains[:i], decodeConfig.Chains[i+1:]...)
+				// make sure to iterate over everything
+				i--
+				continue
 			}
-
-			clients[client.ChainID] = backendClient
+			clients[decodeConfig.Chains[i].ChainID] = backendClient
 		}
-
 		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
 		if err != nil {
 			return fmt.Errorf("could not create scribe backfiller: %w", err)
