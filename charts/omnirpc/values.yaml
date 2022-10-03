@@ -88,3 +88,7 @@ files:
   # files listed here will be copied into /config/ and mounted into the application container
   config.yml: |-
     test: true
+
+env:
+  - name: GOLOG_LOG_FMT
+    value: "json"

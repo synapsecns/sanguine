@@ -72,6 +72,9 @@ indexer:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
+  env:
+    - name: GOLOG_LOG_FMT
+      value: "json"
   tolerations: {}
   # TODO: this should be in extraValues for testing
   extraInitContainers:
@@ -115,6 +118,9 @@ server:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
+  env:
+    - name: GOLOG_LOG_FMT
+      value: "json"
   tolerations: []
   # TODO: this should be in extraValues for testing
   extraInitContainers:

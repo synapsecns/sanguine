@@ -25,6 +25,20 @@ func (_m *Response) Body() []byte {
 	return r0
 }
 
+// StatusCode provides a mock function with given fields:
+func (_m *Response) StatusCode() int {
+	ret := _m.Called()
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	return r0
+}
+
 type mockConstructorTestingTNewResponse interface {
 	mock.TestingT
 	Cleanup(func())

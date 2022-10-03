@@ -99,6 +99,10 @@ issues:
       linters:
         - revive
         - stylecheck
+    # wrapping errors when exporting for testing is tedious
+    - path: export_test\.go
+      linters:
+        - wrapcheck
       text: 'should not use dot imports'
     - path: contracts/
       linters:

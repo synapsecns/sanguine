@@ -1,11 +1,13 @@
 package proxy
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/goccy/go-json"
+	"golang.org/x/sync/errgroup"
 )
 
 // JSONRPCMessage is A value of this type can a JSON-RPC request, notification, successful response or
@@ -87,10 +89,8 @@ type feeHistoryResultMarshaling struct {
 
 // StandardizeResponse produces a standardized json response for hashing (strips extra fields)
 // nolint: gocognit, cyclop
-func StandardizeResponse(method string, body []byte) (out []byte, err error) {
+func standardizeResponse(method string, rpcMessage JSONRPCMessage) (out []byte, err error) {
 	// TODO: use a sync.pool for acquiring/releasing these structs
-	var rpcMessage JSONRPCMessage
-	err = json.Unmarshal(body, &rpcMessage)
 
 OUTER:
 	switch RPCMethod(method) {
@@ -160,11 +160,24 @@ OUTER:
 		var head *types.Header
 		var rpcBody rpcBlock
 
-		if err = json.Unmarshal(rpcMessage.Result, &head); err != nil {
-			return nil, fmt.Errorf("could not parse: %w", err)
-		}
-		if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
-			return nil, fmt.Errorf("could not parse: %w", err)
+		groupCtx, _ := errgroup.WithContext(context.Background())
+		groupCtx.Go(func() error {
+			if err = json.Unmarshal(rpcMessage.Result, &head); err != nil {
+				return fmt.Errorf("could not parse: %w", err)
+			}
+			return nil
+		})
+		groupCtx.Go(func() error {
+			if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
+				return fmt.Errorf("could not parse: %w", err)
+			}
+			return nil
+		})
+
+		err = groupCtx.Wait()
+		if err != nil {
+			//nolint: wrapcheck
+			return nil, err
 		}
 
 		// Quick-verify transaction and uncle lists. This mostly helps with debugging the server.
