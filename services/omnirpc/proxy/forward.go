@@ -34,10 +34,6 @@ func (f *Forwarder) newRawResponse(body []byte, url string) (*rawResponse, error
 		return nil, fmt.Errorf("could not parse response: %w", err)
 	}
 
-	if f.rpcRequest == nil {
-		return nil, fmt.Errorf("could not set rpc request: %w", err)
-	}
-
 	standardizedResponse, err := standardizeResponse(f.rpcRequest.Method, rpcMessage)
 	if err != nil {
 		return nil, fmt.Errorf("could not standardize response: %w", err)
