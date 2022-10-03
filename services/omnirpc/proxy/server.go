@@ -8,7 +8,6 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
@@ -32,6 +31,8 @@ type RPCProxy struct {
 	forwarderPool sync.Pool
 	// client contains the http client
 	client omniHTTP.Client
+	// customMiddleware allows a caller to add custom middleware
+	customMiddleware func(router *gin.Engine)
 }
 
 // NewProxy creates a new rpc proxy.
@@ -44,11 +45,13 @@ func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
 	}
 }
 
-// Run runs the rpc server until context cancellation.
-func (r *RPCProxy) Run(ctx context.Context) {
-	go r.startProxyLoop(ctx)
+// SetCustomMiddleware allows a caller to add custom middleware.
+func (r *RPCProxy) SetCustomMiddleware(middleFunc func(router *gin.Engine)) {
+	r.customMiddleware = middleFunc
+}
 
-	router := gin.New()
+// SetupMiddleware sets up the middleware used by the router.
+func (r *RPCProxy) SetupMiddleware(router *gin.Engine) {
 	router.Use(requestid.New(
 		requestid.WithCustomHeaderStrKey(requestid.HeaderStrKey(omniHTTP.XRequestIDString)),
 		requestid.WithGenerator(func() string {
@@ -57,7 +60,6 @@ func (r *RPCProxy) Run(ctx context.Context) {
 
 	router.Use(helmet.Default())
 	router.Use(gin.Recovery())
-	log.SetAllLoggers(log.LevelDebug)
 	router.Use(ginzap.GinzapWithConfig(logger.Desugar(), &ginzap.Config{
 		TimeFormat: time.RFC3339,
 		UTC:        true,
@@ -80,6 +82,18 @@ func (r *RPCProxy) Run(ctx context.Context) {
 			c.Request.Header.Set(omniHTTP.XRequestIDString, c.Writer.Header().Get(omniHTTP.XRequestIDString))
 		}
 	})
+
+	if r.customMiddleware != nil {
+		r.customMiddleware(router)
+	}
+}
+
+// Run runs the rpc server until context cancellation.
+func (r *RPCProxy) Run(ctx context.Context) {
+	go r.startProxyLoop(ctx)
+
+	router := gin.New()
+	r.SetupMiddleware(router)
 
 	router.GET("/health-check", func(c *gin.Context) {
 		c.JSON(200, gin.H{
