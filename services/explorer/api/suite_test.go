@@ -66,6 +66,7 @@ func (g *APISuite) SetupTest() {
 	address := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
 	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address)
 	Nil(g.T(), err)
+	fmt.Println("help me please", g.gqlClient.Client.BaseURL)
 
 	go func() {
 		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
@@ -76,6 +77,8 @@ func (g *APISuite) SetupTest() {
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", httpport)
+
+	fmt.Println("poopiefart", fmt.Sprintf("%s%s", baseURL, gqlServer.GraphqlEndpoint))
 
 	g.client = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, gqlServer.GraphqlEndpoint))
 

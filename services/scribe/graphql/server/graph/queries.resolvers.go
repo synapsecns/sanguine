@@ -98,6 +98,16 @@ func (r *queryResolver) LastStoredBlockNumber(ctx context.Context, chainID int) 
 	return &blockNumberInt, nil
 }
 
+// FirstStoredBlockNumber is the resolver for the firstStoredBlockNumber field.
+func (r *queryResolver) FirstStoredBlockNumber(ctx context.Context, chainID int) (*int, error) {
+	blockNumber, err := r.DB.RetrieveFirstBlockStored(ctx, uint32(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving first block: %w", err)
+	}
+	blockNumberInt := int(blockNumber)
+	return &blockNumberInt, nil
+}
+
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 

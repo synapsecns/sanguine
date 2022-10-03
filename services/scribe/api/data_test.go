@@ -187,6 +187,11 @@ func (g APISuite) TestBlockTimeDataEquality() {
 	lastBlock, err := g.gqlClient.GetLastStoredBlockNumber(g.GetTestContext(), int(chainID))
 	Nil(g.T(), err)
 	Equal(g.T(), *lastBlock.Response, int(blockNumber))
+
+	// check that the first stored block is correct
+	firstBlock, err := g.gqlClient.GetFirstStoredBlockNumber(g.GetTestContext(), int(chainID))
+	Nil(g.T(), err)
+	Equal(g.T(), *firstBlock.Response, int(blockNumber))
 }
 
 func (g *APISuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {

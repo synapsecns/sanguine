@@ -20,3 +20,7 @@ query GetBlockTime ($chain_id: Int!, $block_number: Int!) {
 query GetLastStoredBlockNumber ($chain_id: Int!) {
   response: lastStoredBlockNumber (chain_id: $chain_id)
 }
+
+query GetFirstStoredBlockNumber ($chain_id: Int!) {
+  response: firstStoredBlockNumber (chain_id: $chain_id)
+}

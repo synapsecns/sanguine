@@ -59,3 +59,20 @@ func (s Store) RetrieveLastBlockStored(ctx context.Context, chainID uint32) (uin
 
 	return blockTime.BlockNumber, nil
 }
+
+// RetrieveFirstBlockStored retrieves the first block number that has a stored block time.
+func (s Store) RetrieveFirstBlockStored(ctx context.Context, chainID uint32) (uint64, error) {
+	var blockTime BlockTime
+	dbTx := s.DB().WithContext(ctx).
+		Model(&BlockTime{}).
+		Where(&BlockTime{
+			ChainID: chainID,
+		}).
+		Order(fmt.Sprintf("%s ASC", BlockNumberFieldName)).
+		First(&blockTime)
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("could not retrieve first block time: %w", dbTx.Error)
+	}
+
+	return blockTime.BlockNumber, nil
+}

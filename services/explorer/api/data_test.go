@@ -10,9 +10,24 @@ import (
 )
 
 func (g APISuite) TestSome() {
+	//// create data for storing a block time
+	//chainID := gofakeit.Uint32()
+	//blockNumber := uint64(gofakeit.Uint32())
+	//blockTime := uint64(gofakeit.Uint32())
+	//
+	//// store it
+	//err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, blockTime)
+	//Nil(g.T(), err)
+
+	//// retrieve it
+	//retrievedBlockTime, err := g.gqlClient.GetBlockTime(g.GetTestContext(), int(chainID), int(blockNumber))
+	//Nil(g.T(), err)
+	//// check that the data is equal
+	//Equal(g.T(), *retrievedBlockTime.Response, int(blockTime))
+
 	chainID := gofakeit.Uint32()
 	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-	for blockNumber := 0; blockNumber < 10; blockNumber++ {
+	for blockNumber := 1; blockNumber <= 10; blockNumber++ {
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			ChainID:         chainID,
@@ -20,12 +35,18 @@ func (g APISuite) TestSome() {
 			BlockNumber:     uint64(blockNumber),
 			TxHash:          txHash.String(),
 		})
+		err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, uint64(blockNumber), uint64(blockNumber))
+		Nil(g.T(), err)
 	}
 	chainIDRef := int(chainID)
+	_ = chainIDRef
 	addressRef := address.String()
-	some, err := g.client.GetCountByChainID(g.GetTestContext(), &chainIDRef, &addressRef, nil, nil)
+	some, err := g.client.GetCountByChainID(g.GetTestContext(), nil, &addressRef, nil, nil)
 	Nil(g.T(), err)
 	res := *some.Response[0]
+	fmt.Println(*res.Count)
+	fmt.Println(*res.ChainID)
+	res = *some.Response[1]
 	fmt.Println(*res.Count)
 	fmt.Println(*res.ChainID)
 }

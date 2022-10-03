@@ -19,6 +19,27 @@ type ConsumerDB struct {
 	mock.Mock
 }
 
+// BridgeCountByChainID provides a mock function with given fields: ctx, chainID, address, directionIn, firstBlock
+func (_m *ConsumerDB) BridgeCountByChainID(ctx context.Context, chainID uint32, address *string, directionIn bool, firstBlock uint64) (uint64, error) {
+	ret := _m.Called(ctx, chainID, address, directionIn, firstBlock)
+
+	var r0 uint64
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, *string, bool, uint64) uint64); ok {
+		r0 = rf(ctx, chainID, address, directionIn, firstBlock)
+	} else {
+		r0 = ret.Get(0).(uint64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, uint32, *string, bool, uint64) error); ok {
+		r1 = rf(ctx, chainID, address, directionIn, firstBlock)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // DB provides a mock function with given fields:
 func (_m *ConsumerDB) DB() *gorm.DB {
 	ret := _m.Called()
@@ -33,6 +54,29 @@ func (_m *ConsumerDB) DB() *gorm.DB {
 	}
 
 	return r0
+}
+
+// GetAllChainIDs provides a mock function with given fields: ctx
+func (_m *ConsumerDB) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
+	ret := _m.Called(ctx)
+
+	var r0 []uint32
+	if rf, ok := ret.Get(0).(func(context.Context) []uint32); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uint32)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // ReadBlockNumberByChainID provides a mock function with given fields: ctx, eventType, chainID

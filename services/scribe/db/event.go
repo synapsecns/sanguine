@@ -85,6 +85,8 @@ type EventDBReader interface {
 	RetrieveBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) (uint64, error)
 	// RetrieveLastBlockStored retrieves the last block number that has a stored block time.
 	RetrieveLastBlockStored(ctx context.Context, chainID uint32) (uint64, error)
+	// RetrieveFirstBlockStored retrieves the first block number that has a stored block time.
+	RetrieveFirstBlockStored(ctx context.Context, chainID uint32) (uint64, error)
 }
 
 // EventDB stores events.

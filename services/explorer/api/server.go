@@ -52,7 +52,8 @@ func Start(ctx context.Context, cfg Config) error {
 	}
 
 	// get the fetcher
-	fetcher := consumer.NewFetcher(client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", cfg.ScribeURL, gqlServer.GraphqlEndpoint)))
+	fmt.Println("i think i think", fmt.Sprintf("%s%s", cfg.ScribeURL, gqlServer.GraphqlEndpoint))
+	fetcher := consumer.NewFetcher(client.NewClient(http.DefaultClient, cfg.ScribeURL))
 
 	gqlServer.EnableGraphql(router, consumerDB, *fetcher)
 	// grpcServer, err := server.SetupGRPCServer(ctx, router, consumerDB)

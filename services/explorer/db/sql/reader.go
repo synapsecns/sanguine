@@ -3,6 +3,7 @@ package sql
 import (
 	"context"
 	"fmt"
+	"math/big"
 )
 
 // ReadBlockNumberByChainID provides an easy-to-use interface to validate database
@@ -47,7 +48,7 @@ func (s *Store) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
-	var resIn []uint32
+	var resIn []big.Int
 	dbTx = s.db.WithContext(ctx).Raw(`SELECT DISTINCT destination_chain_id FROM bridge_events`).Find(&resIn)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
@@ -57,7 +58,7 @@ func (s *Store) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
 		uniqueChainIDs[chainID] = true
 	}
 	for _, chainID := range resIn {
-		uniqueChainIDs[chainID] = true
+		uniqueChainIDs[uint32(chainID.Uint64())] = true
 	}
 	var res []uint32
 	for chainID := range uniqueChainIDs {
@@ -71,12 +72,12 @@ func (s *Store) BridgeCountByChainID(ctx context.Context, chainID uint32, addres
 	var res int64
 	var addressSpecifier string
 	if address != nil {
-		addressSpecifier = fmt.Sprintf(" AND address = '%s'", *address)
+		addressSpecifier = fmt.Sprintf(" AND contract_address = '%s'", *address)
 	}
 
 	if directionIn {
 		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT ON (tx_hash, event_index)) FROM bridge_events WHERE destination_chain_id = %d AND block_number >= %d%s`,
+			`SELECT COUNT(DISTINCT tx_hash) FROM bridge_events WHERE destination_chain_id = %d AND block_number >= %d%s`,
 			chainID, firstBlock, addressSpecifier,
 			// `SELECT count(*),
 			//	argMax(destination_chain_id, insert_time) as destination_chain_id,
@@ -89,7 +90,7 @@ func (s *Store) BridgeCountByChainID(ctx context.Context, chainID uint32, addres
 		}
 	} else {
 		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT ON (tx_hash, event_index)) FROM bridge_events WHERE chain_id = %d AND block_number >= %d%s`,
+			`SELECT COUNT(DISTINCT tx_hash) FROM bridge_events WHERE chain_id = %d AND block_number >= %d%s`,
 			chainID, firstBlock, addressSpecifier,
 		)).Find(&res)
 		if dbTx.Error != nil {
