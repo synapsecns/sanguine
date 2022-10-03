@@ -144,6 +144,7 @@ func (p *ProxySuite) TestForwardRequest() {
 	captureClient := omniHTTP.NewCaptureClient(func(c *omniHTTP.CapturedRequest) (omniHTTP.Response, error) {
 		bodyRes := new(mocks.Response)
 		bodyRes.On("Body").Return(testRes)
+		bodyRes.On("StatusCode").Return(200)
 		return bodyRes, nil
 	})
 	prxy.SetClient(captureClient)
