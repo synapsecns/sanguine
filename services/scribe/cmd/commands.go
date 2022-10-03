@@ -83,7 +83,7 @@ var backfillCommand = &cli.Command{
 		for i := 0; i < len(decodeConfig.Chains); i++ {
 			backendClient, errA := ethclient.DialContext(c.Context, decodeConfig.Chains[i].RPCUrl)
 			// errA: Completely invalid RPC URL, fatal connection. Skipping url completely.
-			_, errB := backendClient.NetworkID(c.Context)
+			_, errB := backendClient.BlockNumber(c.Context)
 			// errB: URL valid, but cannot make valid connection
 			if errA == nil && errB != nil {
 				// amount of retries for attempting backfill.
@@ -99,7 +99,7 @@ var backfillCommand = &cli.Command{
 						sleep *= 2
 					}
 					backendClient, errA = ethclient.DialContext(c.Context, decodeConfig.Chains[i].RPCUrl)
-					_, errB = backendClient.NetworkID(c.Context)
+					_, errB = backendClient.BlockNumber(c.Context)
 					if errA == nil && errB == nil {
 						// backfill successful
 						break
