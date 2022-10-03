@@ -98,8 +98,9 @@ var backfillCommand = &cli.Command{
 						// increase sleep time by *2
 						sleep *= 2
 					}
+					backendClient, errA = ethclient.DialContext(c.Context, decodeConfig.Chains[i].RPCUrl)
 					_, errB = backendClient.NetworkID(c.Context)
-					if errB == nil {
+					if errA == nil && errB == nil {
 						// backfill successful
 						break
 					}
