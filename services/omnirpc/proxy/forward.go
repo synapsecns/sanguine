@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"github.com/ImVexed/fasturl"
+	"github.com/goccy/go-json"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
 	"golang.org/x/exp/slices"
 	"strings"
@@ -18,6 +19,8 @@ type rawResponse struct {
 	// hash is a unique hash of the raw response.
 	// we use this to check for equality
 	hash string
+	// hasError is wether or not the response could be deserialized
+	hasError bool
 }
 
 // newRawResponse produces a response with a unique hash based on json
@@ -25,15 +28,22 @@ type rawResponse struct {
 func (f *Forwarder) newRawResponse(body []byte, url string) (*rawResponse, error) {
 	// TODO: see if there's a faster way to do this. Canonical json?
 	// unmarshall and remarshall
-	standardizedResponse, err := StandardizeResponse(f.rpcRequest.Method, body)
+	var rpcMessage JSONRPCMessage
+	err := json.Unmarshal(body, &rpcMessage)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse response: %w", err)
+	}
+
+	standardizedResponse, err := standardizeResponse(f.rpcRequest.Method, rpcMessage)
 	if err != nil {
 		return nil, fmt.Errorf("could not standardize response: %w", err)
 	}
 
 	return &rawResponse{
-		body: body,
-		url:  url,
-		hash: fmt.Sprintf("%x", sha256.Sum256(standardizedResponse)),
+		body:     body,
+		url:      url,
+		hash:     fmt.Sprintf("%x", sha256.Sum256(standardizedResponse)),
+		hasError: rpcMessage.Error != nil,
 	}, nil
 }
 
@@ -42,7 +52,7 @@ const (
 	httpsSchema = "https"
 )
 
-func (f *Forwarder) forwardRequest(ctx context.Context, endpoint, requestID string) (*rawResponse, error) {
+func (f *Forwarder) forwardRequest(ctx context.Context, endpoint string) (*rawResponse, error) {
 	endpointURL, err := fasturl.ParseURL(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse endpoint (%s): %w", endpointURL, err)
@@ -60,14 +70,17 @@ func (f *Forwarder) forwardRequest(ctx context.Context, endpoint, requestID stri
 		SetContext(ctx).
 		SetRequestURI(endpoint).
 		SetBody(f.body).
-		SetHeaderBytes(http.XRequestID, []byte(requestID)).
+		SetHeaderBytes(http.XRequestID, f.requestID).
 		SetHeaderBytes(http.XForwardedFor, http.OmniRPCValue).
 		SetHeaderBytes(http.ContentType, http.JSONType).
 		SetHeaderBytes(http.Accept, http.JSONType).
 		Do()
-
 	if err != nil {
 		return nil, fmt.Errorf("could not get response from %s: %w", endpoint, err)
+	}
+
+	if resp.StatusCode() < 200 || resp.StatusCode() > 400 {
+		return nil, fmt.Errorf("invalid response code: %w", err)
 	}
 
 	rawResp, err := f.newRawResponse(resp.Body(), endpoint)

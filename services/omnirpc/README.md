@@ -66,6 +66,10 @@ curl --location --request POST 'http://localhost:5000/rpc/1' \
 
 This is because chains might have different states for "latest", resulting in false positives. The same goes for the following queries:
 
+You can also query using a customizable number of confirmations using (for 2 confirmations on eth): `http://localhost:5000/confirmations/2/rpc/1`.
+
+A postman collection is also available at `/collection.json`
+
 Confirmable only when latest or pending are not passed:
 
 - `eth_getBlockByNumber`
@@ -103,3 +107,9 @@ This is also verifiable in the headers. A successful response will have the foll
 # Chainlist
 
 You can also quickly start a server running against all public chainlist rpcs with a confirmation threshold of 1. Just run `./omnirpc chainlist-server`
+
+# To Do:
+
+- Optionally use latest block number instead of latest to make latest queries confirmable
+- Customizable Confirmation Count
+- Real error handling
