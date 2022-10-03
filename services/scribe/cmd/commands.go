@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/urfave/cli/v2"
+	"time"
 )
 
 //go:embed cmd.md
@@ -106,12 +107,26 @@ var backfillCommand = &cli.Command{
 			return fmt.Errorf("could not create scribe backfiller: %w", err)
 		}
 
-		err = scribeBackfiller.Backfill(c.Context)
-		if err != nil {
-			return fmt.Errorf("could not backfill backfiller: %w", err)
-		}
+		// amount of retries for attempting backfill.
+		attempts := 1000
 
-		return nil
+		// initial amount of backoff for each retry
+		sleep := time.Second
+		for i := 0; i < attempts; i++ {
+			if i > 0 {
+				fmt.Println("[RETRY] retrying after error:", err, "\nNet number of retries: ", i+1)
+				time.Sleep(sleep)
+				// increase sleep time by *2
+				sleep *= 2
+			}
+			err = scribeBackfiller.Backfill(c.Context)
+			if err == nil {
+				// backfill successful
+				return nil
+			}
+		}
+		fmt.Println("After", attempts, "attempts, backfilling failed. Last error:", err)
+		return fmt.Errorf("could not backfill backfiller: %w", err)
 	},
 }
 
