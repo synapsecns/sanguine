@@ -3,12 +3,17 @@ package proxy
 import (
 	"context"
 	"fmt"
+	helmet "github.com/danielkov/gin-helmet"
 	"github.com/gin-contrib/requestid"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
+	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"go.uber.org/zap/zapcore"
 	"net/http"
 	"strconv"
 	"sync"
@@ -43,12 +48,31 @@ func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
 func (r *RPCProxy) Run(ctx context.Context) {
 	go r.startProxyLoop(ctx)
 
-	router := gin.Default()
+	router := gin.New()
 	router.Use(requestid.New(
 		requestid.WithCustomHeaderStrKey(requestid.HeaderStrKey(omniHTTP.XRequestIDString)),
 		requestid.WithGenerator(func() string {
 			return uuid.New().String()
 		})))
+
+	router.Use(helmet.Default())
+	router.Use(gin.Recovery())
+	log.SetAllLoggers(log.LevelDebug)
+	router.Use(ginzap.GinzapWithConfig(logger.Desugar(), &ginzap.Config{
+		TimeFormat: time.RFC3339,
+		UTC:        true,
+		Context: func(c *gin.Context) (fields []zapcore.Field) {
+			requestID := c.GetHeader(omniHTTP.XRequestIDString)
+			fields = append(fields, zapcore.Field{
+				Key:    "request-id",
+				Type:   zapcore.StringType,
+				String: requestID,
+			})
+
+			return fields
+		},
+	}))
+	router.Use(ginzap.RecoveryWithZap(logger.Desugar(), true))
 
 	router.Use(func(c *gin.Context) {
 		// set on request as well
@@ -70,7 +94,37 @@ func (r *RPCProxy) Run(ctx context.Context) {
 				"error": fmt.Sprintf("chainid must be a number: %d", chainID),
 			})
 		}
-		r.Forward(c, uint32(chainID))
+		r.Forward(c, uint32(chainID), nil)
+	})
+
+	router.POST("/confirmations/:confirmations/rpc/:id", func(c *gin.Context) {
+		chainID, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Sprintf("chainid must be a number: %d", chainID),
+			})
+		}
+		realConfs, err := strconv.Atoi(c.Param("confirmations"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Sprintf("confirmations must be a number: %d", chainID),
+			})
+		}
+
+		confirmations := uint16(realConfs)
+
+		r.Forward(c, uint32(chainID), &confirmations)
+	})
+
+	router.GET("/collection.json", func(c *gin.Context) {
+		res, err := collection.CreateCollection()
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Sprintf("could not parse collection: %v", err),
+			})
+		}
+
+		c.Data(http.StatusOK, gin.MIMEJSON, res)
 	})
 
 	logger.Infof("running on port %d", r.port)

@@ -32,6 +32,7 @@ type Request interface {
 //go:generate go run github.com/vektra/mockery/v2 --name Response --output ./mocks --case=underscore
 type Response interface {
 	Body() []byte
+	StatusCode() int
 }
 
 // ClientType is the client type to use

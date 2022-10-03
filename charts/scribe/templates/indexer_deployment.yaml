@@ -56,6 +56,10 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.indexer.env }}
+          env:
+            {{- toYaml .Values.indexer.env | nindent 12 }}
+          {{- end }}
     {{- if .Values.files }}
           volumeMounts:
             - name: configmap
