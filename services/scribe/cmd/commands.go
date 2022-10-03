@@ -13,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/urfave/cli/v2"
-	"time"
 )
 
 //go:embed cmd.md
@@ -80,52 +79,12 @@ var backfillCommand = &cli.Command{
 
 		clients := make(map[uint32]backfill.ScribeBackend)
 		// TODO: should be resistant to errors on startup from a single chain
-		for i := 0; i < len(decodeConfig.Chains); i++ {
-			backendClient, errA := ethclient.DialContext(c.Context, decodeConfig.Chains[i].RPCUrl)
-			// errA: Completely invalid RPC URL, fatal connection.
-			_, errB := backendClient.BlockNumber(c.Context)
-			// errB: URL valid, but cannot make valid connection
-			if errA != nil || errB != nil {
-				// amount of retries for attempting backfill.
-				attempts := 100
-				// initial amount of backoff for each retry
-				sleep := time.Second
-				// retrying connection
-				for retryIndex := 0; retryIndex < attempts; retryIndex++ {
-					fmt.Println("[RETRY] retrying after error:", errB, "\nNet number of retries: ", retryIndex+1)
-					time.Sleep(sleep)
-					// increase sleep time by *2
-					sleep *= 2
-
-					// re-try/refresh backendClient connection
-					backendClient, errA = ethclient.DialContext(c.Context, decodeConfig.Chains[i].RPCUrl)
-					// validate connection
-					_, errB = backendClient.BlockNumber(c.Context)
-					if errA == nil && errB == nil {
-						// backfill successful
-						break
-					}
-				}
+		for _, client := range decodeConfig.Chains {
+			backendClient, err := ethclient.DialContext(c.Context, client.RPCUrl)
+			if err != nil {
+				return fmt.Errorf("could not start client for %s", client.RPCUrl)
 			}
-
-			// After n attempts, the connection issues persist. Thus, it will be removed from backfill staging and skipped.
-			if errA != nil || errB != nil {
-				fmt.Println("The RPCurl", decodeConfig.Chains[i].RPCUrl, "is unreachable, skipping chain id: ", decodeConfig.Chains[i].ChainID)
-				// remove chain from clients
-				delete(clients, decodeConfig.Chains[i].ChainID)
-				// check if resulting list of clients is empty (none of the RPC URLS had a good connection)
-				if len(clients) == 0 && i+1 == len(decodeConfig.Chains) {
-					return fmt.Errorf("no rpc url connection successful - %s", "clients returned a zero length array.")
-				}
-				// remove chain from decoded chain config
-				decodeConfig.Chains = append(decodeConfig.Chains[:i], decodeConfig.Chains[i+1:]...)
-				// make sure to iterate over everything
-				i--
-				continue
-			}
-
-			// RPC url validation successful, client added to list of clients.
-			clients[decodeConfig.Chains[i].ChainID] = backendClient
+			clients[client.ChainID] = backendClient
 		}
 		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
 		if err != nil {
