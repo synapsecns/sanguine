@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/synapsecns/sanguine/core/prometheus"
+	"github.com/synapsecns/sanguine/core/prom"
 	watcher "github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"math/big"
@@ -30,7 +30,7 @@ type PoolClient interface {
 	// it is kept ina  separate call to allow metrics to be independently assessed
 	Watcher() watcher.BlockHeightWatcher
 	// Instrumentable allows a user to collect metrics against pool client
-	prometheus.Instrumentable
+	prom.Instrumentable
 }
 
 // NewPoolClient creates a new pool client from a list of metered evm clients.

@@ -1,11 +1,2 @@
-// Package metrics implements a metrics dashboard with either datadog or prometheus
+// Package metrics implements a metrics dashboard with either datadog or prometheus (coming soon)
 package metrics
-
-// MetricsHandler
-type MetricsHandler interface {
-}
-
-// NewDatadogMetricsHandler creates a new datadog metrics handler
-func NewDatadogMetricsHandler() {
-
-}

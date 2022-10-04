@@ -1,4 +1,4 @@
-package prometheus_test
+package prom_test
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"github.com/prometheus/pushgateway/handler"
 	"github.com/prometheus/pushgateway/storage"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/core/prometheus"
+	"github.com/synapsecns/sanguine/core/prom"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"net"
 	"net/http"
@@ -30,7 +30,7 @@ var logger = log.Logger("synapse-metrics-test")
 // make sure push gateway metrics are correctly pushed.
 func (m MetricsSuite) TestPushGateway() {
 	gatewayURL := NewMockGateway(m.GetTestContext(), m.T())
-	metricHandler := prometheus.NewMetricHandler("", &prometheus.Config{
+	metricHandler := prom.NewMetricHandler("", &prom.Config{
 		PushGateway: gatewayURL,
 	})
 	err := metricHandler.Start(m.GetTestContext())
@@ -44,7 +44,7 @@ func (m MetricsSuite) TestBoardHandler() {
 	Nil(m.T(), err)
 
 	response := httptest.NewRecorder()
-	server := prometheus.CreateBoardJSONHandler(board)
+	server := prom.CreateBoardJSONHandler(board)
 	server.ServeHTTP(response, req)
 
 	Equal(m.T(), response.Code, http.StatusOK)
@@ -58,7 +58,7 @@ func NewMockGateway(ctx context.Context, tb testing.TB) string {
 	err := mockRegistery.Register(version.NewCollector("pushgateway"))
 	Nil(tb, err)
 
-	promLogger := prometheus.NewPromLogger(logger)
+	promLogger := prom.NewPromLogger(logger)
 
 	ms := storage.NewDiskMetricStore("", time.Minute*5, mockRegistery, promLogger)
 

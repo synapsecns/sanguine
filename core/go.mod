@@ -33,12 +33,16 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/urfave/cli/v2 v2.16.3
 	go.uber.org/zap v1.23.0
+	golang.org/x/exp v0.0.0-20221004215720-b9f4876ce741
 	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
+	gopkg.in/DataDog/dd-trace-go.v1 v1.42.1
 	gorm.io/gorm v1.23.9
 	k8s.io/apimachinery v0.25.1
 )
 
 require (
+	github.com/DataDog/datadog-go/v5 v5.0.2 // indirect
+	github.com/DataDog/gostackparse v0.5.0 // indirect
 	github.com/LK4D4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7 // indirect
@@ -59,7 +63,10 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
+	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/gosimple/slug v1.1.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
@@ -103,7 +110,8 @@ require (
 	golang.org/x/sys v0.0.0-20220913175220-63ea55921009 // indirect
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.12 // indirect
+	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
+	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

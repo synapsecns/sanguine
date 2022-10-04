@@ -44,13 +44,15 @@ require (
 	gitlab.com/1f320/x v0.3.0
 	go.uber.org/automaxprocs v1.5.1
 	go.uber.org/zap v1.23.0
-	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b
+	golang.org/x/exp v0.0.0-20221004215720-b9f4876ce741
 	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.25.1
 )
 
 require (
+	github.com/DataDog/datadog-go/v5 v5.0.2 // indirect
+	github.com/DataDog/gostackparse v0.5.0 // indirect
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088 // indirect
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
@@ -99,6 +101,7 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-github/v37 v37.0.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/gosimple/slug v1.1.1 // indirect
 	github.com/grafana-tools/sdk v0.0.0-20220919052116-6562121319fc // indirect
@@ -207,6 +210,7 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
+	gopkg.in/DataDog/dd-trace-go.v1 v1.42.1 // indirect
 	gopkg.in/hedzr/errors.v3 v3.0.21 // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect

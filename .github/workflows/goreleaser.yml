@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - feat/instrument
 
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
@@ -115,11 +116,11 @@ jobs:
   run-goreleaser:
     runs-on: ubuntu-latest
     needs: [build-goreleaser,changes]
-    if: ${{ needs.changes.outputs.package_count > 0 }}
+#    if: ${{ needs.changes.outputs.package_count > 0 }}
     strategy:
       matrix:
         # list of packages, if you update this update changes as well
-        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        package: ['services/omnirpc']
     container:
       image: ${{ needs.build-goreleaser.outputs.goreleaser-image }}
       volumes: [ /repo ]

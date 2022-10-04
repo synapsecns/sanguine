@@ -1,4 +1,4 @@
-package prometheus_test
+package prom_test
 
 import (
 	"github.com/stretchr/testify/suite"

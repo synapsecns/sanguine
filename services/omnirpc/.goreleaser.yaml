@@ -53,7 +53,15 @@ changelog:
   sort: asc
 
 dockers:
-  # Docker AMD64
+  # Docker AMD64 (build ubuntu for debugging)
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/omnirpc:ubuntu-latest'
+      - 'ghcr.io/synapsecns/sanguine/omnirpc:ubuntu-{{ .Tag }}'
+    dockerfile: ../../docker/omnirpc.ubuntu.Dockerfile
+    ids:
+      - omnirpc
   - goos: linux
     goarch: amd64
     image_templates:
