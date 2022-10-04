@@ -45,6 +45,7 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 
 	// fixes a timeout issue https://stackoverflow.com/a/42146536
 	sqlDB.SetMaxIdleConns(MaxIdleConns)
+	sqlDB.SetMaxOpenConns(10)
 
 	err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
 
