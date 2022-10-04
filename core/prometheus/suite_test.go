@@ -1,4 +1,4 @@
-package metrics_test
+package prometheus_test
 
 import (
 	"github.com/stretchr/testify/suite"

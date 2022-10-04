@@ -10,8 +10,8 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/observer"
+	"github.com/synapsecns/sanguine/core/prometheus"
 	"github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
 	"github.com/teivah/onecontext"
 	"math/big"
@@ -288,4 +288,4 @@ func (c *contractWatcherImpl) GetMetrics(labels map[string]string) []prometheus.
 	}
 }
 
-var _ metrics.Instrumentable = &contractWatcherImpl{}
+var _ prometheus.Instrumentable = &contractWatcherImpl{}
