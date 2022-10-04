@@ -17,6 +17,7 @@ root
 ├── <a href="./packages">packages</a>
 │   ├── <a href="./packages/contracts-core">contracts-core</a>: Core contracts used for synapse, powered by <a href="https://github.com/foundry-rs/foundry">Foundry</a>
 ├── <a href="./tools">services</a>
+│   ├── <a href="./services/explorer">explorer</a>: Bridge/messaging explorer backend
 │   ├── <a href="./services/omnirpc">omnirpc</a>: Latency aware RPC Client used across multiple-chains at once
 │   ├── <a href="./services/scribe">scribe</a>: Generalized ethereum event logger
 ├── <a href="./tools">tools</a>
