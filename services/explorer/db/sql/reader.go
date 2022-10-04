@@ -3,6 +3,7 @@ package sql
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"math/big"
 )
 
@@ -31,7 +32,7 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 		}
 		blockNumber = resp.BlockNumber
 	}
-	
+
 	return &blockNumber, nil
 }
 
@@ -69,7 +70,19 @@ func (s *Store) GetTokenAddressesByChainID(ctx context.Context, chainID uint32) 
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
+	return res, nil
+}
 
+// GetTransactionCountForEveryAddress gets the count of transactions (origin) for each address per chain id.
+func (s *Store) GetTransactionCountForEveryAddress(ctx context.Context, subQuery string) ([]*model.AddressRanking, error) {
+	var res []*model.AddressRanking
+	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS count FROM (%s) GROUP BY address ORDER BY count DESC`, TokenFieldName, TxHashFieldName, subQuery)).Scan(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+	if len(res) == 0 {
+		return nil, nil
+	}
 	return res, nil
 }
 
@@ -102,6 +115,6 @@ func (s *Store) BridgeEventCount(ctx context.Context, chainID uint32, address *s
 			return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
 	}
-
+	fmt.Println("resresresresres", res)
 	return uint64(res), nil
 }

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"gorm.io/gorm"
@@ -23,6 +24,8 @@ type ConsumerDBReader interface {
 	BridgeEventCount(ctx context.Context, chainID uint32, address *string, tokenAddress *string, directionIn bool, firstBlock uint64) (count uint64, err error)
 	// GetTokenAddressesByChainID gets all token addresses that have been used in bridge events for a given chain ID.
 	GetTokenAddressesByChainID(ctx context.Context, chainID uint32) ([]string, error)
+	// GetTransactionCountForEveryAddress gets the count of transactions (origin) for each address.
+	GetTransactionCountForEveryAddress(ctx context.Context, subQuery string) ([]*model.AddressRanking, error)
 	// DB gets the underlying gorm db.
 	DB() *gorm.DB
 }
