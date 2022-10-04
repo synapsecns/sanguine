@@ -1,6 +1,7 @@
 package api_test
 
 import (
+	gosql "database/sql"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -28,7 +29,7 @@ func (g APISuite) TestGetCountByChainID() {
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			ChainID:            chainID,
-			ContractAddress:    address.String(),
+			Recipient:          gosql.NullString{address.String(), true},
 			DestinationChainID: big.NewInt(int64(destinationChainID)),
 			BlockNumber:        blockNumber,
 			TxHash:             txHash.String(),
@@ -86,4 +87,37 @@ func (g APISuite) TestGetCountByChainID() {
 		}
 	}
 	Equal(g.T(), reached, 3)
+}
+
+func (g APISuite) TestGetCountByTokenAddress() {
+	chainID := gofakeit.Uint32()
+	destinationChainIDA := gofakeit.Uint32()
+	destinationChainIDB := gofakeit.Uint32()
+	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+	// Generate bridge events for different chain IDs.
+	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
+		var destinationChainID uint32
+		if blockNumber%2 == 0 {
+			destinationChainID = destinationChainIDA
+		} else {
+			destinationChainID = destinationChainIDB
+		}
+		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+			ChainID:            chainID,
+			Recipient:          gosql.NullString{address.String(), true},
+			DestinationChainID: big.NewInt(int64(destinationChainID)),
+			BlockNumber:        blockNumber,
+			TxHash:             txHash.String(),
+			EventIndex:         gofakeit.Uint64(),
+		})
+		// Set all times after current time, so we can get the events.
+		err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDA, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDB, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+	}
 }

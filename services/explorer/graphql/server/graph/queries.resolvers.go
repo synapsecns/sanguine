@@ -6,7 +6,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	resolvers "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/resolver"
@@ -29,29 +28,12 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 
 // CountByChainID is the resolver for the countByChainId field.
 func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error) {
-	var chainIDs []uint32
-	// if the chain ID is not specified, get all chain IDs
-	if chainID == nil {
-		chainIDsInt, err := r.DB.GetAllChainIDs(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get all chain IDs: %w", err)
-		}
-		chainIDs = append(chainIDs, chainIDsInt...)
-	} else {
-		chainIDs = append(chainIDs, uint32(*chainID))
+	chainIDs, err := r.getChainIDs(ctx, chainID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get chain IDs: %w", err)
 	}
-	var directionIn bool
-	if direction != nil {
-		directionIn = *direction == model.DirectionIn
-	} else {
-		directionIn = true
-	}
-	var targetTime uint64
-	if hours == nil {
-		targetTime = uint64(time.Now().Add(-time.Hour * 24).Unix())
-	} else {
-		targetTime = uint64(time.Now().Add(-time.Hour * time.Duration(*hours)).Unix())
-	}
+	directionIn := r.getDirectionIn(direction)
+	targetTime := r.getTargetTime(hours)
 
 	// get the number of transactions for each chain ID
 	var results []*model.TransactionCountResult
@@ -60,7 +42,7 @@ func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, addres
 		if err != nil {
 			return nil, fmt.Errorf("failed to get start block number: %w", err)
 		}
-		count, err := r.DB.BridgeCountByChainID(ctx, chain, address, directionIn, startBlock)
+		count, err := r.DB.BridgeEventCount(ctx, chain, address, nil, directionIn, startBlock)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 		}
@@ -77,7 +59,44 @@ func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, addres
 
 // CountByTokenAddress is the resolver for the countByTokenAddress field.
 func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error) {
-	panic(fmt.Errorf("not implemented: CountByTokenAddress - countByTokenAddress"))
+	chainIDs, err := r.getChainIDs(ctx, chainID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get chain IDs: %w", err)
+	}
+	chainIDsToTokenAddresses := make(map[uint32][]string)
+	for _, chain := range chainIDs {
+		tokenAddresses, err := r.DB.GetTokenAddressesByChainID(ctx, chain)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get token addresses: %w", err)
+		}
+		chainIDsToTokenAddresses[chain] = tokenAddresses
+	}
+	directionIn := r.getDirectionIn(direction)
+	targetTime := r.getTargetTime(hours)
+
+	// get the number of transactions for each token address, for each chain ID
+	var results []*model.TokenCountResult
+	for chain, tokenAddresses := range chainIDsToTokenAddresses {
+		startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chain, 0, targetTime)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get start block number: %w", err)
+		}
+		for _, tokenAddress := range tokenAddresses {
+			count, err := r.DB.BridgeEventCount(ctx, chain, address, &tokenAddress, directionIn, startBlock)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get count by token address: %w", err)
+			}
+			chainInt := int(chain)
+			countInt := int(count)
+			results = append(results, &model.TokenCountResult{
+				ChainID:      &chainInt,
+				TokenAddress: &tokenAddress,
+				Count:        &countInt,
+			})
+		}
+	}
+
+	return results, nil
 }
 
 // AddressRanking is the resolver for the addressRanking field.

@@ -20,6 +20,8 @@ func init() {
 	AmountFieldName = namer.GetConsistentName("Amount")
 	EventIndexFieldName = namer.GetConsistentName("EventIndex")
 	DestinationChainIDFieldName = namer.GetConsistentName("DestinationChainID")
+	TokenFieldName = namer.GetConsistentName("Token")
+	RecipientFieldName = namer.GetConsistentName("Recipient")
 }
 
 var (
@@ -41,6 +43,10 @@ var (
 	EventIndexFieldName string
 	// DestinationChainIDFieldName is the destination chain id field name.
 	DestinationChainIDFieldName string
+	// TokenFieldName is the token field name.
+	TokenFieldName string
+	// RecipientFieldName is the recipient field name.
+	RecipientFieldName string
 )
 
 // SwapEvent stores data for emitted events from the Swap contract.

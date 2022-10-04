@@ -31,6 +31,7 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 		}
 		blockNumber = resp.BlockNumber
 	}
+	
 	return &blockNumber, nil
 }
 
@@ -57,39 +58,50 @@ func (s *Store) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
 	for chainID := range uniqueChainIDs {
 		res = append(res, chainID)
 	}
+
 	return res, nil
 }
 
-// BridgeCountByChainID returns the number of bridge events for a given chain ID.
-func (s *Store) BridgeCountByChainID(ctx context.Context, chainID uint32, address *string, directionIn bool, firstBlock uint64) (count uint64, err error) {
+// GetTokenAddressesByChainID gets all token addresses that have been used in bridge events for a given chain ID.
+func (s *Store) GetTokenAddressesByChainID(ctx context.Context, chainID uint32) ([]string, error) {
+	var res []string
+	dbTx := s.db.WithContext(ctx).Raw(`SELECT DISTINCT %s FROM bridge_events WHERE %s = %d`, TokenFieldName, ChainIDFieldName, chainID).Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
+// BridgeEventCount returns the number of bridge events.
+func (s *Store) BridgeEventCount(ctx context.Context, chainID uint32, address *string, tokenAddress *string, directionIn bool, firstBlock uint64) (count uint64, err error) {
 	var res int64
 	var addressSpecifier string
 	if address != nil {
-		addressSpecifier = fmt.Sprintf(" AND %s = '%s'", ContractAddressFieldName, *address)
+		addressSpecifier = fmt.Sprintf(" AND %s = '%s'", RecipientFieldName, *address)
+	}
+	var tokenAddressSpecifier string
+	if tokenAddress != nil {
+		tokenAddressSpecifier = fmt.Sprintf(" AND %s = '%s'", TokenFieldName, *tokenAddress)
 	}
 
 	if directionIn {
 		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT (%s, %s)) FROM bridge_events WHERE %s = %d AND %s >= %d%s`,
-			TxHashFieldName, EventIndexFieldName, DestinationChainIDFieldName, chainID, BlockNumberFieldName, firstBlock, addressSpecifier,
+			`SELECT COUNT(DISTINCT (%s, %s)) FROM bridge_events WHERE %s = %d AND %s >= %d%s%s`,
+			TxHashFieldName, EventIndexFieldName, DestinationChainIDFieldName, chainID, BlockNumberFieldName, firstBlock, addressSpecifier, tokenAddressSpecifier,
 		)).Find(&res)
 		if dbTx.Error != nil {
 			return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
 	} else {
 		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT %s, %s) FROM bridge_events WHERE %s = %d AND %s >= %d%s`,
-			TxHashFieldName, EventIndexFieldName, ChainIDFieldName, chainID, BlockNumberFieldName, firstBlock, addressSpecifier,
+			`SELECT COUNT(DISTINCT %s, %s) FROM bridge_events WHERE %s = %d AND %s >= %d%s%s`,
+			TxHashFieldName, EventIndexFieldName, ChainIDFieldName, chainID, BlockNumberFieldName, firstBlock, addressSpecifier, tokenAddressSpecifier,
 		)).Find(&res)
 		if dbTx.Error != nil {
 			return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 		}
 	}
+
 	return uint64(res), nil
 }
-
-//// BridgeCountByTokenAddress returns the number of bridge events for a given token address.
-// func (s *Store) BridgeCountByTokenAddress(ctx context.Context, chainID uint32, address *string, directionIn bool, firstBlock uint64) (count uint64, err error) {
-//	var res int64
-//	var addressSpec
-//}
