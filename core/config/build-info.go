@@ -89,7 +89,7 @@ func (b BuildInfo) Date() string {
 	return b.date
 }
 
-// VersionString pretty prints a version string with the info above
+// VersionString pretty prints a version string with the info above.
 func (b BuildInfo) VersionString() string {
 	return fmt.Sprintf("%s: (commit: %s), commit (date: %s) \n", b.version, b.commit, b.date)
 }
