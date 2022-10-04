@@ -84,20 +84,16 @@ var backfillCommand = &cli.Command{
 			if err != nil {
 				return fmt.Errorf("could not start client for %s", client.RPCUrl)
 			}
-
 			clients[client.ChainID] = backendClient
 		}
-
 		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
 		if err != nil {
 			return fmt.Errorf("could not create scribe backfiller: %w", err)
 		}
-
 		err = scribeBackfiller.Backfill(c.Context)
 		if err != nil {
 			return fmt.Errorf("could not backfill backfiller: %w", err)
 		}
-
 		return nil
 	},
 }
