@@ -3,14 +3,19 @@ package cmd
 import (
 	// used to embed markdown.
 	_ "embed"
+	"fmt"
+	"github.com/synapsecns/sanguine/core/config"
 	"github.com/urfave/cli/v2"
 )
 
 // Start starts the command line.
-func Start(args []string) {
+func Start(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
-	app.Name = "explorer"
-	app.Description = "An indexer + API serving platform analytics"
+	app.Name = buildInfo.Name()
+	app.Version = buildInfo.Version()
+
+	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
+	app.Description = buildInfo.VersionString() + "An indexer + API serving platform analytics"
 	app.Usage = "explorer help"
 	app.EnableBashCompletion = true
 

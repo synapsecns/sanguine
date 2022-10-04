@@ -1,20 +1,21 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/gen2brain/beeep"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/urfave/cli/v2"
 )
 
-// appName is the name of the abi generator.
-const appName = "abigen"
-
 // Run runs the cmd
 // TODO maybe use ifacemaker to generate interfaces for these.
-func Run(args []string) {
+func Run(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
-	app.Name = appName
+	app.Name = buildInfo.Name()
+	app.Version = buildInfo.Version()
+	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
+
 	app.Description = "abi generator. This extends the standard abi gen by requiring a sol-version and using docker. It also generates metadata for each contract."
 	app.Commands = []*cli.Command{
 		GenerateCommand,
