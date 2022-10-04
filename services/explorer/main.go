@@ -2,11 +2,19 @@
 package main
 
 import (
+	"github.com/synapsecns/sanguine/core/config"
 	"os"
 
 	"github.com/synapsecns/sanguine/services/explorer/cmd"
 )
 
+var (
+	version = config.DefaultVersion
+	commit  = config.DefaultCommit
+	date    = config.DefaultDate
+)
+
 func main() {
-	cmd.Start(os.Args)
+	buildInfo := config.NewBuildInfo(version, commit, "explorer", date)
+	cmd.Start(os.Args, buildInfo)
 }
