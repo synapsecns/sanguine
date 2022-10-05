@@ -1,10 +1,8 @@
-FROM alpine as builder
+FROM alpine
 
 RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache gcc musl-dev linux-headers git
 
-FROM scratch
-
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 WORKDIR /app
 COPY omnirpc /app/omnirpc
