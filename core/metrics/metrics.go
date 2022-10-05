@@ -48,7 +48,7 @@ const HandlerEnv = "METRICS_HANDLER"
 func SetupFromEnv(ctx context.Context, buildInfo config.BuildInfo) (err error) {
 	var handler Handler
 
-	metricsHandler := os.Getenv(HandlerEnv)
+	metricsHandler := strings.ToLower(os.Getenv(HandlerEnv))
 	//nolint: gocritic
 	switch metricsHandler {
 	case DataDog.Lower():
