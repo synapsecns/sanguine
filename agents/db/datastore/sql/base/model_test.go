@@ -14,7 +14,6 @@ import (
 func TestCommittedMessageAccessors(t *testing.T) {
 	cm := base.CommittedMessage{
 		CMDomainID:          gofakeit.Uint32(),
-		CMLeafIndex:         gofakeit.Uint32(),
 		CMMessage:           []byte(gofakeit.Paragraph(4, 1, 4, " ")),
 		CMLeaf:              common.BytesToHash([]byte(gofakeit.Paragraph(4, 1, 4, " "))).Bytes(),
 		CMOrigin:            gofakeit.Uint32(),
@@ -41,9 +40,7 @@ func TestCommittedMessageAccessors(t *testing.T) {
 	Nil(t, err)
 	Equal(t, toLeaf[:], cm.CMLeaf)
 
-	Equal(t, cm.DestinationAndNonce(), types.CombineDestinationAndNonce(cm.CMDestination, cm.CMNonce))
 	Equal(t, cm.OptimisticSeconds(), cm.CMOptimisticSeconds)
-	Equal(t, cm.LeafIndex(), cm.CMLeafIndex)
 	Equal(t, cm.Message(), cm.CMMessage)
 	Equal(t, core.BytesToSlice(cm.Leaf()), cm.CMLeaf)
 

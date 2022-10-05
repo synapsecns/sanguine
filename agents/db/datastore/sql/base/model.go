@@ -18,7 +18,6 @@ func init() {
 	NonceFieldName = namer.GetConsistentName("Nonce")
 	DomainIDFieldName = namer.GetConsistentName("DomainID")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
-	LeafIndexFieldName = namer.GetConsistentName("CMLeafIndex")
 }
 
 var (
@@ -128,8 +127,6 @@ type CommittedMessage struct {
 	CMVersion uint16 `gorm:"column:cm_version"`
 	// CMDomainID is the id of the domain we're renaming
 	CMDomainID uint32 `gorm:"column:domain_id;uniqueIndex:cm_idx_id"`
-	// CMLeafIndex is the leaf index at which the message is committed
-	CMLeafIndex uint32 `gorm:"column:leaf_index;uniqueIndex:cm_idx_id"`
 	// CMMessage is the fully detailed message that was created
 	CMMessage []byte `gorm:"column:message"`
 	// CMLeaf is the leaf
@@ -139,7 +136,7 @@ type CommittedMessage struct {
 	// CMSender is the sender of the message
 	CMSender []byte `gorm:"column:sender"`
 	// CMNonce is the nonce of the message
-	CMNonce uint32 `gorm:"column:nonce"`
+	CMNonce uint32 `gorm:"column:nonce;uniqueIndex:cm_idx_id"`
 	// CMDestination is the sip-44 destination of the message
 	CMDestination uint32 `gorm:"column:destination"`
 	// CMRecipient is the recipient of the message
@@ -208,19 +205,9 @@ func (c CommittedMessage) ToLeaf() (leaf [32]byte, err error) {
 	return common.BytesToHash(c.CMLeaf), nil
 }
 
-// DestinationAndNonce gets the destination and nonce encoded into a single field.
-func (c CommittedMessage) DestinationAndNonce() uint64 {
-	return types.CombineDestinationAndNonce(c.DestinationDomain(), c.Nonce())
-}
-
 // OptimisticSeconds gets the optimistic seconds count.
 func (c CommittedMessage) OptimisticSeconds() uint32 {
 	return c.CMOptimisticSeconds
-}
-
-// LeafIndex gets the leaf index of the committed message.
-func (c CommittedMessage) LeafIndex() uint32 {
-	return c.CMLeafIndex
 }
 
 // Message gets the message.
