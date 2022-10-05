@@ -51,7 +51,7 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     uint256 private entered;
 
     // domain => [leaf => status]
-    // Status is either NONE, EXECUTED (see below) or merkle root that was used for proving.
+    // Status is either NONE or EXECUTED (see above)
     mapping(uint32 => mapping(bytes32 => bytes32)) public messageStatus;
 
     // notary => blacklist info
@@ -66,15 +66,17 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
 
     /**
      * @notice Emitted when message is executed
-     * @param messageHash The keccak256 hash of the message that was executed
+     * @param remoteDomain  Remote domain where message originated
+     * @param messageHash   The keccak256 hash of the message that was executed
      */
     event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash);
 
     /**
      * @notice Emitted when a root's confirmation is modified by governance
-     * @param root The root for which confirmAt has been set
+     * @param remoteDomain      The domain for which root's confirmAt has been set
+     * @param root              The root for which confirmAt has been set
      * @param previousConfirmAt The previous value of confirmAt
-     * @param newConfirmAt The new value of confirmAt
+     * @param newConfirmAt      The new value of confirmAt
      */
     event SetConfirmation(
         uint32 indexed remoteDomain,
@@ -83,6 +85,13 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         uint256 newConfirmAt
     );
 
+    /**
+     * @notice Emitted when a Notary is blacklisted due to a submitted Guard's fraud Report
+     * @param notary    The notary that was blacklisted
+     * @param guard     The guard that signed the fraud report
+     * @param reporter  The actor who submitted signed fraud report
+     * @param report    Raw bytes of fraud report
+     */
     event NotaryBlacklisted(
         address indexed notary,
         address indexed guard,
@@ -198,37 +207,6 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Attempts to prove the validity of message given its leaf, the
-     * merkle proof of inclusion for the leaf, and the index of the leaf.
-     * @dev Reverts if message's MessageStatus != None (i.e. if message was
-     * already proven or executed)
-     * @dev For convenience, we allow proving against any previous root.
-     * This means that witnesses never need to be updated for the new root
-     * @param _originDomain         Domain of Origin
-     * @param _leaf                 Leaf (hash) of the message
-     * @param _proof                Merkle proof of inclusion for leaf
-     * @param _index                Index of leaf in Origin's merkle tree
-     * @param _optimisticSeconds    Optimistic period of the message
-     * @return root                 Merkle root used for proving message inclusion
-     **/
-    function _prove(
-        uint32 _originDomain,
-        bytes32 _leaf,
-        bytes32[32] calldata _proof,
-        uint256 _index,
-        uint32 _optimisticSeconds
-    ) internal view returns (bytes32 root) {
-        // ensure that mirror is active
-        require(mirrors[_originDomain].latestNonce != 0, "Mirror not active");
-        // ensure that message has not been proven or executed
-        require(messageStatus[_originDomain][_leaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
-        // calculate the expected root based on the proof
-        root = MerkleLib.branchRoot(_leaf, _proof, _index);
-        // Sanity check: this either returns true or reverts
-        assert(acceptableRoot(_originDomain, _optimisticSeconds, root));
-    }
-
-    /**
      * @notice Blacklists Notary:
      * - New attestations signed by Notary are not accepted
      * - Any old roots attested by Notary can not be used for proving/executing
@@ -253,13 +231,22 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         // TODO: Send system message indicating that a Notary was reported?
     }
 
+    // solhint-disable-next-line no-empty-blocks
+    function _storeTips(bytes29 _tips) internal virtual {
+        // TODO: implement storing & claiming logic
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL VIEWS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     function _checkForSystemMessage(bytes32 _recipient) internal view returns (address recipient) {
         // Check if SYSTEM_ROUTER was specified as message recipient
         if (_recipient == SystemMessage.SYSTEM_ROUTER) {
             /**
              * @dev Route message to SystemRouter.
-             *      Note: Only SystemRouter contract on origin chain
-             *      can send such a message (enforced in Origin.sol).
+             * Note: Only SystemRouter contract on origin chain
+             * can send such a message (enforced in Origin.sol).
              */
             recipient = address(systemRouter);
         } else {
@@ -268,7 +255,34 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         }
     }
 
-    function _storeTips(bytes29 _tips) internal virtual {
-        // TODO: implement storing & claiming logic
+    /**
+     * @notice Attempts to prove the validity of message given its leaf, the
+     * merkle proof of inclusion for the leaf, and the index of the leaf.
+     * @dev Reverts if message's MessageStatus != None (i.e. if message was
+     * already proven or executed)
+     * @dev For convenience, we allow proving against any previous root.
+     * This means that witnesses never need to be updated for the new root
+     * @param _originDomain         Domain of Origin
+     * @param _leaf                 Leaf (hash) of the message
+     * @param _proof                Merkle proof of inclusion for leaf
+     * @param _index                Index of leaf in Origin's merkle tree
+     * @param _optimisticSeconds    Optimistic period of the message
+     * @return root                 Merkle root used for proving message inclusion
+     **/
+    function _prove(
+        uint32 _originDomain,
+        bytes32 _leaf,
+        bytes32[32] calldata _proof,
+        uint256 _index,
+        uint32 _optimisticSeconds
+    ) internal view returns (bytes32 root) {
+        // ensure that mirror is active
+        require(mirrors[_originDomain].latestNonce != 0, "Mirror not active");
+        // ensure that message has not been executed
+        require(messageStatus[_originDomain][_leaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
+        // calculate the expected root based on the proof
+        root = MerkleLib.branchRoot(_leaf, _proof, _index);
+        // Sanity check: this either returns true or reverts
+        assert(acceptableRoot(_originDomain, _optimisticSeconds, root));
     }
 }
