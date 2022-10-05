@@ -48,7 +48,7 @@ func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
 
 // Run runs the rpc server until context cancellation.
 func (r *RPCProxy) Run(ctx context.Context) {
-	tracer.Start()
+	tracer.Start(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true))
 	defer tracer.Stop()
 
 	go r.startProxyLoop(ctx)
