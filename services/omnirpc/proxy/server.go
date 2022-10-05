@@ -14,6 +14,8 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"go.uber.org/zap/zapcore"
+	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"net/http"
 	"strconv"
 	"sync"
@@ -46,9 +48,13 @@ func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
 
 // Run runs the rpc server until context cancellation.
 func (r *RPCProxy) Run(ctx context.Context) {
+	tracer.Start()
+	defer tracer.Stop()
+
 	go r.startProxyLoop(ctx)
 
 	router := gin.New()
+	router.Use(gintrace.Middleware("omnirpc"))
 	router.Use(requestid.New(
 		requestid.WithCustomHeaderStrKey(requestid.HeaderStrKey(omniHTTP.XRequestIDString)),
 		requestid.WithGenerator(func() string {
