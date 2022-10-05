@@ -31,10 +31,6 @@ type IOriginCaller interface {
 	//
 	// Solidity: function allNotaries() view returns(address[])
 	AllNotaries(opts *bind.CallOpts) ([]common.Address, error)
-	// Count is a free data retrieval call binding the contract method 0x06661abd.
-	//
-	// Solidity: function count() view returns(uint256)
-	Count(opts *bind.CallOpts) (*big.Int, error)
 	// GetGuard is a free data retrieval call binding the contract method 0x629ddf69.
 	//
 	// Solidity: function getGuard(uint256 _index) view returns(address)
@@ -57,7 +53,7 @@ type IOriginCaller interface {
 	LocalDomain(opts *bind.CallOpts) (uint32, error)
 	// Nonce is a free data retrieval call binding the contract method 0xaffed0e0.
 	//
-	// Solidity: function nonce() view returns(uint32)
+	// Solidity: function nonce() view returns(uint32 latestNonce)
 	Nonce(opts *bind.CallOpts) (uint32, error)
 	// NotariesAmount is a free data retrieval call binding the contract method 0x8e62e9ef.
 	//
@@ -75,23 +71,15 @@ type IOriginCaller interface {
 	//
 	// Solidity: function root() view returns(bytes32)
 	Root(opts *bind.CallOpts) ([32]byte, error)
-	// State is a free data retrieval call binding the contract method 0xc19d93fb.
-	//
-	// Solidity: function state() view returns(uint8)
-	State(opts *bind.CallOpts) (uint8, error)
 	// SuggestAttestation is a free data retrieval call binding the contract method 0x524787d0.
 	//
-	// Solidity: function suggestAttestation() view returns(uint32 _nonce, bytes32 _root)
+	// Solidity: function suggestAttestation() view returns(uint32 latestNonce, bytes32 latestRoot)
 	SuggestAttestation(opts *bind.CallOpts) (struct {
-		Nonce uint32
-		Root  [32]byte
+		LatestNonce uint32
+		LatestRoot  [32]byte
 	}, error)
 	// SystemRouter is a free data retrieval call binding the contract method 0x529d1549.
 	//
 	// Solidity: function systemRouter() view returns(address)
 	SystemRouter(opts *bind.CallOpts) (common.Address, error)
-	// Tree is a free data retrieval call binding the contract method 0xfd54b228.
-	//
-	// Solidity: function tree() view returns(uint256 count)
-	Tree(opts *bind.CallOpts) (*big.Int, error)
 }

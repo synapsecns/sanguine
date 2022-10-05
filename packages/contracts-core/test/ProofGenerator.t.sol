@@ -51,7 +51,7 @@ contract ProofGeneratorTest is Test {
         for (uint256 i = 0; i < length; ++i) {
             bytes32 node = keccak256(abi.encode(length, i));
             leafs[i] = node;
-            tree.insert(node);
+            tree.insert(i, node);
         }
     }
 
@@ -65,11 +65,11 @@ contract ProofGeneratorTest is Test {
         // Non-existing leaf should be zero
         assertEq(gen.getNode(0, length), bytes32(0), "!zero");
         // Merkle root should match
-        assertEq(gen.getRoot(), tree.root(), "!root");
+        assertEq(gen.getRoot(), tree.root(length), "!root");
     }
 
     function _checkGenerateProofs() internal {
-        bytes32 root = tree.root();
+        bytes32 root = tree.root(length);
         // Should be able to generate a valid proof for any existing leafs
         for (uint256 i = 0; i < length; ++i) {
             bytes32[32] memory proof = gen.getProof(i);

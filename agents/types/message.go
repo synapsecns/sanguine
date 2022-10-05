@@ -34,8 +34,6 @@ type Message interface {
 	Recipient() common.Hash
 	// ToLeaf converts a leaf to a keccac256
 	ToLeaf() (leaf [32]byte, err error)
-	// DestinationAndNonce gets the destination and nonce encoded into a single field
-	DestinationAndNonce() uint64
 	// OptimisticSeconds gets the optimistic seconds count
 	OptimisticSeconds() uint32
 }
@@ -141,18 +139,6 @@ func (m messageImpl) OptimisticSeconds() uint32 {
 	return m.Header().OptimisticSeconds()
 }
 
-// DestinationAndNonce gets the destination and nonce encoded in a single field
-// TODO: statically assert 32 bit fields here.
-func (m messageImpl) DestinationAndNonce() uint64 {
-	return CombineDestinationAndNonce(m.DestinationDomain(), m.Nonce())
-}
-
-// CombineDestinationAndNonce combines a destination and nonce.
-func CombineDestinationAndNonce(destination, nonce uint32) uint64 {
-	dest := uint64(destination)
-	return ((dest) << 32) | uint64(nonce)
-}
-
 func (m messageImpl) Body() []byte {
 	return m.body
 }
@@ -171,8 +157,6 @@ func (m messageImpl) ToLeaf() (leaf [32]byte, err error) {
 
 // CommittedMessage is the message that got committed.
 type CommittedMessage interface {
-	// LeafIndex is the index at which the message is committed
-	LeafIndex() uint32
 	// Message is the fully detailed message that was committed
 	Message() []byte
 	// Leaf gets a leaf
@@ -182,23 +166,20 @@ type CommittedMessage interface {
 }
 
 // NewCommittedMessage creates a new committed message.
-func NewCommittedMessage(leafIndex uint32, message []byte) CommittedMessage {
+func NewCommittedMessage(message []byte) CommittedMessage {
 	return committedMessageImpl{
-		leafIndex: leafIndex,
-		message:   message,
+		message: message,
 	}
 }
 
 // commitedMessageImpl contains the implementation of a committed message.
 type committedMessageImpl struct {
-	leafIndex     uint32
 	committedRoot common.Hash
 	message       []byte
 }
 
 // CommittedMessageEncoder is used to export fields for struct encoding.
 type CommittedMessageEncoder struct {
-	LeafIndex     uint32
 	CommittedRoot common.Hash
 	Message       []byte
 }
@@ -214,7 +195,6 @@ func DecodeCommittedMessage(rawMessage []byte) (CommittedMessage, error) {
 	}
 
 	decoded := committedMessageImpl{
-		leafIndex:     msg.LeafIndex,
 		committedRoot: msg.CommittedRoot,
 		message:       msg.Message,
 	}
@@ -226,7 +206,6 @@ func DecodeCommittedMessage(rawMessage []byte) (CommittedMessage, error) {
 // Deprecated: will be removed.
 func (c committedMessageImpl) Encode() ([]byte, error) {
 	newCommittedMessage := CommittedMessageEncoder{
-		LeafIndex:     c.leafIndex,
 		CommittedRoot: c.committedRoot,
 		Message:       c.message,
 	}
@@ -247,11 +226,6 @@ func (c committedMessageImpl) Leaf() (leaf [32]byte) {
 	copy(leaf[:], rawLeaf)
 
 	return leaf
-}
-
-// LeafIndex gets the index of the leaf.
-func (c committedMessageImpl) LeafIndex() uint32 {
-	return c.leafIndex
 }
 
 // Message gets the message.
