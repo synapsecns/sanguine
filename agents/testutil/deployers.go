@@ -142,11 +142,17 @@ func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 		}
 
 		auth := d.Backend().GetTxContext(ctx, &transactOps.From)
-		initTx, err := destination.Initialize(auth.TransactOpts, uint32(d.Registry().Get(ctx, OriginType).ChainID().Uint64()), common.Address{})
+		initTx, err := destination.Initialize(auth.TransactOpts)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not initialize destination: %w", err)
 		}
 		d.Backend().WaitForConfirmation(ctx, initTx)
+
+		addTx, err := destination.AddNotary(auth.TransactOpts, uint32(d.Registry().Get(ctx, OriginType).ChainID().Uint64()), common.Address{})
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not add notary: %w", err)
+		}
+		d.Backend().WaitForConfirmation(ctx, addTx)
 
 		return destinationAddress, destinationTx, destination, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
