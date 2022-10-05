@@ -124,6 +124,7 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
      */
     function setNotary(uint32 _domain, address _notary) external onlyOwner {
         // TODO: proper implementation
+        // Notaries and Guards should be added/removed by a BondingManager contract
         _addNotary(_domain, _notary);
     }
 
