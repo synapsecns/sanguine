@@ -113,54 +113,6 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           PUBLIC FUNCTIONS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Given formatted message, attempts to dispatch
-     * message payload to end recipient.
-     * @dev Recipient must implement a `handle` method (refer to IMessageRecipient.sol)
-     * Reverts if formatted message's destination domain is not the Destination's domain,
-     * if message proof is invalid, or its optimistic period not yet passed.
-     * Also reverts if the recipient reverted upon receiving the message.
-     * @param _message  Formatted message
-     * @param _proof    Merkle proof of inclusion for message's leaf
-     * @param _index    Index of leaf in origin's merkle tree
-     */
-    function execute(
-        bytes memory _message,
-        bytes32[32] calldata _proof,
-        uint256 _index
-    ) public {
-        bytes29 message = _message.castToMessage();
-        bytes29 header = message.header();
-        uint32 originDomain = header.origin();
-        // ensure message was meant for this domain
-        require(header.destination() == _localDomain(), "!destination");
-        bytes32 leaf = message.keccak();
-        // ensure message can be proven against a confirmed root,
-        // and that message's optimistic period has passed
-        bytes32 root = _prove(originDomain, leaf, _proof, _index, header.optimisticSeconds());
-        // check re-entrancy guard
-        require(entered == 1, "!reentrant");
-        entered = 0;
-        _storeTips(message.tips());
-        // update message status as executed
-        messageStatus[originDomain][leaf] = MESSAGE_STATUS_EXECUTED;
-        address recipient = _checkForSystemMessage(header.recipient());
-        IMessageRecipient(recipient).handle(
-            originDomain,
-            header.nonce(),
-            header.sender(),
-            mirrorRoots[originDomain][root].submittedAt,
-            message.body().clone()
-        );
-        emit Executed(originDomain, leaf);
-        // reset re-entrancy guard
-        entered = 1;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                    EXTERNAL FUNCTIONS: RESTRICTED                    ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -190,6 +142,54 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         uint256 _previousConfirmAt = mirrorRoots[_originDomain][_root].submittedAt;
         mirrorRoots[_originDomain][_root].submittedAt = uint96(_confirmAt);
         emit SetConfirmation(_originDomain, _root, _previousConfirmAt, _confirmAt);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Given formatted message, attempts to dispatch
+     * message payload to end recipient.
+     * @dev Recipient must implement a `handle` method (refer to IMessageRecipient.sol)
+     * Reverts if formatted message's destination domain is not the Destination's domain,
+     * if message proof is invalid, or its optimistic period not yet passed.
+     * Also reverts if the recipient reverted upon receiving the message.
+     * @param _message  Formatted message
+     * @param _proof    Merkle proof of inclusion for message's leaf
+     * @param _index    Index of leaf in origin's merkle tree
+     */
+    function execute(
+        bytes memory _message,
+        bytes32[32] calldata _proof,
+        uint256 _index
+    ) external {
+        bytes29 message = _message.castToMessage();
+        bytes29 header = message.header();
+        uint32 originDomain = header.origin();
+        // ensure message was meant for this domain
+        require(header.destination() == _localDomain(), "!destination");
+        bytes32 leaf = message.keccak();
+        // ensure message can be proven against a confirmed root,
+        // and that message's optimistic period has passed
+        bytes32 root = _prove(originDomain, leaf, _proof, _index, header.optimisticSeconds());
+        // check re-entrancy guard
+        require(entered == 1, "!reentrant");
+        entered = 0;
+        _storeTips(message.tips());
+        // update message status as executed
+        messageStatus[originDomain][leaf] = MESSAGE_STATUS_EXECUTED;
+        address recipient = _checkForSystemMessage(header.recipient());
+        IMessageRecipient(recipient).handle(
+            originDomain,
+            header.nonce(),
+            header.sender(),
+            mirrorRoots[originDomain][root].submittedAt,
+            message.body().clone()
+        );
+        emit Executed(originDomain, leaf);
+        // reset re-entrancy guard
+        entered = 1;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
