@@ -14,11 +14,11 @@ contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
         return _isNotary(_localDomain(), _notary);
     }
 
-    function setFailed(address _notary) public {
-        _fail(_notary, address(0));
-    }
-
-    function destinationAndNonce(uint32 _destination, uint32 _nonce) public pure returns (uint64) {
-        return _destinationAndNonce(_destination, _nonce);
+    function removeAllNotaries() public {
+        uint256 amount = notariesAmount();
+        // Remove every Notary to halt the contract
+        for (uint256 i = 0; i < amount; ++i) {
+            _removeNotary(getNotary(0));
+        }
     }
 }

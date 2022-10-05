@@ -32,8 +32,8 @@ contract ClientTest is SynapseTestWithNotaryManager {
 
     event Dispatch(
         bytes32 indexed messageHash,
-        uint256 indexed leafIndex,
-        uint64 indexed destinationAndNonce,
+        uint32 indexed nonce,
+        uint32 indexed destination,
         bytes tips,
         bytes message
     );
@@ -126,13 +126,7 @@ contract ClientTest is SynapseTestWithNotaryManager {
     function _checkSendMessage() internal {
         bytes memory message = _createSentMessage();
         vm.expectEmit(true, true, true, true);
-        emit Dispatch(
-            keccak256(message),
-            nonce - 1,
-            (uint64(remoteDomain) << 32) | nonce,
-            tips,
-            message
-        );
+        emit Dispatch(keccak256(message), nonce, remoteDomain, tips, message);
         deal(address(this), tipsValue);
         client.sendMessage{ value: tipsValue }(remoteDomain, tips, messageBody);
     }

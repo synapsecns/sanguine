@@ -20,8 +20,8 @@ contract OriginGasGolfTest is SynapseTestWithNotaryManager {
 
     event Dispatch(
         bytes32 indexed messageHash,
-        uint256 indexed leafIndex,
-        uint64 indexed destinationAndNonce,
+        uint32 indexed nonce,
+        uint32 indexed destination,
         bytes tips,
         bytes message
     );
@@ -43,13 +43,7 @@ contract OriginGasGolfTest is SynapseTestWithNotaryManager {
         bytes memory message = Message.formatMessage(_header, _tips, messageBody);
         bytes32 messageHash = keccak256(message);
         vm.expectEmit(true, true, true, true);
-        emit Dispatch(
-            messageHash,
-            origin.count(),
-            (uint64(remoteDomain) << 32) | nonce,
-            _tips,
-            message
-        );
+        emit Dispatch(messageHash, nonce, remoteDomain, _tips, message);
         hoax(sender);
         origin.dispatch{ value: TOTAL_TIPS }(remoteDomain, recipient, 0, _tips, messageBody);
         newRoot = origin.root();

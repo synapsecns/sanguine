@@ -31,8 +31,8 @@ func (s Store) StoreCommittedMessage(ctx context.Context, domainID uint32, messa
 	} else {
 		var count int64
 		tx := s.DB().WithContext(ctx).Model(&CommittedMessage{}).Where(&CommittedMessage{
-			CMDomainID:  domainID,
-			CMLeafIndex: message.LeafIndex(),
+			CMDomainID: domainID,
+			CMNonce:    decodedMessage.Nonce(),
 		}).Count(&count)
 
 		if tx.Error != nil {
@@ -47,7 +47,6 @@ func (s Store) StoreCommittedMessage(ctx context.Context, domainID uint32, messa
 
 	tx := baseQuery.Create(&CommittedMessage{
 		CMDomainID:          domainID,
-		CMLeafIndex:         message.LeafIndex(),
 		CMMessage:           message.Message(),
 		CMLeaf:              hashToSlice(message.Leaf()),
 		CMOrigin:            decodedMessage.OriginDomain(),
