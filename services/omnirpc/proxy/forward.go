@@ -1,14 +1,13 @@
 package proxy
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
-	"encoding/json"
 	"fmt"
-	resty "github.com/go-resty/resty/v2"
+	"github.com/ImVexed/fasturl"
+	"github.com/goccy/go-json"
+	"github.com/synapsecns/sanguine/services/omnirpc/http"
 	"golang.org/x/exp/slices"
-	urlParser "net/url"
 	"strings"
 )
 
@@ -19,30 +18,32 @@ type rawResponse struct {
 	url string
 	// hash is a unique hash of the raw response.
 	// we use this to check for equality
-	hash [32]byte
+	hash string
+	// hasError is wether or not the response could be deserialized
+	hasError bool
 }
 
 // newRawResponse produces a response with a unique hash based on json
 // regardless of formatting.
-func newRawResponse(body []byte, url string) (*rawResponse, error) {
-	var unmarshalled interface{}
-
+func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string) (*rawResponse, error) {
+	// TODO: see if there's a faster way to do this. Canonical json?
 	// unmarshall and remarshall
-	decoder := json.NewDecoder(bytes.NewReader(body))
-	err := decoder.Decode(&unmarshalled)
+	var rpcMessage JSONRPCMessage
+	err := json.Unmarshal(body, &rpcMessage)
 	if err != nil {
-		return nil, fmt.Errorf("could not decode json: %w", err)
+		return nil, fmt.Errorf("could not parse response: %w", err)
 	}
 
-	remarshalled, err := json.Marshal(unmarshalled)
+	standardizedResponse, err := standardizeResponse(ctx, f.rpcRequest.Method, rpcMessage)
 	if err != nil {
-		return nil, fmt.Errorf("could not re-encode json: %w", err)
+		return nil, fmt.Errorf("could not standardize response: %w", err)
 	}
 
 	return &rawResponse{
-		body: body,
-		url:  url,
-		hash: sha256.Sum256(remarshalled),
+		body:     body,
+		url:      url,
+		hash:     fmt.Sprintf("%x", sha256.Sum256(standardizedResponse)),
+		hasError: rpcMessage.Error != nil,
 	}, nil
 }
 
@@ -51,32 +52,38 @@ const (
 	httpsSchema = "https"
 )
 
-func forwardRequest(ctx context.Context, body []byte, endpoint, header string) (*rawResponse, error) {
-	endpointURL, err := urlParser.Parse(endpoint)
+func (f *Forwarder) forwardRequest(ctx context.Context, endpoint string) (*rawResponse, error) {
+	endpointURL, err := fasturl.ParseURL(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse endpoint (%s): %w", endpointURL, err)
 	}
 
-	allowedProtocols := []string{httpSchema, httpsSchema}
+	allowedProtocols := []string{httpsSchema, httpSchema}
 
 	// websockets not yet supported
-	if !slices.Contains(allowedProtocols, endpointURL.Scheme) {
-		return nil, fmt.Errorf("schema must be one of %s, got %s", strings.Join(allowedProtocols, ","), endpointURL.Scheme)
+	if !slices.Contains(allowedProtocols, endpointURL.Protocol) {
+		return nil, fmt.Errorf("schema must be one of %s, got %s", strings.Join(allowedProtocols, ","), endpointURL.Protocol)
 	}
 
-	client := resty.New()
-	resp, err := client.R().
+	req := f.client.NewRequest()
+	resp, err := req.
 		SetContext(ctx).
-		SetBody(body).
-		SetHeader("x-forwarded-for", "omnirpc").
-		SetHeader(requestIDKey, header).
-		Post(endpoint)
-
+		SetRequestURI(endpoint).
+		SetBody(f.body).
+		SetHeaderBytes(http.XRequestID, f.requestID).
+		SetHeaderBytes(http.XForwardedFor, http.OmniRPCValue).
+		SetHeaderBytes(http.ContentType, http.JSONType).
+		SetHeaderBytes(http.Accept, http.JSONType).
+		Do()
 	if err != nil {
 		return nil, fmt.Errorf("could not get response from %s: %w", endpoint, err)
 	}
 
-	rawResp, err := newRawResponse(resp.Body(), endpoint)
+	if resp.StatusCode() < 200 || resp.StatusCode() > 400 {
+		return nil, fmt.Errorf("invalid response code: %w", err)
+	}
+
+	rawResp, err := f.newRawResponse(ctx, resp.Body(), endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("invalid response: %w", err)
 	}

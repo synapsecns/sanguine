@@ -3,7 +3,10 @@ package cmd
 import (
 	"fmt"
 	"github.com/phayes/freeport"
+	"github.com/synapsecns/sanguine/core"
 	rpcConfig "github.com/synapsecns/sanguine/services/omnirpc/config"
+	"github.com/synapsecns/sanguine/services/omnirpc/debug"
+	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
 	"github.com/urfave/cli/v2"
@@ -38,6 +41,10 @@ var chainListCommand = &cli.Command{
 	Usage: "runs a chainlist proxy server",
 	Flags: []cli.Flag{portFlag},
 	Action: func(c *cli.Context) error {
+		// Create a large heap allocation of 10 GiB
+		// See: https://blog.twitch.tv/en/2019/04/10/go-memory-ballast-how-i-learnt-to-stop-worrying-and-love-the-heap/
+		_ = make([]byte, 10<<30)
+
 		rConfig, err := rpcConfig.GetPublicRPCConfig(c.Context)
 		if err != nil {
 			return fmt.Errorf("could not get rpc map: %w", err)
@@ -51,7 +58,7 @@ var chainListCommand = &cli.Command{
 			rConfig.Port = uint16(freeport.GetPort())
 		}
 
-		server := proxy.NewProxy(rConfig)
+		server := proxy.NewProxy(rConfig, omniHTTP.ClientTypeFromString(rConfig.ClientType))
 
 		server.Run(c.Context)
 
@@ -74,7 +81,7 @@ var publicConfigCommand = &cli.Command{
 			return fmt.Errorf("could not get rpc map: %w", err)
 		}
 
-		outputConfig, err := os.Create(c.String(outputFlag.Name))
+		outputConfig, err := os.Create(core.ExpandOrReturnPath(c.String(outputFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not create config file: %w", err)
 		}
@@ -101,7 +108,11 @@ var serverCommand = &cli.Command{
 		portFlag,
 	},
 	Action: func(c *cli.Context) error {
-		fileContents, err := os.ReadFile(c.String(configFlag.Name))
+		// Create a large heap allocation of 10 GiB
+		// See: https://blog.twitch.tv/en/2019/04/10/go-memory-ballast-how-i-learnt-to-stop-worrying-and-love-the-heap/
+		_ = make([]byte, 10<<30)
+
+		fileContents, err := os.ReadFile(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not read file %s: %w", c.String(configFlag.Name), err)
 		}
@@ -118,10 +129,26 @@ var serverCommand = &cli.Command{
 			rConfig.Port = uint16(freeport.GetPort())
 		}
 
-		server := proxy.NewProxy(rConfig)
+		server := proxy.NewProxy(rConfig, omniHTTP.ClientTypeFromString(rConfig.ClientType))
 
 		server.Run(c.Context)
 
 		return nil
+	},
+}
+
+var debugResponse = &cli.Command{
+	Name:  "debug-response",
+	Usage: "used for debugging responses and finding diff between rpcs",
+	Flags: []cli.Flag{
+		fileFlag,
+	},
+	Action: func(c *cli.Context) error {
+		diffFile, err := os.ReadFile(c.String(fileFlag.Name))
+		if err != nil {
+			return fmt.Errorf("could not read file: %w", err)
+		}
+		// nolint: wrapcheck
+		return debug.HashDiff(diffFile)
 	},
 }

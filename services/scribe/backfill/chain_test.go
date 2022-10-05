@@ -58,12 +58,12 @@ func (b BackfillSuite) TestChainBackfill() {
 	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChain, chainConfig)
 	Nil(b.T(), err)
 
-	b.EmitEventsForAChain(chainID, contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)
+	b.EmitEventsForAChain(contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)
 }
 
 // EmitEventsForAChain emits events for a chain, and if `backfill` is set to true,
 // will store the events and check their existence in the database.
-func (b BackfillSuite) EmitEventsForAChain(chainID uint32, contracts []contracts.DeployedContract, testRefs []*testcontract.TestContractRef, simulatedChain *simulated.Backend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig, backfill bool) {
+func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContract, testRefs []*testcontract.TestContractRef, simulatedChain *simulated.Backend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig, backfill bool) {
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 	// Emit events from each contract.
 	for _, testRef := range testRefs {
@@ -80,9 +80,7 @@ func (b BackfillSuite) EmitEventsForAChain(chainID uint32, contracts []contracts
 
 	if backfill {
 		// Backfill the chain.
-		lastBlock, err := simulatedChain.BlockNumber(b.GetTestContext())
-		Nil(b.T(), err)
-		err = chainBackfiller.Backfill(b.GetTestContext(), lastBlock, false)
+		err := chainBackfiller.Backfill(b.GetTestContext(), false)
 		Nil(b.T(), err)
 
 		// Check that the events were written to the database.
@@ -107,5 +105,21 @@ func (b BackfillSuite) EmitEventsForAChain(chainID uint32, contracts []contracts
 		// There should be 9 receipts. One from `EmitEventA`, one from `EmitEventB`, and
 		// one from `EmitEventAandB`, for each contract.
 		Equal(b.T(), 9, len(receipts))
+		totalBlockTimes := uint64(0)
+		currBlock, err := simulatedChain.BlockNumber(b.GetTestContext())
+		Nil(b.T(), err)
+		for blockNum := uint64(0); blockNum <= currBlock; blockNum++ {
+			_, err := b.testDB.RetrieveBlockTime(b.GetTestContext(), chainBackfiller.ChainID(), blockNum)
+			if err == nil {
+				totalBlockTimes++
+			}
+		}
+		// There are `currBlock`+1 block times stored. (+1 because block 0 is stored)
+		Equal(b.T(), currBlock+1, totalBlockTimes)
+
+		// Check that the last stored block time is correct.
+		lastBlockTime, err := b.testDB.RetrieveLastBlockTime(b.GetTestContext(), chainBackfiller.ChainID())
+		Nil(b.T(), err)
+		Equal(b.T(), currBlock, lastBlockTime)
 	}
 }

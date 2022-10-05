@@ -15,6 +15,8 @@ import (
 )
 
 // TestScribeBackfill tests backfilling data from all chains.
+//
+//nolint:cyclop
 func (b BackfillSuite) TestScribeBackfill() {
 	// Set up 3 chains, and the simulated backends for each.
 	chainA := gofakeit.Uint32()
@@ -93,9 +95,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 
 	scribeBackends := make(map[uint32]backfill.ScribeBackend)
 	for _, backend := range simulatedBackends {
-		chainID, err := backend.ChainID(b.GetTestContext())
-		Nil(b.T(), err)
-		scribeBackends[uint32(chainID.Uint64())] = backend
+		scribeBackends[uint32(backend.GetChainID())] = backend
 	}
 
 	// Set up the scribe backfiller.
@@ -104,7 +104,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 
 	// Run the backfill test for each chain.
 	for i, chainBackfiller := range chainBackfillers {
-		b.EmitEventsForAChain(chains[i], allDeployedContracts[i], allContractRefs[i], simulatedBackends[i], chainBackfiller, allChainConfigs[i], false)
+		b.EmitEventsForAChain(allDeployedContracts[i], allContractRefs[i], simulatedBackends[i], chainBackfiller, allChainConfigs[i], false)
 	}
 
 	// Run the scribe's backfill.
@@ -120,4 +120,22 @@ func (b BackfillSuite) TestScribeBackfill() {
 	Nil(b.T(), err)
 	// There are 9 receipts per chain. Since there are 3 chains, 9*3 = 27 receipts.
 	Equal(b.T(), 27, len(receipts))
+	for _, chainBackfiller := range chainBackfillers {
+		totalBlockTimes := uint64(0)
+		currBlock, err := scribeBackfiller.Clients()[chainBackfiller.ChainID()].BlockNumber(b.GetTestContext())
+		Nil(b.T(), err)
+		for blockNum := uint64(0); blockNum <= currBlock; blockNum++ {
+			_, err := b.testDB.RetrieveBlockTime(b.GetTestContext(), chainBackfiller.ChainID(), blockNum)
+			if err == nil {
+				totalBlockTimes++
+			}
+		}
+		// There are `currBlock`+1 block times stored. (+1 because block 0 is stored)
+		Equal(b.T(), currBlock+1, totalBlockTimes)
+
+		// Check that the last stored block time is correct.
+		lastBlockTime, err := b.testDB.RetrieveLastBlockTime(b.GetTestContext(), chainBackfiller.ChainID())
+		Nil(b.T(), err)
+		Equal(b.T(), currBlock, lastBlockTime)
+	}
 }

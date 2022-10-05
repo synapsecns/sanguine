@@ -2,6 +2,8 @@ run:
   concurrency: 1
   tests: true
   skip-dirs-use-default: false
+  skip-dirs:
+    - grpc/client/rest/*
   timeout: 15m
   skip-files:
     - '.*\\.abigen\\.go$'
@@ -97,6 +99,10 @@ issues:
       linters:
         - revive
         - stylecheck
+    # wrapping errors when exporting for testing is tedious
+    - path: export_test\.go
+      linters:
+        - wrapcheck
       text: 'should not use dot imports'
     - path: contracts/
       linters:

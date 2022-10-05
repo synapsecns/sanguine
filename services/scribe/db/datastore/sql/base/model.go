@@ -127,11 +127,11 @@ type EthTx struct {
 type LastIndexedInfo struct {
 	gorm.Model
 	// ContractAddress is the contract address
-	ContractAddress string `gorm:"column:contract_address"`
+	ContractAddress string `gorm:"column:contract_address;index:idx_last_indexed,priority:1"`
+	// BlockNumber is the last block number indexed
+	BlockNumber uint64 `gorm:"column:block_number;auto_increment:false;index:idx_last_indexed,priority:2"`
 	// ChainID is the chain id of the contract
 	ChainID uint32 `gorm:"column:chain_id"`
-	// BlockNumber is the last block number indexed
-	BlockNumber uint64 `gorm:"column:block_number;auto_increment:false"`
 }
 
 // LastConfirmedBlockInfo contains information on when a chain last had a block pass the required confirmation
@@ -141,5 +141,24 @@ type LastConfirmedBlockInfo struct {
 	// ChainID is the chain id of the contract
 	ChainID uint32 `gorm:"column:chain_id"`
 	// BlockNumber is the last block number indexed
+	BlockNumber uint64 `gorm:"column:block_number;auto_increment:false"`
+}
+
+// BlockTime contains the timestamp of a block.
+type BlockTime struct {
+	// ChainID is the chain id of the contract
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	// BlockNumber is the block number
+	BlockNumber uint64 `gorm:"column:block_number;primaryKey;auto_increment:false"`
+	// Timestamp is the timestamp of the block
+	Timestamp uint64 `gorm:"column:timestamp;auto_increment:false"`
+}
+
+// LastBlockTime contains the last block that had its timestamp stored.
+type LastBlockTime struct {
+	gorm.Model
+	// ChainID is the chain id of the contract
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	// BlockNumber is the block number
 	BlockNumber uint64 `gorm:"column:block_number;auto_increment:false"`
 }

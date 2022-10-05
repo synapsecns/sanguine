@@ -21,8 +21,8 @@ func NewMockHash(tb testing.TB) common.Hash {
 	return hash
 }
 
-// GetMockEvents gets eventCount mock events.
-func GetMockEvents(tb testing.TB, eventCount int) (logs []types.Log) {
+// GetMockLogs gets eventCount mock events.
+func GetMockLogs(tb testing.TB, eventCount int) (logs []types.Log) {
 	tb.Helper()
 	eventAddress := MockAddress()
 	eventTopic := []common.Hash{NewMockHash(tb)}

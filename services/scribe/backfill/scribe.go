@@ -3,16 +3,14 @@ package backfill
 import (
 	"context"
 	"fmt"
-	"math/big"
-
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"golang.org/x/sync/errgroup"
+	"math/big"
 )
 
 // ScribeBackfiller is a backfiller that aggregates all backfilling from ChainBackfillers.
@@ -28,16 +26,7 @@ type ScribeBackfiller struct {
 }
 
 // NewScribeBackfiller creates a new backfiller for the scribe.
-func NewScribeBackfiller(eventDB db.EventDB, clients map[uint32]ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
-	// set up the clients mapping
-	clientsMap := make(map[uint32]ScribeBackend)
-	for _, client := range clients {
-		chainID, err := client.ChainID(context.Background())
-		if err != nil {
-			return nil, fmt.Errorf("could not get chain ID: %w", err)
-		}
-		clientsMap[uint32(chainID.Uint64())] = client
-	}
+func NewScribeBackfiller(eventDB db.EventDB, clientsMap map[uint32]ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
 	// initialize the list of chain backfillers
 	chainBackfillers := map[uint32]*ChainBackfiller{}
 	// initialize each chain backfiller
@@ -66,14 +55,9 @@ func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 	for _, chainBackfiller := range s.ChainBackfillers {
 		// capture func literal
 		chainBackfiller := chainBackfiller
-		// get the end height for the backfill
-		currentBlock, err := s.clients[chainBackfiller.chainID].BlockNumber(groupCtx)
-		if err != nil {
-			return fmt.Errorf("could not get current block number: %w", err)
-		}
 		// call Backfill concurrently
 		g.Go(func() error {
-			err := chainBackfiller.Backfill(groupCtx, currentBlock, false)
+			err := chainBackfiller.Backfill(groupCtx, false)
 			if err != nil {
 				return fmt.Errorf("could not backfill chain: %w", err)
 			}
@@ -111,6 +95,8 @@ type ScribeBackend interface {
 	//
 	// TODO(karalabe): Deprecate when the subscription one can return past data too.
 	FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error)
+	// HeaderByNumber returns the block header with the given block number.
+	HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error)
 }
 
 var _ ScribeBackend = simulated.Backend{}

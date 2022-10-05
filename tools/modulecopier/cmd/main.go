@@ -3,20 +3,20 @@ package cmd
 import (
 	"fmt"
 	"github.com/gen2brain/beeep"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/tools/modulecopier/internal"
 	"github.com/urfave/cli/v2"
 	"os"
 )
 
-const appName = "modulecopier"
-
 // Run runs the module copier.
-func Run(args []string) {
+func Run(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
-	app.Name = appName
-	app.Version = config.AppVersion
-	app.Description = "This is used for copying files out of modules in order to export unused fields. This should only be used for unit testing"
+	app.Name = buildInfo.Name()
+	app.Version = buildInfo.Version()
+	app.Description = buildInfo.VersionString() + "This is used for copying files out of modules in order to export unused fields. This should only be used for unit testing"
+	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.Flags = []cli.Flag{
 		modulePathFlag,
 		filePathFlag,
@@ -29,7 +29,7 @@ func Run(args []string) {
 		}
 
 		modulePath := c.String(modulePathFlag.Name)
-		filePath := c.String(filePathFlag.Name)
+		filePath := core.ExpandOrReturnPath(c.String(filePathFlag.Name))
 		packageName := c.String(packageFlag.Name)
 
 		// return an error if neither is specified or both are specified

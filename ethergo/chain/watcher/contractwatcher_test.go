@@ -140,7 +140,7 @@ func (s *WatcherSuite) TestListeners() {
 	// listener count is how many listeners to create
 	const listenerCount = 10
 	// testEvents are the producerChan produces and the listener verify happened
-	testEvents := mocks.GetMockEvents(s.T(), eventCount)
+	testEvents := mocks.GetMockLogs(s.T(), eventCount)
 	initializationSemaphore := semaphore.NewWeighted(listenerCount)
 	// use a waitgroup to manage the listeners
 	var wg sync.WaitGroup

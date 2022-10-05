@@ -1,6 +1,7 @@
 ignore: |
   **/node_modules/**
   **/charts/**
+  **/swagger.yaml
 
 rules:
   document-start:

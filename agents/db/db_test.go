@@ -20,7 +20,6 @@ func (t *DBSuite) TestRetrieveLatestNonce() {
 		ErrorIs(t.T(), err, db.ErrNoNonceForDomain)
 
 		nonce := 0
-		leafIndex := uint32(1)
 
 		for i := 0; i < 10; i++ {
 			header := types.NewHeader(gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), uint32(i), gofakeit.Uint32(), common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
@@ -31,7 +30,7 @@ func (t *DBSuite) TestRetrieveLatestNonce() {
 			encoded, err := types.EncodeMessage(realMessage)
 			Nil(t.T(), err)
 
-			err = testDB.StoreCommittedMessage(t.GetTestContext(), domainID, types.NewCommittedMessage(leafIndex, encoded))
+			err = testDB.StoreCommittedMessage(t.GetTestContext(), domainID, types.NewCommittedMessage(encoded))
 			Nil(t.T(), err)
 
 			newNonce, err := testDB.RetrieveLatestCommittedMessageNonce(t.GetTestContext(), domainID)
@@ -39,7 +38,6 @@ func (t *DBSuite) TestRetrieveLatestNonce() {
 			Equal(t.T(), uint32(nonce), newNonce)
 
 			nonce++
-			leafIndex++
 		}
 	})
 }

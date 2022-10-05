@@ -16,7 +16,7 @@ func (h OriginSuite) TestDispatchTopic() {
 	txContext := h.testBackend.GetTxContext(h.GetTestContext(), nil)
 
 	dispatchSink := make(chan *origin.OriginDispatch)
-	sub, err := h.originContract.WatchDispatch(&bind.WatchOpts{Context: h.GetTestContext()}, dispatchSink, [][32]byte{}, []*big.Int{}, []uint64{})
+	sub, err := h.originContract.WatchDispatch(&bind.WatchOpts{Context: h.GetTestContext()}, dispatchSink, [][32]byte{}, []uint32{}, []uint32{})
 	Nil(h.T(), err)
 
 	enodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))

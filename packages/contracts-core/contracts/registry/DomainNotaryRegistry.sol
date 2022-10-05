@@ -23,6 +23,18 @@ abstract contract DomainNotaryRegistry is AbstractNotaryRegistry, DomainContext 
     uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Ensures that there is at least one active Notary.
+     */
+    modifier haveActiveNotary() {
+        require(notariesAmount() != 0, "!notaries");
+        _;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -39,14 +51,14 @@ abstract contract DomainNotaryRegistry is AbstractNotaryRegistry, DomainContext 
      * @notice Returns i-th Notary. O(1)
      * @dev Will revert if index is out of range
      */
-    function getNotary(uint256 _index) external view returns (address) {
+    function getNotary(uint256 _index) public view returns (address) {
         return notaries.at(_index);
     }
 
     /**
      * @notice Returns amount of active notaries. O(1)
      */
-    function notariesAmount() external view returns (uint256) {
+    function notariesAmount() public view returns (uint256) {
         return notaries.length();
     }
 
