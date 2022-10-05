@@ -48,9 +48,7 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // re-entrancy guard
-    uint8 private entered;
-
-    uint256 internal mirrorCount;
+    uint256 private entered;
 
     // domain => [leaf => status]
     // Status is either NONE, EXECUTED (see below) or merkle root that was used for proving.
@@ -60,7 +58,7 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     mapping(address => Blacklist) public blacklistedNotaries;
 
     // gap for upgrade safety
-    uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
