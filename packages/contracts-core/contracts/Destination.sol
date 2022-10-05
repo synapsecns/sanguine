@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-// ============ Internal Imports ============
 import { LocalDomainContext } from "./context/LocalDomainContext.sol";
 import { DestinationHub } from "./hubs/DestinationHub.sol";
 import { SystemContract } from "./system/SystemContract.sol";
 import { Version0 } from "./Version0.sol";
+import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message } from "./libs/Message.sol";
 import { Header } from "./libs/Header.sol";
 import { Tips } from "./libs/Tips.sol";
+import { TypedMemView } from "./libs/TypedMemView.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
 import { SystemMessage } from "./libs/SystemMessage.sol";
-import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
-// ============ External Imports ============
-import { TypedMemView } from "./libs/TypedMemView.sol";
 
 /**
  * @title Destination
@@ -22,8 +20,6 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
  * prove and dispatch messages to end recipients.
  */
 contract Destination is Version0, SystemContract, LocalDomainContext, DestinationHub {
-    // ============ Libraries ============
-
     using Message for bytes;
     using Message for bytes29;
     using Header for bytes29;
@@ -32,7 +28,6 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     /**
      * @notice Information stored for every blacklisted Notary.
      * TODO: finalize structure
-     * @param isBlacklisted		Whether the Notary is blacklisted
      * @param guard				Guard who reported the Notary
      * @param blacklistedAt		Timestamp when Notary was blacklisted
      */
@@ -41,7 +36,16 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         uint96 blacklistedAt; // 96 bits
     }
 
-    // ============ Public Storage ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              CONSTANTS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    bytes32 internal constant MESSAGE_STATUS_NONE = bytes32(0);
+    bytes32 internal constant MESSAGE_STATUS_EXECUTED = bytes32(uint256(1));
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               STORAGE                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // re-entrancy guard
     uint8 private entered;
@@ -58,12 +62,9 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     // gap for upgrade safety
     uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
 
-    // ============ Constants ============
-
-    bytes32 internal constant MESSAGE_STATUS_NONE = bytes32(0);
-    bytes32 internal constant MESSAGE_STATUS_EXECUTED = bytes32(uint256(1));
-
-    // ============ Events ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                EVENTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Emitted when message is executed
@@ -91,12 +92,16 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         bytes report
     );
 
-    // ============ Constructor ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             CONSTRUCTOR                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     //solhint-disable-next-line no-empty-blocks
     constructor(uint32 _localDomain) LocalDomainContext(_localDomain) {}
 
-    // ============ Initializer ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             INITIALIZER                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Initialize the mirror
@@ -109,7 +114,9 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         entered = 1;
     }
 
-    // ============ External Functions ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           PUBLIC FUNCTIONS                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Given formatted message, attempts to dispatch
@@ -155,7 +162,9 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         entered = 1;
     }
 
-    // ============ External Owner Functions ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                    EXTERNAL FUNCTIONS: RESTRICTED                    ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Set Notary role
@@ -185,7 +194,9 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         emit SetConfirmation(_originDomain, _root, _previousConfirmAt, _confirmAt);
     }
 
-    // ============ Public Functions ============
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Attempts to prove the validity of message given its leaf, the
@@ -217,8 +228,6 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         // Sanity check: this either returns true or reverts
         assert(acceptableRoot(_originDomain, _optimisticSeconds, root));
     }
-
-    // ============ Internal Functions ============
 
     /**
      * @notice Blacklists Notary:
