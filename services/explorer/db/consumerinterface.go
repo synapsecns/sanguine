@@ -24,8 +24,8 @@ type ConsumerDBReader interface {
 	BridgeEventCount(ctx context.Context, chainID uint32, address *string, tokenAddress *string, directionIn bool, firstBlock uint64) (count uint64, err error)
 	// GetTokenAddressesByChainID gets all token addresses that have been used in bridge events for a given chain ID.
 	GetTokenAddressesByChainID(ctx context.Context, chainID uint32) ([]string, error)
-	// BridgeEventsFromIdentifiers returns events given identifiers.
-	BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int) (partialInfos []*model.PartialInfo, err error)
+	// PartialInfosFromIdentifiers returns events given identifiers.
+	PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int, order bool) (partialInfos []*model.PartialInfo, err error)
 	// GetSwapSuccess returns if an event had a successful swap.
 	GetSwapSuccess(ctx context.Context, kappa string, chainID uint32) (*bool, error)
 	// GetTxHashFromKappa returns the transaction hash for a given kappa.

@@ -41,7 +41,7 @@ func (_m *ConsumerDB) BridgeEventCount(ctx context.Context, chainID uint32, addr
 }
 
 // BridgeEventsFromIdentifiers provides a mock function with given fields: ctx, chainID, address, tokenAddress, kappa, txHash, page
-func (_m *ConsumerDB) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32, address *string, tokenAddress *string, kappa *string, txHash *string, page int) ([]*model.PartialInfo, error) {
+func (_m *ConsumerDB) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address *string, tokenAddress *string, kappa *string, txHash *string, page int) ([]*model.PartialInfo, error) {
 	ret := _m.Called(ctx, chainID, address, tokenAddress, kappa, txHash, page)
 
 	var r0 []*model.PartialInfo

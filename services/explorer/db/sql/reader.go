@@ -196,9 +196,9 @@ func generateAddressSpecifierSQL(address *string, firstFilter *bool) string {
 	if address != nil {
 		if *firstFilter {
 			*firstFilter = false
-			return fmt.Sprintf(" (%s = '%s' OR %s = '%s')", RecipientFieldName, *address, SenderFieldName, *address)
+			return fmt.Sprintf(" WHERE (%s = toString(%s) OR %s = toString(%s))", RecipientFieldName, *address, SenderFieldName, *address)
 		}
-		return fmt.Sprintf(" AND (%s = '%s' OR %s = '%s')", RecipientFieldName, *address, SenderFieldName, *address)
+		return fmt.Sprintf(" AND (%s = toString(%s) OR %s = toString(%s))", RecipientFieldName, *address, SenderFieldName, *address)
 	}
 	return ""
 }
@@ -206,7 +206,7 @@ func generateAddressSpecifierSQL(address *string, firstFilter *bool) string {
 func generateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *bool) string {
 	if value != nil {
 		if *firstFilter {
-			return fmt.Sprintf("%s = %d", field, *value)
+			return fmt.Sprintf(" WHERE %s = %d", field, *value)
 		}
 		return fmt.Sprintf("AND %s = %d", field, *value)
 	}
@@ -216,15 +216,15 @@ func generateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *boo
 func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *bool) string {
 	if value != nil {
 		if *firstFilter {
-			return fmt.Sprintf("%s = %s", field, *value)
+			return fmt.Sprintf(" WHERE %s = toString(%s)", field, *value)
 		}
-		return fmt.Sprintf("AND %s = %s", field, *value)
+		return fmt.Sprintf("AND %s = toString(%s)", field, *value)
 	}
 	return ""
 }
 
-// BridgeEventsFromIdentifiers returns events given identifiers.
-func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int) (partialInfos []*model.PartialInfo, err error) {
+// PartialInfosFromIdentifiers returns events given identifiers. If order is true, the events are ordered by block number.
+func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int, order bool) (partialInfos []*model.PartialInfo, err error) {
 	var res []BridgeEvent
 	firstFilter := true
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, ChainIDFieldName, &firstFilter)
@@ -232,23 +232,23 @@ func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, TokenFieldName, &firstFilter)
 	kappaSpecifier := generateSingleSpecifierStringSQL(tokenAddress, KappaFieldName, &firstFilter)
 	txHashSpecifier := generateSingleSpecifierStringSQL(kappa, TxHashFieldName, &firstFilter)
+	orderSpecifier := ""
+	if order {
+		orderSpecifier = fmt.Sprintf(" ORDER BY %s DESC", BlockNumberFieldName)
+	}
 
-	// TODO Lex merge this correctly
-	// if page < 1 {
-	//	page = 1
-	//}
-	// pageSpecifier := fmt.Sprintf(" LIMIT %d OFFSET %d", PageSize, (page-1)*PageSize)
 	pageSpecifier := ""
 
 	compositeIdentifiers := fmt.Sprintf(
-		`WHERE%s%s%s%s%s%s`,
-		chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, pageSpecifier, kappaSpecifier, txHashSpecifier,
+		`%s%s%s%s%s%s%s`,
+		chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, pageSpecifier, kappaSpecifier, txHashSpecifier, orderSpecifier,
 	)
 
 	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
 		`SELECT * FROM bridge_events %s`,
 		compositeIdentifiers,
 	)).Find(&res)
+	fmt.Printf("res: %+v\n", res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
