@@ -196,6 +196,13 @@ contract DestinationTest is SynapseTest {
         destination.submitAttestation(attestation);
     }
 
+    function test_submitAttestation_emptyRoot() public {
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, bytes32(0));
+        vm.expectRevert("Empty root");
+        // Attestations with empty root should be rejected
+        destination.submitAttestation(attestation);
+    }
+
     function test_submitAttestation_localDomain() public {
         // Make Notary active on localDomain
         destination.removeNotary(remoteDomain, notary);
@@ -281,36 +288,14 @@ contract DestinationTest is SynapseTest {
         destination.setSensitiveValue(1337, 0, 0, 0);
     }
 
-    function _prepareExecuteTest(uint32 optimisticPeriod) internal returns (bytes memory message) {
-        test_submitAttestation();
-
-        uint32 nonce = 1234;
-        bytes32 sender = "sender";
-        bytes memory messageBody = "message body";
-        dApp.prepare(remoteDomain, nonce, sender, messageBody);
-        bytes32 recipient = TypeCasts.addressToBytes32(address(dApp));
-
-        bytes memory _header = Header.formatHeader(
-            remoteDomain,
-            sender,
-            nonce,
-            localDomain,
-            recipient,
-            optimisticPeriod
-        );
-
-        message = Message.formatMessage(_header, getDefaultTips(), messageBody);
-        bytes32 messageHash = keccak256(message);
-        // Let's imagine message was proved against current root
-        destination.setMessageStatus(remoteDomain, messageHash, ROOT);
-    }
-
     function _checkExecute(uint32 _index) internal {
         _prepareTest(_index, OPTIMISTIC_PERIOD);
         vm.warp(block.timestamp + OPTIMISTIC_PERIOD);
         vm.expectEmit(true, true, true, true);
         emit LogTips(NOTARY_TIP, BROADCASTER_TIP, PROVER_TIP, EXECUTOR_TIP);
         destination.execute(testMessage, proof, _index);
+        // Check that merkle root used for proving was recorded
+        assertEq(destination.messageStatus(remoteDomain, leaf), merkleRoot, "!messageStatus");
     }
 
     function _prepareTest(uint32 _messageIndex, uint32 _optimisticPeriod) internal {

@@ -132,12 +132,14 @@ abstract contract DestinationHub is
     ) internal override returns (bool) {
         uint32 originDomain = _attestationView.attestedDomain();
         require(originDomain != _localDomain(), "Attestation is from local chain");
+        bytes32 root = _attestationView.attestedRoot();
+        require(root != bytes32(0), "Empty root");
         uint32 nonce = _attestationView.attestedNonce();
-        _updateMirror(_notary, originDomain, nonce, _attestationView.attestedRoot());
+        _updateMirror(_notary, originDomain, nonce, root);
         emit AttestationAccepted(
             originDomain,
             nonce,
-            _attestationView.attestedRoot(),
+            root,
             _attestationView.notarySignature().clone()
         );
         return true;

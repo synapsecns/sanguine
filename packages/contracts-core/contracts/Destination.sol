@@ -41,7 +41,6 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     bytes32 internal constant MESSAGE_STATUS_NONE = bytes32(0);
-    bytes32 internal constant MESSAGE_STATUS_EXECUTED = bytes32(uint256(1));
 
     // We're using uint256 instead of bool/uint8 here, because reading/writing is
     // cheaper for the types that are using a full word of storage
@@ -58,7 +57,8 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     uint256 private status;
 
     // domain => [leaf => status]
-    // Status is either NONE or EXECUTED (see above)
+    // Message wasn't executed => MESSAGE_STATUS_NONE
+    // Message was executed => merkle root used for proving when executed
     mapping(uint32 => mapping(bytes32 => bytes32)) public messageStatus;
 
     // notary => blacklist info
@@ -194,8 +194,10 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         require(status == NOT_ENTERED, "!reentrant");
         status = ENTERED;
         _storeTips(message.tips());
-        // update message status as executed
-        messageStatus[originDomain][leaf] = MESSAGE_STATUS_EXECUTED;
+        // it should not be possible to construct a merkle tree with a root = 0x0, but even then
+        // attestations with empty root would be rejected: see DestinationHub._handleAttestation()
+        // update message status as executed, new status is never bytes32(0)
+        messageStatus[originDomain][leaf] = root;
         address recipient = _checkForSystemMessage(header.recipient());
         IMessageRecipient(recipient).handle(
             originDomain,
