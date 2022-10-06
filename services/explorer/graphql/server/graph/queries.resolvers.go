@@ -73,7 +73,81 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 
 // BridgeAmountStatistic is the resolver for the bridgeAmountStatistic field.
 func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error) {
-	panic(fmt.Errorf("not implemented: BridgeAmountStatistic - bridgeAmountStatistic"))
+	var err error
+	subQuery := "bridge_events"
+	additionalFilters := ""
+	switch *duration {
+	case "PAST_DAY":
+		hours := 24
+		targetTime := r.getTargetTime(&hours)
+		if chainID == nil {
+			chainIDs, err := r.DB.GetAllChainIDs(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get chain IDs: %w", err)
+			}
+			subQuery = "("
+			for i, chain := range chainIDs {
+				startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chain, 0, targetTime)
+				if err != nil {
+					return nil, fmt.Errorf("failed to get start block number: %w", err)
+				}
+				sqlString := fmt.Sprintf("\nSELECT %s, %s, amount_usd FROM bridge_events WHERE %s = %d AND  %s >= %d", sql.TokenFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName, chain, sql.BlockNumberFieldName, startBlock)
+				if i != len(chainIDs)-1 {
+					sqlString += " UNION ALL"
+				} else {
+					sqlString += ")"
+				}
+				subQuery += sqlString
+			}
+		} else {
+			startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, uint32(*chainID), 0, targetTime)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get start block number: %w", err)
+			}
+			additionalFilters = fmt.Sprintf("WHERE %s >= %d AND %s = %d", sql.BlockNumberFieldName, startBlock, sql.ChainIDFieldName, *chainID)
+		}
+	default: //ALL_TIME
+		if chainID != nil {
+			additionalFilters = fmt.Sprintf("WHERE %s = %d", sql.ChainIDFieldName, *chainID)
+		}
+	}
+
+	var operation string
+	switch typeArg {
+	case "MEAN":
+		operation = "AVG"
+	case "TOTAL":
+		operation = "sumKahan"
+	case "MEDIAN":
+		operation = "median"
+	default:
+		operation = typeArg.String()
+	}
+	if address != nil {
+		if additionalFilters != "" {
+			additionalFilters += " AND "
+		} else {
+			additionalFilters += "WHERE "
+		}
+		additionalFilters += fmt.Sprintf("%s = toString(%s)", sql.ContractAddressFieldName, *address)
+	}
+	if tokenAddress != nil {
+		if additionalFilters != "WHERE " {
+			additionalFilters += " AND "
+		} else {
+			additionalFilters += "WHERE "
+		}
+		additionalFilters += fmt.Sprintf("%s = toString(%s)", sql.TokenFieldName, *tokenAddress)
+	}
+	finalSql := fmt.Sprintf("\nSELECT %s(toUInt256(amount_usd)) FROM %s %s", operation, subQuery, additionalFilters)
+	res, err := r.DB.GetBridgeStatistic(ctx, finalSql)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
+	}
+	output := model.ValueResult{
+		USDValue: res,
+	}
+	return &output, nil
 }
 
 // CountByChainID is the resolver for the countByChainId field.

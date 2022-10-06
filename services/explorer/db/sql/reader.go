@@ -132,6 +132,21 @@ func (s *Store) GetTokenAddressesByChainID(ctx context.Context, chainID uint32) 
 	return res, nil
 }
 
+// GetBridgeStatistic gets the bridge statistics.
+func (s *Store) GetBridgeStatistic(ctx context.Context, subQuery string) (*string, error) {
+	var res float64
+	dbTx := s.db.WithContext(ctx).Raw(subQuery).Find(&res)
+
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+	output := fmt.Sprintf("%f", res)
+	if len(output) == 0 {
+		return nil, nil
+	}
+	return &output, nil
+}
+
 // BridgeEventCount returns the number of bridge events.
 func (s *Store) BridgeEventCount(ctx context.Context, chainID uint32, address *string, tokenAddress *string, directionIn bool, firstBlock uint64) (count uint64, err error) {
 	var res int64

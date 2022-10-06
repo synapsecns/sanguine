@@ -33,6 +33,8 @@ type ConsumerDBReader interface {
 	GetKappaFromTxHash(ctx context.Context, txHash string, chainID *uint32) (*string, error)
 	// GetTransactionCountForEveryAddress gets the count of transactions (origin) for each address.
 	GetTransactionCountForEveryAddress(ctx context.Context, subQuery string) ([]*model.AddressRanking, error)
+	// GetBridgeStatistic gets bridge statistics
+	GetBridgeStatistic(ctx context.Context, subQuery string) (*string, error)
 	// DB gets the underlying gorm db.
 	DB() *gorm.DB
 }
