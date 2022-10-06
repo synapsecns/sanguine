@@ -11,7 +11,7 @@ import (
 // ConsumerDBWriter is the interface for writing to the ConsumerDB.
 type ConsumerDBWriter interface {
 	// StoreEvent stores an event.
-	StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenID *string) error
+	StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenID *string, sender string) error
 }
 
 // ConsumerDBReader is the interface for reading events from the ConsumerDB.

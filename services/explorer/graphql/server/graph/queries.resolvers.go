@@ -6,8 +6,8 @@ package graph
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 
+	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	resolvers "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/resolver"
 )

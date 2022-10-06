@@ -104,6 +104,29 @@ func (_m *ConsumerDB) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
 	return r0, r1
 }
 
+// GetKappaFromTxHash provides a mock function with given fields: ctx, txHash, chainID
+func (_m *ConsumerDB) GetKappaFromTxHash(ctx context.Context, txHash string, chainID *uint32) (*string, error) {
+	ret := _m.Called(ctx, txHash, chainID)
+
+	var r0 *string
+	if rf, ok := ret.Get(0).(func(context.Context, string, *uint32) *string); ok {
+		r0 = rf(ctx, txHash, chainID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, *uint32) error); ok {
+		r1 = rf(ctx, txHash, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetSwapSuccess provides a mock function with given fields: ctx, kappa, chainID
 func (_m *ConsumerDB) GetSwapSuccess(ctx context.Context, kappa string, chainID uint32) (*bool, error) {
 	ret := _m.Called(ctx, kappa, chainID)
@@ -143,6 +166,29 @@ func (_m *ConsumerDB) GetTokenAddressesByChainID(ctx context.Context, chainID ui
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, uint32) error); ok {
 		r1 = rf(ctx, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetTransactionCountForEveryAddress provides a mock function with given fields: ctx, subQuery
+func (_m *ConsumerDB) GetTransactionCountForEveryAddress(ctx context.Context, subQuery string) ([]*model.AddressRanking, error) {
+	ret := _m.Called(ctx, subQuery)
+
+	var r0 []*model.AddressRanking
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.AddressRanking); ok {
+		r0 = rf(ctx, subQuery)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.AddressRanking)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, subQuery)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -196,13 +242,13 @@ func (_m *ConsumerDB) ReadBlockNumberByChainID(ctx context.Context, eventType in
 	return r0, r1
 }
 
-// StoreEvent provides a mock function with given fields: ctx, bridgeEvent, swapEvent, chainID, tokenID
-func (_m *ConsumerDB) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenID *string) error {
-	ret := _m.Called(ctx, bridgeEvent, swapEvent, chainID, tokenID)
+// StoreEvent provides a mock function with given fields: ctx, bridgeEvent, swapEvent, chainID, tokenID, sender
+func (_m *ConsumerDB) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenID *string, sender string) error {
+	ret := _m.Called(ctx, bridgeEvent, swapEvent, chainID, tokenID, sender)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, bridge.EventLog, swap.EventLog, uint32, *string) error); ok {
-		r0 = rf(ctx, bridgeEvent, swapEvent, chainID, tokenID)
+	if rf, ok := ret.Get(0).(func(context.Context, bridge.EventLog, swap.EventLog, uint32, *string, string) error); ok {
+		r0 = rf(ctx, bridgeEvent, swapEvent, chainID, tokenID, sender)
 	} else {
 		r0 = ret.Error(0)
 	}
