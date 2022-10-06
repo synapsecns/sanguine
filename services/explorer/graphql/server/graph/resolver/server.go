@@ -51,7 +51,6 @@ type ComplexityRoot struct {
 		FromInfo    func(childComplexity int) int
 		Kappa       func(childComplexity int) int
 		Pending     func(childComplexity int) int
-		Status      func(childComplexity int) int
 		SwapSuccess func(childComplexity int) int
 		ToInfo      func(childComplexity int) int
 	}
@@ -74,6 +73,7 @@ type ComplexityRoot struct {
 
 	PartialInfo struct {
 		Address        func(childComplexity int) int
+		BlockNumber    func(childComplexity int) int
 		ChainID        func(childComplexity int) int
 		FormattedValue func(childComplexity int) int
 		Time           func(childComplexity int) int
@@ -176,13 +176,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.BridgeTransaction.Pending(childComplexity), true
 
-	case "BridgeTransaction.status":
-		if e.complexity.BridgeTransaction.Status == nil {
-			break
-		}
-
-		return e.complexity.BridgeTransaction.Status(childComplexity), true
-
 	case "BridgeTransaction.swapSuccess":
 		if e.complexity.BridgeTransaction.SwapSuccess == nil {
 			break
@@ -252,6 +245,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PartialInfo.Address(childComplexity), true
+
+	case "PartialInfo.blockNumber":
+		if e.complexity.PartialInfo.BlockNumber == nil {
+			break
+		}
+
+		return e.complexity.PartialInfo.BlockNumber(childComplexity), true
 
 	case "PartialInfo.chainId":
 		if e.complexity.PartialInfo.ChainID == nil {
@@ -595,7 +595,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   kappa:        String
   pending:      Boolean
   swapSuccess:  Boolean
-  status:       String
+#  status:       String
 }
 type PartialInfo {
   chainId: Int
@@ -606,6 +606,7 @@ type PartialInfo {
   USDValue:       Float
   tokenAddress:   String
   tokenSymbol:    String
+  blockNumber:    Int
   time:           Int
 }
 type DateResult {
@@ -1145,6 +1146,8 @@ func (ec *executionContext) fieldContext_BridgeTransaction_fromInfo(ctx context.
 				return ec.fieldContext_PartialInfo_tokenAddress(ctx, field)
 			case "tokenSymbol":
 				return ec.fieldContext_PartialInfo_tokenSymbol(ctx, field)
+			case "blockNumber":
+				return ec.fieldContext_PartialInfo_blockNumber(ctx, field)
 			case "time":
 				return ec.fieldContext_PartialInfo_time(ctx, field)
 			}
@@ -1206,6 +1209,8 @@ func (ec *executionContext) fieldContext_BridgeTransaction_toInfo(ctx context.Co
 				return ec.fieldContext_PartialInfo_tokenAddress(ctx, field)
 			case "tokenSymbol":
 				return ec.fieldContext_PartialInfo_tokenSymbol(ctx, field)
+			case "blockNumber":
+				return ec.fieldContext_PartialInfo_blockNumber(ctx, field)
 			case "time":
 				return ec.fieldContext_PartialInfo_time(ctx, field)
 			}
@@ -1333,47 +1338,6 @@ func (ec *executionContext) fieldContext_BridgeTransaction_swapSuccess(ctx conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _BridgeTransaction_status(ctx context.Context, field graphql.CollectedField, obj *model.BridgeTransaction) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_BridgeTransaction_status(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Status, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_BridgeTransaction_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "BridgeTransaction",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2000,6 +1964,47 @@ func (ec *executionContext) fieldContext_PartialInfo_tokenSymbol(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _PartialInfo_blockNumber(ctx context.Context, field graphql.CollectedField, obj *model.PartialInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialInfo_blockNumber(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BlockNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialInfo_blockNumber(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PartialInfo_time(ctx context.Context, field graphql.CollectedField, obj *model.PartialInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PartialInfo_time(ctx, field)
 	if err != nil {
@@ -2087,8 +2092,6 @@ func (ec *executionContext) fieldContext_Query_bridgeTransactions(ctx context.Co
 				return ec.fieldContext_BridgeTransaction_pending(ctx, field)
 			case "swapSuccess":
 				return ec.fieldContext_BridgeTransaction_swapSuccess(ctx, field)
-			case "status":
-				return ec.fieldContext_BridgeTransaction_status(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeTransaction", field.Name)
 		},
@@ -2153,8 +2156,6 @@ func (ec *executionContext) fieldContext_Query_latestBridgeTransactions(ctx cont
 				return ec.fieldContext_BridgeTransaction_pending(ctx, field)
 			case "swapSuccess":
 				return ec.fieldContext_BridgeTransaction_swapSuccess(ctx, field)
-			case "status":
-				return ec.fieldContext_BridgeTransaction_status(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeTransaction", field.Name)
 		},
@@ -4779,10 +4780,6 @@ func (ec *executionContext) _BridgeTransaction(ctx context.Context, sel ast.Sele
 
 			out.Values[i] = ec._BridgeTransaction_swapSuccess(ctx, field, obj)
 
-		case "status":
-
-			out.Values[i] = ec._BridgeTransaction_status(ctx, field, obj)
-
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4926,6 +4923,10 @@ func (ec *executionContext) _PartialInfo(ctx context.Context, sel ast.SelectionS
 		case "tokenSymbol":
 
 			out.Values[i] = ec._PartialInfo_tokenSymbol(ctx, field, obj)
+
+		case "blockNumber":
+
+			out.Values[i] = ec._PartialInfo_blockNumber(ctx, field, obj)
 
 		case "time":
 

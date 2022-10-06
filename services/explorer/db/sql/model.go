@@ -22,6 +22,9 @@ func init() {
 	DestinationChainIDFieldName = namer.GetConsistentName("DestinationChainID")
 	TokenFieldName = namer.GetConsistentName("Token")
 	RecipientFieldName = namer.GetConsistentName("Recipient")
+	KappaFieldName = namer.GetConsistentName("Kappa")
+	DestinationKappaFieldName = namer.GetConsistentName("DestinationKappa")
+	SenderFieldName = namer.GetConsistentName("Sender")
 }
 
 var (
@@ -47,7 +50,16 @@ var (
 	TokenFieldName string
 	// RecipientFieldName is the recipient field name.
 	RecipientFieldName string
+	// KappaFieldName is the kappa field name.
+	KappaFieldName string
+	// DestinationKappaFieldName is the destination kappa field name.
+	DestinationKappaFieldName string
+	// SenderFieldName is the sender field name.
+	SenderFieldName string
 )
+
+// PageSize is the amount of entries per page of events.
+var PageSize = 100
 
 // SwapEvent stores data for emitted events from the Swap contract.
 type SwapEvent struct {
@@ -65,6 +77,8 @@ type SwapEvent struct {
 	EventType uint8 `gorm:"column:event_type"`
 	// EventIndex is the index of the log
 	EventIndex uint64 `gorm:"column:event_index"`
+	// Sender is the address of the sender
+	Sender string `gorm:"column:sender"`
 
 	// TokenIndex is the index of the token in the pool
 	TokenIndex *big.Int `gorm:"column:token_index;type:UInt256"`
@@ -138,6 +152,10 @@ type BridgeEvent struct {
 	Amount *big.Int `gorm:"column:amount;type:UInt256"`
 	// EventIndex is the index of the log
 	EventIndex uint64 `gorm:"column:event_index"`
+	// DestinationKappa is the destination kappa
+	DestinationKappa string `gorm:"column:destination_kappa"`
+	// Sender is the address of the sender
+	Sender string `gorm:"column:sender"`
 
 	// Recipient is the address to send the tokens to
 	Recipient sql.NullString `gorm:"column:recipient"`

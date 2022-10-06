@@ -87,6 +87,7 @@ func (s Store) ConfirmLogsInRange(ctx context.Context, startBlock, endBlock uint
 		Model(&Log{}).
 		Order(BlockNumberFieldName).
 		Where(rangeQuery, startBlock, endBlock).
+		Where(&Log{ChainID: chainID}).
 		Update(ConfirmedFieldName, true)
 
 	if dbTx.Error != nil {

@@ -118,7 +118,11 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) 
 				}
 				eventParser = c.swapParsers[log.Address]
 			}
-			err := eventParser.ParseAndStore(groupCtx, log, c.chainID)
+			sender, err := c.fetcher.FetchClient.GetTxSender(groupCtx, int(c.chainID), log.TxHash.String())
+			if err != nil || sender.Response == nil {
+				return fmt.Errorf("could not get tx sender: %w", err)
+			}
+			err = eventParser.ParseAndStore(groupCtx, log, c.chainID, *sender.Response)
 			if err != nil {
 				return fmt.Errorf("could not parse and store log: %w", err)
 			}

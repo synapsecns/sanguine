@@ -39,6 +39,7 @@ type GetBridgeTransactions struct {
 			USDValue       *float64 "json:\"USDValue\" graphql:\"USDValue\""
 			TokenAddress   *string  "json:\"tokenAddress\" graphql:\"tokenAddress\""
 			TokenSymbol    *string  "json:\"tokenSymbol\" graphql:\"tokenSymbol\""
+			BlockNumber    *int     "json:\"blockNumber\" graphql:\"blockNumber\""
 			Time           *int     "json:\"time\" graphql:\"time\""
 		} "json:\"fromInfo\" graphql:\"fromInfo\""
 		ToInfo *struct {
@@ -50,12 +51,12 @@ type GetBridgeTransactions struct {
 			USDValue       *float64 "json:\"USDValue\" graphql:\"USDValue\""
 			TokenAddress   *string  "json:\"tokenAddress\" graphql:\"tokenAddress\""
 			TokenSymbol    *string  "json:\"tokenSymbol\" graphql:\"tokenSymbol\""
+			BlockNumber    *int     "json:\"blockNumber\" graphql:\"blockNumber\""
 			Time           *int     "json:\"time\" graphql:\"time\""
 		} "json:\"toInfo\" graphql:\"toInfo\""
 		Kappa       *string "json:\"kappa\" graphql:\"kappa\""
 		Pending     *bool   "json:\"pending\" graphql:\"pending\""
 		SwapSuccess *bool   "json:\"swapSuccess\" graphql:\"swapSuccess\""
-		Status      *string "json:\"status\" graphql:\"status\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetLatestBridgeTransactions struct {
@@ -69,6 +70,7 @@ type GetLatestBridgeTransactions struct {
 			USDValue       *float64 "json:\"USDValue\" graphql:\"USDValue\""
 			TokenAddress   *string  "json:\"tokenAddress\" graphql:\"tokenAddress\""
 			TokenSymbol    *string  "json:\"tokenSymbol\" graphql:\"tokenSymbol\""
+			BlockNumber    *int     "json:\"blockNumber\" graphql:\"blockNumber\""
 			Time           *int     "json:\"time\" graphql:\"time\""
 		} "json:\"fromInfo\" graphql:\"fromInfo\""
 		ToInfo *struct {
@@ -80,12 +82,12 @@ type GetLatestBridgeTransactions struct {
 			USDValue       *float64 "json:\"USDValue\" graphql:\"USDValue\""
 			TokenAddress   *string  "json:\"tokenAddress\" graphql:\"tokenAddress\""
 			TokenSymbol    *string  "json:\"tokenSymbol\" graphql:\"tokenSymbol\""
+			BlockNumber    *int     "json:\"blockNumber\" graphql:\"blockNumber\""
 			Time           *int     "json:\"time\" graphql:\"time\""
 		} "json:\"toInfo\" graphql:\"toInfo\""
 		Kappa       *string "json:\"kappa\" graphql:\"kappa\""
 		Pending     *bool   "json:\"pending\" graphql:\"pending\""
 		SwapSuccess *bool   "json:\"swapSuccess\" graphql:\"swapSuccess\""
-		Status      *string "json:\"status\" graphql:\"status\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetBridgeAmountStatistic struct {
@@ -140,6 +142,7 @@ const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainId: In
 			USDValue
 			tokenAddress
 			tokenSymbol
+			blockNumber
 			time
 		}
 		toInfo {
@@ -151,12 +154,12 @@ const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainId: In
 			USDValue
 			tokenAddress
 			tokenSymbol
+			blockNumber
 			time
 		}
 		kappa
 		pending
 		swapSuccess
-		status
 	}
 }
 `
@@ -191,6 +194,7 @@ const GetLatestBridgeTransactionsDocument = `query GetLatestBridgeTransactions (
 			USDValue
 			tokenAddress
 			tokenSymbol
+			blockNumber
 			time
 		}
 		toInfo {
@@ -202,12 +206,12 @@ const GetLatestBridgeTransactionsDocument = `query GetLatestBridgeTransactions (
 			USDValue
 			tokenAddress
 			tokenSymbol
+			blockNumber
 			time
 		}
 		kappa
 		pending
 		swapSuccess
-		status
 	}
 }
 `

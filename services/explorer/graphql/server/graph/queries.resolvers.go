@@ -13,7 +13,56 @@ import (
 
 // BridgeTransactions is the resolver for the bridgeTransactions field.
 func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) ([]*model.BridgeTransaction, error) {
-	panic(fmt.Errorf("not implemented: BridgeTransactions - bridgeTransactions"))
+	// If no search parameters are provided, throw an error.
+	if chainID == nil && address == nil && txnHash == nil && kappa == nil {
+		return nil, fmt.Errorf("must provide at least one of chainID, address, txnHash, or kappa")
+	}
+	// Deal with potentially nil parameters.
+	if page == nil {
+		page = new(int)
+		*page = 1
+	}
+	if includePending == nil {
+		includePending = new(bool)
+		*includePending = true
+	}
+	if *includePending == false && kappa != nil {
+		return nil, fmt.Errorf("cannot filter by kappa without including pending transactions")
+	}
+	var chainIDRef *uint32
+	if chainID != nil {
+		tmp := uint32(*chainID)
+		chainIDRef = &tmp
+	}
+
+	var err error
+	var results []*model.BridgeTransaction
+	if txnHash != nil {
+		// If we are given a transaction hash, we search for the bridge transaction on the origin chain, then locate
+		// its counterpart on the destination chain using the kappa (the keccak256 hash of the transaction hash).
+		fromInfos, err := r.DB.BridgeEventsFromIdentifiers(ctx, chainIDRef, address, tokenAddress, nil, txnHash, *page)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
+		}
+		results, err = r.originToDestinationBridge(ctx, address, txnHash, kappa, includePending, page, tokenAddress, fromInfos)
+	} else if kappa != nil {
+		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
+		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
+		toInfos, err := r.DB.BridgeEventsFromIdentifiers(ctx, chainIDRef, address, tokenAddress, kappa, nil, *page)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
+		}
+		results, err = r.destinationToOriginBridge(ctx, address, txnHash, kappa, page, tokenAddress, toInfos)
+	} else {
+		// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for
+		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
+		// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
+		results, err = r.originOrDestinationBridge(ctx, chainIDRef, address, txnHash, kappa, includePending, page, tokenAddress)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
+	}
+	return results, nil
 }
 
 // LatestBridgeTransactions is the resolver for the latestBridgeTransactions field.

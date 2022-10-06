@@ -11,6 +11,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
+	model "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
+
 	swap "github.com/synapsecns/sanguine/services/explorer/types/swap"
 )
 
@@ -19,20 +21,43 @@ type ConsumerDB struct {
 	mock.Mock
 }
 
-// BridgeEventCount provides a mock function with given fields: ctx, chainID, address, directionIn, firstBlock
-func (_m *ConsumerDB) BridgeEventCount(ctx context.Context, chainID uint32, address *string, directionIn bool, firstBlock uint64) (uint64, error) {
-	ret := _m.Called(ctx, chainID, address, directionIn, firstBlock)
+// BridgeEventCount provides a mock function with given fields: ctx, chainID, address, tokenAddress, directionIn, firstBlock
+func (_m *ConsumerDB) BridgeEventCount(ctx context.Context, chainID uint32, address *string, tokenAddress *string, directionIn bool, firstBlock uint64) (uint64, error) {
+	ret := _m.Called(ctx, chainID, address, tokenAddress, directionIn, firstBlock)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func(context.Context, uint32, *string, bool, uint64) uint64); ok {
-		r0 = rf(ctx, chainID, address, directionIn, firstBlock)
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, *string, *string, bool, uint64) uint64); ok {
+		r0 = rf(ctx, chainID, address, tokenAddress, directionIn, firstBlock)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, uint32, *string, bool, uint64) error); ok {
-		r1 = rf(ctx, chainID, address, directionIn, firstBlock)
+	if rf, ok := ret.Get(1).(func(context.Context, uint32, *string, *string, bool, uint64) error); ok {
+		r1 = rf(ctx, chainID, address, tokenAddress, directionIn, firstBlock)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// BridgeEventsFromIdentifiers provides a mock function with given fields: ctx, chainID, address, tokenAddress, kappa, txHash, page
+func (_m *ConsumerDB) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32, address *string, tokenAddress *string, kappa *string, txHash *string, page int) ([]*model.PartialInfo, error) {
+	ret := _m.Called(ctx, chainID, address, tokenAddress, kappa, txHash, page)
+
+	var r0 []*model.PartialInfo
+	if rf, ok := ret.Get(0).(func(context.Context, *uint32, *string, *string, *string, *string, int) []*model.PartialInfo); ok {
+		r0 = rf(ctx, chainID, address, tokenAddress, kappa, txHash, page)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.PartialInfo)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *uint32, *string, *string, *string, *string, int) error); ok {
+		r1 = rf(ctx, chainID, address, tokenAddress, kappa, txHash, page)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -79,6 +104,29 @@ func (_m *ConsumerDB) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
 	return r0, r1
 }
 
+// GetSwapSuccess provides a mock function with given fields: ctx, kappa, chainID
+func (_m *ConsumerDB) GetSwapSuccess(ctx context.Context, kappa string, chainID uint32) (*bool, error) {
+	ret := _m.Called(ctx, kappa, chainID)
+
+	var r0 *bool
+	if rf, ok := ret.Get(0).(func(context.Context, string, uint32) *bool); ok {
+		r0 = rf(ctx, kappa, chainID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bool)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, uint32) error); ok {
+		r1 = rf(ctx, kappa, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetTokenAddressesByChainID provides a mock function with given fields: ctx, chainID
 func (_m *ConsumerDB) GetTokenAddressesByChainID(ctx context.Context, chainID uint32) ([]string, error) {
 	ret := _m.Called(ctx, chainID)
@@ -95,6 +143,29 @@ func (_m *ConsumerDB) GetTokenAddressesByChainID(ctx context.Context, chainID ui
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, uint32) error); ok {
 		r1 = rf(ctx, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetTxHashFromKappa provides a mock function with given fields: ctx, kappa
+func (_m *ConsumerDB) GetTxHashFromKappa(ctx context.Context, kappa string) (*string, error) {
+	ret := _m.Called(ctx, kappa)
+
+	var r0 *string
+	if rf, ok := ret.Get(0).(func(context.Context, string) *string); ok {
+		r0 = rf(ctx, kappa)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, kappa)
 	} else {
 		r1 = ret.Error(1)
 	}

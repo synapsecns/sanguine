@@ -28,6 +28,7 @@ type Query struct {
 	BlockTime              *int                 "json:\"blockTime\" graphql:\"blockTime\""
 	LastStoredBlockNumber  *int                 "json:\"lastStoredBlockNumber\" graphql:\"lastStoredBlockNumber\""
 	FirstStoredBlockNumber *int                 "json:\"firstStoredBlockNumber\" graphql:\"firstStoredBlockNumber\""
+	TxSender               *string              "json:\"txSender\" graphql:\"txSender\""
 }
 type GetLogsRange struct {
 	Response []*struct {
@@ -51,6 +52,9 @@ type GetLastStoredBlockNumber struct {
 }
 type GetFirstStoredBlockNumber struct {
 	Response *int "json:\"response\" graphql:\"response\""
+}
+type GetTxSender struct {
+	Response *string "json:\"response\" graphql:\"response\""
 }
 
 const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
@@ -134,6 +138,25 @@ func (c *Client) GetFirstStoredBlockNumber(ctx context.Context, chainID int, htt
 
 	var res GetFirstStoredBlockNumber
 	if err := c.Client.Post(ctx, "GetFirstStoredBlockNumber", GetFirstStoredBlockNumberDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetTxSenderDocument = `query GetTxSender ($chain_id: Int!, $tx_hash: String!) {
+	response: txSender(chain_id: $chain_id, tx_hash: $tx_hash)
+}
+`
+
+func (c *Client) GetTxSender(ctx context.Context, chainID int, txHash string, httpRequestOptions ...client.HTTPRequestOption) (*GetTxSender, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+		"tx_hash":  txHash,
+	}
+
+	var res GetTxSender
+	if err := c.Client.Post(ctx, "GetTxSender", GetTxSenderDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

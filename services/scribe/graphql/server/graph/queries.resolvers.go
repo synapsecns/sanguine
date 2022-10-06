@@ -6,7 +6,9 @@ package graph
 import (
 	"context"
 	"fmt"
+	"math/big"
 
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
 	resolvers "github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/resolver"
@@ -106,6 +108,24 @@ func (r *queryResolver) FirstStoredBlockNumber(ctx context.Context, chainID int)
 	}
 	blockNumberInt := int(blockNumber)
 	return &blockNumberInt, nil
+}
+
+// TxSender is the resolver for the txSender field.
+func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int) (*string, error) {
+	filter := db.EthTxFilter{
+		TxHash:  txHash,
+		ChainID: uint32(chainID),
+	}
+	ethTx, err := r.DB.RetrieveEthTxsWithFilter(ctx, filter, 1)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving transaction: %w", err)
+	}
+	msgFrom, err := ethTx[0].AsMessage(types.NewEIP2930Signer(ethTx[0].ChainId()), big.NewInt(1))
+	if err != nil {
+		return nil, err
+	}
+	sender := msgFrom.From().String()
+	return &sender, nil
 }
 
 // Query returns resolvers.QueryResolver implementation.

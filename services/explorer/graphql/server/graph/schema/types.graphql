@@ -4,7 +4,7 @@ type BridgeTransaction {
   kappa:        String
   pending:      Boolean
   swapSuccess:  Boolean
-  status:       String
+#  status:       String
 }
 type PartialInfo {
   chainId: Int
@@ -15,6 +15,7 @@ type PartialInfo {
   USDValue:       Float
   tokenAddress:   String
   tokenSymbol:    String
+  blockNumber:    Int
   time:           Int
 }
 type DateResult {

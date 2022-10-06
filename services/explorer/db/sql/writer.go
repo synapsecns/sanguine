@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"math/big"
@@ -35,17 +36,17 @@ func BoolToUint8(input *bool) *uint8 {
 }
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
-func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenID *string) error {
+func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swapEvent swap.EventLog, chainID uint32, tokenID *string, sender string) error {
 	if bridgeEvent != nil {
 		dbTx := s.DB().WithContext(ctx).
-			Create(s.eventToBridgeEvent(bridgeEvent, chainID, tokenID))
+			Create(s.eventToBridgeEvent(bridgeEvent, chainID, tokenID, sender))
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store bridge event: %w", dbTx.Error)
 		}
 	}
 	if swapEvent != nil {
 		dbTx := s.DB().WithContext(ctx).
-			Create(s.eventToSwapEvent(swapEvent, chainID, nil))
+			Create(s.eventToSwapEvent(swapEvent, chainID, nil, sender))
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store swap event: %w", dbTx.Error)
 		}
@@ -55,7 +56,7 @@ func (s *Store) StoreEvent(ctx context.Context, bridgeEvent bridge.EventLog, swa
 }
 
 // eventToBridgeEvent stores a bridge event.
-func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenID *string) BridgeEvent {
+func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenID *string, sender string) BridgeEvent {
 	var recipient sql.NullString
 	if event.GetRecipient() != nil {
 		recipient.Valid = true
@@ -114,6 +115,8 @@ func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenI
 		TxHash:             event.GetTxHash().String(),
 		Amount:             event.GetAmount(),
 		EventIndex:         event.GetEventIndex(),
+		DestinationKappa:   crypto.Keccak256Hash(event.GetTxHash().Bytes()).String(),
+		Sender:             sender,
 		Recipient:          recipient,
 		RecipientBytes:     recipientBytes,
 		DestinationChainID: destinationChainID,
@@ -133,7 +136,7 @@ func (s *Store) eventToBridgeEvent(event bridge.EventLog, chainID uint32, tokenI
 }
 
 // eventToSwapEvent stores a swap event.
-func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenID *string) SwapEvent {
+func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenID *string, sender string) SwapEvent {
 	var buyer sql.NullString
 	if event.GetBuyer() != nil {
 		buyer.Valid = true
@@ -175,6 +178,7 @@ func (s *Store) eventToSwapEvent(event swap.EventLog, chainID uint32, tokenID *s
 		BlockNumber:     event.GetBlockNumber(),
 		TxHash:          event.GetTxHash().String(),
 		EventIndex:      event.GetEventIndex(),
+		Sender:          sender,
 		Buyer:           buyer,
 		TokensSold:      event.GetTokensSold(),
 		TokensBought:    event.GetTokensBought(),

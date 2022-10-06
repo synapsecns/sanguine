@@ -17,6 +17,7 @@ query GetBridgeTransactions($chainId: Int, $address: String, $txHash: String, $k
       USDValue
       tokenAddress
       tokenSymbol
+      blockNumber
       time
     }
     toInfo {
@@ -28,12 +29,12 @@ query GetBridgeTransactions($chainId: Int, $address: String, $txHash: String, $k
       USDValue
       tokenAddress
       tokenSymbol
+      blockNumber
       time
     }
     kappa
     pending
     swapSuccess
-    status
   }
 }
 
@@ -51,6 +52,7 @@ query GetLatestBridgeTransactions($includePending: Boolean, $page: Int) {
       USDValue
       tokenAddress
       tokenSymbol
+      blockNumber
       time
     }
     toInfo {
@@ -62,12 +64,12 @@ query GetLatestBridgeTransactions($includePending: Boolean, $page: Int) {
       USDValue
       tokenAddress
       tokenSymbol
+      blockNumber
       time
     }
     kappa
     pending
     swapSuccess
-    status
   }
 }
 

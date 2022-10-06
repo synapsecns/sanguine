@@ -19,7 +19,6 @@ type BridgeTransaction struct {
 	Kappa       *string      `json:"kappa"`
 	Pending     *bool        `json:"pending"`
 	SwapSuccess *bool        `json:"swapSuccess"`
-	Status      *string      `json:"status"`
 }
 
 type CSVData struct {
@@ -47,6 +46,7 @@ type PartialInfo struct {
 	USDValue       *float64 `json:"USDValue"`
 	TokenAddress   *string  `json:"tokenAddress"`
 	TokenSymbol    *string  `json:"tokenSymbol"`
+	BlockNumber    *int     `json:"blockNumber"`
 	Time           *int     `json:"time"`
 }
 
