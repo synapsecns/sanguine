@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	resolvers "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/resolver"
@@ -150,7 +151,36 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 
 // AddressRanking is the resolver for the addressRanking field.
 func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*model.AddressRanking, error) {
-	panic(fmt.Errorf("not implemented: AddressRanking - addressRanking"))
+	chainIDs, err := r.DB.GetAllChainIDs(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get chain IDs: %w", err)
+	}
+	targetTime := r.getTargetTime(hours)
+
+	// this is a generated sql sub query that will allow all addresses across all chains to be queried at once
+	// 1. this is the proper way to query this and 2. this will allow us to leverage sql's ORDER BY
+	var genSql string
+	for i, chain := range chainIDs {
+		startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chain, 0, targetTime)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get start block number: %w", err)
+		}
+		sqlString := fmt.Sprintf("\nSELECT %s, %s FROM bridge_events WHERE %s = %d AND %s >= %d", sql.TokenFieldName, sql.TxHashFieldName, sql.ChainIDFieldName, chain, sql.BlockNumberFieldName, startBlock)
+		if i != len(chainIDs)-1 {
+			sqlString += " UNION ALL"
+		}
+		genSql += sqlString
+	}
+
+	// TODO talk to lex about this, should we just build the queries in here like this?
+	// might make more sense since we can use the helper queries in here and prevent
+	// doing a bunch of repetitive sql queries. This was done this way bc its the most
+	// simple solution with the least data parsing.
+	res, err := r.DB.GetTransactionCountForEveryAddress(ctx, genSql)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
+	}
+	return res, nil
 }
 
 // GetCSV is the resolver for the getCsv field.
