@@ -43,12 +43,19 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     bytes32 internal constant MESSAGE_STATUS_NONE = bytes32(0);
     bytes32 internal constant MESSAGE_STATUS_EXECUTED = bytes32(uint256(1));
 
+    // We're using uint256 instead of bool/uint8 here, because reading/writing is
+    // cheaper for the types that are using a full word of storage
+    uint256 internal constant NOT_ENTERED = 1;
+    // TODO: set up execute() tests with message recipients actually spending some gas
+    // to determine if ENTERED = 0 or ENTERED = 2 leads to lower median gas usage
+    uint256 internal constant ENTERED = 0;
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // re-entrancy guard
-    uint256 private entered;
+    uint256 private status;
 
     // domain => [leaf => status]
     // Status is either NONE or EXECUTED (see above)
@@ -118,7 +125,7 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
      */
     function initialize() external initializer {
         __SystemContract_initialize();
-        entered = 1;
+        status = NOT_ENTERED;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -184,8 +191,8 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         // and that message's optimistic period has passed
         bytes32 root = _prove(originDomain, leaf, _proof, _index, header.optimisticSeconds());
         // check re-entrancy guard
-        require(entered == 1, "!reentrant");
-        entered = 0;
+        require(status == NOT_ENTERED, "!reentrant");
+        status = ENTERED;
         _storeTips(message.tips());
         // update message status as executed
         messageStatus[originDomain][leaf] = MESSAGE_STATUS_EXECUTED;
@@ -199,7 +206,7 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
         );
         emit Executed(originDomain, leaf);
         // reset re-entrancy guard
-        entered = 1;
+        status = NOT_ENTERED;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
