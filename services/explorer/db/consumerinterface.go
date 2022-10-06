@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"gorm.io/gorm"
