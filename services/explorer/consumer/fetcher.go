@@ -256,13 +256,11 @@ func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID uint32, to
 }
 
 // GetToken gets the token from the bridge config contract.
-func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID, block uint32, tokenID string) (token *bridgeconfig.BridgeConfigV3Token, err error) {
+func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, tokenID *string) (token *bridgeconfig.BridgeConfigV3Token, err error) {
 	tok, err := b.bridgeConfig.GetToken(&bind.CallOpts{
-		BlockNumber: big.NewInt(int64(block)),
-		Context:     ctx,
-	}, tokenID, big.NewInt(int64(chainID)))
+		Context: ctx,
+	}, *tokenID, big.NewInt(int64(chainID)))
 	if err != nil {
-		// var none bridgeconfig.BridgeConfigV3Token
 		return nil, fmt.Errorf("could not get token id: %w", err)
 	}
 	return &tok, nil

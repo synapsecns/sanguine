@@ -128,8 +128,14 @@ type SwapEvent struct {
 	Time *big.Int `gorm:"column:time;type:UInt256"`
 	// Receiver is the address of the receiver
 	Receiver sql.NullString `gorm:"column:receiver"`
-	// TokenID is the token's ID
-	TokenID sql.NullString `gorm:"column:token_id"`
+	// AmountUSD is the amount in USD
+	AmountsUSD []float64 `gorm:"column:amount_usd;type:Array(Float64)"`
+	// FeeAmountUSD is the fee amount in USD
+	FeeAmountsUSD []float64 `gorm:"column:fee_amount_usd;type:Array(Float64)"`
+	// TokenDecimal is the token's decimal
+	TokenDecimal *uint8 `gorm:"column:token_decimal"`
+	// TokenSymbol is the token's symbol from coingecko
+	TokenSymbol sql.NullString `gorm:"column:token_symbol"`
 }
 
 // BridgeEvent stores data for emitted events from the Bridge contract.
@@ -185,4 +191,12 @@ type BridgeEvent struct {
 	SwapDeadline *big.Int `gorm:"column:swap_deadline;type:UInt256"`
 	// TokenID is the token's ID
 	TokenID sql.NullString `gorm:"column:token_id"`
+	// AmountUSD is the amount in USD
+	AmountUSD *float64 `gorm:"column:amount_usd;type:Float64"`
+	// FeeAmountUSD is the fee amount in USD
+	FeeAmountUSD *float64 `gorm:"column:fee_amount_usd;type:Float64"`
+	// TokenDecimal is the token's decimal
+	TokenDecimal *uint8 `gorm:"column:token_decimal"`
+	// TokenSymbol is the token's symbol from coin gecko
+	TokenSymbol sql.NullString `gorm:"column:token_symbol"`
 }

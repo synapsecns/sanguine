@@ -6,6 +6,16 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 )
 
+// EventType is an enum for event types.
+type EventType int8
+
+const (
+	// Bridge - SynapseBridge event.
+	Bridge int8 = iota
+	// Swap - SwapFlashLoan event.
+	Swap
+)
+
 // ReadBlockNumberByChainID provides an easy-to-use interface to validate database
 // data from a recent write event via chain id.
 func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error) {
@@ -190,7 +200,7 @@ func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32
 	if page < 1 {
 		page = 1
 	}
-	//pageSpecifier := fmt.Sprintf(" LIMIT %d OFFSET %d", PageSize, (page-1)*PageSize)
+	// pageSpecifier := fmt.Sprintf(" LIMIT %d OFFSET %d", PageSize, (page-1)*PageSize)
 	pageSpecifier := ""
 
 	compositeIdentifiers := fmt.Sprintf(
@@ -215,7 +225,7 @@ func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
 
-	//if kappa != nil {
+	// if kappa != nil {
 	//	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
 	//		`SELECT * FROM bridge_events WHERE %s = %s AND %s`,
 	//		KappaFieldName, *kappa, compositeIdentifiers,
@@ -223,7 +233,7 @@ func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32
 	//	if dbTx.Error != nil {
 	//		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	//	}
-	//} else if txHash != nil {
+	// } else if txHash != nil {
 	//	fmt.Println(fmt.Sprintf(
 	//		`SELECT * FROM bridge_events WHERE %s = '%s' AND %s`,
 	//		TxHashFieldName, *txHash, compositeIdentifiers,
@@ -235,7 +245,7 @@ func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32
 	//	if dbTx.Error != nil {
 	//		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	//	}
-	//} else {
+	// } else {
 	//	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
 	//		`SELECT * FROM bridge_events WHERE %s`,
 	//		compositeIdentifiers,

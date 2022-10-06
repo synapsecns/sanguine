@@ -2,7 +2,6 @@ package api_test
 
 import (
 	gosql "database/sql"
-	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -196,7 +195,6 @@ func (g APISuite) TestGetBridgeTransactions() {
 	txHashA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	txHashB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	kappaString := crypto.Keccak256Hash(txHashA.Bytes()).String()
-	fmt.Println("FUCKING PIECE OF SHIT", kappaString)
 	txHashString := txHashA.String()
 	page := 1
 
@@ -271,7 +269,6 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Equal(g.T(), len(addressRes.Response), 1)
 	addressResOne := *addressRes.Response[0]
 	Equal(g.T(), originResOne, addressResOne)
-
 }
 
 // nolint:cyclop

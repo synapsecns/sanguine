@@ -35,15 +35,13 @@ func (c *ConsumerSuite) TestToken() {
 	defer c.cleanup()
 	fetcher, err := consumer.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.testBackend)
 	Nil(c.T(), err)
-	curentBlockNumber, err := c.testBackend.BlockNumber(c.GetTestContext())
-	Nil(c.T(), err)
 
 	for _, testToken := range testTokens {
 		tokenID, err := fetcher.GetTokenID(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), common.HexToAddress(testToken.TokenAddress))
 
 		Nil(c.T(), err)
 		Equal(c.T(), *tokenID, testToken.tokenID)
-		token, err := fetcher.GetToken(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), uint32(curentBlockNumber), *tokenID)
+		token, err := fetcher.GetToken(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), tokenID)
 		Nil(c.T(), err)
 		tokenOut := *token
 		Equal(c.T(), common.HexToAddress(testToken.TokenAddress).String(), common.HexToAddress(tokenOut.TokenAddress).String())
