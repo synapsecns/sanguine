@@ -74,9 +74,10 @@ func (s *Store) GetKappaFromTxHash(ctx context.Context, txHash string, chainID *
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
 
-	if !res.Kappa.Valid || res.Kappa.String == "" {
-		return nil, nil
-	}
+	// The below does the same
+	// if !res.Kappa.Valid || res.Kappa.String == "" {
+	//	return nil, nil
+	//}
 
 	return &res.Kappa.String, nil
 }
@@ -92,16 +93,14 @@ func (s *Store) GetSwapSuccess(ctx context.Context, kappa string, chainID uint32
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
 	if res.SwapSuccess == nil {
-		return nil, nil
+		return nil, fmt.Errorf("GetSwapSuccess returned a nil: %w", dbTx.Error)
 	}
 	if res.SwapSuccess.Uint64() == 1 {
 		trueVal := true
 		return &trueVal, nil
-	} else if res.SwapSuccess.Uint64() == 0 {
-		falseVal := false
-		return &falseVal, nil
 	}
-	return nil, nil
+	falseVal := false
+	return &falseVal, nil
 }
 
 // GetAllChainIDs gets all chain IDs that have been used in bridge events.
@@ -142,7 +141,7 @@ func (s *Store) GetBridgeStatistic(ctx context.Context, subQuery string) (*strin
 	}
 	output := fmt.Sprintf("%f", res)
 	if len(output) == 0 {
-		return nil, nil
+		return nil, fmt.Errorf("GetBridgeStatistic returned nil: %w", dbTx.Error)
 	}
 	return &output, nil
 }
@@ -193,45 +192,59 @@ func (s *Store) GetTransactionCountForEveryAddress(ctx context.Context, subQuery
 	return res, nil
 }
 
+func generateAddressSpecifierSQL(address *string, firstFilter *bool) string {
+	if address != nil {
+		if *firstFilter {
+			*firstFilter = false
+			return fmt.Sprintf(" (%s = '%s' OR %s = '%s')", RecipientFieldName, *address, SenderFieldName, *address)
+		}
+		return fmt.Sprintf(" AND (%s = '%s' OR %s = '%s')", RecipientFieldName, *address, SenderFieldName, *address)
+	}
+	return ""
+}
+
+func generateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *bool) string {
+	if value != nil {
+		if *firstFilter {
+			return fmt.Sprintf("%s = %d", field, *value)
+		}
+		return fmt.Sprintf("AND %s = %d", field, *value)
+	}
+	return ""
+}
+
+func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *bool) string {
+	if value != nil {
+		if *firstFilter {
+			return fmt.Sprintf("%s = %s", field, *value)
+		}
+		return fmt.Sprintf("AND %s = %s", field, *value)
+	}
+	return ""
+}
+
 // BridgeEventsFromIdentifiers returns events given identifiers.
 func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int) (partialInfos []*model.PartialInfo, err error) {
 	var res []BridgeEvent
-	and := ""
-	var chainIDSpecifier string
-	if chainID != nil {
-		chainIDSpecifier = fmt.Sprintf(" %s %s = %d", and, ChainIDFieldName, *chainID)
-		and = "AND"
-	}
-	var addressSpecifier string
-	if address != nil {
-		addressSpecifier = fmt.Sprintf(" %s (%s = '%s' OR %s = '%s')", and, RecipientFieldName, *address, SenderFieldName, *address)
-		and = "AND"
-	}
-	var tokenAddressSpecifier string
-	if tokenAddress != nil {
-		tokenAddressSpecifier = fmt.Sprintf(" %s %s = '%s'", and, TokenFieldName, *tokenAddress)
-		and = "AND"
-	}
-	if page < 1 {
-		page = 1
-	}
+	firstFilter := true
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, ChainIDFieldName, &firstFilter)
+	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter)
+	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, TokenFieldName, &firstFilter)
+	kappaSpecifier := generateSingleSpecifierStringSQL(tokenAddress, KappaFieldName, &firstFilter)
+	txHashSpecifier := generateSingleSpecifierStringSQL(kappa, TxHashFieldName, &firstFilter)
+
+	// TODO Lex merge this correctly
+	// if page < 1 {
+	//	page = 1
+	//}
 	// pageSpecifier := fmt.Sprintf(" LIMIT %d OFFSET %d", PageSize, (page-1)*PageSize)
 	pageSpecifier := ""
 
 	compositeIdentifiers := fmt.Sprintf(
-		`WHERE%s%s%s%s`,
-		chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, pageSpecifier,
+		`WHERE%s%s%s%s%s%s`,
+		chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, pageSpecifier, kappaSpecifier, txHashSpecifier,
 	)
-	if kappa != nil {
-		compositeIdentifiers += fmt.Sprintf(" %s %s = '%s'", and, KappaFieldName, *kappa)
-	}
-	if txHash != nil {
-		compositeIdentifiers += fmt.Sprintf(" %s %s = '%s'", and, TxHashFieldName, *txHash)
-	}
 
-	fmt.Println(fmt.Sprintf(
-		`SELECT * FROM bridge_events %s`,
-		compositeIdentifiers))
 	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
 		`SELECT * FROM bridge_events %s`,
 		compositeIdentifiers,
@@ -270,22 +283,24 @@ func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32
 	//	}
 	//}
 
-	for _, event := range res {
-		chainIDInt := int(event.ChainID)
-		blockNumberInt := int(event.BlockNumber)
+	for i := range res {
+		chainIDInt := int(res[i].ChainID)
+		blockNumberInt := int(res[i].BlockNumber)
 		var recipient string
-		if event.Recipient.Valid {
-			recipient = event.Recipient.String
-		} else if event.RecipientBytes.Valid {
-			recipient = event.RecipientBytes.String
-		} else {
+		switch {
+		case res[i].Recipient.Valid:
+			recipient = res[i].Recipient.String
+		case res[i].RecipientBytes.Valid:
+			recipient = res[i].RecipientBytes.String
+		default:
 			recipient = ""
 		}
+
 		partialInfos = append(partialInfos, &model.PartialInfo{
 			ChainID:      &chainIDInt,
 			Address:      &recipient,
-			TxnHash:      &event.TxHash,
-			TokenAddress: &event.Token,
+			TxnHash:      &res[i].TxHash,
+			TokenAddress: &res[i].Token,
 			BlockNumber:  &blockNumberInt,
 		})
 	}

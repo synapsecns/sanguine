@@ -27,7 +27,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		includePending = new(bool)
 		*includePending = true
 	}
-	if *includePending == false && kappa != nil {
+	if !*includePending && kappa != nil {
 		return nil, fmt.Errorf("cannot filter by kappa without including pending transactions")
 	}
 	var chainIDRef *uint32
@@ -38,15 +38,20 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 
 	var err error
 	var results []*model.BridgeTransaction
-	if txnHash != nil {
+
+	switch {
+	case txnHash != nil:
 		// If we are given a transaction hash, we search for the bridge transaction on the origin chain, then locate
 		// its counterpart on the destination chain using the kappa (the keccak256 hash of the transaction hash).
 		fromInfos, err := r.DB.BridgeEventsFromIdentifiers(ctx, chainIDRef, address, tokenAddress, nil, txnHash, *page)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
-		results, err = r.originToDestinationBridge(ctx, address, txnHash, kappa, includePending, page, tokenAddress, fromInfos)
-	} else if kappa != nil {
+		results, err = r.originToDestinationBridge(ctx, address, kappa, includePending, page, tokenAddress, fromInfos)
+		if err != nil {
+			fmt.Println("originToDestinationBridge threw an error")
+		}
+	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
 		toInfos, err := r.DB.BridgeEventsFromIdentifiers(ctx, chainIDRef, address, tokenAddress, kappa, nil, *page)
@@ -54,12 +59,19 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
 		results, err = r.destinationToOriginBridge(ctx, address, txnHash, kappa, page, tokenAddress, toInfos)
-	} else {
+		if err != nil {
+			fmt.Println("destinationToOriginBridge threw an error")
+		}
+	default:
 		// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for
 		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
 		// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
 		results, err = r.originOrDestinationBridge(ctx, chainIDRef, address, txnHash, kappa, includePending, page, tokenAddress)
+		if err != nil {
+			fmt.Println("originOrDestinationBridge threw an error")
+		}
 	}
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
@@ -76,8 +88,9 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	var err error
 	subQuery := "bridge_events"
 	additionalFilters := ""
+	// nolint:nestif
 	switch *duration {
-	case "PAST_DAY":
+	case model.DurationPastDay:
 		hours := 24
 		targetTime := r.getTargetTime(&hours)
 		if chainID == nil {
@@ -106,41 +119,41 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 			}
 			additionalFilters = fmt.Sprintf("WHERE %s >= %d AND %s = %d", sql.BlockNumberFieldName, startBlock, sql.ChainIDFieldName, *chainID)
 		}
-	default: //ALL_TIME
+	case model.DurationAllTime:
 		if chainID != nil {
 			additionalFilters = fmt.Sprintf("WHERE %s = %d", sql.ChainIDFieldName, *chainID)
 		}
 	}
-
+	whereStr := "WHERE "
 	var operation string
 	switch typeArg {
-	case "MEAN":
+	case model.StatisticTypeMean:
 		operation = "AVG"
-	case "TOTAL":
+	case model.StatisticTypeTotal:
 		operation = "sumKahan"
-	case "MEDIAN":
+	case model.StatisticTypeMedian:
 		operation = "median"
-	default:
-		operation = typeArg.String()
+	case model.StatisticTypeCount:
+		operation = "COUNT"
 	}
 	if address != nil {
 		if additionalFilters != "" {
 			additionalFilters += " AND "
 		} else {
-			additionalFilters += "WHERE "
+			additionalFilters += whereStr
 		}
 		additionalFilters += fmt.Sprintf("%s = toString(%s)", sql.ContractAddressFieldName, *address)
 	}
 	if tokenAddress != nil {
-		if additionalFilters != "WHERE " {
+		if additionalFilters != "" {
 			additionalFilters += " AND "
 		} else {
-			additionalFilters += "WHERE "
+			additionalFilters += whereStr
 		}
 		additionalFilters += fmt.Sprintf("%s = toString(%s)", sql.TokenFieldName, *tokenAddress)
 	}
-	finalSql := fmt.Sprintf("\nSELECT %s(toUInt256(amount_usd)) FROM %s %s", operation, subQuery, additionalFilters)
-	res, err := r.DB.GetBridgeStatistic(ctx, finalSql)
+	finalSQL := fmt.Sprintf("\nSELECT %s(toUInt256(amount_usd)) FROM %s %s", operation, subQuery, additionalFilters)
+	res, err := r.DB.GetBridgeStatistic(ctx, finalSQL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}
@@ -205,8 +218,8 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 		if err != nil {
 			return nil, fmt.Errorf("failed to get start block number: %w", err)
 		}
-		for _, tokenAddress := range tokenAddresses {
-			count, err := r.DB.BridgeEventCount(ctx, chain, address, &tokenAddress, directionIn, startBlock)
+		for i := range tokenAddresses {
+			count, err := r.DB.BridgeEventCount(ctx, chain, address, &tokenAddresses[i], directionIn, startBlock)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get count by token address: %w", err)
 			}
@@ -214,7 +227,7 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 			countInt := int(count)
 			results = append(results, &model.TokenCountResult{
 				ChainID:      &chainInt,
-				TokenAddress: &tokenAddress,
+				TokenAddress: &tokenAddresses[i],
 				Count:        &countInt,
 			})
 		}
@@ -233,7 +246,7 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 
 	// this is a generated sql sub query that will allow all addresses across all chains to be queried at once
 	// 1. this is the proper way to query this and 2. this will allow us to leverage sql's ORDER BY
-	var genSql string
+	var genSQL string
 	for i, chain := range chainIDs {
 		startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chain, 0, targetTime)
 		if err != nil {
@@ -243,14 +256,14 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 		if i != len(chainIDs)-1 {
 			sqlString += " UNION ALL"
 		}
-		genSql += sqlString
+		genSQL += sqlString
 	}
 
 	// TODO talk to lex about this, should we just build the queries in here like this?
 	// might make more sense since we can use the helper queries in here and prevent
 	// doing a bunch of repetitive sql queries. This was done this way bc its the most
 	// simple solution with the least data parsing.
-	res, err := r.DB.GetTransactionCountForEveryAddress(ctx, genSql)
+	res, err := r.DB.GetTransactionCountForEveryAddress(ctx, genSQL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}

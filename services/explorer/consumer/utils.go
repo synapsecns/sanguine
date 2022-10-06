@@ -1,6 +1,7 @@
 package consumer
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"gopkg.in/yaml.v2"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // OpenYaml opens yaml file with coin gecko ID mapping and returns it.
@@ -26,28 +28,36 @@ func OpenYaml(path string) (map[string]string, error) {
 }
 
 // GetTokenMetadataWithTokenID gets the token metadata (symbol, price).
-func GetTokenMetadataWithTokenID(timestamp int, tokenID *string, path string) (*float64, *string) {
+func GetTokenMetadataWithTokenID(ctx context.Context, timestamp int, tokenID *string, path string) (*float64, *string) {
 	coinGeckoIDs, err := OpenYaml(path)
 	if err != nil {
 		fmt.Println("Error while retrieving CoinGecko ids from yaml:", err)
 		return nil, nil
 	}
 	coinGeckoID := coinGeckoIDs[*tokenID]
-	return GetDefiLlamaData(timestamp, &coinGeckoID)
+	return GetDefiLlamaData(ctx, timestamp, &coinGeckoID)
 }
 
 // TODO implement this for swaps
 // func GetTokenMetadataWithSymbol(blockNumber uint64, tokenID *string) (*float64, *string)
 
 // GetDefiLlamaData does a get request to defi llama for the symbol and price for a token.
-func GetDefiLlamaData(timestamp int, coinGeckoID *string) (*float64, *string) {
+func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID *string) (*float64, *string) {
 	fmt.Println(timestamp, *coinGeckoID)
-	resp, err := http.Get(fmt.Sprintf("https://coins.llama.fi/prices/historical/%d/coingecko:%s", timestamp, *coinGeckoID))
+	client := http.Client{
+		Timeout: 2 * time.Second,
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://coins.llama.fi/prices/historical/%d/coingecko:%s", timestamp, *coinGeckoID), nil) // OK
+	if err != nil {
+		return nil, nil
+	}
+	resRaw, err := client.Do(req)
 	if err != nil {
 		return nil, nil
 	}
 	res := make(map[string]map[string]map[string]interface{})
-	if json.NewDecoder(resp.Body).Decode(&res) != nil {
+	err = json.NewDecoder(resRaw.Body).Decode(&res)
+	if err != nil {
 		return nil, nil
 	}
 
@@ -60,7 +70,7 @@ func GetDefiLlamaData(timestamp int, coinGeckoID *string) (*float64, *string) {
 	if stringRes, ok := res["coins"][fmt.Sprintf("coingecko:%s", *coinGeckoID)]["symbol"].(string); ok {
 		symbol = &stringRes
 	}
-	if resp.Body.Close() != nil {
+	if resRaw.Body.Close() != nil {
 		fmt.Println("Failed while closing connection")
 	}
 	return price, symbol

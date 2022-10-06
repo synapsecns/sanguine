@@ -35,7 +35,7 @@ func (g APISuite) TestBridgeAmountStatistic() {
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			ChainID:            chainID,
-			Recipient:          gosql.NullString{address.String(), true},
+			Recipient:          gosql.NullString{String: address.String(), Valid: true},
 			DestinationChainID: big.NewInt(int64(destinationChainID)),
 			BlockNumber:        blockNumber,
 			TxHash:             txHash.String(),
@@ -61,13 +61,15 @@ func (g APISuite) TestBridgeAmountStatistic() {
 	mean := total / count
 	median := 0.0
 	sort.Float64s(cumulativePrice)
-	if count == 0 {
+	switch {
+	case count == 0:
 		median = 0.0
-	} else if len(cumulativePrice)%2 == 0 {
+	case len(cumulativePrice)%2 == 0:
 		median = (cumulativePrice[len(cumulativePrice)/2-1] + cumulativePrice[len(cumulativePrice)/2]) / 2
-	} else {
+	default:
 		median = cumulativePrice[len(cumulativePrice)/2]
 	}
+
 	statType := model.StatisticTypeTotal
 	duration := model.DurationPastDay
 	result, err := g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)

@@ -298,7 +298,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	// If we have a timestamp, populate the following attributes of bridgeEvent.
 	if err == nil {
 		// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
-		tokenPrice, symbol := GetTokenMetadataWithTokenID(*timeStamp.Response, tokenID, "../tokenIDToCoinGeckoID.yaml")
+		tokenPrice, symbol := GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID, "../tokenIDToCoinGeckoID.yaml")
 		if tokenPrice != nil {
 			// Add AmountUSD to bridgeEvent (if price is not nil)
 			bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
@@ -310,12 +310,12 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 
 	// TODO fix GetTxSender, make this actually successfully get a sender value
-	// sender, err := c.fetcher.FetchClient.GetTxSender(groupCtx, int(c.chainID), log.TxHash.String())
-	// if err != nil ||  sender != nil{
+	// sender, err := p.consumerFetcher.FetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
+	// if err != nil || sender != nil {
 	//	return fmt.Errorf("could not get tx sender: %w", err)
 	//}
 	// bridgeEvent.Sender = *sender.Response
-
+	//
 	bridgeEvent.Sender = "FAKE_SENDER"
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent, nil)
 	if err != nil {
@@ -480,12 +480,12 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 	// FeeAmountsUSD: Get price data from GetPrice(timestamp, coin gecko id)
 	// var amountsUSD []*big.Int
 	// amountsUSD = append(amountsUSD, nil)
-	//swapEvent.AmountsUSD = amountsUSD
+	// swapEvent.AmountsUSD = amountsUSD
 	//
-	//var feeAmountsUSD []*big.Int
-	//feeAmountsUSD = append(feeAmountsUSD, nil)
-	//swapEvent.FeeAmountsUSD = feeAmountsUSD
-	//TODO potential refactor: delete SwapEvent.Amount and SwapEvent.Fee.
+	// var feeAmountsUSD []*big.Int
+	// feeAmountsUSD = append(feeAmountsUSD, nil)
+	// swapEvent.FeeAmountsUSD = feeAmountsUSD
+	// TODO potential refactor: delete SwapEvent.Amount and SwapEvent.Fee.
 	// These values will just be a single element array in SwapEvent.Amounts and SwapEvent.Fees
 
 	// Store bridgeEvent

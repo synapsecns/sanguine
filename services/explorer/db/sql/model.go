@@ -124,7 +124,6 @@ type BridgeEvent struct {
 	TokenSymbol sql.NullString `gorm:"column:token_symbol"`
 }
 
-
 // SwapEvent stores data for emitted events from the Swap contract.
 type SwapEvent struct {
 	// InsertTime is the time the event was inserted into the database
@@ -201,4 +200,3 @@ type SwapEvent struct {
 	// TokenSymbol is the token's symbol from coingecko
 	TokenSymbol sql.NullString `gorm:"column:token_symbol"`
 }
-

@@ -14,6 +14,7 @@ type ConsumerDBWriter interface {
 }
 
 // ConsumerDBReader is the interface for reading events from the ConsumerDB.
+// nolint:interfacebloat
 type ConsumerDBReader interface {
 	// GetAllChainIDs gets all chain IDs that have been used in bridge events.
 	GetAllChainIDs(ctx context.Context) ([]uint32, error)
