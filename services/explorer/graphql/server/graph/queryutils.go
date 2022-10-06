@@ -52,7 +52,7 @@ func (r *queryResolver) getTokenAddressesByChainID(ctx context.Context, chainID 
 	return tokenAddresses, nil
 }
 
-func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string, fromInfos []*model.PartialInfo) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string, fromInfos []*model.PartialInfo, order bool) ([]*model.BridgeTransaction, error) {
 	var results []*model.BridgeTransaction
 	for _, fromInfo := range fromInfos {
 		blockTime, err := r.Fetcher.FetchClient.GetBlockTime(ctx, *fromInfo.ChainID, *fromInfo.BlockNumber)
@@ -65,7 +65,7 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 		if kappa != nil {
 			destinationKappa = *kappa
 		}
-		toInfos, err := r.DB.BridgeEventsFromIdentifiers(ctx, nil, address, tokenAddress, &destinationKappa, nil, *page)
+		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, nil, address, tokenAddress, &destinationKappa, nil, *page, order)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -126,7 +126,7 @@ func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *
 		if err != nil {
 			return nil, fmt.Errorf("failed to get origin tx hash: %w", err)
 		}
-		fromInfos, err := r.DB.BridgeEventsFromIdentifiers(ctx, nil, address, tokenAddress, nil, originTxHash, *page)
+		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, nil, address, tokenAddress, nil, originTxHash, *page, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -150,23 +150,17 @@ func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *
 			})
 		}
 		if len(fromInfos) == 0 {
-			results = append(results, &model.BridgeTransaction{
-				FromInfo:    nil,
-				ToInfo:      toInfo,
-				Kappa:       kappa,
-				Pending:     &pending,
-				SwapSuccess: swapSuccess,
-			})
+			return nil, fmt.Errorf("no fromInfo found for kappa %s", *kappa)
 		}
 	}
 	return results, nil
 }
 
-func (r *queryResolver) originOrDestinationBridge(ctx context.Context, chainID *uint32, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) originOrDestinationBridge(ctx context.Context, chainID *uint32, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string, order bool) ([]*model.BridgeTransaction, error) {
 	var results []*model.BridgeTransaction
 	var toInfos []*model.PartialInfo
 	var fromInfos []*model.PartialInfo
-	infos, err := r.DB.BridgeEventsFromIdentifiers(ctx, chainID, address, tokenAddress, kappa, txnHash, *page)
+	infos, err := r.DB.PartialInfosFromIdentifiers(ctx, chainID, address, tokenAddress, kappa, txnHash, *page, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 	}
@@ -181,7 +175,7 @@ func (r *queryResolver) originOrDestinationBridge(ctx context.Context, chainID *
 			toInfos = append(toInfos, info)
 		}
 	}
-	originResults, err := r.originToDestinationBridge(ctx, nil, nil, nil, includePending, page, tokenAddress, fromInfos)
+	originResults, err := r.originToDestinationBridge(ctx, nil, nil, nil, includePending, page, tokenAddress, fromInfos, order)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get origin -> destination bridge transactions: %w", err)
 	}

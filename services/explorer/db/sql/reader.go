@@ -168,8 +168,8 @@ func (s *Store) GetTransactionCountForEveryAddress(ctx context.Context, subQuery
 	return res, nil
 }
 
-// BridgeEventsFromIdentifiers returns events given identifiers.
-func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int) (partialInfos []*model.PartialInfo, err error) {
+// PartialInfosFromIdentifiers returns events given identifiers. If order is true, the events are ordered by block number.
+func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int, order bool) (partialInfos []*model.PartialInfo, err error) {
 	var res []BridgeEvent
 	and := ""
 	var chainIDSpecifier string
@@ -203,6 +203,9 @@ func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32
 	if txHash != nil {
 		compositeIdentifiers += fmt.Sprintf(" %s %s = '%s'", and, TxHashFieldName, *txHash)
 	}
+	if order {
+		compositeIdentifiers += fmt.Sprintf(" ORDER BY %s DESC", BlockNumberFieldName)
+	}
 
 	fmt.Println(fmt.Sprintf(
 		`SELECT * FROM bridge_events %s`,
@@ -211,6 +214,7 @@ func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32
 		`SELECT * FROM bridge_events %s`,
 		compositeIdentifiers,
 	)).Find(&res)
+	fmt.Printf("res: %+v\n", res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -248,6 +252,7 @@ func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32
 	for _, event := range res {
 		chainIDInt := int(event.ChainID)
 		blockNumberInt := int(event.BlockNumber)
+		txHashh := event.TxHash
 		var recipient string
 		if event.Recipient.Valid {
 			recipient = event.Recipient.String
@@ -259,7 +264,7 @@ func (s *Store) BridgeEventsFromIdentifiers(ctx context.Context, chainID *uint32
 		partialInfos = append(partialInfos, &model.PartialInfo{
 			ChainID:      &chainIDInt,
 			Address:      &recipient,
-			TxnHash:      &event.TxHash,
+			TxnHash:      &txHashh,
 			TokenAddress: &event.Token,
 			BlockNumber:  &blockNumberInt,
 		})
