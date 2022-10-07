@@ -45,7 +45,6 @@ func GetTokenMetadataWithTokenID(ctx context.Context, timestamp int, tokenID *st
 
 // GetDefiLlamaData does a get request to defi llama for the symbol and price for a token.
 func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID *string) (*float64, *string) {
-	fmt.Println(timestamp, *coinGeckoID)
 	client := http.Client{
 		Timeout: 2 * time.Second,
 	}
@@ -80,7 +79,6 @@ func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID *string) (
 
 // GetAmountUSD computes the USD value of a token amount.
 func GetAmountUSD(amount *big.Int, decimals uint8, price *float64) *float64 {
-	fmt.Println(amount, decimals, price)
 	trueAmount := float64(amount.Int64()) * math.Pow(10.0, float64(decimals)) * *price
 	return &trueAmount
 }
