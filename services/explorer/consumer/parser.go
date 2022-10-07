@@ -296,6 +296,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 	// Get timestamp from consumer
 	timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	fmt.Println("TIMEEEEE", timeStamp)
 	// If we have a timestamp, populate the following attributes of bridgeEvent.
 	if err != nil {
 		return fmt.Errorf("could not fetch timestamp: %w", err)
@@ -313,14 +314,14 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		bridgeEvent.TokenSymbol = ToNullString(symbol)
 	}
 
-	// TODO fix GetTxSender, make this actually successfully get a sender value
-	// sender, err := p.consumerFetcher.FetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
-	// if err != nil || sender != nil {
-	//	return fmt.Errorf("could not get tx sender: %w", err)
-	//}
-	// bridgeEvent.Sender = *sender.Response
-	//
-	bridgeEvent.Sender = "FAKE_SENDER"
+	sender, err := p.consumerFetcher.FetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
+	if err != nil || sender == nil {
+		fmt.Println("could not get tx sender: %w", err)
+		bridgeEvent.Sender = "FAKE_SENDER"
+	} else {
+		bridgeEvent.Sender = *sender.Response
+	}
+
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent, nil)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
