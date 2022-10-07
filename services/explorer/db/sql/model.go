@@ -25,6 +25,7 @@ func init() {
 	KappaFieldName = namer.GetConsistentName("Kappa")
 	DestinationKappaFieldName = namer.GetConsistentName("DestinationKappa")
 	SenderFieldName = namer.GetConsistentName("Sender")
+	TimeStampFieldName = namer.GetConsistentName("TimeStamp")
 }
 
 var (
@@ -56,6 +57,8 @@ var (
 	DestinationKappaFieldName string
 	// SenderFieldName is the sender field name.
 	SenderFieldName string
+	// TimeStampFieldName is the timestamp field name.
+	TimeStampFieldName string
 )
 
 // PageSize is the amount of entries per page of events.

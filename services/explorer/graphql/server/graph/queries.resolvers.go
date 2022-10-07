@@ -315,7 +315,7 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	startTime := nowTime - int64(*days*86400)
 
 	// Create sql segment with filters
-	filter := fmt.Sprintf("WHERE %s = %d AND timestamp >= %d", sql.ChainIDFieldName, *chainID, startTime)
+	filter := fmt.Sprintf("WHERE %s = %d AND %s >= %d", sql.ChainIDFieldName, *chainID, sql.TimeStampFieldName, startTime)
 
 	// Create query for getting day by day data
 	subQuery := fmt.Sprintf("SELECT %s AS total, FROM_UNIXTIME(timestamp, %s) AS date FROM bridge_events %s GROUP BY date ORDER BY total DESC", operation, "'%d/%m/%Y'", filter)
