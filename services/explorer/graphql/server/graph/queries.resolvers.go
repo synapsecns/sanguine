@@ -301,11 +301,39 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 
 // GetCSV is the resolver for the getCsv field.
 func (r *queryResolver) GetCSV(ctx context.Context, address string) (*model.CSVData, error) {
+	// Select *
+	// FROM u kno
+	// where address = address
+
+	// turn event to csv
+	// https://pkg.go.dev/encoding/csv#example_Writer
+
+	// post that file somewhere on ipfs
+	// get url back and the id
+	
+	//return this
+	//CSVData {
+	//	cid:            String
+	//	ipfsGatewayUrl: String
+	//}
 	panic(fmt.Errorf("not implemented: GetCSV - getCsv"))
 }
 
 // HistoricalStatistics is the resolver for the historicalStatistics field.
 func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int) (*model.HistoricalResult, error) {
+	// SELECT Sum(amount_usd) or Count(DISTINCT tx_hash) or Count(DISTINCT Addresses)
+	// From u kno
+	// Where blocknum > block, chain id = chainid,
+	// that goes into a subtable with dateResults type: {date, amount}
+
+	// from that table, the total is calculated, dateResults and type are added on.
+
+	// will need to
+	// add timestamps to each event
+	// query with FROM_UNIXTIME and do a group by date.
+
+	// p easy
+
 	panic(fmt.Errorf("not implemented: HistoricalStatistics - historicalStatistics"))
 }
 
