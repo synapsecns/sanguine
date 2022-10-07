@@ -45,6 +45,14 @@ func GetTokenMetadataWithTokenID(ctx context.Context, timestamp int, tokenID *st
 
 // GetDefiLlamaData does a get request to defi llama for the symbol and price for a token.
 func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID *string) (*float64, *string) {
+	if *coinGeckoID == "NO_TOKEN" || *coinGeckoID == "NO_PRICE" {
+		// if there is no data on the token, the amount returned will be 1:1 (price will be same as the amount of token
+		// and the token  symbol will say "no symbol"
+		one := float64(1)
+		noSymbol := "NO_SYMBOL"
+		return &one, &noSymbol
+	}
+
 	client := http.Client{
 		Timeout: 2 * time.Second,
 	}
