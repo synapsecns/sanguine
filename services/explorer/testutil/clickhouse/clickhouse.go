@@ -59,16 +59,16 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 	address := fmt.Sprintf("%s:%s", "localhost", resource.GetPort("9000/tcp"))
 
 	// Docker will hard kill the container in 360 seconds (this is a test env)
-	// in a continous integration enviornment, this is increased to allow for the lower cpu count
-	resourceExpity := uint(360)
+	// in a continuous integration environment, this is increased to allow for the lower cpu count
+	resourceLifetime := uint(360)
 	pool.MaxWait = time.Minute * 2
 
 	if os.Getenv("CI") != "" {
-		resourceExpity = 900
+		resourceLifetime = 900
 		pool.MaxWait = time.Minute * 5
 	}
 
-	if resource.Expire(resourceExpity) != nil {
+	if resource.Expire(resourceLifetime) != nil {
 		return nil, nil, err
 	}
 
