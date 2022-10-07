@@ -39,15 +39,15 @@ type APISuite struct {
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
 // Every test suite in the synapse library should inherit from this suite and override where necessary.
-func NewTestSuite(tb testing.TB) APISuite {
+func NewTestSuite(tb testing.TB) *APISuite {
 	tb.Helper()
-	return APISuite{
+	return &APISuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 		logIndex:  atomic.Int64{},
 	}
 }
 
-func (g APISuite) SetupTest() {
+func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 
 	g.db, g.eventDB, g.gqlClient, g.logIndex, g.cleanup, g.testBackend, g.deployManager = testutil.NewTestEnvDB(g.GetTestContext(), g.T())
