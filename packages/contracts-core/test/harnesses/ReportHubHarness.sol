@@ -7,17 +7,15 @@ import { ReportHub } from "../../contracts/hubs/ReportHub.sol";
 
 import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
 import { GlobalNotaryRegistryHarness } from "./GlobalNotaryRegistryHarness.sol";
+import { ReportHubHarnessEvents } from "../events/ReportHubHarnessEvents.sol";
 
-contract ReportHubHarness is ReportHub, GuardRegistryHarness, GlobalNotaryRegistryHarness {
+contract ReportHubHarness is
+    ReportHubHarnessEvents,
+    ReportHub,
+    GuardRegistryHarness,
+    GlobalNotaryRegistryHarness
+{
     using TypedMemView for bytes29;
-
-    event LogReport(
-        address guard,
-        address notary,
-        bytes attestation,
-        bytes reportView,
-        bytes report
-    );
 
     function _handleReport(
         address _guard,

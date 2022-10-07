@@ -11,16 +11,16 @@ import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
 import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
 import { SystemContractHarness } from "./SystemContractHarness.sol";
 import { GlobalNotaryRegistryHarness } from "./GlobalNotaryRegistryHarness.sol";
+import { DestinationHarnessEvents } from "../events/DestinationHarnessEvents.sol";
 
 contract DestinationHarness is
+    DestinationHarnessEvents,
     Destination,
     SystemContractHarness,
     GlobalNotaryRegistryHarness,
     GuardRegistryHarness
 {
     using Tips for bytes29;
-
-    event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);
 
     //solhint-disable-next-line no-empty-blocks
     constructor(uint32 _localDomain) Destination(_localDomain) {}

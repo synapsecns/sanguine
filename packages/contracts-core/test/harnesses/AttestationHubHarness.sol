@@ -5,12 +5,15 @@ pragma solidity 0.8.17;
 import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 import { AttestationHub } from "../../contracts/hubs/AttestationHub.sol";
 
+import { AttestationHubHarnessEvents } from "../events/AttestationHubHarnessEvents.sol";
 import { GlobalNotaryRegistryHarness } from "./GlobalNotaryRegistryHarness.sol";
 
-contract AttestationHubHarness is AttestationHub, GlobalNotaryRegistryHarness {
+contract AttestationHubHarness is
+    AttestationHubHarnessEvents,
+    AttestationHub,
+    GlobalNotaryRegistryHarness
+{
     using TypedMemView for bytes29;
-
-    event LogAttestation(address notary, bytes attestationView, bytes attestation);
 
     function _handleAttestation(
         address _notary,
