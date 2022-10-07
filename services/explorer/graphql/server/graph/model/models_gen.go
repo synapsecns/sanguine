@@ -21,11 +21,6 @@ type BridgeTransaction struct {
 	SwapSuccess *bool        `json:"swapSuccess"`
 }
 
-type CSVData struct {
-	Cid            *string `json:"cid"`
-	IpfsGatewayURL *string `json:"ipfsGatewayUrl"`
-}
-
 type DateResult struct {
 	Date  *string  `json:"date"`
 	Total *float64 `json:"total"`

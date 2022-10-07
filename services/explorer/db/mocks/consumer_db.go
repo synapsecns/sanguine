@@ -102,6 +102,29 @@ func (_m *ConsumerDB) GetBridgeStatistic(ctx context.Context, subQuery string) (
 	return r0, r1
 }
 
+// GetHistoricalData provides a mock function with given fields: ctx, subQuery, typeArg, filter
+func (_m *ConsumerDB) GetHistoricalData(ctx context.Context, subQuery string, typeArg *model.HistoricalResultType, filter string) (*model.HistoricalResult, error) {
+	ret := _m.Called(ctx, subQuery, typeArg, filter)
+
+	var r0 *model.HistoricalResult
+	if rf, ok := ret.Get(0).(func(context.Context, string, *model.HistoricalResultType, string) *model.HistoricalResult); ok {
+		r0 = rf(ctx, subQuery, typeArg, filter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.HistoricalResult)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, *model.HistoricalResultType, string) error); ok {
+		r1 = rf(ctx, subQuery, typeArg, filter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetKappaFromTxHash provides a mock function with given fields: ctx, txHash, chainID
 func (_m *ConsumerDB) GetKappaFromTxHash(ctx context.Context, txHash string, chainID *uint32) (*string, error) {
 	ret := _m.Called(ctx, txHash, chainID)

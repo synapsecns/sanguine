@@ -119,14 +119,6 @@ query GetAddressRanking($hours: Int) {
   }
 }
 
-query GetGetCsv($address: String!) {
-  response: getCsv(
-    address: $address
-  ) {
-    cid
-    ipfsGatewayUrl
-  }
-}
 
 query GetHistoricalStatistics($chainId: Int, $type: HistoricalResultType, $days: Int) {
   response: historicalStatistics(

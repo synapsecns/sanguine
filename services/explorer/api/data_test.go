@@ -515,3 +515,74 @@ func (g APISuite) TestAddressRanking() {
 		}
 	}
 }
+
+//nolint:cyclop
+func (g APISuite) TestHistoricalStatistics() {
+	chainID := gofakeit.Uint32()
+	destinationChainIDA := gofakeit.Uint32()
+	destinationChainIDB := gofakeit.Uint32()
+	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+	tokenAddr := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
+	nowTime := time.Now().Unix()
+	senders := []string{common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String()}
+	cumulativePrice := []float64{}
+	// Generate bridge events for different chain IDs.
+	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
+		var destinationChainID uint32
+		if blockNumber%2 == 0 {
+			destinationChainID = destinationChainIDA
+		} else {
+			destinationChainID = destinationChainIDB
+		}
+		price := float64(gofakeit.Number(1, 300))
+		cumulativePrice = append(cumulativePrice, price)
+		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		timestamp := uint64(nowTime) - 100 - (10*blockNumber)*86400
+		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+			ChainID:            chainID,
+			Recipient:          gosql.NullString{String: address.String(), Valid: true},
+			DestinationChainID: big.NewInt(int64(destinationChainID)),
+			BlockNumber:        blockNumber,
+			TxHash:             txHash.String(),
+			EventIndex:         gofakeit.Uint64(),
+			Token:              tokenAddr,
+			Amount:             big.NewInt(int64(gofakeit.Number(1, 300))),
+			AmountUSD:          &price,
+			Sender:             senders[blockNumber%3],
+			TimeStamp:          &timestamp,
+		})
+		// Set all times after current time, so we can get the events.
+		err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDA, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDB, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+	}
+	days := 120
+	chainIDInt := int(chainID)
+	total := 0.0
+	for _, v := range cumulativePrice {
+		total += v
+	}
+	typeArg := model.HistoricalResultTypeBridgevolume
+	result, err := g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
+	Nil(g.T(), err)
+	NotNil(g.T(), result)
+	Equal(g.T(), total, *result.Response.Total)
+	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
+
+	typeArg = model.HistoricalResultTypeAddresses
+	result, err = g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
+	Nil(g.T(), err)
+	NotNil(g.T(), result)
+	Equal(g.T(), float64(3), *result.Response.Total)
+	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
+
+	typeArg = model.HistoricalResultTypeTransactions
+	result, err = g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
+	Nil(g.T(), err)
+	NotNil(g.T(), result)
+	Equal(g.T(), float64(len(cumulativePrice)), *result.Response.Total)
+	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
+}

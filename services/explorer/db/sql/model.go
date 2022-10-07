@@ -25,6 +25,7 @@ func init() {
 	KappaFieldName = namer.GetConsistentName("Kappa")
 	DestinationKappaFieldName = namer.GetConsistentName("DestinationKappa")
 	SenderFieldName = namer.GetConsistentName("Sender")
+	TimeStampFieldName = namer.GetConsistentName("TimeStamp")
 }
 
 var (
@@ -56,6 +57,8 @@ var (
 	DestinationKappaFieldName string
 	// SenderFieldName is the sender field name.
 	SenderFieldName string
+	// TimeStampFieldName is the timestamp field name.
+	TimeStampFieldName string
 )
 
 // PageSize is the amount of entries per page of events.
@@ -122,6 +125,8 @@ type BridgeEvent struct {
 	TokenDecimal *uint8 `gorm:"column:token_decimal"`
 	// TokenSymbol is the token's symbol from coin gecko
 	TokenSymbol sql.NullString `gorm:"column:token_symbol"`
+	// TimeStamp is the timestamp of the block in which the event occurred.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
 
 // SwapEvent stores data for emitted events from the Swap contract.
@@ -199,4 +204,6 @@ type SwapEvent struct {
 	TokenDecimal *uint8 `gorm:"column:token_decimal"`
 	// TokenSymbol is the token's symbol from coingecko
 	TokenSymbol sql.NullString `gorm:"column:token_symbol"`
+	// TimeStamp is the timestamp of the block in which the event occurred.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
 }

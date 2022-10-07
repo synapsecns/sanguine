@@ -55,11 +55,6 @@ type ComplexityRoot struct {
 		ToInfo      func(childComplexity int) int
 	}
 
-	CSVData struct {
-		Cid            func(childComplexity int) int
-		IpfsGatewayURL func(childComplexity int) int
-	}
-
 	DateResult struct {
 		Date  func(childComplexity int) int
 		Total func(childComplexity int) int
@@ -90,7 +85,6 @@ type ComplexityRoot struct {
 		BridgeTransactions       func(childComplexity int, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) int
 		CountByChainID           func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress      func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
-		GetCSV                   func(childComplexity int, address string) int
 		HistoricalStatistics     func(childComplexity int, chainID *int, typeArg *model.HistoricalResultType, days *int) int
 		LatestBridgeTransactions func(childComplexity int, includePending *bool, page *int) int
 	}
@@ -122,7 +116,6 @@ type QueryResolver interface {
 	CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error)
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
 	AddressRanking(ctx context.Context, hours *int) ([]*model.AddressRanking, error)
-	GetCSV(ctx context.Context, address string) (*model.CSVData, error)
 	HistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int) (*model.HistoricalResult, error)
 }
 
@@ -189,20 +182,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BridgeTransaction.ToInfo(childComplexity), true
-
-	case "CSVData.cid":
-		if e.complexity.CSVData.Cid == nil {
-			break
-		}
-
-		return e.complexity.CSVData.Cid(childComplexity), true
-
-	case "CSVData.ipfsGatewayUrl":
-		if e.complexity.CSVData.IpfsGatewayURL == nil {
-			break
-		}
-
-		return e.complexity.CSVData.IpfsGatewayURL(childComplexity), true
 
 	case "DateResult.date":
 		if e.complexity.DateResult.Date == nil {
@@ -368,18 +347,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.CountByTokenAddress(childComplexity, args["chainId"].(*int), args["address"].(*string), args["direction"].(*model.Direction), args["hours"].(*int)), true
-
-	case "Query.getCsv":
-		if e.complexity.Query.GetCSV == nil {
-			break
-		}
-
-		args, err := ec.field_Query_getCsv_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.GetCSV(childComplexity, args["address"].(string)), true
 
 	case "Query.historicalStatistics":
 		if e.complexity.Query.HistoricalStatistics == nil {
@@ -574,10 +541,6 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   Specifying no parameters defaults to 24 hours.
   """
   addressRanking(hours: Int = 24): [AddressRanking]
-  """
-  Returns csv of address' transactions
-  """
-  getCsv(address: String!): CSVData
 
   """
   Historical transactional data
@@ -637,10 +600,7 @@ type AddressRanking {
   address:  String
   count:    Int
 }
-type CSVData {
-  cid:            String
-  ipfsGatewayUrl: String
-}
+
 enum Duration {
   PAST_DAY
   ALL_TIME
@@ -899,21 +859,6 @@ func (ec *executionContext) field_Query_countByTokenAddress_args(ctx context.Con
 		}
 	}
 	args["hours"] = arg3
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_getCsv_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["address"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["address"] = arg0
 	return args, nil
 }
 
@@ -1338,88 +1283,6 @@ func (ec *executionContext) fieldContext_BridgeTransaction_swapSuccess(ctx conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CSVData_cid(ctx context.Context, field graphql.CollectedField, obj *model.CSVData) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CSVData_cid(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Cid, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CSVData_cid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CSVData",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CSVData_ipfsGatewayUrl(ctx context.Context, field graphql.CollectedField, obj *model.CSVData) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CSVData_ipfsGatewayUrl(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.IpfsGatewayURL, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CSVData_ipfsGatewayUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CSVData",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2400,64 +2263,6 @@ func (ec *executionContext) fieldContext_Query_addressRanking(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_addressRanking_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_getCsv(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getCsv(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetCSV(rctx, fc.Args["address"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.CSVData)
-	fc.Result = res
-	return ec.marshalOCSVData2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐCSVData(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_getCsv(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "cid":
-				return ec.fieldContext_CSVData_cid(ctx, field)
-			case "ipfsGatewayUrl":
-				return ec.fieldContext_CSVData_ipfsGatewayUrl(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type CSVData", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getCsv_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -4791,35 +4596,6 @@ func (ec *executionContext) _BridgeTransaction(ctx context.Context, sel ast.Sele
 	return out
 }
 
-var cSVDataImplementors = []string{"CSVData"}
-
-func (ec *executionContext) _CSVData(ctx context.Context, sel ast.SelectionSet, obj *model.CSVData) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, cSVDataImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("CSVData")
-		case "cid":
-
-			out.Values[i] = ec._CSVData_cid(ctx, field, obj)
-
-		case "ipfsGatewayUrl":
-
-			out.Values[i] = ec._CSVData_ipfsGatewayUrl(ctx, field, obj)
-
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var dateResultImplementors = []string{"DateResult"}
 
 func (ec *executionContext) _DateResult(ctx context.Context, sel ast.SelectionSet, obj *model.DateResult) graphql.Marshaler {
@@ -5072,26 +4848,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_addressRanking(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
-		case "getCsv":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_getCsv(ctx, field)
 				return res
 			}
 
@@ -5988,13 +5744,6 @@ func (ec *executionContext) marshalOBridgeTransaction2ᚖgithubᚗcomᚋsynapsec
 		return graphql.Null
 	}
 	return ec._BridgeTransaction(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOCSVData2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐCSVData(ctx context.Context, sel ast.SelectionSet, v *model.CSVData) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._CSVData(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalODateResult2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDateResult(ctx context.Context, sel ast.SelectionSet, v []*model.DateResult) graphql.Marshaler {

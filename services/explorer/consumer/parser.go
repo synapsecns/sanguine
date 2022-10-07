@@ -190,6 +190,7 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 
 		// placeholders for further data maturation of this event.
 		TokenID:      sql.NullString{},
+		TimeStamp:    nil,
 		AmountUSD:    nil,
 		FeeAmountUSD: nil,
 		TokenDecimal: nil,
@@ -295,8 +296,11 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 	// Get timestamp from consumer
 	timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	fmt.Println("TIMEEEEE", timeStamp)
 	// If we have a timestamp, populate the following attributes of bridgeEvent.
 	if err == nil {
+		timeStampBig := uint64(*timeStamp.Response)
+		bridgeEvent.TimeStamp = &timeStampBig
 		// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
 		tokenPrice, symbol := GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID)
 		if tokenPrice != nil {
@@ -309,14 +313,14 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		}
 	}
 
-	// TODO fix GetTxSender, make this actually successfully get a sender value
-	// sender, err := p.consumerFetcher.FetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
-	// if err != nil || sender != nil {
-	//	return fmt.Errorf("could not get tx sender: %w", err)
-	//}
-	// bridgeEvent.Sender = *sender.Response
-	//
-	bridgeEvent.Sender = "FAKE_SENDER"
+	sender, err := p.consumerFetcher.FetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
+	if err != nil || sender == nil {
+		fmt.Println("could not get tx sender: %w", err)
+		bridgeEvent.Sender = "FAKE_SENDER"
+	} else {
+		bridgeEvent.Sender = *sender.Response
+	}
+
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent, nil)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
@@ -386,6 +390,7 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 		Time:            event.GetTime(),
 		Receiver:        receiver,
 
+		TimeStamp:     nil,
 		AmountsUSD:    nil,
 		FeeAmountsUSD: nil,
 		TokenDecimal:  nil,

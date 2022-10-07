@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
@@ -47,7 +48,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
-		results, err = r.originToDestinationBridge(ctx, address, txnHash, kappa, includePending, page, tokenAddress, fromInfos, false)
+		results, err = r.originToDestinationBridge(ctx, address, kappa, includePending, page, tokenAddress, fromInfos, false)
 		if err != nil {
 			fmt.Println("originToDestinationBridge threw an error")
 		}
@@ -67,9 +68,6 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
 		// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
 		results, err = r.originOrDestinationBridge(ctx, chainIDRef, address, txnHash, kappa, includePending, page, tokenAddress, false)
-		if err != nil {
-			fmt.Println("originOrDestinationBridge threw an error")
-		}
 	}
 
 	if err != nil {
@@ -103,7 +101,7 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 		}
 
 		// Take the fromInfo from the latest bridge transaction and use it to get the bridge transaction.
-		bridgeTxn, err := r.originToDestinationBridge(ctx, nil, nil, nil, includePending, page, nil, fromInfos, true)
+		bridgeTxn, err := r.originToDestinationBridge(ctx, nil, nil, includePending, page, nil, fromInfos, true)
 		if err != nil || len(bridgeTxn) == 0 {
 			return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 		}
@@ -298,37 +296,36 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 	return res, nil
 }
 
-// GetCSV is the resolver for the getCsv field.
-func (r *queryResolver) GetCSV(ctx context.Context, address string) (*model.CSVData, error) {
-	// TODO
-	// Select *
-	// FROM u kno
-	// where address = address
-	// turn event to csv
-	// https://pkg.go.dev/encoding/csv#example_Writer
-	// post that file somewhere on ipfs
-	// get url back and the id
-	// return this
-	// CSVData {
-	//	cid:            String
-	//	ipfsGatewayUrl: String
-	//
-	panic(fmt.Errorf("not implemented: GetCSV - getCsv"))
-}
-
 // HistoricalStatistics is the resolver for the historicalStatistics field.
 func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int) (*model.HistoricalResult, error) {
-	// TODO
-	// SELECT Sum(amount_usd) or Count(DISTINCT tx_hash) or Count(DISTINCT Addresses)
-	// From u kno
-	// Where blocknum > block, chain id = chainid,
-	// that goes into a subtable with dateResults type: {date, amount}
-	// from that table, the total is calculated, dateResults and type are added on.
-	// will need to
-	// add timestamps to each event
-	// query with FROM_UNIXTIME and do a group by date.
+	var operation string
 
-	panic(fmt.Errorf("not implemented: HistoricalStatistics - historicalStatistics"))
+	// Handle the different logic needed for each query type.
+	switch *typeArg {
+	case model.HistoricalResultTypeBridgevolume:
+		operation = "sumKahan(amount_usd)"
+	case model.HistoricalResultTypeAddresses:
+		operation = fmt.Sprintf("uniqExact(%s)", sql.SenderFieldName)
+	case model.HistoricalResultTypeTransactions:
+		operation = fmt.Sprintf("uniqExact(%s)", sql.TxHashFieldName)
+	}
+
+	// nowTime used for calculating time in the past
+	nowTime := time.Now().Unix()
+	startTime := nowTime - int64(*days*86400)
+
+	// Create sql segment with filters
+	filter := fmt.Sprintf("WHERE %s = %d AND %s >= %d", sql.ChainIDFieldName, *chainID, sql.TimeStampFieldName, startTime)
+
+	// Create query for getting day by day data
+	subQuery := fmt.Sprintf("SELECT %s AS total, FROM_UNIXTIME(timestamp, %s) AS date FROM bridge_events %s GROUP BY date ORDER BY total DESC", operation, "'%d/%m/%Y'", filter)
+
+	// get data
+	res, err := r.DB.GetHistoricalData(ctx, subQuery, typeArg, filter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
+	}
+	return res, nil
 }
 
 // Query returns resolvers.QueryResolver implementation.

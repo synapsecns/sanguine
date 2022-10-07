@@ -8,6 +8,7 @@ import (
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/phayes/freeport"
 	"net"
+	"os"
 	"strconv"
 	"time"
 )
@@ -58,10 +59,18 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 	address := fmt.Sprintf("%s:%s", "localhost", resource.GetPort("9000/tcp"))
 
 	// Docker will hard kill the container in 360 seconds (this is a test env)
-	if resource.Expire(360) != nil {
+	// in a continuous integration environment, this is increased to allow for the lower cpu count
+	resourceLifetime := uint(360)
+	pool.MaxWait = time.Minute * 2
+
+	if os.Getenv("CI") != "" {
+		resourceLifetime = 900
+		pool.MaxWait = time.Minute * 5
+	}
+
+	if resource.Expire(resourceLifetime) != nil {
 		return nil, nil, err
 	}
-	pool.MaxWait = time.Minute * 2
 
 	// Teardown function
 	cleanup := func() {
