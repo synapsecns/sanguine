@@ -300,19 +300,17 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	if err != nil {
 		return fmt.Errorf("could not fetch timestamp: %w", err)
 	}
-	if timeStamp != nil {
-		timeStampBig := uint64(*timeStamp.Response)
-		bridgeEvent.TimeStamp = &timeStampBig
-		// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
-		tokenPrice, symbol := GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID)
-		if tokenPrice != nil {
-			// Add AmountUSD to bridgeEvent (if price is not nil)
-			bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
-			// Add AmountUSD to bridgeEvent (if price is not nil)
-			bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
-			// Add TokenSymbol to bridgeEvent
-			bridgeEvent.TokenSymbol = ToNullString(symbol)
-		}
+	timeStampBig := uint64(*timeStamp.Response)
+	bridgeEvent.TimeStamp = &timeStampBig
+	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
+	tokenPrice, symbol := GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID)
+	if tokenPrice != nil {
+		// Add AmountUSD to bridgeEvent (if price is not nil)
+		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
+		// Add AmountUSD to bridgeEvent (if price is not nil)
+		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
+		// Add TokenSymbol to bridgeEvent
+		bridgeEvent.TokenSymbol = ToNullString(symbol)
 	}
 
 	// TODO fix GetTxSender, make this actually successfully get a sender value
