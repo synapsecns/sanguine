@@ -7,6 +7,7 @@ import { TypedMemView } from "../libs/TypedMemView.sol";
 
 import { DomainNotaryRegistry } from "../registry/DomainNotaryRegistry.sol";
 import { GuardRegistry } from "../registry/GuardRegistry.sol";
+import { OriginHubEvents } from "../events/OriginHubEvents.sol";
 import { AttestationHub } from "./AttestationHub.sol";
 import { ReportHub } from "./ReportHub.sol";
 
@@ -18,7 +19,13 @@ import { MerkleLib } from "../libs/Merkle.sol";
  * Keeps track of this domain's Notaries and all Guards: accepts
  * and checks their attestations/reports related to Origin.
  */
-abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, GuardRegistry {
+abstract contract OriginHub is
+    OriginHubEvents,
+    AttestationHub,
+    ReportHub,
+    DomainNotaryRegistry,
+    GuardRegistry
+{
     using Attestation for bytes29;
     using Report for bytes29;
     using TypedMemView for bytes29;
@@ -36,31 +43,6 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
 
     // gap for upgrade safety
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Emitted when a correct report on a fraud attestation is submitted.
-     * @param guard     Guard who signed the fraud report
-     * @param report    Report data and signature
-     */
-    event CorrectFraudReport(address indexed guard, bytes report);
-
-    /**
-     * @notice Emitted when proof of an incorrect report is submitted.
-     * @param guard     Guard who signed the incorrect report
-     * @param report    Report data and signature
-     */
-    event IncorrectReport(address indexed guard, bytes report);
-
-    /**
-     * @notice Emitted when proof of an fraud attestation is submitted.
-     * @param notary        Notary who signed fraud attestation
-     * @param attestation   Attestation data and signature
-     */
-    event FraudAttestation(address indexed notary, bytes attestation);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕

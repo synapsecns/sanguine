@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import { Attestation } from "../libs/Attestation.sol";
 import { AttestationHub } from "./AttestationHub.sol";
+import { DestinationHubEvents } from "../events/DestinationHubEvents.sol";
 import { Report } from "../libs/Report.sol";
 import { ReportHub } from "./ReportHub.sol";
 import { DomainContext } from "../context/DomainContext.sol";
@@ -16,6 +17,7 @@ import { TypedMemView } from "../libs/TypedMemView.sol";
  * merkle state in a separate Mirror.
  */
 abstract contract DestinationHub is
+    DestinationHubEvents,
     DomainContext,
     AttestationHub,
     ReportHub,
@@ -65,14 +67,6 @@ abstract contract DestinationHub is
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // TODO: emit full attestation payload instead of signature?
-    event AttestationAccepted(
-        uint32 indexed origin,
-        uint32 indexed nonce,
-        bytes32 indexed root,
-        bytes signature
-    );
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
