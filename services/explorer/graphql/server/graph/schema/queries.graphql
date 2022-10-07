@@ -56,10 +56,6 @@ type Query {
   Specifying no parameters defaults to 24 hours.
   """
   addressRanking(hours: Int = 24): [AddressRanking]
-  """
-  Returns csv of address' transactions
-  """
-  getCsv(address: String!): CSVData
 
   """
   Historical transactional data

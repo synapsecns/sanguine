@@ -25,7 +25,6 @@ type Query struct {
 	CountByChainID           []*model.TransactionCountResult "json:\"countByChainId\" graphql:\"countByChainId\""
 	CountByTokenAddress      []*model.TokenCountResult       "json:\"countByTokenAddress\" graphql:\"countByTokenAddress\""
 	AddressRanking           []*model.AddressRanking         "json:\"addressRanking\" graphql:\"addressRanking\""
-	GetCSV                   *model.CSVData                  "json:\"getCsv\" graphql:\"getCsv\""
 	HistoricalStatistics     *model.HistoricalResult         "json:\"historicalStatistics\" graphql:\"historicalStatistics\""
 }
 type GetBridgeTransactions struct {
@@ -112,12 +111,6 @@ type GetAddressRanking struct {
 	Response []*struct {
 		Address *string "json:\"address\" graphql:\"address\""
 		Count   *int    "json:\"count\" graphql:\"count\""
-	} "json:\"response\" graphql:\"response\""
-}
-type GetGetCSV struct {
-	Response *struct {
-		Cid            *string "json:\"cid\" graphql:\"cid\""
-		IpfsGatewayURL *string "json:\"ipfsGatewayUrl\" graphql:\"ipfsGatewayUrl\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetHistoricalStatistics struct {
@@ -318,27 +311,6 @@ func (c *Client) GetAddressRanking(ctx context.Context, hours *int, httpRequestO
 
 	var res GetAddressRanking
 	if err := c.Client.Post(ctx, "GetAddressRanking", GetAddressRankingDocument, &res, vars, httpRequestOptions...); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-const GetGetCSVDocument = `query GetGetCsv ($address: String!) {
-	response: getCsv(address: $address) {
-		cid
-		ipfsGatewayUrl
-	}
-}
-`
-
-func (c *Client) GetGetCSV(ctx context.Context, address string, httpRequestOptions ...client.HTTPRequestOption) (*GetGetCSV, error) {
-	vars := map[string]interface{}{
-		"address": address,
-	}
-
-	var res GetGetCSV
-	if err := c.Client.Post(ctx, "GetGetCsv", GetGetCSVDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

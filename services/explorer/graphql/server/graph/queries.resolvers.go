@@ -298,24 +298,6 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 	return res, nil
 }
 
-// GetCSV is the resolver for the getCsv field.
-func (r *queryResolver) GetCSV(ctx context.Context, address string) (*model.CSVData, error) {
-	// TODO
-	// Select *
-	// FROM u kno
-	// where address = address
-	// turn event to csv
-	// https://pkg.go.dev/encoding/csv#example_Writer
-	// post that file somewhere on ipfs
-	// get url back and the id
-	// return this
-	// CSVData {
-	//	cid:            String
-	//	ipfsGatewayUrl: String
-	//
-	panic(fmt.Errorf("not implemented: GetCSV - getCsv"))
-}
-
 // HistoricalStatistics is the resolver for the historicalStatistics field.
 func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int) (*model.HistoricalResult, error) {
 	// TODO

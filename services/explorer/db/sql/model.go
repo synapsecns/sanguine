@@ -122,6 +122,8 @@ type BridgeEvent struct {
 	TokenDecimal *uint8 `gorm:"column:token_decimal"`
 	// TokenSymbol is the token's symbol from coin gecko
 	TokenSymbol sql.NullString `gorm:"column:token_symbol"`
+	// TimeStamp is the timestamp of the block in which the event occurred.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
 
 // SwapEvent stores data for emitted events from the Swap contract.
@@ -199,4 +201,6 @@ type SwapEvent struct {
 	TokenDecimal *uint8 `gorm:"column:token_decimal"`
 	// TokenSymbol is the token's symbol from coingecko
 	TokenSymbol sql.NullString `gorm:"column:token_symbol"`
+	// TimeStamp is the timestamp of the block in which the event occurred.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
 }

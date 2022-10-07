@@ -190,6 +190,7 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 
 		// placeholders for further data maturation of this event.
 		TokenID:      sql.NullString{},
+		TimeStamp:    nil,
 		AmountUSD:    nil,
 		FeeAmountUSD: nil,
 		TokenDecimal: nil,
@@ -297,6 +298,9 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	// If we have a timestamp, populate the following attributes of bridgeEvent.
 	if err == nil {
+
+		timeStampBig := uint64(*timeStamp.Response)
+		bridgeEvent.TimeStamp = &timeStampBig
 		// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
 		tokenPrice, symbol := GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID)
 		if tokenPrice != nil {
@@ -386,6 +390,7 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 		Time:            event.GetTime(),
 		Receiver:        receiver,
 
+		TimeStamp:     nil,
 		AmountsUSD:    nil,
 		FeeAmountsUSD: nil,
 		TokenDecimal:  nil,
