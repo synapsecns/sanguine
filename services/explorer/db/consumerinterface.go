@@ -37,7 +37,7 @@ type ConsumerDBReader interface {
 	// GetBridgeStatistic gets bridge statistics
 	GetBridgeStatistic(ctx context.Context, subQuery string) (*string, error)
 	// GetHistoricalData gets bridge historical data
-	GetHistoricalData(ctx context.Context, subQuery string, typeArg *model.HistoricalResultType) (*model.HistoricalResult, error)
+	GetHistoricalData(ctx context.Context, subQuery string, typeArg *model.HistoricalResultType, filter string) (*model.HistoricalResult, error)
 	// DB gets the underlying gorm db.
 	DB() *gorm.DB
 }

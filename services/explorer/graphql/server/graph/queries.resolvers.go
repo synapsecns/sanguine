@@ -301,31 +301,30 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 
 // HistoricalStatistics is the resolver for the historicalStatistics field.
 func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int) (*model.HistoricalResult, error) {
-	// TODO
-	// SELECT Sum(amount_usd) or Count(DISTINCT tx_hash) or Count(DISTINCT Addresses)
-	// From u kno
-	// Where blocknum > block, chain id = chainid,
-	// that goes into a subtable with dateResults type: {date, amount}
-	// from that table, the total is calculated, dateResults and type are added on.
-	// will need to
-	// add timestamps to each event
-	// query with FROM_UNIXTIME and do a group by date.
 	var operation string
+
+	// Handle the different logic needed for each query type.
 	switch *typeArg {
 	case model.HistoricalResultTypeBridgevolume:
 		operation = "sumKahan(amount_usd)"
 	case model.HistoricalResultTypeAddresses:
-		operation = "COUNT(DISTINCT address)"
+		operation = fmt.Sprintf("uniqExact(%s)", sql.SenderFieldName)
 	case model.HistoricalResultTypeTransactions:
-		operation = "COUNT(DISTINCT tx_hash)"
+		operation = fmt.Sprintf("uniqExact(%s)", sql.TxHashFieldName)
 	}
 
 	// nowTime used for calculating time in the past
 	nowTime := time.Now().Unix()
 	startTime := nowTime - int64(*days*86400)
-	subQuery := fmt.Sprintf("SELECT %s AS value, FROM_UNIXTIME(timestamp, %s) AS datetime FROM bridge_events WHERE %s = %d AND timestamp >= %d GROUP BY datetime ORDER BY value DESC", operation, "'%d/%m/%Y'", sql.ChainIDFieldName, *chainID, startTime)
-	fmt.Println("subQuery", subQuery)
-	res, err := r.DB.GetHistoricalData(ctx, subQuery, typeArg)
+
+	// Create sql segment with filters
+	filter := fmt.Sprintf("WHERE %s = %d AND timestamp >= %d", sql.ChainIDFieldName, *chainID, startTime)
+
+	// Create query for getting day by day data
+	subQuery := fmt.Sprintf("SELECT %s AS total, FROM_UNIXTIME(timestamp, %s) AS date FROM bridge_events %s GROUP BY date ORDER BY total DESC", operation, "'%d/%m/%Y'", filter)
+
+	// get data
+	res, err := r.DB.GetHistoricalData(ctx, subQuery, typeArg, filter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
+	"gorm.io/gorm"
 )
 
 // EventType is an enum for event types.
@@ -193,29 +194,36 @@ func (s *Store) GetTransactionCountForEveryAddress(ctx context.Context, subQuery
 }
 
 // GetHistoricalData gets historical data for an address.
-func (s *Store) GetHistoricalData(ctx context.Context, subQuery string, typeArg *model.HistoricalResultType) (*model.HistoricalResult, error) {
-
+func (s *Store) GetHistoricalData(ctx context.Context, subQuery string, typeArg *model.HistoricalResultType, filter string) (*model.HistoricalResult, error) {
+	// TODO clean up
 	var res []*model.DateResult
+
+	// Get day by day data.
 	dbTx := s.db.WithContext(ctx).Raw(subQuery).Scan(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
-
-	fmt.Println(dbTx)
-	fmt.Println(res)
 	var sum float64
-	dbTxFinal := s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT sum(value) FROM (%S)", subQuery)).Scan(&sum)
+	var dbTxFinal *gorm.DB
+
+	// Get the rest of the data depending on query type.
+	switch *typeArg {
+	case model.HistoricalResultTypeAddresses:
+		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT uniqExact(%s) FROM bridge_events %s", SenderFieldName, filter)).Scan(&sum)
+	case model.HistoricalResultTypeTransactions:
+		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)).Scan(&sum)
+	case model.HistoricalResultTypeBridgevolume: // Extra in case things change.
+		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)).Scan(&sum)
+	}
 	if dbTxFinal.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
-	fmt.Println(dbTxFinal)
-	fmt.Println(sum)
 	payload := model.HistoricalResult{
 		Total:       &sum,
 		DateResults: res,
 		Type:        typeArg,
 	}
-	fmt.Println("payloadpayload", payload)
+
 	return &payload, nil
 }
 
