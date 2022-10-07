@@ -63,12 +63,11 @@ jobs:
           done
 
       - name: Test
-        uses: lhotari/action-upterm@v1
-#        uses: nick-fields/retry@v2
-#        with:
-#          command: go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
-#          max_attempts: 6
-#          timeout_minutes: 15
+        uses: nick-fields/retry@v2
+        with:
+          command: go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
+          max_attempts: 6
+          timeout_minutes: 15
         env:
           ENABLE_MYSQL_TEST: true
           MYSQL_HOST: 0.0.0.0
