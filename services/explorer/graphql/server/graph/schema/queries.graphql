@@ -61,7 +61,7 @@ type Query {
   Historical transactional data
   """
   historicalStatistics(
-    chainId:  Int
+    chainId:  Int!
     type:     HistoricalResultType = BRIDGEVOLUME
     days:     Int = 30
   ): HistoricalResult

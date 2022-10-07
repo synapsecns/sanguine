@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
@@ -309,8 +310,26 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	// will need to
 	// add timestamps to each event
 	// query with FROM_UNIXTIME and do a group by date.
+	var operation string
+	switch *typeArg {
+	case model.HistoricalResultTypeBridgevolume:
+		operation = "sumKahan(amount_usd)"
+	case model.HistoricalResultTypeAddresses:
+		operation = "COUNT(DISTINCT address)"
+	case model.HistoricalResultTypeTransactions:
+		operation = "COUNT(DISTINCT tx_hash)"
+	}
 
-	panic(fmt.Errorf("not implemented: HistoricalStatistics - historicalStatistics"))
+	// nowTime used for calculating time in the past
+	nowTime := time.Now().Unix()
+	startTime := nowTime - int64(*days*86400)
+	subQuery := fmt.Sprintf("SELECT %s AS value, FROM_UNIXTIME(timestamp, %s) AS datetime FROM bridge_events WHERE %s = %d AND timestamp >= %d GROUP BY datetime ORDER BY value DESC", operation, "'%d/%m/%Y'", sql.ChainIDFieldName, *chainID, startTime)
+	fmt.Println("subQuery", subQuery)
+	res, err := r.DB.GetHistoricalData(ctx, subQuery, typeArg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
+	}
+	return res, nil
 }
 
 // Query returns resolvers.QueryResolver implementation.

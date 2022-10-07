@@ -192,6 +192,33 @@ func (s *Store) GetTransactionCountForEveryAddress(ctx context.Context, subQuery
 	return res, nil
 }
 
+// GetHistoricalData gets historical data for an address.
+func (s *Store) GetHistoricalData(ctx context.Context, subQuery string, typeArg *model.HistoricalResultType) (*model.HistoricalResult, error) {
+
+	var res []*model.DateResult
+	dbTx := s.db.WithContext(ctx).Raw(subQuery).Scan(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	fmt.Println(dbTx)
+	fmt.Println(res)
+	var sum float64
+	dbTxFinal := s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT sum(value) FROM (%S)", subQuery)).Scan(&sum)
+	if dbTxFinal.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+	fmt.Println(dbTxFinal)
+	fmt.Println(sum)
+	payload := model.HistoricalResult{
+		Total:       &sum,
+		DateResults: res,
+		Type:        typeArg,
+	}
+	fmt.Println("payloadpayload", payload)
+	return &payload, nil
+}
+
 // GenerateAddressSpecifierSQL generates a where function with an string.
 func GenerateAddressSpecifierSQL(address *string, firstFilter *bool) string {
 	if address != nil {
