@@ -115,45 +115,56 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 
 // BridgeAmountStatistic is the resolver for the bridgeAmountStatistic field.
 func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error) {
+	getSubQuery := func(targetTime uint64) (string, error) {
+		subQuery := "("
+		chainIDs, err := r.DB.GetAllChainIDs(ctx)
+		if err != nil {
+			return subQuery, fmt.Errorf("failed to get chain IDs: %w", err)
+		}
+
+		for i, chain := range chainIDs {
+			startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chain, 0, targetTime)
+			if err != nil {
+				return subQuery, fmt.Errorf("failed to get start block number: %w", err)
+			}
+			sqlString := fmt.Sprintf("\nSELECT %s, %s, amount_usd FROM bridge_events WHERE %s = %d AND  %s >= %d", sql.TokenFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName, chain, sql.BlockNumberFieldName, startBlock)
+			if i != len(chainIDs)-1 {
+				sqlString += " UNION ALL"
+			} else {
+				sqlString += ")"
+			}
+			subQuery += sqlString
+		}
+		return subQuery, nil
+	}
 	var err error
 	subQuery := "bridge_events"
-	additionalFilters := ""
+
+	firstFilter := true
+	blockNumberFilter := ""
+	chainIDFilter := ""
 	switch *duration {
 	case model.DurationPastDay:
 		hours := 24
 		targetTime := r.getTargetTime(&hours)
 		if chainID == nil {
-			chainIDs, err := r.DB.GetAllChainIDs(ctx)
+			subQuery, err = getSubQuery(targetTime)
 			if err != nil {
-				return nil, fmt.Errorf("failed to get chain IDs: %w", err)
-			}
-			subQuery = "("
-			for i, chain := range chainIDs {
-				startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chain, 0, targetTime)
-				if err != nil {
-					return nil, fmt.Errorf("failed to get start block number: %w", err)
-				}
-				sqlString := fmt.Sprintf("\nSELECT %s, %s, amount_usd FROM bridge_events WHERE %s = %d AND  %s >= %d", sql.TokenFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName, chain, sql.BlockNumberFieldName, startBlock)
-				if i != len(chainIDs)-1 {
-					sqlString += " UNION ALL"
-				} else {
-					sqlString += ")"
-				}
-				subQuery += sqlString
+				return nil, err
 			}
 		} else {
 			startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, uint32(*chainID), 0, targetTime)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get start block number: %w", err)
 			}
-			additionalFilters = fmt.Sprintf("WHERE %s >= %d AND %s = %d", sql.BlockNumberFieldName, startBlock, sql.ChainIDFieldName, *chainID)
+			chainID32 := uint32(*chainID)
+			chainIDFilter = sql.GenerateSingleSpecifierI32SQL(&chainID32, sql.ChainIDFieldName, &firstFilter)
+			blockNumberFilter = fmt.Sprintf("AND %s >= %d", sql.BlockNumberFieldName, startBlock)
 		}
 	case model.DurationAllTime:
-		if chainID != nil {
-			additionalFilters = fmt.Sprintf("WHERE %s = %d", sql.ChainIDFieldName, *chainID)
-		}
+		chainID32 := uint32(*chainID)
+		chainIDFilter = sql.GenerateSingleSpecifierI32SQL(&chainID32, sql.ChainIDFieldName, &firstFilter)
 	}
-	whereStr := "WHERE "
 	var operation string
 	switch typeArg {
 	case model.StatisticTypeMean:
@@ -165,22 +176,14 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	case model.StatisticTypeCount:
 		operation = "COUNT"
 	}
-	if address != nil {
-		if additionalFilters != "" {
-			additionalFilters += " AND "
-		} else {
-			additionalFilters += whereStr
-		}
-		additionalFilters += fmt.Sprintf("%s = toString(%s)", sql.ContractAddressFieldName, *address)
-	}
-	if tokenAddress != nil {
-		if additionalFilters != "" {
-			additionalFilters += " AND "
-		} else {
-			additionalFilters += whereStr
-		}
-		additionalFilters += fmt.Sprintf("%s = toString(%s)", sql.TokenFieldName, *tokenAddress)
-	}
+	tokenAddressFilter := sql.GenerateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter)
+	// TODO double check this
+	addressFilter := sql.GenerateSingleSpecifierStringSQL(address, sql.ContractAddressFieldName, &firstFilter)
+
+	additionalFilters := fmt.Sprintf(
+		`%s%s%s%s`,
+		blockNumberFilter, chainIDFilter, tokenAddressFilter, addressFilter,
+	)
 	finalSQL := fmt.Sprintf("\nSELECT %s(toUInt256(amount_usd)) FROM %s %s", operation, subQuery, additionalFilters)
 	res, err := r.DB.GetBridgeStatistic(ctx, finalSQL)
 	if err != nil {
@@ -288,10 +291,6 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 		genSQL += sqlString
 	}
 
-	// TODO talk to lex about this, should we just build the queries in here like this?
-	// might make more sense since we can use the helper queries in here and prevent
-	// doing a bunch of repetitive sql queries. This was done this way bc its the most
-	// simple solution with the least data parsing.
 	res, err := r.DB.GetTransactionCountForEveryAddress(ctx, genSQL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
@@ -301,38 +300,33 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 
 // GetCSV is the resolver for the getCsv field.
 func (r *queryResolver) GetCSV(ctx context.Context, address string) (*model.CSVData, error) {
+	// TODO
 	// Select *
 	// FROM u kno
 	// where address = address
-
 	// turn event to csv
 	// https://pkg.go.dev/encoding/csv#example_Writer
-
 	// post that file somewhere on ipfs
 	// get url back and the id
-	
-	//return this
-	//CSVData {
+	// return this
+	// CSVData {
 	//	cid:            String
 	//	ipfsGatewayUrl: String
-	//}
+	//
 	panic(fmt.Errorf("not implemented: GetCSV - getCsv"))
 }
 
 // HistoricalStatistics is the resolver for the historicalStatistics field.
 func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int) (*model.HistoricalResult, error) {
+	// TODO
 	// SELECT Sum(amount_usd) or Count(DISTINCT tx_hash) or Count(DISTINCT Addresses)
 	// From u kno
 	// Where blocknum > block, chain id = chainid,
 	// that goes into a subtable with dateResults type: {date, amount}
-
 	// from that table, the total is calculated, dateResults and type are added on.
-
 	// will need to
 	// add timestamps to each event
 	// query with FROM_UNIXTIME and do a group by date.
-
-	// p easy
 
 	panic(fmt.Errorf("not implemented: HistoricalStatistics - historicalStatistics"))
 }

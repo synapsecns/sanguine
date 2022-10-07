@@ -192,7 +192,8 @@ func (s *Store) GetTransactionCountForEveryAddress(ctx context.Context, subQuery
 	return res, nil
 }
 
-func generateAddressSpecifierSQL(address *string, firstFilter *bool) string {
+// GenerateAddressSpecifierSQL generates a where function with an string.
+func GenerateAddressSpecifierSQL(address *string, firstFilter *bool) string {
 	if address != nil {
 		if *firstFilter {
 			*firstFilter = false
@@ -203,7 +204,8 @@ func generateAddressSpecifierSQL(address *string, firstFilter *bool) string {
 	return ""
 }
 
-func generateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *bool) string {
+// GenerateSingleSpecifierI32SQL generates a where function with an uint32.
+func GenerateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *bool) string {
 	if value != nil {
 		if *firstFilter {
 			return fmt.Sprintf(" WHERE %s = %d", field, *value)
@@ -213,7 +215,8 @@ func generateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *boo
 	return ""
 }
 
-func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *bool) string {
+// GenerateSingleSpecifierStringSQL generates a where function with a string.
+func GenerateSingleSpecifierStringSQL(value *string, field string, firstFilter *bool) string {
 	if value != nil {
 		if *firstFilter {
 			return fmt.Sprintf(" WHERE %s = '%s'", field, *value)
@@ -227,11 +230,11 @@ func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *
 func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int, order bool) (partialInfos []*model.PartialInfo, err error) {
 	var res []BridgeEvent
 	firstFilter := true
-	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, ChainIDFieldName, &firstFilter)
-	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter)
-	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, TokenFieldName, &firstFilter)
-	kappaSpecifier := generateSingleSpecifierStringSQL(kappa, KappaFieldName, &firstFilter)
-	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, TxHashFieldName, &firstFilter)
+	chainIDSpecifier := GenerateSingleSpecifierI32SQL(chainID, ChainIDFieldName, &firstFilter)
+	addressSpecifier := GenerateAddressSpecifierSQL(address, &firstFilter)
+	tokenAddressSpecifier := GenerateSingleSpecifierStringSQL(tokenAddress, TokenFieldName, &firstFilter)
+	kappaSpecifier := GenerateSingleSpecifierStringSQL(kappa, KappaFieldName, &firstFilter)
+	txHashSpecifier := GenerateSingleSpecifierStringSQL(txHash, TxHashFieldName, &firstFilter)
 	orderSpecifier := ""
 	if order {
 		orderSpecifier = fmt.Sprintf(" ORDER BY %s DESC", BlockNumberFieldName)

@@ -21,7 +21,7 @@ func TestGetDefiLlamaData(t *testing.T) {
 	Equal(t, *symbol, knownSymbol)
 }
 func TestOpenYaml(t *testing.T) {
-	parsedYaml, err := consumer.OpenYaml("tokenIDToCoinGeckoID.yaml")
+	parsedYaml, err := consumer.OpenYaml()
 	fmt.Println(parsedYaml)
 	Nil(t, err)
 	NotNil(t, parsedYaml)
@@ -31,7 +31,7 @@ func TestGetTokenMetadataWithTokenID(t *testing.T) {
 	timestamp := 1664980469
 	tokenID := "synFRAX"
 	ctx := context.TODO()
-	price, symbol := consumer.GetTokenMetadataWithTokenID(ctx, timestamp, &tokenID, "tokenIDtoCoinGeckoID.yaml")
+	price, symbol := consumer.GetTokenMetadataWithTokenID(ctx, timestamp, &tokenID)
 	NotNil(t, price)
 	NotNil(t, symbol)
 }

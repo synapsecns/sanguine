@@ -298,7 +298,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	// If we have a timestamp, populate the following attributes of bridgeEvent.
 	if err == nil {
 		// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
-		tokenPrice, symbol := GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID, "../tokenIDToCoinGeckoID.yaml")
+		tokenPrice, symbol := GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID)
 		if tokenPrice != nil {
 			// Add AmountUSD to bridgeEvent (if price is not nil)
 			bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)

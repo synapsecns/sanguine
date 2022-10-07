@@ -14,8 +14,10 @@ import (
 )
 
 // OpenYaml opens yaml file with coin gecko ID mapping and returns it.
-func OpenYaml(path string) (map[string]string, error) {
-	input, err := os.ReadFile(filepath.Clean(path))
+func OpenYaml() (map[string]string, error) {
+	pwd, _ := os.Getwd()
+	// nolint:gosec
+	input, err := os.ReadFile(pwd + filepath.Clean("/tokenIDToCoinGeckoID.yaml"))
 	if err != nil {
 		return nil, fmt.Errorf("error opening yaml file %w", err)
 	}
@@ -28,8 +30,8 @@ func OpenYaml(path string) (map[string]string, error) {
 }
 
 // GetTokenMetadataWithTokenID gets the token metadata (symbol, price).
-func GetTokenMetadataWithTokenID(ctx context.Context, timestamp int, tokenID *string, path string) (*float64, *string) {
-	coinGeckoIDs, err := OpenYaml(path)
+func GetTokenMetadataWithTokenID(ctx context.Context, timestamp int, tokenID *string) (*float64, *string) {
+	coinGeckoIDs, err := OpenYaml()
 	if err != nil {
 		fmt.Println("Error while retrieving CoinGecko ids from yaml:", err)
 		return nil, nil

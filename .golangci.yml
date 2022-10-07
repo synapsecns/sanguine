@@ -43,6 +43,8 @@ linters:
     # potentially extensively refactor code, when they want to smaller change to
     # land.
     - gocyclo
+    - nestif
+    - cyclop
 
     # Instances of table driven tests that don't pre-allocate shouldn't trigger
     # the linter.
@@ -118,4 +120,5 @@ issues:
       linters:
         - staticcheck
       text: 'SA1019'
+
   exclude-use-default: false
