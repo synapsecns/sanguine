@@ -6,8 +6,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
@@ -97,15 +95,13 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 	}
 	// For each chain ID, get the latest bridge transaction.
 	var results []*model.BridgeTransaction
-	for _, chainID := range chainIDs {
+	for i := range chainIDs {
 		// Get the PartialInfo for the latest bridge transaction.
-		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, &chainID, nil, nil, nil, nil, *page, true)
+		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, &chainIDs[i], nil, nil, nil, nil, *page, true)
 		if err != nil || len(fromInfos) == 0 {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
-		fmt.Println("PLS HELP", *fromInfos[0].BlockNumber)
-		fmt.Println("PLS HELP", *fromInfos[0].TxnHash)
-		fmt.Println("PLS HELP", crypto.Keccak256Hash(common.Hex2Bytes(*fromInfos[0].TxnHash)).String())
+
 		// Take the fromInfo from the latest bridge transaction and use it to get the bridge transaction.
 		bridgeTxn, err := r.originToDestinationBridge(ctx, nil, nil, nil, includePending, page, nil, fromInfos, true)
 		if err != nil || len(bridgeTxn) == 0 {
@@ -122,7 +118,6 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	var err error
 	subQuery := "bridge_events"
 	additionalFilters := ""
-	// nolint:nestif
 	switch *duration {
 	case model.DurationPastDay:
 		hours := 24

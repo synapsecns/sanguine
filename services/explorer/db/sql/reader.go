@@ -74,10 +74,10 @@ func (s *Store) GetKappaFromTxHash(ctx context.Context, txHash string, chainID *
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
 
-	// The below does the same
-	// if !res.Kappa.Valid || res.Kappa.String == "" {
-	//	return nil, nil
-	//}
+	// nolint:nilnil
+	if !res.Kappa.Valid || res.Kappa.String == "" {
+		return nil, nil
+	}
 
 	return &res.Kappa.String, nil
 }
@@ -196,9 +196,9 @@ func generateAddressSpecifierSQL(address *string, firstFilter *bool) string {
 	if address != nil {
 		if *firstFilter {
 			*firstFilter = false
-			return fmt.Sprintf(" WHERE (%s = toString(%s) OR %s = toString(%s))", RecipientFieldName, *address, SenderFieldName, *address)
+			return fmt.Sprintf(" WHERE (%s = '%s' OR %s = '%s')", RecipientFieldName, *address, SenderFieldName, *address)
 		}
-		return fmt.Sprintf(" AND (%s = toString(%s) OR %s = toString(%s))", RecipientFieldName, *address, SenderFieldName, *address)
+		return fmt.Sprintf(" AND (%s = '%s OR %s = '%s)", RecipientFieldName, *address, SenderFieldName, *address)
 	}
 	return ""
 }
@@ -216,9 +216,9 @@ func generateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *boo
 func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *bool) string {
 	if value != nil {
 		if *firstFilter {
-			return fmt.Sprintf(" WHERE %s = toString(%s)", field, *value)
+			return fmt.Sprintf(" WHERE %s = '%s'", field, *value)
 		}
-		return fmt.Sprintf("AND %s = toString(%s)", field, *value)
+		return fmt.Sprintf("AND %s = '%s'", field, *value)
 	}
 	return ""
 }
@@ -230,8 +230,8 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, ChainIDFieldName, &firstFilter)
 	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter)
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, TokenFieldName, &firstFilter)
-	kappaSpecifier := generateSingleSpecifierStringSQL(tokenAddress, KappaFieldName, &firstFilter)
-	txHashSpecifier := generateSingleSpecifierStringSQL(kappa, TxHashFieldName, &firstFilter)
+	kappaSpecifier := generateSingleSpecifierStringSQL(kappa, KappaFieldName, &firstFilter)
+	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, TxHashFieldName, &firstFilter)
 	orderSpecifier := ""
 	if order {
 		orderSpecifier = fmt.Sprintf(" ORDER BY %s DESC", BlockNumberFieldName)

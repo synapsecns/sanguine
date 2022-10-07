@@ -44,13 +44,13 @@ func (r *queryResolver) getTargetTime(hours *int) uint64 {
 	return targetTime
 }
 
-func (r *queryResolver) getTokenAddressesByChainID(ctx context.Context, chainID uint32) ([]string, error) {
-	tokenAddresses, err := r.DB.GetTokenAddressesByChainID(ctx, chainID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get token addresses by chain ID: %w", err)
-	}
-	return tokenAddresses, nil
-}
+// func (r *queryResolver) getTokenAddressesByChainID(ctx context.Context, chainID uint32) ([]string, error) {
+//	tokenAddresses, err := r.DB.GetTokenAddressesByChainID(ctx, chainID)
+//	if err != nil {
+//		return nil, fmt.Errorf("failed to get token addresses by chain ID: %w", err)
+//	}
+//	return tokenAddresses, nil
+//}
 
 // nolint complexity
 func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string, fromInfos []*model.PartialInfo, order bool) ([]*model.BridgeTransaction, error) {

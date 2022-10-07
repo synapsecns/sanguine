@@ -115,7 +115,7 @@ func (g APISuite) TestGetCountByChainID() {
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			ChainID:            chainID,
-			Recipient:          gosql.NullString{address.String(), true},
+			Recipient:          gosql.NullString{String: address.String(), Valid: true},
 			DestinationChainID: big.NewInt(int64(destinationChainID)),
 			BlockNumber:        blockNumber,
 			TxHash:             txHash.String(),
@@ -175,6 +175,7 @@ func (g APISuite) TestGetCountByChainID() {
 	Equal(g.T(), reached, 3)
 }
 
+// nolint (needed for testing all possibilities)
 func (g APISuite) TestGetCountByTokenAddress() {
 	chainID := gofakeit.Uint32()
 	destinationChainID := gofakeit.Uint32()
@@ -193,7 +194,7 @@ func (g APISuite) TestGetCountByTokenAddress() {
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			ChainID:            chainID,
-			Recipient:          gosql.NullString{address.String(), true},
+			Recipient:          gosql.NullString{String: address.String(), Valid: true},
 			DestinationChainID: big.NewInt(int64(destinationChainID)),
 			Token:              tokenAddress.String(),
 			BlockNumber:        blockNumber,
@@ -286,7 +287,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 	g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 		ChainID:            chainID,
 		Sender:             senderString,
-		Recipient:          gosql.NullString{address.String(), true},
+		Recipient:          gosql.NullString{String: address.String(), Valid: true},
 		DestinationChainID: big.NewInt(int64(destinationChainID)),
 		Token:              tokenAddress.String(),
 		BlockNumber:        1,
@@ -296,12 +297,12 @@ func (g APISuite) TestGetBridgeTransactions() {
 	})
 	g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 		ChainID:            destinationChainID,
-		Recipient:          gosql.NullString{address.String(), true},
+		Recipient:          gosql.NullString{String: address.String(), Valid: true},
 		DestinationChainID: big.NewInt(int64(chainID)),
 		Token:              tokenAddress.String(),
 		BlockNumber:        1,
 		TxHash:             txHashB.String(),
-		Kappa:              gosql.NullString{kappaString, true},
+		Kappa:              gosql.NullString{String: kappaString, Valid: true},
 		SwapSuccess:        big.NewInt(1),
 		EventIndex:         gofakeit.Uint64(),
 	})
@@ -387,7 +388,7 @@ func (g APISuite) TestLatestBridgeTransaction() {
 			BlockNumber:        blockNumber,
 			TxHash:             txHashA.String(),
 			DestinationKappa:   kappaStringA,
-			Kappa:              gosql.NullString{kappaStringB, true},
+			Kappa:              gosql.NullString{String: kappaStringB, Valid: true},
 		})
 		// } else {
 		fmt.Println("POO")
@@ -397,7 +398,7 @@ func (g APISuite) TestLatestBridgeTransaction() {
 			BlockNumber:        blockNumber,
 			TxHash:             txHashB.String(),
 			DestinationKappa:   kappaStringB,
-			Kappa:              gosql.NullString{kappaStringA, true},
+			Kappa:              gosql.NullString{String: kappaStringA, Valid: true},
 		})
 		//}
 		if blockNumber == 10 {
@@ -474,7 +475,7 @@ func (g APISuite) TestAddressRanking() {
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			ChainID:            chainID,
-			Recipient:          gosql.NullString{address.String(), true},
+			Recipient:          gosql.NullString{String: address.String(), Valid: true},
 			DestinationChainID: big.NewInt(int64(destinationChainID)),
 			BlockNumber:        blockNumber,
 			TxHash:             txHash.String(),
