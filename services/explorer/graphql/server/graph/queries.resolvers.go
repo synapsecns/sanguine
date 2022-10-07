@@ -48,7 +48,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
-		results, err = r.originToDestinationBridge(ctx, address, txnHash, kappa, includePending, page, tokenAddress, fromInfos, false)
+		results, err = r.originToDestinationBridge(ctx, address, kappa, includePending, page, tokenAddress, fromInfos, false)
 		if err != nil {
 			fmt.Println("originToDestinationBridge threw an error")
 		}
@@ -68,9 +68,6 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
 		// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
 		results, err = r.originOrDestinationBridge(ctx, chainIDRef, address, txnHash, kappa, includePending, page, tokenAddress, false)
-		if err != nil {
-			fmt.Println("originOrDestinationBridge threw an error")
-		}
 	}
 
 	if err != nil {
@@ -104,7 +101,7 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 		}
 
 		// Take the fromInfo from the latest bridge transaction and use it to get the bridge transaction.
-		bridgeTxn, err := r.originToDestinationBridge(ctx, nil, nil, nil, includePending, page, nil, fromInfos, true)
+		bridgeTxn, err := r.originToDestinationBridge(ctx, nil, nil, includePending, page, nil, fromInfos, true)
 		if err != nil || len(bridgeTxn) == 0 {
 			return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 		}

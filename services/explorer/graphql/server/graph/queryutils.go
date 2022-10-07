@@ -52,8 +52,7 @@ func (r *queryResolver) getTargetTime(hours *int) uint64 {
 //	return tokenAddresses, nil
 //}
 
-// nolint complexity
-func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string, fromInfos []*model.PartialInfo, order bool) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *string, kappa *string, includePending *bool, page *int, tokenAddress *string, fromInfos []*model.PartialInfo, order bool) ([]*model.BridgeTransaction, error) {
 	var results []*model.BridgeTransaction
 	for _, fromInfo := range fromInfos {
 		blockTime, err := r.Fetcher.FetchClient.GetBlockTime(ctx, *fromInfo.ChainID, *fromInfo.BlockNumber)
@@ -107,7 +106,6 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 	return results, nil
 }
 
-// nolint complexity
 func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *string, txnHash *string, kappa *string, page *int, tokenAddress *string, toInfos []*model.PartialInfo) ([]*model.BridgeTransaction, error) {
 	var results []*model.BridgeTransaction
 	pending := false
@@ -176,7 +174,7 @@ func (r *queryResolver) originOrDestinationBridge(ctx context.Context, chainID *
 			toInfos = append(toInfos, info)
 		}
 	}
-	originResults, err := r.originToDestinationBridge(ctx, nil, nil, nil, includePending, page, tokenAddress, fromInfos, order)
+	originResults, err := r.originToDestinationBridge(ctx, nil, nil, includePending, page, tokenAddress, fromInfos, order)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get origin -> destination bridge transactions: %w", err)
 	}
