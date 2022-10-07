@@ -15,7 +15,7 @@ import (
 )
 
 // nolint:cyclop
-func (g *APISuite) TestBridgeAmountStatistic() {
+func (g APISuite) TestBridgeAmountStatistic() {
 	chainID := gofakeit.Uint32()
 	destinationChainIDA := gofakeit.Uint32()
 	destinationChainIDB := gofakeit.Uint32()
@@ -98,7 +98,7 @@ func (g *APISuite) TestBridgeAmountStatistic() {
 }
 
 //nolint:cyclop
-func (g *APISuite) TestGetCountByChainID() {
+func (g APISuite) TestGetCountByChainID() {
 	chainID := gofakeit.Uint32()
 	destinationChainIDA := gofakeit.Uint32()
 	destinationChainIDB := gofakeit.Uint32()
@@ -176,7 +176,7 @@ func (g *APISuite) TestGetCountByChainID() {
 }
 
 // nolint (needed for testing all possibilities)
-func (g *APISuite) TestGetCountByTokenAddress() {
+func (g APISuite) TestGetCountByTokenAddress() {
 	chainID := gofakeit.Uint32()
 	destinationChainID := gofakeit.Uint32()
 	tokenAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
@@ -271,7 +271,7 @@ func (g *APISuite) TestGetCountByTokenAddress() {
 	Equal(g.T(), reached, 4)
 }
 
-func (g *APISuite) TestGetBridgeTransactions() {
+func (g APISuite) TestGetBridgeTransactions() {
 	chainID := gofakeit.Uint32()
 	destinationChainID := gofakeit.Uint32()
 	tokenAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
@@ -357,7 +357,7 @@ func (g *APISuite) TestGetBridgeTransactions() {
 	Equal(g.T(), originResOne, addressResOne)
 }
 
-func (g *APISuite) TestLatestBridgeTransaction() {
+func (g APISuite) TestLatestBridgeTransaction() {
 	// var kappaStringA, kappaStringB string
 	chainIDA := gofakeit.Uint32()
 	chainIDB := gofakeit.Uint32()
@@ -432,7 +432,7 @@ func (g *APISuite) TestLatestBridgeTransaction() {
 }
 
 //nolint:cyclop
-func (g *APISuite) TestAddressRanking() {
+func (g APISuite) TestAddressRanking() {
 	var chainID uint32
 	chainIDs := []uint32{gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32()}
 	destinationChainIDA := gofakeit.Uint32()
