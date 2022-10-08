@@ -262,7 +262,7 @@ func GenerateSingleSpecifierStringSQL(value *string, field string, firstFilter *
 }
 
 // PartialInfosFromIdentifiers returns events given identifiers. If order is true, the events are ordered by block number.
-func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int, order bool) (partialInfos []*model.PartialInfo, err error) {
+func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int) (partialInfos []*model.PartialInfo, err error) {
 	var res []BridgeEvent
 	firstFilter := true
 	chainIDSpecifier := GenerateSingleSpecifierI32SQL(chainID, ChainIDFieldName, &firstFilter)
@@ -270,16 +270,12 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32
 	tokenAddressSpecifier := GenerateSingleSpecifierStringSQL(tokenAddress, TokenFieldName, &firstFilter)
 	kappaSpecifier := GenerateSingleSpecifierStringSQL(kappa, KappaFieldName, &firstFilter)
 	txHashSpecifier := GenerateSingleSpecifierStringSQL(txHash, TxHashFieldName, &firstFilter)
-	orderSpecifier := ""
-	if order {
-		orderSpecifier = fmt.Sprintf(" ORDER BY %s DESC", BlockNumberFieldName)
-	}
 
-	pageSpecifier := ""
+	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC LIMIT %d OFFSET %d", BlockNumberFieldName, PageSize, (page-1)*PageSize)
 
 	compositeIdentifiers := fmt.Sprintf(
-		`%s%s%s%s%s%s%s`,
-		chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, pageSpecifier, kappaSpecifier, txHashSpecifier, orderSpecifier,
+		`%s%s%s%s%s%s`,
+		chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, kappaSpecifier, txHashSpecifier, pageSpecifier,
 	)
 
 	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(

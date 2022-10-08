@@ -44,18 +44,18 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	case txnHash != nil:
 		// If we are given a transaction hash, we search for the bridge transaction on the origin chain, then locate
 		// its counterpart on the destination chain using the kappa (the keccak256 hash of the transaction hash).
-		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, chainIDRef, address, tokenAddress, nil, txnHash, *page, false)
+		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, chainIDRef, address, tokenAddress, nil, txnHash, *page)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
-		results, err = r.originToDestinationBridge(ctx, address, kappa, includePending, page, tokenAddress, fromInfos, false)
+		results, err = r.originToDestinationBridge(ctx, address, kappa, includePending, page, tokenAddress, fromInfos)
 		if err != nil {
 			fmt.Println("originToDestinationBridge threw an error")
 		}
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
-		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, chainIDRef, address, tokenAddress, kappa, nil, *page, false)
+		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, chainIDRef, address, tokenAddress, kappa, nil, *page)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -67,7 +67,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for
 		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
 		// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
-		results, err = r.originOrDestinationBridge(ctx, chainIDRef, address, txnHash, kappa, includePending, page, tokenAddress, false)
+		results, err = r.originOrDestinationBridge(ctx, chainIDRef, address, txnHash, kappa, includePending, page, tokenAddress)
 	}
 
 	if err != nil {
@@ -95,13 +95,13 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 	var results []*model.BridgeTransaction
 	for i := range chainIDs {
 		// Get the PartialInfo for the latest bridge transaction.
-		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, &chainIDs[i], nil, nil, nil, nil, *page, true)
+		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, &chainIDs[i], nil, nil, nil, nil, *page)
 		if err != nil || len(fromInfos) == 0 {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
 
 		// Take the fromInfo from the latest bridge transaction and use it to get the bridge transaction.
-		bridgeTxn, err := r.originToDestinationBridge(ctx, nil, nil, includePending, page, nil, fromInfos, true)
+		bridgeTxn, err := r.originToDestinationBridge(ctx, nil, nil, includePending, page, nil, fromInfos)
 		if err != nil || len(bridgeTxn) == 0 {
 			return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 		}
