@@ -122,7 +122,7 @@ func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int
 	}
 	msgFrom, err := ethTx[0].AsMessage(types.NewEIP2930Signer(ethTx[0].ChainId()), big.NewInt(1))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error retrieving ethtx: %w", err)
 	}
 	sender := msgFrom.From().String()
 	return &sender, nil

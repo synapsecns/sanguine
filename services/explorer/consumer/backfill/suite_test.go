@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
+	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -32,6 +33,7 @@ type BackfillSuite struct {
 	deployManager        *testutil.DeployManager
 	testDeployManager    *testcontracts.DeployManager
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
+	consumerFetcher      *consumer.Fetcher
 }
 
 // NewBackfillSuite creates a new backfill test suite.
@@ -81,7 +83,7 @@ func (b *BackfillSuite) SetupTest() {
 	b.db, b.eventDB, b.gqlClient, b.logIndex, b.cleanup, b.testBackend, b.deployManager = testutil.NewTestEnvDB(b.GetTestContext(), b.T())
 
 	b.testDeployManager = testcontracts.NewDeployManager(b.T())
-
+	b.consumerFetcher = consumer.NewFetcher(b.gqlClient)
 	var deployInfo contracts.DeployedContract
 	deployInfo, b.bridgeConfigContract = b.testDeployManager.GetBridgeConfigV3(b.GetTestContext(), b.testBackend)
 

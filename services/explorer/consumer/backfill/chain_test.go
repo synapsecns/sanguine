@@ -112,11 +112,11 @@ func (b *BackfillSuite) TestBackfill() {
 	// set up a ChainBackfiller
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
 	Nil(b.T(), err)
-	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf)
+	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf, b.consumerFetcher)
 	Nil(b.T(), err)
-	spA, err := consumer.NewSwapParser(b.db, swapContractA.Address())
+	spA, err := consumer.NewSwapParser(b.db, swapContractA.Address(), b.consumerFetcher)
 	Nil(b.T(), err)
-	spB, err := consumer.NewSwapParser(b.db, swapContractB.Address())
+	spB, err := consumer.NewSwapParser(b.db, swapContractB.Address(), b.consumerFetcher)
 	Nil(b.T(), err)
 	spMap := map[common.Address]*consumer.SwapParser{}
 	spMap[swapContractA.Address()] = spA
@@ -469,7 +469,7 @@ func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.Bridg
 			TokenIndexTo:   big.NewInt(int64(parsedLog.TokenIndexTo)),
 			MinDy:          parsedLog.MinDy,
 			Deadline:       parsedLog.Deadline,
-			SwapSuccess:    big.NewInt(int64(*sql.BoolToUint8(&parsedLog.SwapSuccess))),
+			SwapSuccess:    big.NewInt(int64(*consumer.BoolToUint8(&parsedLog.SwapSuccess))),
 			Kappa:          kappa,
 		}).Count(&count)
 	if events.Error != nil {
@@ -509,7 +509,7 @@ func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer
 			SwapTokenIndex: big.NewInt(int64(parsedLog.SwapTokenIndex)),
 			SwapMinAmount:  parsedLog.SwapMinAmount,
 			SwapDeadline:   parsedLog.SwapDeadline,
-			SwapSuccess:    big.NewInt(int64(*sql.BoolToUint8(&parsedLog.SwapSuccess))),
+			SwapSuccess:    big.NewInt(int64(*consumer.BoolToUint8(&parsedLog.SwapSuccess))),
 			Kappa:          kappa,
 		}).Count(&count)
 	if events.Error != nil {

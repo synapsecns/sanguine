@@ -46,10 +46,7 @@ type AddressRanking {
   address:  String
   count:    Int
 }
-type CSVData {
-  cid:            String
-  ipfsGatewayUrl: String
-}
+
 enum Duration {
   PAST_DAY
   ALL_TIME

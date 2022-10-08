@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/services/explorer/db"
 	gormClickhouse "gorm.io/driver/clickhouse"
 	"gorm.io/gorm"
 	"time"
@@ -16,7 +15,7 @@ type Store struct {
 }
 
 // DB gets the underlying gorm db.
-func (s Store) DB() *gorm.DB {
+func (s *Store) DB() *gorm.DB {
 	return s.db
 }
 
@@ -40,5 +39,3 @@ func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 	}
 	return &Store{clickhouseDB}, nil
 }
-
-var _ db.ConsumerDB = &Store{}

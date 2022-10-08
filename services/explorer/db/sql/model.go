@@ -25,6 +25,7 @@ func init() {
 	KappaFieldName = namer.GetConsistentName("Kappa")
 	DestinationKappaFieldName = namer.GetConsistentName("DestinationKappa")
 	SenderFieldName = namer.GetConsistentName("Sender")
+	TimeStampFieldName = namer.GetConsistentName("TimeStamp")
 }
 
 var (
@@ -56,10 +57,77 @@ var (
 	DestinationKappaFieldName string
 	// SenderFieldName is the sender field name.
 	SenderFieldName string
+	// TimeStampFieldName is the timestamp field name.
+	TimeStampFieldName string
 )
 
 // PageSize is the amount of entries per page of events.
 var PageSize = 100
+
+// BridgeEvent stores data for emitted events from the Bridge contract.
+type BridgeEvent struct {
+	// InsertTime is the time the event was inserted into the database
+	InsertTime uint64 `gorm:"column:insert_time"`
+	// ContractAddress is the address of the contract that generated the event
+	ContractAddress string `gorm:"column:contract_address"`
+	// ChainID is the chain id of the contract that generated the event
+	ChainID uint32 `gorm:"column:chain_id"`
+	// EventType is the type of the event
+	EventType uint8 `gorm:"column:event_type"`
+	// BlockNumber is the block number of the event
+	BlockNumber uint64 `gorm:"column:block_number"`
+	// TxHash is the transaction hash of the event
+	TxHash string `gorm:"column:tx_hash"`
+	// Token is the address of the token
+	Token string `gorm:"column:token"`
+	// Amount is the amount of tokens
+	Amount *big.Int `gorm:"column:amount;type:UInt256"`
+	// EventIndex is the index of the log
+	EventIndex uint64 `gorm:"column:event_index"`
+	// DestinationKappa is the destination kappa
+	DestinationKappa string `gorm:"column:destination_kappa"`
+	// Sender is the address of the sender
+	Sender string `gorm:"column:sender"`
+
+	// Recipient is the address to send the tokens to
+	Recipient sql.NullString `gorm:"column:recipient"`
+	// RecipientBytes is the recipient address in bytes
+	RecipientBytes sql.NullString `gorm:"column:recipient_bytes"`
+	// DestinationChainID is the chain id of the chain to send the tokens to
+	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
+	// Fee is the fee
+	Fee *big.Int `gorm:"column:fee;type:UInt256"`
+	// Kappa is theFee keccak256 hash of the transaction
+	Kappa sql.NullString `gorm:"column:kappa"`
+	// TokenIndexFrom is the index of the from token in the pool
+	TokenIndexFrom *big.Int `gorm:"column:token_index_from;type:UInt256"`
+	// TokenIndexTo is the index of the to token in the pool
+	TokenIndexTo *big.Int `gorm:"column:token_index_to;type:UInt256"`
+	// MinDy is the minimum amount of tokens to receive
+	MinDy *big.Int `gorm:"column:min_dy;type:UInt256"`
+	// Deadline is the deadline of the transaction
+	Deadline *big.Int `gorm:"column:deadline;type:UInt256"`
+	// SwapSuccess is whether the swap was successful
+	SwapSuccess *big.Int `gorm:"column:swap_success;type:UInt256"`
+	// SwapTokenIndex is the index of the token in the pool
+	SwapTokenIndex *big.Int `gorm:"column:swap_token_index;type:UInt256"`
+	// SwapMinAmount is the minimum amount of tokens to receive
+	SwapMinAmount *big.Int `gorm:"column:swap_min_amount;type:UInt256"`
+	// SwapDeadline is the deadline of the swap transaction
+	SwapDeadline *big.Int `gorm:"column:swap_deadline;type:UInt256"`
+	// TokenID is the token's ID
+	TokenID sql.NullString `gorm:"column:token_id"`
+	// AmountUSD is the amount in USD
+	AmountUSD *float64 `gorm:"column:amount_usd;type:Float64"`
+	// FeeAmountUSD is the fee amount in USD
+	FeeAmountUSD *float64 `gorm:"column:fee_amount_usd;type:Float64"`
+	// TokenDecimal is the token's decimal
+	TokenDecimal *uint8 `gorm:"column:token_decimal"`
+	// TokenSymbol is the token's symbol from coin gecko
+	TokenSymbol sql.NullString `gorm:"column:token_symbol"`
+	// TimeStamp is the timestamp of the block in which the event occurred.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
+}
 
 // SwapEvent stores data for emitted events from the Swap contract.
 type SwapEvent struct {
@@ -128,61 +196,14 @@ type SwapEvent struct {
 	Time *big.Int `gorm:"column:time;type:UInt256"`
 	// Receiver is the address of the receiver
 	Receiver sql.NullString `gorm:"column:receiver"`
-	// TokenID is the token's ID
-	TokenID sql.NullString `gorm:"column:token_id"`
-}
-
-// BridgeEvent stores data for emitted events from the Bridge contract.
-type BridgeEvent struct {
-	// InsertTime is the time the event was inserted into the database
-	InsertTime uint64 `gorm:"column:insert_time"`
-	// ContractAddress is the address of the contract that generated the event
-	ContractAddress string `gorm:"column:contract_address"`
-	// ChainID is the chain id of the contract that generated the event
-	ChainID uint32 `gorm:"column:chain_id"`
-	// EventType is the type of the event
-	EventType uint8 `gorm:"column:event_type"`
-	// BlockNumber is the block number of the event
-	BlockNumber uint64 `gorm:"column:block_number"`
-	// TxHash is the transaction hash of the event
-	TxHash string `gorm:"column:tx_hash"`
-	// Token is the address of the token
-	Token string `gorm:"column:token"`
-	// Amount is the amount of tokens
-	Amount *big.Int `gorm:"column:amount;type:UInt256"`
-	// EventIndex is the index of the log
-	EventIndex uint64 `gorm:"column:event_index"`
-	// DestinationKappa is the destination kappa
-	DestinationKappa string `gorm:"column:destination_kappa"`
-	// Sender is the address of the sender
-	Sender string `gorm:"column:sender"`
-
-	// Recipient is the address to send the tokens to
-	Recipient sql.NullString `gorm:"column:recipient"`
-	// RecipientBytes is the recipient address in bytes
-	RecipientBytes sql.NullString `gorm:"column:recipient_bytes"`
-	// DestinationChainID is the chain id of the chain to send the tokens to
-	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
-	// Fee is the fee
-	Fee *big.Int `gorm:"column:fee;type:UInt256"`
-	// Kappa is theFee keccak256 hash of the transaction
-	Kappa sql.NullString `gorm:"column:kappa"`
-	// TokenIndexFrom is the index of the from token in the pool
-	TokenIndexFrom *big.Int `gorm:"column:token_index_from;type:UInt256"`
-	// TokenIndexTo is the index of the to token in the pool
-	TokenIndexTo *big.Int `gorm:"column:token_index_to;type:UInt256"`
-	// MinDy is the minimum amount of tokens to receive
-	MinDy *big.Int `gorm:"column:min_dy;type:UInt256"`
-	// Deadline is the deadline of the transaction
-	Deadline *big.Int `gorm:"column:deadline;type:UInt256"`
-	// SwapSuccess is whether the swap was successful
-	SwapSuccess *big.Int `gorm:"column:swap_success;type:UInt256"`
-	// SwapTokenIndex is the index of the token in the pool
-	SwapTokenIndex *big.Int `gorm:"column:swap_token_index;type:UInt256"`
-	// SwapMinAmount is the minimum amount of tokens to receive
-	SwapMinAmount *big.Int `gorm:"column:swap_min_amount;type:UInt256"`
-	// SwapDeadline is the deadline of the swap transaction
-	SwapDeadline *big.Int `gorm:"column:swap_deadline;type:UInt256"`
-	// TokenID is the token's ID
-	TokenID sql.NullString `gorm:"column:token_id"`
+	// AmountUSD is the amount in USD
+	AmountsUSD []float64 `gorm:"column:amount_usd;type:Array(Float64)"`
+	// FeeAmountUSD is the fee amount in USD
+	FeeAmountsUSD []float64 `gorm:"column:fee_amount_usd;type:Array(Float64)"`
+	// TokenDecimal is the token's decimal
+	TokenDecimal *uint8 `gorm:"column:token_decimal"`
+	// TokenSymbol is the token's symbol from coingecko
+	TokenSymbol sql.NullString `gorm:"column:token_symbol"`
+	// TimeStamp is the timestamp of the block in which the event occurred.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
