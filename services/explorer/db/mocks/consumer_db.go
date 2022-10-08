@@ -240,13 +240,13 @@ func (_m *ConsumerDB) GetTxHashFromKappa(ctx context.Context, kappa string) (*st
 	return r0, r1
 }
 
-// PartialInfosFromIdentifiers provides a mock function with given fields: ctx, chainID, address, tokenAddress, kappa, txHash, page, order
-func (_m *ConsumerDB) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address *string, tokenAddress *string, kappa *string, txHash *string, page int, order bool) ([]*model.PartialInfo, error) {
-	ret := _m.Called(ctx, chainID, address, tokenAddress, kappa, txHash, page, order)
+// PartialInfosFromIdentifiers provides a mock function with given fields: ctx, chainID, address, tokenAddress, kappa, txHash, page
+func (_m *ConsumerDB) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address *string, tokenAddress *string, kappa *string, txHash *string, page int) ([]*model.PartialInfo, error) {
+	ret := _m.Called(ctx, chainID, address, tokenAddress, kappa, txHash, page)
 
 	var r0 []*model.PartialInfo
-	if rf, ok := ret.Get(0).(func(context.Context, *uint32, *string, *string, *string, *string, int, bool) []*model.PartialInfo); ok {
-		r0 = rf(ctx, chainID, address, tokenAddress, kappa, txHash, page, order)
+	if rf, ok := ret.Get(0).(func(context.Context, *uint32, *string, *string, *string, *string, int) []*model.PartialInfo); ok {
+		r0 = rf(ctx, chainID, address, tokenAddress, kappa, txHash, page)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*model.PartialInfo)
@@ -254,8 +254,8 @@ func (_m *ConsumerDB) PartialInfosFromIdentifiers(ctx context.Context, chainID *
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *uint32, *string, *string, *string, *string, int, bool) error); ok {
-		r1 = rf(ctx, chainID, address, tokenAddress, kappa, txHash, page, order)
+	if rf, ok := ret.Get(1).(func(context.Context, *uint32, *string, *string, *string, *string, int) error); ok {
+		r1 = rf(ctx, chainID, address, tokenAddress, kappa, txHash, page)
 	} else {
 		r1 = ret.Error(1)
 	}
