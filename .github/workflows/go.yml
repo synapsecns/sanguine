@@ -3,7 +3,7 @@ on:
   pull_request:
   push:
     branches-ignore:
-      - 'gh-spages'
+      - 'gh-pages'
 
 jobs:
   test:
