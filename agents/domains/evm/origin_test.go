@@ -75,6 +75,5 @@ func (i ContractSuite) TestFetchSortedOriginUpdates() {
 	for iter, message := range messages {
 		testDispatch := testDispatches[iter]
 		True(i.T(), bytes.Contains(message.Message(), testDispatch.message))
-		Equal(i.T(), message.LeafIndex(), uint32(iter))
 	}
 }

@@ -65,7 +65,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 // If `onlyOneBlock` is true, the backfiller will only backfill the block at `endHeight`.
 //
 //nolint:gocognit,cyclop
-func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64, onlyOneBlock bool) error {
+func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
 	// iterate over each contract backfiller
@@ -91,10 +91,17 @@ func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64, onlyOne
 				case <-groupCtx.Done():
 					return fmt.Errorf("context canceled: %w", groupCtx.Err())
 				case <-time.After(timeout):
+					// get the end height for the backfill
+					endHeight, err := c.client.BlockNumber(ctx)
+					if err != nil {
+						timeout = b.Duration()
+						logger.Warnf("could not get block number, bad connection to rpc likely: %w", err)
+						continue
+					}
 					if onlyOneBlock {
 						startHeight = endHeight
 					}
-					err := contractBackfiller.Backfill(groupCtx, startHeight, endHeight)
+					err = contractBackfiller.Backfill(groupCtx, startHeight, endHeight)
 					if err != nil {
 						timeout = b.Duration()
 						logger.Warnf("could not backfill data: %w", err)
@@ -122,6 +129,13 @@ func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64, onlyOne
 		case <-groupCtx.Done():
 			return fmt.Errorf("context canceled: %w", groupCtx.Err())
 		case <-time.After(timeout):
+			// get the end height for the backfill
+			endHeight, err := c.client.BlockNumber(ctx)
+			if err != nil {
+				timeout = b.Duration()
+				logger.Warnf("could not get block number, bad connection to rpc likely: %w", err)
+				goto RETRY
+			}
 			startHeight, err := c.startHeightForBlockTime(groupCtx)
 			if err != nil {
 				return fmt.Errorf("could not get start height for block time: %w", err)
@@ -129,6 +143,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, endHeight uint64, onlyOne
 			if startHeight != 0 {
 				startHeight--
 			}
+
 			for blockNum := startHeight; blockNum <= endHeight; blockNum++ {
 				header, err := c.client.HeaderByNumber(groupCtx, big.NewInt(int64(blockNum)))
 				if err != nil {

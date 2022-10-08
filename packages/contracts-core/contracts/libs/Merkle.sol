@@ -13,34 +13,35 @@ library MerkleLib {
     uint256 internal constant MAX_LEAVES = 2**TREE_DEPTH - 1;
 
     /**
-     * @notice Struct representing incremental merkle tree. Contains current
-     * branch and the number of inserted leaves in the tree.
+     * @notice Struct representing incremental merkle tree. Contains the current branch,
+     * while the number of inserted leaves are stored externally.
      **/
     struct Tree {
         bytes32[TREE_DEPTH] branch;
-        uint256 count;
     }
 
     /**
      * @notice Inserts `_node` into merkle tree
      * @dev Reverts if tree is full
-     * @param _node Element to insert into tree
+     * @param _count    Amount of inserted leaves in the tree
+     * @param _node     Element to insert into tree
      **/
-    function insert(Tree storage _tree, bytes32 _node) internal {
-        uint256 size = _tree.count;
-        require(size < MAX_LEAVES, "merkle tree full");
-
+    function insert(
+        Tree storage _tree,
+        uint256 _count,
+        bytes32 _node
+    ) internal {
+        require(_count < MAX_LEAVES, "merkle tree full");
         unchecked {
-            ++size;
+            ++_count;
         }
-        _tree.count = size;
         for (uint256 i = 0; i < TREE_DEPTH; ) {
-            if ((size & 1) == 1) {
+            if ((_count & 1) == 1) {
                 _tree.branch[i] = _node;
                 return;
             }
             _node = keccak256(abi.encodePacked(_tree.branch[i], _node));
-            size >>= 1;
+            _count >>= 1;
             unchecked {
                 ++i;
             }
@@ -53,18 +54,17 @@ library MerkleLib {
     /**
      * @notice Calculates and returns`_tree`'s current root given array of zero
      * hashes
-     * @param _zeroes Array of zero hashes
+     * @param _count    Amount of inserted leaves in the tree
+     * @param _zeroes   Array of zero hashes
      * @return _current Calculated root of `_tree`
      **/
-    function rootWithCtx(Tree storage _tree, bytes32[TREE_DEPTH] memory _zeroes)
-        internal
-        view
-        returns (bytes32 _current)
-    {
-        uint256 _index = _tree.count;
-
+    function rootWithCtx(
+        Tree storage _tree,
+        uint256 _count,
+        bytes32[TREE_DEPTH] memory _zeroes
+    ) internal view returns (bytes32 _current) {
         for (uint256 i = 0; i < TREE_DEPTH; ) {
-            uint256 _ithBit = (_index >> i) & 0x01;
+            uint256 _ithBit = (_count >> i) & 0x01;
             if (_ithBit == 1) {
                 _current = keccak256(abi.encodePacked(_tree.branch[i], _current));
             } else {
@@ -76,9 +76,13 @@ library MerkleLib {
         }
     }
 
-    /// @notice Calculates and returns`_tree`'s current root
-    function root(Tree storage _tree) internal view returns (bytes32) {
-        return rootWithCtx(_tree, zeroHashes());
+    /**
+     * @notice Calculates and returns`_tree`'s current root
+     * @param _count    Amount of inserted leaves in the tree
+     * @return Calculated root of `_tree`
+     **/
+    function root(Tree storage _tree, uint256 _count) internal view returns (bytes32) {
+        return rootWithCtx(_tree, _count, zeroHashes());
     }
 
     /// @notice Returns array of TREE_DEPTH zero hashes

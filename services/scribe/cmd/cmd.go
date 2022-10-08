@@ -3,16 +3,18 @@ package cmd
 import (
 	// used to embed markdown.
 	_ "embed"
+	"fmt"
 	"github.com/synapsecns/sanguine/core/commandline"
+	"github.com/synapsecns/sanguine/core/config"
 	"github.com/urfave/cli/v2"
 )
 
 // Start starts the command line.
-func Start(args []string) {
+func Start(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
-	app.Name = "scribe"
-	app.Description = "scribe is used to run a generic event indexer"
-	app.Usage = "scribe help"
+	app.Name = buildInfo.Name()
+	app.Description = buildInfo.VersionString() + "scribe is used to run a generic event indexer"
+	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
 
 	// commands

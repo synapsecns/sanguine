@@ -3,15 +3,14 @@ package backfill
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"math/big"
-
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"golang.org/x/sync/errgroup"
+	"math/big"
 )
 
 // ScribeBackfiller is a backfiller that aggregates all backfilling from ChainBackfillers.
@@ -56,14 +55,9 @@ func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 	for _, chainBackfiller := range s.ChainBackfillers {
 		// capture func literal
 		chainBackfiller := chainBackfiller
-		// get the end height for the backfill
-		currentBlock, err := s.clients[chainBackfiller.chainID].BlockNumber(groupCtx)
-		if err != nil {
-			return fmt.Errorf("could not get current block number: %w", err)
-		}
 		// call Backfill concurrently
 		g.Go(func() error {
-			err := chainBackfiller.Backfill(groupCtx, currentBlock, false)
+			err := chainBackfiller.Backfill(groupCtx, false)
 			if err != nil {
 				return fmt.Errorf("could not backfill chain: %w", err)
 			}

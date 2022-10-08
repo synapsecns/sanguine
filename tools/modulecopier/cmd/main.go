@@ -10,14 +10,13 @@ import (
 	"os"
 )
 
-const appName = "modulecopier"
-
 // Run runs the module copier.
-func Run(args []string) {
+func Run(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
-	app.Name = appName
-	app.Version = config.AppVersion
-	app.Description = "This is used for copying files out of modules in order to export unused fields. This should only be used for unit testing"
+	app.Name = buildInfo.Name()
+	app.Version = buildInfo.Version()
+	app.Description = buildInfo.VersionString() + "This is used for copying files out of modules in order to export unused fields. This should only be used for unit testing"
+	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.Flags = []cli.Flag{
 		modulePathFlag,
 		filePathFlag,
