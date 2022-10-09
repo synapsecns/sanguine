@@ -114,9 +114,17 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf, b.consumerFetcher)
 	Nil(b.T(), err)
-	spA, err := consumer.NewSwapParser(b.db, swapContractA.Address(), b.consumerFetcher)
+
+	// srB is the swap ref for getting token data
+	srA, err := consumer.NewSwapFetcher(swapContractA.Address(), b.testBackend)
 	Nil(b.T(), err)
-	spB, err := consumer.NewSwapParser(b.db, swapContractB.Address(), b.consumerFetcher)
+	spA, err := consumer.NewSwapParser(b.db, swapContractA.Address(), *srA, b.consumerFetcher)
+	Nil(b.T(), err)
+
+	// srB is the swap ref for getting token data
+	srB, err := consumer.NewSwapFetcher(swapContractB.Address(), b.testBackend)
+	Nil(b.T(), err)
+	spB, err := consumer.NewSwapParser(b.db, swapContractB.Address(), *srB, b.consumerFetcher)
 	Nil(b.T(), err)
 	spMap := map[common.Address]*consumer.SwapParser{}
 	spMap[swapContractA.Address()] = spA

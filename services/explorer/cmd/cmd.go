@@ -3,8 +3,8 @@ package cmd
 import (
 	// used to embed markdown.
 	_ "embed"
-	"github.com/synapsecns/sanguine/core/commandline"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/urfave/cli/v2"
 )
