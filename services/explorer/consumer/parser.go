@@ -479,7 +479,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 		var tokenSymbols map[uint8]string
 
 		// Get metadata for each token amount
-		for tokenIndex, _ := range swapEvent.Amount {
+		for tokenIndex := range swapEvent.Amount {
 			// get token symbol and decimals from the erc20 contract associated to the token.
 			symbol, decimals := p.swapFetcher.GetTokenMetaData(ctx, tokenIndex)
 			if symbol != nil && decimals != nil {
@@ -499,9 +499,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 			swapEvent.TokenPrices = tokenPrices
 			swapEvent.TokenDecimal = tokenDecimals
 			swapEvent.TokenSymbol = tokenSymbols
-
 		}
-
 	}
 
 	// Store bridgeEvent

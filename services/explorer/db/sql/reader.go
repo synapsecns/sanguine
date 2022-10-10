@@ -306,22 +306,37 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32
 	tokenAddressSpecifier := GenerateSingleSpecifierStringSQLS(tokenAddress, TokenFieldName, &firstFilter)
 	kappaSpecifier := GenerateSingleSpecifierStringSQLS(kappa, KappaFieldName, &firstFilter)
 	txHashSpecifier := GenerateSingleSpecifierStringSQLS(txHash, TxHashFieldName, &firstFilter)
-
 	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC LIMIT %d OFFSET %d", BlockNumberFieldName, PageSize, (page-1)*PageSize)
 
-	compositeIdentifiers := fmt.Sprintf(
-		`%s%s%s%s%s%s`,
-		chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, kappaSpecifier, txHashSpecifier, pageSpecifier,
+	compositeIdentifiers := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + kappaSpecifier + txHashSpecifier + pageSpecifier
+	selectParameters := fmt.Sprintf(
+		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
+		ContractAddressFieldName, ChainIDFieldName, EventTypeFieldName, BlockNumberFieldName,
+		TokenFieldName, AmountFieldName, EventIndexFieldName, DestinationKappaFieldName,
+		SenderFieldName, TxHashFieldName, InsertTimeFieldName,
+	)
+	groupByParameters := fmt.Sprintf(
+		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s`,
+		TxHashFieldName, ContractAddressFieldName, ChainIDFieldName, EventTypeFieldName, BlockNumberFieldName,
+		TokenFieldName, AmountFieldName, EventIndexFieldName, DestinationKappaFieldName, SenderFieldName,
+	)
+	joinOnParameters := fmt.Sprintf(
+		`t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s
+		AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = insert_max_time`,
+		TxHashFieldName, TxHashFieldName, ContractAddressFieldName, ContractAddressFieldName, ChainIDFieldName,
+		ChainIDFieldName, EventTypeFieldName, EventTypeFieldName, BlockNumberFieldName, BlockNumberFieldName,
+		TokenFieldName, TokenFieldName, AmountFieldName, AmountFieldName, EventIndexFieldName, EventIndexFieldName,
+		DestinationKappaFieldName, DestinationKappaFieldName, SenderFieldName, SenderFieldName, InsertTimeFieldName,
 	)
 
 	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
 		`
 		SELECT t1.* FROM bridge_events t1
     	JOIN (
-    	SELECT %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s) AS insert_max_time
-    	FROM bridge_events GROUP BY %s,%s, %s,%s,%s,%s,%s,%s,%s,%s) t2
-    	    ON (t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = insert_max_time) %s `,
-		ContractAddressFieldName, ChainIDFieldName, EventTypeFieldName, BlockNumberFieldName, TokenFieldName, AmountFieldName, EventIndexFieldName, DestinationKappaFieldName, SenderFieldName, TxHashFieldName, InsertTimeFieldName, TxHashFieldName, ContractAddressFieldName, ChainIDFieldName, EventTypeFieldName, BlockNumberFieldName, TokenFieldName, AmountFieldName, EventIndexFieldName, DestinationKappaFieldName, SenderFieldName, TxHashFieldName, TxHashFieldName, ContractAddressFieldName, ContractAddressFieldName, ChainIDFieldName, ChainIDFieldName, EventTypeFieldName, EventTypeFieldName, BlockNumberFieldName, BlockNumberFieldName, TokenFieldName, TokenFieldName, AmountFieldName, AmountFieldName, EventIndexFieldName, EventIndexFieldName, DestinationKappaFieldName, DestinationKappaFieldName, SenderFieldName, SenderFieldName, InsertTimeFieldName, compositeIdentifiers,
+    	SELECT %s AS insert_max_time
+    	FROM bridge_events GROUP BY %s) t2
+    	    ON (%s) %s `,
+		selectParameters, groupByParameters, joinOnParameters, compositeIdentifiers,
 	)).Find(&res)
 
 	fmt.Println("dbTx!", dbTx)
@@ -340,11 +355,13 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32
 		case res[i].RecipientBytes.Valid:
 			recipient = res[i].RecipientBytes.String
 		default:
-			recipient = ""
+			return nil, fmt.Errorf("recipient is not valid")
 		}
 		var tokenSymbol string
 		if res[i].TokenSymbol.Valid && res[i].TokenSymbol.String != "" {
 			tokenSymbol = res[i].TokenSymbol.String
+		} else {
+			return nil, fmt.Errorf("token symbol is not valid")
 		}
 		value := res[i].Amount.String()
 		var formattedValue float64
@@ -354,10 +371,14 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32
 				return nil, fmt.Errorf("failed to parse float: %w", err)
 			}
 			formattedValue /= math.Pow10(int(*res[i].TokenDecimal))
+		} else {
+			return nil, fmt.Errorf("token decimal is not valid")
 		}
 		var timeStamp int
 		if res[i].TimeStamp != nil {
 			timeStamp = int(*res[i].TimeStamp)
+		} else {
+			return nil, fmt.Errorf("time stamp is not valid")
 		}
 
 		partialInfos = append(partialInfos, &model.PartialInfo{

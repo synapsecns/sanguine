@@ -387,11 +387,16 @@ func (g APISuite) TestLatestBridgeTransaction() {
 	var kappaStringA, kappaStringB string
 	chainIDA := gofakeit.Uint32()
 	chainIDB := gofakeit.Uint32()
+	tokenDecimal := uint8(1)
 	page := 1
 
 	var blockNumber uint64
 	// Generate multiple bridge events for different chain IDs.
-	for blockNumber = uint64(1); blockNumber <= 10; blockNumber++ {
+	for {
+		if blockNumber > 10 {
+			break
+		}
+		// for blockNumber = uint64(1); blockNumber <= 10; blockNumber++ {
 		txHashA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		txHashB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		kappaStringA = crypto.Keccak256Hash(txHashA.Bytes()).String()
@@ -405,6 +410,10 @@ func (g APISuite) TestLatestBridgeTransaction() {
 			DestinationKappa:   kappaStringA,
 			Amount:             big.NewInt(int64(gofakeit.Uint32())),
 			Kappa:              gosql.NullString{String: kappaStringB, Valid: true},
+			Recipient:          gosql.NullString{String: gofakeit.Word(), Valid: true},
+			TokenSymbol:        gosql.NullString{String: gofakeit.Word(), Valid: true},
+			TokenDecimal:       &tokenDecimal,
+			TimeStamp:          &blockNumber,
 		})
 		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			InsertTime:         1,
@@ -415,16 +424,22 @@ func (g APISuite) TestLatestBridgeTransaction() {
 			DestinationKappa:   kappaStringB,
 			Amount:             big.NewInt(int64(gofakeit.Uint32())),
 			Kappa:              gosql.NullString{String: kappaStringA, Valid: true},
+			Recipient:          gosql.NullString{String: gofakeit.Word(), Valid: true},
+			TokenSymbol:        gosql.NullString{String: gofakeit.Word(), Valid: true},
+			TokenDecimal:       &tokenDecimal,
+			TimeStamp:          &blockNumber,
 		})
 		// Set all times after current time, so we can get the events.
 		err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainIDA, blockNumber, blockNumber)
 		Nil(g.T(), err)
 		err = g.eventDB.StoreBlockTime(g.GetTestContext(), chainIDB, blockNumber, blockNumber)
 		Nil(g.T(), err)
+		blockNumber++
 	}
 	// Add one more bridge event without a completed destination event to test pending.
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	kappaString := crypto.Keccak256Hash(txHash.Bytes()).String()
+	newBlockNumber := blockNumber + 1
 	g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 		InsertTime:         1,
 		ChainID:            chainIDA,
@@ -433,8 +448,12 @@ func (g APISuite) TestLatestBridgeTransaction() {
 		TxHash:             txHash.String(),
 		DestinationKappa:   kappaString,
 		Amount:             big.NewInt(int64(gofakeit.Uint32())),
+		Recipient:          gosql.NullString{String: gofakeit.Word(), Valid: true},
+		TokenSymbol:        gosql.NullString{String: gofakeit.Word(), Valid: true},
+		TokenDecimal:       &tokenDecimal,
+		TimeStamp:          &newBlockNumber,
 	})
-	err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainIDA, blockNumber+1, blockNumber+1)
+	err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainIDA, newBlockNumber, newBlockNumber)
 	Nil(g.T(), err)
 	// Get the latest bridge transactions.
 	// Start with pending being true.
