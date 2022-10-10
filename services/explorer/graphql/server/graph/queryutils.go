@@ -55,11 +55,11 @@ func (r *queryResolver) getTargetTime(hours *int) uint64 {
 func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *string, kappa *string, includePending *bool, page *int, tokenAddress *string, fromInfos []*model.PartialInfo) ([]*model.BridgeTransaction, error) {
 	var results []*model.BridgeTransaction
 	for _, fromInfo := range fromInfos {
-		blockTime, err := r.Fetcher.FetchClient.GetBlockTime(ctx, *fromInfo.ChainID, *fromInfo.BlockNumber)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get block time: %w", err)
-		}
-		fromInfo.Time = blockTime.Response
+		//blockTime, err := r.Fetcher.FetchClient.GetBlockTime(ctx, *fromInfo.ChainID, *fromInfo.BlockNumber)
+		//if err != nil {
+		//	return nil, fmt.Errorf("failed to get block time: %w", err)
+		//}
+		//fromInfo.Time = blockTime.Response
 		txHash := common.HexToHash(*fromInfo.TxnHash)
 		destinationKappa := crypto.Keccak256Hash(txHash.Bytes()).String()
 		if kappa != nil {
@@ -72,11 +72,11 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 		switch len(toInfos) {
 		case 1:
 			toInfo := toInfos[0]
-			blockTime, err = r.Fetcher.FetchClient.GetBlockTime(ctx, *toInfo.ChainID, *toInfo.BlockNumber)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get block time: %w", err)
-			}
-			toInfo.Time = blockTime.Response
+			//blockTime, err = r.Fetcher.FetchClient.GetBlockTime(ctx, *toInfo.ChainID, *toInfo.BlockNumber)
+			//if err != nil {
+			//	return nil, fmt.Errorf("failed to get block time: %w", err)
+			//}
+			//toInfo.Time = blockTime.Response
 			swapSuccess, err := r.DB.GetSwapSuccess(ctx, destinationKappa, uint32(*toInfo.ChainID))
 			if err != nil {
 				return nil, fmt.Errorf("failed to get swap success: %w", err)
@@ -110,11 +110,11 @@ func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *
 	var results []*model.BridgeTransaction
 	pending := false
 	for _, toInfo := range toInfos {
-		blockTime, err := r.Fetcher.FetchClient.GetBlockTime(ctx, *toInfo.ChainID, *toInfo.BlockNumber)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get block time: %w", err)
-		}
-		toInfo.Time = blockTime.Response
+		//blockTime, err := r.Fetcher.FetchClient.GetBlockTime(ctx, *toInfo.ChainID, *toInfo.BlockNumber)
+		//if err != nil {
+		//	return nil, fmt.Errorf("failed to get block time: %w", err)
+		//}
+		//toInfo.Time = blockTime.Response
 		swapSuccess, err := r.DB.GetSwapSuccess(ctx, *kappa, uint32(*toInfo.ChainID))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get swap success: %w", err)
@@ -135,11 +135,11 @@ func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *
 			return nil, fmt.Errorf("multiple fromInfos found for kappa %s", *kappa)
 		case len(fromInfos) == 1:
 			fromInfo := fromInfos[0]
-			blockTime, err = r.Fetcher.FetchClient.GetBlockTime(ctx, *fromInfo.ChainID, *fromInfo.BlockNumber)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get block time: %w", err)
-			}
-			fromInfo.Time = blockTime.Response
+			//blockTime, err = r.Fetcher.FetchClient.GetBlockTime(ctx, *fromInfo.ChainID, *fromInfo.BlockNumber)
+			//if err != nil {
+			//	return nil, fmt.Errorf("failed to get block time: %w", err)
+			//}
+			//fromInfo.Time = blockTime.Response
 
 			results = append(results, &model.BridgeTransaction{
 				FromInfo:    fromInfo,

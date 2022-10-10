@@ -96,16 +96,19 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 	for i := range chainIDs {
 		// Get the PartialInfo for the latest bridge transaction.
 		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, &chainIDs[i], nil, nil, nil, nil, *page)
-		if err != nil || len(fromInfos) == 0 {
+		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
-
-		// Take the fromInfo from the latest bridge transaction and use it to get the bridge transaction.
-		bridgeTxn, err := r.originToDestinationBridge(ctx, nil, nil, includePending, page, nil, fromInfos)
-		if err != nil || len(bridgeTxn) == 0 {
-			return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
+		if len(fromInfos) != 0 {
+			// Take the fromInfo from the latest bridge transaction and use it to get the bridge transaction.
+			bridgeTxn, err := r.originToDestinationBridge(ctx, nil, nil, includePending, page, nil, fromInfos)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
+			}
+			if len(bridgeTxn) != 0 {
+				results = append(results, bridgeTxn[0])
+			}
 		}
-		results = append(results, bridgeTxn[0])
 	}
 
 	return results, nil

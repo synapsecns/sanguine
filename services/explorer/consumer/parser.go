@@ -296,7 +296,6 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 	// Get timestamp from consumer
 	timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
-	fmt.Println("TIMEEEEE", timeStamp)
 	// If we have a timestamp, populate the following attributes of bridgeEvent.
 	if err == nil {
 		timeStampBig := uint64(*timeStamp.Response)
@@ -306,8 +305,8 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		if tokenPrice != nil {
 			// Add AmountUSD to bridgeEvent (if price is not nil)
 			bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
-			// Add AmountUSD to bridgeEvent (if price is not nil)
-			bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
+			// Add FeeAmountUSD to bridgeEvent (if price is not nil)
+			bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
 			// Add TokenSymbol to bridgeEvent
 			bridgeEvent.TokenSymbol = ToNullString(symbol)
 		}

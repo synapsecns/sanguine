@@ -26,6 +26,8 @@ func init() {
 	DestinationKappaFieldName = namer.GetConsistentName("DestinationKappa")
 	SenderFieldName = namer.GetConsistentName("Sender")
 	TimeStampFieldName = namer.GetConsistentName("TimeStamp")
+	AmountUSDFieldName = namer.GetConsistentName("AmountUSD")
+	TokenDecimalFieldName = namer.GetConsistentName("TokenDecimal")
 }
 
 var (
@@ -59,6 +61,10 @@ var (
 	SenderFieldName string
 	// TimeStampFieldName is the timestamp field name.
 	TimeStampFieldName string
+	// AmountUSDFieldName is the amount in USD field name.
+	AmountUSDFieldName string
+	// TokenDecimalFieldName is the token decimal field name.
+	TokenDecimalFieldName string
 )
 
 // PageSize is the amount of entries per page of events.

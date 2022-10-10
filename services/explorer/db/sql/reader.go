@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"gorm.io/gorm"
+	"math"
+	"strconv"
 )
 
 // EventType is an enum for event types.
@@ -287,36 +289,6 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
 
-	// if kappa != nil {
-	//	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-	//		`SELECT * FROM bridge_events WHERE %s = %s AND %s`,
-	//		KappaFieldName, *kappa, compositeIdentifiers,
-	//	)).Find(&res)
-	//	if dbTx.Error != nil {
-	//		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-	//	}
-	// } else if txHash != nil {
-	//	fmt.Println(fmt.Sprintf(
-	//		`SELECT * FROM bridge_events WHERE %s = '%s' AND %s`,
-	//		TxHashFieldName, *txHash, compositeIdentifiers,
-	//	))
-	//	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-	//		`SELECT * FROM bridge_events WHERE %s = '%s' AND %s`,
-	//		TxHashFieldName, *txHash, compositeIdentifiers,
-	//	)).Find(&res)
-	//	if dbTx.Error != nil {
-	//		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-	//	}
-	// } else {
-	//	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-	//		`SELECT * FROM bridge_events WHERE %s`,
-	//		compositeIdentifiers,
-	//	)).Find(&res)
-	//	if dbTx.Error != nil {
-	//		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-	//	}
-	//}
-
 	for i := range res {
 		chainIDInt := int(res[i].ChainID)
 		blockNumberInt := int(res[i].BlockNumber)
@@ -329,13 +301,35 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32
 		default:
 			recipient = ""
 		}
+		var tokenSymbol string
+		if res[i].TokenSymbol.Valid && res[i].TokenSymbol.String != "" {
+			tokenSymbol = res[i].TokenSymbol.String
+		}
+		value := res[i].Amount.String()
+		var formattedValue float64
+		if res[i].TokenDecimal != nil {
+			formattedValue, err = strconv.ParseFloat(value, 64)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse float: %w", err)
+			}
+			formattedValue = formattedValue / math.Pow10(int(*res[i].TokenDecimal))
+		}
+		var timeStamp int
+		if res[i].TimeStamp != nil {
+			timeStamp = int(*res[i].TimeStamp)
+		}
 
 		partialInfos = append(partialInfos, &model.PartialInfo{
-			ChainID:      &chainIDInt,
-			Address:      &recipient,
-			TxnHash:      &res[i].TxHash,
-			TokenAddress: &res[i].Token,
-			BlockNumber:  &blockNumberInt,
+			ChainID:        &chainIDInt,
+			Address:        &recipient,
+			TxnHash:        &res[i].TxHash,
+			Value:          &value,
+			FormattedValue: &formattedValue,
+			USDValue:       res[i].AmountUSD,
+			TokenAddress:   &res[i].Token,
+			TokenSymbol:    &tokenSymbol,
+			BlockNumber:    &blockNumberInt,
+			Time:           &timeStamp,
 		})
 	}
 
