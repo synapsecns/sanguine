@@ -4,6 +4,8 @@ import (
 	"context"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -20,7 +22,9 @@ func TestGetDefiLlamaData(t *testing.T) {
 	Equal(t, *symbol, knownSymbol)
 }
 func TestOpenYaml(t *testing.T) {
-	parsedYaml, err := consumer.OpenYaml()
+	pwd, _ := os.Getwd()
+	path := pwd + filepath.Clean("/tokenIDToCoinGeckoID.yaml")
+	parsedYaml, err := consumer.OpenYaml(path)
 	Nil(t, err)
 	NotNil(t, parsedYaml)
 }

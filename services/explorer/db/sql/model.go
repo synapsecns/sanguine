@@ -154,12 +154,10 @@ type SwapEvent struct {
 	// Sender is the address of the sender
 	Sender string `gorm:"column:sender"`
 
-	// TokenIndex is the index of the token in the pool
-	TokenIndex *big.Int `gorm:"column:token_index;type:UInt256"`
 	// Amount is the amount of tokens
-	Amount *big.Int `gorm:"column:amount;type:UInt256"`
+	Amount map[uint8]string `gorm:"column:amount;type:Map(UInt8, String)"`
 	// AmountFee is the amount of fees
-	AmountFee *big.Int `gorm:"column:amount_fee;type:UInt256"`
+	AmountFee map[uint8]string `gorm:"column:amount_fee;type:Map(UInt8, String)"`
 	// ProtocolFee is the protocol fee
 	ProtocolFee *big.Int `gorm:"column:protocol_fee;type:UInt256"`
 	// Buyer is the address of the buyer
@@ -174,10 +172,6 @@ type SwapEvent struct {
 	BoughtID *big.Int `gorm:"column:bought_id;type:UInt256"`
 	// Provider is the address of the provider
 	Provider sql.NullString `gorm:"column:provider"`
-	// TokenAmounts is the amounts of each token to transact
-	TokenAmounts []*big.Int `gorm:"column:token_amounts;type:Array(UInt256)"`
-	// Fees is the fees for each token
-	Fees []*big.Int `gorm:"column:fees;type:Array(UInt256)"`
 	// Invariant is the invariant of the pool
 	Invariant *big.Int `gorm:"column:invariant;type:UInt256"`
 	// LPTokenAmount is the amount of LP tokens
@@ -202,14 +196,12 @@ type SwapEvent struct {
 	Time *big.Int `gorm:"column:time;type:UInt256"`
 	// Receiver is the address of the receiver
 	Receiver sql.NullString `gorm:"column:receiver"`
-	// AmountUSD is the amount in USD
-	AmountsUSD []float64 `gorm:"column:amount_usd;type:Array(Float64)"`
-	// FeeAmountUSD is the fee amount in USD
-	FeeAmountsUSD []float64 `gorm:"column:fee_amount_usd;type:Array(Float64)"`
+	// TokenPrices are the prices of each token at the given time
+	TokenPrices map[uint8]float64 `gorm:"column:amount_usd;type:Map(UInt8, Float64)"`
 	// TokenDecimal is the token's decimal
-	TokenDecimal *uint8 `gorm:"column:token_decimal"`
+	TokenDecimal map[uint8]uint8 `gorm:"column:token_decimal;type:Map(UInt8, UInt8)"`
 	// TokenSymbol is the token's symbol from coingecko
-	TokenSymbol sql.NullString `gorm:"column:token_symbol"`
+	TokenSymbol map[uint8]string `gorm:"column:token_symbol;type:Map(UInt8, String)"`
 	// TimeStamp is the timestamp of the block in which the event occurred.
 	TimeStamp *uint64 `gorm:"column:timestamp"`
 }

@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -290,32 +289,33 @@ func NewSwapFetcher(swapAddress common.Address, backend bind.ContractBackend) (*
 }
 
 // GetTokenMetaData gets the token from the erc20 token contract given a swap contract token id.
-func (s *SwapFetcher) GetTokenMetaData(ctx context.Context, tokenIndex uint8) (sql.NullString, *uint8) {
+func (s *SwapFetcher) GetTokenMetaData(ctx context.Context, tokenIndex uint8) (*string, *uint8) {
 	tokenAddress, err := s.swap.GetToken(&bind.CallOpts{
 		Context: ctx,
 	}, tokenIndex)
 	if err != nil {
 		fmt.Println("Error getting Token Address", err)
+		return nil, nil
 	}
 	erc20caller, err := swap.NewERC20(tokenAddress, s.backend)
 	if err != nil {
 		fmt.Println("Error getting erc20caller", err)
-		return sql.NullString{String: "", Valid: false}, nil
+		return nil, nil
 	}
 	tokenSymbol, err := erc20caller.Symbol(&bind.CallOpts{
 		Context: ctx,
 	})
 	if err != nil {
 		fmt.Println("Error getting tokenSymbol", err)
-		return sql.NullString{String: tokenSymbol, Valid: true}, nil
+		return &tokenSymbol, nil
 	}
 	tokenDecimals, err := erc20caller.Decimals(&bind.CallOpts{
 		Context: ctx,
 	})
 	if err != nil {
 		fmt.Println("Error getting tokenDecimals", err)
-		return sql.NullString{String: tokenSymbol, Valid: true}, nil
+		return &tokenSymbol, nil
 	}
 
-	return sql.NullString{String: tokenSymbol, Valid: true}, &tokenDecimals
+	return &tokenSymbol, &tokenDecimals
 }

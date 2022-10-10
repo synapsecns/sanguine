@@ -316,13 +316,13 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		}
 	}
 
-	sender, err := p.consumerFetcher.FetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
-	if err != nil || sender == nil {
-		fmt.Println("could not get tx sender: %w", err)
-		bridgeEvent.Sender = "FAKE_SENDER"
-	} else {
-		bridgeEvent.Sender = *sender.Response
-	}
+	// sender, err := p.consumerFetcher.FetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
+	// if err != nil || sender == nil {
+	//	fmt.Println("could not get tx sender: %w", err)
+	//	bridgeEvent.Sender = "FAKE_SENDER"
+	//} else {
+	//	bridgeEvent.Sender = *sender.Response
+	//}
 
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent, nil)
 	if err != nil {
@@ -347,10 +347,6 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 	} else {
 		provider.Valid = false
 	}
-	var tokenIndex *big.Int
-	if event.GetTokenIndex() != nil {
-		tokenIndex = big.NewInt(int64(*event.GetTokenIndex()))
-	}
 	var receiver sql.NullString
 	if event.GetReceiver() != nil {
 		receiver.Valid = true
@@ -374,30 +370,27 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 		SoldID:          event.GetSoldId(),
 		BoughtID:        event.GetBoughtId(),
 		Provider:        provider,
-		TokenAmounts:    event.GetTokenAmounts(),
-		Fees:            event.GetFees(),
-		Invariant:       event.GetInvariant(),
-		LPTokenSupply:   event.GetLPTokenSupply(),
-		LPTokenAmount:   event.GetLPTokenAmount(),
-		NewAdminFee:     event.GetNewAdminFee(),
-		NewSwapFee:      event.GetNewSwapFee(),
-		TokenIndex:      tokenIndex,
-		Amount:          event.GetAmount(),
-		AmountFee:       event.GetAmountFee(),
-		ProtocolFee:     event.GetProtocolFee(),
-		OldA:            event.GetOldA(),
-		NewA:            event.GetNewA(),
-		InitialTime:     event.GetInitialTime(),
-		FutureTime:      event.GetFutureTime(),
-		CurrentA:        event.GetCurrentA(),
-		Time:            event.GetTime(),
-		Receiver:        receiver,
 
-		TimeStamp:     nil,
-		AmountsUSD:    nil,
-		FeeAmountsUSD: nil,
-		TokenDecimal:  nil,
-		TokenSymbol:   sql.NullString{},
+		Invariant:     event.GetInvariant(),
+		LPTokenSupply: event.GetLPTokenSupply(),
+		LPTokenAmount: event.GetLPTokenAmount(),
+		NewAdminFee:   event.GetNewAdminFee(),
+		NewSwapFee:    event.GetNewSwapFee(),
+		Amount:        event.GetAmount(),
+		AmountFee:     event.GetAmountFee(),
+		ProtocolFee:   event.GetProtocolFee(),
+		OldA:          event.GetOldA(),
+		NewA:          event.GetNewA(),
+		InitialTime:   event.GetInitialTime(),
+		FutureTime:    event.GetFutureTime(),
+		CurrentA:      event.GetCurrentA(),
+		Time:          event.GetTime(),
+		Receiver:      receiver,
+
+		TimeStamp:    nil,
+		TokenPrices:  nil,
+		TokenSymbol:  nil,
+		TokenDecimal: nil,
 	}
 }
 
@@ -479,24 +472,37 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 
 	// populate swap event type so following operations can mature the event data.
 	swapEvent := eventToSwapEvent(iFace, chainID)
-	// Add sender to swapEvent
-	if swapEvent.TokenIndex != nil {
-		symbol, decimals := p.swapFetcher.GetTokenMetaData(ctx, uint8(swapEvent.TokenIndex.Uint64()))
-		swapEvent.TokenSymbol = symbol
-		swapEvent.TokenDecimal = decimals
-	}
-	// TODO need to add the following data to this swap event
-	// AmountsUSD: Get price data from GetPrice(timestamp, coin gecko id)
-	// FeeAmountsUSD: Get price data from GetPrice(timestamp, coin gecko id)
-	// var amountsUSD []*big.Int
-	// amountsUSD = append(amountsUSD, nil)
-	// swapEvent.AmountsUSD = amountsUSD
+	fmt.Println("IM RIGHT HERe")
+	// if swapEvent.Amount != nil {
+	//	var tokenPrices map[*big.Int]*float64
+	//	var tokenDecimals map[*big.Int]*uint8
+	//	var tokenSymbols map[*big.Int]*string
 	//
-	// var feeAmountsUSD []*big.Int
-	// feeAmountsUSD = append(feeAmountsUSD, nil)
-	// swapEvent.FeeAmountsUSD = feeAmountsUSD
-	// TODO potential refactor: delete SwapEvent.Amount and SwapEvent.Fee.
-	// These values will just be a single element array in SwapEvent.Amounts and SwapEvent.Fees
+	//	// Get metadata for each token amount
+	//	for tokenIndex, _ := range swapEvent.Amount {
+	//		// get token symbol and decimals from the erc20 contract associated to the token.
+	//		symbol, decimals := p.swapFetcher.GetTokenMetaData(ctx, uint8(tokenIndex.Uint64()))
+	//		if symbol != nil && symbol != nil {
+	//			tokenSymbols[tokenIndex] = symbol
+	//			tokenDecimals[tokenIndex] = decimals
+	//
+	//			// get timestamp of the block where the event occurred.
+	//			timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	//			if err != nil {
+	//				return fmt.Errorf("could not get timestamp: %w", err)
+	//			}
+	//
+	//			// get the token price from the defi llama
+	//			tokenPrice, _ := GetTokenMetadataWithTokenSymbol(ctx, *timeStamp.Response, symbol)
+	//			tokenPrices[tokenIndex] = tokenPrice
+	//		}
+	//		swapEvent.TokenPrices = tokenPrices
+	//		swapEvent.TokenDecimal = tokenDecimals
+	//		swapEvent.TokenSymbol = tokenSymbols
+	//
+	//	}
+	//
+	//}
 
 	// Store bridgeEvent
 	err = p.consumerDB.StoreEvent(ctx, nil, &swapEvent)

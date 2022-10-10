@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/backfill"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -137,11 +138,22 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	var count int64
 	bridgeEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
+	fmt.Println("FUCK YOU1")
+
 	Nil(b.T(), bridgeEvents.Error)
+	fmt.Println("FUCK YOU3")
+
 	Equal(b.T(), int64(10), count)
+	fmt.Println("FUCK YOU4")
+
 	swapEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
+	fmt.Println("FUCK YOU5")
+
 	Nil(b.T(), swapEvents.Error)
+	fmt.Println("FUCK YOU6")
+
 	Equal(b.T(), int64(10), count)
+	fmt.Println("FUCK YOU7")
 
 	// Test bridge parity
 	err = b.depositParity(depositLog, bp, uint32(testChainID.Uint64()))
@@ -563,6 +575,8 @@ func (b *BackfillSuite) redeemV2Parity(log *types.Log, parser *consumer.BridgePa
 //nolint:dupl
 func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
+	fmt.Println("FUCK YOU")
+
 	parsedLog, err := parser.Filterer.ParseTokenSwap(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
@@ -597,6 +611,7 @@ func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, 
 //nolint:dupl
 func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
+	fmt.Println("FUCK YOU")
 	parsedLog, err := parser.Filterer.ParseAddLiquidity(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
@@ -625,8 +640,8 @@ func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.Swap
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
-	Equal(b.T(), parsedLog.TokenAmounts, storedLog.TokenAmounts)
-	Equal(b.T(), parsedLog.Fees, storedLog.Fees)
+	// Equal(b.T(), parsedLog.TokenAmounts, storedLog.Amount)
+	// Equal(b.T(), parsedLog.Fees, storedLog.AmountFee)
 	return nil
 }
 
@@ -660,7 +675,7 @@ func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *consumer.S
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
-	Equal(b.T(), parsedLog.TokenAmounts, storedLog.TokenAmounts)
+	// Equal(b.T(), parsedLog.TokenAmounts, storedLog.Amount)
 	return nil
 }
 
@@ -729,8 +744,8 @@ func (b *BackfillSuite) removeLiquidityImbalanceParity(log *types.Log, parser *c
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
-	Equal(b.T(), parsedLog.TokenAmounts, storedLog.TokenAmounts)
-	Equal(b.T(), parsedLog.Fees, storedLog.Fees)
+	// Equal(b.T(), parsedLog.TokenAmounts, storedLog.Amount)
+	// Equal(b.T(), parsedLog.Fees, storedLog.AmountFee)
 	return nil
 }
 
@@ -854,6 +869,9 @@ func (b *BackfillSuite) flashLoanParity(log *types.Log, parser *consumer.SwapPar
 		String: parsedLog.Receiver.String(),
 		Valid:  true,
 	}
+	amountArray := map[uint8]string{parsedLog.TokenIndex: core.CopyBigInt(parsedLog.Amount).String()}
+	feeArray := map[uint8]string{parsedLog.TokenIndex: core.CopyBigInt(parsedLog.AmountFee).String()}
+	var storedLog sql.SwapEvent
 	var count int64
 	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
@@ -864,14 +882,14 @@ func (b *BackfillSuite) flashLoanParity(log *types.Log, parser *consumer.SwapPar
 			TxHash:          log.TxHash.String(),
 
 			Receiver:    receiver,
-			TokenIndex:  big.NewInt(int64(parsedLog.TokenIndex)),
-			Amount:      parsedLog.Amount,
-			AmountFee:   parsedLog.AmountFee,
 			ProtocolFee: parsedLog.ProtocolFee,
-		}).Count(&count)
+		}).
+		Find(&storedLog).Count(&count)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
+	Equal(b.T(), amountArray, storedLog.Amount)
+	Equal(b.T(), feeArray, storedLog.AmountFee)
 	return nil
 }

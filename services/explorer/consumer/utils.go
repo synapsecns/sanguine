@@ -10,14 +10,14 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
 // OpenYaml opens yaml file with coin gecko ID mapping and returns it.
-func OpenYaml() (map[string]string, error) {
-	pwd, _ := os.Getwd()
+func OpenYaml(path string) (map[string]string, error) {
 	// nolint:gosec
-	input, err := os.ReadFile(pwd + filepath.Clean("/tokenIDToCoinGeckoID.yaml"))
+	input, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("error opening yaml file %w", err)
 	}
@@ -31,12 +31,27 @@ func OpenYaml() (map[string]string, error) {
 
 // GetTokenMetadataWithTokenID gets the token metadata (symbol, price).
 func GetTokenMetadataWithTokenID(ctx context.Context, timestamp int, tokenID *string) (*float64, *string) {
-	coinGeckoIDs, err := OpenYaml()
+	pwd, _ := os.Getwd()
+	path := pwd + filepath.Clean("/tokenIDToCoinGeckoID.yaml")
+	coinGeckoIDs, err := OpenYaml(path)
 	if err != nil {
 		fmt.Println("Error while retrieving CoinGecko ids from yaml:", err)
 		return nil, nil
 	}
 	coinGeckoID := coinGeckoIDs[*tokenID]
+	return GetDefiLlamaData(ctx, timestamp, &coinGeckoID)
+}
+
+// GetTokenMetadataWithTokenSymbol gets the token metadata (symbol, price).
+func GetTokenMetadataWithTokenSymbol(ctx context.Context, timestamp int, tokenSymbol *string) (*float64, *string) {
+	pwd, _ := os.Getwd()
+	path := pwd + filepath.Clean("/tokenIDToCoinGeckoID.yaml")
+	coinGeckoIDs, err := OpenYaml(path)
+	if err != nil {
+		fmt.Println("Error while retrieving CoinGecko ids from yaml:", err)
+		return nil, nil
+	}
+	coinGeckoID := coinGeckoIDs[strings.ToLower(*tokenSymbol)]
 	return GetDefiLlamaData(ctx, timestamp, &coinGeckoID)
 }
 
