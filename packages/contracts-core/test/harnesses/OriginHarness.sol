@@ -2,6 +2,7 @@
 
 pragma solidity 0.8.17;
 
+import { Message } from "../../contracts/libs/Message.sol";
 import { Origin } from "../../contracts/Origin.sol";
 import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
 import { SystemContractHarness } from "./SystemContractHarness.sol";
@@ -24,5 +25,24 @@ contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
 
     function isNotary(address _notary) public view returns (bool) {
         return _isNotary(_localDomain(), _notary);
+    }
+
+    function getNextMessage(
+        uint32 _destination,
+        bytes32 _recipientAddress,
+        uint32 _optimisticSeconds,
+        bytes memory _tips,
+        bytes memory _messageBody
+    ) public view returns (bytes memory message) {
+        message = Message.formatMessage(
+            _localDomain(),
+            _getSender(_recipientAddress),
+            nonce() + 1,
+            _destination,
+            _recipientAddress,
+            _optimisticSeconds,
+            _tips,
+            _messageBody
+        );
     }
 }
