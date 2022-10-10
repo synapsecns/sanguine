@@ -9,6 +9,7 @@ import { Message } from "../contracts/libs/Message.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Tips } from "../contracts/libs/Tips.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
+import { ProofGenerator } from "./utils/ProofGenerator.sol";
 
 import { OriginHarness } from "./harnesses/OriginHarness.sol";
 import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
@@ -40,7 +41,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
     uint32[] internal domains;
 
     uint32 internal nonce = 1;
-    uint32 internal optimisticSeconds = OPTIMISTIC_PERIOD;
+    uint32 internal optimisticSeconds = 420;
 
     /// @notice Default test setup is Origin calling Destination
     uint8 internal systemCaller = uint8(ISystemRouter.SystemEntity.Origin);
@@ -53,9 +54,11 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
 
     uint32 internal constant SYNAPSE_DOMAIN = 4269;
 
-    uint32 internal constant OPTIMISTIC_PERIOD = 420;
-    uint32 internal constant NONCE = 69;
-    bytes32 internal constant ROOT = "root";
+    ProofGenerator internal proofGen;
+    uint32 internal constant NONCE = 1;
+    uint32 internal constant INDEX = 0;
+    bytes32[32] internal proof;
+    bytes32 internal root;
 
     event Dispatch(
         bytes32 indexed messageHash,
@@ -81,11 +84,14 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         notaryManager.setOrigin(address(origin));
 
         destination = new DestinationHarness(localDomain);
-        destination.initialize(remoteDomain, notary);
+        destination.initialize();
+        destination.addNotary(remoteDomain, notary);
 
         systemRouter = new SystemRouterHarness(localDomain, address(origin), address(destination));
         origin.setSystemRouter(systemRouter);
         destination.setSystemRouter(systemRouter);
+
+        proofGen = new ProofGenerator();
 
         // System Router on local chain sends a system message to remote
         sentSystemMessage = MessageContext({
@@ -237,7 +243,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds - 1);
         vm.expectRevert("!optimisticSeconds");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     /**
@@ -250,7 +256,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds);
         vm.expectRevert("Unknown recipient");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     /**
@@ -262,7 +268,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         _prepareReceiveTest(message);
         skip(optimisticSeconds);
         vm.expectRevert("Not a system message");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     /**
@@ -275,7 +281,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(receivedUsualMessage);
         skip(optimisticSeconds);
         vm.expectRevert("BasicClient: !trustedSender");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     /**
@@ -288,7 +294,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(receivedFakeSystemMessage);
         skip(optimisticSeconds);
         vm.expectRevert("BasicClient: !trustedSender");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -369,7 +375,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes memory message = _createSystemMessage(receivedSystemMessage, recipients, dataArray);
         _prepareReceiveTest(message);
         skip(optimisticSeconds);
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
         // TODO: check execution order
     }
 
@@ -393,7 +399,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         _prepareReceiveTest(message);
         skip(optimisticSeconds);
         vm.expectRevert("!optimisticPeriod");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -517,7 +523,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds);
         vm.expectRevert("!allowedCaller");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     /**
@@ -531,7 +537,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds);
         vm.expectRevert("!localDomain");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     /**
@@ -545,6 +551,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
             destination.setSensitiveValueOnlyTwoHours.selector,
             secretValue
         );
+
         optimisticSeconds = 2 hours;
         _checkReceiveSystemMessage();
     }
@@ -564,7 +571,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds);
         vm.expectRevert("!optimisticPeriod");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     /**
@@ -594,7 +601,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(receivedSystemMessage);
         skip(optimisticSeconds);
         vm.expectRevert("!synapseDomain");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -661,7 +668,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         skip(optimisticSeconds);
         vm.expectEmit(true, true, true, true);
         emit LogSystemCall(context.origin, systemCaller, rootSubmittedAt);
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
         assertEq(
             ISystemMockContract(_getSystemAddress(systemRecipient)).sensitiveValue(),
             secretValue
@@ -693,10 +700,14 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
      * @dev Marks given message as being ready for the execution with the given optimistic period.
      */
     function _prepareReceiveTest(bytes memory _message) internal {
-        // Mark message as proved against ROOT
-        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
+        // Create a merkle tree with a lonely message
+        bytes32[] memory leafs = new bytes32[](1);
+        leafs[0] = keccak256(_message);
+        proofGen.createTree(leafs);
+        root = proofGen.getRoot();
+        proof = proofGen.getProof(INDEX);
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, root);
         destination.submitAttestation(attestation);
-        destination.setMessageStatus(remoteDomain, keccak256(_message), ROOT);
     }
 
     /**

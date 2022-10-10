@@ -12,6 +12,7 @@ import { OriginHarness } from "./harnesses/OriginHarness.sol";
 import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
 import { SystemRouterHarness } from "./harnesses/SystemRouterHarness.sol";
 import { ClientHarness } from "./harnesses/ClientHarness.sol";
+import { ProofGenerator } from "./utils/ProofGenerator.sol";
 
 // solhint-disable func-name-mixedcase
 contract ClientTest is SynapseTestWithNotaryManager {
@@ -27,8 +28,13 @@ contract ClientTest is SynapseTestWithNotaryManager {
     bytes internal tips;
     bytes internal messageBody = "such body much wow";
 
-    uint32 internal constant NONCE = 420;
     bytes32 internal constant ROOT = "root";
+
+    ProofGenerator internal proofGen;
+    uint32 internal constant NONCE = 1;
+    uint32 internal constant INDEX = 0;
+    bytes32[32] internal proof;
+    bytes32 internal root;
 
     event Dispatch(
         bytes32 indexed messageHash,
@@ -48,10 +54,13 @@ contract ClientTest is SynapseTestWithNotaryManager {
         notaryManager.setOrigin(address(origin));
 
         destination = new DestinationHarness(localDomain);
-        destination.initialize(remoteDomain, notary);
+        destination.initialize();
+        destination.addNotary(remoteDomain, notary);
 
         client = new ClientHarness(address(origin), address(destination), optimisticSeconds);
         tips = Tips.emptyTips();
+
+        proofGen = new ProofGenerator();
     }
 
     function test_constructor() public {
@@ -88,14 +97,14 @@ contract ClientTest is SynapseTestWithNotaryManager {
     function test_handle() public {
         bytes memory message = _prepareReceiveTest(true, remoteDomain);
         skip(optimisticSeconds);
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     function test_handle_optimisticPeriodNotPassed() public {
         bytes memory message = _prepareReceiveTest(false, remoteDomain);
         skip(optimisticSeconds - 1);
         vm.expectRevert("!optimisticSeconds");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     function test_handle_optimisticPeriodForged() public {
@@ -103,7 +112,7 @@ contract ClientTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(false, remoteDomain);
         skip(optimisticSeconds);
         vm.expectRevert("Client: !optimisticSeconds");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     function test_handle_unknownSender() public {
@@ -111,7 +120,7 @@ contract ClientTest is SynapseTestWithNotaryManager {
         bytes memory message = _prepareReceiveTest(false, remoteDomain);
         skip(optimisticSeconds);
         vm.expectRevert("BasicClient: !trustedSender");
-        destination.execute(message);
+        destination.execute(message, proof, INDEX);
     }
 
     function test_handle_notDestination() public {
@@ -136,9 +145,14 @@ contract ClientTest is SynapseTestWithNotaryManager {
         returns (bytes memory message)
     {
         message = _createReceivedMessage();
-        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
+        // Create a merkle tree with a lonely message
+        bytes32[] memory leafs = new bytes32[](1);
+        leafs[0] = keccak256(message);
+        proofGen.createTree(leafs);
+        root = proofGen.getRoot();
+        proof = proofGen.getProof(INDEX);
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, root);
         destination.submitAttestation(attestation);
-        destination.setMessageStatus(_originDomain, keccak256(message), ROOT);
         if (_success) {
             vm.expectEmit(true, true, true, true);
             emit LogMessage(_originDomain, nonce, messageBody);
