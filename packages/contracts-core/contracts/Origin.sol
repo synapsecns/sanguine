@@ -183,18 +183,17 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
         // Latest nonce (i.e. "last message" nonce) is current amount of leaves in the tree.
         // Message nonce is the amount of leaves after the new leaf insertion
         messageNonce = nonce() + 1;
-        bytes32 sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
-        bytes memory _header = Header.formatHeader(
+        bytes memory message = Message.formatMessage(
             _localDomain(),
-            sender,
+            _getSender(_recipientAddress),
             messageNonce,
             _destination,
             _recipientAddress,
-            _optimisticSeconds
+            _optimisticSeconds,
+            _tips,
+            _messageBody
         );
-        // format the message into packed bytes
-        bytes memory message = Message.formatMessage(_header, _tips, _messageBody);
         messageHash = keccak256(message);
         // insert the hashed message into the Merkle tree
         _insertMessage(messageNonce, messageHash);
@@ -252,11 +251,7 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
      * SYSTEM_ROUTER is used as "sender address" on origin chain.
      * Note: tx will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
      */
-    function _checkForSystemMessage(bytes32 _recipientAddress)
-        internal
-        view
-        returns (bytes32 sender)
-    {
+    function _getSender(bytes32 _recipientAddress) internal view returns (bytes32 sender) {
         if (_recipientAddress != SystemMessage.SYSTEM_ROUTER) {
             sender = TypeCasts.addressToBytes32(msg.sender);
             /**
