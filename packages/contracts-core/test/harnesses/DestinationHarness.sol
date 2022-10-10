@@ -3,6 +3,7 @@
 pragma solidity 0.8.13;
 
 import { Destination } from "../../contracts/Destination.sol";
+import { GlobalNotaryRegistry } from "../../contracts/registry/GlobalNotaryRegistry.sol";
 
 import { MirrorLib } from "../../contracts/libs/Mirror.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
@@ -10,8 +11,14 @@ import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
 
 import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
 import { SystemContractHarness } from "./SystemContractHarness.sol";
+import { GlobalNotaryRegistryHarness } from "./GlobalNotaryRegistryHarness.sol";
 
-contract DestinationHarness is Destination, SystemContractHarness, GuardRegistryHarness {
+contract DestinationHarness is
+    Destination,
+    SystemContractHarness,
+    GlobalNotaryRegistryHarness,
+    GuardRegistryHarness
+{
     using MirrorLib for MirrorLib.Mirror;
     using Tips for bytes29;
 
@@ -20,24 +27,16 @@ contract DestinationHarness is Destination, SystemContractHarness, GuardRegistry
     //solhint-disable-next-line no-empty-blocks
     constructor(uint32 _localDomain) Destination(_localDomain) {}
 
-    function addNotary(uint32 _domain, address _notary) public {
-        _addNotary(_domain, _notary);
-    }
-
-    function removeNotary(uint32 _domain, address _notary) public {
-        _removeNotary(_domain, _notary);
-    }
-
-    function isNotary(uint32 _domain, address _notary) public view returns (bool) {
-        return _isNotary(_domain, _notary);
+    function setSensitiveValue(uint256 _newValue) external onlySystemRouter {
+        sensitiveValue = _newValue;
     }
 
     function setMessageStatus(
-        uint32 _remoteDomain,
+        uint32 _originDomain,
         bytes32 _messageHash,
         bytes32 _status
     ) external {
-        allMirrors[activeMirrors[_remoteDomain]].setMessageStatus(_messageHash, _status);
+        messageStatus[_originDomain][_messageHash] = _status;
     }
 
     function _storeTips(bytes29 _tips) internal override {
