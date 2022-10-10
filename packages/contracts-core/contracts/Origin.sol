@@ -179,27 +179,27 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
     ) external payable haveActiveNotary {
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         require(_tips.castToTips().totalTips() == msg.value, "!tips");
-        // get the latest nonce; new message nonce is latest nonce plus 1
-        uint32 latestNonce = nonce();
+        // Latest nonce (i.e. "last message" nonce) is current amount of leaves in the tree.
+        // Message nonce is the amount of leaves after the new leaf insertion
+        uint32 messageNonce = nonce() + 1;
         bytes32 sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
         bytes memory _header = Header.formatHeader(
             _localDomain(),
             sender,
-            latestNonce + 1,
+            messageNonce,
             _destination,
             _recipientAddress,
             _optimisticSeconds
         );
         // format the message into packed bytes
         bytes memory message = Message.formatMessage(_header, _tips, _messageBody);
-        // insert the hashed message into the Merkle tree
         bytes32 messageHash = keccak256(message);
-        // new root is added to the historical roots
-        _insertHash(latestNonce, messageHash);
+        // insert the hashed message into the Merkle tree
+        _insertMessage(messageNonce, messageHash);
         // Emit Dispatch event with message information
-        // note: leaf index in the tree is latestNonce, meaning we don't need to emit that
-        emit Dispatch(messageHash, latestNonce + 1, _destination, _tips, message);
+        // note: leaf index in the tree is messageNonce - 1, meaning we don't need to emit that
+        emit Dispatch(messageHash, messageNonce, _destination, _tips, message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
