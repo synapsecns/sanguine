@@ -66,7 +66,7 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 		if kappa != nil {
 			destinationKappa = *kappa
 		}
-		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, GeneratePartialInfoQuery(nil, address, tokenAddress, &destinationKappa, nil, *page))
+		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(nil, address, tokenAddress, &destinationKappa, nil, *page))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -127,7 +127,7 @@ func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *
 		if err != nil {
 			return nil, fmt.Errorf("failed to get origin tx hash: %w", err)
 		}
-		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, GeneratePartialInfoQuery(nil, address, tokenAddress, nil, originTxHash, *page))
+		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(nil, address, tokenAddress, nil, originTxHash, *page))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -160,14 +160,14 @@ func (r *queryResolver) originOrDestinationBridge(ctx context.Context, chainID *
 	var results []*model.BridgeTransaction
 	var toInfos []*model.PartialInfo
 	var fromInfos []*model.PartialInfo
-	infos, err := r.DB.PartialInfosFromIdentifiers(ctx, GeneratePartialInfoQuery(chainID, address, tokenAddress, kappa, txnHash, *page))
+	infos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, kappa, txnHash, *page))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 	}
 	firstFilter := true
-	chainIDSpecifier := GenerateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 	for _, info := range infos {
-		txHashSpecifier := GenerateSingleSpecifierStringSQL(info.TxnHash, sql.TxHashFieldName, &firstFilter, "")
+		txHashSpecifier := generateSingleSpecifierStringSQL(info.TxnHash, sql.TxHashFieldName, &firstFilter, "")
 		query := fmt.Sprintf(`SELECT * FROM bridge_events %s%s`, chainIDSpecifier, txHashSpecifier)
 		kappa, err := r.DB.GetKappaFromTxHash(ctx, query)
 		if err != nil {
@@ -207,8 +207,8 @@ func (r *queryResolver) mergeBridgeTransactions(origin []*model.BridgeTransactio
 	return results
 }
 
-// GenerateAddressSpecifierSQL generates a where function with an string.
-func GenerateAddressSpecifierSQL(address *string, firstFilter *bool, tablePrefix string) string {
+// generateAddressSpecifierSQL generates a where function with an string.
+func generateAddressSpecifierSQL(address *string, firstFilter *bool, tablePrefix string) string {
 	if address != nil {
 		if *firstFilter {
 			*firstFilter = false
@@ -219,8 +219,8 @@ func GenerateAddressSpecifierSQL(address *string, firstFilter *bool, tablePrefix
 	return ""
 }
 
-// GenerateSingleSpecifierI32SQL generates a where function with an uint32.
-func GenerateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *bool, tablePrefix string) string {
+// generateSingleSpecifierI32SQL generates a where function with an uint32.
+func generateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *bool, tablePrefix string) string {
 	if value != nil {
 		if *firstFilter {
 			*firstFilter = false
@@ -231,8 +231,8 @@ func GenerateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *boo
 	return ""
 }
 
-// GenerateBlockSpecifierSQL generates a where function with an uint64.
-func GenerateBlockSpecifierSQL(value *uint64, field string, firstFilter *bool, tablePrefix string) string {
+// generateBlockSpecifierSQL generates a where function with an uint64.
+func generateBlockSpecifierSQL(value *uint64, field string, firstFilter *bool, tablePrefix string) string {
 	if value != nil {
 		if *firstFilter {
 			*firstFilter = false
@@ -244,7 +244,7 @@ func GenerateBlockSpecifierSQL(value *uint64, field string, firstFilter *bool, t
 }
 
 // GenerateSingleSpecifierStringSQL generates a where function with a string.
-func GenerateSingleSpecifierStringSQL(value *string, field string, firstFilter *bool, tablePrefix string) string {
+func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *bool, tablePrefix string) string {
 	if value != nil {
 		if *firstFilter {
 			*firstFilter = false
@@ -255,14 +255,14 @@ func GenerateSingleSpecifierStringSQL(value *string, field string, firstFilter *
 	return ""
 }
 
-// GeneratePartialInfoQuery returns the query for making the PartialInfo query.
-func GeneratePartialInfoQuery(chainID *uint32, address, tokenAddress, kappa, txHash *string, page int) string {
+// generatePartialInfoQuery returns the query for making the PartialInfo query.
+func generatePartialInfoQuery(chainID *uint32, address, tokenAddress, kappa, txHash *string, page int) string {
 	firstFilter := true
-	chainIDSpecifier := GenerateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "t1.")
-	addressSpecifier := GenerateAddressSpecifierSQL(address, &firstFilter, "t1.")
-	tokenAddressSpecifier := GenerateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "t1.")
-	kappaSpecifier := GenerateSingleSpecifierStringSQL(kappa, sql.KappaFieldName, &firstFilter, "t1.")
-	txHashSpecifier := GenerateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "t1.")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "t1.")
+	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "t1.")
+	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "t1.")
+	kappaSpecifier := generateSingleSpecifierStringSQL(kappa, sql.KappaFieldName, &firstFilter, "t1.")
+	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "t1.")
 
 	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC LIMIT %d OFFSET %d", sql.BlockNumberFieldName, sql.PageSize, (page-1)*sql.PageSize)
 
@@ -297,17 +297,17 @@ func GeneratePartialInfoQuery(chainID *uint32, address, tokenAddress, kappa, txH
 	return query
 }
 
-// GenerateBridgeEventCountQuery creates the query for bridge event count.
-func GenerateBridgeEventCountQuery(chainID uint32, address *string, tokenAddress *string, directionIn bool, firstBlock *uint64) string {
+// generateBridgeEventCountQuery creates the query for bridge event count.
+func generateBridgeEventCountQuery(chainID uint32, address *string, tokenAddress *string, directionIn bool, firstBlock *uint64) string {
 	chainField := sql.ChainIDFieldName
 	if directionIn {
 		chainField = sql.DestinationChainIDFieldName
 	}
 	firstFilter := true
-	chainIDSpecifier := GenerateSingleSpecifierI32SQL(&chainID, chainField, &firstFilter, "")
-	addressSpecifier := GenerateSingleSpecifierStringSQL(address, sql.RecipientFieldName, &firstFilter, "")
-	tokenAddressSpecifier := GenerateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
-	blockSpecifier := GenerateBlockSpecifierSQL(firstBlock, sql.BlockNumberFieldName, &firstFilter, "")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(&chainID, chainField, &firstFilter, "")
+	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.RecipientFieldName, &firstFilter, "")
+	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
+	blockSpecifier := generateBlockSpecifierSQL(firstBlock, sql.BlockNumberFieldName, &firstFilter, "")
 
 	query := fmt.Sprintf(`SELECT COUNT(DISTINCT (%s, %s)) FROM bridge_events %s%s%s%s`,
 		sql.TxHashFieldName, sql.EventIndexFieldName, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, blockSpecifier)

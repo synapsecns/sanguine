@@ -177,12 +177,10 @@ func (s *Store) GetHistoricalData(ctx context.Context, subQuery string, typeArg 
 	var dbTxFinal *gorm.DB
 
 	// Get the rest of the data depending on query type.
-	switch *typeArg {
-	case model.HistoricalResultTypeAddresses:
+	if *typeArg == model.HistoricalResultTypeAddresses {
 		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT uniqExact(%s) FROM bridge_events %s", SenderFieldName, filter)).Scan(&sum)
-	case model.HistoricalResultTypeTransactions:
-		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)).Scan(&sum)
-	case model.HistoricalResultTypeBridgevolume: // Extra in case things change.
+	} else {
+		// TODO pass table from previous query to prevent redoing this query.
 		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)).Scan(&sum)
 	}
 	if dbTxFinal.Error != nil {
