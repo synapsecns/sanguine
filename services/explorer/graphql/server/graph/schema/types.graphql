@@ -1,11 +1,18 @@
+"""
+BridgeTransaction represents an entire bridge transaction, including both
+to and from transactions. If a `from` transaction does not have a corresponding
+`to` transaction, `pending` will be true.
+"""
 type BridgeTransaction {
   fromInfo: PartialInfo
   toInfo:   PartialInfo
   kappa:        String
   pending:      Boolean
   swapSuccess:  Boolean
-#  status:       String
 }
+"""
+PartialInfo is a transaction that occurred on one chain.
+"""
 type PartialInfo {
   chainId: Int
   address: String
@@ -18,10 +25,16 @@ type PartialInfo {
   blockNumber:    Int
   time:           Int
 }
+"""
+DateResult is a given statistic for a given date.
+"""
 type DateResult {
   date:   String,
   total:  Float
 }
+"""
+HistoricalResult is a given statistic for dates.
+"""
 type HistoricalResult {
   total:        Float
   dateResults:  [DateResult]
