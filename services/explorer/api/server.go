@@ -74,7 +74,7 @@ func Start(ctx context.Context, cfg Config) error {
 		}
 		return nil
 	})
-	
+
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("server error: %w", err)
