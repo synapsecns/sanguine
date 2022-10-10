@@ -51,11 +51,9 @@ func (s SwapFlashLoanAddLiquidity) GetAmount() map[uint8]string {
 	zero := big.NewInt(0)
 	for i, tokenAmount := range s.TokenAmounts {
 		if tokenAmount.Cmp(zero) == 1 {
-			fmt.Println("UYUUU3", core.CopyBigInt(tokenAmount))
 			tokenAmounts[uint8(i)] = core.CopyBigInt(tokenAmount).String()
 		}
 	}
-	fmt.Println("UYUUU", tokenAmounts)
 	return tokenAmounts
 }
 
@@ -65,11 +63,9 @@ func (s SwapFlashLoanAddLiquidity) GetAmountFee() map[uint8]string {
 	zero := big.NewInt(0)
 	for i, feeAmount := range s.Fees {
 		if feeAmount.Cmp(zero) == 1 {
-			fmt.Println("UYUUU4", core.CopyBigInt(feeAmount))
 			feeAmounts[uint8(i)] = core.CopyBigInt(feeAmount).String()
 		}
 	}
-	fmt.Println("UYUUU", feeAmounts)
 	return feeAmounts
 }
 
@@ -362,7 +358,6 @@ func (s SwapFlashLoanRemoveLiquidityOne) GetTokensBought() *big.Int {
 // GetAmount puts the amount in a map with it's associated token index.
 func (s SwapFlashLoanRemoveLiquidityOne) GetAmount() map[uint8]string {
 	output := map[uint8]string{uint8(s.BoughtId.Int64()): core.CopyBigInt(s.TokensBought).String()}
-	fmt.Println("SDKJHSKJHDS1", output)
 	return output
 }
 
@@ -483,11 +478,9 @@ func (s SwapFlashLoanRemoveLiquidityImbalance) GetAmount() map[uint8]string {
 	zero := big.NewInt(0)
 	for i, tokenAmount := range s.TokenAmounts {
 		if tokenAmount.Cmp(zero) == 1 {
-			fmt.Println("UYUUU1", core.CopyBigInt(tokenAmount))
 			tokenAmounts[uint8(i)] = core.CopyBigInt(tokenAmount).String()
 		}
 	}
-	fmt.Println("UYUUU", tokenAmounts)
 	return tokenAmounts
 }
 
@@ -497,11 +490,9 @@ func (s SwapFlashLoanRemoveLiquidityImbalance) GetAmountFee() map[uint8]string {
 	zero := big.NewInt(0)
 	for i, feeAmount := range s.Fees {
 		if feeAmount.Cmp(zero) == 1 {
-			fmt.Println("UYUUU2", core.CopyBigInt(feeAmount))
 			feeAmounts[uint8(i)] = core.CopyBigInt(feeAmount).String()
 		}
 	}
-	fmt.Println("UYUUU", feeAmounts)
 	return feeAmounts
 }
 

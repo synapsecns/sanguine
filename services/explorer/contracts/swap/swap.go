@@ -2,7 +2,6 @@
 package swap
 
 import (
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core"
@@ -68,7 +67,6 @@ func (s SwapFlashLoanTokenSwap) GetLPTokenAmount() *big.Int {
 // GetAmount puts the amount in a map with it's associated token index.
 func (s SwapFlashLoanTokenSwap) GetAmount() map[uint8]string {
 	output := map[uint8]string{uint8(s.SoldId.Int64()): core.CopyBigInt(s.TokensSold).String(), uint8(s.BoughtId.Int64()): core.CopyBigInt(s.TokensBought).String()}
-	fmt.Println("SDKJHSKJHDS")
 	return output
 }
 

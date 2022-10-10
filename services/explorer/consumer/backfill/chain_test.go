@@ -138,22 +138,11 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	var count int64
 	bridgeEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
-	fmt.Println("FUCK YOU1")
-
 	Nil(b.T(), bridgeEvents.Error)
-	fmt.Println("FUCK YOU3")
-
 	Equal(b.T(), int64(10), count)
-	fmt.Println("FUCK YOU4")
-
 	swapEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
-	fmt.Println("FUCK YOU5")
-
 	Nil(b.T(), swapEvents.Error)
-	fmt.Println("FUCK YOU6")
-
 	Equal(b.T(), int64(10), count)
-	fmt.Println("FUCK YOU7")
 
 	// Test bridge parity
 	err = b.depositParity(depositLog, bp, uint32(testChainID.Uint64()))
@@ -214,7 +203,7 @@ func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, bloc
 	return receipt.Logs[0], nil
 }
 
-//nolint:dupl
+// nolint:dupl
 func (b *BackfillSuite) depositParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenDeposit(*log)
@@ -575,7 +564,6 @@ func (b *BackfillSuite) redeemV2Parity(log *types.Log, parser *consumer.BridgePa
 //nolint:dupl
 func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
-	fmt.Println("FUCK YOU")
 
 	parsedLog, err := parser.Filterer.ParseTokenSwap(*log)
 	if err != nil {
@@ -611,7 +599,6 @@ func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, 
 //nolint:dupl
 func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
-	fmt.Println("FUCK YOU")
 	parsedLog, err := parser.Filterer.ParseAddLiquidity(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)

@@ -2,7 +2,6 @@
 package swap
 
 import (
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core"
@@ -38,14 +37,12 @@ func (s SwapFlashLoanFlashLoan) GetEventType() swap.EventType {
 // GetAmount puts the amount in a map with it's associated token index.
 func (s SwapFlashLoanFlashLoan) GetAmount() map[uint8]string {
 	output := map[uint8]string{s.TokenIndex: core.CopyBigInt(s.Amount).String()}
-	fmt.Println("SDKJHSKJHDS1", output)
 	return output
 }
 
 // GetAmountFee gets the amount fee.
 func (s SwapFlashLoanFlashLoan) GetAmountFee() map[uint8]string {
 	output := map[uint8]string{s.TokenIndex: core.CopyBigInt(s.AmountFee).String()}
-	fmt.Println("SDKJHSKJHDS2", output)
 	return output
 }
 

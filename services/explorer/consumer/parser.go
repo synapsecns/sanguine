@@ -320,7 +320,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	// if err != nil || sender == nil {
 	//	fmt.Println("could not get tx sender: %w", err)
 	//	bridgeEvent.Sender = "FAKE_SENDER"
-	//} else {
+	// } else {
 	//	bridgeEvent.Sender = *sender.Response
 	//}
 
@@ -472,37 +472,37 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 
 	// populate swap event type so following operations can mature the event data.
 	swapEvent := eventToSwapEvent(iFace, chainID)
-	fmt.Println("IM RIGHT HERe")
-	// if swapEvent.Amount != nil {
-	//	var tokenPrices map[*big.Int]*float64
-	//	var tokenDecimals map[*big.Int]*uint8
-	//	var tokenSymbols map[*big.Int]*string
-	//
-	//	// Get metadata for each token amount
-	//	for tokenIndex, _ := range swapEvent.Amount {
-	//		// get token symbol and decimals from the erc20 contract associated to the token.
-	//		symbol, decimals := p.swapFetcher.GetTokenMetaData(ctx, uint8(tokenIndex.Uint64()))
-	//		if symbol != nil && symbol != nil {
-	//			tokenSymbols[tokenIndex] = symbol
-	//			tokenDecimals[tokenIndex] = decimals
-	//
-	//			// get timestamp of the block where the event occurred.
-	//			timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
-	//			if err != nil {
-	//				return fmt.Errorf("could not get timestamp: %w", err)
-	//			}
-	//
-	//			// get the token price from the defi llama
-	//			tokenPrice, _ := GetTokenMetadataWithTokenSymbol(ctx, *timeStamp.Response, symbol)
-	//			tokenPrices[tokenIndex] = tokenPrice
-	//		}
-	//		swapEvent.TokenPrices = tokenPrices
-	//		swapEvent.TokenDecimal = tokenDecimals
-	//		swapEvent.TokenSymbol = tokenSymbols
-	//
-	//	}
-	//
-	//}
+
+	if swapEvent.Amount != nil {
+		var tokenPrices map[uint8]float64
+		var tokenDecimals map[uint8]uint8
+		var tokenSymbols map[uint8]string
+
+		// Get metadata for each token amount
+		for tokenIndex, _ := range swapEvent.Amount {
+			// get token symbol and decimals from the erc20 contract associated to the token.
+			symbol, decimals := p.swapFetcher.GetTokenMetaData(ctx, tokenIndex)
+			if symbol != nil && decimals != nil {
+				tokenSymbols[tokenIndex] = *symbol
+				tokenDecimals[tokenIndex] = *decimals
+
+				// get timestamp of the block where the event occurred.
+				timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+				if err != nil {
+					return fmt.Errorf("could not get timestamp: %w", err)
+				}
+
+				// get the token price from the defi llama
+				tokenPrice, _ := GetTokenMetadataWithTokenSymbol(ctx, *timeStamp.Response, symbol)
+				tokenPrices[tokenIndex] = *tokenPrice
+			}
+			swapEvent.TokenPrices = tokenPrices
+			swapEvent.TokenDecimal = tokenDecimals
+			swapEvent.TokenSymbol = tokenSymbols
+
+		}
+
+	}
 
 	// Store bridgeEvent
 	err = p.consumerDB.StoreEvent(ctx, nil, &swapEvent)
