@@ -17,35 +17,45 @@ import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
 import { AppHarness } from "./harnesses/AppHarness.sol";
 
 import { SynapseTest } from "./utils/SynapseTest.sol";
+import { ProofGenerator } from "./utils/ProofGenerator.sol";
 
 // solhint-disable func-name-mixedcase
 contract DestinationTest is SynapseTest {
-    DestinationHarness destination;
-    AppHarness dApp;
-
-    uint32 internal constant OPTIMISTIC_PERIOD = 10;
-
-    bytes32 internal constant ROOT = keccak256("test root");
-
-    uint256 processGas;
-    uint256 reserveGas;
-
-    ISystemRouter internal systemRouter;
-
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
     using Message for bytes29;
+
+    DestinationHarness internal destination;
+    AppHarness internal dApp;
+
+    uint32 internal constant OPTIMISTIC_PERIOD = 10;
+
+    uint32 internal constant NONCE = 14;
+    bytes32 internal constant ROOT = keccak256("test root");
+
+    ProofGenerator internal proofGen;
+    bytes internal testMessage;
+    bytes32 internal leaf;
+    uint32 internal messageIndex;
+    bytes32[32] internal proof;
+    bytes32 internal merkleRoot;
+
+    ISystemRouter internal systemRouter;
 
     event LogSystemCall(uint32 origin, uint8 caller, uint256 rootSubmittedAt);
 
     function setUp() public override {
         super.setUp();
         destination = new DestinationHarness(localDomain);
-        destination.initialize(remoteDomain, notary);
+        destination.initialize();
         dApp = new AppHarness(OPTIMISTIC_PERIOD);
         systemRouter = ISystemRouter(address(1234567890));
         destination.setSystemRouter(systemRouter);
+        destination.addNotary(remoteDomain, notary);
         destination.addGuard(guard);
+
+        proofGen = new ProofGenerator();
+        merkleRoot = ROOT;
     }
 
     // ============ INITIAL STATE ============
@@ -56,7 +66,7 @@ contract DestinationTest is SynapseTest {
 
     function test_cannotInitializeTwice() public {
         vm.expectRevert("Initializable: contract is already initialized");
-        destination.initialize(remoteDomain, notary);
+        destination.initialize();
     }
 
     // ============ STATE & PERMISSIONING ============
@@ -89,13 +99,13 @@ contract DestinationTest is SynapseTest {
         uint256 newConfirmAt
     );
 
-    function test_setConfirmation(uint256 _confirmAt) public {
+    function test_setConfirmation(uint96 _confirmAt) public {
         vm.startPrank(destination.owner());
-        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), 0);
+        assertEq(destination.submittedAt(remoteDomain, ROOT), 0);
         vm.expectEmit(true, true, true, true);
         emit SetConfirmation(remoteDomain, ROOT, 0, _confirmAt);
         destination.setConfirmation(remoteDomain, ROOT, _confirmAt);
-        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), _confirmAt);
+        assertEq(destination.submittedAt(remoteDomain, ROOT), _confirmAt);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -110,8 +120,7 @@ contract DestinationTest is SynapseTest {
     );
 
     function test_submitReport() public {
-        uint32 nonce = 42;
-        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, ROOT);
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
         (bytes memory report, ) = signFraudReport(guardPK, attestation);
         vm.expectEmit(true, true, true, true);
         emit NotaryBlacklisted(notary, guard, address(this), report);
@@ -119,24 +128,21 @@ contract DestinationTest is SynapseTest {
     }
 
     function test_submitReport_valid() public {
-        uint32 nonce = 42;
-        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, ROOT);
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
         (bytes memory report, ) = signValidReport(guardPK, attestation);
         vm.expectRevert("Not a fraud report");
         destination.submitReport(report);
     }
 
     function test_submitReport_notGuard() public {
-        uint32 nonce = 42;
-        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, ROOT);
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
         (bytes memory report, ) = signFraudReport(fakeGuardPK, attestation);
         vm.expectRevert("Signer is not a guard");
         destination.submitReport(report);
     }
 
     function test_submitReport_notNotary() public {
-        uint32 nonce = 42;
-        (bytes memory attestation, ) = signRemoteAttestation(fakeNotaryPK, nonce, ROOT);
+        (bytes memory attestation, ) = signRemoteAttestation(fakeNotaryPK, NONCE, ROOT);
         (bytes memory report, ) = signFraudReport(guardPK, attestation);
         vm.expectRevert("Signer is not a notary");
         destination.submitReport(report);
@@ -144,7 +150,7 @@ contract DestinationTest is SynapseTest {
 
     function test_submitReport_twice() public {
         test_submitReport();
-        uint32 nonce = 69;
+        uint32 nonce = NONCE + 1;
         bytes32 root = "another fraud attestation";
         (bytes memory attestation, ) = signRemoteAttestation(notaryPK, nonce, root);
         (bytes memory report, ) = signFraudReport(guardPK, attestation);
@@ -167,24 +173,33 @@ contract DestinationTest is SynapseTest {
 
     // Broadcaster relays a new root signed by notary on Origin chain
     function test_submitAttestation() public {
-        uint32 nonce = 42;
         assertTrue(destination.isNotary(remoteDomain, vm.addr(notaryPK)));
-        (bytes memory attestation, bytes memory sig) = signRemoteAttestation(notaryPK, nonce, ROOT);
+        (bytes memory attestation, bytes memory sig) = signRemoteAttestation(
+            notaryPK,
+            NONCE,
+            merkleRoot
+        );
         // Root doesn't exist yet
-        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), 0);
+        assertEq(destination.submittedAt(remoteDomain, merkleRoot), 0);
         // Broadcaster sends over a root signed by the notary on the Origin chain
         vm.expectEmit(true, true, true, true);
-        emit AttestationAccepted(remoteDomain, nonce, ROOT, sig);
+        emit AttestationAccepted(remoteDomain, NONCE, merkleRoot, sig);
         destination.submitAttestation(attestation);
         // Time at which root was confirmed is set, optimistic timeout starts now
-        assertEq(destination.activeMirrorConfirmedAt(remoteDomain, ROOT), block.timestamp);
+        assertEq(destination.submittedAt(remoteDomain, merkleRoot), block.timestamp);
     }
 
     function test_submitAttestation_fakeNotary() public {
-        uint32 nonce = 42;
-        (bytes memory attestation, ) = signRemoteAttestation(fakeNotaryPK, nonce, ROOT);
+        (bytes memory attestation, ) = signRemoteAttestation(fakeNotaryPK, NONCE, ROOT);
         vm.expectRevert("Signer is not a notary");
         // Attestation signed by fakeNotary should be rejected
+        destination.submitAttestation(attestation);
+    }
+
+    function test_submitAttestation_emptyRoot() public {
+        (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, bytes32(0));
+        vm.expectRevert("Empty root");
+        // Attestations with empty root should be rejected
         destination.submitAttestation(attestation);
     }
 
@@ -192,55 +207,72 @@ contract DestinationTest is SynapseTest {
         // Make Notary active on localDomain
         destination.removeNotary(remoteDomain, notary);
         destination.addNotary(localDomain, notary);
-        uint32 nonce = 42;
-        (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, ROOT);
-        vm.expectRevert("Attestation refers to local chain");
+        (bytes memory attestation, ) = signOriginAttestation(notaryPK, NONCE, ROOT);
+        vm.expectRevert("Attestation is from local chain");
         // Mirror should reject attestations from the chain it's deployed on
         destination.submitAttestation(attestation);
     }
 
     function test_acceptableRoot() public {
-        uint32 optimisticSeconds = 69;
         test_submitAttestation();
-        vm.warp(block.timestamp + optimisticSeconds);
-        assertTrue(destination.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
+        skip(OPTIMISTIC_PERIOD);
+        assertTrue(destination.acceptableRoot(remoteDomain, OPTIMISTIC_PERIOD, merkleRoot));
     }
 
-    function test_cannotAcceptableRoot() public {
+    function test_acceptableRoot_invalidRoot() public {
+        vm.expectRevert("Invalid root");
+        skip(OPTIMISTIC_PERIOD);
+        destination.acceptableRoot(remoteDomain, OPTIMISTIC_PERIOD, merkleRoot);
+    }
+
+    function test_acceptableRoot_inactiveNotary() public {
+        test_submitAttestation();
+        destination.removeNotary(remoteDomain, notary);
+        skip(OPTIMISTIC_PERIOD);
+        vm.expectRevert("Inactive notary");
+        destination.acceptableRoot(remoteDomain, OPTIMISTIC_PERIOD, merkleRoot);
+    }
+
+    function test_acceptableRoot_periodNoPassed() public {
         test_submitAttestation();
         uint32 optimisticSeconds = 69;
         vm.warp(block.timestamp + optimisticSeconds - 1);
-        assertFalse(destination.acceptableRoot(remoteDomain, optimisticSeconds, ROOT));
+        vm.expectRevert("!optimisticSeconds");
+        assertFalse(destination.acceptableRoot(remoteDomain, optimisticSeconds, merkleRoot));
     }
 
     event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);
 
-    function test_execute() public {
-        bytes memory message = _prepareExecuteTest(OPTIMISTIC_PERIOD);
-        vm.warp(block.timestamp + OPTIMISTIC_PERIOD);
-        vm.expectEmit(true, true, true, true);
-        emit LogTips(NOTARY_TIP, BROADCASTER_TIP, PROVER_TIP, EXECUTOR_TIP);
-        destination.execute(message);
+    function test_execute_firstIndex() public {
+        _checkExecute(0);
     }
 
-    function test_executePeriodNotPassed() public {
-        bytes memory message = _prepareExecuteTest(OPTIMISTIC_PERIOD);
+    function test_execute_midIndex() public {
+        _checkExecute(NONCE / 2);
+    }
+
+    function test_execute_lastIndex() public {
+        _checkExecute(NONCE - 1);
+    }
+
+    function test_execute_periodNotPassed() public {
+        _prepareTest(0, OPTIMISTIC_PERIOD);
         vm.warp(block.timestamp + OPTIMISTIC_PERIOD - 1);
         vm.expectRevert("!optimisticSeconds");
-        destination.execute(message);
+        destination.execute(testMessage, proof, 0);
     }
 
-    function test_executeForgedPeriodReduced() public {
-        bytes memory message = _prepareExecuteTest(OPTIMISTIC_PERIOD - 1);
+    function test_execute_forgedPeriod_reduced() public {
+        _prepareTest(0, OPTIMISTIC_PERIOD - 1);
         vm.warp(block.timestamp + OPTIMISTIC_PERIOD - 1);
         vm.expectRevert("app: !optimisticSeconds");
-        destination.execute(message);
+        destination.execute(testMessage, proof, 0);
     }
 
     function test_executeForgePeriodZero() public {
-        bytes memory message = _prepareExecuteTest(0);
+        _prepareTest(0, 0);
         vm.expectRevert("app: !optimisticSeconds");
-        destination.execute(message);
+        destination.execute(testMessage, proof, 0);
     }
 
     function test_onlySystemRouter() public {
@@ -256,27 +288,43 @@ contract DestinationTest is SynapseTest {
         destination.setSensitiveValue(1337, 0, 0, 0);
     }
 
-    function _prepareExecuteTest(uint32 optimisticPeriod) internal returns (bytes memory message) {
-        test_submitAttestation();
+    function _checkExecute(uint32 _index) internal {
+        _prepareTest(_index, OPTIMISTIC_PERIOD);
+        vm.warp(block.timestamp + OPTIMISTIC_PERIOD);
+        vm.expectEmit(true, true, true, true);
+        emit LogTips(NOTARY_TIP, BROADCASTER_TIP, PROVER_TIP, EXECUTOR_TIP);
+        destination.execute(testMessage, proof, _index);
+        // Check that merkle root used for proving was recorded
+        assertEq(destination.messageStatus(remoteDomain, leaf), merkleRoot, "!messageStatus");
+    }
 
-        uint32 nonce = 1234;
+    function _prepareTest(uint32 _messageIndex, uint32 _optimisticPeriod) internal {
         bytes32 sender = "sender";
         bytes memory messageBody = "message body";
-        dApp.prepare(remoteDomain, nonce, sender, messageBody);
+        dApp.prepare(remoteDomain, _messageIndex, sender, messageBody);
         bytes32 recipient = TypeCasts.addressToBytes32(address(dApp));
-
         bytes memory _header = Header.formatHeader(
             remoteDomain,
             sender,
-            nonce,
+            _messageIndex,
             localDomain,
             recipient,
-            optimisticPeriod
+            _optimisticPeriod
         );
+        testMessage = Message.formatMessage(_header, getDefaultTips(), messageBody);
+        leaf = keccak256(testMessage);
 
-        message = Message.formatMessage(_header, getDefaultTips(), messageBody);
-        bytes32 messageHash = keccak256(message);
-        // Let's imagine message was proved against current root
-        destination.setMessageStatus(remoteDomain, messageHash, ROOT);
+        bytes32[] memory leafs = new bytes32[](NONCE);
+        for (uint256 i = 0; i < NONCE; ++i) {
+            if (i == _messageIndex) {
+                leafs[i] = leaf;
+            } else {
+                leafs[i] = keccak256(abi.encode(NONCE, i));
+            }
+        }
+        proofGen.createTree(leafs);
+        merkleRoot = proofGen.getRoot();
+        proof = proofGen.getProof(_messageIndex);
+        test_submitAttestation();
     }
 }
