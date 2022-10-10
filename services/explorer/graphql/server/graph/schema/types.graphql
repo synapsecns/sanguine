@@ -40,21 +40,30 @@ type HistoricalResult {
   dateResults:  [DateResult]
   type:         HistoricalResultType
 }
-type ScalarResult {
-  value: String
-}
+"""
+ValueResult is a USDValue result.
+"""
 type ValueResult {
   USDValue: String
 }
+"""
+TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
+"""
 type TransactionCountResult {
   chainId:  Int
   count:    Int
 }
+"""
+TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
+"""
 type TokenCountResult {
   chainId:      Int
   tokenAddress: String
   count:        Int
 }
+"""
+AddressRanking gives the amount of transactions that occurred for a specific address across all chains.
+"""
 type AddressRanking {
   address:  String
   count:    Int

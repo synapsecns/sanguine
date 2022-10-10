@@ -8,6 +8,7 @@ import (
 	"strconv"
 )
 
+// AddressRanking gives the amount of transactions that occurred for a specific address across all chains.
 type AddressRanking struct {
 	Address *string `json:"address"`
 	Count   *int    `json:"count"`
@@ -51,21 +52,20 @@ type PartialInfo struct {
 	Time           *int     `json:"time"`
 }
 
-type ScalarResult struct {
-	Value *string `json:"value"`
-}
-
+// TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
 type TokenCountResult struct {
 	ChainID      *int    `json:"chainId"`
 	TokenAddress *string `json:"tokenAddress"`
 	Count        *int    `json:"count"`
 }
 
+// TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
 type TransactionCountResult struct {
 	ChainID *int `json:"chainId"`
 	Count   *int `json:"count"`
 }
 
+// ValueResult is a USDValue result.
 type ValueResult struct {
 	USDValue *string `json:"USDValue"`
 }

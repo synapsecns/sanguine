@@ -89,10 +89,6 @@ type ComplexityRoot struct {
 		LatestBridgeTransactions func(childComplexity int, includePending *bool, page *int) int
 	}
 
-	ScalarResult struct {
-		Value func(childComplexity int) int
-	}
-
 	TokenCountResult struct {
 		ChainID      func(childComplexity int) int
 		Count        func(childComplexity int) int
@@ -372,13 +368,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.LatestBridgeTransactions(childComplexity, args["includePending"].(*bool), args["page"].(*int)), true
 
-	case "ScalarResult.value":
-		if e.complexity.ScalarResult.Value == nil {
-			break
-		}
-
-		return e.complexity.ScalarResult.Value(childComplexity), true
-
 	case "TokenCountResult.chainId":
 		if e.complexity.TokenCountResult.ChainID == nil {
 			break
@@ -594,21 +583,30 @@ type HistoricalResult {
   dateResults:  [DateResult]
   type:         HistoricalResultType
 }
-type ScalarResult {
-  value: String
-}
+"""
+ValueResult is a USDValue result.
+"""
 type ValueResult {
   USDValue: String
 }
+"""
+TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
+"""
 type TransactionCountResult {
   chainId:  Int
   count:    Int
 }
+"""
+TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
+"""
 type TokenCountResult {
   chainId:      Int
   tokenAddress: String
   count:        Int
 }
+"""
+AddressRanking gives the amount of transactions that occurred for a specific address across all chains.
+"""
 type AddressRanking {
   address:  String
   count:    Int
@@ -2466,47 +2464,6 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ScalarResult_value(ctx context.Context, field graphql.CollectedField, obj *model.ScalarResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ScalarResult_value(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Value, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_ScalarResult_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ScalarResult",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4902,31 +4859,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
-
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var scalarResultImplementors = []string{"ScalarResult"}
-
-func (ec *executionContext) _ScalarResult(ctx context.Context, sel ast.SelectionSet, obj *model.ScalarResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, scalarResultImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("ScalarResult")
-		case "value":
-
-			out.Values[i] = ec._ScalarResult_value(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
