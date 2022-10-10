@@ -263,15 +263,49 @@ func GenerateSingleSpecifierStringSQL(value *string, field string, firstFilter *
 	return ""
 }
 
+// GenerateAddressSpecifierSQLS generates a where function with an string.
+func GenerateAddressSpecifierSQLS(address *string, firstFilter *bool) string {
+	if address != nil {
+		if *firstFilter {
+			*firstFilter = false
+			return fmt.Sprintf(" WHERE (t1.%s = '%s' OR  %s = '%s')", RecipientFieldName, *address, SenderFieldName, *address)
+		}
+		return fmt.Sprintf(" AND (t1.%s = '%s' OR %s = '%s')", RecipientFieldName, *address, SenderFieldName, *address)
+	}
+	return ""
+}
+
+// GenerateSingleSpecifierI32SQLS generates a where function with an uint32.
+func GenerateSingleSpecifierI32SQLS(value *uint32, field string, firstFilter *bool) string {
+	if value != nil {
+		if *firstFilter {
+			return fmt.Sprintf(" WHERE t1.%s = %d", field, *value)
+		}
+		return fmt.Sprintf("AND t1.%s = %d", field, *value)
+	}
+	return ""
+}
+
+// GenerateSingleSpecifierStringSQLS generates a where function with a string.
+func GenerateSingleSpecifierStringSQLS(value *string, field string, firstFilter *bool) string {
+	if value != nil {
+		if *firstFilter {
+			return fmt.Sprintf(" WHERE t1.%s = '%s'", field, *value)
+		}
+		return fmt.Sprintf("AND t1.%s = '%s'", field, *value)
+	}
+	return ""
+}
+
 // PartialInfosFromIdentifiers returns events given identifiers. If order is true, the events are ordered by block number.
 func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int) (partialInfos []*model.PartialInfo, err error) {
 	var res []BridgeEvent
 	firstFilter := true
-	chainIDSpecifier := GenerateSingleSpecifierI32SQL(chainID, ChainIDFieldName, &firstFilter)
-	addressSpecifier := GenerateAddressSpecifierSQL(address, &firstFilter)
-	tokenAddressSpecifier := GenerateSingleSpecifierStringSQL(tokenAddress, TokenFieldName, &firstFilter)
-	kappaSpecifier := GenerateSingleSpecifierStringSQL(kappa, KappaFieldName, &firstFilter)
-	txHashSpecifier := GenerateSingleSpecifierStringSQL(txHash, TxHashFieldName, &firstFilter)
+	chainIDSpecifier := GenerateSingleSpecifierI32SQLS(chainID, ChainIDFieldName, &firstFilter)
+	addressSpecifier := GenerateAddressSpecifierSQLS(address, &firstFilter)
+	tokenAddressSpecifier := GenerateSingleSpecifierStringSQLS(tokenAddress, TokenFieldName, &firstFilter)
+	kappaSpecifier := GenerateSingleSpecifierStringSQLS(kappa, KappaFieldName, &firstFilter)
+	txHashSpecifier := GenerateSingleSpecifierStringSQLS(txHash, TxHashFieldName, &firstFilter)
 
 	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC LIMIT %d OFFSET %d", BlockNumberFieldName, PageSize, (page-1)*PageSize)
 
@@ -281,9 +315,16 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32
 	)
 
 	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-		`SELECT * FROM bridge_events %s`,
-		compositeIdentifiers,
+		`
+		SELECT t1.* FROM bridge_events t1
+    	JOIN (
+    	SELECT %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s) AS insert_max_time
+    	FROM bridge_events GROUP BY %s,%s, %s,%s,%s,%s,%s,%s,%s,%s) t2
+    	    ON (t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = insert_max_time) %s `,
+		ContractAddressFieldName, ChainIDFieldName, EventTypeFieldName, BlockNumberFieldName, TokenFieldName, AmountFieldName, EventIndexFieldName, DestinationKappaFieldName, SenderFieldName, TxHashFieldName, InsertTimeFieldName, TxHashFieldName, ContractAddressFieldName, ChainIDFieldName, EventTypeFieldName, BlockNumberFieldName, TokenFieldName, AmountFieldName, EventIndexFieldName, DestinationKappaFieldName, SenderFieldName, TxHashFieldName, TxHashFieldName, ContractAddressFieldName, ContractAddressFieldName, ChainIDFieldName, ChainIDFieldName, EventTypeFieldName, EventTypeFieldName, BlockNumberFieldName, BlockNumberFieldName, TokenFieldName, TokenFieldName, AmountFieldName, AmountFieldName, EventIndexFieldName, EventIndexFieldName, DestinationKappaFieldName, DestinationKappaFieldName, SenderFieldName, SenderFieldName, InsertTimeFieldName, compositeIdentifiers,
 	)).Find(&res)
+
+	fmt.Println("dbTx!", dbTx)
 	fmt.Printf("res: %+v\n", res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
