@@ -176,12 +176,13 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
-    ) external payable haveActiveNotary {
+    ) external payable haveActiveNotary returns (uint32 messageNonce, bytes32 messageHash) {
+        // TODO: add unit tests covering return values
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         require(_tips.castToTips().totalTips() == msg.value, "!tips");
         // Latest nonce (i.e. "last message" nonce) is current amount of leaves in the tree.
         // Message nonce is the amount of leaves after the new leaf insertion
-        uint32 messageNonce = nonce() + 1;
+        messageNonce = nonce() + 1;
         bytes32 sender = _checkForSystemMessage(_recipientAddress);
         // format the message into packed bytes
         bytes memory _header = Header.formatHeader(
@@ -194,7 +195,7 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
         );
         // format the message into packed bytes
         bytes memory message = Message.formatMessage(_header, _tips, _messageBody);
-        bytes32 messageHash = keccak256(message);
+        messageHash = keccak256(message);
         // insert the hashed message into the Merkle tree
         _insertMessage(messageNonce, messageHash);
         // Emit Dispatch event with message information
