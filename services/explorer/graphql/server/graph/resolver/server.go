@@ -485,9 +485,8 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
 `, BuiltIn: false},
 	{Name: "../schema/queries.graphql", Input: `type Query {
   """
-  Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash
-  At least 1 search parameter is required, which is one of chain id, address, txn hash or kappa
-  Not explicitly specifying a search parameter executes a search across all txns irrespective of the field's value
+  Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
+  At least 1 search parameter is required, which is one of chain id, address, txn hash or kappa.
   """
   bridgeTransactions(
     chainId:        Int
@@ -499,7 +498,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     tokenAddress:   String
   ): [BridgeTransaction]
   """
-  Returns the latest bridged transactions across all chains
+  Returns the latest bridged transactions across all chains.
   """
   latestBridgeTransactions(
     includePending: Boolean = true
@@ -507,7 +506,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   ): [BridgeTransaction]
   """
   Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
-  Specifying no duration defaults to ALL_TIME, and no chain or address searches across all
+  Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
   """
   bridgeAmountStatistic(
     type:         StatisticType!
@@ -517,8 +516,9 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     tokenAddress: String
   ): ValueResult
   """
-  Returns the COUNT of bridged transactions for a given duration, chain and address.
-  Specifying no duration defaults to ALL_TIME
+  Returns the COUNT of bridged transactions for a given chain. If direction of bridge transactions
+  is not specified, it defaults to IN.
+  Specifying no duration defaults to the last 24 hours.
   """
   countByChainId(
     chainId:    Int
@@ -552,14 +552,21 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   ): HistoricalResult
 }
 `, BuiltIn: false},
-	{Name: "../schema/types.graphql", Input: `type BridgeTransaction {
+	{Name: "../schema/types.graphql", Input: `"""
+BridgeTransaction represents an entire bridge transaction, including both
+to and from transactions. If a ` + "`" + `from` + "`" + ` transaction does not have a corresponding
+` + "`" + `to` + "`" + ` transaction, ` + "`" + `pending` + "`" + ` will be true.
+"""
+type BridgeTransaction {
   fromInfo: PartialInfo
   toInfo:   PartialInfo
   kappa:        String
   pending:      Boolean
   swapSuccess:  Boolean
-#  status:       String
 }
+"""
+PartialInfo is a transaction that occurred on one chain.
+"""
 type PartialInfo {
   chainId: Int
   address: String
@@ -572,10 +579,16 @@ type PartialInfo {
   blockNumber:    Int
   time:           Int
 }
+"""
+DateResult is a given statistic for a given date.
+"""
 type DateResult {
   date:   String,
   total:  Float
 }
+"""
+HistoricalResult is a given statistic for dates.
+"""
 type HistoricalResult {
   total:        Float
   dateResults:  [DateResult]

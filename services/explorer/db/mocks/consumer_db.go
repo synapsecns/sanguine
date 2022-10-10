@@ -19,20 +19,20 @@ type ConsumerDB struct {
 	mock.Mock
 }
 
-// BridgeEventCount provides a mock function with given fields: ctx, chainID, address, tokenAddress, directionIn, firstBlock
-func (_m *ConsumerDB) BridgeEventCount(ctx context.Context, chainID uint32, address *string, tokenAddress *string, directionIn bool, firstBlock uint64) (uint64, error) {
-	ret := _m.Called(ctx, chainID, address, tokenAddress, directionIn, firstBlock)
+// BridgeEventCount provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) BridgeEventCount(ctx context.Context, query string) (uint64, error) {
+	ret := _m.Called(ctx, query)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func(context.Context, uint32, *string, *string, bool, uint64) uint64); ok {
-		r0 = rf(ctx, chainID, address, tokenAddress, directionIn, firstBlock)
+	if rf, ok := ret.Get(0).(func(context.Context, string) uint64); ok {
+		r0 = rf(ctx, query)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, uint32, *string, *string, bool, uint64) error); ok {
-		r1 = rf(ctx, chainID, address, tokenAddress, directionIn, firstBlock)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -125,13 +125,13 @@ func (_m *ConsumerDB) GetHistoricalData(ctx context.Context, subQuery string, ty
 	return r0, r1
 }
 
-// GetKappaFromTxHash provides a mock function with given fields: ctx, txHash, chainID
-func (_m *ConsumerDB) GetKappaFromTxHash(ctx context.Context, txHash string, chainID *uint32) (*string, error) {
-	ret := _m.Called(ctx, txHash, chainID)
+// GetKappaFromTxHash provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetKappaFromTxHash(ctx context.Context, query string) (*string, error) {
+	ret := _m.Called(ctx, query)
 
 	var r0 *string
-	if rf, ok := ret.Get(0).(func(context.Context, string, *uint32) *string); ok {
-		r0 = rf(ctx, txHash, chainID)
+	if rf, ok := ret.Get(0).(func(context.Context, string) *string); ok {
+		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*string)
@@ -139,8 +139,8 @@ func (_m *ConsumerDB) GetKappaFromTxHash(ctx context.Context, txHash string, cha
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, *uint32) error); ok {
-		r1 = rf(ctx, txHash, chainID)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -171,13 +171,13 @@ func (_m *ConsumerDB) GetSwapSuccess(ctx context.Context, kappa string, chainID 
 	return r0, r1
 }
 
-// GetTokenAddressesByChainID provides a mock function with given fields: ctx, chainID
-func (_m *ConsumerDB) GetTokenAddressesByChainID(ctx context.Context, chainID uint32) ([]string, error) {
-	ret := _m.Called(ctx, chainID)
+// GetTokenAddressesByChainID provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetTokenAddressesByChainID(ctx context.Context, query string) ([]string, error) {
+	ret := _m.Called(ctx, query)
 
 	var r0 []string
-	if rf, ok := ret.Get(0).(func(context.Context, uint32) []string); ok {
-		r0 = rf(ctx, chainID)
+	if rf, ok := ret.Get(0).(func(context.Context, string) []string); ok {
+		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
@@ -185,8 +185,8 @@ func (_m *ConsumerDB) GetTokenAddressesByChainID(ctx context.Context, chainID ui
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, uint32) error); ok {
-		r1 = rf(ctx, chainID)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -240,13 +240,13 @@ func (_m *ConsumerDB) GetTxHashFromKappa(ctx context.Context, kappa string) (*st
 	return r0, r1
 }
 
-// PartialInfosFromIdentifiers provides a mock function with given fields: ctx, chainID, address, tokenAddress, kappa, txHash, page
-func (_m *ConsumerDB) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address *string, tokenAddress *string, kappa *string, txHash *string, page int) ([]*model.PartialInfo, error) {
-	ret := _m.Called(ctx, chainID, address, tokenAddress, kappa, txHash, page)
+// PartialInfosFromIdentifiers provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) PartialInfosFromIdentifiers(ctx context.Context, query string) ([]*model.PartialInfo, error) {
+	ret := _m.Called(ctx, query)
 
 	var r0 []*model.PartialInfo
-	if rf, ok := ret.Get(0).(func(context.Context, *uint32, *string, *string, *string, *string, int) []*model.PartialInfo); ok {
-		r0 = rf(ctx, chainID, address, tokenAddress, kappa, txHash, page)
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.PartialInfo); ok {
+		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*model.PartialInfo)
@@ -254,8 +254,8 @@ func (_m *ConsumerDB) PartialInfosFromIdentifiers(ctx context.Context, chainID *
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *uint32, *string, *string, *string, *string, int) error); ok {
-		r1 = rf(ctx, chainID, address, tokenAddress, kappa, txHash, page)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
 	} else {
 		r1 = ret.Error(1)
 	}

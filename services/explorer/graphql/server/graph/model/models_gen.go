@@ -13,6 +13,9 @@ type AddressRanking struct {
 	Count   *int    `json:"count"`
 }
 
+// BridgeTransaction represents an entire bridge transaction, including both
+// to and from transactions. If a `from` transaction does not have a corresponding
+// `to` transaction, `pending` will be true.
 type BridgeTransaction struct {
 	FromInfo    *PartialInfo `json:"fromInfo"`
 	ToInfo      *PartialInfo `json:"toInfo"`
@@ -21,17 +24,20 @@ type BridgeTransaction struct {
 	SwapSuccess *bool        `json:"swapSuccess"`
 }
 
+// DateResult is a given statistic for a given date.
 type DateResult struct {
 	Date  *string  `json:"date"`
 	Total *float64 `json:"total"`
 }
 
+// HistoricalResult is a given statistic for dates.
 type HistoricalResult struct {
 	Total       *float64              `json:"total"`
 	DateResults []*DateResult         `json:"dateResults"`
 	Type        *HistoricalResultType `json:"type"`
 }
 
+// PartialInfo is a transaction that occurred on one chain.
 type PartialInfo struct {
 	ChainID        *int     `json:"chainId"`
 	Address        *string  `json:"address"`

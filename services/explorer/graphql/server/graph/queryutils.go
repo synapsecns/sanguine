@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"time"
 )
@@ -65,7 +66,7 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 		if kappa != nil {
 			destinationKappa = *kappa
 		}
-		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, nil, address, tokenAddress, &destinationKappa, nil, *page)
+		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, GeneratePartialInfoQuery(nil, address, tokenAddress, &destinationKappa, nil, *page))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -126,7 +127,7 @@ func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *
 		if err != nil {
 			return nil, fmt.Errorf("failed to get origin tx hash: %w", err)
 		}
-		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, nil, address, tokenAddress, nil, originTxHash, *page)
+		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, GeneratePartialInfoQuery(nil, address, tokenAddress, nil, originTxHash, *page))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -159,12 +160,16 @@ func (r *queryResolver) originOrDestinationBridge(ctx context.Context, chainID *
 	var results []*model.BridgeTransaction
 	var toInfos []*model.PartialInfo
 	var fromInfos []*model.PartialInfo
-	infos, err := r.DB.PartialInfosFromIdentifiers(ctx, chainID, address, tokenAddress, kappa, txnHash, *page)
+	infos, err := r.DB.PartialInfosFromIdentifiers(ctx, GeneratePartialInfoQuery(chainID, address, tokenAddress, kappa, txnHash, *page))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 	}
+	firstFilter := true
+	chainIDSpecifier := GenerateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 	for _, info := range infos {
-		kappa, err := r.DB.GetKappaFromTxHash(ctx, *info.TxnHash, chainID)
+		txHashSpecifier := GenerateSingleSpecifierStringSQL(info.TxnHash, sql.TxHashFieldName, &firstFilter, "")
+		query := fmt.Sprintf(`SELECT * FROM bridge_events %s%s`, chainIDSpecifier, txHashSpecifier)
+		kappa, err := r.DB.GetKappaFromTxHash(ctx, query)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get kappa from tx hash: %w", err)
 		}
@@ -200,4 +205,111 @@ func (r *queryResolver) mergeBridgeTransactions(origin []*model.BridgeTransactio
 		results = append(results, tx)
 	}
 	return results
+}
+
+// GenerateAddressSpecifierSQL generates a where function with an string.
+func GenerateAddressSpecifierSQL(address *string, firstFilter *bool, tablePrefix string) string {
+	if address != nil {
+		if *firstFilter {
+			*firstFilter = false
+			return fmt.Sprintf(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+		}
+		return fmt.Sprintf(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	}
+	return ""
+}
+
+// GenerateSingleSpecifierI32SQL generates a where function with an uint32.
+func GenerateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *bool, tablePrefix string) string {
+	if value != nil {
+		if *firstFilter {
+			*firstFilter = false
+			return fmt.Sprintf(" WHERE %s%s = %d", tablePrefix, field, *value)
+		}
+		return fmt.Sprintf(" AND %s%s = %d", tablePrefix, field, *value)
+	}
+	return ""
+}
+
+// GenerateBlockSpecifierSQL generates a where function with an uint64.
+func GenerateBlockSpecifierSQL(value *uint64, field string, firstFilter *bool, tablePrefix string) string {
+	if value != nil {
+		if *firstFilter {
+			*firstFilter = false
+			return fmt.Sprintf(" WHERE %s%s >= %d", tablePrefix, field, *value)
+		}
+		return fmt.Sprintf(" AND %s%s >= %d", tablePrefix, field, *value)
+	}
+	return ""
+}
+
+// GenerateSingleSpecifierStringSQL generates a where function with a string.
+func GenerateSingleSpecifierStringSQL(value *string, field string, firstFilter *bool, tablePrefix string) string {
+	if value != nil {
+		if *firstFilter {
+			*firstFilter = false
+			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, field, *value)
+		}
+		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, field, *value)
+	}
+	return ""
+}
+
+// GeneratePartialInfoQuery returns the query for making the PartialInfo query.
+func GeneratePartialInfoQuery(chainID *uint32, address, tokenAddress, kappa, txHash *string, page int) string {
+	firstFilter := true
+	chainIDSpecifier := GenerateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "t1.")
+	addressSpecifier := GenerateAddressSpecifierSQL(address, &firstFilter, "t1.")
+	tokenAddressSpecifier := GenerateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "t1.")
+	kappaSpecifier := GenerateSingleSpecifierStringSQL(kappa, sql.KappaFieldName, &firstFilter, "t1.")
+	txHashSpecifier := GenerateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "t1.")
+
+	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC LIMIT %d OFFSET %d", sql.BlockNumberFieldName, sql.PageSize, (page-1)*sql.PageSize)
+
+	compositeIdentifiers := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + kappaSpecifier + txHashSpecifier + pageSpecifier
+	selectParameters := fmt.Sprintf(
+		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
+		sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
+		sql.SenderFieldName, sql.TxHashFieldName, sql.InsertTimeFieldName,
+	)
+	groupByParameters := fmt.Sprintf(
+		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s`,
+		sql.TxHashFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName,
+	)
+	joinOnParameters := fmt.Sprintf(
+		`t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s
+		AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = insert_max_time`,
+		sql.TxHashFieldName, sql.TxHashFieldName, sql.ContractAddressFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName,
+		sql.ChainIDFieldName, sql.EventTypeFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName, sql.BlockNumberFieldName,
+		sql.TokenFieldName, sql.TokenFieldName, sql.AmountFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.EventIndexFieldName,
+		sql.DestinationKappaFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName, sql.SenderFieldName, sql.InsertTimeFieldName,
+	)
+	query := fmt.Sprintf(
+		`
+		SELECT t1.* FROM bridge_events t1
+    	JOIN (
+    	SELECT %s AS insert_max_time
+    	FROM bridge_events GROUP BY %s) t2
+    	    ON (%s) %s `,
+		selectParameters, groupByParameters, joinOnParameters, compositeIdentifiers)
+	return query
+}
+
+// GenerateBridgeEventCountQuery creates the query for bridge event count.
+func GenerateBridgeEventCountQuery(chainID uint32, address *string, tokenAddress *string, directionIn bool, firstBlock *uint64) string {
+	chainField := sql.ChainIDFieldName
+	if directionIn {
+		chainField = sql.DestinationChainIDFieldName
+	}
+	firstFilter := true
+	chainIDSpecifier := GenerateSingleSpecifierI32SQL(&chainID, chainField, &firstFilter, "")
+	addressSpecifier := GenerateSingleSpecifierStringSQL(address, sql.RecipientFieldName, &firstFilter, "")
+	tokenAddressSpecifier := GenerateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
+	blockSpecifier := GenerateBlockSpecifierSQL(firstBlock, sql.BlockNumberFieldName, &firstFilter, "")
+
+	query := fmt.Sprintf(`SELECT COUNT(DISTINCT (%s, %s)) FROM bridge_events %s%s%s%s`,
+		sql.TxHashFieldName, sql.EventIndexFieldName, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, blockSpecifier)
+	return query
 }
