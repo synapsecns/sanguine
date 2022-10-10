@@ -89,19 +89,23 @@ func (p *BridgeParser) EventType(log ethTypes.Log) (_ bridgeTypes.EventType, ok 
 type SwapParser struct {
 	// consumerDB is the database to store parsed data in
 	consumerDB db.ConsumerDB
+	// swap is the address of the bridge
+	swapAddress common.Address
 	// Filterer is the swap Filterer we use to parse events
 	Filterer *swap.SwapFlashLoanFilterer
 	// consumerFetcher is the Fetcher for sender and timestamp
 	consumerFetcher *Fetcher
+	// swapFetcher is the fetcher for token data from swaps.
+	swapFetcher SwapFetcher
 }
 
 // NewSwapParser creates a new parser for a given bridge.
-func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, consumerFetcher *Fetcher) (*SwapParser, error) {
+func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFetcher SwapFetcher, consumerFetcher *Fetcher) (*SwapParser, error) {
 	filterer, err := swap.NewSwapFlashLoanFilterer(swapAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
-	return &SwapParser{consumerDB, filterer, consumerFetcher}, nil
+	return &SwapParser{consumerDB, swapAddress, filterer, consumerFetcher, swapFetcher}, nil
 }
 
 // EventType returns the event type of a swap log.
@@ -476,10 +480,12 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 	// populate swap event type so following operations can mature the event data.
 	swapEvent := eventToSwapEvent(iFace, chainID)
 	// Add sender to swapEvent
-
+	if swapEvent.TokenIndex != nil {
+		symbol, decimals := p.swapFetcher.GetTokenMetaData(ctx, uint8(swapEvent.TokenIndex.Uint64()))
+		swapEvent.TokenSymbol = symbol
+		swapEvent.TokenDecimal = decimals
+	}
 	// TODO need to add the following data to this swap event
-	// TokenDecimal: call getToken(uint8 index) (IERC20) from swap contract then index decimal
-	// TokenSymbol: call getToken(uint8 index) (IERC20) from swap contract then index symbol
 	// AmountsUSD: Get price data from GetPrice(timestamp, coin gecko id)
 	// FeeAmountsUSD: Get price data from GetPrice(timestamp, coin gecko id)
 	// var amountsUSD []*big.Int

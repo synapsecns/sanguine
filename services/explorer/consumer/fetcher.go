@@ -2,12 +2,14 @@ package consumer
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/scribe/graphql"
 	"golang.org/x/sync/errgroup"
 	"math/big"
@@ -261,10 +263,59 @@ func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, toke
 		return nil, fmt.Errorf("invalid token id")
 	}
 	tok, err := b.bridgeConfig.GetToken(&bind.CallOpts{
+		// TODO add block number here
 		Context: ctx,
 	}, *tokenID, big.NewInt(int64(chainID)))
 	if err != nil {
 		return nil, fmt.Errorf("could not get token id: %w", err)
 	}
 	return &tok, nil
+}
+
+// SwapFetcher is the fetcher for token data from the swap contract.
+type SwapFetcher struct {
+	swap        *swap.SwapRef
+	backend     bind.ContractBackend
+	swapAddress common.Address
+}
+
+// NewSwapFetcher creates a new swap fetcher.
+// Backend must be an archive backend.
+func NewSwapFetcher(swapAddress common.Address, backend bind.ContractBackend) (*SwapFetcher, error) {
+	swap, err := swap.NewSwapRef(swapAddress, backend)
+	if err != nil {
+		return nil, fmt.Errorf("could not bind swap config contract: %w", err)
+	}
+	return &SwapFetcher{swap, backend, swapAddress}, nil
+}
+
+// GetTokenMetaData gets the token from the erc20 token contract given a swap contract token id.
+func (s *SwapFetcher) GetTokenMetaData(ctx context.Context, tokenIndex uint8) (sql.NullString, *uint8) {
+	tokenAddress, err := s.swap.GetToken(&bind.CallOpts{
+		Context: ctx,
+	}, tokenIndex)
+	if err != nil {
+		fmt.Println("Error getting Token Address", err)
+	}
+	erc20caller, err := swap.NewERC20(tokenAddress, s.backend)
+	if err != nil {
+		fmt.Println("Error getting erc20caller", err)
+		return sql.NullString{String: "", Valid: false}, nil
+	}
+	tokenSymbol, err := erc20caller.Symbol(&bind.CallOpts{
+		Context: ctx,
+	})
+	if err != nil {
+		fmt.Println("Error getting tokenSymbol", err)
+		return sql.NullString{String: tokenSymbol, Valid: true}, nil
+	}
+	tokenDecimals, err := erc20caller.Decimals(&bind.CallOpts{
+		Context: ctx,
+	})
+	if err != nil {
+		fmt.Println("Error getting tokenDecimals", err)
+		return sql.NullString{String: tokenSymbol, Valid: true}, nil
+	}
+
+	return sql.NullString{String: tokenSymbol, Valid: true}, &tokenDecimals
 }
