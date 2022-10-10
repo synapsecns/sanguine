@@ -474,9 +474,9 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 	swapEvent := eventToSwapEvent(iFace, chainID)
 
 	if swapEvent.Amount != nil {
-		var tokenPrices map[uint8]float64
-		var tokenDecimals map[uint8]uint8
-		var tokenSymbols map[uint8]string
+		tokenPrices := map[uint8]float64{}
+		tokenDecimals := map[uint8]uint8{}
+		tokenSymbols := map[uint8]string{}
 
 		// Get metadata for each token amount
 		for tokenIndex := range swapEvent.Amount {

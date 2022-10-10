@@ -30,7 +30,7 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 		dbTx := s.DB().WithContext(ctx).
 			Find(&resp, "chain_id = ?", chainID)
 		if dbTx.Error != nil {
-			return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+			return nil, fmt.Errorf("failed to read event: %w", dbTx.Error)
 		}
 		blockNumber = resp.BlockNumber
 
@@ -63,16 +63,10 @@ func (s *Store) GetTxHashFromKappa(ctx context.Context, kappa string) (*string, 
 }
 
 // GetKappaFromTxHash returns the kappa for a given transaction hash.
-func (s *Store) GetKappaFromTxHash(ctx context.Context, txHash string, chainID *uint32) (*string, error) {
+func (s *Store) GetKappaFromTxHash(ctx context.Context, query string) (*string, error) {
 	var res BridgeEvent
-	var chainIDSpecifier string
-	if chainID != nil {
-		chainIDSpecifier = fmt.Sprintf(" AND %s = %d", ChainIDFieldName, *chainID)
-	}
-	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-		`SELECT * FROM bridge_events WHERE %s = '%s'%s`,
-		TxHashFieldName, txHash, chainIDSpecifier,
-	)).Find(&res)
+
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -121,12 +115,9 @@ func (s *Store) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
 }
 
 // GetTokenAddressesByChainID gets all token addresses that have been used in bridge events for a given chain ID.
-func (s *Store) GetTokenAddressesByChainID(ctx context.Context, chainID uint32) ([]string, error) {
+func (s *Store) GetTokenAddressesByChainID(ctx context.Context, query string) ([]string, error) {
 	var res []string
-	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-		`SELECT DISTINCT %s FROM bridge_events WHERE %s = %d OR %s = %d`,
-		TokenFieldName, ChainIDFieldName, chainID, DestinationChainIDFieldName, chainID,
-	)).Find(&res)
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -150,35 +141,12 @@ func (s *Store) GetBridgeStatistic(ctx context.Context, subQuery string) (*strin
 }
 
 // BridgeEventCount returns the number of bridge events.
-func (s *Store) BridgeEventCount(ctx context.Context, chainID uint32, address *string, tokenAddress *string, directionIn bool, firstBlock uint64) (count uint64, err error) {
+func (s *Store) BridgeEventCount(ctx context.Context, query string) (count uint64, err error) {
 	var res int64
-	var addressSpecifier string
-	if address != nil {
-		addressSpecifier = fmt.Sprintf(" AND %s = '%s'", RecipientFieldName, *address)
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
-	var tokenAddressSpecifier string
-	if tokenAddress != nil {
-		tokenAddressSpecifier = fmt.Sprintf(" AND %s = '%s'", TokenFieldName, *tokenAddress)
-	}
-
-	if directionIn {
-		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT (%s, %s)) FROM bridge_events WHERE %s = %d AND %s >= %d%s%s`,
-			TxHashFieldName, EventIndexFieldName, DestinationChainIDFieldName, chainID, BlockNumberFieldName, firstBlock, addressSpecifier, tokenAddressSpecifier,
-		)).Find(&res)
-		if dbTx.Error != nil {
-			return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-		}
-	} else {
-		dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-			`SELECT COUNT(DISTINCT %s, %s) FROM bridge_events WHERE %s = %d AND %s >= %d%s%s`,
-			TxHashFieldName, EventIndexFieldName, ChainIDFieldName, chainID, BlockNumberFieldName, firstBlock, addressSpecifier, tokenAddressSpecifier,
-		)).Find(&res)
-		if dbTx.Error != nil {
-			return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-		}
-	}
-
 	return uint64(res), nil
 }
 
@@ -209,12 +177,10 @@ func (s *Store) GetHistoricalData(ctx context.Context, subQuery string, typeArg 
 	var dbTxFinal *gorm.DB
 
 	// Get the rest of the data depending on query type.
-	switch *typeArg {
-	case model.HistoricalResultTypeAddresses:
+	if *typeArg == model.HistoricalResultTypeAddresses {
 		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT uniqExact(%s) FROM bridge_events %s", SenderFieldName, filter)).Scan(&sum)
-	case model.HistoricalResultTypeTransactions:
-		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)).Scan(&sum)
-	case model.HistoricalResultTypeBridgevolume: // Extra in case things change.
+	} else {
+		// TODO pass table from previous query to prevent redoing this query.
 		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)).Scan(&sum)
 	}
 	if dbTxFinal.Error != nil {
@@ -229,118 +195,12 @@ func (s *Store) GetHistoricalData(ctx context.Context, subQuery string, typeArg 
 	return &payload, nil
 }
 
-// GenerateAddressSpecifierSQL generates a where function with an string.
-func GenerateAddressSpecifierSQL(address *string, firstFilter *bool) string {
-	if address != nil {
-		if *firstFilter {
-			*firstFilter = false
-			return fmt.Sprintf(" WHERE (%s = '%s' OR %s = '%s')", RecipientFieldName, *address, SenderFieldName, *address)
-		}
-		return fmt.Sprintf(" AND (%s = '%s OR %s = '%s)", RecipientFieldName, *address, SenderFieldName, *address)
-	}
-	return ""
-}
-
-// GenerateSingleSpecifierI32SQL generates a where function with an uint32.
-func GenerateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *bool) string {
-	if value != nil {
-		if *firstFilter {
-			return fmt.Sprintf(" WHERE %s = %d", field, *value)
-		}
-		return fmt.Sprintf("AND %s = %d", field, *value)
-	}
-	return ""
-}
-
-// GenerateSingleSpecifierStringSQL generates a where function with a string.
-func GenerateSingleSpecifierStringSQL(value *string, field string, firstFilter *bool) string {
-	if value != nil {
-		if *firstFilter {
-			return fmt.Sprintf(" WHERE %s = '%s'", field, *value)
-		}
-		return fmt.Sprintf("AND %s = '%s'", field, *value)
-	}
-	return ""
-}
-
-// GenerateAddressSpecifierSQLS generates a where function with an string.
-func GenerateAddressSpecifierSQLS(address *string, firstFilter *bool) string {
-	if address != nil {
-		if *firstFilter {
-			*firstFilter = false
-			return fmt.Sprintf(" WHERE (t1.%s = '%s' OR  %s = '%s')", RecipientFieldName, *address, SenderFieldName, *address)
-		}
-		return fmt.Sprintf(" AND (t1.%s = '%s' OR %s = '%s')", RecipientFieldName, *address, SenderFieldName, *address)
-	}
-	return ""
-}
-
-// GenerateSingleSpecifierI32SQLS generates a where function with an uint32.
-func GenerateSingleSpecifierI32SQLS(value *uint32, field string, firstFilter *bool) string {
-	if value != nil {
-		if *firstFilter {
-			return fmt.Sprintf(" WHERE t1.%s = %d", field, *value)
-		}
-		return fmt.Sprintf("AND t1.%s = %d", field, *value)
-	}
-	return ""
-}
-
-// GenerateSingleSpecifierStringSQLS generates a where function with a string.
-func GenerateSingleSpecifierStringSQLS(value *string, field string, firstFilter *bool) string {
-	if value != nil {
-		if *firstFilter {
-			return fmt.Sprintf(" WHERE t1.%s = '%s'", field, *value)
-		}
-		return fmt.Sprintf("AND t1.%s = '%s'", field, *value)
-	}
-	return ""
-}
-
 // PartialInfosFromIdentifiers returns events given identifiers. If order is true, the events are ordered by block number.
-func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32, address, tokenAddress, kappa, txHash *string, page int) (partialInfos []*model.PartialInfo, err error) {
+func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) (partialInfos []*model.PartialInfo, err error) {
 	var res []BridgeEvent
-	firstFilter := true
-	chainIDSpecifier := GenerateSingleSpecifierI32SQLS(chainID, ChainIDFieldName, &firstFilter)
-	addressSpecifier := GenerateAddressSpecifierSQLS(address, &firstFilter)
-	tokenAddressSpecifier := GenerateSingleSpecifierStringSQLS(tokenAddress, TokenFieldName, &firstFilter)
-	kappaSpecifier := GenerateSingleSpecifierStringSQLS(kappa, KappaFieldName, &firstFilter)
-	txHashSpecifier := GenerateSingleSpecifierStringSQLS(txHash, TxHashFieldName, &firstFilter)
-	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC LIMIT %d OFFSET %d", BlockNumberFieldName, PageSize, (page-1)*PageSize)
 
-	compositeIdentifiers := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + kappaSpecifier + txHashSpecifier + pageSpecifier
-	selectParameters := fmt.Sprintf(
-		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
-		ContractAddressFieldName, ChainIDFieldName, EventTypeFieldName, BlockNumberFieldName,
-		TokenFieldName, AmountFieldName, EventIndexFieldName, DestinationKappaFieldName,
-		SenderFieldName, TxHashFieldName, InsertTimeFieldName,
-	)
-	groupByParameters := fmt.Sprintf(
-		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s`,
-		TxHashFieldName, ContractAddressFieldName, ChainIDFieldName, EventTypeFieldName, BlockNumberFieldName,
-		TokenFieldName, AmountFieldName, EventIndexFieldName, DestinationKappaFieldName, SenderFieldName,
-	)
-	joinOnParameters := fmt.Sprintf(
-		`t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s
-		AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = insert_max_time`,
-		TxHashFieldName, TxHashFieldName, ContractAddressFieldName, ContractAddressFieldName, ChainIDFieldName,
-		ChainIDFieldName, EventTypeFieldName, EventTypeFieldName, BlockNumberFieldName, BlockNumberFieldName,
-		TokenFieldName, TokenFieldName, AmountFieldName, AmountFieldName, EventIndexFieldName, EventIndexFieldName,
-		DestinationKappaFieldName, DestinationKappaFieldName, SenderFieldName, SenderFieldName, InsertTimeFieldName,
-	)
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
 
-	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-		`
-		SELECT t1.* FROM bridge_events t1
-    	JOIN (
-    	SELECT %s AS insert_max_time
-    	FROM bridge_events GROUP BY %s) t2
-    	    ON (%s) %s `,
-		selectParameters, groupByParameters, joinOnParameters, compositeIdentifiers,
-	)).Find(&res)
-
-	fmt.Println("dbTx!", dbTx)
-	fmt.Printf("res: %+v\n", res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
