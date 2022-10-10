@@ -312,7 +312,7 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, chainID *uint32
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse float: %w", err)
 			}
-			formattedValue = formattedValue / math.Pow10(int(*res[i].TokenDecimal))
+			formattedValue /= math.Pow10(int(*res[i].TokenDecimal))
 		}
 		var timeStamp int
 		if res[i].TimeStamp != nil {

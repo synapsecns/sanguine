@@ -289,7 +289,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 	amount := big.NewInt(int64(gofakeit.Uint64()))
 	amountUSD := float64(gofakeit.Number(1, 300))
 	tokenDecimals := uint8(gofakeit.Number(0, 3))
-	tokenSymbol := gosql.NullString{gofakeit.Word(), true}
+	tokenSymbol := gofakeit.Word()
 	timestamp := uint64(time.Now().Unix())
 	page := 1
 
@@ -309,7 +309,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 		Amount:             amount,
 		AmountUSD:          &amountUSD,
 		TokenDecimal:       &tokenDecimals,
-		TokenSymbol:        tokenSymbol,
+		TokenSymbol:        gosql.NullString{String: tokenSymbol, Valid: true},
 		TimeStamp:          &timestamp,
 	})
 	g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
@@ -329,7 +329,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 		AmountUSD:          &amountUSD,
 		TokenDecimal:       &tokenDecimals,
 		Sender:             gofakeit.Word(),
-		TokenSymbol:        tokenSymbol,
+		TokenSymbol:        gosql.NullString{String: tokenSymbol, Valid: true},
 		TimeStamp:          &timestamp,
 	})
 	err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, 1, timestamp)
@@ -349,12 +349,11 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Equal(g.T(), *fromInfo.ChainID, int(chainID))
 	Equal(g.T(), *fromInfo.Address, address.String())
 	Equal(g.T(), *fromInfo.TxnHash, txHashA.String())
-	// do value
 	Equal(g.T(), *fromInfo.Value, amount.String())
 	Equal(g.T(), *fromInfo.USDValue, amountUSD)
 	formattedValue := float64(amount.Int64()) / math.Pow10(int(tokenDecimals))
 	Equal(g.T(), *fromInfo.FormattedValue, formattedValue)
-	Equal(g.T(), *fromInfo.TokenSymbol, tokenSymbol.String)
+	Equal(g.T(), *fromInfo.TokenSymbol, tokenSymbol)
 	Equal(g.T(), *fromInfo.TokenAddress, tokenAddress.String())
 	Equal(g.T(), *fromInfo.BlockNumber, 1)
 	Equal(g.T(), *fromInfo.Time, int(timestamp))
@@ -366,7 +365,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Equal(g.T(), *toInfo.Value, amount.String())
 	Equal(g.T(), *toInfo.USDValue, amountUSD)
 	Equal(g.T(), *toInfo.FormattedValue, formattedValue)
-	Equal(g.T(), *toInfo.TokenSymbol, tokenSymbol.String)
+	Equal(g.T(), *toInfo.TokenSymbol, tokenSymbol)
 	Equal(g.T(), *toInfo.TokenAddress, tokenAddress.String())
 	Equal(g.T(), *toInfo.BlockNumber, 1)
 	Equal(g.T(), *toInfo.Time, int(timestamp))
