@@ -17,6 +17,13 @@ import (
 	"math/big"
 )
 
+func arrayToTokenIndexMap(input []*big.Int) map[uint8]string {
+	output := map[uint8]string{}
+	for i := range input {
+		output[uint8(i)] = input[i].String()
+	}
+	return output
+}
 func (b *BackfillSuite) TestBackfill() {
 	testChainID := b.testBackend.GetBigChainID()
 	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
@@ -627,8 +634,8 @@ func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.Swap
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
-	// Equal(b.T(), parsedLog.TokenAmounts, storedLog.Amount)
-	// Equal(b.T(), parsedLog.Fees, storedLog.AmountFee)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.TokenAmounts), storedLog.Amount)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.Fees), storedLog.AmountFee)
 	return nil
 }
 
@@ -643,6 +650,9 @@ func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *consumer.S
 		String: parsedLog.Provider.String(),
 		Valid:  true,
 	}
+
+	arrayToTokenIndexMap(parsedLog.TokenAmounts)
+
 	var storedLog sql.SwapEvent
 	var count int64
 	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
@@ -662,7 +672,7 @@ func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *consumer.S
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
-	// Equal(b.T(), parsedLog.TokenAmounts, storedLog.Amount)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.TokenAmounts), storedLog.Amount)
 	return nil
 }
 
@@ -731,8 +741,8 @@ func (b *BackfillSuite) removeLiquidityImbalanceParity(log *types.Log, parser *c
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
-	// Equal(b.T(), parsedLog.TokenAmounts, storedLog.Amount)
-	// Equal(b.T(), parsedLog.Fees, storedLog.AmountFee)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.TokenAmounts), storedLog.Amount)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.Fees), storedLog.AmountFee)
 	return nil
 }
 
