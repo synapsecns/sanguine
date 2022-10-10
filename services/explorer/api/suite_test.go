@@ -78,11 +78,6 @@ func (g *APISuite) SetupTest() {
 
 	g.client = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, gqlServer.GraphqlEndpoint))
 
-	// config := rest.NewConfiguration()
-	// config.BasePath = baseURL
-	// config.Host = baseURL
-	// g.grpcClient = rest.NewAPIClient(config)
-
 	// var request *http.Request
 	g.Eventually(func() bool {
 		request, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)
@@ -96,21 +91,6 @@ func (g *APISuite) SetupTest() {
 		}
 		return false
 	})
-	//
-	// g.Eventually(func() bool {
-	//	res, realRes, err := g.grpcClient.ScribeServiceApi.ScribeServiceCheck(g.GetTestContext(), rest.V1HealthCheckRequest{
-	//		Service: "any",
-	//	})
-	//	if err == nil {
-	//		defer func() {
-	//			_ = realRes.Body.Close()
-	//		}()
-	//
-	//		return *res.Status == rest.SERVING_HealthCheckResponseServingStatus
-	//	}
-	//
-	//	return false
-	// })
 }
 
 func TestAPISuite(t *testing.T) {

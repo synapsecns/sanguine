@@ -31,10 +31,10 @@ var portFlag = &cli.UintFlag{
 }
 
 var addressFlag = &cli.StringFlag{
-	Name:  "address",
-	Usage: "--address <address>",
-	Value: "",
-	//Required: true,
+	Name:     "address",
+	Usage:    "--address <address>",
+	Value:    "",
+	Required: true,
 }
 
 var scribeURL = &cli.StringFlag{

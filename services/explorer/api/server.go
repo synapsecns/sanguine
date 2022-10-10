@@ -55,18 +55,12 @@ func Start(ctx context.Context, cfg Config) error {
 	fetcher := consumer.NewFetcher(client.NewClient(http.DefaultClient, cfg.ScribeURL))
 
 	gqlServer.EnableGraphql(router, consumerDB, *fetcher)
-	// grpcServer, err := server.SetupGRPCServer(ctx, router, consumerDB)
-	// if err != nil {
-	//	return fmt.Errorf("could not create grpc server: %w", err)
-	//}
 
 	router.GET(HealthCheck, func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status": "UP",
 		})
 	})
-
-	// router.GET("static", gin.WrapH(http.FileServer(http.FS(static))))
 
 	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.HTTPPort)
 
@@ -80,27 +74,7 @@ func Start(ctx context.Context, cfg Config) error {
 		}
 		return nil
 	})
-
-	// g.Go(func() error {
-	//	var lc net.ListenConfig
-	//	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
-	//	if err != nil {
-	//		return fmt.Errorf("could not start listener: %w", err)
-	//	}
-	//
-	//	err = grpcServer.Serve(listener)
-	//	if err != nil {
-	//		return fmt.Errorf("could not start grpc server: %w", err)
-	//	}
-	//	return nil
-	// })
-	//
-	// g.Go(func() error {
-	//	<-ctx.Done()
-	//	grpcServer.Stop()
-	//	return nil
-	// })
-
+	
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("server error: %w", err)

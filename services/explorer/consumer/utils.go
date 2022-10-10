@@ -55,9 +55,6 @@ func GetTokenMetadataWithTokenSymbol(ctx context.Context, timestamp int, tokenSy
 	return GetDefiLlamaData(ctx, timestamp, &coinGeckoID)
 }
 
-// TODO implement this for swaps
-// func GetTokenMetadataWithSymbol(blockNumber uint64, tokenID *string) (*float64, *string)
-
 // GetDefiLlamaData does a get request to defi llama for the symbol and price for a token.
 func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID *string) (*float64, *string) {
 	if *coinGeckoID == "NO_TOKEN" || *coinGeckoID == "NO_PRICE" {
