@@ -184,16 +184,16 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
         // Message nonce is the amount of leaves after the new leaf insertion
         messageNonce = nonce() + 1;
         // format the message into packed bytes
-        bytes memory message = Message.formatMessage(
-            _localDomain(),
-            _getSender(_recipientAddress),
-            messageNonce,
-            _destination,
-            _recipientAddress,
-            _optimisticSeconds,
-            _tips,
-            _messageBody
-        );
+        bytes memory message = Message.formatMessage({
+            _origin: _localDomain(),
+            _sender: _getSender(_recipientAddress),
+            _nonce: messageNonce,
+            _destination: _destination,
+            _recipient: _recipientAddress,
+            _optimisticSeconds: _optimisticSeconds,
+            _tips: _tips,
+            _messageBody: _messageBody
+        });
         messageHash = keccak256(message);
         // insert the hashed message into the Merkle tree
         _insertMessage(messageNonce, messageHash);
