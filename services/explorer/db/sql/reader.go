@@ -52,7 +52,7 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 func (s *Store) GetTxHashFromKappa(ctx context.Context, kappa string) (*string, error) {
 	var res BridgeEvent
 	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-		`SELECT * FROM bridge_events WHERE %s = '%s'`,
+		`SELECT * FROM bridge_events WHERE %s = '%s' SETTINGS readonly=1`,
 		DestinationKappaFieldName, kappa,
 	)).Find(&res)
 	if dbTx.Error != nil {
@@ -66,7 +66,7 @@ func (s *Store) GetTxHashFromKappa(ctx context.Context, kappa string) (*string, 
 func (s *Store) GetKappaFromTxHash(ctx context.Context, query string) (*string, error) {
 	var res BridgeEvent
 
-	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -83,9 +83,10 @@ func (s *Store) GetKappaFromTxHash(ctx context.Context, query string) (*string, 
 func (s *Store) GetSwapSuccess(ctx context.Context, kappa string, chainID uint32) (*bool, error) {
 	var res BridgeEvent
 	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-		`SELECT * FROM bridge_events WHERE %s = '%s' AND %s = %d`,
+		`SELECT * FROM bridge_events WHERE %s = '%s' AND %s = %d SETTINGS readonly=1`,
 		KappaFieldName, kappa, ChainIDFieldName, chainID,
 	)).Find(&res)
+	//s.db.WithContext(ctx).Raw(`SELECT * FROM (UPDATE bridge_events SET insert_time=1) SETTINGS readonly=1`).Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -104,7 +105,7 @@ func (s *Store) GetSwapSuccess(ctx context.Context, kappa string, chainID uint32
 func (s *Store) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
 	var res []uint32
 	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-		`SELECT DISTINCT %s FROM bridge_events UNION DISTINCT SELECT DISTINCT toUInt32(%s) FROM bridge_events`,
+		`SELECT DISTINCT %s FROM bridge_events UNION DISTINCT SELECT DISTINCT toUInt32(%s) FROM bridge_events SETTINGS readonly=1`,
 		ChainIDFieldName, DestinationChainIDFieldName,
 	)).Find(&res)
 	if dbTx.Error != nil {
@@ -117,7 +118,7 @@ func (s *Store) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
 // GetTokenAddressesByChainID gets all token addresses that have been used in bridge events for a given chain ID.
 func (s *Store) GetTokenAddressesByChainID(ctx context.Context, query string) ([]string, error) {
 	var res []string
-	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -128,7 +129,7 @@ func (s *Store) GetTokenAddressesByChainID(ctx context.Context, query string) ([
 // GetBridgeStatistic gets the bridge statistics.
 func (s *Store) GetBridgeStatistic(ctx context.Context, subQuery string) (*string, error) {
 	var res float64
-	dbTx := s.db.WithContext(ctx).Raw(subQuery).Find(&res)
+	dbTx := s.db.WithContext(ctx).Raw(subQuery + " SETTINGS readonly=1").Find(&res)
 
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
@@ -143,7 +144,7 @@ func (s *Store) GetBridgeStatistic(ctx context.Context, subQuery string) (*strin
 // BridgeEventCount returns the number of bridge events.
 func (s *Store) BridgeEventCount(ctx context.Context, query string) (count uint64, err error) {
 	var res int64
-	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -153,7 +154,7 @@ func (s *Store) BridgeEventCount(ctx context.Context, query string) (count uint6
 // GetTransactionCountForEveryAddress gets the count of transactions (origin) for each address per chain id.
 func (s *Store) GetTransactionCountForEveryAddress(ctx context.Context, subQuery string) ([]*model.AddressRanking, error) {
 	var res []*model.AddressRanking
-	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS count FROM (%s) GROUP BY address ORDER BY count DESC`, TokenFieldName, TxHashFieldName, subQuery)).Scan(&res)
+	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS count FROM (%s) GROUP BY address ORDER BY count DESC SETTINGS readonly=1`, TokenFieldName, TxHashFieldName, subQuery)).Scan(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -178,10 +179,10 @@ func (s *Store) GetHistoricalData(ctx context.Context, subQuery string, typeArg 
 
 	// Get the rest of the data depending on query type.
 	if *typeArg == model.HistoricalResultTypeAddresses {
-		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT uniqExact(%s) FROM bridge_events %s", SenderFieldName, filter)).Scan(&sum)
+		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT uniqExact(%s) FROM bridge_events %s SETTINGS readonly=1", SenderFieldName, filter)).Scan(&sum)
 	} else {
 		// TODO pass table from previous query to prevent redoing this query.
-		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)).Scan(&sum)
+		dbTxFinal = s.db.WithContext(ctx).Raw(fmt.Sprintf("SELECT sumKahan(total) FROM (%s) SETTINGS readonly=1", subQuery)).Scan(&sum)
 	}
 	if dbTxFinal.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
@@ -201,7 +202,7 @@ func (s *Store) GetHistoricalData(ctx context.Context, subQuery string, typeArg 
 func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) (partialInfos []*model.PartialInfo, err error) {
 	var res []BridgeEvent
 
-	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
 
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
