@@ -11,6 +11,8 @@ import (
 type ConsumerDBWriter interface {
 	// StoreEvent stores an event.
 	StoreEvent(ctx context.Context, bridgeEvent *sql.BridgeEvent, swapEvent *sql.SwapEvent) error
+	// DB gets the underlying gorm db.
+	DB() *gorm.DB
 }
 
 // ConsumerDBReader is the interface for reading events from the ConsumerDB.
@@ -38,8 +40,6 @@ type ConsumerDBReader interface {
 	GetBridgeStatistic(ctx context.Context, subQuery string) (*string, error)
 	// GetHistoricalData gets bridge historical data
 	GetHistoricalData(ctx context.Context, subQuery string, typeArg *model.HistoricalResultType, filter string) (*model.HistoricalResult, error)
-	// DB gets the underlying gorm db.
-	DB() *gorm.DB
 }
 
 // ConsumerDB is the interface for the ConsumerDB.
