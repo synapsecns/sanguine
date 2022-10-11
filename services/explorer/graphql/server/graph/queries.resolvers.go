@@ -50,7 +50,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		}
 		results, err = r.originToDestinationBridge(ctx, address, kappa, includePending, page, tokenAddress, fromInfos)
 		if err != nil {
-			fmt.Println("originToDestinationBridge threw an error")
+			return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 		}
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
@@ -61,7 +61,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		}
 		results, err = r.destinationToOriginBridge(ctx, address, txnHash, kappa, page, tokenAddress, toInfos)
 		if err != nil {
-			fmt.Println("destinationToOriginBridge threw an error")
+			return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 		}
 	default:
 		// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for

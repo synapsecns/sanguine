@@ -196,6 +196,8 @@ func (s *Store) GetHistoricalData(ctx context.Context, subQuery string, typeArg 
 }
 
 // PartialInfosFromIdentifiers returns events given identifiers. If order is true, the events are ordered by block number.
+//
+//nolint:cyclop
 func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) (partialInfos []*model.PartialInfo, err error) {
 	var res []BridgeEvent
 

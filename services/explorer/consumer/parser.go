@@ -317,16 +317,16 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
 	if err != nil {
-		//return fmt.Errorf("could not get tx sender: %w", err)
+		// return fmt.Errorf("could not get tx sender: %w", err)
 		fmt.Println("could not get tx sender: %w", err)
 		bridgeEvent.Sender = "FAKE_SENDER"
 	}
 	bridgeEvent.Sender = sender
-	//sender, err := p.consumerFetcher.fetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
-	//if err != nil || sender == nil {
+	// sender, err := p.consumerFetcher.fetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
+	// if err != nil || sender == nil {
 	//	fmt.Println("could not get tx sender: %w", err)
 	//	bridgeEvent.Sender = "FAKE_SENDER"
-	//} else {
+	// } else {
 	//	bridgeEvent.Sender = *sender.Response
 	//}
 
