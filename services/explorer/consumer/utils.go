@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gopkg.in/yaml.v2"
+	"log"
 	"math"
 	"math/big"
 	"net/http"
@@ -35,7 +36,6 @@ func GetTokenMetadataWithTokenID(ctx context.Context, timestamp int, tokenID *st
 	path := pwd + filepath.Clean("/tokenIDToCoinGeckoID.yaml")
 	coinGeckoIDs, err := OpenYaml(path)
 	if err != nil {
-		fmt.Println("Error while retrieving CoinGecko ids from yaml:", err)
 		return nil, nil
 	}
 	coinGeckoID := coinGeckoIDs[*tokenID]
@@ -48,7 +48,6 @@ func GetTokenMetadataWithTokenSymbol(ctx context.Context, timestamp int, tokenSy
 	path := pwd + filepath.Clean("/tokenIDToCoinGeckoID.yaml")
 	coinGeckoIDs, err := OpenYaml(path)
 	if err != nil {
-		fmt.Println("Error while retrieving CoinGecko ids from yaml:", err)
 		return nil, nil
 	}
 	coinGeckoID := coinGeckoIDs[strings.ToLower(*tokenSymbol)]
@@ -84,7 +83,6 @@ func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID *string) (
 
 	var price *float64
 	var symbol *string
-	price, symbol = nil, nil
 	if priceRes, ok := res["coins"][fmt.Sprintf("coingecko:%s", *coinGeckoID)]["price"].(float64); ok {
 		price = &priceRes
 	}
@@ -92,7 +90,7 @@ func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID *string) (
 		symbol = &stringRes
 	}
 	if resRaw.Body.Close() != nil {
-		fmt.Println("Failed while closing connection")
+		log.Printf("Error closing http connection.")
 	}
 	return price, symbol
 }

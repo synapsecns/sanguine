@@ -46,7 +46,7 @@ func (s SwapFlashLoanFlashLoan) GetAmountFee() map[uint8]string {
 	return output
 }
 
-// GetProtocolFee gets the protoc ol fee.
+// GetProtocolFee gets the protocol fee.
 func (s SwapFlashLoanFlashLoan) GetProtocolFee() *big.Int {
 	return core.CopyBigInt(s.ProtocolFee)
 }

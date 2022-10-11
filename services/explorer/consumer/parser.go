@@ -286,7 +286,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 
 	// get Token from BridgeConfig data (for getting token decimal but use this for anything else).
-	token, err := p.fetcher.GetToken(ctx, chainID, tokenID)
+	token, err := p.fetcher.GetToken(ctx, chainID, tokenID, uint32(iFace.GetBlockNumber()))
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -316,13 +316,13 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		}
 	}
 
-	// sender, err := p.consumerFetcher.FetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
-	// if err != nil || sender == nil {
-	//	fmt.Println("could not get tx sender: %w", err)
-	//	bridgeEvent.Sender = "FAKE_SENDER"
-	// } else {
-	//	bridgeEvent.Sender = *sender.Response
-	//}
+	sender, err := p.consumerFetcher.FetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
+	if err != nil || sender == nil {
+		fmt.Println("could not get tx sender: %w", err)
+		bridgeEvent.Sender = "FAKE_SENDER"
+	} else {
+		bridgeEvent.Sender = *sender.Response
+	}
 
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent, nil)
 	if err != nil {

@@ -257,7 +257,7 @@ func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID uint32, to
 }
 
 // GetToken gets the token from the bridge config contract.
-func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, tokenID *string) (token *bridgeconfig.BridgeConfigV3Token, err error) {
+func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, tokenID *string, blockNumber uint32) (token *bridgeconfig.BridgeConfigV3Token, err error) {
 	if tokenID == nil {
 		return nil, fmt.Errorf("invalid token id")
 	}
@@ -266,7 +266,7 @@ func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, toke
 		Context: ctx,
 	}, *tokenID, big.NewInt(int64(chainID)))
 	if err != nil {
-		return nil, fmt.Errorf("could not get token id: %w", err)
+		return nil, fmt.Errorf("could not get token at block number %d: %w", blockNumber, err)
 	}
 	return &tok, nil
 }
@@ -294,26 +294,22 @@ func (s *SwapFetcher) GetTokenMetaData(ctx context.Context, tokenIndex uint8) (*
 		Context: ctx,
 	}, tokenIndex)
 	if err != nil {
-		fmt.Println("Error getting Token Address", err)
 		return nil, nil
 	}
 	erc20caller, err := swap.NewERC20(tokenAddress, s.backend)
 	if err != nil {
-		fmt.Println("Error getting erc20caller", err)
 		return nil, nil
 	}
 	tokenSymbol, err := erc20caller.Symbol(&bind.CallOpts{
 		Context: ctx,
 	})
 	if err != nil {
-		fmt.Println("Error getting tokenSymbol", err)
 		return &tokenSymbol, nil
 	}
 	tokenDecimals, err := erc20caller.Decimals(&bind.CallOpts{
 		Context: ctx,
 	})
 	if err != nil {
-		fmt.Println("Error getting tokenDecimals", err)
 		return &tokenSymbol, nil
 	}
 
