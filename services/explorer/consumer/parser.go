@@ -299,7 +299,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	bridgeEvent.TokenDecimal = &token.TokenDecimals
 
 	// Get timestamp from consumer
-	timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	timeStamp, err := p.consumerFetcher.fetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	// If we have a timestamp, populate the following attributes of bridgeEvent.
 	if err == nil {
 		timeStampBig := uint64(*timeStamp.Response)
@@ -315,14 +315,20 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 			bridgeEvent.TokenSymbol = ToNullString(symbol)
 		}
 	}
-
-	sender, err := p.consumerFetcher.FetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
-	if err != nil || sender == nil {
+	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
+	if err != nil {
+		//return fmt.Errorf("could not get tx sender: %w", err)
 		fmt.Println("could not get tx sender: %w", err)
 		bridgeEvent.Sender = "FAKE_SENDER"
-	} else {
-		bridgeEvent.Sender = *sender.Response
 	}
+	bridgeEvent.Sender = sender
+	//sender, err := p.consumerFetcher.fetchClient.GetTxSender(ctx, int(chainID), iFace.GetTxHash().String())
+	//if err != nil || sender == nil {
+	//	fmt.Println("could not get tx sender: %w", err)
+	//	bridgeEvent.Sender = "FAKE_SENDER"
+	//} else {
+	//	bridgeEvent.Sender = *sender.Response
+	//}
 
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent, nil)
 	if err != nil {
@@ -487,7 +493,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 				tokenDecimals[tokenIndex] = *decimals
 
 				// get timestamp of the block where the event occurred.
-				timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+				timeStamp, err := p.consumerFetcher.fetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 				if err != nil {
 					return fmt.Errorf("could not get timestamp: %w", err)
 				}

@@ -396,7 +396,6 @@ func (g APISuite) TestLatestBridgeTransaction() {
 		if blockNumber > 10 {
 			break
 		}
-		// for blockNumber = uint64(1); blockNumber <= 10; blockNumber++ {
 		txHashA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		txHashB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		kappaStringA = crypto.Keccak256Hash(txHashA.Bytes()).String()

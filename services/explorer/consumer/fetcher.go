@@ -16,14 +16,23 @@ import (
 
 // Fetcher is the fetcher for the events. It uses GQL.
 type Fetcher struct {
-	FetchClient *client.Client
+	fetchClient *client.Client
 }
 
 // NewFetcher creates a new fetcher.
 func NewFetcher(fetchClient *client.Client) *Fetcher {
 	return &Fetcher{
-		FetchClient: fetchClient,
+		fetchClient: fetchClient,
 	}
+}
+
+// FetchTxSender fetches the sender of a transaction.
+func (f Fetcher) FetchTxSender(ctx context.Context, chainID uint32, txHash string) (string, error) {
+	sender, err := f.fetchClient.GetTxSender(ctx, int(chainID), txHash)
+	if err != nil || sender == nil || sender.Response == nil {
+		return "", fmt.Errorf("could not get sender: %w", err)
+	}
+	return *sender.Response, nil
 }
 
 // FetchLogsInRange fetches logs in a range with the GQL client.
@@ -31,7 +40,7 @@ func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBloc
 	logs := &client.GetLogsRange{}
 	page := 1
 	for {
-		paginatedLogs, err := f.FetchClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), page)
+		paginatedLogs, err := f.fetchClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), page)
 		if err != nil {
 			return nil, fmt.Errorf("could not get logs: %w", err)
 		}
@@ -103,7 +112,7 @@ func (f Fetcher) TimeToBlockNumber(ctx context.Context, chainID uint32, startHei
 	for i < j {
 		mid = (i + j) / 2
 
-		midBlock, err := f.FetchClient.GetBlockTime(ctx, int(chainID), int(mid))
+		midBlock, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(mid))
 		if err != nil || midBlock == nil || midBlock.Response == nil {
 			return 0, fmt.Errorf("could not get mid time: %w", err)
 		}
@@ -119,7 +128,7 @@ func (f Fetcher) TimeToBlockNumber(ctx context.Context, chainID uint32, startHei
 		//nolint: nestif // we want to keep the logic for the binary search together
 		if targetTime < midTime {
 			// If target is greater than previous to mid, return the closest of the two
-			midSubBlock, err := f.FetchClient.GetBlockTime(ctx, int(chainID), int(mid-1))
+			midSubBlock, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(mid-1))
 			if err != nil || midSubBlock == nil || midSubBlock.Response == nil {
 				return 0, fmt.Errorf("could not get mid time: %w", err)
 			}
@@ -138,7 +147,7 @@ func (f Fetcher) TimeToBlockNumber(ctx context.Context, chainID uint32, startHei
 			j = mid
 		} else {
 			// If target is greater than mid
-			midPlusBlock, err := f.FetchClient.GetBlockTime(ctx, int(chainID), int(mid+1))
+			midPlusBlock, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(mid+1))
 			if err != nil || midPlusBlock == nil || midPlusBlock.Response == nil {
 				return 0, fmt.Errorf("could not get mid time: %w", err)
 			}
@@ -158,7 +167,7 @@ func (f Fetcher) TimeToBlockNumber(ctx context.Context, chainID uint32, startHei
 	}
 
 	// only a single element is left after the search. Fetch the block and return it.
-	resultingBlock, err := f.FetchClient.GetBlockTime(ctx, int(chainID), int(mid))
+	resultingBlock, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(mid))
 	if err != nil || resultingBlock == nil || resultingBlock.Response == nil {
 		return 0, fmt.Errorf("could not get mid time: %w", err)
 	}
@@ -175,14 +184,14 @@ func getClosest(lesser block, greater block, target uint64) block {
 
 //nolint:cyclop
 func (f Fetcher) getSearchRange(ctx context.Context, startHeight uint64, chainID uint32) (*blockRange, error) {
-	getEndHeight, err := f.FetchClient.GetLastStoredBlockNumber(ctx, int(chainID))
+	getEndHeight, err := f.fetchClient.GetLastStoredBlockNumber(ctx, int(chainID))
 	if err != nil {
 		return nil, fmt.Errorf("could not get end height: %w", err)
 	}
 	endHeight := uint64(*getEndHeight.Response)
 	var output blockRange
 	if startHeight == 0 {
-		getStartHeight, err := f.FetchClient.GetFirstStoredBlockNumber(ctx, int(chainID))
+		getStartHeight, err := f.fetchClient.GetFirstStoredBlockNumber(ctx, int(chainID))
 		if err != nil {
 			return nil, fmt.Errorf("could not get start height: %w", err)
 		}
@@ -194,7 +203,7 @@ func (f Fetcher) getSearchRange(ctx context.Context, startHeight uint64, chainID
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
-		startTime, err := f.FetchClient.GetBlockTime(ctx, int(chainID), int(startHeight))
+		startTime, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(startHeight))
 		if err != nil || startTime == nil || startTime.Response == nil {
 			return fmt.Errorf("could not get start time: %w", err)
 		}
@@ -206,7 +215,7 @@ func (f Fetcher) getSearchRange(ctx context.Context, startHeight uint64, chainID
 	})
 
 	g.Go(func() error {
-		endTime, err := f.FetchClient.GetBlockTime(ctx, int(chainID), int(endHeight))
+		endTime, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(endHeight))
 		if err != nil || endTime == nil || endTime.Response == nil {
 			return fmt.Errorf("could not get end time: %w", err)
 		}
@@ -256,7 +265,7 @@ func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID uint32, to
 	return &tokenIDStr, nil
 }
 
-// GetToken gets the token from the bridge config contract.
+// GetToken gets the token from the bridge config contract. Requires an archived note.
 func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, tokenID *string, blockNumber uint32) (token *bridgeconfig.BridgeConfigV3Token, err error) {
 	if tokenID == nil {
 		return nil, fmt.Errorf("invalid token id")
@@ -294,22 +303,26 @@ func (s *SwapFetcher) GetTokenMetaData(ctx context.Context, tokenIndex uint8) (*
 		Context: ctx,
 	}, tokenIndex)
 	if err != nil {
+		logger.Errorf("could not get token address: %s", err)
 		return nil, nil
 	}
 	erc20caller, err := swap.NewERC20(tokenAddress, s.backend)
 	if err != nil {
+		logger.Errorf("could not bind erc20 contract: %s", err)
 		return nil, nil
 	}
 	tokenSymbol, err := erc20caller.Symbol(&bind.CallOpts{
 		Context: ctx,
 	})
 	if err != nil {
+		logger.Errorf("could not get token symbol: %s", err)
 		return &tokenSymbol, nil
 	}
 	tokenDecimals, err := erc20caller.Decimals(&bind.CallOpts{
 		Context: ctx,
 	})
 	if err != nil {
+		logger.Errorf("could not get token decimals: %s", err)
 		return &tokenSymbol, nil
 	}
 

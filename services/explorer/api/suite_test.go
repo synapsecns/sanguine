@@ -58,7 +58,7 @@ func (g *APISuite) SetupTest() {
 	NotNil(g.T(), port)
 	Nil(g.T(), err)
 	if port == nil || err != nil {
-		cleanup()
+		g.TearDownTest()
 		return
 	}
 
@@ -78,7 +78,6 @@ func (g *APISuite) SetupTest() {
 
 	g.client = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, gqlServer.GraphqlEndpoint))
 
-	// var request *http.Request
 	g.Eventually(func() bool {
 		request, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)
 		Nil(g.T(), err)
