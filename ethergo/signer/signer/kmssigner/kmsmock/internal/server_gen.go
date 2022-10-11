@@ -16,7 +16,7 @@ import (
 func Run(port, seedPath string) {
 
 	//-----------
-	// UNSAFE_DB Setup
+	// DB Setup
 
 	database := data.NewDatabase(config.DatabasePath)
 	defer database.Close()
