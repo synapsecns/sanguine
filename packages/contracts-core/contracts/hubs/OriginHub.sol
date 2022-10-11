@@ -245,12 +245,17 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
     }
 
     /**
-     * @notice Inserts _hash into the Merkle tree and stores the new merkle root.
+     * @notice Inserts new message into the Merkle tree and stores the new merkle root.
+     * @param _messageNonce Nonce of the dispatched message
+     * @param _messageHash  Hash of the dispatched message
      */
-    function _insertHash(uint32 _count, bytes32 _hash) internal {
-        tree.insert(_count, _hash);
-        // Amount of leafs increased after the insertion
-        historicalRoots.push(tree.root(_count + 1));
+    function _insertMessage(uint32 _messageNonce, bytes32 _messageHash) internal {
+        /// @dev _messageNonce == tree.count() + 1
+        // tree.insert() requires amount of leaves AFTER the leaf insertion (i.e. tree.count() + 1)
+        tree.insert(_messageNonce, _messageHash);
+        /// @dev leaf is inserted => _messageNonce == tree.count()
+        // tree.root() requires current amount of leaves (i.e. tree.count())
+        historicalRoots.push(tree.root(_messageNonce));
     }
 
     /**
