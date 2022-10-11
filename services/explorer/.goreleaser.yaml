@@ -4,8 +4,25 @@ monorepo:
   tag_prefix: services/explorer/
   dir: services/explorer/
 
+
 builds:
-  - skip: true
+  # Linux AMD64
+  - id: explorer
+    binary: explorer
+    env:
+      - CGO_CFLAGS=-I/usr/local/include
+      - CGO_ENABLED=1
+      - CGO_LDFLAGS=-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lsnappy  -lzstd -lbz2
+    # see: https://github.com/cosmos/iavl/pull/465/files
+    ldflags:
+      - -s -w
+    main: main.go
+    flags:
+      - -tags=builtin_static,rocksdb,static
+    goos:
+      - linux
+    goarch:
+      - amd64
 
 # add a source archive at release time
 source:
@@ -34,3 +51,15 @@ checksum:
 # Add a changelog
 changelog:
   sort: asc
+
+
+dockers:
+  # Docker AMD64
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/explorer:latest'
+      - 'ghcr.io/synapsecns/sanguine/explorer:{{ .Tag }}'
+    dockerfile: ../../docker/explorer.Dockerfile
+    ids:
+      - explorer
