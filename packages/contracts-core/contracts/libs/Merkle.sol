@@ -23,25 +23,24 @@ library MerkleLib {
     /**
      * @notice Inserts `_node` into merkle tree
      * @dev Reverts if tree is full
-     * @param _count    Amount of inserted leaves in the tree
+     * @param _newCount Amount of inserted leaves in the tree after the insertion (i.e. current + 1)
      * @param _node     Element to insert into tree
      **/
     function insert(
         Tree storage _tree,
-        uint256 _count,
+        uint256 _newCount,
         bytes32 _node
     ) internal {
-        require(_count < MAX_LEAVES, "merkle tree full");
-        unchecked {
-            ++_count;
-        }
+        require(_newCount <= MAX_LEAVES, "merkle tree full");
+        // No need to increase _newCount here,
+        // as it is already the amount of leaves after the insertion.
         for (uint256 i = 0; i < TREE_DEPTH; ) {
-            if ((_count & 1) == 1) {
+            if ((_newCount & 1) == 1) {
                 _tree.branch[i] = _node;
                 return;
             }
             _node = keccak256(abi.encodePacked(_tree.branch[i], _node));
-            _count >>= 1;
+            _newCount >>= 1;
             unchecked {
                 ++i;
             }
@@ -54,7 +53,7 @@ library MerkleLib {
     /**
      * @notice Calculates and returns`_tree`'s current root given array of zero
      * hashes
-     * @param _count    Amount of inserted leaves in the tree
+     * @param _count    Current amount of inserted leaves in the tree
      * @param _zeroes   Array of zero hashes
      * @return _current Calculated root of `_tree`
      **/
@@ -78,7 +77,7 @@ library MerkleLib {
 
     /**
      * @notice Calculates and returns`_tree`'s current root
-     * @param _count    Amount of inserted leaves in the tree
+     * @param _count    Current amount of inserted leaves in the tree
      * @return Calculated root of `_tree`
      **/
     function root(Tree storage _tree, uint256 _count) internal view returns (bytes32) {

@@ -176,30 +176,30 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
-    ) external payable haveActiveNotary {
+    ) external payable haveActiveNotary returns (uint32 messageNonce, bytes32 messageHash) {
+        // TODO: add unit tests covering return values
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         require(_tips.castToTips().totalTips() == msg.value, "!tips");
-        // get the latest nonce; new message nonce is latest nonce plus 1
-        uint32 latestNonce = nonce();
-        bytes32 sender = _checkForSystemMessage(_recipientAddress);
+        // Latest nonce (i.e. "last message" nonce) is current amount of leaves in the tree.
+        // Message nonce is the amount of leaves after the new leaf insertion
+        messageNonce = nonce() + 1;
         // format the message into packed bytes
-        bytes memory _header = Header.formatHeader(
-            _localDomain(),
-            sender,
-            latestNonce + 1,
-            _destination,
-            _recipientAddress,
-            _optimisticSeconds
-        );
-        // format the message into packed bytes
-        bytes memory message = Message.formatMessage(_header, _tips, _messageBody);
+        bytes memory message = Message.formatMessage({
+            _origin: _localDomain(),
+            _sender: _getSender(_recipientAddress),
+            _nonce: messageNonce,
+            _destination: _destination,
+            _recipient: _recipientAddress,
+            _optimisticSeconds: _optimisticSeconds,
+            _tips: _tips,
+            _messageBody: _messageBody
+        });
+        messageHash = keccak256(message);
         // insert the hashed message into the Merkle tree
-        bytes32 messageHash = keccak256(message);
-        // new root is added to the historical roots
-        _insertHash(latestNonce, messageHash);
+        _insertMessage(messageNonce, messageHash);
         // Emit Dispatch event with message information
-        // note: leaf index in the tree is latestNonce, meaning we don't need to emit that
-        emit Dispatch(messageHash, latestNonce + 1, _destination, _tips, message);
+        // note: leaf index in the tree is messageNonce - 1, meaning we don't need to emit that
+        emit Dispatch(messageHash, messageNonce, _destination, _tips, message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -251,11 +251,7 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
      * SYSTEM_ROUTER is used as "sender address" on origin chain.
      * Note: tx will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
      */
-    function _checkForSystemMessage(bytes32 _recipientAddress)
-        internal
-        view
-        returns (bytes32 sender)
-    {
+    function _getSender(bytes32 _recipientAddress) internal view returns (bytes32 sender) {
         if (_recipientAddress != SystemMessage.SYSTEM_ROUTER) {
             sender = TypeCasts.addressToBytes32(msg.sender);
             /**
