@@ -144,10 +144,10 @@ func (b *BackfillSuite) TestBackfill() {
 	err = chainBackfiller.Backfill(b.GetTestContext(), 0, 12)
 	Nil(b.T(), err)
 	var count int64
-	bridgeEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
+	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
 	Nil(b.T(), bridgeEvents.Error)
 	Equal(b.T(), int64(10), count)
-	swapEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
+	swapEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
 	Nil(b.T(), swapEvents.Error)
 	Equal(b.T(), int64(10), count)
 
@@ -223,7 +223,7 @@ func (b *BackfillSuite) depositParity(log *types.Log, parser *consumer.BridgePar
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -255,7 +255,7 @@ func (b *BackfillSuite) redeemParity(log *types.Log, parser *consumer.BridgePars
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -291,7 +291,7 @@ func (b *BackfillSuite) withdrawParity(log *types.Log, parser *consumer.BridgePa
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -328,7 +328,7 @@ func (b *BackfillSuite) mintParity(log *types.Log, parser *consumer.BridgeParser
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -361,7 +361,7 @@ func (b *BackfillSuite) depositAndSwapParity(log *types.Log, parser *consumer.Br
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -396,7 +396,7 @@ func (b *BackfillSuite) redeemAndSwapParity(log *types.Log, parser *consumer.Bri
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -431,7 +431,7 @@ func (b *BackfillSuite) redeemAndRemoveParity(log *types.Log, parser *consumer.B
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -469,7 +469,7 @@ func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.Bridg
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -511,7 +511,7 @@ func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -548,7 +548,7 @@ func (b *BackfillSuite) redeemV2Parity(log *types.Log, parser *consumer.BridgePa
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -582,7 +582,7 @@ func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, 
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -616,7 +616,7 @@ func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.Swap
 	}
 	var storedLog sql.SwapEvent
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -655,7 +655,7 @@ func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *consumer.S
 
 	var storedLog sql.SwapEvent
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -689,7 +689,7 @@ func (b *BackfillSuite) removeLiquidityOneParity(log *types.Log, parser *consume
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -723,7 +723,7 @@ func (b *BackfillSuite) removeLiquidityImbalanceParity(log *types.Log, parser *c
 	}
 	var storedLog sql.SwapEvent
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -755,7 +755,7 @@ func (b *BackfillSuite) newAdminFeeParity(log *types.Log, parser *consumer.SwapP
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -781,7 +781,7 @@ func (b *BackfillSuite) newSwapFeeParity(log *types.Log, parser *consumer.SwapPa
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -807,7 +807,7 @@ func (b *BackfillSuite) rampAParity(log *types.Log, parser *consumer.SwapParser,
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -836,7 +836,7 @@ func (b *BackfillSuite) stopRampAParity(log *types.Log, parser *consumer.SwapPar
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -870,7 +870,7 @@ func (b *BackfillSuite) flashLoanParity(log *types.Log, parser *consumer.SwapPar
 	feeArray := map[uint8]string{parsedLog.TokenIndex: core.CopyBigInt(parsedLog.AmountFee).String()}
 	var storedLog sql.SwapEvent
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,

@@ -14,8 +14,10 @@ type Store struct {
 	db *gorm.DB
 }
 
-// DB gets the underlying gorm db.
-func (s *Store) DB() *gorm.DB {
+// UNSAFE_DB gets the underlying gorm db.
+//
+//nolint:golint,revive,stylecheck
+func (s *Store) UNSAFE_DB() *gorm.DB {
 	return s.db
 }
 

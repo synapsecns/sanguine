@@ -8,13 +8,13 @@ import (
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
 func (s *Store) StoreEvent(ctx context.Context, bridgeEvent *BridgeEvent, swapEvent *SwapEvent) error {
 	if bridgeEvent != nil {
-		dbTx := s.DB().WithContext(ctx).Create(*bridgeEvent)
+		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*bridgeEvent)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store bridge event: %w", dbTx.Error)
 		}
 	}
 	if swapEvent != nil {
-		dbTx := s.DB().WithContext(ctx).Create(*swapEvent)
+		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*swapEvent)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store swap event: %w", dbTx.Error)
 		}

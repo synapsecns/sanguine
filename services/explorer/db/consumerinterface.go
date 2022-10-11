@@ -11,8 +11,10 @@ import (
 type ConsumerDBWriter interface {
 	// StoreEvent stores an event.
 	StoreEvent(ctx context.Context, bridgeEvent *sql.BridgeEvent, swapEvent *sql.SwapEvent) error
-	// DB gets the underlying gorm db.
-	DB() *gorm.DB
+	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
+	//
+	//nolint:golint
+	UNSAFE_DB() *gorm.DB
 }
 
 // ConsumerDBReader is the interface for reading events from the ConsumerDB.

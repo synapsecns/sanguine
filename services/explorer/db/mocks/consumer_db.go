@@ -41,7 +41,7 @@ func (_m *ConsumerDB) BridgeEventCount(ctx context.Context, query string) (uint6
 }
 
 // DB provides a mock function with given fields:
-func (_m *ConsumerDB) DB() *gorm.DB {
+func (_m *ConsumerDB) UNSAFE_DB() *gorm.DB {
 	ret := _m.Called()
 
 	var r0 *gorm.DB

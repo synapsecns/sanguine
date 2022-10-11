@@ -27,7 +27,7 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 	switch eventType {
 	case Bridge:
 		var resp BridgeEvent
-		dbTx := s.DB().WithContext(ctx).
+		dbTx := s.UNSAFE_DB().WithContext(ctx).
 			Find(&resp, "chain_id = ?", chainID)
 		if dbTx.Error != nil {
 			return nil, fmt.Errorf("failed to read event: %w", dbTx.Error)
@@ -37,7 +37,7 @@ func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, ch
 	// If reading a swap event
 	case Swap:
 		var resp SwapEvent
-		dbTx := s.DB().WithContext(ctx).
+		dbTx := s.UNSAFE_DB().WithContext(ctx).
 			Find(&resp, "chain_id = ?", chainID)
 		if dbTx.Error != nil {
 			return nil, fmt.Errorf("failed to store read event: %w", dbTx.Error)

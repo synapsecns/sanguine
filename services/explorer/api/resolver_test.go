@@ -35,7 +35,7 @@ func (g APISuite) TestBridgeAmountStatistic() {
 		price := float64(gofakeit.Number(1, 300))
 		cumulativePrice = append(cumulativePrice, price)
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			InsertTime:         1,
 			ChainID:            chainID,
 			Recipient:          gosql.NullString{String: address.String(), Valid: true},
@@ -115,7 +115,7 @@ func (g APISuite) TestGetCountByChainID() {
 			destinationChainID = destinationChainIDB
 		}
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			InsertTime:         1,
 			ChainID:            chainID,
 			Recipient:          gosql.NullString{String: address.String(), Valid: true},
@@ -195,7 +195,7 @@ func (g APISuite) TestGetCountByTokenAddress() {
 			tokenAddress = tokenAddressB
 		}
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			InsertTime:         1,
 			ChainID:            chainID,
 			Recipient:          gosql.NullString{String: address.String(), Valid: true},
@@ -293,7 +293,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 	timestamp := uint64(time.Now().Unix())
 	page := 1
 
-	g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 		InsertTime:         1,
 		ContractAddress:    common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
 		ChainID:            chainID,
@@ -312,7 +312,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 		TokenSymbol:        gosql.NullString{String: tokenSymbol, Valid: true},
 		TimeStamp:          &timestamp,
 	})
-	g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 		InsertTime:         1,
 		ContractAddress:    common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
 		ChainID:            destinationChainID,
@@ -400,7 +400,7 @@ func (g APISuite) TestLatestBridgeTransaction() {
 		txHashB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		kappaStringA = crypto.Keccak256Hash(txHashA.Bytes()).String()
 		kappaStringB = crypto.Keccak256Hash(txHashB.Bytes()).String()
-		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			InsertTime:         1,
 			ChainID:            chainIDA,
 			DestinationChainID: big.NewInt(int64(chainIDB)),
@@ -414,7 +414,7 @@ func (g APISuite) TestLatestBridgeTransaction() {
 			TokenDecimal:       &tokenDecimal,
 			TimeStamp:          &blockNumber,
 		})
-		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			InsertTime:         1,
 			ChainID:            chainIDB,
 			DestinationChainID: big.NewInt(int64(chainIDA)),
@@ -439,7 +439,7 @@ func (g APISuite) TestLatestBridgeTransaction() {
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	kappaString := crypto.Keccak256Hash(txHash.Bytes()).String()
 	newBlockNumber := blockNumber + 1
-	g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 		InsertTime:         1,
 		ChainID:            chainIDA,
 		DestinationChainID: big.NewInt(int64(chainIDB)),
@@ -525,7 +525,7 @@ func (g APISuite) TestAddressRanking() {
 		// change up chainID (1/3 chance of using a new chain)
 		chainID = chainIDs[gofakeit.Number(0, 2)]
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			InsertTime:         1,
 			ChainID:            chainID,
 			Recipient:          gosql.NullString{String: address.String(), Valid: true},
@@ -591,7 +591,7 @@ func (g APISuite) TestHistoricalStatistics() {
 		cumulativePrice = append(cumulativePrice, price)
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		timestamp := uint64(nowTime) - 100 - (10*blockNumber)*86400
-		g.db.DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			ChainID:            chainID,
 			Recipient:          gosql.NullString{String: address.String(), Valid: true},
 			DestinationChainID: big.NewInt(int64(destinationChainID)),
