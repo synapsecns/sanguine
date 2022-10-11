@@ -65,7 +65,7 @@ func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID *string) (
 	}
 
 	client := http.Client{
-		Timeout: 2 * time.Second,
+		Timeout: 10 * time.Second,
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://coins.llama.fi/prices/historical/%d/coingecko:%s", timestamp, *coinGeckoID), nil) // OK
 	if err != nil {
