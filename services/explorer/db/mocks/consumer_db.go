@@ -40,22 +40,6 @@ func (_m *ConsumerDB) BridgeEventCount(ctx context.Context, query string) (uint6
 	return r0, r1
 }
 
-// DB provides a mock function with given fields:
-func (_m *ConsumerDB) UNSAFE_DB() *gorm.DB {
-	ret := _m.Called()
-
-	var r0 *gorm.DB
-	if rf, ok := ret.Get(0).(func() *gorm.DB); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*gorm.DB)
-		}
-	}
-
-	return r0
-}
-
 // GetAllChainIDs provides a mock function with given fields: ctx
 func (_m *ConsumerDB) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
 	ret := _m.Called(ctx)
@@ -295,6 +279,22 @@ func (_m *ConsumerDB) StoreEvent(ctx context.Context, bridgeEvent *sql.BridgeEve
 		r0 = rf(ctx, bridgeEvent, swapEvent)
 	} else {
 		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UNSAFE_DB provides a mock function with given fields:
+func (_m *ConsumerDB) UNSAFE_DB() *gorm.DB {
+	ret := _m.Called()
+
+	var r0 *gorm.DB
+	if rf, ok := ret.Get(0).(func() *gorm.DB); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*gorm.DB)
+		}
 	}
 
 	return r0
