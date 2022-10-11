@@ -86,7 +86,7 @@ func (s *Store) GetSwapSuccess(ctx context.Context, kappa string, chainID uint32
 		`SELECT * FROM bridge_events WHERE %s = '%s' AND %s = %d SETTINGS readonly=1`,
 		KappaFieldName, kappa, ChainIDFieldName, chainID,
 	)).Find(&res)
-	//s.db.WithContext(ctx).Raw(`SELECT * FROM (UPDATE bridge_events SET insert_time=1) SETTINGS readonly=1`).Find(&res)
+	// s.db.WithContext(ctx).Raw(`SELECT * FROM (UPDATE bridge_events SET insert_time=1) SETTINGS readonly=1`).Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
