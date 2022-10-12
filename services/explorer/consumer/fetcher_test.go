@@ -31,6 +31,14 @@ func (c *ConsumerSuite) TestFetchLogsInRange() {
 	Equal(c.T(), 5, len(logs))
 }
 
+func (c *ConsumerSuite) TestNewSwapFetcher() {
+	swapContract, _ := c.testDeployManager.GetTestSwapFlashLoan(c.GetTestContext(), c.testBackend)
+	fetcher, err := consumer.NewSwapFetcher(swapContract.Address(), c.testBackend)
+
+	Nil(c.T(), err)
+	NotNil(c.T(), fetcher)
+}
+
 func (c *ConsumerSuite) TestToken() {
 	defer c.cleanup()
 	fetcher, err := consumer.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.testBackend)
