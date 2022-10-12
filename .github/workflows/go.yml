@@ -89,6 +89,10 @@ jobs:
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: password
         options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
+    default:
+      run:
+        working-directory: ${{ matrix.package }}
+        shell: bash
     steps:
       - uses: actions/checkout@v2
         with:
@@ -108,7 +112,7 @@ jobs:
             ~/.cache/go-build
             ~/Library/Caches/go-build
             %LocalAppData%\go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('${{matrix.package}}/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
@@ -127,7 +131,6 @@ jobs:
 
       - name: Test
         uses: nick-fields/retry@v2
-        working-directory: ${{matrix.package}}
         with:
           command: go test ./... -coverprofile=profile.cov
           max_attempts: 6
