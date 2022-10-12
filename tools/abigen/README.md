@@ -33,6 +33,7 @@ package dev
 
 import (
 	_ "github.com/path/to/missing/package"
+	"flag"
 )
 
 func init() {
