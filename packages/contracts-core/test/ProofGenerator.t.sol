@@ -51,7 +51,7 @@ contract ProofGeneratorTest is Test {
         for (uint256 i = 0; i < length; ++i) {
             bytes32 node = keccak256(abi.encode(length, i));
             leafs[i] = node;
-            tree.insert(i, node);
+            tree.insert(i + 1, node);
         }
     }
 

@@ -94,6 +94,43 @@ library Message {
     }
 
     /**
+     * @notice Returns formatted message with provided fields
+     * @param _origin               Domain of origin chain
+     * @param _sender               Address that sent the message
+     * @param _nonce                Message nonce on origin chain
+     * @param _destination          Domain of destination chain
+     * @param _recipient            Address that will receive the message
+     * @param _optimisticSeconds    Optimistic period for message execution
+     * @param _tips                 Formatted tips payload
+     * @param _messageBody          Raw bytes of message body
+     * @return Formatted message
+     **/
+    function formatMessage(
+        uint32 _origin,
+        bytes32 _sender,
+        uint32 _nonce,
+        uint32 _destination,
+        bytes32 _recipient,
+        uint32 _optimisticSeconds,
+        bytes memory _tips,
+        bytes memory _messageBody
+    ) internal pure returns (bytes memory) {
+        return
+            formatMessage(
+                Header.formatHeader(
+                    _origin,
+                    _sender,
+                    _nonce,
+                    _destination,
+                    _recipient,
+                    _optimisticSeconds
+                ),
+                _tips,
+                _messageBody
+            );
+    }
+
+    /**
      * @notice Checks that a payload is a formatted Message.
      */
     function isMessage(bytes29 _view) internal pure returns (bool) {

@@ -53,6 +53,9 @@ func makeEthConfig(address common.Address, config *params.ChainConfig) *ethconfi
 	ethConfig.Miner.GasPrice = big.NewInt(1)
 	ethConfig.EnablePreimageRecording = true
 	ethConfig.RPCTxFeeCap = params.Ether * 10
+	ethConfig.NoPruning = true
+	ethConfig.TxLookupLimit = 0
+	ethConfig.Preimages = true
 
 	return &ethConfig
 }
