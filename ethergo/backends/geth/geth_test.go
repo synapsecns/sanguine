@@ -2,7 +2,6 @@ package geth_test
 
 import (
 	"context"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
@@ -25,10 +24,8 @@ func (g *GethSuite) TestGetFullBackend() {
 	Nil(g.T(), err)
 
 	historicalBlock := new(big.Int).Sub(currentBlock.Number(), big.NewInt(2))
-	res, err := client.StorageAt(g.GetTestContext(), common.Address{}, common.BigToHash(big.NewInt(1)), historicalBlock)
+	_, err = client.StorageAt(g.GetTestContext(), common.Address{}, common.BigToHash(big.NewInt(1)), historicalBlock)
 	Nil(g.T(), err)
-
-	fmt.Println(res)
 }
 
 func (g *GethSuite) TestFaucet() {
