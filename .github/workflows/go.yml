@@ -101,6 +101,7 @@ jobs:
 
       - name: Go modules cache
         uses: actions/cache@v2
+        working-directory: ${{matrix.package}}
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -127,6 +128,7 @@ jobs:
 
       - name: Test
         uses: nick-fields/retry@v2
+        working-directory: ${{matrix.package}}
         with:
           command: go test ./... -coverprofile=profile.cov
           max_attempts: 6
