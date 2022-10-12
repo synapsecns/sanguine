@@ -111,9 +111,9 @@ jobs:
             ~/.cache/go-build
             ~/Library/Caches/go-build
             %LocalAppData%\go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('${{matrix.package}}/go.sum') }}
+          key: ${{ runner.os }}-test-${{matrix.package}}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-test-${{matrix.package}}
 
       - name: Install Go
         uses: actions/setup-go@v3
