@@ -1,4 +1,4 @@
-package proxy
+package types
 
 // RPCMethod is an enum type for an rpc method.
 type RPCMethod string

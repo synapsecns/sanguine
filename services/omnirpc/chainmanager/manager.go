@@ -164,7 +164,7 @@ var _ ChainManager = &chainManager{}
 type Chain interface {
 	// ConfirmationsThreshold gets the confirmation count
 	ConfirmationsThreshold() uint16
-	// URLs gets the urls
+	// URLs gets the urls for the chain sorted by latency/sync status
 	URLs() []string
 	// ID returns the id of the chain
 	ID() uint32

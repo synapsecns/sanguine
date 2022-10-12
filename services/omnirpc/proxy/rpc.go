@@ -6,39 +6,10 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/goccy/go-json"
 	"github.com/hedzr/cmdr/tool"
-	"github.com/invopop/jsonschema"
+	"github.com/synapsecns/sanguine/services/omnirpc/types"
 	"golang.org/x/exp/slices"
 	"math/big"
 )
-
-// RPCRequest is a raw rpc request format.
-type RPCRequest struct {
-	ID     json.RawMessage   `json:"id"`
-	Method string            `json:"method"`
-	Params []json.RawMessage `json:"params"`
-}
-
-func init() {
-	schema := jsonschema.Reflect(&RPCRequest{})
-	rawSchema, err := schema.MarshalJSON()
-	if err != nil {
-		panic(fmt.Errorf("could not reflect rpc schema: %w", err))
-	}
-	rpcReqSchema = string(rawSchema)
-}
-
-// rpcReqSchema contains the raw rpc request schema.
-var rpcReqSchema string
-
-func parseRPCPayload(body []byte) (_ *RPCRequest, err error) {
-	rpcPayload := RPCRequest{}
-	err = json.Unmarshal(body, &rpcPayload)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse json payload: %w, must conform to: %s", err, rpcReqSchema)
-	}
-
-	return &rpcPayload, nil
-}
 
 func isBlockNumConfirmable(arg json.RawMessage) bool {
 	// nonConfirmableBlockNumArgs is a list of non numerical block args
@@ -67,24 +38,24 @@ func isFilterArgConfirmable(arg json.RawMessage) (bool, error) {
 	return !usesLatest, nil
 }
 
-func (r RPCRequest) isConfirmable() (bool, error) {
+func isConfirmable(r types.IRPCRequest) (bool, error) {
 	// TODO: handle batch methods
 	// TODO: should we error on default?
 	//nolint: exhaustive
-	switch RPCMethod(r.Method) {
-	case BlockByNumberMethod, PendingTransactionCountMethod:
-		return isBlockNumConfirmable(r.Params[0]), nil
-	case BlockNumberMethod, SyncProgressMethod, GasPriceMethod, MaxPriorityMethod, EstimateGasMethod:
+	switch r.GetMethod() {
+	case types.BlockByNumberMethod, types.PendingTransactionCountMethod:
+		return isBlockNumConfirmable(r.GetParams()[0]), nil
+	case types.BlockNumberMethod, types.SyncProgressMethod, types.GasPriceMethod, types.MaxPriorityMethod, types.EstimateGasMethod:
 		return false, nil
-	case GetBalanceMethod, GetCodeMethod, TransactionCountMethod, CallMethod:
-		return isBlockNumConfirmable(r.Params[1]), nil
-	case StorageAtMethod:
-		return isBlockNumConfirmable(r.Params[2]), nil
-	case GetLogsMethod:
-		return isFilterArgConfirmable(r.Params[0])
+	case types.GetBalanceMethod, types.GetCodeMethod, types.TransactionCountMethod, types.CallMethod:
+		return isBlockNumConfirmable(r.GetParams()[1]), nil
+	case types.StorageAtMethod:
+		return isBlockNumConfirmable(r.GetParams()[2]), nil
+	case types.GetLogsMethod:
+		return isFilterArgConfirmable(r.GetParams()[0])
 	// not confirmable because tx could be pending. We might want to handle w/ omnicast though
 	// left separate for comment
-	case SendRawTransactionMethod:
+	case types.SendRawTransactionMethod:
 		return false, nil
 	}
 	return true, nil

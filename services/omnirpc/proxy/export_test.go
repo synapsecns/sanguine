@@ -8,22 +8,17 @@ import (
 	"github.com/puzpuzpuz/xsync"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"github.com/synapsecns/sanguine/services/omnirpc/types"
 )
 
 // IsConfirmable exports isConfirmable for testing.
 func IsConfirmable(body []byte) (bool, error) {
-	parsedPayload, err := parseRPCPayload(body)
+	parsedPayload, err := types.ParseRPCPayload(body)
 	if err != nil {
 		return false, fmt.Errorf("could not parse payload: %w", err)
 	}
 	//nolint: wrapcheck
-	return parsedPayload.isConfirmable()
-}
-
-// ParseRPCPayload exports parseRPCPayload for testing.
-func ParseRPCPayload(body []byte) (_ *RPCRequest, err error) {
-	//nolint: wrapcheck
-	return parseRPCPayload(body)
+	return isConfirmable(parsedPayload)
 }
 
 // SetClient allows overriding the client on the rpc proxy.
@@ -116,11 +111,11 @@ func (f *Forwarder) SetResMap(resMap *xsync.MapOf[[]rawResponse]) {
 	f.resMap = resMap
 }
 
-func (f *Forwarder) RPCRequest() *RPCRequest {
+func (f *Forwarder) RPCRequest() *types.RPCRequest {
 	return f.rpcRequest
 }
 
-func (f *Forwarder) SetRPCRequest(rpcRequest *RPCRequest) {
+func (f *Forwarder) SetRPCRequest(rpcRequest *types.RPCRequest) {
 	f.rpcRequest = rpcRequest
 }
 

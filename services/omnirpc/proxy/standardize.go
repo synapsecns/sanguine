@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/goccy/go-json"
+	types2 "github.com/synapsecns/sanguine/services/omnirpc/types"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -94,50 +95,50 @@ func standardizeResponse(ctx context.Context, method string, rpcMessage JSONRPCM
 	// TODO: use a sync.pool for acquiring/releasing these structs
 
 OUTER:
-	switch RPCMethod(method) {
-	case ChainIDMethod, BlockNumberMethod, TransactionCountByHashMethod, GetBalanceMethod, GasPriceMethod, MaxPriorityMethod:
+	switch types2.RPCMethod(method) {
+	case types2.ChainIDMethod, types2.BlockNumberMethod, types2.TransactionCountByHashMethod, types2.GetBalanceMethod, types2.GasPriceMethod, types2.MaxPriorityMethod:
 		var result hexutil.Big
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case StorageAtMethod, GetCodeMethod:
+	case types2.StorageAtMethod, types2.GetCodeMethod:
 		var result hexutil.Bytes
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case TransactionCountMethod, EstimateGasMethod:
+	case types2.TransactionCountMethod, types2.EstimateGasMethod:
 		var result hexutil.Uint64
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case PendingTransactionCountMethod:
+	case types2.PendingTransactionCountMethod:
 		var result hexutil.Uint
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case TransactionByHashMethod, TransactionByBlockHashAndIndexMethod:
+	case types2.TransactionByHashMethod, types2.TransactionByBlockHashAndIndexMethod:
 		var rpcBody rpcTransaction
 		if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(rpcBody)
-	case GetLogsMethod:
+	case types2.GetLogsMethod:
 		var result []types.Log
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case TransactionReceiptByHashMethod:
+	case types2.TransactionReceiptByHashMethod:
 		var rpcBody *types.Receipt
 		if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(rpcBody)
-	case SyncProgressMethod:
+	case types2.SyncProgressMethod:
 		var syncing bool
 		if err = json.Unmarshal(rpcMessage.Result, &syncing); err == nil {
 			out, err = json.Marshal(syncing)
@@ -150,14 +151,14 @@ OUTER:
 		}
 
 		out, err = json.Marshal(p)
-	case FeeHistoryMethod:
+	case types2.FeeHistoryMethod:
 		var rpcBody feeHistoryResultMarshaling
 		if err := json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(rpcBody)
 
-	case BlockByHashMethod, BlockByNumberMethod:
+	case types2.BlockByHashMethod, types2.BlockByNumberMethod:
 		var head *types.Header
 		var rpcBody rpcBlock
 
@@ -209,7 +210,7 @@ OUTER:
 			return nil, fmt.Errorf("could not unmarshall full block: %w", err)
 		}
 	// we don't do anything here, kept for exhaustiveness
-	case CallMethod, SendRawTransactionMethod:
+	case types2.CallMethod, types2.SendRawTransactionMethod:
 		return out, nil
 	}
 

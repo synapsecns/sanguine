@@ -72,7 +72,6 @@ A postman collection is also available at `/collection.json`
 
 Confirmable only when latest or pending are not passed:
 
-- `eth_getBlockByNumber`
 - `eth_getBlockTransactionCountByNumber`
 - `eth_getBalance`
 - `eth_getCode`

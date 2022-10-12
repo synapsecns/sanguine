@@ -13,6 +13,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
+	types2 "github.com/synapsecns/sanguine/services/omnirpc/types"
 	"github.com/valyala/fasthttp"
 	"io"
 	"math/big"
@@ -41,7 +42,7 @@ func (p *ProxySuite) captureResponse(backendURL string, makeReq func(client *eth
 		requestBody, err := io.ReadAll(reqBodyReader)
 		Nil(p.T(), err)
 
-		rpcReq, err := proxy.ParseRPCPayload(requestBody)
+		rpcReq, err := types2.ParseRPCPayload(requestBody)
 		Nil(p.T(), err)
 
 		var rpcMessage proxy.JSONRPCMessage

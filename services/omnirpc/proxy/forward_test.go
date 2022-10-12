@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/http/mocks"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	proxyMocks "github.com/synapsecns/sanguine/services/omnirpc/proxy/mocks"
+	"github.com/synapsecns/sanguine/services/omnirpc/types"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -87,7 +88,7 @@ func (p *ProxySuite) TestAcquireReleaseForwarder() {
 	forwarder.SetRequestID([]byte(uuid.New().String()))
 	forwarder.SetRequiredConfirmations(gofakeit.Uint16())
 	forwarder.SetBlankResMap()
-	forwarder.SetRPCRequest(&proxy.RPCRequest{
+	forwarder.SetRPCRequest(&types.RPCRequest{
 		ID:     []byte(strconv.Itoa(gofakeit.Number(1, 2))),
 		Method: gofakeit.Word(),
 	})
@@ -155,7 +156,7 @@ func (p *ProxySuite) TestForwardRequest() {
 	forwarder := prxy.AcquireForwarder()
 	forwarder.SetBody(testBody)
 	forwarder.SetRequestID([]byte(testRequestID))
-	forwarder.SetRPCRequest(&proxy.RPCRequest{Method: methodName})
+	forwarder.SetRPCRequest(&types.RPCRequest{Method: methodName})
 
 	_, err := forwarder.ForwardRequest(p.GetTestContext(), testURL)
 	Nil(p.T(), err)
@@ -190,9 +191,9 @@ func (p *ProxySuite) TestOverrideConfirmability() {
 	chainManager.On("URLs").Return(urls)
 	forwarder.SetChain(chainManager)
 
-	forwarder.SetBody(p.MustMarshall(proxy.RPCRequest{
+	forwarder.SetBody(p.MustMarshall(types.RPCRequest{
 		ID:     []byte("\"1\""),
-		Method: string(proxy.BlockByNumberMethod),
+		Method: string(types.BlockByNumberMethod),
 		Params: []json.RawMessage{[]byte("\"1\"")},
 	}))
 	testContext, _ := gin.CreateTestContext(httptest.NewRecorder())

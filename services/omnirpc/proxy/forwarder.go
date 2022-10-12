@@ -10,6 +10,8 @@ import (
 	"github.com/synapsecns/sanguine/core/threaditer"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"github.com/synapsecns/sanguine/services/omnirpc/preflight"
+	"github.com/synapsecns/sanguine/services/omnirpc/types"
 	"io"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"net/http"
@@ -38,7 +40,7 @@ type Forwarder struct {
 	// Note: because we use an array here, this is not thread safe for writes
 	resMap *xsync.MapOf[[]rawResponse]
 	// rpcRequest is the parsed rpc request
-	rpcRequest *RPCRequest
+	rpcRequest *types.RPCRequest
 	// mux is used to track the release of the forwarder. This should only be used in async methods
 	// as RLock
 	mux sync.RWMutex
@@ -98,6 +100,8 @@ func (r *RPCProxy) Forward(c *gin.Context, chainID uint32, requiredConfirmations
 	if ok := forwarder.fillAndValidate(chainID); !ok {
 		return
 	}
+
+	preflight.RunPreflightChecks(c, forwarder.rpcRequest)
 
 	forwarder.attemptForwardAndValidate()
 }
@@ -291,6 +295,7 @@ func (f *Forwarder) attemptForward(ctx context.Context, errChan chan error, resC
 func (f *Forwarder) fillAndValidate(chainID uint32) (ok bool) {
 	var err error
 
+	// get the chain info
 	f.chain = f.r.chainManager.GetChain(chainID)
 	if f.chain == nil {
 		f.c.JSON(http.StatusBadRequest, gin.H{
@@ -325,7 +330,7 @@ func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 	}
 
 	var err error
-	f.rpcRequest, err = parseRPCPayload(f.body)
+	f.rpcRequest, err = types.ParseRPCPayload(f.body)
 	if err != nil {
 		f.c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
@@ -333,7 +338,7 @@ func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 		return false
 	}
 
-	confirmable, err := f.rpcRequest.isConfirmable()
+	confirmable, err := isConfirmable(f.rpcRequest)
 	if err != nil {
 		f.c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
