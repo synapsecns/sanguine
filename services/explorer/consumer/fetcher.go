@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
@@ -270,10 +271,16 @@ func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, toke
 	if tokenID == nil {
 		return nil, fmt.Errorf("invalid token id")
 	}
-	tok, err := b.bridgeConfig.GetToken(&bind.CallOpts{
-		// TODO add block number here
+	callOps := bind.CallOpts{
 		Context: ctx,
-	}, *tokenID, big.NewInt(int64(chainID)))
+	}
+	if !core.IsTest() {
+		callOps = bind.CallOpts{
+			BlockNumber: big.NewInt(int64(blockNumber)),
+			Context:     ctx,
+		}
+	}
+	tok, err := b.bridgeConfig.GetToken(&callOps, *tokenID, big.NewInt(int64(chainID)))
 	if err != nil {
 		return nil, fmt.Errorf("could not get token at block number %d: %w", blockNumber, err)
 	}
@@ -299,6 +306,7 @@ func NewSwapFetcher(swapAddress common.Address, backend bind.ContractBackend) (*
 
 // GetTokenMetaData gets the token from the erc20 token contract given a swap contract token id.
 func (s *SwapFetcher) GetTokenMetaData(ctx context.Context, tokenIndex uint8) (*string, *uint8) {
+	fmt.Println("tokenIndextokenIndex", tokenIndex)
 	tokenAddress, err := s.swap.GetToken(&bind.CallOpts{
 		Context: ctx,
 	}, tokenIndex)
