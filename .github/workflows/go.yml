@@ -62,7 +62,6 @@ jobs:
       # list all packages
       - id: all
         run: |
-          pwd
           export ALL=$(go work edit -json | jq -c -r '[.Use[].DiskPath]')
           echo "##[set-output name=ALL;]$(echo $ALL)"
 
@@ -90,7 +89,7 @@ jobs:
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: password
         options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
-    default:
+    defaults:
       run:
         working-directory: ${{ matrix.package }}
         shell: bash
