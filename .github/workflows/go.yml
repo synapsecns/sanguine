@@ -95,7 +95,6 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v2
-        working-directory: ~
         with:
           fetch-depth: 0
           submodules: 'recursive'
