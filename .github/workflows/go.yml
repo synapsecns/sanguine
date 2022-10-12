@@ -132,7 +132,7 @@ jobs:
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: go test ./... -coverprofile=profile.cov
+          command: pwd && go test ./... -coverprofile=profile.cov
           max_attempts: 6
           timeout_minutes: 15
         env:
