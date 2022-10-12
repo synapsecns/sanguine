@@ -4,6 +4,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // ExpandOrReturnPath expands a homedir path, if it can't be expanded, the original dir is returned
@@ -37,4 +38,13 @@ func GetEnvInt(name string, defaultVal int) int {
 		return defaultVal
 	}
 	return res
+}
+
+// IsTest returns true if the current process is a test.
+func IsTest() bool {
+	if len(os.Args) == 0 {
+		return false
+	}
+
+	return strings.HasSuffix(os.Args[0], ".test")
 }

@@ -33,11 +33,11 @@ package dev
 
 import (
 	_ "github.com/path/to/missing/package"
-	"flag"
+	"github.com/synapsecns/sanguine/core"
 )
 
 func init() {
-  if flag.Lookup("test.v") == nil {
+  if !core.IsTest() {
 	  panic("could not import dev package: this package is meant to define dependencies, not be imported.")
   }
 }

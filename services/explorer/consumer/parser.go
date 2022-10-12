@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -14,8 +15,6 @@ import (
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"math/big"
-	"os"
-	"strings"
 	"time"
 )
 
@@ -319,7 +318,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
 	if err != nil {
-		if !strings.HasSuffix(os.Args[0], ".test") {
+		if !core.IsTest() {
 			return fmt.Errorf("could not fetch tx sender: %w", err)
 		}
 		logger.Errorf("could not get tx sender: %v", err)
