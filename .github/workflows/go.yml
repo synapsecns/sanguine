@@ -101,7 +101,6 @@ jobs:
 
       - name: Go modules cache
         uses: actions/cache@v2
-        working-directory: ${{matrix.package}}
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -109,7 +108,7 @@ jobs:
             ~/.cache/go-build
             ~/Library/Caches/go-build
             %LocalAppData%\go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('${{matrix.package}}/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
