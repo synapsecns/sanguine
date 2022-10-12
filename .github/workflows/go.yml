@@ -91,7 +91,7 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
     defaults:
       run:
-        working-directory: ${{ matrix.package }}
+        working-directory: "./i-dont-exist"
     steps:
       - uses: actions/checkout@v2
         with:
