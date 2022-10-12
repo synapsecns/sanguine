@@ -8,6 +8,7 @@ run:
   skip-files:
     - '.*\\.abigen\\.go$'
     - '.*\\.metadata\\.go$'
+    - '.*\\.pb\\.go$'
 
 
 linters-settings:
