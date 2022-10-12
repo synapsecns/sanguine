@@ -36,7 +36,9 @@ import (
 )
 
 func init() {
-	panic("could not import dev package: this package is meant to define dependencies, not be imported.")
+  if flag.Lookup("test.v") == nil {
+	  panic("could not import dev package: this package is meant to define dependencies, not be imported.")
+  }
 }
 ```
 
