@@ -155,7 +155,7 @@ jobs:
         name: Send Coverage (Codecov)
         with:
           token: ${{ secrets.CODECOV }}
-          files: ${{matrix.package}}/profile.cov
+          files: profile.cov
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
 
@@ -166,7 +166,8 @@ jobs:
         uses: shogo82148/actions-goveralls@v1
         with:
           github-token: ${{ secrets.github_token }}
-          path-to-profile: profile.cov
+          # coveralls will not respect default run
+          path-to-profile: ${{matrix.package}}/profile.cov
           ignore: ${{ env.IGNORED }}
           flag-name: Go-${{ matrix.go-version }}
 
