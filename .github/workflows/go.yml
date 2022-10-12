@@ -6,15 +6,73 @@ on:
       - 'gh-pages'
 
 jobs:
+  # changes allows us to only run a job on changed packages
+  changes:
+    name: Change Detection
+    runs-on: ubuntu-latest
+    outputs:
+      # Expose matched filters as job 'packages' output variable
+      packages: ${{ steps.filter_go.outputs.changes }}
+      package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
+      solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
+      all_packages: ${{ steps.all.outputs.ALL }} # list of changed and unchanged packages
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      # For pull requests it's not necessary to checkout the code
+      - uses: dorny/paths-filter@v2
+        name: 'Check for Go Changes'
+        id: filter_go
+        with:
+          #  make sure to update run-goreleaser when adding a new package here
+          filters: |
+            agents: 'agents/**'
+            services/scribe: 'services/scribe/**'
+            services/explorer: 'services/explorer/**'
+            tools: 'tools/**'
+            core: 'core/**'
+            ethergo: 'ethergo/**'
+            services/omnirpc: 'services/omnirpc/**'
+      - name: Check For Solidity Changes
+        id: filter_solidity
+        uses: tj-actions/changed-files@v26.1
+        with:
+          files: |
+            **/*.sol
+      - name: Run step if any of the listed files above change
+        if: steps.filter_solidity.outputs.any_changed == 'true'
+        run: |
+          echo "One or more files listed above has changed."
+
+      - id: length
+        run: |
+          export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
+          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
+        env:
+          FILTERED_PATHS: ${{ steps.filter_go.outputs.changes }}
+
+      # list all packages
+      - id: all
+        run: |
+          export ALL=$(go work edit -json | jq -c -r '[.Use[].DiskPath]')
+          echo "##[set-output name=ALL;]$(echo $ALL)"
+
+
   test:
     name: Go Coverage
     runs-on: ${{ matrix.platform }}
+    needs: changes
     strategy:
       matrix:
         go-version:
           - 1.19.x
         platform:
           - ubuntu-latest
+        # only do on agents for now. Anything that relies on solidity in a package should do this
+        package: ${{ fromJSON(needs.changes.outputs.all_packages) }}
     services:
       mariadb:
         image: mariadb:latest
@@ -104,52 +162,6 @@ jobs:
           ignore: ${{ env.IGNORED }}
           flag-name: Go-${{ matrix.go-version }}
 
-  # changes allows us to only run a job on changed packages
-  changes:
-    name: Change Detection
-    runs-on: ubuntu-latest
-    outputs:
-      # Expose matched filters as job 'packages' output variable
-      packages: ${{ steps.filter_go.outputs.changes }}
-      package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
-      solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          submodules: 'recursive'
-
-      # For pull requests it's not necessary to checkout the code
-      - uses: dorny/paths-filter@v2
-        name: 'Check for Go Changes'
-        id: filter_go
-        with:
-          #  make sure to update run-goreleaser when adding a new package here
-          filters: |
-            agents: 'agents/**'
-            services/scribe: 'services/scribe/**'
-            services/explorer: 'services/explorer/**'
-            tools: 'tools/**'
-            core: 'core/**'
-            ethergo: 'ethergo/**'
-            services/omnirpc: 'services/omnirpc/**'
-      - name: Check For Solidity Changes
-        id: filter_solidity
-        uses: tj-actions/changed-files@v26.1
-        with:
-          files: |
-            **/*.sol
-      - name: Run step if any of the listed files above change
-        if: steps.filter_solidity.outputs.any_changed == 'true'
-        run: |
-          echo "One or more files listed above has changed."
-
-      - id: length
-        run: |
-          export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
-          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
-        env:
-          FILTERED_PATHS: ${{ steps.filter_go.outputs.changes }}
 
   # make sure the build works
   build:
