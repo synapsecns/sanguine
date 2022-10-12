@@ -92,7 +92,6 @@ jobs:
     defaults:
       run:
         working-directory: ${{ matrix.package }}
-        shell: bash
     steps:
       - uses: actions/checkout@v2
         with:
