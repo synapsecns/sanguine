@@ -117,7 +117,7 @@ func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int
 		ChainID: uint32(chainID),
 	}
 	ethTx, err := r.DB.RetrieveEthTxsWithFilter(ctx, filter, 1)
-	if err != nil {
+	if err != nil || len(ethTx) == 0 {
 		return nil, fmt.Errorf("error retrieving transaction: %w", err)
 	}
 	msgFrom, err := ethTx[0].AsMessage(types.NewEIP2930Signer(ethTx[0].ChainId()), big.NewInt(1))
