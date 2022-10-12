@@ -54,6 +54,11 @@ jobs:
         env:
           FILTERED_PATHS: ${{ steps.filter_go.outputs.changes }}
 
+      # needed for listing packages
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
       # list all packages
       - id: all
         run: |
@@ -123,7 +128,7 @@ jobs:
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
+          command: go test ./... -coverprofile=profile.cov
           max_attempts: 6
           timeout_minutes: 15
         env:
