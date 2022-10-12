@@ -65,7 +65,7 @@ jobs:
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
+          command: go test  -coverpkg=./... $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
           max_attempts: 6
           timeout_minutes: 15
         env:
