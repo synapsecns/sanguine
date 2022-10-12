@@ -90,7 +90,7 @@ func (t *TxQueueTransactor) GetTransactor(ctx context.Context, chainID *big.Int)
 // GetNonce uses the greatest of the database nonce or the on-chain nonce for the next transaction.
 func (t TxQueueTransactor) GetNonce(parentCtx context.Context) (nonce uint64, err error) {
 	g, ctx := errgroup.WithContext(parentCtx)
-	// onChainNonce is the latest nonce from eth_transactionCount. UNSAFE_DB nonce is latest nonce from db + 1
+	// onChainNonce is the latest nonce from eth_transactionCount. DB nonce is latest nonce from db + 1
 	// locks are not built into this method or the insertion level of the db
 	var onChainNonce, dbNonce uint64
 
