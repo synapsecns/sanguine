@@ -131,7 +131,7 @@ jobs:
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: cd ${{matrix.package}} && go test ./... -coverprofile=profile.cov
+          command: cd ${{matrix.package}} && go test -coverpkg=./... ./... -coverprofile=profile.cov
           max_attempts: 6
           timeout_minutes: 15
         env:
