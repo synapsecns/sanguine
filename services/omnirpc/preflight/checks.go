@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/hedzr/cmdr/tool"
 	"github.com/synapsecns/sanguine/services/omnirpc/types"
 	"math/big"
 )
@@ -26,8 +28,13 @@ func checkTransaction(rpcRequest types.IRPCRequest, chainID uint64) (ok bool, _ 
 		return false, fmt.Errorf("rpc request %s requires at least one arg", types.SendRawTransactionMethod)
 	}
 
+	rawBin, err := hexutil.Decode(tool.StripQuotes(string(rpcRequest.GetParams()[0])))
+	if err != nil {
+		return false, fmt.Errorf("could not recover decode tx binary: %w", err)
+	}
+
 	tx := ethTypes.Transaction{}
-	err := tx.UnmarshalBinary(rpcRequest.GetParams()[0])
+	err = tx.UnmarshalBinary(rawBin)
 	if err != nil {
 		return false, fmt.Errorf("could not unmarshal transaction: %w", err)
 	}
