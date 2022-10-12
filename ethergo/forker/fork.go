@@ -26,7 +26,7 @@ func Fork(ctx context.Context, rpcURL string, chainID uint64, clientFunc func(cl
 
 	_ = processPort
 
-	cmd := exec.Command("/Users/jake/.foundry/bin/anvil", "--fork-url", rpcURL, "--chain-id", strconv.Itoa(int(chainID)), "--port", strconv.Itoa(processPort))
+	cmd := exec.Command("anvil", "--fork-url", rpcURL, "--chain-id", strconv.Itoa(int(chainID)), "--port", strconv.Itoa(processPort))
 	cmd.Env = os.Environ()
 
 	stderr, err := cmd.StderrPipe()
@@ -57,6 +57,7 @@ func Fork(ctx context.Context, rpcURL string, chainID uint64, clientFunc func(cl
 	})
 
 	g.Go(func() error {
+		defer cmd.Process.Kill()
 		startupCtx, cancel := context.WithCancel(ctx)
 		defer cancel()
 
