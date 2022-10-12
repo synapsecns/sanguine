@@ -13,8 +13,20 @@ contract DomainNotaryRegistryHarness is LocalDomainContext, DomainNotaryRegistry
         return _addNotary(_notary);
     }
 
+    function addNotary(uint32 _domain, address _notary) public returns (bool) {
+        return _addNotary(_domain, _notary);
+    }
+
     function removeNotary(address _notary) public returns (bool) {
         return _removeNotary(_notary);
+    }
+
+    function removeNotary(uint32 _domain, address _notary) public returns (bool) {
+        return _removeNotary(_domain, _notary);
+    }
+
+    function isNotary(address _notary) public view returns (bool) {
+        return _isNotary(_notary);
     }
 
     function isNotary(uint32 _domain, address _notary) public view returns (bool) {
