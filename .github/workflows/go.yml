@@ -62,6 +62,7 @@ jobs:
       # list all packages
       - id: all
         run: |
+          pwd
           export ALL=$(go work edit -json | jq -c -r '[.Use[].DiskPath]')
           echo "##[set-output name=ALL;]$(echo $ALL)"
 
@@ -95,6 +96,7 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v2
+        working-directory: ~
         with:
           fetch-depth: 0
           submodules: 'recursive'
