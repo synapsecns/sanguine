@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { GlobalNotaryRegistry } from "../../contracts/registry/GlobalNotaryRegistry.sol";
+import { GlobalNotaryRegistry } from "../../../contracts/registry/GlobalNotaryRegistry.sol";
 
 contract GlobalNotaryRegistryHarness is GlobalNotaryRegistry {
     function addNotary(uint32 _domain, address _notary) public returns (bool) {

@@ -8,10 +8,10 @@ import { GlobalNotaryRegistry } from "../../contracts/registry/GlobalNotaryRegis
 import { Tips } from "../../contracts/libs/Tips.sol";
 import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
 
-import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
-import { SystemContractHarness } from "./SystemContractHarness.sol";
-import { GlobalNotaryRegistryHarness } from "./GlobalNotaryRegistryHarness.sol";
-import { DestinationHarnessEvents } from "../events/DestinationHarnessEvents.sol";
+import { GuardRegistryHarness } from "./registry/GuardRegistryHarness.t.sol";
+import { GlobalNotaryRegistryHarness } from "./registry/GlobalNotaryRegistryHarness.t.sol";
+import { SystemContractHarness } from "./system/SystemContractHarness.t.sol";
+import { DestinationHarnessEvents } from "./events/DestinationHarnessEvents.sol";
 
 contract DestinationHarness is
     DestinationHarnessEvents,

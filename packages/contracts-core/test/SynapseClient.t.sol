@@ -4,8 +4,8 @@ pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 
-import { SynapseClientHarness } from "./harnesses/SynapseClientHarness.sol";
-import { OriginHarness } from "./harnesses/OriginHarness.sol";
+import { SynapseClientHarness } from "./harnesses/client/SynapseClientHarness.t.sol";
+import { OriginHarness } from "./harnesses/OriginHarness.t.sol";
 
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 

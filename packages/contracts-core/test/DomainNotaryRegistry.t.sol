@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 
-import { DomainNotaryRegistryHarness } from "./harnesses/DomainNotaryRegistryHarness.sol";
+import { DomainNotaryRegistryHarness } from "./harnesses/registry/DomainNotaryRegistryHarness.t.sol";
 
 contract DomainNotaryRegistryTest is Test {
     DomainNotaryRegistryHarness internal registry;

@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.17;
 
-import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
-import { AttestationHub } from "../../contracts/hubs/AttestationHub.sol";
+import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
+import { AttestationHub } from "../../../contracts/hubs/AttestationHub.sol";
 
 import { AttestationHubHarnessEvents } from "../events/AttestationHubHarnessEvents.sol";
-import { GlobalNotaryRegistryHarness } from "./GlobalNotaryRegistryHarness.sol";
+import { GlobalNotaryRegistryHarness } from "../registry/GlobalNotaryRegistryHarness.t.sol";
 
 contract AttestationHubHarness is
     AttestationHubHarnessEvents,

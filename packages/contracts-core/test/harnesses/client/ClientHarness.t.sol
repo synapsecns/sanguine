@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { Client } from "../../contracts/client/Client.sol";
+import { Client } from "../../../contracts/client/Client.sol";
 import { ClientHarnessEvents } from "../events/ClientHarnessEvents.sol";
 
 contract ClientHarness is ClientHarnessEvents, Client {

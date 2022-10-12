@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import "../../tools/libs/ReportTools.t.sol";
-import { ReportHubHarness } from "../../harnesses/ReportHubHarness.sol";
+import { ReportHubHarness } from "../../harnesses/hubs/ReportHubHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract ReportHubTest is ReportTools {

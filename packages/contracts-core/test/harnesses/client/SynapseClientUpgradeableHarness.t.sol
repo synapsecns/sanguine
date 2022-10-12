@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { SynapseClientUpgradeable } from "../../contracts/client/SynapseClientUpgradeable.sol";
+import { SynapseClientUpgradeable } from "../../../contracts/client/SynapseClientUpgradeable.sol";
 
 // solhint-disable no-empty-blocks
 contract SynapseClientUpgradeableHarness is SynapseClientUpgradeable {

@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import "../../tools/libs/AttestationTools.t.sol";
-import { AttestationHubHarness } from "../../harnesses/AttestationHubHarness.sol";
+import { AttestationHubHarness } from "../../harnesses/hubs/AttestationHubHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract AttestationHubTest is AttestationTools {

@@ -3,10 +3,10 @@ pragma solidity 0.8.17;
 
 import "../../contracts/NotaryManager.sol";
 // ============ Harnesses ============
-import "../harnesses/AppHarness.sol";
-import "../harnesses/DestinationHarness.sol";
-import "../harnesses/OriginHarness.sol";
-import "../harnesses/SystemRouterHarness.sol";
+import "../harnesses/client/AppHarness.t.sol";
+import "../harnesses/DestinationHarness.t.sol";
+import "../harnesses/OriginHarness.t.sol";
+import "../harnesses/system/SystemRouterHarness.t.sol";
 // ============ Utils ============
 import "./SynapseConstants.t.sol";
 import "./SynapseEvents.t.sol";

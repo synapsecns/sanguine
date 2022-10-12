@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { IMessageRecipient } from "../../contracts/interfaces/IMessageRecipient.sol";
+import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
 
 contract AppHarness is IMessageRecipient {
     uint32 public optimisticSeconds;

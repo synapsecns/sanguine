@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { SynapseClient } from "../../contracts/client/SynapseClient.sol";
+import { SynapseClient } from "../../../contracts/client/SynapseClient.sol";
 
 // solhint-disable no-empty-blocks
 contract SynapseClientHarness is SynapseClient {

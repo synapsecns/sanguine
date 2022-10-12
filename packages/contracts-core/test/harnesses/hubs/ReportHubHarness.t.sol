@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.17;
 
-import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
-import { ReportHub } from "../../contracts/hubs/ReportHub.sol";
+import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
+import { ReportHub } from "../../../contracts/hubs/ReportHub.sol";
 
-import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
-import { GlobalNotaryRegistryHarness } from "./GlobalNotaryRegistryHarness.sol";
+import { GuardRegistryHarness } from "../registry/GuardRegistryHarness.t.sol";
+import { GlobalNotaryRegistryHarness } from "../registry/GlobalNotaryRegistryHarness.t.sol";
 import { ReportHubHarnessEvents } from "../events/ReportHubHarnessEvents.sol";
 
 contract ReportHubHarness is

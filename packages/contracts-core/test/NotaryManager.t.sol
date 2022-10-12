@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import "forge-std/Test.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
-import { OriginHarness } from "./harnesses/OriginHarness.sol";
+import { OriginHarness } from "./harnesses/OriginHarness.t.sol";
 
 import { NotaryManager } from "../contracts/NotaryManager.sol";
 import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";

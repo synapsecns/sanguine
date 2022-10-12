@@ -11,9 +11,9 @@ import { Tips } from "../contracts/libs/Tips.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 import { ProofGenerator } from "./utils/ProofGenerator.sol";
 
-import { OriginHarness } from "./harnesses/OriginHarness.sol";
-import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
-import { SystemRouterHarness } from "./harnesses/SystemRouterHarness.sol";
+import { OriginHarness } from "./harnesses/OriginHarness.t.sol";
+import { DestinationHarness } from "./harnesses/DestinationHarness.t.sol";
+import { SystemRouterHarness } from "./harnesses/system/SystemRouterHarness.t.sol";
 
 interface ISystemMockContract {
     function sensitiveValue() external view returns (uint256);

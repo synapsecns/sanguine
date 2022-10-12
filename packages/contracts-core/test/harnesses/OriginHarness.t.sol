@@ -4,8 +4,8 @@ pragma solidity 0.8.17;
 
 import { Message } from "../../contracts/libs/Message.sol";
 import { Origin } from "../../contracts/Origin.sol";
-import { GuardRegistryHarness } from "./GuardRegistryHarness.sol";
-import { SystemContractHarness } from "./SystemContractHarness.sol";
+import { GuardRegistryHarness } from "./registry/GuardRegistryHarness.t.sol";
+import { SystemContractHarness } from "./system/SystemContractHarness.t.sol";
 
 contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
     //solhint-disable-next-line no-empty-blocks

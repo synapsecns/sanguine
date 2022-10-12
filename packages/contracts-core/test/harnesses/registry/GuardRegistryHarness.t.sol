@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { GuardRegistry } from "../../contracts/registry/GuardRegistry.sol";
+import { GuardRegistry } from "../../../contracts/registry/GuardRegistry.sol";
 
 contract GuardRegistryHarness is GuardRegistry {
     function addGuard(address _guard) public returns (bool) {

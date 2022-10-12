@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 
-import { GuardRegistryHarness } from "./harnesses/GuardRegistryHarness.sol";
+import { GuardRegistryHarness } from "./harnesses/registry/GuardRegistryHarness.t.sol";
 
 contract GuardRegistryTest is Test {
     GuardRegistryHarness internal registry;

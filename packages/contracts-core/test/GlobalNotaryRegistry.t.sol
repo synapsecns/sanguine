@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 
-import { GlobalNotaryRegistryHarness } from "./harnesses/GlobalNotaryRegistryHarness.sol";
+import { GlobalNotaryRegistryHarness } from "./harnesses/registry/GlobalNotaryRegistryHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract GlobalNotaryRegistryTest is Test {

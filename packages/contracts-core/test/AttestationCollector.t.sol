@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 
 import { SynapseTest } from "./utils/SynapseTest.sol";
 
-import { AttestationCollectorHarness } from "./harnesses/AttestationCollectorHarness.sol";
+import { AttestationCollectorHarness } from "./harnesses/AttestationCollectorHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract AttestationCollectorTest is SynapseTest {

@@ -11,11 +11,11 @@ import "../../contracts/events/NotaryRegistryEvents.sol";
 import "../../contracts/events/OriginEvents.sol";
 import "../../contracts/events/OriginHubEvents.sol";
 // ============ Harness events ============
-import "../events/AttestationHubHarnessEvents.sol";
-import "../events/ClientHarnessEvents.sol";
-import "../events/DestinationHarnessEvents.sol";
-import "../events/ReportHubHarnessEvents.sol";
-import "../events/SystemContractHarnessEvents.sol";
+import "../harnesses/events/AttestationHubHarnessEvents.sol";
+import "../harnesses/events/ClientHarnessEvents.sol";
+import "../harnesses/events/DestinationHarnessEvents.sol";
+import "../harnesses/events/ReportHubHarnessEvents.sol";
+import "../harnesses/events/SystemContractHarnessEvents.sol";
 
 // solhint-disable-next-line no-empty-blocks
 abstract contract SynapseEvents is

@@ -8,10 +8,10 @@ import { Header } from "../contracts/libs/Header.sol";
 import { Tips } from "../contracts/libs/Tips.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
-import { OriginHarness } from "./harnesses/OriginHarness.sol";
-import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
-import { SystemRouterHarness } from "./harnesses/SystemRouterHarness.sol";
-import { ClientHarness } from "./harnesses/ClientHarness.sol";
+import { OriginHarness } from "./harnesses/OriginHarness.t.sol";
+import { DestinationHarness } from "./harnesses/DestinationHarness.t.sol";
+import { SystemRouterHarness } from "./harnesses/system/SystemRouterHarness.t.sol";
+import { ClientHarness } from "./harnesses/client/ClientHarness.t.sol";
 import { ProofGenerator } from "./utils/ProofGenerator.sol";
 
 // solhint-disable func-name-mixedcase
