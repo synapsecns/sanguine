@@ -36,7 +36,7 @@ func (b *BackfillSuite) TestBackfill() {
 	// Store every bridge event.
 	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
-	depositLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 0)
+	depositLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 2)
 	Nil(b.T(), err)
 	bridgeTx, err = bridgeRef.TestRedeem(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(int64(gofakeit.Uint32()))), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
@@ -48,7 +48,7 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	bridgeTx, err = bridgeRef.TestMint(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())})
 	Nil(b.T(), err)
-	mintLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 2)
+	mintLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 3)
 	Nil(b.T(), err)
 	bridgeTx, err = bridgeRef.TestDepositAndSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
