@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/services/explorer/config"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/backfill"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -32,6 +33,27 @@ func (b *BackfillSuite) TestBackfill() {
 	swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
 
 	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
+
+	// create the config
+	startBlocks := map[uint32]uint64{
+		uint32(testChainID.Uint64()): 0,
+	}
+	chainConfigs := []config.ChainConfig{
+		{
+			ChainID:                uint32(testChainID.Uint64()),
+			FetchBlockIncrement:    3,
+			StartBlocks:            startBlocks,
+			BridgeConfigV3Address:  b.bridgeConfigContract.Address().String(),
+			SynapseBridgeAddress:   bridgeContract.Address().String(),
+			SwapFlashLoanAddresses: []string{swapContractA.Address().String(), swapContractB.Address().String()},
+		},
+	}
+
+	explorerConfig := config.Config{
+		Chains:      chainConfigs,
+		RefreshRate: 2,
+		ScribeURL:   b.gqlClient.Client.BaseURL,
+	}
 
 	// Store every bridge event.
 	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
@@ -141,7 +163,8 @@ func (b *BackfillSuite) TestBackfill() {
 	chainBackfiller := backfill.NewChainBackfiller(uint32(testChainID.Uint64()), b.db, 3, bp, bridgeContract.Address(), spMap, *f, b.bridgeConfigContract.Address())
 
 	// backfill the blocks
-	err = chainBackfiller.Backfill(b.GetTestContext(), 0, 12)
+	// TODO: store the latest block number to query to in scribe db
+	err = chainBackfiller.Backfill(b.GetTestContext())
 	Nil(b.T(), err)
 	var count int64
 	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)

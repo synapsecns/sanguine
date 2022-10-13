@@ -1,4 +1,4 @@
-package consumerconfig
+package config
 
 import (
 	"context"
@@ -12,12 +12,14 @@ type ChainConfig struct {
 	ChainID uint32 `yaml:"chain_id"`
 	// FetchBlockIncrement is the number of blocks to fetch at a time.
 	FetchBlockIncrement uint32 `yaml:"fetch_block_increment"`
+	// StartBlocks is a mapping from chain ID -> start block for backfilling.
+	StartBlocks map[uint32]uint64 `yaml:"start_blocks"`
 	// BridgeConfigV3Address is the address of the BridgeConfigV3.sol contract
 	BridgeConfigV3Address string `yaml:"bridge_config_v3_address"`
 	// SynapseBridgeAddress is the address of the SynapseBridge.sol contract
 	SynapseBridgeAddress string `yaml:"synapse_bridge_address"`
 	// SwapFlashLoanAddresses are the addresses of the SwapFlashLoan.sol contracts
-	SwapFlashLoanAddress []string `yaml:"swap_flash_loan_address"`
+	SwapFlashLoanAddresses []string `yaml:"swap_flash_loan_address"`
 }
 
 // ChainConfigs contains an array fo ChainConfigs.

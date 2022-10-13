@@ -205,3 +205,13 @@ type SwapEvent struct {
 	// TimeStamp is the timestamp of the block in which the event occurred.
 	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
+
+// LastBlock stores the last block number that the explorer has backfilled to on each chain.
+type LastBlock struct {
+	// InsertTime is the time that the entry was stored
+	InsertTime uint64 `gorm:"column:insert_time"`
+	// ChainID is the chain id of the chain
+	ChainID uint32 `gorm:"column:chain_id"`
+	// BlockNumber is the last block number that the explorer has backfilled to
+	BlockNumber uint64 `gorm:"column:block_number"`
+}

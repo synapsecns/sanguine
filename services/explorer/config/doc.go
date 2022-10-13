@@ -1,2 +1,2 @@
-// Package consumerconfig contains the consumer config for the explorer service.
-package consumerconfig
+// Package config contains the consumer config for the explorer service.
+package config

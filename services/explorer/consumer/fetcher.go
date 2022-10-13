@@ -26,6 +26,15 @@ func NewFetcher(fetchClient *client.Client) *Fetcher {
 	}
 }
 
+// FetchLastBlock fetches the last block that Scribe has stored.
+func (f Fetcher) FetchLastBlock(ctx context.Context, chainID uint32) (uint64, error) {
+	getEndHeight, err := f.fetchClient.GetLastStoredBlockNumber(ctx, int(chainID))
+	if err != nil && getEndHeight == nil {
+		return 0, fmt.Errorf("could not get end height: %w", err)
+	}
+	return uint64(*getEndHeight.Response), nil
+}
+
 // FetchTxSender fetches the sender of a transaction.
 func (f Fetcher) FetchTxSender(ctx context.Context, chainID uint32, txHash string) (string, error) {
 	sender, err := f.fetchClient.GetTxSender(ctx, int(chainID), txHash)
