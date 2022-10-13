@@ -3,6 +3,7 @@ package forker
 import (
 	"bufio"
 	"context"
+	// embed is used for anvil binaries
 	_ "embed"
 	"fmt"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -11,6 +12,8 @@ import (
 	"golang.org/x/sync/errgroup"
 	"io"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"math"
+	"math/rand"
 	"os"
 	"os/exec"
 	"runtime"
@@ -18,13 +21,16 @@ import (
 	"time"
 )
 
-//go:embed anvilbin/anvil_darwin_bin
-var anvilDarwinBin []byte
+//go:embed anvilbin/anvil_darwin_amd64_bin
+var anvilDarwinAmd64Bin []byte
 
-//go:embed anvilbin/anvil_linux_bin
-var anvilLinuxBin []byte
+//go:embed anvilbin/anvil_darwin_arm64_bin
+var anvilDarwinArm64Bin []byte
 
-// TODO: add comment
+//go:embed anvilbin/anvil_linux_amd64_bin
+var anvilLinuxAmd64Bin []byte
+
+// Fork will fork the given evm blockchain for the purposes of testing.
 func Fork(ctx context.Context, rpcURL string, chainID uint64, clientFunc func(client *ethclient.Client)) error {
 	// TODO: embed binary/copy or figure out a way to download
 	processPort, err := freeport.GetFreePort()
@@ -35,22 +41,30 @@ func Fork(ctx context.Context, rpcURL string, chainID uint64, clientFunc func(cl
 	var filePayload []byte
 
 	osType := runtime.GOOS
-	switch osType {
-	case "darwin":
-		filePayload = anvilDarwinBin
-	case "linux":
-		filePayload = anvilLinuxBin
+	archType := runtime.GOARCH
+	osTypeWithArch := osType + "_" + archType
+	switch osTypeWithArch {
+	case "darwin_amd64":
+		filePayload = anvilDarwinAmd64Bin
+	case "darwin_arm64":
+		filePayload = anvilDarwinArm64Bin
+	case "linux_amd64":
+		filePayload = anvilLinuxAmd64Bin
 	default:
-		return fmt.Errorf("unsupported os %s", osType)
+		return fmt.Errorf("unsupported arch %s for os %s", archType, osType)
 	}
 
-	err = os.WriteFile("./anvil_embedded", filePayload, 0755)
+	now := time.Now().UnixNano()
+	rand.Seed(now)
+
+	embeddedFileName := "./anvil_embedded_" + strconv.FormatInt(time.Now().UnixNano(), 16) + "_" + strconv.FormatInt(int64(rand.Intn(math.MaxInt32)), 16)
+	err = os.WriteFile(embeddedFileName, filePayload, 0755) //nolint: gosec
 	if err != nil {
-		return fmt.Errorf("failed to write anvil_embedded: %w", err)
+		return fmt.Errorf("failed to write %s: %w", embeddedFileName, err)
 	}
-	defer os.Remove("./anvil_embedded")
+	defer os.Remove(embeddedFileName) //nolint: errcheck
 
-	cmd := exec.Command("./anvil_embedded", "--fork-url", rpcURL, "--chain-id", strconv.Itoa(int(chainID)), "--port", strconv.Itoa(processPort))
+	cmd := exec.Command(embeddedFileName, "--fork-url", rpcURL, "--chain-id", strconv.Itoa(int(chainID)), "--port", strconv.Itoa(processPort)) //nolint: gosec
 	cmd.Env = os.Environ()
 
 	stderr, err := cmd.StderrPipe()
@@ -81,7 +95,7 @@ func Fork(ctx context.Context, rpcURL string, chainID uint64, clientFunc func(cl
 	})
 
 	g.Go(func() error {
-		defer cmd.Process.Kill()
+		defer cmd.Process.Kill() //nolint: errcheck
 		startupCtx, cancel := context.WithCancel(ctx)
 		defer cancel()
 
