@@ -118,6 +118,8 @@ jobs:
         with:
           fetch-depth: 0
           submodules: 'recursive'
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
 
       # For pull requests it's not necessary to checkout the code
       - uses: dorny/paths-filter@v2
