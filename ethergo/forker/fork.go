@@ -21,8 +21,6 @@ import (
 	"time"
 )
 
-// delete me
-//
 //go:embed anvilbin/anvil_darwin_amd64_bin
 var anvilDarwinAmd64Bin []byte
 
