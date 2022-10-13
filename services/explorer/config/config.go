@@ -1,4 +1,4 @@
-package config
+package consumerconfig
 
 import (
 	"context"
@@ -10,37 +10,35 @@ import (
 	"path/filepath"
 )
 
-// Config holds the config for the explorer.
+// Config is used to configure the explorer's data consumption.
 type Config struct {
-	// SynapseBridgeAddress is the address of the SynapseBridge.sol contract
-	SynapseBridgeAddress string `yaml:"synapse_bridge_address"`
-	// BridgeConfigV3Address is the address of the BridgeConfigV3.sol contract
-	BridgeConfigV3Address string `yaml:"bridge_config_v3_address"`
-	// SwapFlashLoanAddress is the address of the SwapFlashLoan.sol contract
-	SwapFlashLoanAddress string `yaml:"swap_flash_loan_address"`
+	// Chains stores the chain configurations.
+	Chains ChainConfigs `yaml:"chains"`
+	// RefreshRate is the rate at which the explorer will refresh the last block height in seconds.
+	RefreshRate uint `yaml:"refresh_rate"`
 }
 
-// IsValid makes sure the config is valid. This is done by calling IsValid() on each
+// IsValid makes sure the addressconfig is valid. This is done by calling IsValid() on each
 // submodule. If any method returns an error that is returned here and the entirety
 // of IsValid returns false. Any warnings are logged by the submodules respective loggers.
-// TODO: add more checks.
 func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
-	if c.SynapseBridgeAddress != c.BridgeConfigV3Address && c.SynapseBridgeAddress != c.SwapFlashLoanAddress {
-		return true, nil
+	if ok, err = c.Chains.IsValid(ctx); !ok {
+		return false, err
 	}
-	return false, err
+
+	return true, nil
 }
 
-// Encode gets the encoded config.toml file.
+// Encode gets the encoded addressconfig.toml file.
 func (c Config) Encode() ([]byte, error) {
 	output, err := yaml.Marshal(&c)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(spew.Sdump(c), 20), err)
+		return nil, fmt.Errorf("could not unmarshall addressconfig %s: %w", ellipsis.Shorten(spew.Sdump(c), 20), err)
 	}
 	return output, nil
 }
 
-// DecodeConfig parses in a config from a file.
+// DecodeConfig parses in a addressconfig from a file.
 func DecodeConfig(filePath string) (cfg Config, err error) {
 	input, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
@@ -48,7 +46,7 @@ func DecodeConfig(filePath string) (cfg Config, err error) {
 	}
 	err = yaml.Unmarshal(input, &cfg)
 	if err != nil {
-		return Config{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
+		return Config{}, fmt.Errorf("could not unmarshall addressconfig %s: %w", ellipsis.Shorten(string(input), 30), err)
 	}
 	return cfg, nil
 }
