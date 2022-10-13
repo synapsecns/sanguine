@@ -118,6 +118,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) 
 				}
 				eventParser = c.swapParsers[log.Address]
 			}
+
 			err := eventParser.ParseAndStore(groupCtx, log, c.chainID)
 			if err != nil {
 				return fmt.Errorf("could not parse and store log: %w", err)

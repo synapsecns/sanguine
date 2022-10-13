@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/backfill"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -16,6 +17,13 @@ import (
 	"math/big"
 )
 
+func arrayToTokenIndexMap(input []*big.Int) map[uint8]string {
+	output := map[uint8]string{}
+	for i := range input {
+		output[uint8(i)] = input[i].String()
+	}
+	return output
+}
 func (b *BackfillSuite) TestBackfill() {
 	testChainID := b.testBackend.GetBigChainID()
 	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
@@ -28,7 +36,7 @@ func (b *BackfillSuite) TestBackfill() {
 	// Store every bridge event.
 	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
-	depositLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 0)
+	depositLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 2)
 	Nil(b.T(), err)
 	bridgeTx, err = bridgeRef.TestRedeem(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(int64(gofakeit.Uint32()))), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
@@ -40,7 +48,7 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	bridgeTx, err = bridgeRef.TestMint(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())})
 	Nil(b.T(), err)
-	mintLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 2)
+	mintLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 3)
 	Nil(b.T(), err)
 	bridgeTx, err = bridgeRef.TestDepositAndSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
@@ -112,11 +120,19 @@ func (b *BackfillSuite) TestBackfill() {
 	// set up a ChainBackfiller
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
 	Nil(b.T(), err)
-	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf)
+	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf, b.consumerFetcher)
 	Nil(b.T(), err)
-	spA, err := consumer.NewSwapParser(b.db, swapContractA.Address())
+
+	// srB is the swap ref for getting token data
+	srA, err := consumer.NewSwapFetcher(swapContractA.Address(), b.testBackend)
 	Nil(b.T(), err)
-	spB, err := consumer.NewSwapParser(b.db, swapContractB.Address())
+	spA, err := consumer.NewSwapParser(b.db, swapContractA.Address(), *srA, b.consumerFetcher)
+	Nil(b.T(), err)
+
+	// srB is the swap ref for getting token data
+	srB, err := consumer.NewSwapFetcher(swapContractB.Address(), b.testBackend)
+	Nil(b.T(), err)
+	spB, err := consumer.NewSwapParser(b.db, swapContractB.Address(), *srB, b.consumerFetcher)
 	Nil(b.T(), err)
 	spMap := map[common.Address]*consumer.SwapParser{}
 	spMap[swapContractA.Address()] = spA
@@ -128,10 +144,10 @@ func (b *BackfillSuite) TestBackfill() {
 	err = chainBackfiller.Backfill(b.GetTestContext(), 0, 12)
 	Nil(b.T(), err)
 	var count int64
-	bridgeEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
+	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
 	Nil(b.T(), bridgeEvents.Error)
 	Equal(b.T(), int64(10), count)
-	swapEvents := b.db.DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
+	swapEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
 	Nil(b.T(), swapEvents.Error)
 	Equal(b.T(), int64(10), count)
 
@@ -194,7 +210,7 @@ func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, bloc
 	return receipt.Logs[0], nil
 }
 
-//nolint:dupl
+// nolint:dupl
 func (b *BackfillSuite) depositParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenDeposit(*log)
@@ -207,7 +223,7 @@ func (b *BackfillSuite) depositParity(log *types.Log, parser *consumer.BridgePar
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -239,7 +255,7 @@ func (b *BackfillSuite) redeemParity(log *types.Log, parser *consumer.BridgePars
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -275,7 +291,7 @@ func (b *BackfillSuite) withdrawParity(log *types.Log, parser *consumer.BridgePa
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -312,7 +328,7 @@ func (b *BackfillSuite) mintParity(log *types.Log, parser *consumer.BridgeParser
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -345,7 +361,7 @@ func (b *BackfillSuite) depositAndSwapParity(log *types.Log, parser *consumer.Br
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -380,7 +396,7 @@ func (b *BackfillSuite) redeemAndSwapParity(log *types.Log, parser *consumer.Bri
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -415,7 +431,7 @@ func (b *BackfillSuite) redeemAndRemoveParity(log *types.Log, parser *consumer.B
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -453,7 +469,7 @@ func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.Bridg
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -469,7 +485,7 @@ func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.Bridg
 			TokenIndexTo:   big.NewInt(int64(parsedLog.TokenIndexTo)),
 			MinDy:          parsedLog.MinDy,
 			Deadline:       parsedLog.Deadline,
-			SwapSuccess:    big.NewInt(int64(*sql.BoolToUint8(&parsedLog.SwapSuccess))),
+			SwapSuccess:    big.NewInt(int64(*consumer.BoolToUint8(&parsedLog.SwapSuccess))),
 			Kappa:          kappa,
 		}).Count(&count)
 	if events.Error != nil {
@@ -495,7 +511,7 @@ func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer
 		Valid:  true,
 	}
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -509,7 +525,7 @@ func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer
 			SwapTokenIndex: big.NewInt(int64(parsedLog.SwapTokenIndex)),
 			SwapMinAmount:  parsedLog.SwapMinAmount,
 			SwapDeadline:   parsedLog.SwapDeadline,
-			SwapSuccess:    big.NewInt(int64(*sql.BoolToUint8(&parsedLog.SwapSuccess))),
+			SwapSuccess:    big.NewInt(int64(*consumer.BoolToUint8(&parsedLog.SwapSuccess))),
 			Kappa:          kappa,
 		}).Count(&count)
 	if events.Error != nil {
@@ -532,7 +548,7 @@ func (b *BackfillSuite) redeemV2Parity(log *types.Log, parser *consumer.BridgePa
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -555,6 +571,7 @@ func (b *BackfillSuite) redeemV2Parity(log *types.Log, parser *consumer.BridgePa
 //nolint:dupl
 func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
 	// parse the log
+
 	parsedLog, err := parser.Filterer.ParseTokenSwap(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
@@ -565,7 +582,7 @@ func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, 
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -599,7 +616,7 @@ func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.Swap
 	}
 	var storedLog sql.SwapEvent
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -617,8 +634,8 @@ func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.Swap
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
-	Equal(b.T(), parsedLog.TokenAmounts, storedLog.TokenAmounts)
-	Equal(b.T(), parsedLog.Fees, storedLog.Fees)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.TokenAmounts), storedLog.Amount)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.Fees), storedLog.AmountFee)
 	return nil
 }
 
@@ -633,9 +650,12 @@ func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *consumer.S
 		String: parsedLog.Provider.String(),
 		Valid:  true,
 	}
+
+	arrayToTokenIndexMap(parsedLog.TokenAmounts)
+
 	var storedLog sql.SwapEvent
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -652,7 +672,7 @@ func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *consumer.S
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
-	Equal(b.T(), parsedLog.TokenAmounts, storedLog.TokenAmounts)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.TokenAmounts), storedLog.Amount)
 	return nil
 }
 
@@ -669,7 +689,7 @@ func (b *BackfillSuite) removeLiquidityOneParity(log *types.Log, parser *consume
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -703,7 +723,7 @@ func (b *BackfillSuite) removeLiquidityImbalanceParity(log *types.Log, parser *c
 	}
 	var storedLog sql.SwapEvent
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -721,8 +741,8 @@ func (b *BackfillSuite) removeLiquidityImbalanceParity(log *types.Log, parser *c
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
-	Equal(b.T(), parsedLog.TokenAmounts, storedLog.TokenAmounts)
-	Equal(b.T(), parsedLog.Fees, storedLog.Fees)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.TokenAmounts), storedLog.Amount)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.Fees), storedLog.AmountFee)
 	return nil
 }
 
@@ -735,7 +755,7 @@ func (b *BackfillSuite) newAdminFeeParity(log *types.Log, parser *consumer.SwapP
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -761,7 +781,7 @@ func (b *BackfillSuite) newSwapFeeParity(log *types.Log, parser *consumer.SwapPa
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -787,7 +807,7 @@ func (b *BackfillSuite) rampAParity(log *types.Log, parser *consumer.SwapParser,
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -816,7 +836,7 @@ func (b *BackfillSuite) stopRampAParity(log *types.Log, parser *consumer.SwapPar
 	}
 
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -846,8 +866,11 @@ func (b *BackfillSuite) flashLoanParity(log *types.Log, parser *consumer.SwapPar
 		String: parsedLog.Receiver.String(),
 		Valid:  true,
 	}
+	amountArray := map[uint8]string{parsedLog.TokenIndex: core.CopyBigInt(parsedLog.Amount).String()}
+	feeArray := map[uint8]string{parsedLog.TokenIndex: core.CopyBigInt(parsedLog.AmountFee).String()}
+	var storedLog sql.SwapEvent
 	var count int64
-	events := b.db.DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
 		Where(&sql.SwapEvent{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
@@ -856,14 +879,14 @@ func (b *BackfillSuite) flashLoanParity(log *types.Log, parser *consumer.SwapPar
 			TxHash:          log.TxHash.String(),
 
 			Receiver:    receiver,
-			TokenIndex:  big.NewInt(int64(parsedLog.TokenIndex)),
-			Amount:      parsedLog.Amount,
-			AmountFee:   parsedLog.AmountFee,
 			ProtocolFee: parsedLog.ProtocolFee,
-		}).Count(&count)
+		}).
+		Find(&storedLog).Count(&count)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
+	Equal(b.T(), amountArray, storedLog.Amount)
+	Equal(b.T(), feeArray, storedLog.AmountFee)
 	return nil
 }

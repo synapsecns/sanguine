@@ -31,23 +31,71 @@ func (c *ConsumerSuite) TestFetchLogsInRange() {
 	Equal(c.T(), 5, len(logs))
 }
 
+func (c *ConsumerSuite) TestNewSwapFetcher() {
+	swapContract, _ := c.testDeployManager.GetTestSwapFlashLoan(c.GetTestContext(), c.testBackend)
+	fetcher, err := consumer.NewSwapFetcher(swapContract.Address(), c.testBackend)
+
+	Nil(c.T(), err)
+	NotNil(c.T(), fetcher)
+}
+
 func (c *ConsumerSuite) TestToken() {
 	defer c.cleanup()
 	fetcher, err := consumer.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.testBackend)
 	Nil(c.T(), err)
-	curentBlockNumber, err := c.testBackend.BlockNumber(c.GetTestContext())
+	currentBlockNumber, err := c.testBackend.BlockNumber(c.GetTestContext())
 	Nil(c.T(), err)
-
 	for _, testToken := range testTokens {
 		tokenID, err := fetcher.GetTokenID(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), common.HexToAddress(testToken.TokenAddress))
 
 		Nil(c.T(), err)
 		Equal(c.T(), *tokenID, testToken.tokenID)
-		token, err := fetcher.GetToken(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), uint32(curentBlockNumber), *tokenID)
+		token, err := fetcher.GetToken(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), tokenID, uint32(currentBlockNumber))
 		Nil(c.T(), err)
 		tokenOut := *token
 		Equal(c.T(), common.HexToAddress(testToken.TokenAddress).String(), common.HexToAddress(tokenOut.TokenAddress).String())
 		Equal(c.T(), testToken.SwapFee, token.SwapFee)
 		Equal(c.T(), testToken.IsUnderlying, token.IsUnderlying)
 	}
+}
+
+func (c *ConsumerSuite) TestTimeToBlockNumber() {
+	defer c.cleanup()
+	fetcher := consumer.NewFetcher(c.gqlClient)
+	chainID := gofakeit.Uint32()
+
+	baseTime := uint64(0)
+
+	// Store 10 block numbers and block times.
+	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
+		err := c.eventDB.StoreBlockTime(c.GetTestContext(), chainID, blockNumber, baseTime)
+		Nil(c.T(), err)
+		baseTime += uint64(gofakeit.Uint32())
+	}
+
+	targetTime := uint64(gofakeit.Uint32() * 5)
+
+	blockNumber, err := fetcher.TimeToBlockNumber(c.GetTestContext(), chainID, 1, targetTime)
+	Nil(c.T(), err)
+
+	// Find the block number that is closest to the target time.
+	var closestBlockNumber uint64
+	closestBlockTime := ^uint64(0)
+	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
+		blockTime, err := c.eventDB.RetrieveBlockTime(c.GetTestContext(), chainID, blockNumber)
+		Nil(c.T(), err)
+		timeDiff := abs(int64(blockTime) - int64(targetTime))
+		if closestBlockTime > timeDiff {
+			closestBlockTime = timeDiff
+			closestBlockNumber = blockNumber
+		}
+	}
+	Equal(c.T(), closestBlockNumber, blockNumber)
+}
+
+func abs(a int64) uint64 {
+	if a < 0 {
+		return uint64(-a)
+	}
+	return uint64(a)
 }

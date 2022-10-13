@@ -6,7 +6,9 @@ package graph
 import (
 	"context"
 	"fmt"
+	"math/big"
 
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
 	resolvers "github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/resolver"
@@ -81,11 +83,49 @@ func (r *queryResolver) TransactionsRange(ctx context.Context, txHash *string, c
 // BlockTime is the resolver for the blockTime field.
 func (r *queryResolver) BlockTime(ctx context.Context, chainID int, blockNumber int) (*int, error) {
 	blockTime, err := r.DB.RetrieveBlockTime(ctx, uint32(chainID), uint64(blockNumber))
-	blockTimeInt := int(blockTime)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving block time: %w", err)
 	}
+	blockTimeInt := int(blockTime)
 	return &blockTimeInt, nil
+}
+
+// LastStoredBlockNumber is the resolver for the lastStoredBlockNumber field.
+func (r *queryResolver) LastStoredBlockNumber(ctx context.Context, chainID int) (*int, error) {
+	blockNumber, err := r.DB.RetrieveLastBlockStored(ctx, uint32(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving last block: %w", err)
+	}
+	blockNumberInt := int(blockNumber)
+	return &blockNumberInt, nil
+}
+
+// FirstStoredBlockNumber is the resolver for the firstStoredBlockNumber field.
+func (r *queryResolver) FirstStoredBlockNumber(ctx context.Context, chainID int) (*int, error) {
+	blockNumber, err := r.DB.RetrieveFirstBlockStored(ctx, uint32(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving first block: %w", err)
+	}
+	blockNumberInt := int(blockNumber)
+	return &blockNumberInt, nil
+}
+
+// TxSender is the resolver for the txSender field.
+func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int) (*string, error) {
+	filter := db.EthTxFilter{
+		TxHash:  txHash,
+		ChainID: uint32(chainID),
+	}
+	ethTx, err := r.DB.RetrieveEthTxsWithFilter(ctx, filter, 1)
+	if err != nil || len(ethTx) == 0 {
+		return nil, fmt.Errorf("error retrieving transaction: %w", err)
+	}
+	msgFrom, err := ethTx[0].AsMessage(types.NewEIP2930Signer(ethTx[0].ChainId()), big.NewInt(1))
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving ethtx: %w", err)
+	}
+	sender := msgFrom.From().String()
+	return &sender, nil
 }
 
 // Query returns resolvers.QueryResolver implementation.

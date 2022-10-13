@@ -4,6 +4,7 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/urfave/cli/v2"
 )
@@ -20,7 +21,11 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	app.EnableBashCompletion = true
 
 	// commands
-	app.Commands = cli.Commands{infoCommand}
+	// TODO: add backfill command
+	app.Commands = cli.Commands{infoCommand, serverCommand}
+	shellCommand := commandline.GenerateShellCommand(app.Commands)
+	app.Commands = append(app.Commands, shellCommand)
+	app.Action = shellCommand.Action
 
 	err := app.Run(args)
 	if err != nil {

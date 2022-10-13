@@ -21,7 +21,7 @@ type Store struct {
 func NewSqliteStore(ctx context.Context, dbPath string) (*Store, error) {
 	logger.Debugf("creating sqlite store at %s", dbPath)
 
-	// creat the directory to the store if it doesn't exist
+	// create the directory to the store if it doesn't exist
 	err := os.MkdirAll(dbPath, os.ModePerm)
 	if err != nil {
 		return nil, fmt.Errorf("could not create sqlite store")

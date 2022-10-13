@@ -34,19 +34,16 @@ func (s SwapFlashLoanFlashLoan) GetEventType() swap.EventType {
 	return swap.FlashLoanEvent
 }
 
-// GetTokenIndex gets the token index.
-func (s SwapFlashLoanFlashLoan) GetTokenIndex() *uint8 {
-	return &s.TokenIndex
-}
-
-// GetAmount gets the amount.
-func (s SwapFlashLoanFlashLoan) GetAmount() *big.Int {
-	return core.CopyBigInt(s.Amount)
+// GetAmount puts the amount in a map with it's associated token index.
+func (s SwapFlashLoanFlashLoan) GetAmount() map[uint8]string {
+	output := map[uint8]string{s.TokenIndex: core.CopyBigInt(s.Amount).String()}
+	return output
 }
 
 // GetAmountFee gets the amount fee.
-func (s SwapFlashLoanFlashLoan) GetAmountFee() *big.Int {
-	return core.CopyBigInt(s.AmountFee)
+func (s SwapFlashLoanFlashLoan) GetAmountFee() map[uint8]string {
+	output := map[uint8]string{s.TokenIndex: core.CopyBigInt(s.AmountFee).String()}
+	return output
 }
 
 // GetProtocolFee gets the protocol fee.
@@ -61,16 +58,6 @@ func (s SwapFlashLoanFlashLoan) GetLPTokenAmount() *big.Int {
 
 // GetProvider gets the provider removing liquidity.
 func (s SwapFlashLoanFlashLoan) GetProvider() *common.Address {
-	return nil
-}
-
-// GetTokenAmounts gets the amount of tokens.
-func (s SwapFlashLoanFlashLoan) GetTokenAmounts() []*big.Int {
-	return nil
-}
-
-// GetFees gets the fees for each token.
-func (s SwapFlashLoanFlashLoan) GetFees() []*big.Int {
 	return nil
 }
 

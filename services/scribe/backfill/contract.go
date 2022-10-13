@@ -153,7 +153,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		if isPending {
 			return fmt.Errorf("transaction is pending")
 		}
-		err = c.eventDB.StoreEthTx(groupCtx, txn, c.chainID, log.BlockHash, log.BlockNumber)
+		err = c.eventDB.StoreEthTx(groupCtx, txn, c.chainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
 		if err != nil {
 			return fmt.Errorf("could not store transaction: %w", err)
 		}

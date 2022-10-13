@@ -85,8 +85,9 @@ func (s Store) ConfirmLogsInRange(ctx context.Context, startBlock, endBlock uint
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
-		Order(BlockNumberFieldName).
+		Order(BlockNumberFieldName+" desc").
 		Where(rangeQuery, startBlock, endBlock).
+		Where(&Log{ChainID: chainID}).
 		Update(ConfirmedFieldName, true)
 
 	if dbTx.Error != nil {
@@ -134,7 +135,7 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
 		Where(&query).
-		Order(fmt.Sprintf("%s, %s", BlockNumberFieldName, BlockIndexFieldName)).
+		Order(fmt.Sprintf("%s desc, %s desc", BlockNumberFieldName, BlockIndexFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbLogs)
@@ -161,7 +162,7 @@ func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, 
 		Model(&Log{}).
 		Where(&queryFilter).
 		Where(rangeQuery, startBlock, endBlock).
-		Order(fmt.Sprintf("%s, %s", BlockNumberFieldName, BlockIndexFieldName)).
+		Order(fmt.Sprintf("%s desc, %s desc", BlockNumberFieldName, BlockIndexFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbLogs)

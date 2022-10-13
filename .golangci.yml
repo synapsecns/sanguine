@@ -8,6 +8,7 @@ run:
   skip-files:
     - '.*\\.abigen\\.go$'
     - '.*\\.metadata\\.go$'
+    - '.*\\.pb\\.go$'
 
 
 linters-settings:
@@ -118,4 +119,8 @@ issues:
       linters:
         - staticcheck
       text: 'SA1019'
+    - path: \.resolvers\.go
+      linters:
+        - cyclop
+
   exclude-use-default: false

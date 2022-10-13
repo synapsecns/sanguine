@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
+	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	"go.uber.org/atomic"
 	"math/big"
@@ -30,6 +31,7 @@ type ConsumerSuite struct {
 	cleanup              func()
 	testBackend          backends.SimulatedTestBackend
 	deployManager        *testutil.DeployManager
+	testDeployManager    *testcontracts.DeployManager
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
 }
 
@@ -80,7 +82,7 @@ func (c *ConsumerSuite) SetupTest() {
 
 	var deployInfo contracts.DeployedContract
 	deployInfo, c.bridgeConfigContract = c.deployManager.GetBridgeConfigV3(c.GetTestContext(), c.testBackend)
-
+	c.testDeployManager = testcontracts.NewDeployManager(c.T())
 	for _, token := range testTokens {
 		auth := c.testBackend.GetTxContext(c.GetTestContext(), deployInfo.OwnerPtr())
 		tx, err := token.SetTokenConfig(c.bridgeConfigContract, auth)

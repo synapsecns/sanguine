@@ -44,18 +44,13 @@ func (s SwapFlashLoanNewAdminFee) GetSoldId() *big.Int {
 	return nil
 }
 
-// GetTokenIndex gets the Token index.
-func (s SwapFlashLoanNewAdminFee) GetTokenIndex() *uint8 {
+// GetAmount gets the amount(s).
+func (s SwapFlashLoanNewAdminFee) GetAmount() map[uint8]string {
 	return nil
 }
 
-// GetAmount gets the amount.
-func (s SwapFlashLoanNewAdminFee) GetAmount() *big.Int {
-	return nil
-}
-
-// GetAmountFee gets the amount.
-func (s SwapFlashLoanNewAdminFee) GetAmountFee() *big.Int {
+// GetAmountFee gets the fee amount(s).
+func (s SwapFlashLoanNewAdminFee) GetAmountFee() map[uint8]string {
 	return nil
 }
 
@@ -124,16 +119,6 @@ func (s SwapFlashLoanNewAdminFee) GetProvider() *common.Address {
 	return nil
 }
 
-// GetTokenAmounts gets the amount of tokens.
-func (s SwapFlashLoanNewAdminFee) GetTokenAmounts() []*big.Int {
-	return nil
-}
-
-// GetFees gets the gets fees.
-func (s SwapFlashLoanNewAdminFee) GetFees() []*big.Int {
-	return nil
-}
-
 // GetInvariant gets the invariant of the swap.
 func (s SwapFlashLoanNewAdminFee) GetInvariant() *big.Int {
 	return nil
@@ -195,18 +180,13 @@ func (s SwapFlashLoanNewSwapFee) GetSoldId() *big.Int {
 	return nil
 }
 
-// GetTokenIndex gets the Token index.
-func (s SwapFlashLoanNewSwapFee) GetTokenIndex() *uint8 {
-	return nil
-}
-
 // GetAmount gets the amount.
-func (s SwapFlashLoanNewSwapFee) GetAmount() *big.Int {
+func (s SwapFlashLoanNewSwapFee) GetAmount() map[uint8]string {
 	return nil
 }
 
 // GetAmountFee gets the amount.
-func (s SwapFlashLoanNewSwapFee) GetAmountFee() *big.Int {
+func (s SwapFlashLoanNewSwapFee) GetAmountFee() map[uint8]string {
 	return nil
 }
 
@@ -277,16 +257,6 @@ func (s SwapFlashLoanNewSwapFee) GetTokensBought() *big.Int {
 
 // GetProvider gets the Provider of the swap.
 func (s SwapFlashLoanNewSwapFee) GetProvider() *common.Address {
-	return nil
-}
-
-// GetTokenAmounts gets the amount of tokens.
-func (s SwapFlashLoanNewSwapFee) GetTokenAmounts() []*big.Int {
-	return nil
-}
-
-// GetFees gets the gets fees.
-func (s SwapFlashLoanNewSwapFee) GetFees() []*big.Int {
 	return nil
 }
 
