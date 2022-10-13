@@ -2,10 +2,10 @@
 
 pragma solidity 0.8.17;
 
-import { Client } from "../../../contracts/client/Client.sol";
-import { ClientHarnessEvents } from "../events/ClientHarnessEvents.sol";
+import { BasicClient } from "../../../contracts/client/BasicClient.sol";
+import { BasicClientHarnessEvents } from "../events/BasicClientHarnessEvents.sol";
 
-contract ClientHarness is ClientHarnessEvents, Client {
+contract BasicClientHarness is BasicClientHarnessEvents, BasicClient {
     uint32 internal optimisticPeriod;
 
     // solhint-disable-next-line no-empty-blocks
@@ -13,7 +13,7 @@ contract ClientHarness is ClientHarnessEvents, Client {
         address _origin,
         address _destination,
         uint32 _optimisticPeriod
-    ) Client(_origin, _destination) {
+    ) BasicClient(_origin, _destination) {
         optimisticPeriod = _optimisticPeriod;
     }
 
@@ -22,10 +22,10 @@ contract ClientHarness is ClientHarnessEvents, Client {
         bytes memory _tips,
         bytes memory _message
     ) public payable {
-        _send(_destination, _tips, _message);
+        _send(_destination, optimisticSeconds(), _tips, _message);
     }
 
-    function optimisticSeconds() public view override returns (uint32) {
+    function optimisticSeconds() public view returns (uint32) {
         return optimisticPeriod;
     }
 
@@ -34,11 +34,12 @@ contract ClientHarness is ClientHarnessEvents, Client {
         // bytes32(0) for _destination == 0
     }
 
-    function _handle(
+    function _handleUnsafe(
         uint32 _origin,
         uint32 _nonce,
+        uint256 _rootSubmittedAt,
         bytes memory _message
     ) internal override {
-        emit LogClientMessage(_origin, _nonce, _message);
+        emit LogBasicClientMessage(_origin, _nonce, _rootSubmittedAt, _message);
     }
 }

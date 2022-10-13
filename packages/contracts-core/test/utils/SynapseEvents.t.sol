@@ -12,6 +12,7 @@ import "../../contracts/events/OriginEvents.sol";
 import "../../contracts/events/OriginHubEvents.sol";
 // ============ Harness events ============
 import "../harnesses/events/AttestationHubHarnessEvents.sol";
+import "../harnesses/events/BasicClientHarnessEvents.sol";
 import "../harnesses/events/ClientHarnessEvents.sol";
 import "../harnesses/events/DestinationHarnessEvents.sol";
 import "../harnesses/events/ReportHubHarnessEvents.sol";
@@ -28,6 +29,7 @@ abstract contract SynapseEvents is
     OriginEvents,
     OriginHubEvents,
     AttestationHubHarnessEvents,
+    BasicClientHarnessEvents,
     ClientHarnessEvents,
     DestinationHarnessEvents,
     ReportHubHarnessEvents,
