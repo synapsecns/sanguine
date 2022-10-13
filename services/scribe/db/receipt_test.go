@@ -117,7 +117,7 @@ func (t *DBSuite) TestConfirmReceiptsInRange() {
 		chainID := gofakeit.Uint32()
 
 		// Store five receipts.
-		for i := 0; i < 5; i++ {
+		for i := 4; i >= 0; i-- {
 			receipt := t.MakeRandomReceipt(common.BigToHash(big.NewInt(gofakeit.Int64())))
 			receipt.BlockNumber = big.NewInt(int64(i))
 			err := testDB.StoreReceipt(t.GetTestContext(), receipt, chainID)
@@ -136,8 +136,8 @@ func (t *DBSuite) TestConfirmReceiptsInRange() {
 		retrievedReceipts, err := testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), receiptFilter, 1)
 		Nil(t.T(), err)
 		Equal(t.T(), 2, len(retrievedReceipts))
-		Equal(t.T(), retrievedReceipts[0].BlockNumber, big.NewInt(0))
-		Equal(t.T(), retrievedReceipts[1].BlockNumber, big.NewInt(1))
+		Equal(t.T(), retrievedReceipts[0].BlockNumber, big.NewInt(1))
+		Equal(t.T(), retrievedReceipts[1].BlockNumber, big.NewInt(0))
 	})
 }
 
