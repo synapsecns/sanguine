@@ -13,7 +13,7 @@ import (
 )
 
 // StoreEthTx stores a processed text.
-func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64) error {
+func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error {
 	marshalledTx, err := tx.MarshalBinary()
 	if err != nil {
 		return fmt.Errorf("could not marshall tx to binary: %w", err)
@@ -25,14 +25,15 @@ func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID ui
 			DoNothing: true,
 		}).
 		Create(&EthTx{
-			TxHash:      tx.Hash().String(),
-			ChainID:     chainID,
-			BlockHash:   blockHash.String(),
-			BlockNumber: blockNumber,
-			RawTx:       marshalledTx,
-			GasFeeCap:   tx.GasFeeCap().Uint64(),
-			GasTipCap:   tx.GasTipCap().Uint64(),
-			Confirmed:   false,
+			TxHash:           tx.Hash().String(),
+			ChainID:          chainID,
+			BlockHash:        blockHash.String(),
+			BlockNumber:      blockNumber,
+			RawTx:            marshalledTx,
+			GasFeeCap:        tx.GasFeeCap().Uint64(),
+			GasTipCap:        tx.GasTipCap().Uint64(),
+			Confirmed:        false,
+			TransactionIndex: transactionIndex,
 		})
 
 	if dbTx.Error != nil {
@@ -64,7 +65,7 @@ func (s Store) ConfirmEthTxsInRange(ctx context.Context, startBlock, endBlock ui
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&EthTx{}).
-		Order(BlockNumberFieldName).
+		Order(BlockNumberFieldName+" desc").
 		Where(rangeQuery, startBlock, endBlock).
 		Update(ConfirmedFieldName, true)
 
@@ -113,7 +114,7 @@ func (s Store) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthT
 	dbTx := s.DB().WithContext(ctx).
 		Model(&EthTx{}).
 		Where(&query).
-		Order(BlockNumberFieldName).
+		Order(fmt.Sprintf("%s desc, %s desc", BlockNumberFieldName, TransactionIndexFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbEthTxs)
@@ -145,7 +146,7 @@ func (s Store) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFi
 		Model(&EthTx{}).
 		Where(&query).
 		Where(rangeQuery, startBlock, endBlock).
-		Order(BlockNumberFieldName).
+		Order(fmt.Sprintf("%s desc, %s desc", BlockNumberFieldName, TransactionIndexFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbEthTxs)

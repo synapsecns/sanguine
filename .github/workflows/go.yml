@@ -6,104 +6,6 @@ on:
       - 'gh-pages'
 
 jobs:
-  test:
-    name: Go Coverage
-    runs-on: ${{ matrix.platform }}
-    strategy:
-      matrix:
-        go-version:
-          - 1.19.x
-        platform:
-          - ubuntu-latest
-    services:
-      mariadb:
-        image: mariadb:latest
-        ports:
-          - 3306
-        env:
-          MYSQL_USER: user
-          MYSQL_PASSWORD: password
-          MYSQL_DATABASE: test
-          MYSQL_ROOT_PASSWORD: password
-        options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          submodules: 'recursive'
-
-      # todo: consider making this a service. You'd need another way to expose the private keys for the test
-      - name: Run rinkeby
-        run: docker run -p 8045:8545 -d -v /tmp/keys/:/tmp/keys/  --name rinkeby --restart always trufflesuite/ganache-cli ganache-cli --accounts 10 --account_keys_path /tmp/keys/rinkeby --chainId 4 # --fork https://rinkeby-light.eth.linkpool.io (no need to actually fork)
-
-      - name: Go modules cache
-        uses: actions/cache@v2
-        with:
-          # see https://github.com/mvdan/github-actions-golang
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-            ~/Library/Caches/go-build
-            %LocalAppData%\go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ matrix.go-version }}
-
-      - name: Verify MariaDB connection
-        env:
-          PORT: ${{ job.services.mariadb.ports[3306] }}
-        run: |
-          while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
-          sleep 1
-          done
-
-      - name: Test
-        uses: nick-fields/retry@v2
-        with:
-          command: go test $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')  -coverprofile=profile.cov
-          max_attempts: 6
-          timeout_minutes: 15
-        env:
-          ENABLE_MYSQL_TEST: true
-          MYSQL_HOST: 0.0.0.0
-          MYSQL_USER: user
-          MYSQL_PASSWORD: password
-          MYSQL_DATABASE: test
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
-          GOMAXPROCS: 18
-          GANACHE_KEYS: /tmp/keys/rinkeby
-          GANACHE_RPC_URL: http://0.0.0.0:8045
-
-      - name: Generate ignore list
-        # generate a list of files to ignore on goveralls
-        run: |
-          echo "IGNORED=$(find . \( -name "*_generated.go" -o -name "*.abigen.go"  -o -name "*_string.go"   \) -print0 | xargs -0 ls | sed 's/.\/*//' | tr '\n' ',' |  sed 's/,*\r*$//')" >> $GITHUB_ENV
-
-      - uses: codecov/codecov-action@v3
-        name: Send Coverage (Codecov)
-        with:
-          token: ${{ secrets.CODECOV }}
-          files: profile.cov
-          fail_ci_if_error: true # optional (default = false)
-          verbose: true # optional (default = false)
-
-      # We customize the build step because by default
-      # We can not use ** because goveralls uses filepath.Match
-      # to match ignore files and it does not support it.
-      - name: Send coverage (Coveralls)
-        uses: shogo82148/actions-goveralls@v1
-        with:
-          github-token: ${{ secrets.github_token }}
-          path-to-profile: profile.cov
-          ignore: ${{ env.IGNORED }}
-          flag-name: Go-${{ matrix.go-version }}
-
   # changes allows us to only run a job on changed packages
   changes:
     name: Change Detection
@@ -113,6 +15,7 @@ jobs:
       packages: ${{ steps.filter_go.outputs.changes }}
       package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
+      all_packages: ${{ steps.all.outputs.ALL }} # list of changed and unchanged packages
     steps:
       - uses: actions/checkout@v2
         with:
@@ -150,6 +53,124 @@ jobs:
           echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
         env:
           FILTERED_PATHS: ${{ steps.filter_go.outputs.changes }}
+
+      # needed for listing packages
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      # list all packages
+      - id: all
+        run: |
+          export ALL=$(go work edit -json | jq -c -r '[.Use[].DiskPath]')
+          echo "##[set-output name=ALL;]$(echo $ALL)"
+
+
+  test:
+    name: Go Coverage
+    runs-on: ${{ matrix.platform }}
+    needs: changes
+    strategy:
+      matrix:
+        go-version:
+          - 1.19.x
+        platform:
+          - ubuntu-latest
+        # only do on agents for now. Anything that relies on solidity in a package should do this
+        package: ${{ fromJSON(needs.changes.outputs.all_packages) }}
+    services:
+      mariadb:
+        image: mariadb:latest
+        ports:
+          - 3306
+        env:
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: password
+        options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
+    defaults:
+      run:
+        working-directory: ${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      # todo: consider making this a service. You'd need another way to expose the private keys for the test
+      - name: Run rinkeby
+        run: docker run -p 8045:8545 -d -v /tmp/keys/:/tmp/keys/  --name rinkeby --restart always trufflesuite/ganache-cli ganache-cli --accounts 10 --account_keys_path /tmp/keys/rinkeby --chainId 4 # --fork https://rinkeby-light.eth.linkpool.io (no need to actually fork)
+
+      - name: Go modules cache
+        uses: actions/cache@v2
+        with:
+          # see https://github.com/mvdan/github-actions-golang
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          key: ${{ runner.os }}-test-${{matrix.package}}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-test-${{matrix.package}}
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Verify MariaDB connection
+        env:
+          PORT: ${{ job.services.mariadb.ports[3306] }}
+        run: |
+          while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
+          sleep 1
+          done
+
+      - name: Test
+        uses: nick-fields/retry@v2
+        with:
+          command: cd ${{matrix.package}} && go test -coverpkg=./... ./... -coverprofile=profile.cov
+          max_attempts: 6
+          timeout_minutes: 15
+        env:
+          ENABLE_MYSQL_TEST: true
+          MYSQL_HOST: 0.0.0.0
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
+          GOMAXPROCS: 18
+          GANACHE_KEYS: /tmp/keys/rinkeby
+          GANACHE_RPC_URL: http://0.0.0.0:8045
+
+      - name: Generate ignore list
+        # generate a list of files to ignore on goveralls
+        run: |
+          echo "IGNORED=$(find . \( -name "*_generated.go" -o -name "*.abigen.go"  -o -name "*_string.go"   \) -print0 | xargs -0 ls | sed 's/.\/*//' | tr '\n' ',' |  sed 's/,*\r*$//')" >> $GITHUB_ENV
+
+      - uses: codecov/codecov-action@v3
+        name: Send Coverage (Codecov)
+        with:
+          token: ${{ secrets.CODECOV }}
+          files: profile.cov
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
+
+      # We customize the build step because by default
+      # We can not use ** because goveralls uses filepath.Match
+      # to match ignore files and it does not support it.
+      - name: Send coverage (Coveralls)
+        uses: shogo82148/actions-goveralls@v1
+        with:
+          github-token: ${{ secrets.github_token }}
+          # coveralls will not respect default run
+          path-to-profile: ${{matrix.package}}/profile.cov
+          ignore: ${{ env.IGNORED }}
+          flag-name: Go-${{ matrix.go-version }}
+
 
   # make sure the build works
   build:

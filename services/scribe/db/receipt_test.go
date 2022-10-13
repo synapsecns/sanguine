@@ -20,14 +20,14 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 			t.MakeRandomLog(txHashA),
 			t.MakeRandomLog(txHashA),
 		}
-		randomLogsA[0].BlockNumber = 1
-		randomLogsA[1].BlockNumber = 2
+		randomLogsA[0].BlockNumber = 4
+		randomLogsA[1].BlockNumber = 3
 		randomLogsB := []types.Log{
 			t.MakeRandomLog(txHashB),
 			t.MakeRandomLog(txHashB),
 		}
-		randomLogsB[0].BlockNumber = 3
-		randomLogsB[1].BlockNumber = 4
+		randomLogsB[0].BlockNumber = 2
+		randomLogsB[1].BlockNumber = 1
 
 		// Store all random logs, since `RetrieveReceipt` needs to query them to build the Receipt.
 		for _, log := range randomLogsA {
@@ -117,7 +117,7 @@ func (t *DBSuite) TestConfirmReceiptsInRange() {
 		chainID := gofakeit.Uint32()
 
 		// Store five receipts.
-		for i := 0; i < 5; i++ {
+		for i := 4; i >= 0; i-- {
 			receipt := t.MakeRandomReceipt(common.BigToHash(big.NewInt(gofakeit.Int64())))
 			receipt.BlockNumber = big.NewInt(int64(i))
 			err := testDB.StoreReceipt(t.GetTestContext(), receipt, chainID)
@@ -136,8 +136,8 @@ func (t *DBSuite) TestConfirmReceiptsInRange() {
 		retrievedReceipts, err := testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), receiptFilter, 1)
 		Nil(t.T(), err)
 		Equal(t.T(), 2, len(retrievedReceipts))
-		Equal(t.T(), retrievedReceipts[0].BlockNumber, big.NewInt(0))
-		Equal(t.T(), retrievedReceipts[1].BlockNumber, big.NewInt(1))
+		Equal(t.T(), retrievedReceipts[0].BlockNumber, big.NewInt(1))
+		Equal(t.T(), retrievedReceipts[1].BlockNumber, big.NewInt(0))
 	})
 }
 

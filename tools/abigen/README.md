@@ -33,10 +33,13 @@ package dev
 
 import (
 	_ "github.com/path/to/missing/package"
+	"github.com/synapsecns/sanguine/core"
 )
 
 func init() {
-	panic("could not import dev package: this package is meant to define dependencies, not be imported.")
+  if !core.IsTest() {
+	  panic("could not import dev package: this package is meant to define dependencies, not be imported.")
+  }
 }
 ```
 

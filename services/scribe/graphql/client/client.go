@@ -19,13 +19,16 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	Logs              []*model.Log         "json:\"logs\" graphql:\"logs\""
-	LogsRange         []*model.Log         "json:\"logsRange\" graphql:\"logsRange\""
-	Receipts          []*model.Receipt     "json:\"receipts\" graphql:\"receipts\""
-	ReceiptsRange     []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
-	Transactions      []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
-	TransactionsRange []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
-	BlockTime         *int                 "json:\"blockTime\" graphql:\"blockTime\""
+	Logs                   []*model.Log         "json:\"logs\" graphql:\"logs\""
+	LogsRange              []*model.Log         "json:\"logsRange\" graphql:\"logsRange\""
+	Receipts               []*model.Receipt     "json:\"receipts\" graphql:\"receipts\""
+	ReceiptsRange          []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
+	Transactions           []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
+	TransactionsRange      []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
+	BlockTime              *int                 "json:\"blockTime\" graphql:\"blockTime\""
+	LastStoredBlockNumber  *int                 "json:\"lastStoredBlockNumber\" graphql:\"lastStoredBlockNumber\""
+	FirstStoredBlockNumber *int                 "json:\"firstStoredBlockNumber\" graphql:\"firstStoredBlockNumber\""
+	TxSender               *string              "json:\"txSender\" graphql:\"txSender\""
 }
 type GetLogs struct {
 	Response []*struct {
@@ -209,6 +212,15 @@ type GetTransactionsResolvers struct {
 }
 type GetBlockTime struct {
 	Response *int "json:\"response\" graphql:\"response\""
+}
+type GetLastStoredBlockNumber struct {
+	Response *int "json:\"response\" graphql:\"response\""
+}
+type GetFirstStoredBlockNumber struct {
+	Response *int "json:\"response\" graphql:\"response\""
+}
+type GetTxSender struct {
+	Response *string "json:\"response\" graphql:\"response\""
 }
 
 const GetLogsDocument = `query GetLogs ($chain_id: Int!, $page: Int!) {
@@ -554,6 +566,61 @@ func (c *Client) GetBlockTime(ctx context.Context, chainID int, blockNumber int,
 
 	var res GetBlockTime
 	if err := c.Client.Post(ctx, "GetBlockTime", GetBlockTimeDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetLastStoredBlockNumberDocument = `query GetLastStoredBlockNumber ($chain_id: Int!) {
+	response: lastStoredBlockNumber(chain_id: $chain_id)
+}
+`
+
+func (c *Client) GetLastStoredBlockNumber(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetLastStoredBlockNumber, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+	}
+
+	var res GetLastStoredBlockNumber
+	if err := c.Client.Post(ctx, "GetLastStoredBlockNumber", GetLastStoredBlockNumberDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetFirstStoredBlockNumberDocument = `query GetFirstStoredBlockNumber ($chain_id: Int!) {
+	response: firstStoredBlockNumber(chain_id: $chain_id)
+}
+`
+
+func (c *Client) GetFirstStoredBlockNumber(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetFirstStoredBlockNumber, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+	}
+
+	var res GetFirstStoredBlockNumber
+	if err := c.Client.Post(ctx, "GetFirstStoredBlockNumber", GetFirstStoredBlockNumberDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetTxSenderDocument = `query GetTxSender ($chain_id: Int!, $tx_hash: String!) {
+	response: txSender(chain_id: $chain_id, tx_hash: $tx_hash)
+}
+`
+
+func (c *Client) GetTxSender(ctx context.Context, chainID int, txHash string, httpRequestOptions ...client.HTTPRequestOption) (*GetTxSender, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+		"tx_hash":  txHash,
+	}
+
+	var res GetTxSender
+	if err := c.Client.Post(ctx, "GetTxSender", GetTxSenderDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

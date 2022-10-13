@@ -38,10 +38,10 @@ func (g APISuite) TestRetrieveData() {
 		Nil(g.T(), err)
 		// create and store txs
 		tx = g.buildEthTx()
-		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(blockNumber))
+		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(blockNumber), gofakeit.Uint64())
 		Nil(g.T(), err)
 		tx = g.buildEthTx()
-		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(blockNumber))
+		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(blockNumber), gofakeit.Uint64())
 		Nil(g.T(), err)
 	}
 
@@ -143,7 +143,7 @@ func (g APISuite) TestTransactionDataEquality() {
 	tx := g.buildEthTx()
 
 	// store it
-	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), blockNumber)
+	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), blockNumber, gofakeit.Uint64())
 	Nil(g.T(), err)
 
 	// retrieve it
@@ -182,6 +182,16 @@ func (g APISuite) TestBlockTimeDataEquality() {
 
 	// check that the data is equal
 	Equal(g.T(), *retrievedBlockTime.Response, int(blockTime))
+
+	// check that the last stored block is correct
+	lastBlock, err := g.gqlClient.GetLastStoredBlockNumber(g.GetTestContext(), int(chainID))
+	Nil(g.T(), err)
+	Equal(g.T(), *lastBlock.Response, int(blockNumber))
+
+	// check that the first stored block is correct
+	firstBlock, err := g.gqlClient.GetFirstStoredBlockNumber(g.GetTestContext(), int(chainID))
+	Nil(g.T(), err)
+	Equal(g.T(), *firstBlock.Response, int(blockNumber))
 }
 
 func (g *APISuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {

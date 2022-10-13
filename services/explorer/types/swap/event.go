@@ -19,12 +19,10 @@ type EventLog interface {
 	GetEventType() EventType
 	// GetEventIndex returns the index of the log.
 	GetEventIndex() uint64
-	// GetTokenIndex returns the token index of the tx.
-	GetTokenIndex() *uint8
-	// GetAmount returns the amount of the tx.
-	GetAmount() *big.Int
+	// GetAmount returns the token amount with its token index.
+	GetAmount() map[uint8]string
 	// GetAmountFee returns the amount fee of the tx.
-	GetAmountFee() *big.Int
+	GetAmountFee() map[uint8]string
 	// GetProtocolFee returns the protocol fee from the tx.
 	GetProtocolFee() *big.Int
 	// GetBuyer returns the buyer of the token swap.
@@ -41,10 +39,6 @@ type EventLog interface {
 	GetTokensBought() *big.Int
 	// GetProvider returns the provider removing liquidity.
 	GetProvider() *common.Address
-	// GetTokenAmounts returns the amount of tokens .
-	GetTokenAmounts() []*big.Int
-	// GetFees returns the fees for each token.
-	GetFees() []*big.Int
 	// GetInvariant returns the invariant.
 	GetInvariant() *big.Int
 	// GetLPTokenSupply returns the LP token supply.

@@ -77,7 +77,7 @@ func (t *DBSuite) TestStoreAndRetrieveEthTx() {
 			signedTx, err := transactor.Signer(signer.Address(), testTx)
 			Nil(t.T(), err)
 
-			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, uint32(testTx.ChainId().Uint64()), common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint64())
+			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, uint32(testTx.ChainId().Uint64()), common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint64(), gofakeit.Uint64())
 			Nil(t.T(), err)
 
 			ethTxFilter := db.EthTxFilter{
@@ -120,7 +120,7 @@ func (t *DBSuite) TestConfirmEthTxsInRange() {
 			signedTx, err := transactor.Signer(signer.Address(), testTx)
 			Nil(t.T(), err)
 
-			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(i))
+			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(i), gofakeit.Uint64())
 			Nil(t.T(), err)
 		}
 
@@ -163,7 +163,7 @@ func (t *DBSuite) TestDeleteEthTxsForBlockHash() {
 		signedTx, err := transactor.Signer(signer.Address(), testTx)
 		Nil(t.T(), err)
 
-		err = testDB.StoreEthTx(t.GetTestContext(), signedTx, chainID, common.BigToHash(big.NewInt(5)), uint64(0))
+		err = testDB.StoreEthTx(t.GetTestContext(), signedTx, chainID, common.BigToHash(big.NewInt(5)), uint64(0), gofakeit.Uint64())
 		Nil(t.T(), err)
 
 		// Ensure the tx is in the database,

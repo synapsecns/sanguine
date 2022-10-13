@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/synapsecns/sanguine/services/scribe/db"
@@ -19,7 +20,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		// Store two logs with the same txHash, and one with a different txHash.
 		txHashA := common.BigToHash(big.NewInt(txHashRandom))
 		logA := t.MakeRandomLog(txHashA)
-		logA.BlockNumber = 1
+		logA.BlockNumber = 3
 		err := testDB.StoreLog(t.GetTestContext(), logA, chainID)
 		Nil(t.T(), err)
 
@@ -30,7 +31,7 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 
 		txHashC := common.BigToHash(big.NewInt(txHashRandom + 1))
 		logC := t.MakeRandomLog(txHashC)
-		logC.BlockNumber = 3
+		logC.BlockNumber = 1
 		err = testDB.StoreLog(t.GetTestContext(), logC, chainID+1)
 		Nil(t.T(), err)
 
@@ -75,8 +76,9 @@ func (t *DBSuite) TestConfirmLogsInRange() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		chainID := gofakeit.Uint32()
 
+		mostRecentBlock := 4
 		// Store five logs.
-		for i := 0; i < 5; i++ {
+		for i := mostRecentBlock; i >= 0; i-- {
 			txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 			log := t.MakeRandomLog(txHash)
 			log.BlockNumber = uint64(i)
@@ -94,10 +96,11 @@ func (t *DBSuite) TestConfirmLogsInRange() {
 			Confirmed: true,
 		}
 		retrievedLogs, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), logFilter, 1)
+		fmt.Println("retrievedLogsretrievedLogs", retrievedLogs, len(retrievedLogs), retrievedLogs[0].BlockNumber, retrievedLogs[1].BlockNumber)
 		Nil(t.T(), err)
 		Equal(t.T(), 2, len(retrievedLogs))
-		Equal(t.T(), retrievedLogs[0].BlockNumber, uint64(0))
-		Equal(t.T(), retrievedLogs[1].BlockNumber, uint64(1))
+		Equal(t.T(), uint64(1), retrievedLogs[0].BlockNumber)
+		Equal(t.T(), uint64(0), retrievedLogs[1].BlockNumber)
 	})
 }
 
