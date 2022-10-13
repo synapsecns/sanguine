@@ -381,13 +381,13 @@ func (_m *EventDB) StoreBlockTime(ctx context.Context, chainID uint32, blockNumb
 	return r0
 }
 
-// StoreEthTx provides a mock function with given fields: ctx, tx, chainID, blockHash, blockNumber
-func (_m *EventDB) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64) error {
-	ret := _m.Called(ctx, tx, chainID, blockHash, blockNumber)
+// StoreEthTx provides a mock function with given fields: ctx, tx, chainID, blockHash, blockNumber, transactionIndex
+func (_m *EventDB) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error {
+	ret := _m.Called(ctx, tx, chainID, blockHash, blockNumber, transactionIndex)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *types.Transaction, uint32, common.Hash, uint64) error); ok {
-		r0 = rf(ctx, tx, chainID, blockHash, blockNumber)
+	if rf, ok := ret.Get(0).(func(context.Context, *types.Transaction, uint32, common.Hash, uint64, uint64) error); ok {
+		r0 = rf(ctx, tx, chainID, blockHash, blockNumber, transactionIndex)
 	} else {
 		r0 = ret.Error(0)
 	}

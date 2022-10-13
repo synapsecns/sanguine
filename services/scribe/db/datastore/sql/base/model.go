@@ -19,6 +19,7 @@ func init() {
 	BlockIndexFieldName = namer.GetConsistentName("BlockIndex")
 	BlockHashFieldName = namer.GetConsistentName("BlockHash")
 	ConfirmedFieldName = namer.GetConsistentName("Confirmed")
+	TransactionIndexFieldName = namer.GetConsistentName("TransactionIndex")
 }
 
 var (
@@ -36,6 +37,8 @@ var (
 	BlockHashFieldName string
 	// ConfirmedFieldName is the confirmed field name.
 	ConfirmedFieldName string
+	// TransactionIndexFieldName is the name of the transaction block  field.
+	TransactionIndexFieldName string
 )
 
 // PageSize is the amount of entries per page of logs.
@@ -106,7 +109,7 @@ type Receipt struct {
 // EthTx contains a processed ethereum transaction.
 type EthTx struct {
 	// TxHash is the hash of the transaction
-	TxHash string `gorm:"column:tx_hash;primaryKey;index:idx_block_number_tx,priority:2,sort:desc"`
+	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// ChainID is the chain id of the transaction
 	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
 	// BlockHash is the hash of the block in which the transaction was included
@@ -121,6 +124,8 @@ type EthTx struct {
 	GasTipCap uint64
 	// Confirmed is true if this log has been confirmed by the chain
 	Confirmed bool `gorm:"column:confirmed"`
+	// TransactionIndex is the index of the transaction in the block
+	TransactionIndex uint64 `gorm:"column:transaction_index;index:idx_block_number_tx,priority:2,sort:desc"`
 }
 
 // LastIndexedInfo contains information on when a contract was last indexed.
