@@ -174,7 +174,6 @@ jobs:
           ignore: ${{ env.IGNORED }}
           flag-name: Go-${{ matrix.go-version }}
 
-
   # make sure the build works
   build:
     name: Build
