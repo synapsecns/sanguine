@@ -20,14 +20,14 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 			t.MakeRandomLog(txHashA),
 			t.MakeRandomLog(txHashA),
 		}
-		randomLogsA[0].BlockNumber = 1
-		randomLogsA[1].BlockNumber = 2
+		randomLogsA[0].BlockNumber = 4
+		randomLogsA[1].BlockNumber = 3
 		randomLogsB := []types.Log{
 			t.MakeRandomLog(txHashB),
 			t.MakeRandomLog(txHashB),
 		}
-		randomLogsB[0].BlockNumber = 3
-		randomLogsB[1].BlockNumber = 4
+		randomLogsB[0].BlockNumber = 2
+		randomLogsB[1].BlockNumber = 1
 
 		// Store all random logs, since `RetrieveReceipt` needs to query them to build the Receipt.
 		for _, log := range randomLogsA {

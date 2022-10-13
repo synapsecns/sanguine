@@ -66,7 +66,7 @@ func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock 
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Receipt{}).
-		Order(BlockNumberFieldName).
+		Order(BlockNumberFieldName+" desc").
 		Where(rangeQuery, startBlock, endBlock).
 		Update(ConfirmedFieldName, true)
 
@@ -117,7 +117,7 @@ func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Receipt{}).
 		Where(&query).
-		Order(BlockNumberFieldName).
+		Order(fmt.Sprintf("%s, %s", BlockNumberFieldName, TxHashFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbReceipts)
@@ -149,7 +149,7 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 		Model(&Receipt{}).
 		Where(&query).
 		Where(rangeQuery, startBlock, endBlock).
-		Order(BlockNumberFieldName).
+		Order(fmt.Sprintf("%s, %s", BlockNumberFieldName, TxHashFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbReceipts)

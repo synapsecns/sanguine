@@ -58,7 +58,7 @@ type Log struct {
 	// Data is the data provided by the contract
 	Data []byte `gorm:"data"`
 	// BlockNumber is the block in which the transaction was included
-	BlockNumber uint64 `gorm:"column:block_number"`
+	BlockNumber uint64 `gorm:"column:block_number;index:idx_block_number,priority:1,sort:desc"`
 	// TxHash is the hash of the transaction
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// TxIndex is the index of the transaction in the block
@@ -66,7 +66,7 @@ type Log struct {
 	// BlockHash is the hash of the block in which the transaction was included
 	BlockHash string `gorm:"block_hash"`
 	// Index is the index of the log in the block
-	BlockIndex uint64 `gorm:"column:block_index;primaryKey;auto_increment:false"`
+	BlockIndex uint64 `gorm:"column:block_index;primaryKey;auto_increment:false;index:idx_block_number,priority:2,sort:desc"`
 	// Removed is true if this log was reverted due to a chain re-organization
 	Removed bool `gorm:"removed"`
 	// Confirmed is true if this log has been confirmed by the chain
@@ -78,41 +78,41 @@ type Receipt struct {
 	// ChainID is the chain id of the receipt
 	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
 	// Type is the type
-	Type uint8 `gorm:"receipt_type"`
+	Type uint8 `gorm:"column:receipt_type"`
 	// PostState is the post state
-	PostState []byte `gorm:"post_state"`
+	PostState []byte `gorm:"column:post_state"`
 	// Status is the status of the transaction
-	Status uint64 `gorm:"status"`
+	Status uint64 `gorm:"column:status"`
 	// CumulativeGasUsed is the total amount of gas used when this transaction was executed in the block
-	CumulativeGasUsed uint64 `gorm:"cumulative_gas_used"`
+	CumulativeGasUsed uint64 `gorm:"column:cumulative_gas_used"`
 	// Bloom is the bloom filter
-	Bloom []byte `gorm:"bloom"`
+	Bloom []byte `gorm:"column:bloom"`
 	// TxHash is the hash of the transaction
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// ContractAddress is the address of the contract
 	ContractAddress string `gorm:"column:contract_address"`
 	// GasUsed is the amount of gas used by this transaction alone
-	GasUsed uint64 `gorm:"gas_used"`
+	GasUsed uint64 `gorm:"column:gas_used"`
 	// BlockHash is the hash of the block in which this transaction was included
-	BlockHash string `gorm:"block_hash"`
+	BlockHash string `gorm:"column:block_hash"`
 	// BlockNumber is the block in which this transaction was included
-	BlockNumber uint64 `gorm:"block_number"`
+	BlockNumber uint64 `gorm:"column:block_number;index:idx_block_number_receipt,priority:1,sort:desc"`
 	// TransactionIndex is the index of the transaction in the block
-	TransactionIndex uint64 `gorm:"transaction_index"`
+	TransactionIndex uint64 `gorm:"column:transaction_index;index:idx_block_number_receipt,priority:2,sort:desc"`
 	// Confirmed is true if this log has been confirmed by the chain
-	Confirmed bool `gorm:"confirmed"`
+	Confirmed bool `gorm:"column:confirmed"`
 }
 
 // EthTx contains a processed ethereum transaction.
 type EthTx struct {
 	// TxHash is the hash of the transaction
-	TxHash string `gorm:"column:tx_hash;primaryKey"`
+	TxHash string `gorm:"column:tx_hash;primaryKey;index:idx_block_number_tx,priority:2,sort:desc"`
 	// ChainID is the chain id of the transaction
 	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
 	// BlockHash is the hash of the block in which the transaction was included
 	BlockHash string `gorm:"block_hash"`
 	// BlockNumber is the block in which the transaction was included
-	BlockNumber uint64 `gorm:"column:block_number"`
+	BlockNumber uint64 `gorm:"column:block_number;index:idx_block_number_tx,priority:1,sort:desc"`
 	// RawTx is the raw serialized transaction
 	RawTx []byte `gorm:"column:raw_tx"`
 	// GasFeeCap contains the gas fee cap stored in wei
@@ -120,7 +120,7 @@ type EthTx struct {
 	// GasTipCap contains the gas tip cap stored in wei
 	GasTipCap uint64
 	// Confirmed is true if this log has been confirmed by the chain
-	Confirmed bool `gorm:"confirmed"`
+	Confirmed bool `gorm:"column:confirmed"`
 }
 
 // LastIndexedInfo contains information on when a contract was last indexed.
