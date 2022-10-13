@@ -9,6 +9,7 @@ import (
 	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/syndtr/goleveldb/leveldb"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -27,7 +28,7 @@ func seed(path string, database *data.Database) {
 		return
 	}
 
-	context, err := os.ReadFile(path)
+	context, err := ioutil.ReadFile(path)
 	if err != nil {
 		logger.Errorln(fmt.Sprintf("Unable to read seed content of file at path %s; skipping.", path))
 		return
