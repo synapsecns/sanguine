@@ -3,6 +3,7 @@ package forker
 import (
 	"bufio"
 	"context"
+	_ "embed"
 	"fmt"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ipfs/go-log"
@@ -12,9 +13,16 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"time"
 )
+
+//go:embed anvilbin/anvil_darwin_bin
+var anvilDarwinBin []byte
+
+//go:embed anvilbin/anvil_linux_bin
+var anvilLinuxBin []byte
 
 // TODO: add comment
 func Fork(ctx context.Context, rpcURL string, chainID uint64, clientFunc func(client *ethclient.Client)) error {
@@ -24,9 +32,25 @@ func Fork(ctx context.Context, rpcURL string, chainID uint64, clientFunc func(cl
 		return fmt.Errorf("failed to get free port: %w", err)
 	}
 
-	_ = processPort
+	var filePayload []byte
 
-	cmd := exec.Command("anvil", "--fork-url", rpcURL, "--chain-id", strconv.Itoa(int(chainID)), "--port", strconv.Itoa(processPort))
+	osType := runtime.GOOS
+	switch osType {
+	case "darwin":
+		filePayload = anvilDarwinBin
+	case "linux":
+		filePayload = anvilLinuxBin
+	default:
+		return fmt.Errorf("unsupported os %s", osType)
+	}
+
+	err = os.WriteFile("./anvil_embedded", filePayload, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to write anvil_embedded: %w", err)
+	}
+	defer os.Remove("./anvil_embedded")
+
+	cmd := exec.Command("./anvil_embedded", "--fork-url", rpcURL, "--chain-id", strconv.Itoa(int(chainID)), "--port", strconv.Itoa(processPort))
 	cmd.Env = os.Environ()
 
 	stderr, err := cmd.StderrPipe()
