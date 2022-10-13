@@ -2,6 +2,7 @@ package geth_test
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
@@ -16,6 +17,15 @@ func (g *GethSuite) TestGetFullBackend() {
 	height, err := client.HeaderByNumber(g.GetTestContext(), nil)
 	Nil(g.T(), err)
 	Equal(g.T(), height.Number.Uint64(), uint64(0))
+
+	be.FundAccount(g.GetTestContext(), common.Address{}, *big.NewInt(1))
+
+	currentBlock, err := client.BlockByNumber(g.GetTestContext(), nil)
+	Nil(g.T(), err)
+
+	historicalBlock := new(big.Int).Sub(currentBlock.Number(), big.NewInt(2))
+	_, err = client.StorageAt(g.GetTestContext(), common.Address{}, common.BigToHash(big.NewInt(1)), historicalBlock)
+	Nil(g.T(), err)
 }
 
 func (g *GethSuite) TestFaucet() {
