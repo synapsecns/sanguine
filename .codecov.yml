@@ -5,6 +5,15 @@ coverage:
   round: down
   precision: 5
 
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0.5%
+    patch:
+      default:
+        threshold: 0.5%
+
 ignore:
   - '**/*_generated.go'
   - '**/*.abigen.go'
