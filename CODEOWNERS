@@ -23,7 +23,8 @@ tools/ @trajan0x
 .codecov.yml @trajan0x
 .editorconfig @trajan0x
 .prettierrc @trajan0x @ChiTimesChi
-.prettierrc.son @trajan0x @ChiTimesChi
+.prettierrc.js @trajan0x @ChiTimesChi
+.prettierrc.json @trajan0x @ChiTimesChi
 .yamllint.yml @trajan0x
 .eslintrc.js @ChiTimesChi
 .gitattributes @trajan0x
@@ -40,3 +41,5 @@ README.md @trajan0x
 tsconfig.json @trajan0x
 tsconfig.build.json @trajan0x
 yarn.lock @trajan0x
+CODEOWNERS @trajan0x
+

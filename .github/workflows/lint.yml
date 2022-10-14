@@ -3,7 +3,7 @@ on: [push]
 jobs:
   # TODO: add editor config linter
   # https://github.com/editorconfig-checker/editorconfig-checker#continuous-integration
-  yaml:
+  general-linters:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
