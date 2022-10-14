@@ -20,7 +20,7 @@ type EventLog interface {
 	// GetEventIndex returns the index of the log.
 	GetEventIndex() uint64
 	// GetMessageID returns the message id of the event.
-	GetMessageID() string
+	GetMessageID() *string
 	// GetSourceChainID returns the chain id of the message's source chain.
 	GetSourceChainID() *big.Int
 
@@ -43,4 +43,6 @@ type EventLog interface {
 	GetOptions() *string
 	// GetFee returns the fee of the message.
 	GetFee() *big.Int
+	// GetRevertReason returns the reason why the event was reverted.
+	GetRevertReason() *string
 }

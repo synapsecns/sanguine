@@ -632,6 +632,13 @@ contract TestMessageBusUpgradeable is MessageBusUpgradeable {
             messageId
         );
     }
+    function testCallReverted(
+        string calldata reason
+    ) external {
+        emit CallReverted(
+            reason
+        );
+    }
 }
 
 

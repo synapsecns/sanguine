@@ -124,12 +124,17 @@ func (b *BackfillSuite) TestBackfill() {
 	// Store every message event.
 	messageTx, err := messageRef.TestExecuted(transactOpts.TransactOpts, [32]byte{byte(gofakeit.Uint64())}, uint8(gofakeit.Number(0, 2)), common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint64(), gofakeit.Uint64())
 	Nil(b.T(), err)
-	executedLog, err := b.storeTestLog(messageTx, uint32(testChainID.Uint64()), 3)
+	executedLog, err := b.storeTestLog(messageTx, uint32(testChainID.Uint64()), 5)
 	Nil(b.T(), err)
 
-	messageTx, err = messageRef.TestMessageSent(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())}, big.NewInt(int64(gofakeit.Uint32())), []byte{byte(gofakeit.Uint64())}, gofakeit.Uint64(), []byte{byte(gofakeit.Uint64())}, big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())})
+	messageTx, err = messageRef.TestMessageSent(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())}, big.NewInt(int64(gofakeit.Uint32())), []byte(gofakeit.Paragraph(2, 5, 30, " ")), gofakeit.Uint64(), []byte{byte(gofakeit.Uint64())}, big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())})
 	Nil(b.T(), err)
-	messageSentLog, err := b.storeTestLog(messageTx, uint32(testChainID.Uint64()), 4)
+	messageSentLog, err := b.storeTestLog(messageTx, uint32(testChainID.Uint64()), 6)
+	Nil(b.T(), err)
+
+	messageTx, err = messageRef.TestCallReverted(transactOpts.TransactOpts, gofakeit.Paragraph(2, 4, 20, " "))
+	Nil(b.T(), err)
+	callRevertedLog, err := b.storeTestLog(messageTx, uint32(testChainID.Uint64()), 7)
 	Nil(b.T(), err)
 
 	// set up a ChainBackfiller
@@ -163,7 +168,7 @@ func (b *BackfillSuite) TestBackfill() {
 	chainBackfiller := backfill.NewChainBackfiller(uint32(testChainID.Uint64()), b.db, 3, bp, bridgeContract.Address(), spMap, *f, b.bridgeConfigContract.Address(), mbp, messageContract.Address())
 
 	// backfill the blocks
-	err = chainBackfiller.Backfill(b.GetTestContext(), 0, 12)
+	err = chainBackfiller.Backfill(b.GetTestContext(), 0, 14)
 	Nil(b.T(), err)
 	var count int64
 	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
@@ -174,7 +179,7 @@ func (b *BackfillSuite) TestBackfill() {
 	Equal(b.T(), int64(10), count)
 	messageEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.MessageEvent{}).Count(&count)
 	Nil(b.T(), messageEvents.Error)
-	Equal(b.T(), int64(2), count)
+	Equal(b.T(), int64(3), count)
 
 	// Test bridge parity
 	err = b.depositParity(depositLog, bp, uint32(testChainID.Uint64()))
@@ -224,6 +229,8 @@ func (b *BackfillSuite) TestBackfill() {
 	err = b.executedParity(executedLog, mbp, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 	err = b.messageSentParity(messageSentLog, mbp, uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	err = b.callRevertedParity(callRevertedLog, mbp, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 }
 
@@ -939,7 +946,7 @@ func (b *BackfillSuite) executedParity(log *types.Log, parser *consumer.MessageP
 			BlockNumber:     log.BlockNumber,
 			TxHash:          log.TxHash.String(),
 
-			MessageID:     common.Bytes2Hex(parsedLog.MessageId[:]),
+			MessageID:     gosql.NullString{String: common.Bytes2Hex(parsedLog.MessageId[:]), Valid: true},
 			SourceChainID: big.NewInt(int64(parsedLog.SrcChainId)),
 		}).
 		Find(&storedLog).Count(&count)
@@ -947,6 +954,8 @@ func (b *BackfillSuite) executedParity(log *types.Log, parser *consumer.MessageP
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
+	Equal(b.T(), big.NewInt(int64(parsedLog.SrcNonce)), storedLog.Nonce)
+	Equal(b.T(), parsedLog.DstAddress.String(), storedLog.DestinationAddress.String)
 	return nil
 }
 
@@ -967,7 +976,7 @@ func (b *BackfillSuite) messageSentParity(log *types.Log, parser *consumer.Messa
 			BlockNumber:     log.BlockNumber,
 			TxHash:          log.TxHash.String(),
 
-			MessageID:     common.Bytes2Hex(parsedLog.MessageId[:]),
+			MessageID:     gosql.NullString{String: common.Bytes2Hex(parsedLog.MessageId[:]), Valid: true},
 			SourceChainID: parsedLog.SrcChainID,
 		}).
 		Find(&storedLog).Count(&count)
@@ -975,5 +984,35 @@ func (b *BackfillSuite) messageSentParity(log *types.Log, parser *consumer.Messa
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
 	Equal(b.T(), int64(1), count)
+	Equal(b.T(), common.Bytes2Hex(parsedLog.Message), storedLog.Message.String)
+	Equal(b.T(), parsedLog.Fee, storedLog.Fee)
+	Equal(b.T(), common.Bytes2Hex(parsedLog.Receiver[:]), storedLog.Receiver.String)
+
+	return nil
+}
+
+//nolint:dupl
+func (b *BackfillSuite) callRevertedParity(log *types.Log, parser *consumer.MessageParser, chainID uint32) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseCallReverted(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+	var storedLog sql.MessageEvent
+	var count int64
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.MessageEvent{}).
+		Where(&sql.MessageEvent{
+			ContractAddress: log.Address.String(),
+			ChainID:         chainID,
+			EventType:       messageTypes.CallRevertedEvent.Int(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+		}).
+		Find(&storedLog).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	Equal(b.T(), parsedLog.Reason, storedLog.RevertedReason.String)
 	return nil
 }

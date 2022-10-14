@@ -10,11 +10,12 @@ func _() {
 	var x [1]struct{}
 	_ = x[ExecutedEvent-0]
 	_ = x[MessageSentEvent-1]
+	_ = x[CallRevertedEvent-2]
 }
 
-const _EventType_name = "ExecutedEventMessageSentEvent"
+const _EventType_name = "ExecutedEventMessageSentEventCallRevertedEvent"
 
-var _EventType_index = [...]uint8{0, 13, 29}
+var _EventType_index = [...]uint8{0, 13, 29, 46}
 
 func (i EventType) String() string {
 	if i >= EventType(len(_EventType_index)-1) {

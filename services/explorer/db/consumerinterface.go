@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"gorm.io/gorm"
 )
@@ -10,7 +9,7 @@ import (
 // ConsumerDBWriter is the interface for writing to the ConsumerDB.
 type ConsumerDBWriter interface {
 	// StoreEvent stores an event.
-	StoreEvent(ctx context.Context, bridgeEvent *sql.BridgeEvent, swapEvent *sql.SwapEvent, messageEvent *sql.MessageEvent) error
+	StoreEvent(ctx context.Context, event interface{}) error
 	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
 	//
 	//nolint:golint

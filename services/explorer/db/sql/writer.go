@@ -6,21 +6,21 @@ import (
 )
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
-func (s *Store) StoreEvent(ctx context.Context, bridgeEvent *BridgeEvent, swapEvent *SwapEvent, messageEvent *MessageEvent) error {
-	if bridgeEvent != nil {
-		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*bridgeEvent)
+func (s *Store) StoreEvent(ctx context.Context, event interface{}) error {
+	switch conv := event.(type) {
+	case *BridgeEvent:
+		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(conv)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store bridge event: %w", dbTx.Error)
 		}
-	}
-	if swapEvent != nil {
-		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*swapEvent)
+
+	case *SwapEvent:
+		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(conv)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store swap event: %w", dbTx.Error)
 		}
-	}
-	if messageEvent != nil {
-		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*messageEvent)
+	case *MessageEvent:
+		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(conv)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store message event: %w", dbTx.Error)
 		}

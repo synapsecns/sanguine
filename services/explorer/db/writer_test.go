@@ -26,7 +26,7 @@ func (t *DBSuite) TestBridgeWrite() {
 		Recipient:          sql.NullString{String: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(), Valid: true},
 		DestinationChainID: big.NewInt(gofakeit.Int64()),
 	}
-	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil, nil)
+	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent)
 	Nil(t.T(), err)
 }
 
@@ -46,22 +46,21 @@ func (t *DBSuite) TestSwapWrite() {
 		SoldID:       big.NewInt(gofakeit.Int64()),
 		BoughtID:     big.NewInt(gofakeit.Int64()),
 	}
-	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent, nil)
+	err := t.db.StoreEvent(t.GetTestContext(), swapEvent)
 	Nil(t.T(), err)
 }
 
 func (t *DBSuite) TestMessageWrite() {
 	defer t.cleanup()
 	messageEvent := &model.MessageEvent{
-		InsertTime:      gofakeit.Uint64(),
-		ContractAddress: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
-		ChainID:         gofakeit.Uint32(),
-		EventType:       messageTypes.MessageSentEvent.Int(),
-		BlockNumber:     gofakeit.Uint64(),
-		TxHash:          common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
-		MessageID:       gofakeit.Sentence(10),
-		SourceChainID:   big.NewInt(gofakeit.Int64()),
-
+		InsertTime:         gofakeit.Uint64(),
+		ContractAddress:    common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		ChainID:            gofakeit.Uint32(),
+		EventType:          messageTypes.MessageSentEvent.Int(),
+		BlockNumber:        gofakeit.Uint64(),
+		TxHash:             common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		MessageID:          sql.NullString{String: gofakeit.Sentence(10), Valid: true},
+		SourceChainID:      big.NewInt(gofakeit.Int64()),
 		SourceAddress:      sql.NullString{String: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(), Valid: true},
 		DestinationChainID: big.NewInt(gofakeit.Int64()),
 		Nonce:              big.NewInt(gofakeit.Int64()),
@@ -70,6 +69,6 @@ func (t *DBSuite) TestMessageWrite() {
 		Message:            sql.NullString{String: gofakeit.Sentence(10), Valid: true},
 		Receiver:           sql.NullString{String: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(), Valid: true},
 	}
-	err := t.db.StoreEvent(t.GetTestContext(), nil, nil, messageEvent)
+	err := t.db.StoreEvent(t.GetTestContext(), messageEvent)
 	Nil(t.T(), err)
 }

@@ -10,11 +10,13 @@ const (
 	ExecutedEvent EventType = iota
 	// MessageSentEvent is the message sent event.
 	MessageSentEvent
+	// CallRevertedEvent is when a call is reverted.
+	CallRevertedEvent
 )
 
 // AllEventTypes is a list of the event types.
 func AllEventTypes() []EventType {
-	return []EventType{ExecutedEvent, MessageSentEvent}
+	return []EventType{ExecutedEvent, MessageSentEvent, CallRevertedEvent}
 }
 
 // Int gets the int value of the event type.

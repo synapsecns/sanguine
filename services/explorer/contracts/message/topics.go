@@ -18,6 +18,8 @@ func init() {
 	ExecutedTopic = parsedMessage.Events["Executed"].ID
 
 	MessageSentTopic = parsedMessage.Events["MessageSent"].ID
+
+	CallRevertedTopic = parsedMessage.Events["CallReverted"].ID
 }
 
 // ExecutedTopic is the topic used for receiving messages.
@@ -26,12 +28,16 @@ var ExecutedTopic common.Hash
 // MessageSentTopic is the topic used for sending messages.
 var MessageSentTopic common.Hash
 
+// CallRevertedTopic is the topic used for checking reverted calls.
+var CallRevertedTopic common.Hash
+
 // TopicMap maps events to topics.
 // this is returned as a function to assert immutability.
 func TopicMap() map[message.EventType]common.Hash {
 	return map[message.EventType]common.Hash{
-		message.ExecutedEvent:    ExecutedTopic,
-		message.MessageSentEvent: MessageSentTopic,
+		message.ExecutedEvent:     ExecutedTopic,
+		message.MessageSentEvent:  MessageSentTopic,
+		message.CallRevertedEvent: CallRevertedTopic,
 	}
 }
 

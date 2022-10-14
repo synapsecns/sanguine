@@ -292,7 +292,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 	bridgeEvent.Sender = sender
 
-	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent, nil, nil)
+	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
@@ -322,20 +322,6 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFet
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
 	return &SwapParser{consumerDB, swapAddress, filterer, consumerFetcher, swapFetcher}, nil
-}
-
-// EventType returns the event type of a swap log.
-func (p *SwapParser) EventType(log ethTypes.Log) (_ swapTypes.EventType, ok bool) {
-	for _, logTopic := range log.Topics {
-		eventType := swap.EventTypeFromTopic(logTopic)
-		if eventType == nil {
-			continue
-		}
-
-		return *eventType, true
-	}
-	// return an unknown event to avoid cases where user failed to check the event type
-	return swapTypes.EventType(len(swapTypes.AllEventTypes()) + 2), false
 }
 
 // eventToSwapEvent stores a swap event.
@@ -510,7 +496,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 	}
 
 	// Store bridgeEvent
-	err = p.consumerDB.StoreEvent(ctx, nil, &swapEvent, nil)
+	err = p.consumerDB.StoreEvent(ctx, &swapEvent)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
@@ -564,7 +550,7 @@ func eventToMessageEvent(event messageTypes.EventLog, chainID uint32) model.Mess
 		TxHash:          event.GetTxHash().String(),
 		EventIndex:      event.GetEventIndex(),
 		Sender:          "",
-		MessageID:       event.GetMessageID(),
+		MessageID:       ToNullString(event.GetMessageID()),
 		SourceChainID:   event.GetSourceChainID(),
 
 		Status:             ToNullString(event.GetStatus()),
@@ -577,6 +563,7 @@ func eventToMessageEvent(event messageTypes.EventLog, chainID uint32) model.Mess
 		Options:            ToNullString(event.GetOptions()),
 		Fee:                event.GetFee(),
 		TimeStamp:          nil,
+		RevertedReason:     ToNullString(event.GetRevertReason()),
 	}
 }
 
@@ -595,6 +582,12 @@ func (m *MessageParser) ParseAndStore(ctx context.Context, log ethTypes.Log, cha
 			return iFace, nil
 		case message.Topic(messageTypes.MessageSentEvent):
 			iFace, err := m.Filterer.ParseMessageSent(log)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse sent message: %w", err)
+			}
+			return iFace, nil
+		case message.Topic(messageTypes.CallRevertedEvent):
+			iFace, err := m.Filterer.ParseCallReverted(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not parse sent message: %w", err)
 			}
@@ -620,17 +613,8 @@ func (m *MessageParser) ParseAndStore(ctx context.Context, log ethTypes.Log, cha
 		timeStampBig := uint64(*timeStamp.Response)
 		messageEvent.TimeStamp = &timeStampBig
 	}
-	// sender, err := m.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
-	// if err != nil {
-	//	if !core.IsTest() {
-	//		return fmt.Errorf("could not fetch tx sender: %w", err)
-	//	}
-	//	logger.Errorf("could not get tx sender: %v", err)
-	//	sender = "FAKE_SENDER"
-	//}
-	// messageEvent.Sender = sender
 
-	err = m.consumerDB.StoreEvent(ctx, nil, nil, &messageEvent)
+	err = m.consumerDB.StoreEvent(ctx, &messageEvent)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}

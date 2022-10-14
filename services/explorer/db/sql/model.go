@@ -224,29 +224,31 @@ type MessageEvent struct {
 	EventIndex uint64 `gorm:"column:event_index"`
 	// Sender is the address of the sender
 	Sender string `gorm:"column:sender"`
+
 	// MessageId is the message id of the event.
-	MessageID string `gorm:"column:message_id"`
+	MessageID sql.NullString `gorm:"column:message_id"`
 	// SourceChainID is the chain id of the message's source chain.
 	SourceChainID *big.Int `gorm:"column:source_chain_id;type:UInt256"`
-
 	// Status is the status of the event.
 	Status sql.NullString `gorm:"column:status"`
-	// GetSourceAddress is the address that the message will be passed from.
+	// SourceAddress is the address that the message will be passed from.
 	SourceAddress sql.NullString `gorm:"column:source_address"`
 	// DestinationAddress is the address that the message will be passed to.
 	DestinationAddress sql.NullString `gorm:"column:destination_address"`
 	// DestinationChainID is the chain id of the message's destination chain.
 	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
-	// Nonce is the nonce of the message.
+	// Nonce is the nonce of the message. It is equivalent to the nonce on the origin chain.
 	Nonce *big.Int `gorm:"column:nonce;type:UInt256"`
 	// Message is the message.
 	Message sql.NullString `gorm:"column:message"`
 	// Receiver is the receiver of the event.
 	Receiver sql.NullString `gorm:"column:receiver"`
-	// Options is the message.
+	// Options are the options chosen for the message.
 	Options sql.NullString `gorm:"column:options"`
 	// Fee is the fee of the message.
 	Fee *big.Int `gorm:"column:fee;type:UInt256"`
-	// TimeStamp is the fee of the message.
+	// RevertedReason is the reason a call was reverted.
+	RevertedReason sql.NullString `gorm:"column:reverted_reason"`
+	// TimeStamp is the timestamp in which the record was inserted.
 	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
