@@ -16,12 +16,6 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
     using TypedMemView for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    event AttestationSubmitted(address indexed notary, bytes attestation);
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -50,7 +44,13 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
     ▏*║                             UPGRADE GAP                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    uint256[46] private __GAP;
+    uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                EVENTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    event AttestationSubmitted(address indexed notary, bytes attestation);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕
@@ -58,6 +58,20 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
 
     function initialize() external initializer {
         __Ownable_init_unchained();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              OWNER ONLY                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // TODO: add/remove notaries upon bonding/unbonding
+
+    function addNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
+        return _addNotary(_domain, _notary);
+    }
+
+    function removeNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
+        return _removeNotary(_domain, _notary);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -95,12 +109,12 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
      * @notice Get latest attestation for the domain.
      */
     function getLatestAttestation(uint32 _domain) external view returns (bytes memory) {
-        uint256 notariesAmount = domainNotaries[_domain].length;
-        require(notariesAmount != 0, "!notaries");
+        uint256 amount = notariesAmount(_domain);
+        require(amount != 0, "!notaries");
         uint32 _latestNonce = 0;
-        bytes32 _latestRoot;
-        for (uint256 i = 0; i < notariesAmount; ) {
-            address notary = domainNotaries[_domain][i];
+        bytes32 _latestRoot = bytes32(0);
+        for (uint256 i = 0; i < amount; ) {
+            address notary = getNotary(_domain, i);
             uint32 nonce = latestNonce[_domain][notary];
             // Check latest Notary's nonce against current latest nonce
             if (nonce > _latestNonce) {
@@ -131,6 +145,15 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
     }
 
     /**
+     * @notice Get amount of attested roots for given (domain, nonce).
+     * Assuming no fraud is committed, amount <= 1.
+     * If amount > 1, fraud was committed.
+     */
+    function rootsAmount(uint32 _domain, uint32 _nonce) external view returns (uint256) {
+        return attestedRoots[_domain][_nonce].length;
+    }
+
+    /**
      * @notice Get i-th root for given (domain, nonce), if exists.
      * Assuming no fraud is committed, index = 0 should be used.
      * If fraud was committed, there might be more than one root for given (domain, nonce).
@@ -144,52 +167,9 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
         return attestedRoots[_domain][_nonce][_index];
     }
 
-    /**
-     * @notice Get amount of attested roots for given (domain, nonce).
-     * Assuming no fraud is committed, amount <= 1.
-     * If amount > 1, fraud was committed.
-     */
-    function rootsAmount(uint32 _domain, uint32 _nonce) external view returns (uint256) {
-        return attestedRoots[_domain][_nonce].length;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              OWNER ONLY                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // TODO: add/remove notaries upon bonding/unbonding
-
-    function addNotary(uint32 _domain, address _notary) external onlyOwner {
-        _addNotary(_domain, _notary);
-    }
-
-    function removeNotary(uint32 _domain, address _notary) external onlyOwner {
-        _removeNotary(_domain, _notary);
-    }
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function _formatAttestation(
-        uint32 _domain,
-        uint32 _nonce,
-        bytes32 _root
-    ) internal view returns (bytes memory) {
-        return
-            Attestation.formatAttestation(
-                Attestation.formatAttestationData(_domain, _nonce, _root),
-                signatures[_domain][_nonce][_root]
-            );
-    }
-
-    function _signatureExists(
-        uint32 _domain,
-        uint32 _nonce,
-        bytes32 _root
-    ) internal view returns (bool) {
-        return signatures[_domain][_nonce][_root].length > 0;
-    }
 
     /**
      * @dev Both Notary and Guard signatures
@@ -218,5 +198,25 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
         attestedRoots[domain][nonce].push(root);
         emit AttestationSubmitted(_notary, _attestation);
         return true;
+    }
+
+    function _formatAttestation(
+        uint32 _domain,
+        uint32 _nonce,
+        bytes32 _root
+    ) internal view returns (bytes memory) {
+        return
+            Attestation.formatAttestation(
+                Attestation.formatAttestationData(_domain, _nonce, _root),
+                signatures[_domain][_nonce][_root]
+            );
+    }
+
+    function _signatureExists(
+        uint32 _domain,
+        uint32 _nonce,
+        bytes32 _root
+    ) internal view returns (bool) {
+        return signatures[_domain][_nonce][_root].length > 0;
     }
 }

@@ -61,14 +61,16 @@ library TypedMemView {
 
     // The null view
     bytes29 public constant NULL = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-    uint256 constant LOW_12_MASK = 0xffffffffffffffffffffffff;
-    uint8 constant TWELVE_BYTES = 96;
+    uint256 public constant LOW_12_MASK = 0xffffffffffffffffffffffff;
+    uint8 public constant TWELVE_BYTES = 96;
 
     /**
-     * @notice      Returns the encoded hex character that represents the lower 4 bits of the argument.
+     * @notice      Returns the encoded hex character that represents
+     *              the lower 4 bits of the argument.
      * @param _b    The byte
      * @return      char - The encoded hex character
      */
+    // solhint-disable-next-line code-complexity
     function nibbleHex(uint8 _b) internal pure returns (uint8 char) {
         // This can probably be done more efficiently, but it's only in error
         // paths, so we don't really care :)
@@ -216,6 +218,7 @@ library TypedMemView {
      * @notice      Return the null view.
      * @return      bytes29 - The null view
      */
+    // solhint-disable-next-line ordering
     function nullView() internal pure returns (bytes29) {
         return NULL;
     }
@@ -591,7 +594,7 @@ library TypedMemView {
         if (_index + _bytes > len(memView)) {
             revert(indexErrOverrun(loc(memView), len(memView), _index, uint256(_bytes)));
         }
-        require(_bytes <= 32, "TypedMemView/index - Attempted to index more than 32 bytes");
+        require(_bytes <= 32, "Index: more than 32 bytes");
 
         uint8 bitLength;
         unchecked {
@@ -637,8 +640,8 @@ library TypedMemView {
     }
 
     /**
-     * @notice          Parse an address from the view at `_index`. Requires that the view have >= 20 bytes
-     *                  following that index.
+     * @notice          Parse an address from the view at `_index`.
+     *                  Requires that the view have >= 20 bytes following that index.
      * @param memView   The view
      * @param _index    The index
      * @return          address - The address
@@ -767,8 +770,8 @@ library TypedMemView {
      * @return          written - the unsafe memory reference
      */
     function unsafeCopyTo(bytes29 memView, uint256 _newLoc) private view returns (bytes29 written) {
-        require(notNull(memView), "TypedMemView/copyTo - Null pointer deref");
-        require(isValid(memView), "TypedMemView/copyTo - Invalid pointer deref");
+        require(notNull(memView), "copyTo: Null pointer deref");
+        require(isValid(memView), "copyTo: Invalid pointer deref");
         uint256 _len = len(memView);
         uint256 _oldLoc = loc(memView);
 
@@ -790,8 +793,8 @@ library TypedMemView {
     }
 
     /**
-     * @notice          Copies the referenced memory to a new loc in memory, returning a `bytes` pointing to
-     *                  the new memory
+     * @notice          Copies the referenced memory to a new loc in memory,
+     *                  returning a `bytes` pointing to the new memory.
      * @dev             Shortcuts if the pointers are identical, otherwise compares type and digest.
      * @param memView   The view
      * @return          ret - The view pointing to the new memory

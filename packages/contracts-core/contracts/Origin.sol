@@ -113,7 +113,7 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // solhint-disable-next-line no-empty-blocks
-    constructor(uint32 _localDomain) LocalDomainContext(_localDomain) {}
+    constructor(uint32 _domain) LocalDomainContext(_domain) {}
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕

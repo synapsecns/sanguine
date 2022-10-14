@@ -7,6 +7,7 @@ import { UpgradeBeacon } from "./UpgradeBeacon.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
+// solhint-disable max-line-length
 /**
  * @title UpgradeBeaconController
  * @notice Set as the controller of UpgradeBeacon contract(s),
@@ -14,6 +15,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * @dev This implementation is a minimal version inspired by 0age's implementation:
  * https://github.com/dharma-eng/dharma-smart-wallet/blob/master/contracts/upgradeability/DharmaUpgradeBeaconController.sol
  */
+// solhint-enable max-line-length
 contract UpgradeBeaconController is Ownable {
     // ============ Events ============
 

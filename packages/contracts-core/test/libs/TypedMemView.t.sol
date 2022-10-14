@@ -5,6 +5,7 @@ import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 
 import "forge-std/Test.sol";
 
+// solhint-disable func-name-mixedcase, max-line-length
 contract TestMemView is Test {
     using TypedMemView for bytes29;
 
@@ -94,6 +95,7 @@ contract TestMemView is Test {
         require(v1.sliceFrom(14, 0).equal(v2.prefix(2, 0)), "ffff");
     }
 
+    // solhint-disable-next-line ordering
     function test_Slicing() public view {
         // 76 bytes - 3 words
 

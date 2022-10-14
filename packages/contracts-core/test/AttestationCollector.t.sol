@@ -6,14 +6,9 @@ import { SynapseTest } from "./utils/SynapseTest.sol";
 
 import { AttestationCollectorHarness } from "./harnesses/AttestationCollectorHarness.sol";
 
+// solhint-disable func-name-mixedcase
 contract AttestationCollectorTest is SynapseTest {
     AttestationCollectorHarness internal collector;
-
-    event AttestationSubmitted(address indexed notary, bytes attestation);
-
-    event NotaryAdded(uint32 indexed domain, address notary);
-
-    event NotaryRemoved(uint32 indexed domain, address notary);
 
     uint32 internal nonce = 420;
     bytes32 internal root = "root";
@@ -26,6 +21,10 @@ contract AttestationCollectorTest is SynapseTest {
     mapping(uint32 => uint256) internal rootsAmount;
 
     uint256 internal constant NOTARIES_AMOUNT = 4;
+
+    event AttestationSubmitted(address indexed notary, bytes attestation);
+    event NotaryAdded(uint32 indexed domain, address notary);
+    event NotaryRemoved(uint32 indexed domain, address notary);
 
     function setUp() public override {
         super.setUp();
@@ -278,6 +277,7 @@ contract AttestationCollectorTest is SynapseTest {
         return keccak256(abi.encode("root", _nonce, _notaryIndex));
     }
 
+    // solhint-disable-next-line ordering
     function _generateTestAttestation(
         uint32 _nonce,
         uint256 _notaryIndex,
@@ -315,6 +315,7 @@ contract AttestationCollectorTest is SynapseTest {
         assertEq(collector.getAttestation(localDomain, _nonce, _root), attestation);
     }
 
+    // solhint-disable-next-line code-complexity
     function _checkLatestAttestations() internal {
         uint32 latestNonce = 0;
         bytes memory latestAttestation;

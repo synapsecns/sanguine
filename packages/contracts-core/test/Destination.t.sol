@@ -10,7 +10,6 @@ import { TypeCasts } from "../contracts/libs/TypeCasts.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
-import { MirrorLib } from "../contracts/libs/Mirror.sol";
 import { ISystemRouter } from "../contracts/interfaces/ISystemRouter.sol";
 import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
 
@@ -43,6 +42,25 @@ contract DestinationTest is SynapseTest {
     ISystemRouter internal systemRouter;
 
     event LogSystemCall(uint32 origin, uint8 caller, uint256 rootSubmittedAt);
+    event SetConfirmation(
+        uint32 indexed remoteDomain,
+        bytes32 indexed root,
+        uint256 previousConfirmAt,
+        uint256 newConfirmAt
+    );
+    event NotaryBlacklisted(
+        address indexed notary,
+        address indexed guard,
+        address indexed reporter,
+        bytes report
+    );
+    event AttestationAccepted(
+        uint32 indexed origin,
+        uint32 indexed nonce,
+        bytes32 indexed root,
+        bytes signature
+    );
+    event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);
 
     function setUp() public override {
         super.setUp();
@@ -92,13 +110,6 @@ contract DestinationTest is SynapseTest {
         destination.setConfirmation(remoteDomain, ROOT, 0);
     }
 
-    event SetConfirmation(
-        uint32 indexed remoteDomain,
-        bytes32 indexed root,
-        uint256 previousConfirmAt,
-        uint256 newConfirmAt
-    );
-
     function test_setConfirmation(uint96 _confirmAt) public {
         vm.startPrank(destination.owner());
         assertEq(destination.submittedAt(remoteDomain, ROOT), 0);
@@ -111,13 +122,6 @@ contract DestinationTest is SynapseTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            SUBMIT REPORT                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    event NotaryBlacklisted(
-        address indexed notary,
-        address indexed guard,
-        address indexed reporter,
-        bytes report
-    );
 
     function test_submitReport() public {
         (bytes memory attestation, ) = signRemoteAttestation(notaryPK, NONCE, ROOT);
@@ -163,13 +167,6 @@ contract DestinationTest is SynapseTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          SUBMIT ATTESTATION                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    event AttestationAccepted(
-        uint32 indexed origin,
-        uint32 indexed nonce,
-        bytes32 indexed root,
-        bytes signature
-    );
 
     // Broadcaster relays a new root signed by notary on Origin chain
     function test_submitAttestation() public {
@@ -240,8 +237,6 @@ contract DestinationTest is SynapseTest {
         vm.expectRevert("!optimisticSeconds");
         assertFalse(destination.acceptableRoot(remoteDomain, optimisticSeconds, merkleRoot));
     }
-
-    event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);
 
     function test_execute_firstIndex() public {
         _checkExecute(0);

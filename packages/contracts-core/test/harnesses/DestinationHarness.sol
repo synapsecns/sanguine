@@ -5,7 +5,6 @@ pragma solidity 0.8.13;
 import { Destination } from "../../contracts/Destination.sol";
 import { GlobalNotaryRegistry } from "../../contracts/registry/GlobalNotaryRegistry.sol";
 
-import { MirrorLib } from "../../contracts/libs/Mirror.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
 import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
 
@@ -19,7 +18,6 @@ contract DestinationHarness is
     GlobalNotaryRegistryHarness,
     GuardRegistryHarness
 {
-    using MirrorLib for MirrorLib.Mirror;
     using Tips for bytes29;
 
     event LogTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip);

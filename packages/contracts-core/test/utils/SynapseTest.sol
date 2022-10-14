@@ -12,17 +12,17 @@ import { Tips } from "../../contracts/libs/Tips.sol";
 contract SynapseTest is Test {
     using Attestation for bytes;
 
-    uint256 notaryPK = 1;
-    uint256 fakeNotaryPK = 2;
-    uint256 guardPK = 3;
-    uint256 fakeGuardPK = 4;
-    address notary = vm.addr(notaryPK);
-    address fakeNotary = vm.addr(fakeNotaryPK);
-    address guard = vm.addr(guardPK);
-    address fakeGuard = vm.addr(fakeGuardPK);
+    uint256 internal notaryPK = 1;
+    uint256 internal fakeNotaryPK = 2;
+    uint256 internal guardPK = 3;
+    uint256 internal fakeGuardPK = 4;
+    address internal notary = vm.addr(notaryPK);
+    address internal fakeNotary = vm.addr(fakeNotaryPK);
+    address internal guard = vm.addr(guardPK);
+    address internal fakeGuard = vm.addr(fakeGuardPK);
 
-    uint32 localDomain = 1500;
-    uint32 remoteDomain = 1000;
+    uint32 internal localDomain = 1500;
+    uint32 internal remoteDomain = 1000;
 
     uint96 internal constant NOTARY_TIP = 1234;
     uint96 internal constant BROADCASTER_TIP = 3456;
@@ -54,6 +54,7 @@ contract SynapseTest is Test {
         return Tips.emptyTips();
     }
 
+    // solhint-disable-next-line ordering
     function signOriginAttestation(
         uint256 privKey,
         uint32 nonce,
@@ -113,6 +114,7 @@ contract SynapseTest is Test {
         if (tempEmptyStringTest.length == 0) {
             return 0x0;
         }
+        // solhint-disable-next-line no-inline-assembly
         assembly {
             result := mload(add(source, 32))
         }
@@ -124,7 +126,7 @@ contract SynapseTest is Test {
 }
 
 contract SynapseTestWithNotaryManager is SynapseTest {
-    NotaryManager notaryManager;
+    NotaryManager internal notaryManager;
 
     function setUp() public virtual override {
         super.setUp();
