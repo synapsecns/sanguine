@@ -20,6 +20,7 @@ services/scribe @trajan0x @CryptoMaxPlanck
 tools/ @trajan0x
 
 # config files
+.changeset/ @aureliusbtc
 .codecov.yml @trajan0x
 .editorconfig @trajan0x
 .prettierrc @trajan0x @ChiTimesChi
