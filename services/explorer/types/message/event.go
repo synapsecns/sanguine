@@ -37,7 +37,7 @@ type MessageLog interface {
 	// GetSourceNonce returns the source nonce of the message.
 	GetSourceNonce() *big.Int
 	// GetNonce returns the nonce of the message.
-	GetNonce() *big.Int
+	GetNonce() *big.Int //TODO ask Trajan about src vs nonce
 	// GetMessage gets the message.
 	GetMessage() *[]byte
 	// GetReceiver returns the receiver of the event.

@@ -35,7 +35,7 @@ func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 	}
 
 	// load all models
-	err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY (event_index, block_number, event_type, tx_hash, chain_id, contract_address)").AutoMigrate(&SwapEvent{}, &BridgeEvent{})
+	err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY (event_index, block_number, event_type, tx_hash, chain_id, contract_address)").AutoMigrate(&SwapEvent{}, &BridgeEvent{}, &MessageEvent{})
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on clickhouse: %w", err)
 	}

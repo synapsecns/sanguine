@@ -205,3 +205,50 @@ type SwapEvent struct {
 	// TimeStamp is the timestamp of the block in which the event occurred.
 	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
+
+// MessageEvent stores data for emitted events from the Message contract.
+type MessageEvent struct {
+	// InsertTime is the time the event was inserted into the database
+	InsertTime uint64 `gorm:"column:insert_time"`
+	// ContractAddress is the address of the contract that generated the event
+	ContractAddress string `gorm:"column:contract_address"`
+	// ChainID is the chain id of the contract that generated the event
+	ChainID uint32 `gorm:"column:chain_id"`
+	// BlockNumber is the block number of the event
+	BlockNumber uint64 `gorm:"column:block_number"`
+	// TxHash is the transaction hash of the event
+	TxHash string `gorm:"column:tx_hash"`
+	// EventType is the type of the event
+	EventType uint8 `gorm:"column:event_type"`
+	// EventIndex is the index of the log
+	EventIndex uint64 `gorm:"column:event_index"`
+	// Sender is the address of the sender
+	Sender string `gorm:"column:sender"`
+	// MessageId is the message id of the event.
+	MessageId string `gorm:"column:message_id"`
+	// SourceChainID is the chain id of the message's source chain.
+	SourceChainID *big.Int `gorm:"column:source_chain_id;type:UInt256"`
+
+	// Status is the status of the event.
+	Status *string `gorm:"column:status"`
+	// GetSourceAddress is the address that the message will be passed from.
+	SourceAddress *string `gorm:"column:source_address"`
+	// DestinationAddress is the address that the message will be passed to.
+	DestinationAddress *string `gorm:"column:destination_address"`
+	// DestinationChainID is the chain id of the message's destination chain.
+	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
+	// GasLimit is the gas limit to be passed alongside the message, depending on the fee paid on the source chain.
+	GasLimit *big.Int `gorm:"column:gas_limit;type:UInt256"`
+	// SourceNonce is the source nonce of the message.
+	SourceNonce *big.Int `gorm:"column:source_nonce;type:UInt256"`
+	// Nonce is the nonce of the message.
+	Nonce *big.Int `gorm:"column:nonce;type:UInt256"`
+	// Message is the message.
+	Message *string `gorm:"column:message"`
+	// Receiver is the receiver of the event.
+	Receiver *string `gorm:"column:receiver"`
+	// Options is the message.
+	Options *string `gorm:"column:options"`
+	// Fee is the fee of the message.
+	Fee *big.Int `gorm:"column:fee;type:UInt256"`
+}
