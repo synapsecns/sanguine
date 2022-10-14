@@ -190,12 +190,12 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         vm.expectEmit(true, true, true, true);
         emit Dispatch(keccak256(message), 1, remoteDomain, _tips, message);
         deal(address(this), TOTAL_TIPS);
-        client.send{ value: TOTAL_TIPS }(remoteDomain, _tips, messageBody);
+        client.sendMessage{ value: TOTAL_TIPS }(remoteDomain, _tips, messageBody);
     }
 
     function test_sendNoRecipient() public {
         bytes memory messageBody = hex"01030307";
         vm.expectRevert("BasicClient: !recipient");
-        client.send(remoteDomain, getEmptyTips(), messageBody);
+        client.sendMessage(remoteDomain, getEmptyTips(), messageBody);
     }
 }

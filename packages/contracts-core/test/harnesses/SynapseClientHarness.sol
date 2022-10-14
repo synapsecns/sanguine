@@ -8,7 +8,7 @@ import { SynapseClient } from "../../contracts/client/SynapseClient.sol";
 contract SynapseClientHarness is SynapseClient {
     constructor(address _origin, address _destination) SynapseClient(_origin, _destination) {}
 
-    function send(
+    function sendMessage(
         uint32 _destination,
         bytes memory _tips,
         bytes memory _message

@@ -14,7 +14,7 @@ contract SynapseClientUpgradeableHarness is SynapseClientUpgradeable {
         __SynapseClient_init();
     }
 
-    function send(
+    function sendMessage(
         uint32 _destination,
         bytes memory _tips,
         bytes memory _message
