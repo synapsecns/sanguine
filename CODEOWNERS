@@ -19,7 +19,7 @@ services/scribe @trajan0x @CryptoMaxPlanck
 tools/ @trajan0x
 
 # config files
-.codecov.yaml @trajan0x
+.codecov.yml @trajan0x
 .editorconfig @trajan0x
 .eslintrc.js @ChiTimesChi
 .gitattributes @trajan0x
