@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/message"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
 
@@ -44,4 +45,16 @@ func (d *DeployManager) GetSwapFlashLoan(ctx context.Context, backend backends.S
 	assert.True(d.T(), ok)
 
 	return swapContract, swapHandle
+}
+
+// GetMessageBusUpgradable gets a typecast swap contract.
+func (d *DeployManager) GetMessageBusUpgradable(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *message.MessageRef) {
+	d.T().Helper()
+
+	messageContract := d.GetContractRegistry(backend).Get(ctx, MessageBusUpgradableType)
+
+	messageHandle, ok := messageContract.ContractHandle().(*message.MessageRef)
+	assert.True(d.T(), ok)
+
+	return messageContract, messageHandle
 }

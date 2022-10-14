@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/message"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
 
@@ -29,6 +30,11 @@ type SwapFlashLoanDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// MessageBusUpgradableDeployer is the type of the Message Bus deployer.
+type MessageBusUpgradableDeployer struct {
+	*deployer.BaseDeployer
+}
+
 // NewBridgeConfigV3Deployer creates a new bridge config v2 client.
 func NewBridgeConfigV3Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return BridgeConfigV3Deployer{deployer.NewSimpleDeployer(registry, backend, BridgeConfigTypeV3)}
@@ -42,6 +48,11 @@ func NewSynapseBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend
 // NewSwapFlashLoanDeployer creates a new bridge config v2 client.
 func NewSwapFlashLoanDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return SwapFlashLoanDeployer{deployer.NewSimpleDeployer(registry, backend, SwapFlashLoanType)}
+}
+
+// NewMessageBusUpgradableDeployer creates a new message bus upgradable client.
+func NewMessageBusUpgradableDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return MessageBusUpgradableDeployer{deployer.NewSimpleDeployer(registry, backend, MessageBusUpgradableType)}
 }
 
 // Deploy deploys bridge config v3
@@ -98,6 +109,17 @@ func (n SwapFlashLoanDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 	})
 }
 
+// Deploy deploys Message Bus Upgradable
+// nolint: dupl
+func (n MessageBusUpgradableDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return message.DeployMessageBusUpgradeable(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return message.NewMessageRef(address, backend)
+	})
+}
+
 var _ deployer.ContractDeployer = &BridgeConfigV3Deployer{}
 var _ deployer.ContractDeployer = &SynapseBridgeDeployer{}
 var _ deployer.ContractDeployer = &SwapFlashLoanDeployer{}
+var _ deployer.ContractDeployer = &MessageBusUpgradableDeployer{}

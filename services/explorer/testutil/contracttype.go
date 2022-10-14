@@ -42,6 +42,8 @@ const (
 	SynapseBridgeType contractTypeImpl = 1
 	// SwapFlashLoanType is the swap contract type.
 	SwapFlashLoanType contractTypeImpl = 2
+	// MessageBusUpgradableType is the messaging contract type.
+	MessageBusUpgradableType contractTypeImpl = 3
 )
 
 // ID gets the contract type as an id.
@@ -68,7 +70,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return bridge.Contracts["/solidity/SynapseBridgeV1_flat.sol:SynapseBridge"]
 	case SwapFlashLoanType:
 		return swap.Contracts["/solidity/SwapFlashLoanV1_flat.sol:SwapFlashLoan"]
-
+	case MessageBusUpgradableType:
+		return swap.Contracts["/solidity/MessageBusUpgradeable_flat.sol:MessageBusUpgradeable"]
 	default:
 		panic("not yet implemented")
 	}

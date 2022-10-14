@@ -1,4 +1,4 @@
-package messaging
+package message
 
 import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -6,29 +6,29 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-// MessagingRef isa bound Message Bus Upgradeable contract and the address of the contract
+// MessageRef isa bound Message Bus Upgradeable contract and the address of the contract
 // nolint: golint
-type MessagingRef struct {
+type MessageRef struct {
 	*MessageBusUpgradeable
 	address common.Address
 }
 
 // Address is the contract address.
-func (s MessagingRef) Address() common.Address {
+func (s MessageRef) Address() common.Address {
 	return s.address
 }
 
-// NewMessagingRef gets a bound Message Bus Upgradeable contract and the address of the contract
+// NewMessageRef gets a bound Message Bus Upgradeable contract and the address of the contract
 // nolint: golint
-func NewMessagingRef(address common.Address, backend bind.ContractBackend) (*MessagingRef, error) {
+func NewMessageRef(address common.Address, backend bind.ContractBackend) (*MessageRef, error) {
 	messageBusUpgradeable, err := NewMessageBusUpgradeable(address, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &MessagingRef{
+	return &MessageRef{
 		MessageBusUpgradeable: messageBusUpgradeable,
 		address:               address,
 	}, nil
 }
 
-var _ vm.ContractRef = &MessagingRef{}
+var _ vm.ContractRef = &MessageRef{}
