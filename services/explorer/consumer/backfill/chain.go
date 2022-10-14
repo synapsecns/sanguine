@@ -73,11 +73,13 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 				case <-groupCtx.Done():
 					return fmt.Errorf("context canceled: %w", groupCtx.Err())
 				case <-time.After(timeout):
+
 					// fetch the logs
 					rangeEnd := funcHeight + uint64(c.chainConfig.FetchBlockIncrement) - 1
 					if rangeEnd > endHeight {
 						rangeEnd = endHeight
 					}
+
 					logs, err := c.Fetcher.FetchLogsInRange(groupCtx, c.chainConfig.ChainID, funcHeight, rangeEnd)
 					if err != nil {
 						timeout = b.Duration()
@@ -89,6 +91,9 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 					if err != nil {
 						logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 					}
+
+					// Store the last block
+					c.consumerDB.StoreLastBlock(groupCtx, c.chainConfig.ChainID, rangeEnd)
 					return nil
 				}
 			}

@@ -85,32 +85,13 @@ func (e Explorer) Start(ctx context.Context) error {
 
 // nolint:gocognit
 func (e Explorer) processRange(ctx context.Context, chainID uint32) error {
-	// TODO add comments, take out log
+	// TODO @Maxplanck
 	// TODO probably remove mapping from start blocks? since chainID is already decided.
-	newBlock := e.config.Chains[chainID].StartBlocks[chainID]
-	fmt.Println("newBlock", newBlock)
 
+	// Backfill the chain
 	err := e.explorerBackfiller.ChainBackfillers[chainID].Backfill(ctx)
 	if err != nil {
-		return fmt.Errorf("could not retrieve last confirmed block: %w", err)
-	}
-
-	lastBlockNumber, err := e.consumerDB.RetrieveLastBlock(ctx, chainID)
-	if err != nil {
-		return fmt.Errorf("could not retrieve last confirmed block: %w", err)
-	}
-
-	for i := lastBlockNumber; i <= newBlock; i++ {
-		// check the validity of the block
-		err = e.explorerBackfiller.ChainBackfillers[chainID].Backfill(ctx)
-		if err != nil {
-			return fmt.Errorf("could not backfill: %w", err)
-		}
-		// update the last confirmed block number
-		err = e.consumerDB.StoreLastBlock(ctx, chainID, i)
-		if err != nil {
-			return fmt.Errorf("could not store last confirmed block: %w", err)
-		}
+		return fmt.Errorf("could not backfill: %w", err)
 	}
 
 	return nil
