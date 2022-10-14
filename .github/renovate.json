@@ -19,10 +19,11 @@
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "excludePackagePrefixes": [],
-      "matchManagers": ["gomod", "gomodUpdateImportPaths", "gomodTidy"],
+      "matchManagers": ["gomod"],
       "automerge": false,
       "postUpdateOptions": [
-        "gomodTidy"
+        "gomodTidy",
+        "gomodUpdateImportPaths"
       ]
     },
     {
