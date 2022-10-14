@@ -27,11 +27,12 @@
     },
     {
       "matchDatasources": ["npm"],
-      "stabilityDays": 3,
+      "stabilityDays": 3
     },
     {
       "matchPackagePrefixes": ["@openzeppelin/"],
-      "prPriority": 1
+      "prPriority": 1,
+      "stabilityDays": 0
     }
   ],
   "updateInternalDeps": true,
