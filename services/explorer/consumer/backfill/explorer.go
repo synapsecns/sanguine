@@ -26,6 +26,8 @@ type ExplorerBackfiller struct {
 }
 
 // NewExplorerBackfiller creates a new backfiller for the explorer.
+//
+// nolint:gocognit
 func NewExplorerBackfiller(consumerDB db.ConsumerDB, config config.Config) (*ExplorerBackfiller, error) {
 	// initialize the list of chain backfillers
 	chainBackfillers := make(map[uint32]*ChainBackfiller)
@@ -56,8 +58,9 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context) error {
 
 	// iterate over each chain backfiller
 	// for _, chainBackfiller := range e.ChainBackfillers {
-	for _, chainConfig := range e.config.Chains {
+	for i := range e.config.Chains {
 		// capture func literal
+		chainConfig := e.config.Chains[i]
 
 		chainBackfiller := e.ChainBackfillers[chainConfig.ChainID]
 		// call Backfill concurrently
@@ -77,6 +80,7 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context) error {
 	return nil
 }
 
+// nolint:gocognit,cyclop
 func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig, baseURL string) (*ChainBackfiller, error) {
 	// get the ABI for each contract
 	bridgeConfigABI, err := bridgeconfig.BridgeConfigV3MetaData.GetAbi()

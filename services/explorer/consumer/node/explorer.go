@@ -46,9 +46,9 @@ func (e Explorer) Start(ctx context.Context) error {
 	}
 	// backfill each chain
 	g, groupCtx := errgroup.WithContext(ctx)
-	for _, chainConfig := range e.config.Chains {
+	for i := range e.config.Chains {
 		// capture the func literal
-		chainConfig := chainConfig
+		chainConfig := e.config.Chains[i]
 		g.Go(func() error {
 			// backoff in case of an error
 			b := &backoff.Backoff{
@@ -64,7 +64,11 @@ func (e Explorer) Start(ctx context.Context) error {
 				case <-groupCtx.Done():
 					return fmt.Errorf("context canceled: %w", groupCtx.Err())
 				case <-time.After(timeout):
-					//some
+					err := e.processRange(groupCtx, chainConfig.ChainID)
+					if err != nil {
+						timeout = b.Duration()
+						continue
+					}
 					b.Reset()
 					timeout = time.Duration(refreshRate) * time.Second
 				}
@@ -79,17 +83,35 @@ func (e Explorer) Start(ctx context.Context) error {
 	return nil
 }
 
+// nolint:gocognit
 func (e Explorer) processRange(ctx context.Context, chainID uint32) error {
-	//// get the latest block stored by Scribe
-	//latestBlock, err := e.explorerBackfiller.ChainBackfillers[chainID].Fetcher.FetchLastBlock(ctx, chainID)
-	//if err != nil {
-	//	return fmt.Errorf("could not fetch last block: %w", err)
-	//}
-	// in the range (last confirmed block number, current block number - required confirmations],
-	// check the validity of the blocks, and modify the database accordingly
+	// TODO add comments, take out log
+	// TODO probably remove mapping from start blocks? since chainID is already decided.
+	newBlock := e.config.Chains[chainID].StartBlocks[chainID]
+	fmt.Println("newBlock", newBlock)
+
+	err := e.explorerBackfiller.ChainBackfillers[chainID].Backfill(ctx)
+	if err != nil {
+		return fmt.Errorf("could not retrieve last confirmed block: %w", err)
+	}
+
 	lastBlockNumber, err := e.consumerDB.RetrieveLastBlock(ctx, chainID)
 	if err != nil {
 		return fmt.Errorf("could not retrieve last confirmed block: %w", err)
 	}
 
+	for i := lastBlockNumber; i <= newBlock; i++ {
+		// check the validity of the block
+		err = e.explorerBackfiller.ChainBackfillers[chainID].Backfill(ctx)
+		if err != nil {
+			return fmt.Errorf("could not backfill: %w", err)
+		}
+		// update the last confirmed block number
+		err = e.consumerDB.StoreLastBlock(ctx, chainID, i)
+		if err != nil {
+			return fmt.Errorf("could not store last confirmed block: %w", err)
+		}
+	}
+
+	return nil
 }
