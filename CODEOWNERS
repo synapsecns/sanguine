@@ -1,4 +1,4 @@
-@trajan0x
+* @trajan0x
 
 *.sol @ChiTimesChi @aureliusbtc @trajan0x
 *.go @trajan0x
@@ -23,20 +23,9 @@ tools/ @trajan0x
 
 # config files
 .changeset/ @aureliusbtc
-.codecov.yml @trajan0x
-.editorconfig @trajan0x
 .prettierrc.js @trajan0x @ChiTimesChi
 .prettierrc.json @trajan0x @ChiTimesChi
-.yamllint.yml @trajan0x
-.eslintrc.js @ChiTimesChi
-.gitattributes @trajan0x
-.gitignore @trajan0x
-.gitmodules @trajan0x
-.golangci.yml @trajan0x
-.nvmrc @trajan0x
-go.work @trajan0x
-go.work.sum @trajan0x
-lerna.json @trajan0x
+.eslintrc.js @trajan0x @ChiTimesChi
 LICENSE @trajan0x @aureliusbtc
 
 
