@@ -15,8 +15,8 @@ jobs:
         uses: ludeeus/action-shellcheck@master
       - uses: mszostok/codeowners-validator@v0.7.4
         with:
-          checks: "files,owners,duppatterns,syntax"
-          experimental_checks: "notowned,avoid-shadowing"
+          checks: 'files,owners,duppatterns,syntax'
+          experimental_checks: 'notowned,avoid-shadowing'
           # GitHub access token is required only if the `owners` check is enabled
           github_access_token: ${{ secrets.github_token }}
       - name: Validate JSON
