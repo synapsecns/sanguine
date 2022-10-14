@@ -13,12 +13,12 @@ jobs:
           config_file: .yamllint.yml
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
       - uses: mszostok/codeowners-validator@v0.7.4
         with:
           checks: 'files,duppatterns,syntax'
           experimental_checks: 'notowned,avoid-shadowing'
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
       - name: Validate JSON
         uses: walbo/validate-json@v1.1.0
       - name: Validate codecov
