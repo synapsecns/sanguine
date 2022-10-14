@@ -564,7 +564,7 @@ func eventToMessageEvent(event messageTypes.EventLog, chainID uint32) model.Mess
 		TxHash:          event.GetTxHash().String(),
 		EventIndex:      event.GetEventIndex(),
 		Sender:          "",
-		MessageId:       event.GetMessageId(),
+		MessageID:       event.GetMessageID(),
 		SourceChainID:   event.GetSourceChainID(),
 
 		Status:             ToNullString(event.GetStatus()),
@@ -620,15 +620,15 @@ func (m *MessageParser) ParseAndStore(ctx context.Context, log ethTypes.Log, cha
 		timeStampBig := uint64(*timeStamp.Response)
 		messageEvent.TimeStamp = &timeStampBig
 	}
-	sender, err := m.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
-	if err != nil {
-		if !core.IsTest() {
-			return fmt.Errorf("could not fetch tx sender: %w", err)
-		}
-		logger.Errorf("could not get tx sender: %v", err)
-		sender = "FAKE_SENDER"
-	}
-	messageEvent.Sender = sender
+	// sender, err := m.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
+	// if err != nil {
+	//	if !core.IsTest() {
+	//		return fmt.Errorf("could not fetch tx sender: %w", err)
+	//	}
+	//	logger.Errorf("could not get tx sender: %v", err)
+	//	sender = "FAKE_SENDER"
+	//}
+	// messageEvent.Sender = sender
 
 	err = m.consumerDB.StoreEvent(ctx, nil, nil, &messageEvent)
 	if err != nil {

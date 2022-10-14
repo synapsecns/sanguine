@@ -5,6 +5,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/message/testmessage"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 )
 
@@ -71,7 +72,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case TestSwapFlashLoanType:
 		return testswap.Contracts["/solidity/TestSwapFlashLoan.sol:TestSwapFlashLoan"]
 	case TestMessageBusUpgradeableType:
-		return testswap.Contracts["/solidity/TestMessageBusUpgradeable.sol:TestMessageBusUpgradeable"]
+		return testmessage.Contracts["/solidity/TestMessageBusUpgradeable.sol:TestMessageBusUpgradeable"]
 
 	default:
 		panic("not yet implemented")

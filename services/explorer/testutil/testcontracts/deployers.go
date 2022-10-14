@@ -29,7 +29,7 @@ func NewTestMessageBusUpgradeableDeployer(registry deployer.GetOnlyContractRegis
 // Deploy deploys a test message.
 func (t TestMessageBusUpgradeableDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return t.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return testmessage.DeployMessageBusUpgradeable(transactOps, backend)
+		return testmessage.DeployTestMessageBusUpgradeable(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return testmessage.NewTestMessageRef(address, backend)
 	})

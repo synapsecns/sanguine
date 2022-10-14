@@ -225,7 +225,7 @@ type MessageEvent struct {
 	// Sender is the address of the sender
 	Sender string `gorm:"column:sender"`
 	// MessageId is the message id of the event.
-	MessageId string `gorm:"column:message_id"`
+	MessageID string `gorm:"column:message_id"`
 	// SourceChainID is the chain id of the message's source chain.
 	SourceChainID *big.Int `gorm:"column:source_chain_id;type:UInt256"`
 

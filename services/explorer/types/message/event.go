@@ -19,8 +19,8 @@ type EventLog interface {
 	GetEventType() EventType
 	// GetEventIndex returns the index of the log.
 	GetEventIndex() uint64
-	// GetMessageId returns the message id of the event.
-	GetMessageId() string
+	// GetMessageID returns the message id of the event.
+	GetMessageID() string
 	// GetSourceChainID returns the chain id of the message's source chain.
 	GetSourceChainID() *big.Int
 

@@ -31,10 +31,14 @@ type ChainBackfiller struct {
 	bridgeConfigAddress common.Address
 	// fetcher is the fetcher to use to fetch logs.
 	fetcher consumer.Fetcher
+	// messageParser is the parser to use to parse message events.
+	messageParser *consumer.MessageParser
+	// messageAddress is the address of the message contract.
+	messageAddress common.Address
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncrement uint64, bridgeParser *consumer.BridgeParser, bridgeAddress common.Address, swapParsers map[common.Address]*consumer.SwapParser, fetcher consumer.Fetcher, bridgeConfigAddress common.Address) *ChainBackfiller {
+func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncrement uint64, bridgeParser *consumer.BridgeParser, bridgeAddress common.Address, swapParsers map[common.Address]*consumer.SwapParser, fetcher consumer.Fetcher, bridgeConfigAddress common.Address, messageParser *consumer.MessageParser, messageAddress common.Address) *ChainBackfiller {
 	failedLogs := atomic.Uint32{}
 	failedLogs.Store(0)
 	return &ChainBackfiller{
@@ -46,6 +50,8 @@ func NewChainBackfiller(chainID uint32, consumerDB db.ConsumerDB, fetchBlockIncr
 		swapParsers:         swapParsers,
 		fetcher:             fetcher,
 		bridgeConfigAddress: bridgeConfigAddress,
+		messageParser:       messageParser,
+		messageAddress:      messageAddress,
 	}
 }
 
@@ -109,16 +115,19 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) 
 		log := log
 		g.Go(func() error {
 			var eventParser consumer.Parser
-			if log.Address == c.bridgeAddress {
+			switch log.Address {
+			case c.bridgeAddress:
 				eventParser = c.bridgeParser
-			} else {
+			case c.messageAddress:
+				eventParser = c.messageParser
+			default:
 				if c.swapParsers[log.Address] == nil {
 					logger.Warnf("no parser found for contract %s", log.Address.Hex())
 					return nil
 				}
 				eventParser = c.swapParsers[log.Address]
 			}
-
+			fmt.Println("hey")
 			err := eventParser.ParseAndStore(groupCtx, log, c.chainID)
 			if err != nil {
 				return fmt.Errorf("could not parse and store log: %w", err)

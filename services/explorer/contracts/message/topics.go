@@ -18,7 +18,6 @@ func init() {
 	ExecutedTopic = parsedMessage.Events["Executed"].ID
 
 	MessageSentTopic = parsedMessage.Events["MessageSent"].ID
-
 }
 
 // ExecutedTopic is the topic used for receiving messages.

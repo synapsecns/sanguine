@@ -270,13 +270,13 @@ func (_m *ConsumerDB) ReadBlockNumberByChainID(ctx context.Context, eventType in
 	return r0, r1
 }
 
-// StoreEvent provides a mock function with given fields: ctx, bridgeEvent, swapEvent
-func (_m *ConsumerDB) StoreEvent(ctx context.Context, bridgeEvent *sql.BridgeEvent, swapEvent *sql.SwapEvent) error {
-	ret := _m.Called(ctx, bridgeEvent, swapEvent)
+// StoreEvent provides a mock function with given fields: ctx, bridgeEvent, swapEvent, messageEvent
+func (_m *ConsumerDB) StoreEvent(ctx context.Context, bridgeEvent *sql.BridgeEvent, swapEvent *sql.SwapEvent, messageEvent *sql.MessageEvent) error {
+	ret := _m.Called(ctx, bridgeEvent, swapEvent, messageEvent)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *sql.BridgeEvent, *sql.SwapEvent) error); ok {
-		r0 = rf(ctx, bridgeEvent, swapEvent)
+	if rf, ok := ret.Get(0).(func(context.Context, *sql.BridgeEvent, *sql.SwapEvent, *sql.MessageEvent) error); ok {
+		r0 = rf(ctx, bridgeEvent, swapEvent, messageEvent)
 	} else {
 		r0 = ret.Error(0)
 	}

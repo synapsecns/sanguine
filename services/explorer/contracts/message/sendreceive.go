@@ -38,8 +38,8 @@ func (m MessageBusUpgradeableExecuted) GetEventIndex() uint64 {
 	return uint64(m.Raw.Index)
 }
 
-// GetMessageId gets the message id for the event.
-func (m MessageBusUpgradeableExecuted) GetMessageId() string {
+// GetMessageID gets the message id for the event.
+func (m MessageBusUpgradeableExecuted) GetMessageID() string {
 	return common.Bytes2Hex(m.MessageId[:])
 }
 
@@ -99,7 +99,7 @@ var _ message.EventLog = &MessageBusUpgradeableExecuted{}
 
 // GetEventType gets the execute event type.
 func (m MessageBusUpgradeableMessageSent) GetEventType() message.EventType {
-	return message.ExecutedEvent
+	return message.MessageSentEvent
 }
 
 // GetRaw gets the raw logs.
@@ -127,8 +127,8 @@ func (m MessageBusUpgradeableMessageSent) GetEventIndex() uint64 {
 	return uint64(m.Raw.Index)
 }
 
-// GetMessageId gets the message id for the event.
-func (m MessageBusUpgradeableMessageSent) GetMessageId() string {
+// GetMessageID gets the message id for the event.
+func (m MessageBusUpgradeableMessageSent) GetMessageID() string {
 	return common.Bytes2Hex(m.MessageId[:])
 }
 
@@ -165,7 +165,7 @@ func (m MessageBusUpgradeableMessageSent) GetNonce() *big.Int {
 
 // GetMessage gets the message for the event.
 func (m MessageBusUpgradeableMessageSent) GetMessage() *string {
-	message := common.Bytes2Hex(m.Message[:])
+	message := common.Bytes2Hex(m.Message)
 	return &message
 }
 
@@ -177,7 +177,7 @@ func (m MessageBusUpgradeableMessageSent) GetReceiver() *string {
 
 // GetOptions gets the options for the event.
 func (m MessageBusUpgradeableMessageSent) GetOptions() *string {
-	options := common.Bytes2Hex(m.Options[:])
+	options := common.Bytes2Hex(m.Options)
 	return &options
 }
 

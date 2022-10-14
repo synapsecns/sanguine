@@ -59,7 +59,7 @@ func (t *DBSuite) TestMessageWrite() {
 		EventType:       messageTypes.MessageSentEvent.Int(),
 		BlockNumber:     gofakeit.Uint64(),
 		TxHash:          common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
-		MessageId:       gofakeit.Sentence(10),
+		MessageID:       gofakeit.Sentence(10),
 		SourceChainID:   big.NewInt(gofakeit.Int64()),
 
 		SourceAddress:      sql.NullString{String: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(), Valid: true},
