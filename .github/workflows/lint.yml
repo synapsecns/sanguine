@@ -17,6 +17,8 @@ jobs:
         with:
           checks: 'files,duppatterns,syntax'
           experimental_checks: 'notowned,avoid-shadowing'
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
       - name: Validate JSON
         uses: walbo/validate-json@v1.1.0
       - name: Validate codecov
