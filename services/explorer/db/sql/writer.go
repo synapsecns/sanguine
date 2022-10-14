@@ -3,7 +3,6 @@ package sql
 import (
 	"context"
 	"fmt"
-	"time"
 )
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
@@ -39,24 +38,26 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 		dbTx = s.db.WithContext(ctx).
 			Model(&LastBlock{}).
 			Create(&LastBlock{
-				InsertTime:  uint64(time.Now().UnixNano()),
 				ChainID:     chainID,
 				BlockNumber: blockNumber,
 			})
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
 		}
+
 		return nil
 	}
-	dbTx = s.db.WithContext(ctx).
-		Model(&LastBlock{}).
-		Where(&LastBlock{
-			ChainID: chainID,
-		}).
-		Update(BlockNumberFieldName, blockNumber)
-
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not update last block: %w", dbTx.Error)
+	if blockNumber > entry.BlockNumber {
+		dbTx = s.db.WithContext(ctx).
+			Model(&LastBlock{}).
+			Create(&LastBlock{
+				ChainID:     chainID,
+				BlockNumber: blockNumber,
+			})
+		if dbTx.Error != nil {
+			return fmt.Errorf("could not store last block: %w", dbTx.Error)
+		}
+		s.db.WithContext(ctx).Exec(fmt.Sprintf("OPTIMIZE TABLE last_blocks DEDUPLICATE BY %s", ChainIDFieldName))
 	}
 	return nil
 }
