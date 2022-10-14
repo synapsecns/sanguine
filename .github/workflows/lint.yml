@@ -14,7 +14,7 @@ jobs:
       - name: Validate JSON
         uses: walbo/validate-json@v1.1.0
         with:
-          files: "**/*.json"
+          files: "./**/*.json"
       - name: Validate codecov
         run: |
           # https://docs.codecov.io/docs/codecov-yaml curl, if respoonse code ok then exit 0 otherwise exit 1
