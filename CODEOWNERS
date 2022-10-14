@@ -23,7 +23,6 @@ tools/ @trajan0x
 .changeset/ @aureliusbtc
 .codecov.yml @trajan0x
 .editorconfig @trajan0x
-.prettierrc @trajan0x @ChiTimesChi
 .prettierrc.js @trajan0x @ChiTimesChi
 .prettierrc.json @trajan0x @ChiTimesChi
 .yamllint.yml @trajan0x
