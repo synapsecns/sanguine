@@ -66,12 +66,12 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
 
     // TODO: add/remove notaries upon bonding/unbonding
 
-    function addNotary(uint32 _domain, address _notary) external onlyOwner {
-        _addNotary(_domain, _notary);
+    function addNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
+        return _addNotary(_domain, _notary);
     }
 
-    function removeNotary(uint32 _domain, address _notary) external onlyOwner {
-        _removeNotary(_domain, _notary);
+    function removeNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
+        return _removeNotary(_domain, _notary);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
