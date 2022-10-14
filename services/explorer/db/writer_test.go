@@ -7,6 +7,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
+	messageTypes "github.com/synapsecns/sanguine/services/explorer/types/message"
 	"math/big"
 )
 
@@ -25,7 +26,7 @@ func (t *DBSuite) TestBridgeWrite() {
 		Recipient:          sql.NullString{String: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(), Valid: true},
 		DestinationChainID: big.NewInt(gofakeit.Int64()),
 	}
-	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil)
+	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil, nil)
 	Nil(t.T(), err)
 }
 
@@ -45,6 +46,32 @@ func (t *DBSuite) TestSwapWrite() {
 		SoldID:       big.NewInt(gofakeit.Int64()),
 		BoughtID:     big.NewInt(gofakeit.Int64()),
 	}
-	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent)
+	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent, nil)
+	Nil(t.T(), err)
+}
+
+func (t *DBSuite) TestMessageWrite() {
+	defer t.cleanup()
+	testString := gofakeit.Sentence(10)
+	address := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
+	messageEvent := &model.MessageEvent{
+		InsertTime:      gofakeit.Uint64(),
+		ContractAddress: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		ChainID:         gofakeit.Uint32(),
+		EventType:       messageTypes.MessageSentEvent.Int(),
+		BlockNumber:     gofakeit.Uint64(),
+		TxHash:          common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		MessageId:       testString,
+		SourceChainID:   big.NewInt(gofakeit.Int64()),
+
+		SourceAddress:      &address,
+		DestinationChainID: big.NewInt(gofakeit.Int64()),
+		Nonce:              big.NewInt(gofakeit.Int64()),
+		Fee:                big.NewInt(gofakeit.Int64()),
+		Options:            &testString,
+		Message:            &testString,
+		Receiver:           &address,
+	}
+	err := t.db.StoreEvent(t.GetTestContext(), nil, nil, messageEvent)
 	Nil(t.T(), err)
 }

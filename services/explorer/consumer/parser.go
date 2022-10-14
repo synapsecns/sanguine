@@ -326,7 +326,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 	bridgeEvent.Sender = sender
 
-	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent, nil)
+	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent, nil, nil)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
@@ -505,7 +505,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 	}
 
 	// Store bridgeEvent
-	err = p.consumerDB.StoreEvent(ctx, nil, &swapEvent)
+	err = p.consumerDB.StoreEvent(ctx, nil, &swapEvent, nil)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
