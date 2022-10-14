@@ -42,6 +42,34 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                VIEWS                                 ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Returns addresses of all Notaries for a given domain.
+     * @dev This copies storage into memory, so can consume a lof of gas, if
+     * amount of notaries is large (see EnumerableSet.values())
+     */
+    function allNotaries(uint32 _domain) external view returns (address[] memory) {
+        return domainNotaries[_domain];
+    }
+
+    /**
+     * @notice Returns i-th Notary for a given domain. O(1)
+     * @dev Will revert if index is out of range
+     */
+    function getNotary(uint32 _domain, uint256 _index) public view returns (address) {
+        return domainNotaries[_domain][_index];
+    }
+
+    /**
+     * @notice Returns amount of active notaries for a given domain. O(1)
+     */
+    function notariesAmount(uint32 _domain) public view returns (uint256) {
+        return domainNotaries[_domain].length;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 

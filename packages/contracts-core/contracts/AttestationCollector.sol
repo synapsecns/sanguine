@@ -109,12 +109,12 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
      * @notice Get latest attestation for the domain.
      */
     function getLatestAttestation(uint32 _domain) external view returns (bytes memory) {
-        uint256 notariesAmount = domainNotaries[_domain].length;
-        require(notariesAmount != 0, "!notaries");
+        uint256 amount = notariesAmount(_domain);
+        require(amount != 0, "!notaries");
         uint32 _latestNonce = 0;
         bytes32 _latestRoot = bytes32(0);
-        for (uint256 i = 0; i < notariesAmount; ) {
-            address notary = domainNotaries[_domain][i];
+        for (uint256 i = 0; i < amount; ) {
+            address notary = getNotary(_domain, i);
             uint32 nonce = latestNonce[_domain][notary];
             // Check latest Notary's nonce against current latest nonce
             if (nonce > _latestNonce) {
