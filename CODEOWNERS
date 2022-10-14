@@ -1,0 +1,31 @@
+* @trajan0x
+
+*.sol @ChiTimesChi @aureliusbtc @trajan0x
+*.go @trajan0x
+
+.github/ @trajan0x
+.github/workflows/solidity.yml @trajan0x @ChiTimesChi
+.github/workflows/foundry-tests.yml @trajan0x @ChiTimesChi
+
+.vscode/ @trajan0x @ChiTimesChi
+agents/ @trajan0x @ChiTimesChi
+core/ @trajan0x
+charts/ @trajan0x
+docker/ @trajan0x
+ethergo/ @trajan0x
+make/ @trajan0x
+packages/contracts-core/ @ChiTimesChi @trajan0x
+
+services/explorer @CryptoMaxPlanck @simonmahns @trajan0x
+services/omnirpc @trajan0x
+services/scribe @trajan0x @CryptoMaxPlanck
+tools/ @trajan0x
+
+# config files
+.changeset/ @aureliusbtc
+.prettierrc.js @trajan0x @ChiTimesChi
+.prettierrc.json @trajan0x @ChiTimesChi
+.eslintrc.js @trajan0x @ChiTimesChi
+LICENSE @trajan0x @aureliusbtc
+
+
