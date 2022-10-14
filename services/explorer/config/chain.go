@@ -10,6 +10,8 @@ import (
 type ChainConfig struct {
 	// ChainID is the ID of the chain.
 	ChainID uint32 `yaml:"chain_id"`
+	// RPCURL is the ID of the chain.
+	RPCURL string `yaml:"chain_id"`
 	// FetchBlockIncrement is the number of blocks to fetch at a time.
 	FetchBlockIncrement uint32 `yaml:"fetch_block_increment"`
 	// StartBlocks is a mapping from chain ID -> start block for backfilling.

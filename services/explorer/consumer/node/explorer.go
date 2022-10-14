@@ -22,9 +22,9 @@ type Explorer struct {
 }
 
 // NewExplorer creates a new explorer.
-func NewExplorer(consumerDB db.ConsumerDB, config config.Config) (*Explorer, error) {
+func NewExplorer(ctx context.Context, consumerDB db.ConsumerDB, config config.Config) (*Explorer, error) {
 	// initialize the explorer backfiller
-	explorerBackfiller, err := backfill.NewExplorerBackfiller(consumerDB, config)
+	explorerBackfiller, err := backfill.NewExplorerBackfiller(ctx, consumerDB, config)
 	if err != nil {
 		return nil, fmt.Errorf("could not create explorer backfiller: %w", err)
 	}
