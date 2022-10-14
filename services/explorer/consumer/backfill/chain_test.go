@@ -38,6 +38,7 @@ func (b *BackfillSuite) TestBackfill() {
 	startBlocks := map[uint32]uint64{
 		uint32(testChainID.Uint64()): 0,
 	}
+
 	chainConfigs := []config.ChainConfig{
 		{
 			ChainID:                uint32(testChainID.Uint64()),
@@ -49,11 +50,12 @@ func (b *BackfillSuite) TestBackfill() {
 		},
 	}
 
-	explorerConfig := config.Config{
-		Chains:      chainConfigs,
-		RefreshRate: 2,
-		ScribeURL:   b.gqlClient.Client.BaseURL,
-	}
+	// This structure is for reference
+	// explorerConfig := config.Config{
+	//	Chains:      chainConfigs,
+	//	RefreshRate: 2,
+	//	ScribeURL:   b.gqlClient.Client.BaseURL,
+	//}
 
 	// Store every bridge event.
 	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
@@ -160,7 +162,9 @@ func (b *BackfillSuite) TestBackfill() {
 	spMap[swapContractA.Address()] = spA
 	spMap[swapContractB.Address()] = spB
 	f := consumer.NewFetcher(b.gqlClient)
-	chainBackfiller := backfill.NewChainBackfiller(uint32(testChainID.Uint64()), b.db, 3, bp, bridgeContract.Address(), spMap, *f, b.bridgeConfigContract.Address())
+
+	// Test the first chain in the config file
+	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, *f, chainConfigs[0])
 
 	// backfill the blocks
 	// TODO: store the latest block number to query to in scribe db

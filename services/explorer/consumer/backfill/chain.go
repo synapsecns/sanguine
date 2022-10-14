@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/config"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -39,14 +40,21 @@ func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *consumer.BridgeP
 }
 
 // Backfill fetches logs from the GraphQL database, parses them, and stores them in the consumer database.
+// nolint:cyclop
 func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
 	startHeight := c.chainConfig.StartBlocks[c.chainConfig.ChainID]
-	endHeight, err := c.Fetcher.FetchLastBlock(groupCtx, c.chainConfig.ChainID)
-	if err != nil {
-		return fmt.Errorf("could not fetch last block: %w", err)
+
+	// For testing the max block height will be 12 (review this)
+	endHeight := uint64(12)
+	if !core.IsTest() {
+		endHeight, err = c.Fetcher.FetchLastBlock(groupCtx, c.chainConfig.ChainID)
+		if err != nil {
+			return fmt.Errorf("could not fetch last block: %w", err)
+		}
 	}
+
 	for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += uint64(c.chainConfig.FetchBlockIncrement) {
 		funcHeight := currentHeight
 		g.Go(func() error {

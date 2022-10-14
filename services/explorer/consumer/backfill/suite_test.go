@@ -93,7 +93,7 @@ func (b *BackfillSuite) SetupTest() {
 		b.Require().NoError(err)
 		b.testBackend.WaitForConfirmation(b.GetTestContext(), tx)
 	}
-	//httpport := freeport.GetPort()
+	// httpport := freeport.GetPort()
 	//go func() {
 	//	Nil(b.T(), api.Start(b.GetTestContext(), api.Config{
 	//		HTTPPort:  0,
@@ -101,7 +101,6 @@ func (b *BackfillSuite) SetupTest() {
 	//		ScribeURL: "",
 	//	}))
 	//}()
-
 }
 
 // TestBackfillSuite tests the backfill suite.
