@@ -1,3 +1,5 @@
+@trajan0x
+
 *.sol @ChiTimesChi @aureliusbtc @trajan0x
 *.go @trajan0x
 
@@ -36,10 +38,5 @@ go.work @trajan0x
 go.work.sum @trajan0x
 lerna.json @trajan0x
 LICENSE @trajan0x @aureliusbtc
-package.json @trajan0x
-README.md @trajan0x
-tsconfig.json @trajan0x
-tsconfig.build.json @trajan0x
-yarn.lock @trajan0x
-CODEOWNERS @trajan0x
+
 
