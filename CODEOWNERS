@@ -7,6 +7,7 @@
 
 .vscode/ @trajan0x @ChiTimesChi
 agents/ @trajan0x @ChiTimesChi
+core/ @trajan0x
 charts/ @trajan0x
 docker/ @trajan0x
 ethergo/ @trajan0x
@@ -21,6 +22,9 @@ tools/ @trajan0x
 # config files
 .codecov.yml @trajan0x
 .editorconfig @trajan0x
+.prettierrc @trajan0x @ChiTimesChi
+.prettierrc.son @trajan0x @ChiTimesChi
+.yamllint.yml @trajan0x
 .eslintrc.js @ChiTimesChi
 .gitattributes @trajan0x
 .gitignore @trajan0x
@@ -28,6 +32,7 @@ tools/ @trajan0x
 .golangci.yml @trajan0x
 .nvmrc @trajan0x
 go.work @trajan0x
+go.work.sum @trajan0x
 lerna.json @trajan0x
 LICENSE @trajan0x @aureliusbtc
 package.json @trajan0x
