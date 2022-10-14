@@ -230,25 +230,23 @@ type MessageEvent struct {
 	SourceChainID *big.Int `gorm:"column:source_chain_id;type:UInt256"`
 
 	// Status is the status of the event.
-	Status *string `gorm:"column:status"`
+	Status sql.NullString `gorm:"column:status"`
 	// GetSourceAddress is the address that the message will be passed from.
-	SourceAddress *string `gorm:"column:source_address"`
+	SourceAddress sql.NullString `gorm:"column:source_address"`
 	// DestinationAddress is the address that the message will be passed to.
-	DestinationAddress *string `gorm:"column:destination_address"`
+	DestinationAddress sql.NullString `gorm:"column:destination_address"`
 	// DestinationChainID is the chain id of the message's destination chain.
 	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
-	// GasLimit is the gas limit to be passed alongside the message, depending on the fee paid on the source chain.
-	GasLimit *big.Int `gorm:"column:gas_limit;type:UInt256"`
-	// SourceNonce is the source nonce of the message.
-	SourceNonce *big.Int `gorm:"column:source_nonce;type:UInt256"`
 	// Nonce is the nonce of the message.
 	Nonce *big.Int `gorm:"column:nonce;type:UInt256"`
 	// Message is the message.
-	Message *string `gorm:"column:message"`
+	Message sql.NullString `gorm:"column:message"`
 	// Receiver is the receiver of the event.
-	Receiver *string `gorm:"column:receiver"`
+	Receiver sql.NullString `gorm:"column:receiver"`
 	// Options is the message.
-	Options *string `gorm:"column:options"`
+	Options sql.NullString `gorm:"column:options"`
 	// Fee is the fee of the message.
 	Fee *big.Int `gorm:"column:fee;type:UInt256"`
+	// TimeStamp is the fee of the message.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
 }

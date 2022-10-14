@@ -52,8 +52,6 @@ func (t *DBSuite) TestSwapWrite() {
 
 func (t *DBSuite) TestMessageWrite() {
 	defer t.cleanup()
-	testString := gofakeit.Sentence(10)
-	address := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
 	messageEvent := &model.MessageEvent{
 		InsertTime:      gofakeit.Uint64(),
 		ContractAddress: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
@@ -61,16 +59,16 @@ func (t *DBSuite) TestMessageWrite() {
 		EventType:       messageTypes.MessageSentEvent.Int(),
 		BlockNumber:     gofakeit.Uint64(),
 		TxHash:          common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
-		MessageId:       testString,
+		MessageId:       gofakeit.Sentence(10),
 		SourceChainID:   big.NewInt(gofakeit.Int64()),
 
-		SourceAddress:      &address,
+		SourceAddress:      sql.NullString{String: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(), Valid: true},
 		DestinationChainID: big.NewInt(gofakeit.Int64()),
 		Nonce:              big.NewInt(gofakeit.Int64()),
 		Fee:                big.NewInt(gofakeit.Int64()),
-		Options:            &testString,
-		Message:            &testString,
-		Receiver:           &address,
+		Options:            sql.NullString{String: gofakeit.Sentence(10), Valid: true},
+		Message:            sql.NullString{String: gofakeit.Sentence(10), Valid: true},
+		Receiver:           sql.NullString{String: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(), Valid: true},
 	}
 	err := t.db.StoreEvent(t.GetTestContext(), nil, nil, messageEvent)
 	Nil(t.T(), err)

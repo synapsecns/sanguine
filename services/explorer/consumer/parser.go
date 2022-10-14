@@ -9,10 +9,12 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/message"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
+	messageTypes "github.com/synapsecns/sanguine/services/explorer/types/message"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"math/big"
 	"time"
@@ -49,6 +51,8 @@ type Parser interface {
 	ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error
 }
 
+/* BRIDGE PARSING */
+
 // BridgeParser parses events from the bridge contract.
 type BridgeParser struct {
 	// consumerDB is the database to store parsed data in
@@ -79,48 +83,10 @@ func (p *BridgeParser) EventType(log ethTypes.Log) (_ bridgeTypes.EventType, ok 
 		if eventType == nil {
 			continue
 		}
-
 		return *eventType, true
 	}
 	// return an unknown event to avoid cases where user failed to check the event type
 	return bridgeTypes.EventType(len(bridgeTypes.AllEventTypes()) + 2), false
-}
-
-// SwapParser parses events from the swap contract.
-type SwapParser struct {
-	// consumerDB is the database to store parsed data in
-	consumerDB db.ConsumerDB
-	// swap is the address of the bridge
-	swapAddress common.Address
-	// Filterer is the swap Filterer we use to parse events
-	Filterer *swap.SwapFlashLoanFilterer
-	// consumerFetcher is the Fetcher for sender and timestamp
-	consumerFetcher *Fetcher
-	// swapFetcher is the fetcher for token data from swaps.
-	swapFetcher SwapFetcher
-}
-
-// NewSwapParser creates a new parser for a given bridge.
-func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFetcher SwapFetcher, consumerFetcher *Fetcher) (*SwapParser, error) {
-	filterer, err := swap.NewSwapFlashLoanFilterer(swapAddress, nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
-	}
-	return &SwapParser{consumerDB, swapAddress, filterer, consumerFetcher, swapFetcher}, nil
-}
-
-// EventType returns the event type of a swap log.
-func (p *SwapParser) EventType(log ethTypes.Log) (_ swapTypes.EventType, ok bool) {
-	for _, logTopic := range log.Topics {
-		eventType := swap.EventTypeFromTopic(logTopic)
-		if eventType == nil {
-			continue
-		}
-
-		return *eventType, true
-	}
-	// return an unknown event to avoid cases where user failed to check the event type
-	return swapTypes.EventType(len(swapTypes.AllEventTypes()) + 2), false
 }
 
 // eventToBridgeEvent stores a bridge event.
@@ -333,6 +299,45 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	return nil
 }
 
+/* SWAP PARSING */
+
+// SwapParser parses events from the swap contract.
+type SwapParser struct {
+	// consumerDB is the database to store parsed data in
+	consumerDB db.ConsumerDB
+	// swap is the address of the bridge
+	swapAddress common.Address
+	// Filterer is the swap Filterer we use to parse events
+	Filterer *swap.SwapFlashLoanFilterer
+	// consumerFetcher is the Fetcher for sender and timestamp
+	consumerFetcher *Fetcher
+	// swapFetcher is the fetcher for token data from swaps.
+	swapFetcher SwapFetcher
+}
+
+// NewSwapParser creates a new parser for a given bridge.
+func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFetcher SwapFetcher, consumerFetcher *Fetcher) (*SwapParser, error) {
+	filterer, err := swap.NewSwapFlashLoanFilterer(swapAddress, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
+	}
+	return &SwapParser{consumerDB, swapAddress, filterer, consumerFetcher, swapFetcher}, nil
+}
+
+// EventType returns the event type of a swap log.
+func (p *SwapParser) EventType(log ethTypes.Log) (_ swapTypes.EventType, ok bool) {
+	for _, logTopic := range log.Topics {
+		eventType := swap.EventTypeFromTopic(logTopic)
+		if eventType == nil {
+			continue
+		}
+
+		return *eventType, true
+	}
+	// return an unknown event to avoid cases where user failed to check the event type
+	return swapTypes.EventType(len(swapTypes.AllEventTypes()) + 2), false
+}
+
 // eventToSwapEvent stores a swap event.
 func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent {
 	var buyer sql.NullString
@@ -506,6 +511,126 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 
 	// Store bridgeEvent
 	err = p.consumerDB.StoreEvent(ctx, nil, &swapEvent, nil)
+	if err != nil {
+		return fmt.Errorf("could not store event: %w", err)
+	}
+	return nil
+}
+
+/* MESSAGE PARSING */
+
+// MessageParser parses events from the message contract.
+type MessageParser struct {
+	// consumerDB is the database to store parsed data in
+	consumerDB db.ConsumerDB
+	// Filterer is the message Filterer we use to parse events
+	Filterer *message.MessageBusUpgradeableFilterer
+	// messageAddress is the address of the message
+	messageAddress common.Address
+	// consumerFetcher is the Fetcher for sender and timestamp
+	consumerFetcher *Fetcher
+}
+
+// NewMessageParser creates a new parser for a given message.
+func NewMessageParser(consumerDB db.ConsumerDB, messageAddress common.Address, consumerFetcher *Fetcher) (*MessageParser, error) {
+	filterer, err := message.NewMessageBusUpgradeableFilterer(messageAddress, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not create %T: %w", message.MessageBusReceiverUpgradeableFilterer{}, err)
+	}
+	return &MessageParser{consumerDB, filterer, messageAddress, consumerFetcher}, nil
+}
+
+// EventType returns the event type of a message log.
+func (m *MessageParser) EventType(log ethTypes.Log) (_ messageTypes.EventType, ok bool) {
+	for _, logTopic := range log.Topics {
+		eventType := message.EventTypeFromTopic(logTopic)
+		if eventType == nil {
+			continue
+		}
+		return *eventType, true
+	}
+	// return an unknown event to avoid cases where user failed to check the event type
+	return messageTypes.EventType(len(messageTypes.AllEventTypes()) + 2), false
+}
+
+// eventToMessageEvent stores a message event.
+func eventToMessageEvent(event messageTypes.EventLog, chainID uint32) model.MessageEvent {
+	return model.MessageEvent{
+		InsertTime:      uint64(time.Now().UnixNano()),
+		ContractAddress: event.GetContractAddress().String(),
+		ChainID:         chainID,
+		EventType:       event.GetEventType().Int(),
+		BlockNumber:     event.GetBlockNumber(),
+		TxHash:          event.GetTxHash().String(),
+		EventIndex:      event.GetEventIndex(),
+		Sender:          "",
+		MessageId:       event.GetMessageId(),
+		SourceChainID:   event.GetSourceChainID(),
+
+		Status:             ToNullString(event.GetStatus()),
+		SourceAddress:      ToNullString(event.GetSourceAddress()),
+		DestinationAddress: ToNullString(event.GetDestinationAddress()),
+		DestinationChainID: event.GetDestinationChainID(),
+		Nonce:              event.GetNonce(),
+		Message:            ToNullString(event.GetMessage()),
+		Receiver:           ToNullString(event.GetReceiver()),
+		Options:            ToNullString(event.GetOptions()),
+		Fee:                event.GetFee(),
+		TimeStamp:          nil,
+	}
+}
+
+// ParseAndStore parses the message logs and stores them in the database.
+//
+// nolint:gocognit,cyclop,dupl
+func (m *MessageParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	logTopic := log.Topics[0]
+	iFace, err := func(log ethTypes.Log) (messageTypes.EventLog, error) {
+		switch logTopic {
+		case message.Topic(messageTypes.ExecutedEvent):
+			iFace, err := m.Filterer.ParseExecuted(log)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse token : %w", err)
+			}
+			return iFace, nil
+		case message.Topic(messageTypes.MessageSentEvent):
+			iFace, err := m.Filterer.ParseMessageSent(log)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse sent message: %w", err)
+			}
+			return iFace, nil
+
+		default:
+			return nil, fmt.Errorf("unknown topic: %s", logTopic.Hex())
+		}
+	}(log)
+
+	if err != nil {
+		// Switch failed.
+		return err
+	}
+
+	// populate message event type so following operations can mature the event data.
+	messageEvent := eventToMessageEvent(iFace, chainID)
+
+	// Get timestamp from consumer
+	timeStamp, err := m.consumerFetcher.fetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	// If we have a timestamp, populate the following attributes of messageEvent.
+	if err == nil {
+		timeStampBig := uint64(*timeStamp.Response)
+		messageEvent.TimeStamp = &timeStampBig
+	}
+	sender, err := m.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
+	if err != nil {
+		if !core.IsTest() {
+			return fmt.Errorf("could not fetch tx sender: %w", err)
+		}
+		logger.Errorf("could not get tx sender: %v", err)
+		sender = "FAKE_SENDER"
+	}
+	messageEvent.Sender = sender
+
+	err = m.consumerDB.StoreEvent(ctx, nil, nil, &messageEvent)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
