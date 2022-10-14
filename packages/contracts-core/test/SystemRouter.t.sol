@@ -19,7 +19,7 @@ interface ISystemMockContract {
     function sensitiveValue() external view returns (uint256);
 }
 
-// solhint-disable func-name-mixedcase
+// solhint-disable func-name-mixedcase, max-states-count
 contract SystemRouterTest is SynapseTestWithNotaryManager {
     struct MessageContext {
         uint32 origin;
@@ -714,6 +714,7 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
      * @dev Constructs recipient and data arrays for the multicall test.
      * Emits events if a test assumes successful message execution.
      */
+    // solhint-disable code-complexity
     function _prepareMultiCallTest(bool _sentFromLocal, bool _emitEvents)
         internal
         returns (ISystemRouter.SystemEntity[] memory recipients, bytes[] memory dataArray)

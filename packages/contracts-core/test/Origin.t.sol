@@ -12,12 +12,26 @@ import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
 // solhint-disable func-name-mixedcase
 contract OriginTest is SynapseTestWithNotaryManager {
-    OriginHarness origin;
-    uint32 optimisticSeconds;
+    OriginHarness internal origin;
+    uint32 internal optimisticSeconds;
 
     ISystemRouter internal systemRouter;
 
     event LogSystemCall(uint32 origin, uint8 caller, uint256 rootSubmittedAt);
+
+    event Dispatch(
+        bytes32 indexed messageHash,
+        uint32 indexed nonce,
+        uint32 indexed destination,
+        bytes tips,
+        bytes message
+    );
+
+    event CorrectFraudReport(address indexed guard, bytes report);
+    event IncorrectReport(address indexed guard, bytes report);
+    event FraudAttestation(address indexed notary, bytes attestation);
+    event GuardSlashed(address indexed guard, address indexed reporter);
+    event NotarySlashed(address indexed notary, address indexed guard, address indexed reporter);
 
     function setUp() public override {
         super.setUp();
@@ -61,14 +75,16 @@ contract OriginTest is SynapseTestWithNotaryManager {
         vm.assume(_notOwner != origin.owner());
         vm.startPrank(_notOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        // Must pass in a contract to setNotaryManager, otherwise will revert with !contract notaryManger
+        // Must pass in a contract to setNotaryManager,
+        // otherwise will revert with !contract notaryManger
         origin.setNotaryManager(address(origin));
     }
 
     function test_setNotaryManager() public {
         assertFalse(address(origin.notaryManager()) == address(origin));
         origin.setNotaryManager(address(origin));
-        // Must pass in a contract to setNotaryManager, otherwise will revert with !contract notaryManger
+        // Must pass in a contract to setNotaryManager,
+        // otherwise will revert with !contract notaryManger
         assertEq(address(origin.notaryManager()), address(origin));
     }
 
@@ -90,14 +106,6 @@ contract OriginTest is SynapseTestWithNotaryManager {
     }
 
     // ============ DISPATCHING MESSAGING ============
-
-    event Dispatch(
-        bytes32 indexed messageHash,
-        uint32 indexed nonce,
-        uint32 indexed destination,
-        bytes tips,
-        bytes message
-    );
 
     // Tests sending a message and adding it to queue
     function test_dispatch() public {
@@ -191,12 +199,8 @@ contract OriginTest is SynapseTestWithNotaryManager {
     }
 
     // ============ REPORTS ============
-    event CorrectFraudReport(address indexed guard, bytes report);
-    event IncorrectReport(address indexed guard, bytes report);
-    event FraudAttestation(address indexed notary, bytes attestation);
-    event GuardSlashed(address indexed guard, address indexed reporter);
-    event NotarySlashed(address indexed notary, address indexed guard, address indexed reporter);
 
+    // solhint-disable-next-line ordering
     function test_submitReport_wrongDomain() public {
         uint32 nonce = 42;
         bytes32 root = "very real much wow";

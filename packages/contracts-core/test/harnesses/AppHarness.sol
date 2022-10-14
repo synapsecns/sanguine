@@ -10,7 +10,7 @@ contract AppHarness is IMessageRecipient {
     uint32 public expectedOrigin;
     uint32 public expectedNonce;
     bytes32 public expectedSender;
-    bytes32 expectedMessageBodyHash;
+    bytes32 public expectedMessageBodyHash;
 
     constructor(uint32 _optimisticSeconds) {
         optimisticSeconds = _optimisticSeconds;

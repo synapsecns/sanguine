@@ -10,9 +10,14 @@ import { OriginHarness } from "./harnesses/OriginHarness.sol";
 import { NotaryManager } from "../contracts/NotaryManager.sol";
 import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 
+// solhint-disable func-name-mixedcase
 contract NotaryManagerTest is SynapseTestWithNotaryManager {
-    OriginHarness origin;
-    OriginHarness fakeOrigin;
+    OriginHarness internal origin;
+    OriginHarness internal fakeOrigin;
+
+    event NewOrigin(address origin);
+    event NewNotary(address notary);
+    event FakeSlashed(address reporter);
 
     function setUp() public override {
         super.setUp();
@@ -29,8 +34,6 @@ contract NotaryManagerTest is SynapseTestWithNotaryManager {
         notaryManager.setOrigin(address(fakeOrigin));
     }
 
-    event NewOrigin(address origin);
-
     function test_setOriginAsOwner() public {
         vm.startPrank(notaryManager.owner());
         assertEq(notaryManager.origin(), address(origin));
@@ -46,8 +49,6 @@ contract NotaryManagerTest is SynapseTestWithNotaryManager {
         vm.expectRevert("Ownable: caller is not the owner");
         notaryManager.setNotary(fakeNotary);
     }
-
-    event NewNotary(address notary);
 
     function test_setNotaryAsOwner() public {
         vm.startPrank(notaryManager.owner());
@@ -66,8 +67,6 @@ contract NotaryManagerTest is SynapseTestWithNotaryManager {
         vm.expectRevert("!origin");
         notaryManager.slashNotary(payable(address(this)));
     }
-
-    event FakeSlashed(address reporter);
 
     function test_slashNotaryAsOrigin() public {
         vm.startPrank(notaryManager.origin());

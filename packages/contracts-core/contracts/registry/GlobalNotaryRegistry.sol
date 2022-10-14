@@ -3,6 +3,7 @@ pragma solidity 0.8.13;
 
 import { AbstractNotaryRegistry } from "./AbstractNotaryRegistry.sol";
 
+// solhint-disable max-line-length
 /**
  * @notice A Registry to keep track of Notaries on all domains.
  *
@@ -12,6 +13,7 @@ import { AbstractNotaryRegistry } from "./AbstractNotaryRegistry.sol";
  *
  * It is assumed that the Notary is active on a single chain.
  */
+// solhint-enable max-line-length
 contract GlobalNotaryRegistry is AbstractNotaryRegistry {
     /**
      * @notice Information about an active Notary, optimized for fir in one word of storage.
