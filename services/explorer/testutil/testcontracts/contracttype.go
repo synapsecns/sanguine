@@ -42,6 +42,8 @@ const (
 	TestSynapseBridgeType
 	// TestSwapFlashLoanType is the swap contract type.
 	TestSwapFlashLoanType
+	// TestMessageBusUpgradeableType is the message bus contract type.
+	TestMessageBusUpgradeableType
 )
 
 // ID gets the contract type as an id.
@@ -68,6 +70,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return testbridge.Contracts["/solidity/TestSynapseBridge.sol:TestSynapseBridge"]
 	case TestSwapFlashLoanType:
 		return testswap.Contracts["/solidity/TestSwapFlashLoan.sol:TestSwapFlashLoan"]
+	case TestMessageBusUpgradeableType:
+		return testswap.Contracts["/solidity/TestMessageBusUpgradeable.sol:TestMessageBusUpgradeable"]
 
 	default:
 		panic("not yet implemented")

@@ -11,9 +11,31 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/message/testmessage"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 )
+
+// TestMessageBusUpgradeableDeployer is the type of the test message bus upgradeable deployer.
+type TestMessageBusUpgradeableDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewTestMessageBusUpgradeableDeployer creates a new test bridge deployer.
+func NewTestMessageBusUpgradeableDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return TestMessageBusUpgradeableDeployer{deployer.NewSimpleDeployer(registry, backend, TestMessageBusUpgradeableType)}
+}
+
+// Deploy deploys a test message.
+func (t TestMessageBusUpgradeableDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return t.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return testmessage.DeployMessageBusUpgradeable(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return testmessage.NewTestMessageRef(address, backend)
+	})
+}
+
+var _ deployer.ContractDeployer = &TestMessageBusUpgradeableDeployer{}
 
 // TestSynapseBridgeDeployer is the type of the test bridge deployer.
 type TestSynapseBridgeDeployer struct {
