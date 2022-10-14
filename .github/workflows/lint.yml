@@ -7,11 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: yaml-lint
-        uses: ibiqlik/action-yamllint@v3
-        id: yaml-lint
-        with:
-          config_file: .yamllint.yml
       - uses: mszostok/codeowners-validator@v0.7.4
         with:
           checks: 'files,duppatterns,syntax'
@@ -25,6 +20,11 @@ jobs:
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
 
+      - name: yaml-lint
+        uses: ibiqlik/action-yamllint@v3
+        id: yaml-lint
+        with:
+          config_file: .yamllint.yml
       - uses: actions/upload-artifact@v2
         if: always()
         with:
