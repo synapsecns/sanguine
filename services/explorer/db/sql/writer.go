@@ -54,6 +54,7 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 			ChainID: chainID,
 		}).
 		Update(BlockNumberFieldName, blockNumber)
+
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not update last block: %w", dbTx.Error)
 	}

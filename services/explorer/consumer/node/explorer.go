@@ -80,10 +80,16 @@ func (e Explorer) Start(ctx context.Context) error {
 }
 
 func (e Explorer) processRange(ctx context.Context, chainID uint32) error {
-	// get the latest block stored by Scribe
-	latestBlock, err := e.explorerBackfiller.ChainBackfillers[chainID].Fetcher.FetchLastBlock(ctx, chainID)
+	//// get the latest block stored by Scribe
+	//latestBlock, err := e.explorerBackfiller.ChainBackfillers[chainID].Fetcher.FetchLastBlock(ctx, chainID)
+	//if err != nil {
+	//	return fmt.Errorf("could not fetch last block: %w", err)
+	//}
+	// in the range (last confirmed block number, current block number - required confirmations],
+	// check the validity of the blocks, and modify the database accordingly
+	lastBlockNumber, err := e.consumerDB.RetrieveLastBlock(ctx, chainID)
 	if err != nil {
-		return fmt.Errorf("could not fetch last block: %w", err)
+		return fmt.Errorf("could not retrieve last confirmed block: %w", err)
 	}
 
 }

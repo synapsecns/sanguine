@@ -55,7 +55,7 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context) error {
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	// iterate over each chain backfiller
-	//for _, chainBackfiller := range e.ChainBackfillers {
+	// for _, chainBackfiller := range e.ChainBackfillers {
 	for _, chainConfig := range e.config.Chains {
 		// capture func literal
 
