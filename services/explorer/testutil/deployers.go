@@ -30,8 +30,8 @@ type SwapFlashLoanDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// MessageBusUpgradableDeployer is the type of the Message Bus deployer.
-type MessageBusUpgradableDeployer struct {
+// MessageBusUpgradeableDeployer is the type of the Message Bus deployer.
+type MessageBusUpgradeableDeployer struct {
 	*deployer.BaseDeployer
 }
 
@@ -50,9 +50,9 @@ func NewSwapFlashLoanDeployer(registry deployer.GetOnlyContractRegistry, backend
 	return SwapFlashLoanDeployer{deployer.NewSimpleDeployer(registry, backend, SwapFlashLoanType)}
 }
 
-// NewMessageBusUpgradableDeployer creates a new message bus upgradable client.
-func NewMessageBusUpgradableDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return MessageBusUpgradableDeployer{deployer.NewSimpleDeployer(registry, backend, MessageBusUpgradableType)}
+// NewMessageBusUpgradeableDeployer creates a new message bus upgradable client.
+func NewMessageBusUpgradeableDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return MessageBusUpgradeableDeployer{deployer.NewSimpleDeployer(registry, backend, MessageBusUpgradeableType)}
 }
 
 // Deploy deploys bridge config v3
@@ -111,7 +111,7 @@ func (n SwapFlashLoanDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 
 // Deploy deploys Message Bus Upgradable
 // nolint: dupl
-func (n MessageBusUpgradableDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+func (n MessageBusUpgradeableDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return message.DeployMessageBusUpgradeable(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -122,4 +122,4 @@ func (n MessageBusUpgradableDeployer) Deploy(ctx context.Context) (contracts.Dep
 var _ deployer.ContractDeployer = &BridgeConfigV3Deployer{}
 var _ deployer.ContractDeployer = &SynapseBridgeDeployer{}
 var _ deployer.ContractDeployer = &SwapFlashLoanDeployer{}
-var _ deployer.ContractDeployer = &MessageBusUpgradableDeployer{}
+var _ deployer.ContractDeployer = &MessageBusUpgradeableDeployer{}

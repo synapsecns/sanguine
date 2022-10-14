@@ -1,6 +1,7 @@
 package testutil_test
 
 import (
+	"fmt"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
@@ -12,6 +13,8 @@ func (s *SimulatedSuite) GetDeployedContractsFromRegistry(registry deployer.Cont
 	deployedContracts = make(map[int]contracts.ContractType)
 
 	for _, contractType := range testutil.AllContractTypes {
+		fmt.Println("YOOOO contractType", contractType, testutil.AllContractTypes)
+
 		if registry.IsContractDeployed(contractType) {
 			deployedContracts[contractType.ID()] = contractType
 		}

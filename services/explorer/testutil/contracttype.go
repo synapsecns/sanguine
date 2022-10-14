@@ -1,10 +1,12 @@
 package testutil
 
 import (
+	"fmt"
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/message"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
 
@@ -42,8 +44,8 @@ const (
 	SynapseBridgeType contractTypeImpl = 1
 	// SwapFlashLoanType is the swap contract type.
 	SwapFlashLoanType contractTypeImpl = 2
-	// MessageBusUpgradableType is the messaging contract type.
-	MessageBusUpgradableType contractTypeImpl = 3
+	// MessageBusUpgradeableType is the messaging contract type.
+	MessageBusUpgradeableType contractTypeImpl = 3
 )
 
 // ID gets the contract type as an id.
@@ -63,6 +65,7 @@ func (c contractTypeImpl) Name() string {
 // ContractInfo gets the source code of every contract. See TODO above.
 // TODO these should use contract name and maybe come out of the generator.
 func (c contractTypeImpl) ContractInfo() *compiler.Contract {
+	fmt.Println("YOOOO")
 	switch c {
 	case BridgeConfigTypeV3:
 		return bridgeconfig.Contracts["/solidity/BridgeConfigV3_flat.sol:BridgeConfigV3"]
@@ -70,8 +73,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return bridge.Contracts["/solidity/SynapseBridgeV1_flat.sol:SynapseBridge"]
 	case SwapFlashLoanType:
 		return swap.Contracts["/solidity/SwapFlashLoanV1_flat.sol:SwapFlashLoan"]
-	case MessageBusUpgradableType:
-		return swap.Contracts["/solidity/MessageBusUpgradeable_flat.sol:MessageBusUpgradeable"]
+	case MessageBusUpgradeableType:
+		return message.Contracts["/solidity/MessageBusUpgradeable_flat.sol:MessageBusUpgradeable"]
 	default:
 		panic("not yet implemented")
 	}

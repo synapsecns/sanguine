@@ -47,11 +47,11 @@ func (d *DeployManager) GetSwapFlashLoan(ctx context.Context, backend backends.S
 	return swapContract, swapHandle
 }
 
-// GetMessageBusUpgradable gets a typecast swap contract.
-func (d *DeployManager) GetMessageBusUpgradable(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *message.MessageRef) {
+// GetMessageBusUpgradeable gets a typecast swap contract.
+func (d *DeployManager) GetMessageBusUpgradeable(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *message.MessageRef) {
 	d.T().Helper()
 
-	messageContract := d.GetContractRegistry(backend).Get(ctx, MessageBusUpgradableType)
+	messageContract := d.GetContractRegistry(backend).Get(ctx, MessageBusUpgradeableType)
 
 	messageHandle, ok := messageContract.ContractHandle().(*message.MessageRef)
 	assert.True(d.T(), ok)

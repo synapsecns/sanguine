@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-// MessageRef isa bound Message Bus Upgradeable contract and the address of the contract
+// MessageRef is a bound Message Bus Upgradeable contract and the address of the contract
 // nolint: golint
 type MessageRef struct {
 	*MessageBusUpgradeable

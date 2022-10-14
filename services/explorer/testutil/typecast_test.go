@@ -11,7 +11,7 @@ func (s SimulatedSuite) TestTypecast() {
 		NotNil(s.T(), bridgeHandle)
 		_, swapHandle := s.deployManager.GetSwapFlashLoan(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), swapHandle)
-		_, messageHandle := s.deployManager.GetMessageBusUpgradable(s.GetTestContext(), s.testBackend)
+		_, messageHandle := s.deployManager.GetMessageBusUpgradeable(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), messageHandle)
 	})
 }
