@@ -10,7 +10,6 @@ import { TypeCasts } from "../contracts/libs/TypeCasts.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
-import { MirrorLib } from "../contracts/libs/Mirror.sol";
 import { ISystemRouter } from "../contracts/interfaces/ISystemRouter.sol";
 import { DestinationHarness } from "./harnesses/DestinationHarness.sol";
 
