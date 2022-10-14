@@ -111,7 +111,7 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     //solhint-disable-next-line no-empty-blocks
-    constructor(uint32 _localDomain) LocalDomainContext(_localDomain) {}
+    constructor(uint32 _domain) LocalDomainContext(_domain) {}
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕
