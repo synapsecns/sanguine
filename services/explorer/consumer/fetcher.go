@@ -280,8 +280,8 @@ func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, toke
 		return nil, fmt.Errorf("invalid token id")
 	}
 	tok, err := b.bridgeConfig.GetToken(&bind.CallOpts{
-		// TODO add block number here
-		Context: ctx,
+		BlockNumber: big.NewInt(int64(blockNumber)),
+		Context:     ctx,
 	}, *tokenID, big.NewInt(int64(chainID)))
 	if err != nil {
 		return nil, fmt.Errorf("could not get token at block number %d: %w", blockNumber, err)

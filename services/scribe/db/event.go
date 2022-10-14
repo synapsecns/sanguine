@@ -30,7 +30,7 @@ type EventDBWriter interface {
 	DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 
 	// StoreEthTx stores a processed transaction
-	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64) error
+	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error
 	// ConfirmEthTxsForBlockHash confirms eth txs for a given block hash.
 	ConfirmEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 	// ConfirmEthTxsInRange confirms eth txs in a range.
