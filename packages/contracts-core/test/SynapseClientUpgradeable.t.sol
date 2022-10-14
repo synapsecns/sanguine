@@ -17,14 +17,23 @@ import {
     TransparentUpgradeableProxy
 } from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
+// solhint-disable func-name-mixedcase
 contract SynapseClientTest is SynapseTestWithNotaryManager {
     SynapseClientUpgradeableHarness public client;
     OriginHarness public origin;
 
-    address public constant destination = address(1234567890);
-    address public constant owner = address(9876543210);
-    bytes32 public constant trustedSender = bytes32(uint256(1234554321));
+    address public constant DESTINATION = address(1234567890);
+    address public constant OWNER = address(9876543210);
+    bytes32 public constant TRUSTED_SENDER = bytes32(uint256(1234554321));
     address public constant PROXY_ADMIN = address(13377331);
+
+    event Dispatch(
+        bytes32 indexed messageHash,
+        uint32 indexed nonce,
+        uint32 indexed destination,
+        bytes tips,
+        bytes message
+    );
 
     function setUp() public override {
         super.setUp();
@@ -33,12 +42,12 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         origin.initialize(INotaryManager(notaryManager));
         notaryManager.setOrigin(address(origin));
 
-        vm.label(destination, "mirror");
-        vm.label(owner, "owner");
+        vm.label(DESTINATION, "destination");
+        vm.label(OWNER, "owner");
 
         SynapseClientUpgradeableHarness impl = new SynapseClientUpgradeableHarness(
             address(origin),
-            destination
+            DESTINATION
         );
 
         TransparentUpgradeableProxy proxy = new TransparentUpgradeableProxy(
@@ -48,12 +57,12 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         );
         client = SynapseClientUpgradeableHarness(address(proxy));
         client.initialize();
-        client.transferOwnership(owner);
+        client.transferOwnership(OWNER);
     }
 
     function test_constructor() public {
         assertEq(client.origin(), address(origin));
-        assertEq(client.destination(), destination);
+        assertEq(client.destination(), DESTINATION);
     }
 
     function test_cannotInitializeTwice() public {
@@ -62,27 +71,26 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
     }
 
     function test_setTrustedSender() public {
-        vm.prank(owner);
-        client.setTrustedSender(remoteDomain, trustedSender);
-        assertEq(client.trustedSender(remoteDomain), trustedSender);
+        vm.prank(OWNER);
+        client.setTrustedSender(remoteDomain, TRUSTED_SENDER);
+        assertEq(client.trustedSender(remoteDomain), TRUSTED_SENDER);
     }
 
     function test_setTrustedSenderAsNotOwner(address _notOwner) public {
-        vm.assume(_notOwner != owner);
-        vm.assume(_notOwner != PROXY_ADMIN);
+        vm.assume(_notOwner != OWNER);
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_notOwner);
-        client.setTrustedSender(remoteDomain, trustedSender);
+        client.setTrustedSender(remoteDomain, TRUSTED_SENDER);
     }
 
     function test_setTrustedSenderEmptyDomain() public {
-        vm.prank(owner);
+        vm.prank(OWNER);
         vm.expectRevert("!domain");
-        client.setTrustedSender(0, trustedSender);
+        client.setTrustedSender(0, TRUSTED_SENDER);
     }
 
     function test_setTrustedSenderEmptySender() public {
-        vm.prank(owner);
+        vm.prank(OWNER);
         vm.expectRevert("!sender");
         client.setTrustedSender(remoteDomain, bytes32(0));
     }
@@ -93,9 +101,9 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         bytes32[] memory senders = new bytes32[](amount);
         for (uint256 i = 0; i < amount; i++) {
             domains[i] = uint32(remoteDomain + i);
-            senders[i] = bytes32(uint256(trustedSender) + i);
+            senders[i] = bytes32(uint256(TRUSTED_SENDER) + i);
         }
-        vm.prank(owner);
+        vm.prank(OWNER);
         client.setTrustedSenders(domains, senders);
         for (uint256 i = 0; i < amount; i++) {
             assertEq(client.trustedSender(domains[i]), senders[i]);
@@ -103,8 +111,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
     }
 
     function test_setTrustedSendersAsNotOwner(address _notOwner) public {
-        vm.assume(_notOwner != owner);
-        vm.assume(_notOwner != PROXY_ADMIN);
+        vm.assume(_notOwner != OWNER);
         uint32[] memory domains = new uint32[](1);
         bytes32[] memory senders = new bytes32[](1);
         vm.expectRevert("Ownable: caller is not the owner");
@@ -116,73 +123,56 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         uint32[] memory domains = new uint32[](1);
         bytes32[] memory senders = new bytes32[](2);
         vm.expectRevert("!arrays");
-        vm.prank(owner);
+        vm.prank(OWNER);
         client.setTrustedSenders(domains, senders);
     }
 
     function test_handle() public {
         test_setTrustedSender();
-        vm.prank(destination);
-        client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
+        vm.prank(DESTINATION);
+        client.handle(remoteDomain, 0, TRUSTED_SENDER, block.timestamp, bytes(""));
     }
 
     function test_handleNotDestination(address _notDestination) public {
-        vm.assume(_notDestination != destination);
-        vm.assume(_notDestination != PROXY_ADMIN);
+        vm.assume(_notDestination != DESTINATION);
         test_setTrustedSender();
-
         vm.prank(_notDestination);
         vm.expectRevert("BasicClient: !destination");
-        client.handle(remoteDomain, 0, trustedSender, block.timestamp, bytes(""));
+        client.handle(remoteDomain, 0, TRUSTED_SENDER, block.timestamp, bytes(""));
     }
 
     function test_handleFakeDomain(uint32 _notRemote) public {
         vm.assume(_notRemote != remoteDomain);
-
         test_setTrustedSender();
-
-        vm.prank(destination);
+        vm.prank(DESTINATION);
         vm.expectRevert("BasicClient: !trustedSender");
-        client.handle(_notRemote, 0, trustedSender, block.timestamp, bytes(""));
+        client.handle(_notRemote, 0, TRUSTED_SENDER, block.timestamp, bytes(""));
     }
 
     function test_handleFakeSender(bytes32 _notSender) public {
-        vm.assume(_notSender != trustedSender);
-
+        vm.assume(_notSender != TRUSTED_SENDER);
         test_setTrustedSender();
-
-        vm.prank(destination);
+        vm.prank(DESTINATION);
         vm.expectRevert("BasicClient: !trustedSender");
         client.handle(remoteDomain, 0, _notSender, block.timestamp, bytes(""));
     }
 
     function test_handleFakeDomainAndSender(uint32 _notRemote) public {
         vm.assume(_notRemote != remoteDomain);
-
         test_setTrustedSender();
-
-        vm.prank(destination);
+        vm.prank(DESTINATION);
         vm.expectRevert("BasicClient: !trustedSender");
-        // trustedSender for unknown remote is bytes32(0),
+        // TRUSTED_SENDER for unknown remote is bytes32(0),
         // but this still has to revert
         client.handle(_notRemote, 0, bytes32(0), block.timestamp, bytes(""));
     }
 
     function test_handleOptimisticSecondsNotPassed() public {
         test_setTrustedSender();
-
-        vm.prank(destination);
+        vm.prank(DESTINATION);
         vm.expectRevert("Client: !optimisticSeconds");
-        client.handle(remoteDomain, 0, trustedSender, block.timestamp + 1, bytes(""));
+        client.handle(remoteDomain, 0, TRUSTED_SENDER, block.timestamp + 1, bytes(""));
     }
-
-    event Dispatch(
-        bytes32 indexed messageHash,
-        uint32 indexed nonce,
-        uint32 indexed destination,
-        bytes tips,
-        bytes message
-    );
 
     function test_send() public {
         test_setTrustedSender();
@@ -192,7 +182,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
             bytes32(uint256(uint160(address(client)))),
             1,
             remoteDomain,
-            trustedSender,
+            TRUSTED_SENDER,
             0
         );
         bytes memory _tips = getDefaultTips();
@@ -200,12 +190,12 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         vm.expectEmit(true, true, true, true);
         emit Dispatch(keccak256(message), 1, remoteDomain, _tips, message);
         deal(address(this), TOTAL_TIPS);
-        client.send{ value: TOTAL_TIPS }(remoteDomain, _tips, messageBody);
+        client.sendMessage{ value: TOTAL_TIPS }(remoteDomain, _tips, messageBody);
     }
 
     function test_sendNoRecipient() public {
         bytes memory messageBody = hex"01030307";
         vm.expectRevert("BasicClient: !recipient");
-        client.send(remoteDomain, getEmptyTips(), messageBody);
+        client.sendMessage(remoteDomain, getEmptyTips(), messageBody);
     }
 }

@@ -110,6 +110,7 @@ contract NotaryManager is INotaryManager, Ownable {
      * we override OpenZeppelin Ownable implementation
      * of renounceOwnership to make it a no-op
      */
+    // solhint-disable-next-line no-empty-blocks
     function renounceOwnership() public override onlyOwner {
         // do nothing
     }

@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 // ============ External Imports ============
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
+// solhint-disable max-line-length
 /**
  * @title UpgradeBeaconProxy
  * @notice
@@ -19,6 +20,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * found in OpenZeppelin's implementation:
  * https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/proxy/beacon/BeaconProxy.sol
  */
+// solhint-enable max-line-length
 contract UpgradeBeaconProxy {
     // ============ Immutables ============
 
@@ -64,6 +66,7 @@ contract UpgradeBeaconProxy {
     /**
      * @notice Forwards all calls with no data to _fallback()
      */
+    // solhint-disable-next-line ordering
     receive() external payable {
         _fallback();
     }
@@ -90,7 +93,8 @@ contract UpgradeBeaconProxy {
     }
 
     /**
-     * @notice Delegates function calls to the implementation contract returned by the Upgrade Beacon
+     * @notice Delegates function calls to the implementation contract
+     * returned by the Upgrade Beacon.
      */
     function _fallback() private {
         _delegate(_getImplementation());

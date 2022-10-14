@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 // ============ External Imports ============
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
+// solhint-disable max-line-length
 /**
  * @title UpgradeBeacon
  * @notice Stores the address of an implementation contract
@@ -16,6 +17,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * found in OpenZeppelin's implementation:
  * https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/proxy/beacon/BeaconProxy.sol
  */
+// solhint-enable max-line-length
 contract UpgradeBeacon {
     // ============ Immutables ============
 
@@ -81,7 +83,8 @@ contract UpgradeBeacon {
     /**
      * @notice Perform checks on the new implementation address
      * then upgrade the stored implementation.
-     * @param _newImplementation Address of the new implementation contract which will replace the old one
+     * @param _newImplementation    Address of the new implementation contract
+     *                              which will replace the old one.
      */
     function _setImplementation(address _newImplementation) private {
         // Require that the new implementation is different from the current one

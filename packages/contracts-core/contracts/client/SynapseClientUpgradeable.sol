@@ -22,26 +22,22 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
     // ============ Upgrade gap ============
 
     // gap for upgrade safety
-    uint256[49] private __GAP;
+    uint256[49] private __GAP; //solhint-disable-line var-name-mixedcase
 
     // ============ Constructor ============
 
+    // solhint-disable-next-line no-empty-blocks
     constructor(address _origin, address _destination) Client(_origin, _destination) {}
 
     // ============ Initializer ============
 
+    // solhint-disable-next-line func-name-mixedcase
     function __SynapseClient_init() internal onlyInitializing {
         __Ownable_init_unchained();
     }
 
+    // solhint-disable-next-line func-name-mixedcase, no-empty-blocks
     function __SynapseClient_init_unchained() internal onlyInitializing {}
-
-    // ============ Public Functions  ============
-
-    /// @notice Returns the trusted sender for the given remote chain.
-    function trustedSender(uint32 _remoteDomain) public view override returns (bytes32) {
-        return trustedSenders[_remoteDomain];
-    }
 
     // ============ Restricted Functions  ============
 
@@ -51,6 +47,7 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
      * @param _remoteDomain     The domain of the remote chain
      * @param _trustedSender    The trusted sender
      */
+    // solhint-disable-next-line ordering
     function setTrustedSender(uint32 _remoteDomain, bytes32 _trustedSender) external onlyOwner {
         _setTrustedSender(_remoteDomain, _trustedSender);
     }
@@ -73,6 +70,13 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
                 ++i;
             }
         }
+    }
+
+    // ============ Public Functions  ============
+
+    /// @notice Returns the trusted sender for the given remote chain.
+    function trustedSender(uint32 _remoteDomain) public view override returns (bytes32) {
+        return trustedSenders[_remoteDomain];
     }
 
     // ============ Internal Functions  ============
