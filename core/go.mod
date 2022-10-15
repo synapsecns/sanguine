@@ -33,7 +33,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/urfave/cli/v2 v2.16.3
 	go.uber.org/zap v1.23.0
-	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
+	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	gorm.io/gorm v1.23.9
 	k8s.io/apimachinery v0.25.1
 )
