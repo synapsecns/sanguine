@@ -131,6 +131,16 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
         require(block.timestamp >= _rootSubmittedAt + _optimisticSeconds, "!optimisticPeriod");
     }
 
+    /**
+     * @notice Checks if a given entity is allowed to call a function using a _systemMask
+     * @param _systemMask a mask of allowed entities
+     * @param _entity a system entity to check
+     * @return true if _entity is allowed to call a function
+     *
+     * @dev this function works by converting the enum value to a non-zero bit mask
+     * we then use a bitwise AND operation to check if permission bits allow the entity
+     * to perform this operation, see: https://en.wikipedia.org/wiki/Bitwise_operation#AND for details
+     */
     function _entityAllowed(uint256 _systemMask, ISystemRouter.SystemEntity _entity)
         internal
         pure
@@ -139,6 +149,14 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
         return _systemMask & _getSystemMask(_entity) != 0;
     }
 
+    /**
+     * @notice Returns a mask for a given system entity
+     * @param _entity System entity
+     * @return a non-zero mask for a given system entity
+     *
+     * Converts an enum value into a non-zero bit mask used for a bitwise AND check
+     * E.g. for Origin (0) returns 1, for Destination (1) returns 2
+     */
     function _getSystemMask(ISystemRouter.SystemEntity _entity) internal pure returns (uint256) {
         return 1 << uint8(_entity);
     }
