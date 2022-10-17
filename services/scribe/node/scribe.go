@@ -102,6 +102,7 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, false)
 	if err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
+		return fmt.Errorf("could not backfill: %w", err)
 	}
 
 	// in the range (last confirmed block number, current block number - required confirmations],

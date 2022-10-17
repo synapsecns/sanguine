@@ -3,8 +3,8 @@ package node
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/synapsecns/sanguine/services/explorer/config"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/backfill"
@@ -21,6 +21,8 @@ import (
 type ExplorerBackfiller struct {
 	// consumerDB is the database to store consumer data in
 	consumerDB db.ConsumerDB
+	// clients is a mapping of chain IDs -> clients
+	clients map[uint32]bind.ContractBackend
 	// ChainBackfillers is a mapping of chain IDs -> chain backfillers
 	ChainBackfillers map[uint32]*backfill.ChainBackfiller
 	// config is the config for the backfiller
@@ -30,25 +32,24 @@ type ExplorerBackfiller struct {
 // NewExplorerBackfiller creates a new backfiller for the explorer.
 //
 // nolint:gocognit
-func NewExplorerBackfiller(ctx context.Context, consumerDB db.ConsumerDB, config config.Config) (*ExplorerBackfiller, error) {
+func NewExplorerBackfiller(ctx context.Context, consumerDB db.ConsumerDB, config config.Config, clients map[uint32]bind.ContractBackend) (*ExplorerBackfiller, error) {
 	// initialize the list of chain backfillers
 	chainBackfillers := make(map[uint32]*backfill.ChainBackfiller)
+
+	// create the consumer Fetcher
+	fetcher := consumer.NewFetcher(gqlClient.NewClient(http.DefaultClient, config.ScribeURL))
 	// initialize each chain backfiller
 	for _, chainConfig := range config.Chains {
-		bridgeConfigV3ABI, err := bridgeconfig.BridgeConfigV3MetaData.GetAbi()
-		if err != nil || bridgeConfigV3ABI == nil {
-			return nil, fmt.Errorf("could not get bridge config v3 abi: %w", err)
-		}
 		// create the chain backfiller
-		chainBackfiller, err := getChainBackfiller(ctx, consumerDB, chainConfig, config.ScribeURL)
+		chainBackfiller, err := getChainBackfiller(consumerDB, chainConfig, fetcher, clients[chainConfig.ChainID])
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain backfiller: %w", err)
 		}
-
 		chainBackfillers[chainConfig.ChainID] = chainBackfiller
 	}
 	return &ExplorerBackfiller{
 		consumerDB:       consumerDB,
+		clients:          clients,
 		ChainBackfillers: chainBackfillers,
 		config:           config,
 	}, nil
@@ -82,8 +83,8 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context) error {
 	return nil
 }
 
-// nolint:gocognit,cyclop
-func getChainBackfiller(ctx context.Context, consumerDB db.ConsumerDB, chainConfig config.ChainConfig, baseURL string) (*backfill.ChainBackfiller, error) {
+// nolint gocognit,cyclop
+func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig, fetcher *consumer.Fetcher, client bind.ContractBackend) (*backfill.ChainBackfiller, error) {
 	// get the ABI for each contract
 	bridgeConfigABI, err := bridgeconfig.BridgeConfigV3MetaData.GetAbi()
 	if err != nil || bridgeConfigABI == nil {
@@ -98,12 +99,8 @@ func getChainBackfiller(ctx context.Context, consumerDB db.ConsumerDB, chainConf
 		return nil, fmt.Errorf("could not get bridge abi: %w", err)
 	}
 
-	// create the client
-	ethClient, err := ethclient.DialContext(ctx, chainConfig.RPCURL)
-	// create the consumer Fetcher
-	fetcher := consumer.NewFetcher(gqlClient.NewClient(http.DefaultClient, baseURL))
 	// create the bridge config Fetcher
-	bridgeConfigFetcher, err := consumer.NewBridgeConfigFetcher(common.HexToAddress(chainConfig.BridgeConfigV3Address), ethClient)
+	bridgeConfigFetcher, err := consumer.NewBridgeConfigFetcher(common.HexToAddress(chainConfig.BridgeConfigV3Address), client)
 	if err != nil || bridgeConfigFetcher == nil {
 		return nil, fmt.Errorf("could not create bridge config Fetcher: %w", err)
 	}
@@ -116,7 +113,7 @@ func getChainBackfiller(ctx context.Context, consumerDB db.ConsumerDB, chainConf
 	swapParsers := make(map[common.Address]*consumer.SwapParser)
 	for _, swapAddress := range chainConfig.SwapFlashLoanAddresses {
 		// create the swap Fetcher
-		swapFetcher, err := consumer.NewSwapFetcher(common.HexToAddress(swapAddress), ethClient)
+		swapFetcher, err := consumer.NewSwapFetcher(common.HexToAddress(swapAddress), client)
 		if err != nil || swapFetcher == nil {
 			return nil, fmt.Errorf("could not create swap Fetcher: %w", err)
 		}

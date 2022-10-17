@@ -5,6 +5,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
@@ -31,7 +32,7 @@ type NodeSuite struct {
 	gqlClient            *client.Client
 	logIndex             atomic.Int64
 	cleanup              func()
-	testBackend          backends.SimulatedTestBackend
+	testBackends         map[uint32]backends.SimulatedTestBackend
 	deployManager        *testutil.DeployManager
 	testDeployManager    *testcontracts.DeployManager
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
@@ -79,17 +80,25 @@ var testTokens = []TestToken{{
 
 func (c *NodeSuite) SetupTest() {
 	c.TestSuite.SetupTest()
+	backends := make(map[uint32]backends.SimulatedTestBackend)
+	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup, _, c.deployManager = testutil.NewTestEnvDB(c.GetTestContext(), c.T())
+	backend1 := geth.NewEmbeddedBackendForChainID(c.GetTestContext(), c.T(), big.NewInt(int64(1)))
+	backend2 := geth.NewEmbeddedBackendForChainID(c.GetTestContext(), c.T(), big.NewInt(int64(2)))
+	backend3 := geth.NewEmbeddedBackendForChainID(c.GetTestContext(), c.T(), big.NewInt(int64(3)))
 
-	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup, c.testBackend, c.deployManager = testutil.NewTestEnvDB(c.GetTestContext(), c.T())
+	backends[uint32(1)] = backend1
+	backends[uint32(2)] = backend2
+	backends[uint32(3)] = backend3
+	c.testBackends = backends
+	c.testDeployManager = testcontracts.NewDeployManager(c.T())
 
 	var deployInfo contracts.DeployedContract
-	deployInfo, c.bridgeConfigContract = c.deployManager.GetBridgeConfigV3(c.GetTestContext(), c.testBackend)
-	c.testDeployManager = testcontracts.NewDeployManager(c.T())
+	deployInfo, c.bridgeConfigContract = c.deployManager.GetBridgeConfigV3(c.GetTestContext(), backend1)
 	for _, token := range testTokens {
-		auth := c.testBackend.GetTxContext(c.GetTestContext(), deployInfo.OwnerPtr())
+		auth := backend1.GetTxContext(c.GetTestContext(), deployInfo.OwnerPtr())
 		tx, err := token.SetTokenConfig(c.bridgeConfigContract, auth)
 		c.Require().NoError(err)
-		c.testBackend.WaitForConfirmation(c.GetTestContext(), tx)
+		backend1.WaitForConfirmation(c.GetTestContext(), tx)
 	}
 }
 

@@ -40,7 +40,7 @@ func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *consumer.BridgeP
 }
 
 // Backfill fetches logs from the GraphQL database, parses them, and stores them in the consumer database.
-// nolint:cyclop
+// nolint:cyclop,gocognit
 func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
@@ -93,7 +93,10 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 					}
 
 					// Store the last block
-					c.consumerDB.StoreLastBlock(groupCtx, c.chainConfig.ChainID, rangeEnd)
+					err = c.consumerDB.StoreLastBlock(groupCtx, c.chainConfig.ChainID, rangeEnd)
+					if err != nil {
+						logger.Warnf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
+					}
 					return nil
 				}
 			}
