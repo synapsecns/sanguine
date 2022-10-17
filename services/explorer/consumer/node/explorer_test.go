@@ -2,8 +2,7 @@ package node_test
 
 // TODO finish implementing this test. Had to leave to bus.
 
-
-//import (
+// import (
 //	"github.com/brianvoe/gofakeit/v6"
 //	"github.com/ethereum/go-ethereum/params"
 //	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
@@ -50,49 +49,49 @@ package node_test
 //	scribeConfig := config.Config{
 //		Chains: []config.ChainConfig{chainConfig},
 //	}
-	//
-	//clients := make(map[uint32]backfill.ScribeBackend)
-	//clients[chainID] = simulatedChain
-	//
-	//// Set up the explorer.
-	//scribe, err := NewExplorer(l.db, clients, scribeConfig)
-	//Nil(l.T(), err)
-	//
-	//for _, testRef := range testRefs {
-	//	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
-	//	Nil(l.T(), err)
-	//	simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
-	//	tx, err = testRef.EmitEventB(transactOpts.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
-	//	Nil(l.T(), err)
-	//	simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
-	//	tx, err = testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
-	//	Nil(l.T(), err)
-	//	simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
-	//}
-	//
-	//err = scribe.ProcessRange(l.GetTestContext(), chainID, 0)
-	//Nil(l.T(), err)
-	//
-	//// Check that the events were recorded.
-	//for _, contract := range contracts {
-	//	// Check the storage of logs.
-	//	logFilter := db.LogFilter{
-	//		ChainID:         chainConfig.ChainID,
-	//		ContractAddress: contract.Address().String(),
-	//	}
-	//	logs, err := l.testDB.RetrieveLogsWithFilter(l.GetTestContext(), logFilter, 1)
-	//	Nil(l.T(), err)
-	//	// There should be 4 logs. One from `EmitEventA`, one from `EmitEventB`, and two
-	//	// from `EmitEventAandB`.
-	//	Equal(l.T(), 4, len(logs))
-	//}
-	//// Check the storage of receipts.
-	//receiptFilter := db.ReceiptFilter{
-	//	ChainID: chainConfig.ChainID,
-	//}
-	//receipts, err := l.testDB.RetrieveReceiptsWithFilter(l.GetTestContext(), receiptFilter, 1)
-	//Nil(l.T(), err)
-	//// There should be 9 receipts. One from `EmitEventA`, one from `EmitEventB`, and
-	//// one from `EmitEventAandB`, for each contract.
-	//Equal(l.T(), 9, len(receipts))
-}
+//
+//clients := make(map[uint32]backfill.ScribeBackend)
+//clients[chainID] = simulatedChain
+//
+//// Set up the explorer.
+//scribe, err := NewExplorer(l.db, clients, scribeConfig)
+//Nil(l.T(), err)
+//
+//for _, testRef := range testRefs {
+//	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+//	Nil(l.T(), err)
+//	simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
+//	tx, err = testRef.EmitEventB(transactOpts.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
+//	Nil(l.T(), err)
+//	simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
+//	tx, err = testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
+//	Nil(l.T(), err)
+//	simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
+//}
+//
+//err = scribe.ProcessRange(l.GetTestContext(), chainID, 0)
+//Nil(l.T(), err)
+//
+//// Check that the events were recorded.
+//for _, contract := range contracts {
+//	// Check the storage of logs.
+//	logFilter := db.LogFilter{
+//		ChainID:         chainConfig.ChainID,
+//		ContractAddress: contract.Address().String(),
+//	}
+//	logs, err := l.testDB.RetrieveLogsWithFilter(l.GetTestContext(), logFilter, 1)
+//	Nil(l.T(), err)
+//	// There should be 4 logs. One from `EmitEventA`, one from `EmitEventB`, and two
+//	// from `EmitEventAandB`.
+//	Equal(l.T(), 4, len(logs))
+//}
+//// Check the storage of receipts.
+//receiptFilter := db.ReceiptFilter{
+//	ChainID: chainConfig.ChainID,
+//}
+//receipts, err := l.testDB.RetrieveReceiptsWithFilter(l.GetTestContext(), receiptFilter, 1)
+//Nil(l.T(), err)
+//// There should be 9 receipts. One from `EmitEventA`, one from `EmitEventB`, and
+//// one from `EmitEventAandB`, for each contract.
+//Equal(l.T(), 9, len(receipts))
+//}

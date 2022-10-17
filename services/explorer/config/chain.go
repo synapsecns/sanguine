@@ -15,7 +15,7 @@ type ChainConfig struct {
 	// FetchBlockIncrement is the number of blocks to fetch at a time.
 	FetchBlockIncrement uint32 `yaml:"fetch_block_increment"`
 	// StartBlocks is a mapping from chain ID -> start block for backfilling.
-	StartBlocks map[uint32]uint64 `yaml:"start_blocks"`
+	StartBlock uint64 `yaml:"start_blocks"`
 	// BridgeConfigV3Address is the address of the BridgeConfigV3.sol contract
 	BridgeConfigV3Address string `yaml:"bridge_config_v3_address"`
 	// SynapseBridgeAddress is the address of the SynapseBridge.sol contract
@@ -30,15 +30,12 @@ type ChainConfigs []ChainConfig
 // IsValid validates the chain config by asserting no two chains appear twice.
 func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 	intSet := collection.Set[uint32]{}
-
 	for _, cfg := range c {
 		if intSet.Contains(cfg.ChainID) {
 			return false, fmt.Errorf("chain id %d appears twice", cfg.ChainID)
 		}
-
 		intSet.Add(cfg.ChainID)
 	}
-
 	return true, nil
 }
 
@@ -47,6 +44,5 @@ func (c ChainConfig) IsValid(ctx context.Context) (ok bool, err error) {
 	if c.ChainID == 0 {
 		return false, fmt.Errorf("chain ID cannot be 0")
 	}
-
 	return true, nil
 }

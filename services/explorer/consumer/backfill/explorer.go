@@ -47,8 +47,9 @@ func NewExplorerBackfiller(ctx context.Context, consumerDB db.ConsumerDB, config
 		chainBackfillers[chainConfig.ChainID] = chainBackfiller
 	}
 	return &ExplorerBackfiller{
-		consumerDB: consumerDB,
-		config:     config,
+		consumerDB:       consumerDB,
+		ChainBackfillers: chainBackfillers,
+		config:           config,
 	}, nil
 }
 
@@ -58,7 +59,6 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context) error {
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	// iterate over each chain backfiller
-	// for _, chainBackfiller := range e.ChainBackfillers {
 	for i := range e.config.Chains {
 		// capture func literal
 		chainConfig := e.config.Chains[i]

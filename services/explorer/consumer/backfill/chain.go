@@ -44,7 +44,7 @@ func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *consumer.BridgeP
 func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
-	startHeight := c.chainConfig.StartBlocks[c.chainConfig.ChainID]
+	startHeight := c.chainConfig.StartBlock
 
 	// For testing the max block height will be 12 (review this)
 	endHeight := uint64(12)

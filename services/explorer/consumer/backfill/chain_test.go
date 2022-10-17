@@ -34,16 +34,11 @@ func (b *BackfillSuite) TestBackfill() {
 
 	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
 
-	// create the config
-	startBlocks := map[uint32]uint64{
-		uint32(testChainID.Uint64()): 0,
-	}
-
 	chainConfigs := []config.ChainConfig{
 		{
 			ChainID:                uint32(testChainID.Uint64()),
 			FetchBlockIncrement:    3,
-			StartBlocks:            startBlocks,
+			StartBlock:             0,
 			BridgeConfigV3Address:  b.bridgeConfigContract.Address().String(),
 			SynapseBridgeAddress:   bridgeContract.Address().String(),
 			SwapFlashLoanAddresses: []string{swapContractA.Address().String(), swapContractB.Address().String()},

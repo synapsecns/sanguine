@@ -20,7 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
-=
 	"go.uber.org/atomic"
 )
 
