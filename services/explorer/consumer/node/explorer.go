@@ -32,16 +32,23 @@ type ExplorerBackfiller struct {
 // NewExplorerBackfiller creates a new backfiller for the explorer.
 //
 // nolint:gocognit
-func NewExplorerBackfiller(ctx context.Context, consumerDB db.ConsumerDB, config config.Config, clients map[uint32]bind.ContractBackend) (*ExplorerBackfiller, error) {
+func NewExplorerBackfiller(consumerDB db.ConsumerDB, config config.Config, clients map[uint32]bind.ContractBackend) (*ExplorerBackfiller, error) {
 	// initialize the list of chain backfillers
 	chainBackfillers := make(map[uint32]*backfill.ChainBackfiller)
 
 	// create the consumer Fetcher
 	fetcher := consumer.NewFetcher(gqlClient.NewClient(http.DefaultClient, config.ScribeURL))
+
+	// create the bridge config Fetcher
+	bridgeConfigRef, err := bridgeconfig.NewBridgeConfigRef(common.HexToAddress(config.BridgeConfigAddress), clients[config.BridgeConfigChainID])
+
+	if err != nil || bridgeConfigRef == nil {
+		return nil, fmt.Errorf("could not create bridge config Fetcher: %w", err)
+	}
 	// initialize each chain backfiller
 	for _, chainConfig := range config.Chains {
 		// create the chain backfiller
-		chainBackfiller, err := getChainBackfiller(consumerDB, chainConfig, fetcher, clients[chainConfig.ChainID])
+		chainBackfiller, err := getChainBackfiller(consumerDB, chainConfig, fetcher, clients[chainConfig.ChainID], common.HexToAddress(config.BridgeConfigAddress), bridgeConfigRef)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain backfiller: %w", err)
 		}
@@ -84,7 +91,7 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context) error {
 }
 
 // nolint gocognit,cyclop
-func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig, fetcher *consumer.Fetcher, client bind.ContractBackend) (*backfill.ChainBackfiller, error) {
+func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig, fetcher *consumer.Fetcher, client bind.ContractBackend, bridgeConfigAddress common.Address, bridgeRef *bridgeconfig.BridgeConfigRef) (*backfill.ChainBackfiller, error) {
 	// get the ABI for each contract
 	bridgeConfigABI, err := bridgeconfig.BridgeConfigV3MetaData.GetAbi()
 	if err != nil || bridgeConfigABI == nil {
@@ -99,13 +106,13 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 		return nil, fmt.Errorf("could not get bridge abi: %w", err)
 	}
 
-	// create the bridge config Fetcher
-	bridgeConfigFetcher, err := consumer.NewBridgeConfigFetcher(common.HexToAddress(chainConfig.BridgeConfigV3Address), client)
-	if err != nil || bridgeConfigFetcher == nil {
-		return nil, fmt.Errorf("could not create bridge config Fetcher: %w", err)
+	newConfigFetcher, err := consumer.NewBridgeConfigFetcher(bridgeConfigAddress, bridgeRef)
+	if err != nil || newConfigFetcher == nil {
+		return nil, fmt.Errorf("could not get bridge abi: %w", err)
 	}
+
 	// create the bridge parser
-	bridgeParser, err := consumer.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.SynapseBridgeAddress), *bridgeConfigFetcher, fetcher)
+	bridgeParser, err := consumer.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.SynapseBridgeAddress), *newConfigFetcher, fetcher)
 	if err != nil || bridgeParser == nil {
 		return nil, fmt.Errorf("could not create bridge parser: %w", err)
 	}

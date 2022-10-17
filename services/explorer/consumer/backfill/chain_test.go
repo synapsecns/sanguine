@@ -39,7 +39,6 @@ func (b *BackfillSuite) TestBackfill() {
 			ChainID:                uint32(testChainID.Uint64()),
 			FetchBlockIncrement:    3,
 			StartBlock:             0,
-			BridgeConfigV3Address:  b.bridgeConfigContract.Address().String(),
 			SynapseBridgeAddress:   bridgeContract.Address().String(),
 			SwapFlashLoanAddresses: []string{swapContractA.Address().String(), swapContractB.Address().String()},
 		},
@@ -137,7 +136,7 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// set up a ChainBackfiller
-	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
+	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
 	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf, b.consumerFetcher)
 	Nil(b.T(), err)

@@ -18,6 +18,10 @@ type Config struct {
 	RefreshRate uint `yaml:"refresh_rate"`
 	// ScribeURL is the URL of the Scribe server.
 	ScribeURL string `yaml:"scribe_url"`
+	// BridgeConfigAddress is the address of BridgeConfig contract.
+	BridgeConfigAddress string `yaml:"bridge_config_abi"`
+	// BridgeConfigChainID is the ChainID of BridgeConfig contract.
+	BridgeConfigChainID uint32 `yaml:"bridge_config_chain_id"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

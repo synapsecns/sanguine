@@ -5,6 +5,7 @@ package bridgeconfig
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -1770,11 +1771,10 @@ func (_BridgeConfigV3 *BridgeConfigV3CallerSession) GetTokenByID(tokenID string,
 func (_BridgeConfigV3 *BridgeConfigV3Caller) GetTokenID(opts *bind.CallOpts, tokenAddress common.Address, chainID *big.Int) (string, error) {
 	var out []interface{}
 	err := _BridgeConfigV3.contract.Call(opts, &out, "getTokenID", tokenAddress, chainID)
-
+	fmt.Println("++++++", out, err)
 	if err != nil {
 		return *new(string), err
 	}
-
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err

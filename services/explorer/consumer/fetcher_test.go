@@ -41,7 +41,7 @@ func (c *ConsumerSuite) TestNewSwapFetcher() {
 
 func (c *ConsumerSuite) TestToken() {
 	defer c.cleanup()
-	fetcher, err := consumer.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.testBackend)
+	fetcher, err := consumer.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.bridgeConfigContract)
 	Nil(c.T(), err)
 	currentBlockNumber, err := c.testBackend.BlockNumber(c.GetTestContext())
 	Nil(c.T(), err)

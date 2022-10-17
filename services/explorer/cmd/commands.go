@@ -100,7 +100,7 @@ var backfillCommand = &cli.Command{
 			}
 			clients[client.ChainID] = backendClient
 		}
-		explorerBackfiller, err := node.NewExplorerBackfiller(c.Context, db, decodeConfig, clients)
+		explorerBackfiller, err := node.NewExplorerBackfiller(db, decodeConfig, clients)
 		if err != nil {
 			return fmt.Errorf("could not create explorer backfiller: %w", err)
 		}
@@ -123,8 +123,8 @@ func init() {
 // return nil, fmt.Errorf("could not get bridge config v3 abi: %w", err)
 //}
 // swapABI, err := swap.SwapFlashLoanMetaData.GetAbi()
-//if err != nil || swapABI == nil {
-//return nil, fmt.Errorf("could not get swap flash loan abi: %w", err)
+// if err != nil || swapABI == nil {
+// return nil, fmt.Errorf("could not get swap flash loan abi: %w", err)
 //}
 //bridgeABI, err := bridge.SynapseBridgeMetaData.GetAbi()
 //if err != nil || bridgeABI == nil {

@@ -244,23 +244,20 @@ func (f Fetcher) getSearchRange(ctx context.Context, startHeight uint64, chainID
 
 // BridgeConfigFetcher is the fetcher for the bridge config contract.
 type BridgeConfigFetcher struct {
-	bridgeConfig        *bridgeconfig.BridgeConfigRef
+	bridgeConfigRef     *bridgeconfig.BridgeConfigRef
 	bridgeConfigAddress common.Address
 } // TODO switch bridge config based on block number
 
 // NewBridgeConfigFetcher creates a new config fetcher.
 // Backend must be an archive backend.
-func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, backend bind.ContractBackend) (*BridgeConfigFetcher, error) {
-	bridgeConfig, err := bridgeconfig.NewBridgeConfigRef(bridgeConfigAddress, backend)
-	if err != nil {
-		return nil, fmt.Errorf("could not bind bridge config contract: %w", err)
-	}
-	return &BridgeConfigFetcher{bridgeConfig, bridgeConfigAddress}, nil
+func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, bridgeConfigRef *bridgeconfig.BridgeConfigRef) (*BridgeConfigFetcher, error) {
+	return &BridgeConfigFetcher{bridgeConfigRef, bridgeConfigAddress}, nil
 }
 
 // GetTokenID gets the token id from the bridge config contract.
 func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID uint32, tokenAddress common.Address) (tokenID *string, err error) {
-	tokenIDStr, err := b.bridgeConfig.GetTokenID(&bind.CallOpts{
+	fmt.Println("tokenIDStr", tokenAddress)
+	tokenIDStr, err := b.bridgeConfigRef.GetTokenID(&bind.CallOpts{
 		Context: ctx,
 	}, tokenAddress, big.NewInt(int64(chainID)))
 	if err != nil {
@@ -279,7 +276,7 @@ func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, toke
 	if tokenID == nil {
 		return nil, fmt.Errorf("invalid token id")
 	}
-	tok, err := b.bridgeConfig.GetToken(&bind.CallOpts{
+	tok, err := b.bridgeConfigRef.GetToken(&bind.CallOpts{
 		BlockNumber: big.NewInt(int64(blockNumber)),
 		Context:     ctx,
 	}, *tokenID, big.NewInt(int64(chainID)))
@@ -308,6 +305,7 @@ func NewSwapFetcher(swapAddress common.Address, backend bind.ContractBackend) (*
 
 // GetTokenMetaData gets the token from the erc20 token contract given a swap contract token id.
 func (s *SwapFetcher) GetTokenMetaData(ctx context.Context, tokenIndex uint8) (*string, *uint8) {
+	fmt.Println("SWAAAA")
 	tokenAddress, err := s.swap.GetToken(&bind.CallOpts{
 		Context: ctx,
 	}, tokenIndex)
