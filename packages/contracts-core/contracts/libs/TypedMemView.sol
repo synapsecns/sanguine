@@ -358,6 +358,8 @@ library TypedMemView {
         uint256 _len
     ) internal pure returns (bytes29 newView) {
         uint256 _end = _loc + _len;
+        // Make sure that a view is not constructed that points to unallocated memory
+        // as this could be indicative of a buffer overflow attack
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             if gt(_end, mload(0x40)) {
