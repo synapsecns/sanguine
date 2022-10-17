@@ -9,6 +9,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/services/explorer/config"
+	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 
 	"github.com/synapsecns/sanguine/services/explorer/consumer/node"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
@@ -58,6 +59,14 @@ func (n NodeSuite) TestLive() {
 	if err != nil {
 		n.FailNow(err.Error())
 	}
+	var count int64
+	bridgeEvents := n.db.UNSAFE_DB().WithContext(n.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
+	Nil(n.T(), bridgeEvents.Error)
+	fmt.Println("COUNT", count)
+	swapEvents := n.db.UNSAFE_DB().WithContext(n.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
+	Nil(n.T(), swapEvents.Error)
+	fmt.Println("COUNT", count)
+
 }
 
 // nolinting until parity tests implemented

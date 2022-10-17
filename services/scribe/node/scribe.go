@@ -41,7 +41,7 @@ func NewScribe(eventDB db.EventDB, clients map[uint32]backfill.ScribeBackend, co
 	}, nil
 }
 
-//	starts the scribe. This works by starting a backfill and recording what the
+// Start starts the scribe. This works by starting a backfill and recording what the
 //
 // current block, which it will backfill to. Then, each chain will listen for new block
 // heights and backfill to that height.
@@ -101,7 +101,6 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 
 	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, false)
 	if err != nil {
-		return fmt.Errorf("could not backfill: %w", err)
 		return fmt.Errorf("could not backfill: %w", err)
 	}
 
