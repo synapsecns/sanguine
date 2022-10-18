@@ -72,11 +72,12 @@ func (n NodeSuite) TestLive() {
 		transactOpts := n.testBackends[k].GetTxContext(n.GetTestContext(), nil)
 
 		chainConfigs = append(chainConfigs, config.ChainConfig{
-			ChainID:                k,
-			FetchBlockIncrement:    3,
-			StartBlock:             0,
-			SynapseBridgeAddress:   bridgeContract.Address().String(),
-			SwapFlashLoanAddresses: []string{swapContractA.Address().String(), swapContractB.Address().String()},
+			ChainID:                  k,
+			FetchBlockIncrement:      3,
+			StartBlock:               0,
+			SynapseBridgeAddress:     bridgeContract.Address().String(),
+			SwapFlashLoanAddresses:   []string{swapContractA.Address().String(), swapContractB.Address().String()},
+			StartFromLastBlockStored: false,
 		})
 
 		n.fillBlocks(bridgeRef, swapRefA, swapRefB, transactOpts, k)
@@ -116,7 +117,10 @@ func (n NodeSuite) TestLive() {
 		swapEventsChain := n.db.UNSAFE_DB().WithContext(n.GetTestContext()).Model(&sql.SwapEvent{}).Where(&sql.SwapEvent{ChainID: k}).Count(&count)
 		Nil(n.T(), swapEventsChain.Error)
 		Equal(n.T(), int64(10), count)
+
+		val, err := n.db.RetrieveLastBlock(n.GetTestContext(), 1)
 	}
+	fmt.Println(n.db.RetrieveLastBlock(n.GetTestContext(), 1))
 }
 
 // nolinting until parity tests implemented
@@ -223,5 +227,9 @@ func (n NodeSuite) fillBlocks(bridgeRef *testbridge.TestBridgeRef, swapRefA *tes
 	swapTx, err = swapRefA.TestFlashLoan(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(n.T(), err)
 	_, err = n.storeTestLog(swapTx, chainID, 9)
+	Nil(n.T(), err)
+
+	// Set the last block store by scribe
+	err = n.eventDB.StoreLastConfirmedBlock(n.GetTestContext(), chainID, 12)
 	Nil(n.T(), err)
 }

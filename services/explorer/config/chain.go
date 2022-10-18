@@ -20,6 +20,8 @@ type ChainConfig struct {
 	SynapseBridgeAddress string `yaml:"synapse_bridge_address"`
 	// SwapFlashLoanAddresses are the addresses of the SwapFlashLoan.sol contracts
 	SwapFlashLoanAddresses []string `yaml:"swap_flash_loan_address"`
+	// StartFromLastBlockStored is a flag to start from the last block(s) stored in the database for each chain.
+	StartFromLastBlockStored bool `yaml:"start_from_last_block_stored"`
 }
 
 // ChainConfigs contains an array fo ChainConfigs.

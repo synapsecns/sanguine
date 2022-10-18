@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/config"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -46,13 +45,20 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 	g, groupCtx := errgroup.WithContext(ctx)
 	startHeight := c.chainConfig.StartBlock
 
-	// For testing the max block height will be 12 (review this)
-	endHeight := uint64(12)
-	if !core.IsTest() {
-		endHeight, err = c.Fetcher.FetchLastBlock(groupCtx, c.chainConfig.ChainID)
+	// Set StartFromLastBlockStored to true to trigger backfill from last block store by explorer
+	// Otherwise it will start at the block number specified in the config file.
+	if c.chainConfig.StartFromLastBlockStored {
+		startHeight, err = c.consumerDB.RetrieveLastBlock(ctx, c.chainConfig.ChainID)
 		if err != nil {
-			return fmt.Errorf("could not fetch last block: %w", err)
+			return fmt.Errorf("could not get last block number: %w", err)
 		}
+	}
+
+	// For testing the max block height will be 12 (review this)
+
+	endHeight, err := c.Fetcher.FetchLastBlock(ctx, c.chainConfig.ChainID)
+	if err != nil {
+		return fmt.Errorf("could not fetch last block: %w", err)
 	}
 
 	for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += uint64(c.chainConfig.FetchBlockIncrement) {

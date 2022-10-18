@@ -32,24 +32,19 @@ func (b *BackfillSuite) TestBackfill() {
 	testDeployManagerB := testcontracts.NewDeployManager(b.T())
 	swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
 
+	lastBlock := uint64(12)
 	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
 
 	chainConfigs := []config.ChainConfig{
 		{
-			ChainID:                uint32(testChainID.Uint64()),
-			FetchBlockIncrement:    3,
-			StartBlock:             0,
-			SynapseBridgeAddress:   bridgeContract.Address().String(),
-			SwapFlashLoanAddresses: []string{swapContractA.Address().String(), swapContractB.Address().String()},
+			ChainID:                  uint32(testChainID.Uint64()),
+			FetchBlockIncrement:      3,
+			StartBlock:               0,
+			SynapseBridgeAddress:     bridgeContract.Address().String(),
+			SwapFlashLoanAddresses:   []string{swapContractA.Address().String(), swapContractB.Address().String()},
+			StartFromLastBlockStored: false,
 		},
 	}
-
-	// This structure is for reference
-	// explorerConfig := config.Config{
-	//	Chains:      chainConfigs,
-	//	RefreshRate: 2,
-	//	ScribeURL:   b.gqlClient.Client.BaseURL,
-	//}
 
 	// Store every bridge event.
 	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
@@ -135,6 +130,10 @@ func (b *BackfillSuite) TestBackfill() {
 	flashLoanLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 9)
 	Nil(b.T(), err)
 
+	// Set the last block store by scribe
+	err = b.eventDB.StoreLastConfirmedBlock(b.GetTestContext(), uint32(testChainID.Uint64()), lastBlock)
+	Nil(b.T(), err)
+
 	// set up a ChainBackfiller
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
@@ -215,6 +214,11 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	err = b.flashLoanParity(flashLoanLog, spA, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
+
+	// Check that the last block was stored in explorer's db
+	lastBlockStored, err := b.db.RetrieveLastBlock(b.GetTestContext(), uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	Equal(b.T(), lastBlock, lastBlockStored)
 }
 
 func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, blockNumber uint64) (*types.Log, error) {

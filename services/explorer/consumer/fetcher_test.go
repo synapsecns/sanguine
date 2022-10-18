@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"math/big"
+	"time"
 )
 
 func (c *ConsumerSuite) TestFetchLogsInRange() {
@@ -65,7 +66,10 @@ func (c *ConsumerSuite) TestTimeToBlockNumber() {
 	chainID := gofakeit.Uint32()
 
 	baseTime := uint64(0)
-
+	err := c.eventDB.StoreLastConfirmedBlock(c.GetTestContext(), chainID, 12)
+	if err != nil {
+		c.T().Fatal(err)
+	}
 	// Store 10 block numbers and block times.
 	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
 		err := c.eventDB.StoreBlockTime(c.GetTestContext(), chainID, blockNumber, baseTime)
@@ -73,8 +77,11 @@ func (c *ConsumerSuite) TestTimeToBlockNumber() {
 		baseTime += uint64(gofakeit.Uint32())
 	}
 
-	targetTime := uint64(gofakeit.Uint32() * 5)
+	targetTime := uint64(time.Now().Unix())
 
+	blockNumberInit := uint64(12)
+	err = c.eventDB.StoreBlockTime(c.GetTestContext(), chainID, blockNumberInit, uint64(time.Now().Unix())*blockNumberInit)
+	Nil(c.T(), err)
 	blockNumber, err := fetcher.TimeToBlockNumber(c.GetTestContext(), chainID, 1, targetTime)
 	Nil(c.T(), err)
 

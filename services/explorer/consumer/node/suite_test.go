@@ -78,7 +78,7 @@ func (c *NodeSuite) SetupTest() {
 
 	// var deployInfo contracts.DeployedContract
 	// deployInfo, c.bridgeConfigContract = c.deployManager.GetBridgeConfigV3(c.GetTestContext(), backend1)
-	//for _, token := range testTokens {
+	// for _, token := range testTokens {
 	//	auth := backend1.GetTxContext(c.GetTestContext(), deployInfo.OwnerPtr())
 	//	tx, err := token.SetTokenConfig(c.bridgeConfigContract, auth)
 	//	c.Require().NoError(err)
