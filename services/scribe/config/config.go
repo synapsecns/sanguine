@@ -26,7 +26,6 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 	if ok, err = c.Chains.IsValid(ctx); !ok {
 		return false, err
 	}
-
 	return true, nil
 }
 

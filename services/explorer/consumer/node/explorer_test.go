@@ -117,8 +117,6 @@ func (n NodeSuite) TestLive() {
 		swapEventsChain := n.db.UNSAFE_DB().WithContext(n.GetTestContext()).Model(&sql.SwapEvent{}).Where(&sql.SwapEvent{ChainID: k}).Count(&count)
 		Nil(n.T(), swapEventsChain.Error)
 		Equal(n.T(), int64(10), count)
-
-		val, err := n.db.RetrieveLastBlock(n.GetTestContext(), 1)
 	}
 	fmt.Println(n.db.RetrieveLastBlock(n.GetTestContext(), 1))
 }

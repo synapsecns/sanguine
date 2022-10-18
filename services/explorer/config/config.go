@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
 	"gopkg.in/yaml.v2"
 	"os"
@@ -28,7 +29,19 @@ type Config struct {
 // submodule. If any method returns an error that is returned here and the entirety
 // of IsValid returns false. Any warnings are logged by the submodules respective loggers.
 func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
-	if ok, err = c.Chains.IsValid(ctx); !ok {
+	if c.ScribeURL == "" {
+		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
+	}
+	if c.BridgeConfigChainID == 0 {
+		return false, fmt.Errorf("BridgeConfigChainID chain ID cannot be 0")
+	}
+	if c.BridgeConfigAddress == "" {
+		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
+	}
+	if len(c.BridgeConfigAddress) != (common.AddressLength*2)+2 {
+		return false, fmt.Errorf("field Address: %w", ErrAddressLength)
+	}
+	if ok, err = c.Chains.IsValid(); !ok {
 		return false, err
 	}
 	return true, nil

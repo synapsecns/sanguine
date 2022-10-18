@@ -1,8 +1,8 @@
 package config
 
 import (
-	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/richardwilkes/toolbox/collection"
 )
 
@@ -10,12 +10,12 @@ import (
 type ChainConfig struct {
 	// ChainID is the ID of the chain.
 	ChainID uint32 `yaml:"chain_id"`
-	// RPCURL is the ID of the chain.
-	RPCURL string `yaml:"chain_id"`
+	// RPCURL is the RPC of the chain.
+	RPCURL string `yaml:"rpc_url"`
 	// FetchBlockIncrement is the number of blocks to fetch at a time.
 	FetchBlockIncrement uint32 `yaml:"fetch_block_increment"`
 	// StartBlocks is a mapping from chain ID -> start block for backfilling.
-	StartBlock uint64 `yaml:"start_blocks"`
+	StartBlock uint64 `yaml:"start_block"`
 	// SynapseBridgeAddress is the address of the SynapseBridge.sol contract
 	SynapseBridgeAddress string `yaml:"synapse_bridge_address"`
 	// SwapFlashLoanAddresses are the addresses of the SwapFlashLoan.sol contracts
@@ -28,11 +28,15 @@ type ChainConfig struct {
 type ChainConfigs []ChainConfig
 
 // IsValid validates the chain config by asserting no two chains appear twice.
-func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
+func (c ChainConfigs) IsValid() (ok bool, err error) {
 	intSet := collection.Set[uint32]{}
 	for _, cfg := range c {
 		if intSet.Contains(cfg.ChainID) {
 			return false, fmt.Errorf("chain id %d appears twice", cfg.ChainID)
+		}
+		ok, err = cfg.IsValid()
+		if !ok {
+			return false, err
 		}
 		intSet.Add(cfg.ChainID)
 	}
@@ -40,9 +44,23 @@ func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 }
 
 // IsValid validates the chain config.
-func (c ChainConfig) IsValid(ctx context.Context) (ok bool, err error) {
+func (c ChainConfig) IsValid() (ok bool, err error) {
 	if c.ChainID == 0 {
 		return false, fmt.Errorf("chain ID cannot be 0")
+	}
+	if c.SynapseBridgeAddress == "" {
+		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
+	}
+	if len(c.SynapseBridgeAddress) != (common.AddressLength*2)+2 {
+		return false, fmt.Errorf("field Address: %w", ErrAddressLength)
+	}
+	for i := range c.SwapFlashLoanAddresses {
+		if c.SwapFlashLoanAddresses[i] == "" {
+			return false, fmt.Errorf("field Address: %w", ErrRequiredField)
+		}
+		if len(c.SwapFlashLoanAddresses[i]) != (common.AddressLength*2)+2 {
+			return false, fmt.Errorf("address not correct length: %w", ErrAddressLength)
+		}
 	}
 	return true, nil
 }
