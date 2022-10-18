@@ -173,6 +173,23 @@ contract OriginTest is SynapseTestWithNotaryManager {
         );
     }
 
+    function test_dispatch_tipsBadlyFormatted() public {
+        address sender = vm.addr(1555);
+        (, bytes memory messageBody, bytes32 recipient, , bytes memory tips) = _prepareTestMessage(
+            sender
+        );
+        tips = bytes.concat(tips, "some extra data");
+        hoax(sender);
+        // TODO: this should revert - change test after the fix
+        origin.dispatch{ value: TOTAL_TIPS }(
+            remoteDomain,
+            recipient,
+            optimisticSeconds,
+            tips,
+            messageBody
+        );
+    }
+
     function _prepareTestMessage(address sender)
         internal
         returns (
