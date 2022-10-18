@@ -204,7 +204,9 @@ library TypedMemView {
      * @return      mask - The mask
      */
     function leftMask(uint8 _len) private pure returns (uint256 mask) {
-        // ugly. redo without assembly?
+        // 0x800...00 binary representation is 100...00
+        // sar stands for "signed arithmetic shift": https://en.wikipedia.org/wiki/Arithmetic_shift
+        // sar(N-1, 100...00) = 11...100..00, with exactly N highest bits set to 1
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             mask := sar(
@@ -334,6 +336,13 @@ library TypedMemView {
         uint256 _loc,
         uint256 _len
     ) private pure returns (bytes29 newView) {
+        /**
+         * @dev Ref memory layout
+         * [000..005) 5 bytes of type
+         * [005..017) 12 bytes of location
+         * [017..029) 12 bytes of length
+         * last 3 bits are blank and dropped in typecast
+         */
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             newView := shl(96, or(newView, _type)) // insert type
@@ -358,6 +367,8 @@ library TypedMemView {
         uint256 _len
     ) internal pure returns (bytes29 newView) {
         uint256 _end = _loc + _len;
+        // Make sure that a view is not constructed that points to unallocated memory
+        // as this could be indicative of a buffer overflow attack
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             if gt(_end, mload(0x40)) {
