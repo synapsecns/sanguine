@@ -146,7 +146,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         (, bytes memory messageBody, bytes32 recipient, , bytes memory tips) = _prepareTestMessage(
             sender
         );
-        vm.expectRevert("!tips");
+        vm.expectRevert("!tips: totalTips");
         hoax(sender);
         origin.dispatch{ value: TOTAL_TIPS + 1 }(
             remoteDomain,
@@ -162,7 +162,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         (, bytes memory messageBody, bytes32 recipient, , bytes memory tips) = _prepareTestMessage(
             sender
         );
-        vm.expectRevert("!tips");
+        vm.expectRevert("!tips: totalTips");
         hoax(sender);
         origin.dispatch{ value: TOTAL_TIPS - 1 }(
             remoteDomain,
@@ -173,14 +173,16 @@ contract OriginTest is SynapseTestWithNotaryManager {
         );
     }
 
+    // TODO: add tests for a "smaller" payload and wrong tips version
     function test_dispatch_tipsBadlyFormatted() public {
         address sender = vm.addr(1555);
         (, bytes memory messageBody, bytes32 recipient, , bytes memory tips) = _prepareTestMessage(
             sender
         );
         tips = bytes.concat(tips, "some extra data");
+        // tips payload is larger than it should be
+        vm.expectRevert("!tips: formatting");
         hoax(sender);
-        // TODO: this should revert - change test after the fix
         origin.dispatch{ value: TOTAL_TIPS }(
             remoteDomain,
             recipient,
