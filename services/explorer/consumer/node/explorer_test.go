@@ -228,6 +228,6 @@ func (n NodeSuite) fillBlocks(bridgeRef *testbridge.TestBridgeRef, swapRefA *tes
 	Nil(n.T(), err)
 
 	// Set the last block store by scribe
-	err = n.eventDB.StoreLastConfirmedBlock(n.GetTestContext(), chainID, 12)
+	err = n.eventDB.StoreLastBlockTime(n.GetTestContext(), chainID, 12)
 	Nil(n.T(), err)
 }

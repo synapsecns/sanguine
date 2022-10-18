@@ -131,7 +131,7 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// Set the last block store by scribe
-	err = b.eventDB.StoreLastConfirmedBlock(b.GetTestContext(), uint32(testChainID.Uint64()), lastBlock)
+	err = b.eventDB.StoreLastBlockTime(b.GetTestContext(), uint32(testChainID.Uint64()), lastBlock)
 	Nil(b.T(), err)
 
 	// set up a ChainBackfiller

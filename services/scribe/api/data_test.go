@@ -176,6 +176,10 @@ func (g APISuite) TestBlockTimeDataEquality() {
 	err := g.db.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, blockTime)
 	Nil(g.T(), err)
 
+	// store last block time
+	err = g.db.StoreLastBlockTime(g.GetTestContext(), chainID, blockNumber)
+	Nil(g.T(), err)
+
 	// retrieve it
 	retrievedBlockTime, err := g.gqlClient.GetBlockTime(g.GetTestContext(), int(chainID), int(blockNumber))
 	Nil(g.T(), err)

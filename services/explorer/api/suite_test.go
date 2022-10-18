@@ -70,7 +70,8 @@ func (g *APISuite) SetupTest() {
 	g.chainIDs = []uint32{gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32()}
 	for i := range g.chainIDs {
 		// Set all chains to have a height of 12 blocks.
-		err = g.eventDB.StoreLastConfirmedBlock(g.GetTestContext(), g.chainIDs[i], 10)
+		// store last block time
+		err = g.eventDB.StoreLastBlockTime(g.GetTestContext(), g.chainIDs[i], 10)
 		Nil(g.T(), err)
 	}
 	go func() {

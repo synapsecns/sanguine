@@ -54,8 +54,6 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 		}
 	}
 
-	// For testing the max block height will be 12 (review this)
-
 	endHeight, err := c.Fetcher.FetchLastBlock(ctx, c.chainConfig.ChainID)
 	if err != nil {
 		return fmt.Errorf("could not fetch last block: %w", err)

@@ -92,7 +92,7 @@ func (r *queryResolver) BlockTime(ctx context.Context, chainID int, blockNumber 
 
 // LastStoredBlockNumber is the resolver for the lastStoredBlockNumber field.
 func (r *queryResolver) LastStoredBlockNumber(ctx context.Context, chainID int) (*int, error) {
-	blockNumber, err := r.DB.RetrieveLastConfirmedBlock(ctx, uint32(chainID))
+	blockNumber, err := r.DB.RetrieveLastBlockTime(ctx, uint32(chainID))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving last block: %w", err)
 	}
