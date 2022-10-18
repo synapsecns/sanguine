@@ -80,7 +80,7 @@ var serverCommand = &cli.Command{
 var backfillCommand = &cli.Command{
 	Name:        "backfill",
 	Description: "backfills up to a block and then halts",
-	//Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},
+	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
 		decodeConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
