@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 	"time"
 )
 
@@ -55,13 +56,24 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 	}
 
 	endHeight, err := c.Fetcher.FetchLastBlock(ctx, c.chainConfig.ChainID)
-	if err != nil {
-		return fmt.Errorf("could not fetch last block: %w", err)
-	}
 
-	for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += uint64(c.chainConfig.FetchBlockIncrement) {
+	// Init semaphore to signal number of concurrent requests
+	// This is to prevent knocking over scribe with a shit ton of requests
+	sem := semaphore.NewWeighted(c.chainConfig.MaxGoroutines)
+
+	for currentHeight := startHeight; currentHeight < endHeight; currentHeight += c.chainConfig.FetchBlockIncrement {
 		funcHeight := currentHeight
+
+		// Acquire semaphore, waiting for it to be "available goroutine"
+		err = sem.Acquire(ctx, 1)
+		if err != nil {
+			return err
+		}
+
 		g.Go(func() error {
+			// signal release of goroutine so another can be started
+			defer sem.Release(1)
+
 			// backoff in the case of an error
 			b := &backoff.Backoff{
 				Factor: 2,
@@ -72,7 +84,6 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 			// timeout should always be 0 on the first attempt
 			timeout := time.Duration(0)
 			for {
-				// TODO: add a notification for failure to parse and store an event
 				select {
 				case <-groupCtx.Done():
 					return fmt.Errorf("context canceled: %w", groupCtx.Err())
@@ -83,13 +94,17 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 					if rangeEnd > endHeight {
 						rangeEnd = endHeight
 					}
-
+					fmt.Println("range", funcHeight, rangeEnd)
 					logs, err := c.Fetcher.FetchLogsInRange(groupCtx, c.chainConfig.ChainID, funcHeight, rangeEnd)
 					if err != nil {
 						timeout = b.Duration()
 						logger.Warnf("could not fetch logs for chain %d: %s. Retrying in %s", c.chainConfig.ChainID, err, timeout)
 						continue
 					}
+					if len(logs) == 0 {
+						logger.Warnf("no logs for chain id %d in block range %d to %d, skipping processing", c.chainConfig.ChainID, rangeEnd, rangeEnd)
+					}
+
 					// parse and store the logs
 					err = c.processLogs(groupCtx, logs)
 					if err != nil {
@@ -121,24 +136,23 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) 
 	g, groupCtx := errgroup.WithContext(ctx)
 	for _, log := range logs {
 		log := log
-		g.Go(func() error {
-			var eventParser consumer.Parser
-			if log.Address == common.HexToAddress(c.chainConfig.SynapseBridgeAddress) {
-				eventParser = c.bridgeParser
-			} else {
-				if c.swapParsers[log.Address] == nil {
-					logger.Warnf("no parser found for contract %s", log.Address.Hex())
-					return nil
-				}
-				eventParser = c.swapParsers[log.Address]
+		var eventParser consumer.Parser
+		if log.Address == common.HexToAddress(c.chainConfig.SynapseBridgeAddress) {
+			eventParser = c.bridgeParser
+		} else {
+			if c.swapParsers[log.Address] == nil {
+				// commenting this out this because it clogs the logs - many of the indexed transactions are not bridge/swap/messaging/etc.
+				// logger.Warnf("no parser found for contract %s", log.Address.Hex())
+				return nil
 			}
+			eventParser = c.swapParsers[log.Address]
+		}
 
-			err := eventParser.ParseAndStore(groupCtx, log, c.chainConfig.ChainID)
-			if err != nil {
-				return fmt.Errorf("could not parse and store log: %w", err)
-			}
-			return nil
-		})
+		err := eventParser.ParseAndStore(groupCtx, log, c.chainConfig.ChainID)
+		if err != nil {
+			return fmt.Errorf("could not parse and store log: %w", err)
+		}
+		return nil
 	}
 
 	if err := g.Wait(); err != nil {

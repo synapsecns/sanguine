@@ -13,7 +13,7 @@ type ChainConfig struct {
 	// RPCURL is the RPC of the chain.
 	RPCURL string `yaml:"rpc_url"`
 	// FetchBlockIncrement is the number of blocks to fetch at a time.
-	FetchBlockIncrement uint32 `yaml:"fetch_block_increment"`
+	FetchBlockIncrement uint64 `yaml:"fetch_block_increment"`
 	// StartBlocks is a mapping from chain ID -> start block for backfilling.
 	StartBlock uint64 `yaml:"start_block"`
 	// SynapseBridgeAddress is the address of the SynapseBridge.sol contract
@@ -22,6 +22,8 @@ type ChainConfig struct {
 	SwapFlashLoanAddresses []string `yaml:"swap_flash_loan_address"`
 	// StartFromLastBlockStored is a flag to start from the last block(s) stored in the database for each chain.
 	StartFromLastBlockStored bool `yaml:"start_from_last_block_stored"`
+	// MaxGoroutines is the maximum number of goroutines that can be spawned.
+	MaxGoroutines int64 `yaml:"max_goroutines"`
 }
 
 // ChainConfigs contains an array fo ChainConfigs.
@@ -47,6 +49,9 @@ func (c ChainConfigs) IsValid() (ok bool, err error) {
 func (c ChainConfig) IsValid() (ok bool, err error) {
 	if c.ChainID == 0 {
 		return false, fmt.Errorf("chain ID cannot be 0")
+	}
+	if c.MaxGoroutines == 0 {
+		return false, fmt.Errorf("must have more than 0 goroutines per chain")
 	}
 	if c.SynapseBridgeAddress == "" {
 		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
