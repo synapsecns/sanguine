@@ -67,7 +67,7 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Suggest an attestation for the Notary to sign and submit.
+     * @notice Suggest an attestation for the Guards to sign and submit.
      * @dev If no messages have been sent, following values are returned:
      * - nonce = 0
      * - root = 0x27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757
@@ -100,10 +100,10 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Checks is a submitted Attestation is a valid Attestation.
-     * Attestation can be either Fraud or Valid.
-     * A Fraud Attestation is a (_nonce, _root) attestation that doesn't correspond with
-     * the historical state of Origin contract. Either of those needs to be true:
+     * @notice Checks if a submitted Attestation is a valid Attestation.
+     * Attestation Flag can be either "Fraud" or "Valid".
+     * A "Fraud" Attestation is a (_nonce, _root) attestation that doesn't correspond with
+     * the historical state of Origin contract. Either of these needs to be true:
      * - _nonce is higher than current nonce (no root exists for this nonce)
      * - _root is not equal to the historical root of _nonce
      * This would mean that message(s) that were not truly
