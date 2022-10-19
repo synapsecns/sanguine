@@ -54,10 +54,11 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 				ChainID:     chainID,
 				BlockNumber: blockNumber,
 			})
+
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
 		}
-		s.db.WithContext(ctx).Exec(fmt.Sprintf("OPTIMIZE TABLE last_blocks DEDUPLICATE BY %s", ChainIDFieldName))
+		s.db.WithContext(ctx).Exec(fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d ", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID))
 	}
 	return nil
 }

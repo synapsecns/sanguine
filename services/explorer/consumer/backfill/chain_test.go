@@ -25,6 +25,8 @@ func arrayToTokenIndexMap(input []*big.Int) map[uint8]string {
 	}
 	return output
 }
+
+//nolint:maintidx
 func (b *BackfillSuite) TestBackfill() {
 	testChainID := b.testBackend.GetBigChainID()
 	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
@@ -43,6 +45,7 @@ func (b *BackfillSuite) TestBackfill() {
 			SynapseBridgeAddress:     bridgeContract.Address().String(),
 			SwapFlashLoanAddresses:   []string{swapContractA.Address().String(), swapContractB.Address().String()},
 			StartFromLastBlockStored: false,
+			MaxGoroutines:            5,
 		},
 	}
 
@@ -104,7 +107,7 @@ func (b *BackfillSuite) TestBackfill() {
 	bridgeTx, err = bridgeRef.TestRedeemV2(transactOpts.TransactOpts, [32]byte{byte(gofakeit.Uint64())}, big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
 	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(11)), 1)
-	redeemV2Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 11)
+	redeemV2Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 12)
 	Nil(b.T(), err)
 
 	// Store every swap event across two different swap contracts.
@@ -164,8 +167,8 @@ func (b *BackfillSuite) TestBackfill() {
 
 	swapTx, err = swapRefA.TestFlashLoan(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(9)), 1)
-	flashLoanLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 9)
+	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(12)), 1)
+	flashLoanLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 12)
 	Nil(b.T(), err)
 
 	// Set the last block store by scribe

@@ -56,7 +56,9 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 	}
 
 	endHeight, err := c.Fetcher.FetchLastBlock(ctx, c.chainConfig.ChainID)
-
+	if err != nil {
+		return fmt.Errorf("could not get last block number: %w", err)
+	}
 	// Init semaphore to signal number of concurrent requests
 	// This is to prevent knocking over scribe with a shit ton of requests
 	sem := semaphore.NewWeighted(c.chainConfig.MaxGoroutines)
@@ -67,7 +69,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 		// Acquire semaphore, waiting for it to be "available goroutine"
 		err = sem.Acquire(ctx, 1)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not acquire semaphore: %w", err)
 		}
 
 		g.Go(func() error {
@@ -90,7 +92,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 				case <-time.After(timeout):
 
 					// fetch the logs
-					rangeEnd := funcHeight + uint64(c.chainConfig.FetchBlockIncrement) - 1
+					rangeEnd := funcHeight + c.chainConfig.FetchBlockIncrement - 1
 					if rangeEnd > endHeight {
 						rangeEnd = endHeight
 					}
@@ -110,12 +112,6 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 					if err != nil {
 						logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 					}
-
-					// Store the last block
-					err = c.consumerDB.StoreLastBlock(groupCtx, c.chainConfig.ChainID, rangeEnd)
-					if err != nil {
-						logger.Warnf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
-					}
 					return nil
 				}
 			}
@@ -124,7 +120,6 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
 	}
-
 	return nil
 }
 
@@ -132,31 +127,30 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 //
 //nolint:gocognit,cyclop
 func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log) error {
-	// initialize the errgroup
-	g, groupCtx := errgroup.WithContext(ctx)
-	for _, log := range logs {
-		log := log
+	for i := range logs {
 		var eventParser consumer.Parser
-		if log.Address == common.HexToAddress(c.chainConfig.SynapseBridgeAddress) {
+		if logs[i].Address == common.HexToAddress(c.chainConfig.SynapseBridgeAddress) {
 			eventParser = c.bridgeParser
 		} else {
-			if c.swapParsers[log.Address] == nil {
+			if c.swapParsers[logs[i].Address] == nil {
 				// commenting this out this because it clogs the logs - many of the indexed transactions are not bridge/swap/messaging/etc.
 				// logger.Warnf("no parser found for contract %s", log.Address.Hex())
 				return nil
 			}
-			eventParser = c.swapParsers[log.Address]
+			eventParser = c.swapParsers[logs[i].Address]
 		}
 
-		err := eventParser.ParseAndStore(groupCtx, log, c.chainConfig.ChainID)
+		err := eventParser.ParseAndStore(ctx, logs[i], c.chainConfig.ChainID)
 		if err != nil {
 			return fmt.Errorf("could not parse and store log: %w", err)
 		}
-		return nil
-	}
 
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("error while processing logs: %w", err)
+		// TODO this can be moved out of the for loop once log order is guaranteed
+		// Store the last block
+		err = c.consumerDB.StoreLastBlock(ctx, c.chainConfig.ChainID, logs[i].BlockNumber)
+		if err != nil {
+			logger.Warnf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
+		}
 	}
 	return nil
 }

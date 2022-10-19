@@ -19,6 +19,7 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 		SynapseBridgeAddress:     etherMocks.MockAddress().String(),
 		SwapFlashLoanAddresses:   []string{etherMocks.MockAddress().String(), etherMocks.MockAddress().String()},
 		StartFromLastBlockStored: false,
+		MaxGoroutines:            gofakeit.Int64(),
 	}
 	chain2 := config.ChainConfig{
 		ChainID:                  chainID + 1,
@@ -27,6 +28,7 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 		SynapseBridgeAddress:     etherMocks.MockAddress().String(),
 		SwapFlashLoanAddresses:   []string{etherMocks.MockAddress().String(), etherMocks.MockAddress().String()},
 		StartFromLastBlockStored: false,
+		MaxGoroutines:            gofakeit.Int64(),
 	}
 	chainConfigs := config.ChainConfigs{chain1, chain2}
 	testConfig := config.Config{

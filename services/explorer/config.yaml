@@ -1,0 +1,14 @@
+refresh_rate: 1000
+scribe_url: 'https://scribe.interoperability.institute/graphql'
+bridge_config_address: '0x5217c83ca75559B1f8a8803824E5b7ac233A12a1'
+bridge_config_chain_id: 1
+chains:
+  - chain_id: 1
+    rpc_url: 'https://eth-mainnet.g.alchemy.com/v2/lgt9ky0PTVL2vDEaud7QYTlpBd7aX43T'
+    fetch_block_increment: 1000
+    start_block: 15000000
+    synapse_bridge_address: '0x2796317b0fF8538F253012862c06787Adfb8cEb6'
+    swap_flash_loan_address: ['0x1116898DdA4015eD8dDefb84b6e8Bc24528Af2d8']
+    start_from_last_block_stored: false
+    max_goroutines: 10
+
