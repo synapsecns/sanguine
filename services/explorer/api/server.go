@@ -85,7 +85,8 @@ func Start(ctx context.Context, cfg Config) error {
 
 // InitDB initializes a database given a database type and path.
 func InitDB(ctx context.Context, address string) (db.ConsumerDB, error) {
-	if address == "" {
+
+	if address == "default" {
 		cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 		if cleanup == nil {
 			return nil, fmt.Errorf("clickhouse spin up failure, no open port found: %w", err)

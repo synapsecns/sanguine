@@ -256,7 +256,6 @@ func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, bridgeConfigRef 
 
 // GetTokenID gets the token id from the bridge config contract.
 func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID uint32, tokenAddress common.Address) (tokenID *string, err error) {
-	fmt.Println("tokenIDStr", tokenAddress)
 	tokenIDStr, err := b.bridgeConfigRef.GetTokenID(&bind.CallOpts{
 		Context: ctx,
 	}, tokenAddress, big.NewInt(int64(chainID)))
@@ -305,7 +304,6 @@ func NewSwapFetcher(swapAddress common.Address, backend bind.ContractBackend) (*
 
 // GetTokenMetaData gets the token from the erc20 token contract given a swap contract token id.
 func (s *SwapFetcher) GetTokenMetaData(ctx context.Context, tokenIndex uint8) (*string, *uint8) {
-	fmt.Println("SWAAAA")
 	tokenAddress, err := s.swap.GetToken(&bind.CallOpts{
 		Context: ctx,
 	}, tokenIndex)

@@ -120,7 +120,7 @@ func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int
 	if err != nil || len(ethTx) == 0 {
 		return nil, fmt.Errorf("error retrieving transaction: %w", err)
 	}
-	msgFrom, err := ethTx[0].AsMessage(types.NewEIP2930Signer(ethTx[0].ChainId()), big.NewInt(1))
+	msgFrom, err := ethTx[0].AsMessage(types.LatestSignerForChainID(ethTx[0].ChainId()), big.NewInt(1))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving ethtx: %w", err)
 	}

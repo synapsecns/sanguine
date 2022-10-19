@@ -80,14 +80,13 @@ var serverCommand = &cli.Command{
 var backfillCommand = &cli.Command{
 	Name:        "backfill",
 	Description: "backfills up to a block and then halts",
-	Flags:       []cli.Flag{configFlag},
+	Flags:       []cli.Flag{configFlag, clickhouseAddressFlag},
 	Action: func(c *cli.Context) error {
 		decodeConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not decode config: %w", err)
 
 		}
-
 		db, err := api.InitDB(c.Context, c.String(clickhouseAddressFlag.Name))
 		if err != nil {
 			return fmt.Errorf("could not initialize database: %w", err)

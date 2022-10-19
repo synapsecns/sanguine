@@ -66,7 +66,7 @@ func (c *ConsumerSuite) TestTimeToBlockNumber() {
 	chainID := gofakeit.Uint32()
 
 	baseTime := uint64(0)
-	err := c.eventDB.StoreLastConfirmedBlock(c.GetTestContext(), chainID, 12)
+	err := c.eventDB.StoreLastBlockTime(c.GetTestContext(), chainID, 12)
 	if err != nil {
 		c.T().Fatal(err)
 	}
