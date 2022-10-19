@@ -117,6 +117,9 @@ func (b *BackfillSuite) TestBackfill() {
 	flashLoanLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 9)
 	Nil(b.T(), err)
 
+	err = b.eventDB.StoreLastBlockTime(b.GetTestContext(), uint32(testChainID.Uint64()), 12)
+	Nil(b.T(), err)
+
 	// set up a ChainBackfiller
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
 	Nil(b.T(), err)
