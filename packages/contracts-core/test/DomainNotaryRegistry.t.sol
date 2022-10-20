@@ -15,8 +15,8 @@ contract DomainNotaryRegistryTest is Test {
     address internal constant NOTARY_3 = address(3);
     address internal constant NOTARY_4 = address(4);
 
-    event NotaryAdded(uint32 indexed domain, address notary);
-    event NotaryRemoved(uint32 indexed domain, address notary);
+    event NotaryAdded(uint32 indexed domain, address indexed notary);
+    event NotaryRemoved(uint32 indexed domain, address indexed notary);
 
     function setUp() public {
         registry = new DomainNotaryRegistryHarness(DOMAIN);

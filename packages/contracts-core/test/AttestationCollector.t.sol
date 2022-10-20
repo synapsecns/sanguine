@@ -23,8 +23,8 @@ contract AttestationCollectorTest is SynapseTest {
     uint256 internal constant NOTARIES_AMOUNT = 4;
 
     event AttestationSubmitted(address indexed notary, bytes attestation);
-    event NotaryAdded(uint32 indexed domain, address notary);
-    event NotaryRemoved(uint32 indexed domain, address notary);
+    event NotaryAdded(uint32 indexed domain, address indexed notary);
+    event NotaryRemoved(uint32 indexed domain, address indexed notary);
 
     function setUp() public override {
         super.setUp();
