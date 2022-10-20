@@ -27,7 +27,7 @@ func (c *ConsumerSuite) TestFetchLogsInRange() {
 
 	// Fetch logs from 4 to 8.
 	fetcher := consumer.NewFetcher(c.gqlClient)
-	logs, err := fetcher.FetchLogsInRange(c.GetTestContext(), chainID, 4, 8)
+	logs, err := fetcher.FetchLogsInRange(c.GetTestContext(), chainID, 4, 8, contractAddress)
 	Nil(c.T(), err)
 	Equal(c.T(), 5, len(logs))
 }

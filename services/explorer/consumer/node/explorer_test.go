@@ -62,26 +62,46 @@ func (n NodeSuite) TestLive() {
 		swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(n.GetTestContext(), n.testBackends[k])
 		transactOpts := n.testBackends[k].GetTxContext(n.GetTestContext(), nil)
 
+		contracts := []config.ContractConfig{
+			{
+				ContractType: "bridge",
+				Address:      bridgeContract.Address().String(),
+				StartBlock:   0,
+			},
+			{
+				ContractType: "swap",
+				Address:      swapContractA.Address().String(),
+				StartBlock:   0,
+			},
+			{
+				ContractType: "swap",
+				Address:      swapContractB.Address().String(),
+				StartBlock:   0,
+			},
+		}
 		chainConfigs = append(chainConfigs, config.ChainConfig{
-			ChainID:                  k,
-			FetchBlockIncrement:      100,
-			StartBlock:               0,
-			SynapseBridgeAddress:     bridgeContract.Address().String(),
-			SwapFlashLoanAddresses:   []string{swapContractA.Address().String(), swapContractB.Address().String()},
-			StartFromLastBlockStored: false,
-			MaxGoroutines:            5,
+			ChainID:             k,
+			RPCURL:              gofakeit.URL(),
+			FetchBlockIncrement: 100,
+			MaxGoroutines:       5,
+			Contracts:           contracts,
 		})
-
+		// go through each contract and save the end height in scribe
+		for i := range contracts {
+			//  the last block store per contract
+			err := n.eventDB.StoreLastIndexed(n.GetTestContext(), common.HexToAddress(contracts[i].Address), k, 12)
+			Nil(n.T(), err)
+		}
 		n.fillBlocks(bridgeRef, swapRefA, swapRefB, transactOpts, k)
 	}
 
 	// This structure is for reference
 	explorerConfig := config.Config{
-		Chains:              chainConfigs,
 		RefreshRate:         2,
 		ScribeURL:           n.gqlClient.Client.BaseURL,
 		BridgeConfigAddress: deployInfo.Address().String(),
 		BridgeConfigChainID: n.blockConfigChainID,
+		Chains:              chainConfigs,
 	}
 
 	explorerBackfiller, err := node.NewExplorerBackfiller(n.db, explorerConfig, backends)

@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/richardwilkes/toolbox/collection"
 )
 
@@ -14,16 +13,10 @@ type ChainConfig struct {
 	RPCURL string `yaml:"rpc_url"`
 	// FetchBlockIncrement is the number of blocks to fetch at a time.
 	FetchBlockIncrement uint64 `yaml:"fetch_block_increment"`
-	// StartBlocks is a mapping from chain ID -> start block for backfilling.
-	StartBlock uint64 `yaml:"start_block"`
-	// SynapseBridgeAddress is the address of the SynapseBridge.sol contract
-	SynapseBridgeAddress string `yaml:"synapse_bridge_address"`
-	// SwapFlashLoanAddresses are the addresses of the SwapFlashLoan.sol contracts
-	SwapFlashLoanAddresses []string `yaml:"swap_flash_loan_address"`
-	// StartFromLastBlockStored is a flag to start from the last block(s) stored in the database for each chain.
-	StartFromLastBlockStored bool `yaml:"start_from_last_block_stored"`
 	// MaxGoroutines is the maximum number of goroutines that can be spawned.
 	MaxGoroutines int64 `yaml:"max_goroutines"`
+	// Contracts are the contracts.
+	Contracts ContractConfigs `yaml:"contracts"`
 }
 
 // ChainConfigs contains an array fo ChainConfigs.
@@ -50,22 +43,18 @@ func (c ChainConfig) IsValid() (ok bool, err error) {
 	if c.ChainID == 0 {
 		return false, fmt.Errorf("chain ID cannot be 0")
 	}
+	if c.RPCURL == "" {
+		return false, fmt.Errorf("field RPCURL: %w", ErrRequiredField)
+	}
+	if c.FetchBlockIncrement == 0 {
+		return false, fmt.Errorf("field FetchBlockIncrement: %w", ErrRequiredField)
+	}
 	if c.MaxGoroutines == 0 {
 		return false, fmt.Errorf("must have more than 0 goroutines per chain")
 	}
-	if c.SynapseBridgeAddress == "" {
-		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
-	}
-	if len(c.SynapseBridgeAddress) != (common.AddressLength*2)+2 {
-		return false, fmt.Errorf("field Address: %w", ErrAddressLength)
-	}
-	for i := range c.SwapFlashLoanAddresses {
-		if c.SwapFlashLoanAddresses[i] == "" {
-			return false, fmt.Errorf("field Address: %w", ErrRequiredField)
-		}
-		if len(c.SwapFlashLoanAddresses[i]) != (common.AddressLength*2)+2 {
-			return false, fmt.Errorf("address not correct length: %w", ErrAddressLength)
-		}
+	ok, err = c.Contracts.IsValid()
+	if !ok {
+		return false, err
 	}
 	return true, nil
 }

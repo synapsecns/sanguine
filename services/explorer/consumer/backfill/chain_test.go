@@ -37,17 +37,43 @@ func (b *BackfillSuite) TestBackfill() {
 	lastBlock := uint64(12)
 	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
 
+	contractConfigBridge := config.ContractConfig{
+		ContractType: "bridge",
+		Address:      bridgeContract.Address().String(),
+		StartBlock:   0,
+	}
+	contractConfigSwap1 := config.ContractConfig{
+		ContractType: "swap",
+		Address:      swapContractA.Address().String(),
+		StartBlock:   0,
+	}
+	contractConfigSwap2 := config.ContractConfig{
+		ContractType: "swap",
+		Address:      swapContractB.Address().String(),
+		StartBlock:   0,
+	}
+
+	// Create the chain configs
 	chainConfigs := []config.ChainConfig{
 		{
-			ChainID:                  uint32(testChainID.Uint64()),
-			FetchBlockIncrement:      100,
-			StartBlock:               0,
-			SynapseBridgeAddress:     bridgeContract.Address().String(),
-			SwapFlashLoanAddresses:   []string{swapContractA.Address().String(), swapContractB.Address().String()},
-			StartFromLastBlockStored: false,
-			MaxGoroutines:            5,
+			ChainID:             uint32(testChainID.Uint64()),
+			RPCURL:              gofakeit.URL(),
+			FetchBlockIncrement: 100,
+			MaxGoroutines:       int64(5),
+			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2},
 		},
 	}
+	//
+	// chainConfigs := []config.ChainConfig{
+	//	{
+	//		ChainID:              uint32(testChainID.Uint64()),
+	//		FetchBlockIncrement:  100,
+	//		StartBlock:           0,
+	//		SynapseBridgeAddress: bridgeContract.Address().String(),
+	//		MaxGoroutines:        5,
+	//		Contracts:            []config.ContractConfig{},
+	//	},
+	//}
 
 	// Store every bridge event.
 	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
@@ -171,9 +197,12 @@ func (b *BackfillSuite) TestBackfill() {
 	flashLoanLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 12)
 	Nil(b.T(), err)
 
-	// Set the last block store by scribe
-	err = b.eventDB.StoreLastBlockTime(b.GetTestContext(), uint32(testChainID.Uint64()), lastBlock)
-	Nil(b.T(), err)
+	// go through each contract and save the end height in scribe
+	for i := range chainConfigs[0].Contracts {
+		//  the last block store per contract
+		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigs[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock)
+		Nil(b.T(), err)
+	}
 
 	// set up a ChainBackfiller
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
@@ -256,7 +285,6 @@ func (b *BackfillSuite) TestBackfill() {
 	err = b.flashLoanParity(flashLoanLog, spA, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 
-	// Check that the last block was stored in explorer's db
 	lastBlockStored, err := b.db.RetrieveLastBlock(b.GetTestContext(), uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 	Equal(b.T(), lastBlock, lastBlockStored)

@@ -75,17 +75,6 @@ func (c *NodeSuite) SetupTest() {
 
 	c.testBackends = backends
 	c.testDeployManager = testcontracts.NewDeployManager(c.T())
-
-	// var deployInfo contracts.DeployedContract
-	// deployInfo, c.bridgeConfigContract = c.deployManager.GetBridgeConfigV3(c.GetTestContext(), backend1)
-	// for _, token := range testTokens {
-	//	auth := backend1.GetTxContext(c.GetTestContext(), deployInfo.OwnerPtr())
-	//	tx, err := token.SetTokenConfig(c.bridgeConfigContract, auth)
-	//	c.Require().NoError(err)
-	//	backend1.WaitForConfirmation(c.GetTestContext(), tx)
-	//}
-	//// blockConfigChainID is the chain ID of the block config.
-	//
 }
 
 // TestConsumerSuite runs the integration test suite.

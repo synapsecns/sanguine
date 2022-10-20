@@ -3,40 +3,40 @@ package config_test
 import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	etherMocks "github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/explorer/config"
+	"math/big"
 )
 
 func (c ConfigSuite) TestConfigEncodeDecode() {
-	// generate an example config
-	chainID := gofakeit.Uint32()
-
+	// Create the chain configs
 	chain1 := config.ChainConfig{
-		ChainID:                  chainID,
-		FetchBlockIncrement:      3,
-		StartBlock:               0,
-		SynapseBridgeAddress:     etherMocks.MockAddress().String(),
-		SwapFlashLoanAddresses:   []string{etherMocks.MockAddress().String(), etherMocks.MockAddress().String()},
-		StartFromLastBlockStored: false,
-		MaxGoroutines:            gofakeit.Int64(),
+		ChainID:             gofakeit.Uint32(),
+		RPCURL:              gofakeit.URL(),
+		FetchBlockIncrement: 100,
+		MaxGoroutines:       gofakeit.Int64(),
+		Contracts:           []config.ContractConfig{makeContractConfig(), makeContractConfig()},
 	}
 	chain2 := config.ChainConfig{
-		ChainID:                  chainID + 1,
-		FetchBlockIncrement:      3,
-		StartBlock:               0,
-		SynapseBridgeAddress:     etherMocks.MockAddress().String(),
-		SwapFlashLoanAddresses:   []string{etherMocks.MockAddress().String(), etherMocks.MockAddress().String()},
-		StartFromLastBlockStored: false,
-		MaxGoroutines:            gofakeit.Int64(),
+		ChainID:             gofakeit.Uint32(),
+		RPCURL:              gofakeit.URL(),
+		FetchBlockIncrement: 100,
+		MaxGoroutines:       gofakeit.Int64(),
+		Contracts:           []config.ContractConfig{makeContractConfig(), makeContractConfig()},
 	}
+
+	// Put all the chain configs together
 	chainConfigs := config.ChainConfigs{chain1, chain2}
+
+	// Put everything into one Config
 	testConfig := config.Config{
-		Chains:              chainConfigs,
 		RefreshRate:         uint(gofakeit.Uint8()),
 		ScribeURL:           "http://localhost:8080",
 		BridgeConfigAddress: etherMocks.MockAddress().String(),
 		BridgeConfigChainID: gofakeit.Uint32(),
+		Chains:              chainConfigs,
 	}
 
 	encodedConfig, err := testConfig.Encode()
@@ -46,7 +46,16 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 	decodedConfig, err := config.DecodeConfig(file.Name())
 	Nil(c.T(), err)
 
+	// Check the validity of the decoded config
 	ok, err := decodedConfig.IsValid(c.GetTestContext())
 	True(c.T(), ok)
 	Nil(c.T(), err)
+}
+
+func makeContractConfig() config.ContractConfig {
+	return config.ContractConfig{
+		ContractType: gofakeit.UUID(),
+		Address:      common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		StartBlock:   gofakeit.Int64(),
+	}
 }

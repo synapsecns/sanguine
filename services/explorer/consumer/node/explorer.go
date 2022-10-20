@@ -90,32 +90,31 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context) error {
 
 // nolint gocognit,cyclop
 func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig, fetcher *consumer.Fetcher, client bind.ContractBackend, bridgeConfigAddress common.Address, bridgeRef *bridgeconfig.BridgeConfigRef) (*backfill.ChainBackfiller, error) {
-
 	newConfigFetcher, err := consumer.NewBridgeConfigFetcher(bridgeConfigAddress, bridgeRef)
 	if err != nil || newConfigFetcher == nil {
 		return nil, fmt.Errorf("could not get bridge abi: %w", err)
 	}
-
-	// create the bridge parser
-	bridgeParser, err := consumer.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.SynapseBridgeAddress), *newConfigFetcher, fetcher)
-	if err != nil || bridgeParser == nil {
-		return nil, fmt.Errorf("could not create bridge parser: %w", err)
-	}
-	// create the swap parsers
 	swapParsers := make(map[common.Address]*consumer.SwapParser)
-	for _, swapAddress := range chainConfig.SwapFlashLoanAddresses {
-		// create the swap Fetcher
-		swapFetcher, err := consumer.NewSwapFetcher(common.HexToAddress(swapAddress), client)
-		if err != nil || swapFetcher == nil {
-			return nil, fmt.Errorf("could not create swap Fetcher: %w", err)
+	var bridgeParser *consumer.BridgeParser
+	for i := range chainConfig.Contracts {
+		switch chainConfig.Contracts[i].ContractType {
+		case "bridge":
+			bridgeParser, err = consumer.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), *newConfigFetcher, fetcher)
+			if err != nil || bridgeParser == nil {
+				return nil, fmt.Errorf("could not create bridge parser: %w", err)
+			}
+		case "swap":
+			swapFetcher, err := consumer.NewSwapFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client)
+			if err != nil || swapFetcher == nil {
+				return nil, fmt.Errorf("could not create swap Fetcher: %w", err)
+			}
+			swapParser, err := consumer.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), *swapFetcher, fetcher)
+			if err != nil || swapParser == nil {
+				return nil, fmt.Errorf("could not create swap parser: %w", err)
+			}
+			swapParsers[common.HexToAddress(chainConfig.Contracts[i].Address)] = swapParser
 		}
-		swapParser, err := consumer.NewSwapParser(consumerDB, common.HexToAddress(swapAddress), *swapFetcher, fetcher)
-		if err != nil || swapParser == nil {
-			return nil, fmt.Errorf("could not create swap parser: %w", err)
-		}
-		swapParsers[common.HexToAddress(swapAddress)] = swapParser
 	}
 	chainBackfiller := backfill.NewChainBackfiller(consumerDB, bridgeParser, swapParsers, *fetcher, chainConfig)
-
 	return chainBackfiller, nil
 }

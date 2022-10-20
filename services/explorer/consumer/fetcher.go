@@ -44,12 +44,23 @@ func (f Fetcher) FetchTxSender(ctx context.Context, chainID uint32, txHash strin
 	return *sender.Response, nil
 }
 
+// FetchLastIndexed fetches the last indexed block per contract.
+func (f Fetcher) FetchLastIndexed(ctx context.Context, chainID uint32, contractAddress string) (uint64, error) {
+	lastIndexed, err := f.fetchClient.GetLastIndexed(ctx, int(chainID), contractAddress)
+	fmt.Println("lastIndexlastIndexedlastIndexedlastIndexeded", *lastIndexed.Response, contractAddress, chainID)
+	if err != nil || lastIndexed == nil || lastIndexed.Response == nil {
+		return 0, fmt.Errorf("could not get last indexed for contract %s: %w", contractAddress, err)
+	}
+	return uint64(*lastIndexed.Response), nil
+}
+
 // FetchLogsInRange fetches logs in a range with the GQL client.
-func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64) ([]ethTypes.Log, error) {
+func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64, contractAddress common.Address) ([]ethTypes.Log, error) {
 	logs := &client.GetLogsRange{}
 	page := 1
+	contractAddressString := contractAddress.String()
 	for {
-		paginatedLogs, err := f.fetchClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), page)
+		paginatedLogs, err := f.fetchClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), page, &contractAddressString)
 		if err != nil {
 			return nil, fmt.Errorf("could not get logs: %w", err)
 		}

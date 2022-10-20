@@ -13,8 +13,6 @@ import (
 
 // Config is used to configure the explorer's data consumption.
 type Config struct {
-	// Chains stores the chain configurations.
-	Chains ChainConfigs `yaml:"chains"`
 	// RefreshRate is the rate at which the explorer will refresh the last block height in seconds.
 	RefreshRate uint `yaml:"refresh_rate"`
 	// ScribeURL is the URL of the Scribe server.
@@ -23,6 +21,8 @@ type Config struct {
 	BridgeConfigAddress string `yaml:"bridge_config_address"`
 	// BridgeConfigChainID is the ChainID of BridgeConfig contract.
 	BridgeConfigChainID uint32 `yaml:"bridge_config_chain_id"`
+	// Chains stores the chain configurations.
+	Chains ChainConfigs `yaml:"chains"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -32,22 +32,24 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 	if c.ScribeURL == "" {
 		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
 	}
-	if c.BridgeConfigChainID == 0 {
-		return false, fmt.Errorf("BridgeConfigChainID chain ID cannot be 0")
-	}
 	if c.BridgeConfigAddress == "" {
 		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
 	}
 	if len(c.BridgeConfigAddress) != (common.AddressLength*2)+2 {
 		return false, fmt.Errorf("field Address: %w", ErrAddressLength)
 	}
+	if c.BridgeConfigChainID == 0 {
+		return false, fmt.Errorf("BridgeConfigChainID chain ID cannot be 0")
+	}
+
+	// Checks validity of each chain config.
 	if ok, err = c.Chains.IsValid(); !ok {
 		return false, err
 	}
 	return true, nil
 }
 
-// Encode gets the encoded config.toml file.
+// Encode gets the encoded config.yaml file.
 func (c Config) Encode() ([]byte, error) {
 	output, err := yaml.Marshal(&c)
 	if err != nil {
