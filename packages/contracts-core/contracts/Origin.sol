@@ -179,7 +179,11 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
     ) external payable haveActiveNotary returns (uint32 messageNonce, bytes32 messageHash) {
         // TODO: add unit tests covering return values
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
-        require(_tips.castToTips().totalTips() == msg.value, "!tips");
+        bytes29 tips = _tips.castToTips();
+        // Check: tips payload is correctly formatted
+        require(tips.isTips(), "!tips: formatting");
+        // Check: total tips value matches msg.value
+        require(tips.totalTips() == msg.value, "!tips: totalTips");
         // Latest nonce (i.e. "last message" nonce) is current amount of leaves in the tree.
         // Message nonce is the amount of leaves after the new leaf insertion
         messageNonce = nonce() + 1;
