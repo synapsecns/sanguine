@@ -81,9 +81,9 @@ func Start(ctx context.Context, cfg Config) error {
 	return nil
 }
 
-// TODO add connection to Google Cloud hosted clickhouse
 // InitDB initializes a database given a database type and path.
 func InitDB(ctx context.Context, address string) (db.ConsumerDB, error) {
+	// TODO add connection to Google Cloud hosted clickhouse
 	if address == "default" {
 		cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 		if cleanup == nil {
