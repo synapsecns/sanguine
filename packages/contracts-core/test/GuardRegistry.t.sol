@@ -13,8 +13,8 @@ contract GuardRegistryTest is Test {
     address internal constant GUARD_3 = address(3);
     address internal constant GUARD_4 = address(4);
 
-    event GuardAdded(address guard);
-    event GuardRemoved(address guard);
+    event GuardAdded(address indexed guard);
+    event GuardRemoved(address indexed guard);
 
     function setUp() public {
         registry = new GuardRegistryHarness();
