@@ -67,7 +67,7 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Suggest an attestation for the Notary to sign and submit.
+     * @notice Suggest an attestation for the off-chain actors to sign and submit.
      * @dev If no messages have been sent, following values are returned:
      * - nonce = 0
      * - root = 0x27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757
@@ -100,10 +100,10 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Checks is a submitted Attestation is a valid Attestation.
-     * Attestation can be either Fraud or Valid.
-     * A Fraud Attestation is a (_nonce, _root) attestation that doesn't correspond with
-     * the historical state of Origin contract. Either of those needs to be true:
+     * @notice Checks if a submitted Attestation is a valid Attestation.
+     * Attestation Flag can be either "Fraud" or "Valid".
+     * A "Fraud" Attestation is a (_nonce, _root) attestation that doesn't correspond with
+     * the historical state of Origin contract. Either of these needs to be true:
      * - _nonce is higher than current nonce (no root exists for this nonce)
      * - _root is not equal to the historical root of _nonce
      * This would mean that message(s) that were not truly
@@ -114,8 +114,8 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
      * submit a Fraud Report using Origin.submitReport()
      * in order to slash the Notary with a Fraud Attestation.
      *
-     * @dev Both Notary and Guard signatures
-     * have been checked at this point (see ReportHub.sol).
+     * @dev Notary signature and role have been checked in AttestationHub,
+     * hence `_notary` is an active Notary at this point.
      *
      * @param _notary           Notary address (signature&role already verified)
      * @param _attestationView  Memory view over reported Attestation for convenience
@@ -127,8 +127,6 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool isValid) {
-        /// @dev Notary role have been checked in ReportHub, meaning
-        /// _notary is an active Notary at this point.
         uint32 attestedNonce = _attestationView.attestedNonce();
         bytes32 attestedRoot = _attestationView.attestedRoot();
         isValid = _isValidAttestation(attestedNonce, attestedRoot);
@@ -172,8 +170,8 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
      * submit a Fraud Report using Origin.submitReport()
      * in order to slash the Notary with a Fraud Attestation.
      *
-     * @dev Both Notary and Guard signatures
-     * have been checked at this point (see ReportHub.sol).
+     * @dev Both Notary and Guard signatures and roles have been checked in ReportHub,
+     * hence `_notary` is an active Notary, `_guard` is an active Guard at this point.
      *
      * @param _guard            Guard address (signature&role already verified)
      * @param _notary           Notary address (signature&role already verified)
@@ -189,8 +187,6 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
         bytes29 _reportView,
         bytes memory _report
     ) internal override returns (bool) {
-        /// @dev Notary and Guard roles have been checked in ReportHub, meaning
-        /// _notary is an active Notary, _guard is an active Guard at this point.
         uint32 attestedNonce = _attestationView.attestedNonce();
         bytes32 attestedRoot = _attestationView.attestedRoot();
         if (_isValidAttestation(attestedNonce, attestedRoot)) {
