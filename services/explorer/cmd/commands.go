@@ -49,9 +49,9 @@ var scribeURL = &cli.StringFlag{
 }
 var clickhouseAddressFlag = &cli.StringFlag{
 	Name:     "address",
-	Usage:    "--address <path/to/database> or <database url>",
+	Usage:    "--address pass 'default' to use the default clickhouse address",
 	Value:    "",
-	Required: true,
+	Required: false,
 }
 var configFlag = &cli.StringFlag{
 	Name:      "config",
