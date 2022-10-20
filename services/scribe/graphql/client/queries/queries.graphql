@@ -187,14 +187,19 @@ query GetTransactionsResolvers ($chain_id: Int!, $page: Int!) {
     }
 }
 
+
 query GetBlockTime ($chain_id: Int!, $block_number: Int!) {
     response: blockTime (chain_id: $chain_id, block_number: $block_number)
 }
 
+# GetLastStoredBlockNumber returns the last stored block number for a given chain
+# this is retrieved from the block_times table.
 query GetLastStoredBlockNumber ($chain_id: Int!) {
     response: lastStoredBlockNumber (chain_id: $chain_id)
 }
 
+# GetFirstStoredBlockNumber returns the first stored block number for a given chain
+# this is retrieved from the block_times table.
 query GetFirstStoredBlockNumber ($chain_id: Int!) {
     response: firstStoredBlockNumber (chain_id: $chain_id)
 }

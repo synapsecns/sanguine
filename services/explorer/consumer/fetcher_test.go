@@ -66,22 +66,17 @@ func (c *ConsumerSuite) TestTimeToBlockNumber() {
 	chainID := gofakeit.Uint32()
 
 	baseTime := uint64(0)
-	err := c.eventDB.StoreLastBlockTime(c.GetTestContext(), chainID, 12)
-	if err != nil {
-		c.T().Fatal(err)
-	}
+
 	// Store 10 block numbers and block times.
 	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
 		err := c.eventDB.StoreBlockTime(c.GetTestContext(), chainID, blockNumber, baseTime)
 		Nil(c.T(), err)
 		baseTime += uint64(gofakeit.Uint32())
 	}
-	err = c.eventDB.StoreLastBlockTime(c.GetTestContext(), chainID, 12)
-	Nil(c.T(), err)
-	targetTime := uint64(time.Now().Unix())
 
+	targetTime := uint64(time.Now().Unix())
 	blockNumberInit := uint64(12)
-	err = c.eventDB.StoreBlockTime(c.GetTestContext(), chainID, blockNumberInit, uint64(time.Now().Unix())*blockNumberInit)
+	err := c.eventDB.StoreBlockTime(c.GetTestContext(), chainID, blockNumberInit, uint64(time.Now().Unix())*blockNumberInit)
 	Nil(c.T(), err)
 	blockNumber, err := fetcher.TimeToBlockNumber(c.GetTestContext(), chainID, 1, targetTime)
 	Nil(c.T(), err)

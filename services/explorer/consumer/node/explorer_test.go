@@ -273,10 +273,6 @@ func (n NodeSuite) fillBlocks(bridgeRef *testbridge.TestBridgeRef, swapRefA *tes
 	n.storeEthTx(bridgeTx, big.NewInt(int64(chainID)), big.NewInt(int64(9)), 3)
 	_, err = n.storeTestLog(swapTx, chainID, 9)
 	Nil(n.T(), err)
-
-	// Set the last block store by scribe
-	err = n.eventDB.StoreLastBlockTime(n.GetTestContext(), chainID, 12)
-	Nil(n.T(), err)
 }
 
 // storeEthTx stores the eth transaction so the get sender functionality can be tested.

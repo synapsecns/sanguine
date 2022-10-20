@@ -68,12 +68,12 @@ func (g *APISuite) SetupTest() {
 	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address)
 	Nil(g.T(), err)
 	g.chainIDs = []uint32{gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32()}
-	for i := range g.chainIDs {
-		// Set all chains to have a height of 12 blocks.
-		// store last block time
-		err = g.eventDB.StoreLastBlockTime(g.GetTestContext(), g.chainIDs[i], 10)
-		Nil(g.T(), err)
-	}
+	// for i := range g.chainIDs {
+	// 	// Set all chains to have a height of 12 blocks.
+	// 	// store last block time
+	// 	err = g.eventDB.StoreLastBlockTime(g.GetTestContext(), g.chainIDs[i], 10)
+	// 	Nil(g.T(), err)
+	// }
 	go func() {
 		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
 			HTTPPort:  uint16(httpport),
