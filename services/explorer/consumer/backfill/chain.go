@@ -43,10 +43,16 @@ func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *consumer.BridgeP
 func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 	for i := range c.chainConfig.Contracts {
 		contract := c.chainConfig.Contracts[i]
-		// initialize the errgroup
+
+		// Initialize the errgroup
 		g, groupCtx := errgroup.WithContext(ctx)
+
+		// Set limit of goroutines so Scribe doesn't get knocked over.
 		g.SetLimit(int(c.chainConfig.MaxGoroutines))
+
+		// Set the start height
 		startHeight := uint64(contract.StartBlock)
+
 		// Set start block to -1 to trigger backfill from last block stored by explorer
 		// Otherwise it will start at the block number specified in the config file.
 		if contract.StartBlock < 0 {
@@ -56,28 +62,16 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 			}
 		}
 
+		// Get last indexed block for the current contract.
 		endHeight, err := c.Fetcher.FetchLastIndexed(ctx, c.chainConfig.ChainID, contract.Address)
 		if err != nil {
 			return fmt.Errorf("could not get last indexed for contract %s: %w", contract.Address, err)
 		}
-		// Init semaphore to signal number of concurrent requests
-		// This is to prevent knocking over scribe with a shit ton of requests
-		// sem := semaphore.NewWeighted(c.chainConfig.MaxGoroutines)
 
-		// Iterate over all blocks and fetches logs with the current contract address
+		// Iterate over all blocks and fetch logs with the current contract address
 		for currentHeight := startHeight; currentHeight < endHeight; currentHeight += c.chainConfig.FetchBlockIncrement {
 			funcHeight := currentHeight
-
-			// Acquire semaphore, waiting for it to be "available goroutine"
-			// err = sem.Acquire(ctx, 1)
-			// if err != nil {
-			//	return fmt.Errorf("could not acquire semaphore: %w", err)
-			//}
-
 			g.Go(func() error {
-				// signal release of goroutine so another can be started
-				// defer sem.Release(1)
-
 				// backoff in the case of an error
 				b := &backoff.Backoff{
 					Factor: 2,
@@ -94,22 +88,21 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 						return fmt.Errorf("context canceled: %w", groupCtx.Err())
 					case <-time.After(timeout):
 
-						// fetch the logs
+						// Fetch the logs
 						rangeEnd := funcHeight + c.chainConfig.FetchBlockIncrement - 1
 						if rangeEnd > endHeight {
 							rangeEnd = endHeight
 						}
-						fmt.Println("range", funcHeight, rangeEnd)
+
+						// Fetch the logs from Scribe
 						logs, err := c.Fetcher.FetchLogsInRange(groupCtx, c.chainConfig.ChainID, funcHeight, rangeEnd, common.HexToAddress(contract.Address))
 						if err != nil {
 							timeout = b.Duration()
 							logger.Warnf("could not fetch logs for chain %d: %s. Retrying in %s", c.chainConfig.ChainID, err, timeout)
 							continue
 						}
-						if len(logs) == 0 {
-							logger.Warnf("no logs for chain id %d in block range %d to %d, skipping processing", c.chainConfig.ChainID, rangeEnd, rangeEnd)
-						}
 
+						// Init parser
 						var eventParser consumer.Parser
 						switch contract.ContractType {
 						case "bridge":
@@ -118,7 +111,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 							eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
 						}
 
-						// parse and store the logs
+						// Parse and store logs
 						err = c.processLogs(groupCtx, logs, eventParser)
 						if err != nil {
 							logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
@@ -144,9 +137,8 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 		if err != nil {
 			return fmt.Errorf("could not parse and store log: %w", err)
 		}
-
-		// TODO this can be moved out of the for loop once log order is guaranteed
-		// Store the last block
+		// TODO this can be moved out of this for loop once log order is guaranteed
+		// Store the last block in clickhouse
 		err = c.consumerDB.StoreLastBlock(ctx, c.chainConfig.ChainID, logs[i].BlockNumber)
 		if err != nil {
 			logger.Warnf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)

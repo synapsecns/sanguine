@@ -172,11 +172,11 @@ func (g APISuite) TestBlockTimeDataEquality() {
 	blockNumber := uint64(gofakeit.Uint32())
 	blockTime := uint64(gofakeit.Uint32())
 
-	// store it
+	// store block time
 	err := g.db.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, blockTime)
 	Nil(g.T(), err)
 
-	// retrieve it
+	// retrieve block time
 	retrievedBlockTime, err := g.gqlClient.GetBlockTime(g.GetTestContext(), int(chainID), int(blockNumber))
 	Nil(g.T(), err)
 

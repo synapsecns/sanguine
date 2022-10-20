@@ -37,6 +37,7 @@ func (b *BackfillSuite) TestBackfill() {
 	lastBlock := uint64(12)
 	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
 
+	// Initialize testing config.
 	contractConfigBridge := config.ContractConfig{
 		ContractType: "bridge",
 		Address:      bridgeContract.Address().String(),
@@ -63,17 +64,6 @@ func (b *BackfillSuite) TestBackfill() {
 			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2},
 		},
 	}
-	//
-	// chainConfigs := []config.ChainConfig{
-	//	{
-	//		ChainID:              uint32(testChainID.Uint64()),
-	//		FetchBlockIncrement:  100,
-	//		StartBlock:           0,
-	//		SynapseBridgeAddress: bridgeContract.Address().String(),
-	//		MaxGoroutines:        5,
-	//		Contracts:            []config.ContractConfig{},
-	//	},
-	//}
 
 	// Store every bridge event.
 	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
@@ -197,14 +187,14 @@ func (b *BackfillSuite) TestBackfill() {
 	flashLoanLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 12)
 	Nil(b.T(), err)
 
-	// go through each contract and save the end height in scribe
+	// Go through each contract and save the end height in scribe
 	for i := range chainConfigs[0].Contracts {
 		//  the last block store per contract
 		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigs[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock)
 		Nil(b.T(), err)
 	}
 
-	// set up a ChainBackfiller
+	// Set up a ChainBackfiller
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
 	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf, b.consumerFetcher)
@@ -229,7 +219,7 @@ func (b *BackfillSuite) TestBackfill() {
 	// Test the first chain in the config file
 	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, *f, chainConfigs[0])
 
-	// backfill the blocks
+	// Backfill the blocks
 	// TODO: store the latest block number to query to in scribe db
 	err = chainBackfiller.Backfill(b.GetTestContext())
 	Nil(b.T(), err)
@@ -290,6 +280,7 @@ func (b *BackfillSuite) TestBackfill() {
 	Equal(b.T(), lastBlock, lastBlockStored)
 }
 
+// storeTestLogs stores the test logs in the database.
 func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, blockNumber uint64) (*types.Log, error) {
 	b.testBackend.WaitForConfirmation(b.GetTestContext(), tx)
 	receipt, err := b.testBackend.TransactionReceipt(b.GetTestContext(), tx.Hash())

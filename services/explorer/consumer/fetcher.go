@@ -47,7 +47,6 @@ func (f Fetcher) FetchTxSender(ctx context.Context, chainID uint32, txHash strin
 // FetchLastIndexed fetches the last indexed block per contract.
 func (f Fetcher) FetchLastIndexed(ctx context.Context, chainID uint32, contractAddress string) (uint64, error) {
 	lastIndexed, err := f.fetchClient.GetLastIndexed(ctx, int(chainID), contractAddress)
-	fmt.Println("lastIndexlastIndexedlastIndexedlastIndexeded", *lastIndexed.Response, contractAddress, chainID)
 	if err != nil || lastIndexed == nil || lastIndexed.Response == nil {
 		return 0, fmt.Errorf("could not get last indexed for contract %s: %w", contractAddress, err)
 	}

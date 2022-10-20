@@ -40,6 +40,7 @@ func (b BackfillSuite) TestChainBackfill() {
 		Nil(b.T(), err)
 		startBlocks[i] = receipt.BlockNumber.Uint64()
 	}
+
 	// Set up the ChainConfig for the backfiller.
 	contractConfigs := config.ContractConfigs{}
 	for i, contract := range contracts {
@@ -65,6 +66,7 @@ func (b BackfillSuite) TestChainBackfill() {
 // will store the events and check their existence in the database.
 func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContract, testRefs []*testcontract.TestContractRef, simulatedChain *simulated.Backend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig, backfill bool) {
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
+
 	// Emit events from each contract.
 	for _, testRef := range testRefs {
 		tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
@@ -102,6 +104,7 @@ func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContrac
 		}
 		receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), receiptFilter, 1)
 		Nil(b.T(), err)
+
 		// There should be 9 receipts. One from `EmitEventA`, one from `EmitEventB`, and
 		// one from `EmitEventAandB`, for each contract.
 		Equal(b.T(), 9, len(receipts))

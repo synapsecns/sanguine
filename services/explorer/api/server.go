@@ -34,8 +34,6 @@ type Config struct {
 // Start starts the api server.
 func Start(ctx context.Context, cfg Config) error {
 	router := gin.New()
-	fmt.Println("HTTPPORT: ", cfg.HTTPPort)
-
 	router.Use(helmet.Default())
 	router.Use(gin.Recovery())
 	router.Use(cors.New(cors.Config{
