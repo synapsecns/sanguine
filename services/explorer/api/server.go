@@ -34,8 +34,6 @@ type Config struct {
 // Start starts the api server.
 func Start(ctx context.Context, cfg Config) error {
 	router := gin.New()
-	fmt.Println("HTTPPORT: ", cfg.HTTPPort)
-
 	router.Use(helmet.Default())
 	router.Use(gin.Recovery())
 	router.Use(cors.New(cors.Config{
@@ -85,7 +83,8 @@ func Start(ctx context.Context, cfg Config) error {
 
 // InitDB initializes a database given a database type and path.
 func InitDB(ctx context.Context, address string) (db.ConsumerDB, error) {
-	if address == "" {
+	// TODO add connection to Google Cloud hosted clickhouse
+	if address == "default" {
 		cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 		if cleanup == nil {
 			return nil, fmt.Errorf("clickhouse spin up failure, no open port found: %w", err)

@@ -87,4 +87,9 @@ type Query {
     tx_hash: String!
     chain_id: Int!
   ): String
+  # returns the last indexed block number for a chain
+  lastIndexed(
+    contract_address: String!
+    chain_id: Int!
+  ): Int
 }

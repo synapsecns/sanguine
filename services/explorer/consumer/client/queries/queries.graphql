@@ -1,5 +1,5 @@
-query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
-  response: logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
+query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!, $contract_address: String) {
+  response: logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page, contract_address: $contract_address) {
     contract_address
     chain_id
     topics
@@ -27,4 +27,8 @@ query GetFirstStoredBlockNumber ($chain_id: Int!) {
 
 query GetTxSender ($chain_id: Int!, $tx_hash: String!) {
   response: txSender (chain_id: $chain_id, tx_hash: $tx_hash)
+}
+
+query GetLastIndexed ($chain_id: Int!, $contract_address: String!) {
+  response: lastIndexed (chain_id: $chain_id, contract_address: $contract_address)
 }

@@ -11,6 +11,8 @@ import (
 type ConsumerDBWriter interface {
 	// StoreEvent stores an event.
 	StoreEvent(ctx context.Context, bridgeEvent *sql.BridgeEvent, swapEvent *sql.SwapEvent) error
+	// StoreLastBlock stores the last block number that has been backfilled for a given chain.
+	StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64) error
 	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
 	//
 	//nolint:golint
@@ -42,6 +44,8 @@ type ConsumerDBReader interface {
 	GetBridgeStatistic(ctx context.Context, subQuery string) (*string, error)
 	// GetHistoricalData gets bridge historical data
 	GetHistoricalData(ctx context.Context, subQuery string, typeArg *model.HistoricalResultType, filter string) (*model.HistoricalResult, error)
+	// RetrieveLastBlock retrieves the last block number backfilled for a given chain ID.
+	RetrieveLastBlock(ctx context.Context, chainID uint32) (lastBlock uint64, err error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.
