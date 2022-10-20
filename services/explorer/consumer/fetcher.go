@@ -26,6 +26,15 @@ func NewFetcher(fetchClient *client.Client) *Fetcher {
 	}
 }
 
+// FetchLastBlock fetches the last block that Scribe has stored.
+func (f Fetcher) FetchLastBlock(ctx context.Context, chainID uint32) (uint64, error) {
+	getEndHeight, err := f.fetchClient.GetLastStoredBlockNumber(ctx, int(chainID))
+	if err != nil && getEndHeight == nil {
+		return 0, fmt.Errorf("could not get end height: %w", err)
+	}
+	return uint64(*getEndHeight.Response), nil
+}
+
 // FetchTxSender fetches the sender of a transaction.
 func (f Fetcher) FetchTxSender(ctx context.Context, chainID uint32, txHash string) (string, error) {
 	sender, err := f.fetchClient.GetTxSender(ctx, int(chainID), txHash)
@@ -35,12 +44,22 @@ func (f Fetcher) FetchTxSender(ctx context.Context, chainID uint32, txHash strin
 	return *sender.Response, nil
 }
 
+// FetchLastIndexed fetches the last indexed block per contract.
+func (f Fetcher) FetchLastIndexed(ctx context.Context, chainID uint32, contractAddress string) (uint64, error) {
+	lastIndexed, err := f.fetchClient.GetLastIndexed(ctx, int(chainID), contractAddress)
+	if err != nil || lastIndexed == nil || lastIndexed.Response == nil {
+		return 0, fmt.Errorf("could not get last indexed for contract %s: %w", contractAddress, err)
+	}
+	return uint64(*lastIndexed.Response), nil
+}
+
 // FetchLogsInRange fetches logs in a range with the GQL client.
-func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64) ([]ethTypes.Log, error) {
+func (f Fetcher) FetchLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64, contractAddress common.Address) ([]ethTypes.Log, error) {
 	logs := &client.GetLogsRange{}
 	page := 1
+	contractAddressString := contractAddress.String()
 	for {
-		paginatedLogs, err := f.fetchClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), page)
+		paginatedLogs, err := f.fetchClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), page, &contractAddressString)
 		if err != nil {
 			return nil, fmt.Errorf("could not get logs: %w", err)
 		}
@@ -235,23 +254,19 @@ func (f Fetcher) getSearchRange(ctx context.Context, startHeight uint64, chainID
 
 // BridgeConfigFetcher is the fetcher for the bridge config contract.
 type BridgeConfigFetcher struct {
-	bridgeConfig        *bridgeconfig.BridgeConfigRef
+	bridgeConfigRef     *bridgeconfig.BridgeConfigRef
 	bridgeConfigAddress common.Address
 } // TODO switch bridge config based on block number
 
 // NewBridgeConfigFetcher creates a new config fetcher.
 // Backend must be an archive backend.
-func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, backend bind.ContractBackend) (*BridgeConfigFetcher, error) {
-	bridgeConfig, err := bridgeconfig.NewBridgeConfigRef(bridgeConfigAddress, backend)
-	if err != nil {
-		return nil, fmt.Errorf("could not bind bridge config contract: %w", err)
-	}
-	return &BridgeConfigFetcher{bridgeConfig, bridgeConfigAddress}, nil
+func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, bridgeConfigRef *bridgeconfig.BridgeConfigRef) (*BridgeConfigFetcher, error) {
+	return &BridgeConfigFetcher{bridgeConfigRef, bridgeConfigAddress}, nil
 }
 
 // GetTokenID gets the token id from the bridge config contract.
 func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID uint32, tokenAddress common.Address) (tokenID *string, err error) {
-	tokenIDStr, err := b.bridgeConfig.GetTokenID(&bind.CallOpts{
+	tokenIDStr, err := b.bridgeConfigRef.GetTokenID(&bind.CallOpts{
 		Context: ctx,
 	}, tokenAddress, big.NewInt(int64(chainID)))
 	if err != nil {
@@ -270,7 +285,7 @@ func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, toke
 	if tokenID == nil {
 		return nil, fmt.Errorf("invalid token id")
 	}
-	tok, err := b.bridgeConfig.GetToken(&bind.CallOpts{
+	tok, err := b.bridgeConfigRef.GetToken(&bind.CallOpts{
 		BlockNumber: big.NewInt(int64(blockNumber)),
 		Context:     ctx,
 	}, *tokenID, big.NewInt(int64(chainID)))

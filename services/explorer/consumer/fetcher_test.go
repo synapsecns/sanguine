@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"math/big"
+	"time"
 )
 
 func (c *ConsumerSuite) TestFetchLogsInRange() {
@@ -26,7 +27,7 @@ func (c *ConsumerSuite) TestFetchLogsInRange() {
 
 	// Fetch logs from 4 to 8.
 	fetcher := consumer.NewFetcher(c.gqlClient)
-	logs, err := fetcher.FetchLogsInRange(c.GetTestContext(), chainID, 4, 8)
+	logs, err := fetcher.FetchLogsInRange(c.GetTestContext(), chainID, 4, 8, contractAddress)
 	Nil(c.T(), err)
 	Equal(c.T(), 5, len(logs))
 }
@@ -41,7 +42,7 @@ func (c *ConsumerSuite) TestNewSwapFetcher() {
 
 func (c *ConsumerSuite) TestToken() {
 	defer c.cleanup()
-	fetcher, err := consumer.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.testBackend)
+	fetcher, err := consumer.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.bridgeConfigContract)
 	Nil(c.T(), err)
 	currentBlockNumber, err := c.testBackend.BlockNumber(c.GetTestContext())
 	Nil(c.T(), err)
@@ -73,8 +74,10 @@ func (c *ConsumerSuite) TestTimeToBlockNumber() {
 		baseTime += uint64(gofakeit.Uint32())
 	}
 
-	targetTime := uint64(gofakeit.Uint32() * 5)
-
+	targetTime := uint64(time.Now().Unix())
+	blockNumberInit := uint64(12)
+	err := c.eventDB.StoreBlockTime(c.GetTestContext(), chainID, blockNumberInit, uint64(time.Now().Unix())*blockNumberInit)
+	Nil(c.T(), err)
 	blockNumber, err := fetcher.TimeToBlockNumber(c.GetTestContext(), chainID, 1, targetTime)
 	Nil(c.T(), err)
 

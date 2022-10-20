@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/services/explorer/config"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/backfill"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -24,6 +25,8 @@ func arrayToTokenIndexMap(input []*big.Int) map[uint8]string {
 	}
 	return output
 }
+
+//nolint:maintidx
 func (b *BackfillSuite) TestBackfill() {
 	testChainID := b.testBackend.GetBigChainID()
 	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
@@ -31,94 +34,168 @@ func (b *BackfillSuite) TestBackfill() {
 	testDeployManagerB := testcontracts.NewDeployManager(b.T())
 	swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
 
+	lastBlock := uint64(12)
 	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
+
+	// Initialize testing config.
+	contractConfigBridge := config.ContractConfig{
+		ContractType: "bridge",
+		Address:      bridgeContract.Address().String(),
+		StartBlock:   0,
+	}
+	contractConfigSwap1 := config.ContractConfig{
+		ContractType: "swap",
+		Address:      swapContractA.Address().String(),
+		StartBlock:   0,
+	}
+	contractConfigSwap2 := config.ContractConfig{
+		ContractType: "swap",
+		Address:      swapContractB.Address().String(),
+		StartBlock:   0,
+	}
+
+	// Create the chain configs
+	chainConfigs := []config.ChainConfig{
+		{
+			ChainID:             uint32(testChainID.Uint64()),
+			RPCURL:              gofakeit.URL(),
+			FetchBlockIncrement: 100,
+			MaxGoroutines:       int64(5),
+			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2},
+		},
+	}
 
 	// Store every bridge event.
 	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(2)), 1)
 	depositLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 2)
 	Nil(b.T(), err)
+
 	bridgeTx, err = bridgeRef.TestRedeem(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(int64(gofakeit.Uint32()))), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(2)), 2)
 	redeemLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 2)
 	Nil(b.T(), err)
+
 	bridgeTx, err = bridgeRef.TestWithdraw(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())})
 	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(2)), 3)
 	withdrawLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 2)
 	Nil(b.T(), err)
+
 	bridgeTx, err = bridgeRef.TestMint(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())})
 	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(3)), 1)
 	mintLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 3)
 	Nil(b.T(), err)
+
 	bridgeTx, err = bridgeRef.TestDepositAndSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(6)), 1)
 	depositAndSwapLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 6)
 	Nil(b.T(), err)
+
 	bridgeTx, err = bridgeRef.TestRedeemAndSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(7)), 1)
 	redeemAndSwapLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 7)
 	Nil(b.T(), err)
+
 	bridgeTx, err = bridgeRef.TestRedeemAndRemove(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(8)), 1)
 	redeemAndRemoveLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 8)
 	Nil(b.T(), err)
+
 	bridgeTx, err = bridgeRef.TestMintAndSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint8(), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())})
 	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(9)), 1)
 	mintAndSwapLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 9)
 	Nil(b.T(), err)
+
 	bridgeTx, err = bridgeRef.TestWithdrawAndRemove(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())})
 	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(10)), 1)
 	withdrawAndRemoveLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 10)
 	Nil(b.T(), err)
+
 	bridgeTx, err = bridgeRef.TestRedeemV2(transactOpts.TransactOpts, [32]byte{byte(gofakeit.Uint64())}, big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
-	redeemV2Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 11)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(11)), 1)
+	redeemV2Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 12)
 	Nil(b.T(), err)
 
 	// Store every swap event across two different swap contracts.
 	swapTx, err := swapRefA.TestSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
 	Nil(b.T(), err)
-	swapLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
-	Nil(b.T(), err)
-	swapTx, err = swapRefB.TestAddLiquidity(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
-	Nil(b.T(), err)
-	addLiquidityLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
-	Nil(b.T(), err)
-	swapTx, err = swapRefB.TestRemoveLiquidity(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())))
-	Nil(b.T(), err)
-	removeLiquidityLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 0)
-	Nil(b.T(), err)
-	swapTx, err = swapRefA.TestRemoveLiquidityOne(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
-	Nil(b.T(), err)
-	removeLiquidityOneLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 1)
-	Nil(b.T(), err)
-	swapTx, err = swapRefA.TestRemoveLiquidityImbalance(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
-	Nil(b.T(), err)
-	removeLiquidityImbalanceLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 1)
-	Nil(b.T(), err)
-	swapTx, err = swapRefB.TestNewAdminFee(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())))
-	Nil(b.T(), err)
-	newAdminFeeLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 5)
-	Nil(b.T(), err)
-	swapTx, err = swapRefA.TestNewSwapFee(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())))
-	Nil(b.T(), err)
-	newSwapFeeLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 6)
-	Nil(b.T(), err)
-	swapTx, err = swapRefA.TestRampA(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
-	Nil(b.T(), err)
-	rampALog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 7)
-	Nil(b.T(), err)
-	swapTx, err = swapRefB.TestStopRampA(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
-	Nil(b.T(), err)
-	stopRampALog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 8)
-	Nil(b.T(), err)
-	swapTx, err = swapRefA.TestFlashLoan(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
-	Nil(b.T(), err)
-	flashLoanLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 9)
+	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(4)), 1)
+	swapLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 4)
 	Nil(b.T(), err)
 
-	// set up a ChainBackfiller
-	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.testBackend)
+	swapTx, err = swapRefB.TestAddLiquidity(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(4)), 2)
+	addLiquidityLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 4)
+	Nil(b.T(), err)
+
+	swapTx, err = swapRefB.TestRemoveLiquidity(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(4)), 3)
+	removeLiquidityLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 4)
+	Nil(b.T(), err)
+
+	swapTx, err = swapRefA.TestRemoveLiquidityOne(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(5)), 1)
+	removeLiquidityOneLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 5)
+	Nil(b.T(), err)
+
+	swapTx, err = swapRefA.TestRemoveLiquidityImbalance(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, []*big.Int{big.NewInt(int64(gofakeit.Uint64()))}, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(5)), 2)
+	removeLiquidityImbalanceLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 5)
+	Nil(b.T(), err)
+
+	swapTx, err = swapRefB.TestNewAdminFee(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(6)), 1)
+	newAdminFeeLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 6)
+	Nil(b.T(), err)
+
+	swapTx, err = swapRefA.TestNewSwapFee(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(7)), 1)
+	newSwapFeeLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 7)
+	Nil(b.T(), err)
+
+	swapTx, err = swapRefA.TestRampA(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(8)), 1)
+	rampALog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 8)
+	Nil(b.T(), err)
+
+	swapTx, err = swapRefB.TestStopRampA(transactOpts.TransactOpts, big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(8)), 1)
+	stopRampALog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 8)
+	Nil(b.T(), err)
+
+	swapTx, err = swapRefA.TestFlashLoan(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
+	Nil(b.T(), err)
+	b.storeEthTx(swapTx, testChainID, big.NewInt(int64(12)), 1)
+	flashLoanLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 12)
+	Nil(b.T(), err)
+
+	// Go through each contract and save the end height in scribe
+	for i := range chainConfigs[0].Contracts {
+		//  the last block store per contract
+		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigs[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock)
+		Nil(b.T(), err)
+	}
+
+	// Set up a ChainBackfiller
+	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
 	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf, b.consumerFetcher)
 	Nil(b.T(), err)
@@ -138,10 +215,13 @@ func (b *BackfillSuite) TestBackfill() {
 	spMap[swapContractA.Address()] = spA
 	spMap[swapContractB.Address()] = spB
 	f := consumer.NewFetcher(b.gqlClient)
-	chainBackfiller := backfill.NewChainBackfiller(uint32(testChainID.Uint64()), b.db, 3, bp, bridgeContract.Address(), spMap, *f, b.bridgeConfigContract.Address())
 
-	// backfill the blocks
-	err = chainBackfiller.Backfill(b.GetTestContext(), 0, 12)
+	// Test the first chain in the config file
+	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, *f, chainConfigs[0])
+
+	// Backfill the blocks
+	// TODO: store the latest block number to query to in scribe db
+	err = chainBackfiller.Backfill(b.GetTestContext())
 	Nil(b.T(), err)
 	var count int64
 	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
@@ -194,8 +274,13 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	err = b.flashLoanParity(flashLoanLog, spA, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
+
+	lastBlockStored, err := b.db.RetrieveLastBlock(b.GetTestContext(), uint32(testChainID.Uint64()))
+	Nil(b.T(), err)
+	Equal(b.T(), lastBlock, lastBlockStored)
 }
 
+// storeTestLogs stores the test logs in the database.
 func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, blockNumber uint64) (*types.Log, error) {
 	b.testBackend.WaitForConfirmation(b.GetTestContext(), tx)
 	receipt, err := b.testBackend.TransactionReceipt(b.GetTestContext(), tx.Hash())
@@ -889,4 +974,10 @@ func (b *BackfillSuite) flashLoanParity(log *types.Log, parser *consumer.SwapPar
 	Equal(b.T(), amountArray, storedLog.Amount)
 	Equal(b.T(), feeArray, storedLog.AmountFee)
 	return nil
+}
+
+// storeEthTx stores the eth transaction so the get sender functionality can be tested.
+func (b *BackfillSuite) storeEthTx(tx *types.Transaction, chainID *big.Int, blockNumber *big.Int, index int) {
+	err := b.eventDB.StoreEthTx(b.GetTestContext(), tx, uint32(chainID.Uint64()), common.BigToHash(blockNumber), blockNumber.Uint64(), uint64(index))
+	Nil(b.T(), err)
 }

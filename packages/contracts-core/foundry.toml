@@ -8,6 +8,8 @@ libs = ["../../node_modules", "node_modules", "lib"]
 
 [profile.ci]
 verbosity = 4
-fuzz_runs = 1000
+
+[fuzz]
+runs = 2000
 
 # See more config options https://github.com/gakonst/foundry/tree/master/config

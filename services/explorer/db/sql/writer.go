@@ -21,3 +21,44 @@ func (s *Store) StoreEvent(ctx context.Context, bridgeEvent *BridgeEvent, swapEv
 	}
 	return nil
 }
+
+// StoreLastBlock stores the last block number that has been backfilled for a given chain.
+func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64) error {
+	entry := LastBlock{}
+	dbTx := s.db.WithContext(ctx).
+		Model(&LastBlock{}).
+		Where(&LastBlock{
+			ChainID: chainID,
+		}).
+		Scan(&entry)
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not retrieve last block: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		dbTx = s.db.WithContext(ctx).
+			Model(&LastBlock{}).
+			Create(&LastBlock{
+				ChainID:     chainID,
+				BlockNumber: blockNumber,
+			})
+		if dbTx.Error != nil {
+			return fmt.Errorf("could not store last block: %w", dbTx.Error)
+		}
+
+		return nil
+	}
+	if blockNumber > entry.BlockNumber {
+		dbTx = s.db.WithContext(ctx).
+			Model(&LastBlock{}).
+			Create(&LastBlock{
+				ChainID:     chainID,
+				BlockNumber: blockNumber,
+			})
+
+		if dbTx.Error != nil {
+			return fmt.Errorf("could not store last block: %w", dbTx.Error)
+		}
+		s.db.WithContext(ctx).Exec(fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d ", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID))
+	}
+	return nil
+}

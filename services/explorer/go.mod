@@ -32,6 +32,7 @@ require (
 	github.com/jpillora/backoff v1.0.0
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
+	github.com/richardwilkes/toolbox v1.74.0
 	github.com/stretchr/testify v1.8.0
 	github.com/synapsecns/sanguine/core v0.0.0-20220823193711-904c560fc7d3
 	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
@@ -39,7 +40,7 @@ require (
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/vektah/gqlparser/v2 v2.5.1
 	go.uber.org/atomic v1.10.0
-	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
+	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/clickhouse v0.4.2
 	gorm.io/gorm v1.23.9

@@ -48,3 +48,32 @@ func (t *DBSuite) TestSwapWrite() {
 	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent)
 	Nil(t.T(), err)
 }
+
+func (t *DBSuite) TestLastBlockWrite() {
+	defer t.cleanup()
+	chainID := gofakeit.Uint32()
+	blockNumber := gofakeit.Uint64()
+	err := t.db.StoreLastBlock(t.GetTestContext(), chainID, blockNumber)
+	Nil(t.T(), err)
+	blockNumber++
+	err = t.db.StoreLastBlock(t.GetTestContext(), chainID, blockNumber)
+	Nil(t.T(), err)
+	storedBlockNum, err := t.db.RetrieveLastBlock(t.GetTestContext(), chainID)
+	Nil(t.T(), err)
+	Equal(t.T(), blockNumber, storedBlockNum)
+
+	chainID2 := gofakeit.Uint32()
+	blockNumber2 := gofakeit.Uint64()
+	err = t.db.StoreLastBlock(t.GetTestContext(), chainID2, blockNumber2)
+	Nil(t.T(), err)
+	blockNumber2--
+	err = t.db.StoreLastBlock(t.GetTestContext(), chainID2, blockNumber2)
+	Nil(t.T(), err)
+	storedBlockNum2, err := t.db.RetrieveLastBlock(t.GetTestContext(), chainID2)
+	Nil(t.T(), err)
+	Equal(t.T(), blockNumber2+1, storedBlockNum2)
+
+	storedBlockNumOg, err := t.db.RetrieveLastBlock(t.GetTestContext(), chainID)
+	Nil(t.T(), err)
+	Equal(t.T(), blockNumber, storedBlockNumOg)
+}
