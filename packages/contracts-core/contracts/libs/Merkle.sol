@@ -16,6 +16,7 @@ library MerkleLib {
      * @notice Struct representing incremental merkle tree. Contains the current branch,
      * while the number of inserted leaves are stored externally.
      **/
+    // solhint-disable-next-line ordering
     struct Tree {
         bytes32[TREE_DEPTH] branch;
     }

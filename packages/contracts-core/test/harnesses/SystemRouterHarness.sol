@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 
 import { SystemRouter } from "../../contracts/system/SystemRouter.sol";
 
+// solhint-disable no-empty-blocks
 contract SystemRouterHarness is SystemRouter {
     constructor(
         uint32 _localDomain,

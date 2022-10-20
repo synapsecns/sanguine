@@ -9,6 +9,7 @@ import { SynapseTypes } from "../../contracts/libs/SynapseTypes.sol";
 import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 import { TypeCasts } from "../../contracts/libs/TypeCasts.sol";
 
+// solhint-disable func-name-mixedcase
 contract SystemMessageTest is Bytes29Test {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;

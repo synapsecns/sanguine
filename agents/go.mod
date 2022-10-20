@@ -9,7 +9,7 @@ require (
 	github.com/Thor-x86/nullable v1.0.0
 	github.com/aws/smithy-go v1.13.3
 	github.com/brianvoe/gofakeit/v6 v6.19.0
-	github.com/coinbase/rosetta-sdk-go v0.8.0
+	github.com/coinbase/rosetta-sdk-go v0.8.1
 	github.com/ethereum/go-ethereum v1.10.25
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
@@ -24,7 +24,7 @@ require (
 	github.com/ugorji/go/codec v1.2.7
 	github.com/vburenin/ifacemaker v1.2.0
 	github.com/vektra/mockery/v2 v2.14.0
-	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
+	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	gorm.io/driver/mysql v1.3.6
 	gorm.io/driver/sqlite v1.3.6
 	gorm.io/gorm v1.23.9
@@ -174,7 +174,7 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
-	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b // indirect
+	golang.org/x/exp v0.0.0-20221012211006-4de253d81b95 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/sys v0.0.0-20220913175220-63ea55921009 // indirect

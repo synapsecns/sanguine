@@ -76,7 +76,8 @@ func (c *ConsumerSuite) TestTimeToBlockNumber() {
 		Nil(c.T(), err)
 		baseTime += uint64(gofakeit.Uint32())
 	}
-
+	err = c.eventDB.StoreLastBlockTime(c.GetTestContext(), chainID, 12)
+	Nil(c.T(), err)
 	targetTime := uint64(time.Now().Unix())
 
 	blockNumberInit := uint64(12)

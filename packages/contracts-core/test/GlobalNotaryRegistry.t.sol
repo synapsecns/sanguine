@@ -7,9 +7,6 @@ import { GlobalNotaryRegistryHarness } from "./harnesses/GlobalNotaryRegistryHar
 
 // solhint-disable func-name-mixedcase
 contract GlobalNotaryRegistryTest is Test {
-    event NotaryAdded(uint32 indexed domain, address notary);
-    event NotaryRemoved(uint32 indexed domain, address notary);
-
     address internal constant NOTARY_1 = address(1);
     address internal constant NOTARY_2 = address(2);
     address internal constant NOTARY_3 = address(3);
@@ -19,6 +16,9 @@ contract GlobalNotaryRegistryTest is Test {
     uint32 internal constant DOMAIN_2 = 4321;
 
     GlobalNotaryRegistryHarness internal registry;
+
+    event NotaryAdded(uint32 indexed domain, address notary);
+    event NotaryRemoved(uint32 indexed domain, address notary);
 
     function setUp() public {
         registry = new GlobalNotaryRegistryHarness();
