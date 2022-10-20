@@ -61,7 +61,7 @@ abstract contract SystemContractHarness is SystemContractHarnessEvents, SystemCo
         onlyCallers(ORIGIN | DESTINATION, ISystemRouter.SystemEntity(_caller))
     {
         _setSensitiveValue(_newValue, _origin, _caller, _rootSubmittedAt);
-        emit OnlyDestinationCall(address(this), _newValue);
+        emit OnlyOriginDestinationCall(address(this), _newValue);
     }
 
     function setSensitiveValueOnlyTwoHours(

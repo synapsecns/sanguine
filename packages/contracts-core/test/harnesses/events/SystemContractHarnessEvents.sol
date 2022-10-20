@@ -8,6 +8,7 @@ abstract contract SystemContractHarnessEvents {
     event OnlyLocalCall(address recipient, uint256 newValue);
     event OnlyOriginCall(address recipient, uint256 newValue);
     event OnlyDestinationCall(address recipient, uint256 newValue);
+    event OnlyOriginDestinationCall(address recipient, uint256 newValue);
     event OnlyTwoHoursCall(address recipient, uint256 newValue);
     event OnlySynapseChainCall(address recipient, uint256 newValue);
 }
