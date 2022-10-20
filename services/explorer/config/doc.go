@@ -1,2 +1,2 @@
-// Package config enables .yaml files to be passed and parsed to specify indexer behavior
+// Package config handles config data decoded from config.yaml for the explorer service.
 package config

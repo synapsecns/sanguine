@@ -29,6 +29,7 @@ type Query struct {
 	LastStoredBlockNumber  *int                 "json:\"lastStoredBlockNumber\" graphql:\"lastStoredBlockNumber\""
 	FirstStoredBlockNumber *int                 "json:\"firstStoredBlockNumber\" graphql:\"firstStoredBlockNumber\""
 	TxSender               *string              "json:\"txSender\" graphql:\"txSender\""
+	LastIndexed            *int                 "json:\"lastIndexed\" graphql:\"lastIndexed\""
 }
 type GetLogs struct {
 	Response []*struct {
@@ -221,6 +222,9 @@ type GetFirstStoredBlockNumber struct {
 }
 type GetTxSender struct {
 	Response *string "json:\"response\" graphql:\"response\""
+}
+type GetLastIndexed struct {
+	Response *int "json:\"response\" graphql:\"response\""
 }
 
 const GetLogsDocument = `query GetLogs ($chain_id: Int!, $page: Int!) {
@@ -621,6 +625,25 @@ func (c *Client) GetTxSender(ctx context.Context, chainID int, txHash string, ht
 
 	var res GetTxSender
 	if err := c.Client.Post(ctx, "GetTxSender", GetTxSenderDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetLastIndexedDocument = `query GetLastIndexed ($chain_id: Int!, $contract_address: String!) {
+	response: lastIndexed(chain_id: $chain_id, contract_address: $contract_address)
+}
+`
+
+func (c *Client) GetLastIndexed(ctx context.Context, chainID int, contractAddress string, httpRequestOptions ...client.HTTPRequestOption) (*GetLastIndexed, error) {
+	vars := map[string]interface{}{
+		"chain_id":         chainID,
+		"contract_address": contractAddress,
+	}
+
+	var res GetLastIndexed
+	if err := c.Client.Post(ctx, "GetLastIndexed", GetLastIndexedDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

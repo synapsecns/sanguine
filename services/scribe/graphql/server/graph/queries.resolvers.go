@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
@@ -120,12 +121,22 @@ func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int
 	if err != nil || len(ethTx) == 0 {
 		return nil, fmt.Errorf("error retrieving transaction: %w", err)
 	}
-	msgFrom, err := ethTx[0].AsMessage(types.NewEIP2930Signer(ethTx[0].ChainId()), big.NewInt(1))
+	msgFrom, err := ethTx[0].AsMessage(types.LatestSignerForChainID(ethTx[0].ChainId()), big.NewInt(1))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving ethtx: %w", err)
 	}
 	sender := msgFrom.From().String()
 	return &sender, nil
+}
+
+// LastIndexed is the resolver for the lastIndexed field.
+func (r *queryResolver) LastIndexed(ctx context.Context, contractAddress string, chainID int) (*int, error) {
+	blockNumber, err := r.DB.RetrieveLastIndexed(ctx, common.HexToAddress(contractAddress), uint32(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving contract last block: %w", err)
+	}
+	blockNumberInt := int(blockNumber)
+	return &blockNumberInt, nil
 }
 
 // Query returns resolvers.QueryResolver implementation.

@@ -270,6 +270,27 @@ func (_m *ConsumerDB) ReadBlockNumberByChainID(ctx context.Context, eventType in
 	return r0, r1
 }
 
+// RetrieveLastBlock provides a mock function with given fields: ctx, chainID
+func (_m *ConsumerDB) RetrieveLastBlock(ctx context.Context, chainID uint32) (uint64, error) {
+	ret := _m.Called(ctx, chainID)
+
+	var r0 uint64
+	if rf, ok := ret.Get(0).(func(context.Context, uint32) uint64); ok {
+		r0 = rf(ctx, chainID)
+	} else {
+		r0 = ret.Get(0).(uint64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, uint32) error); ok {
+		r1 = rf(ctx, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // StoreEvent provides a mock function with given fields: ctx, bridgeEvent, swapEvent
 func (_m *ConsumerDB) StoreEvent(ctx context.Context, bridgeEvent *sql.BridgeEvent, swapEvent *sql.SwapEvent) error {
 	ret := _m.Called(ctx, bridgeEvent, swapEvent)
@@ -277,6 +298,20 @@ func (_m *ConsumerDB) StoreEvent(ctx context.Context, bridgeEvent *sql.BridgeEve
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, *sql.BridgeEvent, *sql.SwapEvent) error); ok {
 		r0 = rf(ctx, bridgeEvent, swapEvent)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// StoreLastBlock provides a mock function with given fields: ctx, chainID, blockNumber
+func (_m *ConsumerDB) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64) error {
+	ret := _m.Called(ctx, chainID, blockNumber)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint64) error); ok {
+		r0 = rf(ctx, chainID, blockNumber)
 	} else {
 		r0 = ret.Error(0)
 	}

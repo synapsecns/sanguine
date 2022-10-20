@@ -29,6 +29,7 @@ type Query struct {
 	LastStoredBlockNumber  *int                 "json:\"lastStoredBlockNumber\" graphql:\"lastStoredBlockNumber\""
 	FirstStoredBlockNumber *int                 "json:\"firstStoredBlockNumber\" graphql:\"firstStoredBlockNumber\""
 	TxSender               *string              "json:\"txSender\" graphql:\"txSender\""
+	LastIndexed            *int                 "json:\"lastIndexed\" graphql:\"lastIndexed\""
 }
 type GetLogsRange struct {
 	Response []*struct {
@@ -56,9 +57,12 @@ type GetFirstStoredBlockNumber struct {
 type GetTxSender struct {
 	Response *string "json:\"response\" graphql:\"response\""
 }
+type GetLastIndexed struct {
+	Response *int "json:\"response\" graphql:\"response\""
+}
 
-const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
-	response: logsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
+const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!, $contract_address: String) {
+	response: logsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page, contract_address: $contract_address) {
 		contract_address
 		chain_id
 		topics
@@ -73,12 +77,13 @@ const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block:
 }
 `
 
-func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsRange, error) {
+func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, contractAddress *string, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsRange, error) {
 	vars := map[string]interface{}{
-		"chain_id":    chainID,
-		"start_block": startBlock,
-		"end_block":   endBlock,
-		"page":        page,
+		"chain_id":         chainID,
+		"start_block":      startBlock,
+		"end_block":        endBlock,
+		"page":             page,
+		"contract_address": contractAddress,
 	}
 
 	var res GetLogsRange
@@ -157,6 +162,25 @@ func (c *Client) GetTxSender(ctx context.Context, chainID int, txHash string, ht
 
 	var res GetTxSender
 	if err := c.Client.Post(ctx, "GetTxSender", GetTxSenderDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetLastIndexedDocument = `query GetLastIndexed ($chain_id: Int!, $contract_address: String!) {
+	response: lastIndexed(chain_id: $chain_id, contract_address: $contract_address)
+}
+`
+
+func (c *Client) GetLastIndexed(ctx context.Context, chainID int, contractAddress string, httpRequestOptions ...client.HTTPRequestOption) (*GetLastIndexed, error) {
+	vars := map[string]interface{}{
+		"chain_id":         chainID,
+		"contract_address": contractAddress,
+	}
+
+	var res GetLastIndexed
+	if err := c.Client.Post(ctx, "GetLastIndexed", GetLastIndexedDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

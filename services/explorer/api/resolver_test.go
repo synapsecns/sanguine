@@ -15,11 +15,107 @@ import (
 	"time"
 )
 
+//nolint:cyclop
+func (g APISuite) TestAddressRanking() {
+	var chainID uint32
+	chainIDs := []uint32{g.chainIDs[0], g.chainIDs[1], g.chainIDs[2]}
+	destinationChainIDA := g.chainIDs[3]
+	destinationChainIDB := g.chainIDs[4]
+
+	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+	// used for validation later
+	var addressesTried = make(map[string]int)
+
+	// this counter lets us have a random variation in address occurrence
+	resetTokenAddrCounter := gofakeit.Number(1, 3)
+	// random token addr
+	tokenAddr := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
+	// for holding the current token addr in line the gofakeit.Bool() decides to pass true
+	lastTokenAddr := tokenAddr
+	// Generate bridge events for different chain IDs.
+	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
+		var destinationChainID uint32
+		if blockNumber%2 == 0 {
+			destinationChainID = destinationChainIDA
+		} else {
+			destinationChainID = destinationChainIDB
+		}
+
+		// if the token counter is zero reset it
+		if resetTokenAddrCounter == 0 {
+			tokenAddr = common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
+			lastTokenAddr = tokenAddr
+			resetTokenAddrCounter = gofakeit.Number(1, 3)
+		} else {
+			// before using the current token addr, let throw in some randomness
+			if gofakeit.Bool() {
+				tokenAddr = common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
+			} else {
+				resetTokenAddrCounter--
+			}
+		}
+		// change up chainID (1/3 chance of using a new chain)
+		chainID = chainIDs[gofakeit.Number(0, 2)]
+		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+			InsertTime:         1,
+			ChainID:            chainID,
+			Recipient:          gosql.NullString{String: address.String(), Valid: true},
+			DestinationChainID: big.NewInt(int64(destinationChainID)),
+			BlockNumber:        blockNumber,
+			TxHash:             txHash.String(),
+			EventIndex:         gofakeit.Uint64(),
+			Token:              tokenAddr,
+		})
+
+		// add the tokenAddr inserted to the test map (for validation later)
+		addressesTried[tokenAddr]++
+
+		// Set all times after current time, so we can get the events.
+		err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainIDs[0], blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), chainIDs[1], blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), chainIDs[2], blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDA, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDB, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+
+		// if a random address was inserted, revert to address corresponding to resetTokenAddrCounter
+		if lastTokenAddr != tokenAddr {
+			tokenAddr = lastTokenAddr
+		}
+	}
+
+	blockNumberInit := uint64(10)
+	err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, blockNumberInit, uint64(time.Now().Unix())*blockNumberInit)
+	Nil(g.T(), err)
+
+	result, err := g.client.GetAddressRanking(g.GetTestContext(), nil)
+	Nil(g.T(), err)
+	NotNil(g.T(), result)
+
+	// check if the length of the response is same to the number of unique addresses inserted into test db
+	Equal(g.T(), len(result.Response), len(addressesTried))
+
+	// Validate contents of response by comparing to addressesTried
+	for k, v := range addressesTried {
+		for _, res := range result.Response {
+			if *res.Address == k {
+				Equal(g.T(), v, *res.Count)
+			}
+		}
+	}
+}
+
 // nolint:cyclop
 func (g APISuite) TestBridgeAmountStatistic() {
-	chainID := gofakeit.Uint32()
-	destinationChainIDA := gofakeit.Uint32()
-	destinationChainIDB := gofakeit.Uint32()
+	chainID := g.chainIDs[0]
+	destinationChainIDA := g.chainIDs[1]
+	destinationChainIDB := g.chainIDs[2]
 	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	tokenAddr := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
 
@@ -101,9 +197,9 @@ func (g APISuite) TestBridgeAmountStatistic() {
 
 //nolint:cyclop
 func (g APISuite) TestGetCountByChainID() {
-	chainID := gofakeit.Uint32()
-	destinationChainIDA := gofakeit.Uint32()
-	destinationChainIDB := gofakeit.Uint32()
+	chainID := g.chainIDs[0]
+	destinationChainIDA := g.chainIDs[1]
+	destinationChainIDB := g.chainIDs[2]
 	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
 	// Generate bridge events for different chain IDs.
@@ -132,6 +228,7 @@ func (g APISuite) TestGetCountByChainID() {
 		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDB, blockNumber, uint64(time.Now().Unix())*blockNumber)
 		Nil(g.T(), err)
 	}
+
 	addressRef := address.String()
 	directionRef := model.DirectionOut
 	resultOut, err := g.client.GetCountByChainID(g.GetTestContext(), nil, &addressRef, &directionRef, nil)
@@ -180,8 +277,8 @@ func (g APISuite) TestGetCountByChainID() {
 
 // nolint (needed for testing all possibilities)
 func (g APISuite) TestGetCountByTokenAddress() {
-	chainID := gofakeit.Uint32()
-	destinationChainID := gofakeit.Uint32()
+	chainID := g.chainIDs[0]
+	destinationChainID := g.chainIDs[1]
 	tokenAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	tokenAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
@@ -211,10 +308,13 @@ func (g APISuite) TestGetCountByTokenAddress() {
 		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainID, blockNumber, uint64(time.Now().Unix())*blockNumber)
 		Nil(g.T(), err)
 	}
+
 	addressRef := address.String()
 	directionRef := model.DirectionOut
+
 	resultOut, err := g.client.GetCountByTokenAddress(g.GetTestContext(), nil, &addressRef, &directionRef, nil)
 	Nil(g.T(), err)
+
 	// There should be 4 results, two for each token on two chain. Each on the source chain ID should have 5 events,
 	// while each on the destination chain ID should have 0 events.
 	Equal(g.T(), len(resultOut.Response), 4)
@@ -275,9 +375,82 @@ func (g APISuite) TestGetCountByTokenAddress() {
 	Equal(g.T(), reached, 4)
 }
 
+//nolint:cyclop
+func (g APISuite) TestHistoricalStatistics() {
+	chainID := g.chainIDs[0]
+	destinationChainIDA := g.chainIDs[1]
+	destinationChainIDB := g.chainIDs[2]
+	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+	tokenAddr := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
+	nowTime := time.Now().Unix()
+	senders := []string{common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String()}
+	cumulativePrice := []float64{}
+	// Generate bridge events for different chain IDs.
+	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
+		var destinationChainID uint32
+		if blockNumber%2 == 0 {
+			destinationChainID = destinationChainIDA
+		} else {
+			destinationChainID = destinationChainIDB
+		}
+		price := float64(gofakeit.Number(1, 300))
+		cumulativePrice = append(cumulativePrice, price)
+		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		timestamp := uint64(nowTime) - 100 - (10*blockNumber)*86400
+		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
+			ChainID:            chainID,
+			Recipient:          gosql.NullString{String: address.String(), Valid: true},
+			DestinationChainID: big.NewInt(int64(destinationChainID)),
+			BlockNumber:        blockNumber,
+			TxHash:             txHash.String(),
+			EventIndex:         gofakeit.Uint64(),
+			Token:              tokenAddr,
+			Amount:             big.NewInt(int64(gofakeit.Number(1, 300))),
+			AmountUSD:          &price,
+			Sender:             senders[blockNumber%3],
+			TimeStamp:          &timestamp,
+		})
+		// Set all times after current time, so we can get the events.
+		err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDA, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDB, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		Nil(g.T(), err)
+	}
+
+	days := 120
+	chainIDInt := int(chainID)
+	total := 0.0
+	for _, v := range cumulativePrice {
+		total += v
+	}
+	typeArg := model.HistoricalResultTypeBridgevolume
+	result, err := g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
+	Nil(g.T(), err)
+	NotNil(g.T(), result)
+	Equal(g.T(), total, *result.Response.Total)
+	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
+
+	typeArg = model.HistoricalResultTypeAddresses
+	result, err = g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
+	Nil(g.T(), err)
+	NotNil(g.T(), result)
+	Equal(g.T(), float64(3), *result.Response.Total)
+	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
+
+	typeArg = model.HistoricalResultTypeTransactions
+	result, err = g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
+	Nil(g.T(), err)
+	NotNil(g.T(), result)
+	Equal(g.T(), float64(len(cumulativePrice)), *result.Response.Total)
+	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
+}
+
 func (g APISuite) TestGetBridgeTransactions() {
-	chainID := gofakeit.Uint32()
-	destinationChainID := gofakeit.Uint32()
+	chainID := g.chainIDs[0]
+	destinationChainID := g.chainIDs[1]
+
 	tokenAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	senderAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
@@ -385,8 +558,8 @@ func (g APISuite) TestGetBridgeTransactions() {
 
 func (g APISuite) TestLatestBridgeTransaction() {
 	var kappaStringA, kappaStringB string
-	chainIDA := gofakeit.Uint32()
-	chainIDB := gofakeit.Uint32()
+	chainIDA := g.chainIDs[0]
+	chainIDB := g.chainIDs[1]
 	tokenDecimal := uint8(1)
 	page := 1
 
@@ -452,6 +625,7 @@ func (g APISuite) TestLatestBridgeTransaction() {
 		TokenDecimal:       &tokenDecimal,
 		TimeStamp:          &newBlockNumber,
 	})
+
 	err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainIDA, newBlockNumber, newBlockNumber)
 	Nil(g.T(), err)
 	// Get the latest bridge transactions.
@@ -481,161 +655,4 @@ func (g APISuite) TestLatestBridgeTransaction() {
 			Equal(g.T(), *bridgeTransaction.Kappa, kappaStringB)
 		}
 	}
-}
-
-//nolint:cyclop
-func (g APISuite) TestAddressRanking() {
-	var chainID uint32
-	chainIDs := []uint32{gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32()}
-	destinationChainIDA := gofakeit.Uint32()
-	destinationChainIDB := gofakeit.Uint32()
-	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-
-	// used for validation later
-	var addressesTried = make(map[string]int)
-
-	// this counter lets us have a random variation in address occurrence
-	resetTokenAddrCounter := gofakeit.Number(1, 3)
-	// random token addr
-	tokenAddr := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
-	// for holding the current token addr in line the gofakeit.Bool() decides to pass true
-	lastTokenAddr := tokenAddr
-	// Generate bridge events for different chain IDs.
-	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
-		var destinationChainID uint32
-		if blockNumber%2 == 0 {
-			destinationChainID = destinationChainIDA
-		} else {
-			destinationChainID = destinationChainIDB
-		}
-
-		// if the token counter is zero reset it
-		if resetTokenAddrCounter == 0 {
-			tokenAddr = common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
-			lastTokenAddr = tokenAddr
-			resetTokenAddrCounter = gofakeit.Number(1, 3)
-		} else {
-			// before using the current token addr, let throw in some randomness
-			if gofakeit.Bool() {
-				tokenAddr = common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
-			} else {
-				resetTokenAddrCounter--
-			}
-		}
-		// change up chainID (1/3 chance of using a new chain)
-		chainID = chainIDs[gofakeit.Number(0, 2)]
-		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
-			InsertTime:         1,
-			ChainID:            chainID,
-			Recipient:          gosql.NullString{String: address.String(), Valid: true},
-			DestinationChainID: big.NewInt(int64(destinationChainID)),
-			BlockNumber:        blockNumber,
-			TxHash:             txHash.String(),
-			EventIndex:         gofakeit.Uint64(),
-			Token:              tokenAddr,
-		})
-
-		// add the tokenAddr inserted to the test map (for validation later)
-		addressesTried[tokenAddr]++
-
-		// Set all times after current time, so we can get the events.
-		err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, uint64(time.Now().Unix())*blockNumber)
-		Nil(g.T(), err)
-		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDA, blockNumber, uint64(time.Now().Unix())*blockNumber)
-		Nil(g.T(), err)
-		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDB, blockNumber, uint64(time.Now().Unix())*blockNumber)
-		Nil(g.T(), err)
-
-		// if a random address was inserted, revert to address corresponding to resetTokenAddrCounter
-		if lastTokenAddr != tokenAddr {
-			tokenAddr = lastTokenAddr
-		}
-	}
-	result, err := g.client.GetAddressRanking(g.GetTestContext(), nil)
-	Nil(g.T(), err)
-	NotNil(g.T(), result)
-
-	// check if the length of the response is same to the number of unique addresses inserted into test db
-	Equal(g.T(), len(result.Response), len(addressesTried))
-
-	// Validate contents of response by comparing to addressesTried
-	for k, v := range addressesTried {
-		for _, res := range result.Response {
-			if *res.Address == k {
-				Equal(g.T(), v, *res.Count)
-			}
-		}
-	}
-}
-
-//nolint:cyclop
-func (g APISuite) TestHistoricalStatistics() {
-	chainID := gofakeit.Uint32()
-	destinationChainIDA := gofakeit.Uint32()
-	destinationChainIDB := gofakeit.Uint32()
-	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-	tokenAddr := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
-	nowTime := time.Now().Unix()
-	senders := []string{common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String()}
-	cumulativePrice := []float64{}
-	// Generate bridge events for different chain IDs.
-	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
-		var destinationChainID uint32
-		if blockNumber%2 == 0 {
-			destinationChainID = destinationChainIDA
-		} else {
-			destinationChainID = destinationChainIDB
-		}
-		price := float64(gofakeit.Number(1, 300))
-		cumulativePrice = append(cumulativePrice, price)
-		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		timestamp := uint64(nowTime) - 100 - (10*blockNumber)*86400
-		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
-			ChainID:            chainID,
-			Recipient:          gosql.NullString{String: address.String(), Valid: true},
-			DestinationChainID: big.NewInt(int64(destinationChainID)),
-			BlockNumber:        blockNumber,
-			TxHash:             txHash.String(),
-			EventIndex:         gofakeit.Uint64(),
-			Token:              tokenAddr,
-			Amount:             big.NewInt(int64(gofakeit.Number(1, 300))),
-			AmountUSD:          &price,
-			Sender:             senders[blockNumber%3],
-			TimeStamp:          &timestamp,
-		})
-		// Set all times after current time, so we can get the events.
-		err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, uint64(time.Now().Unix())*blockNumber)
-		Nil(g.T(), err)
-		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDA, blockNumber, uint64(time.Now().Unix())*blockNumber)
-		Nil(g.T(), err)
-		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDB, blockNumber, uint64(time.Now().Unix())*blockNumber)
-		Nil(g.T(), err)
-	}
-	days := 120
-	chainIDInt := int(chainID)
-	total := 0.0
-	for _, v := range cumulativePrice {
-		total += v
-	}
-	typeArg := model.HistoricalResultTypeBridgevolume
-	result, err := g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
-	Nil(g.T(), err)
-	NotNil(g.T(), result)
-	Equal(g.T(), total, *result.Response.Total)
-	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
-
-	typeArg = model.HistoricalResultTypeAddresses
-	result, err = g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
-	Nil(g.T(), err)
-	NotNil(g.T(), result)
-	Equal(g.T(), float64(3), *result.Response.Total)
-	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
-
-	typeArg = model.HistoricalResultTypeTransactions
-	result, err = g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
-	Nil(g.T(), err)
-	NotNil(g.T(), result)
-	Equal(g.T(), float64(len(cumulativePrice)), *result.Response.Total)
-	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
 }

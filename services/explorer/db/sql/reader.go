@@ -260,3 +260,20 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) (
 
 	return partialInfos, nil
 }
+
+// RetrieveLastBlock retrieves the last block number backfilled for a given chain ID.
+func (s *Store) RetrieveLastBlock(ctx context.Context, chainID uint32) (lastBlock uint64, err error) {
+	var res uint64
+	dbTx := s.db.WithContext(ctx).
+		Raw(fmt.Sprintf(`SELECT %s FROM last_blocks WHERE %s = %d SETTINGS readonly=1`,
+			BlockNumberFieldName, ChainIDFieldName, chainID)).
+		First(&res)
+	if dbTx.RowsAffected == 0 {
+		return 0, nil
+	}
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("failed to read last block: %w", dbTx.Error)
+	}
+
+	return res, nil
+}

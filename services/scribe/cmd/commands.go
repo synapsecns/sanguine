@@ -78,7 +78,6 @@ var backfillCommand = &cli.Command{
 		}
 
 		clients := make(map[uint32]backfill.ScribeBackend)
-		// TODO: should be resistant to errors on startup from a single chain
 		for _, client := range decodeConfig.Chains {
 			backendClient, err := ethclient.DialContext(c.Context, client.RPCUrl)
 			if err != nil {
