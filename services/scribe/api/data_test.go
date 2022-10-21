@@ -273,7 +273,7 @@ func (g APISuite) TestLogCount() {
 	var err error
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
 		// create and store logs
-		if (blockNumber%2 == 0) {
+		if blockNumber%2 == 0 {
 			log = g.buildLog(contractAddressA, uint64(blockNumber))
 			err = g.db.StoreLog(g.GetTestContext(), log, chainID)
 			Nil(g.T(), err)
@@ -292,5 +292,4 @@ func (g APISuite) TestLogCount() {
 	logCountB, err := g.gqlClient.GetLogCount(g.GetTestContext(), int(chainID), contractAddressA.String())
 	Nil(g.T(), err)
 	Equal(g.T(), 5, *logCountB.Response)
-
 }

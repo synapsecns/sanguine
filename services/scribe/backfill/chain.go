@@ -138,7 +138,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			}
 			startHeight, err := c.startHeightForBlockTime(groupCtx)
 			if err != nil {
-				return fmt.Errorf("could not get start height for block time: %v", err)
+				return fmt.Errorf("could not get start height for block time: %w", err)
 			}
 			if startHeight != 0 {
 				startHeight--

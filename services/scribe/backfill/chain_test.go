@@ -111,6 +111,7 @@ func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContrac
 		Equal(b.T(), 9, len(receipts))
 		totalBlockTimes := uint64(0)
 		currBlock, err := simulatedChain.BlockNumber(b.GetTestContext())
+		Nil(b.T(), err)
 		firstBlock, err := b.testDB.RetrieveFirstBlockStored(b.GetTestContext(), chainBackfiller.ChainID())
 		Nil(b.T(), err)
 		for blockNum := firstBlock; blockNum <= currBlock; blockNum++ {

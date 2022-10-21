@@ -135,7 +135,6 @@ func (t *DBSuite) TestDeleteLogsForBlockHash() {
 
 func (t *DBSuite) TestLogCount() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
-
 		chainID := gofakeit.Uint32()
 		contractAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 		contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
@@ -162,7 +161,6 @@ func (t *DBSuite) TestLogCount() {
 		logCountB, err := testDB.RetrieveLogCountForContract(t.GetTestContext(), contractAddressB, chainID)
 		Nil(t.T(), err)
 		Equal(t.T(), int64(5), logCountB)
-
 	})
 }
 func (t *DBSuite) MakeRandomLog(txHash common.Hash) types.Log {
@@ -182,10 +180,10 @@ func (t *DBSuite) MakeRandomLog(txHash common.Hash) types.Log {
 	}
 }
 
-func (b *DBSuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {
-	currentIndex := b.logIndex.Load()
+func (t *DBSuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {
+	currentIndex := t.logIndex.Load()
 	// increment next index
-	b.logIndex.Add(1)
+	t.logIndex.Add(1)
 	log := types.Log{
 		Address:     contractAddress,
 		Topics:      []common.Hash{common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64()))},

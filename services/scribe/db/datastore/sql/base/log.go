@@ -150,6 +150,7 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 	return buildLogsFromDBLogs(dbLogs), nil
 }
 
+// RetrieveLogCountForContract retrieves the count of logs per contract.
 func (s Store) RetrieveLogCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error) {
 	var count int64
 	dbTx := s.DB().WithContext(ctx).
