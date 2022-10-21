@@ -10,11 +10,12 @@ func _() {
 	var x [1]struct{}
 	_ = x[DataDog-0]
 	_ = x[NewRelic-1]
+	_ = x[Null-2]
 }
 
-const _HandlerType_name = "DatadogNewRelic"
+const _HandlerType_name = "DatadogNewRelicNull"
 
-var _HandlerType_index = [...]uint8{0, 7, 15}
+var _HandlerType_index = [...]uint8{0, 7, 15, 19}
 
 func (i HandlerType) String() string {
 	if i >= HandlerType(len(_HandlerType_index)-1) {

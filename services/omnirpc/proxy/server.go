@@ -9,13 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"go.uber.org/zap/zapcore"
-	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"net/http"
 	"strconv"
 	"sync"
@@ -34,27 +33,27 @@ type RPCProxy struct {
 	forwarderPool sync.Pool
 	// client contains the http client
 	client omniHTTP.Client
+	// metrics contains the metrics handler
+	metrics metrics.Handler
 }
 
 // NewProxy creates a new rpc proxy.
-func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
+func NewProxy(config config.Config, clientType omniHTTP.ClientType, metrics metrics.Handler) *RPCProxy {
 	return &RPCProxy{
 		chainManager:    chainmanager.NewChainManagerFromConfig(config),
 		refreshInterval: time.Second * time.Duration(config.RefreshInterval),
 		port:            config.Port,
 		client:          omniHTTP.NewClient(clientType),
+		metrics:         metrics,
 	}
 }
 
 // Run runs the rpc server until context cancellation.
 func (r *RPCProxy) Run(ctx context.Context) {
-	tracer.Start(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true))
-	defer tracer.Stop()
-
 	go r.startProxyLoop(ctx)
 
 	router := gin.New()
-	router.Use(gintrace.Middleware("omnirpc"))
+	router.Use(r.metrics.Gin())
 	router.Use(requestid.New(
 		requestid.WithCustomHeaderStrKey(requestid.HeaderStrKey(omniHTTP.XRequestIDString)),
 		requestid.WithGenerator(func() string {

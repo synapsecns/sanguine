@@ -3,6 +3,8 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	ngrin "github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/synapsecns/sanguine/core/config"
 	"os"
@@ -19,6 +21,10 @@ func NewRelicMetricsHandler(buildInfo config.BuildInfo) Handler {
 	return &newRelicHandler{
 		buildInfo: buildInfo,
 	}
+}
+
+func (n *newRelicHandler) Gin() gin.HandlerFunc {
+	return ngrin.Middleware(n.app)
 }
 
 func (n *newRelicHandler) Start(_ context.Context) (err error) {

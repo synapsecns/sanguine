@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
 	"os"
 	"strings"
@@ -11,6 +12,8 @@ import (
 // Handler collects metrics.
 type Handler interface {
 	Start(ctx context.Context) error
+	// Gin gets a gin middleware for tracing.
+	Gin() gin.HandlerFunc
 }
 
 // HandlerType is the handler type to use
@@ -34,7 +37,9 @@ const (
 	// DataDog is the datadog driver.
 	DataDog HandlerType = 0 // Datadog
 	// NewRelic is the new relic driver.
-	NewRelic HandlerType = iota //NewRelic
+	NewRelic HandlerType = iota // NewRelic
+	// Null is a null data type handler
+	Null HandlerType = iota // Null
 )
 
 // Lower gets the lowercase version of the handler type. Useful for comparison
@@ -57,6 +62,8 @@ func SetupFromEnv(ctx context.Context, buildInfo config.BuildInfo) (err error) {
 		handler = NewDatadogMetricsHandler(buildInfo)
 	case NewRelic.Lower():
 		handler = NewRelicMetricsHandler(buildInfo)
+	case Null.Lower():
+		handler = NewNullHandler()
 	}
 
 	if handler != nil {
