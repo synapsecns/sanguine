@@ -270,25 +270,27 @@ func (g APISuite) TestLogCount() {
 
 	// create and store logs, receipts, and txs
 	var log types.Log
-
 	var err error
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
 		// create and store logs
-		log = g.buildLog(contractAddressA, uint64(blockNumber))
-		err = g.db.StoreLog(g.GetTestContext(), log, chainID)
-		Nil(g.T(), err)
-		log = g.buildLog(contractAddressB, uint64(blockNumber))
-		err = g.db.StoreLog(g.GetTestContext(), log, chainID)
-		Nil(g.T(), err)
+		if (blockNumber%2 == 0) {
+			log = g.buildLog(contractAddressA, uint64(blockNumber))
+			err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+			Nil(g.T(), err)
+		} else {
+			log = g.buildLog(contractAddressB, uint64(blockNumber))
+			err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+			Nil(g.T(), err)
+		}
 	}
 
 	// test get logs and get logs in a range (Graphql)
 	logCountA, err := g.gqlClient.GetLogCount(g.GetTestContext(), int(chainID), contractAddressA.String())
 	Nil(g.T(), err)
-	Equal(g.T(), 10, *logCountA.Response)
+	Equal(g.T(), 5, *logCountA.Response)
 	// store last indexed
 	logCountB, err := g.gqlClient.GetLogCount(g.GetTestContext(), int(chainID), contractAddressA.String())
 	Nil(g.T(), err)
-	Equal(g.T(), 10, *logCountB.Response)
+	Equal(g.T(), 5, *logCountB.Response)
 
 }

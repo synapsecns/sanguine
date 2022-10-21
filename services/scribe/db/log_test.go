@@ -133,6 +133,38 @@ func (t *DBSuite) TestDeleteLogsForBlockHash() {
 	})
 }
 
+func (t *DBSuite) TestLogCount() {
+	t.RunOnAllDBs(func(testDB db.EventDB) {
+
+		chainID := gofakeit.Uint32()
+		contractAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+		contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+		// create and store logs, receipts, and txs
+		var log types.Log
+
+		var err error
+		for blockNumber := 0; blockNumber < 5; blockNumber++ {
+			// create and store logs
+			log = t.buildLog(contractAddressA, uint64(blockNumber))
+			err = testDB.StoreLog(t.GetTestContext(), log, chainID)
+			Nil(t.T(), err)
+			log = t.buildLog(contractAddressB, uint64(blockNumber))
+			err = testDB.StoreLog(t.GetTestContext(), log, chainID)
+			Nil(t.T(), err)
+		}
+
+		// test get logs and get logs in a range (Graphql)
+		logCountA, err := testDB.RetrieveLogCountForContract(t.GetTestContext(), contractAddressA, chainID)
+		Nil(t.T(), err)
+		Equal(t.T(), int64(5), logCountA)
+		// store last indexed
+		logCountB, err := testDB.RetrieveLogCountForContract(t.GetTestContext(), contractAddressB, chainID)
+		Nil(t.T(), err)
+		Equal(t.T(), int64(5), logCountB)
+
+	})
+}
 func (t *DBSuite) MakeRandomLog(txHash common.Hash) types.Log {
 	currentIndex := t.logIndex.Load()
 	// increment next index
@@ -148,4 +180,23 @@ func (t *DBSuite) MakeRandomLog(txHash common.Hash) types.Log {
 		Index:       uint(currentIndex),
 		Removed:     gofakeit.Bool(),
 	}
+}
+
+func (b *DBSuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {
+	currentIndex := b.logIndex.Load()
+	// increment next index
+	b.logIndex.Add(1)
+	log := types.Log{
+		Address:     contractAddress,
+		Topics:      []common.Hash{common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64()))},
+		Data:        []byte(gofakeit.Sentence(10)),
+		BlockNumber: blockNumber,
+		TxHash:      common.BigToHash(big.NewInt(gofakeit.Int64())),
+		TxIndex:     uint(gofakeit.Uint64()),
+		BlockHash:   common.BigToHash(big.NewInt(gofakeit.Int64())),
+		Index:       uint(currentIndex),
+		Removed:     gofakeit.Bool(),
+	}
+
+	return log
 }
