@@ -154,7 +154,7 @@ func (t *DBSuite) TestLogCount() {
 			Nil(t.T(), err)
 		}
 
-		// test get logs and get logs in a range (Graphql)
+		// test get logs and get logs with testDB
 		logCountA, err := testDB.RetrieveLogCountForContract(t.GetTestContext(), contractAddressA, chainID)
 		Nil(t.T(), err)
 		Equal(t.T(), int64(5), logCountA)
