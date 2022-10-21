@@ -38,10 +38,10 @@ func (g APISuite) TestRetrieveData() {
 		Nil(g.T(), err)
 		// create and store txs
 		tx = g.buildEthTx()
-		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(blockNumber))
+		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(blockNumber), gofakeit.Uint64())
 		Nil(g.T(), err)
 		tx = g.buildEthTx()
-		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(blockNumber))
+		err = g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(blockNumber), gofakeit.Uint64())
 		Nil(g.T(), err)
 	}
 
@@ -143,7 +143,7 @@ func (g APISuite) TestTransactionDataEquality() {
 	tx := g.buildEthTx()
 
 	// store it
-	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), blockNumber)
+	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), blockNumber, gofakeit.Uint64())
 	Nil(g.T(), err)
 
 	// retrieve it
@@ -172,16 +172,26 @@ func (g APISuite) TestBlockTimeDataEquality() {
 	blockNumber := uint64(gofakeit.Uint32())
 	blockTime := uint64(gofakeit.Uint32())
 
-	// store it
+	// store block time
 	err := g.db.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, blockTime)
 	Nil(g.T(), err)
 
-	// retrieve it
+	// retrieve block time
 	retrievedBlockTime, err := g.gqlClient.GetBlockTime(g.GetTestContext(), int(chainID), int(blockNumber))
 	Nil(g.T(), err)
 
 	// check that the data is equal
 	Equal(g.T(), *retrievedBlockTime.Response, int(blockTime))
+
+	// check that the last stored block is correct
+	lastBlock, err := g.gqlClient.GetLastStoredBlockNumber(g.GetTestContext(), int(chainID))
+	Nil(g.T(), err)
+	Equal(g.T(), *lastBlock.Response, int(blockNumber))
+
+	// check that the first stored block is correct
+	firstBlock, err := g.gqlClient.GetFirstStoredBlockNumber(g.GetTestContext(), int(chainID))
+	Nil(g.T(), err)
+	Equal(g.T(), *firstBlock.Response, int(blockNumber))
 }
 
 func (g *APISuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {
@@ -232,4 +242,22 @@ func (g *APISuite) buildEthTx() *types.Transaction {
 	})
 
 	return ethTx
+}
+
+func (g APISuite) TestLastContractIndexed() {
+	// create data for storing a block time
+	chainID := gofakeit.Uint32()
+	blockNumber := uint64(gofakeit.Uint32())
+	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+	// store last indexed
+	err := g.db.StoreLastIndexed(g.GetTestContext(), contractAddress, chainID, blockNumber)
+	Nil(g.T(), err)
+
+	// retrieve last indexed
+	retrievedBlockTime, err := g.gqlClient.GetLastIndexed(g.GetTestContext(), int(chainID), contractAddress.String())
+	Nil(g.T(), err)
+
+	// check that the data is equal
+	Equal(g.T(), *retrievedBlockTime.Response, int(blockNumber))
 }

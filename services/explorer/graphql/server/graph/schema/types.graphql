@@ -1,0 +1,90 @@
+"""
+BridgeTransaction represents an entire bridge transaction, including both
+to and from transactions. If a `from` transaction does not have a corresponding
+`to` transaction, `pending` will be true.
+"""
+type BridgeTransaction {
+  fromInfo: PartialInfo
+  toInfo:   PartialInfo
+  kappa:        String
+  pending:      Boolean
+  swapSuccess:  Boolean
+}
+"""
+PartialInfo is a transaction that occurred on one chain.
+"""
+type PartialInfo {
+  chainId: Int
+  address: String
+  txnHash: String
+  value:          String
+  formattedValue: Float
+  USDValue:       Float
+  tokenAddress:   String
+  tokenSymbol:    String
+  blockNumber:    Int
+  time:           Int
+}
+"""
+DateResult is a given statistic for a given date.
+"""
+type DateResult {
+  date:   String,
+  total:  Float
+}
+"""
+HistoricalResult is a given statistic for dates.
+"""
+type HistoricalResult {
+  total:        Float
+  dateResults:  [DateResult]
+  type:         HistoricalResultType
+}
+"""
+ValueResult is a USDValue result.
+"""
+type ValueResult {
+  USDValue: String
+}
+"""
+TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
+"""
+type TransactionCountResult {
+  chainId:  Int
+  count:    Int
+}
+"""
+TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
+"""
+type TokenCountResult {
+  chainId:      Int
+  tokenAddress: String
+  count:        Int
+}
+"""
+AddressRanking gives the amount of transactions that occurred for a specific address across all chains.
+"""
+type AddressRanking {
+  address:  String
+  count:    Int
+}
+
+enum Duration {
+  PAST_DAY
+  ALL_TIME
+}
+enum Direction {
+  IN
+  OUT
+}
+enum StatisticType {
+  MEAN
+  MEDIAN
+  TOTAL
+  COUNT
+}
+enum HistoricalResultType {
+  BRIDGEVOLUME
+  TRANSACTIONS
+  ADDRESSES
+}

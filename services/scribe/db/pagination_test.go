@@ -14,7 +14,7 @@ func (t *DBSuite) TestPagination() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		// Store 100 logs.
-		for i := 0; i < 100; i++ {
+		for i := 101; i > 1; i-- {
 			log := t.MakeRandomLog(txHash)
 			log.BlockNumber = uint64(i)
 			err := testDB.StoreLog(t.GetTestContext(), log, 1)
@@ -22,7 +22,7 @@ func (t *DBSuite) TestPagination() {
 		}
 		// Store another log that should be on the second page.
 		log := t.MakeRandomLog(txHash)
-		log.BlockNumber = 100
+		log.BlockNumber = 1
 		err := testDB.StoreLog(t.GetTestContext(), log, 1)
 		Nil(t.T(), err)
 

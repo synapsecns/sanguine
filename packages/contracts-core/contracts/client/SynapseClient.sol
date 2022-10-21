@@ -18,14 +18,8 @@ abstract contract SynapseClient is Client, Ownable {
 
     // ============ Constructor ============
 
+    // solhint-disable-next-line no-empty-blocks
     constructor(address _origin, address _destination) Client(_origin, _destination) {}
-
-    // ============ Public Functions  ============
-
-    /// @notice Returns the trusted sender for the given remote chain.
-    function trustedSender(uint32 _remoteDomain) public view override returns (bytes32) {
-        return trustedSenders[_remoteDomain];
-    }
 
     // ============ Restricted Functions  ============
 
@@ -57,6 +51,13 @@ abstract contract SynapseClient is Client, Ownable {
                 ++i;
             }
         }
+    }
+
+    // ============ Public Functions  ============
+
+    /// @notice Returns the trusted sender for the given remote chain.
+    function trustedSender(uint32 _remoteDomain) public view override returns (bytes32) {
+        return trustedSenders[_remoteDomain];
     }
 
     // ============ Internal Functions  ============

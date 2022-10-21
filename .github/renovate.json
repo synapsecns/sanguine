@@ -1,8 +1,20 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:base",
+    ":gitSignOff"
   ],
+  "commitBodyTable": true,
+  "semanticCommits": "enabled",
+  "labels": ["dependencies"],
+  "additionalBranchPrefix": "{{parentDir}}-",
+  "assigneesFromCodeOwners": true,
   "assignees": [],
+  "bumpVersion": "minor",
+  "fetchReleaseNotes": true,
+  "draftPR": true,
+  "cloneSubmodules": true,
+  "includeForks": true,
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
@@ -12,10 +24,21 @@
       "postUpdateOptions": [
         "gomodTidy"
       ]
+    },
+    {
+      "matchDatasources": ["npm"],
+      "stabilityDays": 3
+    },
+    {
+      "matchPackagePrefixes": ["@openzeppelin/"],
+      "prPriority": 1,
+      "stabilityDays": 0
     }
   ],
-  "branchConcurrentLimit": 1,
-  "prConcurrentLimit": 1,
+  "updateInternalDeps": true,
+  "transitiveRemediation": true,
+  "branchConcurrentLimit": 7,
+  "prConcurrentLimit": 7,
   "git-submodules": {
     "enabled": true
   }

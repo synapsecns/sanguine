@@ -4,12 +4,17 @@
 package internal
 
 import (
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/tools"
 	"github.com/vektra/mockery/v2/pkg"
 )
 
 func init() {
-	panic("could not import dev package: this package is meant to define dependencies, not be imported.")
+	// This package should never be imported. If it is, panic.
+	// we ignore this in tests because -covermode will recursively try to run all packages
+	if !core.IsTest() {
+		panic("could not import internal package: this package is meant to define dependencies, not be imported.")
+	}
 }
 
 // required by mockery.

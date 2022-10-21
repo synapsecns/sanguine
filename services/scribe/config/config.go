@@ -26,11 +26,10 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 	if ok, err = c.Chains.IsValid(ctx); !ok {
 		return false, err
 	}
-
 	return true, nil
 }
 
-// Encode gets the encoded config.toml file.
+// Encode gets the encoded config.yaml file.
 func (c Config) Encode() ([]byte, error) {
 	output, err := yaml.Marshal(&c)
 	if err != nil {

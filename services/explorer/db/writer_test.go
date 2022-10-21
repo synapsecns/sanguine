@@ -1,68 +1,79 @@
 package db_test
 
 import (
+	"database/sql"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
+	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
+	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"math/big"
 )
 
 func (t *DBSuite) TestBridgeWrite() {
 	defer t.cleanup()
-	bridgeEvent := bridge.SynapseBridgeTokenDeposit{
-		To:      common.BigToAddress(big.NewInt(gofakeit.Int64())),
-		ChainId: big.NewInt(int64(gofakeit.Uint64())),
-		Token:   common.BigToAddress(big.NewInt(gofakeit.Int64())),
-		Amount:  big.NewInt(int64(gofakeit.Uint64())),
-		Raw: ethTypes.Log{
-			Address:     common.BigToAddress(big.NewInt(gofakeit.Int64())),
-			Topics:      []common.Hash{},
-			Data:        []byte{},
-			BlockNumber: gofakeit.Uint64(),
-			TxHash:      common.BigToHash(big.NewInt(gofakeit.Int64())),
-			TxIndex:     uint(gofakeit.Uint64()),
-			BlockHash:   common.BigToHash(big.NewInt(gofakeit.Int64())),
-			Index:       uint(gofakeit.Uint64()),
-			Removed:     false,
-		},
+	bridgeEvent := &model.BridgeEvent{
+		InsertTime:      gofakeit.Uint64(),
+		ContractAddress: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		ChainID:         gofakeit.Uint32(),
+		EventType:       bridgeTypes.DepositEvent.Int(),
+		BlockNumber:     gofakeit.Uint64(),
+		TxHash:          common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+
+		Token:              common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		Amount:             big.NewInt(gofakeit.Int64()),
+		Recipient:          sql.NullString{String: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(), Valid: true},
+		DestinationChainID: big.NewInt(gofakeit.Int64()),
 	}
-	chainID := gofakeit.Uint32()
-	testTokenID := "testid"
-	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil, chainID, &testTokenID)
+	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil)
 	Nil(t.T(), err)
-	blockNumber, err := t.db.ReadBlockNumberByChainID(t.GetTestContext(), 0, chainID)
-	Nil(t.T(), err)
-	Equal(t.T(), *blockNumber, bridgeEvent.Raw.BlockNumber, "Returned data from bridge write incorrect.")
 }
 
 func (t *DBSuite) TestSwapWrite() {
 	defer t.cleanup()
-	swapEvent := swap.SwapFlashLoanTokenSwap{
-		Buyer:        common.BigToAddress(big.NewInt(gofakeit.Int64())),
-		TokensSold:   big.NewInt(int64(gofakeit.Uint64())),
-		TokensBought: big.NewInt(int64(gofakeit.Uint64())),
-		SoldId:       big.NewInt(int64(gofakeit.Uint64())),
-		BoughtId:     big.NewInt(int64(gofakeit.Uint64())),
-		Raw: ethTypes.Log{
-			Address:     common.BigToAddress(big.NewInt(gofakeit.Int64())),
-			Topics:      []common.Hash{},
-			Data:        []byte{},
-			BlockNumber: gofakeit.Uint64(),
-			TxHash:      common.BigToHash(big.NewInt(gofakeit.Int64())),
-			TxIndex:     uint(gofakeit.Uint64()),
-			BlockHash:   common.BigToHash(big.NewInt(gofakeit.Int64())),
-			Index:       uint(gofakeit.Uint64()),
-			Removed:     false,
-		},
+	swapEvent := &model.SwapEvent{
+		InsertTime:      gofakeit.Uint64(),
+		ContractAddress: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		ChainID:         gofakeit.Uint32(),
+		EventType:       bridgeTypes.DepositEvent.Int(),
+		BlockNumber:     gofakeit.Uint64(),
+		TxHash:          common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+
+		Buyer:        sql.NullString{String: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(), Valid: true},
+		TokensSold:   big.NewInt(gofakeit.Int64()),
+		TokensBought: big.NewInt(gofakeit.Int64()),
+		SoldID:       big.NewInt(gofakeit.Int64()),
+		BoughtID:     big.NewInt(gofakeit.Int64()),
 	}
+	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent)
+	Nil(t.T(), err)
+}
+
+func (t *DBSuite) TestLastBlockWrite() {
+	defer t.cleanup()
 	chainID := gofakeit.Uint32()
-	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent, chainID, nil)
+	blockNumber := gofakeit.Uint64()
+	err := t.db.StoreLastBlock(t.GetTestContext(), chainID, blockNumber)
 	Nil(t.T(), err)
-	blockNumber, err := t.db.ReadBlockNumberByChainID(t.GetTestContext(), 1, chainID)
+	blockNumber++
+	err = t.db.StoreLastBlock(t.GetTestContext(), chainID, blockNumber)
 	Nil(t.T(), err)
-	Equal(t.T(), *blockNumber, swapEvent.Raw.BlockNumber, "Returned data from swap write incorrect.")
+	storedBlockNum, err := t.db.RetrieveLastBlock(t.GetTestContext(), chainID)
 	Nil(t.T(), err)
+	Equal(t.T(), blockNumber, storedBlockNum)
+
+	chainID2 := gofakeit.Uint32()
+	blockNumber2 := gofakeit.Uint64()
+	err = t.db.StoreLastBlock(t.GetTestContext(), chainID2, blockNumber2)
+	Nil(t.T(), err)
+	blockNumber2--
+	err = t.db.StoreLastBlock(t.GetTestContext(), chainID2, blockNumber2)
+	Nil(t.T(), err)
+	storedBlockNum2, err := t.db.RetrieveLastBlock(t.GetTestContext(), chainID2)
+	Nil(t.T(), err)
+	Equal(t.T(), blockNumber2+1, storedBlockNum2)
+
+	storedBlockNumOg, err := t.db.RetrieveLastBlock(t.GetTestContext(), chainID)
+	Nil(t.T(), err)
+	Equal(t.T(), blockNumber, storedBlockNumOg)
 }

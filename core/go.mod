@@ -36,6 +36,7 @@ require (
 	golang.org/x/exp v0.0.0-20221004215720-b9f4876ce741
 	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
 	gopkg.in/DataDog/dd-trace-go.v1 v1.42.1
+	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	gorm.io/gorm v1.23.9
 	k8s.io/apimachinery v0.25.1
 )
@@ -106,7 +107,7 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
-	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094 // indirect
+	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
 	golang.org/x/sys v0.0.0-20220913175220-63ea55921009 // indirect
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
 	golang.org/x/text v0.3.7 // indirect

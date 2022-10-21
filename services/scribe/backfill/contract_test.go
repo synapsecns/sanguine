@@ -27,7 +27,7 @@ func (b BackfillSuite) TestFailedStore() {
 		Return(fmt.Errorf("failed to store receipt"))
 	mockDB.
 		// on a store transaction call
-		On("StoreEthTx", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		On("StoreEthTx", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		// return an error
 		Return(fmt.Errorf("failed to store transaction"))
 	mockDB.
@@ -194,7 +194,7 @@ func (b BackfillSuite) TestContractBackfill() {
 	// Check to see if 4 logs were collected.
 	Equal(b.T(), 4, len(logs))
 	// Check to see if the last receipt has two logs.
-	Equal(b.T(), 2, len(receipts[2].Logs))
+	Equal(b.T(), 2, len(receipts[0].Logs))
 	// Ensure last indexed block is correct.
 	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()))
 	Nil(b.T(), err)

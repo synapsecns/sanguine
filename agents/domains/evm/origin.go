@@ -82,7 +82,7 @@ func (h originContract) ProduceAttestation(ctx context.Context) (types.Attestati
 		return nil, fmt.Errorf("could not suggest update: %w", err)
 	}
 
-	if suggestedUpdate.Root == [32]byte{} {
+	if suggestedUpdate.LatestRoot == [32]byte{} {
 		return nil, domains.ErrNoUpdate
 	}
 
@@ -92,7 +92,7 @@ func (h originContract) ProduceAttestation(ctx context.Context) (types.Attestati
 		return nil, fmt.Errorf("could not get local domain: %w", err)
 	}
 
-	update := types.NewAttestation(localDomain, suggestedUpdate.Nonce, suggestedUpdate.Root)
+	update := types.NewAttestation(localDomain, suggestedUpdate.LatestNonce, suggestedUpdate.LatestRoot)
 
 	return update, nil
 }

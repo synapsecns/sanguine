@@ -30,3 +30,7 @@ func (c *CoreSuite) TestGetEnvInt() {
 	Nil(c.T(), os.Setenv("valid", "3"))
 	Equal(c.T(), common.GetEnvInt("valid", 1), 3)
 }
+
+func (c *CoreSuite) TestIsTest() {
+	True(c.T(), common.IsTest())
+}

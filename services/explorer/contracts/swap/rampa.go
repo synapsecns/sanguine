@@ -74,18 +74,13 @@ func (s SwapFlashLoanRampA) GetTokensBought() *big.Int {
 	return nil
 }
 
-// GetTokenIndex gets the Token index.
-func (s SwapFlashLoanRampA) GetTokenIndex() *uint8 {
-	return nil
-}
-
 // GetAmount gets the amount.
-func (s SwapFlashLoanRampA) GetAmount() *big.Int {
+func (s SwapFlashLoanRampA) GetAmount() map[uint8]string {
 	return nil
 }
 
 // GetAmountFee gets the amount.
-func (s SwapFlashLoanRampA) GetAmountFee() *big.Int {
+func (s SwapFlashLoanRampA) GetAmountFee() map[uint8]string {
 	return nil
 }
 
@@ -101,16 +96,6 @@ func (s SwapFlashLoanRampA) GetBuyer() *common.Address {
 
 // GetProvider gets the provider removing liquidity.
 func (s SwapFlashLoanRampA) GetProvider() *common.Address {
-	return nil
-}
-
-// GetTokenAmounts gets the amount of tokens.
-func (s SwapFlashLoanRampA) GetTokenAmounts() []*big.Int {
-	return nil
-}
-
-// GetFees gets the fees for each token.
-func (s SwapFlashLoanRampA) GetFees() []*big.Int {
 	return nil
 }
 
@@ -200,7 +185,7 @@ func (s SwapFlashLoanStopRampA) GetBoughtId() *big.Int {
 	return nil
 }
 
-// GetSoldId gets the solid id.
+// GetSoldId gets the sold id.
 func (s SwapFlashLoanStopRampA) GetSoldId() *big.Int {
 	return nil
 }
@@ -215,18 +200,13 @@ func (s SwapFlashLoanStopRampA) GetTokensBought() *big.Int {
 	return nil
 }
 
-// GetTokenIndex gets the Token index.
-func (s SwapFlashLoanStopRampA) GetTokenIndex() *uint8 {
-	return nil
-}
-
 // GetAmount gets the amount.
-func (s SwapFlashLoanStopRampA) GetAmount() *big.Int {
+func (s SwapFlashLoanStopRampA) GetAmount() map[uint8]string {
 	return nil
 }
 
 // GetAmountFee gets the amount.
-func (s SwapFlashLoanStopRampA) GetAmountFee() *big.Int {
+func (s SwapFlashLoanStopRampA) GetAmountFee() map[uint8]string {
 	return nil
 }
 
@@ -242,16 +222,6 @@ func (s SwapFlashLoanStopRampA) GetBuyer() *common.Address {
 
 // GetProvider gets the provider removing liquidity.
 func (s SwapFlashLoanStopRampA) GetProvider() *common.Address {
-	return nil
-}
-
-// GetTokenAmounts gets the amount of tokens.
-func (s SwapFlashLoanStopRampA) GetTokenAmounts() []*big.Int {
-	return nil
-}
-
-// GetFees gets the fees for each token.
-func (s SwapFlashLoanStopRampA) GetFees() []*big.Int {
 	return nil
 }
 
