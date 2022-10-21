@@ -95,6 +95,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	// parallelize storing logs, receipts, and transactions
 	g, groupCtx := errgroup.WithContext(ctx)
+	g.SetLimit(3)
 
 	var returnedReceipt types.Receipt
 	doneChan := make(chan bool, 2)
