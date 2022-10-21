@@ -17,7 +17,7 @@ type Config struct {
 	RefreshRate uint `yaml:"refresh_rate"`
 	// ScribeURL is the URL of the Scribe server.
 	ScribeURL string `yaml:"scribe_url"`
-	//RPCURL is the URL of the RPC server.
+	// RPCURL is the URL of the RPC server.
 	RPCURL string `yaml:"rpc_url"`
 	// BridgeConfigAddress is the address of BridgeConfig contract.
 	BridgeConfigAddress string `yaml:"bridge_config_address"`

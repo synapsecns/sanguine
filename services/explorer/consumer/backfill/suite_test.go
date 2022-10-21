@@ -93,7 +93,6 @@ func (b *BackfillSuite) SetupTest() {
 		b.Require().NoError(err)
 		b.testBackend.WaitForConfirmation(b.GetTestContext(), tx)
 	}
-
 }
 
 // TestBackfillSuite tests the backfill suite.
