@@ -33,6 +33,8 @@ func init() {
 const (
 	// DataDog is the datadog driver.
 	DataDog HandlerType = 0 // Datadog
+	// NewRelic is the new relic driver.
+	NewRelic HandlerType = iota //NewRelic
 )
 
 // Lower gets the lowercase version of the handler type. Useful for comparison
@@ -53,6 +55,8 @@ func SetupFromEnv(ctx context.Context, buildInfo config.BuildInfo) (err error) {
 	switch metricsHandler {
 	case DataDog.Lower():
 		handler = NewDatadogMetricsHandler(buildInfo)
+	case NewRelic.Lower():
+		handler = NewRelicMetricsHandler(buildInfo)
 	}
 
 	if handler != nil {

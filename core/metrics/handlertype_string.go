@@ -9,11 +9,12 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[DataDog-0]
+	_ = x[NewRelic-1]
 }
 
-const _HandlerType_name = "Datadog"
+const _HandlerType_name = "DatadogNewRelic"
 
-var _HandlerType_index = [...]uint8{0, 7}
+var _HandlerType_index = [...]uint8{0, 7, 15}
 
 func (i HandlerType) String() string {
 	if i >= HandlerType(len(_HandlerType_index)-1) {

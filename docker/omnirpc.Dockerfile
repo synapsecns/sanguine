@@ -1,10 +1,16 @@
-FROM alpine
+# TODO: we should use alpine here
+FROM ubuntu:latest
 
-RUN apk add --no-cache ca-certificates
-RUN apk add --no-cache gcc musl-dev linux-headers git libc6-compat
+LABEL org.label-schema.description="Omnirpc Docker file"
+LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine/omnirpc"
+LABEL org.label-schema.schema-version="1.0.0"
+LABEL org.label-schema.vcs-url="https://github.com/synapsecns/sanguine"
+LABEL org.opencontainers.image.source="https://github.com/synapsecns/sanguine"
 
+RUN apt-get update
+RUN apt-get install ca-certificates -y
+RUN update-ca-certificates
 
-WORKDIR /app
-COPY omnirpc /app/omnirpc
+COPY omnirpc /omnirpc
 
-ENTRYPOINT ["/app/omnirpc"]
+ENTRYPOINT ["/omnirpc"]

@@ -22,6 +22,7 @@ require (
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/ipfs/go-log v1.0.5
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/newrelic/go-agent/v3 v3.19.2
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.13.0
@@ -34,9 +35,8 @@ require (
 	github.com/urfave/cli/v2 v2.16.3
 	go.uber.org/zap v1.23.0
 	golang.org/x/exp v0.0.0-20221004215720-b9f4876ce741
-	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
-	gopkg.in/DataDog/dd-trace-go.v1 v1.42.1
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
+	gopkg.in/DataDog/dd-trace-go.v1 v1.42.1
 	gorm.io/gorm v1.23.9
 	k8s.io/apimachinery v0.25.1
 )
@@ -114,6 +114,8 @@ require (
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/genproto v0.0.0-20210917145530-b395a37504d4 // indirect
+	google.golang.org/grpc v1.49.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
