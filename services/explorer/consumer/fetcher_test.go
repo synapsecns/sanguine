@@ -47,7 +47,7 @@ func (c *ConsumerSuite) TestToken() {
 	currentBlockNumber, err := c.testBackend.BlockNumber(c.GetTestContext())
 	Nil(c.T(), err)
 	for _, testToken := range testTokens {
-		tokenID, err := fetcher.GetTokenID(c.GetTestContext(), uint32(testToken.ChainId.Uint64()), common.HexToAddress(testToken.TokenAddress))
+		tokenID, err := fetcher.GetTokenID(c.GetTestContext(), testToken.ChainId, common.HexToAddress(testToken.TokenAddress))
 
 		Nil(c.T(), err)
 		Equal(c.T(), *tokenID, testToken.tokenID)

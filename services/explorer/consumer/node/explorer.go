@@ -69,7 +69,6 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context) error {
 	for i := range e.config.Chains {
 		// capture func literal
 		chainConfig := e.config.Chains[i]
-
 		chainBackfiller := e.ChainBackfillers[chainConfig.ChainID]
 		// call Backfill concurrently
 		g.Go(func() error {

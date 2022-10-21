@@ -280,7 +280,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 
 	// get TokenID from BridgeConfig data
-	tokenID, err := p.fetcher.GetTokenID(ctx, chainID, iFace.GetToken())
+	tokenID, err := p.fetcher.GetTokenID(ctx, big.NewInt(int64(chainID)), iFace.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
@@ -498,6 +498,11 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 			swapEvent.TokenSymbol = tokenSymbols
 		}
 	}
+	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
+	if err != nil {
+		logger.Errorf("could not get tx sender: %v", err)
+	}
+	swapEvent.Sender = sender
 
 	// Store bridgeEvent
 	err = p.consumerDB.StoreEvent(ctx, nil, &swapEvent)
