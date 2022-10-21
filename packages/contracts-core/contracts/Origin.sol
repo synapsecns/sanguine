@@ -121,7 +121,6 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
 
     function initialize(INotaryManager _notaryManager) external initializer {
         __SystemContract_initialize();
-        _initializeHistoricalRoots();
         _setNotaryManager(_notaryManager);
         _addNotary(notaryManager.notary());
     }
@@ -186,7 +185,7 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
         require(tips.totalTips() == msg.value, "!tips: totalTips");
         // Latest nonce (i.e. "last message" nonce) is current amount of leaves in the tree.
         // Message nonce is the amount of leaves after the new leaf insertion
-        messageNonce = nonce() + 1;
+        messageNonce = nonce(_destination) + 1;
         // format the message into packed bytes
         bytes memory message = Message.formatMessage({
             _origin: _localDomain(),
@@ -200,7 +199,7 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
         });
         messageHash = keccak256(message);
         // insert the hashed message into the Merkle tree
-        _insertMessage(messageNonce, messageHash);
+        _insertMessage(_destination, messageNonce, messageHash);
         // Emit Dispatch event with message information
         // note: leaf index in the tree is messageNonce - 1, meaning we don't need to emit that
         emit Dispatch(messageHash, messageNonce, _destination, _tips, message);

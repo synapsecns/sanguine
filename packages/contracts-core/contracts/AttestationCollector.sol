@@ -25,20 +25,24 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
      * but different root (meaning one of the attestations is fraudulent),
      * we need a system so store all such attestations.
      *
-     * `attestedRoots` stores a list of attested roots for every (domain, nonce) pair
-     * `signatures` stores a signature for every submitted (domain, nonce, root) attestation.
+     * `originsToDestinationsToNoncesToAttestedRoots` stores a list of attested roots for every (origin_domain, destination_domain, nonce) pair
+     * `originsToDestinationsToNoncesToRootsToSignatures` stores a signature for every submitted (origin_domain, destination_domain, nonce, root) attestation.
      * We only store the first submitted signature for such attestation.
      */
-    // [origin => [nonce => [roots]]]
-    mapping(uint32 => mapping(uint32 => bytes32[])) internal attestedRoots;
-    // [origin => [nonce => [root => signature]]]
-    mapping(uint32 => mapping(uint32 => mapping(bytes32 => bytes))) internal signatures;
+    // [origin [destination => [nonce => [roots]]]]
+    mapping(uint32 => mapping(uint32 => mapping(uint32 => bytes32[])))
+        internal originsToDestinationsToNoncesToAttestedRoots;
+    // [origin => [destination => [nonce => [root => signature]]]]
+    mapping(uint32 => mapping(uint32 => mapping(uint32 => mapping(bytes32 => bytes))))
+        internal originsToDestinationsToNoncesToRootsToSignatures;
 
     /// @dev We are also storing last submitted (nonce, root) attestation for every Notary.
-    // [origin => [notary => latestNonce]]
-    mapping(uint32 => mapping(address => uint32)) public latestNonce;
-    // [origin => [notary => latestRoot]]
-    mapping(uint32 => mapping(address => bytes32)) public latestRoot;
+    // [origin => destination => [[notary => latestNonce]]]
+    mapping(uint32 => mapping(uint32 => mapping(address => uint32)))
+        public originsToDestinationsToNotariesToLatestNonces;
+    // [origin => destination => [[notary => latestRoot]]]
+    mapping(uint32 => mapping(uint32 => mapping(address => bytes32)))
+        public originToDestinationsToNotariesToLatestRoots;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             UPGRADE GAP                              ║*▕
@@ -79,36 +83,42 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Get i-th attestation for given (domain, nonce), if exists.
+     * @notice Get i-th attestation for given (origin_domain, destination_domain, nonce), if exists.
      * Assuming no fraud is committed, index = 0 should be used.
-     * If fraud was committed, there might be more than one attestation for given (domain, nonce).
+     * If fraud was committed, there might be more than one attestation for given (origin_domain, destination_domain, nonce).
      */
     function getAttestation(
-        uint32 _domain,
+        uint32 _origin_domain,
+        uint32 _destination_domain,
         uint32 _nonce,
         uint256 _index
     ) external view returns (bytes memory) {
-        bytes32 root = getRoot(_domain, _nonce, _index);
+        bytes32 root = getRoot(_origin_domain, _destination_domain, _nonce, _index);
         // signature always exists for a stored root
-        return _formatAttestation(_domain, _nonce, root);
+        return _formatAttestation(_origin_domain, _destination_domain, _nonce, root);
     }
 
     /**
-     * @notice Get attestation for (domain, nonce, root), if exists.
+     * @notice Get attestation for (origin_domain, destination_domain, nonce), if exists.
      */
     function getAttestation(
-        uint32 _domain,
+        uint32 _origin_domain,
+        uint32 _destination_domain,
         uint32 _nonce,
         bytes32 _root
     ) external view returns (bytes memory) {
-        require(_signatureExists(_domain, _nonce, _root), "!signature");
-        return _formatAttestation(_domain, _nonce, _root);
+        require(_signatureExists(_origin_domain, _destination_domain, _nonce, _root), "!signature");
+        return _formatAttestation(_origin_domain, _destination_domain, _nonce, _root);
     }
 
     /**
-     * @notice Get latest attestation for the domain.
+     * @notice Get latest attestation for the (origin_domain, destination_domain).
      */
-    function getLatestAttestation(uint32 _domain) external view returns (bytes memory) {
+    function getLatestAttestation(uint32 _origin_domain, _destination_domain)
+        external
+        view
+        returns (bytes memory)
+    {
         uint256 amount = notariesAmount(_domain);
         require(amount != 0, "!notaries");
         uint32 _latestNonce = 0;
@@ -185,7 +195,7 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool) {
-        uint32 domain = _attestationView.attestedDomain();
+        uint32 domain = _attestationView.attestedOriginDomain();
         uint32 nonce = _attestationView.attestedNonce();
         bytes32 root = _attestationView.attestedRoot();
         require(nonce > latestNonce[domain][_notary], "Outdated attestation");
@@ -201,14 +211,20 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
     }
 
     function _formatAttestation(
-        uint32 _domain,
+        uint32 _origin_domain,
+        uint32 _destination_domain,
         uint32 _nonce,
         bytes32 _root
     ) internal view returns (bytes memory) {
         return
             Attestation.formatAttestation(
-                Attestation.formatAttestationData(_domain, _nonce, _root),
-                signatures[_domain][_nonce][_root]
+                Attestation.formatAttestationData(
+                    _origin_domain,
+                    _destination_domain,
+                    _nonce,
+                    _root
+                ),
+                signatures[_origin_domain][_destination_domain][_nonce][_root]
             );
     }
 

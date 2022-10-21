@@ -12,20 +12,22 @@ library Attestation {
     /**
      * @dev AttestationData memory layout
      * [000 .. 004): origin         uint32   4 bytes
-     * [004 .. 008): nonce          uint32   4 bytes
-     * [008 .. 040): root           bytes32 32 bytes
+     * [000 .. 008): destination    uint32   4 bytes
+     * [008 .. 012): nonce          uint32   4 bytes
+     * [012 .. 044): root           bytes32 32 bytes
      *
      *      Attestation memory layout
-     * [000 .. 040): data           bytes   40 bytes (see above)
-     * [040 .. 105): signature      bytes   65 bytes
+     * [000 .. 044): data           bytes   44 bytes (see above)
+     * [044 .. 109): signature      bytes   65 bytes (65 bytes)
      */
 
     uint256 internal constant OFFSET_ORIGIN_DOMAIN = 0;
-    uint256 internal constant OFFSET_NONCE = 4;
-    uint256 internal constant OFFSET_ROOT = 8;
-    uint256 internal constant ATTESTATION_DATA_LENGTH = 40;
+    uint256 internal constant OFFSET_DESTINATION_DOMAIN = 4;
+    uint256 internal constant OFFSET_NONCE = 8;
+    uint256 internal constant OFFSET_ROOT = 12;
+    uint256 internal constant ATTESTATION_DATA_LENGTH = 44;
     uint256 internal constant OFFSET_SIGNATURE = ATTESTATION_DATA_LENGTH;
-    uint256 internal constant ATTESTATION_LENGTH = 105;
+    uint256 internal constant ATTESTATION_LENGTH = 109;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -63,17 +65,19 @@ library Attestation {
 
     /**
      * @notice Returns a formatted AttestationData payload with provided fields
-     * @param _domain   Domain of Origin's chain
-     * @param _root     New merkle root
-     * @param _nonce    Nonce of the merkle root
+     * @param _origin_domain        Domain of Origin's chain
+     * @param _destination_domain   Domain of Destination's chain
+     * @param _root                 New merkle root
+     * @param _nonce                Nonce of the merkle root
      * @return Formatted attestation data
      **/
     function formatAttestationData(
-        uint32 _domain,
+        uint32 _origin_domain,
+        uint32 _destination_domain,
         uint32 _nonce,
         bytes32 _root
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(_domain, _nonce, _root);
+        return abi.encodePacked(_origin_domain, _destination_domain, _nonce, _root);
     }
 
     /**
@@ -90,8 +94,25 @@ library Attestation {
     /**
      * @notice Returns domain of chain where the Origin contract is deployed
      */
-    function attestedDomain(bytes29 _view) internal pure onlyAttestation(_view) returns (uint32) {
+    function attestedOriginDomain(bytes29 _view)
+        internal
+        pure
+        onlyAttestation(_view)
+        returns (uint32)
+    {
         return uint32(_view.indexUint(OFFSET_ORIGIN_DOMAIN, 4));
+    }
+
+    /**
+     * @notice Returns domain of chain where the Destination contract is deployed
+     */
+    function attestedDestinationDomain(bytes29 _view)
+        internal
+        pure
+        onlyAttestation(_view)
+        returns (uint32)
+    {
+        return uint32(_view.indexUint(OFFSET_DESTINATION_DOMAIN, 4));
     }
 
     /**

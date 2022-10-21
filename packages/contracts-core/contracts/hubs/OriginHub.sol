@@ -12,9 +12,12 @@ import { ReportHub } from "./ReportHub.sol";
 
 import { MerkleLib } from "../libs/Merkle.sol";
 
+import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 /**
- * @notice Inserts new message hashes into the Merkle Tree,
- * and keeps track of the historical merkle state.
+ * @notice Inserts new message hashes into the Merkle Trees by destination chain domain,
+ * and keeps track of the historical merkle state for each destination.
+ * Keeps track of all destinations that this origin has sent cross chain messages to.
  * Keeps track of this domain's Notaries and all Guards: accepts
  * and checks their attestations/reports related to Origin.
  */
@@ -25,17 +28,36 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
 
     using MerkleLib for MerkleLib.Tree;
 
+    using EnumerableSet for EnumerableSet.UintSet;
+
+    /**
+     * @notice Latest message information about each destination domain that
+     *         this origin has sent cross chain messages to
+     * @param destination	Destination chain domain
+     * @param latestNonce	Latest nonce for messages sent from this
+     *                      origin to given destination
+     * @param latestRoot	Latest merkle root for messages sent from this
+     *                      origin to given destination
+     */
+    struct AttestationSuggestion {
+        uint32 destination;
+        uint32 latestNonce;
+        bytes32 latestRoot;
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // Merkle Tree containing all hashes of sent messages
-    MerkleLib.Tree internal tree;
-    // Merkle tree roots after inserting a sent message
-    bytes32[] public historicalRoots;
+    // The destination chain domains that this origin has sent cross chain messages to
+    EnumerableSet.UintSet internal destinationChainDomains;
+    // Merkle Tree containing all hashes of sent messages by destination chain domain
+    mapping(uint32 => MerkleLib.Tree) internal treesByDestChainDomains;
+    // Merkle tree roots by destination chain domain after inserting a sent message
+    mapping(uint32 => bytes32[]) internal historicalRootsByDestChainDomains;
 
     // gap for upgrade safety
-    uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[44] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
@@ -66,33 +88,74 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    function getHistoricalRootByDestAndNonce(uint32 _destination, uint32 _nonce)
+        public
+        returns (bytes32 historicalRoot)
+    {
+        if (historicalRootsByDestChainDomains[_destination].length > 0) {
+            historicalRoot = historicalRootsByDestChainDomains[_destination][_nonce];
+        } else if (nonce == 0) {
+            historicalRoot = hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757";
+        } else {
+            historicalRoot = bytes32(0);
+        }
+    }
+
     /**
-     * @notice Suggest an attestation for the off-chain actors to sign and submit.
-     * @dev If no messages have been sent, following values are returned:
+     * @notice Suggest attestations for the off-chain actors to sign and submit.
+     * @dev If no messages have been sent, the array will be empty
+     * @return attestationSuggestions Latest nonce and latest root of each destination
+     */
+    function suggestAttestations()
+        external
+        view
+        returns (AttestationSuggestion[] memory attestationSuggestions)
+    {
+        attestationSuggestions = new AttestationSuggestion[](destinationChainDomains.length());
+        for (uint256 i = 0; i < destinationChainDomains.length(); i++) {
+            uint32 destChainDomain = destinationChainDomains.at(i);
+            uint32 latestNonce = nonce(destChainDomain);
+            uint32 latestRoot = root(destChainDomain);
+            AttestationSuggestion memory attestionSuggestion = new AttestationSuggestion(
+                destChainDomain,
+                latestNonce,
+                latestRoot
+            );
+            attestationSuggestions[i] = attestionSuggestion;
+        }
+    }
+
+    /**
+     * @notice Suggest attestation for the off-chain actors to sign and submit for a specific destination.
+     * @dev If no messages have been sent, thefollowing values are returned:
      * - nonce = 0
      * - root = 0x27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757
      * Which is the merkle root for an empty sparse merkle tree.
      * @return latestNonce Current nonce
      * @return latestRoot  Current merkle root
      */
-    function suggestAttestation() external view returns (uint32 latestNonce, bytes32 latestRoot) {
-        latestNonce = nonce();
-        latestRoot = historicalRoots[latestNonce];
+    function suggestAttestation(uint32 _destination)
+        external
+        view
+        returns (uint32 latestNonce, bytes32 latestRoot)
+    {
+        latestNonce = nonce(_destination);
+        latestRoot = root(_destination);
     }
 
     /**
-     * @notice Returns nonce of the last inserted Merkle root, which is also
-     * the number of inserted leaves in the tree (current index).
+     * @notice Returns nonce of the last inserted Merkle root by destination, which is also
+     * the number of inserted leaves in the destination's tree (current index).
      */
-    function nonce() public view returns (uint32 latestNonce) {
-        latestNonce = uint32(_getTreeCount());
+    function nonce(uint32 _destination) public view returns (uint32 latestNonce) {
+        latestNonce = uint32(_getTreeCount(_destination));
     }
 
     /**
-     * @notice Calculates and returns tree's current root.
+     * @notice Calculates and returns tree's current root for the given destination.
      */
-    function root() public view returns (bytes32) {
-        return tree.root(_getTreeCount());
+    function root(uint32 _destination) public view returns (bytes32) {
+        return treesByDestChainDomains[_destination].root(_getTreeCount(_destination));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -127,9 +190,10 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool isValid) {
+        uint32 attestedDestination = _attestationView.attestedDestinationDomain();
         uint32 attestedNonce = _attestationView.attestedNonce();
         bytes32 attestedRoot = _attestationView.attestedRoot();
-        isValid = _isValidAttestation(attestedNonce, attestedRoot);
+        isValid = _isValidAttestation(attestedDestination, attestedNonce, attestedRoot);
         if (!isValid) {
             emit FraudAttestation(_notary, _attestation);
             // Guard doesn't receive anything, as Notary wasn't slashed using the Fraud Report
@@ -187,9 +251,10 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
         bytes29 _reportView,
         bytes memory _report
     ) internal override returns (bool) {
+        uint32 attestedDestination = _attestationView.attestedDestinationDomain();
         uint32 attestedNonce = _attestationView.attestedNonce();
         bytes32 attestedRoot = _attestationView.attestedRoot();
-        if (_isValidAttestation(attestedNonce, attestedRoot)) {
+        if (_isValidAttestation(attestedDestination, attestedNonce, attestedRoot)) {
             // Attestation: Valid
             if (_reportView.reportedFraud()) {
                 // Flag: Fraud
@@ -225,33 +290,39 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
     }
 
     /**
-     * @notice Inserts a merkle root for an empty sparse merkle tree
-     * into the historical roots array.
-     * @dev This enables:
-     * - Counting nonces from 1 (nonce=0 meaning no messages have been sent).
-     * - Not slashing the Notaries for signing an attestation for an empty tree
-     * (assuming they sign the correct root outlined below).
-     */
-    function _initializeHistoricalRoots() internal {
-        // This function should only be called only if array is empty
-        assert(historicalRoots.length == 0);
-        // Insert a historical root so nonces start at 1 rather then 0.
-        // Here we insert the default root of a sparse merkle tree
-        historicalRoots.push(hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757");
-    }
-
-    /**
      * @notice Inserts new message into the Merkle tree and stores the new merkle root.
      * @param _messageNonce Nonce of the dispatched message
      * @param _messageHash  Hash of the dispatched message
      */
-    function _insertMessage(uint32 _messageNonce, bytes32 _messageHash) internal {
+    function _insertMessage(
+        uint32 _destination,
+        uint32 _messageNonce,
+        bytes32 _messageHash
+    ) internal {
         /// @dev _messageNonce == tree.count() + 1
         // tree.insert() requires amount of leaves AFTER the leaf insertion (i.e. tree.count() + 1)
-        tree.insert(_messageNonce, _messageHash);
+        treesByDestChainDomains[_destination].insert(_messageNonce, _messageHash);
+
+        if (historicalRootsByDestChainDomains[_destination].length == 0) {
+            // @dev This enables:
+            // - Counting nonces from 1 (nonce=0 meaning no messages have been sent).
+            // - Not slashing the Notaries for signing an attestation for an empty tree
+            // (assuming they sign the correct root outlined below).
+            // Insert a historical root so nonces start at 1 rather then 0.
+            // Here we insert the default root of a sparse merkle tree
+            historicalRootsByDestChainDomains[_destination].push(
+                hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757"
+            );
+
+            // Now add the _destination to the list of destinations that this origin has sent cross chain messages to
+            destinationChainDomains.add(_destination);
+        }
+
         /// @dev leaf is inserted => _messageNonce == tree.count()
         // tree.root() requires current amount of leaves (i.e. tree.count())
-        historicalRoots.push(tree.root(_messageNonce));
+        historicalRootsByDestChainDomains[_destination].push(
+            treesByDestChainDomains[_destination].root(_messageNonce)
+        );
     }
 
     /**
@@ -276,25 +347,37 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns whether (_nonce, _root) matches the historical state
-     * of the Merkle Tree.
+     * @notice Returns whether (_destination, _nonce, _root) matches the historical state
+     * of the Merkle Tree for that destination.
      */
-    function _isValidAttestation(uint32 _nonce, bytes32 _root) internal view returns (bool) {
+    function _isValidAttestation(
+        uint32 _destination,
+        uint32 _nonce,
+        bytes32 _root
+    ) internal view returns (bool) {
         // Check if nonce is valid, if not => attestation is fraud
         // Check if root the same as the historical one, if not => attestation is fraud
-        return (_nonce < historicalRoots.length && _root == historicalRoots[_nonce]);
+        return (historicalRootsByDestChainDomains[_destination].length > 1 &&
+            _nonce < historicalRootsByDestChainDomains[_destination].length &&
+            _root == historicalRootsByDestChainDomains[_destination][_nonce]);
     }
 
     /**
-     * @notice Returns amount of leaves in the merkle tree.
+     * @notice Returns amount of leaves in the merkle tree for the given _destination
      * @dev Every inserted leaf leads to adding a historical root,
      * removing the necessity to store amount of leaves separately.
      * Historical roots array is initialized with a root of an empty Sparse Merkle tree,
      * thus actual amount of leaves is lower by one.
      */
-    function _getTreeCount() internal view returns (uint256) {
+    function _getTreeCount(uint32 _destination) internal view returns (uint256) {
         // historicalRoots has length of 1 upon initializing,
-        // so this never underflows assuming contract was initialized
-        return historicalRoots.length - 1;
+        // so this never underflows.
+        // By default, when first message is inserted for destination, a historical root
+        // is initially inserted.
+        if (historicalRootsByDestChainDomains[_destination].length == 0) {
+            return 0;
+        }
+
+        return historicalRootsByDestChainDomains[_destination].length - 1;
     }
 }

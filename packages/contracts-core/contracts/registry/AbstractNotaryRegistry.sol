@@ -86,7 +86,7 @@ abstract contract AbstractNotaryRegistry {
     function _checkNotaryAuth(bytes29 _view) internal view returns (address _notary) {
         require(_view.isAttestation(), "Not an attestation");
         _notary = Auth.recoverSigner(_view.attestationData(), _view.notarySignature().clone());
-        require(_isNotary(_view.attestedDomain(), _notary), "Signer is not a notary");
+        require(_isNotary(_view.attestedOriginDomain(), _notary), "Signer is not a notary");
     }
 
     /**

@@ -53,10 +53,10 @@ abstract contract DestinationHub is
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // domain => [root => info]
+    // origin_domain => [root => info]
     mapping(uint32 => mapping(bytes32 => Root)) public mirrorRoots;
 
-    // domain => mirror
+    // origin_domain => mirror
     mapping(uint32 => Mirror) public mirrors;
 
     // gap for upgrade safety
