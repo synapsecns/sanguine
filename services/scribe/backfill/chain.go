@@ -45,7 +45,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 		}
 		contractBackfillers = append(contractBackfillers, contractBackfiller)
 		startHeights[contract.Address] = contract.StartBlock
-		if contract.StartBlock < minBlockHeight {
+		if contract.StartBlock > minBlockHeight {
 			minBlockHeight = contract.StartBlock
 		}
 	}
@@ -133,12 +133,12 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			endHeight, err := c.client.BlockNumber(ctx)
 			if err != nil {
 				timeout = b.Duration()
-				logger.Warnf("could not get block number, bad connection to rpc likely: %w", err)
+				logger.Warnf("could not get block number, bad connection to rpc likely: %v", err)
 				goto RETRY
 			}
 			startHeight, err := c.startHeightForBlockTime(groupCtx)
 			if err != nil {
-				return fmt.Errorf("could not get start height for block time: %w", err)
+				return fmt.Errorf("could not get start height for block time: %v", err)
 			}
 			if startHeight != 0 {
 				startHeight--
@@ -148,20 +148,20 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				header, err := c.client.HeaderByNumber(groupCtx, big.NewInt(int64(blockNum)))
 				if err != nil {
 					timeout = b.Duration()
-					logger.Warnf("could not get block time: %w", err)
+					logger.Warnf("could not get block time: %v", err)
 					goto RETRY
 				}
 				err = c.eventDB.StoreBlockTime(groupCtx, c.chainID, blockNum, header.Time)
 				if err != nil {
 					timeout = b.Duration()
-					logger.Warnf("could not store block time: %w", err)
+					logger.Warnf("could not store block time: %v", err)
 					goto RETRY
 				}
 				// store the last block time
 				err = c.eventDB.StoreLastBlockTime(groupCtx, c.chainID, blockNum)
 				if err != nil {
 					timeout = b.Duration()
-					logger.Warnf("could not store last block time: %w", err)
+					logger.Warnf("could not store last block time: %v", err)
 					goto RETRY
 				}
 			}

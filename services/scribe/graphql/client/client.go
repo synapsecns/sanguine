@@ -30,6 +30,7 @@ type Query struct {
 	FirstStoredBlockNumber *int                 "json:\"firstStoredBlockNumber\" graphql:\"firstStoredBlockNumber\""
 	TxSender               *string              "json:\"txSender\" graphql:\"txSender\""
 	LastIndexed            *int                 "json:\"lastIndexed\" graphql:\"lastIndexed\""
+	LogCount               *int                 "json:\"logCount\" graphql:\"logCount\""
 }
 type GetLogs struct {
 	Response []*struct {

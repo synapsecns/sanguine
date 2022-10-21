@@ -1,7 +1,6 @@
 package db_test
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/synapsecns/sanguine/services/scribe/db"
@@ -96,7 +95,6 @@ func (t *DBSuite) TestConfirmLogsInRange() {
 			Confirmed: true,
 		}
 		retrievedLogs, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), logFilter, 1)
-		fmt.Println("retrievedLogsretrievedLogs", retrievedLogs, len(retrievedLogs), retrievedLogs[0].BlockNumber, retrievedLogs[1].BlockNumber)
 		Nil(t.T(), err)
 		Equal(t.T(), 2, len(retrievedLogs))
 		Equal(t.T(), uint64(1), retrievedLogs[0].BlockNumber)

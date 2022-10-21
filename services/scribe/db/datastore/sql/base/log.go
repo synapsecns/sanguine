@@ -150,6 +150,21 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 	return buildLogsFromDBLogs(dbLogs), nil
 }
 
+func (s Store) RetrieveLogCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error) {
+	var count int64
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Log{}).
+		Where(&Log{ChainID: chainID}).
+		Where(&Log{ContractAddress: contractAddress.String()}).
+		Count(&count)
+
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("could not count logs: %w", dbTx.Error)
+	}
+
+	return count, nil
+}
+
 // RetrieveLogsInRange retrieves all logs that match an inputted filter and are within a range given a page.
 func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, startBlock, endBlock uint64, page int) (logs []*types.Log, err error) {
 	if page < 1 {
