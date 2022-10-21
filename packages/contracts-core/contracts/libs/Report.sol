@@ -209,7 +209,12 @@ library Report {
      * @notice Returns Report's Attestation (which is supposed to be signed by the Notary already).
      */
     function reportedAttestation(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
-        return _view.slice(OFFSET_ATTESTATION, Attestation.ATTESTATION_LENGTH, SynapseTypes.ATTESTATION);
+        return
+            _view.slice(
+                OFFSET_ATTESTATION,
+                Attestation.ATTESTATION_LENGTH,
+                SynapseTypes.ATTESTATION
+            );
     }
 
     /**

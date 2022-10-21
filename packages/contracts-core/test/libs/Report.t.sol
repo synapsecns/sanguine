@@ -91,9 +91,7 @@ contract ReportTest is SynapseTest, Bytes29Test {
         bytes memory report = Report.formatReport(flag, attestationData, guardSignature);
         bytes29 _view = report.castToReport();
         assertFalse(_view.isReport());
-        // Sanity check: this is not attestation
-//        assert(!_view.reportedAttestation().isAttestation());
-//        assertFalse(report.castToReport().isReport());
+        assertFalse(report.castToReport().isReport());
     }
 
     function test_isReport_emptyPayload() public {
