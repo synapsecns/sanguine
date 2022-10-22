@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
 import { LocalDomainContext } from "../../contracts/context/LocalDomainContext.sol";
 import { DomainNotaryRegistry } from "../../contracts/registry/DomainNotaryRegistry.sol";
