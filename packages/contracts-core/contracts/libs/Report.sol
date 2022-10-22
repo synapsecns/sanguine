@@ -7,10 +7,10 @@ import { SynapseTypes } from "./SynapseTypes.sol";
 
 /**
  * @notice Library for formatting the Guard Reports.
- * Reports are submitted to Home contracts in order to slash a fraudulent Notary.
- * Reports are submitted to ReplicaManager contracts in order to blacklist
+ * Reports are submitted to Origin contracts in order to slash a fraudulent Notary.
+ * Reports are submitted to Destination contracts in order to blacklist
  * an allegedly fraudulent Notary.
- * Just like an Attestation, a Report could be checked on Home contract
+ * Just like an Attestation, a Report could be checked on Origin contract
  * on the chain the reported Notary is attesting.
  * Report includes:
  * - Flag, indicating whether the reported attestation is fraudulent.
@@ -45,35 +45,32 @@ library Report {
      * guardSig is Guard's signature on ReportData
      *
      *      Report memory layout
-     * [000 .. 002): attLength      uint16   2 bytes (length == AAA - 3)
-     * [002 .. 003): flag           uint8    1 bytes
-     * [003 .. AAA]: attestation    bytes   ?? bytes (40 + 64/65 bytes)
-     * [AAA .. END): guardSig       bytes   ?? bytes (64/65 bytes)
+     * [000 .. 001): flag           uint8    1 bytes
+     * [001 .. 106): attestation    bytes   105 bytes (40 + 65 bytes)
+     * [106 .. 171): guardSig       bytes   65 bytes
      *
      *      Unpack attestation field (see Attestation.sol)
-     * [000 .. 002): attLength      uint16   2 bytes (length == AAA - 3)
-     * [002 .. 003): flag           uint8    1 bytes
-     * [003 .. 043]: attData        bytes   40 bytes
-     * [043 .. AAA): notarySig      bytes   ?? bytes (64/65 bytes)
-     * [AAA .. END): guardSig       bytes   ?? bytes (64/65 bytes)
+     * [000 .. 001): flag           uint8    1 bytes
+     * [001 .. 041): attData        bytes   40 bytes
+     * [041 .. 106): notarySig      bytes   65 bytes
+     * [106 .. 171): guardSig       bytes   65 bytes
      *
      * notarySig is Notary's signature on AttestationData
      *
      * flag + attData = reportData (see above), so
      *
      *      Report memory layout (sliced alternatively)
-     * [000 .. 002): attLength      uint16   2 bytes (length == AAA - 3)
-     * [002 .. 043): reportData     bytes   41 bytes
-     * [043 .. AAA): notarySig      bytes   ?? bytes (64/65 bytes)
-     * [AAA .. END): guardSig       bytes   ?? bytes (64/65 bytes)
+     * [000 .. 041): reportData     bytes   41 bytes
+     * [041 .. 106): notarySig      bytes   65 bytes
+     * [106 .. 171): guardSig       bytes   65 bytes
      */
 
-    uint256 internal constant OFFSET_ATTESTATION_LENGTH = 0;
-    uint256 internal constant OFFSET_FLAG = 2;
-    uint256 internal constant OFFSET_ATTESTATION = 3;
+    uint256 internal constant OFFSET_FLAG = 0;
+    uint256 internal constant OFFSET_ATTESTATION = 1;
 
     uint256 internal constant ATTESTATION_DATA_LENGTH = 40;
     uint256 internal constant REPORT_DATA_LENGTH = 1 + ATTESTATION_DATA_LENGTH;
+    uint256 internal constant REPORT_LENGTH = 171;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -154,7 +151,7 @@ library Report {
         bytes memory _attestation,
         bytes memory _guardSig
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(uint16(_attestation.length), uint8(_flag), _attestation, _guardSig);
+        return abi.encodePacked(uint8(_flag), _attestation, _guardSig);
     }
 
     /**
@@ -190,11 +187,9 @@ library Report {
      */
     function isReport(bytes29 _view) internal pure returns (bool) {
         uint256 length = _view.len();
-        // Attestation length & flag should exist
-        if (length < OFFSET_ATTESTATION) return false;
-        uint256 attestationLength = _attestationLength(_view);
-        // Guard signature needs to exist
-        if (length <= OFFSET_ATTESTATION + attestationLength) return false;
+        // Report should be the correct length
+        if (length != REPORT_LENGTH) return false;
+
         // Attestation needs to be formatted as well
         return reportedAttestation(_view).isAttestation();
     }
@@ -214,7 +209,12 @@ library Report {
      * @notice Returns Report's Attestation (which is supposed to be signed by the Notary already).
      */
     function reportedAttestation(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
-        return _view.slice(OFFSET_ATTESTATION, _attestationLength(_view), SynapseTypes.ATTESTATION);
+        return
+            _view.slice(
+                OFFSET_ATTESTATION,
+                Attestation.ATTESTATION_LENGTH,
+                SynapseTypes.ATTESTATION
+            );
     }
 
     /**
@@ -229,19 +229,7 @@ library Report {
      * @notice Returns Guard's signature on ReportData.
      */
     function guardSignature(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
-        uint256 offsetSignature = OFFSET_ATTESTATION + _attestationLength(_view);
+        uint256 offsetSignature = OFFSET_ATTESTATION + Attestation.ATTESTATION_LENGTH;
         return _view.slice(offsetSignature, _view.len() - offsetSignature, SynapseTypes.SIGNATURE);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          PRIVATE FUNCTIONS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @dev No type checks in private functions,
-     *      as the type is checked in the function that called this one.
-     */
-    function _attestationLength(bytes29 _view) private pure returns (uint256) {
-        return _view.indexUint(OFFSET_ATTESTATION_LENGTH, 2);
     }
 }

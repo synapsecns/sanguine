@@ -88,9 +88,6 @@ contract ReportTest is SynapseTest, Bytes29Test {
         _createTestData();
         // Use attestationData instead of full attestation (i.e. no Notary signature)
         bytes memory report = Report.formatReport(flag, attestationData, guardSignature);
-        bytes29 _view = report.castToReport();
-        // Sanity check: this is not attestation
-        assert(!_view.reportedAttestation().isAttestation());
         assertFalse(report.castToReport().isReport());
     }
 
