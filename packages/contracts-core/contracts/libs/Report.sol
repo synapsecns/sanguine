@@ -46,12 +46,12 @@ library Report {
      *
      *      Report memory layout
      * [000 .. 001): flag           uint8    1 bytes
-     * [001 .. 106]: attestation    bytes   105 bytes (40 + 65 bytes)
+     * [001 .. 106): attestation    bytes   105 bytes (40 + 65 bytes)
      * [106 .. 171): guardSig       bytes   65 bytes
      *
      *      Unpack attestation field (see Attestation.sol)
      * [000 .. 001): flag           uint8    1 bytes
-     * [001 .. 041]: attData        bytes   40 bytes
+     * [001 .. 041): attData        bytes   40 bytes
      * [041 .. 106): notarySig      bytes   65 bytes
      * [106 .. 171): guardSig       bytes   65 bytes
      *
@@ -60,9 +60,9 @@ library Report {
      * flag + attData = reportData (see above), so
      *
      *      Report memory layout (sliced alternatively)
-     * [002 .. 043): reportData     bytes   41 bytes
-     * [043 .. 108): notarySig      bytes   65 bytes
-     * [108 .. 173): guardSig       bytes   65 bytes
+     * [000 .. 041): reportData     bytes   41 bytes
+     * [041 .. 106): notarySig      bytes   65 bytes
+     * [106 .. 171): guardSig       bytes   65 bytes
      */
 
     uint256 internal constant OFFSET_FLAG = 0;
