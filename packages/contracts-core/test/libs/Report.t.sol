@@ -8,7 +8,6 @@ import { Attestation } from "../../contracts/libs/Attestation.sol";
 import { Report } from "../../contracts/libs/Report.sol";
 import { SynapseTypes } from "../../contracts/libs/SynapseTypes.sol";
 import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
-import "forge-std/console2.sol";
 
 // solhint-disable func-name-mixedcase
 
@@ -89,8 +88,6 @@ contract ReportTest is SynapseTest, Bytes29Test {
         _createTestData();
         // Use attestationData instead of full attestation (i.e. no Notary signature)
         bytes memory report = Report.formatReport(flag, attestationData, guardSignature);
-        bytes29 _view = report.castToReport();
-        assertFalse(_view.isReport());
         assertFalse(report.castToReport().isReport());
     }
 
