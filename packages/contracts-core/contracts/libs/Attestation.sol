@@ -3,6 +3,7 @@ pragma solidity 0.8.13;
 
 import { SynapseTypes } from "./SynapseTypes.sol";
 import { TypedMemView } from "./TypedMemView.sol";
+import { Auth } from "./Auth.sol";
 
 library Attestation {
     using TypedMemView for bytes;
@@ -16,7 +17,7 @@ library Attestation {
      *
      *      Attestation memory layout
      * [000 .. 040): data           bytes   40 bytes (see above)
-     * [040 .. END): signature      bytes   ?? bytes (64/65 bytes)
+     * [040 .. 105): signature      bytes   65 bytes
      */
 
     uint256 internal constant OFFSET_ORIGIN_DOMAIN = 0;
@@ -24,6 +25,7 @@ library Attestation {
     uint256 internal constant OFFSET_ROOT = 8;
     uint256 internal constant ATTESTATION_DATA_LENGTH = 40;
     uint256 internal constant OFFSET_SIGNATURE = ATTESTATION_DATA_LENGTH;
+    uint256 internal constant ATTESTATION_LENGTH = 105;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -78,9 +80,7 @@ library Attestation {
      * @notice Checks that a payload is a formatted Attestation payload.
      */
     function isAttestation(bytes29 _view) internal pure returns (bool) {
-        // Should have at least 1 bytes for the signature.
-        // Signature length or validity is not checked, ECDSA.sol takes care of it.
-        return _view.len() > ATTESTATION_DATA_LENGTH;
+        return _view.len() == ATTESTATION_LENGTH;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -124,6 +124,6 @@ library Attestation {
      * @notice Returns Notary's signature on AttestationData
      */
     function notarySignature(bytes29 _view) internal pure onlyAttestation(_view) returns (bytes29) {
-        return _view.sliceFrom(OFFSET_SIGNATURE, SynapseTypes.SIGNATURE);
+        return _view.slice(OFFSET_SIGNATURE, Auth.SIGNATURE_LENGTH, SynapseTypes.SIGNATURE);
     }
 }

@@ -31,7 +31,7 @@ var (
 // AttestationMetaData contains all meta data concerning the Attestation contract.
 var AttestationMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205b6cc8823a67eeafdf49370e4a17a8c75ab770148edab200de7269fa567c335664736f6c634300080d0033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212200d59396586a4a1463977ef8ffdd704d232fbb9135984a5da8c83a1efd2ce563864736f6c634300080d0033",
 }
 
 // AttestationABI is the input ABI used to generate the binding from.
@@ -214,7 +214,7 @@ var AttestationHarnessMetaData = &bind.MetaData{
 		"5b42242d": "offsetRoot()",
 		"740261a6": "offsetSignature()",
 	},
-	Bin: "0x608060405234801561001057600080fd5b506104dd806100206000396000f3fe608060405234801561001057600080fd5b50600436106100885760003560e01c8063740261a61161005b578063740261a6146100d157806381646674146100d8578063a104a5e5146100d1578063ef6d4cad146100eb57600080fd5b8063320bfc441461008d5780634d358d65146100a3578063569e1eaf146100c35780635b42242d146100ca575b600080fd5b60005b6040519081526020015b60405180910390f35b6100b66100b13660046102ef565b610153565b60405161009a9190610387565b6004610090565b6008610090565b6028610090565b6100b66100e63660046103d8565b6101bd565b6100b66100f936600461043c565b604080517fffffffff0000000000000000000000000000000000000000000000000000000060e095861b811660208301529390941b9092166024840152602880840191909152815180840390910181526048909201905290565b604080517fffffffff0000000000000000000000000000000000000000000000000000000060e087811b8216602084015286901b16602482015260288082018590528251808303909101815260489091019091526060906101b490836101bd565b95945050505050565b60606101c983836101d0565b9392505050565b606082826040516020016101e5929190610478565b604051602081830303815290604052905092915050565b803563ffffffff8116811461021057600080fd5b919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261025557600080fd5b813567ffffffffffffffff8082111561027057610270610215565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019082821181831017156102b6576102b6610215565b816040528381528660208588010111156102cf57600080fd5b836020870160208301376000602085830101528094505050505092915050565b6000806000806080858703121561030557600080fd5b61030e856101fc565b935061031c602086016101fc565b925060408501359150606085013567ffffffffffffffff81111561033f57600080fd5b61034b87828801610244565b91505092959194509250565b60005b8381101561037257818101518382015260200161035a565b83811115610381576000848401525b50505050565b60208152600082518060208401526103a6816040850160208701610357565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169190910160400192915050565b600080604083850312156103eb57600080fd5b823567ffffffffffffffff8082111561040357600080fd5b61040f86838701610244565b9350602085013591508082111561042557600080fd5b5061043285828601610244565b9150509250929050565b60008060006060848603121561045157600080fd5b61045a846101fc565b9250610468602085016101fc565b9150604084013590509250925092565b6000835161048a818460208801610357565b83519083019061049e818360208801610357565b0194935050505056fea2646970667358221220fbb8c2851783aca1dfb99dea7ab5db98e398fa7a454b76b0c9e0a8adbbf0f16c64736f6c634300080d0033",
+	Bin: "0x608060405234801561001057600080fd5b506104dd806100206000396000f3fe608060405234801561001057600080fd5b50600436106100885760003560e01c8063740261a61161005b578063740261a6146100d157806381646674146100d8578063a104a5e5146100d1578063ef6d4cad146100eb57600080fd5b8063320bfc441461008d5780634d358d65146100a3578063569e1eaf146100c35780635b42242d146100ca575b600080fd5b60005b6040519081526020015b60405180910390f35b6100b66100b13660046102ef565b610153565b60405161009a9190610387565b6004610090565b6008610090565b6028610090565b6100b66100e63660046103d8565b6101bd565b6100b66100f936600461043c565b604080517fffffffff0000000000000000000000000000000000000000000000000000000060e095861b811660208301529390941b9092166024840152602880840191909152815180840390910181526048909201905290565b604080517fffffffff0000000000000000000000000000000000000000000000000000000060e087811b8216602084015286901b16602482015260288082018590528251808303909101815260489091019091526060906101b490836101bd565b95945050505050565b60606101c983836101d0565b9392505050565b606082826040516020016101e5929190610478565b604051602081830303815290604052905092915050565b803563ffffffff8116811461021057600080fd5b919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261025557600080fd5b813567ffffffffffffffff8082111561027057610270610215565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019082821181831017156102b6576102b6610215565b816040528381528660208588010111156102cf57600080fd5b836020870160208301376000602085830101528094505050505092915050565b6000806000806080858703121561030557600080fd5b61030e856101fc565b935061031c602086016101fc565b925060408501359150606085013567ffffffffffffffff81111561033f57600080fd5b61034b87828801610244565b91505092959194509250565b60005b8381101561037257818101518382015260200161035a565b83811115610381576000848401525b50505050565b60208152600082518060208401526103a6816040850160208701610357565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169190910160400192915050565b600080604083850312156103eb57600080fd5b823567ffffffffffffffff8082111561040357600080fd5b61040f86838701610244565b9350602085013591508082111561042557600080fd5b5061043285828601610244565b9150509250929050565b60008060006060848603121561045157600080fd5b61045a846101fc565b9250610468602085016101fc565b9150604084013590509250925092565b6000835161048a818460208801610357565b83519083019061049e818360208801610357565b0194935050505056fea2646970667358221220bbe32523c7bd94d1fb818d23eacd2bf99ed4902d4383fc94b54136c2d296ec3a64736f6c634300080d0033",
 }
 
 // AttestationHarnessABI is the input ABI used to generate the binding from.
@@ -636,10 +636,529 @@ func (_AttestationHarness *AttestationHarnessCallerSession) OffsetSignature() (*
 	return _AttestationHarness.Contract.OffsetSignature(&_AttestationHarness.CallOpts)
 }
 
+// AuthMetaData contains all meta data concerning the Auth contract.
+var AuthMetaData = &bind.MetaData{
+	ABI: "[]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212209f6b5ec896e61ae4db12bf92017ad072cf15bcd3932aa2c38a7322796d9a31ae64736f6c634300080d0033",
+}
+
+// AuthABI is the input ABI used to generate the binding from.
+// Deprecated: Use AuthMetaData.ABI instead.
+var AuthABI = AuthMetaData.ABI
+
+// AuthBin is the compiled bytecode used for deploying new contracts.
+// Deprecated: Use AuthMetaData.Bin instead.
+var AuthBin = AuthMetaData.Bin
+
+// DeployAuth deploys a new Ethereum contract, binding an instance of Auth to it.
+func DeployAuth(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *Auth, error) {
+	parsed, err := AuthMetaData.GetAbi()
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	if parsed == nil {
+		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
+	}
+
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(AuthBin), backend)
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	return address, tx, &Auth{AuthCaller: AuthCaller{contract: contract}, AuthTransactor: AuthTransactor{contract: contract}, AuthFilterer: AuthFilterer{contract: contract}}, nil
+}
+
+// Auth is an auto generated Go binding around an Ethereum contract.
+type Auth struct {
+	AuthCaller     // Read-only binding to the contract
+	AuthTransactor // Write-only binding to the contract
+	AuthFilterer   // Log filterer for contract events
+}
+
+// AuthCaller is an auto generated read-only Go binding around an Ethereum contract.
+type AuthCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// AuthTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type AuthTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// AuthFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type AuthFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// AuthSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type AuthSession struct {
+	Contract     *Auth             // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// AuthCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type AuthCallerSession struct {
+	Contract *AuthCaller   // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts // Call options to use throughout this session
+}
+
+// AuthTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type AuthTransactorSession struct {
+	Contract     *AuthTransactor   // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// AuthRaw is an auto generated low-level Go binding around an Ethereum contract.
+type AuthRaw struct {
+	Contract *Auth // Generic contract binding to access the raw methods on
+}
+
+// AuthCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type AuthCallerRaw struct {
+	Contract *AuthCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// AuthTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type AuthTransactorRaw struct {
+	Contract *AuthTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewAuth creates a new instance of Auth, bound to a specific deployed contract.
+func NewAuth(address common.Address, backend bind.ContractBackend) (*Auth, error) {
+	contract, err := bindAuth(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &Auth{AuthCaller: AuthCaller{contract: contract}, AuthTransactor: AuthTransactor{contract: contract}, AuthFilterer: AuthFilterer{contract: contract}}, nil
+}
+
+// NewAuthCaller creates a new read-only instance of Auth, bound to a specific deployed contract.
+func NewAuthCaller(address common.Address, caller bind.ContractCaller) (*AuthCaller, error) {
+	contract, err := bindAuth(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &AuthCaller{contract: contract}, nil
+}
+
+// NewAuthTransactor creates a new write-only instance of Auth, bound to a specific deployed contract.
+func NewAuthTransactor(address common.Address, transactor bind.ContractTransactor) (*AuthTransactor, error) {
+	contract, err := bindAuth(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &AuthTransactor{contract: contract}, nil
+}
+
+// NewAuthFilterer creates a new log filterer instance of Auth, bound to a specific deployed contract.
+func NewAuthFilterer(address common.Address, filterer bind.ContractFilterer) (*AuthFilterer, error) {
+	contract, err := bindAuth(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &AuthFilterer{contract: contract}, nil
+}
+
+// bindAuth binds a generic wrapper to an already deployed contract.
+func bindAuth(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(AuthABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Auth *AuthRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Auth.Contract.AuthCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Auth *AuthRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Auth.Contract.AuthTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Auth *AuthRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Auth.Contract.AuthTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Auth *AuthCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Auth.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Auth *AuthTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Auth.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Auth *AuthTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Auth.Contract.contract.Transact(opts, method, params...)
+}
+
+// ECDSAMetaData contains all meta data concerning the ECDSA contract.
+var ECDSAMetaData = &bind.MetaData{
+	ABI: "[]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220f44e1da3037d7b7bfbba7c8487cde35969e315cbdb94f8e301928595d890c7c464736f6c634300080d0033",
+}
+
+// ECDSAABI is the input ABI used to generate the binding from.
+// Deprecated: Use ECDSAMetaData.ABI instead.
+var ECDSAABI = ECDSAMetaData.ABI
+
+// ECDSABin is the compiled bytecode used for deploying new contracts.
+// Deprecated: Use ECDSAMetaData.Bin instead.
+var ECDSABin = ECDSAMetaData.Bin
+
+// DeployECDSA deploys a new Ethereum contract, binding an instance of ECDSA to it.
+func DeployECDSA(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *ECDSA, error) {
+	parsed, err := ECDSAMetaData.GetAbi()
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	if parsed == nil {
+		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
+	}
+
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(ECDSABin), backend)
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	return address, tx, &ECDSA{ECDSACaller: ECDSACaller{contract: contract}, ECDSATransactor: ECDSATransactor{contract: contract}, ECDSAFilterer: ECDSAFilterer{contract: contract}}, nil
+}
+
+// ECDSA is an auto generated Go binding around an Ethereum contract.
+type ECDSA struct {
+	ECDSACaller     // Read-only binding to the contract
+	ECDSATransactor // Write-only binding to the contract
+	ECDSAFilterer   // Log filterer for contract events
+}
+
+// ECDSACaller is an auto generated read-only Go binding around an Ethereum contract.
+type ECDSACaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ECDSATransactor is an auto generated write-only Go binding around an Ethereum contract.
+type ECDSATransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ECDSAFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type ECDSAFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ECDSASession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type ECDSASession struct {
+	Contract     *ECDSA            // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// ECDSACallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type ECDSACallerSession struct {
+	Contract *ECDSACaller  // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts // Call options to use throughout this session
+}
+
+// ECDSATransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type ECDSATransactorSession struct {
+	Contract     *ECDSATransactor  // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// ECDSARaw is an auto generated low-level Go binding around an Ethereum contract.
+type ECDSARaw struct {
+	Contract *ECDSA // Generic contract binding to access the raw methods on
+}
+
+// ECDSACallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type ECDSACallerRaw struct {
+	Contract *ECDSACaller // Generic read-only contract binding to access the raw methods on
+}
+
+// ECDSATransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type ECDSATransactorRaw struct {
+	Contract *ECDSATransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewECDSA creates a new instance of ECDSA, bound to a specific deployed contract.
+func NewECDSA(address common.Address, backend bind.ContractBackend) (*ECDSA, error) {
+	contract, err := bindECDSA(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &ECDSA{ECDSACaller: ECDSACaller{contract: contract}, ECDSATransactor: ECDSATransactor{contract: contract}, ECDSAFilterer: ECDSAFilterer{contract: contract}}, nil
+}
+
+// NewECDSACaller creates a new read-only instance of ECDSA, bound to a specific deployed contract.
+func NewECDSACaller(address common.Address, caller bind.ContractCaller) (*ECDSACaller, error) {
+	contract, err := bindECDSA(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ECDSACaller{contract: contract}, nil
+}
+
+// NewECDSATransactor creates a new write-only instance of ECDSA, bound to a specific deployed contract.
+func NewECDSATransactor(address common.Address, transactor bind.ContractTransactor) (*ECDSATransactor, error) {
+	contract, err := bindECDSA(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ECDSATransactor{contract: contract}, nil
+}
+
+// NewECDSAFilterer creates a new log filterer instance of ECDSA, bound to a specific deployed contract.
+func NewECDSAFilterer(address common.Address, filterer bind.ContractFilterer) (*ECDSAFilterer, error) {
+	contract, err := bindECDSA(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &ECDSAFilterer{contract: contract}, nil
+}
+
+// bindECDSA binds a generic wrapper to an already deployed contract.
+func bindECDSA(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(ECDSAABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ECDSA *ECDSARaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ECDSA.Contract.ECDSACaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ECDSA *ECDSARaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ECDSA.Contract.ECDSATransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ECDSA *ECDSARaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ECDSA.Contract.ECDSATransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ECDSA *ECDSACallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ECDSA.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ECDSA *ECDSATransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ECDSA.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ECDSA *ECDSATransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ECDSA.Contract.contract.Transact(opts, method, params...)
+}
+
+// StringsMetaData contains all meta data concerning the Strings contract.
+var StringsMetaData = &bind.MetaData{
+	ABI: "[]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220c39e7463075b31081f29a2e807565dcff6bece3e34b3c3184f066bfec785adba64736f6c634300080d0033",
+}
+
+// StringsABI is the input ABI used to generate the binding from.
+// Deprecated: Use StringsMetaData.ABI instead.
+var StringsABI = StringsMetaData.ABI
+
+// StringsBin is the compiled bytecode used for deploying new contracts.
+// Deprecated: Use StringsMetaData.Bin instead.
+var StringsBin = StringsMetaData.Bin
+
+// DeployStrings deploys a new Ethereum contract, binding an instance of Strings to it.
+func DeployStrings(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *Strings, error) {
+	parsed, err := StringsMetaData.GetAbi()
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	if parsed == nil {
+		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
+	}
+
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(StringsBin), backend)
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	return address, tx, &Strings{StringsCaller: StringsCaller{contract: contract}, StringsTransactor: StringsTransactor{contract: contract}, StringsFilterer: StringsFilterer{contract: contract}}, nil
+}
+
+// Strings is an auto generated Go binding around an Ethereum contract.
+type Strings struct {
+	StringsCaller     // Read-only binding to the contract
+	StringsTransactor // Write-only binding to the contract
+	StringsFilterer   // Log filterer for contract events
+}
+
+// StringsCaller is an auto generated read-only Go binding around an Ethereum contract.
+type StringsCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// StringsTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type StringsTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// StringsFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type StringsFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// StringsSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type StringsSession struct {
+	Contract     *Strings          // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// StringsCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type StringsCallerSession struct {
+	Contract *StringsCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts  // Call options to use throughout this session
+}
+
+// StringsTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type StringsTransactorSession struct {
+	Contract     *StringsTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts  // Transaction auth options to use throughout this session
+}
+
+// StringsRaw is an auto generated low-level Go binding around an Ethereum contract.
+type StringsRaw struct {
+	Contract *Strings // Generic contract binding to access the raw methods on
+}
+
+// StringsCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type StringsCallerRaw struct {
+	Contract *StringsCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// StringsTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type StringsTransactorRaw struct {
+	Contract *StringsTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewStrings creates a new instance of Strings, bound to a specific deployed contract.
+func NewStrings(address common.Address, backend bind.ContractBackend) (*Strings, error) {
+	contract, err := bindStrings(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &Strings{StringsCaller: StringsCaller{contract: contract}, StringsTransactor: StringsTransactor{contract: contract}, StringsFilterer: StringsFilterer{contract: contract}}, nil
+}
+
+// NewStringsCaller creates a new read-only instance of Strings, bound to a specific deployed contract.
+func NewStringsCaller(address common.Address, caller bind.ContractCaller) (*StringsCaller, error) {
+	contract, err := bindStrings(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &StringsCaller{contract: contract}, nil
+}
+
+// NewStringsTransactor creates a new write-only instance of Strings, bound to a specific deployed contract.
+func NewStringsTransactor(address common.Address, transactor bind.ContractTransactor) (*StringsTransactor, error) {
+	contract, err := bindStrings(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &StringsTransactor{contract: contract}, nil
+}
+
+// NewStringsFilterer creates a new log filterer instance of Strings, bound to a specific deployed contract.
+func NewStringsFilterer(address common.Address, filterer bind.ContractFilterer) (*StringsFilterer, error) {
+	contract, err := bindStrings(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &StringsFilterer{contract: contract}, nil
+}
+
+// bindStrings binds a generic wrapper to an already deployed contract.
+func bindStrings(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(StringsABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Strings *StringsRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Strings.Contract.StringsCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Strings *StringsRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Strings.Contract.StringsTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Strings *StringsRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Strings.Contract.StringsTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Strings *StringsCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Strings.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Strings *StringsTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Strings.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Strings *StringsTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Strings.Contract.contract.Transact(opts, method, params...)
+}
+
 // SynapseTypesMetaData contains all meta data concerning the SynapseTypes contract.
 var SynapseTypesMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ee54373adc1c70d46e22fee6280ff65474067144619b58d5a3b245080d527c3164736f6c634300080d0033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220fcf68968a1389959400083b8096e023c13b4f525fc9aa5d2781bea76130df70564736f6c634300080d0033",
 }
 
 // SynapseTypesABI is the input ABI used to generate the binding from.
@@ -817,7 +1336,7 @@ var TypedMemViewMetaData = &bind.MetaData{
 		"f26be3fc": "NULL()",
 		"406cba16": "TWELVE_BYTES()",
 	},
-	Bin: "0x61011561003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060475760003560e01c8063406cba1614604c578063b286bae714606a578063f26be3fc146089575b600080fd5b6053606081565b60405160ff90911681526020015b60405180910390f35b607c6bffffffffffffffffffffffff81565b6040519081526020016061565b60af7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000009091168152602001606156fea2646970667358221220567c4494b00ffcd3def2499aef25e013b15cdf2e70c5ad35962fa0519c09c04464736f6c634300080d0033",
+	Bin: "0x61011561003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060475760003560e01c8063406cba1614604c578063b286bae714606a578063f26be3fc146089575b600080fd5b6053606081565b60405160ff90911681526020015b60405180910390f35b607c6bffffffffffffffffffffffff81565b6040519081526020016061565b60af7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000009091168152602001606156fea264697066735822122086e261e21926b7722cafcea38f98e867e1f6f9a090ab81b61edd54469f61514064736f6c634300080d0033",
 }
 
 // TypedMemViewABI is the input ABI used to generate the binding from.
