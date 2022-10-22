@@ -7,10 +7,10 @@ import { SynapseTypes } from "./SynapseTypes.sol";
 
 /**
  * @notice Library for formatting the Guard Reports.
- * Reports are submitted to Home contracts in order to slash a fraudulent Notary.
- * Reports are submitted to ReplicaManager contracts in order to blacklist
+ * Reports are submitted to Origin contracts in order to slash a fraudulent Notary.
+ * Reports are submitted to Destination contracts in order to blacklist
  * an allegedly fraudulent Notary.
- * Just like an Attestation, a Report could be checked on Home contract
+ * Just like an Attestation, a Report could be checked on Origin contract
  * on the chain the reported Notary is attesting.
  * Report includes:
  * - Flag, indicating whether the reported attestation is fraudulent.
