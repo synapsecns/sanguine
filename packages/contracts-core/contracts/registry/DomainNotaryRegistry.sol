@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
 import { AbstractNotaryRegistry } from "./AbstractNotaryRegistry.sol";
 import { DomainContext } from "../context/DomainContext.sol";
