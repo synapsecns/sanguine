@@ -9,12 +9,20 @@ pragma solidity 0.8.17;
  * @notice An incremental merkle tree modeled on the eth2 deposit contract.
  **/
 library MerkleLib {
+    // Here we define TREE_DEPTH to be 32 since we want callers to be able to
+    // save counts using a 32 bit representation for count.
     uint256 internal constant TREE_DEPTH = 32;
+    // MAX_LEAVES is set to 1 less than tree depth to allow callers to use
+    // uints of TREE_DEPTH type rather than using the next biggest type
+    // to avoid issues when downcasting.
     uint256 internal constant MAX_LEAVES = 2**TREE_DEPTH - 1;
 
     /**
      * @notice Struct representing incremental merkle tree. Contains the current branch,
      * while the number of inserted leaves are stored externally.
+     *
+     * Stores the minimum amount of data needed to update the merkle root in log(n) time
+     * when updating a branch at a particular index.
      **/
     // solhint-disable-next-line ordering
     struct Tree {
@@ -24,8 +32,10 @@ library MerkleLib {
     /**
      * @notice Inserts `_node` into merkle tree
      * @dev Reverts if tree is full
+     * @dev _newCount IS NOT AN INDEX, it is meant to allow the caller to store the count
+     * in a more efficient manner. If _newCount is reused, the tree will be corrupted.
      * @param _newCount Amount of inserted leaves in the tree after the insertion (i.e. current + 1)
-     * @param _node     Element to insert into tree
+     * @param _node     Element to insert into tree -- any leaf
      **/
     function insert(
         Tree storage _tree,
