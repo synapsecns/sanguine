@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
 import { SynapseTest } from "./utils/SynapseTest.sol";
 import { AttestationHubHarness } from "./harnesses/AttestationHubHarness.sol";

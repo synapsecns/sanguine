@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
 import { Destination } from "../../contracts/Destination.sol";
 import { GlobalNotaryRegistry } from "../../contracts/registry/GlobalNotaryRegistry.sol";

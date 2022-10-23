@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
 import { Auth } from "../../../contracts/libs/Auth.sol";
 import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";

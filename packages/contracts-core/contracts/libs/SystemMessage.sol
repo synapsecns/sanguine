@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
 import { SynapseTypes } from "./SynapseTypes.sol";
 import { TypedMemView } from "./TypedMemView.sol";
