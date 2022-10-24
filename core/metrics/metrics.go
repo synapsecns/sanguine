@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -14,6 +15,8 @@ type Handler interface {
 	Start(ctx context.Context) error
 	// Gin gets a gin middleware for tracing.
 	Gin() gin.HandlerFunc
+	// ConfigureHttpClient configures tracing on an http client
+	ConfigureHttpClient(client *http.Client)
 }
 
 // HandlerType is the handler type to use
@@ -51,10 +54,9 @@ func (i HandlerType) Lower() string {
 // HandlerEnv is the driver to use for metrics.
 const HandlerEnv = "METRICS_HANDLER"
 
-// SetupFromEnv sets up a metrics handler from environment variable.
-func SetupFromEnv(ctx context.Context, buildInfo config.BuildInfo) (err error) {
-	var handler Handler
-
+// NewFromEnv sets up a metrics handler from environment variable.
+// this will not set the global and generally, SetupFromEnv should be used instead.
+func NewFromEnv(ctx context.Context, buildInfo config.BuildInfo) (handler Handler, err error) {
 	metricsHandler := strings.ToLower(os.Getenv(HandlerEnv))
 	//nolint: gocritic
 	switch metricsHandler {
@@ -64,14 +66,16 @@ func SetupFromEnv(ctx context.Context, buildInfo config.BuildInfo) (err error) {
 		handler = NewRelicMetricsHandler(buildInfo)
 	case Null.Lower():
 		handler = NewNullHandler()
+	default:
+		handler = NewNullHandler()
 	}
 
 	if handler != nil {
 		err = handler.Start(ctx)
 		if err != nil {
-			return fmt.Errorf("could not start handler: %w", err)
+			return nil, fmt.Errorf("could not start handler: %w", err)
 		}
 	}
 
-	return nil
+	return handler, nil
 }

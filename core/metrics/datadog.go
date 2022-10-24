@@ -7,9 +7,11 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
 	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
+	ddhttp "gopkg.in/DataDog/dd-trace-go.v1/contrib/net/http"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"gopkg.in/DataDog/dd-trace-go.v1/profiler"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"net/http"
 	"strings"
 )
 
@@ -59,6 +61,11 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 		tracer.Stop()
 	}()
 	return nil
+}
+
+// ConfigureHttpClient wraps the Transport of an http.Client with a datadog tracer.
+func (d *datadogHandler) ConfigureHttpClient(client *http.Client) {
+	client = ddhttp.WrapClient(client)
 }
 
 // DDProfileEnv is the data daog profile neviornment variable.

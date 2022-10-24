@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 	"net/url"
@@ -70,7 +70,7 @@ func getLatency(ctx context.Context, rpcURL string) (l Result) {
 
 	startTime := time.Now()
 
-	client, err := ethclient.DialContext(ctx, rpcURL)
+	client, err := metrics.EthClient(ctx, metrics.Get(), rpcURL)
 	if err != nil {
 		l.Error = fmt.Errorf("could not connect to %s: %w", rpcURL, err)
 		return l

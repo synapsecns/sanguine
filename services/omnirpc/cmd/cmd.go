@@ -18,7 +18,7 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	// TODO: should we really halt boot on because of metrics?
 	app.Before = func(c *cli.Context) error {
 		// nolint:wrapcheck
-		return metrics.SetupFromEnv(c.Context, buildInfo)
+		return metrics.Setup(c.Context, buildInfo)
 	}
 
 	app.Description = buildInfo.VersionString() + "Used for checking the lowest latency rpc endpoint fora given chain"

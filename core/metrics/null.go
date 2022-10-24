@@ -3,11 +3,16 @@ package metrics
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // nullHandler is a metrics handler that does nothing.
 // it is used to allow metrics collection to be skipped
 type nullHandler struct {
+}
+
+func (n nullHandler) ConfigureHttpClient(client *http.Client) {
+	// Do nothing
 }
 
 func (n nullHandler) Gin() gin.HandlerFunc {

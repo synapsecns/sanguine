@@ -33,18 +33,15 @@ type RPCProxy struct {
 	forwarderPool sync.Pool
 	// client contains the http client
 	client omniHTTP.Client
-	// metrics contains the metrics handler
-	metrics metrics.Handler
 }
 
 // NewProxy creates a new rpc proxy.
-func NewProxy(config config.Config, clientType omniHTTP.ClientType, metrics metrics.Handler) *RPCProxy {
+func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
 	return &RPCProxy{
 		chainManager:    chainmanager.NewChainManagerFromConfig(config),
 		refreshInterval: time.Second * time.Duration(config.RefreshInterval),
 		port:            config.Port,
 		client:          omniHTTP.NewClient(clientType),
-		metrics:         metrics,
 	}
 }
 
@@ -53,7 +50,7 @@ func (r *RPCProxy) Run(ctx context.Context) {
 	go r.startProxyLoop(ctx)
 
 	router := gin.New()
-	router.Use(r.metrics.Gin())
+	router.Use(metrics.Get().Gin())
 	router.Use(requestid.New(
 		requestid.WithCustomHeaderStrKey(requestid.HeaderStrKey(omniHTTP.XRequestIDString)),
 		requestid.WithGenerator(func() string {

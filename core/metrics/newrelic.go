@@ -7,6 +7,7 @@ import (
 	ngrin "github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/synapsecns/sanguine/core/config"
+	"net/http"
 	"os"
 	"sync"
 )
@@ -51,4 +52,25 @@ func (n *newRelicHandler) Start(_ context.Context) (err error) {
 	}
 
 	return nil
+}
+
+func (n *newRelicHandler) ConfigureHttpClient(client *http.Client) {
+	// use the newrelic transport
+	nrTransport := newrelic.NewRoundTripper(client.Transport)
+	client.Transport = nrRoundTripper{app: n.app, inner: nrTransport}
+}
+
+type nrRoundTripper struct {
+	inner http.RoundTripper
+	app   *newrelic.Application
+}
+
+func (n nrRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	txn := newrelic.FromContext(req.Context())
+	if txn == nil {
+		txn = n.app.StartTransaction(req.URL.String())
+		req = newrelic.RequestWithTransactionContext(req, txn)
+	}
+	// nolint: errrwrap
+	return n.inner.RoundTrip(req)
 }
