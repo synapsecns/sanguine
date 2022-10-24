@@ -102,34 +102,6 @@ library MiniMerkleLib {
         _zeroes[1] = Z_1;
         _zeroes[2] = Z_2;
         _zeroes[3] = Z_3;
-        _zeroes[4] = Z_4;
-        _zeroes[5] = Z_5;
-        _zeroes[6] = Z_6;
-        _zeroes[7] = Z_7;
-        _zeroes[8] = Z_8;
-        _zeroes[9] = Z_9;
-        _zeroes[10] = Z_10;
-        _zeroes[11] = Z_11;
-        _zeroes[12] = Z_12;
-        _zeroes[13] = Z_13;
-        _zeroes[14] = Z_14;
-        _zeroes[15] = Z_15;
-        _zeroes[16] = Z_16;
-        _zeroes[17] = Z_17;
-        _zeroes[18] = Z_18;
-        _zeroes[19] = Z_19;
-        _zeroes[20] = Z_20;
-        _zeroes[21] = Z_21;
-        _zeroes[22] = Z_22;
-        _zeroes[23] = Z_23;
-        _zeroes[24] = Z_24;
-        _zeroes[25] = Z_25;
-        _zeroes[26] = Z_26;
-        _zeroes[27] = Z_27;
-        _zeroes[28] = Z_28;
-        _zeroes[29] = Z_29;
-        _zeroes[30] = Z_30;
-        _zeroes[31] = Z_31;
     }
 
     /**
