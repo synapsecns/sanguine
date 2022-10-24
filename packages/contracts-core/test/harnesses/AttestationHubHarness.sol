@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
 import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
 import { AttestationHub } from "../../contracts/hubs/AttestationHub.sol";

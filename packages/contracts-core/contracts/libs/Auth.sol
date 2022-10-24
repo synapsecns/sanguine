@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
 import { TypedMemView } from "./TypedMemView.sol";
 
@@ -8,6 +8,9 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 library Auth {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
+
+    // @dev non-compact ECDSA signatures are enforced as of OZ 4.7.3
+    uint256 internal constant SIGNATURE_LENGTH = 65;
 
     /**
      * @notice Recovers signer from data and signature.
