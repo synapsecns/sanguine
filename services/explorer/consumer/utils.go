@@ -92,13 +92,7 @@ RETRY:
 	case <-time.After(timeout):
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://coins.llama.fi/prices/historical/%d/coingecko:%s", timestamp, *coinGeckoID), nil)
 		if err != nil {
-			if retries >= tokenMetadataMaxRetry {
-				return nil, nil
-			}
-			timeout = b.Duration()
-			logger.Errorf("error creating request to defi llama %v", err)
-			retries++
-			goto RETRY
+			return nil, nil
 		}
 		resRaw, err := client.Do(req)
 		if err != nil {
@@ -126,6 +120,15 @@ RETRY:
 		}
 		if resRaw.Body.Close() != nil {
 			log.Printf("Error closing http connection.")
+		}
+		if price == nil || symbol == nil {
+			if retries >= tokenMetadataMaxRetry {
+				return nil, nil
+			}
+			timeout = b.Duration()
+			logger.Errorf("error getting price or symbol from defi llama")
+			retries++
+			goto RETRY
 		}
 		return price, symbol
 	}
