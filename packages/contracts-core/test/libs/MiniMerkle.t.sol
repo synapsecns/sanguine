@@ -4,12 +4,14 @@ pragma solidity 0.8.17;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import { MiniMerkleLib } from "../../contracts/libs/MiniMerkle.sol";
+import { MiniProofGenerator } from "../utils/MiniProofGenerator.sol";
 
 contract MiniMerkleTest is Test {
     using MiniMerkleLib for MiniMerkleLib.Tree;
     // libZeroHashes contains zeroHashes produced by merkle lib
     bytes32[] internal libZeroHashes;
     MiniMerkleLib.Tree internal tree;
+    MiniProofGenerator internal gen;
 
     // keccak256 zero hashes
     bytes32 internal constant Z_0 =
@@ -21,8 +23,9 @@ contract MiniMerkleTest is Test {
     bytes32 internal constant Z_3 =
         hex"21ddb9a356815c3fac1026b6dec5df3124afbadb485c9ba5a3e3398a04b7ba85";
 
-    constructor() {
+    function setUp() public {
         libZeroHashes = MiniMerkleLib.zeroHashes();
+        gen = new MiniProofGenerator();
     }
 
     function test_zeroHashes() public {
@@ -97,9 +100,86 @@ contract MiniMerkleTest is Test {
         assertEq(branchRootHelloProofTwo, rootCtxWorld, "!rootHelloVsWorld");
     }
 
+    function test_branchRootAutomatedProof() public {
+        bytes32[] memory leafs = new bytes32[](4);
+        bytes32[4] memory proof;
+        // Insert hello as first leaf
+        bytes32 hello = keccak256(abi.encodePacked("hello"));
+        tree.insert(1, hello);
+        leafs[0] = hello;
+        gen.createTree(leafs);
+        proof = gen.getProof(0);
+        // Check current root
+        bytes32 rootCtxHello = tree.rootWithCtx(1, MiniMerkleLib.zeroHashes());
+        // Check branch root based on manually created proof
+        bytes32 branchRootHello = MiniMerkleLib.branchRoot(hello, proof, 0);
+        assertEq(rootCtxHello, branchRootHello, "!rootHello");
+
+        // Insert bye as second leaf
+        bytes32 bye = keccak256(abi.encodePacked("bye"));
+        tree.insert(2, bye);
+        leafs[1] = bye;
+        gen.createTree(leafs);
+        proof = gen.getProof(1);
+        // Check current root
+        bytes32 rootCtxBye = tree.rootWithCtx(2, MiniMerkleLib.zeroHashes());
+        // Check branch root based on manually created proof
+        bytes32 branchRootBye = MiniMerkleLib.branchRoot(bye, proof, 1);
+        assertEq(rootCtxBye, branchRootBye, "!rootBye");
+
+        // Insert world as third leaf
+        bytes32 world = keccak256(abi.encodePacked("world"));
+        tree.insert(3, world);
+        leafs[2] = world;
+        gen.createTree(leafs);
+        proof = gen.getProof(2);
+        // Check current root
+        bytes32 rootCtxWorld = tree.rootWithCtx(3, MiniMerkleLib.zeroHashes());
+        // Check branch root based on manually created proof
+        bytes32 branchRootWorld = MiniMerkleLib.branchRoot(
+            // node
+            world,
+            // proof
+            proof,
+            // index
+            2
+        );
+        assertEq(rootCtxWorld, branchRootWorld, "!rootWorld");
+
+        // new automated proof for hello at index 0, which is the first message inserted
+        proof = gen.getProof(0);
+        bytes32 branchRootHelloProofTwo = MiniMerkleLib.branchRoot(hello, proof, 0);
+        // checks branch root for hello against latest message insertion rootWithCtx
+        assertEq(branchRootHelloProofTwo, rootCtxWorld, "!rootHelloVsWorld");
+    }
+
     function test_insertOverMax() public {
         bytes32 node = keccak256(abi.encodePacked("0"));
         vm.expectRevert("merkle tree full");
         tree.insert(MiniMerkleLib.MAX_LEAVES + 1, node);
+    }
+
+    function test_treePostCorruption() public {
+        bytes32 node = keccak256(abi.encodePacked("1"));
+        bytes32 corruption = keccak256(abi.encodePacked("corruption"));
+        tree.insert(1, node);
+        tree.insert(2, node);
+        tree.insert(3, node);
+        // console.logBytes32(tree.rootWithCtx(3, MiniMerkleLib.zeroHashes()));
+        tree.insert(1, corruption);
+        console.logBytes32(tree.rootWithCtx(3, MiniMerkleLib.zeroHashes()));
+    }
+
+    function test_doubleCorruption() public {
+        bytes32 node = keccak256(abi.encodePacked("1"));
+        bytes32 corruption = keccak256(abi.encodePacked("corruption"));
+        tree.insert(1, corruption);
+        tree.insert(2, node);
+        tree.insert(3, node);
+        // bytes32 rootWithCtx = tree.rootWithCtx(3, MiniMerkleLib.zeroHashes());
+        // console.logBytes32(rootWithCtx);
+        // tree.insert(1, corruption);
+        bytes32 newRootWithCtx = tree.rootWithCtx(3, MiniMerkleLib.zeroHashes());
+        console.logBytes32(newRootWithCtx);
     }
 }
