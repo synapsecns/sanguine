@@ -103,26 +103,28 @@ library Tips {
 
     /// @notice Returns notaryTip field
     function notaryTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_NOTARY, 12));
+        return uint96(_tips.indexUint(OFFSET_NOTARY, 12));
     }
 
     /// @notice Returns broadcasterTip field
     function broadcasterTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_BROADCASTER, 12));
+        return uint96(_tips.indexUint(OFFSET_BROADCASTER, 12));
     }
 
     /// @notice Returns proverTip field
     function proverTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_PROVER, 12));
+        return uint96(_tips.indexUint(OFFSET_PROVER, 12));
     }
 
     /// @notice Returns executorTip field
     function executorTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_EXECUTOR, 12));
+        return uint96(_tips.indexUint(OFFSET_EXECUTOR, 12));
     }
 
     /// @notice Returns total tip amount.
     function totalTips(bytes29 _tips) internal pure returns (uint96) {
+        // In practice there's no chance that the total tips value would not fit into uint96.
+        // TODO: determine if we want to use uint256 here instead anyway.
         return notaryTip(_tips) + broadcasterTip(_tips) + proverTip(_tips) + executorTip(_tips);
     }
 }
