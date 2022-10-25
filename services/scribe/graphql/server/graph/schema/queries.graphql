@@ -92,4 +92,9 @@ type Query {
     contract_address: String!
     chain_id: Int!
   ): Int
+  # returns the amount of logs stored per contract address
+  logCount(
+  contract_address: String!
+  chain_id: Int!
+  ): Int
 }
