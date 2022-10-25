@@ -137,6 +137,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				goto RETRY
 			}
 			startHeight, err := c.startHeightForBlockTime(groupCtx)
+
 			if err != nil {
 				return fmt.Errorf("could not get start height for block time: %w", err)
 			}
@@ -145,13 +146,13 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			}
 
 			for blockNum := startHeight; blockNum <= endHeight; blockNum++ {
-				header, err := c.client.HeaderByNumber(groupCtx, big.NewInt(int64(blockNum)))
+				rawBlock, err := c.client.BlockByNumber(groupCtx, big.NewInt(int64(blockNum)))
 				if err != nil {
 					timeout = b.Duration()
 					logger.Warnf("could not get block time: %v", err)
 					goto RETRY
 				}
-				err = c.eventDB.StoreBlockTime(groupCtx, c.chainID, blockNum, header.Time)
+				err = c.eventDB.StoreBlockTime(groupCtx, c.chainID, blockNum, rawBlock.Header().Time)
 				if err != nil {
 					timeout = b.Duration()
 					logger.Warnf("could not store block time: %v", err)
