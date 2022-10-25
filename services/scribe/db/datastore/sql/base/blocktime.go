@@ -45,34 +45,34 @@ func (s Store) RetrieveBlockTime(ctx context.Context, chainID uint32, blockNumbe
 
 // RetrieveLastBlockStored retrieves the last block number that has a stored block time.
 func (s Store) RetrieveLastBlockStored(ctx context.Context, chainID uint32) (uint64, error) {
-	var blockTime BlockTime
-	dbTx := s.DB().WithContext(ctx).
+	var blockTime int64
+	row := s.DB().WithContext(ctx).
 		Model(&BlockTime{}).
 		Where(&BlockTime{
 			ChainID: chainID,
 		}).
-		Order(fmt.Sprintf("%s DESC", BlockNumberFieldName)).
-		First(&blockTime)
-	if dbTx.Error != nil {
-		return 0, fmt.Errorf("could not retrieve last block time: %w", dbTx.Error)
+		Select(fmt.Sprintf("max(%s)", BlockNumberFieldName)).Row()
+	err := row.Scan(&blockTime)
+	if err != nil {
+		return 0, fmt.Errorf("could not retrieve last block time: %w", err)
 	}
 
-	return blockTime.BlockNumber, nil
+	return uint64(blockTime), nil
 }
 
 // RetrieveFirstBlockStored retrieves the first block number that has a stored block time.
 func (s Store) RetrieveFirstBlockStored(ctx context.Context, chainID uint32) (uint64, error) {
-	var blockTime BlockTime
-	dbTx := s.DB().WithContext(ctx).
+	var blockTime int64
+	row := s.DB().WithContext(ctx).
 		Model(&BlockTime{}).
 		Where(&BlockTime{
 			ChainID: chainID,
 		}).
-		Order(fmt.Sprintf("%s ASC", BlockNumberFieldName)).
-		First(&blockTime)
-	if dbTx.Error != nil {
-		return 0, fmt.Errorf("could not retrieve first block time: %w", dbTx.Error)
+		Select(fmt.Sprintf("min(%s)", BlockNumberFieldName)).Row()
+	err := row.Scan(&blockTime)
+	if err != nil {
+		return 0, fmt.Errorf("could not retrieve first block time: %w", err)
 	}
 
-	return blockTime.BlockNumber, nil
+	return uint64(blockTime), nil
 }
