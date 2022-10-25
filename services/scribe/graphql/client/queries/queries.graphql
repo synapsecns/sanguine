@@ -213,3 +213,8 @@ query GetTxSender ($chain_id: Int!, $tx_hash: String!) {
 query GetLastIndexed ($chain_id: Int!, $contract_address: String!) {
   response: lastIndexed (chain_id: $chain_id, contract_address: $contract_address)
 }
+
+
+query GetLogCount ($chain_id: Int!, $contract_address: String!) {
+  response: logCount (chain_id: $chain_id, contract_address: $contract_address)
+}
