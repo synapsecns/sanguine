@@ -103,22 +103,22 @@ library Tips {
 
     /// @notice Returns notaryTip field
     function notaryTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_NOTARY, 12));
+        return uint96(_tips.indexUint(OFFSET_NOTARY, 12));
     }
 
     /// @notice Returns broadcasterTip field
     function broadcasterTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_BROADCASTER, 12));
+        return uint96(_tips.indexUint(OFFSET_BROADCASTER, 12));
     }
 
     /// @notice Returns proverTip field
     function proverTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_PROVER, 12));
+        return uint96(_tips.indexUint(OFFSET_PROVER, 12));
     }
 
     /// @notice Returns executorTip field
     function executorTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint32(_tips.indexUint(OFFSET_EXECUTOR, 12));
+        return uint96(_tips.indexUint(OFFSET_EXECUTOR, 12));
     }
 
     /// @notice Returns total tip amount.
