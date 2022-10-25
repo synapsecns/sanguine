@@ -14,13 +14,9 @@ library SystemMessage {
      *
      * - MessageFlag.Call indicates a system contract needs
      * to be called on destination chain.
-     *
-     * - MessageFlag.Last is used for tracking the last flag value,
-     * i.e. a non-meaningful value.
      */
     enum MessageFlag {
-        Call,
-        Last
+        Call
     }
 
     /**
@@ -108,8 +104,8 @@ library SystemMessage {
     function isSystemMessage(bytes29 _view) internal pure returns (bool) {
         // Message body needs to exist
         if (_view.len() <= OFFSET_BODY) return false;
-        // Message flag needs to match an existing enum type
-        if (_messageFlagIntValue(_view) >= uint8(MessageFlag.Last)) return false;
+        // Message flag needs to match an existing enum value
+        if (_messageFlagIntValue(_view) > uint8(type(MessageFlag).max)) return false;
         (MessageFlag messageFlag, bytes29 bodyView) = unpackMessage(_view);
         if (messageFlag == MessageFlag.Call) {
             return isSystemCall(bodyView);
