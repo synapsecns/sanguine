@@ -8,6 +8,9 @@ library SystemMessage {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
+    // TODO: Looks as if SystemCall covers all the possible use cases
+    // for a system message. Determine if that's the case and adjust the code accordingly.
+
     /**
      * @dev More flag values could be added in the future,
      * e.g. flag indicating another type of system message.
