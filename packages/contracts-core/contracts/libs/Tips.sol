@@ -123,6 +123,8 @@ library Tips {
 
     /// @notice Returns total tip amount.
     function totalTips(bytes29 _tips) internal pure returns (uint96) {
+        // In practice there's no chance that the total tips value would not fit into uint96.
+        // TODO: determine if we want to use uint256 here instead anyway.
         return notaryTip(_tips) + broadcasterTip(_tips) + proverTip(_tips) + executorTip(_tips);
     }
 }
