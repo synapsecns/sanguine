@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
 import { TypedMemView } from "../libs/TypedMemView.sol";
 import { Report } from "../libs/Report.sol";
@@ -24,13 +24,13 @@ abstract contract AbstractGuardRegistry {
      * @notice Emitted when a new Guard is added.
      * @param guard    Address of the added guard
      */
-    event GuardAdded(address guard);
+    event GuardAdded(address indexed guard);
 
     /**
      * @notice Emitted when a Guard is removed.
      * @param guard    Address of the removed guard
      */
-    event GuardRemoved(address guard);
+    event GuardRemoved(address indexed guard);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕

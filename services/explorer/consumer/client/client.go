@@ -30,6 +30,7 @@ type Query struct {
 	FirstStoredBlockNumber *int                 "json:\"firstStoredBlockNumber\" graphql:\"firstStoredBlockNumber\""
 	TxSender               *string              "json:\"txSender\" graphql:\"txSender\""
 	LastIndexed            *int                 "json:\"lastIndexed\" graphql:\"lastIndexed\""
+	LogCount               *int                 "json:\"logCount\" graphql:\"logCount\""
 }
 type GetLogsRange struct {
 	Response []*struct {
@@ -58,6 +59,9 @@ type GetTxSender struct {
 	Response *string "json:\"response\" graphql:\"response\""
 }
 type GetLastIndexed struct {
+	Response *int "json:\"response\" graphql:\"response\""
+}
+type GetLogCount struct {
 	Response *int "json:\"response\" graphql:\"response\""
 }
 
@@ -181,6 +185,25 @@ func (c *Client) GetLastIndexed(ctx context.Context, chainID int, contractAddres
 
 	var res GetLastIndexed
 	if err := c.Client.Post(ctx, "GetLastIndexed", GetLastIndexedDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetLogCountDocument = `query GetLogCount ($chain_id: Int!, $contract_address: String!) {
+	response: logCount(chain_id: $chain_id, contract_address: $contract_address)
+}
+`
+
+func (c *Client) GetLogCount(ctx context.Context, chainID int, contractAddress string, httpRequestOptions ...client.HTTPRequestOption) (*GetLogCount, error) {
+	vars := map[string]interface{}{
+		"chain_id":         chainID,
+		"contract_address": contractAddress,
+	}
+
+	var res GetLogCount
+	if err := c.Client.Post(ctx, "GetLogCount", GetLogCountDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

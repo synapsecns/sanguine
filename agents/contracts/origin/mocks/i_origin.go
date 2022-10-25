@@ -176,13 +176,13 @@ func (_m *IOrigin) FilterFraudAttestation(opts *bind.FilterOpts, notary []common
 	return r0, r1
 }
 
-// FilterGuardAdded provides a mock function with given fields: opts
-func (_m *IOrigin) FilterGuardAdded(opts *bind.FilterOpts) (*origin.OriginGuardAddedIterator, error) {
-	ret := _m.Called(opts)
+// FilterGuardAdded provides a mock function with given fields: opts, guard
+func (_m *IOrigin) FilterGuardAdded(opts *bind.FilterOpts, guard []common.Address) (*origin.OriginGuardAddedIterator, error) {
+	ret := _m.Called(opts, guard)
 
 	var r0 *origin.OriginGuardAddedIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *origin.OriginGuardAddedIterator); ok {
-		r0 = rf(opts)
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []common.Address) *origin.OriginGuardAddedIterator); ok {
+		r0 = rf(opts, guard)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*origin.OriginGuardAddedIterator)
@@ -190,8 +190,8 @@ func (_m *IOrigin) FilterGuardAdded(opts *bind.FilterOpts) (*origin.OriginGuardA
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
-		r1 = rf(opts)
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address) error); ok {
+		r1 = rf(opts, guard)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -199,13 +199,13 @@ func (_m *IOrigin) FilterGuardAdded(opts *bind.FilterOpts) (*origin.OriginGuardA
 	return r0, r1
 }
 
-// FilterGuardRemoved provides a mock function with given fields: opts
-func (_m *IOrigin) FilterGuardRemoved(opts *bind.FilterOpts) (*origin.OriginGuardRemovedIterator, error) {
-	ret := _m.Called(opts)
+// FilterGuardRemoved provides a mock function with given fields: opts, guard
+func (_m *IOrigin) FilterGuardRemoved(opts *bind.FilterOpts, guard []common.Address) (*origin.OriginGuardRemovedIterator, error) {
+	ret := _m.Called(opts, guard)
 
 	var r0 *origin.OriginGuardRemovedIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *origin.OriginGuardRemovedIterator); ok {
-		r0 = rf(opts)
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []common.Address) *origin.OriginGuardRemovedIterator); ok {
+		r0 = rf(opts, guard)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*origin.OriginGuardRemovedIterator)
@@ -213,8 +213,8 @@ func (_m *IOrigin) FilterGuardRemoved(opts *bind.FilterOpts) (*origin.OriginGuar
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
-		r1 = rf(opts)
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address) error); ok {
+		r1 = rf(opts, guard)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -314,13 +314,13 @@ func (_m *IOrigin) FilterNewNotaryManager(opts *bind.FilterOpts) (*origin.Origin
 	return r0, r1
 }
 
-// FilterNotaryAdded provides a mock function with given fields: opts, domain
-func (_m *IOrigin) FilterNotaryAdded(opts *bind.FilterOpts, domain []uint32) (*origin.OriginNotaryAddedIterator, error) {
-	ret := _m.Called(opts, domain)
+// FilterNotaryAdded provides a mock function with given fields: opts, domain, notary
+func (_m *IOrigin) FilterNotaryAdded(opts *bind.FilterOpts, domain []uint32, notary []common.Address) (*origin.OriginNotaryAddedIterator, error) {
+	ret := _m.Called(opts, domain, notary)
 
 	var r0 *origin.OriginNotaryAddedIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []uint32) *origin.OriginNotaryAddedIterator); ok {
-		r0 = rf(opts, domain)
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []uint32, []common.Address) *origin.OriginNotaryAddedIterator); ok {
+		r0 = rf(opts, domain, notary)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*origin.OriginNotaryAddedIterator)
@@ -328,8 +328,8 @@ func (_m *IOrigin) FilterNotaryAdded(opts *bind.FilterOpts, domain []uint32) (*o
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []uint32) error); ok {
-		r1 = rf(opts, domain)
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []uint32, []common.Address) error); ok {
+		r1 = rf(opts, domain, notary)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -337,13 +337,13 @@ func (_m *IOrigin) FilterNotaryAdded(opts *bind.FilterOpts, domain []uint32) (*o
 	return r0, r1
 }
 
-// FilterNotaryRemoved provides a mock function with given fields: opts, domain
-func (_m *IOrigin) FilterNotaryRemoved(opts *bind.FilterOpts, domain []uint32) (*origin.OriginNotaryRemovedIterator, error) {
-	ret := _m.Called(opts, domain)
+// FilterNotaryRemoved provides a mock function with given fields: opts, domain, notary
+func (_m *IOrigin) FilterNotaryRemoved(opts *bind.FilterOpts, domain []uint32, notary []common.Address) (*origin.OriginNotaryRemovedIterator, error) {
+	ret := _m.Called(opts, domain, notary)
 
 	var r0 *origin.OriginNotaryRemovedIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []uint32) *origin.OriginNotaryRemovedIterator); ok {
-		r0 = rf(opts, domain)
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []uint32, []common.Address) *origin.OriginNotaryRemovedIterator); ok {
+		r0 = rf(opts, domain, notary)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*origin.OriginNotaryRemovedIterator)
@@ -351,8 +351,8 @@ func (_m *IOrigin) FilterNotaryRemoved(opts *bind.FilterOpts, domain []uint32) (
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []uint32) error); ok {
-		r1 = rf(opts, domain)
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []uint32, []common.Address) error); ok {
+		r1 = rf(opts, domain, notary)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1321,13 +1321,13 @@ func (_m *IOrigin) WatchFraudAttestation(opts *bind.WatchOpts, sink chan<- *orig
 	return r0, r1
 }
 
-// WatchGuardAdded provides a mock function with given fields: opts, sink
-func (_m *IOrigin) WatchGuardAdded(opts *bind.WatchOpts, sink chan<- *origin.OriginGuardAdded) (event.Subscription, error) {
-	ret := _m.Called(opts, sink)
+// WatchGuardAdded provides a mock function with given fields: opts, sink, guard
+func (_m *IOrigin) WatchGuardAdded(opts *bind.WatchOpts, sink chan<- *origin.OriginGuardAdded, guard []common.Address) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, guard)
 
 	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginGuardAdded) event.Subscription); ok {
-		r0 = rf(opts, sink)
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginGuardAdded, []common.Address) event.Subscription); ok {
+		r0 = rf(opts, sink, guard)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(event.Subscription)
@@ -1335,8 +1335,8 @@ func (_m *IOrigin) WatchGuardAdded(opts *bind.WatchOpts, sink chan<- *origin.Ori
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginGuardAdded) error); ok {
-		r1 = rf(opts, sink)
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginGuardAdded, []common.Address) error); ok {
+		r1 = rf(opts, sink, guard)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1344,13 +1344,13 @@ func (_m *IOrigin) WatchGuardAdded(opts *bind.WatchOpts, sink chan<- *origin.Ori
 	return r0, r1
 }
 
-// WatchGuardRemoved provides a mock function with given fields: opts, sink
-func (_m *IOrigin) WatchGuardRemoved(opts *bind.WatchOpts, sink chan<- *origin.OriginGuardRemoved) (event.Subscription, error) {
-	ret := _m.Called(opts, sink)
+// WatchGuardRemoved provides a mock function with given fields: opts, sink, guard
+func (_m *IOrigin) WatchGuardRemoved(opts *bind.WatchOpts, sink chan<- *origin.OriginGuardRemoved, guard []common.Address) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, guard)
 
 	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginGuardRemoved) event.Subscription); ok {
-		r0 = rf(opts, sink)
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginGuardRemoved, []common.Address) event.Subscription); ok {
+		r0 = rf(opts, sink, guard)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(event.Subscription)
@@ -1358,8 +1358,8 @@ func (_m *IOrigin) WatchGuardRemoved(opts *bind.WatchOpts, sink chan<- *origin.O
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginGuardRemoved) error); ok {
-		r1 = rf(opts, sink)
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginGuardRemoved, []common.Address) error); ok {
+		r1 = rf(opts, sink, guard)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1459,13 +1459,13 @@ func (_m *IOrigin) WatchNewNotaryManager(opts *bind.WatchOpts, sink chan<- *orig
 	return r0, r1
 }
 
-// WatchNotaryAdded provides a mock function with given fields: opts, sink, domain
-func (_m *IOrigin) WatchNotaryAdded(opts *bind.WatchOpts, sink chan<- *origin.OriginNotaryAdded, domain []uint32) (event.Subscription, error) {
-	ret := _m.Called(opts, sink, domain)
+// WatchNotaryAdded provides a mock function with given fields: opts, sink, domain, notary
+func (_m *IOrigin) WatchNotaryAdded(opts *bind.WatchOpts, sink chan<- *origin.OriginNotaryAdded, domain []uint32, notary []common.Address) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, domain, notary)
 
 	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginNotaryAdded, []uint32) event.Subscription); ok {
-		r0 = rf(opts, sink, domain)
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginNotaryAdded, []uint32, []common.Address) event.Subscription); ok {
+		r0 = rf(opts, sink, domain, notary)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(event.Subscription)
@@ -1473,8 +1473,8 @@ func (_m *IOrigin) WatchNotaryAdded(opts *bind.WatchOpts, sink chan<- *origin.Or
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginNotaryAdded, []uint32) error); ok {
-		r1 = rf(opts, sink, domain)
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginNotaryAdded, []uint32, []common.Address) error); ok {
+		r1 = rf(opts, sink, domain, notary)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1482,13 +1482,13 @@ func (_m *IOrigin) WatchNotaryAdded(opts *bind.WatchOpts, sink chan<- *origin.Or
 	return r0, r1
 }
 
-// WatchNotaryRemoved provides a mock function with given fields: opts, sink, domain
-func (_m *IOrigin) WatchNotaryRemoved(opts *bind.WatchOpts, sink chan<- *origin.OriginNotaryRemoved, domain []uint32) (event.Subscription, error) {
-	ret := _m.Called(opts, sink, domain)
+// WatchNotaryRemoved provides a mock function with given fields: opts, sink, domain, notary
+func (_m *IOrigin) WatchNotaryRemoved(opts *bind.WatchOpts, sink chan<- *origin.OriginNotaryRemoved, domain []uint32, notary []common.Address) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, domain, notary)
 
 	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginNotaryRemoved, []uint32) event.Subscription); ok {
-		r0 = rf(opts, sink, domain)
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginNotaryRemoved, []uint32, []common.Address) event.Subscription); ok {
+		r0 = rf(opts, sink, domain, notary)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(event.Subscription)
@@ -1496,8 +1496,8 @@ func (_m *IOrigin) WatchNotaryRemoved(opts *bind.WatchOpts, sink chan<- *origin.
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginNotaryRemoved, []uint32) error); ok {
-		r1 = rf(opts, sink, domain)
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginNotaryRemoved, []uint32, []common.Address) error); ok {
+		r1 = rf(opts, sink, domain, notary)
 	} else {
 		r1 = ret.Error(1)
 	}

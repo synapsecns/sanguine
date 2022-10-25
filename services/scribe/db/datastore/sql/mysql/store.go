@@ -21,7 +21,9 @@ type Store struct {
 var MaxIdleConns = 10
 
 // NamingStrategy is exported here for testing.
-var NamingStrategy = schema.NamingStrategy{}
+var NamingStrategy = schema.NamingStrategy{
+	TablePrefix: "v2_",
+}
 
 // NewMysqlStore creates a new mysql store for a given data store.
 func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {

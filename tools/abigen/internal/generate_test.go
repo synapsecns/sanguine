@@ -1,15 +1,16 @@
 package internal_test
 
 import (
-	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/tools/abigen/internal"
 	"os"
 	"os/exec"
 	"testing"
+
+	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/tools/abigen/internal"
 )
 
 func TestCreateRunFile(t *testing.T) {
-	runFile, err := internal.CreateRunFile("0.8.13")
+	runFile, err := internal.CreateRunFile("0.8.17")
 	Nil(t, err)
 
 	//nolint: gosec

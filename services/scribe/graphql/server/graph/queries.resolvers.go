@@ -139,6 +139,16 @@ func (r *queryResolver) LastIndexed(ctx context.Context, contractAddress string,
 	return &blockNumberInt, nil
 }
 
+// LogCount is the resolver for the logCount field.
+func (r *queryResolver) LogCount(ctx context.Context, contractAddress string, chainID int) (*int, error) {
+	logCount, err := r.DB.RetrieveLogCountForContract(ctx, common.HexToAddress(contractAddress), uint32(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving contract last block: %w", err)
+	}
+	logCountInt := int(logCount)
+	return &logCountInt, nil
+}
+
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 
