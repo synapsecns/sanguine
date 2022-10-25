@@ -12,10 +12,13 @@ contract AuthHarness {
     using TypedMemView for bytes;
 
     function recoverSigner(bytes memory _data, bytes memory _signature)
-        public
+        external
         pure
         returns (address)
     {
-        return Auth.recoverSigner(_data.ref(0), _signature);
+        // Walkaround to get the forge coverage working on libraries, see
+        // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
+        address signer = Auth.recoverSigner(_data.ref(0), _signature);
+        return signer;
     }
 }
