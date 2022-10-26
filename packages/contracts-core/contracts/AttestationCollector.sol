@@ -10,6 +10,10 @@ import {
     OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
+/**
+* @title AttestationCollector
+* @notice TODO: add docs
+*/
 contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUpgradeable {
     using Attestation for bytes29;
     using TypedMemView for bytes;
@@ -66,10 +70,12 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
 
     // TODO: add/remove notaries upon bonding/unbonding
 
+    // TODO: need clearer comments over which domain is being used
     function addNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
         return _addNotary(_domain, _notary);
     }
 
+    // TODO: need clearer comments over which domain is being used
     function removeNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
         return _removeNotary(_domain, _notary);
     }
@@ -205,6 +211,7 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
         uint32 _nonce,
         bytes32 _root
     ) internal view returns (bytes memory) {
+        revert(signatures[_domain][_nonce][_root], "!signature");
         return
             Attestation.formatAttestation(
                 Attestation.formatAttestationData(_domain, _nonce, _root),
