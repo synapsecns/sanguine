@@ -54,10 +54,8 @@ func (s Store) RetrieveLastBlockTime(ctx context.Context, chainID uint32) (uint6
 			ChainID: chainID,
 		}).
 		First(&entry)
-	if dbTx.RowsAffected == 0 {
-		return 0, nil
-	}
-	if dbTx.Error != nil {
+
+	if dbTx.Error != nil || dbTx.RowsAffected == 0 {
 		return 0, fmt.Errorf("could not retrieve last block time: %w", dbTx.Error)
 	}
 	return entry.BlockNumber, nil
