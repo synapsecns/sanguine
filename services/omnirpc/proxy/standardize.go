@@ -184,7 +184,6 @@ OUTER:
 		// TODO: check params
 		var txFlag bool
 		err := json.Unmarshal(req.Params[1], &txFlag)
-		fmt.Println("req.Params", txFlag)
 		if txFlag {
 			groupCtx.Go(func() error {
 				if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
