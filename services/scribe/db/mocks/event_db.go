@@ -275,27 +275,6 @@ func (_m *EventDB) RetrieveLastBlockStored(ctx context.Context, chainID uint32) 
 	return r0, r1
 }
 
-// RetrieveLastBlockTime provides a mock function with given fields: ctx, chainID
-func (_m *EventDB) RetrieveLastBlockTime(ctx context.Context, chainID uint32) (uint64, error) {
-	ret := _m.Called(ctx, chainID)
-
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func(context.Context, uint32) uint64); ok {
-		r0 = rf(ctx, chainID)
-	} else {
-		r0 = ret.Get(0).(uint64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, uint32) error); ok {
-		r1 = rf(ctx, chainID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // RetrieveLastConfirmedBlock provides a mock function with given fields: ctx, chainID
 func (_m *EventDB) RetrieveLastConfirmedBlock(ctx context.Context, chainID uint32) (uint64, error) {
 	ret := _m.Called(ctx, chainID)
