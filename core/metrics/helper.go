@@ -10,13 +10,13 @@ import (
 	"sync"
 )
 
-// logOnce ensures that log messages related to unsuppported clients are used only once
+// logOnce ensures that log messages related to unsuppported clients are used only once.
 var logOnce = sync.Once{}
 
 const httpScheme = "http"
 const httpsScheme = "https"
 
-// EthClient is a wrapper around ethclient.Client that adds metrics/tracing
+// EthClient is a wrapper around ethclient.Client that adds metrics/tracing.
 func EthClient(ctx context.Context, metrics Handler, url string) (*ethclient.Client, error) {
 	u, err := fasturl.ParseURL(url)
 	if err != nil {
@@ -26,7 +26,7 @@ func EthClient(ctx context.Context, metrics Handler, url string) (*ethclient.Cli
 	switch u.Protocol {
 	case httpScheme, httpsScheme:
 		client := new(http.Client)
-		metrics.ConfigureHttpClient(client)
+		metrics.ConfigureHTTPClient(client)
 		rpcclient, err := rpc.DialHTTPWithClient(url, client)
 		if err != nil {
 			return nil, fmt.Errorf("could not dial http: %w", err)
@@ -36,6 +36,7 @@ func EthClient(ctx context.Context, metrics Handler, url string) (*ethclient.Cli
 		logOnce.Do(func() {
 			logger.Warnf("unsupported protocol: %s: only %s and %s are supported for metrics, future warnings will be surprssed", u.Protocol, httpScheme, httpsScheme)
 		})
+		//nolint: wrapcheck
 		return ethclient.DialContext(ctx, url)
 	}
 }

@@ -7,11 +7,11 @@ import (
 )
 
 // nullHandler is a metrics handler that does nothing.
-// it is used to allow metrics collection to be skipped
+// it is used to allow metrics collection to be skipped.
 type nullHandler struct {
 }
 
-func (n nullHandler) ConfigureHttpClient(client *http.Client) {
+func (n nullHandler) ConfigureHTTPClient(client *http.Client) {
 	// Do nothing
 }
 
@@ -25,6 +25,7 @@ func (n nullHandler) Start(_ context.Context) error {
 	return nil
 }
 
+// NewNullHandler creates a new null transaction handler.
 func NewNullHandler() Handler {
 	return &nullHandler{}
 }

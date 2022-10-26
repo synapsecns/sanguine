@@ -18,7 +18,7 @@ func TestSetupFromEnv(t *testing.T) {
 
 			t.Setenv(metrics.HandlerEnv, handler.String())
 
-			err := metrics.NewFromEnv(ctx, config.NewBuildInfo(config.DefaultVersion, config.DefaultCommit, config.AppName, config.DefaultDate))
+			_, err := metrics.NewFromEnv(ctx, config.NewBuildInfo(config.DefaultVersion, config.DefaultCommit, config.AppName, config.DefaultDate))
 			Nil(t, err)
 		})
 	}

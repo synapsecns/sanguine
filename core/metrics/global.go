@@ -7,7 +7,7 @@ import (
 
 var globalHandler Handler
 
-// by defualt, use the null handler.
+// by default, use the null handler.
 func init() {
 	globalHandler = NewNullHandler()
 }
@@ -25,7 +25,7 @@ func Setup(ctx context.Context, buildInfo config.BuildInfo) error {
 	return nil
 }
 
-// Get gets the global handler
+// Get gets the global handler.
 func Get() Handler {
 	return globalHandler
 }

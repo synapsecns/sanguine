@@ -46,7 +46,6 @@ require (
 	go.uber.org/zap v1.23.0
 	golang.org/x/exp v0.0.0-20221012211006-4de253d81b95
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
-	gopkg.in/DataDog/dd-trace-go.v1 v1.42.1
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.25.1
 )
@@ -155,6 +154,8 @@ require (
 	github.com/mitchellh/pointerstructure v1.2.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/newrelic/go-agent/v3 v3.19.2 // indirect
+	github.com/newrelic/go-agent/v3/integrations/nrgin v1.1.3 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/palantir/pkg v1.0.1 // indirect
@@ -221,7 +222,10 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
+	google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc // indirect
+	google.golang.org/grpc v1.49.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
+	gopkg.in/DataDog/dd-trace-go.v1 v1.42.1 // indirect
 	gopkg.in/hedzr/errors.v3 v3.0.21 // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect

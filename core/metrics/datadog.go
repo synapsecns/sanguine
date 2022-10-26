@@ -63,9 +63,10 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 	return nil
 }
 
-// ConfigureHttpClient wraps the Transport of an http.Client with a datadog tracer.
-func (d *datadogHandler) ConfigureHttpClient(client *http.Client) {
-	client = ddhttp.WrapClient(client)
+// ConfigureHTTPClient wraps the Transport of an http.Client with a datadog tracer.
+func (d *datadogHandler) ConfigureHTTPClient(client *http.Client) {
+	wrappedTrnasport := ddhttp.WrapClient(client).Transport
+	client.Transport = wrappedTrnasport
 }
 
 // DDProfileEnv is the data daog profile neviornment variable.

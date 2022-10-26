@@ -15,8 +15,8 @@ type Handler interface {
 	Start(ctx context.Context) error
 	// Gin gets a gin middleware for tracing.
 	Gin() gin.HandlerFunc
-	// ConfigureHttpClient configures tracing on an http client
-	ConfigureHttpClient(client *http.Client)
+	// ConfigureHTTPClient configures tracing on an http client
+	ConfigureHTTPClient(client *http.Client)
 }
 
 // HandlerType is the handler type to use
@@ -41,7 +41,7 @@ const (
 	DataDog HandlerType = 0 // Datadog
 	// NewRelic is the new relic driver.
 	NewRelic HandlerType = iota // NewRelic
-	// Null is a null data type handler
+	// Null is a null data type handler.
 	Null HandlerType = iota // Null
 )
 
