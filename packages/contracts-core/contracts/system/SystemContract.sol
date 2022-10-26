@@ -139,7 +139,8 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      *
      * @dev this function works by converting the enum value to a non-zero bit mask
      * we then use a bitwise AND operation to check if permission bits allow the entity
-     * to perform this operation, see: https://en.wikipedia.org/wiki/Bitwise_operation#AND for details
+     * to perform this operation, more details can be found here:
+     * https://en.wikipedia.org/wiki/Bitwise_operation#AND
      */
     function _entityAllowed(uint256 _systemMask, ISystemRouter.SystemEntity _entity)
         internal
