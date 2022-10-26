@@ -191,7 +191,6 @@ OUTER:
 				}
 				return nil
 			})
-
 		} else {
 			groupCtx.Go(func() error {
 				if err = json.Unmarshal(rpcMessage.Result, &rpcBlockNoTx); err != nil {
@@ -199,7 +198,6 @@ OUTER:
 				}
 				return nil
 			})
-
 		}
 
 		err = groupCtx.Wait()
@@ -212,6 +210,7 @@ OUTER:
 			return nil, errors.New("header was empty")
 		}
 
+		// nolint:nestif
 		if txFlag {
 			// Quick-verify transaction and uncle lists. This mostly helps with debugging the server.
 			if head.UncleHash == types.EmptyUncleHash && len(rpcBody.UncleHashes) > 0 {
@@ -232,14 +231,12 @@ OUTER:
 				Header: head,
 			}
 			out, err = json.Marshal(outputBlock)
-
 		} else {
 			outputBlock := fullRPCBlockNoTx{
 				Block:  rpcBlockNoTx,
 				Header: head,
 			}
 			out, err = json.Marshal(outputBlock)
-
 		}
 		if err != nil {
 			return nil, fmt.Errorf("could not unmarshall full block: %w", err)

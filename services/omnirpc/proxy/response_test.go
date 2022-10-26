@@ -312,6 +312,7 @@ func (p *ProxySuite) TestBlockByHash() {
 	Equal(p.T(), resps[0], resps[1])
 }
 
+// nolint:dupl
 func (p *ProxySuite) TestBlockByNumber() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
@@ -338,20 +339,21 @@ func (p *ProxySuite) TestBlockByNumber() {
 	Equal(p.T(), resps[0], resps[1])
 }
 
+// nolint:dupl
 func (p *ProxySuite) TestHeaderByNumber() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
 	latestNumber, err := backend.BlockNumber(p.GetTestContext())
 	Nil(p.T(), err)
 
-	const respCount = 2
+	const respCount = 3
 
 	resps := make([][]byte, respCount)
 
 	for i := 0; i < respCount; i++ {
 		i := i
-		// TODO: we should probably test txes for this as well and mock some
 		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+			// TODO: we should probably test txes for this as well and mock some
 			_, err := client.HeaderByNumber(p.GetTestContext(), new(big.Int).SetUint64(latestNumber))
 			Nil(p.T(), err)
 		}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {

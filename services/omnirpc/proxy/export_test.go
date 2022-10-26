@@ -142,7 +142,32 @@ func StandardizeResponse(method string, body []byte) ([]byte, error) {
 		//nolint: wrapcheck
 		return nil, err
 	}
-	return standardizeResponse(context.Background(), method, rpcMessage)
+	params := []json.RawMessage{rpcMessage.Params}
+
+	// Handle BlockByHash, BlockByNumber, and HeaderByNumber events.
+	if method == "eth_getBlockByHash" || method == "eth_getBlockByNumber" {
+		blockNumber := "0x1"
+		// TODO change for block by header
+		flag := true
+		jsonBlockNumber, err := json.Marshal(&blockNumber)
+		if err != nil {
+			//nolint: wrapcheck
+			return nil, err
+		}
+		jsonFlag, err := json.Marshal(&flag)
+		if err != nil {
+			//nolint: wrapcheck
+			return nil, err
+		}
+		jsonRawParams := []json.RawMessage{jsonBlockNumber, jsonFlag}
+		params = jsonRawParams
+	}
+	rpcRequest := RPCRequest{
+		ID:     rpcMessage.ID,
+		Method: method,
+		Params: params,
+	}
+	return standardizeResponse(context.Background(), rpcRequest, rpcMessage)
 }
 
 // CheckAndSetConfirmability exports checkAndSetConfirmability for testing.
