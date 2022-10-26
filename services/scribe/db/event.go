@@ -79,8 +79,6 @@ type EventDBReader interface {
 	// RetrieveLastConfirmedBlock retrieves the last block number that has been confirmed.
 	RetrieveLastConfirmedBlock(ctx context.Context, chainID uint32) (uint64, error)
 
-	// RetrieveLastBlockTime retrieves the last block time stored for a chain.
-	RetrieveLastBlockTime(ctx context.Context, chainID uint32) (uint64, error)
 	// RetrieveBlockTime retrieves a block time for a chain and block number.
 	RetrieveBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) (uint64, error)
 	// RetrieveLastBlockStored retrieves the last block number that has a stored block time.
