@@ -1,7 +1,6 @@
 package backfill_test
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -86,8 +85,7 @@ func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContrac
 
 		err := chainBackfiller.Backfill(b.GetTestContext(), false)
 		Nil(b.T(), err)
-		firstBlocks, err := b.testDB.RetrieveFirstBlockStored(b.GetTestContext(), chainBackfiller.ChainID())
-		fmt.Println("firstBlock1", firstBlocks)
+
 		// Check that the events were written to the database.
 		for _, contract := range contracts {
 			// Check the storage of logs.
@@ -115,7 +113,6 @@ func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContrac
 		currBlock, err := simulatedChain.BlockNumber(b.GetTestContext())
 		Nil(b.T(), err)
 		firstBlock, err := b.testDB.RetrieveFirstBlockStored(b.GetTestContext(), chainBackfiller.ChainID())
-		fmt.Println("firstBlock", firstBlock, currBlock)
 		Nil(b.T(), err)
 		for blockNum := firstBlock; blockNum <= currBlock; blockNum++ {
 			_, err := b.testDB.RetrieveBlockTime(b.GetTestContext(), chainBackfiller.ChainID(), blockNum)
@@ -124,7 +121,6 @@ func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContrac
 			}
 		}
 		// There are `currBlock` - `firstBlock`+1 block times stored. events don't get emitted until the contract gets deployed.
-		fmt.Println("CUMMMER", currBlock-firstBlock+uint64(1), totalBlockTimes)
 		Equal(b.T(), currBlock-firstBlock+uint64(1), totalBlockTimes)
 
 		// Check that the last stored block time is correct.
