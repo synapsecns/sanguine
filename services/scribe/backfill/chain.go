@@ -3,6 +3,7 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/big"
 	"time"
 
@@ -31,6 +32,8 @@ type ChainBackfiller struct {
 	chainConfig config.ChainConfig
 }
 
+var maxBlockNumberRetry = 10
+
 // NewChainBackfiller creates a new backfiller for a chain.
 func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
 	// initialize the list of contract backfillers
@@ -39,7 +42,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 	startHeights := make(map[string]uint64)
 
 	// start with max uint64
-	minBlockHeight := uint64(1<<64 - 1)
+	minBlockHeight := uint64(math.MaxUint64)
 	for _, contract := range chainConfig.Contracts {
 		contractBackfiller, err := NewContractBackfiller(chainConfig.ChainID, contract.Address, eventDB, client)
 		if err != nil {
@@ -122,12 +125,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				case <-groupCtx.Done():
 					return fmt.Errorf("context canceled: %w", groupCtx.Err())
 				case <-time.After(timeout):
-					// get the end height for the backfill
-					if err != nil {
-						timeout = b.Duration()
-						logger.Warnf("could not get block number, bad connection to rpc likely: %w", err)
-						continue
-					}
 					if onlyOneBlock {
 						startHeight = endHeight
 					}
@@ -192,8 +189,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 					logger.Warnf("could not get block time at block %s: %v", big.NewInt(int64(blockNum)).String(), err)
 					getBlockTries++
 
-					// If the request for BlockByNumber has failed over 9 times, skip that block to prevent an infinite backoff.
-					if getBlockTries > 9 {
+					// If the request for BlockByNumber has failed 10 times, skip that block to prevent an infinite backoff.
+					if getBlockTries >= maxBlockNumberRetry {
 						// Reset
 						timeoutBlockNum = time.Duration(0)
 						getBlockTries = 0

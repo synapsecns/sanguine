@@ -91,24 +91,9 @@ var backfillCommand = &cli.Command{
 	Description: "backfills up to a block and then halts",
 	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},
 	Action: func(c *cli.Context) error {
-
-		decodeConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		db, clients, decodeConfig, err := createScribeParameters(c)
 		if err != nil {
-			return fmt.Errorf("could not decode config: %w", err)
-
-		}
-		db, err := api.InitDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name))
-		if err != nil {
-			return fmt.Errorf("could not initialize database: %w", err)
-		}
-
-		clients := make(map[uint32]backfill.ScribeBackend)
-		for _, client := range decodeConfig.Chains {
-			backendClient, err := ethclient.DialContext(c.Context, client.RPCUrl)
-			if err != nil {
-				return fmt.Errorf("could not start client for %s", client.RPCUrl)
-			}
-			clients[client.ChainID] = backendClient
+			return err
 		}
 		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
 		if err != nil {
