@@ -336,13 +336,11 @@ library TypedMemView {
         uint256 _loc,
         uint256 _len
     ) private pure returns (bytes29 newView) {
-        /**
-         * @dev Ref memory layout
-         * [000..005) 5 bytes of type
-         * [005..017) 12 bytes of location
-         * [017..029) 12 bytes of length
-         * last 3 bits are blank and dropped in typecast
-         */
+        /// @dev Ref memory layout
+        /// [000..005) 5 bytes of type
+        /// [005..017) 12 bytes of location
+        /// [017..029) 12 bytes of length
+        /// last 3 bits are blank and dropped in typecast
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             newView := shl(96, or(newView, _type)) // insert type

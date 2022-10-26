@@ -23,8 +23,6 @@ library Message {
         Body
     }
 
-    Parts private constant PART_LAST = Parts.Body;
-
     /**
      * @dev This is only updated if the whole message structure is changed,
      *      i.e. if a new part is added.
@@ -47,7 +45,7 @@ library Message {
     /// @dev How much bytes is used for storing the version, or a single offset value
     uint8 internal constant TWO_BYTES = 2;
     /// @dev This value reflects the header offset in the latest message version
-    uint16 internal constant OFFSET_HEADER = TWO_BYTES * uint8(PART_LAST);
+    uint16 internal constant OFFSET_HEADER = TWO_BYTES * uint8(type(Parts).max);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -201,7 +199,7 @@ library Message {
         return
             _view.sliceFrom(
                 OFFSET_HEADER + _loadLength(_view, Parts.Header) + _loadLength(_view, Parts.Tips),
-                SynapseTypes.MESSAGE_TIPS
+                SynapseTypes.MESSAGE_BODY
             );
     }
 
