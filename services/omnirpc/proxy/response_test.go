@@ -338,6 +338,32 @@ func (p *ProxySuite) TestBlockByNumber() {
 	Equal(p.T(), resps[0], resps[1])
 }
 
+func (p *ProxySuite) TestHeaderByNumber() {
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	latestNumber, err := backend.BlockNumber(p.GetTestContext())
+	Nil(p.T(), err)
+
+	const respCount = 2
+
+	resps := make([][]byte, respCount)
+
+	for i := 0; i < respCount; i++ {
+		i := i
+		// TODO: we should probably test txes for this as well and mock some
+		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+			_, err := client.HeaderByNumber(p.GetTestContext(), new(big.Int).SetUint64(latestNumber))
+			Nil(p.T(), err)
+		}, func(method string, response proxy.JSONRPCMessage, fullResp []byte) {
+			resps[i], err = proxy.StandardizeResponse(method, fullResp)
+			Nil(p.T(), err)
+		})
+	}
+
+	// ensure response parity after de/re-serialization
+	Equal(p.T(), resps[0], resps[1])
+}
+
 func (p *ProxySuite) TestTransactionByHash() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 

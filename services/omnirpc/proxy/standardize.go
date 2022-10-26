@@ -90,8 +90,9 @@ type feeHistoryResultMarshaling struct {
 
 // StandardizeResponse produces a standardized json response for hashing (strips extra fields)
 // nolint: gocognit, cyclop
-func standardizeResponse(ctx context.Context, method string, rpcMessage JSONRPCMessage) (out []byte, err error) {
+func standardizeResponse(ctx context.Context, req RPCRequest, rpcMessage JSONRPCMessage) (out []byte, err error) {
 	// TODO: use a sync.pool for acquiring/releasing these structs
+	method := req.Method
 
 OUTER:
 	switch RPCMethod(method) {
@@ -168,6 +169,9 @@ OUTER:
 			}
 			return nil
 		})
+
+		// TODO: check params
+		if req.Params
 		groupCtx.Go(func() error {
 			if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
 				return fmt.Errorf("could not parse: %w", err)
