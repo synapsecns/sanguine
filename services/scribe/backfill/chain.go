@@ -73,7 +73,6 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 //
 //nolint:gocognit,cyclop
 func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error {
-	fmt.Println("googoogaagaa")
 	// initialize the errgroup
 	g, groupCtx := errgroup.WithContext(ctx)
 	// backoff in the case of an error
