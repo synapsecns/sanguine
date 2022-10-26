@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/api"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/node"
 	"github.com/urfave/cli/v2"
 )
 
@@ -92,6 +93,42 @@ var backfillCommand = &cli.Command{
 		err = scribeBackfiller.Backfill(c.Context)
 		if err != nil {
 			return fmt.Errorf("could not backfill backfiller: %w", err)
+		}
+		return nil
+	},
+}
+
+var scribeCommand = &cli.Command{
+	Name:        "scribe",
+	Description: "scribe runs the scribe, livefilling across all specified chains",
+	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},
+	Action: func(c *cli.Context) error {
+		decodeConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		if err != nil {
+			return fmt.Errorf("could not decode config: %w", err)
+
+		}
+
+		db, err := api.InitDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name))
+		if err != nil {
+			return fmt.Errorf("could not initialize database: %w", err)
+		}
+
+		clients := make(map[uint32]backfill.ScribeBackend)
+		for _, client := range decodeConfig.Chains {
+			backendClient, err := ethclient.DialContext(c.Context, client.RPCUrl)
+			if err != nil {
+				return fmt.Errorf("could not start client for %s", client.RPCUrl)
+			}
+			clients[client.ChainID] = backendClient
+		}
+		scribe, err := node.NewScribe(db, clients, decodeConfig)
+		if err != nil {
+			return fmt.Errorf("could not create scribe: %w", err)
+		}
+		err = scribe.Start(c.Context)
+		if err != nil {
+			return fmt.Errorf("could not start scribe: %w", err)
 		}
 		return nil
 	},
