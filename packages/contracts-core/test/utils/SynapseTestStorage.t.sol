@@ -10,7 +10,7 @@ import "../harnesses/system/SystemRouterHarness.t.sol";
 // ============ Utils ============
 import "./SynapseConstants.t.sol";
 import "./SynapseEvents.t.sol";
-import "./ProofGenerator.sol";
+import "./proof/ProofGenerator.t.sol";
 
 contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     struct Chain {

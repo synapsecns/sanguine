@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { MerkleLib } from "../../contracts/libs/Merkle.sol";
+import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
 
 contract ProofGenerator {
     uint256 public constant TREE_DEPTH = 32;
