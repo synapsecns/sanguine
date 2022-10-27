@@ -171,7 +171,12 @@ library SystemMessage {
         onlyType(_view, SynapseTypes.SYSTEM_MESSAGE_CALL)
         returns (bytes29)
     {
-        return _view.slice(OFFSET_CALL_PAYLOAD, _view.len() - OFFSET_CALL_PAYLOAD, 0);
+        return
+            _view.slice(
+                OFFSET_CALL_PAYLOAD,
+                _view.len() - OFFSET_CALL_PAYLOAD,
+                SynapseTypes.CALL_PAYLOAD
+            );
     }
 
     // TODO: system message Adjust slicing when Adjust structure is finalized.
