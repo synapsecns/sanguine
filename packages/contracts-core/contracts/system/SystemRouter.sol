@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import { BasicClient } from "../client/BasicClient.sol";
+import { LocalDomainContext } from "../context/LocalDomainContext.sol";
 import { TypedMemView } from "../libs/TypedMemView.sol";
 import { SystemMessage } from "../libs/SystemMessage.sol";
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
@@ -23,7 +24,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * external methods, guarded by onlySystemRouter modifier. These methods could
  * be called cross-chain from any of the system contracts.
  */
-contract SystemRouter is BasicClient, ISystemRouter {
+contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
     using Address for address;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -31,22 +32,15 @@ contract SystemRouter is BasicClient, ISystemRouter {
     using SystemMessage for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              IMMUTABLES                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    uint32 public immutable localDomain;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // solhint-disable no-empty-blocks
     constructor(
-        uint32 _localDomain,
+        uint32 _domain,
         address _origin,
         address _destination
-    ) BasicClient(_origin, _destination) {
-        localDomain = _localDomain;
-    }
+    ) BasicClient(_origin, _destination) LocalDomainContext(_domain) {}
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
@@ -81,7 +75,7 @@ contract SystemRouter is BasicClient, ISystemRouter {
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
         bytes memory payload = _formatCalldata(caller, _data);
-        if (_destination == localDomain) {
+        if (_destination == _localDomain()) {
             /// @dev Passing current timestamp for consistency
             /// Functions that could be called both from a local chain,
             /// as well as from a remote chain with an optimistic period
@@ -206,7 +200,7 @@ contract SystemRouter is BasicClient, ISystemRouter {
         bytes[] memory _payloads
     ) internal {
         uint256 amount = _recipients.length;
-        if (_destination == localDomain) {
+        if (_destination == _localDomain()) {
             for (uint256 i = 0; i < amount; ++i) {
                 /// @dev Passing current timestamp for consistency, see systemCall() for details
                 _localSystemCall(uint8(_recipients[i]), _payloads[i], block.timestamp);
@@ -241,7 +235,7 @@ contract SystemRouter is BasicClient, ISystemRouter {
          * 3. Root timestamp is the last argument,
          * and will be appended before the call on destination chain.
          */
-        return abi.encodePacked(_data, abi.encode(localDomain, _caller));
+        return abi.encodePacked(_data, abi.encode(_localDomain(), _caller));
     }
 
     function _getSystemEntity(address _caller) internal view returns (SystemEntity) {
