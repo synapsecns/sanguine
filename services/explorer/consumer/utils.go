@@ -66,9 +66,9 @@ func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID *string) (
 	if *coinGeckoID == "NO_TOKEN" || *coinGeckoID == "NO_PRICE" {
 		// if there is no data on the token, the amount returned will be 1:1 (price will be same as the amount of token
 		// and the token  symbol will say "no symbol"
-		one := float64(1)
+		zero := float64(0)
 		noSymbol := "NO_SYMBOL"
-		return &one, &noSymbol
+		return &zero, &noSymbol
 	}
 
 	client := http.Client{

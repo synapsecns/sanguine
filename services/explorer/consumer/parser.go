@@ -224,7 +224,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse deposit: %w", err)
 				}
-				logger.Warnf("used v1 bridge contract to parse deposit: %v", err)
+				logger.Warnf("used v1 bridge contract to parse deposit")
 				return iFaceV1, nil
 			}
 			return iFace, nil
@@ -235,7 +235,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse redeem: %w", err)
 				}
-				logger.Warnf("used v1 bridge contract to parse redeem: %v", err)
+				logger.Warnf("used v1 bridge contract to parse redeem")
 				return iFaceV1, nil
 			}
 			return iFace, nil
@@ -246,7 +246,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse withdraw: %w", err)
 				}
-				logger.Warnf("used v1 bridge contract to parse withdraw: %v", err)
+				logger.Warnf("used v1 bridge contract to parse withdraw")
 				return iFaceV1, nil
 			}
 			return iFace, nil
@@ -257,7 +257,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse mint: %w", err)
 				}
-				logger.Warnf("used v1 bridge contract to parse mint: %v", err)
+				logger.Warnf("used v1 bridge contract to parse mint")
 				return iFaceV1, nil
 			}
 			return iFace, nil
@@ -268,7 +268,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse deposit and swap: %w", err)
 				}
-				logger.Warnf("used v1 bridge contract to parse deposit and swap: %v", err)
+				logger.Warnf("used v1 bridge contract to parse deposit and swap")
 				return iFaceV1, nil
 			}
 			return iFace, nil
@@ -314,6 +314,12 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				}
 				logger.Warnf("used v1 bridge contract to parse withdraw and remove")
 				return iFaceV1, nil
+			}
+			return iFace, nil
+		case bridge.Topic(bridgeTypes.RedeemV2Event):
+			iFace, err := p.Filterer.ParseTokenRedeemV2(log)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse redeem v2: %w", err)
 			}
 			return iFace, nil
 		default:

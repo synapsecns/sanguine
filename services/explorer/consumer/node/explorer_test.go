@@ -111,7 +111,7 @@ func (n NodeSuite) TestLive() {
 	err = explorerBackfiller.Backfill(n.GetTestContext())
 	n.Nil(err)
 	var counttemp int64
-	dd := n.db.UNSAFE_DB().WithContext(n.GetTestContext()).Table("bridge_events").Count(&counttemp)
+	dd := n.db.UNSAFE_DB().WithContext(n.GetTestContext()).Table("swap_events").Count(&counttemp)
 	fmt.Println("counttemp", counttemp, dd)
 
 	var count int64
