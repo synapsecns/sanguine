@@ -155,7 +155,6 @@ OUTER:
 			out, err = json.Marshal(syncing)
 			break OUTER
 		}
-
 		var p rpcProgress
 		if err = json.Unmarshal(rpcMessage.Result, &p); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
@@ -181,7 +180,6 @@ OUTER:
 			return nil
 		})
 
-		// TODO: check params
 		var txFlag bool
 		err := json.Unmarshal(req.Params[1], &txFlag)
 		if txFlag {
@@ -210,34 +208,37 @@ OUTER:
 			return nil, errors.New("header was empty")
 		}
 
-		// nolint:nestif
-		if txFlag {
-			// Quick-verify transaction and uncle lists. This mostly helps with debugging the server.
-			if head.UncleHash == types.EmptyUncleHash && len(rpcBody.UncleHashes) > 0 {
-				return nil, fmt.Errorf("server returned non-empty uncle list but block header indicates no uncles")
-			}
-			if head.UncleHash != types.EmptyUncleHash && len(rpcBody.UncleHashes) == 0 {
-				return nil, fmt.Errorf("server returned empty uncle list but block header indicates uncles")
-			}
-			if head.TxHash == types.EmptyRootHash && len(rpcBody.Transactions) > 0 {
-				return nil, fmt.Errorf("server returned non-empty transaction list but block header indicates no transactions")
-			}
-			if head.TxHash != types.EmptyRootHash && len(rpcBody.Transactions) == 0 {
-				return nil, fmt.Errorf("server returned empty transaction list but block header indicates transactions")
-			}
-
-			outputBlock := fullRPCBlock{
-				Block:  rpcBody,
-				Header: head,
-			}
-			out, err = json.Marshal(outputBlock)
-		} else {
+		// If tx flag is false, return output block with fullRPCBlockNoTx type.
+		if !txFlag {
 			outputBlock := fullRPCBlockNoTx{
 				Block:  rpcBlockNoTx,
 				Header: head,
 			}
 			out, err = json.Marshal(outputBlock)
+
+			// Bypass the following uncle block verification.
+			return out, nil
 		}
+
+		// Quick-verify transaction and uncle lists. This mostly helps with debugging the server.
+		if head.UncleHash == types.EmptyUncleHash && len(rpcBody.UncleHashes) > 0 {
+			return nil, fmt.Errorf("server returned non-empty uncle list but block header indicates no uncles")
+		}
+		if head.UncleHash != types.EmptyUncleHash && len(rpcBody.UncleHashes) == 0 {
+			return nil, fmt.Errorf("server returned empty uncle list but block header indicates uncles")
+		}
+		if head.TxHash == types.EmptyRootHash && len(rpcBody.Transactions) > 0 {
+			return nil, fmt.Errorf("server returned non-empty transaction list but block header indicates no transactions")
+		}
+		if head.TxHash != types.EmptyRootHash && len(rpcBody.Transactions) == 0 {
+			return nil, fmt.Errorf("server returned empty transaction list but block header indicates transactions")
+		}
+
+		outputBlock := fullRPCBlock{
+			Block:  rpcBody,
+			Header: head,
+		}
+		out, err = json.Marshal(outputBlock)
 		if err != nil {
 			return nil, fmt.Errorf("could not unmarshall full block: %w", err)
 		}
