@@ -8,6 +8,7 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -54,6 +55,8 @@ type BridgeParser struct {
 	consumerDB db.ConsumerDB
 	// Filterer is the bridge Filterer we use to parse events
 	Filterer *bridge.SynapseBridgeFilterer
+	// Filterer is the bridge Filterer we use to parse events
+	FiltererV1 *bridgev1.SynapseBridgeFilterer
 	// bridgeAddress is the address of the bridge
 	bridgeAddress common.Address
 	// fetcher is a Bridge Config Fetcher
@@ -68,7 +71,12 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bri
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
-	return &BridgeParser{consumerDB, filterer, bridgeAddress, bridgeConfigFetcher, consumerFetcher}, nil
+	// Old bridge contract to filter all events across all times.
+	filtererV1, err := bridgev1.NewSynapseBridgeFilterer(bridgeAddress, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not create %T: %w", bridgev1.SynapseBridgeFilterer{}, err)
+	}
+	return &BridgeParser{consumerDB, filterer, filtererV1, bridgeAddress, bridgeConfigFetcher, consumerFetcher}, nil
 }
 
 // EventType returns the event type of a bridge log.
@@ -212,65 +220,104 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		case bridge.Topic(bridgeTypes.DepositEvent):
 			iFace, err := p.Filterer.ParseTokenDeposit(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse deposit: %w", err)
+				iFaceV1, err := p.FiltererV1.ParseTokenDeposit(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not parse deposit: %w", err)
+				}
+				logger.Warnf("used v1 bridge contract to parse deposit: %v", err)
+				return iFaceV1, nil
 			}
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.RedeemEvent):
 			iFace, err := p.Filterer.ParseTokenRedeem(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse redeem: %w", err)
+				iFaceV1, err := p.FiltererV1.ParseTokenRedeem(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not parse redeem: %w", err)
+				}
+				logger.Warnf("used v1 bridge contract to parse redeem: %v", err)
+				return iFaceV1, nil
 			}
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.WithdrawEvent):
 			iFace, err := p.Filterer.ParseTokenWithdraw(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse withdraw: %w", err)
+				iFaceV1, err := p.FiltererV1.ParseTokenWithdraw(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not parse withdraw: %w", err)
+				}
+				logger.Warnf("used v1 bridge contract to parse withdraw: %v", err)
+				return iFaceV1, nil
 			}
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.MintEvent):
 			iFace, err := p.Filterer.ParseTokenMint(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse mint: %w", err)
+				iFaceV1, err := p.FiltererV1.ParseTokenMint(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not parse mint: %w", err)
+				}
+				logger.Warnf("used v1 bridge contract to parse mint: %v", err)
+				return iFaceV1, nil
 			}
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.DepositAndSwapEvent):
 			iFace, err := p.Filterer.ParseTokenDepositAndSwap(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse deposit and swap: %w", err)
+				iFaceV1, err := p.FiltererV1.ParseTokenDepositAndSwap(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not parse deposit and swap: %w", err)
+				}
+				logger.Warnf("used v1 bridge contract to parse deposit and swap: %v", err)
+				return iFaceV1, nil
 			}
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.MintAndSwapEvent):
 			iFace, err := p.Filterer.ParseTokenMintAndSwap(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse mint and swap: %w", err)
+				iFaceV1, err := p.FiltererV1.ParseTokenMintAndSwap(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not parse mint and swap: %w", err)
+				}
+				logger.Warnf("used v1 bridge contract to parse mint and swap")
+				return iFaceV1, nil
 			}
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.RedeemAndSwapEvent):
 			iFace, err := p.Filterer.ParseTokenRedeemAndSwap(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse redeem and swap: %w", err)
+				iFaceV1, err := p.FiltererV1.ParseTokenRedeemAndSwap(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not parse redeem and swap: %w", err)
+				}
+				logger.Warnf("used v1 bridge contract to parse redeem and swap")
+				return iFaceV1, nil
 			}
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.RedeemAndRemoveEvent):
 			iFace, err := p.Filterer.ParseTokenRedeemAndRemove(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse redeem and remove: %w", err)
+				iFaceV1, err := p.FiltererV1.ParseTokenRedeemAndRemove(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not parse redeem and remove: %w", err)
+				}
+				logger.Warnf("used v1 bridge contract to parse redeem and remove")
+				return iFaceV1, nil
 			}
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.WithdrawAndRemoveEvent):
 			iFace, err := p.Filterer.ParseTokenWithdrawAndRemove(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse withdraw and remove: %w", err)
-			}
-			return iFace, nil
-		case bridge.Topic(bridgeTypes.RedeemV2Event):
-			iFace, err := p.Filterer.ParseTokenRedeemV2(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse redeem v2: %w", err)
+				iFaceV1, err := p.FiltererV1.ParseTokenWithdrawAndRemove(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not parse withdraw and remove: %w", err)
+				}
+				logger.Warnf("used v1 bridge contract to parse withdraw and remove")
+				return iFaceV1, nil
 			}
 			return iFace, nil
 		default:
-			return nil, fmt.Errorf("unknown topic: %s", logTopic.Hex())
+			return nil, fmt.Errorf("unknown topic: %s %s", logTopic.Hex(), logTopic.String())
 		}
 	}(log)
 

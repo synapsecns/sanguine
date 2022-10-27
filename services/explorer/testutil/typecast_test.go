@@ -11,5 +11,7 @@ func (s SimulatedSuite) TestTypecast() {
 		NotNil(s.T(), bridgeHandle)
 		_, swapHandle := s.deployManager.GetSwapFlashLoan(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), swapHandle)
+		_, bridgeHandlev1 := s.deployManager.GetSynapseBridgeV1(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), bridgeHandlev1)
 	})
 }
