@@ -63,4 +63,11 @@ library SynapseTypes {
     uint40 internal constant SYSTEM_MESSAGE             = 0x03_02_00_00_00;
     // prettier-ignore
     uint40 internal constant SYSTEM_MESSAGE_CALL        = 0x03_02_01_00_00;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             0X04: SYSTEM                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // prettier-ignore
+    uint40 internal constant SYSTEM_CALL                = 0x04_00_00_00_00;
 }
