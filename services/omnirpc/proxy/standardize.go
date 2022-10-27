@@ -101,7 +101,7 @@ type feeHistoryResultMarshaling struct {
 
 // StandardizeResponse produces a standardized json response for hashing (strips extra fields)
 // nolint: gocognit, cyclop
-func standardizeResponse(ctx context.Context, req RPCRequest, rpcMessage JSONRPCMessage) (out []byte, err error) {
+func standardizeResponse(ctx context.Context, req *RPCRequest, rpcMessage JSONRPCMessage) (out []byte, err error) {
 	// TODO: use a sync.pool for acquiring/releasing these structs
 	method := req.Method
 

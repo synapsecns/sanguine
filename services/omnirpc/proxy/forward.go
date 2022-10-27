@@ -34,7 +34,7 @@ func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string)
 		return nil, fmt.Errorf("could not parse response: %w", err)
 	}
 
-	standardizedResponse, err := standardizeResponse(ctx, *f.rpcRequest, rpcMessage)
+	standardizedResponse, err := standardizeResponse(ctx, f.rpcRequest, rpcMessage)
 	if err != nil {
 		return nil, fmt.Errorf("could not standardize response: %w", err)
 	}

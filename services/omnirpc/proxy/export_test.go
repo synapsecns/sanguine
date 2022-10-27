@@ -135,7 +135,20 @@ func (f *Forwarder) SetBlankResMap() {
 	f.SetResMap(xsync.NewMapOf[[]rawResponse]())
 }
 
-func StandardizeResponse(method string, body []byte) ([]byte, error) {
+func StandardizeResponse(ctx context.Context, req *RPCRequest, body []byte) ([]byte, error) {
+	var rpcMessage JSONRPCMessage
+	err := json.Unmarshal(body, &rpcMessage)
+	if err != nil {
+		//nolint: wrapcheck
+		return nil, err
+	}
+
+	return standardizeResponse(ctx, req, rpcMessage)
+}
+
+// StandardizeResponseFalseParams exports standardizeResponseFalseParams for testing.
+// this is only used when params[1] is false when calling eth_getBlockByNumber or eth_getBlockByHash.
+func StandardizeResponseFalseParams(ctx context.Context, req *RPCRequest, body []byte) ([]byte, error) {
 	var rpcMessage JSONRPCMessage
 	err := json.Unmarshal(body, &rpcMessage)
 	if err != nil {
@@ -145,7 +158,7 @@ func StandardizeResponse(method string, body []byte) ([]byte, error) {
 	params := []json.RawMessage{rpcMessage.Params}
 
 	// Handle BlockByHash, BlockByNumber, and HeaderByNumber events.
-	if method == "eth_getBlockByHash" || method == "eth_getBlockByNumber" {
+	if req.Method == string(BlockByHashMethod) || req.Method == string(BlockByNumberMethod) {
 		blockNumber := "0x1"
 		// TODO change for block by header
 		flag := true
@@ -164,10 +177,10 @@ func StandardizeResponse(method string, body []byte) ([]byte, error) {
 	}
 	rpcRequest := RPCRequest{
 		ID:     rpcMessage.ID,
-		Method: method,
+		Method: req.Method,
 		Params: params,
 	}
-	return standardizeResponse(context.Background(), rpcRequest, rpcMessage)
+	return standardizeResponse(ctx, &rpcRequest, rpcMessage)
 }
 
 // CheckAndSetConfirmability exports checkAndSetConfirmability for testing.
