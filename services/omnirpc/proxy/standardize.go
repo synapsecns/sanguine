@@ -43,12 +43,14 @@ type txExtraInfo struct {
 	From        *common.Address `json:"from,omitempty"`
 }
 
+// rpcBlock is an eth rpc block.
 type rpcBlock struct {
 	Hash         common.Hash      `json:"hash"`
 	Transactions []rpcTransaction `json:"transactions"`
 	UncleHashes  []common.Hash    `json:"uncles"`
 }
 
+// rpcBlockNoTx is an eth rpc block without transactions (used by eth_getBlockByNumber calls with tx flag set to false).
 type rpcBlockNoTx struct {
 	Hash        common.Hash   `json:"hash"`
 	UncleHashes []common.Hash `json:"uncles"`

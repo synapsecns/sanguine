@@ -160,7 +160,6 @@ func StandardizeResponseFalseParams(ctx context.Context, req *RPCRequest, body [
 	// Handle BlockByHash, BlockByNumber, and HeaderByNumber events.
 	if req.Method == string(BlockByHashMethod) || req.Method == string(BlockByNumberMethod) {
 		blockNumber := "0x1"
-		// TODO change for block by header
 		flag := true
 		jsonBlockNumber, err := json.Marshal(&blockNumber)
 		if err != nil {
