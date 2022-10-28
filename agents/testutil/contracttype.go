@@ -88,23 +88,23 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case OriginType:
 		return origin.Contracts["solidity/Origin.sol:Origin"]
 	case MessageHarnessType:
-		return messageharness.Contracts["solidity/MessageHarness.sol:MessageHarness"]
+		return messageharness.Contracts["solidity/MessageHarness.t.sol:MessageHarness"]
 	case OriginHarnessType:
-		return originharness.Contracts["solidity/OriginHarness.sol:OriginHarness"]
+		return originharness.Contracts["solidity/OriginHarness.t.sol:OriginHarness"]
 	case AttestationHarnessType:
-		return attestationharness.Contracts["solidity/AttestationHarness.sol:AttestationHarness"]
+		return attestationharness.Contracts["solidity/AttestationHarness.t.sol:AttestationHarness"]
 	case DestinationHarnessType:
-		return destinationharness.Contracts["solidity/DestinationHarness.sol:DestinationHarness"]
+		return destinationharness.Contracts["solidity/DestinationHarness.t.sol:DestinationHarness"]
 	case NotaryManagerType:
 		return notarymanager.Contracts["solidity/NotaryManager.sol:NotaryManager"]
 	case TipsHarnessType:
-		return tipsharness.Contracts["solidity/TipsHarness.sol:TipsHarness"]
+		return tipsharness.Contracts["solidity/TipsHarness.t.sol:TipsHarness"]
 	case AttestationCollectorType:
 		return attestationcollector.Contracts["solidity/AttestationCollector.sol:AttestationCollector"]
 	case DestinationType:
 		return destination.Contracts["solidity/Destination.sol:Destination"]
 	case HeaderHarnessType:
-		return headerharness.Contracts["solidity/HeaderHarness.sol:HeaderHarness"]
+		return headerharness.Contracts["solidity/HeaderHarness.t.sol:HeaderHarness"]
 	default:
 		panic("not yet implemented")
 	}
