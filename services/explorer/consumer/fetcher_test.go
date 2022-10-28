@@ -91,7 +91,6 @@ func (c *ConsumerSuite) TestTimeToBlockNumber() {
 		if closestBlockTime > timeDiff {
 			closestBlockTime = timeDiff
 			closestBlockNumber = blockNumber
-
 		}
 	}
 	Equal(c.T(), closestBlockNumber, blockNumberFetched)
