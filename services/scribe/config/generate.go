@@ -7,7 +7,7 @@ import (
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/parser"
 	"golang.org/x/exp/slices"
 	"os"
@@ -31,7 +31,7 @@ type ReceiptClient interface {
 // DefaultClientGenerator generates the default ethclient.
 func DefaultClientGenerator(ctx context.Context, rawURL string) (ReceiptClient, error) {
 	//nolint: wrapcheck
-	return ethclient.DialContext(ctx, rawURL)
+	return metrics.EthClient(ctx, metrics.Get(), rawURL)
 }
 
 type configList map[int]map[string]ContractConfig

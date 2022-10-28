@@ -16,6 +16,7 @@ const (
 )
 
 // EnableGraphql enables the scribe graphql service.
+// TODO: instrument graphql
 func EnableGraphql(engine *gin.Engine, eventDB db.EventDB) {
 	server := handler.NewDefaultServer(
 		resolvers.NewExecutableSchema(

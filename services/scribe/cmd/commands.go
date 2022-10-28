@@ -5,10 +5,10 @@ import (
 	_ "embed"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/hashicorp/consul/sdk/freeport"
 	"github.com/jftuga/termsize"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/api"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -76,7 +76,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 
 	clients = make(map[uint32]backfill.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
-		backendClient, err := ethclient.DialContext(c.Context, client.RPCUrl)
+		backendClient, err := metrics.EthClient(c.Context, metrics.Get(), client.RPCUrl)
 		if err != nil {
 			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", client.RPCUrl)
 		}

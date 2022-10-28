@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"time"
 
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
@@ -35,6 +36,8 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 		NamingStrategy:       NamingStrategy,
 		NowFunc:              time.Now,
 	})
+
+	metrics.Get().AddGormCallbacks(gdb)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create mysql connection: %w", err)

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
@@ -47,6 +48,7 @@ func Start(ctx context.Context, cfg Config) error {
 
 	router.Use(helmet.Default())
 	router.Use(gin.Recovery())
+	router.Use(metrics.Get().Gin())
 
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,

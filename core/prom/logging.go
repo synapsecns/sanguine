@@ -1,4 +1,4 @@
-package metrics
+package prom
 
 import (
 	"fmt"
@@ -16,6 +16,7 @@ func NewPromLogger(logClient *log.ZapEventLogger) PromErrorLogger {
 }
 
 // PromErrorLogger is the error logger used for prometheus http.
+// nolint: golint, gosimple, revive
 type PromErrorLogger struct {
 	*log.ZapEventLogger
 }

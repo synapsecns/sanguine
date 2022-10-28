@@ -11,7 +11,6 @@ RUN apt-get update
 RUN apt-get install ca-certificates -y
 RUN update-ca-certificates
 
-WORKDIR /app
-COPY omnirpc /app/omnirpc
+COPY omnirpc /omnirpc
 
-ENTRYPOINT ["/app/omnirpc"]
+ENTRYPOINT ["/omnirpc"]

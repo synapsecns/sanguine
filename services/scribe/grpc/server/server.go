@@ -18,6 +18,7 @@ func SetupGRPCServer(ctx context.Context, engine *gin.Engine, eventDB db.EventDB
 		db: eventDB,
 	}
 
+	// TODO: instrument grpc
 	mux := runtime.NewServeMux()
 	pbscribe.RegisterScribeServiceServer(s, &sImpl)
 	err := pbscribe.RegisterScribeServiceHandlerServer(ctx, mux, &sImpl)
