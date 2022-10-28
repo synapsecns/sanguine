@@ -104,6 +104,7 @@ var backfillCommand = &cli.Command{
 			return fmt.Errorf("could not backfill backfiller: %w", err)
 		}
 		return nil
+
 	},
 }
 
