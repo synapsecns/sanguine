@@ -75,27 +75,26 @@ func (c *ConsumerSuite) TestTimeToBlockNumber() {
 	}
 
 	targetTime := uint64(time.Now().Unix())
-	blockNumberInit := uint64(12)
-	err := c.eventDB.StoreBlockTime(c.GetTestContext(), chainID, blockNumberInit, uint64(time.Now().Unix())*blockNumberInit)
+	blockNumberInit := uint64(8)
+	err := c.eventDB.StoreBlockTime(c.GetTestContext(), chainID, blockNumberInit, targetTime)
 	Nil(c.T(), err)
 	blockNumberFetched, err := fetcher.TimeToBlockNumber(c.GetTestContext(), int(chainID), 1, targetTime)
 	Nil(c.T(), err)
-	Equal(c.T(), blockNumberInit, blockNumberFetched)
 
 	// Find the block number that is closest to the target time.
 	var closestBlockNumber uint64
-	var blockNumber uint64
 	closestBlockTime := ^uint64(0)
-	for blockNumber = uint64(1); blockNumber <= 10; blockNumber++ {
+	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
 		blockTime, err := c.eventDB.RetrieveBlockTime(c.GetTestContext(), chainID, blockNumber)
 		Nil(c.T(), err)
 		timeDiff := abs(int64(blockTime) - int64(targetTime))
 		if closestBlockTime > timeDiff {
 			closestBlockTime = timeDiff
 			closestBlockNumber = blockNumber
+
 		}
 	}
-	Equal(c.T(), closestBlockNumber, blockNumber)
+	Equal(c.T(), closestBlockNumber, blockNumberFetched)
 }
 
 func abs(a int64) uint64 {

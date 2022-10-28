@@ -285,9 +285,9 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 		SELECT t1.* FROM bridge_events t1
     	JOIN (
     	SELECT %s AS insert_max_time
-    	FROM bridge_events GROUP BY %s) t2
+    	FROM bridge_events WHERE %s GROUP BY %s) t2
     	    ON (%s) %s `,
-		selectParameters, groupByParameters, joinOnParameters, compositeIdentifiers)
+		selectParameters, deDupInQuery, groupByParameters, joinOnParameters, compositeIdentifiers)
 	return query
 }
 
@@ -320,11 +320,12 @@ func (r *queryResolver) generateSubQuery(ctx context.Context, targetTime uint64,
 		if err != nil {
 			return subQuery, fmt.Errorf("failed to get start block number: %w", err)
 		}
-		sqlString := fmt.Sprintf("\nSELECT %s, %s, amount_usd FROM bridge_events WHERE %s = %d AND  %s >= %d", colOne, colTwo, sql.ChainIDFieldName, chain, sql.BlockNumberFieldName, startBlock)
+		sqlString := fmt.Sprintf("\nSELECT %s, %s, amount_usd FROM bridge_events WHERE %s = %d AND  %s >= %d AND %s", colOne, colTwo, sql.ChainIDFieldName, chain, sql.BlockNumberFieldName, startBlock, deDupInQuery)
 		if i != len(chainIDs)-1 {
 			sqlString += " UNION ALL"
 		}
 		subQuery += sqlString
 	}
+	fmt.Println("HI MOMMYY", subQuery)
 	return subQuery + ")", nil
 }

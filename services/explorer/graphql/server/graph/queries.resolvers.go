@@ -13,6 +13,9 @@ import (
 	resolvers "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/resolver"
 )
 
+const sortingKeys = "event_index, block_number, event_type, tx_hash, chain_id, contract_address"
+const deDupInQuery = "(" + sortingKeys + ", insert_time) IN (SELECT " + sortingKeys + ", max(insert_time) as insert_time FROM bridge_events GROUP BY " + sortingKeys + ")"
+
 // BridgeTransactions is the resolver for the bridgeTransactions field.
 func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending bool, page int, tokenAddress *string) ([]*model.BridgeTransaction, error) {
 	// If no search parameters are provided, throw an error.
@@ -139,7 +142,7 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 		`%s%s%s%s`,
 		blockNumberFilter, chainIDFilter, tokenAddressFilter, addressFilter,
 	)
-	finalSQL := fmt.Sprintf("\nSELECT %s(toUInt256(amount_usd)) FROM %s %s", operation, subQuery, additionalFilters)
+	finalSQL := fmt.Sprintf("\nSELECT %s(toUInt256(%s)) FROM %s %s", operation, sql.AmountUSDFieldName, subQuery, additionalFilters)
 	res, err := r.DB.GetFloat64(ctx, finalSQL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
@@ -190,8 +193,8 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 	chainIDsToTokenAddresses := make(map[int][]string)
 	for _, chain := range chainIDs {
 		query := fmt.Sprintf(
-			`SELECT DISTINCT %s FROM bridge_events WHERE %s = %d OR %s = %d`,
-			sql.TokenFieldName, sql.ChainIDFieldName, chain, sql.DestinationChainIDFieldName, chain,
+			`SELECT DISTINCT %s FROM bridge_events WHERE %s = %d OR %s = %d AND %s`,
+			sql.TokenFieldName, sql.ChainIDFieldName, chain, sql.DestinationChainIDFieldName, chain, deDupInQuery,
 		)
 		tokenAddresses, err := r.DB.GetStringArray(ctx, query)
 		if err != nil {
@@ -234,7 +237,7 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate subquery: %w", err)
 	}
-	query := fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS count FROM %s GROUP BY address ORDER BY count DESC SETTINGS readonly=1`, sql.TokenFieldName, sql.TxHashFieldName, subQuery)
+	query := fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS count FROM %s GROUP BY address ORDER BY count DESC`, sql.TokenFieldName, sql.TxHashFieldName, subQuery)
 	res, err := r.DB.GetAddressRanking(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
@@ -257,14 +260,14 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	// Handle the different logic needed for each query type.
 	switch *typeArg {
 	case model.HistoricalResultTypeBridgevolume:
-		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(timestamp, %s) AS date FROM bridge_events %s GROUP BY date ORDER BY total DESC", sql.AmountUSDFieldName, "'%d/%m/%Y'", filter)
-		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s) SETTINGS readonly=1", subQuery)
+		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM bridge_events %s AND %s GROUP BY date ORDER BY total DESC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%d/%m/%Y'", filter, deDupInQuery)
+		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 	case model.HistoricalResultTypeAddresses:
-		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME(timestamp, %s) AS date FROM bridge_events %s GROUP BY date ORDER BY total DESC", sql.SenderFieldName, "'%d/%m/%Y'", filter)
-		query = fmt.Sprintf("SELECT uniqExact(%s) FROM bridge_events %s SETTINGS readonly=1", sql.SenderFieldName, filter)
+		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME( %s, %s) AS date FROM  bridge_events %s AND %s GROUP BY date ORDER BY total DESC", sql.SenderFieldName, sql.TimeStampFieldName, "'%d/%m/%Y'", filter, deDupInQuery)
+		query = fmt.Sprintf("SELECT uniqExact(%s) FROM bridge_events %s AND %s", sql.SenderFieldName, filter, deDupInQuery)
 	case model.HistoricalResultTypeTransactions:
-		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME(timestamp, %s) AS date FROM bridge_events %s GROUP BY date ORDER BY total DESC", sql.TxHashFieldName, "'%d/%m/%Y'", filter)
-		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s) SETTINGS readonly=1", subQuery)
+		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM  bridge_events %s AND %s GROUP BY date ORDER BY total DESC", sql.TxHashFieldName, sql.TimeStampFieldName, "'%d/%m/%Y'", filter, deDupInQuery)
+		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 	default:
 		return nil, fmt.Errorf("invalid type argument")
 	}
