@@ -178,7 +178,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				}
 
 				// Get information on the current block for further processing.
-				rawBlock, err := c.client.BlockByNumber(ctx, big.NewInt(int64(blockNum)))
+				rawBlock, err := c.client.HeaderByNumber(ctx, big.NewInt(int64(blockNum)))
 				if err != nil {
 					timeoutBlockNum = bBlockNum.Duration()
 					logger.Warnf("could not get block time at block %s: %v", big.NewInt(int64(blockNum)).String(), err)
@@ -186,7 +186,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				}
 
 				// Store the block time with the block retrieved above.
-				err = c.eventDB.StoreBlockTime(groupCtx, c.chainID, blockNum, rawBlock.Header().Time)
+				err = c.eventDB.StoreBlockTime(groupCtx, c.chainID, blockNum, rawBlock.Time)
 				if err != nil {
 					timeoutBlockNum = bBlockNum.Duration()
 					logger.Warnf("could not store block time: %v", err)
