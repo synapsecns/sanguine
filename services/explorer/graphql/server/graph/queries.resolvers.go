@@ -235,7 +235,7 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 		return nil, fmt.Errorf("failed to generate subquery: %w", err)
 	}
 	query := fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS count FROM %s GROUP BY address ORDER BY count DESC SETTINGS readonly=1`, sql.TokenFieldName, sql.TxHashFieldName, subQuery)
-	res, err := r.DB.GetTransactionCountForEveryAddress(ctx, query)
+	res, err := r.DB.GetAddressRanking(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}

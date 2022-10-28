@@ -275,7 +275,7 @@ func (b *BackfillSuite) TestBackfill() {
 	err = b.flashLoanParity(flashLoanLog, spA, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 
-	lastBlockStored, err := b.db.RetrieveLastBlock(b.GetTestContext(), uint32(testChainID.Uint64()))
+	lastBlockStored, err := b.db.GetLastBlock(b.GetTestContext(), uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 	Equal(b.T(), lastBlock, lastBlockStored)
 }

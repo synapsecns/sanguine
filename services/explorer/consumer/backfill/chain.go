@@ -56,7 +56,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 		// Set start block to -1 to trigger backfill from last block stored by explorer,
 		// otherwise backfilling will begin at the block number specified in the config file.
 		if contract.StartBlock < 0 {
-			startHeight, err = c.consumerDB.RetrieveLastBlock(ctx, c.chainConfig.ChainID)
+			startHeight, err = c.consumerDB.GetLastBlock(ctx, c.chainConfig.ChainID)
 			if err != nil {
 				return fmt.Errorf("could not get last block number: %w", err)
 			}

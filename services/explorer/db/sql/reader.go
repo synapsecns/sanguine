@@ -8,14 +8,18 @@ import (
 	"strconv"
 )
 
-// GetStringArray returns a string array for a given query.
-func (s *Store) GetStringArray(ctx context.Context, query string) ([]string, error) {
-	var res []string
+/*╔══════════════════════════════════════════════════════════════════════╗*\
+▏*║                        Generic Read Functions                        ║*▕
+\*╚══════════════════════════════════════════════════════════════════════╝*/
+
+// GetUint64 gets a uint64 from a given query.
+func (s *Store) GetUint64(ctx context.Context, query string) (uint64, error) {
+	var res int64
 	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
 	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+		return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
-	return res, nil
+	return uint64(res), nil
 }
 
 // GetFloat64 gets a float64 from a given query.
@@ -28,27 +32,24 @@ func (s *Store) GetFloat64(ctx context.Context, query string) (float64, error) {
 	return res, nil
 }
 
-// GetUint64 gets a uint64 from a given query.
-func (s *Store) GetUint64(ctx context.Context, query string) (uint64, error) {
-	var res int64
+// GetStringArray returns a string array for a given query.
+func (s *Store) GetStringArray(ctx context.Context, query string) ([]string, error) {
+	var res []string
 	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
-	if dbTx.Error != nil {
-		return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-	}
-	return uint64(res), nil
-}
-
-// GetTransactionCountForEveryAddress gets the count of transactions (origin) for each address per chain id.
-func (s *Store) GetTransactionCountForEveryAddress(ctx context.Context, query string) ([]*model.AddressRanking, error) {
-	var res []*model.AddressRanking
-	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Scan(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
-	if len(res) == 0 {
-		return nil, nil
-	}
 	return res, nil
+}
+
+// GetBridgeEvent returns a bridge event.
+func (s *Store) GetBridgeEvent(ctx context.Context, query string) (*BridgeEvent, error) {
+	var res BridgeEvent
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+	return &res, nil
 }
 
 // GetDateResults returns the dya by day data.
@@ -60,6 +61,23 @@ func (s *Store) GetDateResults(ctx context.Context, query string) ([]*model.Date
 	}
 	return res, nil
 }
+
+// GetAddressRanking gets AddressRanking for a given query.
+func (s *Store) GetAddressRanking(ctx context.Context, query string) ([]*model.AddressRanking, error) {
+	var res []*model.AddressRanking
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Scan(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+	if len(res) == 0 {
+		return nil, nil
+	}
+	return res, nil
+}
+
+/*╔══════════════════════════════════════════════════════════════════════╗*\
+▏*║                       Specific Read Functions                        ║*▕
+\*╚══════════════════════════════════════════════════════════════════════╝*/
 
 // PartialInfosFromIdentifiers returns events given identifiers. If order is true, the events are ordered by block number.
 //
@@ -128,10 +146,6 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) (
 	return partialInfos, nil
 }
 
-/*╔══════════════════════════════════════════════════════════════════════╗*\
-▏*║                           Helper functions                           ║*▕
-\*╚══════════════════════════════════════════════════════════════════════╝*/
-
 // GetAllChainIDs gets all chain IDs that have been used in bridge events.
 func (s *Store) GetAllChainIDs(ctx context.Context) ([]int, error) {
 	var res []int
@@ -146,8 +160,8 @@ func (s *Store) GetAllChainIDs(ctx context.Context) ([]int, error) {
 	return res, nil
 }
 
-// RetrieveLastBlock retrieves the last block number backfilled for a given chain ID.
-func (s *Store) RetrieveLastBlock(ctx context.Context, chainID uint32) (lastBlock uint64, err error) {
+// GetLastBlock retrieves the last block number backfilled for a given chain ID.
+func (s *Store) GetLastBlock(ctx context.Context, chainID uint32) (lastBlock uint64, err error) {
 	var res uint64
 	dbTx := s.db.WithContext(ctx).
 		Raw(fmt.Sprintf(`SELECT %s FROM last_blocks WHERE %s = %d SETTINGS readonly=1`,
@@ -161,14 +175,4 @@ func (s *Store) RetrieveLastBlock(ctx context.Context, chainID uint32) (lastBloc
 	}
 
 	return res, nil
-}
-
-// GetBridgeEvent returns a bridge event.
-func (s *Store) GetBridgeEvent(ctx context.Context, query string) (*BridgeEvent, error) {
-	var res BridgeEvent
-	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
-	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-	}
-	return &res, nil
 }

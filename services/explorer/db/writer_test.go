@@ -58,7 +58,7 @@ func (t *DBSuite) TestLastBlockWrite() {
 	blockNumber++
 	err = t.db.StoreLastBlock(t.GetTestContext(), chainID, blockNumber)
 	Nil(t.T(), err)
-	storedBlockNum, err := t.db.RetrieveLastBlock(t.GetTestContext(), chainID)
+	storedBlockNum, err := t.db.GetLastBlock(t.GetTestContext(), chainID)
 	Nil(t.T(), err)
 	Equal(t.T(), blockNumber, storedBlockNum)
 
@@ -69,11 +69,11 @@ func (t *DBSuite) TestLastBlockWrite() {
 	blockNumber2--
 	err = t.db.StoreLastBlock(t.GetTestContext(), chainID2, blockNumber2)
 	Nil(t.T(), err)
-	storedBlockNum2, err := t.db.RetrieveLastBlock(t.GetTestContext(), chainID2)
+	storedBlockNum2, err := t.db.GetLastBlock(t.GetTestContext(), chainID2)
 	Nil(t.T(), err)
 	Equal(t.T(), blockNumber2+1, storedBlockNum2)
 
-	storedBlockNumOg, err := t.db.RetrieveLastBlock(t.GetTestContext(), chainID)
+	storedBlockNumOg, err := t.db.GetLastBlock(t.GetTestContext(), chainID)
 	Nil(t.T(), err)
 	Equal(t.T(), blockNumber, storedBlockNumOg)
 }

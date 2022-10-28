@@ -22,8 +22,6 @@ type ConsumerDBWriter interface {
 // ConsumerDBReader is the interface for reading events from the ConsumerDB.
 // nolint:interfacebloat
 type ConsumerDBReader interface {
-	// GetAllChainIDs gets all chain IDs that have been used in bridge events.
-	GetAllChainIDs(ctx context.Context) ([]int, error)
 	// GetUint64 gets a uint64 for a given query.
 	GetUint64(ctx context.Context, query string) (uint64, error)
 	// GetFloat64 gets a float64 out of the database
@@ -34,12 +32,15 @@ type ConsumerDBReader interface {
 	GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error)
 	// GetDateResults gets day by day data for a given query.
 	GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error)
-	// RetrieveLastBlock retrieves the last block number backfilled for a given chain ID.
-	RetrieveLastBlock(ctx context.Context, chainID uint32) (lastBlock uint64, err error)
+	// GetAddressRanking gets AddressRanking for a given query.
+	GetAddressRanking(ctx context.Context, query string) ([]*model.AddressRanking, error)
+
+	// GetAllChainIDs gets all chain IDs that have been used in bridge events.
+	GetAllChainIDs(ctx context.Context) ([]int, error)
+	// GetLastBlock retrieves the last block number backfilled for a given chain ID.
+	GetLastBlock(ctx context.Context, chainID uint32) (lastBlock uint64, err error)
 	// PartialInfosFromIdentifiers returns events given identifiers.
 	PartialInfosFromIdentifiers(ctx context.Context, query string) ([]*model.PartialInfo, error)
-	// GetTransactionCountForEveryAddress gets the count of transactions (origin) for each address.
-	GetTransactionCountForEveryAddress(ctx context.Context, query string) ([]*model.AddressRanking, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.
