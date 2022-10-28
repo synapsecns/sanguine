@@ -43,15 +43,28 @@ type txExtraInfo struct {
 	From        *common.Address `json:"from,omitempty"`
 }
 
+// rpcBlock is an eth rpc block.
 type rpcBlock struct {
 	Hash         common.Hash      `json:"hash"`
 	Transactions []rpcTransaction `json:"transactions"`
 	UncleHashes  []common.Hash    `json:"uncles"`
 }
 
+// rpcBlockNoTx is an eth rpc block without transactions (used by eth_getBlockByNumber calls with tx flag set to false).
+type rpcBlockNoTx struct {
+	Hash        common.Hash   `json:"hash"`
+	UncleHashes []common.Hash `json:"uncles"`
+}
+
 // fullRPCBlock is used to ensure parity by encoding both the header and the block.
 type fullRPCBlock struct {
 	Block  rpcBlock      `json:"rpc_block"`
+	Header *types.Header `json:"header"`
+}
+
+// fullRPCBlock is used to ensure parity by encoding both the header and the block.
+type fullRPCBlockNoTx struct {
+	Block  rpcBlockNoTx  `json:"rpc_block"`
 	Header *types.Header `json:"header"`
 }
 
@@ -90,8 +103,9 @@ type feeHistoryResultMarshaling struct {
 
 // StandardizeResponse produces a standardized json response for hashing (strips extra fields)
 // nolint: gocognit, cyclop
-func standardizeResponse(ctx context.Context, method string, rpcMessage JSONRPCMessage) (out []byte, err error) {
+func standardizeResponse(ctx context.Context, req *RPCRequest, rpcMessage JSONRPCMessage) (out []byte, err error) {
 	// TODO: use a sync.pool for acquiring/releasing these structs
+	method := req.Method
 
 OUTER:
 	switch RPCMethod(method) {
@@ -143,7 +157,6 @@ OUTER:
 			out, err = json.Marshal(syncing)
 			break OUTER
 		}
-
 		var p rpcProgress
 		if err = json.Unmarshal(rpcMessage.Result, &p); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
@@ -160,7 +173,7 @@ OUTER:
 	case BlockByHashMethod, BlockByNumberMethod:
 		var head *types.Header
 		var rpcBody rpcBlock
-
+		var rpcBlockNoTx rpcBlockNoTx
 		groupCtx, _ := errgroup.WithContext(ctx)
 		groupCtx.Go(func() error {
 			if err = json.Unmarshal(rpcMessage.Result, &head); err != nil {
@@ -168,12 +181,24 @@ OUTER:
 			}
 			return nil
 		})
-		groupCtx.Go(func() error {
-			if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
-				return fmt.Errorf("could not parse: %w", err)
-			}
-			return nil
-		})
+
+		var txFlag bool
+		err := json.Unmarshal(req.Params[1], &txFlag)
+		if txFlag {
+			groupCtx.Go(func() error {
+				if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
+					return fmt.Errorf("could not parse: %w", err)
+				}
+				return nil
+			})
+		} else {
+			groupCtx.Go(func() error {
+				if err = json.Unmarshal(rpcMessage.Result, &rpcBlockNoTx); err != nil {
+					return fmt.Errorf("could not parse: %w", err)
+				}
+				return nil
+			})
+		}
 
 		err = groupCtx.Wait()
 		if err != nil {
@@ -183,6 +208,18 @@ OUTER:
 
 		if head == nil {
 			return nil, errors.New("header was empty")
+		}
+
+		// If tx flag is false, return output block with fullRPCBlockNoTx type.
+		if !txFlag {
+			outputBlock := fullRPCBlockNoTx{
+				Block:  rpcBlockNoTx,
+				Header: head,
+			}
+			out, err = json.Marshal(outputBlock)
+
+			// Bypass the following uncle block verification.
+			return out, nil
 		}
 
 		// Quick-verify transaction and uncle lists. This mostly helps with debugging the server.
@@ -199,12 +236,11 @@ OUTER:
 			return nil, fmt.Errorf("server returned empty transaction list but block header indicates transactions")
 		}
 
-		fullBlock := fullRPCBlock{
+		outputBlock := fullRPCBlock{
 			Block:  rpcBody,
 			Header: head,
 		}
-
-		out, err = json.Marshal(fullBlock)
+		out, err = json.Marshal(outputBlock)
 		if err != nil {
 			return nil, fmt.Errorf("could not unmarshall full block: %w", err)
 		}
