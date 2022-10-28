@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"os"
 
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
@@ -37,6 +38,8 @@ func NewSqliteStore(ctx context.Context, dbPath string) (*Store, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to db %s: %w", dbPath, err)
 	}
+
+	metrics.Get().AddGormCallbacks(gdb)
 
 	err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
 	if err != nil {

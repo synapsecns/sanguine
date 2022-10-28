@@ -15,6 +15,7 @@ require (
 	github.com/cheekybits/genny v1.0.0
 	github.com/ethereum/go-ethereum v1.10.25
 	github.com/fatih/structtag v1.2.0
+	github.com/filipemendespi/newrelic-context v0.0.0-20200414012421-889cae3d7978
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-kit/kit v0.12.0
@@ -25,6 +26,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.19.2
 	github.com/newrelic/go-agent/v3/integrations/nrgin v1.1.3
+	github.com/newrelic/go-agent/v3/integrations/nrzap v1.0.1
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.13.0
@@ -39,7 +41,8 @@ require (
 	golang.org/x/exp v0.0.0-20221012211006-4de253d81b95
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.42.1
-	gorm.io/gorm v1.23.9
+	gorm.io/driver/sqlite v1.4.3
+	gorm.io/gorm v1.24.0
 	k8s.io/apimachinery v0.25.1
 )
 
@@ -100,6 +103,7 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/mattn/go-tty v0.0.3 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

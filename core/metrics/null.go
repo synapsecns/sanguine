@@ -3,12 +3,17 @@ package metrics
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 )
 
 // nullHandler is a metrics handler that does nothing.
 // it is used to allow metrics collection to be skipped.
 type nullHandler struct {
+}
+
+func (n nullHandler) AddGormCallbacks(db *gorm.DB) {
+	// Do nothing
 }
 
 func (n nullHandler) ConfigureHTTPClient(client *http.Client) {

@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	ngrin "github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/integrations/nrzap"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/synapsecns/sanguine/core/config"
+	nrcontrib "github.com/synapsecns/sanguine/core/metrics/newrelic"
+	"gorm.io/gorm"
 	"net/http"
 	"os"
 	"sync"
@@ -25,6 +28,12 @@ func NewRelicMetricsHandler(buildInfo config.BuildInfo) Handler {
 	}
 }
 
+func (n *newRelicHandler) AddGormCallbacks(db *gorm.DB) {
+	nrcontrib.AddGormCallbacks(db, func(name string, opts ...newrelic.TraceOption) *newrelic.Transaction {
+		return n.app.StartTransaction(name, opts...)
+	})
+}
+
 func (n *newRelicHandler) Gin() gin.HandlerFunc {
 	return ngrin.Middleware(n.app)
 }
@@ -37,7 +46,9 @@ func (n *newRelicHandler) Start(_ context.Context) (err error) {
 			newrelic.ConfigAppName(n.buildInfo.Name()),
 			newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
 			newrelic.ConfigAppLogForwardingEnabled(true),
+			newrelic.ConfigAppLogEnabled(true),
 			newrelic.ConfigCodeLevelMetricsEnabled(true),
+			nrzap.ConfigLogger(logger.Desugar()),
 			func(c *newrelic.Config) {
 				c.Labels = map[string]string{
 					"version": n.buildInfo.Version(),

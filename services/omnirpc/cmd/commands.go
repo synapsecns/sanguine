@@ -43,7 +43,7 @@ var chainListCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		// Create a large heap allocation of 10 GiB
 		// See: https://blog.twitch.tv/en/2019/04/10/go-memory-ballast-how-i-learnt-to-stop-worrying-and-love-the-heap/
-		//_ = make([]byte, 10<<30)
+		// _ = make([]byte, 10<<30)
 
 		rConfig, err := rpcConfig.GetPublicRPCConfig(c.Context)
 		if err != nil {
@@ -110,7 +110,7 @@ var serverCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		// Create a large heap allocation of 10 GiB
 		// See: https://blog.twitch.tv/en/2019/04/10/go-memory-ballast-how-i-learnt-to-stop-worrying-and-love-the-heap/
-		//_ = make([]byte, 10<<30)
+		// _ = make([]byte, 10<<30)
 
 		fileContents, err := os.ReadFile(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {

@@ -6,6 +6,7 @@ import (
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
@@ -36,6 +37,7 @@ func Start(ctx context.Context, cfg Config) error {
 	router := gin.New()
 	router.Use(helmet.Default())
 	router.Use(gin.Recovery())
+	router.Use(metrics.Get().Gin())
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
 		AllowHeaders:    []string{"*"},

@@ -10,6 +10,7 @@ import (
 	ddhttp "gopkg.in/DataDog/dd-trace-go.v1/contrib/net/http"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"gopkg.in/DataDog/dd-trace-go.v1/profiler"
+	"gorm.io/gorm"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"net/http"
 	"strings"
@@ -18,6 +19,10 @@ import (
 type datadogHandler struct {
 	profilerOptions []profiler.Option
 	buildInfo       config.BuildInfo
+}
+
+func (d *datadogHandler) AddGormCallbacks(db *gorm.DB) {
+	// TODO: implement, see:  https://github.com/DataDog/dd-trace-go/blob/main/contrib/jinzhu/gorm/example_test.go
 }
 
 // NewDatadogMetricsHandler creates a new datadog metrics handler.

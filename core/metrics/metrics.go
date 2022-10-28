@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
+	"gorm.io/gorm"
 	"net/http"
 	"os"
 	"strings"
@@ -17,6 +18,8 @@ type Handler interface {
 	Gin() gin.HandlerFunc
 	// ConfigureHTTPClient configures tracing on an http client
 	ConfigureHTTPClient(client *http.Client)
+	// AddGormCallbacks adds gorm callbacks for tracing.
+	AddGormCallbacks(db *gorm.DB)
 }
 
 // HandlerType is the handler type to use
