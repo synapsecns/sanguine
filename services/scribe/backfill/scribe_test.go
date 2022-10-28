@@ -120,18 +120,21 @@ func (b BackfillSuite) TestScribeBackfill() {
 	Nil(b.T(), err)
 	// There are 9 receipts per chain. Since there are 3 chains, 9*3 = 27 receipts.
 	Equal(b.T(), 27, len(receipts))
+
 	for _, chainBackfiller := range chainBackfillers {
 		totalBlockTimes := uint64(0)
 		currBlock, err := scribeBackfiller.Clients()[chainBackfiller.ChainID()].BlockNumber(b.GetTestContext())
 		Nil(b.T(), err)
-		for blockNum := uint64(0); blockNum <= currBlock; blockNum++ {
+		firstBlock, err := b.testDB.RetrieveFirstBlockStored(b.GetTestContext(), chainBackfiller.ChainID())
+		Nil(b.T(), err)
+		for blockNum := firstBlock; blockNum <= currBlock; blockNum++ {
 			_, err := b.testDB.RetrieveBlockTime(b.GetTestContext(), chainBackfiller.ChainID(), blockNum)
 			if err == nil {
 				totalBlockTimes++
 			}
 		}
-		// There are `currBlock`+1 block times stored. (+1 because block 0 is stored)
-		Equal(b.T(), currBlock+1, totalBlockTimes)
+		// There are `currBlock` - `firstBlock`+1 block times stored. events don't get emitted until the contract gets deployed.
+		Equal(b.T(), currBlock-firstBlock+uint64(1), totalBlockTimes)
 
 		// Check that the last stored block time is correct.
 		lastBlockTime, err := b.testDB.RetrieveLastBlockTime(b.GetTestContext(), chainBackfiller.ChainID())

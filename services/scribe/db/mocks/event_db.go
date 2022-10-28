@@ -317,6 +317,27 @@ func (_m *EventDB) RetrieveLastIndexed(ctx context.Context, contractAddress comm
 	return r0, r1
 }
 
+// RetrieveLogCountForContract provides a mock function with given fields: ctx, contractAddress, chainID
+func (_m *EventDB) RetrieveLogCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error) {
+	ret := _m.Called(ctx, contractAddress, chainID)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32) int64); ok {
+		r0 = rf(ctx, contractAddress, chainID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, uint32) error); ok {
+		r1 = rf(ctx, contractAddress, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // RetrieveLogsInRange provides a mock function with given fields: ctx, logFilter, startBlock, endBlock, page
 func (_m *EventDB) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, startBlock uint64, endBlock uint64, page int) ([]*types.Log, error) {
 	ret := _m.Called(ctx, logFilter, startBlock, endBlock, page)

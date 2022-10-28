@@ -261,3 +261,35 @@ func (g APISuite) TestLastContractIndexed() {
 	// check that the data is equal
 	Equal(g.T(), *retrievedBlockTime.Response, int(blockNumber))
 }
+
+func (g APISuite) TestLogCount() {
+	// create data for storing a block time
+	chainID := gofakeit.Uint32()
+	contractAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+	contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+	// create and store logs, receipts, and txs
+	var log types.Log
+	var err error
+	for blockNumber := 0; blockNumber < 10; blockNumber++ {
+		// create and store logs
+		if blockNumber%2 == 0 {
+			log = g.buildLog(contractAddressA, uint64(blockNumber))
+			err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+			Nil(g.T(), err)
+		} else {
+			log = g.buildLog(contractAddressB, uint64(blockNumber))
+			err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+			Nil(g.T(), err)
+		}
+	}
+
+	// test get logs and get logs in a range (Graphql)
+	logCountA, err := g.gqlClient.GetLogCount(g.GetTestContext(), int(chainID), contractAddressA.String())
+	Nil(g.T(), err)
+	Equal(g.T(), 5, *logCountA.Response)
+	// store last indexed
+	logCountB, err := g.gqlClient.GetLogCount(g.GetTestContext(), int(chainID), contractAddressA.String())
+	Nil(g.T(), err)
+	Equal(g.T(), 5, *logCountB.Response)
+}
