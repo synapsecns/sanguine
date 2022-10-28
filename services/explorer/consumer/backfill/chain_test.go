@@ -30,6 +30,7 @@ func arrayToTokenIndexMap(input []*big.Int) map[uint8]string {
 func (b *BackfillSuite) TestBackfill() {
 	testChainID := b.testBackend.GetBigChainID()
 	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
+	bridgeV1Contract, bridgeV1Ref := b.testDeployManager.GetTestSynapseBridgeV1(b.GetTestContext(), b.testBackend)
 	swapContractA, swapRefA := b.testDeployManager.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
 	testDeployManagerB := testcontracts.NewDeployManager(b.T())
 	swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
@@ -41,6 +42,11 @@ func (b *BackfillSuite) TestBackfill() {
 	contractConfigBridge := config.ContractConfig{
 		ContractType: "bridge",
 		Address:      bridgeContract.Address().String(),
+		StartBlock:   0,
+	}
+	contractConfigBridgeV1 := config.ContractConfig{
+		ContractType: "bridge",
+		Address:      bridgeV1Contract.Address().String(),
 		StartBlock:   0,
 	}
 	contractConfigSwap1 := config.ContractConfig{
@@ -62,6 +68,15 @@ func (b *BackfillSuite) TestBackfill() {
 			FetchBlockIncrement: 100,
 			MaxGoroutines:       5,
 			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2},
+		},
+	}
+	chainConfigsV1 := []config.ChainConfig{
+		{
+			ChainID:             uint32(testChainID.Uint64()),
+			RPCURL:              gofakeit.URL(),
+			FetchBlockIncrement: 100,
+			MaxGoroutines:       5,
+			Contracts:           []config.ContractConfig{contractConfigBridgeV1, contractConfigSwap1, contractConfigSwap2},
 		},
 	}
 
@@ -124,6 +139,44 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(11)), 1)
 	redeemV2Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 12)
+	Nil(b.T(), err)
+
+	// Store every bridge event using the V1 contract.
+	bridgeTx, err = bridgeV1Ref.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
+	Nil(b.T(), err)
+	fmt.Println("hoshh", bridgeTx.Hash().String())
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(3)), 1)
+	depositV1Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 3)
+	Nil(b.T(), err)
+
+	bridgeTx, err = bridgeV1Ref.TestRedeem(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(int64(gofakeit.Uint32()))), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
+	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(3)), 2)
+	redeemV1Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 3)
+	Nil(b.T(), err)
+
+	bridgeTx, err = bridgeV1Ref.TestWithdraw(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())})
+	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(3)), 3)
+	withdrawV1Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 3)
+	Nil(b.T(), err)
+
+	bridgeTx, err = bridgeV1Ref.TestDepositAndSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(7)), 1)
+	depositAndSwapV1Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 7)
+	Nil(b.T(), err)
+
+	bridgeTx, err = bridgeV1Ref.TestRedeemAndSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(8)), 1)
+	redeemAndSwapV1Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 8)
+	Nil(b.T(), err)
+
+	bridgeTx, err = bridgeV1Ref.TestRedeemAndRemove(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	Nil(b.T(), err)
+	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(9)), 1)
+	redeemAndRemoveV1Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 9)
 	Nil(b.T(), err)
 
 	// Store every swap event across two different swap contracts.
@@ -193,11 +246,18 @@ func (b *BackfillSuite) TestBackfill() {
 		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigs[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock)
 		Nil(b.T(), err)
 	}
+	for i := range chainConfigsV1[0].Contracts {
+		//  the last block store per contract
+		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigsV1[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock)
+		Nil(b.T(), err)
+	}
 
 	// Set up a ChainBackfiller
 	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
 	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf, b.consumerFetcher)
+	Nil(b.T(), err)
+	bpv1, err := consumer.NewBridgeParser(b.db, bridgeV1Contract.Address(), *bcf, b.consumerFetcher)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
@@ -218,37 +278,38 @@ func (b *BackfillSuite) TestBackfill() {
 
 	// Test the first chain in the config file
 	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, *f, chainConfigs[0])
+	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, *f, chainConfigsV1[0])
 
 	// Backfill the blocks
 	// TODO: store the latest block number to query to in scribe db
+	var count int64
 	err = chainBackfiller.Backfill(b.GetTestContext())
 	Nil(b.T(), err)
-	var count int64
-	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
-	Nil(b.T(), bridgeEvents.Error)
-	Equal(b.T(), int64(10), count)
 	swapEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
 	Nil(b.T(), swapEvents.Error)
 	Equal(b.T(), int64(10), count)
+	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
+	Nil(b.T(), bridgeEvents.Error)
+	Equal(b.T(), int64(10), count)
 
 	// Test bridge parity
-	err = b.depositParity(depositLog, bp, uint32(testChainID.Uint64()))
+	err = b.depositParity(depositLog, bp, uint32(testChainID.Uint64()), false)
 	Nil(b.T(), err)
-	err = b.redeemParity(redeemLog, bp, uint32(testChainID.Uint64()))
+	err = b.redeemParity(redeemLog, bp, uint32(testChainID.Uint64()), false)
 	Nil(b.T(), err)
-	err = b.withdrawParity(withdrawLog, bp, uint32(testChainID.Uint64()))
+	err = b.withdrawParity(withdrawLog, bp, uint32(testChainID.Uint64()), false)
 	Nil(b.T(), err)
-	err = b.mintParity(mintLog, bp, uint32(testChainID.Uint64()))
+	err = b.mintParity(mintLog, bp, uint32(testChainID.Uint64()), false)
 	Nil(b.T(), err)
-	err = b.depositAndSwapParity(depositAndSwapLog, bp, uint32(testChainID.Uint64()))
+	err = b.depositAndSwapParity(depositAndSwapLog, bp, uint32(testChainID.Uint64()), false)
 	Nil(b.T(), err)
-	err = b.redeemAndSwapParity(redeemAndSwapLog, bp, uint32(testChainID.Uint64()))
+	err = b.redeemAndSwapParity(redeemAndSwapLog, bp, uint32(testChainID.Uint64()), false)
 	Nil(b.T(), err)
-	err = b.redeemAndRemoveParity(redeemAndRemoveLog, bp, uint32(testChainID.Uint64()))
+	err = b.redeemAndRemoveParity(redeemAndRemoveLog, bp, uint32(testChainID.Uint64()), false)
 	Nil(b.T(), err)
-	err = b.mintAndSwapParity(mintAndSwapLog, bp, uint32(testChainID.Uint64()))
+	err = b.mintAndSwapParity(mintAndSwapLog, bp, uint32(testChainID.Uint64()), false)
 	Nil(b.T(), err)
-	err = b.withdrawAndRemoveParity(withdrawAndRemoveLog, bp, uint32(testChainID.Uint64()))
+	err = b.withdrawAndRemoveParity(withdrawAndRemoveLog, bp, uint32(testChainID.Uint64()), false)
 	Nil(b.T(), err)
 	err = b.redeemV2Parity(redeemV2Log, bp, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
@@ -275,6 +336,27 @@ func (b *BackfillSuite) TestBackfill() {
 	err = b.flashLoanParity(flashLoanLog, spA, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 
+	// Test bridge v1 parity
+	err = chainBackfillerV1.Backfill(b.GetTestContext())
+	Nil(b.T(), err)
+
+	err = b.depositParity(depositV1Log, bpv1, uint32(testChainID.Uint64()), true)
+	Nil(b.T(), err)
+	err = b.redeemParity(redeemV1Log, bpv1, uint32(testChainID.Uint64()), true)
+	Nil(b.T(), err)
+	err = b.withdrawParity(withdrawV1Log, bpv1, uint32(testChainID.Uint64()), true)
+	Nil(b.T(), err)
+	err = b.depositAndSwapParity(depositAndSwapV1Log, bpv1, uint32(testChainID.Uint64()), true)
+	Nil(b.T(), err)
+	err = b.redeemAndSwapParity(redeemAndSwapV1Log, bpv1, uint32(testChainID.Uint64()), true)
+	Nil(b.T(), err)
+	err = b.redeemAndRemoveParity(redeemAndRemoveV1Log, bpv1, uint32(testChainID.Uint64()), true)
+	Nil(b.T(), err)
+
+	bridgeEvents = b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
+	Nil(b.T(), bridgeEvents.Error)
+	Equal(b.T(), int64(16), count)
+
 	lastBlockStored, err := b.db.RetrieveLastBlock(b.GetTestContext(), uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 	Equal(b.T(), lastBlock, lastBlockStored)
@@ -295,9 +377,39 @@ func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, bloc
 	return receipt.Logs[0], nil
 }
 
-// nolint:dupl
-func (b *BackfillSuite) depositParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
+//nolint:dupl
+func (b *BackfillSuite) depositParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
+	if useV1 {
+		parsedLog, err := parser.FiltererV1.ParseTokenDeposit(*log)
+		_ = parsedLog
+		if err != nil {
+			return fmt.Errorf("error parsing log: %w", err)
+		}
+		recipient := gosql.NullString{
+			String: parsedLog.To.String(),
+			Valid:  true,
+		}
+		var count int64
+		events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+			Where(&sql.BridgeEvent{
+				ContractAddress: log.Address.String(),
+				ChainID:         chainID,
+				EventType:       bridgeTypes.DepositEvent.Int(),
+				BlockNumber:     log.BlockNumber,
+				TxHash:          log.TxHash.String(),
+				Token:           parsedLog.Token.String(),
+				Amount:          parsedLog.Amount,
+
+				Recipient:          recipient,
+				DestinationChainID: parsedLog.ChainId,
+			}).Count(&count)
+		if events.Error != nil {
+			return fmt.Errorf("error querying for event: %w", events.Error)
+		}
+		Equal(b.T(), int64(1), count)
+		return nil
+	}
 	parsedLog, err := parser.Filterer.ParseTokenDeposit(*log)
 	_ = parsedLog
 	if err != nil {
@@ -329,8 +441,37 @@ func (b *BackfillSuite) depositParity(log *types.Log, parser *consumer.BridgePar
 }
 
 //nolint:dupl
-func (b *BackfillSuite) redeemParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
+func (b *BackfillSuite) redeemParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
+	if useV1 {
+		parsedLog, err := parser.FiltererV1.ParseTokenRedeem(*log)
+		if err != nil {
+			return fmt.Errorf("error parsing log: %w", err)
+		}
+		recipient := gosql.NullString{
+			String: parsedLog.To.String(),
+			Valid:  true,
+		}
+		var count int64
+		events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+			Where(&sql.BridgeEvent{
+				ContractAddress: log.Address.String(),
+				ChainID:         chainID,
+				EventType:       bridgeTypes.RedeemEvent.Int(),
+				BlockNumber:     log.BlockNumber,
+				TxHash:          log.TxHash.String(),
+				Token:           parsedLog.Token.String(),
+				Amount:          parsedLog.Amount,
+
+				Recipient:          recipient,
+				DestinationChainID: parsedLog.ChainId,
+			}).Count(&count)
+		if events.Error != nil {
+			return fmt.Errorf("error querying for event: %w", events.Error)
+		}
+		Equal(b.T(), int64(1), count)
+		return nil
+	}
 	parsedLog, err := parser.Filterer.ParseTokenRedeem(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
@@ -361,8 +502,42 @@ func (b *BackfillSuite) redeemParity(log *types.Log, parser *consumer.BridgePars
 }
 
 //nolint:dupl
-func (b *BackfillSuite) withdrawParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
+func (b *BackfillSuite) withdrawParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
+	if useV1 {
+		parsedLog, err := parser.FiltererV1.ParseTokenWithdraw(*log)
+		if err != nil {
+			return fmt.Errorf("error parsing log: %w", err)
+		}
+		recipient := gosql.NullString{
+			String: parsedLog.To.String(),
+			Valid:  true,
+		}
+		kappa := gosql.NullString{
+			String: common.Bytes2Hex(parsedLog.Kappa[:]),
+			Valid:  true,
+		}
+		var count int64
+		events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+			Where(&sql.BridgeEvent{
+				ContractAddress: log.Address.String(),
+				ChainID:         chainID,
+				EventType:       bridgeTypes.WithdrawEvent.Int(),
+				BlockNumber:     log.BlockNumber,
+				TxHash:          log.TxHash.String(),
+				Token:           parsedLog.Token.String(),
+				Amount:          parsedLog.Amount,
+
+				Recipient: recipient,
+				Fee:       parsedLog.Fee,
+				Kappa:     kappa,
+			}).Count(&count)
+		if events.Error != nil {
+			return fmt.Errorf("error querying for event: %w", events.Error)
+		}
+		Equal(b.T(), int64(1), count)
+		return nil
+	}
 	parsedLog, err := parser.Filterer.ParseTokenWithdraw(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
@@ -398,8 +573,42 @@ func (b *BackfillSuite) withdrawParity(log *types.Log, parser *consumer.BridgePa
 }
 
 //nolint:dupl
-func (b *BackfillSuite) mintParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
+func (b *BackfillSuite) mintParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
+	if useV1 {
+		parsedLog, err := parser.Filterer.ParseTokenMint(*log)
+		if err != nil {
+			return fmt.Errorf("error parsing log: %w", err)
+		}
+		recipient := gosql.NullString{
+			String: parsedLog.To.String(),
+			Valid:  true,
+		}
+		kappa := gosql.NullString{
+			String: common.Bytes2Hex(parsedLog.Kappa[:]),
+			Valid:  true,
+		}
+		var count int64
+		events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+			Where(&sql.BridgeEvent{
+				ContractAddress: log.Address.String(),
+				ChainID:         chainID,
+				EventType:       bridgeTypes.MintEvent.Int(),
+				BlockNumber:     log.BlockNumber,
+				TxHash:          log.TxHash.String(),
+				Token:           parsedLog.Token.String(),
+				Amount:          parsedLog.Amount,
+
+				Recipient: recipient,
+				Fee:       parsedLog.Fee,
+				Kappa:     kappa,
+			}).Count(&count)
+		if events.Error != nil {
+			return fmt.Errorf("error querying for event: %w", events.Error)
+		}
+		Equal(b.T(), int64(1), count)
+		return nil
+	}
 	parsedLog, err := parser.Filterer.ParseTokenMint(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
@@ -435,8 +644,40 @@ func (b *BackfillSuite) mintParity(log *types.Log, parser *consumer.BridgeParser
 }
 
 //nolint:dupl
-func (b *BackfillSuite) depositAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
+func (b *BackfillSuite) depositAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
+	if useV1 {
+		parsedLog, err := parser.Filterer.ParseTokenDepositAndSwap(*log)
+		if err != nil {
+			return fmt.Errorf("error parsing log: %w", err)
+		}
+		recipient := gosql.NullString{
+			String: parsedLog.To.String(),
+			Valid:  true,
+		}
+		var count int64
+		events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+			Where(&sql.BridgeEvent{
+				ContractAddress: log.Address.String(),
+				ChainID:         chainID,
+				EventType:       bridgeTypes.DepositAndSwapEvent.Int(),
+				BlockNumber:     log.BlockNumber,
+				TxHash:          log.TxHash.String(),
+				Token:           parsedLog.Token.String(),
+				Amount:          parsedLog.Amount,
+
+				Recipient:      recipient,
+				TokenIndexFrom: big.NewInt(int64(parsedLog.TokenIndexFrom)),
+				TokenIndexTo:   big.NewInt(int64(parsedLog.TokenIndexTo)),
+				MinDy:          parsedLog.MinDy,
+				Deadline:       parsedLog.Deadline,
+			}).Count(&count)
+		if events.Error != nil {
+			return fmt.Errorf("error querying for event: %w", events.Error)
+		}
+		Equal(b.T(), int64(1), count)
+		return nil
+	}
 	parsedLog, err := parser.Filterer.ParseTokenDepositAndSwap(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
@@ -470,8 +711,40 @@ func (b *BackfillSuite) depositAndSwapParity(log *types.Log, parser *consumer.Br
 }
 
 //nolint:dupl
-func (b *BackfillSuite) redeemAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
+func (b *BackfillSuite) redeemAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
+	if useV1 {
+		parsedLog, err := parser.Filterer.ParseTokenRedeemAndSwap(*log)
+		if err != nil {
+			return fmt.Errorf("error parsing log: %w", err)
+		}
+		recipient := gosql.NullString{
+			String: parsedLog.To.String(),
+			Valid:  true,
+		}
+		var count int64
+		events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+			Where(&sql.BridgeEvent{
+				ContractAddress: log.Address.String(),
+				ChainID:         chainID,
+				EventType:       bridgeTypes.RedeemAndSwapEvent.Int(),
+				BlockNumber:     log.BlockNumber,
+				TxHash:          log.TxHash.String(),
+				Token:           parsedLog.Token.String(),
+				Amount:          parsedLog.Amount,
+
+				Recipient:      recipient,
+				TokenIndexFrom: big.NewInt(int64(parsedLog.TokenIndexFrom)),
+				TokenIndexTo:   big.NewInt(int64(parsedLog.TokenIndexTo)),
+				MinDy:          parsedLog.MinDy,
+				Deadline:       parsedLog.Deadline,
+			}).Count(&count)
+		if events.Error != nil {
+			return fmt.Errorf("error querying for event: %w", events.Error)
+		}
+		Equal(b.T(), int64(1), count)
+		return nil
+	}
 	parsedLog, err := parser.Filterer.ParseTokenRedeemAndSwap(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
@@ -505,8 +778,39 @@ func (b *BackfillSuite) redeemAndSwapParity(log *types.Log, parser *consumer.Bri
 }
 
 //nolint:dupl
-func (b *BackfillSuite) redeemAndRemoveParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
+func (b *BackfillSuite) redeemAndRemoveParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
+	if useV1 {
+		parsedLog, err := parser.Filterer.ParseTokenRedeemAndRemove(*log)
+		if err != nil {
+			return fmt.Errorf("error parsing log: %w", err)
+		}
+		recipient := gosql.NullString{
+			String: parsedLog.To.String(),
+			Valid:  true,
+		}
+		var count int64
+		events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+			Where(&sql.BridgeEvent{
+				ContractAddress: log.Address.String(),
+				ChainID:         chainID,
+				EventType:       bridgeTypes.RedeemAndRemoveEvent.Int(),
+				BlockNumber:     log.BlockNumber,
+				TxHash:          log.TxHash.String(),
+				Token:           parsedLog.Token.String(),
+				Amount:          parsedLog.Amount,
+
+				Recipient:      recipient,
+				SwapTokenIndex: big.NewInt(int64(parsedLog.SwapTokenIndex)),
+				SwapMinAmount:  parsedLog.SwapMinAmount,
+				SwapDeadline:   parsedLog.SwapDeadline,
+			}).Count(&count)
+		if events.Error != nil {
+			return fmt.Errorf("error querying for event: %w", events.Error)
+		}
+		Equal(b.T(), int64(1), count)
+		return nil
+	}
 	parsedLog, err := parser.Filterer.ParseTokenRedeemAndRemove(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
@@ -539,8 +843,47 @@ func (b *BackfillSuite) redeemAndRemoveParity(log *types.Log, parser *consumer.B
 }
 
 //nolint:dupl
-func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
+func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
+	if useV1 {
+		parsedLog, err := parser.Filterer.ParseTokenMintAndSwap(*log)
+		if err != nil {
+			return fmt.Errorf("error parsing log: %w", err)
+		}
+		recipient := gosql.NullString{
+			String: parsedLog.To.String(),
+			Valid:  true,
+		}
+		kappa := gosql.NullString{
+			String: common.Bytes2Hex(parsedLog.Kappa[:]),
+			Valid:  true,
+		}
+		var count int64
+		events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+			Where(&sql.BridgeEvent{
+				ContractAddress: log.Address.String(),
+				ChainID:         chainID,
+				EventType:       bridgeTypes.MintAndSwapEvent.Int(),
+				BlockNumber:     log.BlockNumber,
+				TxHash:          log.TxHash.String(),
+				Token:           parsedLog.Token.String(),
+				Amount:          parsedLog.Amount,
+
+				Recipient:      recipient,
+				Fee:            parsedLog.Fee,
+				TokenIndexFrom: big.NewInt(int64(parsedLog.TokenIndexFrom)),
+				TokenIndexTo:   big.NewInt(int64(parsedLog.TokenIndexTo)),
+				MinDy:          parsedLog.MinDy,
+				Deadline:       parsedLog.Deadline,
+				SwapSuccess:    big.NewInt(int64(*consumer.BoolToUint8(&parsedLog.SwapSuccess))),
+				Kappa:          kappa,
+			}).Count(&count)
+		if events.Error != nil {
+			return fmt.Errorf("error querying for event: %w", events.Error)
+		}
+		Equal(b.T(), int64(1), count)
+		return nil
+	}
 	parsedLog, err := parser.Filterer.ParseTokenMintAndSwap(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
@@ -581,8 +924,45 @@ func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.Bridg
 }
 
 //nolint:dupl
-func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
+func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
+	if useV1 {
+		parsedLog, err := parser.Filterer.ParseTokenWithdrawAndRemove(*log)
+		if err != nil {
+			return fmt.Errorf("error parsing log: %w", err)
+		}
+		recipient := gosql.NullString{
+			String: parsedLog.To.String(),
+			Valid:  true,
+		}
+		kappa := gosql.NullString{
+			String: common.Bytes2Hex(parsedLog.Kappa[:]),
+			Valid:  true,
+		}
+		var count int64
+		events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
+			Where(&sql.BridgeEvent{
+				ContractAddress: log.Address.String(),
+				ChainID:         chainID,
+				EventType:       bridgeTypes.WithdrawAndRemoveEvent.Int(),
+				BlockNumber:     log.BlockNumber,
+				TxHash:          log.TxHash.String(),
+				Token:           parsedLog.Token.String(),
+				Amount:          parsedLog.Amount,
+
+				Recipient:      recipient,
+				SwapTokenIndex: big.NewInt(int64(parsedLog.SwapTokenIndex)),
+				SwapMinAmount:  parsedLog.SwapMinAmount,
+				SwapDeadline:   parsedLog.SwapDeadline,
+				SwapSuccess:    big.NewInt(int64(*consumer.BoolToUint8(&parsedLog.SwapSuccess))),
+				Kappa:          kappa,
+			}).Count(&count)
+		if events.Error != nil {
+			return fmt.Errorf("error querying for event: %w", events.Error)
+		}
+		Equal(b.T(), int64(1), count)
+		return nil
+	}
 	parsedLog, err := parser.Filterer.ParseTokenWithdrawAndRemove(*log)
 	if err != nil {
 		return fmt.Errorf("error parsing log: %w", err)
