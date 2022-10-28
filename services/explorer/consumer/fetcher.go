@@ -108,7 +108,7 @@ func (b *blockRange) EndTime() uint64 {
 // TimeToBlockNumber returns the first block number after the given time.
 //
 //nolint:gocognit,cyclop
-func (f Fetcher) TimeToBlockNumber(ctx context.Context, chainID uint32, startHeight, targetTime uint64) (uint64, error) {
+func (f Fetcher) TimeToBlockNumber(ctx context.Context, chainID int, startHeight, targetTime uint64) (uint64, error) {
 	// get the start and end block
 	searchRange, err := f.getSearchRange(ctx, startHeight, chainID)
 	if err != nil {
@@ -202,15 +202,15 @@ func getClosest(lesser block, greater block, target uint64) block {
 }
 
 //nolint:cyclop
-func (f Fetcher) getSearchRange(ctx context.Context, startHeight uint64, chainID uint32) (*blockRange, error) {
-	getEndHeight, err := f.fetchClient.GetLastStoredBlockNumber(ctx, int(chainID))
+func (f Fetcher) getSearchRange(ctx context.Context, startHeight uint64, chainID int) (*blockRange, error) {
+	getEndHeight, err := f.fetchClient.GetLastStoredBlockNumber(ctx, chainID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get end height: %w", err)
 	}
 	endHeight := uint64(*getEndHeight.Response)
 	var output blockRange
 	if startHeight == 0 {
-		getStartHeight, err := f.fetchClient.GetFirstStoredBlockNumber(ctx, int(chainID))
+		getStartHeight, err := f.fetchClient.GetFirstStoredBlockNumber(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get start height: %w", err)
 		}

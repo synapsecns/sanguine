@@ -9,76 +9,6 @@ import (
 	"strconv"
 )
 
-// EventType is an enum for event types.
-type EventType int8
-
-const (
-	// Bridge - SynapseBridge event.
-	Bridge int8 = iota
-	// Swap - SwapFlashLoan event.
-	Swap
-)
-
-// ReadBlockNumberByChainID provides an easy-to-use interface to validate database
-// data from a recent write event via chain id.
-func (s *Store) ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error) {
-	// If reading a bridge event
-	var blockNumber uint64
-	switch eventType {
-	case Bridge:
-		var resp BridgeEvent
-		dbTx := s.db.WithContext(ctx).
-			Find(&resp, "chain_id = ?", chainID)
-		if dbTx.Error != nil {
-			return nil, fmt.Errorf("failed to read event: %w", dbTx.Error)
-		}
-		blockNumber = resp.BlockNumber
-
-	// If reading a swap event
-	case Swap:
-		var resp SwapEvent
-		dbTx := s.db.WithContext(ctx).
-			Find(&resp, "chain_id = ?", chainID)
-		if dbTx.Error != nil {
-			return nil, fmt.Errorf("failed to store read event: %w", dbTx.Error)
-		}
-		blockNumber = resp.BlockNumber
-	}
-
-	return &blockNumber, nil
-}
-
-// GetTxHashFromKappa returns the transaction hash for a given kappa.
-func (s *Store) GetTxHashFromKappa(ctx context.Context, kappa string) (*string, error) {
-	var res BridgeEvent
-	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-		`SELECT * FROM bridge_events WHERE %s = '%s' SETTINGS readonly=1`,
-		DestinationKappaFieldName, kappa,
-	)).Find(&res)
-	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-	}
-
-	return &res.TxHash, nil
-}
-
-// GetKappaFromTxHash returns the kappa for a given transaction hash.
-func (s *Store) GetKappaFromTxHash(ctx context.Context, query string) (*string, error) {
-	var res BridgeEvent
-
-	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
-	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-	}
-
-	// nolint:nilnil
-	if !res.Kappa.Valid || res.Kappa.String == "" {
-		return nil, nil
-	}
-
-	return &res.Kappa.String, nil
-}
-
 // GetSwapSuccess returns if an event had a successful swap.
 func (s *Store) GetSwapSuccess(ctx context.Context, kappa string, chainID uint32) (*bool, error) {
 	var res BridgeEvent
@@ -86,7 +16,6 @@ func (s *Store) GetSwapSuccess(ctx context.Context, kappa string, chainID uint32
 		`SELECT * FROM bridge_events WHERE %s = '%s' AND %s = %d SETTINGS readonly=1`,
 		KappaFieldName, kappa, ChainIDFieldName, chainID,
 	)).Find(&res)
-	// s.db.WithContext(ctx).Raw(`SELECT * FROM (UPDATE bridge_events SET insert_time=1) SETTINGS readonly=1`).Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -101,20 +30,6 @@ func (s *Store) GetSwapSuccess(ctx context.Context, kappa string, chainID uint32
 	return &falseVal, nil
 }
 
-// GetAllChainIDs gets all chain IDs that have been used in bridge events.
-func (s *Store) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
-	var res []uint32
-	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-		`SELECT DISTINCT %s FROM bridge_events UNION DISTINCT SELECT DISTINCT toUInt32(%s) FROM bridge_events SETTINGS readonly=1`,
-		ChainIDFieldName, DestinationChainIDFieldName,
-	)).Find(&res)
-	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-	}
-
-	return res, nil
-}
-
 // GetTokenAddressesByChainID gets all token addresses that have been used in bridge events for a given chain ID.
 func (s *Store) GetTokenAddressesByChainID(ctx context.Context, query string) ([]string, error) {
 	var res []string
@@ -127,9 +42,9 @@ func (s *Store) GetTokenAddressesByChainID(ctx context.Context, query string) ([
 }
 
 // GetBridgeStatistic gets the bridge statistics.
-func (s *Store) GetBridgeStatistic(ctx context.Context, subQuery string) (*string, error) {
+func (s *Store) GetBridgeStatistic(ctx context.Context, query string) (*string, error) {
 	var res float64
-	dbTx := s.db.WithContext(ctx).Raw(subQuery + " SETTINGS readonly=1").Find(&res)
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
 
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
@@ -152,9 +67,9 @@ func (s *Store) BridgeEventCount(ctx context.Context, query string) (count uint6
 }
 
 // GetTransactionCountForEveryAddress gets the count of transactions (origin) for each address per chain id.
-func (s *Store) GetTransactionCountForEveryAddress(ctx context.Context, subQuery string) ([]*model.AddressRanking, error) {
+func (s *Store) GetTransactionCountForEveryAddress(ctx context.Context, query string) ([]*model.AddressRanking, error) {
 	var res []*model.AddressRanking
-	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS count FROM (%s) GROUP BY address ORDER BY count DESC SETTINGS readonly=1`, TokenFieldName, TxHashFieldName, subQuery)).Scan(&res)
+	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -273,6 +188,59 @@ func (s *Store) RetrieveLastBlock(ctx context.Context, chainID uint32) (lastBloc
 	}
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("failed to read last block: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
+/*╔══════════════════════════════════════════════════════════════════════╗*\
+▏*║                        TxHash <> Kappa  functions                    ║*▕
+\*╚══════════════════════════════════════════════════════════════════════╝*/
+
+// GetTxHashFromKappa returns the transaction hash for a given kappa.
+func (s *Store) GetTxHashFromKappa(ctx context.Context, kappa string) (*string, error) {
+	var res BridgeEvent
+	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
+		`SELECT * FROM bridge_events WHERE %s = '%s' SETTINGS readonly=1`,
+		DestinationKappaFieldName, kappa,
+	)).Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return &res.TxHash, nil
+}
+
+// GetKappaFromTxHash returns the kappa for a given transaction hash.
+func (s *Store) GetKappaFromTxHash(ctx context.Context, query string) (*string, error) {
+	var res BridgeEvent
+
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	// nolint:nilnil
+	if !res.Kappa.Valid || res.Kappa.String == "" {
+		return nil, nil
+	}
+
+	return &res.Kappa.String, nil
+}
+
+/*╔══════════════════════════════════════════════════════════════════════╗*\
+▏*║                           Helper functions                           ║*▕
+\*╚══════════════════════════════════════════════════════════════════════╝*/
+
+// GetAllChainIDs gets all chain IDs that have been used in bridge events.
+func (s *Store) GetAllChainIDs(ctx context.Context) ([]int, error) {
+	var res []int
+	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
+		`SELECT DISTINCT %s FROM bridge_events UNION DISTINCT SELECT DISTINCT toUInt32(%s) FROM bridge_events SETTINGS readonly=1`,
+		ChainIDFieldName, DestinationChainIDFieldName,
+	)).Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
 
 	return res, nil

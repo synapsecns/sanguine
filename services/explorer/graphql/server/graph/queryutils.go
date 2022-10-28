@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-func (r *queryResolver) getChainIDs(ctx context.Context, chainID *int) ([]uint32, error) {
-	var chainIDs []uint32
+func (r *queryResolver) getChainIDs(ctx context.Context, chainID *int) ([]int, error) {
+	var chainIDs []int
 	// if the chain ID is not specified, get all chain IDs
 	if chainID == nil {
 		chainIDsInt, err := r.DB.GetAllChainIDs(ctx)
@@ -20,7 +20,7 @@ func (r *queryResolver) getChainIDs(ctx context.Context, chainID *int) ([]uint32
 		}
 		chainIDs = append(chainIDs, chainIDsInt...)
 	} else {
-		chainIDs = append(chainIDs, uint32(*chainID))
+		chainIDs = append(chainIDs, *chainID)
 	}
 	return chainIDs, nil
 }
@@ -45,7 +45,7 @@ func (r *queryResolver) getTargetTime(hours *int) uint64 {
 	return targetTime
 }
 
-func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *string, kappa *string, includePending *bool, page *int, tokenAddress *string, fromInfos []*model.PartialInfo) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *string, kappa *string, includePending bool, page int, tokenAddress *string, fromInfos []*model.PartialInfo) ([]*model.BridgeTransaction, error) {
 	var results []*model.BridgeTransaction
 	for _, fromInfo := range fromInfos {
 		txHash := common.HexToHash(*fromInfo.TxnHash)
@@ -53,7 +53,7 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 		if kappa != nil {
 			destinationKappa = *kappa
 		}
-		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(nil, address, tokenAddress, &destinationKappa, nil, *page))
+		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(nil, address, tokenAddress, &destinationKappa, nil, page))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -73,12 +73,12 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 				SwapSuccess: swapSuccess,
 			})
 		case 0:
-			if *includePending {
+			if includePending {
 				results = append(results, &model.BridgeTransaction{
 					FromInfo:    fromInfo,
 					ToInfo:      nil,
 					Kappa:       &destinationKappa,
-					Pending:     includePending,
+					Pending:     &includePending,
 					SwapSuccess: nil,
 				})
 			}
@@ -89,7 +89,7 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 	return results, nil
 }
 
-func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *string, txnHash *string, kappa *string, page *int, tokenAddress *string, toInfos []*model.PartialInfo) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *string, txnHash *string, kappa *string, page int, tokenAddress *string, toInfos []*model.PartialInfo) ([]*model.BridgeTransaction, error) {
 	var results []*model.BridgeTransaction
 	pending := false
 	for _, toInfo := range toInfos {
@@ -104,7 +104,7 @@ func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *
 		if err != nil {
 			return nil, fmt.Errorf("failed to get origin tx hash: %w", err)
 		}
-		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(nil, address, tokenAddress, nil, originTxHash, *page))
+		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(nil, address, tokenAddress, nil, originTxHash, page))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -127,11 +127,11 @@ func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *
 	return results, nil
 }
 
-func (r *queryResolver) originOrDestinationBridge(ctx context.Context, chainID *uint32, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) originOrDestinationBridge(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending bool, page int, tokenAddress *string) ([]*model.BridgeTransaction, error) {
 	var results []*model.BridgeTransaction
 	var toInfos []*model.PartialInfo
 	var fromInfos []*model.PartialInfo
-	infos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, kappa, txnHash, *page))
+	infos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, kappa, txnHash, page))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 	}
@@ -191,7 +191,7 @@ func generateAddressSpecifierSQL(address *string, firstFilter *bool, tablePrefix
 }
 
 // generateSingleSpecifierI32SQL generates a where function with an uint32.
-func generateSingleSpecifierI32SQL(value *uint32, field string, firstFilter *bool, tablePrefix string) string {
+func generateSingleSpecifierI32SQL(value *int, field string, firstFilter *bool, tablePrefix string) string {
 	if value != nil {
 		if *firstFilter {
 			*firstFilter = false
@@ -227,7 +227,7 @@ func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *
 }
 
 // generatePartialInfoQuery returns the query for making the PartialInfo query.
-func generatePartialInfoQuery(chainID *uint32, address, tokenAddress, kappa, txHash *string, page int) string {
+func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash *string, page int) string {
 	firstFilter := true
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "t1.")
 	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "t1.")
@@ -269,7 +269,7 @@ func generatePartialInfoQuery(chainID *uint32, address, tokenAddress, kappa, txH
 }
 
 // generateBridgeEventCountQuery creates the query for bridge event count.
-func generateBridgeEventCountQuery(chainID uint32, address *string, tokenAddress *string, directionIn bool, firstBlock *uint64) string {
+func generateBridgeEventCountQuery(chainID int, address *string, tokenAddress *string, directionIn bool, firstBlock *uint64) string {
 	chainField := sql.ChainIDFieldName
 	if directionIn {
 		chainField = sql.DestinationChainIDFieldName
@@ -283,4 +283,25 @@ func generateBridgeEventCountQuery(chainID uint32, address *string, tokenAddress
 	query := fmt.Sprintf(`SELECT COUNT(DISTINCT (%s, %s)) FROM bridge_events %s%s%s%s`,
 		sql.TxHashFieldName, sql.EventIndexFieldName, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, blockSpecifier)
 	return query
+}
+
+func (r *queryResolver) generateSubQuery(ctx context.Context, targetTime uint64, colOne string, colTwo string) (string, error) {
+	subQuery := "("
+	chainIDs, err := r.DB.GetAllChainIDs(ctx)
+	if err != nil {
+		return subQuery, fmt.Errorf("failed to get chain IDs: %w", err)
+	}
+
+	for i, chain := range chainIDs {
+		startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chain, 0, targetTime)
+		if err != nil {
+			return subQuery, fmt.Errorf("failed to get start block number: %w", err)
+		}
+		sqlString := fmt.Sprintf("\nSELECT %s, %s, amount_usd FROM bridge_events WHERE %s = %d AND  %s >= %d", colOne, colTwo, sql.ChainIDFieldName, chain, sql.BlockNumberFieldName, startBlock)
+		if i != len(chainIDs)-1 {
+			sqlString += " UNION ALL"
+		}
+		subQuery += sqlString
+	}
+	return subQuery + ")", nil
 }
