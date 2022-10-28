@@ -293,3 +293,23 @@ func (g APISuite) TestLogCount() {
 	Nil(g.T(), err)
 	Equal(g.T(), 5, *logCountB.Response)
 }
+
+func (g APISuite) TestRetrieveBlockTimesCountForChain() {
+	chainIDA := gofakeit.Uint32()
+	chainIDB := gofakeit.Uint32()
+	blockTime := uint64(gofakeit.Uint32())
+	// Store 10 blocks for both chains.
+	for i := uint64(0); i < 10; i++ {
+		err := g.db.StoreBlockTime(g.GetTestContext(), chainIDA, i, blockTime+i)
+		Nil(g.T(), err)
+		err = g.db.StoreBlockTime(g.GetTestContext(), chainIDB, i, blockTime+(i*2))
+		Nil(g.T(), err)
+	}
+
+	blockTimeCountA, err := g.gqlClient.GetBlockTimeCount(g.GetTestContext(), int(chainIDA))
+	Nil(g.T(), err)
+	Equal(g.T(), 10, *blockTimeCountA.Response)
+	blockTimeCountB, err := g.gqlClient.GetBlockTimeCount(g.GetTestContext(), int(chainIDB))
+	Nil(g.T(), err)
+	Equal(g.T(), 10, *blockTimeCountB.Response)
+}

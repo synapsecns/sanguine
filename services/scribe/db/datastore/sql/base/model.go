@@ -49,7 +49,7 @@ type Log struct {
 	// ContractAddress is the address of the contract that generated the event
 	ContractAddress string `gorm:"column:contract_address;primaryKey"`
 	// ChainID is the chain id of the contract that generated the event
-	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// PrimaryTopic is the primary topic of the event. Topics[0]
 	PrimaryTopic sql.NullString `gorm:"primary_topic"`
 	// TopicA is the first topic. Topics[1]
@@ -69,7 +69,7 @@ type Log struct {
 	// BlockHash is the hash of the block in which the transaction was included
 	BlockHash string `gorm:"block_hash"`
 	// Index is the index of the log in the block
-	BlockIndex uint64 `gorm:"column:block_index;primaryKey;auto_increment:false;index:idx_block_number,priority:2,sort:desc"`
+	BlockIndex uint64 `gorm:"column:block_index;primaryKey;index:idx_block_number,priority:2,sort:desc"`
 	// Removed is true if this log was reverted due to a chain re-organization
 	Removed bool `gorm:"removed"`
 	// Confirmed is true if this log has been confirmed by the chain
@@ -79,7 +79,7 @@ type Log struct {
 // Receipt stores the receipt of a transaction.
 type Receipt struct {
 	// ChainID is the chain id of the receipt
-	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// Type is the type
 	Type uint8 `gorm:"column:receipt_type"`
 	// PostState is the post state
@@ -111,7 +111,7 @@ type EthTx struct {
 	// TxHash is the hash of the transaction
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// ChainID is the chain id of the transaction
-	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// BlockHash is the hash of the block in which the transaction was included
 	BlockHash string `gorm:"block_hash"`
 	// BlockNumber is the block in which the transaction was included
@@ -134,7 +134,7 @@ type LastIndexedInfo struct {
 	// ContractAddress is the contract address
 	ContractAddress string `gorm:"column:contract_address;index:idx_last_indexed,priority:1"`
 	// BlockNumber is the last block number indexed
-	BlockNumber uint64 `gorm:"column:block_number;auto_increment:false;index:idx_last_indexed,priority:2"`
+	BlockNumber uint64 `gorm:"column:block_number;index:idx_last_indexed,priority:2"`
 	// ChainID is the chain id of the contract
 	ChainID uint32 `gorm:"column:chain_id"`
 }
@@ -146,24 +146,24 @@ type LastConfirmedBlockInfo struct {
 	// ChainID is the chain id of the contract
 	ChainID uint32 `gorm:"column:chain_id"`
 	// BlockNumber is the last block number indexed
-	BlockNumber uint64 `gorm:"column:block_number;auto_increment:false"`
+	BlockNumber uint64 `gorm:"column:block_number"`
 }
 
 // BlockTime contains the timestamp of a block.
 type BlockTime struct {
 	// ChainID is the chain id of the contract
-	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// BlockNumber is the block number
-	BlockNumber uint64 `gorm:"column:block_number;primaryKey;auto_increment:false"`
+	BlockNumber uint64 `gorm:"column:block_number;primaryKey"`
 	// Timestamp is the timestamp of the block
-	Timestamp uint64 `gorm:"column:timestamp;auto_increment:false"`
+	Timestamp uint64 `gorm:"column:timestamp"`
 }
 
 // LastBlockTime contains the last block that had its timestamp stored.
 type LastBlockTime struct {
 	gorm.Model
 	// ChainID is the chain id of the contract
-	ChainID uint32 `gorm:"column:chain_id;primaryKey;auto_increment:false"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// BlockNumber is the block number
-	BlockNumber uint64 `gorm:"column:block_number;auto_increment:false"`
+	BlockNumber uint64 `gorm:"column:block_number"`
 }

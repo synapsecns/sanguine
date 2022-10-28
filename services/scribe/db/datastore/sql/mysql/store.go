@@ -22,7 +22,7 @@ var MaxIdleConns = 10
 
 // NamingStrategy is exported here for testing.
 var NamingStrategy = schema.NamingStrategy{
-	TablePrefix: "v2_",
+	TablePrefix: "v3_",
 }
 
 // NewMysqlStore creates a new mysql store for a given data store.
