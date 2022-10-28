@@ -32,8 +32,6 @@ type ChainBackfiller struct {
 	chainConfig config.ChainConfig
 }
 
-var maxBlockNumberRetry = 10
-
 // NewChainBackfiller creates a new backfiller for a chain.
 func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
 	// initialize the list of contract backfillers
@@ -166,9 +164,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 		// Current block
 		blockNum := startHeight
-
-		// Init retry limit for getting block
-		getBlockTries := 0
 		for {
 			select {
 			case <-groupCtx.Done():
@@ -187,16 +182,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				if err != nil {
 					timeoutBlockNum = bBlockNum.Duration()
 					logger.Warnf("could not get block time at block %s: %v", big.NewInt(int64(blockNum)).String(), err)
-					getBlockTries++
-
-					// If the request for BlockByNumber has failed 10 times, skip that block to prevent an infinite backoff.
-					if getBlockTries >= maxBlockNumberRetry {
-						// Reset
-						timeoutBlockNum = time.Duration(0)
-						getBlockTries = 0
-						logger.Warnf("skipping storing blocktime for block %s, could not execute BlockByNumber: %v", big.NewInt(int64(blockNum)).String(), err)
-						blockNum++
-					}
 					continue
 				}
 
