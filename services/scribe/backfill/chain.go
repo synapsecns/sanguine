@@ -202,7 +202,10 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 				// Move on to the next block.
 				blockNum++
+
+				// Reset the backoff after successful block parse run to prevent bloated back offs.
 				bBlockNum.Reset()
+
 				// If done with the range, exit go routine.
 				if blockNum > endHeight {
 					return nil
