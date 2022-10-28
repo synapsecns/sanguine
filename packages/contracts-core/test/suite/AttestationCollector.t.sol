@@ -88,50 +88,65 @@ contract AttestationCollectorTest is AttestationCollectorTools {
     ▏*║                 TESTS: SUBMIT ATTESTATION (REVERTS)                  ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_submitAttestation_revert_notNotary() public {
+    function test_submitAttestation_revert_notNotary_attacker() public {
         test_addNotary();
         createAttestationMock({ domain: DOMAIN_LOCAL, signer: attacker });
-        // Attestation signed by not a Notary should be rejected
+        // Check that attacker (address unknown to AttestationCollector) can't sign the attestation
+        // Some random address should not be considered a Notary for `DOMAIN_LOCAL`
         attestationCollectorSubmitAttestation({ revertMessage: "Signer is not a notary" });
     }
 
-    function test_submitAttestation_revert_wrongDomain() public {
+    function test_submitAttestation_revert_notNotary_notaryAnotherDomain() public {
         test_addNotary();
         createAttestationMock({ domain: DOMAIN_LOCAL, signer: suiteNotary(DOMAIN_REMOTE) });
-        // Attestation signed by Notary from chain other that attested chain should be rejected
+        // Check that Notary from another domain can't sign the attestation for `DOMAIN_LOCAL`
+        // Notary from `DOMAIN_REMOTE` should not be considered as a Notary for `DOMAIN_LOCAL`
         attestationCollectorSubmitAttestation({ revertMessage: "Signer is not a notary" });
     }
 
     function test_submitAttestation_revert_zeroNonce() public {
         test_addNotary();
+        // Create attestation with a zero nonce
         createAttestationMock({ domain: DOMAIN_LOCAL, nonce: 0 });
-        // Attestation with a zero nonce should be rejected as "outdated": no new info there
+        // When Notary hasn't submitted a single attestation, they should not be able
+        // to submit attestation with `nonce = 0`. It will be marked as "outdated", as it
+        // doesn't bring new information about the Origin merkle state.
         attestationCollectorSubmitAttestation({ revertMessage: "Outdated attestation" });
     }
 
     function test_submitAttestation_revert_sameNonce() public {
         test_submitAttestation();
-        // Same notary Attestation, that was already submitted, is outdated
+        // When Notary submitted an attestation, they should not be able to submit the
+        // same attestation again.  It will be marked as "outdated", as it
+        // doesn't bring new information about the Origin merkle state.
+        // No need to recreate the attestation, as it is saved after `test_submitAttestation()`
         attestationCollectorSubmitAttestation({ revertMessage: "Outdated attestation" });
     }
 
     function test_submitAttestation_revert_outdatedNonce() public {
         test_submitAttestation();
+        // Create attestation with a nonce lower than of already submitted attestation
         createAttestationMock({ domain: DOMAIN_LOCAL, nonce: attestationNonce - 1 });
-        // Same notary Attestation prior to that, which was already submitted, is outdated
+        // When Notary submitted an attestation with, they should not be able to submit the
+        // attestation with a lower nonce.  It will be marked as "outdated", as it
+        // doesn't bring new information about the Origin merkle state.
         attestationCollectorSubmitAttestation({ revertMessage: "Outdated attestation" });
     }
 
     function test_submitAttestation_revert_duplicate() public {
         test_submitAttestation();
+        // Create attestation for the same merkle state, but signed by another Notary
         createAttestationMock({
             domain: DOMAIN_LOCAL,
             nonce: attestationNonce,
             notaryIndex: 1,
             salt: 0
         });
-        // The very same attestation by another notary will be rejected
+        // Attestation that duplicates the already existing one is not accepted, as it
+        // doesn't bring new information about the Origin merkle state.
         attestationCollectorSubmitAttestation({ revertMessage: "Duplicated attestation" });
+        // TODO: potentially accept duplicated attestations in the future?
+        // Measure "data credibility" as the amount of actors who signed it?
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -146,13 +161,17 @@ contract AttestationCollectorTest is AttestationCollectorTools {
 
     function test_submitAttestation_anotherNotary_outdatedNonce() public {
         test_submitAttestation();
-        // Another notary is free to submit an older attestation if they want
+        // ANOTHER notary can sign and submit an attestation with a lower nonce.
+        // Such attestation should be accepted, otherwise a rogue Notary can submit
+        // a fraud attestation with absurdly big nonce to brick the system.
         submitTestAttestation({ nonce: NONCE_TEST - 1, notaryIndex: 1, isUnique: true });
     }
 
     function test_submitAttestation_anotherNotary_sameNonceAnotherRoot() public {
         test_submitAttestation();
-        // Another notary is free to submit attestation with another root if they want
+        // Another notary can sign and submit an attestation with same nonce, but different root.
+        // Meaning one of the two attestations is fraudulent. Such attestation should be accepted,
+        // otherwise "the first submitted" attestation becomes the source of truth
         submitTestAttestation({ nonce: NONCE_TEST, notaryIndex: 1, isUnique: true });
     }
 
@@ -205,7 +224,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
     ▏*║                        TESTS: VIEWS (REVERTS)                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_getAttestation_noSignature() public {
+    function test_getAttestation_revert_noSignature() public {
         test_submitAttestations();
         // Nonce 6 was submitted only by Notaries 1 and 2
         attestationCollectorGetAttestationByRoot({
@@ -216,7 +235,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         });
     }
 
-    function test_getLatestAttestation_noNotaryAttestations() public {
+    function test_getLatestAttestation_revert_noNotaryAttestations() public {
         test_submitAttestation();
         // Attestation was submitted only for DOMAIN_LOCAL
         attestationCollectorGetLatestNotaryAttestation({
@@ -226,7 +245,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         });
     }
 
-    function test_getLatestAttestation_noAttestations() public {
+    function test_getLatestAttestation_revert_noAttestations() public {
         test_submitAttestation();
         // Attestation was submitted only for DOMAIN_LOCAL
         attestationCollectorGetLatestDomainAttestation({

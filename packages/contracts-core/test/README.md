@@ -12,7 +12,7 @@ test
 ├──<a href="./suite">suite</a> The Foundry test files for the messaging contracts.
 ├──<a href="./tools">tools</a> Testing tools for the messaging contracts, that are used in <a href="./suite">suite</a>.
 ├──<a href="./utils">utils</a> Base test utilities to be used in <a href="./suite">suite</a>.
-│   ├──<a href="./proof">proof</a> Merkle proof generation.
+│   ├──<a href="./utils/proof">proof</a> Merkle proof generation.
 </pre>
 
 The directory structure for the messaging <a href="../contracts">contracts</a> is mirrored in <a href="./harnesses">harnesses</a>, <a href="./suite">suite</a> and <a href="./tools">tools</a>.
