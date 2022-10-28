@@ -102,11 +102,9 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				continue
 			}
 		}
+		b.Reset()
 		break
 	}
-
-	// Reset the backoff
-	b.Reset()
 
 	// iterate over each contract backfiller
 	for i := range c.contractBackfillers {
@@ -132,6 +130,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 						logger.Warnf("could not backfill data: %w", err)
 						continue
 					}
+					b.Reset()
 					return nil
 				}
 			}
@@ -203,7 +202,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 				// Move on to the next block.
 				blockNum++
-
+				bBlockNum.Reset()
 				// If done with the range, exit go routine.
 				if blockNum > endHeight {
 					return nil
