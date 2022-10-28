@@ -131,7 +131,7 @@ func (f Fetcher) TimeToBlockNumber(ctx context.Context, chainID int, startHeight
 	for i < j {
 		mid = (i + j) / 2
 
-		midBlock, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(mid))
+		midBlock, err := f.fetchClient.GetBlockTime(ctx, chainID, int(mid))
 		if err != nil || midBlock == nil || midBlock.Response == nil {
 			return 0, fmt.Errorf("could not get mid time: %w", err)
 		}
@@ -147,7 +147,7 @@ func (f Fetcher) TimeToBlockNumber(ctx context.Context, chainID int, startHeight
 		//nolint: nestif // we want to keep the logic for the binary search together
 		if targetTime < midTime {
 			// If target is greater than previous to mid, return the closest of the two
-			midSubBlock, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(mid-1))
+			midSubBlock, err := f.fetchClient.GetBlockTime(ctx, chainID, int(mid-1))
 			if err != nil || midSubBlock == nil || midSubBlock.Response == nil {
 				return 0, fmt.Errorf("could not get mid time: %w", err)
 			}
@@ -166,7 +166,7 @@ func (f Fetcher) TimeToBlockNumber(ctx context.Context, chainID int, startHeight
 			j = mid
 		} else {
 			// If target is greater than mid
-			midPlusBlock, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(mid+1))
+			midPlusBlock, err := f.fetchClient.GetBlockTime(ctx, chainID, int(mid+1))
 			if err != nil || midPlusBlock == nil || midPlusBlock.Response == nil {
 				return 0, fmt.Errorf("could not get mid time: %w", err)
 			}
@@ -186,7 +186,7 @@ func (f Fetcher) TimeToBlockNumber(ctx context.Context, chainID int, startHeight
 	}
 
 	// only a single element is left after the search. Fetch the block and return it.
-	resultingBlock, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(mid))
+	resultingBlock, err := f.fetchClient.GetBlockTime(ctx, chainID, int(mid))
 	if err != nil || resultingBlock == nil || resultingBlock.Response == nil {
 		return 0, fmt.Errorf("could not get mid time: %w", err)
 	}
@@ -222,7 +222,7 @@ func (f Fetcher) getSearchRange(ctx context.Context, startHeight uint64, chainID
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
-		startTime, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(startHeight))
+		startTime, err := f.fetchClient.GetBlockTime(ctx, chainID, int(startHeight))
 		if err != nil || startTime == nil || startTime.Response == nil {
 			return fmt.Errorf("could not get start time: %w", err)
 		}
@@ -234,7 +234,7 @@ func (f Fetcher) getSearchRange(ctx context.Context, startHeight uint64, chainID
 	})
 
 	g.Go(func() error {
-		endTime, err := f.fetchClient.GetBlockTime(ctx, int(chainID), int(endHeight))
+		endTime, err := f.fetchClient.GetBlockTime(ctx, chainID, int(endHeight))
 		if err != nil || endTime == nil || endTime.Response == nil {
 			return fmt.Errorf("could not get end time: %w", err)
 		}

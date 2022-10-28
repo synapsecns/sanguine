@@ -60,7 +60,15 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 		switch len(toInfos) {
 		case 1:
 			toInfo := toInfos[0]
-			swapSuccess, err := r.DB.GetSwapSuccess(ctx, destinationKappa, uint32(*toInfo.ChainID))
+			var swapSuccess bool
+			swapBridgeEventQuery := fmt.Sprintf(
+				`SELECT * FROM bridge_events WHERE %s = '%s' AND %s = %d SETTINGS readonly=1`,
+				sql.KappaFieldName, destinationKappa, sql.ChainIDFieldName, *toInfo.ChainID,
+			)
+			swapBridgeEvent, err := r.DB.GetBridgeEvent(ctx, swapBridgeEventQuery)
+			if swapBridgeEvent.SwapSuccess.Uint64() == 1 {
+				swapSuccess = true
+			}
 			if err != nil {
 				return nil, fmt.Errorf("failed to get swap success: %w", err)
 			}
@@ -70,7 +78,7 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 				ToInfo:      toInfo,
 				Kappa:       &destinationKappa,
 				Pending:     &pending,
-				SwapSuccess: swapSuccess,
+				SwapSuccess: &swapSuccess,
 			})
 		case 0:
 			if includePending {
@@ -93,16 +101,27 @@ func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *
 	var results []*model.BridgeTransaction
 	pending := false
 	for _, toInfo := range toInfos {
-		swapSuccess, err := r.DB.GetSwapSuccess(ctx, *kappa, uint32(*toInfo.ChainID))
+		var swapSuccess bool
+		swapBridgeEventQuery := fmt.Sprintf(
+			`SELECT * FROM bridge_events WHERE %s = '%s' AND %s = %d SETTINGS readonly=1`,
+			sql.KappaFieldName, *kappa, sql.ChainIDFieldName, *toInfo.ChainID,
+		)
+		swapBridgeEvent, err := r.DB.GetBridgeEvent(ctx, swapBridgeEventQuery)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get swap success: %w", err)
 		}
-		originTxHash, err := r.DB.GetTxHashFromKappa(ctx, *kappa)
-		if txnHash != nil {
-			originTxHash = txnHash
+		if swapBridgeEvent.SwapSuccess.Uint64() == 1 {
+			swapSuccess = true
 		}
-		if err != nil {
-			return nil, fmt.Errorf("failed to get origin tx hash: %w", err)
+		query := fmt.Sprintf(
+			`SELECT * FROM bridge_events WHERE %s = '%s' SETTINGS readonly=1`, sql.DestinationKappaFieldName, *kappa)
+		originTxHash := txnHash
+		if txnHash == nil {
+			bridgeEvent, err := r.DB.GetBridgeEvent(ctx, query)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get bridge event: %w", err)
+			}
+			originTxHash = &bridgeEvent.TxHash
 		}
 		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(nil, address, tokenAddress, nil, originTxHash, page))
 		if err != nil {
@@ -118,7 +137,7 @@ func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *
 				ToInfo:      toInfo,
 				Kappa:       kappa,
 				Pending:     &pending,
-				SwapSuccess: swapSuccess,
+				SwapSuccess: &swapSuccess,
 			})
 		case len(fromInfos) == 0:
 			return nil, fmt.Errorf("no fromInfo found for kappa %s", *kappa)
@@ -135,16 +154,20 @@ func (r *queryResolver) originOrDestinationBridge(ctx context.Context, chainID *
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 	}
+
 	firstFilter := true
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 	for _, info := range infos {
 		txHashSpecifier := generateSingleSpecifierStringSQL(info.TxnHash, sql.TxHashFieldName, &firstFilter, "")
 		query := fmt.Sprintf(`SELECT * FROM bridge_events %s%s`, chainIDSpecifier, txHashSpecifier)
-		kappa, err := r.DB.GetKappaFromTxHash(ctx, query)
+		bridgeEvent, err := r.DB.GetBridgeEvent(ctx, query)
+		fmt.Println("bridgeEvent", bridgeEvent)
+
 		if err != nil {
 			return nil, fmt.Errorf("failed to get kappa from tx hash: %w", err)
 		}
-		if kappa == nil {
+		// Check bridge event kappa
+		if !bridgeEvent.Kappa.Valid || bridgeEvent.Kappa.String == "" {
 			fromInfos = append(fromInfos, info)
 		} else {
 			toInfos = append(toInfos, info)

@@ -94,11 +94,11 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 // BridgeAmountStatistic is the resolver for the bridgeAmountStatistic field.
 func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error) {
 	var err error
+	var blockNumberFilter string
+	var chainIDFilter string
 	subQuery := "bridge_events"
-
 	firstFilter := true
-	blockNumberFilter := ""
-	chainIDFilter := ""
+
 	switch *duration {
 	case model.DurationPastDay:
 		hours := 24
@@ -140,12 +140,13 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 		blockNumberFilter, chainIDFilter, tokenAddressFilter, addressFilter,
 	)
 	finalSQL := fmt.Sprintf("\nSELECT %s(toUInt256(amount_usd)) FROM %s %s", operation, subQuery, additionalFilters)
-	res, err := r.DB.GetBridgeStatistic(ctx, finalSQL)
+	res, err := r.DB.GetFloat64(ctx, finalSQL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}
+	usdValue := fmt.Sprintf("%f", res)
 	output := model.ValueResult{
-		USDValue: res,
+		USDValue: &usdValue,
 	}
 	return &output, nil
 }
@@ -166,11 +167,11 @@ func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, addres
 		if err != nil {
 			return nil, fmt.Errorf("failed to get start block number: %w", err)
 		}
-		count, err := r.DB.BridgeEventCount(ctx, generateBridgeEventCountQuery(chainIDs[i], address, nil, directionIn, &startBlock))
+		count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(chainIDs[i], address, nil, directionIn, &startBlock))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 		}
-		chainInt := int(chainIDs[i])
+		chainInt := chainIDs[i]
 		countInt := int(count)
 		results = append(results, &model.TransactionCountResult{
 			ChainID: &chainInt,
@@ -192,7 +193,7 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 			`SELECT DISTINCT %s FROM bridge_events WHERE %s = %d OR %s = %d`,
 			sql.TokenFieldName, sql.ChainIDFieldName, chain, sql.DestinationChainIDFieldName, chain,
 		)
-		tokenAddresses, err := r.DB.GetTokenAddressesByChainID(ctx, query)
+		tokenAddresses, err := r.DB.GetStringArray(ctx, query)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get token addresses: %w", err)
 		}
@@ -209,11 +210,11 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 			return nil, fmt.Errorf("failed to get start block number: %w", err)
 		}
 		for i := range tokenAddresses {
-			count, err := r.DB.BridgeEventCount(ctx, generateBridgeEventCountQuery(chain, address, &tokenAddresses[i], directionIn, &startBlock))
+			count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(chain, address, &tokenAddresses[i], directionIn, &startBlock))
 			if err != nil {
 				return nil, fmt.Errorf("failed to get count by token address: %w", err)
 			}
-			chainInt := int(chain)
+			chainInt := chain
 			countInt := int(count)
 			results = append(results, &model.TokenCountResult{
 				ChainID:      &chainInt,
@@ -243,17 +244,8 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 
 // HistoricalStatistics is the resolver for the historicalStatistics field.
 func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int) (*model.HistoricalResult, error) {
-	var operation string
-
-	// Handle the different logic needed for each query type.
-	switch *typeArg {
-	case model.HistoricalResultTypeBridgevolume:
-		operation = "sumKahan(amount_usd)"
-	case model.HistoricalResultTypeAddresses:
-		operation = fmt.Sprintf("uniqExact(%s)", sql.SenderFieldName)
-	case model.HistoricalResultTypeTransactions:
-		operation = fmt.Sprintf("uniqExact(%s)", sql.TxHashFieldName)
-	}
+	var subQuery string
+	var query string
 
 	// nowTime used for calculating time in the past
 	nowTime := time.Now().Unix()
@@ -262,15 +254,34 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	// Create sql segment with filters
 	filter := fmt.Sprintf("WHERE %s = %d AND %s >= %d", sql.ChainIDFieldName, *chainID, sql.TimeStampFieldName, startTime)
 
-	// Create query for getting day by day data
-	subQuery := fmt.Sprintf("SELECT %s AS total, FROM_UNIXTIME(timestamp, %s) AS date FROM bridge_events %s GROUP BY date ORDER BY total DESC", operation, "'%d/%m/%Y'", filter)
-
-	// get data
-	res, err := r.DB.GetHistoricalData(ctx, subQuery, typeArg, filter)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
+	// Handle the different logic needed for each query type.
+	switch *typeArg {
+	case model.HistoricalResultTypeBridgevolume:
+		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(timestamp, %s) AS date FROM bridge_events %s GROUP BY date ORDER BY total DESC", sql.AmountUSDFieldName, "'%d/%m/%Y'", filter)
+		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s) SETTINGS readonly=1", subQuery)
+	case model.HistoricalResultTypeAddresses:
+		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME(timestamp, %s) AS date FROM bridge_events %s GROUP BY date ORDER BY total DESC", sql.SenderFieldName, "'%d/%m/%Y'", filter)
+		query = fmt.Sprintf("SELECT uniqExact(%s) FROM bridge_events %s SETTINGS readonly=1", sql.SenderFieldName, filter)
+	case model.HistoricalResultTypeTransactions:
+		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME(timestamp, %s) AS date FROM bridge_events %s GROUP BY date ORDER BY total DESC", sql.TxHashFieldName, "'%d/%m/%Y'", filter)
+		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s) SETTINGS readonly=1", subQuery)
+	default:
+		return nil, fmt.Errorf("invalid type argument")
 	}
-	return res, nil
+	dayByDayData, err := r.DB.GetDateResults(ctx, subQuery)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get dateResults: %w", err)
+	}
+	sum, err := r.DB.GetFloat64(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get total sum: %w", err)
+	}
+	payload := model.HistoricalResult{
+		Total:       &sum,
+		DateResults: dayByDayData,
+		Type:        typeArg,
+	}
+	return &payload, nil
 }
 
 // Query returns resolvers.QueryResolver implementation.
