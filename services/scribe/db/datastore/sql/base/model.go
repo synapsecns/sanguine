@@ -167,3 +167,18 @@ type LastBlockTime struct {
 	// BlockNumber is the block number
 	BlockNumber uint64 `gorm:"column:block_number"`
 }
+
+// BackoffLog contains the backoff information for scribe.
+type BackoffLog struct {
+	gorm.Model
+	// ChainID is the chain that the backoff occurred on
+	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+}
+
+// BackoffCount contains the backoff count for scribe.
+type BackoffCount struct {
+	// ChainID is the chain id of the backoff
+	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	// Count is the number of times the backoff has been triggered
+	Count uint64 `gorm:"column:count"`
+}
