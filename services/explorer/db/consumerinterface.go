@@ -37,8 +37,6 @@ type ConsumerDBReader interface {
 
 	// GetAllChainIDs gets all chain IDs that have been used in bridge events.
 	GetAllChainIDs(ctx context.Context) ([]int, error)
-	// GetLastBlock retrieves the last block number backfilled for a given chain ID.
-	GetLastBlock(ctx context.Context, chainID uint32) (lastBlock uint64, err error)
 	// PartialInfosFromIdentifiers returns events given identifiers.
 	PartialInfosFromIdentifiers(ctx context.Context, query string) ([]*model.PartialInfo, error)
 }
