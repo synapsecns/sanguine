@@ -133,7 +133,6 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 				continue
 			}
 
-			b.Reset()
 			return &LogInfo{
 				logs:  logs,
 				chunk: chunk,

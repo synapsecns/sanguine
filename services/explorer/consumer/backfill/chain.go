@@ -116,7 +116,6 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 						if err != nil {
 							logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 						}
-						b.Reset()
 						return nil
 					}
 				}
