@@ -482,16 +482,16 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     address:        String
     txnHash:        String
     kappa:          String
-    includePending: Boolean! = true
-    page:           Int! = 1
+    includePending: Boolean!
+    page:           Int!
     tokenAddress:   String
   ): [BridgeTransaction]
   """
   Returns the latest bridged transactions across all chains.
   """
   latestBridgeTransactions(
-    includePending: Boolean! = true
-    page:           Int! = 1
+    includePending: Boolean!
+    page:           Int!
   ): [BridgeTransaction]
   """
   Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
