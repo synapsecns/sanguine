@@ -173,6 +173,12 @@ type BackoffLog struct {
 	gorm.Model
 	// ChainID is the chain that the backoff occurred on
 	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	// ContractAddress is the contract address that had the backoff
+	ContractAddress sql.NullString `gorm:"column:contract_address;primaryKey"`
+	// BlockNumber is the block number that the backoff occurred on
+	BlockNumber uint64 `gorm:"column:block_number;primaryKey"`
+	// BackoffType is the type of backoff
+	BackoffType uint8 `gorm:"column:backoff_type;primaryKey"`
 }
 
 // BackoffCount contains the backoff count for scribe.
