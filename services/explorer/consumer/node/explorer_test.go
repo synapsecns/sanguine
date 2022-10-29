@@ -112,7 +112,7 @@ func (n NodeSuite) TestLive() {
 	n.Nil(err)
 	var counttemp int64
 	dd := n.db.UNSAFE_DB().WithContext(n.GetTestContext()).Table("swap_events").Count(&counttemp)
-	fmt.Println("counttemp", counttemp, dd)
+	n.Nil(dd.Error)
 
 	var count int64
 	bridgeEvents := n.db.UNSAFE_DB().WithContext(n.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
@@ -139,16 +139,13 @@ func (n NodeSuite) TestLive() {
 //nolint:unparam
 func (n *NodeSuite) storeTestLog(tx *types.Transaction, chainID uint32, blockNumber uint64) (*types.Log, error) {
 	n.testBackends[chainID].WaitForConfirmation(n.GetTestContext(), tx)
-	fmt.Println("tx hash", tx.Hash().String())
 	receipt, err := n.testBackends[chainID].TransactionReceipt(n.GetTestContext(), tx.Hash())
-	fmt.Println("receipt", receipt)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get receipt for transaction %s: %w", tx.Hash().String(), err)
 	}
 
 	receipt.Logs[0].BlockNumber = blockNumber
-	fmt.Println("blockNumber", blockNumber)
 
 	err = n.eventDB.StoreLog(n.GetTestContext(), *receipt.Logs[0], chainID)
 	if err != nil {
