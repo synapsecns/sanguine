@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -52,6 +53,11 @@ type EventDBWriter interface {
 	StoreLastBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) error
 	// StoreBlockTime stores a block time for a chain.
 	StoreBlockTime(ctx context.Context, chainID uint32, blockNumber, timestamp uint64) error
+
+	// StoreBackoffLog stores a backoff log.
+	StoreBackoffLog(ctx context.Context, chainID uint32, contractAddress sql.NullString, blockNumber uint64, backoffType string, backoffAttempt uint32) error
+	// StoreBackoffCount stores a backoff count.
+	StoreBackoffCount(ctx context.Context, chainID uint32, backoffType string, count uint64) error
 }
 
 // EventDBReader is an interface for reading events from a database.
@@ -89,6 +95,10 @@ type EventDBReader interface {
 	RetrieveLogCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error)
 	// RetrieveBlockTimesCountForChain retrieves the number of block times stored for a chain.
 	RetrieveBlockTimesCountForChain(ctx context.Context, chainID uint32) (int64, error)
+
+	// TODO: add the other backoff
+	// GetBackoffCount gets a backoff count.
+	GetBackoffCount(ctx context.Context, chainID uint32, backoffType string) (uint64, error)
 }
 
 // EventDB stores events.

@@ -20,6 +20,7 @@ func init() {
 	BlockHashFieldName = namer.GetConsistentName("BlockHash")
 	ConfirmedFieldName = namer.GetConsistentName("Confirmed")
 	TransactionIndexFieldName = namer.GetConsistentName("TransactionIndex")
+	CountFieldName = namer.GetConsistentName("Count")
 }
 
 var (
@@ -39,6 +40,8 @@ var (
 	ConfirmedFieldName string
 	// TransactionIndexFieldName is the name of the transaction block  field.
 	TransactionIndexFieldName string
+	// CountFieldName is the name of the count field.
+	CountFieldName string
 )
 
 // PageSize is the amount of entries per page of logs.
@@ -178,13 +181,18 @@ type BackoffLog struct {
 	// BlockNumber is the block number that the backoff occurred on
 	BlockNumber uint64 `gorm:"column:block_number;primaryKey"`
 	// BackoffType is the type of backoff
-	BackoffType uint8 `gorm:"column:backoff_type;primaryKey"`
+	BackoffType string `gorm:"column:backoff_type;primaryKey"`
+	// BackoffAttempt is the number of attempts that have been made
+	BackoffAttempt uint32 `gorm:"column:backoff_attempt"`
 }
 
 // BackoffCount contains the backoff count for scribe.
 type BackoffCount struct {
+	gorm.Model
 	// ChainID is the chain id of the backoff
 	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	// BackoffType is the type of backoff
+	BackoffType string `gorm:"column:backoff_type;primaryKey"`
 	// Count is the number of times the backoff has been triggered
 	Count uint64 `gorm:"column:count"`
 }

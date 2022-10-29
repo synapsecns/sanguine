@@ -102,6 +102,9 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				continue
 			}
 		}
+		if b.Attempt() > 1 {
+			c.eventDB.
+		}
 		b.Reset()
 		break
 	}
