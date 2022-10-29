@@ -19,7 +19,7 @@ jobs:
         uses: ludeeus/action-shellcheck@master
 
       - name: Validate renovate
-        uses: rinchsan/renovate-config-validator@v0.0.0
+        uses: rinchsan/renovate-config-validator@v0.0.12
         with:
           pattern: '.github/renovate.json' # Regular expression for filename to validate, default to *.json
 
