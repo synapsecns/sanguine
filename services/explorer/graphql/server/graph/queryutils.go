@@ -161,7 +161,6 @@ func (r *queryResolver) originOrDestinationBridge(ctx context.Context, chainID *
 		txHashSpecifier := generateSingleSpecifierStringSQL(info.TxnHash, sql.TxHashFieldName, &firstFilter, "")
 		query := fmt.Sprintf(`SELECT * FROM bridge_events %s%s`, chainIDSpecifier, txHashSpecifier)
 		bridgeEvent, err := r.DB.GetBridgeEvent(ctx, query)
-		fmt.Println("bridgeEvent", bridgeEvent)
 
 		if err != nil {
 			return nil, fmt.Errorf("failed to get kappa from tx hash: %w", err)
@@ -326,6 +325,5 @@ func (r *queryResolver) generateSubQuery(ctx context.Context, targetTime uint64,
 		}
 		subQuery += sqlString
 	}
-	fmt.Println("HI MOMMYY", subQuery)
 	return subQuery + ")", nil
 }
