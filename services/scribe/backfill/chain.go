@@ -119,7 +119,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			for {
 				select {
 				case <-groupCtx.Done():
-					logger.Warnf("could not backfill data: %v\nChain: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", groupCtx.Err(), c.chainID, endHeight, b.Attempt(), b.Duration())
+					logger.Warnf("could not backfill data: %v\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", groupCtx.Err(), c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
 					return fmt.Errorf("context canceled: %w", groupCtx.Err())
 				case <-time.After(timeout):
 					if onlyOneBlock {
@@ -128,7 +128,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 					err = contractBackfiller.Backfill(groupCtx, startHeight, endHeight)
 					if err != nil {
 						timeout = b.Duration()
-						logger.Warnf("could not backfill data: %v\nChain: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, endHeight, b.Attempt(), b.Duration())
+						logger.Warnf("could not backfill data: %v\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
 						continue
 					}
 					return nil
