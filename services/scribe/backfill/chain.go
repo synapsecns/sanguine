@@ -130,7 +130,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 						logger.Warnf("could not backfill data: %w", err)
 						continue
 					}
-					b.Reset()
 					return nil
 				}
 			}
