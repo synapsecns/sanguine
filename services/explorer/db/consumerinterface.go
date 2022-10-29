@@ -22,30 +22,23 @@ type ConsumerDBWriter interface {
 // ConsumerDBReader is the interface for reading events from the ConsumerDB.
 // nolint:interfacebloat
 type ConsumerDBReader interface {
+	// GetUint64 gets a uint64 for a given query.
+	GetUint64(ctx context.Context, query string) (uint64, error)
+	// GetFloat64 gets a float64 out of the database
+	GetFloat64(ctx context.Context, query string) (float64, error)
+	// GetStringArray gets an array of strings from a given query.
+	GetStringArray(ctx context.Context, query string) ([]string, error)
+	// GetBridgeEvent returns a bridge event.
+	GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error)
+	// GetDateResults gets day by day data for a given query.
+	GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error)
+	// GetAddressRanking gets AddressRanking for a given query.
+	GetAddressRanking(ctx context.Context, query string) ([]*model.AddressRanking, error)
+
 	// GetAllChainIDs gets all chain IDs that have been used in bridge events.
-	GetAllChainIDs(ctx context.Context) ([]uint32, error)
-	// GetSwapSuccess returns if an event had a successful swap.
-	GetSwapSuccess(ctx context.Context, kappa string, chainID uint32) (*bool, error)
-	// GetTxHashFromKappa returns the transaction hash for a given kappa.
-	GetTxHashFromKappa(ctx context.Context, kappa string) (*string, error)
-	// ReadBlockNumberByChainID reads an event from the database by chainID.
-	ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error)
-	// BridgeEventCount returns the number of bridge events.
-	BridgeEventCount(ctx context.Context, query string) (count uint64, err error)
-	// GetTokenAddressesByChainID gets all token addresses that have been used in bridge events for a given chain ID.
-	GetTokenAddressesByChainID(ctx context.Context, query string) ([]string, error)
+	GetAllChainIDs(ctx context.Context) ([]int, error)
 	// PartialInfosFromIdentifiers returns events given identifiers.
-	PartialInfosFromIdentifiers(ctx context.Context, query string) (partialInfos []*model.PartialInfo, err error)
-	// GetKappaFromTxHash returns the kappa for a given transaction hash.
-	GetKappaFromTxHash(ctx context.Context, query string) (*string, error)
-	// GetTransactionCountForEveryAddress gets the count of transactions (origin) for each address.
-	GetTransactionCountForEveryAddress(ctx context.Context, subQuery string) ([]*model.AddressRanking, error)
-	// GetBridgeStatistic gets bridge statistics
-	GetBridgeStatistic(ctx context.Context, subQuery string) (*string, error)
-	// GetHistoricalData gets bridge historical data
-	GetHistoricalData(ctx context.Context, subQuery string, typeArg *model.HistoricalResultType, filter string) (*model.HistoricalResult, error)
-	// RetrieveLastBlock retrieves the last block number backfilled for a given chain ID.
-	RetrieveLastBlock(ctx context.Context, chainID uint32) (lastBlock uint64, err error)
+	PartialInfosFromIdentifiers(ctx context.Context, query string) ([]*model.PartialInfo, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.
