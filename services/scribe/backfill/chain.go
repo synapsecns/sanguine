@@ -119,6 +119,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			for {
 				select {
 				case <-groupCtx.Done():
+					logger.Warnf("could not backfill data: %v\nChain: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", groupCtx.Err(), c.chainID, endHeight, b.Attempt(), b.Duration())
 					return fmt.Errorf("context canceled: %w", groupCtx.Err())
 				case <-time.After(timeout):
 					if onlyOneBlock {
@@ -127,7 +128,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 					err = contractBackfiller.Backfill(groupCtx, startHeight, endHeight)
 					if err != nil {
 						timeout = b.Duration()
-						logger.Warnf("could not backfill data: %w", err)
+						logger.Warnf("could not backfill data: %v\nChain: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, endHeight, b.Attempt(), b.Duration())
 						continue
 					}
 					return nil
@@ -151,9 +152,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 		// Set the start height to the minimum block height of all contracts
 		startHeight := c.minBlockHeight
-		if err != nil {
-			return fmt.Errorf("could not get start height for block time: %w", err)
-		}
 
 		// Start at the block before the minimum block height
 		if startHeight != 0 {
@@ -165,12 +163,13 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		for {
 			select {
 			case <-groupCtx.Done():
+				logger.Warnf("context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), groupCtx.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 				return fmt.Errorf("context canceled: %w", groupCtx.Err())
 			case <-time.After(timeoutBlockNum):
 				// Check if the current block's already exists in database.
 				_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
 				if err == nil {
-					logger.Warnf("skipping storing blocktime for block %s, blocktime for this block already stored", big.NewInt(int64(blockNum)).String())
+					logger.Warnf("skipping storing blocktime for block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 					blockNum++
 					continue
 				}
@@ -179,7 +178,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				rawBlock, err := c.client.HeaderByNumber(ctx, big.NewInt(int64(blockNum)))
 				if err != nil {
 					timeoutBlockNum = bBlockNum.Duration()
-					logger.Warnf("could not get block time at block %s: %v", big.NewInt(int64(blockNum)).String(), err)
+					logger.Warnf("could not get block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 					continue
 				}
 
@@ -187,7 +186,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				err = c.eventDB.StoreBlockTime(groupCtx, c.chainID, blockNum, rawBlock.Time)
 				if err != nil {
 					timeoutBlockNum = bBlockNum.Duration()
-					logger.Warnf("could not store block time: %v", err)
+					logger.Warnf("could not store block time - block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+
 					continue
 				}
 
@@ -195,7 +195,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				err = c.eventDB.StoreLastBlockTime(groupCtx, c.chainID, blockNum)
 				if err != nil {
 					timeoutBlockNum = bBlockNum.Duration()
-					logger.Warnf("could not store last block time: %v", err)
+					logger.Warnf("could not store last block time %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 					continue
 				}
 
