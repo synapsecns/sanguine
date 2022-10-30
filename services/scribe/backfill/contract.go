@@ -76,7 +76,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 				}
 				err = c.store(groupCtx, log)
 				if err != nil {
-					return fmt.Errorf("could not store log: %w", err)
+					return fmt.Errorf("could not store log: %w \nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 				}
 			case <-doneChan:
 				return nil
@@ -86,7 +86,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 
 	err = g.Wait()
 	if err != nil {
-		return fmt.Errorf("could not backfill contract: %w", err)
+		return fmt.Errorf("could not backfill contract: %w \nChain: %d\nAddress: %s", err, c.chainID, c.address)
 	}
 	return nil
 }
@@ -104,7 +104,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		// make getting receipt a channel in parallel
 		receipt, err := c.client.TransactionReceipt(ctx, log.TxHash)
 		if err != nil {
-			return fmt.Errorf("could not get transaction receipt for txHash: %w", err)
+			return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 		}
 
 		returnedReceipt = *receipt
@@ -125,7 +125,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 				}
 				err := c.eventDB.StoreLog(groupCtx, *log, c.chainID)
 				if err != nil {
-					return fmt.Errorf("could not store log: %w", err)
+					return fmt.Errorf("could not store log: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 				}
 			}
 			return nil
@@ -140,7 +140,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 			// store the receipt in the db
 			err := c.eventDB.StoreReceipt(groupCtx, returnedReceipt, c.chainID)
 			if err != nil {
-				return fmt.Errorf("could not store receipt: %w", err)
+				return fmt.Errorf("could not store receipt: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 			}
 			return nil
 		}
@@ -153,10 +153,10 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		fmt.Println("BLOCKNUM: ", log.BlockNumber)
 		if err != nil {
 			if err.Error() == txNotSupporterError {
-				logger.Warnf("transaction type not supported for: %s on chain id: %d", log.TxHash.Hex(), c.chainID)
+				logger.Warnf("transaction type not supported for: %s on chain id: %d\nLog BlockNumber: %d\nAddress: %s", log.TxHash.Hex(), c.chainID, log.BlockNumber, log.Address.String())
 				return nil
 			}
-			return fmt.Errorf("could not get transaction by hash: %w", err)
+			return fmt.Errorf("could not get transaction by hash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 		}
 		if isPending {
 			return fmt.Errorf("transaction is pending")
