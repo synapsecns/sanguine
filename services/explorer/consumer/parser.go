@@ -354,19 +354,20 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	// Get timestamp from consumer
 	timeStamp, err := p.consumerFetcher.fetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	// If we have a timestamp, populate the following attributes of bridgeEvent.
-	if err == nil {
-		timeStampBig := uint64(*timeStamp.Response)
-		bridgeEvent.TimeStamp = &timeStampBig
-		// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
-		tokenPrice, symbol := GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID)
-		if tokenPrice != nil {
-			// Add AmountUSD to bridgeEvent (if price is not nil)
-			bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
-			// Add FeeAmountUSD to bridgeEvent (if price is not nil)
-			bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
-			// Add TokenSymbol to bridgeEvent
-			bridgeEvent.TokenSymbol = ToNullString(symbol)
-		}
+	if err != nil {
+		return fmt.Errorf("could not get block time: %w", err)
+	}
+	timeStampBig := uint64(*timeStamp.Response)
+	bridgeEvent.TimeStamp = &timeStampBig
+	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
+	tokenPrice, symbol := GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID)
+	if tokenPrice != nil {
+		// Add AmountUSD to bridgeEvent (if price is not nil)
+		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
+		// Add FeeAmountUSD to bridgeEvent (if price is not nil)
+		bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
+		// Add TokenSymbol to bridgeEvent
+		bridgeEvent.TokenSymbol = ToNullString(symbol)
 	}
 	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
 	if err != nil {
