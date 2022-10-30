@@ -189,7 +189,8 @@ library Report {
         uint256 length = _view.len();
         // Report should be the correct length
         if (length != REPORT_LENGTH) return false;
-
+        // Flag needs to match an existing enum value
+        if (_flagIntValue(_view) > uint8(type(Flag).max)) return false;
         // Attestation needs to be formatted as well
         return reportedAttestation(_view).isAttestation();
     }
@@ -202,7 +203,7 @@ library Report {
      * @notice Returns whether Report's Flag is Fraud (indicating fraudulent attestation).
      */
     function reportedFraud(bytes29 _view) internal pure onlyReport(_view) returns (bool) {
-        return _view.indexUint(OFFSET_FLAG, 1) != uint8(Flag.Valid);
+        return _flagIntValue(_view) != uint8(Flag.Valid);
     }
 
     /**
@@ -231,5 +232,17 @@ library Report {
     function guardSignature(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
         uint256 offsetSignature = OFFSET_ATTESTATION + Attestation.ATTESTATION_LENGTH;
         return _view.slice(offsetSignature, _view.len() - offsetSignature, SynapseTypes.SIGNATURE);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          PRIVATE FUNCTIONS                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @dev Returns int value of Report flag.
+     *      Needed to prevent overflow when casting to Flag.
+     */
+    function _flagIntValue(bytes29 _view) private pure returns (uint8 flagIntValue) {
+        flagIntValue = uint8(_view.indexUint(OFFSET_FLAG, 1));
     }
 }

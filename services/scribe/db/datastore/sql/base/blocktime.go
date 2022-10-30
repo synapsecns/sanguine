@@ -76,3 +76,20 @@ func (s Store) RetrieveFirstBlockStored(ctx context.Context, chainID uint32) (ui
 
 	return uint64(blockTime), nil
 }
+
+// RetrieveBlockTimesCountForChain retrieves the number of block times stored for a chain.
+func (s Store) RetrieveBlockTimesCountForChain(ctx context.Context, chainID uint32) (int64, error) {
+	var count int64
+	dbTx := s.DB().WithContext(ctx).
+		Model(&BlockTime{}).
+		Where(&BlockTime{
+			ChainID: chainID,
+		}).
+		Count(&count)
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("could not count block times: %w", dbTx.Error)
+	}
+
+	return count, nil
+
+}

@@ -135,14 +135,51 @@ func (f *Forwarder) SetBlankResMap() {
 	f.SetResMap(xsync.NewMapOf[[]rawResponse]())
 }
 
-func StandardizeResponse(method string, body []byte) ([]byte, error) {
+func StandardizeResponse(ctx context.Context, req *RPCRequest, body []byte) ([]byte, error) {
 	var rpcMessage JSONRPCMessage
 	err := json.Unmarshal(body, &rpcMessage)
 	if err != nil {
 		//nolint: wrapcheck
 		return nil, err
 	}
-	return standardizeResponse(context.Background(), method, rpcMessage)
+
+	return standardizeResponse(ctx, req, rpcMessage)
+}
+
+// StandardizeResponseFalseParams exports standardizeResponseFalseParams for testing.
+// this is only used when params[1] is false when calling eth_getBlockByNumber or eth_getBlockByHash.
+func StandardizeResponseFalseParams(ctx context.Context, req *RPCRequest, body []byte) ([]byte, error) {
+	var rpcMessage JSONRPCMessage
+	err := json.Unmarshal(body, &rpcMessage)
+	if err != nil {
+		//nolint: wrapcheck
+		return nil, err
+	}
+	params := []json.RawMessage{rpcMessage.Params}
+
+	// Handle BlockByHash, BlockByNumber, and HeaderByNumber events.
+	if req.Method == string(BlockByHashMethod) || req.Method == string(BlockByNumberMethod) {
+		blockNumber := "0x1"
+		flag := true
+		jsonBlockNumber, err := json.Marshal(&blockNumber)
+		if err != nil {
+			//nolint: wrapcheck
+			return nil, err
+		}
+		jsonFlag, err := json.Marshal(&flag)
+		if err != nil {
+			//nolint: wrapcheck
+			return nil, err
+		}
+		jsonRawParams := []json.RawMessage{jsonBlockNumber, jsonFlag}
+		params = jsonRawParams
+	}
+	rpcRequest := RPCRequest{
+		ID:     rpcMessage.ID,
+		Method: req.Method,
+		Params: params,
+	}
+	return standardizeResponse(ctx, &rpcRequest, rpcMessage)
 }
 
 // CheckAndSetConfirmability exports checkAndSetConfirmability for testing.

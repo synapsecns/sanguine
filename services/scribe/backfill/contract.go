@@ -177,7 +177,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 }
 
 // chunkSize is how big to make the chunks when fetching.
-const chunkSize = 1024
+const chunkSize = 500
 
 // getLogs gets all logs for the contract.
 func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
