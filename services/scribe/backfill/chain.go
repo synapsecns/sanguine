@@ -105,6 +105,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		b.Reset()
 		break
 	}
+	// TODO CHECK ARB
 
 	// iterate over each contract backfiller
 	for i := range c.contractBackfillers {
