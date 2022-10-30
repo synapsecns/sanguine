@@ -71,7 +71,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 //
 //nolint:gocognit,cyclop
 func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error {
-	// initialize the errgroup
+	// initialize the errgroups for backfilling contracts and getting latest blocknumber.
 	gBackfill, groupCtxBackfill := errgroup.WithContext(ctx)
 	// backoff in the case of an error
 	b := &backoff.Backoff{
@@ -138,6 +138,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	}
 
 	// Backfill the block times
+
+	// Initialize the errgroup for backfilling block times
 	gBlockTime, groupCtxBlockTime := errgroup.WithContext(ctx)
 	gBlockTime.Go(func() error {
 		// Init backoff for backfilling block times
