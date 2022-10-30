@@ -91,5 +91,4 @@ func (s Store) RetrieveBlockTimesCountForChain(ctx context.Context, chainID uint
 	}
 
 	return count, nil
-
 }
