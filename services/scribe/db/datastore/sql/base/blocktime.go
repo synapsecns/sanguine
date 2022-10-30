@@ -13,7 +13,6 @@ func (s Store) StoreBlockTime(ctx context.Context, chainID uint32, blockNumber, 
 			Columns:   []clause.Column{{Name: ChainIDFieldName}, {Name: BlockNumberFieldName}},
 			DoNothing: true,
 		}).
-		Model(&BlockTime{}).
 		Create(&BlockTime{
 			ChainID:     chainID,
 			BlockNumber: blockNumber,
@@ -70,7 +69,6 @@ func (s Store) RetrieveFirstBlockStored(ctx context.Context, chainID uint32) (ui
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("could not retrieve first block time: %w", dbTx.Error)
 	}
-	
 	return blockTime, nil
 }
 
