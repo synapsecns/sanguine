@@ -216,8 +216,12 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		}
 	})
 
-	// wait for all the backfillers to finish
+	// wait for all the blocktimes to finish
 	if err := gBlockTime.Wait(); err != nil {
+		return fmt.Errorf("could not backfill: %w", err)
+	}
+	// wait for all the backfillers to finish
+	if err := gBackfill.Wait(); err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
 	return nil
