@@ -71,8 +71,8 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 //
 //nolint:gocognit,cyclop
 func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error {
-	// initialize the errgroup
-	g, groupCtx := errgroup.WithContext(ctx)
+	// initialize the errgroups for backfilling contracts and getting latest blocknumber.
+	gBackfill, groupCtxBackfill := errgroup.WithContext(ctx)
 	// backoff in the case of an error
 	b := &backoff.Backoff{
 		Factor: 2,
@@ -91,11 +91,11 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	// Retry until block height for the current chain is retrieved.
 	for {
 		select {
-		case <-groupCtx.Done():
-			return fmt.Errorf("context canceled: %w", groupCtx.Err())
+		case <-groupCtxBackfill.Done():
+			return fmt.Errorf("context canceled: %w", groupCtxBackfill.Err())
 		case <-time.After(timeout):
 			// get the end height for the backfill
-			endHeight, err = c.client.BlockNumber(groupCtx)
+			endHeight, err = c.client.BlockNumber(groupCtxBackfill)
 			if err != nil {
 				timeout = b.Duration()
 				logger.Warnf("could not get block number, bad connection to rpc likely: %v", err)
@@ -113,19 +113,19 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		// get the start height for the backfill
 		startHeight := c.startHeights[contractBackfiller.address]
 		// call Backfill concurrently
-		g.Go(func() error {
+		gBackfill.Go(func() error {
 			// timeout should always be 0 on the first attempt
 			timeout = time.Duration(0)
 			for {
 				select {
-				case <-groupCtx.Done():
-					logger.Warnf("could not backfill data: %v\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", groupCtx.Err(), c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
-					return fmt.Errorf("context canceled: %w", groupCtx.Err())
+				case <-groupCtxBackfill.Done():
+					logger.Warnf("could not backfill data: %v\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", groupCtxBackfill.Err(), c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
+					return fmt.Errorf("context canceled: %w", groupCtxBackfill.Err())
 				case <-time.After(timeout):
 					if onlyOneBlock {
 						startHeight = endHeight
 					}
-					err = contractBackfiller.Backfill(groupCtx, startHeight, endHeight)
+					err = contractBackfiller.Backfill(groupCtxBackfill, startHeight, endHeight)
 					if err != nil {
 						timeout = b.Duration()
 						logger.Warnf("could not backfill data: %v\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
@@ -138,7 +138,10 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	}
 
 	// Backfill the block times
-	g.Go(func() error {
+
+	// Initialize the errgroup for backfilling block times
+	gBlockTime, groupCtxBlockTime := errgroup.WithContext(ctx)
+	gBlockTime.Go(func() error {
 		// Init backoff for backfilling block times
 		bBlockNum := &backoff.Backoff{
 			Factor: 2,
@@ -162,9 +165,9 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		blockNum := startHeight
 		for {
 			select {
-			case <-groupCtx.Done():
-				logger.Warnf("context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), groupCtx.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-				return fmt.Errorf("context canceled: %w", groupCtx.Err())
+			case <-groupCtxBlockTime.Done():
+				logger.Warnf("context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), groupCtxBlockTime.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+				return fmt.Errorf("context canceled: %w", groupCtxBlockTime.Err())
 			case <-time.After(timeoutBlockNum):
 				// Check if the current block's already exists in database.
 				_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
@@ -183,7 +186,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				}
 
 				// Store the block time with the block retrieved above.
-				err = c.eventDB.StoreBlockTime(groupCtx, c.chainID, blockNum, rawBlock.Time)
+				err = c.eventDB.StoreBlockTime(groupCtxBlockTime, c.chainID, blockNum, rawBlock.Time)
 				if err != nil {
 					timeoutBlockNum = bBlockNum.Duration()
 					logger.Warnf("could not store block time - block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
@@ -192,7 +195,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				}
 
 				// store the last block time
-				err = c.eventDB.StoreLastBlockTime(groupCtx, c.chainID, blockNum)
+				err = c.eventDB.StoreLastBlockTime(groupCtxBlockTime, c.chainID, blockNum)
 				if err != nil {
 					timeoutBlockNum = bBlockNum.Duration()
 					logger.Warnf("could not store last block time %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
@@ -213,8 +216,12 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		}
 	})
 
+	// wait for all the blocktimes to finish
+	if err := gBlockTime.Wait(); err != nil {
+		return fmt.Errorf("could not backfill: %w", err)
+	}
 	// wait for all the backfillers to finish
-	if err := g.Wait(); err != nil {
+	if err := gBackfill.Wait(); err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
 	return nil
