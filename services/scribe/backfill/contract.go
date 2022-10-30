@@ -151,7 +151,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		txn, isPending, err := c.client.TransactionByHash(groupCtx, log.TxHash)
 		if err != nil {
 			if err.Error() == txNotSupporterError {
-				logger.Warnf("could not get transaction for txHash: %s on chain id: %d", log.TxHash.Hex(), c.chainID)
+				logger.Warnf("transaction type not supported for: %s on chain id: %d", log.TxHash.Hex(), c.chainID)
 				return nil
 			}
 			return fmt.Errorf("could not get transaction by hash: %w", err)
