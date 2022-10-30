@@ -89,21 +89,23 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	var err error
 
 	// Retry until block height for the current chain is retrieved.
-	for {
-		select {
-		case <-groupCtx.Done():
-			return fmt.Errorf("context canceled: %w", groupCtx.Err())
-		case <-time.After(timeout):
-			// get the end height for the backfill
-			endHeight, err = c.client.BlockNumber(groupCtx)
-			if err != nil {
-				timeout = b.Duration()
-				logger.Warnf("could not get block number, bad connection to rpc likely: %v", err)
-				continue
+	if !onlyOneBlock {
+		for {
+			select {
+			case <-groupCtx.Done():
+				return fmt.Errorf("context canceled: %w", groupCtx.Err())
+			case <-time.After(timeout):
+				// get the end height for the backfill
+				endHeight, err = c.client.BlockNumber(groupCtx)
+				if err != nil {
+					timeout = b.Duration()
+					logger.Warnf("could not get block number, bad connection to rpc likely: %v", err)
+					continue
+				}
 			}
+			b.Reset()
+			break
 		}
-		b.Reset()
-		break
 	}
 	// TODO CHECK ARB
 
@@ -113,6 +115,9 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		contractBackfiller := c.contractBackfillers[i]
 		// get the start height for the backfill
 		startHeight := c.startHeights[contractBackfiller.address]
+		if onlyOneBlock {
+			endHeight = startHeight + 1
+		}
 		// call Backfill concurrently
 		g.Go(func() error {
 			// timeout should always be 0 on the first attempt

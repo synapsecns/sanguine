@@ -2,7 +2,9 @@ package backfill_test
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
+	"os"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -199,6 +201,41 @@ func (b BackfillSuite) TestContractBackfill() {
 	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()))
 	Nil(b.T(), err)
 	Equal(b.T(), txBlockNumber, lastIndexed)
+}
+
+// TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
+func (b BackfillSuite) TestTxTypeNotSupported() {
+	if os.Getenv("CI") != "" {
+		b.T().Skip("Network test flake")
+	}
+	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
+	backendClient, err := ethclient.DialContext(b.GetTestContext(), omnirpcURL)
+	Nil(b.T(), err)
+
+	// Set config.
+	contractConfig := config.ContractConfig{
+		Address:    "0xf07d1C752fAb503E47FEF309bf14fbDD3E867089",
+		StartBlock: 228310,
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:               42161,
+		RPCUrl:                omnirpcURL,
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{contractConfig},
+	}
+	chainBackfiller, err := backfill.NewChainBackfiller(42161, b.testDB, backendClient, chainConfig)
+	err = chainBackfiller.Backfill(b.GetTestContext(), true)
+
+	// Check to see if one log is recorded, one receipt is recorded, but no transactions.
+	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
+	Nil(b.T(), err)
+	Equal(b.T(), 1, len(logs))
+	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
+	Nil(b.T(), err)
+	Equal(b.T(), 1, len(receipts))
+	transactions, err := b.testDB.RetrieveEthTxsWithFilter(b.GetTestContext(), db.EthTxFilter{}, 1)
+	Nil(b.T(), err)
+	Equal(b.T(), 0, len(transactions))
 }
 
 // TestGetLogsMock tests the GetLogs function using a mocked blockchain for errors.
