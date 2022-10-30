@@ -26,6 +26,8 @@ type ContractBackfiller struct {
 	cache *lru.Cache
 }
 
+const txNotSupporterError = "transaction type not supported"
+
 // NewContractBackfiller creates a new backfiller for a contract.
 func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client ScribeBackend) (*ContractBackfiller, error) {
 	// initialize the cache for the txHashes
@@ -148,6 +150,9 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		// store the transaction in the db
 		txn, isPending, err := c.client.TransactionByHash(groupCtx, log.TxHash)
 		if err != nil {
+			if err.Error() == txNotSupporterError {
+				return nil
+			}
 			return fmt.Errorf("could not get transaction by hash: %w", err)
 		}
 		if isPending {
