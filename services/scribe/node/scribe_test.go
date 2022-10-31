@@ -44,15 +44,15 @@ func (l LiveSuite) TestLive() {
 	}
 	chainConfig := config.ChainConfig{
 		ChainID:   chainID,
-		RPCUrl:    "an rpc url is not needed for simulated backends",
 		Contracts: contractConfigs,
 	}
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{chainConfig},
 	}
 
-	clients := make(map[uint32]backfill.ScribeBackend)
-	clients[chainID] = simulatedChain
+	clients := make(map[uint32][]backfill.ScribeBackend)
+	clients[chainID] = append(clients[chainID], simulatedChain)
+	clients[chainID] = append(clients[chainID], simulatedChain)
 
 	// Set up the scribe.
 	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig)
@@ -113,7 +113,6 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 	}
 	chainConfig := config.ChainConfig{
 		ChainID:               chainID,
-		RPCUrl:                "an rpc url is not needed for simulated backends",
 		RequiredConfirmations: 3,
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
@@ -121,8 +120,9 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 		Chains: []config.ChainConfig{chainConfig},
 	}
 
-	clients := make(map[uint32]backfill.ScribeBackend)
-	clients[chainID] = simulatedChain
+	clients := make(map[uint32][]backfill.ScribeBackend)
+	clients[chainID] = append(clients[chainID], simulatedChain)
+	clients[chainID] = append(clients[chainID], simulatedChain)
 
 	// Set up the scribe.
 	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig)

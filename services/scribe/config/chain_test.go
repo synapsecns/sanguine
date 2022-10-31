@@ -10,7 +10,6 @@ import (
 func chainConfigFixture() config.ChainConfig {
 	return config.ChainConfig{
 		ChainID:               gofakeit.Uint32(),
-		RPCUrl:                gofakeit.URL(),
 		RequiredConfirmations: gofakeit.Uint32(),
 		Contracts: config.ContractConfigs{
 			config.ContractConfig{
@@ -28,15 +27,6 @@ func (c ConfigSuite) TestChainID() {
 	ok, err := chainConfig.IsValid(c.GetTestContext())
 	False(c.T(), ok)
 	ErrorIs(c.T(), err, config.ErrInvalidChainID)
-}
-
-func (c ConfigSuite) TestRPCUrl() {
-	chainConfig := chainConfigFixture()
-	chainConfig.RPCUrl = ""
-
-	ok, err := chainConfig.IsValid(c.GetTestContext())
-	False(c.T(), ok)
-	ErrorIs(c.T(), err, config.ErrRequiredField)
 }
 
 func (c ConfigSuite) TestChainConfigsDuplicateChainID() {

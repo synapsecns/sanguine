@@ -21,7 +21,7 @@ type ChainBackfiller struct {
 	// eventDB is the database to store event data in
 	eventDB db.EventDB
 	// client is the client for filtering
-	client ScribeBackend
+	client []ScribeBackend
 	// contractBackfillers is the list of contract backfillers
 	contractBackfillers []*ContractBackfiller
 	// startHeights is a map from address -> start height
@@ -33,7 +33,7 @@ type ChainBackfiller struct {
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
+func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBackend, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
 	// initialize the list of contract backfillers
 	contractBackfillers := []*ContractBackfiller{}
 	// initialize each contract backfiller and start heights
@@ -95,7 +95,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			return fmt.Errorf("context canceled: %w", groupCtxBackfill.Err())
 		case <-time.After(timeout):
 			// get the end height for the backfill
-			endHeight, err = c.client.BlockNumber(groupCtxBackfill)
+			endHeight, err = c.client[0].BlockNumber(groupCtxBackfill)
 			if err != nil {
 				timeout = b.Duration()
 				logger.Warnf("could not get block number, bad connection to rpc likely: %v", err)
@@ -180,7 +180,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				}
 
 				// Get information on the current block for further processing.
-				rawBlock, err := c.client.HeaderByNumber(ctx, big.NewInt(int64(blockNum)))
+				rawBlock, err := c.client[0].HeaderByNumber(ctx, big.NewInt(int64(blockNum)))
 				if err != nil {
 					timeoutBlockNum = bBlockNum.Duration()
 					logger.Warnf("could not get block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
