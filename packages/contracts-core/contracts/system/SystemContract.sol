@@ -39,7 +39,7 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      * @dev Modifier for functions that are supposed to be called only from
      * System Contracts on all chains (either local or remote).
      * Note: any function protected by this modifier should have last three params:
-     * - uint32 _originDomain
+     * - uint32 _callOrigin
      * - SystemEntity _caller
      * - uint256 _rootSubmittedAt
      * Make sure to check domain/caller, if a function should be only called
@@ -58,8 +58,8 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      * Note: has to be used alongside with `onlySystemRouter`
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
      */
-    modifier onlySynapseChain(uint32 _originDomain) {
-        require(_originDomain == SYNAPSE_DOMAIN, "!synapseDomain");
+    modifier onlySynapseChain(uint32 _callOrigin) {
+        _assertSynapseChain(_callOrigin);
         _;
     }
 
@@ -73,7 +73,7 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      *  onlyCallers(MASK_0 | MASK_1 | MASK_2, _caller)
      */
     modifier onlyCallers(uint256 _allowedMask, ISystemRouter.SystemEntity _caller) {
-        require(_entityAllowed(_allowedMask, _caller), "!allowedCaller");
+        _assertEntityAllowed(_allowedMask, _caller);
         _;
     }
 
@@ -129,6 +129,17 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
         view
     {
         require(block.timestamp >= _rootSubmittedAt + _optimisticSeconds, "!optimisticPeriod");
+    }
+
+    function _assertEntityAllowed(uint256 _allowedMask, ISystemRouter.SystemEntity _caller)
+        internal
+        pure
+    {
+        require(_entityAllowed(_allowedMask, _caller), "!allowedCaller");
+    }
+
+    function _assertSynapseChain(uint32 _domain) internal pure {
+        require(_domain == SYNAPSE_DOMAIN, "!synapseDomain");
     }
 
     /**
