@@ -17,6 +17,8 @@ type ChainConfig struct {
 	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// Contracts stores all the contract information for the chain.
 	Contracts ContractConfigs `yaml:"contracts"`
+	// BlockTimeBatchSize is the number of block times to fetch in a single batch.
+	BlockTimeBatchSize uint32 `yaml:"block_time_batch_size"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

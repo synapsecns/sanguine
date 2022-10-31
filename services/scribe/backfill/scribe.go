@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
@@ -97,6 +98,16 @@ type ScribeBackend interface {
 	FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error)
 	// HeaderByNumber returns the block header with the given block number.
 	HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error)
+	// BatchCallContext sends all given requests as a single batch and waits for the server
+	// to return a response for all of them. The wait duration is bounded by the
+	// context's deadline.
+	//
+	// In contrast to CallContext, BatchCallContext only returns errors that have occurred
+	// while sending the request. Any error specific to a request is reported through the
+	// Error field of the corresponding BatchElem.
+	//
+	// Note that batch calls may not be executed atomically on the server side.
+	BatchCallContext(ctx context.Context, b []rpc.BatchElem) error
 }
 
 var _ ScribeBackend = simulated.Backend{}

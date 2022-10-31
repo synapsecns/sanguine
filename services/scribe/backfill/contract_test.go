@@ -212,6 +212,7 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 	var backendClient backfill.ScribeBackend
 	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
 	backendClient, err := ethclient.DialContext(b.GetTestContext(), omnirpcURL)
+
 	Nil(b.T(), err)
 
 	// This config is using this block https://arbiscan.io/block/6262099
