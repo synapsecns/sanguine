@@ -95,6 +95,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 	if err != nil {
 		return fmt.Errorf("could not backfill contract: %w \nChain: %d\nAddress: %s\nc Address: %s", err, c.chainID, c.address, c.address)
 	}
+	logger.Infof("Finished backfilling contract %s on chain %d from %d to %d", c.address, c.chainID, startHeight, endHeight)
 	return nil
 }
 
@@ -184,7 +185,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 
 	err := g.Wait()
 	if err != nil {
-		return fmt.Errorf("could not store data: %w", err)
+		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainID, log.BlockNumber, log.TxHash.String())
 	}
 	// store the last indexed block in the db
 	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainID, returnedReceipt.BlockNumber.Uint64())
