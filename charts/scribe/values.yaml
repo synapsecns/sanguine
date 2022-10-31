@@ -175,7 +175,6 @@ files:
     # Production  config example
     chains:
       - chain_id: 1285
-        rpc_url: http://scribe-omnirpc/rpc/1285
         required_confirmations: 50
         contracts:
           - address: 0xd5609cD0e1675331E4Fb1d43207C8d9D83AAb17C
@@ -211,9 +210,10 @@ files:
           - address: 0x9508BF380c1e6f751D97604732eF1Bae6673f299
             start_block: 890944
       - chain_id: 42161
-        rpc_url: http://scribe-omnirpc/rpc/42161
         required_confirmations: 50
         contracts:
+          - address: 0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40
+            start_block:5152261
           - address: 0xffd73E0642e8833cCE9854B963840A8cb2A218e8
             start_block: 738087
           - address: 0x544450Ffdfa5EA20528F21918E8aAC7B2C733381
@@ -261,9 +261,10 @@ files:
           - address: 0x1c3fe783a7c06bfAbd124F2708F5Cc51fA42E102
             start_block: 992358
       - chain_id: 1313161554
-        rpc_url: http://scribe-omnirpc/rpc/1313161554
         required_confirmations: 50
         contracts:
+          - address: 0xCCd87854f58773fe75CdDa542457aC48E46c2D65
+            start_block: 67351766
           - address: 0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89
             start_block: 56092386
           - address: 0x22cdc93F53Ee3F6b8Ad66faD6f98915a5349950E
@@ -297,9 +298,10 @@ files:
           - address: 0x9508BF380c1e6f751D97604732eF1Bae6673f299
             start_block: 56092043
       - chain_id: 250
-        rpc_url: http://scribe-omnirpc/rpc/250
         required_confirmations: 50
         contracts:
+          - address: 0x85662fd123280827e11C59973Ac9fcBE838dC3B4
+            start_block: 29236172
           - address: 0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9
             start_block: 18504007
           - address: 0x8745773CC6e70577819BB76f51FA7640cece505F
@@ -343,9 +345,10 @@ files:
           - address: 0x003107B3aeee133804eaBE7D1df200DdFbb51dCE
             start_block: 18503430
       - chain_id: 1666600000
-        rpc_url: http://scribe-omnirpc/rpc/1666600000
         required_confirmations: 50
         contracts:
+          - address: 0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e
+            start_block: 19163634
           - address: 0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9
             start_block: 18646530
           - address: 0x1cB25d8fa2B2478e0606d58Aa4859498519E4Ae9
@@ -409,9 +412,10 @@ files:
           - address: 0x8745773CC6e70577819BB76f51FA7640cece505F
             start_block: 18646296
       - chain_id: 1088
-        rpc_url: http://scribe-omnirpc/rpc/1088
         required_confirmations: 50
         contracts:
+          - address: 0x555982d2E211745b96736665e19D9308B615F78e
+            start_block: 1251758
           - address: 0xDB9F78F5dD41B73b5020e841B29B5983408f5069
             start_block: 957525
           - address: 0x9f72004d0Ff5cCF2857a3564F7B3329057D15599
@@ -447,9 +451,10 @@ files:
           - address: 0x911766fA1a425Cb7cCCB0377BC152f37F276f8d6
             start_block: 1029274
       - chain_id: 288
-        rpc_url: http://scribe-omnirpc/rpc/288
         required_confirmations: 50
         contracts:
+          - address: 0x75FF037256b36F15919369AC58695550bE72fead
+            start_block: 16221
           - address: 0xE1e1e6711bDfa0b8DEC900F9E677D85aA7F3049d
             start_block: 16210
           - address: 0xf07d1C752fAb503E47FEF309bf14fbDD3E867089
@@ -487,7 +492,6 @@ files:
           - address: 0xd203De32170130082896b4111eDF825a4774c18E
             start_block: 49328
       - chain_id: 53935
-        rpc_url: http://scribe-omnirpc/rpc/53935
         required_confirmations: 50
         contracts:
           - address: 0xCe02a6238EdaD228CF6Bd2504ccF1283e7D94866
@@ -535,7 +539,6 @@ files:
           - address: 0x9596A3C6a4B2597adCC5D6d69b281A7C49e3Fe6A
             start_block: 36
       - chain_id: 10
-        rpc_url: http://scribe-omnirpc/rpc/10
         required_confirmations: 50
         contracts:
           - address: 0x84A420459cd31C3c34583F67E0f0fB191067D32f
@@ -589,9 +592,10 @@ files:
           - address: 0x809DC529f07651bD43A172e8dB6f4a7a0d771036
             start_block: 50509
       - chain_id: 56
-        rpc_url: http://scribe-omnirpc/rpc/56
         required_confirmations: 50
         contracts:
+          - address: 0x28ec0B36F0819ecB5005cAB836F4ED5a2eCa4D13
+            start_block: 12431591
           - address: 0xbE183e2Bd155D5e216e62De331Ab63Fd556ee0E2
             start_block: 8394405
           - address: 0x35e4edD1F12aBa7D0c46a8e48513a5B0B679C89c
@@ -643,9 +647,10 @@ files:
           - address: 0xB6a9b0Be9b087716aCFd4805C2bB5b736aC62b38
             start_block: 11727382
       - chain_id: 1
-        rpc_url: http://scribe-omnirpc/rpc/1
         required_confirmations: 50
         contracts:
+          - address: 0x1116898DdA4015eD8dDefb84b6e8Bc24528Af2d8
+            start_block: 13033711
           - address: 0xFE986b20d34df3Aa9fA2e4d18b8EBe5AC6c753b0
             start_block: 12656274
           - address: 0x5217c83ca75559B1f8a8803824E5b7ac233A12a1
@@ -699,9 +704,10 @@ files:
           - address: 0x647489df0673E17dB3163c47d5233EBB6F5cAc70
             start_block: 13105394
       - chain_id: 43114
-        rpc_url: http://scribe-omnirpc/rpc/43114
         required_confirmations: 50
         contracts:
+          - address: 0xED2a7edd7413021d440b09D654f3b87712abAB66
+            start_block: 6619002
           - address: 0x77a7e60555bC18B4Be44C181b2575eee46212d44
             start_block: 7378400
           - address: 0xdd60483Ace9B215a7c019A44Be2F22Aa9982652E
@@ -761,9 +767,10 @@ files:
           - address: 0xa4666f8E6DBf504BBC2dB7B005743ce7d8efacBB
             start_block: 3446550
       - chain_id: 25
-        rpc_url: http://scribe-omnirpc/rpc/25
         required_confirmations: 50
         contracts:
+          - address: 0xCb6674548586F20ca39C97A52A0ded86f48814De
+            start_block: 2511054
           - address: 0x4cDacbb74E86e2E18c35ae9D97B9427A0ADA8007
             start_block: 1578368
           - address: 0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B
@@ -801,7 +808,6 @@ files:
           - address: 0x41E95B1F1c7849c50Bb9Caf92AB33302c0de945F
             start_block: 2263766
       - chain_id: 8217
-        rpc_url: http://scribe-omnirpc/rpc/8217
         required_confirmations: 50
         contracts:
           - address: 0x72b614cB34d010a097bbf7E492479195DBAE7BB4
@@ -839,7 +845,6 @@ files:
           - address: 0x003107B3aeee133804eaBE7D1df200DdFbb51dCE
             start_block: 93622336
       - chain_id: 1284
-        rpc_url: http://scribe-omnirpc/rpc/1284
         required_confirmations: 50
         contracts:
           - address: 0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3
@@ -889,9 +894,10 @@ files:
           - address: 0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F
             start_block: 175188
       - chain_id: 137
-        rpc_url: http://scribe-omnirpc/rpc/137
         required_confirmations: 50
         contracts:
+          - address: 0x85fCD7Dd0a1e1A9FCD5FD886ED522dE8221C3EE5
+            start_block: 21071348
           - address: 0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3
             start_block: 15848427
           - address: 0x612f3a0226463599CCBCAbFf89623904ef38BcB9
@@ -935,3 +941,4 @@ files:
           - address: 0xa12A034fe81A17d11593C1f85930D20090Ec1747
             start_block: 18439425
     refresh_rate: 0
+    rpc_url: http://omnirpc/confirmations

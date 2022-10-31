@@ -2,7 +2,10 @@ package backfill_test
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
+	"os"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -51,8 +54,9 @@ func (b BackfillSuite) TestFailedStore() {
 		Address:    testContract.Address().String(),
 		StartBlock: 0,
 	}
+	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
 
-	backfiller, err := backfill.NewContractBackfiller(chainID, contractConfig.Address, mockDB, simulatedChain)
+	backfiller, err := backfill.NewContractBackfiller(chainID, contractConfig.Address, mockDB, simulatedChainArr)
 	Nil(b.T(), err)
 
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
@@ -84,8 +88,9 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 		Address:    testContract.Address().String(),
 		StartBlock: 0,
 	}
+	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
 
-	backfiller, err := backfill.NewContractBackfiller(3, contractConfig.Address, b.testDB, simulatedChain)
+	backfiller, err := backfill.NewContractBackfiller(3, contractConfig.Address, b.testDB, simulatedChainArr)
 	Nil(b.T(), err)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
@@ -161,8 +166,9 @@ func (b BackfillSuite) TestContractBackfill() {
 		Address:    testContract.Address().String(),
 		StartBlock: 0,
 	}
+	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
 
-	backfiller, err := backfill.NewContractBackfiller(142, contractConfig.Address, b.testDB, simulatedChain)
+	backfiller, err := backfill.NewContractBackfiller(142, contractConfig.Address, b.testDB, simulatedChainArr)
 	Nil(b.T(), err)
 
 	// Emit events for the backfiller to read.
@@ -199,6 +205,45 @@ func (b BackfillSuite) TestContractBackfill() {
 	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()))
 	Nil(b.T(), err)
 	Equal(b.T(), txBlockNumber, lastIndexed)
+}
+
+// TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
+func (b BackfillSuite) TestTxTypeNotSupported() {
+	if os.Getenv("CI") != "" {
+		b.T().Skip("Network test flake")
+	}
+	var backendClient backfill.ScribeBackend
+	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
+	backendClient, err := ethclient.DialContext(b.GetTestContext(), omnirpcURL)
+	Nil(b.T(), err)
+
+	// This config is using this block https://arbiscan.io/block/6262099
+	// and this tx https://arbiscan.io/tx/0x8800222adf9578fb576db0bd7fb4860fe89932549be084a3313939c03e4d279d
+	// with a unique Arbitrum type to verify that anomalous tx type is handled correctly.
+	contractConfig := config.ContractConfig{
+		Address:    "0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B",
+		StartBlock: 6262099,
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:               42161,
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{contractConfig},
+	}
+	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
+	chainBackfiller, err := backfill.NewChainBackfiller(42161, b.testDB, backendClientArr, chainConfig)
+	Nil(b.T(), err)
+	err = chainBackfiller.Backfill(b.GetTestContext(), true)
+	Nil(b.T(), err)
+	// Check to see if one log is recorded, one receipt is recorded, but no transactions.
+	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID)
+	Nil(b.T(), err)
+	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
+	Nil(b.T(), err)
+	Equal(b.T(), 4, len(logs))
+	Equal(b.T(), contractConfig.StartBlock, lastIndexed)
+	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
+	Nil(b.T(), err)
+	Equal(b.T(), 1, len(receipts))
 }
 
 // TestGetLogsMock tests the GetLogs function using a mocked blockchain for errors.
