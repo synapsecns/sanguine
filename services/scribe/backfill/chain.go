@@ -135,6 +135,9 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 						logger.Warnf("could not backfill data: %v\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
 						continue
 					}
+					// Reset backoff and timeout
+					b.Reset()
+					timeout = time.Duration(0)
 					return nil
 				}
 			}
@@ -213,6 +216,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 				// Reset the backoff after successful block parse run to prevent bloated back offs.
 				bBlockNum.Reset()
+				timeoutBlockNum = time.Duration(0)
 
 				// If done with the range, exit go routine.
 				if blockNum > endHeight {
