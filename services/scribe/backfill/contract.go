@@ -74,6 +74,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
 				}
+				fmt.Println("got a log!")
 				err = c.store(groupCtx, log)
 				if err != nil {
 					return fmt.Errorf("could not store log: %w", err)

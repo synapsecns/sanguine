@@ -214,8 +214,8 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 
 	// Set config.
 	contractConfig := config.ContractConfig{
-		Address:    "0xf07d1C752fAb503E47FEF309bf14fbDD3E867089",
-		StartBlock: 228310,
+		Address:    "0xd5609cD0e1675331E4Fb1d43207C8d9D83AAb17C",
+		StartBlock: 657416,
 	}
 	chainConfig := config.ChainConfig{
 		ChainID:               42161,
