@@ -80,7 +80,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 		if err != nil {
 			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 		}
-		backendClientWConfirmations, err := ethclient.DialContext(c.Context, fmt.Sprintf("%s/4/rpc/%d", scribeConfig.RPCURL, client.ChainID))
+		backendClientWConfirmations, err := ethclient.DialContext(c.Context, fmt.Sprintf("%s/2/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 		if err != nil {
 			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/4/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 		}
