@@ -11,8 +11,6 @@ import (
 type ChainConfig struct {
 	// ChainID is the ID of the chain.
 	ChainID uint32 `yaml:"chain_id"`
-	// RPCUrl is the URL of the chain's RPC server.
-	RPCUrl string `yaml:"rpc_url"`
 	// RequiredConfirmations is the number of confirmations required for a block to be finalized.
 	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// Contracts stores all the contract information for the chain.
@@ -47,9 +45,6 @@ func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 func (c ChainConfig) IsValid(ctx context.Context) (ok bool, err error) {
 	if c.ChainID == 0 {
 		return false, fmt.Errorf("%w: chain ID cannot be 0", ErrInvalidChainID)
-	}
-	if c.RPCUrl == "" {
-		return false, fmt.Errorf("field RPCUrl: %w", ErrRequiredField)
 	}
 	if ok, err = c.Contracts.IsValid(ctx); !ok {
 		return false, err

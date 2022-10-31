@@ -15,7 +15,6 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 		Chains: config.ChainConfigs{
 			config.ChainConfig{
 				ChainID: chainID,
-				RPCUrl:  gofakeit.URL(),
 				Contracts: config.ContractConfigs{
 					config.ContractConfig{
 						Address:    etherMocks.MockAddress().String(),
@@ -29,7 +28,6 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 			},
 			config.ChainConfig{
 				ChainID: chainID + 1,
-				RPCUrl:  gofakeit.URL(),
 				Contracts: config.ContractConfigs{
 					config.ContractConfig{
 						Address:    etherMocks.MockAddress().String(),
@@ -39,6 +37,7 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 			},
 		},
 		RefreshRate: uint(gofakeit.Uint8()),
+		RPCURL:      gofakeit.URL(),
 	}
 
 	encodedConfig, err := testConfig.Encode()
