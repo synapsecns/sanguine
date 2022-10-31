@@ -149,6 +149,61 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
     function renounceOwnership() public override onlyOwner {} //solhint-disable-line no-empty-blocks
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // @notice Pass information that a Notary staked their bond
+    function bondNotary(
+        uint32 _domain,
+        address _notary,
+        uint32 _callOrigin,
+        ISystemRouter.SystemEntity _caller,
+        uint256 _rootSubmittedAt
+    ) external virtual;
+
+    // @notice Pass information that a Notary unstaked their bond
+    function unbondNotary(
+        uint32 _domain,
+        address _notary,
+        uint32 _callOrigin,
+        ISystemRouter.SystemEntity _caller,
+        uint256 _rootSubmittedAt
+    ) external virtual;
+
+    // @notice Pass information that a Notary was slashed on Origin
+    function slashNotary(
+        uint32 _domain,
+        address _notary,
+        uint32 _callOrigin,
+        ISystemRouter.SystemEntity _caller,
+        uint256 _rootSubmittedAt
+    ) external virtual;
+
+    // @notice Pass information that a Guard staked their bond
+    function bondGuard(
+        address _guard,
+        uint32 _callOrigin,
+        ISystemRouter.SystemEntity _caller,
+        uint256 _rootSubmittedAt
+    ) external virtual;
+
+    // @notice Pass information that a Guard unstaked their bond
+    function unbondGuard(
+        address _guard,
+        uint32 _callOrigin,
+        ISystemRouter.SystemEntity _caller,
+        uint256 _rootSubmittedAt
+    ) external virtual;
+
+    // @notice Pass information that a Guard was slashed on Origin
+    function slashGuard(
+        address _guard,
+        uint32 _callOrigin,
+        ISystemRouter.SystemEntity _caller,
+        uint256 _rootSubmittedAt
+    ) external virtual;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 

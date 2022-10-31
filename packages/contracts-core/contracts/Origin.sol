@@ -9,7 +9,6 @@ import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
 import { SystemMessage } from "./libs/SystemMessage.sol";
-import { SystemContract } from "./system/SystemContract.sol";
 import { INotaryManager } from "./interfaces/INotaryManager.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
 // ============ External Imports ============
@@ -29,7 +28,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Origin accepts submissions of fraudulent signatures by the Guard in the form
  * of a Guard's report with said signature and slashes Guard in that case.
  */
-contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
+contract Origin is Version0, OriginHub, LocalDomainContext {
     using Tips for bytes;
     using Tips for bytes29;
 

@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 import { LocalDomainContext } from "./context/LocalDomainContext.sol";
 import { DestinationHub } from "./hubs/DestinationHub.sol";
-import { SystemContract } from "./system/SystemContract.sol";
 import { Version0 } from "./Version0.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
@@ -19,7 +18,7 @@ import { SystemMessage } from "./libs/SystemMessage.sol";
  * @notice Track merkle root state of Origin contracts on other chains,
  * prove and dispatch messages to end recipients.
  */
-contract Destination is Version0, SystemContract, LocalDomainContext, DestinationHub {
+contract Destination is Version0, DestinationHub, LocalDomainContext {
     using Message for bytes;
     using Message for bytes29;
     using Header for bytes29;
