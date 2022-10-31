@@ -51,12 +51,13 @@ func (b BackfillSuite) TestChainBackfill() {
 	}
 	chainConfig := config.ChainConfig{
 		ChainID:   chainID,
-		RPCUrl:    "an rpc url is not needed for simulated backends",
 		Contracts: contractConfigs,
 	}
 
+	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
+
 	// Set up the ChainBackfiller.
-	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChain, chainConfig)
+	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChainArr, chainConfig)
 	Nil(b.T(), err)
 
 	b.EmitEventsForAChain(contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)

@@ -18,7 +18,7 @@ type Scribe struct {
 	// eventDB is the database to store event data in
 	eventDB db.EventDB
 	// clients is a mapping of chain IDs -> clients
-	clients map[uint32]backfill.ScribeBackend
+	clients map[uint32][]backfill.ScribeBackend
 	// scribeBackfiller is the backfiller for the scribe
 	scribeBackfiller *backfill.ScribeBackfiller
 	// config is the config for the scribe
@@ -26,7 +26,7 @@ type Scribe struct {
 }
 
 // NewScribe creates a new scribe.
-func NewScribe(eventDB db.EventDB, clients map[uint32]backfill.ScribeBackend, config config.Config) (*Scribe, error) {
+func NewScribe(eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, config config.Config) (*Scribe, error) {
 	// initialize the scribe backfiller
 	scribeBackfiller, err := backfill.NewScribeBackfiller(eventDB, clients, config)
 	if err != nil {
@@ -93,7 +93,7 @@ func (s Scribe) Start(ctx context.Context) error {
 
 //nolint:gocognit, cyclop
 func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfirmations uint32) error {
-	newBlock, err := s.clients[chainID].BlockNumber(ctx)
+	newBlock, err := s.clients[chainID][0].BlockNumber(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get current block number: %w", err)
 	}
@@ -125,7 +125,7 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 
 	for i := lastBlockNumber + 1; i <= newBlock-uint64(requiredConfirmations); i++ {
 		// check the validity of the block
-		block, err := s.clients[chainID].BlockByNumber(ctx, big.NewInt(int64(i)))
+		block, err := s.clients[chainID][0].BlockByNumber(ctx, big.NewInt(int64(i)))
 		if err != nil {
 			return fmt.Errorf("could not get block by number: %w", err)
 		}

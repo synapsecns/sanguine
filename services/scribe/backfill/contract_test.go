@@ -54,8 +54,9 @@ func (b BackfillSuite) TestFailedStore() {
 		Address:    testContract.Address().String(),
 		StartBlock: 0,
 	}
+	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
 
-	backfiller, err := backfill.NewContractBackfiller(chainID, contractConfig.Address, mockDB, simulatedChain)
+	backfiller, err := backfill.NewContractBackfiller(chainID, contractConfig.Address, mockDB, simulatedChainArr)
 	Nil(b.T(), err)
 
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
@@ -87,8 +88,9 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 		Address:    testContract.Address().String(),
 		StartBlock: 0,
 	}
+	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
 
-	backfiller, err := backfill.NewContractBackfiller(3, contractConfig.Address, b.testDB, simulatedChain)
+	backfiller, err := backfill.NewContractBackfiller(3, contractConfig.Address, b.testDB, simulatedChainArr)
 	Nil(b.T(), err)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
@@ -164,8 +166,9 @@ func (b BackfillSuite) TestContractBackfill() {
 		Address:    testContract.Address().String(),
 		StartBlock: 0,
 	}
+	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
 
-	backfiller, err := backfill.NewContractBackfiller(142, contractConfig.Address, b.testDB, simulatedChain)
+	backfiller, err := backfill.NewContractBackfiller(142, contractConfig.Address, b.testDB, simulatedChainArr)
 	Nil(b.T(), err)
 
 	// Emit events for the backfiller to read.
@@ -223,11 +226,11 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 	}
 	chainConfig := config.ChainConfig{
 		ChainID:               42161,
-		RPCUrl:                omnirpcURL,
 		RequiredConfirmations: 0,
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
-	chainBackfiller, err := backfill.NewChainBackfiller(42161, b.testDB, backendClient, chainConfig)
+	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
+	chainBackfiller, err := backfill.NewChainBackfiller(42161, b.testDB, backendClientArr, chainConfig)
 	Nil(b.T(), err)
 	err = chainBackfiller.Backfill(b.GetTestContext(), true)
 	Nil(b.T(), err)
