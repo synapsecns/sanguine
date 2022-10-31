@@ -24,6 +24,11 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
 
     uint256 internal constant ORIGIN = 1 << uint8(ISystemRouter.SystemEntity.Origin);
     uint256 internal constant DESTINATION = 1 << uint8(ISystemRouter.SystemEntity.Destination);
+    uint256 internal constant BONDING_MANAGER =
+        1 << uint8(ISystemRouter.SystemEntity.BondingManager);
+
+    // TODO: reevaluate optimistic period for staking/unstaking bonds
+    uint256 internal constant BONDING_OPTIMISTIC_PERIOD = 1 days;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
@@ -74,6 +79,33 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      */
     modifier onlyCallers(uint256 _allowedMask, ISystemRouter.SystemEntity _caller) {
         _assertEntityAllowed(_allowedMask, _caller);
+        _;
+    }
+
+    /**
+     * @dev Modifier for functions that are supposed to be called only from
+     * BondingManager on their local chain.
+     * Note: has to be used alongside with `onlySystemRouter`
+     * See `onlySystemRouter` for details about the functions protected by such modifiers.
+     */
+    modifier onlyLocalBondingManager(uint32 _callOrigin, ISystemRouter.SystemEntity _caller) {
+        _assertLocalDomain(_callOrigin);
+        _assertEntityAllowed(BONDING_MANAGER, _caller);
+        _;
+    }
+
+    /**
+     * @dev Modifier for functions that are supposed to be called only from
+     * BondingManager on Synapse Chain.
+     * Note: has to be used alongside with `onlySystemRouter`
+     * See `onlySystemRouter` for details about the functions protected by such modifiers.
+     */
+    modifier onlySynapseChainBondingManager(
+        uint32 _callOrigin,
+        ISystemRouter.SystemEntity _caller
+    ) {
+        _assertSynapseChain(_callOrigin);
+        _assertEntityAllowed(BONDING_MANAGER, _caller);
         _;
     }
 

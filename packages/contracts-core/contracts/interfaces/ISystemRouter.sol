@@ -5,7 +5,8 @@ interface ISystemRouter {
     /// @dev Potential senders/recipients of a system message
     enum SystemEntity {
         Origin,
-        Destination
+        Destination,
+        BondingManager
     }
 
     /**
