@@ -226,11 +226,11 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 	}
 	chainConfig := config.ChainConfig{
 		ChainID:               42161,
-		RPCUrl:                omnirpcURL,
 		RequiredConfirmations: 0,
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
-	chainBackfiller, err := backfill.NewChainBackfiller(42161, b.testDB, backendClient, chainConfig)
+	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
+	chainBackfiller, err := backfill.NewChainBackfiller(42161, b.testDB, backendClientArr, chainConfig)
 	Nil(b.T(), err)
 	err = chainBackfiller.Backfill(b.GetTestContext(), true)
 	Nil(b.T(), err)
