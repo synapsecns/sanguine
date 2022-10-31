@@ -45,6 +45,9 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 	contractBackfillers := []*ContractBackfiller{}
 	// initialize each contract backfiller and start heights
 	startHeights := make(map[string]uint64)
+	// initialize the block time attempt count and buffer
+	blockNumAttemptCount := make(map[uint64]uint32)
+	blockTimeBuffer := []rpc.BatchElem{}
 
 	// start with max uint64
 	minBlockHeight := uint64(math.MaxUint64)
@@ -63,13 +66,15 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 	}
 
 	return &ChainBackfiller{
-		chainID:             chainID,
-		eventDB:             eventDB,
-		client:              client,
-		contractBackfillers: contractBackfillers,
-		startHeights:        startHeights,
-		minBlockHeight:      minBlockHeight,
-		chainConfig:         chainConfig,
+		chainID:              chainID,
+		eventDB:              eventDB,
+		client:               client,
+		contractBackfillers:  contractBackfillers,
+		startHeights:         startHeights,
+		minBlockHeight:       minBlockHeight,
+		chainConfig:          chainConfig,
+		blockTimeBuffer:      blockTimeBuffer,
+		blockNumAttemptCount: blockNumAttemptCount,
 	}, nil
 }
 
@@ -155,7 +160,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 	// Start the buffer handler for the batch block time queries
 	go func() {
-		err := c.bufferHandler(ctx)
+		err := c.bufferHandler(ctx, &c.blockTimeBuffer)
 		if err != nil {
 			logger.Errorf("could not handle buffer: %v", err)
 		}
@@ -196,6 +201,8 @@ blockTimeLoop:
 				Error:  batchElemErr,
 			}
 			c.blockTimeBuffer = append(c.blockTimeBuffer, batchElem)
+			fmt.Println("appending to buffer", blockNum)
+			fmt.Println("CMON", len(c.blockTimeBuffer))
 
 			// Move on to the next block.
 			blockNum++
@@ -217,29 +224,34 @@ blockTimeLoop:
 // bufferHandler will be run concurrently as it takes in BatchElems until it hits a
 // certain threshold, then it will process the BatchElems and stores the results in
 // the eventDB.
-func (c ChainBackfiller) bufferHandler(ctx context.Context) error {
+func (c ChainBackfiller) bufferHandler(ctx context.Context, blockTimeBuffer *[]rpc.BatchElem) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		default:
-			if uint32(len(c.blockTimeBuffer)) >= c.chainConfig.BlockTimeBatchSize {
+			fmt.Println("REALLY HOPE THIS NUM ISN'T ZERO:", uint32(len(*blockTimeBuffer)))
+			if uint32(len(*blockTimeBuffer)) >= c.chainConfig.BlockTimeBatchSize {
+				fmt.Println("HERE")
+
 				// batch call to get the block times
-				err := c.client.BatchCallContext(ctx, c.blockTimeBuffer)
+				err := c.client.BatchCallContext(ctx, *blockTimeBuffer)
 				if err != nil {
 					return fmt.Errorf("could not batch call: %w", err)
 				}
 				// iterate over the batch elems that have results and no errors,
 				// then store the results in the eventDB.
-				for i := 0; i < len(c.blockTimeBuffer); i++ {
-					//for i, elem := range c.blockTimeBuffer {
+				for i := 0; i < len(*blockTimeBuffer); i++ {
+					elem := &(*blockTimeBuffer)[i]
 					// store the block time
-					elem := c.blockTimeBuffer[i]
 					blockNum, err := hexutil.DecodeBig(elem.Args[0].(string))
-					c.blockNumAttemptCount[blockNum.Uint64()]++
 					if err != nil {
 						return fmt.Errorf("could not decode block number: %w", err)
 					}
+					header := elem.Result.(**types.Header)
+					_ = header
+					c.blockNumAttemptCount[blockNum.Uint64()]++
+					fmt.Println("SOMESOMESOME", c.blockNumAttemptCount[blockNum.Uint64()])
 					if elem.Error != nil {
 						logger.Warnf("could not get block time: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %d", elem.Error, c.chainID, blockNum.Uint64(), c.blockNumAttemptCount[blockNum.Uint64()])
 						continue
@@ -248,11 +260,11 @@ func (c ChainBackfiller) bufferHandler(ctx context.Context) error {
 					if elem.Result == nil {
 						continue
 					}
-					err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum.Uint64(), elem.Result.(*types.Header).Time)
-					if err != nil {
-						logger.Warnf("could not store block time - block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %d", blockNum.String(), err, c.chainID, blockNum, c.blockNumAttemptCount[blockNum.Uint64()])
-						continue
-					}
+					err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum.Uint64(), (**header).Time)
+					//if err != nil {
+					//	logger.Warnf("could not store block time - block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %d", blockNum.String(), err, c.chainID, blockNum, c.blockNumAttemptCount[blockNum.Uint64()])
+					//	continue
+					//}
 
 					// store the last block time
 					err = c.eventDB.StoreLastBlockTime(ctx, c.chainID, blockNum.Uint64())
@@ -261,7 +273,8 @@ func (c ChainBackfiller) bufferHandler(ctx context.Context) error {
 						continue
 					}
 					// remove the batch elem from the buffer since it has been processed
-					c.blockTimeBuffer = remove(c.blockTimeBuffer, i)
+					tempBuffer := remove(*blockTimeBuffer, i)
+					blockTimeBuffer = &tempBuffer
 					i--
 				}
 			}

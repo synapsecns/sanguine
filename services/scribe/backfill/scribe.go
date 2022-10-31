@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -109,5 +110,29 @@ type ScribeBackend interface {
 	// Note that batch calls may not be executed atomically on the server side.
 	BatchCallContext(ctx context.Context, b []rpc.BatchElem) error
 }
+
+// TODO private
+type ScribeClient struct {
+	*ethclient.Client
+	underlyingClient rpc.Client
+}
+
+func NewScribeBackend(ctx context.Context, rpcURL string) (ScribeBackend, error) {
+	rpcClient, err := rpc.DialContext(ctx, rpcURL)
+	if err != nil {
+		return nil, fmt.Errorf("could not start client for %s", rpcURL)
+	}
+
+	return &ScribeClient{
+		Client:           ethclient.NewClient(rpcClient),
+		underlyingClient: *rpcClient,
+	}, nil
+}
+
+func (s ScribeClient) BatchCallContext(ctx context.Context, b []rpc.BatchElem) error {
+	return s.underlyingClient.BatchCallContext(ctx, b)
+}
+
+var _ ScribeBackend = &ScribeClient{}
 
 var _ ScribeBackend = simulated.Backend{}
