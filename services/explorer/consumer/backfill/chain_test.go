@@ -80,6 +80,12 @@ func (b *BackfillSuite) TestBackfill() {
 		},
 	}
 
+	// Store blocktimes for testing defillama and timestamp indexing.
+	for i := uint64(0); i < 13; i++ {
+		err := b.eventDB.StoreBlockTime(b.GetTestContext(), uint32(testChainID.Uint64()), i, i)
+		Nil(b.T(), err)
+	}
+
 	// Store every bridge event.
 	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)

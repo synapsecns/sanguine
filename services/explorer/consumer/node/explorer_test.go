@@ -156,6 +156,12 @@ func (n *NodeSuite) storeTestLog(tx *types.Transaction, chainID uint32, blockNum
 }
 
 func (n NodeSuite) fillBlocks(bridgeRef *testbridge.TestBridgeRef, swapRefA *testswap.TestSwapRef, swapRefB *testswap.TestSwapRef, transactOpts backends.AuthType, chainID uint32) {
+	// Store blocktimes for testing defillama and timestamp indexing.
+	for i := uint64(0); i < 13; i++ {
+		err := n.eventDB.StoreBlockTime(n.GetTestContext(), chainID, i, i)
+		Nil(n.T(), err)
+	}
+
 	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(n.T(), err)
 	n.storeEthTx(bridgeTx, big.NewInt(int64(chainID)), big.NewInt(int64(5)), 1)
