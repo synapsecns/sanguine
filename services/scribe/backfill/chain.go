@@ -236,7 +236,7 @@ func (c ChainBackfiller) bufferHandler(ctx context.Context, blockTimeBuffer *[]r
 				fmt.Println("HERE")
 
 				// batch call to get the block times
-				err := c.client.BatchCallContext(ctx, *blockTimeBuffer)
+				err := c.client[0].BatchCallContext(ctx, *blockTimeBuffer)
 				if err != nil {
 					return fmt.Errorf("could not batch call: %w", err)
 				}
