@@ -5,6 +5,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	scribetypes "github.com/synapsecns/sanguine/services/scribe/types"
 )
 
 // EventDBWriter is an interface for writing events to a database.
@@ -52,6 +53,12 @@ type EventDBWriter interface {
 	StoreLastBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) error
 	// StoreBlockTime stores a block time for a chain.
 	StoreBlockTime(ctx context.Context, chainID uint32, blockNumber, timestamp uint64) error
+
+	// StoreFailedLog checks if the failed log exists in the database. If so, increment its FailedAttempt counter,
+	// otherwise, add it to the table with a FailedAttempt value of one.
+	StoreFailedLog(ctx context.Context, chainID uint32, contractAddress common.Address, txHash common.Hash, blockIndex uint64, blockNumber uint64) error
+	// DeleteFailedLog deletes a failed log from the FailedLog table.
+	DeleteFailedLog(ctx context.Context, chainID uint32, contractAddress common.Address, txHash common.Hash, blockIndex uint64, blockNumber uint64) error
 }
 
 // EventDBReader is an interface for reading events from a database.
@@ -89,6 +96,11 @@ type EventDBReader interface {
 	RetrieveLogCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error)
 	// RetrieveBlockTimesCountForChain retrieves the number of block times stored for a chain.
 	RetrieveBlockTimesCountForChain(ctx context.Context, chainID uint32) (int64, error)
+
+	// GetFailedAttempts returns the number of failed attempts for a failed log.
+	GetFailedAttempts(ctx context.Context, chainID uint32, contractAddress common.Address, txHash common.Hash, blockIndex uint64, blockNumber uint64) (uint64, error)
+	// GetFailedLogsFromFilter returns a list of failed logs that match the given filter.
+	GetFailedLogsFromFilter(ctx context.Context, failedLogFilter FailedLogFilter) ([]scribetypes.FailedLog, error)
 }
 
 // EventDB stores events.

@@ -43,6 +43,16 @@ func (b BackfillSuite) TestFailedStore() {
 		On("RetrieveLastIndexed", mock.Anything, mock.Anything, mock.Anything).
 		// return 0
 		Return(uint64(0), nil)
+	mockDB.
+		// on store failed log call
+		On("StoreFailedLog", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		// return nil
+		Return(nil)
+	mockDB.
+		// on get failed attempts
+		On("GetFailedAttempts", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		// return 0
+		Return(uint64(0), nil)
 	chainID := gofakeit.Uint32()
 	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
@@ -56,7 +66,7 @@ func (b BackfillSuite) TestFailedStore() {
 	}
 	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
 
-	backfiller, err := backfill.NewContractBackfiller(chainID, contractConfig.Address, mockDB, simulatedChainArr)
+	backfiller, err := backfill.NewContractBackfiller(chainID, contractConfig.Address, mockDB, simulatedChainArr, 1)
 	Nil(b.T(), err)
 
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
@@ -71,6 +81,7 @@ func (b BackfillSuite) TestFailedStore() {
 
 	// Check to ensure that StoreLastIndexed was never called.
 	mockDB.AssertNotCalled(b.T(), "StoreLastIndexed", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	mockDB.AssertNumberOfCalls(b.T(), "StoreFailedLog", 1)
 }
 
 // TestGetLogsSimulated tests the GetLogs function using a simulated blockchain.
@@ -90,7 +101,7 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 	}
 	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
 
-	backfiller, err := backfill.NewContractBackfiller(3, contractConfig.Address, b.testDB, simulatedChainArr)
+	backfiller, err := backfill.NewContractBackfiller(3, contractConfig.Address, b.testDB, simulatedChainArr, 1)
 	Nil(b.T(), err)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
@@ -168,7 +179,7 @@ func (b BackfillSuite) TestContractBackfill() {
 	}
 	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
 
-	backfiller, err := backfill.NewContractBackfiller(142, contractConfig.Address, b.testDB, simulatedChainArr)
+	backfiller, err := backfill.NewContractBackfiller(142, contractConfig.Address, b.testDB, simulatedChainArr, 1)
 	Nil(b.T(), err)
 
 	// Emit events for the backfiller to read.

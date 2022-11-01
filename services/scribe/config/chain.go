@@ -15,6 +15,8 @@ type ChainConfig struct {
 	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// Contracts stores all the contract information for the chain.
 	Contracts ContractConfigs `yaml:"contracts"`
+	// MaxFails is the maximum number of times a retry will happen before the failedBlock table is updated.
+	MaxFails uint32 `yaml:"max_fails"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

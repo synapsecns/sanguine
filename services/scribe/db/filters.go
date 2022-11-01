@@ -31,3 +31,12 @@ type EthTxFilter struct {
 	BlockNumber uint64
 	Confirmed   bool
 }
+
+// FailedLogFilter is a filter to use when querying the database for failed blocks.
+type FailedLogFilter struct {
+	ChainID         uint32
+	ContractAddress string
+	TxHash          string
+	BlockIndex      uint64
+	BlockNumber     uint64
+}

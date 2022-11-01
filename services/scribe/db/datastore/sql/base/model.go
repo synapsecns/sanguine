@@ -2,6 +2,7 @@ package base
 
 import (
 	"database/sql"
+	"github.com/synapsecns/sanguine/services/scribe/types"
 
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/gorm"
@@ -20,6 +21,7 @@ func init() {
 	BlockHashFieldName = namer.GetConsistentName("BlockHash")
 	ConfirmedFieldName = namer.GetConsistentName("Confirmed")
 	TransactionIndexFieldName = namer.GetConsistentName("TransactionIndex")
+	FailedAttemptsFieldName = namer.GetConsistentName("FailedAttempts")
 }
 
 var (
@@ -39,6 +41,8 @@ var (
 	ConfirmedFieldName string
 	// TransactionIndexFieldName is the name of the transaction block  field.
 	TransactionIndexFieldName string
+	// FailedAttemptsFieldName is the name of the failed attempts field.
+	FailedAttemptsFieldName string
 )
 
 // PageSize is the amount of entries per page of logs.
@@ -68,7 +72,7 @@ type Log struct {
 	TxIndex uint64 `gorm:"tx_index"`
 	// BlockHash is the hash of the block in which the transaction was included
 	BlockHash string `gorm:"block_hash"`
-	// Index is the index of the log in the block
+	// BlockIndex is the index of the log in the block
 	BlockIndex uint64 `gorm:"column:block_index;primaryKey;index:idx_block_number,priority:2,sort:desc"`
 	// Removed is true if this log was reverted due to a chain re-organization
 	Removed bool `gorm:"removed"`
@@ -166,4 +170,9 @@ type LastBlockTime struct {
 	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// BlockNumber is the block number
 	BlockNumber uint64 `gorm:"column:block_number"`
+}
+
+// FailedLog contains the logs that have failed to be indexed.
+type FailedLog struct {
+	types.FailedLog
 }

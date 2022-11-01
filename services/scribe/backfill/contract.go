@@ -24,31 +24,37 @@ type ContractBackfiller struct {
 	client []ScribeBackend
 	// cache is a cache for txHashes
 	cache *lru.Cache
+	// maxFails is the maximum number of failed attempts to store
+	maxFails uint32
 }
 
 const txNotSupporterError = "transaction type not supported"
 const txNotFound = "not found"
 
 // NewContractBackfiller creates a new backfiller for a contract.
-func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client []ScribeBackend) (*ContractBackfiller, error) {
+func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client []ScribeBackend, maxFails uint32) (*ContractBackfiller, error) {
 	// initialize the cache for the txHashes
 	cache, err := lru.New(500)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize cache: %w", err)
 	}
+	if maxFails == 0 {
+		maxFails = 1
+	}
 
 	return &ContractBackfiller{
-		chainID: chainID,
-		address: address,
-		eventDB: eventDB,
-		client:  client,
-		cache:   cache,
+		chainID:  chainID,
+		address:  address,
+		eventDB:  eventDB,
+		client:   client,
+		cache:    cache,
+		maxFails: maxFails,
 	}, nil
 }
 
 // Backfill takes in a channel of logs, uses each log to get the receipt from its txHash,
 // gets all of the logs from the receipt, then stores the receipt, the logs from the
-// receipt, and the last indexed block for hte contract in the EventDB.
+// receipt, and the last indexed block for the contract in the EventDB.
 //
 //nolint:gocognit, cyclop
 func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, endHeight uint64) error {
@@ -185,15 +191,32 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 
 	err := g.Wait()
 	if err != nil {
-		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainID, log.BlockNumber, log.TxHash.String())
+		err = c.eventDB.StoreFailedLog(ctx, c.chainID, common.HexToAddress(c.address), log.TxHash, uint64(log.Index), log.BlockNumber)
+		if err != nil {
+			return fmt.Errorf("could not store failed log: %w", err)
+		}
+		failedAttempts, err := c.eventDB.GetFailedAttempts(ctx, c.chainID, common.HexToAddress(c.address), log.TxHash, uint64(log.Index), log.BlockNumber)
+		if err != nil {
+			return fmt.Errorf("could not get failed attempts: %w", err)
+		}
+		if failedAttempts >= uint64(c.maxFails) {
+			logger.Warnf("failed to store log for %d attempts, skipping\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", failedAttempts, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+		} else {
+			return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainID, log.BlockNumber, log.TxHash.String())
+		}
 	}
 	// store the last indexed block in the db
-	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainID, returnedReceipt.BlockNumber.Uint64())
+	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainID, log.BlockNumber)
 	if err != nil {
 		return fmt.Errorf("could not store last indexed block: %w", err)
 	}
 	// store the txHash in the cache
 	c.cache.Add(log.TxHash, true)
+	// if there is a failed log stored for this log, remove it
+	err = c.eventDB.DeleteFailedLog(ctx, c.chainID, common.HexToAddress(c.address), log.TxHash, uint64(log.Index), log.BlockNumber)
+	if err != nil {
+		return fmt.Errorf("could not remove failed log: %w", err)
+	}
 
 	return nil
 }
