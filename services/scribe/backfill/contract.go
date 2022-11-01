@@ -26,9 +26,15 @@ type ContractBackfiller struct {
 	cache *lru.Cache
 }
 
+// ---- Specific Backfiller Errors ----
+// txNotSupportedError is for handling the legacy Arbitrum tx type
 const txNotSupportedError = "transaction type not supported"
+
+// invalidTxVRSError is for handling Aurora VRS error
 const invalidTxVRSError = "invalid transaction v, r, s values"
-const txNotFound = "not found"
+
+// txNotFoundError is for handling omniRPC errors for BSC
+const txNotFoundError = "not found"
 
 // NewContractBackfiller creates a new backfiller for a contract.
 func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client []ScribeBackend) (*ContractBackfiller, error) {
@@ -113,7 +119,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		// make getting receipt a channel in parallel
 		receipt, err := c.client[0].TransactionReceipt(ctx, log.TxHash)
 		if err != nil {
-			if err.Error() == txNotFound {
+			if err.Error() == txNotFoundError {
 				// Try with client with additional confirmations
 				receipt, err = c.client[1].TransactionReceipt(ctx, log.TxHash)
 				if err != nil {
