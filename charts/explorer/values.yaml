@@ -76,32 +76,7 @@ indexer:
     - name: GOLOG_LOG_FMT
       value: "json"
   tolerations: {}
-  # TODO: this should be in extraValues for testing
-  extraInitContainers:
-    - name: wait-for-omnirpc
-      image: busybox:latest
-      imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
-      env:
-        - name: POD_NAME
-          value: explorer-omnirpc
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-    # Wait for clickhouse to show up
-    # this is mostly for testing
-    - name: wait-for-clickhouse
-      image: busybox:latest
-      imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for clickhouse..."; sleep 1; done;']
-      env:
-        - name: POD_NAME
-          value: explorer-clickhouse
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+
 
 server:
   enabled: true
@@ -123,31 +98,7 @@ server:
       value: "json"
   tolerations: []
   # TODO: this should be in extraValues for testing
-  extraInitContainers:
-    # Wait for clickhouse to show up
-    # this is mostly for testing
-    - name: wait-for-omnirpc
-      image: busybox:latest
-      imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
-      env:
-        - name: POD_NAME
-          value: explorer-omnirpc
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-    - name: wait-for-clickhouse
-      image: busybox:latest
-      imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 9000; do echo "Waiting for clickhouse..."; sleep 1; done;']
-      env:
-        - name: POD_NAME
-          value: explorer-clickhouse
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+
 # https://artifacthub.io/packages/helm/bitnami/clickhouse
 clickhouse:
   # use a constant here to build a connection to the service
@@ -155,7 +106,7 @@ clickhouse:
   fullnameOverride: explorer-clickhouse
   externalAccess:
     enabled: true
-
+  zookeeper:
 
 omnirpc:
   # this can be remote in production, we just want to use the public rpc servers here
