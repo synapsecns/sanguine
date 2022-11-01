@@ -4,6 +4,7 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/hashicorp/consul/sdk/freeport"
 	"github.com/jftuga/termsize"
@@ -62,7 +63,7 @@ var pathFlag = &cli.StringFlag{
 	Required: true,
 }
 
-func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uint32]backfill.ScribeBackend, scribeConfig config.Config, err error) {
+func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, scribeConfig config.Config, err error) {
 	scribeConfig, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
 		return nil, nil, scribeConfig, fmt.Errorf("could not decode config: %w", err)
@@ -73,13 +74,19 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 		return nil, nil, scribeConfig, fmt.Errorf("could not initialize database: %w", err)
 	}
 
-	clients = make(map[uint32]backfill.ScribeBackend)
+	clients = make(map[uint32][]backfill.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
-		scribeBackend, err := backfill.NewScribeBackend(c.Context, client.RPCUrl)
+
+		backendClient, err := backfill.NewScribeBackend(c.Context, fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 		if err != nil {
-			return nil, nil, scribeConfig, fmt.Errorf("could not create scribe backend: %w", err)
+			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 		}
-		clients[client.ChainID] = scribeBackend
+		backendClientWConfirmations, err := backfill.NewScribeBackend(c.Context, fmt.Sprintf("%s/2/rpc/%d", scribeConfig.RPCURL, client.ChainID))
+		if err != nil {
+			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/4/rpc/%d", scribeConfig.RPCURL, client.ChainID))
+		}
+		clients[client.ChainID] = append(clients[client.ChainID], backendClient)
+		clients[client.ChainID] = append(clients[client.ChainID], backendClientWConfirmations)
 	}
 
 	return eventDB, clients, scribeConfig, nil

@@ -1,8 +1,9 @@
 package backfill_test
 
 import (
-	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
@@ -52,13 +53,14 @@ func (b BackfillSuite) TestChainBackfill() {
 	}
 	chainConfig := config.ChainConfig{
 		ChainID:            chainID,
-		RPCUrl:             "an rpc url is not needed for simulated backends",
 		Contracts:          contractConfigs,
 		BlockTimeBatchSize: 1,
 	}
 
+	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
+
 	// Set up the ChainBackfiller.
-	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChain, chainConfig)
+	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChainArr, chainConfig)
 	Nil(b.T(), err)
 
 	b.EmitEventsForAChain(contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)

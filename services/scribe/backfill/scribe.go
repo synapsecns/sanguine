@@ -20,7 +20,7 @@ type ScribeBackfiller struct {
 	// eventDB is the database to store event data in
 	eventDB db.EventDB
 	// clients is a mapping of chain IDs -> clients
-	clients map[uint32]ScribeBackend
+	clients map[uint32][]ScribeBackend
 	// ChainBackfillers is a mapping of chain IDs -> chain backfillers
 	ChainBackfillers map[uint32]*ChainBackfiller
 	// config is the config for the backfiller
@@ -28,7 +28,7 @@ type ScribeBackfiller struct {
 }
 
 // NewScribeBackfiller creates a new backfiller for the scribe.
-func NewScribeBackfiller(eventDB db.EventDB, clientsMap map[uint32]ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
+func NewScribeBackfiller(eventDB db.EventDB, clientsMap map[uint32][]ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
 	// initialize the list of chain backfillers
 	chainBackfillers := map[uint32]*ChainBackfiller{}
 	// initialize each chain backfiller

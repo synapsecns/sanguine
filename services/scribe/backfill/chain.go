@@ -3,12 +3,13 @@ package backfill
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/rpc"
 	"math"
 	"math/big"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -24,7 +25,7 @@ type ChainBackfiller struct {
 	// eventDB is the database to store event data in
 	eventDB db.EventDB
 	// client is the client for filtering
-	client ScribeBackend
+	client []ScribeBackend
 	// contractBackfillers is the list of contract backfillers
 	contractBackfillers []*ContractBackfiller
 	// startHeights is a map from address -> start height
@@ -40,7 +41,7 @@ type ChainBackfiller struct {
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
+func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBackend, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
 	// initialize the list of contract backfillers
 	contractBackfillers := []*ContractBackfiller{}
 	// initialize each contract backfiller and start heights
@@ -108,7 +109,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				return fmt.Errorf("context canceled: %w", groupCtxBackfill.Err())
 			case <-time.After(timeout):
 				// get the end height for the backfill
-				endHeight, err = c.client.BlockNumber(groupCtxBackfill)
+				endHeight, err = c.client[0].BlockNumber(groupCtxBackfill)
 				if err != nil {
 					timeout = b.Duration()
 					logger.Warnf("could not get block number, bad connection to rpc likely: %v", err)
