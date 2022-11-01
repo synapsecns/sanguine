@@ -27,13 +27,13 @@ type ContractBackfiller struct {
 }
 
 // ---- Specific Backfiller Errors ----
-// txNotSupportedError is for handling the legacy Arbitrum tx type
+// txNotSupportedError is for handling the legacy Arbitrum tx type.
 const txNotSupportedError = "transaction type not supported"
 
-// invalidTxVRSError is for handling Aurora VRS error
+// invalidTxVRSError is for handling Aurora VRS error.
 const invalidTxVRSError = "invalid transaction v, r, s values"
 
-// txNotFoundError is for handling omniRPC errors for BSC
+// txNotFoundError is for handling omniRPC errors for BSC.
 const txNotFoundError = "not found"
 
 // NewContractBackfiller creates a new backfiller for a contract.
