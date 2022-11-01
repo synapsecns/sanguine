@@ -148,8 +148,7 @@ server:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-              
-#https://artifacthub.io/packages/helm/bitnami/clickhouse
+# https://artifacthub.io/packages/helm/bitnami/clickhouse
 clickhouse:
   # use a constant here to build a connection to the service
   enabled: true
