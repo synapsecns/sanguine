@@ -148,20 +148,17 @@ server:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-
+              
+#https://artifacthub.io/packages/helm/bitnami/clickhouse
 clickhouse:
   # use a constant here to build a connection to the service
   enabled: true
   fullnameOverride: explorer-clickhouse
-  architecture: standalone
-  networkPolicy:
+  tls:
     enabled: true
-  metrics:
+  externalAccess:
     enabled: true
-  auth:
-    database: explorer
-    # Note: this should be used in production instead of auth.password
-    rootPassword: clickhouse_test
+
 
 omnirpc:
   # this can be remote in production, we just want to use the public rpc servers here
