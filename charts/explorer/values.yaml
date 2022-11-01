@@ -153,8 +153,6 @@ clickhouse:
   # use a constant here to build a connection to the service
   enabled: true
   fullnameOverride: explorer-clickhouse
-  tls:
-    enabled: true
   externalAccess:
     enabled: true
 
