@@ -257,6 +257,45 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 	Equal(b.T(), 1, len(receipts))
 }
 
+// TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
+func (b BackfillSuite) TestInvalidTxVRS() {
+	if os.Getenv("CI") != "" {
+		b.T().Skip("Network test flake")
+	}
+	var backendClient backfill.ScribeBackend
+	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/1313161554"
+	backendClient, err := ethclient.DialContext(b.GetTestContext(), omnirpcURL)
+	Nil(b.T(), err)
+
+	// This config is using this block https://arbiscan.io/block/6262099
+	// and this tx https://arbiscan.io/tx/0x8800222adf9578fb576db0bd7fb4860fe89932549be084a3313939c03e4d279d
+	// with a unique Arbitrum type to verify that anomalous tx type is handled correctly.
+	contractConfig := config.ContractConfig{
+		Address:    "0xaeD5b25BE1c3163c907a471082640450F928DDFE",
+		StartBlock: 58621373,
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:               1313161554,
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{contractConfig},
+	}
+	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
+	chainBackfiller, err := backfill.NewChainBackfiller(1313161554, b.testDB, backendClientArr, chainConfig)
+	Nil(b.T(), err)
+	err = chainBackfiller.Backfill(b.GetTestContext(), true)
+	Nil(b.T(), err)
+	// Check to see if one log is recorded, one receipt is recorded, but no transactions.
+	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID)
+	Nil(b.T(), err)
+	Equal(b.T(), contractConfig.StartBlock, lastIndexed)
+	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
+	Nil(b.T(), err)
+	Equal(b.T(), 9, len(logs))
+	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
+	Nil(b.T(), err)
+	Equal(b.T(), 1, len(receipts))
+}
+
 // TestGetLogsMock tests the GetLogs function using a mocked blockchain for errors.
 func (b BackfillSuite) TestGetLogsMock() {
 	// TODO: do this with mocks for error handling in GetLogs methods

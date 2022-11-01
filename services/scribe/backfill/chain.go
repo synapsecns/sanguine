@@ -119,6 +119,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		if onlyOneBlock {
 			endHeight = startHeight
 		}
+		logger.Infof("Starting backfilling contracts on %d up to block %d ", c.chainID, endHeight)
+
 		// call Backfill concurrently
 		gBackfill.Go(func() error {
 			// timeout should always be 0 on the first attempt
@@ -170,6 +172,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 		// Current block
 		blockNum := startHeight
+		logger.Infof("Starting backfilling blocktimes on %d up to block %d ", c.chainID, endHeight)
+
 		for {
 			select {
 			case <-groupCtxBlockTime.Done():
@@ -220,6 +224,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 				// If done with the range, exit go routine.
 				if blockNum > endHeight {
+					logger.Infof("Exiting backfill on chain %d on block %d ", c.chainID, blockNum)
 					return nil
 				}
 			}
@@ -230,9 +235,12 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	if err := gBlockTime.Wait(); err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
+	logger.Infof("Finished backfilling blocktimes on %d up to block %d ", c.chainID, endHeight)
+
 	// wait for all the backfillers to finish
 	if err := gBackfill.Wait(); err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
+	logger.Infof("Finished backfilling contracts on %d up to block %d ", c.chainID, endHeight)
 	return nil
 }
