@@ -1,0 +1,9 @@
+dependencies:
+- name: clickhouse
+  repository: https://charts.bitnami.com/bitnami
+  version: 1.0.2
+- name: omnirpc
+  repository: file://../omnirpc/
+  version: 0.1.2
+digest: sha256:41af12699d9ad5c1dbaf1dae897a42b1f1fd9ab272eec28c86d65ed7df329863
+generated: "2022-11-01T15:24:26.785915-04:00"
