@@ -230,9 +230,12 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	if err := gBlockTime.Wait(); err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
+	logger.Infof("Finished backfilling blocktimes on %d up to block %d ", c.chainID, endHeight)
+
 	// wait for all the backfillers to finish
 	if err := gBackfill.Wait(); err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
+	logger.Infof("Finished backfilling contracts on %d up to block %d ", c.chainID, endHeight)
 	return nil
 }
