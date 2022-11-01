@@ -26,8 +26,15 @@ type ContractBackfiller struct {
 	cache *lru.Cache
 }
 
-const txNotSupporterError = "transaction type not supported"
-const txNotFound = "not found"
+// ---- Specific Backfiller Errors ----
+// txNotSupportedError is for handling the legacy Arbitrum tx type.
+const txNotSupportedError = "transaction type not supported"
+
+// invalidTxVRSError is for handling Aurora VRS error.
+const invalidTxVRSError = "invalid transaction v, r, s values"
+
+// txNotFoundError is for handling omniRPC errors for BSC.
+const txNotFoundError = "not found"
 
 // NewContractBackfiller creates a new backfiller for a contract.
 func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client []ScribeBackend) (*ContractBackfiller, error) {
@@ -112,7 +119,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		// make getting receipt a channel in parallel
 		receipt, err := c.client[0].TransactionReceipt(ctx, log.TxHash)
 		if err != nil {
-			if err.Error() == txNotFound {
+			if err.Error() == txNotFoundError {
 				// Try with client with additional confirmations
 				receipt, err = c.client[1].TransactionReceipt(ctx, log.TxHash)
 				if err != nil {
@@ -164,8 +171,8 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		// store the transaction in the db
 		txn, isPending, err := c.client[0].TransactionByHash(groupCtx, log.TxHash)
 		if err != nil {
-			if err.Error() == txNotSupporterError {
-				logger.Warnf("transaction type not supported for: %s on chain id: %d\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", log.TxHash.Hex(), c.chainID, log.BlockNumber, log.Address.String(), c.address)
+			if err.Error() == txNotSupportedError || err.Error() == invalidTxVRSError {
+				logger.Warnf("Invalid tx: %s\n%s on chain id: %d\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err.Error(), log.TxHash.Hex(), c.chainID, log.BlockNumber, log.Address.String(), c.address)
 				return nil
 			}
 			return fmt.Errorf("could not get transaction by hash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
