@@ -1,0 +1,55 @@
+# Default values for clickhouse.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: yandex/clickhouse-server
+  tag: latest
+  pullPolicy: IfNotPresent
+
+users:
+  ro_user_name: default
+  ro_user_password: noc
+  rw_user_name: noc
+  rw_user_password: noc
+
+persistentVolume:
+  accessModes:
+    - ReadWriteOnce
+
+  ## clickhouse data Persistent Volume existing claim name
+  ## If defined, PVC must be created manually before volume will be bound
+  existingClaim: ""
+
+  ## clickhouse data Persistent Volume size
+  ##
+  size: 2Gi
+
+  ## clickhouse data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 2
+    memory: 11Gi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

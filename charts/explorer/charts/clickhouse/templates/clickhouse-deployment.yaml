@@ -1,0 +1,103 @@
+apiVersion: apps/v2
+kind: Deployment
+metadata:
+  name: {{ include "clickhouse.fullname" . }}
+  labels:
+{{ include "clickhouse.labels" . | indent 4 }}
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "clickhouse.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      service: clickhouse
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "clickhouse.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        service: clickhouse
+    spec:
+      initContainers:
+        - name: config
+          image: alpine:3.10
+          command:
+            - '/bin/sh'
+            - '-c'
+            - cd /etc/clickhouse-server;
+              ln -sf /etc/clickhouse-server-config/config.xml;
+              ln -sf /etc/clickhouse-server-config/users.xml;
+              chown 105:106 /var/lib/clickhouse/
+          volumeMounts:
+            - mountPath: /var/lib/clickhouse/
+              name: {{ include "clickhouse.fullname" . }}
+            - mountPath: /etc/clickhouse-server/
+              name: config-directory
+            - mountPath: /etc/clickhouse-server-config/
+              name: config-volume
+      containers:
+        - name: clickhouse
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8123
+            - name: native
+              containerPort: 9000
+          env:
+            - name: CLICKHOUSE_SERVER
+              value: "clickhouse"
+            - name: CLICKHOUSE_PORT
+              value: "9000"
+            - name: CLICKHOUSE_USER
+              value: "default"
+            - name: CLICKHOUSE_PASS
+              value: "noc"
+            - name: CLICKHOUSE_DB
+              value: "logs"
+            - name: K8S_LOGS_TABLE
+              value: "logs"
+          livenessProbe:
+            timeoutSeconds: 1
+            initialDelaySeconds: 30
+            tcpSocket:
+              port: 9000
+          readinessProbe:
+            timeoutSeconds: 1
+            initialDelaySeconds: 5
+            tcpSocket:
+              port: 9000
+          resources:
+          {{- toYaml .Values.resources.datastream | nindent 12 }}
+          volumeMounts:
+            - mountPath: /var/lib/clickhouse/
+              name: {{ include "clickhouse.fullname" . }}
+            - mountPath: /etc/clickhouse-server/
+              name: config-directory
+            - mountPath: /etc/clickhouse-server-config/
+              name: config-volume
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+        - name: {{ include "clickhouse.fullname" . }}
+          persistentVolumeClaim:
+            claimName: {{ include "clickhouse.fullname" . }}
+        - name: config-volume
+          configMap:
+            name: {{ include "clickhouse.fullname" . }}
+        - name: config-directory
+          emptyDir:
+            sizeLimit: "0"
