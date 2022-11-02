@@ -130,8 +130,10 @@ abstract contract DestinationHub is
         bytes29 _attestationView,
         bytes memory
     ) internal override returns (bool) {
-        uint32 originDomain = _attestationView.attestedDomain();
+        uint32 originDomain = _attestationView.attestedOrigin();
         require(originDomain != _localDomain(), "Attestation is from local chain");
+        uint32 destinationDomain = _attestationView.attestedDestination();
+        require(destinationDomain == _localDomain(), "Attestation is not destined to local chain");
         bytes32 root = _attestationView.attestedRoot();
         require(root != bytes32(0), "Empty root");
         uint32 nonce = _attestationView.attestedNonce();
@@ -169,7 +171,7 @@ abstract contract DestinationHub is
         bytes memory _report
     ) internal override returns (bool) {
         require(_reportView.reportedFraud(), "Not a fraud report");
-        _blacklistNotary(_attestationView.attestedDomain(), _notary, _guard, _report);
+        _blacklistNotary(_attestationView.attestedDestination(), _notary, _guard, _report);
         return true;
     }
 
@@ -196,7 +198,7 @@ abstract contract DestinationHub is
     /**
      * @notice Child contracts should implement the blacklisting logic.
      * @dev _notary is always an active Notary, _guard is always an active Guard.
-     * @param _domain   Origin domain where fraud was allegedly committed by Notary
+     * @param _domain   Destination domain where fraud was allegedly committed by Notary
      * @param _notary   Notary address who allegedly committed fraud attestation
      * @param _guard    Guard address that reported the Notary
      * @param _report   Payload with Report data and signature

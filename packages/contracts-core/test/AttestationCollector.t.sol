@@ -6,6 +6,8 @@ import { SynapseTest } from "./utils/SynapseTest.sol";
 
 import { AttestationCollectorHarness } from "./harnesses/AttestationCollectorHarness.sol";
 
+import { Attestation } from "../contracts/libs/Attestation.sol";
+
 // solhint-disable func-name-mixedcase
 contract AttestationCollectorTest is SynapseTest {
     AttestationCollectorHarness internal collector;
@@ -181,42 +183,43 @@ contract AttestationCollectorTest is SynapseTest {
         test_submitAttestations();
         vm.expectRevert("!signature");
         // Nonce 6 was submitted only by Notaries 1 and 2
-        collector.getAttestation(localDomain, 6, _generateTestRoot(6, 3));
+        collector.getAttestation(localDomain, remoteDomain, 6, _generateTestRoot(6, 3));
     }
 
     function test_getRoot_noAttestations() public {
         test_submitAttestations();
         vm.expectRevert("!index");
-        collector.getRoot(localDomain, 4, 0);
+        collector.getRoot(localDomain, remoteDomain, 4, 0);
     }
 
     function test_getLatestAttestation_noNotaryAttestations() public {
         test_submitAttestation();
         test_addNotaries();
         vm.expectRevert("No attestations found");
-        collector.getLatestAttestation(localDomain, notaries[0]);
+        collector.getLatestAttestation(localDomain, remoteDomain, notaries[0]);
     }
 
     function test_getLatestAttestation_noAttestations() public {
         test_addNotaries();
         vm.expectRevert("No attestations found");
-        collector.getLatestAttestation(localDomain);
+        collector.getLatestAttestation(localDomain, remoteDomain);
     }
 
     function test_getLatestAttestation_noNotaries() public {
         vm.expectRevert("!notaries");
-        collector.getLatestAttestation(localDomain);
+        collector.getLatestAttestation(localDomain, remoteDomain);
     }
 
     function test_latestNonce() public {
         test_submitAttestations();
         for (uint256 i = 0; i < NOTARIES_AMOUNT; ++i) {
             uint256 notaryNonces = attestedNonces[i].length;
+            uint64 attestedDomains = Attestation.attestedDomains(localDomain, remoteDomain);
             if (notaryNonces == 0) {
-                assertEq(collector.latestNonce(localDomain, notaries[i]), 0);
+                assertEq(collector.latestNonces(attestedDomains, notaries[i]), 0);
             } else {
                 assertEq(
-                    collector.latestNonce(localDomain, notaries[i]),
+                    collector.latestNonces(attestedDomains, notaries[i]),
                     attestedNonces[i][notaryNonces - 1]
                 );
             }
@@ -226,7 +229,7 @@ contract AttestationCollectorTest is SynapseTest {
     function test_rootsAmount() public {
         test_submitAttestations();
         for (uint32 _nonce = 0; _nonce < 16; ++_nonce) {
-            assertEq(collector.rootsAmount(localDomain, _nonce), rootsAmount[_nonce]);
+            assertEq(collector.rootsAmount(localDomain, remoteDomain, _nonce), rootsAmount[_nonce]);
         }
     }
 
@@ -310,9 +313,12 @@ contract AttestationCollectorTest is SynapseTest {
             _notaryIndex,
             _notaryGenerationIndex
         );
-        assertEq(collector.getRoot(localDomain, _nonce, _attestationIndex), _root);
-        assertEq(collector.getAttestation(localDomain, _nonce, _attestationIndex), attestation);
-        assertEq(collector.getAttestation(localDomain, _nonce, _root), attestation);
+        assertEq(collector.getRoot(localDomain, remoteDomain, _nonce, _attestationIndex), _root);
+        assertEq(
+            collector.getAttestation(localDomain, remoteDomain, _nonce, _attestationIndex),
+            attestation
+        );
+        assertEq(collector.getAttestation(localDomain, remoteDomain, _nonce, _root), attestation);
     }
 
     // solhint-disable-next-line code-complexity
@@ -329,7 +335,10 @@ contract AttestationCollectorTest is SynapseTest {
                 attestedNonces[i][indexLast],
                 attestedRoots[i][indexLast]
             );
-            assertEq(collector.getLatestAttestation(localDomain, notaries[i]), attestation);
+            assertEq(
+                collector.getLatestAttestation(localDomain, remoteDomain, notaries[i]),
+                attestation
+            );
 
             if (attestedNonces[i][indexLast] > latestNonce) {
                 latestNonce = attestedNonces[i][indexLast];
@@ -337,7 +346,7 @@ contract AttestationCollectorTest is SynapseTest {
             }
         }
         if (latestNonce != 0) {
-            assertEq(collector.getLatestAttestation(localDomain), latestAttestation);
+            assertEq(collector.getLatestAttestation(localDomain, remoteDomain), latestAttestation);
         }
     }
 }

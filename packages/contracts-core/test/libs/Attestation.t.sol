@@ -17,6 +17,7 @@ contract AttestationTest is SynapseTest, Bytes29Test {
     using TypedMemView for bytes29;
 
     uint32 internal domain = 1234;
+    uint32 internal remote = 12345;
     uint32 internal nonce = 4321;
     bytes32 internal root = keccak256("root");
 
@@ -26,11 +27,12 @@ contract AttestationTest is SynapseTest, Bytes29Test {
         bytes29 _view = _createTestView();
         assertTrue(_view.isAttestation());
 
-        assertEq(_view.attestedDomain(), domain);
+        assertEq(_view.attestedOrigin(), domain);
+        assertEq(_view.attestedDestination(), remote);
         assertEq(_view.attestedNonce(), nonce);
         assertEq(_view.attestedRoot(), root);
 
-        bytes memory data = abi.encodePacked(domain, nonce, root);
+        bytes memory data = abi.encodePacked(domain, remote, nonce, root);
         assertEq(_view.attestationData().clone(), data);
         bytes memory sig = signMessage(SIGNER_PK, data);
         assertEq(_view.notarySignature().clone(), sig);
@@ -38,12 +40,16 @@ contract AttestationTest is SynapseTest, Bytes29Test {
 
     function test_isAttestation_tooShort() public {
         // no signature provided
-        bytes memory _data = Attestation.formatAttestationData(domain, nonce, root);
+        bytes memory _data = Attestation.formatAttestationData(domain, remote, nonce, root);
         assertFalse(_data.ref(0).isAttestation());
     }
 
-    function test_incorrectType_attestedDomain() public {
-        _prepareMistypedTest(SynapseTypes.ATTESTATION).attestedDomain();
+    function test_incorrectType_attestedOrigin() public {
+        _prepareMistypedTest(SynapseTypes.ATTESTATION).attestedOrigin();
+    }
+
+    function test_incorrectType_attestedDestination() public {
+        _prepareMistypedTest(SynapseTypes.ATTESTATION).attestedDestination();
     }
 
     function test_incorrectType_attestedNonce() public {
@@ -63,7 +69,7 @@ contract AttestationTest is SynapseTest, Bytes29Test {
     }
 
     function _createTestView() internal override returns (bytes29 _view) {
-        bytes memory data = Attestation.formatAttestationData(domain, nonce, root);
+        bytes memory data = Attestation.formatAttestationData(domain, remote, nonce, root);
         bytes memory sig = signMessage(SIGNER_PK, data);
         bytes memory attestation = Attestation.formatAttestation(data, sig);
         _view = attestation.castToAttestation();

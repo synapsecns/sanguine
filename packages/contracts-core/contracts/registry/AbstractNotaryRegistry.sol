@@ -9,7 +9,7 @@ import { Auth } from "../libs/Auth.sol";
  * @notice Registry used for verifying Attestations signed by Notaries.
  * This is done agnostic of how the Notaries are actually stored.
  * The child contract is responsible for implementing the Notaries storage.
- * @dev It is assumed that the Notary signature is only valid for a subset of origins.
+ * @dev It is assumed that the Notary signature is only valid for a single destination.
  */
 abstract contract AbstractNotaryRegistry {
     using Attestation for bytes;
@@ -42,20 +42,20 @@ abstract contract AbstractNotaryRegistry {
     /**
      * @notice Adds a new Notary to Registry.
      * @dev Child contracts should implement this depending on how Notaries are stored.
-     * @param _origin   Origin domain where Notary is added
+     * @param _destination   Destination domain where Notary is added
      * @param _notary   New Notary to add
      * @return TRUE if a notary was added
      */
-    function _addNotary(uint32 _origin, address _notary) internal virtual returns (bool);
+    function _addNotary(uint32 _destination, address _notary) internal virtual returns (bool);
 
     /**
      * @notice Removes a Notary from Registry.
      * @dev Child contracts should implement this depending on how Notaries are stored.
-     * @param _origin   Origin domain where Notary is removed
+     * @param _destination   Destination domain where Notary is removed
      * @param _notary   Notary to remove
      * @return TRUE if a notary was removed
      */
-    function _removeNotary(uint32 _origin, address _notary) internal virtual returns (bool);
+    function _removeNotary(uint32 _destination, address _notary) internal virtual returns (bool);
 
     /**
      * @notice  Checks all following statements are true:
@@ -86,15 +86,15 @@ abstract contract AbstractNotaryRegistry {
     function _checkNotaryAuth(bytes29 _view) internal view returns (address _notary) {
         require(_view.isAttestation(), "Not an attestation");
         _notary = Auth.recoverSigner(_view.attestationData(), _view.notarySignature().clone());
-        require(_isNotary(_view.attestedOriginDomain(), _notary), "Signer is not a notary");
+        require(_isNotary(_view.attestedDestination(), _notary), "Signer is not a notary");
     }
 
     /**
      * @notice Checks whether a given account in an authorized Notary.
      * @dev Child contracts should implement this depending on how Notaries are stored.
-     * @param _origin   Origin domain to check
+     * @param _destination   Destination domain to check
      * @param _account  Address to check for being a Notary
      * @return TRUE if the account is an authorized Notary.
      */
-    function _isNotary(uint32 _origin, address _account) internal view virtual returns (bool);
+    function _isNotary(uint32 _destination, address _account) internal view virtual returns (bool);
 }

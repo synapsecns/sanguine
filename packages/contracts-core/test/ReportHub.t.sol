@@ -18,6 +18,7 @@ contract ReportHubTest is SynapseTest {
     ReportHubHarness internal reportHub;
 
     uint32 internal domain = 1234;
+    uint32 internal remote = 12345;
     uint32 internal nonce = 4321;
     bytes32 internal root = keccak256("root");
     Report.Flag internal flag = Report.Flag.Fraud;
@@ -92,7 +93,7 @@ contract ReportHubTest is SynapseTest {
     }
 
     function _createTestReport(uint256 _notaryPK, uint256 _guardPK) internal {
-        attestationData = Attestation.formatAttestationData(domain, nonce, root);
+        attestationData = Attestation.formatAttestationData(domain, remote, nonce, root);
         bytes memory notarySig = signMessage(_notaryPK, attestationData);
         attestation = Attestation.formatAttestation(attestationData, notarySig);
         bytes memory reportData = Report.formatReportData(flag, attestation);

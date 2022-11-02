@@ -21,6 +21,7 @@ contract ReportTest is SynapseTest, Bytes29Test {
     uint256 internal constant GUARD_PK = 7331;
 
     uint32 internal domain = 1234;
+    uint32 internal remote = 12345;
     uint32 internal nonce = 4321;
     bytes32 internal root = keccak256("root");
     Report.Flag internal flag = Report.Flag.Fraud;
@@ -113,7 +114,7 @@ contract ReportTest is SynapseTest, Bytes29Test {
     }
 
     function _createTestData() internal {
-        attestationData = Attestation.formatAttestationData(domain, nonce, root);
+        attestationData = Attestation.formatAttestationData(domain, remote, nonce, root);
         bytes memory notarySig = signMessage(NOTARY_PK, attestationData);
         attestation = Attestation.formatAttestation(attestationData, notarySig);
         bytes memory reportData = Report.formatReportData(flag, attestation);

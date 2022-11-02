@@ -50,11 +50,11 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // The destination chain domains that this origin has sent cross chain messages to
-    EnumerableSet.UintSet internal destinationChainDomains;
+    EnumerableSet.UintSet internal destinations;
     // Merkle Tree containing all hashes of sent messages by destination chain domain
-    mapping(uint32 => MerkleLib.Tree) internal treesByDestChainDomains;
+    mapping(uint32 => MerkleLib.Tree) internal trees;
     // Merkle tree roots by destination chain domain after inserting a sent message
-    mapping(uint32 => bytes32[]) internal historicalRootsByDestChainDomains;
+    mapping(uint32 => bytes32[]) public historicalRoots;
 
     // gap for upgrade safety
     uint256[44] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -90,11 +90,12 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
 
     function getHistoricalRootByDestAndNonce(uint32 _destination, uint32 _nonce)
         public
+        view
         returns (bytes32 historicalRoot)
     {
-        if (historicalRootsByDestChainDomains[_destination].length > 0) {
-            historicalRoot = historicalRootsByDestChainDomains[_destination][_nonce];
-        } else if (nonce == 0) {
+        if (historicalRoots[_destination].length > 0) {
+            historicalRoot = historicalRoots[_destination][_nonce];
+        } else if (_nonce == 0) {
             historicalRoot = hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757";
         } else {
             historicalRoot = bytes32(0);
@@ -111,12 +112,12 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
         view
         returns (AttestationSuggestion[] memory attestationSuggestions)
     {
-        attestationSuggestions = new AttestationSuggestion[](destinationChainDomains.length());
-        for (uint256 i = 0; i < destinationChainDomains.length(); i++) {
-            uint32 destChainDomain = destinationChainDomains.at(i);
+        attestationSuggestions = new AttestationSuggestion[](destinations.length());
+        for (uint256 i = 0; i < destinations.length(); i++) {
+            uint32 destChainDomain = uint32(destinations.at(i));
             uint32 latestNonce = nonce(destChainDomain);
-            uint32 latestRoot = root(destChainDomain);
-            AttestationSuggestion memory attestionSuggestion = new AttestationSuggestion(
+            bytes32 latestRoot = root(destChainDomain);
+            AttestationSuggestion memory attestionSuggestion = AttestationSuggestion(
                 destChainDomain,
                 latestNonce,
                 latestRoot
@@ -155,7 +156,7 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
      * @notice Calculates and returns tree's current root for the given destination.
      */
     function root(uint32 _destination) public view returns (bytes32) {
-        return treesByDestChainDomains[_destination].root(_getTreeCount(_destination));
+        return trees[_destination].root(_getTreeCount(_destination));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -190,7 +191,7 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool isValid) {
-        uint32 attestedDestination = _attestationView.attestedDestinationDomain();
+        uint32 attestedDestination = _attestationView.attestedDestination();
         uint32 attestedNonce = _attestationView.attestedNonce();
         bytes32 attestedRoot = _attestationView.attestedRoot();
         isValid = _isValidAttestation(attestedDestination, attestedNonce, attestedRoot);
@@ -251,7 +252,7 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
         bytes29 _reportView,
         bytes memory _report
     ) internal override returns (bool) {
-        uint32 attestedDestination = _attestationView.attestedDestinationDomain();
+        uint32 attestedDestination = _attestationView.attestedDestination();
         uint32 attestedNonce = _attestationView.attestedNonce();
         bytes32 attestedRoot = _attestationView.attestedRoot();
         if (_isValidAttestation(attestedDestination, attestedNonce, attestedRoot)) {
@@ -301,28 +302,26 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
     ) internal {
         /// @dev _messageNonce == tree.count() + 1
         // tree.insert() requires amount of leaves AFTER the leaf insertion (i.e. tree.count() + 1)
-        treesByDestChainDomains[_destination].insert(_messageNonce, _messageHash);
+        trees[_destination].insert(_messageNonce, _messageHash);
 
-        if (historicalRootsByDestChainDomains[_destination].length == 0) {
+        if (historicalRoots[_destination].length == 0) {
             // @dev This enables:
             // - Counting nonces from 1 (nonce=0 meaning no messages have been sent).
             // - Not slashing the Notaries for signing an attestation for an empty tree
             // (assuming they sign the correct root outlined below).
             // Insert a historical root so nonces start at 1 rather then 0.
             // Here we insert the default root of a sparse merkle tree
-            historicalRootsByDestChainDomains[_destination].push(
+            historicalRoots[_destination].push(
                 hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757"
             );
 
             // Now add the _destination to the list of destinations that this origin has sent cross chain messages to
-            destinationChainDomains.add(_destination);
+            destinations.add(_destination);
         }
 
         /// @dev leaf is inserted => _messageNonce == tree.count()
         // tree.root() requires current amount of leaves (i.e. tree.count())
-        historicalRootsByDestChainDomains[_destination].push(
-            treesByDestChainDomains[_destination].root(_messageNonce)
-        );
+        historicalRoots[_destination].push(trees[_destination].root(_messageNonce));
     }
 
     /**
@@ -357,9 +356,9 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
     ) internal view returns (bool) {
         // Check if nonce is valid, if not => attestation is fraud
         // Check if root the same as the historical one, if not => attestation is fraud
-        return (historicalRootsByDestChainDomains[_destination].length > 1 &&
-            _nonce < historicalRootsByDestChainDomains[_destination].length &&
-            _root == historicalRootsByDestChainDomains[_destination][_nonce]);
+        return (historicalRoots[_destination].length > 1 &&
+            _nonce < historicalRoots[_destination].length &&
+            _root == historicalRoots[_destination][_nonce]);
     }
 
     /**
@@ -374,10 +373,10 @@ abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, 
         // so this never underflows.
         // By default, when first message is inserted for destination, a historical root
         // is initially inserted.
-        if (historicalRootsByDestChainDomains[_destination].length == 0) {
+        if (historicalRoots[_destination].length == 0) {
             return 0;
         }
 
-        return historicalRootsByDestChainDomains[_destination].length - 1;
+        return historicalRoots[_destination].length - 1;
     }
 }

@@ -51,7 +51,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         assertEq(uint256(origin.notariesAmount()), 1);
         assertTrue(origin.isNotary(notary));
         // Root of an empty sparse Merkle tree should be stored with nonce=0
-        assertEq(origin.historicalRoots(0), origin.root());
+        assertEq(origin.historicalRoots(remoteDomain, 0), origin.root(remoteDomain));
     }
 
     function test_cannotInitializeTwice() public {
@@ -128,7 +128,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
             tips,
             messageBody
         );
-        assertTrue(origin.historicalRoots(nonce) == origin.root());
+        assertTrue(origin.historicalRoots(remoteDomain, nonce) == origin.root(remoteDomain));
     }
 
     // Rejects messages over a set size
@@ -204,7 +204,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
     {
         recipient = addressToBytes32(vm.addr(1337));
         messageBody = bytes("message");
-        nonce = origin.nonce() + 1;
+        nonce = origin.nonce(remoteDomain) + 1;
         bytes memory _header = Header.formatHeader(
             localDomain,
             addressToBytes32(sender),
@@ -255,7 +255,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
     function test_submitReport_fraud_bigNonce() public {
         test_dispatch();
         uint32 nonce = 2;
-        bytes32 root = origin.root();
+        bytes32 root = origin.root(remoteDomain);
         // This root exists, but with nonce = 1
         // Nonce = 2 doesn't exist yet
         _checkFraudAttestation(nonce, root);
@@ -265,7 +265,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         test_dispatch();
         test_dispatch();
         uint32 nonce = 1;
-        bytes32 root = origin.root();
+        bytes32 root = origin.root(remoteDomain);
         // This root exists, but with nonce = 2
         // nonce = 1 exists, with a different Merkle root
         _checkFraudAttestation(nonce, root);
@@ -304,7 +304,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
     function test_submitReport_fraud_incorrectReport() public {
         test_dispatch();
         uint32 nonce = 1;
-        bytes32 root = origin.root();
+        bytes32 root = origin.root(remoteDomain);
         _checkIncorrectReport(Report.Flag.Fraud, nonce, root);
     }
 
@@ -315,7 +315,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
     function test_submitReport_valid() public {
         test_dispatch();
         uint32 nonce = 1;
-        bytes32 root = origin.root();
+        bytes32 root = origin.root(remoteDomain);
         // valid attestation
         (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
         // this makes the report incorrect
@@ -335,7 +335,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
     function test_submitReport_valid_bigNonce() public {
         test_dispatch();
         uint32 nonce = 2;
-        bytes32 root = origin.root();
+        bytes32 root = origin.root(remoteDomain);
         // This root exists, but with nonce = 1
         // Nonce = 2 doesn't exist yet
         _checkIncorrectReport(Report.Flag.Valid, nonce, root);
@@ -345,7 +345,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         test_dispatch();
         test_dispatch();
         uint32 nonce = 1;
-        bytes32 root = origin.root();
+        bytes32 root = origin.root(remoteDomain);
         // This root exists, but with nonce = 2
         // nonce = 1 exists, with a different Merkle root
         _checkIncorrectReport(Report.Flag.Valid, nonce, root);
@@ -401,7 +401,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
     function test_submitAttestation_valid() public {
         test_dispatch();
         uint32 nonce = 1;
-        bytes32 root = origin.root();
+        bytes32 root = origin.root(remoteDomain);
         (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
         // Submit a valid attestation
         assertTrue(origin.submitAttestation(attestation));
@@ -429,7 +429,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
     function test_submitAttestation_fraud_bigNonce() public {
         test_dispatch();
         uint32 nonce = 2;
-        bytes32 root = origin.root();
+        bytes32 root = origin.root(remoteDomain);
         // This root exists, but with nonce = 1
         // Nonce = 2 doesn't exist yet
         _submitFraudAttestation(nonce, root);
@@ -439,7 +439,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         test_dispatch();
         test_dispatch();
         uint32 nonce = 1;
-        bytes32 root = origin.root();
+        bytes32 root = origin.root(remoteDomain);
         // This root exists, but with nonce = 2
         // nonce = 1 exists, with a different Merkle root
         _submitFraudAttestation(nonce, root);
@@ -471,10 +471,10 @@ contract OriginTest is SynapseTestWithNotaryManager {
         test_dispatch();
         test_dispatch();
         test_dispatch();
-        (uint32 nonce, bytes32 root) = origin.suggestAttestation();
+        (uint32 nonce, bytes32 root) = origin.suggestAttestation(remoteDomain);
         // sanity checks
         assertEq(nonce, 4);
-        assertEq(root, origin.historicalRoots(nonce));
+        assertEq(root, origin.historicalRoots(remoteDomain, nonce));
         (bytes memory attestation, ) = signOriginAttestation(notaryPK, nonce, root);
         (bytes memory report, ) = signFraudReport(guardPK, attestation);
         // Should be a valid attestation

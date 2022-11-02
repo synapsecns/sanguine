@@ -60,7 +60,12 @@ contract SynapseTest is Test {
         uint32 nonce,
         bytes32 root
     ) public returns (bytes memory attestation, bytes memory signature) {
-        bytes memory data = Attestation.formatAttestationData(localDomain, nonce, root);
+        bytes memory data = Attestation.formatAttestationData(
+            localDomain,
+            remoteDomain,
+            nonce,
+            root
+        );
         signature = signMessage(privKey, data);
         attestation = Attestation.formatAttestation(data, signature);
     }
@@ -70,7 +75,12 @@ contract SynapseTest is Test {
         uint32 nonce,
         bytes32 root
     ) public returns (bytes memory attestation, bytes memory signature) {
-        bytes memory data = Attestation.formatAttestationData(remoteDomain, nonce, root);
+        bytes memory data = Attestation.formatAttestationData(
+            remoteDomain,
+            localDomain,
+            nonce,
+            root
+        );
         signature = signMessage(privKey, data);
         attestation = Attestation.formatAttestation(data, signature);
     }

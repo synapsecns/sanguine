@@ -16,6 +16,7 @@ contract AttestationHubTest is SynapseTest {
     AttestationHubHarness internal attestationHub;
 
     uint32 internal domain = 1234;
+    uint32 internal remote = 12345;
     uint32 internal nonce = 4321;
     bytes32 internal root = keccak256("root");
 
@@ -69,7 +70,7 @@ contract AttestationHubTest is SynapseTest {
     }
 
     function _createTestAttestation(uint256 _notaryPK) internal {
-        attestationData = Attestation.formatAttestationData(domain, nonce, root);
+        attestationData = Attestation.formatAttestationData(domain, remote, nonce, root);
         bytes memory notarySig = signMessage(_notaryPK, attestationData);
         attestation = Attestation.formatAttestation(attestationData, notarySig);
     }

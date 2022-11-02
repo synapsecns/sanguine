@@ -12,7 +12,7 @@ library Attestation {
     /**
      * @dev AttestationData memory layout
      * [000 .. 004): origin         uint32   4 bytes
-     * [000 .. 008): destination    uint32   4 bytes
+     * [004 .. 008): destination    uint32   4 bytes
      * [008 .. 012): nonce          uint32   4 bytes
      * [012 .. 044): root           bytes32 32 bytes
      *
@@ -94,19 +94,14 @@ library Attestation {
     /**
      * @notice Returns domain of chain where the Origin contract is deployed
      */
-    function attestedOriginDomain(bytes29 _view)
-        internal
-        pure
-        onlyAttestation(_view)
-        returns (uint32)
-    {
+    function attestedOrigin(bytes29 _view) internal pure onlyAttestation(_view) returns (uint32) {
         return uint32(_view.indexUint(OFFSET_ORIGIN_DOMAIN, 4));
     }
 
     /**
      * @notice Returns domain of chain where the Destination contract is deployed
      */
-    function attestedDestinationDomain(bytes29 _view)
+    function attestedDestination(bytes29 _view)
         internal
         pure
         onlyAttestation(_view)
@@ -139,6 +134,43 @@ library Attestation {
                 ATTESTATION_DATA_LENGTH,
                 SynapseTypes.ATTESTATION_DATA
             );
+    }
+
+    /**
+     * @notice Returns Attestation's Key from the tuple (origin, destination, nonce)
+     */
+    function attestionKey(
+        uint32 _origin,
+        uint32 _destination,
+        uint32 _nonce
+    ) internal pure returns (uint96) {
+        return (_origin << 64) + (_destination << 32) + _nonce;
+    }
+
+    /**
+     * @notice Returns Attestation's Key which combines the tuple (origin, destination, nonce) sliced from the attestation
+     */
+    function attestionKey(bytes29 _view) internal pure onlyAttestation(_view) returns (uint96) {
+        uint32 origin = attestedOrigin(_view);
+        uint32 destination = attestedDestination(_view);
+        uint32 nonce = attestedNonce(_view);
+        return attestionKey(origin, destination, nonce);
+    }
+
+    /**
+     * @notice Returns Attestated domains which combines the tuple (origin, destination)
+     */
+    function attestedDomains(uint32 _origin, uint32 _destination) internal pure returns (uint64) {
+        return (_origin << 32) + _destination;
+    }
+
+    /**
+     * @notice Returns Attestated domains which combines the tuple (origin, destination) sliced from the attestation
+     */
+    function attestedDomains(bytes29 _view) internal pure onlyAttestation(_view) returns (uint64) {
+        uint32 origin = attestedOrigin(_view);
+        uint32 destination = attestedDestination(_view);
+        return attestedDomains(origin, destination);
     }
 
     /**

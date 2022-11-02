@@ -13,12 +13,17 @@ contract AttestationHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatAttestation(
-        uint32 _domain,
+        uint32 _origin,
+        uint32 _destination,
         uint32 _nonce,
         bytes32 _root,
         bytes memory _signature
     ) public pure returns (bytes memory) {
-        return formatAttestation(formatAttestationData(_domain, _nonce, _root), _signature);
+        return
+            formatAttestation(
+                formatAttestationData(_origin, _destination, _nonce, _root),
+                _signature
+            );
     }
 
     function formatAttestation(bytes memory _data, bytes memory _signature)
@@ -30,11 +35,12 @@ contract AttestationHarness {
     }
 
     function formatAttestationData(
-        uint32 _domain,
+        uint32 _origin,
+        uint32 _destination,
         uint32 _nonce,
         bytes32 _root
     ) public pure returns (bytes memory) {
-        return Attestation.formatAttestationData(_domain, _nonce, _root);
+        return Attestation.formatAttestationData(_origin, _destination, _nonce, _root);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
