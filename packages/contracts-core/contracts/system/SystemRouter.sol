@@ -121,7 +121,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
     }
 
     /**
-     * @notice Calls a few system contracts with the given calldata.
+     * @notice Calls a few system contracts using the given calldata for each call.
      * See `systemCall` for details on system calls.
      * Note: tx will revert if any of the calls revert, guaranteeing
      * that either all calls succeed or none.
@@ -141,6 +141,54 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
             payloads[i] = _formatCalldata(caller, _dataArray[i]);
         }
         _multiCall(_destination, _optimisticSeconds, _recipients, payloads);
+    }
+
+    /**
+     * @notice Calls a few system contracts using the same calldata for each call.
+     * See `systemCall` for details on system calls.
+     * Note: tx will revert if any of the calls revert, guaranteeing
+     * that either all calls succeed or none.
+     */
+    function systemMultiCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        SystemEntity[] memory _recipients,
+        bytes memory _data
+    ) external {
+        /// @dev This will revert if msg.sender is not a system contract
+        SystemEntity caller = _getSystemEntity(msg.sender);
+        uint256 amount = _recipients.length;
+        bytes[] memory payloads = new bytes[](amount);
+        for (uint256 i = 0; i < amount; ++i) {
+            // Append calldata with (origin, caller) to form the payload
+            payloads[i] = _formatCalldata(caller, _data);
+        }
+        _multiCall(_destination, _optimisticSeconds, _recipients, payloads);
+    }
+
+    /**
+     * @notice Calls a single system contract a few times using the given calldata for each call.
+     * See `systemCall` for details on system calls.
+     * Note: tx will revert if any of the calls revert, guaranteeing
+     * that either all calls succeed or none.
+     */
+    function systemMultiCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        SystemEntity _recipient,
+        bytes[] memory _dataArray
+    ) external {
+        /// @dev This will revert if msg.sender is not a system contract
+        SystemEntity caller = _getSystemEntity(msg.sender);
+        uint256 amount = _dataArray.length;
+        bytes[] memory payloads = new bytes[](amount);
+        SystemEntity[] memory recipients = new SystemEntity[](amount);
+        for (uint256 i = 0; i < amount; ++i) {
+            // Append calldata with (origin, caller) to form the payload
+            payloads[i] = _formatCalldata(caller, _dataArray[i]);
+            recipients[i] = _recipient;
+        }
+        _multiCall(_destination, _optimisticSeconds, recipients, payloads);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
