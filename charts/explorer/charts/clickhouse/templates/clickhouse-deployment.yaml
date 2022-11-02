@@ -53,7 +53,7 @@ spec:
             - name: CLICKHOUSE_PORT
               value: "9000"
             - name: CLICKHOUSE_USER
-              value: "default"
+              value: "clickhouse"
             - name: CLICKHOUSE_PASSWORD
               value: "clickhouse"
             - name: CLICKHOUSE_DB

@@ -10,8 +10,7 @@ image:
   pullPolicy: IfNotPresent
 
 users:
-  user: default
-  # Need to change
+  user: clickhouse
   password: clickhouse
 
 persistentVolume:
