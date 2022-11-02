@@ -23,6 +23,8 @@ data:
       <max_concurrent_queries>100</max_concurrent_queries>
       <uncompressed_cache_size>8589934592</uncompressed_cache_size>
       <mark_cache_size>5368709120</mark_cache_size>
+      <user_files_path>/var/lib/clickhouse/user_files</user_files_path>
+      <format_schema_path>/var/lib/clickhouse/format_schema</format_schema_path>
       <path>/var/lib/clickhouse/</path>
       <tmp_path>/var/lib/clickhouse/tmp/</tmp_path>
       <users_config>users.xml</users_config>
