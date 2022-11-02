@@ -63,22 +63,14 @@ data:
         </readonly>
       </profiles>
       <users>
-        <{{ .Values.users.ro_user_name }}>
-          <password>{{ .Values.users.ro_user_password }}</password>
+        <default>
+          <password>{{ .Values.users.password }}</password>
           <networks incl="networks" replace="replace">
             <ip>::/0</ip>
           </networks>
           <profile>default</profile>
           <quota>default</quota>
-        </{{ .Values.users.ro_user_name }}>
-        <{{ .Values.users.rw_user_name }}>
-          <password>{{ .Values.users.rw_user_password }}</password>
-          <networks incl="networks" replace="replace">
-            <ip>::/0</ip>
-          </networks>
-          <profile>default</profile>
-          <quota>default</quota>
-        </{{ .Values.users.rw_user_name }}>
+        </default>
       </users>
       <quotas>
         <default>

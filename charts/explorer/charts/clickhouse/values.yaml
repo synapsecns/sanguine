@@ -10,10 +10,9 @@ image:
   pullPolicy: IfNotPresent
 
 users:
-  ro_user_name: default
-  ro_user_password: noc
-  rw_user_name: noc
-  rw_user_password: noc
+  username: default
+  # Need to change
+  password: temp_pass
 
 persistentVolume:
   accessModes:
@@ -24,7 +23,6 @@ persistentVolume:
   existingClaim: ""
 
   ## clickhouse data Persistent Volume size
-  ##
   size: 2Gi
 
   ## clickhouse data Persistent Volume Storage Class
