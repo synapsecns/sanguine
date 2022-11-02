@@ -19,7 +19,7 @@ The directory structure for the messaging <a href="../contracts">contracts</a> i
 
 ## Harnesses
 
-For the majority of production contracts exists a corresponding harness. It exposes internal constants, functions and variables for testing. It also emits "logging" events to be used for testing. For instance:
+For the majority of production contracts, there exists a corresponding harness. It exposes internal constants, functions and variables for testing. It also emits "logging" events to be used for testing. For instance:
 
 ```solidity
 // From BasicClientHarness.t.sol
@@ -36,7 +36,7 @@ function _handleUnsafe(
 
 ## Suite
 
-Suite features a collecting of testing contracts. For every production contract there is a corresponding testing one.
+Suite features a collection of testing contracts. For every production contract there is a corresponding testing one.
 
 The underlying testing logic is usually implemented in the corresponding [Tools](#tools) contract. The tests itself are implemented in the testing contract.
 
@@ -74,20 +74,20 @@ contract BasicClientTest is BasicClientTools {
 
 A mix of snake_case and camelCase is used.
 
-- `test_someFunction_whenCondition()` is used for tests, where no reverts are supposed to happen:
-  - `someFunction` refers to function that is being tested
+- `test_someFunction_whenCondition()` is used for tests, when no reverts are supposed to happen:
+  - `someFunction` refers to a function that is being tested
   - `whenCondition` (optional) refers to special condition for a test. A minimal yet explicit name should be used. E.g. `noTips` instead of `doesNotUseAnyTipsWhatsoever`.
-- `test_someFunction_revert_whenCondition` is used for tests, where reverts are supposed to happen:
-  - `someFunction` refers to function that is being tested
-  - `whenCondition` refers for a condition where function is supposed to revert. By default, functions are not supposed to revert, so condition should always be mentioned in the function name. See above for picking a minimalistic condition name.
+- `test_someFunction_revert_whenCondition` is used for tests, when reverts are supposed to happen:
+  - `someFunction` refers to a function that is being tested
+  - `whenCondition` refers to a condition when the function is supposed to revert. By default, functions are not supposed to revert, so the revert condition should always be mentioned in the function name. See above for picking a minimalistic condition name.
 
 ### Test function workflow
 
 Usual workflow is:
 
 - Set up conditions for the test.
-- Trigger function that is being tested.
-- Check any following things:
+- Trigger the function that is being tested.
+- Check any of the following things:
   - Events emitted
   - State after the function call
   - Revert that should have happened
@@ -386,14 +386,14 @@ In the same `setUp` functions, a collection of off-chain actors are created. For
 
 Inherits from `Test`, a default Foundry testing contract.
 
-Features some useful utilities, that don't require access to state variables, like typecasts, key generation, string formatting.
+Features some useful utilities that don't require access to state variables, like typecasts, key generation, string formatting.
 
 ### `SynapseTestStorage`
 
 Inherits from [SynapseConstants](#synapseconstants), [SynapseEvents](#synapseevents).
 
 Features all storage variables used for testing (like saved deployments, actors, etc), as well as a collection of handy getters for them.
-Also features a tool to generate Merkle proofs, and variables for test context in the messaging tests.
+Also features a tool to generate Merkle proofs, and the preset context variables for the messaging tests.
 
 ### `SynapseConstants`
 
