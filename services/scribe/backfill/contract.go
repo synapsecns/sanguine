@@ -119,12 +119,16 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		// make getting receipt a channel in parallel
 		receipt, err := c.client[0].TransactionReceipt(ctx, log.TxHash)
 		if err != nil {
-			if err.Error() == txNotFoundError {
+			switch err.Error() {
+			case txNotFoundError:
 				// Try with client with additional confirmations
 				receipt, err = c.client[1].TransactionReceipt(ctx, log.TxHash)
 				if err != nil {
 					return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 				}
+
+			default:
+				return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 			}
 		}
 
