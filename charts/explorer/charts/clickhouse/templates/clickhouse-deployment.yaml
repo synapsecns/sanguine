@@ -55,7 +55,7 @@ spec:
             - name: CLICKHOUSE_USER
               value: "default"
             - name: CLICKHOUSE_PASS
-              value: "noc"
+              value: "mYs3cr3tP4ssw0rd"
             - name: CLICKHOUSE_DB
               value: "logs"
             - name: K8S_LOGS_TABLE
