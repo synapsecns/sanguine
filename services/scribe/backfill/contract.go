@@ -218,6 +218,12 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		} else {
 			return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainID, log.BlockNumber, log.TxHash.String())
 		}
+	} else {
+		// if there is a failed log stored for this log, remove it
+		err = c.eventDB.DeleteFailedLog(ctx, c.chainID, common.HexToAddress(c.address), log.TxHash, uint64(log.Index), log.BlockNumber)
+		if err != nil {
+			return fmt.Errorf("could not remove failed log: %w", err)
+		}
 	}
 	// store the last indexed block in the db
 	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainID, log.BlockNumber)
@@ -226,11 +232,6 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	}
 	// store the txHash in the cache
 	c.cache.Add(log.TxHash, true)
-	// if there is a failed log stored for this log, remove it
-	err = c.eventDB.DeleteFailedLog(ctx, c.chainID, common.HexToAddress(c.address), log.TxHash, uint64(log.Index), log.BlockNumber)
-	if err != nil {
-		return fmt.Errorf("could not remove failed log: %w", err)
-	}
 
 	return nil
 }

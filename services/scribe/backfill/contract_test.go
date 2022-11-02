@@ -26,7 +26,6 @@ type TestScribeBackend struct {
 }
 
 func (t TestScribeBackend) TransactionByHash(ctx context.Context, txHash common.Hash) (tx *types.Transaction, isPending bool, err error) {
-	fmt.Println("poopoo")
 	return nil, false, fmt.Errorf("some error")
 }
 
@@ -48,26 +47,49 @@ func (b BackfillSuite) TestFailedLogs() {
 	chainBackfiller, err := backfill.NewContractBackfiller(chainID, contractConfig.Address, b.testDB, simulatedChainArr, 3)
 	Nil(b.T(), err)
 
-	// Emit 4 logs.
+	// Emit a log.
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
 	Nil(b.T(), err)
 	chain.WaitForConfirmation(b.GetTestContext(), tx)
-	//tx, err = testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(4), big.NewInt(5), big.NewInt(6))
-	//Nil(b.T(), err)
-	//chain.WaitForConfirmation(b.GetTestContext(), tx)
-	//tx, err = testRef.EmitEventB(transactOpts.TransactOpts, []byte{7}, big.NewInt(8), big.NewInt(9))
-	//Nil(b.T(), err)
-	//chain.WaitForConfirmation(b.GetTestContext(), tx)
-	// Get the block number of the last transaction.
+	// Get the block number of the transaction.
 	blockNumber, err := b.getTxBlockNumber(chain, tx)
 
 	// Backfill logs.
 	err = chainBackfiller.Backfill(b.GetTestContext(), 0, blockNumber)
 	NotNil(b.T(), err)
+	// Check that the failed logs table has the correct number of entries.
+	failedLogsFilter := db.FailedLogFilter{
+		ChainID:         chainID,
+		ContractAddress: testContract.Address().String(),
+		TxHash:          tx.Hash().String(),
+	}
+	failedLogs, err := b.testDB.GetFailedLogsFromFilter(b.GetTestContext(), failedLogsFilter)
+	Nil(b.T(), err)
+	Equal(b.T(), 1, len(failedLogs))
+	Equal(b.T(), uint64(1), failedLogs[0].FailedAttempts)
 	err = chainBackfiller.Backfill(b.GetTestContext(), 0, blockNumber)
 	NotNil(b.T(), err)
+	failedLogs, err = b.testDB.GetFailedLogsFromFilter(b.GetTestContext(), failedLogsFilter)
+	Nil(b.T(), err)
+	Equal(b.T(), 1, len(failedLogs))
+	Equal(b.T(), uint64(2), failedLogs[0].FailedAttempts)
 	err = chainBackfiller.Backfill(b.GetTestContext(), 0, blockNumber)
 	Nil(b.T(), err)
+	failedLogs, err = b.testDB.GetFailedLogsFromFilter(b.GetTestContext(), failedLogsFilter)
+	Nil(b.T(), err)
+	Equal(b.T(), 1, len(failedLogs))
+	Equal(b.T(), uint64(3), failedLogs[0].FailedAttempts)
+
+	// Make a new backfiller with the correct ScribeBackend and backfill.
+	// Now the failed log should be deleted.
+	chainArr := []backfill.ScribeBackend{chain, chain}
+	chainBackfiller, err = backfill.NewContractBackfiller(chainID, contractConfig.Address, b.testDB, chainArr, 3)
+	Nil(b.T(), err)
+	err = chainBackfiller.Backfill(b.GetTestContext(), 0, blockNumber)
+	Nil(b.T(), err)
+	failedLogs, err = b.testDB.GetFailedLogsFromFilter(b.GetTestContext(), failedLogsFilter)
+	Nil(b.T(), err)
+	Equal(b.T(), 0, len(failedLogs))
 }
 
 // TestFailedStore tests that the ChainBackfiller continues backfilling after a failed store.

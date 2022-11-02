@@ -43,6 +43,7 @@ func (s Store) StoreFailedLog(ctx context.Context, chainID uint32, contractAddre
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not create failed log: %w", dbTx.Error)
 		}
+		return nil
 	}
 	dbTx = s.DB().WithContext(ctx).
 		Model(&FailedLog{}).
