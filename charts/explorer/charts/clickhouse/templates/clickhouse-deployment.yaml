@@ -54,7 +54,7 @@ spec:
               value: "9000"
             - name: CLICKHOUSE_USER
               value: "default"
-            - name: CLICKHOUSE_PASS
+            - name: CLICKHOUSE_PASSWORD
               value: "mYs3cr3tP4ssw0rd"
             - name: CLICKHOUSE_DB
               value: "logs"
