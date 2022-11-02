@@ -6,4 +6,4 @@ dependencies:
   repository: file://../omnirpc/
   version: 0.1.2
 digest: sha256:d29635e317aa73c46ca619eb6af02f6849ce5065dc47dd21e03a96493b4d2062
-generated: "2022-11-01T20:36:19.04293-04:00"
+generated: "2022-11-01T20:53:21.396936-04:00"

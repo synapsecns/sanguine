@@ -1,9 +1,0 @@
-dependencies:
-- name: clickhouse
-  repository: file://charts/clickhouse
-  version: 0.1.1
-- name: omnirpc
-  repository: file://../omnirpc/
-  version: 0.1.2
-digest: sha256:4824579109e08147d0fad50d01935816528098a4b137357984f40d4f8d6d2005
-generated: "2022-11-01T20:04:48.616154-04:00"
