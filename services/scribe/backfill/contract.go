@@ -34,7 +34,7 @@ const txNotFound = "not found"
 // NewContractBackfiller creates a new backfiller for a contract.
 func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client []ScribeBackend, maxFails uint32) (*ContractBackfiller, error) {
 	// initialize the cache for the txHashes
-	cache, err := lru.New(500)
+	cache, err := lru.New(1000)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize cache: %w", err)
 	}

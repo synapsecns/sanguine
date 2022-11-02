@@ -1,6 +1,7 @@
 package backfill_test
 
 import (
+	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -19,6 +20,55 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 )
+
+type TestScribeBackend struct {
+	backfill.ScribeBackend
+}
+
+func (t TestScribeBackend) TransactionByHash(ctx context.Context, txHash common.Hash) (tx *types.Transaction, isPending bool, err error) {
+	fmt.Println("poopoo")
+	return nil, false, fmt.Errorf("some error")
+}
+
+// TestFailedLogs tests the functionality of the FailedLog table.
+func (b BackfillSuite) TestFailedLogs() {
+	chainID := gofakeit.Uint32()
+	chain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
+	chain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
+	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), chain)
+	transactOpts := chain.GetTxContext(b.GetTestContext(), nil)
+	// Set config.
+	contractConfig := config.ContractConfig{
+		Address:    testContract.Address().String(),
+		StartBlock: 0,
+	}
+	simulatedChain := TestScribeBackend{chain}
+	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
+
+	chainBackfiller, err := backfill.NewContractBackfiller(chainID, contractConfig.Address, b.testDB, simulatedChainArr, 3)
+	Nil(b.T(), err)
+
+	// Emit 4 logs.
+	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	Nil(b.T(), err)
+	chain.WaitForConfirmation(b.GetTestContext(), tx)
+	//tx, err = testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(4), big.NewInt(5), big.NewInt(6))
+	//Nil(b.T(), err)
+	//chain.WaitForConfirmation(b.GetTestContext(), tx)
+	//tx, err = testRef.EmitEventB(transactOpts.TransactOpts, []byte{7}, big.NewInt(8), big.NewInt(9))
+	//Nil(b.T(), err)
+	//chain.WaitForConfirmation(b.GetTestContext(), tx)
+	// Get the block number of the last transaction.
+	blockNumber, err := b.getTxBlockNumber(chain, tx)
+
+	// Backfill logs.
+	err = chainBackfiller.Backfill(b.GetTestContext(), 0, blockNumber)
+	NotNil(b.T(), err)
+	err = chainBackfiller.Backfill(b.GetTestContext(), 0, blockNumber)
+	NotNil(b.T(), err)
+	err = chainBackfiller.Backfill(b.GetTestContext(), 0, blockNumber)
+	Nil(b.T(), err)
+}
 
 // TestFailedStore tests that the ChainBackfiller continues backfilling after a failed store.
 func (b BackfillSuite) TestFailedStore() {
