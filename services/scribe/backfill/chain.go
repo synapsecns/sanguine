@@ -286,7 +286,6 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 			}
 		}
 	}
-
 }
 
 func zeroCheck(value uint64) uint64 {
