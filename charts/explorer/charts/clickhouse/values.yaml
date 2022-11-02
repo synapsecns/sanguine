@@ -12,7 +12,7 @@ image:
 users:
   user: default
   # Need to change
-  password: mYs3cr3tP4ssw0rd
+  password: clickhouse
 
 persistentVolume:
   accessModes:

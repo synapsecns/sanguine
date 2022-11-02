@@ -55,11 +55,9 @@ spec:
             - name: CLICKHOUSE_USER
               value: "default"
             - name: CLICKHOUSE_PASSWORD
-              value: "mYs3cr3tP4ssw0rd"
+              value: "clickhouse"
             - name: CLICKHOUSE_DB
-              value: "logs"
-            - name: K8S_LOGS_TABLE
-              value: "logs"
+              value: "clickhouse"
           livenessProbe:
             timeoutSeconds: 1
             initialDelaySeconds: 30
