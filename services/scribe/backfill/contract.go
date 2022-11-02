@@ -178,9 +178,16 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		txn, isPending, err := c.client[0].TransactionByHash(groupCtx, log.TxHash)
 		if err != nil {
 			if err.Error() == txNotSupportedError || err.Error() == invalidTxVRSError {
-				logger.Warnf("Invalid tx: %s\n%s on chain id: %d\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err.Error(), log.TxHash.Hex(), c.chainID, log.BlockNumber, log.Address.String(), c.address)
+				logger.Infof("Invalid tx: %s\n%s on chain id: %d\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err.Error(), log.TxHash.Hex(), c.chainID, log.BlockNumber, log.Address.String(), c.address)
 				return nil
 			}
+			if err.Error() == txNotFoundError {
+				txn, isPending, err = c.client[1].TransactionByHash(groupCtx, log.TxHash)
+				if err != nil {
+					return fmt.Errorf("could not get transaction by hash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+				}
+			}
+
 			return fmt.Errorf("could not get transaction by hash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 		}
 
