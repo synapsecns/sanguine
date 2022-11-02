@@ -177,7 +177,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		for {
 			select {
 			case <-groupCtxBlockTime.Done():
-				logger.Warnf("context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), groupCtxBlockTime.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+				logger.Warnf("gBlockTime context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), groupCtxBlockTime.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 				return fmt.Errorf("context canceled: %w", groupCtxBlockTime.Err())
 			case <-time.After(timeoutBlockNum):
 				// Check if the current block's already exists in database.
