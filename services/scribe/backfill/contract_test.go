@@ -53,6 +53,7 @@ func (b BackfillSuite) TestFailedLogs() {
 	chain.WaitForConfirmation(b.GetTestContext(), tx)
 	// Get the block number of the transaction.
 	blockNumber, err := b.getTxBlockNumber(chain, tx)
+	Nil(b.T(), err)
 
 	// Backfill logs.
 	err = chainBackfiller.Backfill(b.GetTestContext(), 0, blockNumber)

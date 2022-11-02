@@ -176,21 +176,24 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	g.Go(func() error {
 		// store the transaction in the db
 		txn, isPending, err := c.client[0].TransactionByHash(groupCtx, log.TxHash)
+
 		if err != nil {
-			if err.Error() == txNotSupportedError || err.Error() == invalidTxVRSError {
+			switch err.Error() {
+			case txNotSupportedError:
 				logger.Infof("Invalid tx: %s\n%s on chain id: %d\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err.Error(), log.TxHash.Hex(), c.chainID, log.BlockNumber, log.Address.String(), c.address)
 				return nil
-			}
-			if err.Error() == txNotFoundError {
+			case invalidTxVRSError:
+				logger.Infof("Invalid tx: %s\n%s on chain id: %d\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err.Error(), log.TxHash.Hex(), c.chainID, log.BlockNumber, log.Address.String(), c.address)
+				return nil
+			case txNotFoundError:
 				txn, isPending, err = c.client[1].TransactionByHash(groupCtx, log.TxHash)
 				if err != nil {
-					return fmt.Errorf("could not get transaction by hash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+					return fmt.Errorf("could not get transaction by hash with extra client: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 				}
+			default:
+				return fmt.Errorf("could not get transaction by hash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 			}
-
-			return fmt.Errorf("could not get transaction by hash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 		}
-
 		if isPending {
 			return fmt.Errorf("transaction is pending")
 		}
@@ -204,6 +207,8 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	})
 
 	err := g.Wait()
+	// If there was an error in storing the logs, receipts, or transactions, then go through the failed logs table.
+	//nolint:nestif
 	if err != nil {
 		err = c.eventDB.StoreFailedLog(ctx, c.chainID, common.HexToAddress(c.address), log.TxHash, uint64(log.Index), log.BlockNumber)
 		if err != nil {
