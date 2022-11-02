@@ -22,18 +22,22 @@ spec:
         service: clickhouse
     spec:
       initContainers:
-        - name: chown
-          image: busybox
+        - name: config
+          image: alpine:3.10
           command:
-            - chown
-            - -R
-            - 101:101
-            - /var/lib/clickhouse
-          securityContext:
-            runAsUser: 0
+            - '/bin/sh'
+            - '-c'
+            - cd /etc/clickhouse-server;
+              ln -sf /etc/clickhouse-server-config/config.xml;
+              ln -sf /etc/clickhouse-server-config/users.xml;
+              chown 105:106 /var/lib/clickhouse/
           volumeMounts:
-            - name: data
-              mountPath: /var/lib/clickhouse/
+            - mountPath: /var/lib/clickhouse/
+              name: {{ include "clickhouse.fullname" . }}
+            - mountPath: /etc/clickhouse-server/
+              name: config-directory
+            - mountPath: /etc/clickhouse-server-config/
+              name: config-volume
       containers:
         - name: clickhouse
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
