@@ -27,5 +27,14 @@ func (t *DBSuite) TestRetrieveLastBlockStoredVerbose() {
 		Nil(t.T(), err)
 		Equal(t.T(), 9, retrievedBlockTimeB.BlockNumber)
 		Equal(t.T(), int(chainIDB), retrievedBlockTimeB.ChainID)
+		NotNil(t.T(), retrievedBlockTimeB.CreatedAt)
+
+		err = testDB.StoreLastBlockTime(t.GetTestContext(), chainIDB, 10)
+		Nil(t.T(), err)
+
+		retrievedBlockTimeB, err = testDB.RetrieveLastBlockStoredVerbose(t.GetTestContext(), chainIDB)
+		Nil(t.T(), err)
+		Equal(t.T(), 10, retrievedBlockTimeB.BlockNumber)
+		NotNil(t.T(), retrievedBlockTimeB.UpdatedAt)
 	})
 }

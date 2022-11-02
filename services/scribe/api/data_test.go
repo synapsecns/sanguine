@@ -313,3 +313,35 @@ func (g APISuite) TestRetrieveBlockTimesCountForChain() {
 	Nil(g.T(), err)
 	Equal(g.T(), 10, *blockTimeCountB.Response)
 }
+
+func (g APISuite) TestRetrieveLastBlockStoredVerbose() {
+	chainIDA := gofakeit.Uint32()
+	chainIDB := gofakeit.Uint32()
+	// Store 10 blocks for both chains.
+
+	err := g.db.StoreLastBlockTime(g.GetTestContext(), chainIDA, 9)
+	Nil(g.T(), err)
+	err = g.db.StoreLastBlockTime(g.GetTestContext(), chainIDB, 9)
+	Nil(g.T(), err)
+
+	// Ensure the block time for the chain ID matches the one stored.
+	retrievedBlockTimeA, err := g.gqlClient.GetLastBlockStoredVerbose(g.GetTestContext(), int(chainIDA))
+	Nil(g.T(), err)
+	Equal(g.T(), 9, retrievedBlockTimeA.Response.BlockNumber)
+	Equal(g.T(), int(chainIDA), retrievedBlockTimeA.Response.ChainID)
+	NotNil(g.T(), retrievedBlockTimeA.Response.CreatedAt)
+
+	retrievedBlockTimeB, err := g.gqlClient.GetLastBlockStoredVerbose(g.GetTestContext(), int(chainIDB))
+	Nil(g.T(), err)
+	Equal(g.T(), 9, retrievedBlockTimeB.Response.BlockNumber)
+	Equal(g.T(), int(chainIDB), retrievedBlockTimeB.Response.ChainID)
+	NotNil(g.T(), retrievedBlockTimeB.Response.CreatedAt)
+
+	err = g.db.StoreLastBlockTime(g.GetTestContext(), chainIDB, 10)
+	Nil(g.T(), err)
+
+	retrievedBlockTimeB, err = g.gqlClient.GetLastBlockStoredVerbose(g.GetTestContext(), int(chainIDB))
+	Nil(g.T(), err)
+	Equal(g.T(), 10, retrievedBlockTimeB.Response.BlockNumber)
+	NotNil(g.T(), retrievedBlockTimeB.Response.UpdatedAt)
+}
