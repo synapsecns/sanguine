@@ -11,6 +11,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
+	model "github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
+
 	types "github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -263,6 +265,29 @@ func (_m *EventDB) RetrieveLastBlockStored(ctx context.Context, chainID uint32) 
 		r0 = rf(ctx, chainID)
 	} else {
 		r0 = ret.Get(0).(uint64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, uint32) error); ok {
+		r1 = rf(ctx, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// RetrieveLastBlockStoredVerbose provides a mock function with given fields: ctx, chainID
+func (_m *EventDB) RetrieveLastBlockStoredVerbose(ctx context.Context, chainID uint32) (*model.Block, error) {
+	ret := _m.Called(ctx, chainID)
+
+	var r0 *model.Block
+	if rf, ok := ret.Get(0).(func(context.Context, uint32) *model.Block); ok {
+		r0 = rf(ctx, chainID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.Block)
+		}
 	}
 
 	var r1 error

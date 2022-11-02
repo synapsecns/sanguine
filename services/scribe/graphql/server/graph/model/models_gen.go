@@ -6,6 +6,13 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/types"
 )
 
+type Block struct {
+	ChainID     int    `json:"chain_id"`
+	BlockNumber int    `json:"block_number"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
 type BlockTime struct {
 	ChainID     int `json:"chain_id"`
 	BlockNumber int `json:"block_number"`

@@ -102,4 +102,9 @@ type Query {
   blockTimeCount(
     chain_id: Int!
   ): Int
+
+  # returns the amount of block times stored per chain
+  lastStoredBlockVerbose(
+    chain_id: Int!
+  ): Block
 }

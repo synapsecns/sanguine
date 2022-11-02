@@ -32,6 +32,7 @@ type Query struct {
 	LastIndexed            *int                 "json:\"lastIndexed\" graphql:\"lastIndexed\""
 	LogCount               *int                 "json:\"logCount\" graphql:\"logCount\""
 	BlockTimeCount         *int                 "json:\"blockTimeCount\" graphql:\"blockTimeCount\""
+	LastStoredBlockVerbose *model.Block         "json:\"lastStoredBlockVerbose\" graphql:\"lastStoredBlockVerbose\""
 }
 type GetLogs struct {
 	Response []*struct {
@@ -233,6 +234,14 @@ type GetLogCount struct {
 }
 type GetBlockTimeCount struct {
 	Response *int "json:\"response\" graphql:\"response\""
+}
+type GetLastBlockStoredVerbose struct {
+	Response *struct {
+		ChainID     int    "json:\"chain_id\" graphql:\"chain_id\""
+		BlockNumber int    "json:\"block_number\" graphql:\"block_number\""
+		CreatedAt   string "json:\"created_at\" graphql:\"created_at\""
+		UpdatedAt   string "json:\"updated_at\" graphql:\"updated_at\""
+	} "json:\"response\" graphql:\"response\""
 }
 
 const GetLogsDocument = `query GetLogs ($chain_id: Int!, $page: Int!) {
@@ -689,6 +698,29 @@ func (c *Client) GetBlockTimeCount(ctx context.Context, chainID int, httpRequest
 
 	var res GetBlockTimeCount
 	if err := c.Client.Post(ctx, "GetBlockTimeCount", GetBlockTimeCountDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetLastBlockStoredVerboseDocument = `query GetLastBlockStoredVerbose ($chain_id: Int!) {
+	response: lastStoredBlockVerbose(chain_id: $chain_id) {
+		chain_id
+		block_number
+		created_at
+		updated_at
+	}
+}
+`
+
+func (c *Client) GetLastBlockStoredVerbose(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetLastBlockStoredVerbose, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+	}
+
+	var res GetLastBlockStoredVerbose
+	if err := c.Client.Post(ctx, "GetLastBlockStoredVerbose", GetLastBlockStoredVerboseDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

@@ -59,3 +59,10 @@ type BlockTime {
   block_number: Int!
   timestamp: Int!
 }
+
+type Block {
+  chain_id: Int!
+  block_number: Int!
+  created_at: String!
+  updated_at: String!
+}

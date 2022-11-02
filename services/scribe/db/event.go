@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -89,6 +90,9 @@ type EventDBReader interface {
 	RetrieveLogCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error)
 	// RetrieveBlockTimesCountForChain retrieves the number of block times stored for a chain.
 	RetrieveBlockTimesCountForChain(ctx context.Context, chainID uint32) (int64, error)
+
+	// RetrieveLastBlockStoredVerbose retrieves the last blocktime from the laststoredblocktime table.
+	RetrieveLastBlockStoredVerbose(ctx context.Context, chainID uint32) (*model.Block, error)
 }
 
 // EventDB stores events.

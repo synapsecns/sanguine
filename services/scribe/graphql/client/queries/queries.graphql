@@ -222,3 +222,12 @@ query GetLogCount ($chain_id: Int!, $contract_address: String!) {
 query GetBlockTimeCount ($chain_id: Int!) {
   response: blockTimeCount (chain_id: $chain_id)
 }
+
+query GetLastBlockStoredVerbose ($chain_id: Int!) {
+  response: lastStoredBlockVerbose (chain_id: $chain_id) {
+    chain_id
+    block_number
+    created_at
+    updated_at
+  }
+}

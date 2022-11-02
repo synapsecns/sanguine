@@ -159,6 +159,15 @@ func (r *queryResolver) BlockTimeCount(ctx context.Context, chainID int) (*int, 
 	return &blockTimesCountInt, nil
 }
 
+// LastStoredBlockVerbose is the resolver for the lastStoredBlockVerbose field.
+func (r *queryResolver) LastStoredBlockVerbose(ctx context.Context, chainID int) (*model.Block, error) {
+	block, err := r.DB.RetrieveLastBlockStoredVerbose(ctx, uint32(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving contract last block: %w", err)
+	}
+	return block, nil
+}
+
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 
