@@ -12,6 +12,15 @@ type BlockTime struct {
 	Timestamp   int `json:"timestamp"`
 }
 
+type FailedLog struct {
+	ChainID         int    `json:"chain_id"`
+	ContractAddress string `json:"contract_address"`
+	TxHash          string `json:"tx_hash"`
+	BlockIndex      int    `json:"block_index"`
+	BlockNumber     int    `json:"block_number"`
+	FailedAttempts  int    `json:"failed_attempts"`
+}
+
 type Log struct {
 	ContractAddress string       `json:"contract_address"`
 	ChainID         int          `json:"chain_id"`

@@ -138,8 +138,8 @@ func failedLogFilterToQuery(failedLogFilter db.FailedLogFilter) FailedLog {
 }
 
 // GetFailedLogsFromFilter returns a list of failed logs that match the given filter.
-func (s Store) GetFailedLogsFromFilter(ctx context.Context, failedLogFilter db.FailedLogFilter) ([]types.FailedLog, error) {
-	var failedLogs []FailedLog
+func (s Store) GetFailedLogsFromFilter(ctx context.Context, failedLogFilter db.FailedLogFilter) ([]*types.FailedLog, error) {
+	var failedLogs []*FailedLog
 	query := failedLogFilterToQuery(failedLogFilter)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&FailedLog{}).
@@ -150,9 +150,10 @@ func (s Store) GetFailedLogsFromFilter(ctx context.Context, failedLogFilter db.F
 		return nil, fmt.Errorf("could not scan failed logs: %w", dbTx.Error)
 	}
 
-	var failedLogsTypes []types.FailedLog
+	var failedLogsTypes []*types.FailedLog
 	for _, failedLog := range failedLogs {
-		failedLogsTypes = append(failedLogsTypes, failedLog.FailedLog)
+		storeLog := failedLog.FailedLog
+		failedLogsTypes = append(failedLogsTypes, &storeLog)
 	}
 	return failedLogsTypes, nil
 }

@@ -32,6 +32,7 @@ type Query struct {
 	LastIndexed            *int                 "json:\"lastIndexed\" graphql:\"lastIndexed\""
 	LogCount               *int                 "json:\"logCount\" graphql:\"logCount\""
 	BlockTimeCount         *int                 "json:\"blockTimeCount\" graphql:\"blockTimeCount\""
+	FailedLogs             []*model.FailedLog   "json:\"failedLogs\" graphql:\"failedLogs\""
 }
 type GetLogs struct {
 	Response []*struct {
@@ -233,6 +234,16 @@ type GetLogCount struct {
 }
 type GetBlockTimeCount struct {
 	Response *int "json:\"response\" graphql:\"response\""
+}
+type GetFailedLogs struct {
+	Response []*struct {
+		ChainID         int    "json:\"chain_id\" graphql:\"chain_id\""
+		ContractAddress string "json:\"contract_address\" graphql:\"contract_address\""
+		TxHash          string "json:\"tx_hash\" graphql:\"tx_hash\""
+		BlockIndex      int    "json:\"block_index\" graphql:\"block_index\""
+		BlockNumber     int    "json:\"block_number\" graphql:\"block_number\""
+		FailedAttempts  int    "json:\"failed_attempts\" graphql:\"failed_attempts\""
+	} "json:\"response\" graphql:\"response\""
 }
 
 const GetLogsDocument = `query GetLogs ($chain_id: Int!, $page: Int!) {
@@ -689,6 +700,35 @@ func (c *Client) GetBlockTimeCount(ctx context.Context, chainID int, httpRequest
 
 	var res GetBlockTimeCount
 	if err := c.Client.Post(ctx, "GetBlockTimeCount", GetBlockTimeCountDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetFailedLogsDocument = `query GetFailedLogs ($chain_id: Int!, $contract_address: String, $tx_hash: String, $block_index: Int, $block_number: Int) {
+	response: failedLogs(chain_id: $chain_id, contract_address: $contract_address, tx_hash: $tx_hash, block_index: $block_index, block_number: $block_number) {
+		chain_id
+		contract_address
+		tx_hash
+		block_index
+		block_number
+		failed_attempts
+	}
+}
+`
+
+func (c *Client) GetFailedLogs(ctx context.Context, chainID int, contractAddress *string, txHash *string, blockIndex *int, blockNumber *int, httpRequestOptions ...client.HTTPRequestOption) (*GetFailedLogs, error) {
+	vars := map[string]interface{}{
+		"chain_id":         chainID,
+		"contract_address": contractAddress,
+		"tx_hash":          txHash,
+		"block_index":      blockIndex,
+		"block_number":     blockNumber,
+	}
+
+	var res GetFailedLogs
+	if err := c.Client.Post(ctx, "GetFailedLogs", GetFailedLogsDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

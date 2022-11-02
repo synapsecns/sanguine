@@ -68,3 +68,21 @@ func BuildEthTxFilter(txHash *string, blockNumber *int, blockHash *string, confi
 	}
 	return ethTxFilter
 }
+
+// BuildFailedLogFilter builds a failed log filter.
+func BuildFailedLogFilter(contractAddress *string, txHash *string, blockIndex *int, blockNumber *int) FailedLogFilter {
+	failedLogFilter := FailedLogFilter{}
+	if contractAddress != nil {
+		failedLogFilter.ContractAddress = *contractAddress
+	}
+	if txHash != nil {
+		failedLogFilter.TxHash = *txHash
+	}
+	if blockIndex != nil {
+		failedLogFilter.BlockIndex = uint64(*blockIndex)
+	}
+	if blockNumber != nil {
+		failedLogFilter.BlockNumber = uint64(*blockNumber)
+	}
+	return failedLogFilter
+}

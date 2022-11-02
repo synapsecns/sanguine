@@ -53,6 +53,15 @@ type ComplexityRoot struct {
 		Timestamp   func(childComplexity int) int
 	}
 
+	FailedLog struct {
+		BlockIndex      func(childComplexity int) int
+		BlockNumber     func(childComplexity int) int
+		ChainID         func(childComplexity int) int
+		ContractAddress func(childComplexity int) int
+		FailedAttempts  func(childComplexity int) int
+		TxHash          func(childComplexity int) int
+	}
+
 	Log struct {
 		BlockHash       func(childComplexity int) int
 		BlockNumber     func(childComplexity int) int
@@ -73,6 +82,7 @@ type ComplexityRoot struct {
 	Query struct {
 		BlockTime              func(childComplexity int, chainID int, blockNumber int) int
 		BlockTimeCount         func(childComplexity int, chainID int) int
+		FailedLogs             func(childComplexity int, chainID int, contractAddress *string, txHash *string, blockIndex *int, blockNumber *int) int
 		FirstStoredBlockNumber func(childComplexity int, chainID int) int
 		LastIndexed            func(childComplexity int, contractAddress string, chainID int) int
 		LastStoredBlockNumber  func(childComplexity int, chainID int) int
@@ -143,6 +153,7 @@ type QueryResolver interface {
 	LastIndexed(ctx context.Context, contractAddress string, chainID int) (*int, error)
 	LogCount(ctx context.Context, contractAddress string, chainID int) (*int, error)
 	BlockTimeCount(ctx context.Context, chainID int) (*int, error)
+	FailedLogs(ctx context.Context, chainID int, contractAddress *string, txHash *string, blockIndex *int, blockNumber *int) ([]*model.FailedLog, error)
 }
 type ReceiptResolver interface {
 	Logs(ctx context.Context, obj *model.Receipt) ([]*model.Log, error)
@@ -190,6 +201,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BlockTime.Timestamp(childComplexity), true
+
+	case "FailedLog.block_index":
+		if e.complexity.FailedLog.BlockIndex == nil {
+			break
+		}
+
+		return e.complexity.FailedLog.BlockIndex(childComplexity), true
+
+	case "FailedLog.block_number":
+		if e.complexity.FailedLog.BlockNumber == nil {
+			break
+		}
+
+		return e.complexity.FailedLog.BlockNumber(childComplexity), true
+
+	case "FailedLog.chain_id":
+		if e.complexity.FailedLog.ChainID == nil {
+			break
+		}
+
+		return e.complexity.FailedLog.ChainID(childComplexity), true
+
+	case "FailedLog.contract_address":
+		if e.complexity.FailedLog.ContractAddress == nil {
+			break
+		}
+
+		return e.complexity.FailedLog.ContractAddress(childComplexity), true
+
+	case "FailedLog.failed_attempts":
+		if e.complexity.FailedLog.FailedAttempts == nil {
+			break
+		}
+
+		return e.complexity.FailedLog.FailedAttempts(childComplexity), true
+
+	case "FailedLog.tx_hash":
+		if e.complexity.FailedLog.TxHash == nil {
+			break
+		}
+
+		return e.complexity.FailedLog.TxHash(childComplexity), true
 
 	case "Log.block_hash":
 		if e.complexity.Log.BlockHash == nil {
@@ -312,6 +365,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.BlockTimeCount(childComplexity, args["chain_id"].(int)), true
+
+	case "Query.failedLogs":
+		if e.complexity.Query.FailedLogs == nil {
+			break
+		}
+
+		args, err := ec.field_Query_failedLogs_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FailedLogs(childComplexity, args["chain_id"].(int), args["contract_address"].(*string), args["tx_hash"].(*string), args["block_index"].(*int), args["block_number"].(*int)), true
 
 	case "Query.firstStoredBlockNumber":
 		if e.complexity.Query.FirstStoredBlockNumber == nil {
@@ -823,11 +888,18 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   contract_address: String!
   chain_id: Int!
   ): Int
-
   # returns the amount of block times stored per chain
   blockTimeCount(
     chain_id: Int!
   ): Int
+  # returns failed logs that match the given filter
+  failedLogs(
+    chain_id: Int!
+    contract_address: String
+    tx_hash: String
+    block_index: Int
+    block_number: Int
+  ): [FailedLog]
 }
 `, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `scalar JSON
@@ -891,6 +963,15 @@ type BlockTime {
   block_number: Int!
   timestamp: Int!
 }
+
+type FailedLog {
+  chain_id: Int!
+  contract_address: String!
+  tx_hash: String!
+  block_index: Int!
+  block_number: Int!
+  failed_attempts: Int!
+}
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -950,6 +1031,57 @@ func (ec *executionContext) field_Query_blockTime_args(ctx context.Context, rawA
 		}
 	}
 	args["block_number"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_failedLogs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chain_id"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["contract_address"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contract_address"))
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["contract_address"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["tx_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_hash"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tx_hash"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["block_index"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_index"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["block_index"] = arg3
+	var arg4 *int
+	if tmp, ok := rawArgs["block_number"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_number"))
+		arg4, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["block_number"] = arg4
 	return args, nil
 }
 
@@ -1719,6 +1851,270 @@ func (ec *executionContext) _BlockTime_timestamp(ctx context.Context, field grap
 func (ec *executionContext) fieldContext_BlockTime_timestamp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "BlockTime",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FailedLog_chain_id(ctx context.Context, field graphql.CollectedField, obj *model.FailedLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FailedLog_chain_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ChainID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FailedLog_chain_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FailedLog",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FailedLog_contract_address(ctx context.Context, field graphql.CollectedField, obj *model.FailedLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FailedLog_contract_address(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ContractAddress, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FailedLog_contract_address(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FailedLog",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FailedLog_tx_hash(ctx context.Context, field graphql.CollectedField, obj *model.FailedLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FailedLog_tx_hash(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TxHash, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FailedLog_tx_hash(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FailedLog",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FailedLog_block_index(ctx context.Context, field graphql.CollectedField, obj *model.FailedLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FailedLog_block_index(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BlockIndex, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FailedLog_block_index(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FailedLog",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FailedLog_block_number(ctx context.Context, field graphql.CollectedField, obj *model.FailedLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FailedLog_block_number(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BlockNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FailedLog_block_number(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FailedLog",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FailedLog_failed_attempts(ctx context.Context, field graphql.CollectedField, obj *model.FailedLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FailedLog_failed_attempts(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FailedAttempts, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FailedLog_failed_attempts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FailedLog",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -3273,6 +3669,72 @@ func (ec *executionContext) fieldContext_Query_blockTimeCount(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_blockTimeCount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_failedLogs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_failedLogs(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().FailedLogs(rctx, fc.Args["chain_id"].(int), fc.Args["contract_address"].(*string), fc.Args["tx_hash"].(*string), fc.Args["block_index"].(*int), fc.Args["block_number"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.FailedLog)
+	fc.Result = res
+	return ec.marshalOFailedLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋgraphqlᚋserverᚋgraphᚋmodelᚐFailedLog(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_failedLogs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "chain_id":
+				return ec.fieldContext_FailedLog_chain_id(ctx, field)
+			case "contract_address":
+				return ec.fieldContext_FailedLog_contract_address(ctx, field)
+			case "tx_hash":
+				return ec.fieldContext_FailedLog_tx_hash(ctx, field)
+			case "block_index":
+				return ec.fieldContext_FailedLog_block_index(ctx, field)
+			case "block_number":
+				return ec.fieldContext_FailedLog_block_number(ctx, field)
+			case "failed_attempts":
+				return ec.fieldContext_FailedLog_failed_attempts(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FailedLog", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_failedLogs_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -6715,6 +7177,69 @@ func (ec *executionContext) _BlockTime(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var failedLogImplementors = []string{"FailedLog"}
+
+func (ec *executionContext) _FailedLog(ctx context.Context, sel ast.SelectionSet, obj *model.FailedLog) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, failedLogImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FailedLog")
+		case "chain_id":
+
+			out.Values[i] = ec._FailedLog_chain_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "contract_address":
+
+			out.Values[i] = ec._FailedLog_contract_address(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "tx_hash":
+
+			out.Values[i] = ec._FailedLog_tx_hash(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "block_index":
+
+			out.Values[i] = ec._FailedLog_block_index(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "block_number":
+
+			out.Values[i] = ec._FailedLog_block_number(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "failed_attempts":
+
+			out.Values[i] = ec._FailedLog_failed_attempts(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var logImplementors = []string{"Log"}
 
 func (ec *executionContext) _Log(ctx context.Context, sel ast.SelectionSet, obj *model.Log) graphql.Marshaler {
@@ -7142,6 +7667,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_blockTimeCount(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "failedLogs":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_failedLogs(ctx, field)
 				return res
 			}
 
@@ -8237,6 +8782,54 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOFailedLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋgraphqlᚋserverᚋgraphᚋmodelᚐFailedLog(ctx context.Context, sel ast.SelectionSet, v []*model.FailedLog) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOFailedLog2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋgraphqlᚋserverᚋgraphᚋmodelᚐFailedLog(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOFailedLog2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋgraphqlᚋserverᚋgraphᚋmodelᚐFailedLog(ctx context.Context, sel ast.SelectionSet, v *model.FailedLog) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._FailedLog(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {

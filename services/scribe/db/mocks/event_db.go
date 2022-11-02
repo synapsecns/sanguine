@@ -183,15 +183,15 @@ func (_m *EventDB) GetFailedAttempts(ctx context.Context, chainID uint32, contra
 }
 
 // GetFailedLogsFromFilter provides a mock function with given fields: ctx, failedLogFilter
-func (_m *EventDB) GetFailedLogsFromFilter(ctx context.Context, failedLogFilter db.FailedLogFilter) ([]types.FailedLog, error) {
+func (_m *EventDB) GetFailedLogsFromFilter(ctx context.Context, failedLogFilter db.FailedLogFilter) ([]*types.FailedLog, error) {
 	ret := _m.Called(ctx, failedLogFilter)
 
-	var r0 []types.FailedLog
-	if rf, ok := ret.Get(0).(func(context.Context, db.FailedLogFilter) []types.FailedLog); ok {
+	var r0 []*types.FailedLog
+	if rf, ok := ret.Get(0).(func(context.Context, db.FailedLogFilter) []*types.FailedLog); ok {
 		r0 = rf(ctx, failedLogFilter)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]types.FailedLog)
+			r0 = ret.Get(0).([]*types.FailedLog)
 		}
 	}
 

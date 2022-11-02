@@ -3,6 +3,7 @@ package api_test
 import (
 	"github.com/synapsecns/sanguine/services/scribe/graphql"
 	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
+	scribetypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -312,4 +313,27 @@ func (g APISuite) TestRetrieveBlockTimesCountForChain() {
 	blockTimeCountB, err := g.gqlClient.GetBlockTimeCount(g.GetTestContext(), int(chainIDB))
 	Nil(g.T(), err)
 	Equal(g.T(), 10, *blockTimeCountB.Response)
+}
+
+func (g APISuite) TestGetFailedLogs() {
+	log := scribetypes.FailedLog{
+		ChainID:         gofakeit.Uint32(),
+		ContractAddress: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		TxHash:          common.BigToHash(big.NewInt(gofakeit.Int64())).String(),
+		BlockIndex:      gofakeit.Uint64(),
+		BlockNumber:     gofakeit.Uint64(),
+		FailedAttempts:  gofakeit.Uint64(),
+	}
+	err := g.db.StoreFailedLog(g.GetTestContext(), log.ChainID, common.HexToAddress(log.ContractAddress), common.HexToHash(log.TxHash), log.BlockIndex, log.BlockNumber)
+	Nil(g.T(), err)
+
+	failedLogs, err := g.gqlClient.GetFailedLogs(g.GetTestContext(), int(log.ChainID), &log.ContractAddress, &log.TxHash, nil, nil)
+	Nil(g.T(), err)
+	Equal(g.T(), 1, len(failedLogs.Response))
+	retrievedLog := failedLogs.Response[0]
+	Equal(g.T(), int(log.ChainID), retrievedLog.ChainID)
+	Equal(g.T(), log.ContractAddress, retrievedLog.ContractAddress)
+	Equal(g.T(), log.TxHash, retrievedLog.TxHash)
+	Equal(g.T(), int(log.BlockIndex), retrievedLog.BlockIndex)
+	Equal(g.T(), int(log.BlockNumber), retrievedLog.BlockNumber)
 }

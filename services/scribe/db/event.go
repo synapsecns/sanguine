@@ -100,7 +100,7 @@ type EventDBReader interface {
 	// GetFailedAttempts returns the number of failed attempts for a failed log.
 	GetFailedAttempts(ctx context.Context, chainID uint32, contractAddress common.Address, txHash common.Hash, blockIndex uint64, blockNumber uint64) (uint64, error)
 	// GetFailedLogsFromFilter returns a list of failed logs that match the given filter.
-	GetFailedLogsFromFilter(ctx context.Context, failedLogFilter FailedLogFilter) ([]scribetypes.FailedLog, error)
+	GetFailedLogsFromFilter(ctx context.Context, failedLogFilter FailedLogFilter) ([]*scribetypes.FailedLog, error)
 }
 
 // EventDB stores events.

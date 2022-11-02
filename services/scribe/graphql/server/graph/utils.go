@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
+	scribetypes "github.com/synapsecns/sanguine/services/scribe/types"
 )
 
 func (r Resolver) receiptsToModelReceipts(receipts []types.Receipt, chainID uint32) []*model.Receipt {
@@ -80,5 +81,24 @@ func (r Resolver) ethTxToModelTransaction(ethTx types.Transaction, chainID uint3
 		Value:     ethTx.Value().String(),
 		Nonce:     int(ethTx.Nonce()),
 		To:        ethTx.To().String(),
+	}
+}
+
+func (r Resolver) failedLogsToModelFailedLogs(failedLogs []*scribetypes.FailedLog) []*model.FailedLog {
+	modelFailedLogs := make([]*model.FailedLog, len(failedLogs))
+	for i, failedLog := range failedLogs {
+		modelFailedLogs[i] = r.failedLogToModelFailedLog(failedLog)
+	}
+	return modelFailedLogs
+}
+
+func (r Resolver) failedLogToModelFailedLog(failedLog *scribetypes.FailedLog) *model.FailedLog {
+	return &model.FailedLog{
+		ChainID:         int(failedLog.ChainID),
+		ContractAddress: failedLog.ContractAddress,
+		TxHash:          failedLog.TxHash,
+		BlockIndex:      int(failedLog.BlockIndex),
+		BlockNumber:     int(failedLog.BlockNumber),
+		FailedAttempts:  int(failedLog.FailedAttempts),
 	}
 }

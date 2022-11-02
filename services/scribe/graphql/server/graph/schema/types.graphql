@@ -59,3 +59,12 @@ type BlockTime {
   block_number: Int!
   timestamp: Int!
 }
+
+type FailedLog {
+  chain_id: Int!
+  contract_address: String!
+  tx_hash: String!
+  block_index: Int!
+  block_number: Int!
+  failed_attempts: Int!
+}

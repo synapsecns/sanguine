@@ -159,6 +159,17 @@ func (r *queryResolver) BlockTimeCount(ctx context.Context, chainID int) (*int, 
 	return &blockTimesCountInt, nil
 }
 
+// FailedLogs is the resolver for the failedLogs field.
+func (r *queryResolver) FailedLogs(ctx context.Context, chainID int, contractAddress *string, txHash *string, blockIndex *int, blockNumber *int) ([]*model.FailedLog, error) {
+	filter := db.BuildFailedLogFilter(contractAddress, txHash, blockIndex, blockNumber)
+	filter.ChainID = uint32(chainID)
+	failedLogs, err := r.DB.GetFailedLogsFromFilter(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving failed logs: %w", err)
+	}
+	return r.failedLogsToModelFailedLogs(failedLogs), nil
+}
+
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 

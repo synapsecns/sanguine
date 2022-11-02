@@ -97,9 +97,16 @@ type Query {
   contract_address: String!
   chain_id: Int!
   ): Int
-
   # returns the amount of block times stored per chain
   blockTimeCount(
     chain_id: Int!
   ): Int
+  # returns failed logs that match the given filter
+  failedLogs(
+    chain_id: Int!
+    contract_address: String
+    tx_hash: String
+    block_index: Int
+    block_number: Int
+  ): [FailedLog]
 }

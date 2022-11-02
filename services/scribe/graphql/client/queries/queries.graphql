@@ -222,3 +222,14 @@ query GetLogCount ($chain_id: Int!, $contract_address: String!) {
 query GetBlockTimeCount ($chain_id: Int!) {
   response: blockTimeCount (chain_id: $chain_id)
 }
+
+query GetFailedLogs($chain_id: Int!, $contract_address: String, $tx_hash: String, $block_index: Int, $block_number: Int) {
+  response: failedLogs (chain_id: $chain_id, contract_address: $contract_address, tx_hash: $tx_hash, block_index: $block_index, block_number: $block_number) {
+    chain_id
+    contract_address
+    tx_hash
+    block_index
+    block_number
+    failed_attempts
+  }
+}
