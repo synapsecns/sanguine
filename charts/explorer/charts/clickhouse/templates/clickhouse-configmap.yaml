@@ -19,7 +19,7 @@ data:
       <tcp_port>9000</tcp_port>
       <listen_host>0.0.0.0</listen_host>
       <max_connections>4096</max_connections>
-      <keep_alive_timeout>3</keep_alive_timeout>
+      <keep_alive_timeout>8</keep_alive_timeout>
       <max_concurrent_queries>100</max_concurrent_queries>
       <uncompressed_cache_size>8589934592</uncompressed_cache_size>
       <mark_cache_size>5368709120</mark_cache_size>
@@ -58,13 +58,10 @@ data:
           <use_uncompressed_cache>0</use_uncompressed_cache>
           <load_balancing>random</load_balancing>
         </default>
-        <readonly>
-          <readonly>1</readonly>
-        </readonly>
       </profiles>
       <users>
         <default>
-          <password>{{ .Values.users.password }}</password>
+          <password replace="replace">{{ .Values.users.password }}</password>
           <networks incl="networks" replace="replace">
             <ip>::/0</ip>
           </networks>
