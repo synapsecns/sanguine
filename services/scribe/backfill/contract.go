@@ -171,23 +171,22 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		// store the transaction in the db
 		txn, isPending, err := c.client[0].TransactionByHash(groupCtx, log.TxHash)
 		if err != nil {
-			if err.Error() == txNotSupportedError || err.Error() == invalidTxVRSError {
+			switch err.Error() {
+			case txNotSupportedError:
 				logger.Infof("Invalid tx: %s\n%s on chain id: %d\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err.Error(), log.TxHash.Hex(), c.chainID, log.BlockNumber, log.Address.String(), c.address)
 				return nil
-			}
-			if err.Error() == txNotFoundError {
-				// Try with client with additional confirmations
+			case invalidTxVRSError:
+				logger.Infof("Invalid tx: %s\n%s on chain id: %d\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err.Error(), log.TxHash.Hex(), c.chainID, log.BlockNumber, log.Address.String(), c.address)
+				return nil
+			case txNotFoundError:
 				txn, isPending, err = c.client[1].TransactionByHash(groupCtx, log.TxHash)
 				if err != nil {
-					return fmt.Errorf("could not get transaction by hash with extra confirmations: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+					return fmt.Errorf("could not get transaction by hash with extra client: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 				}
-			} else {
+			default:
 				return fmt.Errorf("could not get transaction by hash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
-
 			}
-
 		}
-
 		if isPending {
 			return fmt.Errorf("transaction is pending")
 		}
