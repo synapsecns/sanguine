@@ -156,7 +156,10 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	endHeight := currentBlock
 
 	// Check if there are any block times stored in the database for the given chain
-	count, _ := c.eventDB.RetrieveBlockTimesCountForChain(groupCtxBlockTime, c.chainID)
+	count, err := c.eventDB.RetrieveBlockTimesCountForChain(groupCtxBlockTime, c.chainID)
+	if err != nil {
+		return fmt.Errorf("could not retrieve block times count for chain: %w", err)
+	}
 
 	// Create another backfiller to start from the last stored block time if there are any block times stored.
 	if count > 0 {
