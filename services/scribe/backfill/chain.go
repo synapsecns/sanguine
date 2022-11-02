@@ -150,85 +150,47 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 	// Initialize the errgroup for backfilling block times
 	gBlockTime, groupCtxBlockTime := errgroup.WithContext(ctx)
-	gBlockTime.Go(func() error {
-		// Init backoff for backfilling block times
-		bBlockNum := &backoff.Backoff{
-			Factor: 2,
-			Jitter: true,
-			Min:    1 * time.Second,
-			Max:    30 * time.Second,
+	startHeight := c.minBlockHeight
+	lastStoredBlockTime := endHeight
+	firstStoredBlockTime := startHeight
+	count, _ := c.eventDB.RetrieveBlockTimesCountForChain(groupCtxBlockTime, c.chainID)
+
+	// Create another backfiller to start from the last stored block time
+	if count > 0 {
+		// Get last stored block time
+		lastStoredBlockTime, err = c.eventDB.RetrieveLastBlockStored(groupCtxBlockTime, c.chainID)
+		if err != nil {
+			return fmt.Errorf("could not retrieve last block stored: %w", err)
 		}
 
-		// timeout should always be 0 on the first attempt
-		timeoutBlockNum := time.Duration(0)
-
-		// Set the start height to the minimum block height of all contracts
-		startHeight := c.minBlockHeight
-
-		// Start at the block before the minimum block height
-		if startHeight != 0 {
-			startHeight--
+		// Get first stored block time
+		firstStoredBlockTime, err = c.eventDB.RetrieveFirstBlockStored(groupCtxBlockTime, c.chainID)
+		if err != nil {
+			return fmt.Errorf("could not retrieve first block stored: %w", err)
 		}
 
-		// Current block
-		blockNum := startHeight
-		logger.Infof("Starting backfilling blocktimes on %d up to block %d ", c.chainID, endHeight)
+		// Get the min of the last stored blocktime and the min start block from the contracts
+		if startHeight > firstStoredBlockTime {
+			startHeight = firstStoredBlockTime
+		}
 
-		for {
-			select {
-			case <-groupCtxBlockTime.Done():
-				logger.Warnf("gBlockTime context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), groupCtxBlockTime.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-				return fmt.Errorf("context canceled: %w", groupCtxBlockTime.Err())
-			case <-time.After(timeoutBlockNum):
-				// Check if the current block's already exists in database.
-				_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
-				if err == nil {
-					logger.Infof("skipping storing blocktime for block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-					blockNum++
-					// Make sure the count doesn't increase unnecessarily.
-					bBlockNum.Reset()
-					continue
-				}
-
-				// Get information on the current block for further processing.
-				rawBlock, err := c.client[0].HeaderByNumber(ctx, big.NewInt(int64(blockNum)))
-				if err != nil {
-					timeoutBlockNum = bBlockNum.Duration()
-					logger.Warnf("could not get block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-					continue
-				}
-
-				// Store the block time with the block retrieved above.
-				err = c.eventDB.StoreBlockTime(groupCtxBlockTime, c.chainID, blockNum, rawBlock.Time)
-				if err != nil {
-					timeoutBlockNum = bBlockNum.Duration()
-					logger.Warnf("could not store block time - block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-
-					continue
-				}
-
-				// store the last block time
-				err = c.eventDB.StoreLastBlockTime(groupCtxBlockTime, c.chainID, blockNum)
-				if err != nil {
-					timeoutBlockNum = bBlockNum.Duration()
-					logger.Warnf("could not store last block time %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-					continue
-				}
-
-				// Move on to the next block.
-				blockNum++
-
-				// Reset the backoff after successful block parse run to prevent bloated back offs.
-				bBlockNum.Reset()
-				timeoutBlockNum = time.Duration(0)
-
-				// If done with the range, exit go routine.
-				if blockNum > endHeight {
-					logger.Infof("Exiting backfill on chain %d on block %d ", c.chainID, blockNum)
-					return nil
-				}
+		// Backfill from last stored block
+		gBlockTime.Go(func() error {
+			err = c.backfillBlockTimes(groupCtxBlockTime, zeroCheck(lastStoredBlockTime), endHeight)
+			if err != nil {
+				return fmt.Errorf("could not backfill block times from last stored block time: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
 			}
+			return nil
+		})
+	}
+
+	// Backfill from earliest block
+	gBlockTime.Go(func() error {
+		err = c.backfillBlockTimes(groupCtxBlockTime, zeroCheck(startHeight), lastStoredBlockTime)
+		if err != nil {
+			return fmt.Errorf("could not backfill block times from min block height: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
 		}
+		return nil
 	})
 
 	// wait for all the blocktimes to finish
@@ -243,4 +205,85 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	}
 	logger.Infof("Finished backfilling contracts on %d up to block %d ", c.chainID, endHeight)
 	return nil
+}
+
+func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uint64, endHeight uint64) error {
+	// Init backoff for backfilling block times
+	bBlockNum := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    30 * time.Second,
+	}
+
+	// timeout should always be 0 on the first attempt
+	timeoutBlockNum := time.Duration(0)
+
+	// Current block
+	blockNum := startHeight
+	logger.Infof("Starting backfilling blocktimes on %d up to block %d ", c.chainID, endHeight)
+
+	for {
+		select {
+		case <-ctx.Done():
+			logger.Warnf("gBlockTime context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), groupCtxBlockTime.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(timeoutBlockNum):
+			// Check if the current block's already exists in database.
+			_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
+			if err == nil {
+				logger.Infof("skipping storing blocktime for block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+				blockNum++
+				// Make sure the count doesn't increase unnecessarily.
+				bBlockNum.Reset()
+				continue
+			}
+
+			// Get information on the current block for further processing.
+			rawBlock, err := c.client[0].HeaderByNumber(ctx, big.NewInt(int64(blockNum)))
+			if err != nil {
+				timeoutBlockNum = bBlockNum.Duration()
+				logger.Warnf("could not get block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+				continue
+			}
+
+			// Store the block time with the block retrieved above.
+			err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum, rawBlock.Time)
+			if err != nil {
+				timeoutBlockNum = bBlockNum.Duration()
+				logger.Warnf("could not store block time - block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+
+				continue
+			}
+
+			// store the last block time
+			err = c.eventDB.StoreLastBlockTime(ctx, c.chainID, blockNum)
+			if err != nil {
+				timeoutBlockNum = bBlockNum.Duration()
+				logger.Warnf("could not store last block time %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+				continue
+			}
+
+			// Move on to the next block.
+			blockNum++
+
+			// Reset the backoff after successful block parse run to prevent bloated back offs.
+			bBlockNum.Reset()
+			timeoutBlockNum = time.Duration(0)
+
+			// If done with the range, exit go routine.
+			if blockNum > endHeight {
+				logger.Infof("Exiting backfill on chain %d on block %d ", c.chainID, blockNum)
+				return nil
+			}
+		}
+	}
+
+}
+
+func zeroCheck(value uint64) uint64 {
+	if value > 0 {
+		return value - 1
+	}
+	return value
 }
