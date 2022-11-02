@@ -146,8 +146,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		})
 	}
 
-	// Backfill the block times
-
 	// Initialize the errgroup for backfilling block times
 	gBlockTime, groupCtxBlockTime := errgroup.WithContext(ctx)
 
@@ -288,6 +286,7 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 	}
 }
 
+// Used for setting start heights for backfilling.
 func zeroCheck(value uint64) uint64 {
 	if value > 0 {
 		return value - 1
