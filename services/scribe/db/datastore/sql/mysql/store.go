@@ -3,12 +3,13 @@ package mysql
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/dbcommon"
+	"time"
+
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	loggerS "gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"time"
 )
 
 // Store is the sqlite store. It extends the base store for sqlite specific queries.
@@ -29,7 +30,7 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 	logger.Debug("creating mysql store")
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
-		Logger:               loggerS.Default.LogMode(loggerS.Silent),
+		Logger:               dbcommon.GetGormLogger(logger),
 		FullSaveAssociations: true,
 		NamingStrategy:       NamingStrategy,
 		NowFunc:              time.Now,
