@@ -65,6 +65,7 @@ data:
         </readonly>
       </profiles>
       <users>
+        <default remove="remove"></default>
         <clickhouse>
           <password replace="replace">{{ .Values.users.password }}</password>
           <networks incl="networks" replace="replace">
