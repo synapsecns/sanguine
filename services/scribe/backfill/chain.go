@@ -242,9 +242,8 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeoutBlockNum):
 			tempBatchLimit := 10
-			batchIdx := 0
-			batchArr := []rpc.BatchElem
-			for batchIdx; batchIdx <= batchIdx+tempBatchLimit; batchIdx++ {
+			var batchArr []rpc.BatchElem
+			for batchIdx := 0; batchIdx <= batchIdx+tempBatchLimit; batchIdx++ {
 				// Check if the current block's already exists in database.
 				_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
 				if err == nil {
@@ -255,7 +254,7 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 					continue
 				}
 
-				// Store the block time info in the blockTimeBuffer for batch querying
+				// Store the block time info in the batchArr for batch querying
 				var batchElemErr error
 				var head *types.Header
 				batchElem := rpc.BatchElem{
@@ -274,29 +273,25 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 				continue
 			}
 
-
-			// Store the block time with the block retrieved above.
-			err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum, rawBlock.Time)
-			if err != nil {
-				timeoutBlockNum = bBlockNum.Duration()
-				loggerBlocktime.Warnf("could not store block time - block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-				continue
+			// Iterate through the batchArr and store the block time info in the database
+			for _, batchElem := range batchArr {
+				if batchElem.Error != nil {
+					timeoutBlockNum = bBlockNum.Duration()
+					loggerBlocktime.Warnf("could not get block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), batchElem.Error, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+					continue
+				}
+				head := batchElem.Result.(*types.Header)
+				err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum, head.Time)
+				if err != nil {
+					timeoutBlockNum = bBlockNum.Duration()
+					loggerBlocktime.Warnf("could not store block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+					continue
+				}
+				loggerBlocktime.Infof("stored block time at block %s\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+				blockNum++
+				// Make sure the count doesn't increase unnecessarily.
+				bBlockNum.Reset()
 			}
-
-			// store the last block time
-			err = c.eventDB.StoreLastBlockTime(ctx, c.chainID, blockNum)
-			if err != nil {
-				timeoutBlockNum = bBlockNum.Duration()
-				loggerBlocktime.Warnf("could not store last block time %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-				continue
-			}
-
-			// Move on to the next block.
-			blockNum++
-
-			// Reset the backoff after successful block parse run to prevent bloated back offs.
-			bBlockNum.Reset()
-			timeoutBlockNum = time.Duration(0)
 
 			// If done with the range, exit go routine.
 			if blockNum > endHeight {

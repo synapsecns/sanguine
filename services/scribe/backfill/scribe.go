@@ -100,7 +100,6 @@ type ScribeBackend interface {
 	FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error)
 	// HeaderByNumber returns the block header with the given block number.
 	HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error)
-
 	// BatchCallContext sends all given requests as a single batch and waits for the server
 	// to return a response for all of them. The wait duration is bounded by the
 	// context's deadline.
@@ -112,7 +111,8 @@ type ScribeBackend interface {
 	// Note that batch calls may not be executed atomically on the server side.
 	BatchCallContext(ctx context.Context, b []rpc.BatchElem) error
 }
-type ScribeClient struct {
+
+type scribeClient struct {
 	*ethclient.Client
 	underlyingClient rpc.Client
 }
@@ -123,15 +123,15 @@ func NewScribeBackend(ctx context.Context, rpcURL string) (ScribeBackend, error)
 		return nil, fmt.Errorf("could not start client for %s", rpcURL)
 	}
 
-	return &ScribeClient{
+	return &scribeClient{
 		Client:           ethclient.NewClient(rpcClient),
 		underlyingClient: *rpcClient,
 	}, nil
 }
 
-func (s ScribeClient) BatchCallContext(ctx context.Context, b []rpc.BatchElem) error {
+func (s scribeClient) BatchCallContext(ctx context.Context, b []rpc.BatchElem) error {
 	return s.underlyingClient.BatchCallContext(ctx, b)
 }
 
-var _ ScribeBackend = &ScribeClient{}
+var _ ScribeBackend = &scribeClient{}
 var _ ScribeBackend = simulated.Backend{}
