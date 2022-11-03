@@ -16,13 +16,13 @@ abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistr
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Adds a new notary, as they staked their bond on SynChain.
+     * @notice Receive a system call indicating that a new Notary staked a bond.
      * @dev Must be called from a local BondingManager. Therefore
      * `uint256 _rootSubmittedAt` is ignored.
-     * @param _domain       Domain, where new Notary is active
-     * @param _notary       New Notary to add
-     * @param _callOrigin   Domain, where system call originated
-     * @param _caller       Entity which performed a system call
+     * @param _domain           Domain where the new Notary will be active
+     * @param _notary           New Notary that staked a bond
+     * @param _callOrigin       Domain where the system call originated
+     * @param _caller           Entity which performed the system call
      */
     function bondNotary(
         uint32 _domain,
@@ -37,13 +37,13 @@ abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistr
     }
 
     /**
-     * @notice Removes an active notary, as they requested the unstaking of their bond on SynChain.
+     * @notice Receive a system call indicating that an active Notary unstaked their bond.
      * @dev Must be called from a local BondingManager. Therefore
      * `uint256 _rootSubmittedAt` is ignored.
-     * @param _domain       Domain, where new Notary was active
-     * @param _notary       Active Notary to remove
-     * @param _callOrigin   Domain, where system call originated
-     * @param _caller       Entity which performed a system call
+     * @param _domain           Domain where the Notary was active
+     * @param _notary           Active Notary that unstaked their bond
+     * @param _callOrigin       Domain where the system call originated
+     * @param _caller           Entity which performed the system call
      */
     function unbondNotary(
         uint32 _domain,
@@ -56,13 +56,13 @@ abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistr
     }
 
     /**
-     * @notice Removes an active notary, as they were slashed.
+     * @notice Receive a system call indicating that an active Notary was slashed.
      * @dev Must be called from a local BondingManager. Therefore
      * `uint256 _rootSubmittedAt` is ignored.
-     * @param _domain       Domain, where new Notary was active
-     * @param _notary       Active Notary to remove
-     * @param _callOrigin   Domain, where system call originated
-     * @param _caller       Entity which performed a system call
+     * @param _domain           Domain where the slashed Notary was active
+     * @param _notary           Active Notary that was slashed
+     * @param _callOrigin       Domain where the system call originated
+     * @param _caller           Entity which performed the system call
      */
     function slashNotary(
         uint32 _domain,
@@ -76,12 +76,12 @@ abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistr
     }
 
     /**
-     * @notice Adds a new guard, as they staked their bond on SynChain.
+     * @notice Receive a system call indicating that a new Guard staked a bond.
      * @dev Must be called from a local BondingManager. Therefore
      * `uint256 _rootSubmittedAt` is ignored.
-     * @param _guard        New Guard to add
-     * @param _callOrigin   Domain, where system call originated
-     * @param _caller       Entity which performed a system call
+     * @param _guard            New Guard that staked a bond
+     * @param _callOrigin       Domain where the system call originated
+     * @param _caller           Entity which performed the system call
      */
     function bondGuard(
         address _guard,
@@ -93,12 +93,12 @@ abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistr
     }
 
     /**
-     * @notice Removes an active guard, as they requested the unstaking of their bond on SynChain.
+     * @notice Receive a system call indicating that an active Guard unstaked their bond.
      * @dev Must be called from a local BondingManager. Therefore
      * `uint256 _rootSubmittedAt` is ignored.
-     * @param _guard        Active Guard to remove
-     * @param _callOrigin   Domain, where system call originated
-     * @param _caller       Entity which performed a system call
+     * @param _guard            Active Guard that unstaked their bond
+     * @param _callOrigin       Domain where the system call originated
+     * @param _caller           Entity which performed the system call
      */
     function unbondGuard(
         address _guard,
@@ -110,12 +110,12 @@ abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistr
     }
 
     /**
-     * @notice Removes an active guard, as they were slashed.
+     * @notice Receive a system call indicating that an active Guard was slashed.
      * @dev Must be called from a local BondingManager. Therefore
      * `uint256 _rootSubmittedAt` is ignored.
-     * @param _guard        Active Guard to remove
-     * @param _callOrigin   Domain, where system call originated
-     * @param _caller       Entity which performed a system call
+     * @param _guard            Active Guard that was slashed
+     * @param _callOrigin       Domain where the system call originated
+     * @param _caller           Entity which performed the system call
      */
     function slashGuard(
         address _guard,
