@@ -94,7 +94,7 @@ library SystemCall {
     function callRecipient(bytes29 _view)
         internal
         pure
-        onlyType(_view, SynapseTypes.SYSTEM_MESSAGE_CALL)
+        onlyType(_view, SynapseTypes.SYSTEM_CALL)
         returns (uint8)
     {
         return uint8(_view.indexUint({ _index: OFFSET_CALL_RECIPIENT, _bytes: 1 }));
@@ -106,7 +106,7 @@ library SystemCall {
     function callPayload(bytes29 _view)
         internal
         pure
-        onlyType(_view, SynapseTypes.SYSTEM_MESSAGE_CALL)
+        onlyType(_view, SynapseTypes.SYSTEM_CALL)
         returns (bytes29)
     {
         return _callPayload(_view);
