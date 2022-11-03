@@ -66,7 +66,7 @@ resources: {}
 
 indexer:
   enabled: true
-  args: ["backfill", "--path=https://default:HIVFlZthRGPo@ximgzwg3r6.us-west-2.aws.clickhouse.cloud:8443", "--config=/config/config.yaml"]
+  args: ["backfill", "--address=https://default:HIVFlZthRGPo@ximgzwg3r6.us-west-2.aws.clickhouse.cloud:8443", "--config=/config/config.yaml"]
   #  args: ["backfill", "--config=/config/config.yaml"]
   podAnnotations: {}
   nodeSelector: {}
