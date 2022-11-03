@@ -28,7 +28,7 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
         1 << uint8(ISystemRouter.SystemEntity.BondingManager);
 
     // TODO: reevaluate optimistic period for staking/unstaking bonds
-    uint256 internal constant BONDING_OPTIMISTIC_PERIOD = 1 days;
+    uint32 internal constant BONDING_OPTIMISTIC_PERIOD = 1 days;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
