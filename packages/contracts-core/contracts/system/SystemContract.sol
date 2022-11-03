@@ -39,8 +39,8 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      * @dev Modifier for functions that are supposed to be called only from
      * System Contracts on all chains (either local or remote).
      * Note: any function protected by this modifier should have last three params:
-     * - uint32 _originDomain
-     * - SystemEntity _caller
+     * - uint32 _callOrigin
+     * - SystemEntity _systemCaller
      * - uint256 _rootSubmittedAt
      * Make sure to check domain/caller, if a function should be only called
      * from a given domain / by a given caller.
@@ -70,10 +70,10 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
      * Note: check constants section for existing mask constants
      * E.g. to restrict the set of callers to three allowed system callers:
-     *  onlyCallers(MASK_0 | MASK_1 | MASK_2, _caller)
+     *  onlyCallers(MASK_0 | MASK_1 | MASK_2, _systemCaller)
      */
-    modifier onlyCallers(uint256 _allowedMask, ISystemRouter.SystemEntity _caller) {
-        require(_entityAllowed(_allowedMask, _caller), "!allowedCaller");
+    modifier onlyCallers(uint256 _allowedMask, ISystemRouter.SystemEntity _systemCaller) {
+        require(_entityAllowed(_allowedMask, _systemCaller), "!allowedCaller");
         _;
     }
 

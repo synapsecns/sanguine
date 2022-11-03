@@ -84,12 +84,15 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
      * @dev Only System contracts are allowed to call this function.
      * Note: knowledge of recipient address is not required, routing will be done by SystemRouter
      * on the destination chain. Following call will be made on destination chain:
-     * - recipient.call(_data, originDomain, originSender, rootSubmittedAt)
-     * Note: data payload is extended with abi encoded (domain, sender, rootTimestamp)
+     * - recipient.call(_data, callOrigin, systemCaller, rootSubmittedAt)
      * This allows recipient to check:
-     * - domain where a system call originated (local domain in this case)
-     * - system entity, who initiated the call (msg.sender on local chain)
-     * - timestamp when merkle root was submitted and optimistic timer started ticking
+     * - callOrigin: domain where a system call originated (local domain in this case)
+     * - systemCaller: system entity who initiated the call (msg.sender on local chain)
+     * - rootSubmittedAt:
+     *   - For cross-chain calls: timestamp when merkle root (used for executing the system call)
+     *     was submitted to destination and its optimistic timer started ticking
+     *   - For on-chain calls: timestamp of the current block
+     *
      * @param _destination          Domain of destination chain
      * @param _optimisticSeconds    Optimistic period for the message
      * @param _recipient            System entity to receive the call on destination chain
@@ -103,13 +106,13 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
-        // Append calldata with (origin, caller) to form the payload
+        // Append calldata with (callOrigin, systemCaller) to form the payload
         bytes memory payload = _formatCalldata(caller, _data);
         if (_destination == _localDomain()) {
             /// @dev Passing current timestamp for consistency
             /// Functions that could be called both from a local chain,
             /// as well as from a remote chain with an optimistic period
-            /// will have to check `origin` and `rootSubmittedAt` to ensure validity.
+            /// will have to check `callOrigin` and `rootSubmittedAt` to ensure validity.
             _localSystemCall(uint8(_recipient), payload, block.timestamp);
         } else {
             bytes[] memory systemCalls = new bytes[](1);
@@ -137,7 +140,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         uint256 amount = _recipients.length;
         bytes[] memory payloads = new bytes[](amount);
         for (uint256 i = 0; i < amount; ++i) {
-            // Append calldata with (origin, caller) to form the payload
+            // Append calldata with (callOrigin, systemCaller) to form the payload
             payloads[i] = _formatCalldata(caller, _dataArray[i]);
         }
         _multiCall(_destination, _optimisticSeconds, _recipients, payloads);
@@ -160,7 +163,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         uint256 amount = _recipients.length;
         bytes[] memory payloads = new bytes[](amount);
         for (uint256 i = 0; i < amount; ++i) {
-            // Append calldata with (origin, caller) to form the payload
+            // Append calldata with (callOrigin, systemCaller) to form the payload
             payloads[i] = _formatCalldata(caller, _data);
         }
         _multiCall(_destination, _optimisticSeconds, _recipients, payloads);
@@ -184,7 +187,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         bytes[] memory payloads = new bytes[](amount);
         SystemEntity[] memory recipients = new SystemEntity[](amount);
         for (uint256 i = 0; i < amount; ++i) {
-            // Append calldata with (origin, caller) to form the payload
+            // Append calldata with (callOrigin, systemCaller) to form the payload
             payloads[i] = _formatCalldata(caller, _dataArray[i]);
             recipients[i] = _recipient;
         }
@@ -247,8 +250,8 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         require(recipient != address(0), "System Contract not set");
         // recipient.functionCall() calls recipient and bubbles the revert from the external call
         // We add `rootSubmittedAt` as the last argument.
-        // (origin, caller) were added by the System Router on origin chain, see _formatCalldata()
-        // So the last arguments for the call are: (origin, caller, rootSubmittedAt)
+        // (callOrigin, systemCaller) were added by the System Router on origin chain.
+        // So the last arguments for the call are: (callOrigin, systemCaller, rootSubmittedAt)
         recipient.functionCall(abi.encodePacked(_payload, _rootSubmittedAt));
         // uint256 takes the full word of storage, so we can use encodePacked here w/o casting
     }
@@ -303,10 +306,12 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
          * @dev Payload for contract call is:
          * ====== ENCODED ON ORIGIN CHAIN ======
          * 1. Function selector and params (_data)
-         * 2. (domain, caller) are the following two arguments
+         * 2. (callOrigin, systemCaller) are the following two arguments:
+         *    - callOrigin is local domain
+         *    - systemCaller is `_caller`
          * ====== ENCODED ON REMOTE CHAIN ======
-         * 3. Root timestamp is the last argument,
-         * and will be appended before the call on destination chain.
+         * 3. Root timestamp is the last argument, and will be appended
+         * before the call on destination chain, see _localSystemCall()
          */
         return abi.encodePacked(_data, abi.encode(_localDomain(), _caller));
     }
