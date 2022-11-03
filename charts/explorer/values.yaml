@@ -150,13 +150,6 @@ server:
             fieldRef:
               fieldPath: metadata.namespace
 
-clickhouse:
-  # use a constant here to build a connection to the service
-  enabled: true
-  fullnameOverride: explorer-clickhouse
-  externalAccess:
-    enabled: true
-
 omnirpc:
   # this can be remote in production, we just want to use the public rpc servers here
   enabled: true
