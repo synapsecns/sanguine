@@ -39,7 +39,7 @@ interface ISystemRouter {
     ) external;
 
     /**
-     * @notice Calls a few system contracts with the given calldata.
+     * @notice Calls a few system contracts using the given calldata for each call.
      * See `systemCall` for details on system calls.
      * Note: tx will revert if any of the calls revert, guaranteeing
      * that either all calls succeed or none.
@@ -48,6 +48,32 @@ interface ISystemRouter {
         uint32 _destination,
         uint32 _optimisticSeconds,
         SystemEntity[] memory _recipients,
+        bytes[] memory _dataArray
+    ) external;
+
+    /**
+     * @notice Calls a few system contracts using the same calldata for each call.
+     * See `systemCall` for details on system calls.
+     * Note: tx will revert if any of the calls revert, guaranteeing
+     * that either all calls succeed or none.
+     */
+    function systemMultiCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        SystemEntity[] memory _recipients,
+        bytes memory _data
+    ) external;
+
+    /**
+     * @notice Calls a single system contract a few times using the given calldata for each call.
+     * See `systemCall` for details on system calls.
+     * Note: tx will revert if any of the calls revert, guaranteeing
+     * that either all calls succeed or none.
+     */
+    function systemMultiCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        SystemEntity _recipient,
         bytes[] memory _dataArray
     ) external;
 }
