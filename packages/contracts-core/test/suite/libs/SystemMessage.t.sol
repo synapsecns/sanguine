@@ -74,7 +74,7 @@ contract SystemMessageLibraryTest is SynapseLibraryTest {
             getter: libHarness.callPayload,
             payloadType: SynapseTypes.SYSTEM_MESSAGE_CALL,
             payload: payloadSystemCall,
-            expectedType: 0, // TODO: introduce PAYLOAD type
+            expectedType: SynapseTypes.CALL_PAYLOAD,
             expectedData: TEST_MESSAGE_PAYLOAD,
             revertMessage: "!systemMessageBody"
         });

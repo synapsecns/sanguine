@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../contracts/libs/SystemMessage.sol";
+import "../../contracts/libs/SystemCall.sol";
 import "../../contracts/libs/Report.sol";
 import "./SynapseTestStorage.t.sol";
 import "./SynapseUtilities.t.sol";

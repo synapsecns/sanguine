@@ -56,7 +56,7 @@ abstract contract SystemRouterTools is DestinationTools {
             context: context,
             mockTips: false,
             body: abi.encode(formattedSystemCalls),
-            recipient: SystemMessage.SYSTEM_ROUTER,
+            recipient: SystemCall.SYSTEM_ROUTER,
             optimisticSeconds: 0
         });
         // Save dispatched message for later execution
@@ -136,7 +136,7 @@ abstract contract SystemRouterTools is DestinationTools {
                 abi.encode(systemCallOrigin, systemCallSender)
             );
             // Save formatted system call
-            formattedSystemCalls[i] = SystemMessage.formatSystemCall({
+            formattedSystemCalls[i] = SystemCall.formatSystemCall({
                 _systemRecipient: uint8(systemCallRecipients[i]),
                 _payload: payload
             });

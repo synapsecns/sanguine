@@ -30,7 +30,7 @@ contract SystemRouterTest is SystemRouterTools {
             uint32 domain = domains[d];
             assertEq(
                 suiteSystemRouter(domain).trustedSender(remoteDomain),
-                SystemMessage.SYSTEM_ROUTER,
+                SystemCall.SYSTEM_ROUTER,
                 "!trustedSender"
             );
         }
@@ -56,7 +56,7 @@ contract SystemRouterTest is SystemRouterTools {
         suiteSystemRouter(DOMAIN_LOCAL).handle({
             _origin: DOMAIN_REMOTE,
             _nonce: 1,
-            _sender: SystemMessage.SYSTEM_ROUTER,
+            _sender: SystemCall.SYSTEM_ROUTER,
             _rootSubmittedAt: block.timestamp,
             _message: abi.encode(formattedSystemCalls)
         });
