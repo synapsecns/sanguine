@@ -93,7 +93,7 @@ func InitDB(ctx context.Context, address string) (db.ConsumerDB, error) {
 			cleanup()
 			return nil, fmt.Errorf("clickhouse spin up failure, no open port found: %w", err)
 		}
-		address = "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
+		address = "wclickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
 	}
 	clickhouseDB, err := sql.OpenGormClickhouse(ctx, address)
 	if err != nil {
