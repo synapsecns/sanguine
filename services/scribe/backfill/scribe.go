@@ -57,6 +57,7 @@ func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 		chainBackfiller := chainBackfiller
 		// call Backfill concurrently
 		g.Go(func() error {
+			logger.Infof("scribe backfilling chain %d", chainBackfiller.chainID)
 			err := chainBackfiller.Backfill(groupCtx, false)
 			if err != nil {
 				return fmt.Errorf("could not backfill chain: %w", err)
