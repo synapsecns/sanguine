@@ -3,6 +3,9 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rpc"
 	"math"
 	"math/big"
 	"time"
@@ -238,30 +241,45 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 			loggerBlocktime.Warnf("gBlockTime context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), ctx.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeoutBlockNum):
-			// Check if the current block's already exists in database.
-			_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
-			if err == nil {
-				loggerBlocktime.Infof("skipping storing blocktime for block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-				blockNum++
-				// Make sure the count doesn't increase unnecessarily.
-				bBlockNum.Reset()
-				continue
-			}
+			tempBatchLimit := 10
+			batchIdx := 0
+			batchArr := []rpc.BatchElem
+			for batchIdx; batchIdx <= batchIdx+tempBatchLimit; batchIdx++ {
+				// Check if the current block's already exists in database.
+				_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
+				if err == nil {
+					loggerBlocktime.Infof("skipping storing blocktime for block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+					blockNum++
+					// Make sure the count doesn't increase unnecessarily.
+					bBlockNum.Reset()
+					continue
+				}
 
-			// Get information on the current block for further processing.
-			rawBlock, err := c.client[0].HeaderByNumber(ctx, big.NewInt(int64(blockNum)))
+				// Store the block time info in the blockTimeBuffer for batch querying
+				var batchElemErr error
+				var head *types.Header
+				batchElem := rpc.BatchElem{
+					Method: "eth_getBlockByNumber",
+					Args:   []interface{}{hexutil.EncodeBig(big.NewInt(int64(blockNum))), false},
+					Result: &head,
+					Error:  batchElemErr,
+				}
+				batchArr = append(batchArr, batchElem)
+
+			}
+			err := c.client[0].BatchCallContext(ctx, batchArr)
 			if err != nil {
 				timeoutBlockNum = bBlockNum.Duration()
 				loggerBlocktime.Warnf("could not get block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 				continue
 			}
 
+
 			// Store the block time with the block retrieved above.
 			err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum, rawBlock.Time)
 			if err != nil {
 				timeoutBlockNum = bBlockNum.Duration()
 				loggerBlocktime.Warnf("could not store block time - block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-
 				continue
 			}
 
