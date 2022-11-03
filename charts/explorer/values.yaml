@@ -94,7 +94,7 @@ indexer:
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz https://default:HIVFlZthRGPo@ximgzwg3r6.us-west-2.aws.clickhouse.cloud:8443; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ximgzwg3r6.us-west-2.aws.clickhouse.cloud 8443; do echo "Waiting for clickhouse..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: explorer-clickhouse
@@ -141,7 +141,7 @@ server:
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz https://default:HIVFlZthRGPo@ximgzwg3r6.us-west-2.aws.clickhouse.cloud:8443; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ximgzwg3r6.us-west-2.aws.clickhouse.cloud 8443; do echo "Waiting for clickhouse..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: explorer-clickhouse
