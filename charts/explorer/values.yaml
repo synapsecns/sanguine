@@ -66,7 +66,7 @@ resources: {}
 
 indexer:
   enabled: true
-  args: ["backfill", "--address=clickhouse://default:HIVFlZthRGPo@ximgzwg3r6.us-west-2.aws.clickhouse.cloud:8443", "--config=/config/config.yaml"]
+  args: ["backfill", "--address=clickhouse://default:HIVFlZthRGPo@ximgzwg3r6.us-west-2.aws.clickhouse.cloud:9000", "--config=/config/config.yaml"]
   #  args: ["backfill", "--config=/config/config.yaml"]
   podAnnotations: {}
   nodeSelector: {}
@@ -107,7 +107,7 @@ indexer:
 server:
   enabled: true
   # this should use a secret in production, for testing only
-  args: ["server", "--port=80", "--scribe-url=https://scribe.interoperability.institute/graphql", "--address=clickhouse://default:HIVFlZthRGPo@ximgzwg3r6.us-west-2.aws.clickhouse.cloud:8443"]
+  args: ["server", "--port=80", "--scribe-url=https://scribe.interoperability.institute/graphql", "--address=clickhouse://default:HIVFlZthRGPo@ximgzwg3r6.us-west-2.aws.clickhouse.cloud:9000"]
   replicaCount: 1
   autoscaling:
     enabled: false
