@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/hashicorp/consul/sdk/freeport"
 	"github.com/jftuga/termsize"
 	"github.com/synapsecns/sanguine/core"
@@ -76,11 +75,12 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 
 	clients = make(map[uint32][]backfill.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
-		backendClient, err := ethclient.DialContext(c.Context, fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
+		backendClient, err := backfill.NewScribeBackend(c.Context, fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
+
 		if err != nil {
 			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 		}
-		backendClientWConfirmations, err := ethclient.DialContext(c.Context, fmt.Sprintf("%s/2/rpc/%d", scribeConfig.RPCURL, client.ChainID))
+		backendClientWConfirmations, err := backfill.NewScribeBackend(c.Context, fmt.Sprintf("%s/2/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 		if err != nil {
 			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/4/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 		}

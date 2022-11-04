@@ -117,6 +117,7 @@ type scribeClient struct {
 	underlyingClient rpc.Client
 }
 
+// NewScribeClient creates a new scribe client.
 func NewScribeBackend(ctx context.Context, rpcURL string) (ScribeBackend, error) {
 	rpcClient, err := rpc.DialContext(ctx, rpcURL)
 	if err != nil {
