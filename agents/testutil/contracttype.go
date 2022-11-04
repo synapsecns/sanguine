@@ -22,6 +22,10 @@ func init() {
 		AllContractTypes = append(AllContractTypes, contractType)
 		// assert type is correct
 		var _ contracts.ContractType = contractType
+		// boot time assertion
+		if contractType.ContractInfo() == nil {
+			panic("contract info is nil")
+		}
 	}
 }
 
