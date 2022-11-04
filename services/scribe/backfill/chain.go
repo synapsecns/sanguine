@@ -246,9 +246,8 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeoutBlockNum):
 			var batchArr []rpc.BatchElem
-
-			for batchIdx := 0; batchIdx <= int(c.chainConfig.BlockBatchSize); batchIdx++ {
-				fmt.Println("batchIdx", batchIdx)
+			for i := 0; i <= int(c.chainConfig.BlockBatchSize); i++ {
+				fmt.Println("i", i)
 				// Check if the current block's already exists in database.
 				_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
 				if err == nil {
