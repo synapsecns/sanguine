@@ -80,12 +80,12 @@ contract SystemRouterTest is SynapseTestWithNotaryManager {
         super.setUp();
 
         origin = new OriginHarness(localDomain);
-        origin.initialize(INotaryManager(notaryManager));
+        origin.initialize();
+        origin.addNotary(localDomain, notary);
         notaryManager.setOrigin(address(origin));
 
         destination = new DestinationHarness(localDomain);
-        destination.initialize();
-        destination.addNotary(remoteDomain, notary);
+        destination.initialize(INotaryManager(notaryManager));
 
         systemRouter = new SystemRouterHarness(localDomain, address(origin), address(destination));
         origin.setSystemRouter(systemRouter);

@@ -6,7 +6,7 @@ import { AttestationHub } from "./AttestationHub.sol";
 import { Report } from "../libs/Report.sol";
 import { ReportHub } from "./ReportHub.sol";
 import { DomainContext } from "../context/DomainContext.sol";
-import { GlobalNotaryRegistry } from "../registry/GlobalNotaryRegistry.sol";
+import { DomainNotaryRegistry } from "../registry/DomainNotaryRegistry.sol";
 import { GuardRegistry } from "../registry/GuardRegistry.sol";
 
 import { TypedMemView } from "../libs/TypedMemView.sol";
@@ -19,7 +19,7 @@ abstract contract DestinationHub is
     DomainContext,
     AttestationHub,
     ReportHub,
-    GlobalNotaryRegistry,
+    DomainNotaryRegistry,
     GuardRegistry
 {
     using Attestation for bytes29;
@@ -104,7 +104,7 @@ abstract contract DestinationHub is
         // Check if root has been submitted
         require(rootInfo.submittedAt != 0, "Invalid root");
         // Check if Notary is an active Notary
-        require(_isNotary(_originDomain, rootInfo.notary), "Inactive notary");
+        require(_isNotary(_localDomain(), rootInfo.notary), "Inactive notary");
         // Check if optimistic period has passed
         require(block.timestamp >= rootInfo.submittedAt + _optimisticSeconds, "!optimisticSeconds");
         return true;
@@ -185,7 +185,7 @@ abstract contract DestinationHub is
         // New Attestation is accepted either if the nonce increased,
         // or the latest attestation was signed by an inactive notary.
         require(
-            _nonce > mirror.latestNonce || !_isNotary(_originDomain, _notary),
+            _nonce > mirror.latestNonce || !_isNotary(_localDomain(), _notary),
             "Outdated attestation"
         );
         (mirror.latestNonce, mirror.latestNotary) = (_nonce, _notary);

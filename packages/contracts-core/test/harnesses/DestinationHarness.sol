@@ -45,4 +45,16 @@ contract DestinationHarness is
             _tips.executorTip()
         );
     }
+
+    function removeAllNotaries() public {
+        uint256 amount = notariesAmount();
+        // Remove every Notary to halt the contract
+        for (uint256 i = 0; i < amount; ++i) {
+            _removeNotary(getNotary(0));
+        }
+    }
+
+    function isNotary(address _notary) public view returns (bool) {
+        return _isNotary(_localDomain(), _notary);
+    }
 }

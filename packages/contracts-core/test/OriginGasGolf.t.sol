@@ -23,7 +23,7 @@ contract OriginGasGolfTest is SynapseTestWithNotaryManager {
     function setUp() public override {
         super.setUp();
         origin = new OriginHarness(localDomain);
-        origin.initialize(INotaryManager(notaryManager));
+        origin.initialize();
         notaryManager.setOrigin(address(origin));
     }
 

@@ -7,14 +7,14 @@ import "forge-std/Test.sol";
 import { SynapseClientHarness } from "./harnesses/SynapseClientHarness.sol";
 import { OriginHarness } from "./harnesses/OriginHarness.sol";
 
-import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
+import { SynapseTest } from "./utils/SynapseTest.sol";
 
 import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 import { Header } from "../contracts/libs/Header.sol";
 import { Message } from "../contracts/libs/Message.sol";
 
 // solhint-disable func-name-mixedcase
-contract SynapseClientTest is SynapseTestWithNotaryManager {
+contract SynapseClientTest is SynapseTest {
     SynapseClientHarness public client;
     OriginHarness public origin;
 
@@ -34,7 +34,7 @@ contract SynapseClientTest is SynapseTestWithNotaryManager {
         super.setUp();
 
         origin = new OriginHarness(localDomain);
-        origin.initialize(INotaryManager(notaryManager));
+        origin.initialize();
         notaryManager.setOrigin(address(origin));
 
         vm.label(DESTINATION, "destination");

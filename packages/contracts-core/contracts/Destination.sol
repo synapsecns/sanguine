@@ -64,8 +64,12 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     // notary => blacklist info
     mapping(address => Blacklist) public blacklistedNotaries;
 
+    // contract responsible for Notary bonding, slashing and rotation
+    // TODO: use "bonding manager" instead when implemented
+    INotaryManager public notaryManager;
+
     // gap for upgrade safety
-    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[43] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
@@ -77,6 +81,24 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
      * @param messageHash   The keccak256 hash of the message that was executed
      */
     event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash);
+
+    /**
+     * @notice Emitted when the NotaryManager contract is changed
+     * @param notaryManager The address of the new notaryManager
+     */
+    event NewNotaryManager(address notaryManager);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Ensures that function is called by the NotaryManager contract
+     */
+    modifier onlyNotaryManager() {
+        require(msg.sender == address(notaryManager), "!notaryManager");
+        _;
+    }
 
     /**
      * @notice Emitted when a root's confirmation is modified by governance
@@ -123,8 +145,10 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
      *      - initializes inherited contracts
      *      - initializes re-entrancy guard
      */
-    function initialize() external initializer {
+    function initialize(INotaryManager _notaryManager) external initializer {
         __SystemContract_initialize();
+        _setNotaryManager(_notaryManager);
+        _addNotary(notaryManager.notary());
         status = NOT_ENTERED;
     }
 
@@ -133,15 +157,31 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Set Notary role
-     * @dev MUST ensure that all roots signed by previous Notary have
-     * been relayed before calling. Only callable by owner (Governance)
-     * @param _notary New Notary
+     * @notice Set a new Notary
+     * @dev To be set when rotating Notary after Fraud
+     * @param _notary the new Notary
      */
-    function setNotary(uint32 _domain, address _notary) external onlyOwner {
-        // TODO: proper implementation
-        // Notaries and Guards should be added/removed by a BondingManager contract
-        _addNotary(_domain, _notary);
+    function setNotary(address _notary) external onlyNotaryManager {
+        /**
+         * TODO: do this properly
+         * @dev 1. New Notaries should be added to all System Contracts
+         *      from "secondary" Bonding contracts (global Notary/Guard registry)
+         *      1a. onlyNotaryManager -> onlyBondingManager (or w/e the name would be)
+         *      2. There is supposed to be more than one active Notary
+         *      2a. setNotary() -> addNotary()
+         */
+        _addNotary(_notary);
+    }
+
+    /**
+     * @notice Set a new NotaryManager contract
+     * @dev Origin(s) will initially be initialized using a trusted NotaryManager contract;
+     * we will progressively decentralize by swapping the trusted contract with a new implementation
+     * that implements Notary bonding & slashing, and rules for Notary selection & rotation
+     * @param _notaryManager the new NotaryManager contract
+     */
+    function setNotaryManager(address _notaryManager) external onlyOwner {
+        _setNotaryManager(INotaryManager(_notaryManager));
     }
 
     /**
@@ -214,6 +254,16 @@ contract Destination is Version0, SystemContract, LocalDomainContext, Destinatio
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Set the NotaryManager
+     * @param _notaryManager Address of the NotaryManager
+     */
+    function _setNotaryManager(INotaryManager _notaryManager) internal {
+        require(Address.isContract(address(_notaryManager)), "!contract notaryManager");
+        notaryManager = INotaryManager(_notaryManager);
+        emit NewNotaryManager(address(_notaryManager));
+    }
 
     /**
      * @notice Blacklists Notary:

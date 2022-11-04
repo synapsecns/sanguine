@@ -55,7 +55,7 @@ contract ClientTest is SynapseTestWithNotaryManager {
 
         destination = new DestinationHarness(localDomain);
         destination.initialize();
-        destination.addNotary(remoteDomain, notary);
+        destination.addNotary(localDomain, notary);
 
         client = new ClientHarness(address(origin), address(destination), optimisticSeconds);
         tips = Tips.emptyTips();

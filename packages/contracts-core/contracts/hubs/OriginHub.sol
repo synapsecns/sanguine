@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { Attestation } from "../libs/Attestation.sol";
 import { Report } from "../libs/Report.sol";
 import { TypedMemView } from "../libs/TypedMemView.sol";
-
+import { GlobalNotaryRegistry } from "../registry/GlobalNotaryRegistry.sol";
 import { DomainNotaryRegistry } from "../registry/DomainNotaryRegistry.sol";
 import { GuardRegistry } from "../registry/GuardRegistry.sol";
 import { AttestationHub } from "./AttestationHub.sol";
@@ -21,7 +21,7 @@ import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableS
  * Keeps track of this domain's Notaries and all Guards: accepts
  * and checks their attestations/reports related to Origin.
  */
-abstract contract OriginHub is AttestationHub, ReportHub, DomainNotaryRegistry, GuardRegistry {
+abstract contract OriginHub is AttestationHub, ReportHub, GlobalNotaryRegistry, GuardRegistry {
     using Attestation for bytes29;
     using Report for bytes29;
     using TypedMemView for bytes29;

@@ -51,36 +51,36 @@ contract AttestationCollectorTest is SynapseTest {
 
     function test_addNotary() public {
         vm.expectEmit(true, true, true, true);
-        emit NotaryAdded(localDomain, notary);
-        collector.addNotary(localDomain, notary);
+        emit NotaryAdded(remoteDomain, notary);
+        collector.addNotary(remoteDomain, notary);
     }
 
     function test_addNotaries() public {
         for (uint256 i = 0; i < NOTARIES_AMOUNT; ++i) {
             vm.expectEmit(true, true, true, true);
-            emit NotaryAdded(localDomain, notaries[i]);
-            collector.addNotary(localDomain, notaries[i]);
-            assertTrue(collector.isNotary(localDomain, notaries[i]));
+            emit NotaryAdded(remoteDomain, notaries[i]);
+            collector.addNotary(remoteDomain, notaries[i]);
+            assertTrue(collector.isNotary(remoteDomain, notaries[i]));
         }
     }
 
     function test_addNotary_notOwner() public {
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(1337));
-        collector.addNotary(localDomain, fakeNotary);
+        collector.addNotary(remoteDomain, fakeNotary);
     }
 
     function test_removeNotary() public {
         test_addNotary();
-        emit NotaryRemoved(localDomain, notary);
-        collector.removeNotary(localDomain, notary);
+        emit NotaryRemoved(remoteDomain, notary);
+        collector.removeNotary(remoteDomain, notary);
     }
 
     function test_removeNotary_notOwner() public {
         test_addNotary();
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(1337));
-        collector.removeNotary(localDomain, fakeNotary);
+        collector.removeNotary(remoteDomain, fakeNotary);
     }
 
     function test_submitAttestation() public {

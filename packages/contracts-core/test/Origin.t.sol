@@ -11,7 +11,7 @@ import { INotaryManager } from "../contracts/interfaces/INotaryManager.sol";
 import { SynapseTestWithNotaryManager } from "./utils/SynapseTest.sol";
 
 // solhint-disable func-name-mixedcase
-contract OriginTest is SynapseTestWithNotaryManager {
+contract OriginTest is SynapseTest {
     OriginHarness internal origin;
     uint32 internal optimisticSeconds;
 
@@ -37,10 +37,11 @@ contract OriginTest is SynapseTestWithNotaryManager {
         super.setUp();
         optimisticSeconds = 10;
         origin = new OriginHarness(localDomain);
-        origin.initialize(INotaryManager(notaryManager));
+        origin.initialize();
         notaryManager.setOrigin(address(origin));
         systemRouter = ISystemRouter(address(1234567890));
         origin.setSystemRouter(systemRouter);
+        origin.addNotary(remoteDomain, notary);
         origin.addGuard(guard);
     }
 
@@ -48,8 +49,8 @@ contract OriginTest is SynapseTestWithNotaryManager {
     function test_correctlyInitialized() public {
         assertEq(address(origin.notaryManager()), address(notaryManager));
         assertEq(origin.owner(), address(this));
-        assertEq(uint256(origin.notariesAmount()), 1);
-        assertTrue(origin.isNotary(notary));
+        assertEq(uint256(origin.notariesAmount(originDomain)), 1);
+        assertTrue(origin.isNotary(originDomain, notary));
         // Root of an empty sparse Merkle tree should be stored with nonce=0
         assertEq(origin.historicalRoots(remoteDomain, 0), origin.root(remoteDomain));
     }
@@ -64,22 +65,6 @@ contract OriginTest is SynapseTestWithNotaryManager {
         origin.setNotary(address(0));
     }
 
-    function test_setNotary() public {
-        assertFalse(origin.isNotary(address(1337)));
-        vm.prank(address(notaryManager));
-        origin.setNotary(address(1337));
-        assertTrue(origin.isNotary(address(1337)));
-    }
-
-    function test_cannotSetNotaryManagerAsNotOwner(address _notOwner) public {
-        vm.assume(_notOwner != origin.owner());
-        vm.startPrank(_notOwner);
-        vm.expectRevert("Ownable: caller is not the owner");
-        // Must pass in a contract to setNotaryManager,
-        // otherwise will revert with !contract notaryManger
-        origin.setNotaryManager(address(origin));
-    }
-
     function test_setNotaryManager() public {
         assertFalse(address(origin.notaryManager()) == address(origin));
         origin.setNotaryManager(address(origin));
@@ -91,18 +76,6 @@ contract OriginTest is SynapseTestWithNotaryManager {
     function test_onlyContractCanBeNotaryManager() public {
         vm.expectRevert("!contract notaryManager");
         origin.setNotaryManager(address(1337));
-    }
-
-    function test_haltsOnNoNotaries() public {
-        origin.removeAllNotaries();
-        vm.expectRevert("!notaries");
-        origin.dispatch(
-            remoteDomain,
-            addressToBytes32(address(1337)),
-            optimisticSeconds,
-            getEmptyTips(),
-            bytes("")
-        );
     }
 
     // ============ DISPATCHING MESSAGING ============
@@ -292,7 +265,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         // Origin should recognize this as a correct report on fraud attestation
         assertTrue(origin.submitReport(report));
         // Origin should have zero active notaries
-        assertEq(uint256(origin.notariesAmount()), 0);
+        assertEq(uint256(origin.notariesAmount(originDomain)), 0);
         // guard should be still Origin's Guard
         assertTrue(origin.isGuard(guard));
     }
@@ -323,7 +296,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         // Origin should recognize this as a correct report on valid attestation
         assertTrue(origin.submitReport(report));
         // Origin should have one active notary
-        assertEq(uint256(origin.notariesAmount()), 1);
+        assertEq(uint256(origin.notariesAmount(originDomain)), 1);
         // guard should be still Origin's Guard
         assertTrue(origin.isGuard(guard));
     }
@@ -384,11 +357,11 @@ contract OriginTest is SynapseTestWithNotaryManager {
         if (flag == Report.Flag.Valid) {
             // Incorrect Valid Report means reported attestation is in fact fraud
             // Origin should have zero active notaries
-            assertEq(uint256(origin.notariesAmount()), 0);
+            assertEq(uint256(origin.notariesAmount(originDomain)), 0);
         } else {
             // Incorrect Fraud Report means reported attestation is in fact valid
             // Origin should have one active notary
-            assertEq(uint256(origin.notariesAmount()), 1);
+            assertEq(uint256(origin.notariesAmount(originDomain)), 1);
         }
         // guard should not be Origin's Guard anymore
         assertFalse(origin.isGuard(guard));
@@ -406,7 +379,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         // Submit a valid attestation
         assertTrue(origin.submitAttestation(attestation));
         // Origin should have one active notary
-        assertEq(uint256(origin.notariesAmount()), 1);
+        assertEq(uint256(origin.notariesAmount(originDomain)), 1);
     }
 
     function test_submitAttestation_wrongDomain() public {
@@ -462,7 +435,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         // False means that attestation was not Valid (i.e. Fraud)
         assertFalse(origin.submitAttestation(attestation));
         // Origin should have zero active notaries
-        assertEq(uint256(origin.notariesAmount()), 0);
+        assertEq(uint256(remoteDomain.notariesAmount(originDomain)), 0);
     }
 
     // Dispatches 4 messages, and then Notary signs latest new roots
@@ -482,7 +455,7 @@ contract OriginTest is SynapseTestWithNotaryManager {
         // Should recognize report as invalid
         assertFalse(origin.submitReport(report));
         // Origin should have one active notary
-        assertEq(uint256(origin.notariesAmount()), 1);
+        assertEq(uint256(origin.notariesAmount(originDomain)), 1);
     }
 
     function test_onlySystemRouter() public {

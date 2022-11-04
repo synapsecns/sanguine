@@ -19,7 +19,7 @@ import { SynapseTest } from "./utils/SynapseTest.sol";
 import { ProofGenerator } from "./utils/ProofGenerator.sol";
 
 // solhint-disable func-name-mixedcase
-contract DestinationTest is SynapseTest {
+contract DestinationTest is SynapseTestWithNotaryManager {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
     using Message for bytes29;
@@ -65,11 +65,10 @@ contract DestinationTest is SynapseTest {
     function setUp() public override {
         super.setUp();
         destination = new DestinationHarness(localDomain);
-        destination.initialize();
+        destination.initialize(INotaryManager(notaryManager));
         dApp = new AppHarness(OPTIMISTIC_PERIOD);
         systemRouter = ISystemRouter(address(1234567890));
         destination.setSystemRouter(systemRouter);
-        destination.addNotary(remoteDomain, notary);
         destination.addGuard(guard);
 
         proofGen = new ProofGenerator();
@@ -321,5 +320,33 @@ contract DestinationTest is SynapseTest {
         merkleRoot = proofGen.getRoot();
         proof = proofGen.getProof(_messageIndex);
         test_submitAttestation();
+    }
+
+    function test_haltsOnNoNotaries() public {
+        origin.removeAllNotaries();
+        vm.expectRevert("!notaries");
+        origin.dispatch(
+            remoteDomain,
+            addressToBytes32(address(1337)),
+            optimisticSeconds,
+            getEmptyTips(),
+            bytes("")
+        );
+    }
+
+    function test_setNotary() public {
+        assertFalse(origin.isNotary(address(1337)));
+        vm.prank(address(notaryManager));
+        origin.setNotary(address(1337));
+        assertTrue(origin.isNotary(address(1337)));
+    }
+
+    function test_cannotSetNotaryManagerAsNotOwner(address _notOwner) public {
+        vm.assume(_notOwner != origin.owner());
+        vm.startPrank(_notOwner);
+        vm.expectRevert("Ownable: caller is not the owner");
+        // Must pass in a contract to setNotaryManager,
+        // otherwise will revert with !contract notaryManger
+        origin.setNotaryManager(address(origin));
     }
 }
