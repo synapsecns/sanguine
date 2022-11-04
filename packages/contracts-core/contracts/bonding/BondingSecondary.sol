@@ -15,7 +15,7 @@ contract BondingSecondary is
     BondingManager
 {
     constructor(uint32 _domain) LocalDomainContext(_domain) {
-        require(_domain != SYNAPSE_DOMAIN, "Can't be deployed on SynChain");
+        require(!_onSynapseChain(), "Can't be deployed on SynChain");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

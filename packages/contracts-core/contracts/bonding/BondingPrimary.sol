@@ -10,7 +10,7 @@ import { GuardRegistry } from "../registry/GuardRegistry.sol";
 
 contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegistry, BondingManager {
     constructor(uint32 _domain) LocalDomainContext(_domain) {
-        require(_domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
+        require(_onSynapseChain(), "Only deployed on SynChain");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

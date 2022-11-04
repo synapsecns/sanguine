@@ -37,7 +37,7 @@ abstract contract BondingManager is AbstractGuardRegistry, AbstractNotaryRegistr
             _assertCrossChainSlashing(_callOrigin, _caller, _rootSubmittedAt);
             // Forward information about slashed Notary to remote chains
             // only if BondingManager is deployed on Synapse Chain
-            forwardUpdate = _localDomain() == SYNAPSE_DOMAIN;
+            forwardUpdate = _onSynapseChain();
         }
         // Forward information about slashed Notary to local system registries
         // Forward information about slashed Notary to remote chains if needed
@@ -74,7 +74,7 @@ abstract contract BondingManager is AbstractGuardRegistry, AbstractNotaryRegistr
             _assertCrossChainSlashing(_callOrigin, _caller, _rootSubmittedAt);
             // Forward information about slashed Guard to remote chains
             // only if BondingManager is deployed on Synapse Chain
-            forwardUpdate = _localDomain() == SYNAPSE_DOMAIN;
+            forwardUpdate = _onSynapseChain();
         }
         // Forward information about slashed Guard to local system registries
         // Forward information about slashed Guard to remote chains if needed

@@ -246,6 +246,10 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    function _onSynapseChain() internal view returns (bool) {
+        return _localDomain() == SYNAPSE_DOMAIN;
+    }
+
     function _assertSystemRouter() internal view {
         require(msg.sender == address(systemRouter), "!systemRouter");
     }
