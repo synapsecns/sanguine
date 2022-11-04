@@ -24,65 +24,94 @@ contract GlobalNotaryRegistryTest is Test {
         registry = new GlobalNotaryRegistryHarness();
     }
 
-    function test_addNotary_multipleDomains() public {
-        _checkAddNotary(DOMAIN_1, NOTARY_1, true);
-        _checkAddNotary(DOMAIN_2, NOTARY_1, false);
+    function test_getDomain() public {
+        _checkAddNotary(DOMAIN_1, NOTARY_1, true, 1);
+        assertEq(registry.getDomain(0), DOMAIN_1, "!getDomain (0)");
+        _checkAddNotary(DOMAIN_2, NOTARY_2, true, 2);
+        assertEq(registry.getDomain(1), DOMAIN_2, "!getDomain (1)");
 
-        _checkAddNotary(DOMAIN_2, NOTARY_2, true);
-        _checkAddNotary(DOMAIN_1, NOTARY_2, false);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_1, true, 1);
+        assertEq(registry.getDomain(0), DOMAIN_2, "!getDomain (2)");
+        _checkRemoveNotary(DOMAIN_2, NOTARY_2, true, 0);
+    }
+
+    function test_allDomains() public {
+        test_addNotary_multipleDomains();
+        uint32[] memory domains = registry.allDomains();
+        assertEq(domains.length, 2, "!length (0)");
+        assertEq(domains[0], DOMAIN_1, "!domains[0] (0)");
+        assertEq(domains[1], DOMAIN_2, "!domains[1] (0)");
+
+        _checkRemoveNotary(DOMAIN_1, NOTARY_1, true, 1);
+        domains = registry.allDomains();
+        assertEq(domains.length, 1, "!length (1)");
+        assertEq(domains[0], DOMAIN_2, "!domains[0] (1)");
+
+        _checkRemoveNotary(DOMAIN_2, NOTARY_2, true, 0);
+        domains = registry.allDomains();
+        assertEq(domains.length, 0, "!length (0)");
+    }
+
+    function test_addNotary_multipleDomains() public {
+        _checkAddNotary(DOMAIN_1, NOTARY_1, true, 1);
+        _checkAddNotary(DOMAIN_2, NOTARY_1, false, 1);
+
+        _checkAddNotary(DOMAIN_2, NOTARY_2, true, 2);
+        _checkAddNotary(DOMAIN_1, NOTARY_2, false, 2);
     }
 
     function test_addNotary_afterDeleting() public {
         test_addNotary_multipleDomains();
-        _checkRemoveNotary(DOMAIN_1, NOTARY_1, true);
-        _checkRemoveNotary(DOMAIN_2, NOTARY_2, true);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_1, true, 1);
+        _checkRemoveNotary(DOMAIN_2, NOTARY_2, true, 0);
 
-        _checkAddNotary(DOMAIN_2, NOTARY_1, true);
-        _checkAddNotary(DOMAIN_1, NOTARY_1, false);
+        _checkAddNotary(DOMAIN_2, NOTARY_1, true, 1);
+        _checkAddNotary(DOMAIN_1, NOTARY_1, false, 1);
 
-        _checkAddNotary(DOMAIN_1, NOTARY_2, true);
-        _checkAddNotary(DOMAIN_2, NOTARY_1, false);
+        _checkAddNotary(DOMAIN_1, NOTARY_2, true, 2);
+        _checkAddNotary(DOMAIN_2, NOTARY_1, false, 2);
     }
 
     function test_addNotary_multipleNotaries() public {
-        _checkAddNotary(DOMAIN_1, NOTARY_1, true);
-        _checkAddNotary(DOMAIN_1, NOTARY_2, true);
-        _checkAddNotary(DOMAIN_1, NOTARY_3, true);
-        _checkAddNotary(DOMAIN_1, NOTARY_4, true);
+        _checkAddNotary(DOMAIN_1, NOTARY_1, true, 1);
+        _checkAddNotary(DOMAIN_1, NOTARY_2, true, 1);
+        _checkAddNotary(DOMAIN_1, NOTARY_3, true, 1);
+        _checkAddNotary(DOMAIN_1, NOTARY_4, true, 1);
     }
 
     function test_addNotary_twice() public {
         test_addNotary_multipleNotaries();
-        _checkAddNotary(DOMAIN_1, NOTARY_1, false);
-        _checkAddNotary(DOMAIN_1, NOTARY_2, false);
-        _checkAddNotary(DOMAIN_1, NOTARY_3, false);
-        _checkAddNotary(DOMAIN_1, NOTARY_4, false);
+        _checkAddNotary(DOMAIN_1, NOTARY_1, false, 1);
+        _checkAddNotary(DOMAIN_1, NOTARY_2, false, 1);
+        _checkAddNotary(DOMAIN_1, NOTARY_3, false, 1);
+        _checkAddNotary(DOMAIN_1, NOTARY_4, false, 1);
     }
 
     function test_removeNotary() public {
         test_addNotary_multipleNotaries();
-        _checkRemoveNotary(DOMAIN_1, NOTARY_3, true);
-        _checkRemoveNotary(DOMAIN_1, NOTARY_1, true);
-        _checkRemoveNotary(DOMAIN_1, NOTARY_2, true);
-        _checkRemoveNotary(DOMAIN_1, NOTARY_4, true);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_3, true, 1);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_1, true, 1);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_2, true, 1);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_4, true, 0);
     }
 
     function test_removeNotary_twice() public {
         test_addNotary_multipleNotaries();
-        _checkRemoveNotary(DOMAIN_1, NOTARY_3, true);
-        _checkRemoveNotary(DOMAIN_1, NOTARY_3, false);
-        _checkRemoveNotary(DOMAIN_1, NOTARY_1, true);
-        _checkRemoveNotary(DOMAIN_1, NOTARY_1, false);
-        _checkRemoveNotary(DOMAIN_1, NOTARY_2, true);
-        _checkRemoveNotary(DOMAIN_1, NOTARY_2, false);
-        _checkRemoveNotary(DOMAIN_1, NOTARY_4, true);
-        _checkRemoveNotary(DOMAIN_1, NOTARY_4, false);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_3, true, 1);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_3, false, 1);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_1, true, 1);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_1, false, 1);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_2, true, 1);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_2, false, 1);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_4, true, 0);
+        _checkRemoveNotary(DOMAIN_1, NOTARY_4, false, 0);
     }
 
     function _checkAddNotary(
         uint32 _domain,
         address _notary,
-        bool _added
+        bool _added,
+        uint256 _activeDomains
     ) internal {
         if (_added) {
             vm.expectEmit(true, true, true, true);
@@ -92,12 +121,14 @@ contract GlobalNotaryRegistryTest is Test {
         if (_added) {
             assertTrue(registry.isNotary(_domain, _notary));
         }
+        assertEq(registry.domainsAmount(), _activeDomains, "!domainsAmount");
     }
 
     function _checkRemoveNotary(
         uint32 _domain,
         address _notary,
-        bool _removed
+        bool _removed,
+        uint256 _activeDomains
     ) internal {
         if (_removed) {
             vm.expectEmit(true, true, true, true);
@@ -105,5 +136,6 @@ contract GlobalNotaryRegistryTest is Test {
         }
         assertEq(registry.removeNotary(_domain, _notary), _removed);
         assertFalse(registry.isNotary(_domain, _notary));
+        assertEq(registry.domainsAmount(), _activeDomains, "!domainsAmount");
     }
 }
