@@ -246,10 +246,13 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeoutBlockNum):
 			var batchArr []rpc.BatchElem
-			for i := 0; i <= int(c.chainConfig.BlockBatchSize); i++ {
-				fmt.Println("i", i)
+			iterSize := c.chainConfig.BlockBatchSize
+			if endHeight-blockNum < uint64(iterSize) {
+				iterSize = uint32(endHeight - blockNum)
+			}
+			for i := 0; i <= int(iterSize); i++ {
 				// Check if the current block's already exists in database.
-				_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
+				_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum+uint64(i))
 				if err == nil {
 					loggerBlocktime.Infof("skipping storing blocktime for block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 					blockNum++
@@ -295,6 +298,7 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 				blockNum++
 				// Make sure the count doesn't increase unnecessarily.
 				bBlockNum.Reset()
+				timeoutBlockNum = time.Duration(0)
 			}
 
 			// If done with the range, exit go routine.
