@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
 	"math"
 	"math/big"
+	"reflect"
 	"time"
 
 	"github.com/jpillora/backoff"
@@ -256,6 +256,7 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 				if err == nil {
 					loggerBlocktime.Infof("skipping storing blocktime for block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 					blockNum++
+					timeoutBlockNum = time.Duration(0)
 					// Make sure the count doesn't increase unnecessarily.
 					bBlockNum.Reset()
 					continue
@@ -263,10 +264,10 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 
 				// Store the block time info in the batchArr for batch querying
 				var batchElemErr error
-				var head *types.Header
+				var head interface{}
 				batchElem := rpc.BatchElem{
 					Method: "eth_getBlockByNumber",
-					Args:   []interface{}{hexutil.EncodeBig(big.NewInt(int64(blockNum))), false},
+					Args:   []interface{}{hexutil.EncodeBig(big.NewInt(int64(blockNum + uint64(i)))), false},
 					Result: &head,
 					Error:  batchElemErr,
 				}
@@ -287,8 +288,13 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 					loggerBlocktime.Warnf("could not get block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), batchElem.Error, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 					continue
 				}
-				head := batchElem.Result.(**types.Header)
-				err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum, (*head).Time)
+				header := reflect.Indirect(reflect.ValueOf(batchElem.Result)).Interface().(map[string]interface{})
+				hex, err := hexutil.DecodeUint64(header["timestamp"].(string))
+				if err != nil {
+					loggerBlocktime.Warnf("could not get blocktime hex %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+					continue
+				}
+				err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum, hex)
 				if err != nil {
 					timeoutBlockNum = bBlockNum.Duration()
 					loggerBlocktime.Warnf("could not store block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
