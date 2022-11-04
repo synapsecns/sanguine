@@ -21,6 +21,8 @@ contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegist
     // instead adding and removing agents are done by the contract owner.
 
     function addNotary(uint32 _domain, address _notary) external onlyOwner {
+        // Add a Notary, break execution if they are already active
+        if (!_addNotary(_domain, _notary)) return;
         // Forward information that a Notary "staked" their bond to relevant local contracts
         // Forward information about the added Notary to remote chains (PINGs)
         // See: this.bondNotary() for handling PONGs
@@ -34,6 +36,8 @@ contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegist
     }
 
     function removeNotary(uint32 _domain, address _notary) external onlyOwner {
+        // Remove a Notary, break execution if they are not currently active
+        if (!_removeNotary(_domain, _notary)) return;
         // Pass information that a Notary "unstaked" their bond to relevant local contracts
         // Forward information about the removed Notary to remote chains (PINGs)
         // See: this.unbondNotary() for handling PONGs
@@ -47,6 +51,8 @@ contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegist
     }
 
     function addGuard(address _guard) external onlyOwner {
+        // Add a Guard, break execution if they are already active
+        if (!_addGuard(_guard)) return;
         // Pass information that a Guard "staked" their bond to relevant local contracts
         // Forward information about the added Guard to remote chains (PINGs)
         // See: this.bondGuard() for handling PONGs
@@ -59,6 +65,8 @@ contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegist
     }
 
     function removeGuard(address _guard) external onlyOwner {
+        // Remove a Guard, break execution if they are not currently active
+        if (!_removeGuard(_guard)) return;
         // Pass information that Guard "unstaked" their bond to relevant local contracts
         // Forward information about the removed Guard to remote chains (PINGs)
         // See: this.unbondGuard() for handling PONGs
