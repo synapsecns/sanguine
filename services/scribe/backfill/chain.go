@@ -42,6 +42,10 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 	// initialize each contract backfiller and start heights
 	startHeights := make(map[string]uint64)
 
+	if chainConfig.BlockBatchSize == 0 {
+		chainConfig.BlockBatchSize = 10
+	}
+
 	// start with max uint64
 	minBlockHeight := uint64(math.MaxUint64)
 	for _, contract := range chainConfig.Contracts {
@@ -241,9 +245,10 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 			loggerBlocktime.Warnf("gBlockTime context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), ctx.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeoutBlockNum):
-			tempBatchLimit := 10
 			var batchArr []rpc.BatchElem
-			for batchIdx := 0; batchIdx <= batchIdx+tempBatchLimit; batchIdx++ {
+
+			for batchIdx := 0; batchIdx <= int(c.chainConfig.BlockBatchSize); batchIdx++ {
+				fmt.Println("batchIdx", batchIdx)
 				// Check if the current block's already exists in database.
 				_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
 				if err == nil {
@@ -280,8 +285,8 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 					loggerBlocktime.Warnf("could not get block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), batchElem.Error, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 					continue
 				}
-				head := batchElem.Result.(*types.Header)
-				err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum, head.Time)
+				head := batchElem.Result.(**types.Header)
+				err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum, (*head).Time)
 				if err != nil {
 					timeoutBlockNum = bBlockNum.Duration()
 					loggerBlocktime.Warnf("could not store block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())

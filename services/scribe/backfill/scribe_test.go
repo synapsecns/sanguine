@@ -1,11 +1,11 @@
 package backfill_test
 
 import (
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -23,9 +23,9 @@ func (b BackfillSuite) TestScribeBackfill() {
 	chainB := chainA + 1
 	chainC := chainB + 1
 	chains := []uint32{chainA, chainB, chainC}
-	simulatedBackends := []*simulated.Backend{}
+	simulatedBackends := []*geth.Backend{}
 	for _, chain := range chains {
-		simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chain)))
+		simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chain)))
 		simulatedBackends = append(simulatedBackends, simulatedChain)
 	}
 	type deployedContracts []contracts.DeployedContract

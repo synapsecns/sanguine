@@ -1,12 +1,12 @@
 package backfill_test
 
 import (
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -23,7 +23,7 @@ func (b BackfillSuite) TestChainBackfill() {
 	managerB := testutil.NewDeployManager(b.T())
 	managerC := testutil.NewDeployManager(b.T())
 	// Get simulated blockchain, deploy three test contracts, and set up test variables.
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
+	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
 	testContractA, testRefA := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	testContractB, testRefB := managerB.GetTestContract(b.GetTestContext(), simulatedChain)
@@ -65,7 +65,7 @@ func (b BackfillSuite) TestChainBackfill() {
 
 // EmitEventsForAChain emits events for a chain, and if `backfill` is set to true,
 // will store the events and check their existence in the database.
-func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContract, testRefs []*testcontract.TestContractRef, simulatedChain *simulated.Backend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig, backfill bool) {
+func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContract, testRefs []*testcontract.TestContractRef, simulatedChain *geth.Backend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig, backfill bool) {
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 
 	// Emit events from each contract.
