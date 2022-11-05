@@ -368,7 +368,7 @@ library AddressUpgradeable {
      * _Available since v3.1._
      */
     function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-      return functionCall(target, data, "Address: low-level call failed");
+        return functionCall(target, data, "Address: low-level call failed");
     }
 
     /**
@@ -823,83 +823,83 @@ contract ERC20 is Context, IERC20 {
 
 
 interface ISwap {
-  // pool data view functions
-  function getA() external view returns (uint256);
+    // pool data view functions
+    function getA() external view returns (uint256);
 
-  function getToken(uint8 index) external view returns (IERC20);
+    function getToken(uint8 index) external view returns (IERC20);
 
-  function getTokenIndex(address tokenAddress) external view returns (uint8);
+    function getTokenIndex(address tokenAddress) external view returns (uint8);
 
-  function getTokenBalance(uint8 index) external view returns (uint256);
+    function getTokenBalance(uint8 index) external view returns (uint256);
 
-  function getVirtualPrice() external view returns (uint256);
+    function getVirtualPrice() external view returns (uint256);
 
-  // min return calculation functions
-  function calculateSwap(
-    uint8 tokenIndexFrom,
-    uint8 tokenIndexTo,
-    uint256 dx
-  ) external view returns (uint256);
+    // min return calculation functions
+    function calculateSwap(
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 dx
+    ) external view returns (uint256);
 
-  function calculateTokenAmount(uint256[] calldata amounts, bool deposit)
+    function calculateTokenAmount(uint256[] calldata amounts, bool deposit)
     external
     view
     returns (uint256);
 
-  function calculateRemoveLiquidity(uint256 amount)
+    function calculateRemoveLiquidity(uint256 amount)
     external
     view
     returns (uint256[] memory);
 
-  function calculateRemoveLiquidityOneToken(
-    uint256 tokenAmount,
-    uint8 tokenIndex
-  ) external view returns (uint256 availableTokenAmount);
+    function calculateRemoveLiquidityOneToken(
+        uint256 tokenAmount,
+        uint8 tokenIndex
+    ) external view returns (uint256 availableTokenAmount);
 
-  // state modifying functions
-  function initialize(
-    IERC20[] memory pooledTokens,
-    uint8[] memory decimals,
-    string memory lpTokenName,
-    string memory lpTokenSymbol,
-    uint256 a,
-    uint256 fee,
-    uint256 adminFee,
-    address lpTokenTargetAddress
-  ) external;
+    // state modifying functions
+    function initialize(
+        IERC20[] memory pooledTokens,
+        uint8[] memory decimals,
+        string memory lpTokenName,
+        string memory lpTokenSymbol,
+        uint256 a,
+        uint256 fee,
+        uint256 adminFee,
+        address lpTokenTargetAddress
+    ) external;
 
-  function swap(
-    uint8 tokenIndexFrom,
-    uint8 tokenIndexTo,
-    uint256 dx,
-    uint256 minDy,
-    uint256 deadline
-  ) external returns (uint256);
+    function swap(
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 dx,
+        uint256 minDy,
+        uint256 deadline
+    ) external returns (uint256);
 
-  function addLiquidity(
-    uint256[] calldata amounts,
-    uint256 minToMint,
-    uint256 deadline
-  ) external returns (uint256);
+    function addLiquidity(
+        uint256[] calldata amounts,
+        uint256 minToMint,
+        uint256 deadline
+    ) external returns (uint256);
 
-  function removeLiquidity(
-    uint256 amount,
-    uint256[] calldata minAmounts,
-    uint256 deadline
-  ) external returns (uint256[] memory);
+    function removeLiquidity(
+        uint256 amount,
+        uint256[] calldata minAmounts,
+        uint256 deadline
+    ) external returns (uint256[] memory);
 
-  function removeLiquidityOneToken(
-    uint256 tokenAmount,
-    uint8 tokenIndex,
-    uint256 minAmount,
-    uint256 deadline
-  ) external returns (uint256);
+    function removeLiquidityOneToken(
+        uint256 tokenAmount,
+        uint8 tokenIndex,
+        uint256 minAmount,
+        uint256 deadline
+    ) external returns (uint256);
 
-  function removeLiquidityImbalance(
-    uint256[] calldata amounts,
-    uint256 maxBurnAmount,
-    uint256 deadline
-  ) external returns (uint256);
+    function removeLiquidityImbalance(
+        uint256[] calldata amounts,
+        uint256 maxBurnAmount,
+        uint256 deadline
+    ) external returns (uint256);
 }
 
 
@@ -912,22 +912,22 @@ interface ISwap {
  * @dev implement this interface to develop a a factory-patterned ECDSA node management contract
  **/
 interface IMetaSwapDeposit {
-  // min return calculation functions
-  function calculateSwap(
-    uint8 tokenIndexFrom,
-    uint8 tokenIndexTo,
-    uint256 dx
-  ) external view returns (uint256);
+    // min return calculation functions
+    function calculateSwap(
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 dx
+    ) external view returns (uint256);
 
-  function swap(
-    uint8 tokenIndexFrom,
-    uint8 tokenIndexTo,
-    uint256 dx,
-    uint256 minDy,
-    uint256 deadline
-  ) external returns (uint256);
+    function swap(
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 dx,
+        uint256 minDy,
+        uint256 deadline
+    ) external returns (uint256);
 
-  function getToken(uint256 index) external view returns (IERC20);
+    function getToken(uint256 index) external view returns (IERC20);
 }
 
 
@@ -1112,8 +1112,8 @@ library EnumerableSetUpgradeable {
         return set._values.length;
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -1167,8 +1167,8 @@ library EnumerableSetUpgradeable {
         return _length(set._inner);
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -1221,8 +1221,8 @@ library EnumerableSetUpgradeable {
         return _length(set._inner);
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -1276,8 +1276,8 @@ library EnumerableSetUpgradeable {
         return _length(set._inner);
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -1797,7 +1797,7 @@ library Address {
      * _Available since v3.1._
      */
     function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-      return functionCall(target, data, "Address: low-level call failed");
+        return functionCall(target, data, "Address: low-level call failed");
     }
 
     /**
@@ -2028,208 +2028,208 @@ abstract contract ERC20Burnable is Context, ERC20 {
 
 
 interface IERC20Mintable is IERC20 {
-  function mint(address to, uint256 amount) external;
+    function mint(address to, uint256 amount) external;
 }
 
 contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable {
-  using SafeERC20 for IERC20;
-  using SafeERC20 for IERC20Mintable;
-  using SafeMath for uint256;
+    using SafeERC20 for IERC20;
+    using SafeERC20 for IERC20Mintable;
+    using SafeMath for uint256;
 
-  bytes32 public constant NODEGROUP_ROLE = keccak256('NODEGROUP_ROLE');
-  bytes32 public constant GOVERNANCE_ROLE = keccak256('GOVERNANCE_ROLE');
+    bytes32 public constant NODEGROUP_ROLE = keccak256('NODEGROUP_ROLE');
+    bytes32 public constant GOVERNANCE_ROLE = keccak256('GOVERNANCE_ROLE');
 
-  mapping(address => uint256) private fees;
+    mapping(address => uint256) private fees;
 
-  uint256 public startBlockNumber;
-  uint256 public constant bridgeVersion = 5;
-  uint256 public chainGasAmount;
-  address payable public WETH_ADDRESS;
+    uint256 public startBlockNumber;
+    uint256 public constant bridgeVersion = 5;
+    uint256 public chainGasAmount;
+    address payable public WETH_ADDRESS;
 
-  receive() external payable {}
-  
-  function initialize() external initializer {
-    startBlockNumber = block.number;
-    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-    __AccessControl_init();
-  }
+    receive() external payable {}
 
-  function setChainGasAmount(uint256 amount) external {
-    require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Not admin");
-    chainGasAmount = amount;
-  }
+    function initialize() external initializer {
+        startBlockNumber = block.number;
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        __AccessControl_init();
+    }
 
-  function setWethAddress(address payable _wethAddress) external {
-    require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Not admin");
-    WETH_ADDRESS = _wethAddress;
-  }
+    function setChainGasAmount(uint256 amount) external {
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Not admin");
+        chainGasAmount = amount;
+    }
 
-  event TokenDeposit(
-    address indexed to,
-    uint256 chainId,
-    IERC20 token,
-    uint256 amount
-  );
-  event TokenRedeem(address indexed to, uint256 chainId, IERC20 token, uint256 amount);
-  event TokenWithdraw(address indexed to, IERC20 token, uint256 amount, uint256 fee, bytes32 kappa);
-  event TokenMint(
-    address indexed to,
-    IERC20Mintable token,
-    uint256 amount,
-    uint256 fee,
-    bytes32 kappa
-  );
-  event TokenDepositAndSwap(
-    address indexed to,
-    uint256 chainId,
-    IERC20 token,
-    uint256 amount,
-    uint8 tokenIndexFrom,
-    uint8 tokenIndexTo,
-    uint256 minDy,
-    uint256 deadline
-  );
-  event TokenMintAndSwap(
-    address indexed to,
-    IERC20Mintable token,
-    uint256 amount,
-    uint256 fee,
-    uint8 tokenIndexFrom,
-    uint8 tokenIndexTo,
-    uint256 minDy,
-    uint256 deadline,
-    bool swapSuccess,
-    bytes32 kappa
-  );
-  event TokenRedeemAndSwap(
-    address indexed to,
-    uint256 chainId,
-    IERC20 token,
-    uint256 amount,
-    uint8 tokenIndexFrom,
-    uint8 tokenIndexTo,
-    uint256 minDy,
-    uint256 deadline
-  );
-  event TokenRedeemAndRemove(
-    address indexed to,
-    uint256 chainId,
-    IERC20 token,
-    uint256 amount,
-    uint8 swapTokenIndex,
-    uint256 swapMinAmount,
-    uint256 swapDeadline
-  );
-  event TokenWithdrawAndRemove(
-    address indexed to,
-    IERC20 token,
-    uint256 amount,
-    uint256 fee,
-    uint8 swapTokenIndex,
-    uint256 swapMinAmount,
-    uint256 swapDeadline,
-    bool swapSuccess,
-    bytes32 kappa
-  );
+    function setWethAddress(address payable _wethAddress) external {
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Not admin");
+        WETH_ADDRESS = _wethAddress;
+    }
 
-  // VIEW FUNCTIONS ***/
-  function getFeeBalance(address tokenAddress) external view returns (uint256) {
-    return fees[tokenAddress];
-  }
+    event TokenDeposit(
+        address indexed to,
+        uint256 chainId,
+        IERC20 token,
+        uint256 amount
+    );
+    event TokenRedeem(address indexed to, uint256 chainId, IERC20 token, uint256 amount);
+    event TokenWithdraw(address indexed to, IERC20 token, uint256 amount, uint256 fee, bytes32 kappa);
+    event TokenMint(
+        address indexed to,
+        IERC20Mintable token,
+        uint256 amount,
+        uint256 fee,
+        bytes32 kappa
+    );
+    event TokenDepositAndSwap(
+        address indexed to,
+        uint256 chainId,
+        IERC20 token,
+        uint256 amount,
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 minDy,
+        uint256 deadline
+    );
+    event TokenMintAndSwap(
+        address indexed to,
+        IERC20Mintable token,
+        uint256 amount,
+        uint256 fee,
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 minDy,
+        uint256 deadline,
+        bool swapSuccess,
+        bytes32 kappa
+    );
+    event TokenRedeemAndSwap(
+        address indexed to,
+        uint256 chainId,
+        IERC20 token,
+        uint256 amount,
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 minDy,
+        uint256 deadline
+    );
+    event TokenRedeemAndRemove(
+        address indexed to,
+        uint256 chainId,
+        IERC20 token,
+        uint256 amount,
+        uint8 swapTokenIndex,
+        uint256 swapMinAmount,
+        uint256 swapDeadline
+    );
+    event TokenWithdrawAndRemove(
+        address indexed to,
+        IERC20 token,
+        uint256 amount,
+        uint256 fee,
+        uint8 swapTokenIndex,
+        uint256 swapMinAmount,
+        uint256 swapDeadline,
+        bool swapSuccess,
+        bytes32 kappa
+    );
 
-  // FEE FUNCTIONS ***/
-  /**
-   * * @notice withdraw specified ERC20 token fees to a given address
+    // VIEW FUNCTIONS ***/
+    function getFeeBalance(address tokenAddress) external view returns (uint256) {
+        return fees[tokenAddress];
+    }
+
+    // FEE FUNCTIONS ***/
+    /**
+     * * @notice withdraw specified ERC20 token fees to a given address
    * * @param token ERC20 token in which fees acccumulated to transfer
    * * @param to Address to send the fees to
    */
-  function withdrawFees(IERC20 token, address to) external whenNotPaused() {
-    require(hasRole(GOVERNANCE_ROLE, msg.sender));
-    require(to != address(0), "Address is 0x000");
-    if (fees[address(token)] != 0) {
-      token.safeTransfer(to, fees[address(token)]);
-      fees[address(token)] = 0;
+    function withdrawFees(IERC20 token, address to) external whenNotPaused() {
+        require(hasRole(GOVERNANCE_ROLE, msg.sender));
+        require(to != address(0), "Address is 0x000");
+        if (fees[address(token)] != 0) {
+            token.safeTransfer(to, fees[address(token)]);
+            fees[address(token)] = 0;
+        }
     }
-  }
 
-  // PAUSABLE FUNCTIONS ***/
-  function pause() external {
-    require(hasRole(GOVERNANCE_ROLE, msg.sender), "Not governance");
-    _pause();
-  }
+    // PAUSABLE FUNCTIONS ***/
+    function pause() external {
+        require(hasRole(GOVERNANCE_ROLE, msg.sender), "Not governance");
+        _pause();
+    }
 
-  function unpause() external {
-    require(hasRole(GOVERNANCE_ROLE, msg.sender), "Not governance");
-    _unpause();
-  }
+    function unpause() external {
+        require(hasRole(GOVERNANCE_ROLE, msg.sender), "Not governance");
+        _unpause();
+    }
 
 
-  /**
-   * @notice Relays to nodes to transfers an ERC20 token cross-chain
+    /**
+     * @notice Relays to nodes to transfers an ERC20 token cross-chain
    * @param to address on other chain to bridge assets to
    * @param chainId which chain to bridge assets onto
    * @param token ERC20 compatible token to deposit into the bridge
    * @param amount Amount in native token decimals to transfer cross-chain pre-fees
    **/
-  function deposit(
-    address to,
-    uint256 chainId,
-    IERC20 token,
-    uint256 amount
-  ) external nonReentrant() whenNotPaused() {
-    emit TokenDeposit(to, chainId, token, amount);
-    token.safeTransferFrom(msg.sender, address(this), amount);
-  }
+    function deposit(
+        address to,
+        uint256 chainId,
+        IERC20 token,
+        uint256 amount
+    ) external nonReentrant() whenNotPaused() {
+        emit TokenDeposit(to, chainId, token, amount);
+        token.safeTransferFrom(msg.sender, address(this), amount);
+    }
 
-  /**
-   * @notice Relays to nodes that (typically) a wrapped synAsset ERC20 token has been burned and the underlying needs to be redeeemed on the native chain
+    /**
+     * @notice Relays to nodes that (typically) a wrapped synAsset ERC20 token has been burned and the underlying needs to be redeeemed on the native chain
    * @param to address on other chain to redeem underlying assets to
    * @param chainId which underlying chain to bridge assets onto
    * @param token ERC20 compatible token to deposit into the bridge
    * @param amount Amount in native token decimals to transfer cross-chain pre-fees
    **/
-  function redeem(
-    address to,
-    uint256 chainId,
-    ERC20Burnable token,
-    uint256 amount
-  ) external nonReentrant() whenNotPaused() {
-    emit TokenRedeem(to, chainId, token, amount);
-    token.burnFrom(msg.sender, amount);
-  }
+    function redeem(
+        address to,
+        uint256 chainId,
+        ERC20Burnable token,
+        uint256 amount
+    ) external nonReentrant() whenNotPaused() {
+        emit TokenRedeem(to, chainId, token, amount);
+        token.burnFrom(msg.sender, amount);
+    }
 
-  /**
-   * @notice Function to be called by the node group to withdraw the underlying assets from the contract
+    /**
+     * @notice Function to be called by the node group to withdraw the underlying assets from the contract
    * @param to address on chain to send underlying assets to
    * @param token ERC20 compatible token to withdraw from the bridge
    * @param amount Amount in native token decimals to withdraw
    * @param fee Amount in native token decimals to save to the contract as fees
    * @param kappa kappa
    **/
-  function withdraw(
-    address to,
-    IERC20 token,
-    uint256 amount,
-    uint256 fee,
-    bytes32 kappa
-  ) external nonReentrant() whenNotPaused() {
-    require(hasRole(NODEGROUP_ROLE, msg.sender), 'Caller is not a node group');
-    require(amount > fee, 'Amount must be greater than fee');
-    fees[address(token)] = fees[address(token)].add(fee);
-    if (address(token) == WETH_ADDRESS && WETH_ADDRESS != address(0)) {
-      IWETH9(WETH_ADDRESS).withdraw(amount.sub(fee));
-      (bool success, ) = to.call{value: amount.sub(fee)}("");
-      require(success, "ETH_TRANSFER_FAILED");
-      emit TokenWithdraw(to, token, amount, fee, kappa);
-    } else {
-      emit TokenWithdraw(to, token, amount, fee, kappa);
-      token.safeTransfer(to, amount.sub(fee));
+    function withdraw(
+        address to,
+        IERC20 token,
+        uint256 amount,
+        uint256 fee,
+        bytes32 kappa
+    ) external nonReentrant() whenNotPaused() {
+        require(hasRole(NODEGROUP_ROLE, msg.sender), 'Caller is not a node group');
+        require(amount > fee, 'Amount must be greater than fee');
+        fees[address(token)] = fees[address(token)].add(fee);
+        if (address(token) == WETH_ADDRESS && WETH_ADDRESS != address(0)) {
+            IWETH9(WETH_ADDRESS).withdraw(amount.sub(fee));
+            (bool success, ) = to.call{value: amount.sub(fee)}("");
+            require(success, "ETH_TRANSFER_FAILED");
+            emit TokenWithdraw(to, token, amount, fee, kappa);
+        } else {
+            emit TokenWithdraw(to, token, amount, fee, kappa);
+            token.safeTransfer(to, amount.sub(fee));
+        }
     }
-  }
 
 
-  /**
-   * @notice Nodes call this function to mint a SynERC20 (or any asset that the bridge is given minter access to). This is called by the nodes after a TokenDeposit event is emitted.
+    /**
+     * @notice Nodes call this function to mint a SynERC20 (or any asset that the bridge is given minter access to). This is called by the nodes after a TokenDeposit event is emitted.
    * @dev This means the SynapseBridge.sol contract must have minter access to the token attempting to be minted
    * @param to address on other chain to redeem underlying assets to
    * @param token ERC20 compatible token to deposit into the bridge
@@ -2237,26 +2237,26 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
    * @param fee Amount in native token decimals to save to the contract as fees
    * @param kappa kappa
    **/
-  function mint(
-    address payable to,
-    IERC20Mintable token,
-    uint256 amount,
-    uint256 fee,
-    bytes32 kappa
-  ) external nonReentrant() whenNotPaused() {
-    require(hasRole(NODEGROUP_ROLE, msg.sender), 'Caller is not a node group');
-    require(amount > fee, 'Amount must be greater than fee');
-    fees[address(token)] = fees[address(token)].add(fee);
-    emit TokenMint(to, token, amount.sub(fee), fee, kappa);
-    token.mint(address(this), amount);
-    IERC20(token).safeTransfer(to, amount.sub(fee));
-    if (chainGasAmount != 0 && address(this).balance > chainGasAmount) {
-      to.transfer(chainGasAmount);
+    function mint(
+        address payable to,
+        IERC20Mintable token,
+        uint256 amount,
+        uint256 fee,
+        bytes32 kappa
+    ) external nonReentrant() whenNotPaused() {
+        require(hasRole(NODEGROUP_ROLE, msg.sender), 'Caller is not a node group');
+        require(amount > fee, 'Amount must be greater than fee');
+        fees[address(token)] = fees[address(token)].add(fee);
+        emit TokenMint(to, token, amount.sub(fee), fee, kappa);
+        token.mint(address(this), amount);
+        IERC20(token).safeTransfer(to, amount.sub(fee));
+        if (chainGasAmount != 0 && address(this).balance > chainGasAmount) {
+            to.transfer(chainGasAmount);
+        }
     }
-  }
 
-  /**
-   * @notice Relays to nodes to both transfer an ERC20 token cross-chain, and then have the nodes execute a swap through a liquidity pool on behalf of the user.
+    /**
+     * @notice Relays to nodes to both transfer an ERC20 token cross-chain, and then have the nodes execute a swap through a liquidity pool on behalf of the user.
    * @param to address on other chain to bridge assets to
    * @param chainId which chain to bridge assets onto
    * @param token ERC20 compatible token to deposit into the bridge
@@ -2266,31 +2266,31 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
    * @param minDy the min amount the user would like to receive, or revert to only minting the SynERC20 token crosschain.
    * @param deadline latest timestamp to accept this transaction
    **/
-  function depositAndSwap(
-    address to,
-    uint256 chainId,
-    IERC20 token,
-    uint256 amount,
-    uint8 tokenIndexFrom,
-    uint8 tokenIndexTo,
-    uint256 minDy,
-    uint256 deadline
-  ) external nonReentrant() whenNotPaused() {
-     emit TokenDepositAndSwap(
-      to,
-      chainId,
-      token,
-      amount,
-      tokenIndexFrom,
-      tokenIndexTo,
-      minDy,
-      deadline
-    );
-    token.safeTransferFrom(msg.sender, address(this), amount);
-  }
+    function depositAndSwap(
+        address to,
+        uint256 chainId,
+        IERC20 token,
+        uint256 amount,
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 minDy,
+        uint256 deadline
+    ) external nonReentrant() whenNotPaused() {
+        emit TokenDepositAndSwap(
+            to,
+            chainId,
+            token,
+            amount,
+            tokenIndexFrom,
+            tokenIndexTo,
+            minDy,
+            deadline
+        );
+        token.safeTransferFrom(msg.sender, address(this), amount);
+    }
 
-  /**
-   * @notice Relays to nodes that (typically) a wrapped synAsset ERC20 token has been burned and the underlying needs to be redeeemed on the native chain. This function indicates to the nodes that they should attempt to redeem the LP token for the underlying assets (E.g "swap" out of the LP token)
+    /**
+     * @notice Relays to nodes that (typically) a wrapped synAsset ERC20 token has been burned and the underlying needs to be redeeemed on the native chain. This function indicates to the nodes that they should attempt to redeem the LP token for the underlying assets (E.g "swap" out of the LP token)
    * @param to address on other chain to redeem underlying assets to
    * @param chainId which underlying chain to bridge assets onto
    * @param token ERC20 compatible token to deposit into the bridge
@@ -2300,31 +2300,31 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
    * @param minDy the min amount the user would like to receive, or revert to only minting the SynERC20 token crosschain.
    * @param deadline latest timestamp to accept this transaction
    **/
-  function redeemAndSwap(
-    address to,
-    uint256 chainId,
-    ERC20Burnable token,
-    uint256 amount,
-    uint8 tokenIndexFrom,
-    uint8 tokenIndexTo,
-    uint256 minDy,
-    uint256 deadline
-  ) external nonReentrant() whenNotPaused() {
-    emit TokenRedeemAndSwap(
-      to,
-      chainId,
-      token,
-      amount,
-      tokenIndexFrom,
-      tokenIndexTo,
-      minDy,
-      deadline
-    );
-    token.burnFrom(msg.sender, amount);
-  }
+    function redeemAndSwap(
+        address to,
+        uint256 chainId,
+        ERC20Burnable token,
+        uint256 amount,
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 minDy,
+        uint256 deadline
+    ) external nonReentrant() whenNotPaused() {
+        emit TokenRedeemAndSwap(
+            to,
+            chainId,
+            token,
+            amount,
+            tokenIndexFrom,
+            tokenIndexTo,
+            minDy,
+            deadline
+        );
+        token.burnFrom(msg.sender, amount);
+    }
 
-  /**
-   * @notice Relays to nodes that (typically) a wrapped synAsset ERC20 token has been burned and the underlying needs to be redeeemed on the native chain. This function indicates to the nodes that they should attempt to redeem the LP token for the underlying assets (E.g "swap" out of the LP token)
+    /**
+     * @notice Relays to nodes that (typically) a wrapped synAsset ERC20 token has been burned and the underlying needs to be redeeemed on the native chain. This function indicates to the nodes that they should attempt to redeem the LP token for the underlying assets (E.g "swap" out of the LP token)
    * @param to address on other chain to redeem underlying assets to
    * @param chainId which underlying chain to bridge assets onto
    * @param token ERC20 compatible token to deposit into the bridge
@@ -2333,29 +2333,29 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
    * @param swapMinAmount Specifies the minimum amount of the underlying asset needed for the nodes to execute the redeem/swap
    * @param swapDeadline Specificies the deadline that the nodes are allowed to try to redeem/swap the LP token
    **/
-  function redeemAndRemove(
-    address to,
-    uint256 chainId,
-    ERC20Burnable token,
-    uint256 amount,
-    uint8 swapTokenIndex,
-    uint256 swapMinAmount,
-    uint256 swapDeadline
-  ) external nonReentrant() whenNotPaused() {
-      emit TokenRedeemAndRemove(
-      to,
-      chainId,
-      token,
-      amount,
-      swapTokenIndex,
-      swapMinAmount,
-      swapDeadline
-    );
-    token.burnFrom(msg.sender, amount);
-  }
+    function redeemAndRemove(
+        address to,
+        uint256 chainId,
+        ERC20Burnable token,
+        uint256 amount,
+        uint8 swapTokenIndex,
+        uint256 swapMinAmount,
+        uint256 swapDeadline
+    ) external nonReentrant() whenNotPaused() {
+        emit TokenRedeemAndRemove(
+            to,
+            chainId,
+            token,
+            amount,
+            swapTokenIndex,
+            swapMinAmount,
+            swapDeadline
+        );
+        token.burnFrom(msg.sender, amount);
+    }
 
-  /**
-   * @notice Nodes call this function to mint a SynERC20 (or any asset that the bridge is given minter access to), and then attempt to swap the SynERC20 into the desired destination asset. This is called by the nodes after a TokenDepositAndSwap event is emitted.
+    /**
+     * @notice Nodes call this function to mint a SynERC20 (or any asset that the bridge is given minter access to), and then attempt to swap the SynERC20 into the desired destination asset. This is called by the nodes after a TokenDepositAndSwap event is emitted.
    * @dev This means the BridgeDeposit.sol contract must have minter access to the token attempting to be minted
    * @param to address on other chain to redeem underlying assets to
    * @param token ERC20 compatible token to deposit into the bridge
@@ -2368,69 +2368,69 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
    * @param deadline Epoch time of the deadline that the swap is allowed to be executed.
    * @param kappa kappa
    **/
-  function mintAndSwap(
-    address payable to,
-    IERC20Mintable token,
-    uint256 amount,
-    uint256 fee,
-    IMetaSwapDeposit pool,
-    uint8 tokenIndexFrom,
-    uint8 tokenIndexTo,
-    uint256 minDy,
-    uint256 deadline,
-    bytes32 kappa
-  ) external nonReentrant() whenNotPaused() {
-    require(hasRole(NODEGROUP_ROLE, msg.sender), 'Caller is not a node group');
-    require(amount > fee, 'Amount must be greater than fee');
-    fees[address(token)] = fees[address(token)].add(fee);
-    // Transfer gas airdrop
-    if (chainGasAmount != 0 && address(this).balance > chainGasAmount) {
-      to.transfer(chainGasAmount);
-    }
-    // first check to make sure more will be given than min amount required
-    uint256 expectedOutput = IMetaSwapDeposit(pool).calculateSwap(
-      tokenIndexFrom,
-      tokenIndexTo,
-      amount.sub(fee)
-    );
-
-    if (expectedOutput >= minDy) {
-      // proceed with swap
-      token.mint(address(this), amount);
-      token.safeIncreaseAllowance(address(pool), amount);
-      try
-        IMetaSwapDeposit(pool).swap(
-          tokenIndexFrom,
-          tokenIndexTo,
-          amount.sub(fee),
-          minDy,
-          deadline
-        )
-      returns (uint256 finalSwappedAmount) {
-        // Swap succeeded, transfer swapped asset
-        IERC20 swappedTokenTo = IMetaSwapDeposit(pool).getToken(tokenIndexTo);
-        if (address(swappedTokenTo) == WETH_ADDRESS && WETH_ADDRESS != address(0)) {
-          IWETH9(WETH_ADDRESS).withdraw(finalSwappedAmount);
-          (bool success, ) = to.call{value: finalSwappedAmount}("");
-          require(success, "ETH_TRANSFER_FAILED");
-          emit TokenMintAndSwap(to, token, finalSwappedAmount, fee, tokenIndexFrom, tokenIndexTo, minDy, deadline, true, kappa);
-        } else {
-          swappedTokenTo.safeTransfer(to, finalSwappedAmount);
-          emit TokenMintAndSwap(to, token, finalSwappedAmount, fee, tokenIndexFrom, tokenIndexTo, minDy, deadline, true, kappa);
+    function mintAndSwap(
+        address payable to,
+        IERC20Mintable token,
+        uint256 amount,
+        uint256 fee,
+        IMetaSwapDeposit pool,
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 minDy,
+        uint256 deadline,
+        bytes32 kappa
+    ) external nonReentrant() whenNotPaused() {
+        require(hasRole(NODEGROUP_ROLE, msg.sender), 'Caller is not a node group');
+        require(amount > fee, 'Amount must be greater than fee');
+        fees[address(token)] = fees[address(token)].add(fee);
+        // Transfer gas airdrop
+        if (chainGasAmount != 0 && address(this).balance > chainGasAmount) {
+            to.transfer(chainGasAmount);
         }
-      } catch {
-        IERC20(token).safeTransfer(to, amount.sub(fee));
-        emit TokenMintAndSwap(to, token, amount.sub(fee), fee, tokenIndexFrom, tokenIndexTo, minDy, deadline, false, kappa);
-      }
-    } else {
-      token.mint(address(this), amount);
-      IERC20(token).safeTransfer(to, amount.sub(fee));
-      emit TokenMintAndSwap(to, token, amount.sub(fee), fee, tokenIndexFrom, tokenIndexTo, minDy, deadline, false, kappa);
-    }
-  }
+        // first check to make sure more will be given than min amount required
+        uint256 expectedOutput = IMetaSwapDeposit(pool).calculateSwap(
+            tokenIndexFrom,
+            tokenIndexTo,
+            amount.sub(fee)
+        );
 
-  /**
-   * @notice Function to be called by the node group to withdraw the underlying assets from the contract
+        if (expectedOutput >= minDy) {
+            // proceed with swap
+            token.mint(address(this), amount);
+            token.safeIncreaseAllowance(address(pool), amount);
+            try
+            IMetaSwapDeposit(pool).swap(
+                tokenIndexFrom,
+                tokenIndexTo,
+                amount.sub(fee),
+                minDy,
+                deadline
+            )
+            returns (uint256 finalSwappedAmount) {
+                // Swap succeeded, transfer swapped asset
+                IERC20 swappedTokenTo = IMetaSwapDeposit(pool).getToken(tokenIndexTo);
+                if (address(swappedTokenTo) == WETH_ADDRESS && WETH_ADDRESS != address(0)) {
+                    IWETH9(WETH_ADDRESS).withdraw(finalSwappedAmount);
+                    (bool success, ) = to.call{value: finalSwappedAmount}("");
+                    require(success, "ETH_TRANSFER_FAILED");
+                    emit TokenMintAndSwap(to, token, finalSwappedAmount, fee, tokenIndexFrom, tokenIndexTo, minDy, deadline, true, kappa);
+                } else {
+                    swappedTokenTo.safeTransfer(to, finalSwappedAmount);
+                    emit TokenMintAndSwap(to, token, finalSwappedAmount, fee, tokenIndexFrom, tokenIndexTo, minDy, deadline, true, kappa);
+                }
+            } catch {
+                IERC20(token).safeTransfer(to, amount.sub(fee));
+                emit TokenMintAndSwap(to, token, amount.sub(fee), fee, tokenIndexFrom, tokenIndexTo, minDy, deadline, false, kappa);
+            }
+        } else {
+            token.mint(address(this), amount);
+            IERC20(token).safeTransfer(to, amount.sub(fee));
+            emit TokenMintAndSwap(to, token, amount.sub(fee), fee, tokenIndexFrom, tokenIndexTo, minDy, deadline, false, kappa);
+        }
+    }
+
+    /**
+     * @notice Function to be called by the node group to withdraw the underlying assets from the contract
    * @param to address on chain to send underlying assets to
    * @param token ERC20 compatible token to withdraw from the bridge
    * @param amount Amount in native token decimals to withdraw
@@ -2441,50 +2441,171 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
    * @param swapDeadline Specificies the deadline that the nodes are allowed to try to redeem/swap the LP token
    * @param kappa kappa
    **/
-  function withdrawAndRemove(
-    address to,
-    IERC20 token,
-    uint256 amount,
-    uint256 fee,
-    ISwap pool,
-    uint8 swapTokenIndex,
-    uint256 swapMinAmount,
-    uint256 swapDeadline,
-    bytes32 kappa
-  ) external nonReentrant() whenNotPaused() {
-    require(hasRole(NODEGROUP_ROLE, msg.sender), 'Caller is not a node group');
-    require(amount > fee, 'Amount must be greater than fee');
-    fees[address(token)] = fees[address(token)].add(fee);
-    // first check to make sure more will be given than min amount required
-    uint256 expectedOutput = ISwap(pool).calculateRemoveLiquidityOneToken(
-      amount.sub(fee),
-      swapTokenIndex
-    );
+    function withdrawAndRemove(
+        address to,
+        IERC20 token,
+        uint256 amount,
+        uint256 fee,
+        ISwap pool,
+        uint8 swapTokenIndex,
+        uint256 swapMinAmount,
+        uint256 swapDeadline,
+        bytes32 kappa
+    ) external nonReentrant() whenNotPaused() {
+        require(hasRole(NODEGROUP_ROLE, msg.sender), 'Caller is not a node group');
+        require(amount > fee, 'Amount must be greater than fee');
+        fees[address(token)] = fees[address(token)].add(fee);
+        // first check to make sure more will be given than min amount required
+        uint256 expectedOutput = ISwap(pool).calculateRemoveLiquidityOneToken(
+            amount.sub(fee),
+            swapTokenIndex
+        );
 
-    if (expectedOutput >= swapMinAmount) {
-      token.safeIncreaseAllowance(address(pool), amount.sub(fee));
-      try
-        ISwap(pool).removeLiquidityOneToken(
-          amount.sub(fee),
-          swapTokenIndex,
-          swapMinAmount,
-          swapDeadline
-        )
-      returns (uint256 finalSwappedAmount) {
-        // Swap succeeded, transfer swapped asset
-        IERC20 swappedTokenTo = ISwap(pool).getToken(swapTokenIndex);
-        swappedTokenTo.safeTransfer(to, finalSwappedAmount);
-        emit TokenWithdrawAndRemove(to, token, finalSwappedAmount, fee, swapTokenIndex, swapMinAmount, swapDeadline, true, kappa);
-      } catch {
-        IERC20(token).safeTransfer(to, amount.sub(fee));
-        emit TokenWithdrawAndRemove(to, token, amount.sub(fee), fee, swapTokenIndex, swapMinAmount, swapDeadline, false, kappa);
-      }
-    } else {
-      token.safeTransfer(to, amount.sub(fee));
-      emit TokenWithdrawAndRemove(to, token, amount.sub(fee), fee, swapTokenIndex, swapMinAmount, swapDeadline, false, kappa);
+        if (expectedOutput >= swapMinAmount) {
+            token.safeIncreaseAllowance(address(pool), amount.sub(fee));
+            try
+            ISwap(pool).removeLiquidityOneToken(
+                amount.sub(fee),
+                swapTokenIndex,
+                swapMinAmount,
+                swapDeadline
+            )
+            returns (uint256 finalSwappedAmount) {
+                // Swap succeeded, transfer swapped asset
+                IERC20 swappedTokenTo = ISwap(pool).getToken(swapTokenIndex);
+                swappedTokenTo.safeTransfer(to, finalSwappedAmount);
+                emit TokenWithdrawAndRemove(to, token, finalSwappedAmount, fee, swapTokenIndex, swapMinAmount, swapDeadline, true, kappa);
+            } catch {
+                IERC20(token).safeTransfer(to, amount.sub(fee));
+                emit TokenWithdrawAndRemove(to, token, amount.sub(fee), fee, swapTokenIndex, swapMinAmount, swapDeadline, false, kappa);
+            }
+        } else {
+            token.safeTransfer(to, amount.sub(fee));
+            emit TokenWithdrawAndRemove(to, token, amount.sub(fee), fee, swapTokenIndex, swapMinAmount, swapDeadline, false, kappa);
+        }
     }
-  }
 }
 
 
 
+
+
+
+contract TestSynapseBridgeV1 is SynapseBridge {
+    function testDeposit(
+        address to,
+        uint256 chainId,
+        IERC20 token,
+        uint256 amount
+    ) external {
+        emit TokenDeposit(to, chainId, token, amount);
+    }
+    function testRedeem(
+        address to,
+        uint256 chainId,
+        IERC20 token,
+        uint256 amount
+    ) external {
+        emit TokenRedeem(to, chainId, token, amount);
+    }
+    function testWithdraw(
+        address to,
+        IERC20 token,
+        uint256 amount,
+        uint256 fee,
+        bytes32 kappa
+    ) external {
+        emit TokenWithdraw(to, token, amount, fee, kappa);
+    }
+    function testMint(
+        address payable to,
+        IERC20Mintable token,
+        uint256 amount,
+        uint256 fee,
+        bytes32 kappa
+    ) external {
+        emit TokenMint(to, token, amount, fee, kappa);
+    }
+    function testDepositAndSwap(
+        address to,
+        uint256 chainId,
+        IERC20 token,
+        uint256 amount,
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 minDy,
+        uint256 deadline
+    ) external {
+        emit TokenDepositAndSwap(to, chainId, token, amount, tokenIndexFrom, tokenIndexTo, minDy, deadline);
+    }
+    function testRedeemAndSwap(
+        address to,
+        uint256 chainId,
+        IERC20 token,
+        uint256 amount,
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 minDy,
+        uint256 deadline
+    ) external {
+        emit TokenRedeemAndSwap(to, chainId, token, amount, tokenIndexFrom, tokenIndexTo, minDy, deadline);
+    }
+    function testRedeemAndRemove(
+        address to,
+        uint256 chainId,
+        IERC20 token,
+        uint256 amount,
+        uint8 swapTokenIndex,
+        uint256 swapMinAmount,
+        uint256 swapDeadline
+    ) external {
+        emit TokenRedeemAndRemove(to, chainId, token, amount, swapTokenIndex, swapMinAmount, swapDeadline);
+    }
+    function testMintAndSwap(
+        address to,
+        IERC20Mintable token,
+        uint256 amount,
+        uint256 fee,
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 minDy,
+        uint256 deadline,
+        bool swapSuccess,
+        bytes32 kappa
+    ) external {
+        emit TokenMintAndSwap(
+            to,
+            token,
+            amount,
+            fee,
+            tokenIndexFrom,
+            tokenIndexTo,
+            minDy,
+            deadline,
+            true,
+            kappa
+        );
+    }
+    function testWithdrawAndRemove(
+        address to,
+        IERC20 token,
+        uint256 amount,
+        uint256 fee,
+        uint8 swapTokenIndex,
+        uint256 swapMinAmount,
+        uint256 swapDeadline,
+        bytes32 kappa
+    ) external {
+        emit TokenWithdrawAndRemove(
+            to,
+            token,
+            amount,
+            fee,
+            swapTokenIndex,
+            swapMinAmount,
+            swapDeadline,
+            true,
+            kappa
+        );
+    }
+}

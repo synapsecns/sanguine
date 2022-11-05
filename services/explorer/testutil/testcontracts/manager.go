@@ -15,6 +15,8 @@ func NewDeployManager(t *testing.T) *DeployManager {
 		NewBridgeConfigV3Deployer,
 
 		NewTestSynapseBridgeDeployer,
+
+		NewTestSynapseBridgeV1Deployer,
 	)
 	return &DeployManager{parentManager}
 }

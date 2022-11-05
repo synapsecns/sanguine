@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
@@ -29,6 +30,18 @@ func (d *DeployManager) GetSynapseBridge(ctx context.Context, backend backends.S
 	bridgeContract := d.GetContractRegistry(backend).Get(ctx, SynapseBridgeType)
 
 	bridgeHandle, ok := bridgeContract.ContractHandle().(*bridge.BridgeRef)
+	assert.True(d.T(), ok)
+
+	return bridgeContract, bridgeHandle
+}
+
+// GetSynapseBridgeV1 gets a typecast bridge v1 contract.
+func (d *DeployManager) GetSynapseBridgeV1(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *bridgev1.BridgeRef) {
+	d.T().Helper()
+
+	bridgeContract := d.GetContractRegistry(backend).Get(ctx, SynapseBridgeV1Type)
+
+	bridgeHandle, ok := bridgeContract.ContractHandle().(*bridgev1.BridgeRef)
 	assert.True(d.T(), ok)
 
 	return bridgeContract, bridgeHandle

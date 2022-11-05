@@ -510,7 +510,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 	err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainID, 1, timestamp)
 	Nil(g.T(), err)
 
-	originRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, &txHashString, nil, nil, &page, nil)
+	originRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, &txHashString, nil, true, page, nil)
 	Nil(g.T(), err)
 	Equal(g.T(), len(originRes.Response), 1)
 	originResOne := *originRes.Response[0]
@@ -543,13 +543,13 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Equal(g.T(), *toInfo.BlockNumber, 1)
 	Equal(g.T(), *toInfo.Time, int(timestamp))
 
-	destinationRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, nil, &kappaString, nil, &page, nil)
+	destinationRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, nil, &kappaString, true, page, nil)
 	Nil(g.T(), err)
 	Equal(g.T(), len(destinationRes.Response), 1)
 	destinationResOne := *destinationRes.Response[0]
 	Equal(g.T(), originResOne, destinationResOne)
 
-	addressRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, &senderString, nil, nil, nil, &page, nil)
+	addressRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, &senderString, nil, nil, true, page, nil)
 	Nil(g.T(), err)
 	Equal(g.T(), len(addressRes.Response), 1)
 	addressResOne := *addressRes.Response[0]
@@ -630,8 +630,7 @@ func (g APISuite) TestLatestBridgeTransaction() {
 	Nil(g.T(), err)
 	// Get the latest bridge transactions.
 	// Start with pending being true.
-	boolRef := false
-	bridgeTransactions, err := g.client.GetLatestBridgeTransactions(g.GetTestContext(), &boolRef, &page)
+	bridgeTransactions, err := g.client.GetLatestBridgeTransactions(g.GetTestContext(), false, page)
 	Nil(g.T(), err)
 	Equal(g.T(), len(bridgeTransactions.Response), 2)
 	for _, bridgeTransaction := range bridgeTransactions.Response {
@@ -643,8 +642,7 @@ func (g APISuite) TestLatestBridgeTransaction() {
 		}
 	}
 	// Then with pending being false
-	boolRef = true
-	bridgeTransactions, err = g.client.GetLatestBridgeTransactions(g.GetTestContext(), &boolRef, &page)
+	bridgeTransactions, err = g.client.GetLatestBridgeTransactions(g.GetTestContext(), true, page)
 	Nil(g.T(), err)
 	Equal(g.T(), len(bridgeTransactions.Response), 2)
 	for _, bridgeTransaction := range bridgeTransactions.Response {

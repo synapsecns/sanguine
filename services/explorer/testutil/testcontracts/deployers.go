@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
@@ -35,6 +36,27 @@ func (t TestSynapseBridgeDeployer) Deploy(ctx context.Context) (contracts.Deploy
 }
 
 var _ deployer.ContractDeployer = &TestSynapseBridgeDeployer{}
+
+// TestSynapseBridgeV1Deployer is the type of the test bridge deployer.
+type TestSynapseBridgeV1Deployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewTestSynapseBridgeV1Deployer creates a new test bridge deployer.
+func NewTestSynapseBridgeV1Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return TestSynapseBridgeV1Deployer{deployer.NewSimpleDeployer(registry, backend, TestSynapseBridgeV1Type)}
+}
+
+// Deploy deploys a test bridge v1.
+func (t TestSynapseBridgeV1Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return t.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return testbridgev1.DeployTestSynapseBridgeV1(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return testbridgev1.NewTestBridgeV1Ref(address, backend)
+	})
+}
+
+var _ deployer.ContractDeployer = &TestSynapseBridgeV1Deployer{}
 
 // TestSwapFlashLoanDeployer is the type of the test swap deployer.
 type TestSwapFlashLoanDeployer struct {
