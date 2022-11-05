@@ -17,7 +17,7 @@ import (
 
 // set all contact types.
 func init() {
-	for i := 0; i < len(_contractTypeImpl_index); i++ {
+	for i := 0; i < len(_contractTypeImpl_index)-1; i++ {
 		contractType := contractTypeImpl(i)
 		AllContractTypes = append(AllContractTypes, contractType)
 		// assert type is correct
