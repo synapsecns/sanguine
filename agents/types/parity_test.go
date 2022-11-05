@@ -138,7 +138,7 @@ func TestMessageEncodeParity(t *testing.T) {
 	_, messageContract := deployManager.GetMessageHarness(ctx, testBackend)
 
 	// check constant parity
-	version, err := messageContract.MessageVersion(&bind.CallOpts{Context: ctx})
+	version, err := messageContract.MessageVersion0(&bind.CallOpts{Context: ctx})
 	Nil(t, err)
 	Equal(t, version, types.MessageVersion)
 
@@ -160,7 +160,7 @@ func TestMessageEncodeParity(t *testing.T) {
 	proverTip := randomUint96BigInt(t)
 	executorTip := randomUint96BigInt(t)
 
-	formattedMessage, err := messageContract.FormatMessage0(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, notaryTip, broadcasterTip, proverTip, executorTip, body)
+	formattedMessage, err := messageContract.FormatMessage1(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, notaryTip, broadcasterTip, proverTip, executorTip, body)
 	Nil(t, err)
 
 	decodedMessage, err := types.DecodeMessage(formattedMessage)
