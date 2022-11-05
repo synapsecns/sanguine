@@ -17,6 +17,8 @@ type Config struct {
 	RefreshRate uint `yaml:"refresh_rate"`
 	// ScribeURL is the URL of the Scribe server.
 	ScribeURL string `yaml:"scribe_url"`
+	// RPCURL is the URL of the RPC server.
+	RPCURL string `yaml:"rpc_url"`
 	// BridgeConfigAddress is the address of BridgeConfig contract.
 	BridgeConfigAddress string `yaml:"bridge_config_address"`
 	// BridgeConfigChainID is the ChainID of BridgeConfig contract.
@@ -29,12 +31,16 @@ type Config struct {
 // submodule. If any method returns an error that is returned here and the entirety
 // of IsValid returns false. Any warnings are logged by the submodules respective loggers.
 func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
-	if c.ScribeURL == "" {
-		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
-	}
 	if c.BridgeConfigAddress == "" {
 		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
 	}
+	if c.ScribeURL == "" {
+		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
+	}
+	if c.RPCURL == "" {
+		return false, fmt.Errorf("field RPCURL: %w", ErrRequiredField)
+	}
+
 	if len(c.BridgeConfigAddress) != (common.AddressLength*2)+2 {
 		return false, fmt.Errorf("field Address: %w", ErrAddressLength)
 	}

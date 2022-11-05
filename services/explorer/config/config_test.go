@@ -14,16 +14,14 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 	// Create the chain configs
 	chain1 := config.ChainConfig{
 		ChainID:             gofakeit.Uint32(),
-		RPCURL:              gofakeit.URL(),
 		FetchBlockIncrement: 100,
-		MaxGoroutines:       gofakeit.Int64(),
+		MaxGoroutines:       10,
 		Contracts:           []config.ContractConfig{makeContractConfig(), makeContractConfig()},
 	}
 	chain2 := config.ChainConfig{
 		ChainID:             gofakeit.Uint32(),
-		RPCURL:              gofakeit.URL(),
 		FetchBlockIncrement: 100,
-		MaxGoroutines:       gofakeit.Int64(),
+		MaxGoroutines:       10,
 		Contracts:           []config.ContractConfig{makeContractConfig(), makeContractConfig()},
 	}
 
@@ -33,7 +31,8 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 	// Put everything into one Config
 	testConfig := config.Config{
 		RefreshRate:         uint(gofakeit.Uint8()),
-		ScribeURL:           "http://localhost:8080",
+		ScribeURL:           gofakeit.URL(),
+		RPCURL:              gofakeit.URL(),
 		BridgeConfigAddress: etherMocks.MockAddress().String(),
 		BridgeConfigChainID: gofakeit.Uint32(),
 		Chains:              chainConfigs,

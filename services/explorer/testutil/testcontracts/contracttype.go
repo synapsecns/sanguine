@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 )
@@ -42,6 +43,8 @@ const (
 	TestSynapseBridgeType
 	// TestSwapFlashLoanType is the swap contract type.
 	TestSwapFlashLoanType
+	// TestSynapseBridgeV1Type is the bridge contract type for V1.
+	TestSynapseBridgeV1Type
 )
 
 // ID gets the contract type as an id.
@@ -68,6 +71,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return testbridge.Contracts["/solidity/TestSynapseBridge.sol:TestSynapseBridge"]
 	case TestSwapFlashLoanType:
 		return testswap.Contracts["/solidity/TestSwapFlashLoan.sol:TestSwapFlashLoan"]
+	case TestSynapseBridgeV1Type:
+		return testbridgev1.Contracts["/solidity/TestSynapseBridgeV1.sol:TestSynapseBridgeV1"]
 
 	default:
 		panic("not yet implemented")
