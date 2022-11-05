@@ -38,7 +38,7 @@ type Forwarder struct {
 	// Note: because we use an array here, this is not thread safe for writes
 	resMap *xsync.MapOf[[]rawResponse]
 	// rpcRequest is the parsed rpc request
-	rpcRequest *RPCRequest
+	rpcRequest []RPCRequest
 	// mux is used to track the release of the forwarder. This should only be used in async methods
 	// as RLock
 	mux sync.RWMutex
@@ -235,7 +235,6 @@ func (f *Forwarder) checkResponses(responseCount int) (done bool) {
 		f.resMap.Range(func(key string, responses []rawResponse) bool {
 			for _, response := range responses {
 				erroredUrls.Delete(response.url)
-
 				rpcErr := ErroredRPCResponse{
 					URL: response.url,
 					Raw: response.body,
@@ -323,7 +322,6 @@ func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 	if f.requiredConfirmations == 0 {
 		f.requiredConfirmations = f.chain.ConfirmationsThreshold()
 	}
-
 	var err error
 	f.rpcRequest, err = parseRPCPayload(f.body)
 	if err != nil {
@@ -333,7 +331,14 @@ func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 		return false
 	}
 
-	confirmable, err := f.rpcRequest.isConfirmable()
+	// This assumes that all items in the batch are utilizing the same method.
+	// omnirpc will send the body in a single (batch) request to the RPCs. Because there is a single
+	// request, all sub requests in the batch will have the same amount of confirmations.
+	// As a result, we can assume, omnirpc can only support batch requests of all the same tupe, unless we alter
+	// its current behavior. For example, like breaking batch requests into individual requests and emulate batch
+	// requests to clients.
+	// TODO make less naive
+	confirmable, err := f.rpcRequest[0].isConfirmable()
 	if err != nil {
 		f.c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,

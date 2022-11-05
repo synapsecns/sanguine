@@ -30,14 +30,22 @@ func init() {
 // rpcReqSchema contains the raw rpc request schema.
 var rpcReqSchema string
 
-func parseRPCPayload(body []byte) (_ *RPCRequest, err error) {
-	rpcPayload := RPCRequest{}
-	err = json.Unmarshal(body, &rpcPayload)
+func parseRPCPayload(body []byte) (_ []RPCRequest, err error) {
+	isBatch := len(body) > 0 && body[0] == '['
+	if isBatch {
+		var rpcPayload []RPCRequest
+		err = json.Unmarshal(body, &rpcPayload)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse batch json payload: %w, must conform to: %s", err, rpcReqSchema)
+		}
+		return rpcPayload, nil
+	}
+	rpcRequest := RPCRequest{}
+	err = json.Unmarshal(body, &rpcRequest)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse json payload: %w, must conform to: %s", err, rpcReqSchema)
 	}
-
-	return &rpcPayload, nil
+	return []RPCRequest{rpcRequest}, nil
 }
 
 func isBlockNumConfirmable(arg json.RawMessage) bool {
