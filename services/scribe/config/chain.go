@@ -16,7 +16,7 @@ type ChainConfig struct {
 	// Contracts stores all the contract information for the chain.
 	Contracts ContractConfigs `yaml:"contracts"`
 	// BlockBatchSize is the number of blocks to fetch at a time.
-	BlockBatchSize uint32 `yaml:"block_batch_size"`
+	BlockBatchSize uint64 `yaml:"block_batch_size"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

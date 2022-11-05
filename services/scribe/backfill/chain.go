@@ -247,32 +247,32 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 		case <-time.After(timeoutBlockNum):
 			var batchArr []rpc.BatchElem
 			iterSize := c.chainConfig.BlockBatchSize
-			if endHeight-blockNum < uint64(iterSize) {
-				iterSize = uint32(endHeight - blockNum)
+			if endHeight-blockNum < iterSize {
+				iterSize = endHeight - blockNum
 			}
-			for i := 0; i <= int(iterSize); i++ {
+
+			// Amount that will be added to current block for each item in the batch
+			for i := uint64(0); i < iterSize+1; i++ {
 				// Check if the current block's already exists in database.
-				_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum+uint64(i))
+				_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum+i)
 				if err == nil {
 					loggerBlocktime.Infof("skipping storing blocktime for block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-					blockNum++
-					timeoutBlockNum = time.Duration(0)
-					// Make sure the count doesn't increase unnecessarily.
-					bBlockNum.Reset()
+					// Move to next block
 					continue
 				}
 
 				// Store the block time info in the batchArr for batch querying
 				var batchElemErr error
 				var head interface{}
+				currentBlockNumber := hexutil.EncodeBig(big.NewInt(int64(blockNum + i)))
+				fmt.Println("currentBlockNumber", currentBlockNumber, blockNum+i)
 				batchElem := rpc.BatchElem{
 					Method: "eth_getBlockByNumber",
-					Args:   []interface{}{hexutil.EncodeBig(big.NewInt(int64(blockNum + uint64(i)))), false},
+					Args:   []interface{}{currentBlockNumber, false},
 					Result: &head,
 					Error:  batchElemErr,
 				}
 				batchArr = append(batchArr, batchElem)
-
 			}
 			err := c.client[0].BatchCallContext(ctx, batchArr)
 			if err != nil {
