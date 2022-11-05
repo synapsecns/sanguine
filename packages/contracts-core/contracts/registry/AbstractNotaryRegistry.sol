@@ -19,6 +19,12 @@ abstract contract AbstractNotaryRegistry is NotaryRegistryEvents {
     using TypedMemView for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    modifier haveActiveNotary(uint32 _domain) virtual;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
