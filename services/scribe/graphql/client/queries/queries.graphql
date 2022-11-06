@@ -218,3 +218,7 @@ query GetLastIndexed ($chain_id: Int!, $contract_address: String!) {
 query GetLogCount ($chain_id: Int!, $contract_address: String!) {
   response: logCount (chain_id: $chain_id, contract_address: $contract_address)
 }
+
+query GetBlockTimeCount ($chain_id: Int!) {
+  response: blockTimeCount (chain_id: $chain_id)
+}

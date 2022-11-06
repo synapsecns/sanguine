@@ -51,12 +51,13 @@ func (b BackfillSuite) TestChainBackfill() {
 	}
 	chainConfig := config.ChainConfig{
 		ChainID:   chainID,
-		RPCUrl:    "an rpc url is not needed for simulated backends",
 		Contracts: contractConfigs,
 	}
 
+	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
+
 	// Set up the ChainBackfiller.
-	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChain, chainConfig)
+	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChainArr, chainConfig)
 	Nil(b.T(), err)
 
 	b.EmitEventsForAChain(contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)
@@ -122,10 +123,5 @@ func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContrac
 		}
 		// There are `currBlock` - `firstBlock`+1 block times stored. events don't get emitted until the contract gets deployed.
 		Equal(b.T(), currBlock-firstBlock+uint64(1), totalBlockTimes)
-
-		// Check that the last stored block time is correct.
-		lastBlockTime, err := b.testDB.RetrieveLastBlockTime(b.GetTestContext(), chainBackfiller.ChainID())
-		Nil(b.T(), err)
-		Equal(b.T(), currBlock, lastBlockTime)
 	}
 }

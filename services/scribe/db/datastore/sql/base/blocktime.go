@@ -13,7 +13,6 @@ func (s Store) StoreBlockTime(ctx context.Context, chainID uint32, blockNumber, 
 			Columns:   []clause.Column{{Name: ChainIDFieldName}, {Name: BlockNumberFieldName}},
 			DoNothing: true,
 		}).
-		Model(&BlockTime{}).
 		Create(&BlockTime{
 			ChainID:     chainID,
 			BlockNumber: blockNumber,
@@ -45,34 +44,59 @@ func (s Store) RetrieveBlockTime(ctx context.Context, chainID uint32, blockNumbe
 
 // RetrieveLastBlockStored retrieves the last block number that has a stored block time.
 func (s Store) RetrieveLastBlockStored(ctx context.Context, chainID uint32) (uint64, error) {
-	var blockTime BlockTime
+	var blockTime uint64
 	dbTx := s.DB().WithContext(ctx).
 		Model(&BlockTime{}).
 		Where(&BlockTime{
 			ChainID: chainID,
 		}).
-		Order(fmt.Sprintf("%s DESC", BlockNumberFieldName)).
-		First(&blockTime)
+		Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).Scan(&blockTime)
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("could not retrieve last block time: %w", dbTx.Error)
 	}
-
-	return blockTime.BlockNumber, nil
+	return blockTime, nil
 }
 
 // RetrieveFirstBlockStored retrieves the first block number that has a stored block time.
 func (s Store) RetrieveFirstBlockStored(ctx context.Context, chainID uint32) (uint64, error) {
-	var blockTime BlockTime
+	var blockTime uint64
 	dbTx := s.DB().WithContext(ctx).
 		Model(&BlockTime{}).
 		Where(&BlockTime{
 			ChainID: chainID,
 		}).
-		Order(fmt.Sprintf("%s ASC", BlockNumberFieldName)).
-		First(&blockTime)
+		Select(fmt.Sprintf("MIN(%s)", BlockNumberFieldName)).Scan(&blockTime)
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("could not retrieve first block time: %w", dbTx.Error)
 	}
+	return blockTime, nil
+}
 
-	return blockTime.BlockNumber, nil
+// RetrieveBlockTimesCountForChain retrieves the number of block times stored for a chain.
+func (s Store) RetrieveBlockTimesCountForChain(ctx context.Context, chainID uint32) (int64, error) {
+	entry := BlockTime{}
+	dbTx := s.DB().WithContext(ctx).
+		Model(&BlockTime{}).
+		Where(&BlockTime{
+			ChainID: chainID,
+		}).
+		Scan(&entry)
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("could not retrieve block times count: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		return 0, nil
+	}
+	var count int64
+	dbTx = s.DB().WithContext(ctx).
+		Model(&BlockTime{}).
+		Where(&BlockTime{
+			ChainID: chainID,
+		}).
+		Count(&count)
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("could not count block times: %w", dbTx.Error)
+	}
+
+	return count, nil
 }

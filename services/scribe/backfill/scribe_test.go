@@ -25,7 +25,8 @@ func (b BackfillSuite) TestScribeBackfill() {
 	chains := []uint32{chainA, chainB, chainC}
 	simulatedBackends := []*simulated.Backend{}
 	for _, chain := range chains {
-		simulatedBackends = append(simulatedBackends, simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chain))))
+		simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chain)))
+		simulatedBackends = append(simulatedBackends, simulatedChain)
 	}
 	type deployedContracts []contracts.DeployedContract
 	type contractRefs []*testcontract.TestContractRef
@@ -76,7 +77,6 @@ func (b BackfillSuite) TestScribeBackfill() {
 	for i, chain := range chains {
 		chainConfig := config.ChainConfig{
 			ChainID:   chain,
-			RPCUrl:    "an rpc url is not needed for simulated backends",
 			Contracts: allContractConfigs[i],
 		}
 		allChainConfigs = append(allChainConfigs, chainConfig)
@@ -88,14 +88,16 @@ func (b BackfillSuite) TestScribeBackfill() {
 	// Set up all chain backfillers.
 	chainBackfillers := []*backfill.ChainBackfiller{}
 	for i, chainConfig := range allChainConfigs {
-		chainBackfiller, err := backfill.NewChainBackfiller(chainConfig.ChainID, b.testDB, simulatedBackends[i], chainConfig)
+		simulatedChainArr := []backfill.ScribeBackend{simulatedBackends[i], simulatedBackends[i]}
+		chainBackfiller, err := backfill.NewChainBackfiller(chainConfig.ChainID, b.testDB, simulatedChainArr, chainConfig)
 		Nil(b.T(), err)
 		chainBackfillers = append(chainBackfillers, chainBackfiller)
 	}
 
-	scribeBackends := make(map[uint32]backfill.ScribeBackend)
+	scribeBackends := make(map[uint32][]backfill.ScribeBackend)
 	for _, backend := range simulatedBackends {
-		scribeBackends[uint32(backend.GetChainID())] = backend
+		simulatedChainArr := []backfill.ScribeBackend{backend, backend}
+		scribeBackends[uint32(backend.GetChainID())] = simulatedChainArr
 	}
 
 	// Set up the scribe backfiller.
@@ -123,7 +125,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 
 	for _, chainBackfiller := range chainBackfillers {
 		totalBlockTimes := uint64(0)
-		currBlock, err := scribeBackfiller.Clients()[chainBackfiller.ChainID()].BlockNumber(b.GetTestContext())
+		currBlock, err := scribeBackfiller.Clients()[chainBackfiller.ChainID()][0].BlockNumber(b.GetTestContext())
 		Nil(b.T(), err)
 		firstBlock, err := b.testDB.RetrieveFirstBlockStored(b.GetTestContext(), chainBackfiller.ChainID())
 		Nil(b.T(), err)
@@ -135,10 +137,5 @@ func (b BackfillSuite) TestScribeBackfill() {
 		}
 		// There are `currBlock` - `firstBlock`+1 block times stored. events don't get emitted until the contract gets deployed.
 		Equal(b.T(), currBlock-firstBlock+uint64(1), totalBlockTimes)
-
-		// Check that the last stored block time is correct.
-		lastBlockTime, err := b.testDB.RetrieveLastBlockTime(b.GetTestContext(), chainBackfiller.ChainID())
-		Nil(b.T(), err)
-		Equal(b.T(), currBlock, lastBlockTime)
 	}
 }

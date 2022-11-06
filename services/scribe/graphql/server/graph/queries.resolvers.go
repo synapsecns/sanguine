@@ -149,6 +149,16 @@ func (r *queryResolver) LogCount(ctx context.Context, contractAddress string, ch
 	return &logCountInt, nil
 }
 
+// BlockTimeCount is the resolver for the blockTimeCount field.
+func (r *queryResolver) BlockTimeCount(ctx context.Context, chainID int) (*int, error) {
+	blockTimesCount, err := r.DB.RetrieveBlockTimesCountForChain(ctx, uint32(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving contract last block: %w", err)
+	}
+	blockTimesCountInt := int(blockTimesCount)
+	return &blockTimesCountInt, nil
+}
+
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 

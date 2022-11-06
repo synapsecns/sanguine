@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import { TypedMemView } from "../libs/TypedMemView.sol";
 import { Attestation } from "../libs/Attestation.sol";
 import { Auth } from "../libs/Auth.sol";
+import { NotaryRegistryEvents } from "../events/NotaryRegistryEvents.sol";
 
 /**
  * @notice Registry used for verifying Attestations signed by Notaries.
@@ -11,29 +12,11 @@ import { Auth } from "../libs/Auth.sol";
  * The child contract is responsible for implementing the Notaries storage.
  * @dev It is assumed that the Notary signature is only valid for a subset of origins.
  */
-abstract contract AbstractNotaryRegistry {
+abstract contract AbstractNotaryRegistry is NotaryRegistryEvents {
     using Attestation for bytes;
     using Attestation for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Emitted when a new Notary is added.
-     * @param domain    Domain where a Notary was added
-     * @param notary    Address of the added notary
-     */
-    event NotaryAdded(uint32 indexed domain, address indexed notary);
-
-    /**
-     * @notice Emitted when a new Notary is removed.
-     * @param domain    Domain where a Notary was removed
-     * @param notary    Address of the removed notary
-     */
-    event NotaryRemoved(uint32 indexed domain, address indexed notary);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕

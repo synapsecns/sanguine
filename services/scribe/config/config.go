@@ -17,6 +17,8 @@ type Config struct {
 	Chains ChainConfigs `yaml:"chains"`
 	// RefreshRate is the rate at which the scribe will refresh the last block height in seconds.
 	RefreshRate uint `yaml:"refresh_rate"`
+	// RPCURL is the url of the omnirpc.
+	RPCURL string `yaml:"rpc_url"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -25,6 +27,9 @@ type Config struct {
 func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 	if ok, err = c.Chains.IsValid(ctx); !ok {
 		return false, err
+	}
+	if c.RPCURL == "" {
+		return false, fmt.Errorf("%w: rpc url cannot be empty", ErrRequiredField)
 	}
 	return true, nil
 }

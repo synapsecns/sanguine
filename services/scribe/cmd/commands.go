@@ -63,7 +63,7 @@ var pathFlag = &cli.StringFlag{
 	Required: true,
 }
 
-func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uint32]backfill.ScribeBackend, scribeConfig config.Config, err error) {
+func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, scribeConfig config.Config, err error) {
 	scribeConfig, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
 		return nil, nil, scribeConfig, fmt.Errorf("could not decode config: %w", err)
@@ -74,13 +74,18 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 		return nil, nil, scribeConfig, fmt.Errorf("could not initialize database: %w", err)
 	}
 
-	clients = make(map[uint32]backfill.ScribeBackend)
+	clients = make(map[uint32][]backfill.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
-		backendClient, err := ethclient.DialContext(c.Context, client.RPCUrl)
+		backendClient, err := ethclient.DialContext(c.Context, fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 		if err != nil {
-			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", client.RPCUrl)
+			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 		}
-		clients[client.ChainID] = backendClient
+		backendClientWConfirmations, err := ethclient.DialContext(c.Context, fmt.Sprintf("%s/2/rpc/%d", scribeConfig.RPCURL, client.ChainID))
+		if err != nil {
+			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/4/rpc/%d", scribeConfig.RPCURL, client.ChainID))
+		}
+		clients[client.ChainID] = append(clients[client.ChainID], backendClient)
+		clients[client.ChainID] = append(clients[client.ChainID], backendClientWConfirmations)
 	}
 
 	return eventDB, clients, scribeConfig, nil
@@ -104,6 +109,7 @@ var backfillCommand = &cli.Command{
 			return fmt.Errorf("could not backfill backfiller: %w", err)
 		}
 		return nil
+
 	},
 }
 

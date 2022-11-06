@@ -3,6 +3,7 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/big"
 	"time"
 
@@ -20,7 +21,7 @@ type ChainBackfiller struct {
 	// eventDB is the database to store event data in
 	eventDB db.EventDB
 	// client is the client for filtering
-	client ScribeBackend
+	client []ScribeBackend
 	// contractBackfillers is the list of contract backfillers
 	contractBackfillers []*ContractBackfiller
 	// startHeights is a map from address -> start height
@@ -32,12 +33,14 @@ type ChainBackfiller struct {
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
+func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBackend, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
 	// initialize the list of contract backfillers
 	contractBackfillers := []*ContractBackfiller{}
 	// initialize each contract backfiller and start heights
 	startHeights := make(map[string]uint64)
-	minBlockHeight := uint64(0)
+
+	// start with max uint64
+	minBlockHeight := uint64(math.MaxUint64)
 	for _, contract := range chainConfig.Contracts {
 		contractBackfiller, err := NewContractBackfiller(chainConfig.ChainID, contract.Address, eventDB, client)
 		if err != nil {
@@ -45,7 +48,9 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 		}
 		contractBackfillers = append(contractBackfillers, contractBackfiller)
 		startHeights[contract.Address] = contract.StartBlock
-		if contract.StartBlock > minBlockHeight {
+
+		// Compare if current minBlockHeight is greater than current StartBlock set in the yaml
+		if minBlockHeight > contract.StartBlock {
 			minBlockHeight = contract.StartBlock
 		}
 	}
@@ -62,131 +67,232 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client ScribeBackend
 }
 
 // Backfill iterates over each contract backfiller and calls Backfill concurrently on each one.
-// If `onlyOneBlock` is true, the backfiller will only backfill the block at `endHeight`.
+// If `onlyOneBlock` is true, the backfiller will only backfill the block at `currentBlock`.
 //
 //nolint:gocognit,cyclop
 func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error {
-	// initialize the errgroup
-	g, groupCtx := errgroup.WithContext(ctx)
+	// initialize the errgroups for backfilling contracts and getting latest blocknumber.
+	gBackfill, groupCtxBackfill := errgroup.WithContext(ctx)
+	// backoff in the case of an error
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    30 * time.Second,
+	}
+
+	// Starting with 0 time out.
+	timeout := time.Duration(0)
+
+	// Init currentBlock
+	var currentBlock uint64
+	var err error
+
+	// Retry until block height for the current chain is retrieved.
+	if !onlyOneBlock {
+		for {
+			select {
+			case <-groupCtxBackfill.Done():
+				return fmt.Errorf("context canceled: %w", groupCtxBackfill.Err())
+			case <-time.After(timeout):
+				// get the end height for the backfill
+				currentBlock, err = c.client[0].BlockNumber(groupCtxBackfill)
+				if err != nil {
+					timeout = b.Duration()
+					logger.Warnf("could not get block number, bad connection to rpc likely: %v", err)
+					continue
+				}
+			}
+			b.Reset()
+			break
+		}
+	} else {
+		currentBlock = c.minBlockHeight + 1
+	}
+
 	// iterate over each contract backfiller
-	for _, contractBackfiller := range c.contractBackfillers {
+	for i := range c.contractBackfillers {
 		// capture func literal
-		contractBackfiller := contractBackfiller
+		contractBackfiller := c.contractBackfillers[i]
 		// get the start height for the backfill
 		startHeight := c.startHeights[contractBackfiller.address]
+		if onlyOneBlock {
+			currentBlock = startHeight
+		}
+		logger.Infof("Starting backfilling contracts on %d up to block %d ", c.chainID, currentBlock)
+
 		// call Backfill concurrently
-		g.Go(func() error {
-			// backoff in the case of an error
-			b := &backoff.Backoff{
-				Factor: 2,
-				Jitter: true,
-				Min:    1 * time.Second,
-				Max:    30 * time.Second,
-			}
+		gBackfill.Go(func() error {
 			// timeout should always be 0 on the first attempt
-			timeout := time.Duration(0)
+			timeout = time.Duration(0)
 			for {
-				// TODO: add a notification for failure to store
 				select {
-				case <-groupCtx.Done():
-					return fmt.Errorf("context canceled: %w", groupCtx.Err())
+				case <-groupCtxBackfill.Done():
+					logger.Warnf("could not backfill data: %v\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", groupCtxBackfill.Err(), c.chainID, startHeight, currentBlock, b.Attempt(), b.Duration())
+					return fmt.Errorf("context canceled: %w", groupCtxBackfill.Err())
 				case <-time.After(timeout):
-					// get the end height for the backfill
-					endHeight, err := c.client.BlockNumber(ctx)
+					err = contractBackfiller.Backfill(groupCtxBackfill, startHeight, currentBlock)
 					if err != nil {
 						timeout = b.Duration()
-						logger.Warnf("could not get block number, bad connection to rpc likely: %w", err)
+						logger.Warnf("could not backfill data: %v\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, currentBlock, b.Attempt(), b.Duration())
 						continue
 					}
-					if onlyOneBlock {
-						startHeight = endHeight
-					}
-					err = contractBackfiller.Backfill(groupCtx, startHeight, endHeight)
-					if err != nil {
-						timeout = b.Duration()
-						logger.Warnf("could not backfill data: %w", err)
-						continue
-					}
+					// Reset backoff and timeout
+					b.Reset()
+					timeout = time.Duration(0)
 					return nil
 				}
 			}
 		})
 	}
-	// backfill the block times
-	g.Go(func() error {
-		// backoff in the case of an error
-		b := &backoff.Backoff{
-			Factor: 2,
-			Jitter: true,
-			Min:    1 * time.Second,
-			Max:    30 * time.Second,
-		}
-		// timeout should always be 0 on the first attempt
-		timeout := time.Duration(0)
-	RETRY:
-		// TODO: add a notification for failure to store block time
-		select {
-		case <-groupCtx.Done():
-			return fmt.Errorf("context canceled: %w", groupCtx.Err())
-		case <-time.After(timeout):
-			// get the end height for the backfill
-			endHeight, err := c.client.BlockNumber(ctx)
-			if err != nil {
-				timeout = b.Duration()
-				logger.Warnf("could not get block number, bad connection to rpc likely: %v", err)
-				goto RETRY
-			}
-			startHeight, err := c.startHeightForBlockTime(groupCtx)
 
-			if err != nil {
-				return fmt.Errorf("could not get start height for block time: %w", err)
-			}
-			if startHeight != 0 {
-				startHeight--
-			}
+	// Initialize the errgroup for backfilling block times
+	gBlockTime, groupCtxBlockTime := errgroup.WithContext(ctx)
 
-			for blockNum := startHeight; blockNum <= endHeight; blockNum++ {
-				rawBlock, err := c.client.BlockByNumber(groupCtx, big.NewInt(int64(blockNum)))
-				if err != nil {
-					timeout = b.Duration()
-					logger.Warnf("could not get block time: %v", err)
-					goto RETRY
-				}
-				err = c.eventDB.StoreBlockTime(groupCtx, c.chainID, blockNum, rawBlock.Header().Time)
-				if err != nil {
-					timeout = b.Duration()
-					logger.Warnf("could not store block time: %v", err)
-					goto RETRY
-				}
-				// store the last block time
-				err = c.eventDB.StoreLastBlockTime(groupCtx, c.chainID, blockNum)
-				if err != nil {
-					timeout = b.Duration()
-					logger.Warnf("could not store last block time: %v", err)
-					goto RETRY
-				}
-			}
-			return nil
-		}
-	})
+	// Set the start height to the min height from all start blocks set in config
+	startHeight := c.minBlockHeight
 
-	// wait for all of the backfillers to finish
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("could not backfill: %w", err)
+	// Set the end height to the latest block height
+	endHeight := currentBlock
+
+	// Check if there are any block times stored in the database for the given chain
+	count, err := c.eventDB.RetrieveBlockTimesCountForChain(groupCtxBlockTime, c.chainID)
+	if err != nil {
+		return fmt.Errorf("could not retrieve block times count for chain: %w", err)
 	}
 
+	// Create another backfiller to start from the last stored block time if there are any block times stored.
+	if count > 0 {
+		loggerBlocktime.Warnf("creating additional backfiller to start at last stored blocktime on chain %d", c.chainID)
+
+		// Set the second backfiller's start height to the last stored block time
+		// This will also be used as the start height for this additional backfiller
+		endHeight, err = c.eventDB.RetrieveLastBlockStored(groupCtxBlockTime, c.chainID)
+		if err != nil {
+			return fmt.Errorf("could not retrieve last block stored: %w", err)
+		}
+
+		// Get first stored block time to compare with the current start height
+		firstStoredBlockTime, err := c.eventDB.RetrieveFirstBlockStored(groupCtxBlockTime, c.chainID)
+		if err != nil {
+			return fmt.Errorf("could not retrieve first block stored: %w", err)
+		}
+
+		// Get the min of the last stored blocktime and the min start block from the contracts
+		if startHeight > firstStoredBlockTime {
+			startHeight = firstStoredBlockTime
+		}
+
+		// Backfill from last stored block to current height
+		gBlockTime.Go(func() error {
+			err = c.backfillBlockTimes(groupCtxBlockTime, zeroCheck(endHeight), currentBlock)
+			if err != nil {
+				return fmt.Errorf("could not backfill block times from last stored block time: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, currentBlock, b.Attempt(), b.Duration())
+			}
+			return nil
+		})
+	}
+
+	// Backfill from earliest block to last stored block
+	gBlockTime.Go(func() error {
+		err = c.backfillBlockTimes(groupCtxBlockTime, zeroCheck(startHeight), endHeight)
+		if err != nil {
+			return fmt.Errorf("could not backfill block times from min block height: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
+		}
+		return nil
+	})
+
+	// wait for all the blocktimes to finish
+	if err := gBlockTime.Wait(); err != nil {
+		return fmt.Errorf("could not backfill: %w", err)
+	}
+	loggerBlocktime.Infof("Finished backfilling blocktimes on %d up to block %d ", c.chainID, currentBlock)
+
+	// wait for all the backfillers to finish
+	if err := gBackfill.Wait(); err != nil {
+		return fmt.Errorf("could not backfill: %w", err)
+	}
+	logger.Infof("Finished backfilling contracts on %d up to block %d ", c.chainID, currentBlock)
 	return nil
 }
 
-// startHeightForBlockTime returns the start height for backfilling block times. This is
-// the maximum of the most recent block for the chain and the minBlockHeight.
-func (c ChainBackfiller) startHeightForBlockTime(ctx context.Context) (startHeight uint64, err error) {
-	lastBlock, err := c.eventDB.RetrieveLastBlockTime(ctx, c.chainID)
-	if err != nil {
-		return 0, fmt.Errorf("could not retrieve last block time: %w", err)
+func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uint64, endHeight uint64) error {
+	// Init backoff for backfilling block times
+	bBlockNum := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    30 * time.Second,
 	}
-	if lastBlock > c.minBlockHeight {
-		return lastBlock, nil
+
+	// timeout should always be 0 on the first attempt
+	timeoutBlockNum := time.Duration(0)
+
+	// Current block
+	blockNum := startHeight
+	loggerBlocktime.Infof("Starting backfilling blocktimes on %d from block %d  to block %d ", c.chainID, startHeight, endHeight)
+
+	for {
+		select {
+		case <-ctx.Done():
+			loggerBlocktime.Warnf("gBlockTime context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), ctx.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(timeoutBlockNum):
+			// Check if the current block's already exists in database.
+			_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
+			if err == nil {
+				loggerBlocktime.Infof("skipping storing blocktime for block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+				blockNum++
+				// Make sure the count doesn't increase unnecessarily.
+				bBlockNum.Reset()
+				continue
+			}
+
+			// Get information on the current block for further processing.
+			rawBlock, err := c.client[0].HeaderByNumber(ctx, big.NewInt(int64(blockNum)))
+			if err != nil {
+				timeoutBlockNum = bBlockNum.Duration()
+				loggerBlocktime.Warnf("could not get block time at block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+				continue
+			}
+
+			// Store the block time with the block retrieved above.
+			err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum, rawBlock.Time)
+			if err != nil {
+				timeoutBlockNum = bBlockNum.Duration()
+				loggerBlocktime.Warnf("could not store block time - block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+
+				continue
+			}
+
+			// store the last block time
+			err = c.eventDB.StoreLastBlockTime(ctx, c.chainID, blockNum)
+			if err != nil {
+				timeoutBlockNum = bBlockNum.Duration()
+				loggerBlocktime.Warnf("could not store last block time %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+				continue
+			}
+
+			// Move on to the next block.
+			blockNum++
+
+			// Reset the backoff after successful block parse run to prevent bloated back offs.
+			bBlockNum.Reset()
+			timeoutBlockNum = time.Duration(0)
+
+			// If done with the range, exit go routine.
+			if blockNum > endHeight {
+				loggerBlocktime.Infof("Exiting backfill on chain %d on block %d ", c.chainID, blockNum)
+				return nil
+			}
+		}
 	}
-	return c.minBlockHeight, nil
+}
+
+// Used for setting start heights for backfilling.
+func zeroCheck(value uint64) uint64 {
+	if value > 0 {
+		return value - 1
+	}
+	return value
 }
