@@ -82,6 +82,21 @@ contract SystemRouterTest is SystemRouterTools {
         }
     }
 
+    function test_systemCall_revert_notSystemCall() public {
+        formattedSystemCalls = new bytes[](1);
+        // Try passing empty payload as "system call"
+        vm.expectRevert("Not a system call");
+        // Mock executing of the message on Destination
+        vm.prank(address(suiteDestination(DOMAIN_LOCAL)));
+        suiteSystemRouter(DOMAIN_LOCAL).handle({
+            _origin: DOMAIN_REMOTE,
+            _nonce: 1,
+            _sender: SystemCall.SYSTEM_ROUTER,
+            _rootSubmittedAt: block.timestamp,
+            _message: abi.encode(formattedSystemCalls)
+        });
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          TESTS: SYSTEM CALL                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
