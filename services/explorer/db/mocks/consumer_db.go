@@ -19,15 +19,17 @@ type ConsumerDB struct {
 	mock.Mock
 }
 
-// BridgeEventCount provides a mock function with given fields: ctx, query
-func (_m *ConsumerDB) BridgeEventCount(ctx context.Context, query string) (uint64, error) {
+// GetAddressRanking provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetAddressRanking(ctx context.Context, query string) ([]*model.AddressRanking, error) {
 	ret := _m.Called(ctx, query)
 
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func(context.Context, string) uint64); ok {
+	var r0 []*model.AddressRanking
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.AddressRanking); ok {
 		r0 = rf(ctx, query)
 	} else {
-		r0 = ret.Get(0).(uint64)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.AddressRanking)
+		}
 	}
 
 	var r1 error
@@ -41,15 +43,15 @@ func (_m *ConsumerDB) BridgeEventCount(ctx context.Context, query string) (uint6
 }
 
 // GetAllChainIDs provides a mock function with given fields: ctx
-func (_m *ConsumerDB) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
+func (_m *ConsumerDB) GetAllChainIDs(ctx context.Context) ([]int, error) {
 	ret := _m.Called(ctx)
 
-	var r0 []uint32
-	if rf, ok := ret.Get(0).(func(context.Context) []uint32); ok {
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context) []int); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]uint32)
+			r0 = ret.Get(0).([]int)
 		}
 	}
 
@@ -63,62 +65,16 @@ func (_m *ConsumerDB) GetAllChainIDs(ctx context.Context) ([]uint32, error) {
 	return r0, r1
 }
 
-// GetBridgeStatistic provides a mock function with given fields: ctx, subQuery
-func (_m *ConsumerDB) GetBridgeStatistic(ctx context.Context, subQuery string) (*string, error) {
-	ret := _m.Called(ctx, subQuery)
-
-	var r0 *string
-	if rf, ok := ret.Get(0).(func(context.Context, string) *string); ok {
-		r0 = rf(ctx, subQuery)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*string)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, subQuery)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetHistoricalData provides a mock function with given fields: ctx, subQuery, typeArg, filter
-func (_m *ConsumerDB) GetHistoricalData(ctx context.Context, subQuery string, typeArg *model.HistoricalResultType, filter string) (*model.HistoricalResult, error) {
-	ret := _m.Called(ctx, subQuery, typeArg, filter)
-
-	var r0 *model.HistoricalResult
-	if rf, ok := ret.Get(0).(func(context.Context, string, *model.HistoricalResultType, string) *model.HistoricalResult); ok {
-		r0 = rf(ctx, subQuery, typeArg, filter)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.HistoricalResult)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, *model.HistoricalResultType, string) error); ok {
-		r1 = rf(ctx, subQuery, typeArg, filter)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetKappaFromTxHash provides a mock function with given fields: ctx, query
-func (_m *ConsumerDB) GetKappaFromTxHash(ctx context.Context, query string) (*string, error) {
+// GetBridgeEvent provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error) {
 	ret := _m.Called(ctx, query)
 
-	var r0 *string
-	if rf, ok := ret.Get(0).(func(context.Context, string) *string); ok {
+	var r0 *sql.BridgeEvent
+	if rf, ok := ret.Get(0).(func(context.Context, string) *sql.BridgeEvent); ok {
 		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*string)
+			r0 = ret.Get(0).(*sql.BridgeEvent)
 		}
 	}
 
@@ -132,22 +88,22 @@ func (_m *ConsumerDB) GetKappaFromTxHash(ctx context.Context, query string) (*st
 	return r0, r1
 }
 
-// GetSwapSuccess provides a mock function with given fields: ctx, kappa, chainID
-func (_m *ConsumerDB) GetSwapSuccess(ctx context.Context, kappa string, chainID uint32) (*bool, error) {
-	ret := _m.Called(ctx, kappa, chainID)
+// GetDateResults provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error) {
+	ret := _m.Called(ctx, query)
 
-	var r0 *bool
-	if rf, ok := ret.Get(0).(func(context.Context, string, uint32) *bool); ok {
-		r0 = rf(ctx, kappa, chainID)
+	var r0 []*model.DateResult
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.DateResult); ok {
+		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*bool)
+			r0 = ret.Get(0).([]*model.DateResult)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, uint32) error); ok {
-		r1 = rf(ctx, kappa, chainID)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -155,8 +111,29 @@ func (_m *ConsumerDB) GetSwapSuccess(ctx context.Context, kappa string, chainID 
 	return r0, r1
 }
 
-// GetTokenAddressesByChainID provides a mock function with given fields: ctx, query
-func (_m *ConsumerDB) GetTokenAddressesByChainID(ctx context.Context, query string) ([]string, error) {
+// GetFloat64 provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetFloat64(ctx context.Context, query string) (float64, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 float64
+	if rf, ok := ret.Get(0).(func(context.Context, string) float64); ok {
+		r0 = rf(ctx, query)
+	} else {
+		r0 = ret.Get(0).(float64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStringArray provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetStringArray(ctx context.Context, query string) ([]string, error) {
 	ret := _m.Called(ctx, query)
 
 	var r0 []string
@@ -178,45 +155,20 @@ func (_m *ConsumerDB) GetTokenAddressesByChainID(ctx context.Context, query stri
 	return r0, r1
 }
 
-// GetTransactionCountForEveryAddress provides a mock function with given fields: ctx, subQuery
-func (_m *ConsumerDB) GetTransactionCountForEveryAddress(ctx context.Context, subQuery string) ([]*model.AddressRanking, error) {
-	ret := _m.Called(ctx, subQuery)
+// GetUint64 provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetUint64(ctx context.Context, query string) (uint64, error) {
+	ret := _m.Called(ctx, query)
 
-	var r0 []*model.AddressRanking
-	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.AddressRanking); ok {
-		r0 = rf(ctx, subQuery)
+	var r0 uint64
+	if rf, ok := ret.Get(0).(func(context.Context, string) uint64); ok {
+		r0 = rf(ctx, query)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.AddressRanking)
-		}
+		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, subQuery)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetTxHashFromKappa provides a mock function with given fields: ctx, kappa
-func (_m *ConsumerDB) GetTxHashFromKappa(ctx context.Context, kappa string) (*string, error) {
-	ret := _m.Called(ctx, kappa)
-
-	var r0 *string
-	if rf, ok := ret.Get(0).(func(context.Context, string) *string); ok {
-		r0 = rf(ctx, kappa)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*string)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, kappa)
+		r1 = rf(ctx, query)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -240,50 +192,6 @@ func (_m *ConsumerDB) PartialInfosFromIdentifiers(ctx context.Context, query str
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = rf(ctx, query)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ReadBlockNumberByChainID provides a mock function with given fields: ctx, eventType, chainID
-func (_m *ConsumerDB) ReadBlockNumberByChainID(ctx context.Context, eventType int8, chainID uint32) (*uint64, error) {
-	ret := _m.Called(ctx, eventType, chainID)
-
-	var r0 *uint64
-	if rf, ok := ret.Get(0).(func(context.Context, int8, uint32) *uint64); ok {
-		r0 = rf(ctx, eventType, chainID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*uint64)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int8, uint32) error); ok {
-		r1 = rf(ctx, eventType, chainID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// RetrieveLastBlock provides a mock function with given fields: ctx, chainID
-func (_m *ConsumerDB) RetrieveLastBlock(ctx context.Context, chainID uint32) (uint64, error) {
-	ret := _m.Called(ctx, chainID)
-
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func(context.Context, uint32) uint64); ok {
-		r0 = rf(ctx, chainID)
-	} else {
-		r0 = ret.Get(0).(uint64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, uint32) error); ok {
-		r1 = rf(ctx, chainID)
 	} else {
 		r1 = ret.Error(1)
 	}

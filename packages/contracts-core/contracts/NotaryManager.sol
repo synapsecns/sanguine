@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // ============ Internal Imports ============
 import { INotaryManager } from "./interfaces/INotaryManager.sol";
 import { Origin } from "./Origin.sol";
+import { NotaryManagerEvents } from "./events/NotaryManagerEvents.sol";
 // ============ External Imports ============
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
@@ -15,7 +16,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * that will manage Notary bonding, slashing,
  * selection and rotation
  */
-contract NotaryManager is INotaryManager, Ownable {
+contract NotaryManager is NotaryManagerEvents, INotaryManager, Ownable {
     // ============ Public Storage ============
 
     // address of origin contract
@@ -25,25 +26,6 @@ contract NotaryManager is INotaryManager, Ownable {
 
     // address of the current notary
     address private _notary;
-
-    // ============ Events ============
-
-    /**
-     * @notice Emitted when a new origin is set
-     * @param origin The address of the new origin contract
-     */
-    event NewOrigin(address origin);
-
-    /**
-     * @notice Emitted when a new notary is set
-     * @param notary The address of the new notary
-     */
-    event NewNotary(address notary);
-
-    /**
-     * @notice Emitted when slashNotary is called
-     */
-    event FakeSlashed(address reporter);
 
     // ============ Modifiers ============
 

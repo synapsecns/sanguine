@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/config"
 	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/db"
+	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"golang.org/x/sync/errgroup"
 	"time"
 )
@@ -48,15 +49,18 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 		g, groupCtx := errgroup.WithContext(ctx)
 
 		// Set limit of goroutines so Scribe doesn't get knocked over.
-		g.SetLimit(int(c.chainConfig.MaxGoroutines))
+		g.SetLimit(c.chainConfig.MaxGoroutines)
 
 		// Set the start height
 		startHeight := uint64(contract.StartBlock)
 
-		// Set start block to -1 to trigger backfill from last block stored by explorer
-		// Otherwise it will start at the block number specified in the config file.
+		// Set start block to -1 to trigger backfill from last block stored by explorer,
+		// otherwise backfilling will begin at the block number specified in the config file.
 		if contract.StartBlock < 0 {
-			startHeight, err = c.consumerDB.RetrieveLastBlock(ctx, c.chainConfig.ChainID)
+			startHeight, err = c.consumerDB.GetUint64(ctx, fmt.Sprintf(
+				"SELECT ifNull(%s, 0) FROM last_blocks WHERE %s = %d",
+				sql.BlockNumberFieldName, sql.ChainIDFieldName, c.chainConfig.ChainID,
+			))
 			if err != nil {
 				return fmt.Errorf("could not get last block number: %w", err)
 			}
@@ -67,7 +71,6 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 		if err != nil {
 			return fmt.Errorf("could not get last indexed for contract %s: %w", contract.Address, err)
 		}
-
 		// Iterate over all blocks and fetch logs with the current contract address
 		for currentHeight := startHeight; currentHeight < endHeight; currentHeight += c.chainConfig.FetchBlockIncrement {
 			funcHeight := currentHeight
