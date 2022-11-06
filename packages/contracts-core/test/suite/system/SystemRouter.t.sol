@@ -141,6 +141,36 @@ contract SystemRouterTest is SystemRouterTools {
         });
     }
 
+    function test_systemMultiCall_sameRecipient() public {
+        bytes4 selector = SystemContractHarness.setSensitiveValue.selector;
+        // Expect a bunch of "system call succeeded" events
+        expectSystemCallsWrapperTests({
+            domain: DOMAIN_LOCAL,
+            selector: selector,
+            sameRecipient: true
+        });
+        triggerTestWrapperMultiCall({
+            domain: DOMAIN_LOCAL,
+            selector: selector,
+            sameRecipient: true
+        });
+    }
+
+    function test_systemMultiCall_sameData() public {
+        bytes4 selector = SystemContractHarness.setSensitiveValue.selector;
+        // Expect a bunch of "system call succeeded" events
+        expectSystemCallsWrapperTests({
+            domain: DOMAIN_LOCAL,
+            selector: selector,
+            sameRecipient: false
+        });
+        triggerTestWrapperMultiCall({
+            domain: DOMAIN_LOCAL,
+            selector: selector,
+            sameRecipient: false
+        });
+    }
+
     function test_systemMultiCall_remote() public {
         // Send system multicalls (REMOTE -> LOCAL) one by one between all system contracts
         // and check that corresponding messages were dispatched
