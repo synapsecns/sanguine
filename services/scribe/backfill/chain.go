@@ -30,10 +30,6 @@ type ChainBackfiller struct {
 	minBlockHeight uint64
 	// chainConfig is the config for the backfiller
 	chainConfig config.ChainConfig
-	// BlockTimeChunkCount is the number of chunks to process at a time.
-	BlockTimeChunkCount uint64
-	// BlockTimeChunkSize is the number of blocks to process per chunk.
-	BlockTimeChunkSize uint64
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
@@ -75,8 +71,6 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 		startHeights:        startHeights,
 		minBlockHeight:      minBlockHeight,
 		chainConfig:         chainConfig,
-		BlockTimeChunkCount: chainConfig.BlockTimeChunkCount,
-		BlockTimeChunkSize:  chainConfig.BlockTimeChunkSize,
 	}, nil
 }
 
@@ -240,12 +234,12 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 		exitFlag := false
 
 		// Creates a backfiller for the number of chunks specified in the config
-		for i := uint64(0); i < c.BlockTimeChunkCount; i++ {
+		for i := uint64(0); i < c.chainConfig.BlockTimeChunkCount; i++ {
 			// Set the start height for the current chunk
-			chunkStartHeight := currentBlock + (i * c.BlockTimeChunkSize)
+			chunkStartHeight := currentBlock + (i * c.chainConfig.BlockTimeChunkSize)
 
 			// Set the end height for the current chunk
-			chunkEndHeight := chunkStartHeight + c.BlockTimeChunkSize - 1
+			chunkEndHeight := chunkStartHeight + c.chainConfig.BlockTimeChunkSize - 1
 
 			// Handle if the current chunk end height is greater than the total end height
 			if chunkEndHeight > endHeight {
@@ -272,7 +266,7 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 			return fmt.Errorf("could not backfill: %w", err)
 		}
 		// Calculate the last block stored for logging, storing, and setting the next current block.
-		lastBlockStored := currentBlock + (c.BlockTimeChunkCount * c.BlockTimeChunkSize) - 1
+		lastBlockStored := currentBlock + (c.chainConfig.BlockTimeChunkCount * c.chainConfig.BlockTimeChunkSize) - 1
 		logger.Infof("Finished backfilling chunks on %d from block %d up to block %d ", c.chainID, currentBlock, lastBlockStored)
 
 		// store the last block time
