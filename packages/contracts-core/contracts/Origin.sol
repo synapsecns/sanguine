@@ -78,7 +78,6 @@ contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, O
 
     function initialize(INotaryManager _notaryManager) external initializer {
         __SystemContract_initialize();
-        _initializeHistoricalRoots();
         _setNotaryManager(_notaryManager);
         _addNotary(notaryManager.notary());
     }
@@ -143,7 +142,7 @@ contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, O
         require(tips.totalTips() == msg.value, "!tips: totalTips");
         // Latest nonce (i.e. "last message" nonce) is current amount of leaves in the tree.
         // Message nonce is the amount of leaves after the new leaf insertion
-        messageNonce = nonce() + 1;
+        messageNonce = nonce(_destination) + 1;
         // format the message into packed bytes
         bytes memory message = Message.formatMessage({
             _origin: _localDomain(),
@@ -157,7 +156,7 @@ contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, O
         });
         messageHash = keccak256(message);
         // insert the hashed message into the Merkle tree
-        _insertMessage(messageNonce, messageHash);
+        _insertMessage(_destination, messageNonce, messageHash);
         // Emit Dispatch event with message information
         // note: leaf index in the tree is messageNonce - 1, meaning we don't need to emit that
         emit Dispatch(messageHash, messageNonce, _destination, _tips, message);
@@ -183,10 +182,15 @@ contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, O
      * @param _notary   Notary to slash
      * @param _guard    Guard who reported fraudulent Notary [address(0) if not a Guard report]
      */
-    function _slashNotary(address _notary, address _guard) internal override {
+    function _slashNotary(
+        uint32 _domain,
+        address _notary,
+        address _guard
+    ) internal override {
         // _notary is always an active Notary at this point
-        _removeNotary(_notary);
+        _removeNotary(_domain, _notary);
         notaryManager.slashNotary(payable(msg.sender));
+        // TODO: add domain to the event (decide what fields need to be indexed)
         emit NotarySlashed(_notary, _guard, msg.sender);
     }
 

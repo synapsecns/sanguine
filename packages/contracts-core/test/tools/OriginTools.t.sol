@@ -34,7 +34,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         createMessage({
             origin: context.origin,
             sender: _getSender(context, recipient),
-            nonce: _nextOriginNonce(context.origin),
+            nonce: _nextOriginNonce(context.origin, context.destination),
             destination: context.destination,
             mockTips: mockTips,
             body: body,
@@ -44,51 +44,65 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     }
 
     // Chain's default Notary attestation for given domain's Origin: current root and current nonce
-    function createSuggestedAttestation(uint32 domain) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(domain).suggestAttestation();
-        createAttestation(domain, nonce, root);
+    function createSuggestedAttestation(uint32 origin, uint32 destination) public {
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
+        createAttestation(origin, destination, nonce, root);
     }
 
     // Chain's given Notary attestation for given domain's Origin: current root and current nonce
-    function createSuggestedAttestation(uint32 domain, uint256 notaryIndex) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(domain).suggestAttestation();
-        createAttestation(domain, nonce, root, notaryIndex);
+    function createSuggestedAttestation(
+        uint32 origin,
+        uint32 destination,
+        uint256 notaryIndex
+    ) public {
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
+        createAttestation(origin, destination, nonce, root, notaryIndex);
     }
 
     // Chain's default Notary attestation for given domain's Origin: current root and fake nonce
-    function createFraudAttestation(uint32 domain, uint32 fakeNonce) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(domain).suggestAttestation();
+    function createFraudAttestation(
+        uint32 origin,
+        uint32 destination,
+        uint32 fakeNonce
+    ) public {
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
         require(nonce != fakeNonce, "Failed to provide wrong nonce");
-        createAttestation(domain, fakeNonce, root);
+        createAttestation(origin, destination, fakeNonce, root);
     }
 
     // Chain's given Notary attestation for given domain's Origin: current root and fake nonce
     function createFraudAttestation(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 fakeNonce,
         uint256 notaryIndex
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(domain).suggestAttestation();
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
         require(nonce != fakeNonce, "Failed to provide wrong nonce");
-        createAttestation(domain, fakeNonce, root, notaryIndex);
+        createAttestation(origin, destination, fakeNonce, root, notaryIndex);
     }
 
     // Chain's default Notary attestation for given domain's Origin: fake root and current nonce
-    function createFraudAttestation(uint32 domain, bytes32 fakeRoot) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(domain).suggestAttestation();
+    function createFraudAttestation(
+        uint32 origin,
+        uint32 destination,
+        bytes32 fakeRoot
+    ) public {
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
         require(root != fakeRoot, "Failed to provide wrong nonce");
-        createAttestation(domain, nonce, fakeRoot);
+        createAttestation(origin, destination, nonce, fakeRoot);
     }
 
     // Chain's given Notary attestation for given domain's Origin: fake root and current nonce
     function createFraudAttestation(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         bytes32 fakeRoot,
         uint256 notaryIndex
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(domain).suggestAttestation();
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
         require(root != fakeRoot, "Failed to provide wrong nonce");
-        createAttestation(domain, nonce, fakeRoot, notaryIndex);
+        createAttestation(origin, destination, nonce, fakeRoot, notaryIndex);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -334,8 +348,8 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     }
 
     // Returns nonce for the next message dispatched via Origin on given domain
-    function _nextOriginNonce(uint32 domain) internal view returns (uint32) {
-        return suiteOrigin(domain).nonce() + 1;
+    function _nextOriginNonce(uint32 origin, uint32 destination) internal view returns (uint32) {
+        return suiteOrigin(origin).nonce(destination) + 1;
     }
 
     // Returns "sender" field that Origin should be using when constructing a message.
