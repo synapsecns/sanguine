@@ -231,10 +231,9 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 
 	// Continue to backfill block times until the current block is greater than the end height
 	for currentBlock <= endHeight {
-		exitFlag := false
-
+		chunkIdx := uint64(0)
 		// Creates a backfiller for the number of chunks specified in the config
-		for chunkIdx := uint64(0); chunkIdx < c.chainConfig.BlockTimeChunkCount; chunkIdx++ {
+		for chunkIdx < c.chainConfig.BlockTimeChunkCount {
 			// Set the start height for the current chunk
 			chunkStartHeight := currentBlock + (chunkIdx * c.chainConfig.BlockTimeChunkSize)
 
@@ -244,7 +243,9 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 			// Handle if the current chunk end height is greater than the total end height
 			if chunkEndHeight >= endHeight {
 				chunkEndHeight = endHeight
-				exitFlag = true
+
+				// Prevents any unnecessary backfillers from being created since we have reached the end height.
+				chunkIdx = c.chainConfig.BlockTimeChunkCount
 			}
 
 			// Create a new backfiller for the current chunk
@@ -255,11 +256,7 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 				}
 				return nil
 			})
-
-			// Prevents any unnecessary backfillers from being created since we have reached the end height.
-			if exitFlag {
-				break
-			}
+			chunkIdx++
 		}
 		// Wait for all the backfillers to finish
 		if err := chunkGroup.Wait(); err != nil {
