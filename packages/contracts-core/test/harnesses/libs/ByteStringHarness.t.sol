@@ -21,7 +21,7 @@ contract ByteStringHarness {
     function arguments(uint40 _type, bytes memory _payload) public pure returns (uint256) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        return ByteString.arguments(_payload.ref(_type));
+        return ByteString.argumentWords(_payload.ref(_type));
     }
 
     function isSignature(bytes memory _payload) public pure returns (bool) {
