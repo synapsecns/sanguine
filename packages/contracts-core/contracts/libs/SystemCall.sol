@@ -32,9 +32,10 @@ library SystemCall {
 
     /**
      * @dev System Router is supposed to append (origin, caller) to the given payload,
-     * meaning there have to exist at least two arguments for a valid system call payload.
+     * meaning for a valid system call payload there have to exist at least two arguments,
+     * occupying at least two words in total.
      */
-    uint256 internal constant PAYLOAD_MIN_ARGUMENTS = 2;
+    uint256 internal constant PAYLOAD_MIN_ARGUMENT_WORDS = 2;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -80,8 +81,8 @@ library SystemCall {
         bytes29 payload = _callPayload(_view);
         // Payload needs to be a proper call payload
         if (!payload.isCallPayload()) return false;
-        // Payload needs to have at least this amount of arguments
-        return payload.arguments() >= PAYLOAD_MIN_ARGUMENTS;
+        // Payload needs to have at least this amount of argument words
+        return payload.argumentWords() >= PAYLOAD_MIN_ARGUMENT_WORDS;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

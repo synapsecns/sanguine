@@ -58,8 +58,14 @@ library ByteString {
     ▏*║                         CALL PAYLOAD SLICING                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // @notice Returns amount of function arguments in the call payload
-    function arguments(bytes29 _view)
+    /**
+     * @notice Returns amount of memory words (32 byte chunks) the function arguments
+     * occupy in the call payload.
+     * @dev This might differ from amount of arguments supplied, if any of the arguments
+     * occupies more than one memory slot. It is true, however, that argument part of the payload
+     * occupies exactly N words, even for dynamic types like `bytes`
+     */
+    function argumentWords(bytes29 _view)
         internal
         pure
         onlyType(_view, SynapseTypes.CALL_PAYLOAD)

@@ -17,8 +17,8 @@ contract SystemCallLibraryTest is SynapseLibraryTest {
     // First element is (uint8 recipient)
     uint8 internal constant FIRST_ELEMENT_BYTES = 8 / 8;
 
-    uint8 internal constant MIN_ARGUMENTS = 2;
-    uint8 internal constant MIN_SYSTEM_CALL_LENGTH = 1 + 4 + 32 * MIN_ARGUMENTS;
+    uint8 internal constant MIN_ARGUMENT_WORDS = 2;
+    uint8 internal constant MIN_SYSTEM_CALL_LENGTH = 1 + 4 + 32 * MIN_ARGUMENT_WORDS;
 
     SystemCallHarness internal libHarness;
 
@@ -81,19 +81,19 @@ contract SystemCallLibraryTest is SynapseLibraryTest {
         // - recipient (1 byte)
         // - selector (4 bytes)
         // - arguments (unknown amount of 32-byte words, at least two words)
-        // Thus, payload should have a length of 1 + 4 + 32 * arguments
+        // Thus, payload should have a length of 1 + 4 + 32 * words
         vm.assume((length - 5) % 32 != 0);
         assertFalse(libHarness.isSystemCall(new bytes(length)), "!isSystemCall: incorrect length");
     }
 
-    function test_isSystemCall_correctPayloadLength(uint8 arguments) public {
-        vm.assume(arguments >= MIN_ARGUMENTS);
+    function test_isSystemCall_correctPayloadLength(uint8 argumentWords) public {
+        vm.assume(argumentWords >= MIN_ARGUMENT_WORDS);
         // System call payload is
         // - recipient (1 byte)
         // - selector (4 bytes)
         // - arguments (unknown amount of 32-byte words, at least two words)
-        // Thus, payload should have a length of 1 + 4 + 32 * arguments
-        uint256 length = 5 + 32 * uint256(arguments);
+        // Thus, payload should have a length of 1 + 4 + 32 * words
+        uint256 length = 5 + 32 * uint256(argumentWords);
         assertTrue(libHarness.isSystemCall(new bytes(length)), "!isSystemCall: correct length");
     }
 
