@@ -226,7 +226,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeight uint64, endHeight uint64) error {
 	// Initialize the errgroup for backfilling block times
-	gBlocktimeChunkBackfiller, groupBlocktimeBackfiller := errgroup.WithContext(ctx)
+	chunkGroup, chunkCtx := errgroup.WithContext(ctx)
 	currentBlock := startHeight
 
 	// Continue to backfill block times until the current block is greater than the end height
@@ -234,22 +234,22 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 		exitFlag := false
 
 		// Creates a backfiller for the number of chunks specified in the config
-		for i := uint64(0); i < c.chainConfig.BlockTimeChunkCount; i++ {
+		for chunkIdx := uint64(0); chunkIdx < c.chainConfig.BlockTimeChunkCount; chunkIdx++ {
 			// Set the start height for the current chunk
-			chunkStartHeight := currentBlock + (i * c.chainConfig.BlockTimeChunkSize)
+			chunkStartHeight := currentBlock + (chunkIdx * c.chainConfig.BlockTimeChunkSize)
 
 			// Set the end height for the current chunk
 			chunkEndHeight := chunkStartHeight + c.chainConfig.BlockTimeChunkSize - 1
 
 			// Handle if the current chunk end height is greater than the total end height
-			if chunkEndHeight > endHeight {
+			if chunkEndHeight >= endHeight {
 				chunkEndHeight = endHeight
 				exitFlag = true
 			}
 
 			// Create a new backfiller for the current chunk
-			gBlocktimeChunkBackfiller.Go(func() error {
-				err := c.blocktimeBackfiller(groupBlocktimeBackfiller, chunkStartHeight, chunkEndHeight)
+			chunkGroup.Go(func() error {
+				err := c.blocktimeBackfiller(chunkCtx, chunkStartHeight, chunkEndHeight)
 				if err != nil {
 					return fmt.Errorf("could not backfill chunk : %w", err)
 				}
@@ -262,7 +262,7 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 			}
 		}
 		// Wait for all the backfillers to finish
-		if err := gBlocktimeChunkBackfiller.Wait(); err != nil {
+		if err := chunkGroup.Wait(); err != nil {
 			return fmt.Errorf("could not backfill: %w", err)
 		}
 		// Calculate the last block stored for logging, storing, and setting the next current block.
