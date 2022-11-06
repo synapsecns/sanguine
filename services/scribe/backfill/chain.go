@@ -47,6 +47,10 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 		chainConfig.BlockTimeChunkCount = 10
 	}
 
+	if chainConfig.BlockTimeChunkSize == 0 {
+		chainConfig.BlockTimeChunkSize = 20
+	}
+
 	// start with max uint64
 	minBlockHeight := uint64(math.MaxUint64)
 	for _, contract := range chainConfig.Contracts {
@@ -72,7 +76,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 		minBlockHeight:      minBlockHeight,
 		chainConfig:         chainConfig,
 		BlockTimeChunkCount: chainConfig.BlockTimeChunkCount,
-		BlockTimeChunkSize:  20,
+		BlockTimeChunkSize:  chainConfig.BlockTimeChunkSize,
 	}, nil
 }
 

@@ -17,6 +17,8 @@ type ChainConfig struct {
 	Contracts ContractConfigs `yaml:"contracts"`
 	// BlockTimeChunkCount is the number of chunks (goroutines) to process at a time while backfilling blocktimes.
 	BlockTimeChunkCount uint64 `yaml:"block_time_chunk_count"`
+	// BlockTimeChunkSize is the number of blocks to process per chunk (goroutine) while backfilling blocktimes.
+	BlockTimeChunkSize uint64 `yaml:"block_time_chunk_size"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.
