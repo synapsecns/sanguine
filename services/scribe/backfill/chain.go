@@ -86,9 +86,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 //
 //nolint:gocognit,cyclop
 func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error {
-	// For calculating elapsed time
 	startTime := time.Now()
-
 	// Create a new context for the chain so all chains don't halt when backfilling is completed.
 	chainCtx := context.WithValue(ctx, chainContextKey, fmt.Sprintf("%d-%d", c.chainID, c.minBlockHeight))
 	// initialize the errgroups for backfilling contracts and getting latest blocknumber.
@@ -98,7 +96,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		Factor: 2,
 		Jitter: true,
 		Min:    1 * time.Second,
-		Max:    30 * time.Second,
+		Max:    10 * time.Second,
 	}
 
 	// Starting with 0 time out.
