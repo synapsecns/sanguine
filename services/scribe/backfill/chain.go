@@ -36,7 +36,7 @@ type contextKey int
 
 const (
 	chainContextKey contextKey = iota
-	backfillContextKey
+	blocktimeContextKey
 )
 
 // NewChainBackfiller creates a new backfiller for a chain.
@@ -86,8 +86,11 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 //
 //nolint:gocognit,cyclop
 func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error {
+	// For calculating elapsed time
+	startTime := time.Now()
+
 	// Create a new context for the chain so all chains don't halt when backfilling is completed.
-	chainCtx := context.WithValue(ctx, chainContextKey, c.chainID)
+	chainCtx := context.WithValue(ctx, chainContextKey, fmt.Sprintf("%d-%d", c.chainID, c.minBlockHeight))
 	// initialize the errgroups for backfilling contracts and getting latest blocknumber.
 	backfillGroup, backfillCtx := errgroup.WithContext(chainCtx)
 	// backoff in the case of an error
@@ -110,7 +113,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		for {
 			select {
 			case <-backfillCtx.Done():
-				return fmt.Errorf("context canceled: %w", backfillCtx.Err())
+				return fmt.Errorf("%s context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
 			case <-time.After(timeout):
 				// get the end height for the backfill
 				currentBlock, err = c.client[0].BlockNumber(backfillCtx)
@@ -146,7 +149,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				select {
 				case <-backfillCtx.Done():
 					logger.Warnf("could not backfill data: %v\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", backfillCtx.Err(), c.chainID, startHeight, currentBlock, b.Attempt(), b.Duration())
-					return fmt.Errorf("context canceled: %w", backfillCtx.Err())
+					return fmt.Errorf("%s context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
 				case <-time.After(timeout):
 					err = contractBackfiller.Backfill(backfillCtx, startHeight, currentBlock)
 					if err != nil {
@@ -220,7 +223,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	if err := backfillGroup.Wait(); err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
-	logger.Infof("Finished backfilling blocktimes and contracts on %d up to block %d ", c.chainID, currentBlock)
+	logger.Infof("Finished backfilling blocktimes and contracts on %d up to block %d\nElaspsed time (hours): %f", c.chainID, currentBlock, time.Now().Sub(startTime).Hours())
 	return nil
 }
 
@@ -233,7 +236,7 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 		loggerBlocktime.Infof("Starting backfilling chunks on %d from block %d  to block %d ", c.chainID, currentBlock, endHeight)
 
 		// Create a new context for the next batch of blocktime chunks
-		blocktimeChunkCtx := context.WithValue(ctx, backfillContextKey, fmt.Sprintf("%d-%d-%d", c.chainID, startHeight, endHeight))
+		blocktimeChunkCtx := context.WithValue(ctx, blocktimeContextKey, fmt.Sprintf("%d-%d-%d", c.chainID, startHeight, endHeight))
 
 		// Initialize the errgroup for the next batch of blocktime chunks
 		chunkGroup, chunkCtx := errgroup.WithContext(blocktimeChunkCtx)
@@ -303,8 +306,8 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 	for {
 		select {
 		case <-ctx.Done():
-			loggerBlocktime.Warnf("gBlockTime context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), ctx.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-			return fmt.Errorf("context canceled: %w", ctx.Err())
+			loggerBlocktime.Warnf("context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), ctx.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
+			return fmt.Errorf("%s context canceled: %w", ctx.Value(blocktimeContextKey), ctx.Err())
 		case <-time.After(timeoutBlockNum):
 			// Check if the current block's already exists in database.
 			_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
