@@ -222,6 +222,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		return fmt.Errorf("could not backfill: %w", err)
 	}
 	logger.Infof("Finished backfilling blocktimes and contracts on %d up to block %d\nElaspsed time (hours): %f", c.chainID, currentBlock, time.Since(startTime).Hours())
+	chainCtx.Done()
 	return nil
 }
 
