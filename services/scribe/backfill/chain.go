@@ -276,7 +276,7 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 		// store the last block time using the parent context.
 		err := c.eventDB.StoreLastBlockTime(ctx, c.chainID, lastBlockStored)
 		if err != nil {
-			loggerBlocktime.Warnf("could not store last block time %s: %v\nChain: %d\nCurrent Block: %d, Last Block: %d", err, c.chainID, currentBlock, lastBlockStored)
+			loggerBlocktime.Warnf("could not store last block time %s: \nChain: %d\nCurrent Block: %d, Last Block: %d", err, c.chainID, currentBlock, lastBlockStored)
 		}
 
 		// Increment the current block by the number of chunks just backfilled.
