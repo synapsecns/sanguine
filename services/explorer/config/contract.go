@@ -11,7 +11,7 @@ type ContractConfig struct {
 	// ContractType is the type of contract.
 	ContractType string `yaml:"contract_type"`
 	// Addresses are the addresses of the contracts
-	Address string `yaml:"addresse"`
+	Address string `yaml:"address"`
 	// StartBlock is where to start backfilling this address from.
 	StartBlock int64 `yaml:"start_block"`
 }

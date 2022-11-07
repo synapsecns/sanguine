@@ -37,3 +37,12 @@ func TestGetTokenMetadataWithTokenID(t *testing.T) {
 	NotNil(t, price)
 	NotNil(t, symbol)
 }
+
+func TestGetTokenMetadataFailure(t *testing.T) {
+	timestamp := 1664980469
+	tokenID := "this is not a token"
+	ctx := context.TODO()
+	price, symbol := consumer.GetTokenMetadataWithTokenID(ctx, timestamp, &tokenID)
+	Nil(t, price)
+	Nil(t, symbol)
+}

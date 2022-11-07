@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
@@ -45,4 +46,16 @@ func (d *DeployManager) GetTestSwapFlashLoan(ctx context.Context, backend backen
 	assert.True(d.T(), ok)
 
 	return swapContract, swapHandle
+}
+
+// GetTestSynapseBridgeV1 gets a typecast test bridge contract v1.
+func (d *DeployManager) GetTestSynapseBridgeV1(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testbridgev1.TestBridgeV1Ref) {
+	d.T().Helper()
+
+	bridgeContract := d.GetContractRegistry(backend).Get(ctx, TestSynapseBridgeV1Type)
+
+	bridgeHandle, ok := bridgeContract.ContractHandle().(*testbridgev1.TestBridgeV1Ref)
+	assert.True(d.T(), ok)
+
+	return bridgeContract, bridgeHandle
 }

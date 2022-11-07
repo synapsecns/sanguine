@@ -62,7 +62,7 @@ var configFlag = &cli.StringFlag{
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, addressFlag},
+	Flags:       []cli.Flag{portFlag, addressFlag, scribeURL},
 	Action: func(c *cli.Context) error {
 		fmt.Println("port", c.Uint("port"))
 		err := api.Start(c.Context, api.Config{
@@ -93,7 +93,7 @@ var backfillCommand = &cli.Command{
 		}
 		clients := make(map[uint32]bind.ContractBackend)
 		for _, client := range decodeConfig.Chains {
-			backendClient, err := ethclient.DialContext(c.Context, client.RPCURL)
+			backendClient, err := ethclient.DialContext(c.Context, decodeConfig.RPCURL+fmt.Sprintf("%d", client.ChainID))
 			if err != nil {
 				return fmt.Errorf("could not start client for %s", client.RPCURL)
 			}
