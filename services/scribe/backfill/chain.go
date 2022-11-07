@@ -32,6 +32,13 @@ type ChainBackfiller struct {
 	chainConfig config.ChainConfig
 }
 
+type contextKey int
+
+const (
+	chainContextKey contextKey = iota
+	backfillContextKey
+)
+
 // NewChainBackfiller creates a new backfiller for a chain.
 func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBackend, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
 	// initialize the list of contract backfillers
@@ -80,7 +87,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 //nolint:gocognit,cyclop
 func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error {
 	// Create a new context for the chain so all chains don't halt when backfilling is completed.
-	chainCtx := context.WithValue(ctx, "chain_id", c.chainID)
+	chainCtx := context.WithValue(ctx, chainContextKey, c.chainID)
 	// initialize the errgroups for backfilling contracts and getting latest blocknumber.
 	backfillGroup, backfillCtx := errgroup.WithContext(chainCtx)
 	// backoff in the case of an error
@@ -218,7 +225,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 }
 
 func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeight uint64, endHeight uint64) error {
-
 	currentBlock := startHeight
 
 	// Continue to backfill block times until the current block is greater than the end height
@@ -227,7 +233,7 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 		loggerBlocktime.Infof("Starting backfilling chunks on %d from block %d  to block %d ", c.chainID, currentBlock, endHeight)
 
 		// Create a new context for the next batch of blocktime chunks
-		blocktimeChunkCtx := context.WithValue(ctx, "blocktime_id", fmt.Sprintf("%d-%d-%d", c.chainID, startHeight, endHeight))
+		blocktimeChunkCtx := context.WithValue(ctx, backfillContextKey, fmt.Sprintf("%d-%d-%d", c.chainID, startHeight, endHeight))
 
 		// Initialize the errgroup for the next batch of blocktime chunks
 		chunkGroup, chunkCtx := errgroup.WithContext(blocktimeChunkCtx)
@@ -250,7 +256,6 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 
 			// Create a new backfiller for the current chunk
 			chunkGroup.Go(func() error {
-
 				err := c.blocktimeBackfiller(chunkCtx, chunkStartHeight, chunkEndHeight)
 				if err != nil {
 					return fmt.Errorf("could not backfill chunk : %w", err)
