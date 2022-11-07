@@ -215,7 +215,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			return fmt.Errorf("could not backfill block times from min block height: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
 		}
 		return nil
-
 	})
 
 	// wait for all the backfilling to finish
