@@ -26,6 +26,8 @@ type ContractBackfiller struct {
 	cache *lru.Cache
 }
 
+var logsChanLenFrequency = 1000
+
 // ---- Specific Backfiller Errors ----
 // txNotSupportedError is for handling the legacy Arbitrum tx type.
 const txNotSupportedError = "transaction type not supported"
@@ -86,6 +88,9 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 				// check if the txHash has already been stored in the cache
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
+				}
+				if len(logsChan)%logsChanLenFrequency == 0 {
+					logger.Infof("logsChan length: %d", len(logsChan))
 				}
 				err := c.store(groupCtx, log)
 				if err != nil {
