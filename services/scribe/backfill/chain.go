@@ -39,6 +39,14 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 	// initialize each contract backfiller and start heights
 	startHeights := make(map[string]uint64)
 
+	if chainConfig.BlockTimeChunkCount == 0 {
+		chainConfig.BlockTimeChunkCount = 10
+	}
+
+	if chainConfig.BlockTimeChunkSize == 0 {
+		chainConfig.BlockTimeChunkSize = 20
+	}
+
 	// start with max uint64
 	minBlockHeight := uint64(math.MaxUint64)
 	for _, contract := range chainConfig.Contracts {
@@ -185,7 +193,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 		// Backfill from last stored block to current height
 		gBlockTime.Go(func() error {
-			err = c.backfillBlockTimes(groupCtxBlockTime, zeroCheck(endHeight), currentBlock)
+			err = c.blocktimeBackfillManager(groupCtxBlockTime, zeroCheck(endHeight), currentBlock)
 			if err != nil {
 				return fmt.Errorf("could not backfill block times from last stored block time: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, currentBlock, b.Attempt(), b.Duration())
 			}
@@ -195,7 +203,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 	// Backfill from earliest block to last stored block
 	gBlockTime.Go(func() error {
-		err = c.backfillBlockTimes(groupCtxBlockTime, zeroCheck(startHeight), endHeight)
+		err = c.blocktimeBackfillManager(groupCtxBlockTime, zeroCheck(startHeight), endHeight)
 		if err != nil {
 			return fmt.Errorf("could not backfill block times from min block height: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
 		}
@@ -216,7 +224,61 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	return nil
 }
 
-func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uint64, endHeight uint64) error {
+func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeight uint64, endHeight uint64) error {
+	// Initialize the errgroup for backfilling block times
+	chunkGroup, chunkCtx := errgroup.WithContext(ctx)
+	currentBlock := startHeight
+
+	// Continue to backfill block times until the current block is greater than the end height
+	for currentBlock <= endHeight {
+		chunkIdx := uint64(0)
+		// Creates a backfiller for the number of chunks specified in the config
+		for chunkIdx < c.chainConfig.BlockTimeChunkCount {
+			// Set the start height for the current chunk
+			chunkStartHeight := currentBlock + (chunkIdx * c.chainConfig.BlockTimeChunkSize)
+
+			// Set the end height for the current chunk
+			chunkEndHeight := chunkStartHeight + c.chainConfig.BlockTimeChunkSize - 1
+
+			// Handle if the current chunk end height is greater than the total end height
+			if chunkEndHeight >= endHeight {
+				chunkEndHeight = endHeight
+
+				// Prevents any unnecessary backfillers from being created since we have reached the end height.
+				chunkIdx = c.chainConfig.BlockTimeChunkCount
+			}
+
+			// Create a new backfiller for the current chunk
+			chunkGroup.Go(func() error {
+				err := c.blocktimeBackfiller(chunkCtx, chunkStartHeight, chunkEndHeight)
+				if err != nil {
+					return fmt.Errorf("could not backfill chunk : %w", err)
+				}
+				return nil
+			})
+			chunkIdx++
+		}
+		// Wait for all the backfillers to finish
+		if err := chunkGroup.Wait(); err != nil {
+			return fmt.Errorf("could not backfill: %w", err)
+		}
+		// Calculate the last block stored for logging, storing, and setting the next current block.
+		lastBlockStored := currentBlock + (c.chainConfig.BlockTimeChunkCount * c.chainConfig.BlockTimeChunkSize) - 1
+		logger.Infof("Finished backfilling chunks on %d from block %d up to block %d ", c.chainID, currentBlock, lastBlockStored)
+
+		// store the last block time
+		err := c.eventDB.StoreLastBlockTime(ctx, c.chainID, lastBlockStored)
+		if err != nil {
+			loggerBlocktime.Warnf("could not store last block time %s: %v\nChain: %d\nCurrent Block: %d, Last Block: %d", err, c.chainID, currentBlock, lastBlockStored)
+		}
+
+		// Increment the current block by the number of chunks just backfilled.
+		currentBlock = lastBlockStored + 1
+	}
+	return nil
+}
+
+func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight uint64, endHeight uint64) error {
 	// Init backoff for backfilling block times
 	bBlockNum := &backoff.Backoff{
 		Factor: 2,
@@ -261,15 +323,6 @@ func (c ChainBackfiller) backfillBlockTimes(ctx context.Context, startHeight uin
 			if err != nil {
 				timeoutBlockNum = bBlockNum.Duration()
 				loggerBlocktime.Warnf("could not store block time - block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
-
-				continue
-			}
-
-			// store the last block time
-			err = c.eventDB.StoreLastBlockTime(ctx, c.chainID, blockNum)
-			if err != nil {
-				timeoutBlockNum = bBlockNum.Duration()
-				loggerBlocktime.Warnf("could not store last block time %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 				continue
 			}
 
