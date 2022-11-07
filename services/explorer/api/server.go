@@ -44,7 +44,7 @@ func Start(ctx context.Context, cfg Config) error {
 	}))
 
 	// initialize the database
-	consumerDB, err := InitDB(ctx, cfg.Address)
+	consumerDB, err := InitDB(ctx, cfg.Address, true)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
@@ -82,7 +82,7 @@ func Start(ctx context.Context, cfg Config) error {
 }
 
 // InitDB initializes a database given a database type and path.
-func InitDB(ctx context.Context, address string) (db.ConsumerDB, error) {
+func InitDB(ctx context.Context, address string, readOnly bool) (db.ConsumerDB, error) {
 	// TODO add connection to Google Cloud hosted clickhouse
 	if address == "default" {
 		cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
@@ -95,7 +95,7 @@ func InitDB(ctx context.Context, address string) (db.ConsumerDB, error) {
 		}
 		address = "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
 	}
-	clickhouseDB, err := sql.OpenGormClickhouse(ctx, address)
+	clickhouseDB, err := sql.OpenGormClickhouse(ctx, address, readOnly)
 	if err != nil {
 		return nil, fmt.Errorf("could not open database: %w", err)
 	}
