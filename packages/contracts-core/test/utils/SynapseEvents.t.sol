@@ -5,7 +5,6 @@ pragma solidity 0.8.17;
 import "../../contracts/events/AttestationHubEvents.sol";
 import "../../contracts/events/DestinationEvents.sol";
 import "../../contracts/events/GuardRegistryEvents.sol";
-import "../../contracts/events/NotaryManagerEvents.sol";
 import "../../contracts/events/NotaryRegistryEvents.sol";
 import "../../contracts/events/OriginEvents.sol";
 import "../../contracts/events/OriginHubEvents.sol";
@@ -23,7 +22,6 @@ abstract contract SynapseEvents is
     AttestationHubEvents,
     DestinationEvents,
     GuardRegistryEvents,
-    NotaryManagerEvents,
     NotaryRegistryEvents,
     OriginEvents,
     OriginHubEvents,

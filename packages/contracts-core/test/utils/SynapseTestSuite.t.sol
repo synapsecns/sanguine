@@ -67,7 +67,6 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     // All contracts are deployed by this contract, the ownership is then transferred to `owner`
     // solhint-disable-next-line code-complexity
     function setupChain(uint32 domain, string memory chainName) public {
-        address domainNotary = suiteNotary(domain);
         // Deploy messaging contracts
         DestinationHarness destination = new DestinationHarness(domain);
         OriginHarness origin = new OriginHarness(domain);
@@ -76,8 +75,6 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
             address(origin),
             address(destination)
         );
-        NotaryManager notaryManager = new NotaryManager(domainNotary);
-        notaryManager.setOrigin(address(origin));
         // Setup destination
         destination.initialize();
         destination.setSystemRouter(systemRouter);
@@ -91,7 +88,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
             }
         }
         // Setup origin
-        origin.initialize(notaryManager);
+        origin.initialize();
         origin.setSystemRouter(systemRouter);
         // Add domain notaries to Origin
         for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
@@ -108,18 +105,15 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // Transfer ownership everywhere
         destination.transferOwnership(owner);
         origin.transferOwnership(owner);
-        notaryManager.transferOwnership(owner);
         // Label deployments
         vm.label(address(destination), string.concat("Destination ", chainName));
         vm.label(address(origin), string.concat("Origin ", chainName));
         vm.label(address(systemRouter), string.concat("SystemRouter ", chainName));
-        vm.label(address(notaryManager), string.concat("NotaryManager ", chainName));
         vm.label(address(app), string.concat("App ", chainName));
         // Save deployments
         chains[domain].destination = destination;
         chains[domain].origin = origin;
         chains[domain].systemRouter = systemRouter;
-        chains[domain].notaryManager = notaryManager;
         chains[domain].app = app;
     }
 
