@@ -78,7 +78,7 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
                 assertEq(
                     globalNotaryRegistryDomainsAmount(),
                     DOMAINS,
-                    "!domainsAmount: after readding"
+                    "!domainsAmount: after reading"
                 );
             }
         }
