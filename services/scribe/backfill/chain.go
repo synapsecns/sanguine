@@ -217,13 +217,14 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			return fmt.Errorf("could not backfill block times from min block height: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
 		}
 		return nil
+
 	})
 
 	// wait for all the backfilling to finish
 	if err := backfillGroup.Wait(); err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
-	logger.Infof("Finished backfilling blocktimes and contracts on %d up to block %d\nElaspsed time (hours): %f", c.chainID, currentBlock, time.Now().Sub(startTime).Hours())
+	logger.Infof("Finished backfilling blocktimes and contracts on %d up to block %d\nElaspsed time (hours): %f", c.chainID, currentBlock, time.Since(startTime).Hours())
 	return nil
 }
 
@@ -309,10 +310,15 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 			loggerBlocktime.Warnf("context canceled %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), ctx.Err(), c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 			return fmt.Errorf("%s context canceled: %w", ctx.Value(blocktimeContextKey), ctx.Err())
 		case <-time.After(timeoutBlockNum):
-			// Check if the current block's already exists in database.
+			// If done with the range, exit go routine.
+			if blockNum > endHeight {
+				loggerBlocktime.Infof("Exiting backfill on chain %d on block %d ", c.chainID, blockNum)
+				return nil
+			}
+
+			// Check if the current block's already exists in database (to prevent unnecessary requests to omnirpc).
 			_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
 			if err == nil {
-				loggerBlocktime.Infof("skipping storing blocktime for block %s: %v\nChain: %d\nBlock: %d\nBackoff Atempts: %f\nBackoff Duration: %d", big.NewInt(int64(blockNum)).String(), err, c.chainID, blockNum, bBlockNum.Attempt(), bBlockNum.Duration())
 				blockNum++
 				// Make sure the count doesn't increase unnecessarily.
 				bBlockNum.Reset()
@@ -341,12 +347,6 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 			// Reset the backoff after successful block parse run to prevent bloated back offs.
 			bBlockNum.Reset()
 			timeoutBlockNum = time.Duration(0)
-
-			// If done with the range, exit go routine.
-			if blockNum > endHeight {
-				loggerBlocktime.Infof("Exiting backfill on chain %d on block %d ", c.chainID, blockNum)
-				return nil
-			}
 		}
 	}
 }
