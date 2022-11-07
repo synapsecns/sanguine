@@ -90,7 +90,11 @@ contract AttestationCollectorTest is AttestationCollectorTools {
 
     function test_submitAttestation_revert_notNotary_attacker() public {
         test_addNotary();
-        createAttestationMock({ domain: DOMAIN_LOCAL, signer: attacker });
+        createAttestationMock({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            signer: attacker
+        });
         // Check that attacker (address unknown to AttestationCollector) can't sign the attestation
         // Some random address should not be considered a Notary for `DOMAIN_LOCAL`
         attestationCollectorSubmitAttestation({ revertMessage: "Signer is not a notary" });
@@ -98,7 +102,11 @@ contract AttestationCollectorTest is AttestationCollectorTools {
 
     function test_submitAttestation_revert_notNotary_notaryAnotherDomain() public {
         test_addNotary();
-        createAttestationMock({ domain: DOMAIN_LOCAL, signer: suiteNotary(DOMAIN_REMOTE) });
+        createAttestationMock({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            signer: suiteNotary(DOMAIN_REMOTE)
+        });
         // Check that Notary from another domain can't sign the attestation for `DOMAIN_LOCAL`
         // Notary from `DOMAIN_REMOTE` should not be considered as a Notary for `DOMAIN_LOCAL`
         attestationCollectorSubmitAttestation({ revertMessage: "Signer is not a notary" });
@@ -107,7 +115,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
     function test_submitAttestation_revert_zeroNonce() public {
         test_addNotary();
         // Create attestation with a zero nonce
-        createAttestationMock({ domain: DOMAIN_LOCAL, nonce: 0 });
+        createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE, nonce: 0 });
         // When Notary hasn't submitted a single attestation, they should not be able
         // to submit attestation with `nonce = 0`. It will be marked as "outdated", as it
         // doesn't bring new information about the Origin merkle state.
@@ -126,7 +134,11 @@ contract AttestationCollectorTest is AttestationCollectorTools {
     function test_submitAttestation_revert_outdatedNonce() public {
         test_submitAttestation();
         // Create attestation with a nonce lower than of already submitted attestation
-        createAttestationMock({ domain: DOMAIN_LOCAL, nonce: attestationNonce - 1 });
+        createAttestationMock({
+            origin: currentOrigin,
+            destination: currentDestination,
+            nonce: attestationNonce - 1
+        });
         // When Notary submitted an attestation with, they should not be able to submit the
         // attestation with a lower nonce.  It will be marked as "outdated", as it
         // doesn't bring new information about the Origin merkle state.
@@ -137,7 +149,8 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         test_submitAttestation();
         // Create attestation for the same merkle state, but signed by another Notary
         createAttestationMock({
-            domain: DOMAIN_LOCAL,
+            origin: currentOrigin,
+            destination: currentDestination,
             nonce: attestationNonce,
             notaryIndex: 1,
             salt: 0
@@ -155,7 +168,8 @@ contract AttestationCollectorTest is AttestationCollectorTools {
 
     function test_submitAttestation() public {
         test_addNotary();
-        curDomain = DOMAIN_LOCAL;
+        currentOrigin = DOMAIN_LOCAL;
+        currentDestination = DOMAIN_REMOTE;
         submitTestAttestation({ nonce: NONCE_TEST, notaryIndex: 0, isUnique: true });
     }
 
@@ -177,46 +191,51 @@ contract AttestationCollectorTest is AttestationCollectorTools {
 
     function test_submitAttestations() public {
         test_addNotary();
-        for (uint256 d = 0; d < DOMAINS; ++d) {
-            curDomain = domains[d];
-            // Notary[0] submits attestations with nonces: [1, 2, 5]
-            // All thNew nonce: will be accepted (next three)
-            submitTestAttestation({ nonce: 1, notaryIndex: 0, isUnique: true });
-            submitTestAttestation({ nonce: 2, notaryIndex: 0, isUnique: true });
-            submitTestAttestation({ nonce: 5, notaryIndex: 0, isUnique: true });
+        for (uint256 o = 0; o < DOMAINS; ++o) {
+            currentOrigin = domains[o];
 
-            // Notary[1] submits attestations with nonces: [1, 3, 6]
-            // The same root as Notary[0]: will not be accepted
-            submitTestAttestation({ nonce: 1, notaryIndex: 1, salt: 0, isUnique: false });
-            // New nonce: will be accepted (next two)
-            submitTestAttestation({ nonce: 3, notaryIndex: 1, isUnique: true });
-            submitTestAttestation({ nonce: 6, notaryIndex: 1, isUnique: true });
+            for (uint256 d = 0; d < DOMAINS; ++d) {
+                if (o == d) continue;
+                currentDestination = domains[d];
+                // Notary[0] submits attestations with nonces: [1, 2, 5]
+                // All thNew nonce: will be accepted (next three)
+                submitTestAttestation({ nonce: 1, notaryIndex: 0, isUnique: true });
+                submitTestAttestation({ nonce: 2, notaryIndex: 0, isUnique: true });
+                submitTestAttestation({ nonce: 5, notaryIndex: 0, isUnique: true });
 
-            // Notary[2] submits nonces [1, 6, 7]
-            // Root is different from one submitted by Notary[0]: will be accepted
-            submitTestAttestation({ nonce: 1, notaryIndex: 2, isUnique: true });
-            // Root is different from one submitted by Notary[1]: will be accepted
-            submitTestAttestation({ nonce: 6, notaryIndex: 2, isUnique: true });
-            // New nonce: will be accepted
-            submitTestAttestation({ nonce: 7, notaryIndex: 2, isUnique: true });
+                // Notary[1] submits attestations with nonces: [1, 3, 6]
+                // The same root as Notary[0]: will not be accepted
+                submitTestAttestation({ nonce: 1, notaryIndex: 1, salt: 0, isUnique: false });
+                // New nonce: will be accepted (next two)
+                submitTestAttestation({ nonce: 3, notaryIndex: 1, isUnique: true });
+                submitTestAttestation({ nonce: 6, notaryIndex: 1, isUnique: true });
 
-            // Notary[3] submits all existing duplicate attestations for nonces [1, 6]
+                // Notary[2] submits nonces [1, 6, 7]
+                // Root is different from one submitted by Notary[0]: will be accepted
+                submitTestAttestation({ nonce: 1, notaryIndex: 2, isUnique: true });
+                // Root is different from one submitted by Notary[1]: will be accepted
+                submitTestAttestation({ nonce: 6, notaryIndex: 2, isUnique: true });
+                // New nonce: will be accepted
+                submitTestAttestation({ nonce: 7, notaryIndex: 2, isUnique: true });
 
-            // The same root as Notary[0]: will not be accepted
-            submitTestAttestation({ nonce: 1, notaryIndex: 3, salt: 0, isUnique: false });
-            // The same root as Notary[2]: will not be accepted
-            submitTestAttestation({ nonce: 1, notaryIndex: 3, salt: 2, isUnique: false });
-            // The same root as Notary[1]: will not be accepted
-            submitTestAttestation({ nonce: 6, notaryIndex: 3, salt: 1, isUnique: false });
-            // The same root as Notary[2]: will not be accepted
-            submitTestAttestation({ nonce: 6, notaryIndex: 3, salt: 2, isUnique: false });
+                // Notary[3] submits all existing duplicate attestations for nonces [1, 6]
 
-            // Submit a few fresh attestations
-            submitTestAttestation({ nonce: 9, notaryIndex: 2, isUnique: true });
-            submitTestAttestation({ nonce: 10, notaryIndex: 0, isUnique: true });
-            // The biggest nonce
-            submitTestAttestation({ nonce: NONCE_TEST, notaryIndex: 3, isUnique: true });
-            submitTestAttestation({ nonce: 8, notaryIndex: 1, isUnique: true });
+                // The same root as Notary[0]: will not be accepted
+                submitTestAttestation({ nonce: 1, notaryIndex: 3, salt: 0, isUnique: false });
+                // The same root as Notary[2]: will not be accepted
+                submitTestAttestation({ nonce: 1, notaryIndex: 3, salt: 2, isUnique: false });
+                // The same root as Notary[1]: will not be accepted
+                submitTestAttestation({ nonce: 6, notaryIndex: 3, salt: 1, isUnique: false });
+                // The same root as Notary[2]: will not be accepted
+                submitTestAttestation({ nonce: 6, notaryIndex: 3, salt: 2, isUnique: false });
+
+                // Submit a few fresh attestations
+                submitTestAttestation({ nonce: 9, notaryIndex: 2, isUnique: true });
+                submitTestAttestation({ nonce: 10, notaryIndex: 0, isUnique: true });
+                // The biggest nonce
+                submitTestAttestation({ nonce: NONCE_TEST, notaryIndex: 3, isUnique: true });
+                submitTestAttestation({ nonce: 8, notaryIndex: 1, isUnique: true });
+            }
         }
     }
 
@@ -228,7 +247,8 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         test_submitAttestations();
         // Nonce 6 was submitted only by Notaries 1 and 2
         attestationCollectorGetAttestationByRoot({
-            domain: DOMAIN_LOCAL,
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
             nonce: 6,
             root: _createMockRoot(6, 0),
             revertMessage: "!signature"
@@ -237,9 +257,13 @@ contract AttestationCollectorTest is AttestationCollectorTools {
 
     function test_getLatestAttestation_revert_noNotaryAttestations() public {
         test_submitAttestation();
-        // Attestation was submitted only for DOMAIN_LOCAL
+        // Attestation was submitted only for (origin, destination):
+        // origin = currentOrigin
+        // destination = currentDestination
+        // Therefore there should be no attestations for the reversed pair
         attestationCollectorGetLatestNotaryAttestation({
-            domain: DOMAIN_REMOTE,
+            origin: currentDestination,
+            destination: currentOrigin,
             notaryIndex: 0,
             revertMessage: "No attestations found"
         });
@@ -247,20 +271,27 @@ contract AttestationCollectorTest is AttestationCollectorTools {
 
     function test_getLatestAttestation_revert_noAttestations() public {
         test_submitAttestation();
-        // Attestation was submitted only for DOMAIN_LOCAL
+        // Attestation was submitted only for (origin, destination):
+        // origin = currentOrigin
+        // destination = currentDestination
+        // Therefore there should be no attestations for the reversed pair
         attestationCollectorGetLatestDomainAttestation({
-            domain: DOMAIN_REMOTE,
+            origin: currentDestination,
+            destination: currentOrigin,
             revertMessage: "No attestations found"
         });
     }
 
     function test_getLatestAttestation_noNotaries() public {
         // Don't add any Notaries
-        for (uint256 d = 0; d < DOMAINS; ++d) {
-            attestationCollectorGetLatestDomainAttestation({
-                domain: domains[d],
-                revertMessage: "!notaries"
-            });
+        for (uint256 o = 0; o < DOMAINS; ++o) {
+            for (uint256 d = 0; d < DOMAINS; ++d) {
+                attestationCollectorGetLatestDomainAttestation({
+                    origin: domains[o],
+                    destination: domains[d],
+                    revertMessage: "!notaries"
+                });
+            }
         }
     }
 
@@ -268,45 +299,61 @@ contract AttestationCollectorTest is AttestationCollectorTools {
     ▏*║                             TESTS: VIEWS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // solhint-disable-next-line code-complexity
     function test_getAttestation_getRoot_rootsAmount() public {
         // Test for following getters (which are used the same testing conditions):
         // getAttestation(), getRoot(), rootsAmount()
         test_submitAttestations();
-        for (uint256 d = 0; d < DOMAINS; ++d) {
-            uint32 domain = domains[d];
-            for (uint32 nonce = 1; nonce <= NONCE_TEST; ++nonce) {
-                bytes[] memory attestations = domainAttestations[domain][nonce];
-                bytes32[] memory roots = domainRoots[domain][nonce];
-                uint256 amount = roots.length;
-                assertEq(attestationCollector.rootsAmount(domain, nonce), amount, "!rootsAmount()");
-                for (uint256 index = 0; index < amount; ++index) {
-                    bytes memory attestation = attestations[index];
-                    bytes32 root = roots[index];
+        for (uint256 o = 0; o < DOMAINS; ++o) {
+            uint32 origin = domains[o];
+            for (uint256 d = 0; d < DOMAINS; ++d) {
+                if (o == d) continue;
+                uint32 destination = domains[d];
+                for (uint32 nonce = 1; nonce <= NONCE_TEST; ++nonce) {
+                    uint96 _key = Attestation.attestationKey(origin, destination, nonce);
+                    bytes[] memory attestations = keyAttestations[_key];
+                    bytes32[] memory roots = keyRoots[_key];
+                    uint256 amount = roots.length;
                     assertEq(
-                        attestationCollector.getAttestation(domain, nonce, index),
-                        attestation,
-                        "!getAttestation(index)"
+                        attestationCollector.rootsAmount(origin, destination, nonce),
+                        amount,
+                        "!rootsAmount()"
                     );
-                    assertEq(
-                        attestationCollector.getAttestation(domain, nonce, root),
-                        attestation,
-                        "!getAttestation(root)"
-                    );
-                    assertEq(
-                        attestationCollector.getRoot(domain, nonce, index),
-                        root,
-                        "!geRoot(index)"
-                    );
+                    for (uint256 index = 0; index < amount; ++index) {
+                        bytes memory attestation = attestations[index];
+                        bytes32 root = roots[index];
+                        assertEq(
+                            attestationCollector.getAttestation(origin, destination, nonce, index),
+                            attestation,
+                            "!getAttestation(index)"
+                        );
+                        assertEq(
+                            attestationCollector.getAttestation(origin, destination, nonce, root),
+                            attestation,
+                            "!getAttestation(root)"
+                        );
+                        assertEq(
+                            attestationCollector.getRoot(origin, destination, nonce, index),
+                            root,
+                            "!geRoot(index)"
+                        );
+                    }
+                    // Check for out of range reverts
+                    vm.expectRevert("!index");
+                    attestationCollector.getAttestation({
+                        _origin: origin,
+                        _destination: destination,
+                        _nonce: nonce,
+                        _index: amount
+                    });
+                    vm.expectRevert("!index");
+                    attestationCollector.getRoot({
+                        _origin: origin,
+                        _destination: destination,
+                        _nonce: nonce,
+                        _index: amount
+                    });
                 }
-                // Check for out of range reverts
-                vm.expectRevert("!index");
-                attestationCollector.getAttestation({
-                    _domain: domain,
-                    _nonce: nonce,
-                    _index: amount
-                });
-                vm.expectRevert("!index");
-                attestationCollector.getRoot({ _domain: domain, _nonce: nonce, _index: amount });
             }
         }
     }
