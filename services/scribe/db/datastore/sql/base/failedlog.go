@@ -28,6 +28,7 @@ func (s Store) StoreFailedLog(ctx context.Context, chainID uint32, contractAddre
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not scan failed log: %w", dbTx.Error)
 	}
+	// If the failed log does not exist, add it to the table with a FailedAttempt value of one.
 	if dbTx.RowsAffected == 0 {
 		dbTx = s.DB().WithContext(ctx).
 			Create(&FailedLog{
@@ -45,6 +46,7 @@ func (s Store) StoreFailedLog(ctx context.Context, chainID uint32, contractAddre
 		}
 		return nil
 	}
+	// If the failed log exists, increment its FailedAttempt counter.
 	dbTx = s.DB().WithContext(ctx).
 		Model(&FailedLog{}).
 		Where(&FailedLog{

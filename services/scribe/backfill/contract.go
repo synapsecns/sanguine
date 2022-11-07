@@ -219,21 +219,25 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	// If there was an error in storing the logs, receipts, or transactions, then go through the failed logs table.
 	//nolint:nestif
 	if err != nil {
+		// store/increment the failed log in the db
 		err = c.eventDB.StoreFailedLog(ctx, c.chainID, common.HexToAddress(c.address), log.TxHash, uint64(log.Index), log.BlockNumber)
 		if err != nil {
 			return fmt.Errorf("could not store failed log: %w", err)
 		}
+		// get the failed attempts count for the log
 		failedAttempts, err := c.eventDB.GetFailedAttempts(ctx, c.chainID, common.HexToAddress(c.address), log.TxHash, uint64(log.Index), log.BlockNumber)
 		if err != nil {
 			return fmt.Errorf("could not get failed attempts: %w", err)
 		}
+		// if the failed attempts count is greater than the max attempts, then log the error and continue
+		// after continuing, the failed log will be added to the cache, and will be skipped over
 		if failedAttempts >= uint64(c.maxFails) {
 			logger.Warnf("failed to store log for %d attempts, skipping\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nAddress: %s\nc Address: %s", failedAttempts, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 		} else {
 			return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainID, log.BlockNumber, log.TxHash.String())
 		}
 	} else {
-		// if there is a failed log stored for this log, remove it
+		// if a log is stored successfully, check to see if it is in the failed logs table and remove it
 		err = c.eventDB.DeleteFailedLog(ctx, c.chainID, common.HexToAddress(c.address), log.TxHash, uint64(log.Index), log.BlockNumber)
 		if err != nil {
 			return fmt.Errorf("could not remove failed log: %w", err)
