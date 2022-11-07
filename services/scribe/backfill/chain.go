@@ -294,7 +294,7 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 		Factor: 2,
 		Jitter: true,
 		Min:    1 * time.Second,
-		Max:    30 * time.Second,
+		Max:    10 * time.Second,
 	}
 
 	// timeout should always be 0 on the first attempt
@@ -319,8 +319,8 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 			// Check if the current block's already exists in database (to prevent unnecessary requests to omnirpc).
 			_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
 			if err == nil {
+				loggerBlocktime.Infof("skipping blocktime backfill on chain %d on block %d ", c.chainID, blockNum)
 				blockNum++
-				// Make sure the count doesn't increase unnecessarily.
 				bBlockNum.Reset()
 				continue
 			}
