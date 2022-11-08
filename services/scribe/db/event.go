@@ -46,10 +46,6 @@ type EventDBWriter interface {
 	// entry if there is no previous value.
 	StoreLastConfirmedBlock(ctx context.Context, chainID uint32, blockNumber uint64) error
 
-	// StoreLastBlockTime stores the last block time stored for a chain.
-	// It updates the value if there is a previous last indexed value, and creates a new
-	// entry if there is no previous value.
-	StoreLastBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) error
 	// StoreBlockTime stores a block time for a chain.
 	StoreBlockTime(ctx context.Context, chainID uint32, blockNumber, timestamp uint64) error
 }

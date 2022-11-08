@@ -267,10 +267,6 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 		// Calculate the last block stored for logging, storing, and setting the next current block.
 		lastBlockStored := currentBlock + (c.chainConfig.BlockTimeChunkCount * c.chainConfig.BlockTimeChunkSize) - 1
 		logger.Infof("Finished backfilling chunks on %d from block %d up to block %d ", c.chainID, currentBlock, lastBlockStored)
-		err := c.eventDB.StoreLastBlockTime(ctx, c.chainID, lastBlockStored)
-		if err != nil {
-			loggerBlocktime.Warnf("could not store last block time %s: \nChain: %d\nCurrent Block: %d, Last Block: %d", err, c.chainID, currentBlock, lastBlockStored)
-		}
 
 		currentBlock = lastBlockStored + 1
 	}
