@@ -114,7 +114,11 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
             notaryIndex: notaryIndex,
             salt: salt
         });
-        if (!isUnique) vm.expectRevert("Duplicated attestation");
+        if (isUnique) {
+            expectAttestationAccepted();
+        } else {
+            vm.expectRevert("Duplicated attestation");
+        }
         attestationCollectorSubmitAttestation({ returnValue: isUnique });
         if (isUnique) {
             // Save accepted attestation
