@@ -429,6 +429,29 @@ func (_m *IOrigin) GetGuard(opts *bind.CallOpts, _index *big.Int) (common.Addres
 	return r0, r1
 }
 
+// GetHistoricalRoot provides a mock function with given fields: opts, _destination, _nonce
+func (_m *IOrigin) GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, error) {
+	ret := _m.Called(opts, _destination, _nonce)
+
+	var r0 [32]byte
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32, uint32) [32]byte); ok {
+		r0 = rf(opts, _destination, _nonce)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([32]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32, uint32) error); ok {
+		r1 = rf(opts, _destination, _nonce)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetNotary provides a mock function with given fields: opts, _index
 func (_m *IOrigin) GetNotary(opts *bind.CallOpts, _index *big.Int) (common.Address, error) {
 	ret := _m.Called(opts, _index)
@@ -468,29 +491,6 @@ func (_m *IOrigin) GuardsAmount(opts *bind.CallOpts) (*big.Int, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// HistoricalRoots provides a mock function with given fields: opts, arg0
-func (_m *IOrigin) HistoricalRoots(opts *bind.CallOpts, arg0 *big.Int) ([32]byte, error) {
-	ret := _m.Called(opts, arg0)
-
-	var r0 [32]byte
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts, *big.Int) [32]byte); ok {
-		r0 = rf(opts, arg0)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([32]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts, *big.Int) error); ok {
-		r1 = rf(opts, arg0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -565,20 +565,20 @@ func (_m *IOrigin) MAXMESSAGEBODYBYTES(opts *bind.CallOpts) (*big.Int, error) {
 	return r0, r1
 }
 
-// Nonce provides a mock function with given fields: opts
-func (_m *IOrigin) Nonce(opts *bind.CallOpts) (uint32, error) {
-	ret := _m.Called(opts)
+// Nonce provides a mock function with given fields: opts, _destination
+func (_m *IOrigin) Nonce(opts *bind.CallOpts, _destination uint32) (uint32, error) {
+	ret := _m.Called(opts, _destination)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint32); ok {
-		r0 = rf(opts)
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) uint32); ok {
+		r0 = rf(opts, _destination)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
+		r1 = rf(opts, _destination)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -993,13 +993,13 @@ func (_m *IOrigin) RenounceOwnership(opts *bind.TransactOpts) (*types.Transactio
 	return r0, r1
 }
 
-// Root provides a mock function with given fields: opts
-func (_m *IOrigin) Root(opts *bind.CallOpts) ([32]byte, error) {
-	ret := _m.Called(opts)
+// Root provides a mock function with given fields: opts, _destination
+func (_m *IOrigin) Root(opts *bind.CallOpts, _destination uint32) ([32]byte, error) {
+	ret := _m.Called(opts, _destination)
 
 	var r0 [32]byte
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) [32]byte); ok {
-		r0 = rf(opts)
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) [32]byte); ok {
+		r0 = rf(opts, _destination)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([32]byte)
@@ -1007,8 +1007,8 @@ func (_m *IOrigin) Root(opts *bind.CallOpts) ([32]byte, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
+		r1 = rf(opts, _destination)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1152,22 +1152,22 @@ func (_m *IOrigin) SubmitReport(opts *bind.TransactOpts, _report []byte) (*types
 	return r0, r1
 }
 
-// SuggestAttestation provides a mock function with given fields: opts
-func (_m *IOrigin) SuggestAttestation(opts *bind.CallOpts) (struct {
+// SuggestAttestation provides a mock function with given fields: opts, _destination
+func (_m *IOrigin) SuggestAttestation(opts *bind.CallOpts, _destination uint32) (struct {
 	LatestNonce uint32
 	LatestRoot  [32]byte
 }, error) {
-	ret := _m.Called(opts)
+	ret := _m.Called(opts, _destination)
 
 	var r0 struct {
 		LatestNonce uint32
 		LatestRoot  [32]byte
 	}
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) struct {
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) struct {
 		LatestNonce uint32
 		LatestRoot  [32]byte
 	}); ok {
-		r0 = rf(opts)
+		r0 = rf(opts, _destination)
 	} else {
 		r0 = ret.Get(0).(struct {
 			LatestNonce uint32
@@ -1176,8 +1176,8 @@ func (_m *IOrigin) SuggestAttestation(opts *bind.CallOpts) (struct {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
+		r1 = rf(opts, _destination)
 	} else {
 		r1 = ret.Error(1)
 	}
