@@ -157,4 +157,16 @@ abstract contract GlobalNotaryRegistryTools is SynapseTestSuite {
     function globalNotaryRegistryNotariesAmount(uint32 domain) public view returns (uint256) {
         return globalNotaryRegistry.notariesAmount(domain);
     }
+
+    function globalNotaryRegistryAllDomains() public view returns (uint32[] memory) {
+        return globalNotaryRegistry.allDomains();
+    }
+
+    function globalNotaryRegistryGetDomain(uint256 index) public view returns (uint32) {
+        return globalNotaryRegistry.getDomain(index);
+    }
+
+    function globalNotaryRegistryDomainsAmount() public view returns (uint256) {
+        return globalNotaryRegistry.domainsAmount();
+    }
 }
