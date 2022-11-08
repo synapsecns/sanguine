@@ -9,7 +9,7 @@ import { OriginHub } from "./hubs/OriginHub.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
-import { SystemMessage } from "./libs/SystemMessage.sol";
+import { SystemCall } from "./libs/SystemCall.sol";
 import { SystemContract } from "./system/SystemContract.sol";
 import { INotaryManager } from "./interfaces/INotaryManager.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
@@ -124,12 +124,12 @@ contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, O
      * @dev Format the message, insert its hash into Merkle tree,
      * enqueue the new Merkle root, and emit `Dispatch` event with message information.
      * @param _destination      Domain of destination chain
-     * @param _recipientAddress Address of recipient on destination chain as bytes32
+     * @param _recipient        Address of recipient on destination chain as bytes32
      * @param _messageBody      Raw bytes content of message
      */
     function dispatch(
         uint32 _destination,
-        bytes32 _recipientAddress,
+        bytes32 _recipient,
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
@@ -147,10 +147,10 @@ contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, O
         // format the message into packed bytes
         bytes memory message = Message.formatMessage({
             _origin: _localDomain(),
-            _sender: _getSender(_recipientAddress),
+            _sender: _checkForSystemRouter(_recipient),
             _nonce: messageNonce,
             _destination: _destination,
-            _recipient: _recipientAddress,
+            _recipient: _recipient,
             _optimisticSeconds: _optimisticSeconds,
             _tips: _tips,
             _messageBody: _messageBody
@@ -206,25 +206,25 @@ contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, O
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns "adjusted" sender address.
-     * @dev By default, "sender address" is msg.sender.
-     * However, if SystemRouter sends a message, specifying SYSTEM_ROUTER as the recipient,
-     * SYSTEM_ROUTER is used as "sender address" on origin chain.
+     * @notice Returns adjusted "sender" field.
+     * @dev By default, "sender" field is msg.sender address casted to bytes32.
+     * However, if SYSTEM_ROUTER is used for "recipient" field, and msg.sender is SystemRouter,
+     * SYSTEM_ROUTER is also used as "sender" field.
      * Note: tx will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
      */
-    function _getSender(bytes32 _recipientAddress) internal view returns (bytes32 sender) {
-        if (_recipientAddress != SystemMessage.SYSTEM_ROUTER) {
+    function _checkForSystemRouter(bytes32 _recipient) internal view returns (bytes32 sender) {
+        if (_recipient != SystemCall.SYSTEM_ROUTER) {
             sender = TypeCasts.addressToBytes32(msg.sender);
             /**
-             * @dev Note: SYSTEM_ROUTER has highest 12 bytes set,
-             *      whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
-             *      Thus, in this branch: sender != SystemMessage.SYSTEM_ROUTER
+             * @dev Note: SYSTEM_ROUTER has only the highest 12 bytes set,
+             * whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
+             * Thus, in this branch: sender != SystemCall.SYSTEM_ROUTER
              */
         } else {
             // Check that SystemRouter specified SYSTEM_ROUTER as recipient, revert otherwise.
             _assertSystemRouter();
-            // Adjust "sender address" for correct processing on remote chain.
-            sender = SystemMessage.SYSTEM_ROUTER;
+            // Adjust "sender" field for correct processing on remote chain.
+            sender = SystemCall.SYSTEM_ROUTER;
         }
     }
 }

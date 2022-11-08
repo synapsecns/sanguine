@@ -199,7 +199,7 @@ library Message {
         return
             _view.sliceFrom(
                 OFFSET_HEADER + _loadLength(_view, Parts.Header) + _loadLength(_view, Parts.Tips),
-                SynapseTypes.MESSAGE_BODY
+                SynapseTypes.RAW_BYTES
             );
     }
 
