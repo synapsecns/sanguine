@@ -28,3 +28,7 @@ dependencies:
     version: "0.1.2"
     repository: "file://../omnirpc/"
     condition: omnirpc.enabled
+  - name: clickhouse
+    version: 1.0.3
+    repository: https://charts.bitnami.com/bitnami
+    condition: clickhouse.enabled

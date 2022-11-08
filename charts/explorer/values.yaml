@@ -66,7 +66,7 @@ resources: {}
 
 indexer:
   enabled: true
-  args: ["backfill", "--address=clickhouse://indexer:qng2MJ0OR0K67KQ0@explorer.explorer-protochain.altinity.cloud:9440/default?secure=true", "--config=/config/config.yaml"]
+  args: ["backfill", "--address=tcp://default:clickhouse@localhost:9000/clickhouse", "--config=/config/config.yaml"]
   #  args: ["backfill", "--config=/config/config.yaml"]
   podAnnotations: {}
   nodeSelector: {}
@@ -94,7 +94,7 @@ indexer:
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ximgzwg3r6.us-west-2.aws.clickhouse.cloud 8443; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz localhost 9000; do echo "Waiting for clickhouse..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: explorer-clickhouse
@@ -107,7 +107,7 @@ indexer:
 server:
   enabled: true
   # this should use a secret in production, for testing only
-  args: ["server", "--port=80", "--scribe-url=https://scribe.interoperability.institute/graphql", "--address=clickhouse://api:V040Zniq6StowbbO@explorer.explorer-protochain.altinity.cloud:9440/default?secure=true"]
+  args: ["server", "--port=80", "--scribe-url=https://scribe.interoperability.institute/graphql", "--address=tcp://default:clickhouse@localhost:9000/clickhouse"]
   replicaCount: 1
   autoscaling:
     enabled: false
@@ -155,6 +155,22 @@ omnirpc:
   enabled: true
   fullnameOverride: explorer-omnirpc
   replicaCount: 2
+
+clickhouse:
+  enabled: true
+  auth:
+    username: default
+    password: "clickhouse"
+  extraEnvVars:
+  tls:
+    enabled: false
+  initdbScripts:
+    my_init_script.sh: |
+      #!/bin/bash
+      set -e
+      clickhouse client -u default --password='clickhouse' -n <<-EOSQL
+        CREATE DATABASE clickhouse;
+      EOSQL
 
 files:
   config.yaml: |-
