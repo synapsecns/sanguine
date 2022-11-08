@@ -34,6 +34,7 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 80
+initialDelaySeconds: 180
 
 ingress:
   enabled: false
