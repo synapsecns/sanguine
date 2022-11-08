@@ -348,6 +348,6 @@ func zeroCheck(value uint64) uint64 {
 	if value > 0 {
 		return value - 1
 	}
-	
+
 	return value
 }
