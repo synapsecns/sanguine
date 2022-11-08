@@ -73,6 +73,8 @@ clickhouse:
     username: default
     password: "clickhouse"
   extraEnvVars:
+    - name: TZ
+      value: "UTC"
   tls:
     enabled: false
   initdbScripts:
