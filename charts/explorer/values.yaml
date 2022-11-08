@@ -66,7 +66,7 @@ resources: {}
 
 indexer:
   enabled: true
-  args: ["backfill", "--address=tcp://default:clickhouse@localhost:9000/clickhouse", "--config=/config/config.yaml"]
+  args: ["backfill", "--address=tcp://default:clickhouse@host.docker.internal:9000/clickhouse", "--config=/config/config.yaml"]
   #  args: ["backfill", "--config=/config/config.yaml"]
   podAnnotations: {}
   nodeSelector: {}
@@ -94,7 +94,7 @@ indexer:
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz localhost 9000; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 8443; do echo "Waiting for clickhouse..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: explorer-clickhouse
@@ -107,7 +107,7 @@ indexer:
 server:
   enabled: true
   # this should use a secret in production, for testing only
-  args: ["server", "--port=80", "--scribe-url=https://scribe.interoperability.institute/graphql", "--address=tcp://default:clickhouse@localhost:9000/clickhouse"]
+  args: ["server", "--port=80", "--scribe-url=https://scribe.interoperability.institute/graphql", "--address=tcp://default:clickhouse@host.docker.internal:9000/clickhouse"]
   replicaCount: 1
   autoscaling:
     enabled: false
