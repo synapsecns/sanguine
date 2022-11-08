@@ -180,6 +180,7 @@ omnirpc:
   enabled: true
   fullnameOverride: explorer-omnirpc
   replicaCount: 2
+  timeoutSeconds: 300
 
 
 files:

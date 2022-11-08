@@ -56,10 +56,16 @@ spec:
               containerPort: 80
               protocol: TCP
           livenessProbe:
+            {{- if .Values.initialDelaySeconds }}
+            initialDelaySeconds: {{- .Values.initialDelaySeconds }}
+            {{- end }}
             httpGet:
               path: /health-check
               port: http
           readinessProbe:
+            {{- if .Values.initialDelaySeconds }}
+            initialDelaySeconds: {{- .Values.initialDelaySeconds }}
+            {{- end }}
             httpGet:
               path: /health-check
               port: http
