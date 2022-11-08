@@ -16,25 +16,23 @@ import (
 
 // LogInfo is the log info.
 type LogInfo struct {
-	// logs are logs
-	logs []types.Log
-	// chunk are chunks
+	logs  []types.Log
 	chunk *util.Chunk
 }
 
 // RangeFilter pre-fetches filter logs into a channel in deterministic order.
 type RangeFilter struct {
-	// iterator is the chunk iterator used for the range
+	// iterator is the chunk iterator used for the range.
 	iterator util.ChunkIterator
 	// logs is a channel with the filtered ahead logs. This channel is not closed
 	// and the user can rely on the garbage collection behavior of RangeFilter to remove it.
 	logs chan *LogInfo
-	// filterer contains the interface used to fetch logs for the given contract. Logs are fteched
-	// for contractAddress
+	// filterer contains the interface used to fetch logs for the given contract. Logs are fetched
+	// for contractAddress.
 	filterer LogFilterer
-	// contractAddress is the contractAddress that logs are fetched for
+	// contractAddress is the contractAddress that logs are fetched for.
 	contractAddress ethCommon.Address
-	// done is whether or not the RangeFilter has completed. It cannot be restarted and the object must be recreated
+	// done is whether the RangeFilter has completed. It cannot be restarted and the object must be recreated.
 	done bool
 }
 
@@ -70,8 +68,8 @@ func NewRangeFilter(address ethCommon.Address, filterer LogFilterer, startBlock,
 	}
 }
 
-// Start starts the filtering process. If the context is canceled, logs will stop being filtered. Returns an error.
-// this should be run on an independent goroutine.
+// Start starts the filtering process. If the context is canceled, logs will stop being filtered.
+// This should be run on an independent goroutine.
 func (f *RangeFilter) Start(ctx context.Context) error {
 	for {
 		select {
@@ -79,16 +77,17 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 			if !f.done && ctx.Err() != nil {
 				return fmt.Errorf("could not finish filtering range: %w", ctx.Err())
 			}
+
 			return nil
 		default:
 			chunk := f.iterator.NextChunk()
+
 			if chunk == nil {
 				f.done = true
 				return nil
 			}
 
 			logs, err := f.FilterLogs(ctx, chunk)
-
 			if err != nil {
 				return fmt.Errorf("could not filter logs: %w", err)
 			}
@@ -109,14 +108,15 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 	}
 
 	attempt := 0
-	// timeout should always be 0 on the first attmept
 	timeout := time.Duration(0)
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
 		case <-time.After(timeout):
 			attempt++
+
 			if attempt > maxAttempts {
 				return nil, errors.New("maximum number of filter attempts exceeded")
 			}
@@ -130,6 +130,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 			if err != nil {
 				timeout = b.Duration()
 				logger.Warnf("could not filter logs for range %d to %d: %v", chunk.MinBlock(), chunk.MaxBlock(), err)
+
 				continue
 			}
 
@@ -149,6 +150,7 @@ func (f *RangeFilter) Drain(ctx context.Context) (filteredLogs []types.Log, err 
 			return nil, fmt.Errorf("context ended: %w", ctx.Err())
 		case log := <-f.GetLogChan():
 			filteredLogs = append(filteredLogs, log.logs...)
+
 			if f.done {
 				return filteredLogs, nil
 			}
@@ -167,7 +169,7 @@ func (f *RangeFilter) appendToChannel(ctx context.Context, logs *LogInfo) {
 	}
 }
 
-// Done returns a bool indicating whether or not the filtering operation is done.
+// Done returns a bool indicating whether the filtering operation is done.
 func (f *RangeFilter) Done() bool {
 	return f.done
 }
