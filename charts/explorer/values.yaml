@@ -72,6 +72,8 @@ clickhouse:
   auth:
     username: default
     password: "clickhouse"
+  zookeeper:
+    enabled: false
   extraEnvVars:
     - name: TZ
       value: "UTC"
