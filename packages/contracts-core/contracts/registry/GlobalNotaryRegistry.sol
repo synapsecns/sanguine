@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import { AbstractNotaryRegistry } from "./AbstractNotaryRegistry.sol";
+import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 // solhint-disable max-line-length
 /**
@@ -15,6 +16,8 @@ import { AbstractNotaryRegistry } from "./AbstractNotaryRegistry.sol";
  */
 // solhint-enable max-line-length
 contract GlobalNotaryRegistry is AbstractNotaryRegistry {
+    using EnumerableSet for EnumerableSet.UintSet;
+
     /**
      * @notice Information about an active Notary, optimized for fir in one word of storage.
      * @dev Since we're storing both domain and index, we can store the actual notary position
@@ -31,6 +34,9 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // All active domains, i.e. having at least one active Notary
+    EnumerableSet.UintSet internal domains;
+
     // Array of active Notaries for every domain
     // [domain => [notaries]]
     mapping(uint32 => address[]) internal domainNotaries;
@@ -39,7 +45,7 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
     mapping(address => NotaryInfo) internal notariesInfo;
 
     // gap for upgrade safety
-    uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
@@ -52,6 +58,32 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
      */
     function allNotaries(uint32 _domain) external view returns (address[] memory) {
         return domainNotaries[_domain];
+    }
+
+    /**
+     * @notice Returns a list of all active domains.
+     */
+    function allDomains() external view returns (uint32[] memory domains_) {
+        uint256 length = domainsAmount();
+        domains_ = new uint32[](length);
+        for (uint256 i = 0; i < length; ++i) {
+            domains_[i] = getDomain(i);
+        }
+    }
+
+    /**
+     * @notice Returns i-th domain from the list of active domains.
+     * @dev Will revert if index is out of range.
+     */
+    function getDomain(uint256 _index) public view returns (uint32) {
+        return uint32(domains.at(_index));
+    }
+
+    /**
+     * @notice Returns the amount of active domains.
+     */
+    function domainsAmount() public view returns (uint256) {
+        return domains.length();
     }
 
     /**
@@ -79,6 +111,8 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
      */
     function _addNotary(uint32 _domain, address _notary) internal override returns (bool) {
         if (notariesInfo[_notary].domain != 0) return false;
+        // No need to check if domain is already known, EnumerableSet takes care of this.
+        domains.add(_domain);
         notariesInfo[_notary] = NotaryInfo({
             domain: _domain,
             index: uint224(domainNotaries[_domain].length)
@@ -110,6 +144,9 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
         notaries.pop();
         // Delete the index for the deleted slot
         delete notariesInfo[_notary];
+        // Remove domain from the list of active domains, if that was the last Notary
+        // TODO: is this the behavior that we actually want?
+        if (lastIndex == 0) domains.remove(_domain);
         emit NotaryRemoved(_domain, _notary);
         return true;
     }
