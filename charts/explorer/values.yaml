@@ -63,6 +63,22 @@ resources: {}
   #   cpu: 100m
 #   memory: 128Mi
 
+clickhouse:
+  enabled: true
+  auth:
+    username: default
+    password: "clickhouse"
+  extraEnvVars:
+  tls:
+    enabled: false
+  initdbScripts:
+    my_init_script.sh: |
+      #!/bin/bash
+      set -e
+      clickhouse client -u default --password='clickhouse' -n <<-EOSQL
+        CREATE DATABASE clickhouse;
+      EOSQL
+
 
 indexer:
   enabled: true
@@ -94,7 +110,7 @@ indexer:
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 8443; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 9000; do echo "Waiting for clickhouse..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: explorer-clickhouse
@@ -141,7 +157,7 @@ server:
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ximgzwg3r6.us-west-2.aws.clickhouse.cloud 8443; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 9000; do echo "Waiting for clickhouse..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: explorer-clickhouse
@@ -156,21 +172,6 @@ omnirpc:
   fullnameOverride: explorer-omnirpc
   replicaCount: 2
 
-clickhouse:
-  enabled: true
-  auth:
-    username: default
-    password: "clickhouse"
-  extraEnvVars:
-  tls:
-    enabled: false
-  initdbScripts:
-    my_init_script.sh: |
-      #!/bin/bash
-      set -e
-      clickhouse client -u default --password='clickhouse' -n <<-EOSQL
-        CREATE DATABASE clickhouse;
-      EOSQL
 
 files:
   config.yaml: |-
