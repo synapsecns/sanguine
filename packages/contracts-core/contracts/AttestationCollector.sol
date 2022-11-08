@@ -5,18 +5,12 @@ import { Attestation } from "./libs/Attestation.sol";
 import { AttestationHub } from "./hubs/AttestationHub.sol";
 import { TypedMemView } from "./libs/TypedMemView.sol";
 import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
-import { AttestationCollectorEvents } from "./events/AttestationCollectorEvents.sol";
 
 import {
     OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract AttestationCollector is
-    AttestationCollectorEvents,
-    AttestationHub,
-    GlobalNotaryRegistry,
-    OwnableUpgradeable
-{
+contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUpgradeable {
     using Attestation for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -223,7 +217,7 @@ contract AttestationCollector is
         // Save signature and root
         signatures[attestedKey][root] = _attestationView.notarySignature().clone();
         attestedRoots[attestedKey].push(root);
-        emit AttestationSubmitted(_notary, _attestation);
+        emit AttestationAccepted(_notary, _attestation);
         return true;
     }
 

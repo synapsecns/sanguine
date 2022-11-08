@@ -148,9 +148,9 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
     ▏*║                            EXPECT EVENTS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function expectAttestationSubmitted() public {
+    function expectAttestationAccepted() public {
         vm.expectEmit(true, true, true, true);
-        emit AttestationSubmitted(attestationNotary, attestationRaw);
+        emit AttestationAccepted(attestationNotary, attestationRaw);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 import { Attestation } from "../libs/Attestation.sol";
 import { AttestationHub } from "./AttestationHub.sol";
-import { DestinationHubEvents } from "../events/DestinationHubEvents.sol";
 import { Report } from "../libs/Report.sol";
 import { ReportHub } from "./ReportHub.sol";
 import { DomainContext } from "../context/DomainContext.sol";
@@ -17,7 +16,6 @@ import { TypedMemView } from "../libs/TypedMemView.sol";
  * merkle state in a separate Mirror.
  */
 abstract contract DestinationHub is
-    DestinationHubEvents,
     DomainContext,
     AttestationHub,
     ReportHub,
@@ -113,12 +111,13 @@ abstract contract DestinationHub is
      *
      * @param _notary           Notary address
      * @param _attestationView  Memory view over attestation
+     * @param _attestation      Payload with Attestation data and signature
      * @return TRUE if Attestation was accepted (implying a new root was added to Mirror).
      */
     function _handleAttestation(
         address _notary,
         bytes29 _attestationView,
-        bytes memory
+        bytes memory _attestation
     ) internal override returns (bool) {
         uint32 local = _localDomain();
         uint32 origin = _attestationView.attestedOrigin();
@@ -130,11 +129,7 @@ abstract contract DestinationHub is
         require(root != bytes32(0), "Empty root");
         uint32 nonce = _attestationView.attestedNonce();
         _updateMirror(_notary, origin, nonce, root);
-        emit AttestationAccepted(
-            _attestationView.attestedKey(),
-            root,
-            _attestationView.notarySignature().clone()
-        );
+        emit AttestationAccepted(_notary, _attestation);
         return true;
     }
 

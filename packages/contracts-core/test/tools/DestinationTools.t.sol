@@ -79,7 +79,7 @@ abstract contract DestinationTools is OriginTools {
 
     function expectAttestationAccepted() public {
         vm.expectEmit(true, true, true, true);
-        emit AttestationAccepted(attestationKey, attestationRoot, signatureNotary);
+        emit AttestationAccepted(attestationNotary, attestationRaw);
     }
 
     function expectExecuted(uint32 domain, uint256 index) public {
