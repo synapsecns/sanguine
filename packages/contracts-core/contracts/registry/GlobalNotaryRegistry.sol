@@ -112,7 +112,10 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
     function _addNotary(uint32 _domain, address _notary) internal override returns (bool) {
         if (notariesInfo[_notary].domain != 0) return false;
         // No need to check if domain is already known, EnumerableSet takes care of this.
-        domains.add(_domain);
+        if (domains.add(_domain)) {
+            // Trigger hook only when the domain was successfully added
+            _afterDomainBecomesActive(_domain, _notary);
+        }
         notariesInfo[_notary] = NotaryInfo({
             domain: _domain,
             index: uint224(domainNotaries[_domain].length)
@@ -145,11 +148,28 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
         // Delete the index for the deleted slot
         delete notariesInfo[_notary];
         // Remove domain from the list of active domains, if that was the last Notary
-        // TODO: is this the behavior that we actually want?
-        if (lastIndex == 0) domains.remove(_domain);
+        if (lastIndex == 0) {
+            if (domains.remove(_domain)) {
+                // Trigger hook only when the domain was successfully removed
+                _afterDomainBecomesInactive(_domain, _notary);
+            }
+        }
         emit NotaryRemoved(_domain, _notary);
         return true;
     }
+
+    // solhint-disable no-empty-blocks
+    /**
+     * @notice Hook that is called after the specified domain becomes active,
+     * i.e. when the first Notary is added to the domain.
+     */
+    function _afterDomainBecomesActive(uint32 _domain, address _notary) internal virtual {}
+
+    /**
+     * @notice Hook that is called after the specified domain becomes inactive,
+     * i.e. when the last Notary is removed from the domain.
+     */
+    function _afterDomainBecomesInactive(uint32 _domain, address _notary) internal virtual {}
 
     /**
      * @notice Returns whether a given address is a notary for a given domain.
