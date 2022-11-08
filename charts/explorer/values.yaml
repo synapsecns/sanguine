@@ -157,7 +157,7 @@ server:
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 9000; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz host.docker.internal 9000; do echo "Waiting for clickhouse..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: explorer-clickhouse
