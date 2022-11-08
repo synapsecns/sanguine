@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { SynapseTypes } from "./SynapseTypes.sol";
 import { TypedMemView } from "./TypedMemView.sol";
-import { Auth } from "./Auth.sol";
+import { ByteString } from "./ByteString.sol";
 
 library Attestation {
     using TypedMemView for bytes;
@@ -124,6 +124,6 @@ library Attestation {
      * @notice Returns Notary's signature on AttestationData
      */
     function notarySignature(bytes29 _view) internal pure onlyAttestation(_view) returns (bytes29) {
-        return _view.slice(OFFSET_SIGNATURE, Auth.SIGNATURE_LENGTH, SynapseTypes.SIGNATURE);
+        return _view.slice(OFFSET_SIGNATURE, ByteString.SIGNATURE_LENGTH, SynapseTypes.SIGNATURE);
     }
 }

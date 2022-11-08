@@ -113,7 +113,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
             getter: libHarness.body,
             payloadType: SynapseTypes.MESSAGE,
             payload: message,
-            expectedType: SynapseTypes.MESSAGE_BODY,
+            expectedType: SynapseTypes.RAW_BYTES,
             expectedData: TEST_MESSAGE_BODY,
             revertMessage: "!body"
         });

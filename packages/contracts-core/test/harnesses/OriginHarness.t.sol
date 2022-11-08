@@ -36,7 +36,7 @@ contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
     ) public view returns (bytes memory message) {
         message = Message.formatMessage(
             _localDomain(),
-            _getSender(_recipientAddress),
+            _checkForSystemRouter(_recipientAddress),
             nonce() + 1,
             _destination,
             _recipientAddress,

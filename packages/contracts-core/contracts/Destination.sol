@@ -13,7 +13,7 @@ import { Header } from "./libs/Header.sol";
 import { Tips } from "./libs/Tips.sol";
 import { TypedMemView } from "./libs/TypedMemView.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
-import { SystemMessage } from "./libs/SystemMessage.sol";
+import { SystemCall } from "./libs/SystemCall.sol";
 
 /**
  * @title Destination
@@ -166,7 +166,7 @@ contract Destination is
         // attestations with empty root would be rejected: see DestinationHub._handleAttestation()
         // update message status as executed, new status is never bytes32(0)
         messageStatus[originDomain][leaf] = root;
-        address recipient = _checkForSystemMessage(header.recipient());
+        address recipient = _checkForSystemRouter(header.recipient());
         IMessageRecipient(recipient).handle(
             originDomain,
             header.nonce(),
@@ -217,13 +217,13 @@ contract Destination is
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _checkForSystemMessage(bytes32 _recipient) internal view returns (address recipient) {
+    function _checkForSystemRouter(bytes32 _recipient) internal view returns (address recipient) {
         // Check if SYSTEM_ROUTER was specified as message recipient
-        if (_recipient == SystemMessage.SYSTEM_ROUTER) {
+        if (_recipient == SystemCall.SYSTEM_ROUTER) {
             /**
              * @dev Route message to SystemRouter.
-             * Note: Only SystemRouter contract on origin chain
-             * can send such a message (enforced in Origin.sol).
+             * Note: Only SystemRouter contract on origin chain can send a message
+             * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
              */
             recipient = address(systemRouter);
         } else {

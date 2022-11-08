@@ -84,13 +84,13 @@ func (_m *IOrigin) AllNotaries(opts *bind.CallOpts) ([]common.Address, error) {
 	return r0, r1
 }
 
-// Dispatch provides a mock function with given fields: opts, _destination, _recipientAddress, _optimisticSeconds, _tips, _messageBody
-func (_m *IOrigin) Dispatch(opts *bind.TransactOpts, _destination uint32, _recipientAddress [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, _destination, _recipientAddress, _optimisticSeconds, _tips, _messageBody)
+// Dispatch provides a mock function with given fields: opts, _destination, _recipient, _optimisticSeconds, _tips, _messageBody
+func (_m *IOrigin) Dispatch(opts *bind.TransactOpts, _destination uint32, _recipient [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, _destination, _recipient, _optimisticSeconds, _tips, _messageBody)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, [32]byte, uint32, []byte, []byte) *types.Transaction); ok {
-		r0 = rf(opts, _destination, _recipientAddress, _optimisticSeconds, _tips, _messageBody)
+		r0 = rf(opts, _destination, _recipient, _optimisticSeconds, _tips, _messageBody)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -99,7 +99,7 @@ func (_m *IOrigin) Dispatch(opts *bind.TransactOpts, _destination uint32, _recip
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, [32]byte, uint32, []byte, []byte) error); ok {
-		r1 = rf(opts, _destination, _recipientAddress, _optimisticSeconds, _tips, _messageBody)
+		r1 = rf(opts, _destination, _recipient, _optimisticSeconds, _tips, _messageBody)
 	} else {
 		r1 = ret.Error(1)
 	}
