@@ -20,6 +20,8 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
     function test_addNotary_multipleNotaries() public {
         for (uint256 d = 0; d < DOMAINS; ++d) {
             uint32 domain = domains[d];
+            // Check amount of domains before adding
+            assertEq(globalNotaryRegistryDomainsAmount(), d, "!domainsAmount: before adding");
             for (uint256 i = 0; i < ELEMENTS; ++i) {
                 expectNotaryAdded({ domain: domain, notaryIndex: i });
                 globalNotaryRegistryAddNotary({
@@ -27,6 +29,12 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
                     notaryIndex: i,
                     returnValue: true
                 });
+                // Check amount of domains after adding
+                assertEq(
+                    globalNotaryRegistryDomainsAmount(),
+                    d + 1,
+                    "!domainsAmount: after adding"
+                );
             }
         }
     }
@@ -42,6 +50,12 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
                     notaryIndex: i,
                     returnValue: false
                 });
+                // Amount of domains should not change
+                assertEq(
+                    globalNotaryRegistryDomainsAmount(),
+                    DOMAINS,
+                    "!domainsAmount: after readding"
+                );
             }
         }
     }
@@ -60,6 +74,12 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
                     notary: notary,
                     returnValue: false
                 });
+                // Amount of domains should not change
+                assertEq(
+                    globalNotaryRegistryDomainsAmount(),
+                    DOMAINS,
+                    "!domainsAmount: after reading"
+                );
             }
         }
     }
@@ -79,6 +99,20 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
                     notaryIndex: i,
                     returnValue: true
                 });
+                // Amount of domains should not change, as long as there's an active notary left
+                if (i != ELEMENTS - 1) {
+                    assertEq(
+                        globalNotaryRegistryDomainsAmount(),
+                        DOMAINS - d,
+                        "!domainsAmount: deleting, active notary left"
+                    );
+                } else {
+                    assertEq(
+                        globalNotaryRegistryDomainsAmount(),
+                        DOMAINS - d - 1,
+                        "!domainsAmount: deleting, all domain notaries removed"
+                    );
+                }
             }
         }
     }
@@ -94,6 +128,12 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
                     notaryIndex: i,
                     returnValue: false
                 });
+                // Amount of domains should not change
+                assertEq(
+                    globalNotaryRegistryDomainsAmount(),
+                    0,
+                    "!domainsAmount: after redeleting"
+                );
             }
         }
     }
@@ -109,6 +149,8 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
         // Should be possible to add Notary back on another domain once deleted
         for (uint256 d = 0; d < DOMAINS; ++d) {
             uint32 domain = domains[d];
+            // Check amount of domains before adding
+            assertEq(globalNotaryRegistryDomainsAmount(), d, "!domainsAmount: before adding");
             for (uint256 i = 0; i < ELEMENTS; ++i) {
                 // Fetch notary address, that used to be active on another domain
                 address notary = suiteForeignNotary({ domain: domain, index: i });
@@ -119,6 +161,12 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
                     notary: notary,
                     returnValue: true
                 });
+                // Check amount of domains after adding
+                assertEq(
+                    globalNotaryRegistryDomainsAmount(),
+                    d + 1,
+                    "!domainsAmount: after adding"
+                );
             }
         }
     }
@@ -256,5 +304,38 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
                 );
             }
         }
+    }
+
+    function test_allDomains_getDomain_domainsAmount() public {
+        // Add first Notary
+        globalNotaryRegistryAddNotary({ domain: DOMAIN_LOCAL, notaryIndex: 0, returnValue: true });
+        // Checks # 1
+        assertEq(globalNotaryRegistryDomainsAmount(), 1, "!domainsAmount (#1)");
+        assertEq(globalNotaryRegistryGetDomain(0), DOMAIN_LOCAL, "!getDomain(0) (#1)");
+        uint32[] memory allDomains = globalNotaryRegistryAllDomains();
+        assertEq(allDomains.length, 1, "!length (#1)");
+        assertEq(allDomains[0], DOMAIN_LOCAL, "!domains[0] (#1)");
+        // Add Notary on another domain
+        globalNotaryRegistryAddNotary({ domain: DOMAIN_REMOTE, notaryIndex: 0, returnValue: true });
+        // Checks # 2
+        assertEq(globalNotaryRegistryDomainsAmount(), 2, "!domainsAmount (#2)");
+        assertEq(globalNotaryRegistryGetDomain(0), DOMAIN_LOCAL, "!getDomain(0) (#2)");
+        assertEq(globalNotaryRegistryGetDomain(1), DOMAIN_REMOTE, "!getDomain(1) (#2)");
+        allDomains = globalNotaryRegistryAllDomains();
+        assertEq(allDomains.length, 2, "!length (#2)");
+        assertEq(allDomains[0], DOMAIN_LOCAL, "!domains[0] (#2)");
+        assertEq(allDomains[1], DOMAIN_REMOTE, "!domains[1] (#2)");
+        // Remove Notary on first domain
+        globalNotaryRegistryRemoveNotary({
+            domain: DOMAIN_LOCAL,
+            notaryIndex: 0,
+            returnValue: true
+        });
+        // Checks #3
+        assertEq(globalNotaryRegistryDomainsAmount(), 1, "!domainsAmount (#3)");
+        assertEq(globalNotaryRegistryGetDomain(0), DOMAIN_REMOTE, "!getDomain (#3)");
+        allDomains = globalNotaryRegistryAllDomains();
+        assertEq(allDomains.length, 1, "!length (#3)");
+        assertEq(allDomains[0], DOMAIN_REMOTE, "!domains[0] (#3)");
     }
 }

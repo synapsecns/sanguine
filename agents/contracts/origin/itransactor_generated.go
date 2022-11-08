@@ -12,8 +12,8 @@ import (
 type IOriginTransactor interface {
 	// Dispatch is a paid mutator transaction binding the contract method 0xf7560e40.
 	//
-	// Solidity: function dispatch(uint32 _destination, bytes32 _recipientAddress, uint32 _optimisticSeconds, bytes _tips, bytes _messageBody) payable returns(uint32 messageNonce, bytes32 messageHash)
-	Dispatch(opts *bind.TransactOpts, _destination uint32, _recipientAddress [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) (*types.Transaction, error)
+	// Solidity: function dispatch(uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds, bytes _tips, bytes _messageBody) payable returns(uint32 messageNonce, bytes32 messageHash)
+	Dispatch(opts *bind.TransactOpts, _destination uint32, _recipient [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) (*types.Transaction, error)
 	// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
 	//
 	// Solidity: function initialize(address _notaryManager) returns()

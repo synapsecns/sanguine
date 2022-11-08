@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { SynapseTypes } from "./SynapseTypes.sol";
 import { TypedMemView } from "./TypedMemView.sol";
-import { Auth } from "./Auth.sol";
+import { ByteString } from "./ByteString.sol";
 
 library Attestation {
     using TypedMemView for bytes;
@@ -183,7 +183,7 @@ library Attestation {
         return
             _view.slice({
                 _index: OFFSET_SIGNATURE,
-                _len: Auth.SIGNATURE_LENGTH,
+                _len: ByteString.SIGNATURE_LENGTH,
                 newType: SynapseTypes.SIGNATURE
             });
     }

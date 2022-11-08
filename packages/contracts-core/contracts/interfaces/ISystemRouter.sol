@@ -17,12 +17,15 @@ interface ISystemRouter {
      * @dev Only System contracts are allowed to call this function.
      * Note: knowledge of recipient address is not required, routing will be done by SystemRouter
      * on the destination chain. Following call will be made on destination chain:
-     * - recipient.call(_data, originDomain, originSender, rootSubmittedAt)
-     * Note: data payload is extended with abi encoded (domain, sender, rootTimestamp)
+     * - recipient.call(_data, callOrigin, systemCaller, rootSubmittedAt)
      * This allows recipient to check:
-     * - domain where a system call originated (local domain in this case)
-     * - system entity, who initiated the call (msg.sender on local chain)
-     * - timestamp when merkle root was submitted and optimistic timer started ticking
+     * - callOrigin: domain where a system call originated (local domain in this case)
+     * - systemCaller: system entity who initiated the call (msg.sender on local chain)
+     * - rootSubmittedAt:
+     *   - For cross-chain calls: timestamp when merkle root (used for executing the system call)
+     *     was submitted to destination and its optimistic timer started ticking
+     *   - For on-chain calls: timestamp of the current block
+     *
      * @param _destination          Domain of destination chain
      * @param _optimisticSeconds    Optimistic period for the message
      * @param _recipient            System entity to receive the call on destination chain
@@ -36,7 +39,7 @@ interface ISystemRouter {
     ) external;
 
     /**
-     * @notice Calls a few system contracts with the given calldata.
+     * @notice Calls a few system contracts using the given calldata for each call.
      * See `systemCall` for details on system calls.
      * Note: tx will revert if any of the calls revert, guaranteeing
      * that either all calls succeed or none.
@@ -45,6 +48,32 @@ interface ISystemRouter {
         uint32 _destination,
         uint32 _optimisticSeconds,
         SystemEntity[] memory _recipients,
+        bytes[] memory _dataArray
+    ) external;
+
+    /**
+     * @notice Calls a few system contracts using the same calldata for each call.
+     * See `systemCall` for details on system calls.
+     * Note: tx will revert if any of the calls revert, guaranteeing
+     * that either all calls succeed or none.
+     */
+    function systemMultiCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        SystemEntity[] memory _recipients,
+        bytes memory _data
+    ) external;
+
+    /**
+     * @notice Calls a single system contract a few times using the given calldata for each call.
+     * See `systemCall` for details on system calls.
+     * Note: tx will revert if any of the calls revert, guaranteeing
+     * that either all calls succeed or none.
+     */
+    function systemMultiCall(
+        uint32 _destination,
+        uint32 _optimisticSeconds,
+        SystemEntity _recipient,
         bytes[] memory _dataArray
     ) external;
 }

@@ -56,7 +56,7 @@ abstract contract SystemRouterTools is DestinationTools {
             context: context,
             mockTips: false,
             body: abi.encode(formattedSystemCalls),
-            recipient: SystemMessage.SYSTEM_ROUTER,
+            recipient: SystemCall.SYSTEM_ROUTER,
             optimisticSeconds: 0
         });
         // Save dispatched message for later execution
@@ -136,7 +136,7 @@ abstract contract SystemRouterTools is DestinationTools {
                 abi.encode(systemCallOrigin, systemCallSender)
             );
             // Save formatted system call
-            formattedSystemCalls[i] = SystemMessage.formatSystemCall({
+            formattedSystemCalls[i] = SystemCall.formatSystemCall({
                 _systemRecipient: uint8(systemCallRecipients[i]),
                 _payload: payload
             });
@@ -160,6 +160,31 @@ abstract contract SystemRouterTools is DestinationTools {
                     selector: selector,
                     newValue: _createMockSensitiveValue(index)
                 });
+                ++index;
+            }
+        }
+        // Sanity check
+        require(index > 0, "No events are expected");
+    }
+
+    function expectSystemCallsWrapperTests(
+        uint32 domain,
+        bytes4 selector,
+        bool sameRecipient
+    ) public {
+        uint256 amount = systemContracts[domain].length;
+        uint256 index = 0;
+        for (uint256 s = 0; s < amount; ++s) {
+            for (uint256 r = 0; r < amount; ++r) {
+                // Wrapper tests use either same recipient
+                address recipient = sameRecipient
+                    ? systemContracts[domain][0]
+                    : systemContracts[domain][r];
+                // Or they use the same data
+                uint256 newValue = sameRecipient
+                    ? _createMockSensitiveValue(index)
+                    : _createMockSensitiveValue(s * amount);
+                expectSystemCallEvent(recipient, selector, newValue);
                 ++index;
             }
         }
@@ -254,6 +279,26 @@ abstract contract SystemRouterTools is DestinationTools {
         });
     }
 
+    function systemRouterMultiCallSameRecipient() public {
+        vm.prank(systemSender);
+        suiteSystemRouter(systemCallOrigin).systemMultiCall({
+            _destination: systemCallDestination,
+            _optimisticSeconds: systemCallOptimisticSeconds,
+            _recipient: systemCallRecipients[0],
+            _dataArray: systemCallDataArray
+        });
+    }
+
+    function systemRouterMultiCallSameData() public {
+        vm.prank(systemSender);
+        suiteSystemRouter(systemCallOrigin).systemMultiCall({
+            _destination: systemCallDestination,
+            _optimisticSeconds: systemCallOptimisticSeconds,
+            _recipients: systemCallRecipients,
+            _data: systemCallDataArray[0]
+        });
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             TEST HELPERS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -310,6 +355,37 @@ abstract contract SystemRouterTools is DestinationTools {
         if (origin != destination) {
             // Create proofs for later execution
             proofGen.createTree(messageHashes);
+        }
+    }
+
+    function triggerTestWrapperMultiCall(
+        uint32 domain,
+        bytes4 selector,
+        bool sameRecipient
+    ) public {
+        uint256 amount = systemContracts[domain].length;
+        uint256 index = 0;
+        for (uint256 s = 0; s < amount; ++s) {
+            address sender = systemContracts[domain][s];
+            // Context for a on-chain call
+            MessageContext memory context = MessageContext(domain, sender, domain);
+            deleteSystemCalls();
+            for (uint256 r = 0; r < amount; (++r, ++index)) {
+                createSystemCall({
+                    context: context,
+                    index: index,
+                    selector: selector,
+                    optimisticSeconds: 0,
+                    recipient: systemContracts[domain][r],
+                    deleteCalls: false,
+                    formatCalls: false
+                });
+            }
+            if (sameRecipient) {
+                systemRouterMultiCallSameRecipient();
+            } else {
+                systemRouterMultiCallSameData();
+            }
         }
     }
 
