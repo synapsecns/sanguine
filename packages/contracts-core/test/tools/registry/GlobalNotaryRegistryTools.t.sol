@@ -13,6 +13,27 @@ abstract contract GlobalNotaryRegistryTools is SynapseTestSuite {
     ▏*║                            EXPECT EVENTS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    function expectHookEvent(
+        uint32 domain,
+        uint256 notaryIndex,
+        bool added
+    ) public {
+        expectHookEvent(domain, suiteNotary(domain, notaryIndex), added);
+    }
+
+    function expectHookEvent(
+        uint32 domain,
+        address notary,
+        bool added
+    ) public {
+        vm.expectEmit(true, true, true, true);
+        if (added) {
+            emit HookDomainActive(domain, notary);
+        } else {
+            emit HookDomainInactive(domain, notary);
+        }
+    }
+
     function expectNotaryAdded(uint32 domain, uint256 notaryIndex) public {
         vm.expectEmit(true, true, true, true);
         emit NotaryAdded(domain, suiteNotary(domain, notaryIndex));
