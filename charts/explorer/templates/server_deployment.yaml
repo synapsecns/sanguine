@@ -60,6 +60,16 @@ spec:
           env:
             {{- toYaml .Values.server.env | nindent 12 }}
           {{- end }}
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            httpGet:
+              path: /health-check
+              port: http
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            httpGet:
+              path: /health-check
+              port: http
         {{- if .Values.files }}
           volumeMounts:
             - name: configmap
