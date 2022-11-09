@@ -65,13 +65,6 @@ spec:
             httpGet:
               path: /health-check
               port: http
-          readinessProbe:
-            tcpSocket:
-              port: 80
-            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
-            periodSeconds: 30
-            timeoutSeconds: 10
-
         {{- if .Values.files }}
           volumeMounts:
             - name: configmap
