@@ -70,9 +70,7 @@ spec:
               port: 80
             initialDelaySeconds: {{ .Values.initialDelaySeconds }}
             periodSeconds: 30
-            httpGet:
-              path: /health-check
-              port: http
+            timeoutSeconds: 10
 
         {{- if .Values.files }}
           volumeMounts:
