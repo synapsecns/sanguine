@@ -3,6 +3,10 @@ package types_test
 import (
 	"context"
 	"crypto/rand"
+	"math/big"
+	"testing"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -10,9 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"math/big"
-	"testing"
-	"time"
 )
 
 func TestEncodeTipsParity(t *testing.T) {
@@ -83,16 +84,22 @@ func TestEncodeAttestationParity(t *testing.T) {
 	testBackend := simulated.NewSimulatedBackend(ctx, t)
 	deployManager := testutil.NewDeployManager(t)
 
-	domain := gofakeit.Uint32()
+	origin := gofakeit.Uint32()
+	destination := origin + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
 	_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
 
-	contractData, err := attesationContract.FormatAttestationData(&bind.CallOpts{Context: ctx}, domain, nonce, root)
+	contractData, err := attesationContract.FormatAttestationData(&bind.CallOpts{Context: ctx}, origin, destination, nonce, root)
 	Nil(t, err)
 
-	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(domain, nonce, root))
+	attestKey := types.AttestationKey{
+		Origin:      origin,
+		Destination: destination,
+		Nonce:       nonce,
+	}
+	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(attestKey.GetRawKey(), root))
 	Nil(t, err)
 	Equal(t, contractData, goFormattedData)
 }
@@ -107,20 +114,26 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
 
 	domain := gofakeit.Uint32()
+	destination := domain + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
 	sig := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 
+	attestKey := types.AttestationKey{
+		Origin:      domain,
+		Destination: destination,
+		Nonce:       nonce,
+	}
 	signedAttestation := types.NewSignedAttestation(
-		types.NewAttestation(domain, nonce, root),
+		types.NewAttestation(attestKey.GetRawKey(), root),
 		sig,
 	)
 
 	encodedSignature, err := types.EncodeSignature(sig)
 	Nil(t, err)
 
-	signedContractAttestation, err := attesationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, domain, nonce, root, encodedSignature)
+	signedContractAttestation, err := attesationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, domain, destination, nonce, root, encodedSignature)
 	Nil(t, err)
 
 	goData, err := types.EncodeSignedAttestation(signedAttestation)

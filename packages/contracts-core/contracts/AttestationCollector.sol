@@ -39,9 +39,9 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
     /// @dev We are also storing last submitted (nonce, root) attestation for every Notary.
     /// attestationDomains = (origin, destination)
     // [attestationDomains => [notary => latestNonce]]
-    mapping(uint64 => mapping(address => uint32)) public latestNonces;
+    mapping(uint64 => mapping(address => uint32)) internal latestNonces;
     // [attestationDomains => [notary => latestRoot]]
-    mapping(uint64 => mapping(address => bytes32)) public latestRoots;
+    mapping(uint64 => mapping(address => bytes32)) internal latestRoots;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             UPGRADE GAP                              ║*▕
@@ -133,6 +133,36 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
         // Check if we found anything
         require(latestNonce != 0, "No attestations found");
         return _formatAttestation(_origin, _destination, latestNonce, latestRoot);
+    }
+
+    /**
+     * @notice Get latest nonce for the (origin, destination, notary).
+     */
+    function getLatestNonce(
+        uint32 _origin,
+        uint32 _destination,
+        address _notary
+    ) external view returns (uint32) {
+        uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
+        uint32 latestNonce = latestNonces[attestationDomains][_notary];
+        // Check if we found anything
+        require(latestNonce != 0, "No nonce found");
+        return latestNonce;
+    }
+
+    /**
+     * @notice Get latest root for the (origin, destination, notary).
+     */
+    function getLatestRoot(
+        uint32 _origin,
+        uint32 _destination,
+        address _notary
+    ) external view returns (bytes32) {
+        uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
+        bytes32 latestRoot = latestRoots[attestationDomains][_notary];
+        // Check if we found anything
+        require(latestRoot != 0, "No root found");
+        return latestRoot;
     }
 
     /**

@@ -3,9 +3,10 @@ package destination_test
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
 	"math/big"
 	"time"
+
+	"github.com/synapsecns/sanguine/core"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -23,7 +24,7 @@ func (d DestinationSuite) TestDestinationSuite() {
 
 	// Create a channel and subscription to receive AttestationAccepted events as they are emitted.
 	attestationSink := make(chan *destination.DestinationAttestationAccepted)
-	subAttestation, err := d.destinationContract.WatchAttestationAccepted(&bind.WatchOpts{Context: d.GetTestContext()}, attestationSink, []uint32{}, []uint32{}, [][32]byte{})
+	subAttestation, err := d.destinationContract.WatchAttestationAccepted(&bind.WatchOpts{Context: d.GetTestContext()}, attestationSink, []*big.Int{}, [][32]byte{})
 	Nil(d.T(), err)
 
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
@@ -36,9 +37,15 @@ func (d DestinationSuite) TestDestinationSuite() {
 
 	// Create an attestation
 	localDomain := uint32(d.testBackendOrigin.ChainConfig().ChainID.Uint64())
+	destinationDomain := localDomain + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-	unsignedAttestation := types.NewAttestation(localDomain, nonce, root)
+	attestKey := types.AttestationKey{
+		Origin:      localDomain,
+		Destination: destinationDomain,
+		Nonce:       nonce,
+	}
+	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
 	hashedAttestation, err := notary.HashAttestation(unsignedAttestation)
 	Nil(d.T(), err)
 
@@ -51,7 +58,8 @@ func (d DestinationSuite) TestDestinationSuite() {
 
 	attestation, err := d.attestationHarness.FormatAttestation(
 		&bind.CallOpts{Context: d.GetTestContext()},
-		signedAttestation.Attestation().Domain(),
+		signedAttestation.Attestation().Origin(),
+		signedAttestation.Attestation().Destination(),
 		signedAttestation.Attestation().Nonce(),
 		signedAttestation.Attestation().Root(),
 		encodedSig,

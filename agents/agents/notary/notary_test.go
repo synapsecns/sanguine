@@ -1,6 +1,9 @@
 package notary_test
 
 import (
+	"math/big"
+	"time"
+
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
@@ -10,8 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"math/big"
-	"time"
 )
 
 func (u NotarySuite) TestNotaryE2E() {
@@ -37,7 +38,8 @@ func (u NotarySuite) TestNotaryE2E() {
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(u.T(), err)
 
-	tx, err := u.originContract.Dispatch(auth.TransactOpts, gofakeit.Uint32(), [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
+	desinationDomain := gofakeit.Uint32()
+	tx, err := u.originContract.Dispatch(auth.TransactOpts, desinationDomain, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
 	Nil(u.T(), err)
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
 
@@ -48,7 +50,7 @@ func (u NotarySuite) TestNotaryE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		latestNonce, err := u.attestationContract.LatestNonce(&bind.CallOpts{Context: u.GetTestContext()}, u.domainClient.Config().DomainID, u.signer.Address())
+		latestNonce, err := u.attestationContract.GetLatestNonce(&bind.CallOpts{Context: u.GetTestContext()}, u.domainClient.Config().DomainID, desinationDomain, u.signer.Address())
 		Nil(u.T(), err)
 
 		return latestNonce != 0

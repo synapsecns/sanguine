@@ -1,12 +1,13 @@
 package db_test
 
 import (
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/types"
-	"math/big"
 )
 
 func (t *DBSuite) TestStoreRetreiveMessageLatestBlockEnd() {
@@ -34,7 +35,8 @@ func (t *DBSuite) TestStoreRetreiveMessageLatestBlockEnd() {
 }
 
 func (t *DBSuite) TestStoreRetrieveSignedAttestaion() {
-	domain := gofakeit.Uint32()
+	origin := gofakeit.Uint32()
+	destination := origin + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
@@ -42,8 +44,12 @@ func (t *DBSuite) TestStoreRetrieveSignedAttestaion() {
 	fakeR := big.NewInt(gofakeit.Int64())
 	fakeS := big.NewInt(gofakeit.Int64())
 
+	attestKey := types.AttestationKey{
+		Origin:      origin,
+		Destination: destination,
+		Nonce:       nonce}
 	signedAttestation := types.NewSignedAttestation(
-		types.NewAttestation(domain, nonce, root),
+		types.NewAttestation(attestKey.GetRawKey(), root),
 		types.NewSignature(fakeV, fakeR, fakeS),
 	)
 
@@ -51,11 +57,12 @@ func (t *DBSuite) TestStoreRetrieveSignedAttestaion() {
 		err := testDB.StoreSignedAttestations(t.GetTestContext(), signedAttestation)
 		Nil(t.T(), err)
 
-		retrievedAttestation, err := testDB.RetrieveSignedAttestationByNonce(t.GetTestContext(), domain, nonce)
+		retrievedAttestation, err := testDB.RetrieveSignedAttestationByNonce(t.GetTestContext(), origin, nonce)
 		Nil(t.T(), err)
 
 		Equal(t.T(), signedAttestation.Attestation().Root(), retrievedAttestation.Attestation().Root())
-		Equal(t.T(), signedAttestation.Attestation().Domain(), retrievedAttestation.Attestation().Domain())
+		Equal(t.T(), signedAttestation.Attestation().Origin(), retrievedAttestation.Attestation().Origin())
+		Equal(t.T(), signedAttestation.Attestation().Destination(), retrievedAttestation.Attestation().Destination())
 		Equal(t.T(), signedAttestation.Attestation().Nonce(), retrievedAttestation.Attestation().Nonce())
 
 		Equal(t.T(), signedAttestation.Signature().V(), retrievedAttestation.Signature().V())

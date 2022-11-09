@@ -1,9 +1,10 @@
 package base
 
 import (
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	"math/big"
 	"time"
+
+	"github.com/synapsecns/sanguine/core/dbcommon"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -112,12 +113,12 @@ type DispatchMessage struct {
 type AcceptedAttestation struct {
 	// AAOriginDomain is the chainID of the Origin contract.
 	AAOriginDomain uint32 `gorm:"column:origin_domain"`
+	// AADestinationDomain is the chainID of the Destination contract.
+	AADestinationDomain uint32 `gorm:"column:destination_domain"`
 	// AANonce is the nonce of the attestation.
 	AANonce uint32 `gorm:"column:nonce"`
 	// AARoot is the root of the attestation.
 	AARoot string `gorm:"column:root"`
-	// AADestinationDomain is the chainID of the Destination contract.
-	AADestinationDomain uint32 `gorm:"column:destination_domain"`
 }
 
 // CommittedMessage is a committed message
@@ -234,8 +235,10 @@ var _ types.Message = CommittedMessage{}
 // SignedAttestation stores attestations.
 type SignedAttestation struct {
 	gorm.Model
-	// SADomain is the domain of the attestation
-	SADomain uint32 `gorm:"column:domain_id;uniqueIndex:sa_idx_id"`
+	// SAOrigin is the origin of the attestation
+	SAOrigin uint32 `gorm:"column:origin_id;uniqueIndex:sa_idx_id"`
+	// SADestination is the destination of the attestation
+	SADestination uint32 `gorm:"column:destination_id;uniqueIndex:sa_idx_id"`
 	// SANonce is the nonce of the attestation
 	SANonce uint32 `gorm:"column:nonce;uniqueIndex:sa_idx_id"`
 	// SARoot is the root of the signed attestation
@@ -260,9 +263,14 @@ func (s SignedAttestation) Signature() types.Signature {
 	return res
 }
 
-// Domain gets the domain of the signed attestation.
-func (s SignedAttestation) Domain() uint32 {
-	return s.SADomain
+// Origin gets the origin of the signed attestation.
+func (s SignedAttestation) Origin() uint32 {
+	return s.SAOrigin
+}
+
+// Destination gets the destination of the signed attestation.
+func (s SignedAttestation) Destination() uint32 {
+	return s.SADestination
 }
 
 // Nonce gets the nonce of the signed attestation.

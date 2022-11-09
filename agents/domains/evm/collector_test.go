@@ -1,6 +1,8 @@
 package evm_test
 
 import (
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -8,7 +10,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
-	"math/big"
 )
 
 func (i ContractSuite) TestSubmitAttestation() {
@@ -16,10 +17,15 @@ func (i ContractSuite) TestSubmitAttestation() {
 	Nil(i.T(), err)
 
 	localDomain := uint32(attestationDomain)
+	destination := localDomain + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-
-	unsignedAttestation := types.NewAttestation(localDomain, nonce, root)
+	attestKey := types.AttestationKey{
+		Origin:      localDomain,
+		Destination: destination,
+		Nonce:       nonce,
+	}
+	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
 	hashedAttestation, err := notary.HashAttestation(unsignedAttestation)
 	Nil(i.T(), err)
 
@@ -31,7 +37,7 @@ func (i ContractSuite) TestSubmitAttestation() {
 	err = attestationCollector.SubmitAttestation(i.GetTestContext(), i.signer, signedAttestation)
 	Nil(i.T(), err)
 
-	latestNonce, err := attestationCollector.LatestNonce(i.GetTestContext(), localDomain, i.signer)
+	latestNonce, err := attestationCollector.GetLatestNonce(i.GetTestContext(), localDomain, destination, i.signer)
 	Nil(i.T(), err)
 	Equal(i.T(), nonce, latestNonce)
 }

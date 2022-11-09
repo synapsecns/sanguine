@@ -1,12 +1,13 @@
 package types_test
 
 import (
+	"math/big"
+	"testing"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/types"
-	"math/big"
-	"testing"
 )
 
 func TestEncodeDecodeSignature(t *testing.T) {
@@ -28,16 +29,22 @@ func TestEncodeDecodeSignature(t *testing.T) {
 
 func TestEncodeDecodeAttestation(t *testing.T) {
 	domain := gofakeit.Uint32()
+	destination := domain + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
-	formattedData, err := types.EncodeAttestation(types.NewAttestation(domain, nonce, root))
+	attestKey := types.AttestationKey{
+		Origin:      domain,
+		Destination: destination,
+		Nonce:       nonce,
+	}
+	formattedData, err := types.EncodeAttestation(types.NewAttestation(attestKey.GetRawKey(), root))
 	Nil(t, err)
 
 	decodedAttestation, err := types.DecodeAttestation(formattedData)
 	Nil(t, err)
 
-	Equal(t, decodedAttestation.Domain(), domain)
+	Equal(t, decodedAttestation.Origin(), domain)
 	Equal(t, decodedAttestation.Nonce(), nonce)
 
 	rawRoot := decodedAttestation.Root()
@@ -46,6 +53,7 @@ func TestEncodeDecodeAttestation(t *testing.T) {
 
 func TestEncodeDecodeSignedAttestation(t *testing.T) {
 	domain := gofakeit.Uint32()
+	destination := domain + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
@@ -53,8 +61,13 @@ func TestEncodeDecodeSignedAttestation(t *testing.T) {
 	fakeR := big.NewInt(gofakeit.Int64())
 	fakeS := big.NewInt(gofakeit.Int64())
 
+	attestKey := types.AttestationKey{
+		Origin:      domain,
+		Destination: destination,
+		Nonce:       nonce,
+	}
 	signedAttestation := types.NewSignedAttestation(
-		types.NewAttestation(domain, nonce, root),
+		types.NewAttestation(attestKey.GetRawKey(), root),
 		types.NewSignature(fakeV, fakeR, fakeS),
 	)
 
@@ -65,7 +78,8 @@ func TestEncodeDecodeSignedAttestation(t *testing.T) {
 	Nil(t, err)
 
 	Equal(t, decoded.Attestation().Root(), signedAttestation.Attestation().Root())
-	Equal(t, decoded.Attestation().Domain(), signedAttestation.Attestation().Domain())
+	Equal(t, decoded.Attestation().Origin(), signedAttestation.Attestation().Origin())
+	Equal(t, decoded.Attestation().Destination(), signedAttestation.Attestation().Destination())
 	Equal(t, decoded.Attestation().Nonce(), signedAttestation.Attestation().Nonce())
 
 	Equal(t, decoded.Signature().V(), signedAttestation.Signature().V())
