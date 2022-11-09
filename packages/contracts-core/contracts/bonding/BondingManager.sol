@@ -3,10 +3,8 @@ pragma solidity 0.8.17;
 
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
 import { SystemContract } from "../system/SystemContract.sol";
-import { AbstractGuardRegistry } from "../registry/AbstractGuardRegistry.sol";
-import { AbstractNotaryRegistry } from "../registry/AbstractNotaryRegistry.sol";
 
-abstract contract BondingManager is AbstractGuardRegistry, AbstractNotaryRegistry, SystemContract {
+abstract contract BondingManager is SystemContract {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
