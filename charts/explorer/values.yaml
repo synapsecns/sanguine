@@ -103,17 +103,17 @@ indexer:
   tolerations: {}
   # TODO: this should be in extraValues for testing
   extraInitContainers:
-    - name: wait-for-omnirpc
-      image: busybox:latest
-      imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
-      env:
-        - name: POD_NAME
-          value: explorer-omnirpc
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+#    - name: wait-for-omnirpc
+#      image: busybox:latest
+#      imagePullPolicy: IfNotPresent
+#      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
+#      env:
+#        - name: POD_NAME
+#          value: explorer-omnirpc
+#        - name: POD_NAMESPACE
+#          valueFrom:
+#            fieldRef:
+#              fieldPath: metadata.namespace
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
@@ -147,17 +147,17 @@ server:
   tolerations: []
   # TODO: this should be in extraValues for testing
   extraInitContainers:
-    - name: wait-for-omnirpc
-      image: busybox:latest
-      imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
-      env:
-        - name: POD_NAME
-          value: explorer-omnirpc
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+#    - name: wait-for-omnirpc
+#      image: busybox:latest
+#      imagePullPolicy: IfNotPresent
+#      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
+#      env:
+#        - name: POD_NAME
+#          value: explorer-omnirpc
+#        - name: POD_NAMESPACE
+#          valueFrom:
+#            fieldRef:
+#              fieldPath: metadata.namespace
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
@@ -182,7 +182,6 @@ files:
   config.yaml: |-
     # Production config example
     refresh_rate: 1
-    rpc_url: 'https://rpc.interoperability.institute/confirmations'
     scribe_url: 'https://scribe.interoperability.institute/graphql'
     bridge_config_address: '0x5217c83ca75559B1f8a8803824E5b7ac233A12a1'
     bridge_config_chain_id: 1
