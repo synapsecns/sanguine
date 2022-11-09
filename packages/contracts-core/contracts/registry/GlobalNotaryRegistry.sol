@@ -110,6 +110,7 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
      * @dev Notary will not be added, if it's active on ANY domain.
      */
     function _addNotary(uint32 _domain, address _notary) internal override returns (bool) {
+        require(_domain != 0, "!domain: zero");
         if (notariesInfo[_notary].domain != 0) return false;
         // No need to check if domain is already known, EnumerableSet takes care of this.
         domains.add(_domain);
@@ -126,6 +127,7 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
      * @notice Tries to remove a notary, emits an event only if notary was removed.
      */
     function _removeNotary(uint32 _domain, address _notary) internal override returns (bool) {
+        require(_domain != 0, "!domain: zero");
         NotaryInfo memory info = notariesInfo[_notary];
         if (info.domain != _domain) return false;
         // To delete a Notary from the array in O(1),
@@ -155,6 +157,7 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
      * @notice Returns whether a given address is a notary for a given domain.
      */
     function _isNotary(uint32 _domain, address _account) internal view override returns (bool) {
+        require(_domain != 0, "!domain: zero");
         return notariesInfo[_account].domain == _domain;
     }
 }
