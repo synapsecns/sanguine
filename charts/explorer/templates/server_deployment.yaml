@@ -63,12 +63,12 @@ spec:
           livenessProbe:
             initialDelaySeconds: {{ .Values.initialDelaySeconds }}
             httpGet:
-              path: /
+              path: /health-check
               port: http
           readinessProbe:
             initialDelaySeconds: {{ .Values.initialDelaySeconds }}
             httpGet:
-              path: /
+              path: /health-check
               port: http
         {{- if .Values.files }}
           volumeMounts:
