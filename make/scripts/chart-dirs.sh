@@ -33,4 +33,4 @@ do
     OUT=$I,${OUT:+$OUT }
 done
 
-echo "$OUT"  | rev | cut -c3- | rev
+echo "$OUT"  | rev | cut -c4- | rev
