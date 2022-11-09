@@ -76,6 +76,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 	logger.Infof("Backfilling contract %s on chain %d from %d to %d", c.address, c.chainID, startHeight, endHeight)
 	logsChan, doneChan := c.getLogs(groupCtx, startHeight, endHeight)
 
+	// Concurrently get logs from the logsChan and store them in the EventDB.
 	g.Go(func() error {
 		for {
 			select {
@@ -122,8 +123,9 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 
 	doneChan := make(chan bool, 2)
 
+	// Get the receipt for the log and notify the other goroutines that depend on it that
+	// it has been retrieved via doneChan.
 	g.Go(func() error {
-		// make getting receipt a channel in parallel
 		receipt, err := c.client[0].TransactionReceipt(ctx, log.TxHash)
 		if err != nil {
 			switch err.Error() {
@@ -147,6 +149,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		return nil
 	})
 
+	// Get the logs from the receipt and store them in the EventDB.
 	g.Go(func() error {
 		select {
 		case <-groupCtx.Done():
@@ -167,6 +170,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		}
 	})
 
+	// Get the transaction from the receipt and store it in the EventDB.
 	g.Go(func() error {
 		select {
 		case <-groupCtx.Done():
@@ -181,6 +185,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		}
 	})
 
+	// Store the transaction in the EventDB, while checking for and handling common errors.
 	g.Go(func() error {
 		txn, isPending, err := c.client[0].TransactionByHash(groupCtx, log.TxHash)
 		if err != nil {
@@ -238,11 +243,12 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 // chunkSize is how big to make the chunks when fetching.
 const chunkSize = 500
 
-// getLogs gets all logs for the contract.
+// getLogs gets all logs for the contract through channels constructed and populated by the rangeFilter.
 func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
 	rangeFilter := NewRangeFilter(common.HexToAddress(c.address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
 	g, ctx := errgroup.WithContext(ctx)
 
+	// Concurrently start the range filter.
 	g.Go(func() error {
 		err := rangeFilter.Start(ctx)
 		if err != nil {
@@ -255,6 +261,7 @@ func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight 
 	logsChan := make(chan types.Log)
 	doneChan := make(chan bool)
 
+	// Concurrently read from the range filter and send to the logsChan.
 	g.Go(func() error {
 	OUTER:
 		for {
