@@ -16,6 +16,8 @@ import "../harnesses/events/DestinationHarnessEvents.sol";
 import "../harnesses/events/NotaryRegistryHarnessEvents.sol";
 import "../harnesses/events/ReportHubHarnessEvents.sol";
 import "../harnesses/events/SystemContractHarnessEvents.sol";
+// ============ Mocks events ============
+import "../mocks/events/SystemContractMockEvents.sol";
 
 // solhint-disable-next-line no-empty-blocks
 abstract contract SynapseEvents is
@@ -25,13 +27,16 @@ abstract contract SynapseEvents is
     NotaryRegistryEvents,
     OriginEvents,
     OriginHubEvents,
+    // Harnesses events
     AttestationHubHarnessEvents,
     BasicClientHarnessEvents,
     ClientHarnessEvents,
     DestinationHarnessEvents,
     NotaryRegistryHarnessEvents,
     ReportHubHarnessEvents,
-    SystemContractHarnessEvents
+    SystemContractHarnessEvents,
+    // Mocks events
+    SystemContractMockEvents
 {
 
 }

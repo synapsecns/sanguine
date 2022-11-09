@@ -396,7 +396,7 @@ abstract contract SystemRouterTools is DestinationTools {
     function prepareMisconfiguredTest(uint32 origin, uint32 destination) public {
         // Deploy a test router with Origin not configured
         SystemRouterHarness systemRouter = new SystemRouterHarness({
-            _localDomain: DOMAIN_LOCAL,
+            _domain: DOMAIN_LOCAL,
             _origin: address(0),
             _destination: address(suiteDestination(destination))
         });
