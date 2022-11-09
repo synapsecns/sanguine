@@ -1,24 +1,27 @@
+{{- if .Values.server.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "explorer.fullname" . }}
+  name: {{ include "explorer.fullname" . }}-server
   labels:
     {{- include "explorer.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  {{- if not .Values.server.autoscaling.enabled }}
+  replicas: {{ .Values.server.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
       {{- include "explorer.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      {{- with .Values.server.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Chart.Name "/templates/" $.Chart.Name "-configmap.yaml") . | sha256sum }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "explorer.selectorLabels" . | nindent 8 }}
+        explorer-type: server
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -26,36 +29,75 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "explorer.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.server.podSecurityContext | nindent 8 }}
+    {{- if .Values.files }}
+      initContainers:
+        - name: copy-{{ .Release.Name }}-config
+          image: busybox
+          command: ['sh', '-c', 'cp -v /configmap/* /config/']
+          volumeMounts:
+            - name: configmap
+              mountPath: /configmap
+            - name: {{ .Release.Name }}-config
+              mountPath: /config
+        {{- if .Values.server.extraInitContainers }}
+        {{- toYaml .Values.server.extraInitContainers | nindent 8 }}
+        {{- end }}
+    {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            {{- toYaml .Values.server.args | nindent 12 }}
           ports:
             - name: http
               containerPort: 80
               protocol: TCP
+          {{- if .Values.server.env }}
+          env:
+            {{- toYaml .Values.server.env | nindent 12 }}
+          {{- end }}
           livenessProbe:
+            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
             httpGet:
-              path: /
+              path: /health-check
               port: http
           readinessProbe:
+            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
             httpGet:
-              path: /
+              path: /health-check
               port: http
+        {{- if .Values.files }}
+          volumeMounts:
+            - name: configmap
+              mountPath: /config
+        {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
+        {{- if .Values.server.extraContainers }}
+        {{- toYaml .Values.server.extraContainers | nindent 8 }}
+        {{- end }}
+      {{- with .Values.server.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.server.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.server.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        {{- if .Values.files }}
+        - name: {{ .Release.Name }}-config
+          emptyDir: {}
+        - name: configmap
+          configMap:
+            name: {{ include "explorer.fullname" . }}-{{ .Release.Name }}
+        {{- end }}
+{{- end }}

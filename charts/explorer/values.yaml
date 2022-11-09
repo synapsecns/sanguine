@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
+  repository: ghcr.io/synapsecns/sanguine/explorer
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -23,29 +23,25 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
 securityContext: {}
   # capabilities:
   #   drop:
   #   - ALL
   # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+# runAsNonRoot: true
+# runAsUser: 1000
 
 service:
   type: ClusterIP
   port: 80
+initialDelaySeconds: 295
 
 ingress:
   enabled: false
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths:
@@ -65,18 +61,134 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
   # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+#   cpu: 100m
+#   memory: 128Mi
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+clickhouse:
+  enabled: true
+  shards: 1
+  replicaCount: 1
+  service:
+    clusterIP: "10.96.0.12"
+  auth:
+    username: default
+    password: "clickhouse"
+  zookeeper:
+    enabled: false
+  extraEnvVars:
+    - name: TZ
+      value: "UTC"
+  tls:
+    enabled: false
+  initdbScripts:
+    my_init_script.sh: |
+      #!/bin/bash
+      set -e
+      clickhouse client -u default --password='clickhouse' -n <<-EOSQL
+        CREATE DATABASE clickhouse;
+      EOSQL
 
-nodeSelector: {}
 
-tolerations: []
+indexer:
+  enabled: true
+  args: ["backfill", "--address=tcp://default:clickhouse@10.96.0.12:9000/clickhouse", "--config=/config/config.yaml"]
+  #  args: ["backfill", "--config=/config/config.yaml"]
+  podAnnotations: {}
+  nodeSelector: {}
+  podSecurityContext: {}
+  affinity: {}
+  env:
+    - name: GOLOG_LOG_FMT
+      value: "json"
+  tolerations: {}
+  # TODO: this should be in extraValues for testing
+  extraInitContainers:
+    - name: wait-for-omnirpc
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: explorer-omnirpc
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    # Wait for clickhouse to show up
+    # this is mostly for testing
+    - name: wait-for-clickhouse
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz 10.96.0.12 8123; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: explorer-clickhouse
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
 
-affinity: {}
+
+server:
+  enabled: true
+  # this should use a secret in production, for testing only
+  args: ["server", "--port=80", "--scribe-url=https://scribe.interoperability.institute/graphql", "--address=tcp://default:clickhouse@10.96.0.12:9000/clickhouse"]
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+  podAnnotations: {}
+  nodeSelector: {}
+  podSecurityContext: {}
+  affinity: {}
+  env:
+    - name: GOLOG_LOG_FMT
+      value: "json"
+  tolerations: []
+  # TODO: this should be in extraValues for testing
+  extraInitContainers:
+    # Wait for clickhouse to show up
+    # this is mostly for testing
+    - name: wait-for-omnirpc
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: explorer-omnirpc
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    - name: wait-for-clickhouse
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz 10.96.0.12 8123; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: explorer-clickhouse
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+
+omnirpc:
+  # this can be remote in production, we just want to use the public rpc servers here
+  enabled: true
+  fullnameOverride: explorer-omnirpc
+  replicaCount: 2
+  timeoutSeconds: 300
+
+
+files:
+  config.yaml: |-
+    # Production config example
+    refresh_rate: 1
+    rpc_url: 'https://rpc.interoperability.institute/confirmations'
+    scribe_url: 'https://scribe.interoperability.institute/graphql'
+    bridge_config_address: '0x5217c83ca75559B1f8a8803824E5b7ac233A12a1'
+    bridge_config_chain_id: 1
+    chains:
