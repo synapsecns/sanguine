@@ -64,14 +64,14 @@ spec:
             initialDelaySeconds: {{ .Values.initialDelaySeconds }}
             httpGet:
               path: /health-check
-              port: 80
-              scheme: HTTP
+              port: http
           readinessProbe:
+            tcpSocket:
+              port: 80
             initialDelaySeconds: {{ .Values.initialDelaySeconds }}
             httpGet:
               path: /health-check
-              port: 80
-              scheme: HTTP
+              port: http
         {{- if .Values.files }}
           volumeMounts:
             - name: configmap
