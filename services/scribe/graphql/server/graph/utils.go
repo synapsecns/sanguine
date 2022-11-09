@@ -8,9 +8,11 @@ import (
 
 func (r Resolver) receiptsToModelReceipts(receipts []types.Receipt, chainID uint32) []*model.Receipt {
 	modelReceipts := make([]*model.Receipt, len(receipts))
+
 	for i, receipt := range receipts {
 		modelReceipts[i] = r.receiptToModelReceipt(receipt, chainID)
 	}
+
 	return modelReceipts
 }
 
@@ -35,14 +37,17 @@ func (r Resolver) logsToModelLogs(logs []*types.Log, chainID uint32) []*model.Lo
 	for i, log := range logs {
 		modelLogs[i] = r.logToModelLog(log, chainID)
 	}
+
 	return modelLogs
 }
 
 func (r Resolver) logToModelLog(log *types.Log, chainID uint32) *model.Log {
 	topicsList := make([]string, len(log.Topics))
+
 	for i, topic := range log.Topics {
 		topicsList[i] = topic.String()
 	}
+
 	return &model.Log{
 		ContractAddress: log.Address.String(),
 		ChainID:         int(chainID),
@@ -59,14 +64,17 @@ func (r Resolver) logToModelLog(log *types.Log, chainID uint32) *model.Log {
 
 func (r Resolver) ethTxsToModelTransactions(ethTxs []types.Transaction, chainID uint32) []*model.Transaction {
 	modelTxs := make([]*model.Transaction, len(ethTxs))
+
 	for i, ethTx := range ethTxs {
 		modelTxs[i] = r.ethTxToModelTransaction(ethTx, chainID)
 	}
+
 	return modelTxs
 }
 
 func (r Resolver) ethTxToModelTransaction(ethTx types.Transaction, chainID uint32) *model.Transaction {
 	protected := ethTx.Protected()
+	
 	return &model.Transaction{
 		ChainID:   int(chainID),
 		TxHash:    ethTx.Hash().String(),
