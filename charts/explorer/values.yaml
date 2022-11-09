@@ -35,7 +35,7 @@ service:
   type: ClusterIP
   port: 80
 
-initialDelaySeconds: 60
+initialDelaySeconds: 240
 
 ingress:
   enabled: false
@@ -93,7 +93,6 @@ clickhouse:
 indexer:
   enabled: true
   args: ["backfill", "--address=tcp://default:clickhouse@10.96.0.12:9000/clickhouse", "--config=/config/config.yaml"]
-  #  args: ["backfill", "--config=/config/config.yaml"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -115,8 +114,6 @@ indexer:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-    # Wait for clickhouse to show up
-    # this is mostly for testing
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
@@ -132,7 +129,7 @@ indexer:
 
 server:
   enabled: true
-  # this should use a secret in production, for testing only
+  # For testing only
   args: ["server", "--port=80", "--scribe-url=https://scribe.interoperability.institute/graphql", "--address=tcp://default:clickhouse@10.96.0.12:9000/clickhouse"]
   replicaCount: 1
   autoscaling:
@@ -140,7 +137,6 @@ server:
     minReplicas: 1
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
-    # targetMemoryUtilizationPercentage: 80
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -151,8 +147,6 @@ server:
   tolerations: []
   # TODO: this should be in extraValues for testing
   extraInitContainers:
-    # Wait for clickhouse to show up
-    # this is mostly for testing
     - name: wait-for-omnirpc
       image: busybox:latest
       imagePullPolicy: IfNotPresent
