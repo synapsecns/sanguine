@@ -221,3 +221,32 @@ func TestHeaderEncodeParity(t *testing.T) {
 
 	Equal(t, headerVersion, types.HeaderVersion)
 }
+
+func TestAttestationKey(t *testing.T) {
+	origin := uint32(1)
+	destination := uint32(2)
+	nonce := uint32(3)
+	attestKey := types.AttestationKey{
+		Origin:      origin,
+		Destination: destination,
+		Nonce:       nonce,
+	}
+	rawKey := attestKey.GetRawKey()
+	attestKeyFromRaw := types.NewAttestionKey(rawKey)
+	Equal(t, attestKey.Origin, attestKeyFromRaw.Origin)
+	Equal(t, attestKey.Destination, attestKeyFromRaw.Destination)
+	Equal(t, attestKey.Nonce, attestKeyFromRaw.Nonce)
+}
+
+func TestAttestatedDomains(t *testing.T) {
+	origin := uint32(1)
+	destination := uint32(2)
+	attestDomains := types.AttestatedDomains{
+		Origin:      origin,
+		Destination: destination,
+	}
+	rawDomains := attestDomains.GetRawDomains()
+	attestDomainsFromRaw := types.NewAttestatedDomains(rawDomains)
+	Equal(t, attestDomains.Origin, attestDomainsFromRaw.Origin)
+	Equal(t, attestDomains.Destination, attestDomainsFromRaw.Destination)
+}
