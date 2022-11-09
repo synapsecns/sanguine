@@ -12,7 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/api"
 	"github.com/synapsecns/sanguine/services/explorer/config"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/node"
+	"github.com/synapsecns/sanguine/services/explorer/node"
 	"github.com/urfave/cli/v2"
 )
 
