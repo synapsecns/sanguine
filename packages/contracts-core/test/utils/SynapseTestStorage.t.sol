@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "../../contracts/bonding/BondingManager.sol";
 // ============ Harnesses ============
 import "../harnesses/client/AppHarness.t.sol";
 import "../harnesses/DestinationHarness.t.sol";
@@ -15,6 +16,7 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     struct Chain {
         DestinationHarness destination;
         OriginHarness origin;
+        BondingManager bondingManager;
         SystemRouterHarness systemRouter;
         AppHarness app;
         address[] notaries;
@@ -94,6 +96,10 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
 
     function suiteOrigin(uint32 domain) public view returns (OriginHarness) {
         return chains[domain].origin;
+    }
+
+    function suiteBondingManager(uint32 domain) public view returns (BondingManager) {
+        return chains[domain].bondingManager;
     }
 
     function suiteSystemRouter(uint32 domain) public view returns (SystemRouterHarness) {
