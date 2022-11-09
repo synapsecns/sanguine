@@ -32,6 +32,7 @@ type ChainBackfiller struct {
 	chainConfig config.ChainConfig
 }
 
+// Used for handling logging of various context types.
 type contextKey int
 
 const (
