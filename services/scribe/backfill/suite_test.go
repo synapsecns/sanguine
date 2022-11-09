@@ -31,17 +31,14 @@ func NewBackfillSuite(tb testing.TB) *BackfillSuite {
 	}
 }
 
+// SetupTest sets up the test suite.
 func (b *BackfillSuite) SetupTest() {
 	b.TestSuite.SetupTest()
 	b.SetTestTimeout(time.Minute * 3)
-
 	sqliteStore, err := sqlite.NewSqliteStore(b.GetTestContext(), filet.TmpDir(b.T(), ""))
 	Nil(b.T(), err)
-
 	b.testDB = sqliteStore
-
 	b.manager = testutil.NewDeployManager(b.T())
-
 	b.wallet, err = wallet.FromRandom()
 	Nil(b.T(), err)
 	b.signer = localsigner.NewSigner(b.wallet.PrivateKey())
