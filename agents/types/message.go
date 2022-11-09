@@ -11,8 +11,7 @@ import (
 )
 
 // Message is an interface that contains metadata.
-// nolint:interface-bloat: this interface needs more than ten methods.
-type Message interface {
+type Message interface { // nolint:interfacebloat
 	// Version gets the version of the message
 	Version() uint16
 	// Header gets the message header
