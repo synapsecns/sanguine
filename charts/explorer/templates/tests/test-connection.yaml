@@ -13,5 +13,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "explorer.fullname" . }}:{{ .Values.service.port }}']
+      args: ['{{ include "explorer.fullname" . }}:{{ .Values.service.port }}/health-check']
   restartPolicy: Never
