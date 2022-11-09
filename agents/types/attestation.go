@@ -7,7 +7,7 @@ import (
 
 // Attestation is the attestation.
 // TODO (joe): Add tests for the AttestationKey and AttestedDomains,
-// converting to and from serialized big.Int form
+// converting to and from serialized big.Int form.
 type Attestation interface {
 	// Origin gets the origin of the attestation
 	Origin() uint32
@@ -30,7 +30,7 @@ type attestation struct {
 	root [32]byte
 }
 
-// AttestationKey is the tuple (origin, destination, nonce)
+// AttestationKey is the tuple (origin, destination, nonce).
 type AttestationKey struct {
 	// Origin of the attestation
 	Origin uint32
@@ -40,7 +40,7 @@ type AttestationKey struct {
 	Nonce uint32
 }
 
-// AttestatedDomains is the tuple (origin, destination)
+// AttestatedDomains is the tuple (origin, destination).
 type AttestatedDomains struct {
 	// Origin of the attestation
 	Origin uint32
@@ -108,7 +108,7 @@ func (s signedAttestation) Signature() Signature {
 }
 
 // NewAttestionKey takes the raw AttestationKey serialized as a big endian big.Int
-// and converts it to AttestationKey which is a tuple of (origin, destination, nonce)
+// and converts it to AttestationKey which is a tuple of (origin, destination, nonce).
 func NewAttestionKey(rawKey *big.Int) AttestationKey {
 	rawBytes := make([]byte, 32)
 	rawKey.FillBytes(rawBytes)
@@ -125,7 +125,7 @@ func NewAttestionKey(rawKey *big.Int) AttestationKey {
 	}
 }
 
-// GetRawKey returns the AttestationKey as a serialized big.Int
+// GetRawKey returns the AttestationKey as a serialized big.Int.
 func (a AttestationKey) GetRawKey() *big.Int {
 	originBytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(originBytes, a.Origin)
@@ -134,16 +134,16 @@ func (a AttestationKey) GetRawKey() *big.Int {
 	nonceBytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(nonceBytes, a.Nonce)
 	rawBytes := make([]byte, 32)
-	copy(rawBytes[0:4], nonceBytes[:])
-	copy(rawBytes[4:8], destinationBytes[:])
-	copy(rawBytes[8:12], originBytes[:])
+	copy(rawBytes[0:4], nonceBytes)
+	copy(rawBytes[4:8], destinationBytes)
+	copy(rawBytes[8:12], originBytes)
 	rawKey := new(big.Int)
 	rawKey.SetBytes(rawBytes)
 	return rawKey
 }
 
 // NewAttestatedDomains takes the raw AttestedDomains serialized as a big endian big.Int
-// and converts it to AttestatedDomains which is a tuple of (origin, destination)
+// and converts it to AttestatedDomains which is a tuple of (origin, destination).
 func NewAttestatedDomains(rawDomains *big.Int) AttestatedDomains {
 	rawBytes := make([]byte, 32)
 	rawDomains.FillBytes(rawBytes)
@@ -160,15 +160,15 @@ func NewAttestatedDomains(rawDomains *big.Int) AttestatedDomains {
 }
 
 // GetRawDomains returns the AttestatedDomains which is a tuple of (origin, destination)
-// as a serialized big.Int
+// as a serialized big.Int.
 func (a AttestatedDomains) GetRawDomains() *big.Int {
 	originBytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(originBytes, a.Origin)
 	destinationBytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(destinationBytes, a.Destination)
 	rawBytes := make([]byte, 32)
-	copy(rawBytes[0:4], destinationBytes[:])
-	copy(rawBytes[4:8], originBytes[:])
+	copy(rawBytes[0:4], destinationBytes)
+	copy(rawBytes[4:8], originBytes)
 	rawDomains := new(big.Int)
 	rawDomains.SetBytes(rawBytes)
 	return rawDomains

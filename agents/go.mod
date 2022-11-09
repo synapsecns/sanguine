@@ -7,7 +7,6 @@ require (
 	github.com/BurntSushi/toml v1.2.0
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/Thor-x86/nullable v1.0.0
-	github.com/aws/smithy-go v1.13.3
 	github.com/brianvoe/gofakeit/v6 v6.19.0
 	github.com/coinbase/rosetta-sdk-go v0.8.1
 	github.com/ethereum/go-ethereum v1.10.26
