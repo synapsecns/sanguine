@@ -40,7 +40,9 @@ const (
 	blocktimeContextKey
 )
 
-// NewChainBackfiller creates a new backfiller for a chain.
+// NewChainBackfiller creates a new backfiller for a chain. This is done by passing through all the function parameters
+// into the ChainBackfiller struct, as well as iterating through all the contracts in the chain config and creating
+// ContractBackfillers for each contract.
 func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBackend, chainConfig config.ChainConfig) (*ChainBackfiller, error) {
 	var contractBackfillers []*ContractBackfiller
 
@@ -198,7 +200,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 		// Backfill from last stored block to current height.
 		backfillGroup.Go(func() error {
-			err = c.blocktimeBackfillManager(backfillCtx, zeroCheck(endHeight), currentBlock)
+			err = c.blocktimeBackfillManager(backfillCtx, decrementIfNotZero(endHeight), currentBlock)
 			if err != nil {
 				return fmt.Errorf("could not backfill block times from last stored block time: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, currentBlock, b.Attempt(), b.Duration())
 			}
@@ -209,7 +211,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 	// Backfill from the earliest block to last stored block.
 	backfillGroup.Go(func() error {
-		err = c.blocktimeBackfillManager(backfillCtx, zeroCheck(startHeight), endHeight)
+		err = c.blocktimeBackfillManager(backfillCtx, decrementIfNotZero(startHeight), endHeight)
 		if err != nil {
 			return fmt.Errorf("could not backfill block times from min block height: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
 		}
@@ -225,6 +227,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	return nil
 }
 
+// blocktimeBackfillManager is a helper function to orchestrate concurrent backfilling of block times.
 func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeight uint64, endHeight uint64) error {
 	currentBlock := startHeight
 
@@ -275,6 +278,7 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 	return nil
 }
 
+// blocktimeBackfiller is a helper function to backfill block times for a given range of blocks.
 func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight uint64, endHeight uint64) error {
 	bBlockNum := &backoff.Backoff{
 		Factor: 2,
@@ -340,8 +344,7 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 	}
 }
 
-// Used for setting start heights for backfilling.
-func zeroCheck(value uint64) uint64 {
+func decrementIfNotZero(value uint64) uint64 {
 	if value > 0 {
 		return value - 1
 	}
