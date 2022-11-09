@@ -74,7 +74,7 @@ func (r Resolver) ethTxsToModelTransactions(ethTxs []types.Transaction, chainID 
 
 func (r Resolver) ethTxToModelTransaction(ethTx types.Transaction, chainID uint32) *model.Transaction {
 	protected := ethTx.Protected()
-	
+
 	return &model.Transaction{
 		ChainID:   int(chainID),
 		TxHash:    ethTx.Hash().String(),
