@@ -86,6 +86,12 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
      */
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              IMMUTABLES                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    address public immutable bondingManager;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -93,8 +99,11 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
     constructor(
         uint32 _domain,
         address _origin,
-        address _destination
-    ) BasicClient(_origin, _destination) LocalDomainContext(_domain) {}
+        address _destination,
+        address _bondingManager
+    ) BasicClient(_origin, _destination) LocalDomainContext(_domain) {
+        bondingManager = _bondingManager;
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
@@ -366,6 +375,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
     function _getSystemEntity(address _caller) internal view returns (SystemEntity) {
         if (_caller == origin) return SystemEntity.Origin;
         if (_caller == destination) return SystemEntity.Destination;
+        if (_caller == bondingManager) return SystemEntity.BondingManager;
         revert("Unauthorized caller");
     }
 
@@ -373,6 +383,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
     function _getSystemAddress(uint8 _recipient) internal view returns (address) {
         if (_recipient == uint8(SystemEntity.Origin)) return origin;
         if (_recipient == uint8(SystemEntity.Destination)) return destination;
+        if (_recipient == uint8(SystemEntity.BondingManager)) return bondingManager;
         revert("Unknown recipient");
     }
 

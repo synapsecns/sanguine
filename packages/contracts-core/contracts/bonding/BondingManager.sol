@@ -6,6 +6,14 @@ import { SystemContract } from "../system/SystemContract.sol";
 
 abstract contract BondingManager is SystemContract {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             INITIALIZER                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function initialize() external initializer {
+        __SystemContract_initialize();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
