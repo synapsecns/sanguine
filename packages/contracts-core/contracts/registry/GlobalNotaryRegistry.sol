@@ -111,17 +111,19 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
      */
     function _addNotary(uint32 _domain, address _notary) internal override returns (bool) {
         if (notariesInfo[_notary].domain != 0) return false;
-        // No need to check if domain is already known, EnumerableSet takes care of this.
-        if (domains.add(_domain)) {
-            // Trigger hook only when the domain was successfully added
-            _afterDomainBecomesActive(_domain, _notary);
-        }
+        // Trigger "before added" hook
+        _beforeNotaryAdded(_domain, _notary);
+        // Add Notary to domain
         notariesInfo[_notary] = NotaryInfo({
             domain: _domain,
             index: uint224(domainNotaries[_domain].length)
         });
         domainNotaries[_domain].push(_notary);
+        // Add domain to the list of active domains (will not add twice, see EnumerableSet.sol)
+        domains.add(_domain);
         emit NotaryAdded(_domain, _notary);
+        // Trigger "after added" hook
+        _afterNotaryAdded(_domain, _notary);
         return true;
     }
 
@@ -130,12 +132,16 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
      */
     function _removeNotary(uint32 _domain, address _notary) internal override returns (bool) {
         NotaryInfo memory info = notariesInfo[_notary];
+        // Check if the Notary is active on the domain
         if (info.domain != _domain) return false;
+        // Trigger "before removed" hook
+        _beforeNotaryRemoved(_domain, _notary);
+        // Remove Notary from domain
+        address[] storage notaries = domainNotaries[_domain];
+        uint256 lastIndex = notaries.length - 1;
         // To delete a Notary from the array in O(1),
         // we swap the Notary to delete with the last one in the array,
         // and then remove the last Notary (sometimes called as 'swap and pop').
-        address[] storage notaries = domainNotaries[_domain];
-        uint256 lastIndex = notaries.length - 1;
         if (lastIndex != info.index) {
             address lastNotary = notaries[lastIndex];
             // Move the last Notary to the index where the Notary to delete is
@@ -148,28 +154,34 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
         // Delete the index for the deleted slot
         delete notariesInfo[_notary];
         // Remove domain from the list of active domains, if that was the last Notary
-        if (lastIndex == 0) {
-            if (domains.remove(_domain)) {
-                // Trigger hook only when the domain was successfully removed
-                _afterDomainBecomesInactive(_domain, _notary);
-            }
-        }
+        if (lastIndex == 0) domains.remove(_domain);
         emit NotaryRemoved(_domain, _notary);
+        // Trigger "after removed" hook
+        _afterNotaryRemoved(_domain, _notary);
         return true;
     }
 
     // solhint-disable no-empty-blocks
-    /**
-     * @notice Hook that is called after the specified domain becomes active,
-     * i.e. when the first Notary is added to the domain.
-     */
-    function _afterDomainBecomesActive(uint32 _domain, address _notary) internal virtual {}
 
     /**
-     * @notice Hook that is called after the specified domain becomes inactive,
-     * i.e. when the last Notary is removed from the domain.
+     * @notice Hook that is called just before a Notary is added for specified domain.
      */
-    function _afterDomainBecomesInactive(uint32 _domain, address _notary) internal virtual {}
+    function _beforeNotaryAdded(uint32 _domain, address _notary) internal virtual {}
+
+    /**
+     * @notice Hook that is called right after a Notary is added for specified domain.
+     */
+    function _afterNotaryAdded(uint32 _domain, address _notary) internal virtual {}
+
+    /**
+     * @notice Hook that is called just before a Notary is removed from specified domain.
+     */
+    function _beforeNotaryRemoved(uint32 _domain, address _notary) internal virtual {}
+
+    /**
+     * @notice Hook that is called right after a Notary is removed from specified domain.
+     */
+    function _afterNotaryRemoved(uint32 _domain, address _notary) internal virtual {}
 
     /**
      * @notice Returns whether a given address is a notary for a given domain.
