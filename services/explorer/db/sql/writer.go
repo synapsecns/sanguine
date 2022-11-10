@@ -13,12 +13,14 @@ func (s *Store) StoreEvent(ctx context.Context, bridgeEvent *BridgeEvent, swapEv
 			return fmt.Errorf("failed to store bridge event: %w", dbTx.Error)
 		}
 	}
+
 	if swapEvent != nil {
 		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*swapEvent)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store swap event: %w", dbTx.Error)
 		}
 	}
+
 	return nil
 }
 
@@ -47,6 +49,7 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 
 		return nil
 	}
+
 	if blockNumber > entry.BlockNumber {
 		dbTx = s.db.WithContext(ctx).
 			Model(&LastBlock{}).
@@ -54,11 +57,12 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 				ChainID:     chainID,
 				BlockNumber: blockNumber,
 			})
-
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
 		}
+
 		s.db.WithContext(ctx).Exec(fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d ", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID))
 	}
+
 	return nil
 }
