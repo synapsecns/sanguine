@@ -51,10 +51,7 @@ func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestat
 		return nil, false
 	}
 
-	attestation := types.NewAttestation(
-		acceptedAttestation.AttestationKey,
-		acceptedAttestation.Root,
-	)
+	attestation := types.NewAttestationFromBytes(acceptedAttestation.Attestation)
 	return attestation, true
 }
 

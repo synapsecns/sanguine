@@ -48,6 +48,25 @@ type AttestatedDomains struct {
 	Destination uint32
 }
 
+func NewAttestationFromBytes(rawBytes []byte) Attestation {
+	rawKeyBytes := rawBytes[0:12]
+	originBytes := rawKeyBytes[8:12]
+	destinationBytes := rawKeyBytes[4:8]
+	nonceBytes := rawKeyBytes[0:4]
+	origin := binary.BigEndian.Uint32(originBytes)
+	destination := binary.BigEndian.Uint32(destinationBytes)
+	nonce := binary.BigEndian.Uint32(nonceBytes)
+	rootBytes := rawBytes[12:44]
+	var root [32]byte
+	copy(root[:], rootBytes)
+	return attestation{
+		origin:      origin,
+		destination: destination,
+		nonce:       nonce,
+		root:        root,
+	}
+}
+
 // NewAttestation creates a new attestation.
 func NewAttestation(rawKey *big.Int, root [32]byte) Attestation {
 	key := NewAttestionKey(rawKey)

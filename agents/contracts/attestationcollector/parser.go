@@ -2,6 +2,7 @@ package attestationcollector
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -52,14 +53,14 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 
 // ParseAttestationSubmitted parses an AttestationSubmitted event.
 func (p parserImpl) ParseAttestationSubmitted(log ethTypes.Log) (_ types.AttestationSubmitted, ok bool) {
-	attestation, err := p.filterer.ParseAttestationSubmitted(log)
-	if err != nil {
+	attestation, didSucceed := p.ParseAttestationSubmitted(log)
+	if !didSucceed {
 		return nil, false
 	}
 
 	attestationSubmitted := types.NewAttestationSubmitted(
-		attestation.Notary.Hash(),
-		attestation.Attestation,
+		attestation.Notary(),
+		attestation.Attestation(),
 	)
 
 	return attestationSubmitted, true

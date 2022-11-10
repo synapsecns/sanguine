@@ -2,9 +2,12 @@ package notary_test
 
 import (
 	"math/big"
+	"time"
 
 	"github.com/Flaque/filet"
+	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/config"
@@ -47,11 +50,10 @@ func (u NotarySuite) TestNotaryE2E() {
 
 	u.Eventually(func() bool {
 		// TODO (joe): Figure out why attestationContract points to old version and fix this test after the GlobalRegistry changes
-		/*_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 		latestNonce, err := u.attestationContract.GetLatestNonce(&bind.CallOpts{Context: u.GetTestContext()}, u.domainClient.Config().DomainID, desinationDomain, u.signer.Address())
 		Nil(u.T(), err)
 
-		return latestNonce != 0*/
-		return true
+		return latestNonce != 0
 	})
 }

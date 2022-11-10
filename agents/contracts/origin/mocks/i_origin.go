@@ -107,6 +107,29 @@ func (_m *IOrigin) Dispatch(opts *bind.TransactOpts, _destination uint32, _recip
 	return r0, r1
 }
 
+// FilterAttestationAccepted provides a mock function with given fields: opts, notary
+func (_m *IOrigin) FilterAttestationAccepted(opts *bind.FilterOpts, notary []common.Address) (*origin.OriginAttestationAcceptedIterator, error) {
+	ret := _m.Called(opts, notary)
+
+	var r0 *origin.OriginAttestationAcceptedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []common.Address) *origin.OriginAttestationAcceptedIterator); ok {
+		r0 = rf(opts, notary)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*origin.OriginAttestationAcceptedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address) error); ok {
+		r1 = rf(opts, notary)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterCorrectFraudReport provides a mock function with given fields: opts, guard
 func (_m *IOrigin) FilterCorrectFraudReport(opts *bind.FilterOpts, guard []common.Address) (*origin.OriginCorrectFraudReportIterator, error) {
 	ret := _m.Called(opts, guard)
@@ -648,6 +671,29 @@ func (_m *IOrigin) Owner(opts *bind.CallOpts) (common.Address, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseAttestationAccepted provides a mock function with given fields: log
+func (_m *IOrigin) ParseAttestationAccepted(log types.Log) (*origin.OriginAttestationAccepted, error) {
+	ret := _m.Called(log)
+
+	var r0 *origin.OriginAttestationAccepted
+	if rf, ok := ret.Get(0).(func(types.Log) *origin.OriginAttestationAccepted); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*origin.OriginAttestationAccepted)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1245,6 +1291,29 @@ func (_m *IOrigin) VERSION(opts *bind.CallOpts) (uint8, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchAttestationAccepted provides a mock function with given fields: opts, sink, notary
+func (_m *IOrigin) WatchAttestationAccepted(opts *bind.WatchOpts, sink chan<- *origin.OriginAttestationAccepted, notary []common.Address) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, notary)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginAttestationAccepted, []common.Address) event.Subscription); ok {
+		r0 = rf(opts, sink, notary)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginAttestationAccepted, []common.Address) error); ok {
+		r1 = rf(opts, sink, notary)
 	} else {
 		r1 = ret.Error(1)
 	}
