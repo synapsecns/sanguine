@@ -23,10 +23,6 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
             // Check amount of domains before adding
             assertEq(globalNotaryRegistryDomainsAmount(), d, "!domainsAmount: before adding");
             for (uint256 i = 0; i < ELEMENTS; ++i) {
-                // Hook should be triggered when first the Notary is added
-                if (i == 0) {
-                    expectHookEvent({ domain: domain, notaryIndex: i, added: true });
-                }
                 expectNotaryAdded({ domain: domain, notaryIndex: i });
                 globalNotaryRegistryAddNotary({
                     domain: domain,
@@ -97,10 +93,6 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
         for (uint256 d = 0; d < DOMAINS; ++d) {
             uint32 domain = domains[d];
             for (uint256 i = 0; i < ELEMENTS; ++i) {
-                // Hook should be triggered when the last Notary is removed
-                if (i == ELEMENTS - 1) {
-                    expectHookEvent({ domain: domain, notaryIndex: i, added: false });
-                }
                 expectNotaryRemoved({ domain: domain, notaryIndex: i });
                 globalNotaryRegistryRemoveNotary({
                     domain: domain,
@@ -162,10 +154,6 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
             for (uint256 i = 0; i < ELEMENTS; ++i) {
                 // Fetch notary address, that used to be active on another domain
                 address notary = suiteForeignNotary({ domain: domain, index: i });
-                // Hook should be triggered when first the Notary is added
-                if (i == 0) {
-                    expectHookEvent({ domain: domain, notary: notary, added: true });
-                }
                 // Since notary is inactive, we should be able to add it on given domain
                 expectNotaryAdded(domain, notary);
                 globalNotaryRegistryAddNotary({

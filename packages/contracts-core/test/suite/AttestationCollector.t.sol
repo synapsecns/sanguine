@@ -33,8 +33,15 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         for (uint256 d = 0; d < DOMAINS; ++d) {
             uint32 domain = domains[d];
             for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
-                expectNotaryAdded(domain, i);
-                attestationCollectorAddNotary(domain, i, true);
+                attestationCollectorAddNotary({
+                    domain: domain,
+                    notaryIndex: i,
+                    returnValue: true
+                });
+                assertTrue(
+                    attestationCollectorIsNotary({ domain: domain, notaryIndex: i }),
+                    "Failed to add Notary"
+                );
             }
         }
         vm.stopPrank();
@@ -61,12 +68,15 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         for (uint256 d = 0; d < DOMAINS; ++d) {
             uint32 domain = domains[d];
             for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
-                expectNotaryRemoved({ domain: domain, notaryIndex: i });
                 attestationCollectorRemoveNotary({
                     domain: domain,
                     notaryIndex: i,
                     returnValue: true
                 });
+                assertFalse(
+                    attestationCollectorIsNotary({ domain: domain, notaryIndex: i }),
+                    "Failed to add Notary"
+                );
             }
         }
         vm.stopPrank();

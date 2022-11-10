@@ -13,40 +13,30 @@ abstract contract GlobalNotaryRegistryTools is SynapseTestSuite {
     ▏*║                            EXPECT EVENTS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function expectHookEvent(
-        uint32 domain,
-        uint256 notaryIndex,
-        bool added
-    ) public {
-        expectHookEvent(domain, suiteNotary(domain, notaryIndex), added);
-    }
-
-    function expectHookEvent(
-        uint32 domain,
-        address notary,
-        bool added
-    ) public {
-        vm.expectEmit(true, true, true, true);
-        if (added) {
-            emit HookDomainActive(domain, notary);
-        } else {
-            emit HookDomainInactive(domain, notary);
-        }
-    }
-
     function expectNotaryAdded(uint32 domain, uint256 notaryIndex) public {
-        vm.expectEmit(true, true, true, true);
-        emit NotaryAdded(domain, suiteNotary(domain, notaryIndex));
+        expectNotaryAdded(domain, suiteNotary(domain, notaryIndex));
     }
 
     function expectNotaryAdded(uint32 domain, address notary) public {
         vm.expectEmit(true, true, true, true);
+        emit BeforeNotaryAdded(domain, notary);
+        vm.expectEmit(true, true, true, true);
         emit NotaryAdded(domain, notary);
+        vm.expectEmit(true, true, true, true);
+        emit AfterNotaryAdded(domain, notary);
     }
 
     function expectNotaryRemoved(uint32 domain, uint256 notaryIndex) public {
+        expectNotaryRemoved(domain, suiteNotary(domain, notaryIndex));
+    }
+
+    function expectNotaryRemoved(uint32 domain, address notary) public {
         vm.expectEmit(true, true, true, true);
-        emit NotaryRemoved(domain, suiteNotary(domain, notaryIndex));
+        emit BeforeNotaryRemoved(domain, notary);
+        vm.expectEmit(true, true, true, true);
+        emit NotaryRemoved(domain, notary);
+        vm.expectEmit(true, true, true, true);
+        emit AfterNotaryRemoved(domain, notary);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -297,4 +297,12 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
     function attestationCollectorGetRoot(uint256 attestationIndex) public view returns (bytes32) {
         return attestationCollector.getRoot(attestationDomain, attestationNonce, attestationIndex);
     }
+
+    function attestationCollectorIsNotary(uint32 domain, uint256 notaryIndex)
+        public
+        view
+        returns (bool)
+    {
+        return attestationCollector.isNotary(domain, suiteNotary(domain, notaryIndex));
+    }
 }
