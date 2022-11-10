@@ -29,6 +29,6 @@ dependencies:
     repository: "file://../omnirpc/"
     condition: omnirpc.enabled
   - name: clickhouse
-    version: 1.0.3
-    repository: https://charts.bitnami.com/bitnami
+    repository: https://sentry-kubernetes.github.io/charts
+    version: 3.1.3
     condition: clickhouse.enabled

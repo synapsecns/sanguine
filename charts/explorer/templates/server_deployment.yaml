@@ -51,7 +51,10 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            {{- toYaml .Values.server.args | nindent 12 }}
+            - server
+            - '--port=80'
+            - '--scribe-url=https://scribe.interoperability.institute/graphql'
+            - '--address=tcp://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
           ports:
             - name: http
               containerPort: 80
@@ -63,6 +66,13 @@ spec:
           livenessProbe:
             initialDelaySeconds: {{ .Values.initialDelaySeconds }}
             failureThreshold: 5
+            timeoutSeconds: 30
+            httpGet:
+              path: /health-check
+              port: http
+          readinessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
             timeoutSeconds: 30
             httpGet:
               path: /health-check

@@ -64,40 +64,61 @@ resources: {}
   # requests:
 #   cpu: 100m
 #   memory: 128Mi
+omnirpc:
+  # this can be remote in production, we just want to use the public rpc servers here
+  enabled: true
+  fullnameOverride: explorer-omnirpc
+  replicaCount: 2
+
 
 clickhouse:
   enabled: true
-  shards: 1
-  replicaCount: 1
-  service:
-    clusterIP: "10.96.0.12"
-  auth:
-    username: default
-    password: "clickhouse"
-  zookeeper:
-    enabled: false
-  extraEnvVars:
-    - name: TZ
-      value: "UTC"
-  tls:
-    enabled: false
-  initdbScripts:
-    my_init_script.sh: |
-      #!/bin/bash
-      set -e
-      clickhouse client -u default --password='clickhouse' -n <<-EOSQL
-        CREATE DATABASE clickhouse;
-      EOSQL
+  ingress:
+    enabled: true
+  clickhouse:
+    replicas: "1"
+    imageVersion: "latest"
+    configmap:
+      remote_servers:
+        internal_replication: true
+        replica:
+          backup:
+            enabled: false
+      users:
+        enabled: true
+        user:
+          - name: default
+            config:
+              password: "clickhouse"
+              networks:
+                - ::/0
+              profile: default
+              quota: default
 
+    persistentVolumeClaim:
+      enabled: true
+      dataPersistentVolume:
+        enabled: true
+        accessModes:
+          - "ReadWriteOnce"
+        storage: "30Gi"
 
 indexer:
   enabled: true
-  args: ["backfill", "--address=tcp://default:clickhouse@10.96.0.12:9000/clickhouse", "--config=/config/config.yaml"]
+  args: ["backfill", "--address=clickhouse://default:clickhouse@{{metadata.namespace}}-clickhouse:9000", "--config=/config/config.yaml"]
+  host:
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.namespace
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
   env:
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
     - name: GOLOG_LOG_FMT
       value: "json"
   tolerations: {}
@@ -117,7 +138,7 @@ indexer:
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz 10.96.0.12 8123; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAMESPACE}-clickhouse 8123; do echo "Waiting for clickhouse..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: explorer-clickhouse
@@ -130,7 +151,11 @@ indexer:
 server:
   enabled: true
   # For testing only
-  args: ["server", "--port=80", "--scribe-url=https://scribe.interoperability.institute/graphql", "--address=tcp://default:clickhouse@10.96.0.12:9000/clickhouse"]
+  args: ["server", "--port=80", "--scribe-url=https://scribe.interoperability.institute/graphql", "--address=clickhouse://default:clickhouse@{{metadata.namespace}}-clickhouse:9000"]
+  host:
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.namespace
   replicaCount: 1
   autoscaling:
     enabled: false
@@ -142,6 +167,10 @@ server:
   podSecurityContext: {}
   affinity: {}
   env:
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
     - name: GOLOG_LOG_FMT
       value: "json"
   tolerations: []
@@ -161,7 +190,7 @@ server:
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz 10.96.0.12 8123; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAMESPACE} 8123; do echo "Waiting for clickhouse..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: explorer-clickhouse
@@ -169,13 +198,6 @@ server:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-
-omnirpc:
-  # this can be remote in production, we just want to use the public rpc servers here
-  enabled: true
-  fullnameOverride: explorer-omnirpc
-  replicaCount: 2
-  timeoutSeconds: 300
 
 
 files:

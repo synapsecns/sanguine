@@ -45,3 +45,6 @@ test-install: ct-install kind-install helm-install ## test chart installs on a l
 	@if [ "$(shell kind get clusters)" = "" ]; then kind create cluster; fi;
 	@eval $$(cd $(GIT_ROOT)); ct install --debug --chart-dirs $(CHART_DIRS) --charts $(CHART_DIRS)
 
+test-install-single: ct-install kind-install helm-install ## test chart install on a local kubernetes cluster, set with make chart=<chart> test-install-single
+	@if [ "$(shell kind get clusters)" = "" ]; then kind create cluster; fi;
+	@eval $$(cd $(GIT_ROOT)); ct install --debug --chart-dirs $(chart) --charts $(chart)
