@@ -360,7 +360,7 @@ func (s *SwapFetcher) GetTokenMetaData(ctx context.Context, tokenIndex uint8) (*
 		logger.Errorf("could not get token symbol: %s", err)
 		return &tokenSymbol, nil
 	}
-	
+
 	tokenDecimals, err := erc20caller.Decimals(&bind.CallOpts{
 		Context: ctx,
 	})

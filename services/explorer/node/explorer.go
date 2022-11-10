@@ -115,6 +115,6 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 	}
 
 	chainBackfiller := backfill.NewChainBackfiller(consumerDB, bridgeParser, swapParsers, *fetcher, chainConfig)
-	
+
 	return chainBackfiller, nil
 }

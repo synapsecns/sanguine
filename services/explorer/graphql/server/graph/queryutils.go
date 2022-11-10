@@ -375,6 +375,6 @@ func (r *queryResolver) generateSubQuery(ctx context.Context, targetTime uint64,
 
 		subQuery += sqlString
 	}
-	
+
 	return subQuery + ")", nil
 }

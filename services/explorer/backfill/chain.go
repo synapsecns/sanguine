@@ -144,6 +144,6 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			logger.Warnf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
 		}
 	}
-	
+
 	return nil
 }

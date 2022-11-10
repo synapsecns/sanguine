@@ -236,7 +236,7 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 
 // ParseAndStore parses the bridge logs and stores them in the database.
 //
-// nolint:gocognit,cyclop,dupl
+// nolint:gocognit,cyclop,dupl,maintidx
 func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	logTopic := log.Topics[0]
 
@@ -628,6 +628,6 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
-	
+
 	return nil
 }
