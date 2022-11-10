@@ -88,7 +88,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 					continue
 				}
 
-				if len(logsChan)%logsChanLenFrequency == 0 {
+				if len(logsChan)%logsChanLenFrequency == 0 && len(logsChan) != 0 {
 					logger.Infof("logsChan length: %d", len(logsChan))
 				}
 
