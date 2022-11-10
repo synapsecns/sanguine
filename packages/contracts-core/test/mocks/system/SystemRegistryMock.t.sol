@@ -3,11 +3,13 @@ pragma solidity 0.8.17;
 
 import { LocalDomainContext } from "../../../contracts/context/LocalDomainContext.sol";
 import { SystemRegistry } from "../../../contracts/system/SystemRegistry.sol";
+import "../events/SystemContractMockEvents.sol";
 import "../../harnesses/registry/GlobalNotaryRegistryHarness.t.sol";
 import "../../harnesses/registry/GuardRegistryHarness.t.sol";
 
 // solhint-disable no-empty-blocks
 contract SystemRegistryMock is
+    SystemContractMockEvents,
     LocalDomainContext,
     SystemRegistry,
     GlobalNotaryRegistry,
@@ -25,5 +27,12 @@ contract SystemRegistryMock is
 
     function isGuard(address _guard) public view returns (bool) {
         return _isGuard(_guard);
+    }
+
+    /**
+     * @notice Hook that is called before the specified agent was slashed via a system call.
+     */
+    function _beforeAgentSlashed(AgentInfo memory _info) internal override {
+        emit SlashAgentCall(_info);
     }
 }

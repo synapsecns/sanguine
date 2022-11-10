@@ -30,13 +30,11 @@ abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistr
         AgentInfo memory _info
     ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
         // TODO: decide if we need to store anything, as the slashing occurred on another chain
+        _beforeAgentSlashed(_info);
         if (_info.agent == Agent.Guard) {
-            address guard = _info.account;
-            _removeGuard(guard);
+            _removeGuard({ _guard: _info.account });
         } else if (_info.agent == Agent.Notary) {
-            uint32 domain = _info.domain;
-            address notary = _info.account;
-            _removeNotary(domain, notary);
+            _removeNotary({ _origin: _info.domain, _notary: _info.account });
         } else {
             // Sanity check
             assert(false);
@@ -101,4 +99,10 @@ abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistr
             assert(false);
         }
     }
+
+    // solhint-disable no-empty-blocks
+    /**
+     * @notice Hook that is called before the specified agent was slashed via a system call.
+     */
+    function _beforeAgentSlashed(AgentInfo memory _info) internal virtual {}
 }
