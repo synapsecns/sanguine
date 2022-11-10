@@ -35,7 +35,7 @@ service:
   type: ClusterIP
   port: 80
 
-initialDelaySeconds: 220
+initialDelaySeconds: 60
 
 ingress:
   enabled: false
@@ -138,7 +138,7 @@ indexer:
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAMESPACE}-clickhouse 8123; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAMESPACE}-clickhouse 9000; do echo "Waiting for clickhouse..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: explorer-clickhouse
@@ -190,7 +190,7 @@ server:
     - name: wait-for-clickhouse
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAMESPACE} 8123; do echo "Waiting for clickhouse..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAMESPACE}-clickhouse 9000; do echo "Waiting for clickhouse..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: explorer-clickhouse
