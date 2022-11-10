@@ -47,24 +47,46 @@ contract DestinationHarness is
     }
 
     /**
-     * @notice Hook that is called after the specified domain becomes active,
-     * i.e. when a Notary is added to the domain, which previously had no active Notaries.
+     * @notice Hook that is called just before a Notary is added for specified domain.
      */
-    function _afterDomainBecomesActive(uint32 _domain, address _notary)
+    function _beforeNotaryAdded(uint32 _domain, address _notary)
         internal
+        virtual
         override(GlobalNotaryRegistry, GlobalNotaryRegistryHarness)
     {
-        GlobalNotaryRegistry._afterDomainBecomesActive(_domain, _notary);
+        GlobalNotaryRegistry._beforeNotaryAdded(_domain, _notary);
     }
 
     /**
-     * @notice Hook that is called after the specified domain becomes inactive,
-     * i.e. when the last Notary is removed from the domain.
+     * @notice Hook that is called right after a Notary is added for specified domain.
      */
-    function _afterDomainBecomesInactive(uint32 _domain, address _notary)
+    function _afterNotaryAdded(uint32 _domain, address _notary)
         internal
+        virtual
         override(GlobalNotaryRegistry, GlobalNotaryRegistryHarness)
     {
-        GlobalNotaryRegistry._afterDomainBecomesInactive(_domain, _notary);
+        GlobalNotaryRegistry._afterNotaryAdded(_domain, _notary);
+    }
+
+    /**
+     * @notice Hook that is called just before a Notary is removed from specified domain.
+     */
+    function _beforeNotaryRemoved(uint32 _domain, address _notary)
+        internal
+        virtual
+        override(GlobalNotaryRegistry, GlobalNotaryRegistryHarness)
+    {
+        GlobalNotaryRegistry._beforeNotaryRemoved(_domain, _notary);
+    }
+
+    /**
+     * @notice Hook that is called right after a Notary is removed from specified domain.
+     */
+    function _afterNotaryRemoved(uint32 _domain, address _notary)
+        internal
+        virtual
+        override(GlobalNotaryRegistry, GlobalNotaryRegistryHarness)
+    {
+        GlobalNotaryRegistry._afterNotaryRemoved(_domain, _notary);
     }
 }
