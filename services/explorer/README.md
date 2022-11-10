@@ -4,15 +4,42 @@
 See [#167](https://github.com/synapsecns/sanguine/issues/167) to learn more.
 
 To access the clickhouse database, you can use the following command from the docker image:
-# Refactor TODO
-- basics, spacing, comments, function headers
-- readme
-- split up the consumer folder
-- clean up the parser so it only parses and the types dont get switched up in the helper files for each topic
-- consolidate contracts folder (solidity in one folder, either in /contracts or in /external
-- see if resolvers + entirity of graphql can do without scribe (speedup maybe?)
 
 ```bash
 clickhouse-client --database=clickhouse_test --user=clickhouse_test --password=clickhouse_test
 ```
+
+## Directory Structure
+
+<pre>
+explorer
+├── <a href="./api">api</a>: API server
+├── <a href="./backfill">backfill</a>: Chain level backfilling service to populate the database
+├── <a href="./cmd">cmd</a>: CLI commands
+├── <a href="./config">config</a>: Configuration files
+├── <a href="./consumer">consumer</a>: Consumes data from Scribe and populates the Explorer database
+│   └── <a href="./consumer/client">client</a>: Client for the Scribe consumer
+├── <a href="./contracts">contracts</a>: Smart contracts and their generated interfaces/utils
+│   ├── <a href="./contracts/bridge">bridge</a>: Bridge smart contract applications
+│   ├── <a href="./contracts/bridgeconfig">bridgeconfig</a>: BridgeConfig smart contract applications
+│   ├── <a href="./contracts/contracts">contracts</a>: Raw flattened smart contracts and test contracts
+│   └── <a href="./contracts/swap">swap</a>: Swap smart contract applications
+├── <a href="./db">db</a>: Database interface
+│   └── <a href="./db/sql">sql</a>: Database writer, reader, and migrations
+├── <a href="./graphql">graphql</a>: GraphQL implementation for the Explorer's recorded data
+│   ├── <a href="./graphql/client">client</a>: The client interface for the GraphQL server
+│   ├── <a href="./graphql/contrib">contrib</a>: Generator for the GraphQL schema
+│   └── <a href="./graphql/server">server</a>: The server implementation for GraphQL
+│       └── <a href="./graphql/server/graph">graph</a>: The server's models, resolvers, and schemas
+├── <a href="./node">node</a>: Live Explorer node
+├── <a href="./testutil">testutil</a>: Test utilities
+└── <a href="./types">types</a>: Explorer specific types
+</pre>
+
+## Refactor TODO
+- basics, spacing, comments, function headers
+- clean up the parser so it only parses and the types dont get switched up in the helper files for each topic
+- see if resolvers + entirity of graphql can do without scribe (speedup maybe?)
+
+
 
