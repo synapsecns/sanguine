@@ -2,10 +2,8 @@ package consumer
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
 	"gopkg.in/yaml.v2"
 	"log"
@@ -21,41 +19,6 @@ import (
 // tokenMetadataMaxRetry is the maximum number of times to retry requesting token metadata
 // from the defi llama API.
 var tokenMetadataMaxRetry = 10
-
-// Parser parses events and stores them.
-type Parser interface {
-	// ParseAndStore parses the logs and stores them in the database.
-	ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error
-}
-
-// BoolToUint8 is a helper function to handle bool to uint8 conversion for clickhouse.
-func BoolToUint8(input *bool) *uint8 {
-	if input == nil {
-		return nil
-	}
-	if *input {
-		one := uint8(1)
-
-		return &one
-	}
-	zero := uint8(0)
-
-	return &zero
-}
-
-// ToNullString is a helper function to convert values to null string.
-func ToNullString(str *string) sql.NullString {
-	var newNullStr sql.NullString
-
-	if str != nil {
-		newNullStr.Valid = true
-		newNullStr.String = *str
-	} else {
-		newNullStr.Valid = false
-	}
-
-	return newNullStr
-}
 
 // OpenYaml opens yaml file with coin gecko ID mapping and returns it.
 func OpenYaml(path string) (map[string]string, error) {

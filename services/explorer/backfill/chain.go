@@ -7,7 +7,8 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/explorer/config"
-	"github.com/synapsecns/sanguine/services/explorer/consumer"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"golang.org/x/sync/errgroup"
@@ -19,17 +20,17 @@ type ChainBackfiller struct {
 	// consumerDB is the database that the backfiller will use to store the events.
 	consumerDB db.ConsumerDB
 	// bridgeParser is the parser to use to parse bridge events.
-	bridgeParser *consumer.BridgeParser
+	bridgeParser *parser.BridgeParser
 	// swapParsers is a map from contract address -> parser.
-	swapParsers map[common.Address]*consumer.SwapParser
+	swapParsers map[common.Address]*parser.SwapParser
 	// Fetcher is the Fetcher to use to fetch logs.
-	Fetcher consumer.Fetcher
+	Fetcher fetcher.ScribeFetcher
 	// chainConfig is the chain config for the chain.
 	chainConfig config.ChainConfig
 }
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *consumer.BridgeParser, swapParsers map[common.Address]*consumer.SwapParser, fetcher consumer.Fetcher, chainConfig config.ChainConfig) *ChainBackfiller {
+func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, fetcher fetcher.ScribeFetcher, chainConfig config.ChainConfig) *ChainBackfiller {
 	return &ChainBackfiller{
 		consumerDB:   consumerDB,
 		bridgeParser: bridgeParser,
@@ -99,7 +100,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 							continue
 						}
 
-						var eventParser consumer.Parser
+						var eventParser parser.Parser
 
 						switch contract.ContractType {
 						case "bridge":
@@ -130,7 +131,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 // processLogs processes the logs and stores them in the consumer database.
 //
 //nolint:gocognit,cyclop
-func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, eventParser consumer.Parser) error {
+func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, eventParser parser.Parser) error {
 	for i := range logs {
 		err := eventParser.ParseAndStore(ctx, logs[i], c.chainConfig.ChainID)
 		if err != nil {

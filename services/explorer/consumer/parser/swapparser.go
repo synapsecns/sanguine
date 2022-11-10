@@ -1,4 +1,4 @@
-package consumer
+package parser
 
 import (
 	"context"
@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/services/explorer/consumer"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -22,14 +24,14 @@ type SwapParser struct {
 	swapAddress common.Address
 	// Filterer is the swap Filterer we use to parse events.
 	Filterer *swap.SwapFlashLoanFilterer
-	// consumerFetcher is the Fetcher for sender and timestamp.
-	consumerFetcher *Fetcher
+	// consumerFetcher is the ScribeFetcher for sender and timestamp.
+	consumerFetcher *fetcher.ScribeFetcher
 	// swapFetcher is the fetcher for token data from swaps.
-	swapFetcher SwapFetcher
+	swapFetcher fetcher.SwapFetcher
 }
 
 // NewSwapParser creates a new parser for a given bridge.
-func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFetcher SwapFetcher, consumerFetcher *Fetcher) (*SwapParser, error) {
+func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFetcher fetcher.SwapFetcher, consumerFetcher *fetcher.ScribeFetcher) (*SwapParser, error) {
 	filterer, err := swap.NewSwapFlashLoanFilterer(swapAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
@@ -222,12 +224,12 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 			if symbol != nil && decimals != nil {
 				tokenSymbols[tokenIndex] = *symbol
 				tokenDecimals[tokenIndex] = *decimals
-				timeStamp, err := p.consumerFetcher.fetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+				timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 				if err != nil {
 					return fmt.Errorf("could not get timestamp: %w", err)
 				}
 
-				tokenPrice, _ := GetTokenMetadataWithTokenSymbol(ctx, *timeStamp.Response, symbol)
+				tokenPrice, _ := consumer.GetTokenMetadataWithTokenSymbol(ctx, *timeStamp.Response, symbol)
 				tokenPrices[tokenIndex] = *tokenPrice
 			}
 

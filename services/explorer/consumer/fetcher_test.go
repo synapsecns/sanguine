@@ -4,7 +4,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/services/explorer/consumer"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"math/big"
 	"time"
@@ -26,7 +26,7 @@ func (c *ConsumerSuite) TestFetchLogsInRange() {
 	}
 
 	// Fetch logs from 4 to 8.
-	fetcher := consumer.NewFetcher(c.gqlClient)
+	fetcher := fetcher.NewFetcher(c.gqlClient)
 	logs, err := fetcher.FetchLogsInRange(c.GetTestContext(), chainID, 4, 8, contractAddress)
 	Nil(c.T(), err)
 	Equal(c.T(), 5, len(logs))
@@ -34,7 +34,7 @@ func (c *ConsumerSuite) TestFetchLogsInRange() {
 
 func (c *ConsumerSuite) TestNewSwapFetcher() {
 	swapContract, _ := c.testDeployManager.GetTestSwapFlashLoan(c.GetTestContext(), c.testBackend)
-	fetcher, err := consumer.NewSwapFetcher(swapContract.Address(), c.testBackend)
+	fetcher, err := fetcher.NewSwapFetcher(swapContract.Address(), c.testBackend)
 
 	Nil(c.T(), err)
 	NotNil(c.T(), fetcher)
@@ -42,7 +42,7 @@ func (c *ConsumerSuite) TestNewSwapFetcher() {
 
 func (c *ConsumerSuite) TestToken() {
 	defer c.cleanup()
-	fetcher, err := consumer.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.bridgeConfigContract)
+	fetcher, err := fetcher.NewBridgeConfigFetcher(c.bridgeConfigContract.Address(), c.bridgeConfigContract)
 	Nil(c.T(), err)
 	currentBlockNumber, err := c.testBackend.BlockNumber(c.GetTestContext())
 	Nil(c.T(), err)
@@ -62,7 +62,7 @@ func (c *ConsumerSuite) TestToken() {
 
 func (c *ConsumerSuite) TestTimeToBlockNumber() {
 	defer c.cleanup()
-	fetcher := consumer.NewFetcher(c.gqlClient)
+	fetcher := fetcher.NewFetcher(c.gqlClient)
 	chainID := gofakeit.Uint32()
 
 	baseTime := uint64(0)

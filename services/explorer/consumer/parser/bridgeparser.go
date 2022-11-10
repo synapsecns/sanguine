@@ -1,4 +1,4 @@
-package consumer
+package parser
 
 import (
 	"context"
@@ -7,6 +7,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/synapsecns/sanguine/services/explorer/consumer"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -26,14 +28,14 @@ type BridgeParser struct {
 	FiltererV1 *bridgev1.SynapseBridgeFilterer
 	// bridgeAddress is the address of the bridge.
 	bridgeAddress common.Address
-	// fetcher is a Bridge Config Fetcher.
-	fetcher BridgeConfigFetcher
-	// consumerFetcher is the Fetcher for sender and timestamp.
-	consumerFetcher *Fetcher
+	// fetcher is a Bridge Config ScribeFetcher.
+	fetcher fetcher.BridgeConfigFetcher
+	// consumerFetcher is the ScribeFetcher for sender and timestamp.
+	consumerFetcher *fetcher.ScribeFetcher
 }
 
 // NewBridgeParser creates a new parser for a given bridge.
-func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bridgeConfigFetcher BridgeConfigFetcher, consumerFetcher *Fetcher) (*BridgeParser, error) {
+func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bridgeConfigFetcher fetcher.BridgeConfigFetcher, consumerFetcher *fetcher.ScribeFetcher) (*BridgeParser, error) {
 	filterer, err := bridge.NewSynapseBridgeFilterer(bridgeAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
@@ -323,7 +325,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	bridgeEvent := eventToBridgeEvent(iFace, chainID)
 	bridgeEvent.TokenID = ToNullString(tokenID)
 	bridgeEvent.TokenDecimal = &token.TokenDecimals
-	timeStamp, err := p.consumerFetcher.fetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	if err != nil {
 		return fmt.Errorf("could not get block time: %w", err)
 	}
@@ -332,13 +334,13 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	bridgeEvent.TimeStamp = &timeStampBig
 
 	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
-	tokenPrice, symbol := GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID)
+	tokenPrice, symbol := consumer.GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID)
 	if tokenPrice != nil {
 		// Add AmountUSD to bridgeEvent (if price is not nil).
-		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
+		bridgeEvent.AmountUSD = consumer.GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
 
 		// Add FeeAmountUSD to bridgeEvent (if price is not nil).
-		bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
+		bridgeEvent.FeeAmountUSD = consumer.GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
 
 		// Add TokenSymbol to bridgeEvent.
 		bridgeEvent.TokenSymbol = ToNullString(symbol)

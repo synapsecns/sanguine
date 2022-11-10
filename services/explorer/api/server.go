@@ -7,8 +7,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	baseServer "github.com/synapsecns/sanguine/core/server"
-	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	gqlServer "github.com/synapsecns/sanguine/services/explorer/graphql/server"
@@ -50,7 +50,7 @@ func Start(ctx context.Context, cfg Config) error {
 	}
 
 	// get the fetcher
-	fetcher := consumer.NewFetcher(client.NewClient(http.DefaultClient, cfg.ScribeURL))
+	fetcher := fetcher.NewFetcher(client.NewClient(http.DefaultClient, cfg.ScribeURL))
 
 	gqlServer.EnableGraphql(router, consumerDB, *fetcher)
 

@@ -7,8 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
 	"github.com/synapsecns/sanguine/services/explorer/config"
-	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	gqlClient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
+	fetcherpkg "github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"golang.org/x/sync/errgroup"
@@ -32,10 +33,10 @@ type ExplorerBackfiller struct {
 // nolint:gocognit
 func NewExplorerBackfiller(consumerDB db.ConsumerDB, config config.Config, clients map[uint32]bind.ContractBackend) (*ExplorerBackfiller, error) {
 	chainBackfillers := make(map[uint32]*backfill.ChainBackfiller)
-	fetcher := consumer.NewFetcher(gqlClient.NewClient(http.DefaultClient, config.ScribeURL))
+	fetcher := fetcherpkg.NewFetcher(gqlClient.NewClient(http.DefaultClient, config.ScribeURL))
 	bridgeConfigRef, err := bridgeconfig.NewBridgeConfigRef(common.HexToAddress(config.BridgeConfigAddress), clients[config.BridgeConfigChainID])
 	if err != nil || bridgeConfigRef == nil {
-		return nil, fmt.Errorf("could not create bridge config Fetcher: %w", err)
+		return nil, fmt.Errorf("could not create bridge config ScribeFetcher: %w", err)
 	}
 
 	// Initialize each chain backfiller.
@@ -82,30 +83,30 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context) error {
 }
 
 // nolint gocognit,cyclop
-func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig, fetcher *consumer.Fetcher, client bind.ContractBackend, bridgeConfigAddress common.Address, bridgeRef *bridgeconfig.BridgeConfigRef) (*backfill.ChainBackfiller, error) {
-	newConfigFetcher, err := consumer.NewBridgeConfigFetcher(bridgeConfigAddress, bridgeRef)
+func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig, fetcher *fetcherpkg.ScribeFetcher, client bind.ContractBackend, bridgeConfigAddress common.Address, bridgeRef *bridgeconfig.BridgeConfigRef) (*backfill.ChainBackfiller, error) {
+	newConfigFetcher, err := fetcherpkg.NewBridgeConfigFetcher(bridgeConfigAddress, bridgeRef)
 	if err != nil || newConfigFetcher == nil {
 		return nil, fmt.Errorf("could not get bridge abi: %w", err)
 	}
 
-	swapParsers := make(map[common.Address]*consumer.SwapParser)
+	swapParsers := make(map[common.Address]*parser.SwapParser)
 
-	var bridgeParser *consumer.BridgeParser
+	var bridgeParser *parser.BridgeParser
 
 	for i := range chainConfig.Contracts {
 		switch chainConfig.Contracts[i].ContractType {
 		case "bridge":
-			bridgeParser, err = consumer.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), *newConfigFetcher, fetcher)
+			bridgeParser, err = parser.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), *newConfigFetcher, fetcher)
 			if err != nil || bridgeParser == nil {
 				return nil, fmt.Errorf("could not create bridge parser: %w", err)
 			}
 		case "swap":
-			swapFetcher, err := consumer.NewSwapFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client)
+			swapFetcher, err := fetcherpkg.NewSwapFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client)
 			if err != nil || swapFetcher == nil {
-				return nil, fmt.Errorf("could not create swap Fetcher: %w", err)
+				return nil, fmt.Errorf("could not create swap ScribeFetcher: %w", err)
 			}
 
-			swapParser, err := consumer.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), *swapFetcher, fetcher)
+			swapParser, err := parser.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), *swapFetcher, fetcher)
 			if err != nil || swapParser == nil {
 				return nil, fmt.Errorf("could not create swap parser: %w", err)
 			}
