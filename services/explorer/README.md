@@ -37,6 +37,3 @@ explorer
 ├── <a href="./testutil">testutil</a>: Test utilities
 └── <a href="./types">types</a>: Explorer specific types
 </pre>
-
-## Refactor TODO
-- see if resolvers + entirity of graphql can do without scribe (speedup maybe?)
