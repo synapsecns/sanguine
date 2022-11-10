@@ -458,20 +458,6 @@ func (_m *EventDB) StoreEthTx(ctx context.Context, tx *types.Transaction, chainI
 	return r0
 }
 
-// StoreLastBlockTime provides a mock function with given fields: ctx, chainID, blockNumber
-func (_m *EventDB) StoreLastBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) error {
-	ret := _m.Called(ctx, chainID, blockNumber)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint64) error); ok {
-		r0 = rf(ctx, chainID, blockNumber)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // StoreLastConfirmedBlock provides a mock function with given fields: ctx, chainID, blockNumber
 func (_m *EventDB) StoreLastConfirmedBlock(ctx context.Context, chainID uint32, blockNumber uint64) error {
 	ret := _m.Called(ctx, chainID, blockNumber)
