@@ -25,21 +25,25 @@ func BoolToUint8(input *bool) *uint8 {
 	}
 	if *input {
 		one := uint8(1)
+
 		return &one
 	}
 	zero := uint8(0)
+
 	return &zero
 }
 
 // ToNullString is a helper function to convert values to null string.
 func ToNullString(str *string) sql.NullString {
 	var newNullStr sql.NullString
+
 	if str != nil {
 		newNullStr.Valid = true
 		newNullStr.String = *str
 	} else {
 		newNullStr.Valid = false
 	}
+
 	return newNullStr
 }
 
@@ -51,17 +55,17 @@ type Parser interface {
 
 // BridgeParser parses events from the bridge contract.
 type BridgeParser struct {
-	// consumerDB is the database to store parsed data in
+	// consumerDB is the database to store parsed data in.
 	consumerDB db.ConsumerDB
-	// Filterer is the bridge Filterer we use to parse events
+	// Filterer is the bridge Filterer we use to parse events.
 	Filterer *bridge.SynapseBridgeFilterer
-	// Filterer is the bridge Filterer we use to parse events
+	// Filterer is the bridge Filterer we use to parse events.
 	FiltererV1 *bridgev1.SynapseBridgeFilterer
-	// bridgeAddress is the address of the bridge
+	// bridgeAddress is the address of the bridge.
 	bridgeAddress common.Address
-	// fetcher is a Bridge Config Fetcher
+	// fetcher is a Bridge Config Fetcher.
 	fetcher BridgeConfigFetcher
-	// consumerFetcher is the Fetcher for sender and timestamp
+	// consumerFetcher is the Fetcher for sender and timestamp.
 	consumerFetcher *Fetcher
 }
 
@@ -71,11 +75,13 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bri
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
+
 	// Old bridge contract to filter all events across all times.
 	filtererV1, err := bridgev1.NewSynapseBridgeFilterer(bridgeAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridgev1.SynapseBridgeFilterer{}, err)
 	}
+
 	return &BridgeParser{consumerDB, filterer, filtererV1, bridgeAddress, bridgeConfigFetcher, consumerFetcher}, nil
 }
 
@@ -89,19 +95,20 @@ func (p *BridgeParser) EventType(log ethTypes.Log) (_ bridgeTypes.EventType, ok 
 
 		return *eventType, true
 	}
-	// return an unknown event to avoid cases where user failed to check the event type
+
+	// Return an unknown event to avoid cases where user failed to check the event type.
 	return bridgeTypes.EventType(len(bridgeTypes.AllEventTypes()) + 2), false
 }
 
 // SwapParser parses events from the swap contract.
 type SwapParser struct {
-	// consumerDB is the database to store parsed data in
+	// consumerDB is the database to store parsed data in.
 	consumerDB db.ConsumerDB
-	// swap is the address of the bridge
+	// swap is the address of the bridge.
 	swapAddress common.Address
-	// Filterer is the swap Filterer we use to parse events
+	// Filterer is the swap Filterer we use to parse events.
 	Filterer *swap.SwapFlashLoanFilterer
-	// consumerFetcher is the Fetcher for sender and timestamp
+	// consumerFetcher is the Fetcher for sender and timestamp.
 	consumerFetcher *Fetcher
 	// swapFetcher is the fetcher for token data from swaps.
 	swapFetcher SwapFetcher
@@ -113,6 +120,7 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFet
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
+
 	return &SwapParser{consumerDB, swapAddress, filterer, consumerFetcher, swapFetcher}, nil
 }
 
@@ -126,47 +134,63 @@ func (p *SwapParser) EventType(log ethTypes.Log) (_ swapTypes.EventType, ok bool
 
 		return *eventType, true
 	}
-	// return an unknown event to avoid cases where user failed to check the event type
+
+	// Return an unknown event to avoid cases where user failed to check the event type.
 	return swapTypes.EventType(len(swapTypes.AllEventTypes()) + 2), false
 }
 
 // eventToBridgeEvent stores a bridge event.
 func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.BridgeEvent {
 	var recipient sql.NullString
+
 	if event.GetRecipient() != nil {
 		recipient.Valid = true
 		recipient.String = event.GetRecipient().String()
 	} else {
 		recipient.Valid = false
 	}
+
 	var recipientBytes sql.NullString
+
 	if event.GetRecipientBytes() != nil {
 		recipientBytes.Valid = true
 		recipientBytes.String = common.Bytes2Hex(event.GetRecipientBytes()[:])
 	} else {
 		recipientBytes.Valid = false
 	}
+
 	var destinationChainID *big.Int
+
 	if event.GetDestinationChainID() != nil {
 		destinationChainID = big.NewInt(int64(event.GetDestinationChainID().Uint64()))
 	}
+
 	var tokenIndexFrom *big.Int
+
 	if event.GetTokenIndexFrom() != nil {
 		tokenIndexFrom = big.NewInt(int64(*event.GetTokenIndexFrom()))
 	}
+
 	var tokenIndexTo *big.Int
+
 	if event.GetTokenIndexTo() != nil {
 		tokenIndexTo = big.NewInt(int64(*event.GetTokenIndexTo()))
 	}
+
 	var swapSuccess *big.Int
+
 	if event.GetSwapSuccess() != nil {
 		swapSuccess = big.NewInt(int64(*BoolToUint8(event.GetSwapSuccess())))
 	}
+
 	var swapTokenIndex *big.Int
+
 	if event.GetSwapTokenIndex() != nil {
 		swapTokenIndex = big.NewInt(int64(*event.GetSwapTokenIndex()))
 	}
+
 	var kappa sql.NullString
+
 	if event.GetKappa() != nil {
 		kappa.Valid = true
 		kappa.String = common.Bytes2Hex(event.GetKappa()[:])
@@ -200,7 +224,7 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 		SwapMinAmount:      event.GetSwapMinAmount(),
 		SwapDeadline:       event.GetSwapDeadline(),
 
-		// placeholders for further data maturation of this event.
+		// Placeholders for further data maturation of this event.
 		TokenID:      sql.NullString{},
 		TimeStamp:    nil,
 		AmountUSD:    nil,
@@ -215,6 +239,7 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 // nolint:gocognit,cyclop,dupl
 func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	logTopic := log.Topics[0]
+
 	iFace, err := func(log ethTypes.Log) (bridgeTypes.EventLog, error) {
 		switch logTopic {
 		case bridge.Topic(bridgeTypes.DepositEvent):
@@ -224,9 +249,12 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse deposit: %w", err)
 				}
+
 				logger.Warnf("used v1 bridge contract to parse deposit")
+
 				return iFaceV1, nil
 			}
+
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.RedeemEvent):
 			iFace, err := p.Filterer.ParseTokenRedeem(log)
@@ -235,9 +263,12 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse redeem: %w", err)
 				}
+
 				logger.Warnf("used v1 bridge contract to parse redeem")
+
 				return iFaceV1, nil
 			}
+
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.WithdrawEvent):
 			iFace, err := p.Filterer.ParseTokenWithdraw(log)
@@ -246,9 +277,12 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse withdraw: %w", err)
 				}
+
 				logger.Warnf("used v1 bridge contract to parse withdraw")
+
 				return iFaceV1, nil
 			}
+
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.MintEvent):
 			iFace, err := p.Filterer.ParseTokenMint(log)
@@ -257,9 +291,12 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse mint: %w", err)
 				}
+
 				logger.Warnf("used v1 bridge contract to parse mint")
+
 				return iFaceV1, nil
 			}
+
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.DepositAndSwapEvent):
 			iFace, err := p.Filterer.ParseTokenDepositAndSwap(log)
@@ -268,9 +305,12 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse deposit and swap: %w", err)
 				}
+
 				logger.Warnf("used v1 bridge contract to parse deposit and swap")
+
 				return iFaceV1, nil
 			}
+
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.MintAndSwapEvent):
 			iFace, err := p.Filterer.ParseTokenMintAndSwap(log)
@@ -279,9 +319,12 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse mint and swap: %w", err)
 				}
+
 				logger.Warnf("used v1 bridge contract to parse mint and swap")
+
 				return iFaceV1, nil
 			}
+
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.RedeemAndSwapEvent):
 			iFace, err := p.Filterer.ParseTokenRedeemAndSwap(log)
@@ -290,9 +333,12 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse redeem and swap: %w", err)
 				}
+
 				logger.Warnf("used v1 bridge contract to parse redeem and swap")
+
 				return iFaceV1, nil
 			}
+
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.RedeemAndRemoveEvent):
 			iFace, err := p.Filterer.ParseTokenRedeemAndRemove(log)
@@ -301,9 +347,12 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse redeem and remove: %w", err)
 				}
+
 				logger.Warnf("used v1 bridge contract to parse redeem and remove")
+
 				return iFaceV1, nil
 			}
+
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.WithdrawAndRemoveEvent):
 			iFace, err := p.Filterer.ParseTokenWithdrawAndRemove(log)
@@ -312,93 +361,101 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 				if err != nil {
 					return nil, fmt.Errorf("could not parse withdraw and remove: %w", err)
 				}
+
 				logger.Warnf("used v1 bridge contract to parse withdraw and remove")
+
 				return iFaceV1, nil
 			}
+
 			return iFace, nil
 		case bridge.Topic(bridgeTypes.RedeemV2Event):
 			iFace, err := p.Filterer.ParseTokenRedeemV2(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not parse redeem v2: %w", err)
 			}
+
 			return iFace, nil
 		default:
 			return nil, fmt.Errorf("unknown topic: %s %s", logTopic.Hex(), logTopic.String())
 		}
 	}(log)
-
 	if err != nil {
 		// Switch failed.
 		return err
 	}
 
-	// get TokenID from BridgeConfig data
+	// Get TokenID from BridgeConfig data.
 	tokenID, err := p.fetcher.GetTokenID(ctx, big.NewInt(int64(chainID)), iFace.GetToken())
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
 
-	// get Token from BridgeConfig data (for getting token decimal but use this for anything else).
+	// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
 	token, err := p.fetcher.GetToken(ctx, chainID, tokenID, uint32(iFace.GetBlockNumber()))
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
 
-	// populate bridge event type so following operations can mature the event data.
 	bridgeEvent := eventToBridgeEvent(iFace, chainID)
-	// Add TokenID to bridgeEvent
 	bridgeEvent.TokenID = ToNullString(tokenID)
-	// Add TokenDecimal to bridgeEvent
 	bridgeEvent.TokenDecimal = &token.TokenDecimals
-
-	// Get timestamp from consumer
 	timeStamp, err := p.consumerFetcher.fetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
-	// If we have a timestamp, populate the following attributes of bridgeEvent.
 	if err != nil {
 		return fmt.Errorf("could not get block time: %w", err)
 	}
+
 	timeStampBig := uint64(*timeStamp.Response)
 	bridgeEvent.TimeStamp = &timeStampBig
+
 	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
 	tokenPrice, symbol := GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID)
 	if tokenPrice != nil {
-		// Add AmountUSD to bridgeEvent (if price is not nil)
+		// Add AmountUSD to bridgeEvent (if price is not nil).
 		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
-		// Add FeeAmountUSD to bridgeEvent (if price is not nil)
+
+		// Add FeeAmountUSD to bridgeEvent (if price is not nil).
 		bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
-		// Add TokenSymbol to bridgeEvent
+
+		// Add TokenSymbol to bridgeEvent.
 		bridgeEvent.TokenSymbol = ToNullString(symbol)
 	}
+
 	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
 	if err != nil {
 		logger.Errorf("could not get tx sender: %v", err)
 	}
-	bridgeEvent.Sender = sender
 
+	bridgeEvent.Sender = sender
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent, nil)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
+
 	return nil
 }
 
 // eventToSwapEvent stores a swap event.
 func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent {
 	var buyer sql.NullString
+
 	if event.GetBuyer() != nil {
 		buyer.Valid = true
 		buyer.String = event.GetBuyer().String()
 	} else {
 		buyer.Valid = false
 	}
+
 	var provider sql.NullString
+
 	if event.GetProvider() != nil {
 		provider.Valid = true
 		provider.String = event.GetProvider().String()
 	} else {
 		provider.Valid = false
 	}
+
 	var receiver sql.NullString
+
 	if event.GetReceiver() != nil {
 		receiver.Valid = true
 		receiver.String = event.GetReceiver().String()
@@ -450,6 +507,7 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 //nolint:gocognit,cyclop,dupl
 func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	logTopic := log.Topics[0]
+
 	iFace, err := func(log ethTypes.Log) (swapTypes.EventLog, error) {
 		switch logTopic {
 		case swap.Topic(swapTypes.TokenSwapEvent):
@@ -457,60 +515,70 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 			if err != nil {
 				return nil, fmt.Errorf("could not store token swap: %w", err)
 			}
+
 			return iFace, nil
 		case swap.Topic(swapTypes.AddLiquidityEvent):
 			iFace, err := p.Filterer.ParseAddLiquidity(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not store add liquidity: %w", err)
 			}
+
 			return iFace, nil
 		case swap.Topic(swapTypes.RemoveLiquidityEvent):
 			iFace, err := p.Filterer.ParseRemoveLiquidity(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not store remove liquidity: %w", err)
 			}
+
 			return iFace, nil
 		case swap.Topic(swapTypes.RemoveLiquidityOneEvent):
 			iFace, err := p.Filterer.ParseRemoveLiquidityOne(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not store remove liquidity one: %w", err)
 			}
+
 			return iFace, nil
 		case swap.Topic(swapTypes.RemoveLiquidityImbalanceEvent):
 			iFace, err := p.Filterer.ParseRemoveLiquidityImbalance(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not store remove liquidity imbalance: %w", err)
 			}
+
 			return iFace, nil
 		case swap.Topic(swapTypes.NewAdminFeeEvent):
 			iFace, err := p.Filterer.ParseNewAdminFee(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not store new admin fee: %w", err)
 			}
+
 			return iFace, nil
 		case swap.Topic(swapTypes.NewSwapFeeEvent):
 			iFace, err := p.Filterer.ParseNewSwapFee(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not store new swap fee: %w", err)
 			}
+
 			return iFace, nil
 		case swap.Topic(swapTypes.RampAEvent):
 			iFace, err := p.Filterer.ParseRampA(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not store ramp a: %w", err)
 			}
+
 			return iFace, nil
 		case swap.Topic(swapTypes.StopRampAEvent):
 			iFace, err := p.Filterer.ParseStopRampA(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not store stop ramp a: %w", err)
 			}
+
 			return iFace, nil
 		case swap.Topic(swapTypes.FlashLoanEvent):
 			iFace, err := p.Filterer.ParseFlashLoan(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not store flash loan: %w", err)
 			}
+
 			return iFace, nil
 		default:
 			return nil, fmt.Errorf("unknown topic: %s", logTopic.Hex())
@@ -521,7 +589,6 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 		return err
 	}
 
-	// populate swap event type so following operations can mature the event data.
 	swapEvent := eventToSwapEvent(iFace, chainID)
 
 	if swapEvent.Amount != nil {
@@ -529,39 +596,38 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 		tokenDecimals := map[uint8]uint8{}
 		tokenSymbols := map[uint8]string{}
 
-		// Get metadata for each token amount
+		// Get metadata for each token amount.
 		for tokenIndex := range swapEvent.Amount {
-			// get token symbol and decimals from the erc20 contract associated to the token.
+			// Get token symbol and decimals from the erc20 contract associated to the token.
 			symbol, decimals := p.swapFetcher.GetTokenMetaData(ctx, tokenIndex)
 			if symbol != nil && decimals != nil {
 				tokenSymbols[tokenIndex] = *symbol
 				tokenDecimals[tokenIndex] = *decimals
-
-				// get timestamp of the block where the event occurred.
 				timeStamp, err := p.consumerFetcher.fetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 				if err != nil {
 					return fmt.Errorf("could not get timestamp: %w", err)
 				}
 
-				// get the token price from the defi llama
 				tokenPrice, _ := GetTokenMetadataWithTokenSymbol(ctx, *timeStamp.Response, symbol)
 				tokenPrices[tokenIndex] = *tokenPrice
 			}
+
 			swapEvent.TokenPrices = tokenPrices
 			swapEvent.TokenDecimal = tokenDecimals
 			swapEvent.TokenSymbol = tokenSymbols
 		}
 	}
+
 	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
 	if err != nil {
 		logger.Errorf("could not get tx sender: %v", err)
 	}
-	swapEvent.Sender = sender
 
-	// Store bridgeEvent
+	swapEvent.Sender = sender
 	err = p.consumerDB.StoreEvent(ctx, nil, &swapEvent)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
+	
 	return nil
 }
