@@ -27,11 +27,14 @@ func OpenYaml(path string) (map[string]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error opening yaml file %w", err)
 	}
+
 	var res map[string]string
+
 	err = yaml.Unmarshal(input, &res)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling yaml file %w", err)
 	}
+
 	return res, nil
 }
 
@@ -43,7 +46,9 @@ func GetTokenMetadataWithTokenID(ctx context.Context, timestamp int, tokenID *st
 	if err != nil {
 		return nil, nil
 	}
+
 	coinGeckoID := coinGeckoIDs[*tokenID]
+
 	return GetDefiLlamaData(ctx, timestamp, &coinGeckoID)
 }
 
@@ -55,7 +60,9 @@ func GetTokenMetadataWithTokenSymbol(ctx context.Context, timestamp int, tokenSy
 	if err != nil {
 		return nil, nil
 	}
+
 	coinGeckoID := coinGeckoIDs[strings.ToLower(*tokenSymbol)]
+
 	return GetDefiLlamaData(ctx, timestamp, &coinGeckoID)
 }
 
@@ -64,26 +71,26 @@ func GetTokenMetadataWithTokenSymbol(ctx context.Context, timestamp int, tokenSy
 //nolint:cyclop
 func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID *string) (*float64, *string) {
 	if *coinGeckoID == "NO_TOKEN" || *coinGeckoID == "NO_PRICE" {
-		// if there is no data on the token, the amount returned will be 1:1 (price will be same as the amount of token
-		// and the token  symbol will say "no symbol"
+		// If there is no data on the token, the amount returned will be 1:1 (price will be same as the amount of token
+		// and the token  symbol will say "no symbol".
 		zero := float64(0)
 		noSymbol := "NO_SYMBOL"
+
 		return &zero, &noSymbol
 	}
 
 	client := http.Client{
 		Timeout: 10 * time.Second,
 	}
-	// backoff in the case of an error
+
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
 		Min:    1 * time.Second,
 		Max:    30 * time.Second,
 	}
-	// timeout should always be 0 on the first attempt
+
 	timeout := time.Duration(0)
-	// keep track of the number of retries
 	retries := 0
 RETRY:
 	select {
@@ -94,16 +101,20 @@ RETRY:
 		if err != nil {
 			return nil, nil
 		}
+
 		resRaw, err := client.Do(req)
 		if err != nil {
 			if retries >= tokenMetadataMaxRetry {
 				return nil, nil
 			}
+
 			timeout = b.Duration()
 			logger.Errorf("error getting response from defi llama %v", err)
 			retries++
+
 			goto RETRY
 		}
+
 		res := make(map[string]map[string]map[string]interface{})
 		err = json.NewDecoder(resRaw.Body).Decode(&res)
 		if err != nil {
@@ -112,24 +123,31 @@ RETRY:
 
 		var price *float64
 		var symbol *string
+
 		if priceRes, ok := res["coins"][fmt.Sprintf("coingecko:%s", *coinGeckoID)]["price"].(float64); ok {
 			price = &priceRes
 		}
+
 		if stringRes, ok := res["coins"][fmt.Sprintf("coingecko:%s", *coinGeckoID)]["symbol"].(string); ok {
 			symbol = &stringRes
 		}
+
 		if resRaw.Body.Close() != nil {
 			log.Printf("Error closing http connection.")
 		}
+
 		if price == nil || symbol == nil {
 			if retries >= tokenMetadataMaxRetry {
 				return nil, nil
 			}
+
 			timeout = b.Duration()
 			logger.Errorf("error getting price or symbol from defi llama")
 			retries++
+
 			goto RETRY
 		}
+
 		return price, symbol
 	}
 }
@@ -137,5 +155,6 @@ RETRY:
 // GetAmountUSD computes the USD value of a token amount.
 func GetAmountUSD(amount *big.Int, decimals uint8, price *float64) *float64 {
 	trueAmount := float64(amount.Int64()) * math.Pow(10.0, float64(decimals)) * *price
+
 	return &trueAmount
 }
