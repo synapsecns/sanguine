@@ -37,7 +37,6 @@ explorer
 </pre>
 
 ## Refactor TODO
-- basics, spacing, comments, function headers
 - clean up the parser so it only parses and the types dont get switched up in the helper files for each topic
 - see if resolvers + entirity of graphql can do without scribe (speedup maybe?)
 
