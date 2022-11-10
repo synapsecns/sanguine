@@ -238,15 +238,15 @@ func TestAttestationKey(t *testing.T) {
 	Equal(t, attestKey.Nonce, attestKeyFromRaw.Nonce)
 }
 
-func TestAttestatedDomains(t *testing.T) {
+func TestAttestedDomains(t *testing.T) {
 	origin := uint32(1)
 	destination := uint32(2)
-	attestDomains := types.AttestatedDomains{
+	attestDomains := types.AttestedDomains{
 		Origin:      origin,
 		Destination: destination,
 	}
 	rawDomains := attestDomains.GetRawDomains()
-	attestDomainsFromRaw := types.NewAttestatedDomains(rawDomains)
+	attestDomainsFromRaw := types.NewAttestedDomains(rawDomains)
 	Equal(t, attestDomains.Origin, attestDomainsFromRaw.Origin)
 	Equal(t, attestDomains.Destination, attestDomainsFromRaw.Destination)
 }
