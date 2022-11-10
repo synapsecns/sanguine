@@ -44,14 +44,8 @@ func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *consumer.BridgeP
 func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 	for i := range c.chainConfig.Contracts {
 		contract := c.chainConfig.Contracts[i]
-
-		// Initialize the errgroup
 		g, groupCtx := errgroup.WithContext(ctx)
-
-		// Set limit of goroutines so Scribe doesn't get knocked over.
 		g.SetLimit(c.chainConfig.MaxGoroutines)
-
-		// Set the start height
 		startHeight := uint64(contract.StartBlock)
 
 		// Set start block to -1 to trigger backfill from last block stored by explorer,
@@ -66,16 +60,16 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 			}
 		}
 
-		// Get last indexed block for the current contract.
 		endHeight, err := c.Fetcher.FetchLastIndexed(ctx, c.chainConfig.ChainID, contract.Address)
 		if err != nil {
 			return fmt.Errorf("could not get last indexed for contract %s: %w", contract.Address, err)
 		}
-		// Iterate over all blocks and fetch logs with the current contract address
+
+		// Iterate over all blocks and fetch logs with the current contract address.
 		for currentHeight := startHeight; currentHeight < endHeight; currentHeight += c.chainConfig.FetchBlockIncrement {
 			funcHeight := currentHeight
+
 			g.Go(func() error {
-				// backoff in the case of an error
 				b := &backoff.Backoff{
 					Factor: 2,
 					Jitter: true,
@@ -83,30 +77,30 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 					Max:    30 * time.Second,
 				}
 
-				// timeout should always be 0 on the first attempt
 				timeout := time.Duration(0)
+
 				for {
 					select {
 					case <-groupCtx.Done():
 						return fmt.Errorf("context canceled: %w", groupCtx.Err())
 					case <-time.After(timeout):
-
-						// Fetch the logs
 						rangeEnd := funcHeight + c.chainConfig.FetchBlockIncrement - 1
+
 						if rangeEnd > endHeight {
 							rangeEnd = endHeight
 						}
 
-						// Fetch the logs from Scribe
+						// Fetch the logs from Scribe.
 						logs, err := c.Fetcher.FetchLogsInRange(groupCtx, c.chainConfig.ChainID, funcHeight, rangeEnd, common.HexToAddress(contract.Address))
 						if err != nil {
 							timeout = b.Duration()
 							logger.Warnf("could not fetch logs for chain %d: %s. Retrying in %s", c.chainConfig.ChainID, err, timeout)
+
 							continue
 						}
 
-						// Init parser
 						var eventParser consumer.Parser
+
 						switch contract.ContractType {
 						case "bridge":
 							eventParser = c.bridgeParser
@@ -114,20 +108,22 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 							eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
 						}
 
-						// Parse and store logs
 						err = c.processLogs(groupCtx, logs, eventParser)
 						if err != nil {
 							logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 						}
+
 						return nil
 					}
 				}
 			})
 		}
+
 		if err := g.Wait(); err != nil {
 			return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
 		}
 	}
+
 	return nil
 }
 
@@ -140,6 +136,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 		if err != nil {
 			return fmt.Errorf("could not parse and store log: %w", err)
 		}
+
 		// TODO this can be moved out of this for loop once log order is guaranteed
 		// Store the last block in clickhouse
 		err = c.consumerDB.StoreLastBlock(ctx, c.chainConfig.ChainID, logs[i].BlockNumber)
@@ -147,5 +144,6 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			logger.Warnf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
 		}
 	}
+	
 	return nil
 }
