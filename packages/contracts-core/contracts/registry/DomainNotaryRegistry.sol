@@ -128,28 +128,6 @@ abstract contract DomainNotaryRegistry is AbstractNotaryRegistry, DomainContext 
         }
     }
 
-    // solhint-disable no-empty-blocks
-
-    /**
-     * @notice Hook that is called just before a Notary is added for specified domain.
-     */
-    function _beforeNotaryAdded(uint32 _domain, address _notary) internal virtual {}
-
-    /**
-     * @notice Hook that is called right after a Notary is added for specified domain.
-     */
-    function _afterNotaryAdded(uint32 _domain, address _notary) internal virtual {}
-
-    /**
-     * @notice Hook that is called just before a Notary is removed from specified domain.
-     */
-    function _beforeNotaryRemoved(uint32 _domain, address _notary) internal virtual {}
-
-    /**
-     * @notice Hook that is called right after a Notary is removed from specified domain.
-     */
-    function _afterNotaryRemoved(uint32 _domain, address _notary) internal virtual {}
-
     /**
      * @notice Returns whether given address is a notary for the tracked domain.
      * @dev Reverts if domain doesn't match the tracked domain.

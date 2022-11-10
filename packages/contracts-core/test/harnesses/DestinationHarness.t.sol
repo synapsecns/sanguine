@@ -3,7 +3,7 @@
 pragma solidity 0.8.17;
 
 import { Destination } from "../../contracts/Destination.sol";
-import { GlobalNotaryRegistry } from "../../contracts/registry/GlobalNotaryRegistry.sol";
+import { AbstractNotaryRegistry } from "../../contracts/registry/AbstractNotaryRegistry.sol";
 
 import { Tips } from "../../contracts/libs/Tips.sol";
 import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
@@ -52,9 +52,9 @@ contract DestinationHarness is
     function _beforeNotaryAdded(uint32 _domain, address _notary)
         internal
         virtual
-        override(GlobalNotaryRegistry, GlobalNotaryRegistryHarness)
+        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
     {
-        GlobalNotaryRegistry._beforeNotaryAdded(_domain, _notary);
+        AbstractNotaryRegistry._beforeNotaryAdded(_domain, _notary);
     }
 
     /**
@@ -63,9 +63,9 @@ contract DestinationHarness is
     function _afterNotaryAdded(uint32 _domain, address _notary)
         internal
         virtual
-        override(GlobalNotaryRegistry, GlobalNotaryRegistryHarness)
+        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
     {
-        GlobalNotaryRegistry._afterNotaryAdded(_domain, _notary);
+        AbstractNotaryRegistry._afterNotaryAdded(_domain, _notary);
     }
 
     /**
@@ -74,9 +74,9 @@ contract DestinationHarness is
     function _beforeNotaryRemoved(uint32 _domain, address _notary)
         internal
         virtual
-        override(GlobalNotaryRegistry, GlobalNotaryRegistryHarness)
+        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
     {
-        GlobalNotaryRegistry._beforeNotaryRemoved(_domain, _notary);
+        AbstractNotaryRegistry._beforeNotaryRemoved(_domain, _notary);
     }
 
     /**
@@ -85,8 +85,8 @@ contract DestinationHarness is
     function _afterNotaryRemoved(uint32 _domain, address _notary)
         internal
         virtual
-        override(GlobalNotaryRegistry, GlobalNotaryRegistryHarness)
+        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
     {
-        GlobalNotaryRegistry._afterNotaryRemoved(_domain, _notary);
+        AbstractNotaryRegistry._afterNotaryRemoved(_domain, _notary);
     }
 }
