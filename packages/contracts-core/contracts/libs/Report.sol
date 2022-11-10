@@ -63,7 +63,7 @@ library Report {
      *      Report memory layout (sliced alternatively)
      * [000 .. 045): reportData     bytes   45 bytes
      * [045 .. 110): notarySig      bytes   65 bytes
-     * [110 .. 171): guardSig       bytes   65 bytes
+     * [110 .. 171): guardSig       bytes   61 bytes
      */
 
     uint256 internal constant OFFSET_FLAG = 0;
