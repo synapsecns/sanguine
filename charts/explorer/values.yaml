@@ -105,11 +105,6 @@ clickhouse:
 
 indexer:
   enabled: true
-  args: ["backfill", "--address=clickhouse://default:clickhouse@{{metadata.namespace}}-clickhouse:9000", "--config=/config/config.yaml"]
-  host:
-    valueFrom:
-      fieldRef:
-        fieldPath: metadata.namespace
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -151,11 +146,6 @@ indexer:
 server:
   enabled: true
   # For testing only
-  args: ["server", "--port=80", "--scribe-url=https://scribe.interoperability.institute/graphql", "--address=clickhouse://default:clickhouse@{{metadata.namespace}}-clickhouse:9000"]
-  host:
-    valueFrom:
-      fieldRef:
-        fieldPath: metadata.namespace
   replicaCount: 1
   autoscaling:
     enabled: false
