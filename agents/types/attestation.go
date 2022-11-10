@@ -48,6 +48,7 @@ type AttestatedDomains struct {
 	Destination uint32
 }
 
+// NewAttestationFromBytes creates a new attesation from raw bytes.
 func NewAttestationFromBytes(rawBytes []byte) Attestation {
 	rawKeyBytes := rawBytes[0:12]
 	originBytes := rawKeyBytes[8:12]

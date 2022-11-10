@@ -19,8 +19,8 @@ func init() {
 type Parser interface {
 	// EventType determines if an event was initiated by the bridge or the user.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
-	// ParseAttestationSubmitted parses an AttestationSubmitted event
-	ParseAttestationSubmitted(log ethTypes.Log) (_ types.AttestationSubmitted, ok bool)
+	// ParseAttestationAccepted parses an AttestationAccepted event
+	ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool)
 }
 
 type parserImpl struct {
@@ -51,19 +51,15 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 	return EventType(len(AllEventTypes) + 2), false
 }
 
-// ParseAttestationSubmitted parses an AttestationSubmitted event.
-func (p parserImpl) ParseAttestationSubmitted(log ethTypes.Log) (_ types.AttestationSubmitted, ok bool) {
-	attestation, didSucceed := p.ParseAttestationSubmitted(log)
-	if !didSucceed {
+// ParseAttestationAccepted parses an AttestationSubmitted event.
+func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool) {
+	attestationCollectorAttestation, err := p.filterer.ParseAttestationAccepted(log)
+	if err != nil {
 		return nil, false
 	}
 
-	attestationSubmitted := types.NewAttestationSubmitted(
-		attestation.Notary(),
-		attestation.Attestation(),
-	)
-
-	return attestationSubmitted, true
+	attestation := types.NewAttestationFromBytes(attestationCollectorAttestation.Attestation)
+	return attestation, true
 }
 
 // EventType is the type of the attestation collector events
