@@ -133,7 +133,7 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	encodedSignature, err := types.EncodeSignature(sig)
 	Nil(t, err)
 
-	signedContractAttestation, err := attesationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, domain, destination, nonce, root, encodedSignature)
+	signedContractAttestation, err := attesationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, origin, destination, nonce, root, encodedSignature)
 	Nil(t, err)
 
 	goData, err := types.EncodeSignedAttestation(signedAttestation)
