@@ -52,14 +52,14 @@ library SystemCall {
 
     /**
      * @notice Returns a formatted System Call payload with provided fields.
-     * See: formatPrefixedCallPayload() for more details.
+     * See: formatCallPayload() for more details.
      * @param _systemRecipient  System Contract to receive message
      *                          (see ISystemRouter.SystemEntity)
      * @param _payload          Memory view over call payload where arguments need to be prepended
      * @param _prefix           abi encoded arguments to add to the call payload
      * @return Formatted System Call payload.
      */
-    function formatPrefixedSystemCall(
+    function formatSystemCall(
         uint8 _systemRecipient,
         bytes29 _payload,
         bytes29 _prefix
@@ -80,7 +80,7 @@ library SystemCall {
      * @param _prefix   abi encoded arguments to add to the call payload
      * @return New call payload with prepended arguments
      */
-    function formatPrefixedCallPayload(bytes29 _payload, bytes29 _prefix)
+    function formatCallPayload(bytes29 _payload, bytes29 _prefix)
         internal
         view
         returns (bytes memory)

@@ -19,30 +19,27 @@ contract SystemCallHarness {
     ▏*║                              FORMATTERS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatPrefixedSystemCall(
+    function formatSystemCall(
         uint8 _systemRecipient,
         uint40 _type,
         bytes memory _payload,
         bytes memory _prefix
     ) public view returns (bytes memory) {
         return
-            SystemCall.formatPrefixedSystemCall(
+            SystemCall.formatSystemCall(
                 _systemRecipient,
                 _payload.ref(_type),
                 _prefix.ref(SynapseTypes.RAW_BYTES)
             );
     }
 
-    function formatPrefixedCallPayload(
+    function formatCallPayload(
         uint40 _type,
         bytes memory _payload,
         bytes memory _prefix
     ) public view returns (bytes memory) {
         return
-            SystemCall.formatPrefixedCallPayload(
-                _payload.ref(_type),
-                _prefix.ref(SynapseTypes.RAW_BYTES)
-            );
+            SystemCall.formatCallPayload(_payload.ref(_type), _prefix.ref(SynapseTypes.RAW_BYTES));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

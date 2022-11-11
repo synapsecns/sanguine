@@ -279,7 +279,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         address recipient = _getSystemAddress(_recipient);
         require(recipient != address(0), "System Contract not set");
         // recipient.functionCall() calls recipient and bubbles the revert from the external call
-        recipient.functionCall(SystemCall.formatPrefixedCallPayload(_callPayload, _prefix));
+        recipient.functionCall(SystemCall.formatCallPayload(_callPayload, _prefix));
     }
 
     /**
@@ -330,7 +330,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
             bytes29 prefix = _prefixRemoteCall(_caller).castToRawBytes();
             bytes[] memory systemCalls = new bytes[](amount);
             for (uint256 i = 0; i < amount; ++i) {
-                systemCalls[i] = SystemCall.formatPrefixedSystemCall({
+                systemCalls[i] = SystemCall.formatSystemCall({
                     _systemRecipient: uint8(_recipients[i]),
                     _payload: _callPayloads[i],
                     _prefix: prefix

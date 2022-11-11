@@ -40,12 +40,12 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
         bytes memory arguments = createTestArguments({ words: wordsArguments, seed: "arguments" });
         bytes memory prefix = createTestArguments({ words: wordsPrefix, seed: "prefix" });
         bytes memory payload = abi.encodePacked(selector, arguments);
-        bytes memory prependedCallPayload = libHarness.formatPrefixedCallPayload({
+        bytes memory prependedCallPayload = libHarness.formatCallPayload({
             _type: SynapseTypes.CALL_PAYLOAD,
             _payload: payload,
             _prefix: prefix
         });
-        bytes memory prependedSystemCall = libHarness.formatPrefixedSystemCall({
+        bytes memory prependedSystemCall = libHarness.formatSystemCall({
             _systemRecipient: recipient,
             _type: SynapseTypes.CALL_PAYLOAD,
             _payload: payload,
@@ -55,12 +55,12 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
         assertEq(
             prependedCallPayload,
             bytes.concat(selector, prefix, arguments),
-            "!formatPrefixedCallPayload"
+            "!formatCallPayload"
         );
         assertEq(
             prependedSystemCall,
             abi.encodePacked(recipient, selector, prefix, arguments),
-            "!formatPrefixedSystemCall"
+            "!formatSystemCall"
         );
         // Test getters
         assertEq(
@@ -144,7 +144,7 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
 
     function test_wrongTypeRevert_formatPrefixedCallPayload(uint40 wrongType) public {
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.CALL_PAYLOAD });
-        libHarness.formatPrefixedCallPayload({
+        libHarness.formatCallPayload({
             _type: wrongType,
             _payload: TEST_MESSAGE_PAYLOAD,
             _prefix: ""
@@ -153,7 +153,7 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
 
     function test_wrongTypeRevert_formatPrefixedSystemCall(uint40 wrongType) public {
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.CALL_PAYLOAD });
-        libHarness.formatPrefixedSystemCall({
+        libHarness.formatSystemCall({
             _systemRecipient: 0,
             _type: wrongType,
             _payload: TEST_MESSAGE_PAYLOAD,
@@ -187,7 +187,7 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
 
     function createTestPayload() public view returns (bytes memory) {
         return
-            libHarness.formatPrefixedSystemCall({
+            libHarness.formatSystemCall({
                 _systemRecipient: 0,
                 _type: SynapseTypes.CALL_PAYLOAD,
                 _payload: TEST_MESSAGE_PAYLOAD,

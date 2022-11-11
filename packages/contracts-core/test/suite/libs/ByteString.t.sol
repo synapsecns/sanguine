@@ -79,7 +79,7 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         bytes memory arguments = createTestArguments(wordsArguments, "arguments");
         bytes memory prefix = createTestArguments(wordsPrefix, "seed");
         bytes memory payload = abi.encodePacked(selector, arguments);
-        bytes memory prefixedPayload = SystemCall.formatPrefixedCallPayload(
+        bytes memory prefixedPayload = SystemCall.formatCallPayload(
             payload.ref(SynapseTypes.CALL_PAYLOAD),
             prefix.ref(SynapseTypes.RAW_BYTES)
         );
