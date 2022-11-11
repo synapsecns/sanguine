@@ -78,18 +78,6 @@ contract SystemCallHarness {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              FORMATTERS                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function formatSystemCall(uint8 _systemRecipient, bytes memory _payload)
-        public
-        pure
-        returns (bytes memory)
-    {
-        return SystemCall.formatSystemCall(_systemRecipient, _payload);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           CONSTANT GETTERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 

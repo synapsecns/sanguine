@@ -28,37 +28,6 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
         libHarness = new SystemCallHarness();
     }
 
-    function test_formattedCorrectly(uint8 recipient) public {
-        // Test formatting
-        bytes memory payload = libHarness.formatSystemCall(recipient, TEST_MESSAGE_PAYLOAD);
-        assertEq(payload, abi.encodePacked(recipient, TEST_MESSAGE_PAYLOAD), "!formatSystemCall");
-        // Test formatting checker
-        assertTrue(libHarness.isSystemCall(payload));
-        // Test getters
-        assertEq(
-            libHarness.callRecipient(SynapseTypes.SYSTEM_CALL, payload),
-            recipient,
-            "!callRecipient"
-        );
-        // Test bytes29 getters
-        checkBytes29Getter({
-            getter: libHarness.castToSystemCall,
-            payloadType: SynapseTypes.SYSTEM_CALL,
-            payload: payload,
-            expectedType: SynapseTypes.SYSTEM_CALL,
-            expectedData: payload,
-            revertMessage: "!castToSystemCall"
-        });
-        checkBytes29Getter({
-            getter: libHarness.callPayload,
-            payloadType: SynapseTypes.SYSTEM_CALL,
-            payload: payload,
-            expectedType: SynapseTypes.CALL_PAYLOAD,
-            expectedData: TEST_MESSAGE_PAYLOAD,
-            revertMessage: "!callPayload"
-        });
-    }
-
     function test_formattedCorrectly_adjusted(
         uint8 recipient,
         uint8 wordsPrefix,

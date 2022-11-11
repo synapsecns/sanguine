@@ -118,21 +118,6 @@ library SystemCall {
     }
 
     /**
-     * @notice Returns a formatted System Call payload with provided fields
-     * @param _systemRecipient  System Contract to receive message
-     *                          (see ISystemRouter.SystemEntity)
-     * @param _payload          Payload for call on destination chain
-     * @return Formatted System Call
-     **/
-    function formatSystemCall(uint8 _systemRecipient, bytes memory _payload)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return abi.encodePacked(_systemRecipient, _payload);
-    }
-
-    /**
      * @notice Checks that a payload is a formatted System Call.
      */
     function isSystemCall(bytes29 _view) internal pure returns (bool) {
