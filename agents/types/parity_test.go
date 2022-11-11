@@ -113,15 +113,15 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 
 	_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
 
-	domain := gofakeit.Uint32()
-	destination := domain + 1
+	origin := gofakeit.Uint32()
+	destination := origin + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
 	sig := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 
 	attestKey := types.AttestationKey{
-		Origin:      domain,
+		Origin:      origin,
 		Destination: destination,
 		Nonce:       nonce,
 	}
@@ -194,7 +194,7 @@ func TestHeaderEncodeParity(t *testing.T) {
 	deployManager := testutil.NewDeployManager(t)
 	_, headerHarnessContract := deployManager.GetHeaderHarness(ctx, testBackend)
 
-	domain := gofakeit.Uint32()
+	origin := gofakeit.Uint32()
 	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	nonce := gofakeit.Uint32()
 	destination := gofakeit.Uint32()
@@ -202,7 +202,7 @@ func TestHeaderEncodeParity(t *testing.T) {
 	optimisticSeconds := gofakeit.Uint32()
 
 	solHeader, err := headerHarnessContract.FormatHeader(&bind.CallOpts{Context: ctx},
-		domain,
+		origin,
 		sender,
 		nonce,
 		destination,
@@ -211,7 +211,7 @@ func TestHeaderEncodeParity(t *testing.T) {
 	)
 	Nil(t, err)
 
-	goHeader, err := types.EncodeHeader(types.NewHeader(domain, sender, nonce, destination, recipient, optimisticSeconds))
+	goHeader, err := types.EncodeHeader(types.NewHeader(origin, sender, nonce, destination, recipient, optimisticSeconds))
 	Nil(t, err)
 
 	Equal(t, goHeader, solHeader)

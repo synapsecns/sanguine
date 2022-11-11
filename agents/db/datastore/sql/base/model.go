@@ -111,10 +111,10 @@ type DispatchMessage struct {
 // AcceptedAttestation is used to track every received accepted attestation over all mirrors.
 // Monitoring uses these accepted attestations' nonces to check for missing messages on destination chains.
 type AcceptedAttestation struct {
-	// AAOriginDomain is the chainID of the Origin contract.
-	AAOriginDomain uint32 `gorm:"column:origin_domain"`
-	// AADestinationDomain is the chainID of the Destination contract.
-	AADestinationDomain uint32 `gorm:"column:destination_domain"`
+	// AAOrigin is the chainID of the Origin contract.
+	AAOrigin uint32 `gorm:"column:origin"`
+	// AADestination is the chainID of the Destination contract.
+	AADestination uint32 `gorm:"column:destination"`
 	// AANonce is the nonce of the attestation.
 	AANonce uint32 `gorm:"column:nonce"`
 	// AARoot is the root of the attestation.

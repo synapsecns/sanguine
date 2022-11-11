@@ -29,7 +29,7 @@ func (d DestinationSuite) TestDestinationSuite() {
 
 		// Create an attestation
 		localDomain := uint32(d.testBackendOrigin.ChainConfig().ChainID.Uint64())
-		destinationDomain := localDomain + 1
+		destinationDomain := uint32(d.testBackendDestination.GetChainID())
 		nonce := gofakeit.Uint32()
 		root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 		attestKey := types.AttestationKey{

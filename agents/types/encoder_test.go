@@ -28,13 +28,13 @@ func TestEncodeDecodeSignature(t *testing.T) {
 }
 
 func TestEncodeDecodeAttestation(t *testing.T) {
-	domain := gofakeit.Uint32()
-	destination := domain + 1
+	origin := gofakeit.Uint32()
+	destination := origin + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
 	attestKey := types.AttestationKey{
-		Origin:      domain,
+		Origin:      origin,
 		Destination: destination,
 		Nonce:       nonce,
 	}
@@ -44,7 +44,7 @@ func TestEncodeDecodeAttestation(t *testing.T) {
 	decodedAttestation, err := types.DecodeAttestation(formattedData)
 	Nil(t, err)
 
-	Equal(t, decodedAttestation.Origin(), domain)
+	Equal(t, decodedAttestation.Origin(), origin)
 	Equal(t, decodedAttestation.Nonce(), nonce)
 
 	rawRoot := decodedAttestation.Root()
@@ -148,20 +148,20 @@ func TestNewMessageEncodeDecode(t *testing.T) {
 }
 
 func TestHeaderEncodeDecode(t *testing.T) {
-	domain := gofakeit.Uint32()
+	origin := gofakeit.Uint32()
 	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	nonce := gofakeit.Uint32()
 	destination := gofakeit.Uint32()
 	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	optimisticSeconds := gofakeit.Uint32()
 
-	ogHeader, err := types.EncodeHeader(types.NewHeader(domain, sender, nonce, destination, recipient, optimisticSeconds))
+	ogHeader, err := types.EncodeHeader(types.NewHeader(origin, sender, nonce, destination, recipient, optimisticSeconds))
 	Nil(t, err)
 
 	decodedHeader, err := types.DecodeHeader(ogHeader)
 	Nil(t, err)
 
-	Equal(t, decodedHeader.OriginDomain(), domain)
+	Equal(t, decodedHeader.OriginDomain(), origin)
 	Equal(t, decodedHeader.Sender(), sender)
 	Equal(t, decodedHeader.Nonce(), nonce)
 	Equal(t, decodedHeader.DestinationDomain(), destination)

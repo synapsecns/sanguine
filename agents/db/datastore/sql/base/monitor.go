@@ -36,10 +36,10 @@ func (s Store) StoreDispatchMessage(ctx context.Context, message types.Message) 
 func (s Store) StoreAcceptedAttestation(ctx context.Context, attestation types.Attestation) error {
 	root := attestation.Root()
 	dxTx := s.DB().WithContext(ctx).Create(&AcceptedAttestation{
-		AAOriginDomain:      attestation.Origin(),
-		AADestinationDomain: attestation.Destination(),
-		AANonce:             attestation.Nonce(),
-		AARoot:              "0x" + hex.EncodeToString(root[:]),
+		AAOrigin:      attestation.Origin(),
+		AADestination: attestation.Destination(),
+		AANonce:       attestation.Nonce(),
+		AARoot:        "0x" + hex.EncodeToString(root[:]),
 	})
 	if dxTx.Error != nil {
 		return fmt.Errorf("could not insert accepted attestation: %w", dxTx.Error)

@@ -37,12 +37,12 @@ func (a AttestationCollectorSuite) TestAttestationCollectorSuite() {
 	a.testBackendOrigin.WaitForConfirmation(a.GetTestContext(), tx)
 
 	// Create an attestation
-	localDomain := uint32(a.testBackendOrigin.ChainConfig().ChainID.Uint64())
-	destination := localDomain + 1
+	origin := uint32(a.testBackendOrigin.ChainConfig().ChainID.Uint64())
+	destination := uint32(a.testBackendDestination.GetChainID())
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	attestKey := types.AttestationKey{
-		Origin:      localDomain,
+		Origin:      origin,
 		Destination: destination,
 		Nonce:       nonce,
 	}
