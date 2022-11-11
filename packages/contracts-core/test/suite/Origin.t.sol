@@ -93,13 +93,6 @@ contract OriginTest is OriginTools {
         origin.setNotaryManager(attacker);
     }
 
-    function test_onlySystemRouter_revert_rejectOthers() public {
-        OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        vm.expectRevert("!systemRouter");
-        vm.prank(owner);
-        origin.setSensitiveValue(1337, 0, 0, 0);
-    }
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       TESTS: RESTRICTED ACCESS                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -119,16 +112,6 @@ contract OriginTest is OriginTools {
         vm.prank(owner);
         origin.setNotaryManager(address(origin));
         assertEq(address(origin.notaryManager()), address(origin), "Failed to set notaryManager");
-    }
-
-    function test_onlySystemRouter() public {
-        OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        SystemRouterHarness systemRouter = suiteSystemRouter(DOMAIN_LOCAL);
-        vm.expectEmit(true, true, true, true);
-        emit LogSystemCall(1, 2, 3);
-        vm.prank(address(systemRouter));
-        origin.setSensitiveValue(1337, 1, 2, 3);
-        assertEq(origin.sensitiveValue(), 1337);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
