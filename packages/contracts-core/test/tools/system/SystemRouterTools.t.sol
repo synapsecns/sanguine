@@ -5,6 +5,8 @@ import "../DestinationTools.t.sol";
 import "../../../contracts/interfaces/ISystemRouter.sol";
 
 abstract contract SystemRouterTools is DestinationTools {
+    using ByteString for bytes;
+
     // domain => (list of all domain's system contracts)
     mapping(uint32 => address[]) internal systemContracts;
 
@@ -129,16 +131,14 @@ abstract contract SystemRouterTools is DestinationTools {
         formattedSystemCalls = new bytes[](amount);
         for (uint256 i = 0; i < amount; ++i) {
             // Reconstruct payload created by System Router.
-            // It appends two parameters to the passed calldata:
+            // It prepends two parameters to the passed calldata arguments:
             // Domain of origin chain, and system entity that sent the message
-            bytes memory payload = abi.encodePacked(
-                systemCallDataArray[i],
-                abi.encode(systemCallOrigin, systemCallSender)
-            );
+            bytes memory prefix = abi.encode(systemCallOrigin, systemCallSender);
             // Save formatted system call
-            formattedSystemCalls[i] = SystemCall.formatSystemCall({
+            formattedSystemCalls[i] = SystemCall.formatPrefixedSystemCall({
                 _systemRecipient: uint8(systemCallRecipients[i]),
-                _payload: payload
+                _payload: systemCallDataArray[i].castToCallPayload(),
+                _prefix: prefix.castToRawBytes()
             });
         }
     }
