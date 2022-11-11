@@ -1,7 +1,7 @@
 package graph
 
 import (
-	"github.com/synapsecns/sanguine/services/explorer/consumer"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 )
 
@@ -14,5 +14,5 @@ import (
 //go:generate go run github.com/synapsecns/sanguine/services/explorer/graphql/contrib
 type Resolver struct {
 	DB      db.ConsumerDB
-	Fetcher consumer.Fetcher
+	Fetcher fetcher.ScribeFetcher
 }
