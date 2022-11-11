@@ -8,9 +8,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/services/explorer/backfill"
 	"github.com/synapsecns/sanguine/services/explorer/config"
-	"github.com/synapsecns/sanguine/services/explorer/consumer"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/backfill"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
+	parserpkg "github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
@@ -259,28 +261,28 @@ func (b *BackfillSuite) TestBackfill() {
 	}
 
 	// Set up a ChainBackfiller
-	bcf, err := consumer.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
+	bcf, err := fetcher.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
-	bp, err := consumer.NewBridgeParser(b.db, bridgeContract.Address(), *bcf, b.consumerFetcher)
+	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), *bcf, b.consumerFetcher)
 	Nil(b.T(), err)
-	bpv1, err := consumer.NewBridgeParser(b.db, bridgeV1Contract.Address(), *bcf, b.consumerFetcher)
-	Nil(b.T(), err)
-
-	// srB is the swap ref for getting token data
-	srA, err := consumer.NewSwapFetcher(swapContractA.Address(), b.testBackend)
-	Nil(b.T(), err)
-	spA, err := consumer.NewSwapParser(b.db, swapContractA.Address(), *srA, b.consumerFetcher)
+	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), *bcf, b.consumerFetcher)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
-	srB, err := consumer.NewSwapFetcher(swapContractB.Address(), b.testBackend)
+	srA, err := fetcher.NewSwapFetcher(swapContractA.Address(), b.testBackend)
 	Nil(b.T(), err)
-	spB, err := consumer.NewSwapParser(b.db, swapContractB.Address(), *srB, b.consumerFetcher)
+	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), *srA, b.consumerFetcher)
 	Nil(b.T(), err)
-	spMap := map[common.Address]*consumer.SwapParser{}
+
+	// srB is the swap ref for getting token data
+	srB, err := fetcher.NewSwapFetcher(swapContractB.Address(), b.testBackend)
+	Nil(b.T(), err)
+	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), *srB, b.consumerFetcher)
+	Nil(b.T(), err)
+	spMap := map[common.Address]*parser.SwapParser{}
 	spMap[swapContractA.Address()] = spA
 	spMap[swapContractB.Address()] = spB
-	f := consumer.NewFetcher(b.gqlClient)
+	f := fetcher.NewFetcher(b.gqlClient)
 
 	// Test the first chain in the config file
 	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, *f, chainConfigs[0])
@@ -388,7 +390,7 @@ func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, bloc
 }
 
 //nolint:dupl
-func (b *BackfillSuite) depositParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
+func (b *BackfillSuite) depositParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
 	if useV1 {
 		parsedLog, err := parser.FiltererV1.ParseTokenDeposit(*log)
@@ -451,7 +453,7 @@ func (b *BackfillSuite) depositParity(log *types.Log, parser *consumer.BridgePar
 }
 
 //nolint:dupl
-func (b *BackfillSuite) redeemParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
+func (b *BackfillSuite) redeemParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
 	if useV1 {
 		parsedLog, err := parser.FiltererV1.ParseTokenRedeem(*log)
@@ -512,7 +514,7 @@ func (b *BackfillSuite) redeemParity(log *types.Log, parser *consumer.BridgePars
 }
 
 //nolint:dupl
-func (b *BackfillSuite) withdrawParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
+func (b *BackfillSuite) withdrawParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
 	if useV1 {
 		parsedLog, err := parser.FiltererV1.ParseTokenWithdraw(*log)
@@ -583,7 +585,7 @@ func (b *BackfillSuite) withdrawParity(log *types.Log, parser *consumer.BridgePa
 }
 
 //nolint:dupl
-func (b *BackfillSuite) mintParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
+func (b *BackfillSuite) mintParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
 	if useV1 {
 		parsedLog, err := parser.Filterer.ParseTokenMint(*log)
@@ -654,7 +656,7 @@ func (b *BackfillSuite) mintParity(log *types.Log, parser *consumer.BridgeParser
 }
 
 //nolint:dupl
-func (b *BackfillSuite) depositAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
+func (b *BackfillSuite) depositAndSwapParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
 	if useV1 {
 		parsedLog, err := parser.Filterer.ParseTokenDepositAndSwap(*log)
@@ -721,7 +723,7 @@ func (b *BackfillSuite) depositAndSwapParity(log *types.Log, parser *consumer.Br
 }
 
 //nolint:dupl
-func (b *BackfillSuite) redeemAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
+func (b *BackfillSuite) redeemAndSwapParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
 	if useV1 {
 		parsedLog, err := parser.Filterer.ParseTokenRedeemAndSwap(*log)
@@ -788,7 +790,7 @@ func (b *BackfillSuite) redeemAndSwapParity(log *types.Log, parser *consumer.Bri
 }
 
 //nolint:dupl
-func (b *BackfillSuite) redeemAndRemoveParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
+func (b *BackfillSuite) redeemAndRemoveParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
 	if useV1 {
 		parsedLog, err := parser.Filterer.ParseTokenRedeemAndRemove(*log)
@@ -853,7 +855,7 @@ func (b *BackfillSuite) redeemAndRemoveParity(log *types.Log, parser *consumer.B
 }
 
 //nolint:dupl
-func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
+func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
 	if useV1 {
 		parsedLog, err := parser.Filterer.ParseTokenMintAndSwap(*log)
@@ -885,7 +887,7 @@ func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.Bridg
 				TokenIndexTo:   big.NewInt(int64(parsedLog.TokenIndexTo)),
 				MinDy:          parsedLog.MinDy,
 				Deadline:       parsedLog.Deadline,
-				SwapSuccess:    big.NewInt(int64(*consumer.BoolToUint8(&parsedLog.SwapSuccess))),
+				SwapSuccess:    big.NewInt(int64(*parserpkg.BoolToUint8(&parsedLog.SwapSuccess))),
 				Kappa:          kappa,
 			}).Count(&count)
 		if events.Error != nil {
@@ -923,7 +925,7 @@ func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.Bridg
 			TokenIndexTo:   big.NewInt(int64(parsedLog.TokenIndexTo)),
 			MinDy:          parsedLog.MinDy,
 			Deadline:       parsedLog.Deadline,
-			SwapSuccess:    big.NewInt(int64(*consumer.BoolToUint8(&parsedLog.SwapSuccess))),
+			SwapSuccess:    big.NewInt(int64(*parserpkg.BoolToUint8(&parsedLog.SwapSuccess))),
 			Kappa:          kappa,
 		}).Count(&count)
 	if events.Error != nil {
@@ -934,7 +936,7 @@ func (b *BackfillSuite) mintAndSwapParity(log *types.Log, parser *consumer.Bridg
 }
 
 //nolint:dupl
-func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer.BridgeParser, chainID uint32, useV1 bool) error {
+func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
 	if useV1 {
 		parsedLog, err := parser.Filterer.ParseTokenWithdrawAndRemove(*log)
@@ -964,7 +966,7 @@ func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer
 				SwapTokenIndex: big.NewInt(int64(parsedLog.SwapTokenIndex)),
 				SwapMinAmount:  parsedLog.SwapMinAmount,
 				SwapDeadline:   parsedLog.SwapDeadline,
-				SwapSuccess:    big.NewInt(int64(*consumer.BoolToUint8(&parsedLog.SwapSuccess))),
+				SwapSuccess:    big.NewInt(int64(*parserpkg.BoolToUint8(&parsedLog.SwapSuccess))),
 				Kappa:          kappa,
 			}).Count(&count)
 		if events.Error != nil {
@@ -1000,7 +1002,7 @@ func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer
 			SwapTokenIndex: big.NewInt(int64(parsedLog.SwapTokenIndex)),
 			SwapMinAmount:  parsedLog.SwapMinAmount,
 			SwapDeadline:   parsedLog.SwapDeadline,
-			SwapSuccess:    big.NewInt(int64(*consumer.BoolToUint8(&parsedLog.SwapSuccess))),
+			SwapSuccess:    big.NewInt(int64(*parserpkg.BoolToUint8(&parsedLog.SwapSuccess))),
 			Kappa:          kappa,
 		}).Count(&count)
 	if events.Error != nil {
@@ -1011,7 +1013,7 @@ func (b *BackfillSuite) withdrawAndRemoveParity(log *types.Log, parser *consumer
 }
 
 //nolint:dupl
-func (b *BackfillSuite) redeemV2Parity(log *types.Log, parser *consumer.BridgeParser, chainID uint32) error {
+func (b *BackfillSuite) redeemV2Parity(log *types.Log, parser *parser.BridgeParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseTokenRedeemV2(*log)
 	if err != nil {
@@ -1044,7 +1046,7 @@ func (b *BackfillSuite) redeemV2Parity(log *types.Log, parser *consumer.BridgePa
 }
 
 //nolint:dupl
-func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+func (b *BackfillSuite) swapParity(log *types.Log, parser *parser.SwapParser, chainID uint32) error {
 	// parse the log
 
 	parsedLog, err := parser.Filterer.ParseTokenSwap(*log)
@@ -1079,7 +1081,7 @@ func (b *BackfillSuite) swapParity(log *types.Log, parser *consumer.SwapParser, 
 }
 
 //nolint:dupl
-func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *parser.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseAddLiquidity(*log)
 	if err != nil {
@@ -1115,7 +1117,7 @@ func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *consumer.Swap
 }
 
 //nolint:dupl
-func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *parser.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseRemoveLiquidity(*log)
 	if err != nil {
@@ -1152,7 +1154,7 @@ func (b *BackfillSuite) removeLiquidityParity(log *types.Log, parser *consumer.S
 }
 
 //nolint:dupl
-func (b *BackfillSuite) removeLiquidityOneParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+func (b *BackfillSuite) removeLiquidityOneParity(log *types.Log, parser *parser.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseRemoveLiquidityOne(*log)
 	if err != nil {
@@ -1186,7 +1188,7 @@ func (b *BackfillSuite) removeLiquidityOneParity(log *types.Log, parser *consume
 }
 
 //nolint:dupl
-func (b *BackfillSuite) removeLiquidityImbalanceParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+func (b *BackfillSuite) removeLiquidityImbalanceParity(log *types.Log, parser *parser.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseRemoveLiquidityImbalance(*log)
 	if err != nil {
@@ -1222,7 +1224,7 @@ func (b *BackfillSuite) removeLiquidityImbalanceParity(log *types.Log, parser *c
 }
 
 //nolint:dupl
-func (b *BackfillSuite) newAdminFeeParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+func (b *BackfillSuite) newAdminFeeParity(log *types.Log, parser *parser.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseNewAdminFee(*log)
 	if err != nil {
@@ -1248,7 +1250,7 @@ func (b *BackfillSuite) newAdminFeeParity(log *types.Log, parser *consumer.SwapP
 }
 
 //nolint:dupl
-func (b *BackfillSuite) newSwapFeeParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+func (b *BackfillSuite) newSwapFeeParity(log *types.Log, parser *parser.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseNewSwapFee(*log)
 	if err != nil {
@@ -1274,7 +1276,7 @@ func (b *BackfillSuite) newSwapFeeParity(log *types.Log, parser *consumer.SwapPa
 }
 
 //nolint:dupl
-func (b *BackfillSuite) rampAParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+func (b *BackfillSuite) rampAParity(log *types.Log, parser *parser.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseRampA(*log)
 	if err != nil {
@@ -1303,7 +1305,7 @@ func (b *BackfillSuite) rampAParity(log *types.Log, parser *consumer.SwapParser,
 }
 
 //nolint:dupl
-func (b *BackfillSuite) stopRampAParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+func (b *BackfillSuite) stopRampAParity(log *types.Log, parser *parser.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseStopRampA(*log)
 	if err != nil {
@@ -1330,7 +1332,7 @@ func (b *BackfillSuite) stopRampAParity(log *types.Log, parser *consumer.SwapPar
 }
 
 //nolint:dupl
-func (b *BackfillSuite) flashLoanParity(log *types.Log, parser *consumer.SwapParser, chainID uint32) error {
+func (b *BackfillSuite) flashLoanParity(log *types.Log, parser *parser.SwapParser, chainID uint32) error {
 	// parse the log
 	parsedLog, err := parser.Filterer.ParseFlashLoan(*log)
 	if err != nil {

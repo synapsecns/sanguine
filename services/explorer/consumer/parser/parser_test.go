@@ -1,7 +1,7 @@
-package consumer_test
+package parser_test
 
 import (
-	"github.com/synapsecns/sanguine/services/explorer/consumer"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
@@ -10,16 +10,16 @@ import (
 func TestBoolToUint8(t *testing.T) {
 	inputTrue := true
 	inputFalse := false
-	checkTrue := consumer.BoolToUint8(&inputTrue)
-	checkFalse := consumer.BoolToUint8(&inputFalse)
+	checkTrue := parser.BoolToUint8(&inputTrue)
+	checkFalse := parser.BoolToUint8(&inputFalse)
 	Equal(t, uint8(1), *checkTrue)
 	Equal(t, uint8(0), *checkFalse)
 }
 
 func TestToNullString(t *testing.T) {
 	inputValid := "TEST_STRING"
-	checkValid := consumer.ToNullString(&inputValid)
-	checkInvalid := consumer.ToNullString(nil)
+	checkValid := parser.ToNullString(&inputValid)
+	checkInvalid := parser.ToNullString(nil)
 	Equal(t, inputValid, checkValid.String)
 	True(t, checkValid.Valid)
 	Equal(t, "", checkInvalid.String)
