@@ -129,12 +129,17 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 			switch err.Error() {
 			// txNotFoundError handles a null return from omnirpc, re-queries with a client with >1 confirmations.
 			case txNotFoundError:
-				// Try with client with additional confirmations.
-				receipt, err = c.client[1].TransactionReceipt(ctx, log.TxHash)
+				// Try with client(s) with additional confirmations.
+				for i := range c.client[1:] {
+					client := c.client[i]
+					receipt, err = client.TransactionReceipt(ctx, log.TxHash)
+					if err == nil {
+						break
+					}
+				}
 				if err != nil {
 					return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 				}
-
 			default:
 				return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 			}
@@ -200,10 +205,17 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 
 			// txNotFoundError handles a null return from omnirpc, re-queries with a client with >1 confirmations.
 			case txNotFoundError:
-				LogEvent(WarnLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
-				txn, isPending, err = c.client[1].TransactionByHash(groupCtx, log.TxHash)
+				LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+				// Try with client(s) with additional confirmations.
+				for i := range c.client[1:] {
+					client := c.client[i]
+					txn, isPending, err = client.TransactionByHash(groupCtx, log.TxHash)
+					if err == nil {
+						break
+					}
+				}
 				if err != nil {
-					return fmt.Errorf("could not get transaction by hash with extra client: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+					return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 				}
 
 			default:

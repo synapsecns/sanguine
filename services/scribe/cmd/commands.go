@@ -64,6 +64,7 @@ var pathFlag = &cli.StringFlag{
 }
 
 func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, scribeConfig config.Config, err error) {
+	maxConfs := 3
 	scribeConfig, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
 		return nil, nil, scribeConfig, fmt.Errorf("could not decode config: %w", err)
@@ -76,16 +77,13 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 
 	clients = make(map[uint32][]backfill.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
-		backendClient, err := ethclient.DialContext(c.Context, fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
-		if err != nil {
-			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
+		for confNum := 1; confNum <= maxConfs; confNum++ {
+			backendClient, err := ethclient.DialContext(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID))
+			if err != nil {
+				return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
+			}
+			clients[client.ChainID] = append(clients[client.ChainID], backendClient)
 		}
-		backendClientWConfirmations, err := ethclient.DialContext(c.Context, fmt.Sprintf("%s/2/rpc/%d", scribeConfig.RPCURL, client.ChainID))
-		if err != nil {
-			return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/4/rpc/%d", scribeConfig.RPCURL, client.ChainID))
-		}
-		clients[client.ChainID] = append(clients[client.ChainID], backendClient)
-		clients[client.ChainID] = append(clients[client.ChainID], backendClientWConfirmations)
 	}
 
 	return eventDB, clients, scribeConfig, nil
