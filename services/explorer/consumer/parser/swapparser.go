@@ -12,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -40,8 +39,7 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFet
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
-	pwd, _ := os.Getwd()
-	symbolPath := pwd + filepath.Clean("/static/tokenIDToCoinGeckoID.yaml")
+	symbolPath := filepath.Clean("../../static/tokenIDToCoinGeckoID.yaml")
 	symbolCoinGeckoIDs, err := OpenYaml(symbolPath)
 
 	if err != nil {

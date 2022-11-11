@@ -14,7 +14,6 @@ import (
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"math/big"
-	"os"
 	"path/filepath"
 	"time"
 )
@@ -49,8 +48,7 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bri
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridgev1.SynapseBridgeFilterer{}, err)
 	}
-	pwd, _ := os.Getwd()
-	idPath := pwd + filepath.Clean("/static/tokenIDToCoinGeckoID.yaml")
+	idPath := filepath.Clean("../../static/tokenIDToCoinGeckoID.yaml")
 	idCoinGeckoIDs, err := OpenYaml(idPath)
 
 	if err != nil {
