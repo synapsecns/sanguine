@@ -8,7 +8,8 @@ import (
 )
 
 func TestOpenYaml(t *testing.T) {
-	path, _ := filepath.Abs("../../static/tokenIDToCoinGeckoID.yaml")
+	path, err := filepath.Abs("../../static/tokenIDToCoinGeckoID.yaml")
+	Nil(t, err)
 	parsedYaml, err := parser.OpenYaml(path)
 	Nil(t, err)
 	NotNil(t, parsedYaml)
