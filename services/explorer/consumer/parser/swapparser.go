@@ -39,7 +39,7 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFet
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
-	symbolPath := filepath.Clean("../../static/tokenIDToCoinGeckoID.yaml")
+	symbolPath, err := filepath.Abs("../static/tokenIDToCoinGeckoID.yaml")
 	symbolCoinGeckoIDs, err := OpenYaml(symbolPath)
 
 	if err != nil {
