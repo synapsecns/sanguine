@@ -5,6 +5,7 @@ import { SynapseTypes } from "./SynapseTypes.sol";
 import { TypedMemView } from "./TypedMemView.sol";
 
 library ByteString {
+    using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
     // @dev non-compact ECDSA signatures are enforced as of OZ 4.7.3
@@ -19,6 +20,8 @@ library ByteString {
      * [AAA .. END) argN        bytes32 32 bytes
      */
     uint256 internal constant SELECTOR_LENGTH = 4;
+    uint256 internal constant OFFSET_SELECTOR = 0;
+    uint256 internal constant OFFSET_ARGUMENTS = SELECTOR_LENGTH;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -34,10 +37,31 @@ library ByteString {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
+     * @notice Returns a properly typed bytes29 pointer for a raw bytes payload.
+     */
+    function castToRawBytes(bytes memory _payload) internal pure returns (bytes29) {
+        return _payload.ref(SynapseTypes.RAW_BYTES);
+    }
+
+    /**
+     * @notice Returns a properly typed bytes29 pointer for a signature payload.
+     */
+    function castToSignature(bytes memory _payload) internal pure returns (bytes29) {
+        return _payload.ref(SynapseTypes.SIGNATURE);
+    }
+
+    /**
      * @notice Checks that a byte string is a signature
      */
     function isSignature(bytes29 _view) internal pure returns (bool) {
         return _view.len() == SIGNATURE_LENGTH;
+    }
+
+    /**
+     * @notice Returns a properly typed bytes29 pointer for a call payload.
+     */
+    function castToCallPayload(bytes memory _payload) internal pure returns (bytes29) {
+        return _payload.ref(SynapseTypes.CALL_PAYLOAD);
     }
 
     /**
@@ -73,5 +97,30 @@ library ByteString {
     {
         // Equivalent of (length - SELECTOR_LENGTH) / 32
         return (_view.len() - SELECTOR_LENGTH) >> 5;
+    }
+
+    /// @notice Returns selector for the provided call payload.
+    function callSelector(bytes29 _view)
+        internal
+        pure
+        onlyType(_view, SynapseTypes.CALL_PAYLOAD)
+        returns (bytes29)
+    {
+        return
+            _view.slice({
+                _index: OFFSET_SELECTOR,
+                _len: SELECTOR_LENGTH,
+                newType: SynapseTypes.RAW_BYTES
+            });
+    }
+
+    /// @notice Returns abi encoded arguments for the provided call payload.
+    function argumentsPayload(bytes29 _view)
+        internal
+        pure
+        onlyType(_view, SynapseTypes.CALL_PAYLOAD)
+        returns (bytes29)
+    {
+        return _view.sliceFrom({ _index: OFFSET_ARGUMENTS, newType: SynapseTypes.RAW_BYTES });
     }
 }
