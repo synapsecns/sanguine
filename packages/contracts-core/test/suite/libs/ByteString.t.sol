@@ -3,11 +3,12 @@ pragma solidity 0.8.17;
 
 import "../../utils/SynapseLibraryTest.t.sol";
 import "../../harnesses/libs/ByteStringHarness.t.sol";
+import "../../tools/libs/ByteStringTools.t.sol";
 
 import "../../../contracts/libs/ByteString.sol";
 
 // solhint-disable func-name-mixedcase
-contract ByteStringLibraryTest is SynapseLibraryTest {
+contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
     using TypedMemView for bytes;
 
     ByteStringHarness internal libHarness;
@@ -23,25 +24,17 @@ contract ByteStringLibraryTest is SynapseLibraryTest {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           TESTS: CONSTANTS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_selectorLength() public {
-        assertEq(libHarness.selectorLength(), selector.length, "!selectorLength");
-    }
-
-    function test_signatureLength() public {
-        bytes memory signature = signMessage({ privKey: 1, message: "" });
-        assertEq(libHarness.signatureLength(), signature.length, "!signatureLength");
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          TESTS: FORMATTING                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_callPayloadFormattedCorrectly(uint8 words) public {
-        bytes memory data = createTestPayload(words);
+    function test_formattedCorrectly_callPayload(uint8 words) public {
+        // Set a sensible limit for the total payload length
+        vm.assume(uint256(words) * 32 <= MAX_MESSAGE_BODY_BYTES);
+        bytes memory arguments = createTestArguments(words, "seed");
+        bytes memory data = abi.encodePacked(selector, arguments);
         require(data.length == selector.length + 32 * uint256(words), "!length");
+        // Test related constants
+        assertEq(libHarness.selectorLength(), selector.length, "!selectorLength");
         // Test formatting checker
         assertTrue(libHarness.isCallPayload(data), "!isCallPayload");
         // Test getters
@@ -50,11 +43,61 @@ contract ByteStringLibraryTest is SynapseLibraryTest {
             words,
             "!argumentWords"
         );
+        // Test bytes29 getters
+        checkBytes29Getter({
+            getter: libHarness.castToCallPayload,
+            payloadType: SynapseTypes.CALL_PAYLOAD,
+            payload: data,
+            expectedType: SynapseTypes.CALL_PAYLOAD,
+            expectedData: data,
+            revertMessage: "!castToCallPayload"
+        });
+        checkBytes29Getter({
+            getter: libHarness.callSelector,
+            payloadType: SynapseTypes.CALL_PAYLOAD,
+            payload: data,
+            expectedType: SynapseTypes.RAW_BYTES,
+            expectedData: bytes.concat(selector),
+            revertMessage: "!callSelector"
+        });
+        checkBytes29Getter({
+            getter: libHarness.argumentsPayload,
+            payloadType: SynapseTypes.CALL_PAYLOAD,
+            payload: data,
+            expectedType: SynapseTypes.RAW_BYTES,
+            expectedData: arguments,
+            revertMessage: "!argumentsPayload"
+        });
     }
 
-    function test_isSignature() public {
-        bytes memory signatureMock = new bytes(libHarness.signatureLength());
-        assertTrue(libHarness.isSignature(signatureMock), "!isSignature: correct length");
+    function test_formattedCorrectly_signature() public {
+        bytes memory signature = signMessage({ privKey: 1, message: "" });
+        // Test related constants
+        assertEq(libHarness.signatureLength(), signature.length, "!signatureLength");
+        // Test formatting checker
+        assertTrue(libHarness.isSignature(signature), "!isSignature");
+        // Test bytes29 getters
+        checkBytes29Getter({
+            getter: libHarness.castToSignature,
+            payloadType: SynapseTypes.SIGNATURE,
+            payload: signature,
+            expectedType: SynapseTypes.SIGNATURE,
+            expectedData: signature,
+            revertMessage: "!castToSignature"
+        });
+    }
+
+    function test_formattedCorrectly_rawBytes() public {
+        bytes memory payload = "test payload";
+        // Test bytes29 getters
+        checkBytes29Getter({
+            getter: libHarness.castToRawBytes,
+            payloadType: SynapseTypes.RAW_BYTES,
+            payload: payload,
+            expectedType: SynapseTypes.RAW_BYTES,
+            expectedData: payload,
+            revertMessage: "!castToRawBytes"
+        });
     }
 
     function test_isSignature_incorrectLength(uint16 length) public {
@@ -118,9 +161,21 @@ contract ByteStringLibraryTest is SynapseLibraryTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_wrongTypeRevert_argumentWords(uint40 wrongType) public {
-        bytes memory payload = createTestPayload(0);
+        bytes memory payload = bytes.concat(selector);
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.CALL_PAYLOAD });
         libHarness.argumentWords(wrongType, payload);
+    }
+
+    function test_wrongTypeRevert_callSelector(uint40 wrongType) public {
+        bytes memory payload = bytes.concat(selector);
+        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.CALL_PAYLOAD });
+        libHarness.callSelector(wrongType, payload);
+    }
+
+    function test_wrongTypeRevert_argumentsPayload(uint40 wrongType) public {
+        bytes memory payload = bytes.concat(selector);
+        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.CALL_PAYLOAD });
+        libHarness.argumentsPayload(wrongType, payload);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -132,19 +187,5 @@ contract ByteStringLibraryTest is SynapseLibraryTest {
         bytes memory payloadMock = bytes.concat(_payload, new bytes(extraBytes));
         bool isCallPayload = extraBytes % 32 == 0;
         assertEq(libHarness.isCallPayload(payloadMock), isCallPayload, _revertMessage);
-    }
-
-    function createTestPayload(uint8 words) public view returns (bytes memory) {
-        return abi.encodePacked(selector, createTestArguments(words));
-    }
-
-    function createTestArguments(uint8 words) public pure returns (bytes memory) {
-        bytes32[] memory arguments = new bytes32[](words);
-        bytes32 randomData = keccak256("very random seed");
-        for (uint256 i = 0; i < words; ++i) {
-            arguments[i] = randomData;
-            randomData = keccak256(abi.encode(randomData));
-        }
-        return abi.encodePacked(arguments);
     }
 }
