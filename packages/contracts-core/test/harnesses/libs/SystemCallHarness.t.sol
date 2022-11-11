@@ -2,6 +2,7 @@
 
 pragma solidity 0.8.17;
 
+import { SynapseTypes } from "../../../contracts/libs/SynapseTypes.sol";
 import { SystemCall } from "../../../contracts/libs/SystemCall.sol";
 import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
 
@@ -13,6 +14,36 @@ contract SystemCallHarness {
     using SystemCall for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              FORMATTERS                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function formatPrefixedSystemCall(
+        uint8 _systemRecipient,
+        uint40 _type,
+        bytes memory _payload,
+        bytes memory _prefix
+    ) public view returns (bytes memory) {
+        return
+            SystemCall.formatPrefixedSystemCall(
+                _systemRecipient,
+                _payload.ref(_type),
+                _prefix.ref(SynapseTypes.RAW_BYTES)
+            );
+    }
+
+    function formatPrefixedCallPayload(
+        uint40 _type,
+        bytes memory _payload,
+        bytes memory _prefix
+    ) public view returns (bytes memory) {
+        return
+            SystemCall.formatPrefixedCallPayload(
+                _payload.ref(_type),
+                _prefix.ref(SynapseTypes.RAW_BYTES)
+            );
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               GETTERS                                ║*▕

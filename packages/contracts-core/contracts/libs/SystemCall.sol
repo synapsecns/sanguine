@@ -51,6 +51,48 @@ library SystemCall {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
+     * @notice Returns a formatted System Call payload with provided fields.
+     * See: formatPrefixedCallPayload() for more details.
+     * @param _systemRecipient  System Contract to receive message
+     *                          (see ISystemRouter.SystemEntity)
+     * @param _payload          Memory view over call payload where arguments need to be prepended
+     * @param _prefix           abi encoded arguments to add to the call payload
+     * @return Formatted System Call payload.
+     */
+    function formatPrefixedSystemCall(
+        uint8 _systemRecipient,
+        bytes29 _payload,
+        bytes29 _prefix
+    ) internal view returns (bytes memory) {
+        bytes29[] memory views = new bytes29[](4);
+        views[0] = abi.encodePacked(_systemRecipient).ref(SynapseTypes.RAW_BYTES);
+        views[1] = _payload.callSelector();
+        views[2] = _prefix;
+        views[3] = _payload.argumentsPayload();
+        return TypedMemView.join(views);
+    }
+
+    /**
+     * @notice Constructs the call payload with extra arguments added BEFORE existing arguments.
+     * @dev Old call payload has structure: [selector, arguments]
+     * New call payload will be formatted : [selector, prefix, arguments]
+     * @param _payload  Memory view over call payload where arguments need to be prepended
+     * @param _prefix   abi encoded arguments to add to the call payload
+     * @return New call payload with prepended arguments
+     */
+    function formatPrefixedCallPayload(bytes29 _payload, bytes29 _prefix)
+        internal
+        view
+        returns (bytes memory)
+    {
+        bytes29[] memory views = new bytes29[](3);
+        views[0] = _payload.callSelector();
+        views[1] = _prefix;
+        views[2] = _payload.argumentsPayload();
+        return TypedMemView.join(views);
+    }
+
+    /**
      * @notice Returns a properly typed bytes29 pointer for a system call payload.
      */
     function castToSystemCall(bytes memory _payload) internal pure returns (bytes29) {
