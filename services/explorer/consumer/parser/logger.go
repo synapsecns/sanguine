@@ -2,4 +2,4 @@ package parser
 
 import "github.com/ipfs/go-log"
 
-var logger = log.Logger("synapse-parser")
+var logger = log.Logger("explorer-parser")

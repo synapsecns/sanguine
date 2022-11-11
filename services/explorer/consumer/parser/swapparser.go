@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -28,6 +30,8 @@ type SwapParser struct {
 	consumerFetcher *fetcher.ScribeFetcher
 	// swapFetcher is the fetcher for token data from swaps.
 	swapFetcher fetcher.SwapFetcher
+	// coinGeckoIDs is a mapping from coin token symbol to coin gecko ID
+	coinGeckoIDs map[string]string
 }
 
 // NewSwapParser creates a new parser for a given bridge.
@@ -36,8 +40,15 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFet
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
+	pwd, _ := os.Getwd()
+	symbolPath := pwd + filepath.Clean("/static/tokenIDToCoinGeckoID.yaml")
+	symbolCoinGeckoIDs, err := OpenYaml(symbolPath)
 
-	return &SwapParser{consumerDB, swapAddress, filterer, consumerFetcher, swapFetcher}, nil
+	if err != nil {
+		return nil, fmt.Errorf("could not open yaml file: %w", err)
+	}
+
+	return &SwapParser{consumerDB, swapAddress, filterer, consumerFetcher, swapFetcher, symbolCoinGeckoIDs}, nil
 }
 
 // EventType returns the event type of a swap log.
@@ -228,8 +239,8 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 				if err != nil {
 					return fmt.Errorf("could not get timestamp: %w", err)
 				}
-
-				tokenPrice, _ := consumer.GetTokenMetadataWithTokenSymbol(ctx, *timeStamp.Response, symbol)
+				coinGeckoID := p.coinGeckoIDs[strings.ToLower(*symbol)]
+				tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
 				tokenPrices[tokenIndex] = *tokenPrice
 			}
 

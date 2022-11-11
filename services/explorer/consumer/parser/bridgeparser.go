@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
@@ -15,6 +14,8 @@ import (
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	"math/big"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -32,6 +33,8 @@ type BridgeParser struct {
 	fetcher fetcher.BridgeConfigFetcher
 	// consumerFetcher is the ScribeFetcher for sender and timestamp.
 	consumerFetcher *fetcher.ScribeFetcher
+	// coinGeckoIDs is the mapping of token id to coin gecko ID
+	coinGeckoIDs map[string]string
 }
 
 // NewBridgeParser creates a new parser for a given bridge.
@@ -46,8 +49,15 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bri
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridgev1.SynapseBridgeFilterer{}, err)
 	}
+	pwd, _ := os.Getwd()
+	idPath := pwd + filepath.Clean("/static/tokenIDToCoinGeckoID.yaml")
+	idCoinGeckoIDs, err := OpenYaml(idPath)
 
-	return &BridgeParser{consumerDB, filterer, filtererV1, bridgeAddress, bridgeConfigFetcher, consumerFetcher}, nil
+	if err != nil {
+		return nil, fmt.Errorf("could not open yaml file: %w", err)
+	}
+
+	return &BridgeParser{consumerDB, filterer, filtererV1, bridgeAddress, bridgeConfigFetcher, consumerFetcher, idCoinGeckoIDs}, nil
 }
 
 // EventType returns the event type of a bridge log.
@@ -334,13 +344,16 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	bridgeEvent.TimeStamp = &timeStampBig
 
 	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
-	tokenPrice, symbol := consumer.GetTokenMetadataWithTokenID(ctx, *timeStamp.Response, tokenID)
+	coinGeckoID := p.coinGeckoIDs[*tokenID]
+	tokenPrice, symbol := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
 	if tokenPrice != nil {
 		// Add AmountUSD to bridgeEvent (if price is not nil).
-		bridgeEvent.AmountUSD = consumer.GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
+		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
 
 		// Add FeeAmountUSD to bridgeEvent (if price is not nil).
-		bridgeEvent.FeeAmountUSD = consumer.GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
+		if iFace.GetFee() != nil {
+			bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
+		}
 
 		// Add TokenSymbol to bridgeEvent.
 		bridgeEvent.TokenSymbol = ToNullString(symbol)
