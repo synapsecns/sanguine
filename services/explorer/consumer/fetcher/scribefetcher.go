@@ -110,6 +110,8 @@ func (b *blockRange) EndTime() uint64 {
 	return b.endBlock.time
 }
 
+// TODO Nuke most of this stuff.
+
 // TimeToBlockNumber returns the first block number after the given time.
 //
 //nolint:gocognit,cyclop
