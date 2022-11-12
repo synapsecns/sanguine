@@ -42,13 +42,13 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * to initiate a system call through the system router. However, every system contract that wants
  * to expose one of its external functions for the system calls, should do the following:
  * 1. Such functions should have the same first three arguments:
- * - someFunction(uint32 origin, ISystemRouter.SystemEntity caller, uint256 rootSubmittedAt, <...>)
- * These arguments are filled by System Routers on origin and destination chain. This allows
+ * - someFunction(uint256 rootSubmittedAt, uint32 origin, ISystemRouter.SystemEntity caller, <...>)
+ * These arguments are filled by the System Routers on origin and destination chain. This allows
  * the recipient to set the restrictions for receiving the call in a very granular way.
  * To perform a call, use payload = abi.encodeWithSelector(someFunction.selector, <...>);
  * 2. Guard such function with `onlySystemRouter` modifier to prevent unauthorized direct calls.
  * Guard function with additional modifiers based on `origin`, `caller`, `rootSubmittedAt`.
- * `rootSubmittedAt` based modifier is a must for receiving cross-chain system calls.  Any Notary
+ * `rootSubmittedAt` based modifier is a must for receiving cross-chain system calls. Any Notary
  * can potentially commit fraud, and try to execute an arbitrary message, including
  * a "message to System Router". By enforcing a minimum optimistic latency for the recipient this
  * attack can be militated, assuming there is at least one honest Guard willing to report the fraud.
