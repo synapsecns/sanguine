@@ -5,6 +5,9 @@ import "../../tools/system/SystemRouterTools.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract SystemRouterTest is SystemRouterTools {
+    using TypedMemView for bytes;
+    using TypedMemView for bytes29;
+
     function setUp() public override {
         super.setUp();
         saveSystemContracts();
@@ -86,6 +89,36 @@ contract SystemRouterTest is SystemRouterTools {
         formattedSystemCalls = new bytes[](1);
         // Try passing empty payload as "system call"
         vm.expectRevert("Not a system call");
+        // Mock executing of the message on Destination
+        vm.prank(address(suiteDestination(DOMAIN_LOCAL)));
+        suiteSystemRouter(DOMAIN_LOCAL).handle({
+            _origin: DOMAIN_REMOTE,
+            _nonce: 1,
+            _sender: SystemCall.SYSTEM_ROUTER,
+            _rootSubmittedAt: block.timestamp,
+            _message: abi.encode(formattedSystemCalls)
+        });
+    }
+
+    function test_systemCall_revert_unknownRecipient() public {
+        MessageContext memory context = MessageContext({
+            origin: DOMAIN_REMOTE,
+            sender: address(suiteOrigin(DOMAIN_REMOTE)),
+            destination: DOMAIN_LOCAL
+        });
+        // Create a valid system call payload
+        createSystemCall({ context: context, recipient: address(suiteOrigin(DOMAIN_LOCAL)) });
+        // Change first byte (uint8 recipient) to an invalid value
+        bytes memory systemCall = formattedSystemCalls[0];
+        // First byte is set to value that doesn't match any enum SystemEntity value
+        // All other bytes remain the same
+        formattedSystemCalls[0] = abi.encodePacked(
+            uint8(type(ISystemRouter.SystemEntity).max) + 1,
+            systemCall.ref(0).sliceFrom({ _index: 1, newType: 0 }).clone()
+        );
+        // Sanity check
+        assert(formattedSystemCalls[0].length == systemCall.length);
+        vm.expectRevert("Unknown recipient");
         // Mock executing of the message on Destination
         vm.prank(address(suiteDestination(DOMAIN_LOCAL)));
         suiteSystemRouter(DOMAIN_LOCAL).handle({
