@@ -116,13 +116,8 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 				return nil, err
 			}
 		} else {
-			startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, *chainID, 0, targetTime)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get start block number: %w", err)
-			}
-
 			chainIDFilter = generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
-			blockNumberFilter = fmt.Sprintf("AND %s >= %d", sql.BlockNumberFieldName, startBlock)
+			blockNumberFilter = fmt.Sprintf("AND %s >= %d", sql.InsertTimeFieldName, targetTime)
 		}
 	case model.DurationAllTime:
 		chainIDFilter = generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
@@ -176,12 +171,7 @@ func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, addres
 	var results []*model.TransactionCountResult
 
 	for i := range chainIDs {
-		startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chainIDs[i], 0, targetTime)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get start block number: %w", err)
-		}
-
-		count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(chainIDs[i], address, nil, directionIn, &startBlock))
+		count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(chainIDs[i], address, nil, directionIn, &targetTime))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 		}
@@ -226,13 +216,8 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 	var results []*model.TokenCountResult
 
 	for chain, tokenAddresses := range chainIDsToTokenAddresses {
-		startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chain, 0, targetTime)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get start block number: %w", err)
-		}
-
 		for i := range tokenAddresses {
-			count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(chain, address, &tokenAddresses[i], directionIn, &startBlock))
+			count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(chain, address, &tokenAddresses[i], directionIn, &targetTime))
 			if err != nil {
 				return nil, fmt.Errorf("failed to get count by token address: %w", err)
 			}

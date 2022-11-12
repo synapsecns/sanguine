@@ -264,8 +264,8 @@ func generateSingleSpecifierI32SQL(value *int, field string, firstFilter *bool, 
 	return ""
 }
 
-// generateBlockSpecifierSQL generates a where function with an uint64.
-func generateBlockSpecifierSQL(value *uint64, field string, firstFilter *bool, tablePrefix string) string {
+// generateTimestampSpecifierSQL generates a where function with an uint64.
+func generateTimestampSpecifierSQL(value *uint64, field string, firstFilter *bool, tablePrefix string) string {
 	if value != nil {
 		if *firstFilter {
 			*firstFilter = false
@@ -336,7 +336,7 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 }
 
 // generateBridgeEventCountQuery creates the query for bridge event count.
-func generateBridgeEventCountQuery(chainID int, address *string, tokenAddress *string, directionIn bool, firstBlock *uint64) string {
+func generateBridgeEventCountQuery(chainID int, address *string, tokenAddress *string, directionIn bool, timestamp *uint64) string {
 	chainField := sql.ChainIDFieldName
 
 	if directionIn {
@@ -347,7 +347,7 @@ func generateBridgeEventCountQuery(chainID int, address *string, tokenAddress *s
 	chainIDSpecifier := generateSingleSpecifierI32SQL(&chainID, chainField, &firstFilter, "")
 	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.RecipientFieldName, &firstFilter, "")
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
-	blockSpecifier := generateBlockSpecifierSQL(firstBlock, sql.BlockNumberFieldName, &firstFilter, "")
+	blockSpecifier := generateTimestampSpecifierSQL(timestamp, sql.TimeStampFieldName, &firstFilter, "")
 	query := fmt.Sprintf(`SELECT COUNT(DISTINCT (%s, %s)) FROM bridge_events %s%s%s%s`,
 		sql.TxHashFieldName, sql.EventIndexFieldName, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, blockSpecifier)
 
@@ -362,12 +362,7 @@ func (r *queryResolver) generateSubQuery(ctx context.Context, targetTime uint64,
 	}
 
 	for i, chain := range chainIDs {
-		startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chain, 0, targetTime)
-		if err != nil {
-			return subQuery, fmt.Errorf("failed to get start block number: %w", err)
-		}
-
-		sqlString := fmt.Sprintf("\nSELECT %s, %s, amount_usd FROM bridge_events WHERE %s = %d AND  %s >= %d AND %s", colOne, colTwo, sql.ChainIDFieldName, chain, sql.BlockNumberFieldName, startBlock, deDupInQuery)
+		sqlString := fmt.Sprintf("\nSELECT %s, %s, amount_usd FROM bridge_events WHERE %s = %d AND  %s >= %d AND %s", colOne, colTwo, sql.ChainIDFieldName, chain, sql.TimeStampFieldName, targetTime, deDupInQuery)
 
 		if i != len(chainIDs)-1 {
 			sqlString += " UNION ALL"
