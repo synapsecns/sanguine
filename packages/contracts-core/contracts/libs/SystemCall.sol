@@ -59,7 +59,7 @@ library SystemCall {
      * @param _prefix   abi encoded arguments to use as the first arguments in the adjusted payload
      * @return Formatted System Call payload.
      */
-    function formatAdjustedSystemCall(
+    function formatSystemCall(
         uint8 _systemRecipient,
         bytes29 _payload,
         bytes29 _prefix

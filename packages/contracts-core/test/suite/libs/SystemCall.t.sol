@@ -28,7 +28,7 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
         libHarness = new SystemCallHarness();
     }
 
-    function test_formattedCorrectly_adjusted(
+    function test_formattedCorrectly(
         uint8 recipient,
         uint8 wordsPrefix,
         uint8 wordsFollowing
@@ -54,7 +54,7 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
             "!formatAdjustedCallPayload"
         );
         // Format the system call
-        bytes memory adjustedSystemCall = libHarness.formatAdjustedSystemCall({
+        bytes memory adjustedSystemCall = libHarness.formatSystemCall({
             _systemRecipient: recipient,
             _type: SynapseTypes.CALL_PAYLOAD,
             _payload: payload,
@@ -64,7 +64,7 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
         assertEq(
             adjustedSystemCall,
             abi.encodePacked(recipient, selector, prefixNew, following),
-            "!formatAdjustedSystemCall"
+            "!formatSystemCall"
         );
         // Test getters
         assertEq(
@@ -110,7 +110,7 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
             _prefix: prefix
         });
         vm.expectRevert("Payload too short");
-        libHarness.formatAdjustedSystemCall({
+        libHarness.formatSystemCall({
             _systemRecipient: recipient,
             _type: SynapseTypes.CALL_PAYLOAD,
             _payload: payload,
@@ -182,9 +182,9 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
         });
     }
 
-    function test_wrongTypeRevert_formatAdjustedSystemCall(uint40 wrongType) public {
+    function test_wrongTypeRevert_formatSystemCall(uint40 wrongType) public {
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.CALL_PAYLOAD });
-        libHarness.formatAdjustedSystemCall({
+        libHarness.formatSystemCall({
             _systemRecipient: 0,
             _type: wrongType,
             _payload: TEST_MESSAGE_PAYLOAD,
@@ -218,7 +218,7 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
 
     function createTestPayload() public view returns (bytes memory) {
         return
-            libHarness.formatAdjustedSystemCall({
+            libHarness.formatSystemCall({
                 _systemRecipient: 0,
                 _type: SynapseTypes.CALL_PAYLOAD,
                 _payload: TEST_MESSAGE_PAYLOAD,

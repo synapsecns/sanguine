@@ -342,7 +342,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
             // Performing a remote system multicall
             bytes[] memory systemCalls = new bytes[](amount);
             for (uint256 i = 0; i < amount; ++i) {
-                systemCalls[i] = SystemCall.formatAdjustedSystemCall({
+                systemCalls[i] = SystemCall.formatSystemCall({
                     _systemRecipient: uint8(_recipients[i]),
                     _payload: _callPayloads[i],
                     _prefix: prefix

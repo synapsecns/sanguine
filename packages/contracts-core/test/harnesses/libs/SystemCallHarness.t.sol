@@ -19,14 +19,14 @@ contract SystemCallHarness {
     ▏*║                              FORMATTERS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatAdjustedSystemCall(
+    function formatSystemCall(
         uint8 _systemRecipient,
         uint40 _type,
         bytes memory _payload,
         bytes memory _prefix
     ) public view returns (bytes memory) {
         return
-            SystemCall.formatAdjustedSystemCall(
+            SystemCall.formatSystemCall(
                 _systemRecipient,
                 _payload.ref(_type),
                 _prefix.ref(SynapseTypes.RAW_BYTES)

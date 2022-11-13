@@ -136,7 +136,7 @@ abstract contract SystemRouterTools is DestinationTools {
             // Root timestamp, domain of origin chain, and system entity that sent the message
             bytes memory prefix = abi.encode(block.timestamp, systemCallOrigin, systemCallSender);
             // Save formatted system call
-            formattedSystemCalls[i] = SystemCall.formatAdjustedSystemCall({
+            formattedSystemCalls[i] = SystemCall.formatSystemCall({
                 _systemRecipient: uint8(systemCallRecipients[i]),
                 _payload: systemCallDataArray[i].castToCallPayload(),
                 _prefix: prefix.castToRawBytes()
