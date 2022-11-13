@@ -46,6 +46,20 @@ func ToNullString(str *string) sql.NullString {
 	return newNullStr
 }
 
+// BytesToString is a helper function to convert bytes to a string.
+func HexToString(bytes []byte) *string {
+	var output string
+
+	if bytes != nil {
+		newNullStr.Valid = true
+		newNullStr.String = *str
+	} else {
+		newNullStr.Valid = false
+	}
+
+	return newNullStr
+}
+
 // OpenYaml opens yaml file with coin gecko ID mapping and returns it.
 func OpenYaml(path string) (map[string]string, error) {
 	// nolint:gosec

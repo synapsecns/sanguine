@@ -214,8 +214,8 @@ type LastBlock struct {
 	BlockNumber uint64 `gorm:"column:block_number"`
 }
 
-// MessageEvent stores data for emitted events from the Message contract.
-type MessageEvent struct {
+// MessageBusEvent stores data for emitted events from the message bus contract.
+type MessageBusEvent struct {
 	// InsertTime is the time the event was inserted into the database
 	InsertTime uint64 `gorm:"column:insert_time"`
 	// ContractAddress is the address of the contract that generated the event

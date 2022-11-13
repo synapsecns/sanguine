@@ -13,7 +13,8 @@ import (
 	"time"
 )
 
-type MessageParser struct {
+// MessageBusParser parses messagebus logs.
+type MessageBusParser struct {
 	// consumerDB is the database to store parsed data in
 	consumerDB db.ConsumerDB
 	// Filterer is the message Filterer we use to parse events
@@ -24,17 +25,17 @@ type MessageParser struct {
 	consumerFetcher *fetcher.ScribeFetcher
 }
 
-// NewMessageParser creates a new parser for a given message.
-func NewMessageParser(consumerDB db.ConsumerDB, messageAddress common.Address, consumerFetcher *fetcher.ScribeFetcher) (*MessageParser, error) {
+// NewMessageBusParser creates a new parser for a given message.
+func NewMessageBusParser(consumerDB db.ConsumerDB, messageAddress common.Address, consumerFetcher *fetcher.ScribeFetcher) (*MessageBusParser, error) {
 	filterer, err := messagebus.NewMessageBusUpgradeableFilterer(messageAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", messagebus.MessageBusReceiverUpgradeableFilterer{}, err)
 	}
-	return &MessageParser{consumerDB, filterer, messageAddress, consumerFetcher}, nil
+	return &MessageBusParser{consumerDB, filterer, messageAddress, consumerFetcher}, nil
 }
 
 // EventType returns the event type of a message log.
-func (m *MessageParser) EventType(log ethTypes.Log) (_ messageBusTypes.EventType, ok bool) {
+func (m *MessageBusParser) EventType(log ethTypes.Log) (_ messageBusTypes.EventType, ok bool) {
 	for _, logTopic := range log.Topics {
 		eventType := messagebus.EventTypeFromTopic(logTopic)
 		if eventType == nil {
@@ -47,8 +48,8 @@ func (m *MessageParser) EventType(log ethTypes.Log) (_ messageBusTypes.EventType
 }
 
 // eventToMessageEvent stores a message event.
-func eventToMessageEvent(event messageBusTypes.EventLog, chainID uint32) model.MessageEvent {
-	return model.MessageEvent{
+func eventToMessageEvent(event messageBusTypes.EventLog, chainID uint32) model.MessageBusEvent {
+	return model.MessageBusEvent{
 		InsertTime:      uint64(time.Now().UnixNano()),
 		ContractAddress: event.GetContractAddress().String(),
 		ChainID:         chainID,
@@ -77,7 +78,7 @@ func eventToMessageEvent(event messageBusTypes.EventLog, chainID uint32) model.M
 // ParseAndStore parses the message logs and stores them in the database.
 //
 // nolint:gocognit,cyclop,dupl
-func (m *MessageParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	logTopic := log.Topics[0]
 	iFace, err := func(log ethTypes.Log) (messageBusTypes.EventLog, error) {
 		switch logTopic {
@@ -126,6 +127,6 @@ func (m *MessageParser) ParseAndStore(ctx context.Context, log ethTypes.Log, cha
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
-	
+
 	return nil
 }

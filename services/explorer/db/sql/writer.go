@@ -6,7 +6,7 @@ import (
 )
 
 //// StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
-//func (s *Store) StoreEvent(ctx context.Context, bridgeEvent *BridgeEvent, swapEvent *SwapEvent) error {
+// func (s *Store) StoreEvent(ctx context.Context, bridgeEvent *BridgeEvent, swapEvent *SwapEvent) error {
 //	if bridgeEvent != nil {
 //		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*bridgeEvent)
 //		if dbTx.Error != nil {
@@ -37,7 +37,7 @@ func (s *Store) StoreEvent(ctx context.Context, event interface{}) error {
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store swap event: %w", dbTx.Error)
 		}
-	case *MessageEvent:
+	case *MessageBusEvent:
 		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(conv)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store message event: %w", dbTx.Error)
