@@ -171,6 +171,104 @@ contract SystemRouterTest is SystemRouterTools {
         destinationExecuteAll({ domain: DOMAIN_LOCAL });
     }
 
+    function test_systemCall_local_correctSecurityArgs(
+        uint256 fakeTimestamp,
+        uint32 fakeOrigin,
+        uint8 fakeCaller
+    ) public {
+        bytes4 selector = SystemContractHarness.setSensitiveValue.selector;
+        MessageContext memory context = MessageContext({
+            origin: DOMAIN_LOCAL,
+            sender: address(suiteOrigin(DOMAIN_LOCAL)),
+            destination: DOMAIN_LOCAL
+        });
+        // Create a valid system call payload
+        createSystemCall({ context: context, recipient: address(suiteDestination(DOMAIN_LOCAL)) });
+        // Adjust calldata passed to SystemRouter to feature fake security args
+        systemCallDataArray[0] = abi.encodeWithSelector(
+            selector,
+            fakeTimestamp,
+            fakeOrigin,
+            fakeCaller,
+            _createMockSensitiveValue(0)
+        );
+        // Expect System Router to perform a call with the correct security args
+        vm.expectCall(
+            systemRecipient,
+            abi.encodeWithSelector(
+                selector,
+                block.timestamp,
+                systemCallOrigin,
+                systemCallSender,
+                _createMockSensitiveValue(0)
+            )
+        );
+        systemRouterCall({ index: 0 });
+    }
+
+    function test_systemCall_remote_correctSecurityArgs(
+        uint256 fakeTimestamp,
+        uint32 fakeOrigin,
+        uint8 fakeCaller
+    ) public {
+        bytes4 selector = SystemContractHarness.setSensitiveValue.selector;
+        MessageContext memory context = MessageContext({
+            origin: DOMAIN_REMOTE,
+            sender: address(suiteOrigin(DOMAIN_REMOTE)),
+            destination: DOMAIN_LOCAL
+        });
+        // Create a multicall from "remote Origin" to all "local contracts"
+        uint256 amount = systemContracts[DOMAIN_LOCAL].length;
+        for (uint256 index = 0; index < amount; ++index) {
+            createSystemCall({
+                context: context,
+                index: index,
+                selector: selector,
+                optimisticSeconds: 0,
+                recipient: systemContracts[DOMAIN_LOCAL][index],
+                deleteCalls: false,
+                formatCalls: false
+            });
+            // Adjust calldata passed to SystemRouter to feature fake security args
+            systemCallDataArray[index] = abi.encodeWithSelector(
+                selector,
+                fakeTimestamp,
+                fakeOrigin,
+                fakeCaller,
+                _createMockSensitiveValue(index)
+            );
+        }
+        // Format calls and expect the dispatched message with the correct security args
+        formatSystemCalls();
+        createDispatchedSystemCallMessage({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
+        systemRouterMultiCall();
+        // Skip time to offset message dispatch and attestation submission
+        skip(1 hours);
+        // Prepare and submit attestation for the dispatched messages
+        destinationSubmitAttestationSuggested({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            returnValue: true
+        });
+        // Skip time to offset attestation submission and message execution
+        skip(2 hours);
+        // Expect system calls with the correct security args
+        for (uint256 index = 0; index < amount; ++index) {
+            vm.expectCall(
+                systemContracts[DOMAIN_LOCAL][index],
+                abi.encodeWithSelector(
+                    selector,
+                    rootSubmittedAt,
+                    systemCallOrigin,
+                    systemCallSender,
+                    _createMockSensitiveValue(index)
+                )
+            );
+        }
+        // Execute message with the multicall
+        destinationExecute({ domain: DOMAIN_LOCAL, index: 0 });
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       TESTS: SYSTEM MULTI CALL                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
