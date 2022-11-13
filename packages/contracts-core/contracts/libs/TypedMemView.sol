@@ -687,7 +687,8 @@ library TypedMemView {
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             let ptr := mload(0x40)
-            res := staticcall(gas(), 2, _loc, _len, ptr, 0x20) // sha2 #1
+            // sha2 precompile is 0x02
+            res := staticcall(gas(), 0x02, _loc, _len, ptr, 0x20)
             digest := mload(ptr)
         }
         require(res, "sha2: out of gas");
@@ -705,8 +706,10 @@ library TypedMemView {
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             let ptr := mload(0x40)
-            res := staticcall(gas(), 2, _loc, _len, ptr, 0x20) // sha2
-            res := and(res, staticcall(gas(), 3, ptr, 0x20, ptr, 0x20)) // rmd160
+            // sha2 precompile is 0x02
+            res := staticcall(gas(), 0x02, _loc, _len, ptr, 0x20)
+            // rmd160 precompile is 0x03
+            res := and(res, staticcall(gas(), 0x03, ptr, 0x20, ptr, 0x20))
             digest := mload(add(ptr, 0xc)) // return value is 0-prefixed.
         }
         require(res, "hash160: out of gas");
@@ -724,8 +727,9 @@ library TypedMemView {
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             let ptr := mload(0x40)
-            res := staticcall(gas(), 2, _loc, _len, ptr, 0x20) // sha2 #1
-            res := and(res, staticcall(gas(), 2, ptr, 0x20, ptr, 0x20)) // sha2 #2
+            // sha2 precompile is 0x02
+            res := staticcall(gas(), 0x02, _loc, _len, ptr, 0x20)
+            res := and(res, staticcall(gas(), 0x02, ptr, 0x20, ptr, 0x20))
             digest := mload(ptr)
         }
         require(res, "hash256: out of gas");
@@ -801,8 +805,8 @@ library TypedMemView {
                 revert(0x60, 0x20) // empty revert message
             }
 
-            // use the identity precompile to copy
-            res := staticcall(gas(), 4, _oldLoc, _len, _newLoc, _len)
+            // use the identity precompile (0x04) to copy
+            res := staticcall(gas(), 0x04, _oldLoc, _len, _newLoc, _len)
         }
         require(res, "identity: out of gas");
 
