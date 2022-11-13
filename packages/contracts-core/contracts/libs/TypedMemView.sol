@@ -321,7 +321,7 @@ library TypedMemView {
             newView := shl(_bitsLoc, or(newView, _type))
             // insert `loc`, shift to prepare empty bits for `len`
             newView := shl(_bitsLen, or(newView, _loc))
-            // insert `ten`, shift to insert 3 blank lowest bits
+            // insert `len`, shift to insert 3 blank lowest bits
             newView := shl(_bitsEmpty, or(newView, _len))
         }
     }
