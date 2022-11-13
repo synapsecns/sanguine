@@ -61,8 +61,25 @@ library TypedMemView {
 
     // The null view
     bytes29 public constant NULL = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-    uint256 public constant LOW_12_MASK = 0xffffffffffffffffffffffff;
-    uint8 public constant TWELVE_BYTES = 96;
+
+    /**
+     * @dev Memory layout for bytes29
+     * [000..005)   type     5 bytes    Type flag for the pointer
+     * [005..017)   loc     12 bytes    Memory address of underlying bytes
+     * [017..029)   len     12 bytes    Length of underlying bytes
+     * [029..032)   empty    3 bytes    Not used
+     */
+    uint256 public constant BITS_TYPE = 40;
+    uint256 public constant BITS_LOC = 96;
+    uint256 public constant BITS_LEN = 96;
+    uint256 public constant BITS_EMPTY = 24;
+
+    // `SHIFT_X` is how much bits to shift for `X` to be in the very bottom bits
+    uint256 public constant SHIFT_LEN = BITS_EMPTY;
+    uint256 public constant SHIFT_LOC = SHIFT_LEN + BITS_LEN;
+    uint256 public constant SHIFT_TYPE = SHIFT_LOC + BITS_LOC;
+
+    uint256 public constant LOW_96_BITS_MASK = type(uint96).max;
 
     // For nibble encoding
     bytes private constant NIBBLE_LOOKUP = "0123456789abcdef";
@@ -264,12 +281,14 @@ library TypedMemView {
      * @return          newView - The new view with the specified type
      */
     function castTo(bytes29 memView, uint40 _newType) internal pure returns (bytes29 newView) {
-        // then | in the new type
+        uint256 _shiftType = SHIFT_TYPE;
+        uint256 _bitsType = BITS_TYPE;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            // shift off the top 5 bytes
-            newView := or(newView, shr(40, shl(40, memView)))
-            newView := or(newView, shl(216, _newType))
+            // shift off the highest 5 bytes
+            newView := or(newView, shr(_bitsType, shl(_bitsType, memView)))
+            // then | in the new type
+            newView := or(newView, shl(_shiftType, _newType))
         }
     }
 
@@ -288,16 +307,22 @@ library TypedMemView {
         uint256 _loc,
         uint256 _len
     ) private pure returns (bytes29 newView) {
-        /// @dev Ref memory layout
-        /// [000..005) 5 bytes of type
-        /// [005..017) 12 bytes of location
-        /// [017..029) 12 bytes of length
-        /// last 3 bits are blank and dropped in typecast
+        uint256 _bitsLoc = BITS_LOC;
+        uint256 _bitsLen = BITS_LEN;
+        uint256 _bitsEmpty = BITS_EMPTY;
+        // Ref memory layout
+        // [000..005) 5 bytes of type
+        // [005..017) 12 bytes of location
+        // [017..029) 12 bytes of length
+        // last 3 bits are blank and dropped in typecast
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            newView := shl(96, or(newView, _type)) // insert type
-            newView := shl(96, or(newView, _loc)) // insert loc
-            newView := shl(24, or(newView, _len)) // empty bottom 3 bytes
+            // insert `type`, shift to prepare empty bits for `loc`
+            newView := shl(_bitsLoc, or(newView, _type))
+            // insert `loc`, shift to prepare empty bits for `len`
+            newView := shl(_bitsLen, or(newView, _loc))
+            // insert `ten`, shift to insert 3 blank lowest bits
+            newView := shl(_bitsEmpty, or(newView, _len))
         }
     }
 
@@ -357,10 +382,10 @@ library TypedMemView {
      * @return          _type - The type associated with the view
      */
     function typeOf(bytes29 memView) internal pure returns (uint40 _type) {
+        uint256 _shiftType = SHIFT_TYPE;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            // 216 == 256 - 40
-            _type := shr(216, memView) // shift out lower 24 bytes
+            _type := shr(_shiftType, memView) // shift out lower 27 bytes
         }
     }
 
@@ -371,7 +396,8 @@ library TypedMemView {
      * @return          bool - True if the 5-byte type flag is equal
      */
     function sameType(bytes29 left, bytes29 right) internal pure returns (bool) {
-        return (left ^ right) >> (2 * TWELVE_BYTES) == 0;
+        // Check that the highest 5 bytes are equal: xor and shift out lower 27 bytes
+        return (left ^ right) >> SHIFT_TYPE == 0;
     }
 
     /**
@@ -380,11 +406,12 @@ library TypedMemView {
      * @return          _loc - The memory address
      */
     function loc(bytes29 memView) internal pure returns (uint96 _loc) {
-        uint256 _mask = LOW_12_MASK; // assembly can't use globals
+        uint256 _uint96Mask = LOW_96_BITS_MASK; // assembly can't use globals
+        uint256 _shiftLoc = SHIFT_LOC;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            // 120 bits = 12 bytes (the encoded loc) + 3 bytes (empty low space)
-            _loc := and(shr(120, memView), _mask)
+            // shift out lower 15 bytes, then use the lowest 12 bytes to determine `loc`
+            _loc := and(shr(_shiftLoc, memView), _uint96Mask)
         }
     }
 
@@ -413,10 +440,12 @@ library TypedMemView {
      * @return          _len - The length of the view
      */
     function len(bytes29 memView) internal pure returns (uint96 _len) {
-        uint256 _mask = LOW_12_MASK; // assembly can't use globals
+        uint256 _uint96Mask = LOW_96_BITS_MASK; // assembly can't use globals
+        uint256 _shiftLen = SHIFT_LEN;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            _len := and(shr(24, memView), _mask)
+            // shift out lower 3 bytes, then use the lowest 12 bytes to determine `len`
+            _len := and(shr(_shiftLen, memView), _uint96Mask)
         }
     }
 
@@ -563,9 +592,11 @@ library TypedMemView {
             bitLength = _bytes * 8;
         }
         uint256 _loc = loc(memView);
+        // Get a mask with `bitLength` highest bits set
         uint256 _mask = leftMask(bitLength);
         assembly {
             // solhint-disable-previous-line no-inline-assembly
+            // Load a full word using index offset, and apply mask to ignore non-relevant bytes
             result := and(mload(add(_loc, _index)), _mask)
         }
     }
