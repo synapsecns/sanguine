@@ -614,6 +614,8 @@ library TypedMemView {
         uint256 _index,
         uint8 _bytes
     ) internal pure returns (uint256 result) {
+        // `index()` returns left-aligned `_bytes`, while integers are right-aligned
+        // Shifting here to right-align with the full 32 bytes word
         return uint256(index(memView, _index, _bytes)) >> ((32 - _bytes) * 8);
     }
 
@@ -640,6 +642,7 @@ library TypedMemView {
      * @return          address - The address
      */
     function indexAddress(bytes29 memView, uint256 _index) internal pure returns (address) {
+        // index 20 bytes as `uint160`, and then cast to `address`
         return address(uint160(indexUint(memView, _index, 20)));
     }
 
