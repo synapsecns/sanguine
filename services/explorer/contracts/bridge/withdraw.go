@@ -35,8 +35,9 @@ func (s SynapseBridgeTokenWithdraw) GetFee() *big.Int {
 }
 
 // GetKappa gets the gappa for the token withdraw.
-func (s SynapseBridgeTokenWithdraw) GetKappa() *[32]byte {
-	return &s.Kappa
+func (s SynapseBridgeTokenWithdraw) GetKappa() *string {
+	output := common.Bytes2Hex(s.Kappa[:])
+	return &output
 }
 
 // GetTxHash gets the unique identifier (txhash) for the withdraw.
@@ -91,7 +92,7 @@ func (s SynapseBridgeTokenWithdraw) GetSwapDeadline() *big.Int {
 	return nil
 }
 
-func (s SynapseBridgeTokenWithdraw) GetRecipientBytes() *[32]byte {
+func (s SynapseBridgeTokenWithdraw) GetRecipientBytes() *string {
 	return nil
 }
 
@@ -195,7 +196,7 @@ func (s SynapseBridgeTokenWithdrawAndRemove) GetDeadline() *big.Int {
 	return nil
 }
 
-func (s SynapseBridgeTokenWithdrawAndRemove) GetRecipientBytes() *[32]byte {
+func (s SynapseBridgeTokenWithdrawAndRemove) GetRecipientBytes() *string {
 	return nil
 }
 

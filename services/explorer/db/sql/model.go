@@ -114,7 +114,7 @@ type BridgeEvent struct {
 	// Deadline is the deadline of the transaction.
 	Deadline *big.Int `gorm:"column:deadline;type:UInt256"`
 	// SwapSuccess is whether the swap was successful.
-	SwapSuccess *big.Int `gorm:"column:swap_success;type:UInt256"`
+	SwapSuccess *uint8 `gorm:"column:swap_success"`
 	// SwapTokenIndex is the index of the token in the pool.
 	SwapTokenIndex *big.Int `gorm:"column:swap_token_index;type:UInt256"`
 	// SwapMinAmount is the minimum amount of tokens to receive.

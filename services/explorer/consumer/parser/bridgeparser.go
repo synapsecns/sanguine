@@ -77,63 +77,6 @@ func (p *BridgeParser) EventType(log ethTypes.Log) (_ bridgeTypes.EventType, ok 
 
 // eventToBridgeEvent stores a bridge event.
 func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.BridgeEvent {
-	var recipient sql.NullString
-
-	if event.GetRecipient() != nil {
-		recipient.Valid = true
-		recipient.String = event.GetRecipient().String()
-	} else {
-		recipient.Valid = false
-	}
-
-	var recipientBytes sql.NullString
-
-	if event.GetRecipientBytes() != nil {
-		recipientBytes.Valid = true
-		recipientBytes.String = common.Bytes2Hex(event.GetRecipientBytes()[:])
-	} else {
-		recipientBytes.Valid = false
-	}
-
-	var destinationChainID *big.Int
-
-	if event.GetDestinationChainID() != nil {
-		destinationChainID = big.NewInt(int64(event.GetDestinationChainID().Uint64()))
-	}
-
-	var tokenIndexFrom *big.Int
-
-	if event.GetTokenIndexFrom() != nil {
-		tokenIndexFrom = big.NewInt(int64(*event.GetTokenIndexFrom()))
-	}
-
-	var tokenIndexTo *big.Int
-
-	if event.GetTokenIndexTo() != nil {
-		tokenIndexTo = big.NewInt(int64(*event.GetTokenIndexTo()))
-	}
-
-	var swapSuccess *big.Int
-
-	if event.GetSwapSuccess() != nil {
-		swapSuccess = big.NewInt(int64(*BoolToUint8(event.GetSwapSuccess())))
-	}
-
-	var swapTokenIndex *big.Int
-
-	if event.GetSwapTokenIndex() != nil {
-		swapTokenIndex = big.NewInt(int64(*event.GetSwapTokenIndex()))
-	}
-
-	var kappa sql.NullString
-
-	if event.GetKappa() != nil {
-		kappa.Valid = true
-		kappa.String = common.Bytes2Hex(event.GetKappa()[:])
-	} else {
-		kappa.Valid = false
-	}
-
 	return model.BridgeEvent{
 		InsertTime:         uint64(time.Now().UnixNano()),
 		ContractAddress:    event.GetContractAddress().String(),
@@ -145,18 +88,18 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 		EventIndex:         event.GetEventIndex(),
 		DestinationKappa:   crypto.Keccak256Hash(event.GetTxHash().Bytes()).String(),
 		Sender:             "",
-		Recipient:          recipient,
-		RecipientBytes:     recipientBytes,
-		DestinationChainID: destinationChainID,
+		Recipient:          ToNullString(event.GetRecipient()),
+		RecipientBytes:     ToNullString(event.GetRecipientBytes()),
+		DestinationChainID: event.GetDestinationChainID(),
 		Token:              event.GetToken().String(),
 		Fee:                event.GetFee(),
-		Kappa:              kappa,
-		TokenIndexFrom:     tokenIndexFrom,
-		TokenIndexTo:       tokenIndexTo,
+		Kappa:              ToNullString(event.GetKappa()),
+		TokenIndexFrom:     event.GetTokenIndexFrom(),
+		TokenIndexTo:       event.GetTokenIndexTo(),
 		MinDy:              event.GetMinDy(),
 		Deadline:           event.GetDeadline(),
-		SwapSuccess:        swapSuccess,
-		SwapTokenIndex:     swapTokenIndex,
+		SwapSuccess:        BoolToUint8(event.GetSwapSuccess()),
+		SwapTokenIndex:     event.GetSwapTokenIndex(),
 		SwapMinAmount:      event.GetSwapMinAmount(),
 		SwapDeadline:       event.GetSwapDeadline(),
 
