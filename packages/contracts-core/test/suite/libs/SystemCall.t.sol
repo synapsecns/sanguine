@@ -11,14 +11,14 @@ import "../../../contracts/libs/SystemCall.sol";
 contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
     using TypedMemView for bytes;
 
-    // Mock payload for tests: a selector and two values
+    // Mock payload for tests: a selector and values for three security arguments
     bytes internal constant TEST_MESSAGE_PAYLOAD =
-        abi.encodeWithSelector(this.setUp.selector, 1, 2);
+        abi.encodeWithSelector(this.setUp.selector, 1, 2, 3);
 
     // First element is (uint8 recipient)
     uint8 internal constant FIRST_ELEMENT_BYTES = 8 / 8;
 
-    uint8 internal constant MIN_ARGUMENT_WORDS = 2;
+    uint8 internal constant MIN_ARGUMENT_WORDS = 3;
     uint8 internal constant MIN_SYSTEM_CALL_LENGTH = 1 + 4 + 32 * MIN_ARGUMENT_WORDS;
 
     SystemCallHarness internal libHarness;
@@ -248,6 +248,12 @@ contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function createTestPayload() public view returns (bytes memory) {
-        return libHarness.formatSystemCall(0, TEST_MESSAGE_PAYLOAD);
+        return
+            libHarness.formatAdjustedSystemCall({
+                _systemRecipient: 0,
+                _type: SynapseTypes.CALL_PAYLOAD,
+                _payload: TEST_MESSAGE_PAYLOAD,
+                _prefix: ""
+            });
     }
 }
