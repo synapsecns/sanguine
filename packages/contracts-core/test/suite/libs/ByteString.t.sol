@@ -70,6 +70,60 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         });
     }
 
+    function test_formattedCorrectly_callPayload_adjusted(uint8 wordsPrefix, uint8 wordsFollowing)
+        public
+    {
+        // Set a sensible limit for the total payload length
+        vm.assume((uint256(wordsPrefix) + wordsFollowing) * 32 <= MAX_MESSAGE_BODY_BYTES);
+        // Create "random" arguments and new/old prefix with different random seeds
+        bytes memory prefixOld = createTestArguments(wordsPrefix, "prefixOld");
+        bytes memory following = createTestArguments(wordsFollowing, "following");
+        bytes memory prefixNew = createTestArguments(wordsPrefix, "prefixNew");
+        bytes memory payload = bytes.concat(selector, prefixOld, following);
+        bytes memory adjustedPayload = SystemCall.formatAdjustedCallPayload(
+            payload.ref(SynapseTypes.CALL_PAYLOAD),
+            prefixNew.ref(SynapseTypes.RAW_BYTES)
+        );
+        // Correct formatting is checked in SystemCall.t.sol
+        // Test formatting checker
+        assertTrue(libHarness.isCallPayload(adjustedPayload), "!isCallPayload");
+        // Test ByteString getters
+        // Test getters
+        assertEq(
+            libHarness.argumentWords({
+                _type: SynapseTypes.CALL_PAYLOAD,
+                _payload: adjustedPayload
+            }),
+            uint256(wordsPrefix) + wordsFollowing,
+            "!argumentWords"
+        );
+        // Test bytes29 getters
+        checkBytes29Getter({
+            getter: libHarness.castToCallPayload,
+            payloadType: SynapseTypes.CALL_PAYLOAD,
+            payload: adjustedPayload,
+            expectedType: SynapseTypes.CALL_PAYLOAD,
+            expectedData: adjustedPayload,
+            revertMessage: "!castToCallPayload"
+        });
+        checkBytes29Getter({
+            getter: libHarness.callSelector,
+            payloadType: SynapseTypes.CALL_PAYLOAD,
+            payload: adjustedPayload,
+            expectedType: SynapseTypes.RAW_BYTES,
+            expectedData: bytes.concat(selector),
+            revertMessage: "!callSelector"
+        });
+        checkBytes29Getter({
+            getter: libHarness.argumentsPayload,
+            payloadType: SynapseTypes.CALL_PAYLOAD,
+            payload: adjustedPayload,
+            expectedType: SynapseTypes.RAW_BYTES,
+            expectedData: bytes.concat(prefixNew, following),
+            revertMessage: "!argumentsPayload"
+        });
+    }
+
     function test_formattedCorrectly_signature() public {
         bytes memory signature = signMessage({ privKey: 1, message: "" });
         // Test related constants
