@@ -18,9 +18,9 @@ func (s MessageBusRef) Address() common.Address {
 	return s.address
 }
 
-// NewMessagingRef gets a bound Message Bus Upgradeable contract and the address of the contract
+// NewMessageBusRef gets a bound Message Bus Upgradeable contract and the address of the contract
 // nolint: golint
-func NewMessagingRef(address common.Address, backend bind.ContractBackend) (*MessageBusRef, error) {
+func NewMessageBusRef(address common.Address, backend bind.ContractBackend) (*MessageBusRef, error) {
 	messageBusUpgradeable, err := NewMessageBusUpgradeable(address, backend)
 	if err != nil {
 		return nil, err

@@ -256,7 +256,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 	}
 
 	swapEvent.Sender = sender
-	err = p.consumerDB.StoreEvent(ctx, nil, &swapEvent)
+	err = p.consumerDB.StoreEvent(ctx, &swapEvent)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
