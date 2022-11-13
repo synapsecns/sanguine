@@ -106,14 +106,7 @@ func (e Executor) Start(ctx context.Context) error {
 			for {
 				response, err := client.FilterLogs(groupCtx, &pbscribe.FilterLogsRequest{
 					Filter: &pbscribe.LogFilter{
-						ContractAddress: nil,
-						ChainId:         chain.ChainID,
-						BlockNumber:     nil,
-						TxHash:          nil,
-						TxIndex:         nil,
-						BlockHash:       nil,
-						Index:           nil,
-						Confirmed:       nil,
+						ChainId: chain.ChainID,
 					},
 					Page: page,
 				})
