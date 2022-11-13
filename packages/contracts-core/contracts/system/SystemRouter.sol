@@ -137,6 +137,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         bytes29[] memory callPayloads = new bytes29[](1);
         recipients[0] = _recipient;
         callPayloads[0] = _data.castToCallPayload();
+        // TODO: check isCallPayload() here?
         _multiCall(caller, _destination, _optimisticSeconds, recipients, callPayloads);
     }
 
@@ -158,6 +159,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         bytes29[] memory callPayloads = new bytes29[](amount);
         for (uint256 i = 0; i < amount; ++i) {
             callPayloads[i] = _dataArray[i].castToCallPayload();
+            // TODO: check isCallPayload() here?
         }
         _multiCall(caller, _destination, _optimisticSeconds, _recipients, callPayloads);
     }
@@ -180,6 +182,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         bytes29[] memory callPayloads = new bytes29[](amount);
         for (uint256 i = 0; i < amount; ++i) {
             callPayloads[i] = _data.castToCallPayload();
+            // TODO: check isCallPayload() here?
         }
         _multiCall(caller, _destination, _optimisticSeconds, _recipients, callPayloads);
     }
@@ -204,6 +207,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         for (uint256 i = 0; i < amount; ++i) {
             recipients[i] = _recipient;
             callPayloads[i] = _dataArray[i].castToCallPayload();
+            // TODO: check isCallPayload() here?
         }
         _multiCall(caller, _destination, _optimisticSeconds, recipients, callPayloads);
     }
@@ -243,6 +247,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         uint256 _rootSubmittedAt,
         bytes memory _message
     ) internal override {
+        // TODO: use TypedMemView for encoding/decoding instead
         // Deserialize the message into a series of system calls to perform
         bytes[] memory systemMessages = abi.decode(_message, (bytes[]));
         uint256 amount = systemMessages.length;
@@ -298,6 +303,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         uint32 _optimisticSeconds,
         bytes[] memory _systemCalls
     ) internal {
+        // TODO: use TypedMemView for encoding/decoding instead
         // Serialize the series of system calls into a byte string
         bytes memory message = abi.encode(_systemCalls);
         /**
