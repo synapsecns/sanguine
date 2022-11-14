@@ -158,6 +158,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         uint256 amount = _recipients.length;
         bytes29[] memory callPayloads = new bytes29[](amount);
         for (uint256 i = 0; i < amount; ++i) {
+            // Assign a memory view for every calldata payload
             callPayloads[i] = _dataArray[i].castToCallPayload();
             // TODO: check isCallPayload() here?
         }
@@ -180,8 +181,11 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         SystemEntity caller = _getSystemEntity(msg.sender);
         uint256 amount = _recipients.length;
         bytes29[] memory callPayloads = new bytes29[](amount);
+        bytes29 dataView = _data.castToCallPayload();
         for (uint256 i = 0; i < amount; ++i) {
-            callPayloads[i] = _data.castToCallPayload();
+            // `_data` is never modified, all slicing leads to writing in unallocated memory
+            // so we can reuse the same memory view here
+            callPayloads[i] = dataView;
             // TODO: check isCallPayload() here?
         }
         _multiCall(caller, _destination, _optimisticSeconds, _recipients, callPayloads);
@@ -205,7 +209,9 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
         bytes29[] memory callPayloads = new bytes29[](amount);
         SystemEntity[] memory recipients = new SystemEntity[](amount);
         for (uint256 i = 0; i < amount; ++i) {
+            // Every call recipient is the same
             recipients[i] = _recipient;
+            // Assign a memory view for every calldata payload
             callPayloads[i] = _dataArray[i].castToCallPayload();
             // TODO: check isCallPayload() here?
         }
