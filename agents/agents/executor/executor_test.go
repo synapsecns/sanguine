@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/node"
 	"math/big"
 )
 
@@ -66,7 +67,18 @@ func (e *ExecutorSuite) TestExecutor() {
 		chainIDB: {simulatedChainB, simulatedChainB},
 	}
 
-	exc, err := executor.NewExecutor(e.GetTestContext(), scribeConfig, clients, e.dbPath, "sqlite", uint16(port))
+	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
+	e.Nil(err)
+
+	// Start the Scribe.
+	go func() {
+		err := scribe.Start(e.GetTestContext())
+		e.Nil(err)
+	}()
+
+	chains := []uint32{chainIDA, chainIDB}
+
+	exc, err := executor.NewExecutor(chains, e.dbPath, "sqlite", uint16(port))
 	e.Nil(err)
 
 	// Start the executor.

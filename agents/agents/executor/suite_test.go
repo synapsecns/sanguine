@@ -45,7 +45,7 @@ func (e *ExecutorSuite) SetupTest() {
 	e.TestSuite.SetupTest()
 	e.SetTestTimeout(time.Minute * 3)
 	e.dbPath = filet.TmpDir(e.T(), "")
-	sqliteStore, err := sqlite.NewSqliteStore(e.GetTestContext(), filet.TmpDir(e.T(), e.dbPath))
+	sqliteStore, err := sqlite.NewSqliteStore(e.GetTestContext(), e.dbPath)
 	Nil(e.T(), err)
 	e.testDB = sqliteStore
 	e.logIndex.Store(0)
