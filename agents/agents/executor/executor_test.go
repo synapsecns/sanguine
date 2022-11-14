@@ -32,6 +32,8 @@ func (e *ExecutorSuite) TestExecutor() {
 	e.Nil(err)
 	simulatedChainA.WaitForConfirmation(e.GetTestContext(), tx)
 	tx, err = testRefB.EmitEventAandB(transactOptsB.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
+	e.Nil(err)
+	simulatedChainB.WaitForConfirmation(e.GetTestContext(), tx)
 
 	contractConfigA := config.ContractConfig{
 		Address:    testContractA.Address().String(),
@@ -68,6 +70,23 @@ func (e *ExecutorSuite) TestExecutor() {
 	e.Nil(err)
 
 	// Start the executor.
-	err = exc.Start(e.GetTestContext())
-	e.Nil(err)
+	go func() {
+		err = exc.Start(e.GetTestContext())
+		e.Nil(err)
+	}()
+
+	e.Eventually(func() bool {
+		if len(exc.LogChans[chainIDA]) == 2 && len(exc.LogChans[chainIDB]) == 2 {
+			logA := <-exc.LogChans[chainIDA]
+			logB := <-exc.LogChans[chainIDA]
+			e.Assert().Less(logA.BlockNumber, logB.BlockNumber)
+			logC := <-exc.LogChans[chainIDB]
+			logD := <-exc.LogChans[chainIDB]
+			e.Assert().LessOrEqual(logC.BlockNumber, logD.BlockNumber)
+			return true
+		}
+
+		return false
+	})
+
 }

@@ -86,16 +86,20 @@ func Start(ctx context.Context, cfg Config) error {
 	})
 
 	g.Go(func() error {
+		fmt.Println("aaaaa")
 		var lc net.ListenConfig
 		listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
 		if err != nil {
 			return fmt.Errorf("could not start listener: %w", err)
 		}
+		fmt.Println("bbbbb")
 
 		err = grpcServer.Serve(listener)
 		if err != nil {
 			return fmt.Errorf("could not start grpc server: %w", err)
 		}
+
+		fmt.Println("GRPC GOOD!")
 
 		return nil
 	})
