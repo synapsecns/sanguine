@@ -33,7 +33,7 @@ library SystemCall {
     /**
      * @dev System Router is supposed to modify (rootSubmittedAt, origin, caller)
      * in the given payload, meaning for a valid system call payload
-     * there have to exist at least three arguments, occupying at least three words in total.
+     * there has to exist at least three arguments, occupying at least three words in total.
      */
     uint256 internal constant PAYLOAD_MIN_ARGUMENT_WORDS = 3;
 
