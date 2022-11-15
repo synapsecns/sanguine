@@ -47,20 +47,13 @@ func NewExecutor(chainIDs []uint32, dbPath string, dbType string, grpcPort uint1
 
 // Start starts the executor agent. This uses gRPC to process the logs.
 func (e Executor) Start(ctx context.Context) error {
-	//ports, err := freeport.Take(2)
-	//if len(ports) < 2 || err != nil {
-	//	return fmt.Errorf("could not get free port: %w", err)
-	//}
-	a := freeport.GetPort()
-	b := freeport.GetPort()
-
 	// Start the GraphQL server for the Scribe, and expose the gRPC server.
 	go func() {
 		err := api.Start(ctx, api.Config{
-			HTTPPort: uint16(a),
+			HTTPPort: uint16(freeport.GetPort()),
 			Database: e.dbType,
 			Path:     e.dbPath,
-			GRPCPort: uint16(b),
+			GRPCPort: e.grpcPort,
 		})
 		if err != nil {
 			logger.Warnf("could not start api: %s", err)
@@ -73,7 +66,7 @@ func (e Executor) Start(ctx context.Context) error {
 	var opts []grpc.DialOption
 
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("localhost:%d", b), opts...)
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("localhost:%d", e.grpcPort), opts...)
 	if err != nil {
 		return fmt.Errorf("could not dial: %w", err)
 	}

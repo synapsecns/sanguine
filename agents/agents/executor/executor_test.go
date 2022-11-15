@@ -59,9 +59,6 @@ func (e *ExecutorSuite) TestExecutor() {
 		Chains: chainConfigs,
 	}
 
-	port, err := freeport.GetFreePort()
-	e.Nil(err)
-
 	clients := map[uint32][]backfill.ScribeBackend{
 		chainIDA: {simulatedChainA, simulatedChainA},
 		chainIDB: {simulatedChainB, simulatedChainB},
@@ -78,7 +75,7 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	chains := []uint32{chainIDA, chainIDB}
 
-	exc, err := executor.NewExecutor(chains, e.dbPath, "sqlite", uint16(port))
+	exc, err := executor.NewExecutor(chains, e.dbPath, "sqlite", uint16(freeport.GetPort()))
 	e.Nil(err)
 
 	// Start the executor.
