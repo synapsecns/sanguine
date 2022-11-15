@@ -21,17 +21,23 @@ type Executor struct {
 	dbPath string
 	// dbType is the type of database.
 	dbType string
-	// grpcPort is the port to expose the gRPC server on.
-	grpcPort uint16
-	// lastBlockProcessed is a map from chain ID -> last block processed.
-	lastBlockProcessed map[uint32]uint64
+	// lastLog is a map from chain ID -> logOrder to make sure logs are chronological.
+	lastLog map[uint32]logOrder
 	// LogChans is a map from chain ID -> log channel.
 	LogChans map[uint32]chan *types.Log
 }
 
+// logOrder is a struct to keep track of the order of a log.
+type logOrder struct {
+	blockNumber uint64
+	blockIndex  uint
+}
+
 // NewExecutor creates a new executor agent.
-func NewExecutor(chainIDs []uint32, dbPath string, dbType string, grpcPort uint16) (*Executor, error) {
+func NewExecutor(chainIDs []uint32, dbPath string, dbType string) (*Executor, error) {
+	lastLog := make(map[uint32]logOrder)
 	channels := make(map[uint32]chan *types.Log)
+
 	for _, chain := range chainIDs {
 		channels[chain] = make(chan *types.Log, 1000)
 	}
@@ -40,7 +46,7 @@ func NewExecutor(chainIDs []uint32, dbPath string, dbType string, grpcPort uint1
 		chainIDs: chainIDs,
 		dbPath:   dbPath,
 		dbType:   dbType,
-		grpcPort: grpcPort,
+		lastLog:  lastLog,
 		LogChans: channels,
 	}, nil
 }
@@ -48,13 +54,15 @@ func NewExecutor(chainIDs []uint32, dbPath string, dbType string, grpcPort uint1
 // Start starts the executor agent. This uses gRPC to process the logs.
 func (e Executor) Start(ctx context.Context) error {
 	// Start the GraphQL server for the Scribe, and expose the gRPC server.
+	apiConfig := api.Config{
+		HTTPPort: uint16(freeport.GetPort()),
+		Database: e.dbType,
+		Path:     e.dbPath,
+		GRPCPort: uint16(freeport.GetPort()),
+	}
+
 	go func() {
-		err := api.Start(ctx, api.Config{
-			HTTPPort: uint16(freeport.GetPort()),
-			Database: e.dbType,
-			Path:     e.dbPath,
-			GRPCPort: e.grpcPort,
-		})
+		err := api.Start(ctx, apiConfig)
 		if err != nil {
 			logger.Warnf("could not start api: %s", err)
 
@@ -66,7 +74,7 @@ func (e Executor) Start(ctx context.Context) error {
 	var opts []grpc.DialOption
 
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("localhost:%d", e.grpcPort), opts...)
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("localhost:%d", apiConfig.GRPCPort), opts...)
 	if err != nil {
 		return fmt.Errorf("could not dial grpc: %w", err)
 	}
@@ -115,7 +123,19 @@ func (e Executor) Start(ctx context.Context) error {
 
 			// Convert the logs to the types.Log type, and put them in the channel.
 			for i := len(responseLogs) - 1; i >= 0; i-- {
-				e.LogChans[chain] <- responseLogs[i].ToLog()
+				log := responseLogs[i].ToLog()
+				if log == nil {
+					return fmt.Errorf("could not convert log")
+				}
+				if !e.lastLog[chain].verifyAfter(*log) {
+					return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog[chain].blockNumber, e.lastLog[chain].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+				}
+
+				e.LogChans[chain] <- log
+				e.lastLog[chain] = logOrder{
+					blockNumber: log.BlockNumber,
+					blockIndex:  log.Index,
+				}
 			}
 
 			return nil
@@ -127,4 +147,16 @@ func (e Executor) Start(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (l logOrder) verifyAfter(log types.Log) bool {
+	if log.BlockNumber < l.blockNumber {
+		return false
+	}
+
+	if log.BlockNumber == l.blockNumber {
+		return log.Index > l.blockIndex
+	}
+
+	return true
 }

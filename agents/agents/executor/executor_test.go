@@ -3,7 +3,6 @@ package executor_test
 import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -75,7 +74,7 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	chains := []uint32{chainIDA, chainIDB}
 
-	exc, err := executor.NewExecutor(chains, e.dbPath, "sqlite", uint16(freeport.GetPort()))
+	exc, err := executor.NewExecutor(chains, e.dbPath, "sqlite")
 	e.Nil(err)
 
 	// Start the executor.
