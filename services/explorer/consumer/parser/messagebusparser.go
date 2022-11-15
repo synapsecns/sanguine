@@ -122,7 +122,7 @@ func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, 
 	// If we have a timestamp, populate the following attributes of messageEvent.
 	timeStampBig := uint64(*timeStamp.Response)
 	messageEvent.TimeStamp = &timeStampBig
-	
+
 	err = m.consumerDB.StoreEvent(ctx, &messageEvent)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
