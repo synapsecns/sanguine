@@ -68,7 +68,7 @@ func (e Executor) Start(ctx context.Context) error {
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("localhost:%d", e.grpcPort), opts...)
 	if err != nil {
-		return fmt.Errorf("could not dial: %w", err)
+		return fmt.Errorf("could not dial grpc: %w", err)
 	}
 
 	client := pbscribe.NewScribeServiceClient(conn)
@@ -104,12 +104,13 @@ func (e Executor) Start(ctx context.Context) error {
 				}
 
 				responseLogs = append(responseLogs, response.Logs...)
-				page++
 
 				// See if we do not need to get the next page.
 				if len(response.Logs) < base.PageSize {
 					break
 				}
+
+				page++
 			}
 
 			// Convert the logs to the types.Log type, and put them in the channel.
