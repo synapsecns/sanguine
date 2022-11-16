@@ -33,4 +33,5 @@ do
     OUT=$I,${OUT:+$OUT }
 done
 
-echo "$OUT"  | rev | cut -c3- | rev
+cutVal=$((${#dirs[@]} + 1))
+echo "$OUT"  | rev | cut -c${cutVal}- | rev
