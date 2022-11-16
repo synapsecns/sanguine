@@ -96,5 +96,4 @@ func (e *ExecutorSuite) TestExecutor() {
 
 		return false
 	})
-
 }

@@ -6,11 +6,12 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/services/scribe/api"
-	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"io"
+	"math/big"
 )
 
 // Executor is the executor agent.
@@ -71,16 +72,14 @@ func (e Executor) Start(ctx context.Context) error {
 	}()
 
 	// Consume the logs from gRPC.
-	var opts []grpc.DialOption
-
-	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("localhost:%d", apiConfig.GRPCPort), opts...)
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("localhost:%d", apiConfig.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("could not dial grpc: %w", err)
 	}
 
 	client := pbscribe.NewScribeServiceClient(conn)
 
+	// Ensure that gRPC is up and running.
 	healthCheck, err := client.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
 	if err != nil {
 		return fmt.Errorf("could not check: %w", err)
@@ -96,34 +95,27 @@ func (e Executor) Start(ctx context.Context) error {
 		chain := chain
 
 		g.Go(func() error {
-			var responseLogs []*pbscribe.Log
-
-			page := uint32(1)
-
-			for {
-				response, err := client.FilterLogs(groupCtx, &pbscribe.FilterLogsRequest{
-					Filter: &pbscribe.LogFilter{
-						ChainId: chain,
-					},
-					Page: page,
-				})
-				if err != nil {
-					return fmt.Errorf("could not filter logs: %w", err)
-				}
-
-				responseLogs = append(responseLogs, response.Logs...)
-
-				// See if we do not need to get the next page.
-				if len(response.Logs) < base.PageSize {
-					break
-				}
-
-				page++
+			stream, err := client.StreamLogs(groupCtx, &pbscribe.StreamLogsRequest{
+				Filter: &pbscribe.LogFilter{
+					ChainId: chain,
+				},
+				FromBlock: "earliest",
+				ToBlock:   big.NewInt(100).String(),
+			})
+			if err != nil {
+				return fmt.Errorf("could not stream logs: %w", err)
 			}
 
-			// Convert the logs to the types.Log type, and put them in the channel.
-			for i := len(responseLogs) - 1; i >= 0; i-- {
-				log := responseLogs[i].ToLog()
+			for {
+				response, err := stream.Recv()
+				if err == io.EOF {
+					return nil
+				}
+				if err != nil {
+					return fmt.Errorf("could not receive: %w", err)
+				}
+
+				log := response.Log.ToLog()
 				if log == nil {
 					return fmt.Errorf("could not convert log")
 				}
@@ -137,8 +129,6 @@ func (e Executor) Start(ctx context.Context) error {
 					blockIndex:  log.Index,
 				}
 			}
-
-			return nil
 		})
 	}
 

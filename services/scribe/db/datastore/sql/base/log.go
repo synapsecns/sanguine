@@ -187,7 +187,7 @@ func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, 
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
 			return []*types.Log{}, fmt.Errorf("could not find logs with filter %v, in range %v-%v: %w", logFilter, startBlock, endBlock, db.ErrNotFound)
 		}
-		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
+		return []*types.Log{}, fmt.Errorf("could not get logs: %w", dbTx.Error)
 	}
 
 	return buildLogsFromDBLogs(dbLogs), nil
