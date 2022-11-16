@@ -84,7 +84,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 					Factor: 2,
 					Jitter: true,
 					Min:    1 * time.Second,
-					Max:    30 * time.Second,
+					Max:    10 * time.Second,
 				}
 
 				timeout := time.Duration(0)
@@ -121,6 +121,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 						err = c.processLogs(groupCtx, logs, eventParser)
 						if err != nil {
 							logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
+							continue
 						}
 
 						return nil
@@ -141,17 +142,43 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 //
 //nolint:gocognit,cyclop
 func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, eventParser parser.Parser) error {
-	for i := range logs {
-		err := eventParser.ParseAndStore(ctx, logs[i], c.chainConfig.ChainID)
-		if err != nil {
-			return fmt.Errorf("could not parse and store log: %w", err)
-		}
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    10 * time.Second,
+	}
 
-		// TODO this can be moved out of this for loop once log order is guaranteed
-		// Store the last block in clickhouse
-		err = c.consumerDB.StoreLastBlock(ctx, c.chainConfig.ChainID, logs[i].BlockNumber)
-		if err != nil {
-			logger.Warnf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
+	timeout := time.Duration(0)
+	logIdx := 0
+	for {
+		select {
+		case <-ctx.Done():
+
+			return nil
+		case <-time.After(timeout):
+			err := eventParser.ParseAndStore(ctx, logs[logIdx], c.chainConfig.ChainID)
+			if err != nil {
+				logger.Warnf("could not parse and store log: %w", err)
+				timeout = b.Duration()
+				continue
+			}
+
+			// Store the last block in clickhouse
+			err = c.consumerDB.StoreLastBlock(ctx, c.chainConfig.ChainID, logs[logIdx].BlockNumber)
+			if err != nil {
+				logger.Warnf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
+				timeout = b.Duration()
+				continue
+			}
+			if logIdx >= len(logs) {
+				return nil
+			}
+			logIdx++
+
+			// Reset the backoff after successful log parse run to prevent bloated back offs.
+			b.Reset()
+			timeout = time.Duration(0)
 		}
 	}
 

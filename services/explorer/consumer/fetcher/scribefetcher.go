@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/scribe/graphql"
+	"time"
 )
 
 // ScribeFetcher is the fetcher for the events. It uses GQL.
@@ -21,26 +23,36 @@ func NewFetcher(fetchClient *client.Client) *ScribeFetcher {
 	}
 }
 
-// FetchLastBlock fetches the last block that Scribe has stored.
-func (s ScribeFetcher) FetchLastBlock(ctx context.Context, chainID uint32) (uint64, error) {
-	getEndHeight, err := s.FetchClient.GetLastStoredBlockNumber(ctx, int(chainID))
-
-	if err != nil && getEndHeight == nil {
-		return 0, fmt.Errorf("could not get end height: %w", err)
-	}
-
-	return uint64(*getEndHeight.Response), nil
-}
-
 // FetchTxSender fetches the sender of a transaction.
 func (s ScribeFetcher) FetchTxSender(ctx context.Context, chainID uint32, txHash string) (string, error) {
-	sender, err := s.FetchClient.GetTxSender(ctx, int(chainID), txHash)
-
-	if err != nil || sender == nil || sender.Response == nil {
-		return "", fmt.Errorf("could not get sender: %w", err)
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    30 * time.Second,
 	}
+	timeout := time.Duration(0)
+RETRY:
+	select {
+	case <-ctx.Done():
 
-	return *sender.Response, nil
+		return "", nil
+	case <-time.After(timeout):
+		sender, err := s.FetchClient.GetTxSender(ctx, int(chainID), txHash)
+
+		if err != nil {
+			logger.Warnf("could not get sender for tx %s: %v", txHash, err)
+			timeout = b.Duration()
+			goto RETRY
+		}
+
+		if sender == nil || sender.Response == nil {
+			logger.Warnf("could not get sender for tx, invalid tx likely (arb legacy, v,r,x, etc.) %s: %v", txHash)
+			*sender.Response = ""
+		}
+
+		return *sender.Response, nil
+	}
 }
 
 // FetchLastIndexed fetches the last indexed block per contract.
