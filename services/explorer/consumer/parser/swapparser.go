@@ -223,6 +223,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 
 	swapEvent := eventToSwapEvent(iFace, chainID)
 
+	// nolint:nestif
 	if swapEvent.Amount != nil {
 		tokenPrices := map[uint8]float64{}
 		tokenDecimals := map[uint8]uint8{}

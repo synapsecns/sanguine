@@ -29,6 +29,12 @@ type ChainBackfiller struct {
 	chainConfig config.ChainConfig
 }
 
+type contextKey string
+
+const (
+	chainKey contextKey = "chainID"
+)
+
 // NewChainBackfiller creates a new backfiller for a chain.
 func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, fetcher fetcher.ScribeFetcher, chainConfig config.ChainConfig) *ChainBackfiller {
 	return &ChainBackfiller{
@@ -45,7 +51,10 @@ func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgePar
 func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 	for i := range c.chainConfig.Contracts {
 		contract := c.chainConfig.Contracts[i]
-		g, groupCtx := errgroup.WithContext(ctx)
+
+		// Create a new context for the chain so all chains don't halt when backfilling is completed.
+		chainCtx := context.WithValue(ctx, chainKey, fmt.Sprintf("%d", c.chainConfig.ChainID))
+		g, groupCtx := errgroup.WithContext(chainCtx)
 		g.SetLimit(c.chainConfig.MaxGoroutines)
 		startHeight := uint64(contract.StartBlock)
 
