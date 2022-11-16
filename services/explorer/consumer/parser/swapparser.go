@@ -241,7 +241,9 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 				}
 				coinGeckoID := p.coinGeckoIDs[strings.ToLower(*symbol)]
 				tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
-				tokenPrices[tokenIndex] = *tokenPrice
+				if tokenPrice != nil {
+					tokenPrices[tokenIndex] = *tokenPrice
+				}
 			}
 
 			swapEvent.TokenPrices = tokenPrices
