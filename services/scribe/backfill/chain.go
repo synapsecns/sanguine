@@ -271,6 +271,7 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 
 		currentBlock = lastBlockStored + 1
 	}
+	LogEvent(WarnLevel, "Finished backfilling chain chunks", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "eh": endHeight, "bt": true})
 
 	return nil
 }
