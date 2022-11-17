@@ -117,7 +117,7 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 				return nil
 			}
 
-			latestScribeBlock, err := s.db.RetrieveLastIndexed(res.Context(), common.HexToAddress(req.Filter.ContractAddress.String()), req.Filter.ChainId)
+			latestScribeBlock, err := s.db.RetrieveLastIndexed(res.Context(), common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
 			if err != nil {
 				return fmt.Errorf("could not retrieve last indexed block: %w", err)
 			}
@@ -132,69 +132,6 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 			}
 		}
 	}
-
-	//var retrievedLogs []*types.Log
-	//
-	////if req.Filter.ContractAddress.Kind == pbscribe.NullableString_Null{} {
-	////	return fmt.Errorf("contract address is nil")
-	////}
-	//
-	//lastFromBlock := uint64(0)
-	//wait := 0
-	//_ = lastFromBlock
-	//logFilter := req.Filter.ToNative()
-	//logFilter.ChainID = req.Filter.ChainId
-	//fromBlock, toBlock, err := s.setBlocks(res.Context(), req)
-	//if err != nil {
-	//	return fmt.Errorf("could not set blocks: %w", err)
-	//}
-	//
-	//for {
-	//	select {
-	//	case <-res.Context().Done():
-	//		return nil
-	//	case <-time.After(time.Duration(wait) * time.Second):
-	//		latestScribeBlock, err := s.db.RetrieveLastIndexed(res.Context(), common.HexToAddress(req.Filter.ContractAddress.String()), req.Filter.ChainId)
-	//		if err != nil {
-	//			return fmt.Errorf("could not retrieve last indexed block: %w", err)
-	//		}
-	//
-	//		page := 1
-	//
-	//		for {
-	//			logs, err := s.db.RetrieveLogsInRange(res.Context(), logFilter, fromBlock, toBlock, page)
-	//			if err != nil {
-	//				return fmt.Errorf("could not retrieve logs: %w", err)
-	//			}
-	//
-	//			retrievedLogs = append(sliceReverse(logs), retrievedLogs...)
-	//
-	//			// See if we do not need to get the next page.
-	//			if len(logs) < base.PageSize {
-	//				break
-	//			}
-	//
-	//			page++
-	//		}
-	//
-	//		// Convert the logs to the protobuf format and send them through the stream.
-	//		for _, log := range retrievedLogs {
-	//			err = res.Send(&pbscribe.StreamLogsResponse{
-	//				Log: pbscribe.FromNativeLog(log),
-	//			})
-	//			if err != nil {
-	//				return fmt.Errorf("could not send log: %w", err)
-	//			}
-	//		}
-	//
-	//		if req.ToBlock != "latest" {
-	//			return nil
-	//		}
-	//
-	//		lastFromBlock = fromBlock
-	//		wait = 1
-	//	}
-	//}
 }
 
 func (s *server) Check(context.Context, *pbscribe.HealthCheckRequest) (*pbscribe.HealthCheckResponse, error) {

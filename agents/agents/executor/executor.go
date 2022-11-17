@@ -8,7 +8,6 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/services/scribe/api"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
@@ -83,51 +82,41 @@ func (e Executor) Start(ctx context.Context) error {
 		return fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
 
-	g, groupCtx := errgroup.WithContext(ctx)
-
-	g.Go(func() error {
-		stream, err := client.StreamLogs(groupCtx, &pbscribe.StreamLogsRequest{
-			Filter: &pbscribe.LogFilter{
-				ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: e.address.Hex()}},
-				ChainId:         e.chainID,
-			},
-			FromBlock: "earliest",
-			ToBlock:   "latest",
-		})
-		if err != nil {
-			return fmt.Errorf("could not stream logs: %w", err)
-		}
-
-		for {
-			response, err := stream.Recv()
-			if err == io.EOF {
-				return nil
-			}
-			if err != nil {
-				return fmt.Errorf("could not receive: %w", err)
-			}
-
-			log := response.Log.ToLog()
-			if log == nil {
-				return fmt.Errorf("could not convert log")
-			}
-			if !e.lastLog.verifyAfter(*log) {
-				return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog.blockNumber, e.lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
-			}
-
-			e.LogChan <- log
-			e.lastLog = logOrderInfo{
-				blockNumber: log.BlockNumber,
-				blockIndex:  log.Index,
-			}
-		}
+	stream, err := client.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
+		Filter: &pbscribe.LogFilter{
+			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: e.address.Hex()}},
+			ChainId:         e.chainID,
+		},
+		FromBlock: "earliest",
+		ToBlock:   "latest",
 	})
-
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("could not process logs: %w", err)
+	if err != nil {
+		return fmt.Errorf("could not stream logs: %w", err)
 	}
 
-	return nil
+	for {
+		response, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return fmt.Errorf("could not receive: %w", err)
+		}
+
+		log := response.Log.ToLog()
+		if log == nil {
+			return fmt.Errorf("could not convert log")
+		}
+		if !e.lastLog.verifyAfter(*log) {
+			return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog.blockNumber, e.lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+		}
+
+		e.LogChan <- log
+		e.lastLog = logOrderInfo{
+			blockNumber: log.BlockNumber,
+			blockIndex:  log.Index,
+		}
+	}
 }
 
 func (l logOrderInfo) verifyAfter(log types.Log) bool {
