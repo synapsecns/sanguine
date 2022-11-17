@@ -72,25 +72,37 @@ func (e *ExecutorSuite) TestExecutor() {
 		e.Nil(err)
 	}()
 
-	chains := []uint32{chainIDA, chainIDB}
-
-	exc, err := executor.NewExecutor(chains, e.dbPath, "sqlite")
+	excA, err := executor.NewExecutor(testContractA.Address(), chainIDA, e.dbPath, "sqlite")
+	e.Nil(err)
+	excB, err := executor.NewExecutor(testContractB.Address(), chainIDB, e.dbPath, "sqlite")
 	e.Nil(err)
 
 	// Start the executor.
 	go func() {
-		err = exc.Start(e.GetTestContext())
+		err = excA.Start(e.GetTestContext())
+		e.Nil(err)
+	}()
+	go func() {
+		err = excB.Start(e.GetTestContext())
 		e.Nil(err)
 	}()
 
 	e.Eventually(func() bool {
-		if len(exc.LogChans[chainIDA]) == 2 && len(exc.LogChans[chainIDB]) == 2 {
-			logA := <-exc.LogChans[chainIDA]
-			logB := <-exc.LogChans[chainIDA]
+		if len(excA.LogChan) == 2 {
+			logA := <-excA.LogChan
+			logB := <-excA.LogChan
 			e.Assert().Less(logA.BlockNumber, logB.BlockNumber)
-			logC := <-exc.LogChans[chainIDB]
-			logD := <-exc.LogChans[chainIDB]
-			e.Assert().LessOrEqual(logC.BlockNumber, logD.BlockNumber)
+			return true
+		}
+
+		return false
+	})
+
+	e.Eventually(func() bool {
+		if len(excB.LogChan) == 2 {
+			logA := <-excB.LogChan
+			logB := <-excB.LogChan
+			e.Assert().LessOrEqual(logA.BlockNumber, logB.BlockNumber)
 			return true
 		}
 
