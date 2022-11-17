@@ -12,7 +12,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
-	"math/big"
 )
 
 // Executor is the executor agent.
@@ -93,8 +92,7 @@ func (e Executor) Start(ctx context.Context) error {
 				ChainId:         e.chainID,
 			},
 			FromBlock: "earliest",
-			ToBlock:   big.NewInt(100).String(),
-			//ToBlock: "latest",
+			ToBlock:   "latest",
 		})
 		if err != nil {
 			return fmt.Errorf("could not stream logs: %w", err)

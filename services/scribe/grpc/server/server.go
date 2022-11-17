@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/gin-gonic/gin"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -10,7 +11,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"google.golang.org/grpc"
-	"math"
 	"strconv"
 	"time"
 )
@@ -60,47 +60,141 @@ func (s *server) FilterLogs(ctx context.Context, req *pbscribe.FilterLogsRequest
 func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.ScribeService_StreamLogsServer) error {
 	var retrievedLogs []*types.Log
 
+	streamNewBlocks := false
+	fromBlock, toBlock, err := s.setBlocks(res.Context(), req)
+	if err != nil {
+		return fmt.Errorf("could not set blocks: %w", err)
+	}
+
+	wait := 0
+	lastFromBlock := uint64(0)
 	logFilter := req.Filter.ToNative()
 	logFilter.ChainID = req.Filter.ChainId
-	fromBlock, err := setBlock(req.FromBlock)
-	if err != nil {
-		return fmt.Errorf("could not set from block: %w", err)
-	}
 
-	toBlock, err := setBlock(req.ToBlock)
-	if err != nil {
-		return fmt.Errorf("could not set to block: %w", err)
+	if req.ToBlock == "latest" {
+		streamNewBlocks = true
 	}
-
-	page := 1
 
 	for {
-		logs, err := s.db.RetrieveLogsInRange(res.Context(), logFilter, fromBlock, toBlock, page)
-		if err != nil {
-			return fmt.Errorf("could not retrieve logs: %w", err)
+		select {
+		case <-res.Context().Done():
+			return nil
+		case <-time.After(time.Duration(wait) * time.Second):
+			if lastFromBlock > fromBlock {
+				fromBlock = lastFromBlock
+			}
+
+			page := 1
+
+			for {
+				logs, err := s.db.RetrieveLogsInRange(res.Context(), logFilter, fromBlock, toBlock, page)
+				if err != nil {
+					return fmt.Errorf("could not retrieve logs: %w", err)
+				}
+
+				retrievedLogs = append(sliceReverse(logs), retrievedLogs...)
+
+				// See if we do not need to get the next page.
+				if len(logs) < base.PageSize {
+					break
+				}
+
+				page++
+			}
+
+			// Convert the logs to the protobuf format and send them through the stream.
+			for _, log := range retrievedLogs {
+				fmt.Println("eat this log", log.BlockNumber)
+				err = res.Send(&pbscribe.StreamLogsResponse{
+					Log: pbscribe.FromNativeLog(log),
+				})
+				if err != nil {
+					return fmt.Errorf("could not send log: %w", err)
+				}
+			}
+
+			if !streamNewBlocks {
+				return nil
+			}
+
+			latestScribeBlock, err := s.db.RetrieveLastIndexed(res.Context(), common.HexToAddress(req.Filter.ContractAddress.String()), req.Filter.ChainId)
+			if err != nil {
+				return fmt.Errorf("could not retrieve last indexed block: %w", err)
+			}
+
+			lastFromBlock = fromBlock
+
+			if latestScribeBlock > toBlock {
+				toBlock = latestScribeBlock
+				wait = 0
+			} else {
+				wait = 1
+			}
 		}
-
-		retrievedLogs = append(sliceReverse(logs), retrievedLogs...)
-
-		// See if we do not need to get the next page.
-		if len(logs) < base.PageSize {
-			break
-		}
-
-		page++
 	}
 
-	// Convert the logs to the protobuf format and send them through the stream.
-	for _, log := range retrievedLogs {
-		err = res.Send(&pbscribe.StreamLogsResponse{
-			Log: pbscribe.FromNativeLog(log),
-		})
-		if err != nil {
-			return fmt.Errorf("could not send log: %w", err)
-		}
-	}
-
-	return nil
+	//var retrievedLogs []*types.Log
+	//
+	////if req.Filter.ContractAddress.Kind == pbscribe.NullableString_Null{} {
+	////	return fmt.Errorf("contract address is nil")
+	////}
+	//
+	//lastFromBlock := uint64(0)
+	//wait := 0
+	//_ = lastFromBlock
+	//logFilter := req.Filter.ToNative()
+	//logFilter.ChainID = req.Filter.ChainId
+	//fromBlock, toBlock, err := s.setBlocks(res.Context(), req)
+	//if err != nil {
+	//	return fmt.Errorf("could not set blocks: %w", err)
+	//}
+	//
+	//for {
+	//	select {
+	//	case <-res.Context().Done():
+	//		return nil
+	//	case <-time.After(time.Duration(wait) * time.Second):
+	//		latestScribeBlock, err := s.db.RetrieveLastIndexed(res.Context(), common.HexToAddress(req.Filter.ContractAddress.String()), req.Filter.ChainId)
+	//		if err != nil {
+	//			return fmt.Errorf("could not retrieve last indexed block: %w", err)
+	//		}
+	//
+	//		page := 1
+	//
+	//		for {
+	//			logs, err := s.db.RetrieveLogsInRange(res.Context(), logFilter, fromBlock, toBlock, page)
+	//			if err != nil {
+	//				return fmt.Errorf("could not retrieve logs: %w", err)
+	//			}
+	//
+	//			retrievedLogs = append(sliceReverse(logs), retrievedLogs...)
+	//
+	//			// See if we do not need to get the next page.
+	//			if len(logs) < base.PageSize {
+	//				break
+	//			}
+	//
+	//			page++
+	//		}
+	//
+	//		// Convert the logs to the protobuf format and send them through the stream.
+	//		for _, log := range retrievedLogs {
+	//			err = res.Send(&pbscribe.StreamLogsResponse{
+	//				Log: pbscribe.FromNativeLog(log),
+	//			})
+	//			if err != nil {
+	//				return fmt.Errorf("could not send log: %w", err)
+	//			}
+	//		}
+	//
+	//		if req.ToBlock != "latest" {
+	//			return nil
+	//		}
+	//
+	//		lastFromBlock = fromBlock
+	//		wait = 1
+	//	}
+	//}
 }
 
 func (s *server) Check(context.Context, *pbscribe.HealthCheckRequest) (*pbscribe.HealthCheckResponse, error) {
@@ -125,22 +219,32 @@ func (s *server) Watch(a *pbscribe.HealthCheckRequest, res pbscribe.ScribeServic
 	}
 }
 
-func setBlock(s string) (uint64, error) {
-	switch s {
-	case "latest":
-		return math.MaxUint64 - 1, nil
-	case "earliest":
-		return 0, nil
-	case "pending":
-		return uint64(math.MaxInt64), nil
-	default:
-		block, err := strconv.ParseInt(s, 16, 64)
-		if err != nil {
-			return 0, fmt.Errorf("could not parse block: %w", err)
-		}
+func (s *server) setBlocks(ctx context.Context, req *pbscribe.StreamLogsRequest) (uint64, uint64, error) {
+	blocks := []string{req.FromBlock, req.ToBlock}
+	resBlocks := make([]uint64, 2)
 
-		return uint64(block), nil
+	for i, block := range blocks {
+		switch block {
+		case "latest":
+			lastIndexed, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
+			if err != nil {
+				return 0, 0, fmt.Errorf("could not retrieve last indexed block: %w", err)
+			}
+
+			resBlocks[i] = lastIndexed
+		case "earliest":
+			resBlocks[i] = 0
+		default:
+			blockNum, err := strconv.ParseUint(block, 16, 64)
+			if err != nil {
+				return 0, 0, fmt.Errorf("could not parse %s block: %w", block, err)
+			}
+
+			resBlocks[i] = blockNum
+		}
 	}
+
+	return resBlocks[0], resBlocks[1], nil
 }
 
 func sliceReverse(a []*types.Log) []*types.Log {
