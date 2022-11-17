@@ -34,6 +34,8 @@ var keyToTitle = map[string]string{
 	"lb":  "Last Block Stored",
 	"a":   "Backoff Attempt",
 	"t":   "Time Elapsed",
+	"ts":  "Time Elapsed (Seconds)",
+	"cn":  "Client Number",
 	"e":   "Error"}
 
 // LogEvent formats and logs an event.
