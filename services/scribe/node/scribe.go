@@ -56,6 +56,7 @@ func (s Scribe) Start(ctx context.Context) error {
 
 	for _, chainConfig := range s.config.Chains {
 		chainConfig := chainConfig
+
 		g.Go(func() error {
 			b := &backoff.Backoff{
 				Factor: 2,

@@ -128,11 +128,11 @@ func (s *server) Watch(a *pbscribe.HealthCheckRequest, res pbscribe.ScribeServic
 func setBlock(s string) (uint64, error) {
 	switch s {
 	case "latest":
-		return math.MaxUint64, nil
+		return math.MaxUint64 - 1, nil
 	case "earliest":
 		return 0, nil
 	case "pending":
-		return math.MaxUint64, nil
+		return uint64(math.MaxInt64), nil
 	default:
 		block, err := strconv.ParseInt(s, 16, 64)
 		if err != nil {

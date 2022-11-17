@@ -101,6 +101,7 @@ func (e Executor) Start(ctx context.Context) error {
 				},
 				FromBlock: "earliest",
 				ToBlock:   big.NewInt(100).String(),
+				//ToBlock: "latest",
 			})
 			if err != nil {
 				return fmt.Errorf("could not stream logs: %w", err)
