@@ -23,6 +23,8 @@ type ChainBackfiller struct {
 	bridgeParser *parser.BridgeParser
 	// swapParsers is a map from contract address -> parser.
 	swapParsers map[common.Address]*parser.SwapParser
+	// messageBusParser is the parser to use to parse message bus events.
+	messageBusParser *parser.MessageBusParser
 	// Fetcher is the Fetcher to use to fetch logs.
 	Fetcher fetcher.ScribeFetcher
 	// chainConfig is the chain config for the chain.
@@ -36,13 +38,14 @@ const (
 )
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, fetcher fetcher.ScribeFetcher, chainConfig config.ChainConfig) *ChainBackfiller {
+func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, fetcher fetcher.ScribeFetcher, chainConfig config.ChainConfig) *ChainBackfiller {
 	return &ChainBackfiller{
-		consumerDB:   consumerDB,
-		bridgeParser: bridgeParser,
-		swapParsers:  swapParsers,
-		Fetcher:      fetcher,
-		chainConfig:  chainConfig,
+		consumerDB:       consumerDB,
+		bridgeParser:     bridgeParser,
+		swapParsers:      swapParsers,
+		messageBusParser: messageBusParser,
+		Fetcher:          fetcher,
+		chainConfig:      chainConfig,
 	}
 }
 
@@ -116,6 +119,8 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 							eventParser = c.bridgeParser
 						case "swap":
 							eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
+						case "messagebus":
+							eventParser = c.messageBusParser
 						}
 
 						err = c.processLogs(groupCtx, logs, eventParser)
@@ -157,6 +162,9 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 
 			return nil
 		case <-time.After(timeout):
+			if logIdx >= len(logs) {
+				return nil
+			}
 			err := eventParser.ParseAndStore(ctx, logs[logIdx], c.chainConfig.ChainID)
 			if err != nil {
 				logger.Warnf("could not parse and store log: %w", err)
@@ -171,9 +179,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 				timeout = b.Duration()
 				continue
 			}
-			if logIdx >= len(logs) {
-				return nil
-			}
+
 			logIdx++
 
 			// Reset the backoff after successful log parse run to prevent bloated back offs.

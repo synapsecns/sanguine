@@ -20,18 +20,18 @@ type MessageBusParser struct {
 	// Filterer is the message Filterer we use to parse events
 	Filterer *messagebus.MessageBusUpgradeableFilterer
 	// messageAddress is the address of the message
-	messageAddress common.Address
+	messageBusAddress common.Address
 	// consumerFetcher is the Fetcher for sender and timestamp
 	consumerFetcher *fetcher.ScribeFetcher
 }
 
 // NewMessageBusParser creates a new parser for a given message.
-func NewMessageBusParser(consumerDB db.ConsumerDB, messageAddress common.Address, consumerFetcher *fetcher.ScribeFetcher) (*MessageBusParser, error) {
-	filterer, err := messagebus.NewMessageBusUpgradeableFilterer(messageAddress, nil)
+func NewMessageBusParser(consumerDB db.ConsumerDB, messageBusAddress common.Address, consumerFetcher *fetcher.ScribeFetcher) (*MessageBusParser, error) {
+	filterer, err := messagebus.NewMessageBusUpgradeableFilterer(messageBusAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", messagebus.MessageBusReceiverUpgradeableFilterer{}, err)
 	}
-	return &MessageBusParser{consumerDB, filterer, messageAddress, consumerFetcher}, nil
+	return &MessageBusParser{consumerDB, filterer, messageBusAddress, consumerFetcher}, nil
 }
 
 // EventType returns the event type of a message log.

@@ -162,13 +162,13 @@ func (n NodeSuite) fillBlocks(bridgeRef *testbridge.TestBridgeRef, swapRefA *tes
 		Nil(n.T(), err)
 	}
 
-	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
+	bridgeTx, err := bridgeRef.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(chainID)), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(n.T(), err)
 	n.storeEthTx(bridgeTx, big.NewInt(int64(chainID)), big.NewInt(int64(5)), 1)
 	_, err = n.storeTestLog(bridgeTx, chainID, 5)
 	Nil(n.T(), err)
 
-	bridgeTx, err = bridgeRef.TestRedeem(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(int64(gofakeit.Uint32()))), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
+	bridgeTx, err = bridgeRef.TestRedeem(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(int64(gofakeit.Uint32()))), big.NewInt(int64(chainID)), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(n.T(), err)
 	n.storeEthTx(bridgeTx, big.NewInt(int64(chainID)), big.NewInt(int64(5)), 2)
 	_, err = n.storeTestLog(bridgeTx, chainID, 5)
@@ -186,19 +186,19 @@ func (n NodeSuite) fillBlocks(bridgeRef *testbridge.TestBridgeRef, swapRefA *tes
 	_, err = n.storeTestLog(bridgeTx, chainID, 6)
 	Nil(n.T(), err)
 
-	bridgeTx, err = bridgeRef.TestDepositAndSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	bridgeTx, err = bridgeRef.TestDepositAndSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(chainID)), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(n.T(), err)
 	n.storeEthTx(bridgeTx, big.NewInt(int64(chainID)), big.NewInt(int64(6)), 5)
 	_, err = n.storeTestLog(bridgeTx, chainID, 6)
 	Nil(n.T(), err)
 
-	bridgeTx, err = bridgeRef.TestRedeemAndSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	bridgeTx, err = bridgeRef.TestRedeemAndSwap(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(chainID)), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(n.T(), err)
 	n.storeEthTx(bridgeTx, big.NewInt(int64(chainID)), big.NewInt(int64(7)), 1)
 	_, err = n.storeTestLog(bridgeTx, chainID, 7)
 	Nil(n.T(), err)
 
-	bridgeTx, err = bridgeRef.TestRedeemAndRemove(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	bridgeTx, err = bridgeRef.TestRedeemAndRemove(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(chainID)), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), gofakeit.Uint8(), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(n.T(), err)
 	n.storeEthTx(bridgeTx, big.NewInt(int64(chainID)), big.NewInt(int64(8)), 1)
 	_, err = n.storeTestLog(bridgeTx, chainID, 8)
@@ -216,7 +216,7 @@ func (n NodeSuite) fillBlocks(bridgeRef *testbridge.TestBridgeRef, swapRefA *tes
 	_, err = n.storeTestLog(bridgeTx, chainID, 10)
 	Nil(n.T(), err)
 
-	bridgeTx, err = bridgeRef.TestRedeemV2(transactOpts.TransactOpts, [32]byte{byte(gofakeit.Uint64())}, big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
+	bridgeTx, err = bridgeRef.TestRedeemV2(transactOpts.TransactOpts, [32]byte{byte(gofakeit.Uint64())}, big.NewInt(int64(chainID)), common.HexToAddress(testTokens[chainID].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(n.T(), err)
 	n.storeEthTx(bridgeTx, big.NewInt(int64(chainID)), big.NewInt(int64(12)), 1)
 	_, err = n.storeTestLog(bridgeTx, chainID, 12)

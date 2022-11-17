@@ -41,7 +41,7 @@ RETRY:
 		sender, err := s.FetchClient.GetTxSender(ctx, int(chainID), txHash)
 
 		if err != nil {
-			logger.Warnf("could not get sender for tx %s: %v", txHash, err)
+			logger.Warnf("could not get sender for tx, trying again %s: %v", txHash, err)
 			timeout = b.Duration()
 			goto RETRY
 		}
