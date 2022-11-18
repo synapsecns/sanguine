@@ -160,7 +160,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 		select {
 		case <-ctx.Done():
 
-			return nil
+			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
 			if logIdx >= len(logs) {
 				return nil
@@ -187,6 +187,4 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			timeout = time.Duration(0)
 		}
 	}
-
-	return nil
 }

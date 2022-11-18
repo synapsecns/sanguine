@@ -87,7 +87,7 @@ var backfillCommand = &cli.Command{
 			return fmt.Errorf("could not decode config: %w", err)
 
 		}
-		db, err := api.InitDB(c.Context, c.String(clickhouseAddressFlag.Name))
+		db, err := api.InitDB(c.Context, c.String(clickhouseAddressFlag.Name), false)
 		if err != nil {
 			return fmt.Errorf("could not initialize database: %w", err)
 		}
