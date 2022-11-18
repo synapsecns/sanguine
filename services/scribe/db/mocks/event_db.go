@@ -361,6 +361,29 @@ func (_m *EventDB) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilt
 	return r0, r1
 }
 
+// RetrieveLogsInRangeAsc provides a mock function with given fields: ctx, logFilter, startBlock, endBlock, page
+func (_m *EventDB) RetrieveLogsInRangeAsc(ctx context.Context, logFilter db.LogFilter, startBlock uint64, endBlock uint64, page int) ([]*types.Log, error) {
+	ret := _m.Called(ctx, logFilter, startBlock, endBlock, page)
+
+	var r0 []*types.Log
+	if rf, ok := ret.Get(0).(func(context.Context, db.LogFilter, uint64, uint64, int) []*types.Log); ok {
+		r0 = rf(ctx, logFilter, startBlock, endBlock, page)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*types.Log)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, db.LogFilter, uint64, uint64, int) error); ok {
+		r1 = rf(ctx, logFilter, startBlock, endBlock, page)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // RetrieveLogsWithFilter provides a mock function with given fields: ctx, logFilter, page
 func (_m *EventDB) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilter, page int) ([]*types.Log, error) {
 	ret := _m.Called(ctx, logFilter, page)
