@@ -223,6 +223,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 
 	swapEvent := eventToSwapEvent(iFace, chainID)
 
+	// nolint:nestif
 	if swapEvent.Amount != nil {
 		tokenPrices := map[uint8]float64{}
 		tokenDecimals := map[uint8]uint8{}
@@ -241,7 +242,9 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 				}
 				coinGeckoID := p.coinGeckoIDs[strings.ToLower(*symbol)]
 				tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
-				tokenPrices[tokenIndex] = *tokenPrice
+				if tokenPrice != nil {
+					tokenPrices[tokenIndex] = *tokenPrice
+				}
 			}
 
 			swapEvent.TokenPrices = tokenPrices
@@ -256,7 +259,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 	}
 
 	swapEvent.Sender = sender
-	err = p.consumerDB.StoreEvent(ctx, nil, &swapEvent)
+	err = p.consumerDB.StoreEvent(ctx, &swapEvent)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}

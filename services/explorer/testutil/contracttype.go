@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
 
@@ -38,13 +39,15 @@ type contractTypeImpl int
 
 const (
 	// BridgeConfigTypeV3 is the bridge config contract type.
-	BridgeConfigTypeV3 contractTypeImpl = 0
+	BridgeConfigTypeV3 contractTypeImpl = iota
 	// SynapseBridgeType is the bridge contract type.
-	SynapseBridgeType contractTypeImpl = 1
+	SynapseBridgeType
 	// SwapFlashLoanType is the swap contract type.
-	SwapFlashLoanType contractTypeImpl = 2
+	SwapFlashLoanType
 	// SynapseBridgeV1Type is the swap contract type.
-	SynapseBridgeV1Type contractTypeImpl = 3
+	SynapseBridgeV1Type
+	// MessageBusType is the messagebus contract type.
+	MessageBusType
 )
 
 // ID gets the contract type as an id.
@@ -73,6 +76,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return swap.Contracts["/solidity/SwapFlashLoanV1_flat.sol:SwapFlashLoan"]
 	case SynapseBridgeV1Type:
 		return bridgev1.Contracts["/solidity/SynapseBridgeV1_flat.sol:SynapseBridge"]
+	case MessageBusType:
+		return messagebus.Contracts["/solidity/MessageBusUpgradeableV1_flat.sol:MessageBusUpgradeable"]
 
 	default:
 		panic("not yet implemented")

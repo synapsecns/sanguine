@@ -65,7 +65,7 @@ func (g *APISuite) SetupTest() {
 	}
 
 	address := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
-	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address)
+	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address, false)
 	Nil(g.T(), err)
 	g.chainIDs = []uint32{gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32()}
 	go func() {

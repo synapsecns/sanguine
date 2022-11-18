@@ -24,8 +24,6 @@ func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, bridgeConfigRef 
 
 // GetTokenID gets the token id from the bridge config contract.
 func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID *big.Int, tokenAddress common.Address) (tokenID *string, err error) {
-	fmt.Println("Getting token id for", tokenAddress.String(), "on chain", chainID, "at block")
-
 	tokenIDStr, err := b.bridgeConfigRef.GetTokenID(&bind.CallOpts{
 		Context: ctx,
 	}, tokenAddress, chainID)

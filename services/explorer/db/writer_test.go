@@ -26,7 +26,7 @@ func (t *DBSuite) TestBridgeWrite() {
 		Recipient:          sql.NullString{String: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(), Valid: true},
 		DestinationChainID: big.NewInt(gofakeit.Int64()),
 	}
-	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent, nil)
+	err := t.db.StoreEvent(t.GetTestContext(), bridgeEvent)
 	Nil(t.T(), err)
 }
 
@@ -46,7 +46,7 @@ func (t *DBSuite) TestSwapWrite() {
 		SoldID:       big.NewInt(gofakeit.Int64()),
 		BoughtID:     big.NewInt(gofakeit.Int64()),
 	}
-	err := t.db.StoreEvent(t.GetTestContext(), nil, swapEvent)
+	err := t.db.StoreEvent(t.GetTestContext(), swapEvent)
 	Nil(t.T(), err)
 }
 

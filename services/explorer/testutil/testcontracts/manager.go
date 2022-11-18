@@ -11,12 +11,10 @@ func NewDeployManager(t *testing.T) *DeployManager {
 
 	parentManager := manager.NewDeployerManager(t,
 		NewTestSwapFlashLoanDeployer,
-
 		NewBridgeConfigV3Deployer,
-
 		NewTestSynapseBridgeDeployer,
-
 		NewTestSynapseBridgeV1Deployer,
+		NewTestMessageBusDeployer,
 	)
 	return &DeployManager{parentManager}
 }
