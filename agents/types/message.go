@@ -11,7 +11,9 @@ import (
 )
 
 // Message is an interface that contains metadata.
-type Message interface { // nolint:interfacebloat
+//
+//nolint:interfacebloat
+type Message interface {
 	// Version gets the version of the message
 	Version() uint16
 	// Header gets the message header

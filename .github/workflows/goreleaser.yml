@@ -7,7 +7,7 @@ on:
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
   # the next run since build-goreleaser and run-goreleaser are run concurrently. We expect github actions
-  # to fix this n a future verison
+  # to fix this in a future verison
   build-goreleaser:
     runs-on: ubuntu-latest
     outputs:
@@ -160,7 +160,7 @@ jobs:
           password: ${{ secrets.GHCR_DOCKER }}
 
       - name: Run GoReleaser
-        run: goreleaser --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yaml
+        run: goreleaser --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GONOSUM: '.*'

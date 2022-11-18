@@ -14,21 +14,20 @@ import (
 
 // ContractBackfiller is a backfiller that fetches logs for a specific contract.
 type ContractBackfiller struct {
-	// chainID is the chainID of the chain the contract is deployed on
+	// chainID is the chainID of the chain the contract is deployed on.
 	chainID uint32
-	// address is the contract address to get logs for
+	// address is the contract address to get logs for.
 	address string
-	// eventDB is the database to store event data in
+	// eventDB is the database to store event data in.
 	eventDB db.EventDB
-	// client is the client for filtering
+	// client is the client for filtering.
 	client []ScribeBackend
-	// cache is a cache for txHashes
+	// cache is a cache for txHashes.
 	cache *lru.Cache
 }
 
 var logsChanLenFrequency = 1000
 
-// ---- Specific Backfiller Errors ----
 // txNotSupportedError is for handling the legacy Arbitrum tx type.
 const txNotSupportedError = "transaction type not supported"
 
@@ -40,7 +39,6 @@ const txNotFoundError = "not found"
 
 // NewContractBackfiller creates a new backfiller for a contract.
 func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client []ScribeBackend) (*ContractBackfiller, error) {
-	// initialize the cache for the txHashes
 	cache, err := lru.New(500)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize cache: %w", err)
@@ -56,42 +54,44 @@ func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, c
 }
 
 // Backfill takes in a channel of logs, uses each log to get the receipt from its txHash,
-// gets all of the logs from the receipt, then stores the receipt, the logs from the
+// gets all the logs from the receipt, then stores the receipt, the logs from the
 // receipt, and the last indexed block for hte contract in the EventDB.
 //
 //nolint:gocognit, cyclop
 func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, endHeight uint64) error {
-	// Get the correct start height
 	startHeight := givenStart
 	lastBlockIndexed, _ := c.eventDB.RetrieveLastIndexed(ctx, common.HexToAddress(c.address), c.chainID)
 
 	if lastBlockIndexed > startHeight {
-		logger.Warnf("last indexed block is greater than start height, using last indexed block: %d over the provided start block: %d\nContract Address: %s", lastBlockIndexed, startHeight, c.address)
+		LogEvent(WarnLevel, "Using last indexed block (lastIndexBlock > startHeight)", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight})
 		startHeight = lastBlockIndexed
 	}
 
-	// in the case of a failed backfill, we want to start from the last indexed block - 1
+	// In the case of a failed backfill, we want to start from the last indexed block - 1.
 	if startHeight != 0 {
 		startHeight--
 	}
 
-	// start listening for logs
 	g, groupCtx := errgroup.WithContext(ctx)
-	logger.Infof("Backfilling contract %s on chain %d from %d to %d", c.address, c.chainID, startHeight, endHeight)
+	LogEvent(InfoLevel, "Beginning to backfill contract ", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight})
 	logsChan, doneChan := c.getLogs(groupCtx, startHeight, endHeight)
+
+	// Concurrently get logs from the logsChan and store them in the EventDB.
 	g.Go(func() error {
 		for {
 			select {
 			case <-groupCtx.Done():
 				return nil
 			case log := <-logsChan:
-				// check if the txHash has already been stored in the cache
+				// Check if the txHash has already been stored in the cache.
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
 				}
-				if len(logsChan)%logsChanLenFrequency == 0 {
-					logger.Infof("logsChan length: %d", len(logsChan))
+
+				if len(logsChan)%logsChanLenFrequency == 0 && len(logsChan) != 0 {
+					LogEvent(InfoLevel, "logsChan length", LogData{"lc": len(logsChan)})
 				}
+
 				err := c.store(groupCtx, log)
 				if err != nil {
 					return fmt.Errorf("could not store log: %w \nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
@@ -103,11 +103,10 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 	})
 
 	err := g.Wait()
-
 	if err != nil {
 		return fmt.Errorf("could not backfill contract: %w \nChain: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainID, c.address, c.address)
 	}
-	logger.Infof("Finished backfilling contract %s on chain %d from %d to %d", c.address, c.chainID, startHeight, endHeight)
+	LogEvent(InfoLevel, "Finished backfilling contract", LogData{"cid": c.chainID, "ca": c.address})
 	return nil
 }
 
@@ -115,20 +114,29 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 //
 //nolint:cyclop, gocognit
 func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
-	// parallelize storing logs, receipts, and transactions
+	var returnedReceipt types.Receipt
+
+	// Parallelize storing logs, receipts, and transactions.
 	g, groupCtx := errgroup.WithContext(ctx)
 
-	var returnedReceipt types.Receipt
 	doneChan := make(chan bool, 2)
+
+	// Get the receipt for the log and notify the other goroutines that depend on it that
+	// it has been retrieved via doneChan.
 	g.Go(func() error {
-		// make getting receipt a channel in parallel
 		receipt, err := c.client[0].TransactionReceipt(ctx, log.TxHash)
 		if err != nil {
 			switch err.Error() {
-			// txNotFoundError handles a null return from omnirpc, re-queries with a client with >1 confirmations
+			// txNotFoundError handles a null return from omnirpc, re-queries with a client with >1 confirmations.
 			case txNotFoundError:
-				// Try with client with additional confirmations
-				receipt, err = c.client[1].TransactionReceipt(ctx, log.TxHash)
+				// Try with client(s) with additional confirmations.
+				for i := range c.client[1:] {
+					client := c.client[i]
+					receipt, err = client.TransactionReceipt(ctx, log.TxHash)
+					if err == nil {
+						break
+					}
+				}
 				if err != nil {
 					return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 				}
@@ -140,72 +148,101 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		returnedReceipt = *receipt
 		doneChan <- true
 		doneChan <- true
+
 		return nil
 	})
 
+	// Get the logs from the receipt and store them in the EventDB.
 	g.Go(func() error {
 		select {
 		case <-groupCtx.Done():
+			LogEvent(ErrorLevel, "Context canceled", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+
 			return fmt.Errorf("context canceled\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 		case <-doneChan:
-			// get the logs from the receipt and store them in the db
 			for _, log := range returnedReceipt.Logs {
 				if log == nil {
+					LogEvent(ErrorLevel, "log is nil", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+
 					return fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 				}
+
 				err := c.eventDB.StoreLog(groupCtx, *log, c.chainID)
 				if err != nil {
+					LogEvent(ErrorLevel, "Could not store log", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+
 					return fmt.Errorf("could not store log: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 				}
 			}
+
 			return nil
 		}
 	})
 
+	// Get the transaction from the receipt and store it in the EventDB.
 	g.Go(func() error {
 		select {
 		case <-groupCtx.Done():
+			LogEvent(ErrorLevel, "Context canceled", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+
 			return fmt.Errorf("context canceled\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 		case <-doneChan:
-			// store the receipt in the db
 			err := c.eventDB.StoreReceipt(groupCtx, returnedReceipt, c.chainID)
 			if err != nil {
 				return fmt.Errorf("could not store receipt: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 			}
+
 			return nil
 		}
 	})
 
+	// Store the transaction in the EventDB, while checking for and handling common errors.
 	g.Go(func() error {
-		// store the transaction in the db
 		txn, isPending, err := c.client[0].TransactionByHash(groupCtx, log.TxHash)
 		if err != nil {
 			switch err.Error() {
-			// txNotSupportedError handles an unsupported tx (typically legacy arbitrum txs), skips the tx entirely
+			// txNotSupportedError handles an unsupported tx (typically legacy arbitrum txs), skips the tx entirely.
 			case txNotSupportedError:
-				logger.Infof("Invalid tx: %s\n%s on chain id: %d\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err.Error(), log.TxHash.Hex(), c.chainID, log.BlockNumber, log.Address.String(), c.address)
+				LogEvent(InfoLevel, "Invalid tx", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 				return nil
-			// invalidTxVRSError handles an invalid tx (typically aurora v,r,s not found txs), skips the tx entirely
+
+			// invalidTxVRSError handles an invalid tx (typically aurora v,r,s not found txs), skips the tx entirely.
 			case invalidTxVRSError:
-				logger.Infof("Invalid tx: %s\n%s on chain id: %d\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err.Error(), log.TxHash.Hex(), c.chainID, log.BlockNumber, log.Address.String(), c.address)
+				LogEvent(InfoLevel, "Invalid tx", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 				return nil
-			// txNotFoundError handles a null return from omnirpc, re-queries with a client with >1 confirmations
+
+			// txNotFoundError handles a null return from omnirpc, re-queries with a client with >1 confirmations.
 			case txNotFoundError:
-				logger.Warnf("Could not get transaction for txHash, trying again with a client with more confirmations: %s\nChain: %d\nLog BlockNumber: %d\nLog 's Contract Address: %s", err.Error(), c.chainID, log.BlockNumber, log.Address.String())
-				txn, isPending, err = c.client[1].TransactionByHash(groupCtx, log.TxHash)
-				if err != nil {
-					return fmt.Errorf("could not get transaction by hash with extra client: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+				LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+				// Try with client(s) with additional confirmations.
+				for i := range c.client[1:] {
+					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "cn": i, "e": err.Error()})
+
+					client := c.client[i]
+					txn, isPending, err = client.TransactionByHash(groupCtx, log.TxHash)
+					if err == nil {
+						break
+					}
 				}
+				if err != nil {
+					LogEvent(ErrorLevel, "Could not get tx for txHash", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
+					return fmt.Errorf("could not get transaction receipt for txHash")
+				}
+
 			default:
 				return fmt.Errorf("could not get transaction by hash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 			}
 		}
+
 		if isPending {
 			return fmt.Errorf("transaction is pending")
 		}
 
 		err = c.eventDB.StoreEthTx(groupCtx, txn, c.chainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
 		if err != nil {
+			LogEvent(ErrorLevel, "Could not store transaction", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
 			return fmt.Errorf("could not store transaction: %w", err)
 		}
 
@@ -214,14 +251,18 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 
 	err := g.Wait()
 	if err != nil {
+		LogEvent(ErrorLevel, "Could not store data", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
 		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainID, log.BlockNumber, log.TxHash.String())
 	}
-	// store the last indexed block in the db
+
 	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainID, returnedReceipt.BlockNumber.Uint64())
 	if err != nil {
+		LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
 		return fmt.Errorf("could not store last indexed block: %w", err)
 	}
-	// store the txHash in the cache
+
 	c.cache.Add(log.TxHash, true)
 
 	return nil
@@ -230,30 +271,32 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 // chunkSize is how big to make the chunks when fetching.
 const chunkSize = 500
 
-// getLogs gets all logs for the contract.
+// getLogs gets all logs for the contract through channels constructed and populated by the rangeFilter.
 func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
-	// start the filterer. This filters the range and sends the logs to the logChan.
 	rangeFilter := NewRangeFilter(common.HexToAddress(c.address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
 	g, ctx := errgroup.WithContext(ctx)
+
+	// Concurrently start the range filter.
 	g.Go(func() error {
-		// start the range filterer, return any errors to an error channel
 		err := rangeFilter.Start(ctx)
 		if err != nil {
 			return fmt.Errorf("could not filter range: %w \nChain: %d\nstart height: %d, end: %d\nContract Address: %s", err, c.chainID, startHeight, endHeight, c.address)
 		}
+
 		return nil
 	})
 
 	logsChan := make(chan types.Log)
 	doneChan := make(chan bool)
 
-	// take the logs and put them in the log channel
+	// Concurrently read from the range filter and send to the logsChan.
 	g.Go(func() error {
 	OUTER:
 		for {
 			select {
 			case <-ctx.Done():
-				logger.Warnf("context canceled while getting logs\nChain: %d\nstart height: %d, end: %d\nContract Address: %s", c.chainID, startHeight, endHeight, c.address)
+				LogEvent(ErrorLevel, "Context canceled while getting log", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight})
+
 				return nil
 			case logInfos := <-rangeFilter.GetLogChan():
 				for _, log := range logInfos.logs {
@@ -262,14 +305,18 @@ func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight 
 			default:
 				if rangeFilter.Done() {
 					finLogs, _ := rangeFilter.Drain(ctx)
+
 					for _, log := range finLogs {
 						logsChan <- log
 					}
+
 					doneChan <- true
+
 					break OUTER
 				}
 			}
 		}
+
 		return nil
 	})
 

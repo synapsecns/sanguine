@@ -19,6 +19,7 @@ func (r *logResolver) Transaction(ctx context.Context, obj *model.Log) (*model.T
 		ChainID: uint32(obj.ChainID),
 		TxHash:  obj.TxHash,
 	}
+
 	transactions, err := r.DB.RetrieveEthTxsWithFilter(ctx, transactionFilter, obj.Page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving transactions: %w", err)
@@ -29,6 +30,7 @@ func (r *logResolver) Transaction(ctx context.Context, obj *model.Log) (*model.T
 	if len(transactions) > 1 {
 		return nil, fmt.Errorf("multiple transactions found for log")
 	}
+
 	return r.ethTxToModelTransaction(transactions[0], uint32(obj.ChainID)), nil
 }
 
@@ -38,6 +40,7 @@ func (r *logResolver) Receipt(ctx context.Context, obj *model.Log) (*model.Recei
 		ChainID: uint32(obj.ChainID),
 		TxHash:  obj.TxHash,
 	}
+
 	receipts, err := r.DB.RetrieveReceiptsWithFilter(ctx, receiptFilter, obj.Page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving receipts: %w", err)
@@ -48,6 +51,7 @@ func (r *logResolver) Receipt(ctx context.Context, obj *model.Log) (*model.Recei
 	if len(receipts) > 1 {
 		return nil, fmt.Errorf("multiple receipts found for log")
 	}
+
 	return r.receiptToModelReceipt(receipts[0], uint32(obj.ChainID)), nil
 }
 
@@ -57,6 +61,7 @@ func (r *logResolver) JSON(ctx context.Context, obj *model.Log) (types.JSON, err
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling json: %w", err)
 	}
+
 	return json, nil
 }
 
@@ -66,10 +71,12 @@ func (r *receiptResolver) Logs(ctx context.Context, obj *model.Receipt) ([]*mode
 		ChainID: uint32(obj.ChainID),
 		TxHash:  obj.TxHash,
 	}
+
 	logs, err := r.DB.RetrieveLogsWithFilter(ctx, logFilter, obj.Page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving logs: %w", err)
 	}
+
 	return r.logsToModelLogs(logs, uint32(obj.ChainID)), nil
 }
 
@@ -79,6 +86,7 @@ func (r *receiptResolver) Transaction(ctx context.Context, obj *model.Receipt) (
 		ChainID: uint32(obj.ChainID),
 		TxHash:  obj.TxHash,
 	}
+
 	transactions, err := r.DB.RetrieveEthTxsWithFilter(ctx, transactionFilter, obj.Page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving transactions: %w", err)
@@ -89,6 +97,7 @@ func (r *receiptResolver) Transaction(ctx context.Context, obj *model.Receipt) (
 	if len(transactions) > 1 {
 		return nil, fmt.Errorf("multiple transactions found for receipt")
 	}
+
 	return r.ethTxToModelTransaction(transactions[0], uint32(obj.ChainID)), nil
 }
 
@@ -98,6 +107,7 @@ func (r *receiptResolver) JSON(ctx context.Context, obj *model.Receipt) (types.J
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling json: %w", err)
 	}
+
 	return json, nil
 }
 
@@ -107,10 +117,12 @@ func (r *transactionResolver) Logs(ctx context.Context, obj *model.Transaction) 
 		ChainID: uint32(obj.ChainID),
 		TxHash:  obj.TxHash,
 	}
+
 	logs, err := r.DB.RetrieveLogsWithFilter(ctx, logFilter, obj.Page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving logs: %w", err)
 	}
+
 	return r.logsToModelLogs(logs, uint32(obj.ChainID)), nil
 }
 
@@ -120,6 +132,7 @@ func (r *transactionResolver) Receipt(ctx context.Context, obj *model.Transactio
 		ChainID: uint32(obj.ChainID),
 		TxHash:  obj.TxHash,
 	}
+
 	receipts, err := r.DB.RetrieveReceiptsWithFilter(ctx, receiptFilter, obj.Page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving receipts: %w", err)
@@ -130,6 +143,7 @@ func (r *transactionResolver) Receipt(ctx context.Context, obj *model.Transactio
 	if len(receipts) > 1 {
 		return nil, fmt.Errorf("multiple receipts found for transaction")
 	}
+
 	return r.receiptToModelReceipt(receipts[0], uint32(obj.ChainID)), nil
 }
 
@@ -139,6 +153,7 @@ func (r *transactionResolver) JSON(ctx context.Context, obj *model.Transaction) 
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling json: %w", err)
 	}
+
 	return json, nil
 }
 

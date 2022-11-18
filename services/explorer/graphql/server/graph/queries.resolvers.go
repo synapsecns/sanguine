@@ -35,6 +35,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
+
 		results, err = r.originToDestinationBridge(ctx, address, kappa, includePending, page, tokenAddress, fromInfos)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
@@ -46,6 +47,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
+
 		results, err = r.destinationToOriginBridge(ctx, address, txnHash, kappa, page, tokenAddress, toInfos)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
@@ -59,6 +61,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
+
 	return results, nil
 }
 
@@ -68,8 +71,10 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 	if err != nil {
 		return nil, fmt.Errorf("failed to get chain IDs: %w", err)
 	}
+
 	// For each chain ID, get the latest bridge transaction.
 	var results []*model.BridgeTransaction
+
 	for i := range chainIDs {
 		// Get the PartialInfo for the latest bridge transaction.
 		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(&chainIDs[i], nil, nil, nil, nil, page))
@@ -96,6 +101,7 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	var err error
 	var blockNumberFilter string
 	var chainIDFilter string
+
 	subQuery := "bridge_events"
 	firstFilter := true
 
@@ -103,23 +109,22 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	case model.DurationPastDay:
 		hours := 24
 		targetTime := r.getTargetTime(&hours)
+
 		if chainID == nil {
 			subQuery, err = r.generateSubQuery(ctx, targetTime, sql.TokenFieldName, sql.ContractAddressFieldName)
 			if err != nil {
 				return nil, err
 			}
 		} else {
-			startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, *chainID, 0, targetTime)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get start block number: %w", err)
-			}
 			chainIDFilter = generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
-			blockNumberFilter = fmt.Sprintf("AND %s >= %d", sql.BlockNumberFieldName, startBlock)
+			blockNumberFilter = fmt.Sprintf("AND %s >= %d", sql.InsertTimeFieldName, targetTime)
 		}
 	case model.DurationAllTime:
 		chainIDFilter = generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 	}
+
 	var operation string
+
 	switch typeArg {
 	case model.StatisticTypeMean:
 		operation = "AVG"
@@ -132,9 +137,9 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
+
 	tokenAddressFilter := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
 	addressFilter := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "")
-
 	additionalFilters := fmt.Sprintf(
 		`%s%s%s%s`,
 		blockNumberFilter, chainIDFilter, tokenAddressFilter, addressFilter,
@@ -144,10 +149,12 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}
+
 	usdValue := fmt.Sprintf("%f", res)
 	output := model.ValueResult{
 		USDValue: &usdValue,
 	}
+
 	return &output, nil
 }
 
@@ -157,20 +164,18 @@ func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, addres
 	if err != nil {
 		return nil, fmt.Errorf("failed to get chain IDs: %w", err)
 	}
+
 	directionIn := r.getDirectionIn(direction)
 	targetTime := r.getTargetTime(hours)
 
-	// get the number of transactions for each chain ID
 	var results []*model.TransactionCountResult
+
 	for i := range chainIDs {
-		startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chainIDs[i], 0, targetTime)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get start block number: %w", err)
-		}
-		count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(chainIDs[i], address, nil, directionIn, &startBlock))
+		count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(chainIDs[i], address, nil, directionIn, &targetTime))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 		}
+
 		chainInt := chainIDs[i]
 		countInt := int(count)
 		results = append(results, &model.TransactionCountResult{
@@ -178,6 +183,7 @@ func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, addres
 			Count:   &countInt,
 		})
 	}
+
 	return results, nil
 }
 
@@ -187,7 +193,9 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 	if err != nil {
 		return nil, fmt.Errorf("failed to get chain IDs: %w", err)
 	}
+
 	chainIDsToTokenAddresses := make(map[int][]string)
+
 	for _, chain := range chainIDs {
 		query := fmt.Sprintf(
 			`SELECT DISTINCT %s FROM bridge_events WHERE %s = %d OR %s = %d AND %s`,
@@ -197,23 +205,23 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 		if err != nil {
 			return nil, fmt.Errorf("failed to get token addresses: %w", err)
 		}
+
 		chainIDsToTokenAddresses[chain] = tokenAddresses
 	}
+
 	directionIn := r.getDirectionIn(direction)
 	targetTime := r.getTargetTime(hours)
 
-	// get the number of transactions for each token address, for each chain ID
+	// Get the number of transactions for each token address, for each chain ID.
 	var results []*model.TokenCountResult
+
 	for chain, tokenAddresses := range chainIDsToTokenAddresses {
-		startBlock, err := r.Fetcher.TimeToBlockNumber(ctx, chain, 0, targetTime)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get start block number: %w", err)
-		}
 		for i := range tokenAddresses {
-			count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(chain, address, &tokenAddresses[i], directionIn, &startBlock))
+			count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(chain, address, &tokenAddresses[i], directionIn, &targetTime))
 			if err != nil {
 				return nil, fmt.Errorf("failed to get count by token address: %w", err)
 			}
+
 			chainInt := chain
 			countInt := int(count)
 			results = append(results, &model.TokenCountResult{
@@ -234,11 +242,13 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate subquery: %w", err)
 	}
+
 	query := fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS count FROM %s GROUP BY address ORDER BY count DESC`, sql.TokenFieldName, sql.TxHashFieldName, subQuery)
 	res, err := r.DB.GetAddressRanking(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}
+
 	return res, nil
 }
 
@@ -247,11 +257,8 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	var subQuery string
 	var query string
 
-	// nowTime used for calculating time in the past
 	nowTime := time.Now().Unix()
 	startTime := nowTime - int64(*days*86400)
-
-	// Create sql segment with filters
 	filter := fmt.Sprintf("WHERE %s = %d AND %s >= %d", sql.ChainIDFieldName, *chainID, sql.TimeStampFieldName, startTime)
 
 	// Handle the different logic needed for each query type.
@@ -268,19 +275,23 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	default:
 		return nil, fmt.Errorf("invalid type argument")
 	}
+
 	dayByDayData, err := r.DB.GetDateResults(ctx, subQuery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get dateResults: %w", err)
 	}
+
 	sum, err := r.DB.GetFloat64(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get total sum: %w", err)
 	}
+
 	payload := model.HistoricalResult{
 		Total:       &sum,
 		DateResults: dayByDayData,
 		Type:        typeArg,
 	}
+
 	return &payload, nil
 }
 
@@ -288,12 +299,3 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-const sortingKeys = "event_index, block_number, event_type, tx_hash, chain_id, contract_address"
-const deDupInQuery = "(" + sortingKeys + ", insert_time) IN (SELECT " + sortingKeys + ", max(insert_time) as insert_time FROM bridge_events GROUP BY " + sortingKeys + ")"
