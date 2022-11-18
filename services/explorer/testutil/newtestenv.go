@@ -89,7 +89,7 @@ func NewTestEnvDB(ctx context.Context, t *testing.T) (db db.ConsumerDB, eventDB 
 	}
 	assert.Equal(t, err, nil)
 	dbURL := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
-	consumerDB, err := sql.OpenGormClickhouse(ctx, dbURL)
+	consumerDB, err := sql.OpenGormClickhouse(ctx, dbURL, false)
 	assert.Nil(t, err)
 	db = consumerDB
 

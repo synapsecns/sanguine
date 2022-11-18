@@ -315,6 +315,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 			return nil, fmt.Errorf("unknown topic: %s %s", logTopic.Hex(), logTopic.String())
 		}
 	}(log)
+
 	if err != nil {
 		// Switch failed.
 		return err
@@ -368,7 +369,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 
 	bridgeEvent.Sender = sender
-	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent, nil)
+	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
