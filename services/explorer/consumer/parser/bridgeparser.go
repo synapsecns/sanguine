@@ -334,7 +334,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 
 	bridgeEvent := eventToBridgeEvent(iFace, chainID)
-	bridgeEvent.TokenID = ToNullString(tokenID) // TODO Change to token symbol
+	bridgeEvent.TokenID = ToNullString(tokenID) // TODO Change to coingecko ID.
 	bridgeEvent.TokenDecimal = &token.TokenDecimals
 	timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	if err != nil {
