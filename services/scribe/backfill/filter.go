@@ -80,6 +80,7 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 
 			return nil
 		default:
+			startTime := time.Now()
 			chunk := f.iterator.NextChunk()
 
 			if chunk == nil {
@@ -93,6 +94,7 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 			}
 
 			f.appendToChannel(ctx, logs)
+			LogEvent(InfoLevel, "Chunk completed", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
 		}
 	}
 }
