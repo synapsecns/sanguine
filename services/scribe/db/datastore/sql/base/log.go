@@ -176,7 +176,7 @@ func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, 
 	return logs, nil
 }
 
-// RetrieveLogsInRangeAsc retrieves all logs that match an inputted filter and are within a range given a page, in ascending order.
+// RetrieveLogsInRangeAsc retrieves all logs that match an inputted filter and are within a range given a page - in ascending order.
 func (s Store) RetrieveLogsInRangeAsc(ctx context.Context, logFilter db.LogFilter, startBlock, endBlock uint64, page int) (logs []*types.Log, err error) {
 	logs, err = s.retrieveLogsInRangeQuery(ctx, logFilter, startBlock, endBlock, page, "asc")
 	if err != nil {
