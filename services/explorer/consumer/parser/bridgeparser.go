@@ -334,7 +334,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 
 	bridgeEvent := eventToBridgeEvent(iFace, chainID)
-	bridgeEvent.TokenID = ToNullString(tokenID)
+	bridgeEvent.TokenID = ToNullString(tokenID) // TODO Change to token symbol
 	bridgeEvent.TokenDecimal = &token.TokenDecimals
 	timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	if err != nil {
@@ -346,9 +346,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
 	coinGeckoID := p.coinGeckoIDs[*tokenID]
-	if coinGeckoID == "" {
-		fmt.Println("EMPYRY chainID", chainID, iFace.GetToken())
-	}
+
 	tokenPrice, symbol := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
 	if tokenPrice != nil {
 		// Add AmountUSD to bridgeEvent (if price is not nil).
