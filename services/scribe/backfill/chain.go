@@ -110,6 +110,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		for {
 			select {
 			case <-backfillCtx.Done():
+				LogEvent(ErrorLevel, "Context canceled", LogData{"cid": c.chainID, "bn": currentBlock, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err(), "bt": true})
+
 				return fmt.Errorf("%s context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
 			case <-time.After(timeout):
 				currentBlock, err = c.client[0].BlockNumber(backfillCtx)
@@ -143,6 +145,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				select {
 				case <-backfillCtx.Done():
 					LogEvent(WarnLevel, "Could not backfill data, context canceled", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
+
 					return fmt.Errorf("%s chain context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
 				case <-time.After(timeout):
 					err = contractBackfiller.Backfill(backfillCtx, startHeight, currentBlock)
@@ -171,6 +174,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	// Check if there are any block times stored in the database for the given chain
 	count, err := c.eventDB.RetrieveBlockTimesCountForChain(backfillCtx, c.chainID)
 	if err != nil {
+		LogEvent(ErrorLevel, "could not retrieve block times count for chain", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
 		return fmt.Errorf("could not retrieve block times count for chain: %w", err)
 	}
 
@@ -274,6 +279,8 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 		}
 
 		if err := chunkGroup.Wait(); err != nil {
+			LogEvent(ErrorLevel, "could not backfill chain", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bt": true})
+
 			return fmt.Errorf("could not backfill chain %d: %w", c.chainID, err)
 		}
 
