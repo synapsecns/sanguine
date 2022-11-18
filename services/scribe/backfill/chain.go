@@ -49,7 +49,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 	startHeights := make(map[string]uint64)
 
 	if chainConfig.BlockTimeChunkCount == 0 {
-		chainConfig.BlockTimeChunkCount = 10
+		chainConfig.BlockTimeChunkCount = 20
 	}
 
 	if chainConfig.BlockTimeChunkSize == 0 {
@@ -110,6 +110,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		for {
 			select {
 			case <-backfillCtx.Done():
+				LogEvent(ErrorLevel, "Context canceled", LogData{"cid": c.chainID, "bn": currentBlock, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err(), "bt": true})
+
 				return fmt.Errorf("%s context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
 			case <-time.After(timeout):
 				currentBlock, err = c.client[0].BlockNumber(backfillCtx)
@@ -142,15 +144,15 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			for {
 				select {
 				case <-backfillCtx.Done():
-					LogEvent(WarnLevel, "Could not backfill data", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
+					LogEvent(WarnLevel, "Could not backfill data, context canceled", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
 
-					return fmt.Errorf("%s context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
+					return fmt.Errorf("%s chain context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
 				case <-time.After(timeout):
 					err = contractBackfiller.Backfill(backfillCtx, startHeight, currentBlock)
 
 					if err != nil {
 						timeout = b.Duration()
-						LogEvent(WarnLevel, "Could not backfill data", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
+						LogEvent(WarnLevel, "Could not backfill data, retrying", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
 
 						continue
 					}
@@ -172,6 +174,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	// Check if there are any block times stored in the database for the given chain
 	count, err := c.eventDB.RetrieveBlockTimesCountForChain(backfillCtx, c.chainID)
 	if err != nil {
+		LogEvent(ErrorLevel, "could not retrieve block times count for chain", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
 		return fmt.Errorf("could not retrieve block times count for chain: %w", err)
 	}
 
@@ -182,12 +186,16 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		// This will also be used as the start height for this additional backfiller.
 		endHeight, err = c.eventDB.RetrieveLastBlockStored(backfillCtx, c.chainID)
 		if err != nil {
+			LogEvent(ErrorLevel, "Could not retrieve last block stored", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
 			return fmt.Errorf("could not retrieve last block stored: %w", err)
 		}
 
 		// Get first stored block time to compare with the current start height.
 		firstStoredBlockTime, err := c.eventDB.RetrieveFirstBlockStored(backfillCtx, c.chainID)
 		if err != nil {
+			LogEvent(ErrorLevel, "Could not retrieve first block stored", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
 			return fmt.Errorf("could not retrieve first block stored: %w", err)
 		}
 
@@ -199,6 +207,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 		backfillGroup.Go(func() error {
 			err = c.blocktimeBackfillManager(backfillCtx, decrementIfNotZero(endHeight), currentBlock)
 			if err != nil {
+				LogEvent(ErrorLevel, "Could not backfill block times from last stored block time", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
 				return fmt.Errorf("could not backfill block times from last stored block time: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, currentBlock, b.Attempt(), b.Duration())
 			}
 
@@ -210,6 +220,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	backfillGroup.Go(func() error {
 		err = c.blocktimeBackfillManager(backfillCtx, decrementIfNotZero(startHeight), endHeight)
 		if err != nil {
+			LogEvent(ErrorLevel, "Could not backfill block times from min block height", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
 			return fmt.Errorf("could not backfill block times from min block height: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
 		}
 
@@ -217,6 +229,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	})
 
 	if err := backfillGroup.Wait(); err != nil {
+		LogEvent(ErrorLevel, "Could not backfill with error group", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
 		return fmt.Errorf("could not backfill: %w", err)
 	}
 	LogEvent(WarnLevel, "Finished backfilling blocktimes and contracts", LogData{"cid": c.chainID, "sh": startHeight, "eh": currentBlock, "t": time.Since(startTime).Hours()})
@@ -230,6 +244,7 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 
 	// Continue to backfill block times until the current block is greater than the end height.
 	for currentBlock <= endHeight {
+		startTime := time.Now()
 		chunkIdx := uint64(0)
 		LogEvent(InfoLevel, "Starting backfilling chunks", LogData{"cid": c.chainID, "bn": currentBlock, "eh": endHeight, "bt": true})
 
@@ -252,7 +267,9 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 			chunkGroup.Go(func() error {
 				err := c.blocktimeBackfiller(chunkCtx, chunkStartHeight, chunkEndHeight)
 				if err != nil {
-					return fmt.Errorf("could not backfill chunk : %w", err)
+					LogEvent(ErrorLevel, "Could backfill chunk", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bt": true})
+
+					return fmt.Errorf("could not backfill chunk: %w", err)
 				}
 
 				return nil
@@ -262,15 +279,18 @@ func (c ChainBackfiller) blocktimeBackfillManager(ctx context.Context, startHeig
 		}
 
 		if err := chunkGroup.Wait(); err != nil {
-			return fmt.Errorf("could not backfill: %w", err)
+			LogEvent(ErrorLevel, "could not backfill chain", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bt": true})
+
+			return fmt.Errorf("could not backfill chain %d: %w", c.chainID, err)
 		}
 
 		// Calculate the last block stored for logging, storing, and setting the next current block.
 		lastBlockStored := currentBlock + (c.chainConfig.BlockTimeChunkCount * c.chainConfig.BlockTimeChunkSize) - 1
-		LogEvent(InfoLevel, "Finished backfilling chunks", LogData{"cid": c.chainID, "bn": currentBlock, "lb": lastBlockStored, "bt": true})
+		LogEvent(InfoLevel, "Finished backfilling chunks", LogData{"cid": c.chainID, "bn": currentBlock, "lb": lastBlockStored, "bt": true, "ts": time.Since(startTime).Seconds()})
 
 		currentBlock = lastBlockStored + 1
 	}
+	LogEvent(WarnLevel, "Finished backfilling all chunks", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "eh": endHeight, "bt": true})
 
 	return nil
 }
@@ -291,7 +311,7 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 	for {
 		select {
 		case <-ctx.Done():
-			LogEvent(InfoLevel, "Context canceled", LogData{"cid": c.chainID, "bn": blockNum, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": ctx.Err()})
+			LogEvent(ErrorLevel, "Context canceled", LogData{"cid": c.chainID, "bn": blockNum, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": ctx.Err()})
 
 			return fmt.Errorf("%s context canceled: %w", ctx.Value(blocktimeContextKey), ctx.Err())
 		case <-time.After(timeoutBlockNum):
@@ -306,7 +326,7 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 			_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
 
 			if err == nil {
-				LogEvent(InfoLevel, "Skipping blocktime backfill", LogData{"cid": c.chainID, "bn": blockNum})
+				LogEvent(InfoLevel, "Skipping blocktime backfill", LogData{"cid": c.chainID, "bn": blockNum, "bt": true})
 				blockNum++
 				bBlockNum.Reset()
 
@@ -318,7 +338,7 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 
 			if err != nil {
 				timeoutBlockNum = bBlockNum.Duration()
-				LogEvent(WarnLevel, "Could not get block time", LogData{"cid": c.chainID, "bn": blockNum, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": ctx.Err()})
+				LogEvent(WarnLevel, "Could not get block time", LogData{"cid": c.chainID, "bn": blockNum, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": err.Error()})
 
 				continue
 			}
@@ -327,7 +347,7 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 			err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum, rawBlock.Time)
 			if err != nil {
 				timeoutBlockNum = bBlockNum.Duration()
-				LogEvent(WarnLevel, "Could not store blocktime", LogData{"cid": c.chainID, "bn": blockNum, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": ctx.Err()})
+				LogEvent(WarnLevel, "Could not store blocktime", LogData{"cid": c.chainID, "bn": blockNum, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": err.Error()})
 
 				continue
 			}
