@@ -58,7 +58,7 @@ type EventDBReader interface {
 	RetrieveLogsWithFilter(ctx context.Context, logFilter LogFilter, page int) (logs []*types.Log, err error)
 	// RetrieveLogsInRange retrieves all logs that match an inputted filter and are within a range given a page.
 	RetrieveLogsInRange(ctx context.Context, logFilter LogFilter, startBlock, endBlock uint64, page int) (logs []*types.Log, err error)
-	// RetrieveLogsInRangeAsc retrieves all logs that match an inputted filter and are within a range given a page, in ascending order.
+	// RetrieveLogsInRangeAsc retrieves all logs that match an inputted filter and are within a range given a page - in ascending order.
 	RetrieveLogsInRangeAsc(ctx context.Context, logFilter LogFilter, startBlock, endBlock uint64, page int) (logs []*types.Log, err error)
 
 	// RetrieveReceiptsWithFilter retrieves receipts with a filter given a page.
