@@ -48,7 +48,7 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bri
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridgev1.SynapseBridgeFilterer{}, err)
 	}
-	idPath := filepath.Clean("../static/tokenIDToCoinGeckoID.yaml")
+	idPath := filepath.Clean("./static/tokenIDToCoinGeckoID.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("could find path to yaml file: %w", err)
 	}
@@ -345,6 +345,9 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
 	coinGeckoID := p.coinGeckoIDs[*tokenID]
+	if coinGeckoID == "" {
+		fmt.Println("EMPYRY chainID", chainID, iFace.GetToken())
+	}
 	tokenPrice, symbol := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
 	if tokenPrice != nil {
 		// Add AmountUSD to bridgeEvent (if price is not nil).
