@@ -46,7 +46,7 @@ type LogFilterer interface {
 }
 
 // bufferSize is how many ranges ahead should be fetched.
-const bufferSize = 10
+const bufferSize = 15
 
 // maxAttempts is that maximum number of times a filter attempt should be made before giving up.
 const maxAttempts = 5
