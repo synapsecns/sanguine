@@ -94,7 +94,7 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 			}
 
 			f.appendToChannel(ctx, logs)
-			LogEvent(InfoLevel, "Chunk completed", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
+			LogEvent(InfoLevel, "Chunk completed", LogData{"ca": f.contractAddress, "sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
 		}
 	}
 }
