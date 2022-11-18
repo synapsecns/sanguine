@@ -46,7 +46,7 @@ type LogFilterer interface {
 }
 
 // bufferSize is how many ranges ahead should be fetched.
-const bufferSize = 10
+const bufferSize = 15
 
 // maxAttempts is that maximum number of times a filter attempt should be made before giving up.
 const maxAttempts = 5
@@ -55,7 +55,7 @@ const maxAttempts = 5
 var minBackoff = 1 * time.Second
 
 // maxBackoff is the maximum backoff period between requests.
-var maxBackoff = 30 * time.Second
+var maxBackoff = 5 * time.Second
 
 // NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
 func NewRangeFilter(address ethCommon.Address, filterer LogFilterer, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
@@ -80,6 +80,7 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 
 			return nil
 		default:
+			startTime := time.Now()
 			chunk := f.iterator.NextChunk()
 
 			if chunk == nil {
@@ -93,6 +94,7 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 			}
 
 			f.appendToChannel(ctx, logs)
+			LogEvent(InfoLevel, "Chunk completed", LogData{"ca": f.contractAddress, "sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
 		}
 	}
 }
