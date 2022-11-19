@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 227.22 227.14">
+  <defs>
+    <linearGradient id="무제_그라디언트_21" data-name="무제 그라디언트 21" x1="70.65" y1="94.51" x2="197.38" y2="-32.21" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff2f00"/>
+      <stop offset="0.13" stop-color="#ff3f00"/>
+      <stop offset="0.38" stop-color="#ff6700"/>
+      <stop offset="0.59" stop-color="#ff8c00"/>
+    </linearGradient>
+    <linearGradient id="무제_그라디언트_68" data-name="무제 그라디언트 68" x1="177.65" y1="177.97" x2="177.65" y2="32.41" gradientUnits="userSpaceOnUse">
+      <stop offset="0.2" stop-color="#f00048"/>
+      <stop offset="0.79" stop-color="#ff8c00"/>
+    </linearGradient>
+    <linearGradient id="무제_그라디언트_30" data-name="무제 그라디언트 30" x1="-0.52" y1="159.29" x2="115.23" y2="43.55" gradientUnits="userSpaceOnUse">
+      <stop offset="0.09" stop-color="#850000"/>
+      <stop offset="0.25" stop-color="#a90e00"/>
+      <stop offset="0.45" stop-color="#ce1c00"/>
+      <stop offset="0.64" stop-color="#e92700"/>
+      <stop offset="0.8" stop-color="#f92d00"/>
+      <stop offset="0.93" stop-color="#ff2f00"/>
+    </linearGradient>
+    <linearGradient id="무제_그라디언트_62" data-name="무제 그라디언트 62" x1="52.79" y1="221.49" x2="161.96" y2="158.46" gradientUnits="userSpaceOnUse">
+      <stop offset="0.07" stop-color="#850000"/>
+      <stop offset="0.88" stop-color="#d30168"/>
+    </linearGradient>
+  </defs>
+  <g id="Layer_2" data-name="Layer 2">
+    <g id="레이어_1" data-name="레이어 1">
+      <g>
+        <path d="M186.41,26.28A113.15,113.15,0,0,0,117.63,0L59.69,153Z" style="fill: url(#무제_그라디언트_21)"/>
+        <path d="M200.86,40.76l-72.78,72.78,72.77,72.77A113.62,113.62,0,0,0,200.86,40.76Z" style="fill: url(#무제_그라디언트_68)"/>
+        <path d="M89.15,17.47.22,106.39a113.42,113.42,0,0,0,25.34,79Z" style="fill: url(#무제_그라디언트_30)"/>
+        <path d="M113.62,128,40.84,200.79a113.64,113.64,0,0,0,145.55,0Z" style="fill: url(#무제_그라디언트_62)"/>
+      </g>
+    </g>
+  </g>
+</svg>
