@@ -2,6 +2,7 @@ package executor
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -54,6 +55,8 @@ func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, dbPath 
 }
 
 // Start starts the executor agent. This uses gRPC to process the logs.
+//
+//nolint:cyclop
 func (e Executor) Start(ctx context.Context) error {
 	// Start the GraphQL server for the Scribe, and expose the gRPC server.
 	apiConfig := api.Config{
@@ -109,7 +112,7 @@ func (e Executor) Start(ctx context.Context) error {
 
 			for {
 				response, err := stream.Recv()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					return nil
 				}
 				if err != nil {

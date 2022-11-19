@@ -9,8 +9,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
-	"github.com/synapsecns/sanguine/services/scribe/graphql/client"
-	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"go.uber.org/atomic"
 	"testing"
@@ -20,15 +18,12 @@ import (
 // ExecutorSuite tests the executor agent.
 type ExecutorSuite struct {
 	*testsuite.TestSuite
-	testDB     db.EventDB
-	dbPath     string
-	gqlClient  *client.Client
-	grpcClient *rest.APIClient
-	logIndex   atomic.Int64
-
-	manager *testutil.DeployManager
-	wallet  wallet.Wallet
-	signer  *localsigner.Signer
+	testDB   db.EventDB
+	dbPath   string
+	logIndex atomic.Int64
+	manager  *testutil.DeployManager
+	wallet   wallet.Wallet
+	signer   *localsigner.Signer
 }
 
 // NewExecutorSuite creates a new executor suite.
