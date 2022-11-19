@@ -86,13 +86,14 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 		default:
 			g, ctx := errgroup.WithContext(ctx)
 			startTime := time.Now()
-			var processedChunks map[int]*LogInfo
+			processedChunks := make(map[int]*LogInfo)
+			nullChunkFlag := false
 			//TODO add backoff
 			for i := 0; i < chunkCount; i++ {
 				g.Go(func() error {
 					chunk := f.iterator.NextChunk()
 					if chunk == nil {
-						f.done = true
+						nullChunkFlag = true
 						return nil
 					}
 					logs, err := f.FilterLogs(ctx, chunk)
@@ -107,7 +108,12 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 				return err
 			}
 			for i := 0; i < chunkCount; i++ {
-				f.appendToChannel(ctx, processedChunks[i])
+				if processedChunks[i] != nil {
+					f.appendToChannel(ctx, processedChunks[i])
+				}
+			}
+			if nullChunkFlag {
+				f.done = true
 			}
 			LogEvent(InfoLevel, "Chunk completed", LogData{"ca": f.contractAddress, "ts": time.Since(startTime).Seconds()})
 		}
