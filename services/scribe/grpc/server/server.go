@@ -57,6 +57,7 @@ func (s *server) FilterLogs(ctx context.Context, req *pbscribe.FilterLogsRequest
 	}, nil
 }
 
+//nolint:gocognit,cyclop
 func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.ScribeService_StreamLogsServer) error {
 	streamNewBlocks := false
 	fromBlock, toBlock, err := s.setBlocks(res.Context(), req)

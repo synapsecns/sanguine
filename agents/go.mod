@@ -11,7 +11,6 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.19.0
 	github.com/coinbase/rosetta-sdk-go v0.8.1
 	github.com/ethereum/go-ethereum v1.10.25
-	github.com/hashicorp/consul/sdk v0.8.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
 	github.com/libs4go/crypto v0.0.1
@@ -139,7 +138,6 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/miguelmota/go-ethereum-hdwallet v0.1.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/pointerstructure v1.2.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
