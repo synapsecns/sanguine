@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/ethergo/util"
+	"golang.org/x/sync/errgroup"
 	"math/big"
 	"time"
 
@@ -48,6 +49,9 @@ type LogFilterer interface {
 // bufferSize is how many ranges ahead should be fetched.
 const bufferSize = 15
 
+// chunkCount is how many chunks to process at a time.
+const chunkCount = 20
+
 // maxAttempts is that maximum number of times a filter attempt should be made before giving up.
 const maxAttempts = 5
 
@@ -80,21 +84,32 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 
 			return nil
 		default:
+			g, ctx := errgroup.WithContext(ctx)
 			startTime := time.Now()
-			chunk := f.iterator.NextChunk()
-
-			if chunk == nil {
-				f.done = true
-				return nil
+			var processedChunks map[int]*LogInfo
+			//TODO add backoff
+			for i := 0; i < chunkCount; i++ {
+				g.Go(func() error {
+					chunk := f.iterator.NextChunk()
+					if chunk == nil {
+						f.done = true
+						return nil
+					}
+					logs, err := f.FilterLogs(ctx, chunk)
+					if err != nil {
+						return fmt.Errorf("could not filter logs: %w", err)
+					}
+					processedChunks[i] = logs
+					return nil
+				})
 			}
-
-			logs, err := f.FilterLogs(ctx, chunk)
-			if err != nil {
-				return fmt.Errorf("could not filter logs: %w", err)
+			if err := g.Wait(); err != nil {
+				return err
 			}
-
-			f.appendToChannel(ctx, logs)
-			LogEvent(InfoLevel, "Chunk completed", LogData{"ca": f.contractAddress, "sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
+			for i := 0; i < chunkCount; i++ {
+				f.appendToChannel(ctx, processedChunks[i])
+			}
+			LogEvent(InfoLevel, "Chunk completed", LogData{"ca": f.contractAddress, "ts": time.Since(startTime).Seconds()})
 		}
 	}
 }
