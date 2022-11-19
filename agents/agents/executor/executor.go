@@ -8,6 +8,7 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/services/scribe/api"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
@@ -15,18 +16,18 @@ import (
 
 // Executor is the executor agent.
 type Executor struct {
-	// address is the address of the contract.
-	address common.Address
-	// chainID is the chain ID for the executor.
-	chainID uint32
+	// chainIDs are the chain IDs for the Executor to process.
+	chainIDs []uint32
+	// addresses is a map from chain ID -> address.
+	addresses map[uint32]common.Address
 	// dbPath is the path to the database.
 	dbPath string
 	// dbType is the type of database.
 	dbType string
-	// lastLog is the last log that was processed.
-	lastLog logOrderInfo
-	// LogChan is a channel for logs.
-	LogChan chan *types.Log
+	// lastLog is a map from chainID -> last log processed.
+	lastLog map[uint32]logOrderInfo
+	// LogChans is a mapping from chain ID -> log channel.
+	LogChans map[uint32]chan *types.Log
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -36,13 +37,19 @@ type logOrderInfo struct {
 }
 
 // NewExecutor creates a new executor agent.
-func NewExecutor(address common.Address, chainID uint32, dbPath string, dbType string) (*Executor, error) {
+func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, dbPath string, dbType string) (*Executor, error) {
+	channels := make(map[uint32]chan *types.Log)
+	for _, chainID := range chainIDs {
+		channels[chainID] = make(chan *types.Log, 1000)
+	}
+
 	return &Executor{
-		address: address,
-		chainID: chainID,
-		dbPath:  dbPath,
-		dbType:  dbType,
-		LogChan: make(chan *types.Log, 1000),
+		chainIDs:  chainIDs,
+		addresses: addresses,
+		dbPath:    dbPath,
+		dbType:    dbType,
+		lastLog:   make(map[uint32]logOrderInfo),
+		LogChans:  channels,
 	}, nil
 }
 
@@ -82,41 +89,55 @@ func (e Executor) Start(ctx context.Context) error {
 		return fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
 
-	stream, err := client.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
-		Filter: &pbscribe.LogFilter{
-			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: e.address.Hex()}},
-			ChainId:         e.chainID,
-		},
-		FromBlock: "earliest",
-		ToBlock:   "latest",
-	})
-	if err != nil {
-		return fmt.Errorf("could not stream logs: %w", err)
+	g, gCtx := errgroup.WithContext(ctx)
+
+	for _, chainID := range e.chainIDs {
+		chainID := chainID
+
+		g.Go(func() error {
+			stream, err := client.StreamLogs(gCtx, &pbscribe.StreamLogsRequest{
+				Filter: &pbscribe.LogFilter{
+					ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: e.addresses[chainID].Hex()}},
+					ChainId:         chainID,
+				},
+				FromBlock: "earliest",
+				ToBlock:   "latest",
+			})
+			if err != nil {
+				return fmt.Errorf("could not stream logs: %w", err)
+			}
+
+			for {
+				response, err := stream.Recv()
+				if err == io.EOF {
+					return nil
+				}
+				if err != nil {
+					return fmt.Errorf("could not receive: %w", err)
+				}
+
+				log := response.Log.ToLog()
+				if log == nil {
+					return fmt.Errorf("could not convert log")
+				}
+				if !e.lastLog[chainID].verifyAfter(*log) {
+					return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog[chainID].blockNumber, e.lastLog[chainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+				}
+
+				e.LogChans[chainID] <- log
+				e.lastLog[chainID] = logOrderInfo{
+					blockNumber: log.BlockNumber,
+					blockIndex:  log.Index,
+				}
+			}
+		})
 	}
 
-	for {
-		response, err := stream.Recv()
-		if err == io.EOF {
-			return nil
-		}
-		if err != nil {
-			return fmt.Errorf("could not receive: %w", err)
-		}
-
-		log := response.Log.ToLog()
-		if log == nil {
-			return fmt.Errorf("could not convert log")
-		}
-		if !e.lastLog.verifyAfter(*log) {
-			return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog.blockNumber, e.lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
-		}
-
-		e.LogChan <- log
-		e.lastLog = logOrderInfo{
-			blockNumber: log.BlockNumber,
-			blockIndex:  log.Index,
-		}
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("error when streaming logs: %w", err)
 	}
+
+	return nil
 }
 
 func (l logOrderInfo) verifyAfter(log types.Log) bool {

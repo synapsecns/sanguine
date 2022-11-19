@@ -58,8 +58,6 @@ func (s *server) FilterLogs(ctx context.Context, req *pbscribe.FilterLogsRequest
 }
 
 func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.ScribeService_StreamLogsServer) error {
-	var retrievedLogs []*types.Log
-
 	streamNewBlocks := false
 	fromBlock, toBlock, err := s.setBlocks(res.Context(), req)
 	if err != nil {
@@ -67,7 +65,7 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 	}
 
 	wait := 0
-	lastFromBlock := uint64(0)
+	nextFromBlock := uint64(0)
 	logFilter := req.Filter.ToNative()
 	logFilter.ChainID = req.Filter.ChainId
 
@@ -79,20 +77,22 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 		select {
 		case <-res.Context().Done():
 			return nil
-		case <-time.After(time.Duration(wait) * time.Second):
-			if lastFromBlock > fromBlock {
-				fromBlock = lastFromBlock
+		default:
+			var retrievedLogs []*types.Log
+
+			if nextFromBlock > fromBlock {
+				fromBlock = nextFromBlock
 			}
 
 			page := 1
 
 			for {
-				logs, err := s.db.RetrieveLogsInRange(res.Context(), logFilter, fromBlock, toBlock, page)
+				logs, err := s.db.RetrieveLogsInRangeAsc(res.Context(), logFilter, fromBlock, toBlock, page)
 				if err != nil {
 					return fmt.Errorf("could not retrieve logs: %w", err)
 				}
 
-				retrievedLogs = append(sliceReverse(logs), retrievedLogs...)
+				retrievedLogs = append(retrievedLogs, logs...)
 
 				// See if we do not need to get the next page.
 				if len(logs) < base.PageSize {
@@ -104,7 +104,6 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 
 			// Convert the logs to the protobuf format and send them through the stream.
 			for _, log := range retrievedLogs {
-				fmt.Println("eat this log", log.BlockNumber)
 				err = res.Send(&pbscribe.StreamLogsResponse{
 					Log: pbscribe.FromNativeLog(log),
 				})
@@ -117,17 +116,19 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 				return nil
 			}
 
-			latestScribeBlock, err := s.db.RetrieveLastIndexed(res.Context(), common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
-			if err != nil {
-				return fmt.Errorf("could not retrieve last indexed block: %w", err)
-			}
+			for {
+				time.Sleep(time.Duration(wait) * time.Second)
+				latestScribeBlock, err := s.db.RetrieveLastIndexed(res.Context(), common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
+				if err != nil {
+					return fmt.Errorf("could not retrieve last indexed block: %w", err)
+				}
 
-			lastFromBlock = fromBlock
-
-			if latestScribeBlock > toBlock {
-				toBlock = latestScribeBlock
-				wait = 0
-			} else {
+				if latestScribeBlock > toBlock {
+					nextFromBlock = toBlock + 1
+					toBlock = latestScribeBlock
+					wait = 0
+					break
+				}
 				wait = 1
 			}
 		}
@@ -182,13 +183,4 @@ func (s *server) setBlocks(ctx context.Context, req *pbscribe.StreamLogsRequest)
 	}
 
 	return resBlocks[0], resBlocks[1], nil
-}
-
-func sliceReverse(a []*types.Log) []*types.Log {
-	for i := len(a)/2 - 1; i >= 0; i-- {
-		opp := len(a) - 1 - i
-		a[i], a[opp] = a[opp], a[i]
-	}
-
-	return a
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
 
@@ -35,6 +36,11 @@ type SynapseBridgeV1Deployer struct {
 	*deployer.BaseDeployer
 }
 
+// MessageBusDeployer is the type of the message bus deployer.
+type MessageBusDeployer struct {
+	*deployer.BaseDeployer
+}
+
 // NewBridgeConfigV3Deployer creates a new bridge config v2 client.
 func NewBridgeConfigV3Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return BridgeConfigV3Deployer{deployer.NewSimpleDeployer(registry, backend, BridgeConfigTypeV3)}
@@ -55,7 +61,12 @@ func NewSynapseBridgeV1Deployer(registry deployer.GetOnlyContractRegistry, backe
 	return SynapseBridgeV1Deployer{deployer.NewSimpleDeployer(registry, backend, SynapseBridgeV1Type)}
 }
 
-// Deploy deploys bridge config v3
+// NewMessageBusDeployer creates a new message bus client.
+func NewMessageBusDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return MessageBusDeployer{deployer.NewSimpleDeployer(registry, backend, MessageBusType)}
+}
+
+// Deploy deploys bridge config v3 contract
 // nolint: dupl
 func (n BridgeConfigV3Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
@@ -89,7 +100,7 @@ func (n BridgeConfigV3Deployer) Deploy(ctx context.Context) (contracts.DeployedC
 	})
 }
 
-// Deploy deploys Synapse Bridge
+// Deploy deploys Synapse Bridge contract
 // nolint: dupl
 func (n SynapseBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
@@ -99,7 +110,7 @@ func (n SynapseBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 	})
 }
 
-// Deploy deploys Synapse Bridge V1
+// Deploy deploys Synapse Bridge V1 contract
 // nolint: dupl
 func (n SynapseBridgeV1Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
@@ -109,13 +120,23 @@ func (n SynapseBridgeV1Deployer) Deploy(ctx context.Context) (contracts.Deployed
 	})
 }
 
-// Deploy deploys Swap Flash Loan
+// Deploy deploys Swap Flash Loan contract
 // nolint: dupl
 func (n SwapFlashLoanDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return swap.DeploySwapFlashLoan(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return swap.NewSwapRef(address, backend)
+	})
+}
+
+// Deploy deploys Message Bus contract
+// nolint: dupl
+func (n MessageBusDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return messagebus.DeployMessageBusUpgradeable(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return messagebus.NewMessageBusRef(address, backend)
 	})
 }
 

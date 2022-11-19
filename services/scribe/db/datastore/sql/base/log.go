@@ -168,29 +168,22 @@ func (s Store) RetrieveLogCountForContract(ctx context.Context, contractAddress 
 
 // RetrieveLogsInRange retrieves all logs that match an inputted filter and are within a range given a page.
 func (s Store) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilter, startBlock, endBlock uint64, page int) (logs []*types.Log, err error) {
-	if page < 1 {
-		page = 1
-	}
-	dbLogs := []Log{}
-	queryFilter := logFilterToQuery(logFilter)
-	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
-	dbTx := s.DB().WithContext(ctx).
-		Model(&Log{}).
-		Where(&queryFilter).
-		Where(rangeQuery, startBlock, endBlock).
-		Order(fmt.Sprintf("%s desc, %s desc", BlockNumberFieldName, BlockIndexFieldName)).
-		Offset((page - 1) * PageSize).
-		Limit(PageSize).
-		Find(&dbLogs)
-
-	if dbTx.Error != nil {
-		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return []*types.Log{}, fmt.Errorf("could not find logs with filter %v, in range %v-%v: %w", logFilter, startBlock, endBlock, db.ErrNotFound)
-		}
-		return []*types.Log{}, fmt.Errorf("could not get logs: %w", dbTx.Error)
+	logs, err = s.retrieveLogsInRangeQuery(ctx, logFilter, startBlock, endBlock, page, "desc")
+	if err != nil {
+		return nil, err
 	}
 
-	return buildLogsFromDBLogs(dbLogs), nil
+	return logs, nil
+}
+
+// RetrieveLogsInRangeAsc retrieves all logs that match an inputted filter and are within a range given a page - in ascending order.
+func (s Store) RetrieveLogsInRangeAsc(ctx context.Context, logFilter db.LogFilter, startBlock, endBlock uint64, page int) (logs []*types.Log, err error) {
+	logs, err = s.retrieveLogsInRangeQuery(ctx, logFilter, startBlock, endBlock, page, "asc")
+	if err != nil {
+		return nil, err
+	}
+
+	return logs, nil
 }
 
 func buildLogsFromDBLogs(dbLogs []Log) []*types.Log {
@@ -231,4 +224,30 @@ func buildTopics(log Log) []common.Hash {
 	}
 
 	return topics
+}
+
+func (s Store) retrieveLogsInRangeQuery(ctx context.Context, logFilter db.LogFilter, startBlock, endBlock uint64, page int, order string) (logs []*types.Log, err error) {
+	if page < 1 {
+		page = 1
+	}
+	dbLogs := []Log{}
+	queryFilter := logFilterToQuery(logFilter)
+	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Log{}).
+		Where(&queryFilter).
+		Where(rangeQuery, startBlock, endBlock).
+		Order(fmt.Sprintf("%s %s, %s %s", BlockNumberFieldName, order, BlockIndexFieldName, order)).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
+		Find(&dbLogs)
+
+	if dbTx.Error != nil {
+		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
+			return []*types.Log{}, fmt.Errorf("could not find logs with filter %v, in range %v-%v: %w", logFilter, startBlock, endBlock, db.ErrNotFound)
+		}
+		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
+	}
+
+	return buildLogsFromDBLogs(dbLogs), nil
 }

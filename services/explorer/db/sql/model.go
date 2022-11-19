@@ -213,3 +213,50 @@ type LastBlock struct {
 	// BlockNumber is the last block number that the explorer has backfilled to.
 	BlockNumber uint64 `gorm:"column:block_number"`
 }
+
+// MessageBusEvent stores data for emitted events from the message bus contract.
+type MessageBusEvent struct {
+	// InsertTime is the time the event was inserted into the database
+	InsertTime uint64 `gorm:"column:insert_time"`
+	// ContractAddress is the address of the contract that generated the event
+	ContractAddress string `gorm:"column:contract_address"`
+	// ChainID is the chain id of the contract that generated the event
+	ChainID uint32 `gorm:"column:chain_id"`
+	// BlockNumber is the block number of the event
+	BlockNumber uint64 `gorm:"column:block_number"`
+	// TxHash is the transaction hash of the event
+	TxHash string `gorm:"column:tx_hash"`
+	// EventType is the type of the event
+	EventType uint8 `gorm:"column:event_type"`
+	// EventIndex is the index of the log
+	EventIndex uint64 `gorm:"column:event_index"`
+	// Sender is the address of the sender
+	Sender string `gorm:"column:sender"`
+
+	// MessageId is the message id of the event.
+	MessageID sql.NullString `gorm:"column:message_id"`
+	// SourceChainID is the chain id of the message's source chain.
+	SourceChainID *big.Int `gorm:"column:source_chain_id;type:UInt256"`
+	// Status is the status of the event.
+	Status sql.NullString `gorm:"column:status"`
+	// SourceAddress is the address that the message will be passed from.
+	SourceAddress sql.NullString `gorm:"column:source_address"`
+	// DestinationAddress is the address that the message will be passed to.
+	DestinationAddress sql.NullString `gorm:"column:destination_address"`
+	// DestinationChainID is the chain id of the message's destination chain.
+	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
+	// Nonce is the nonce of the message. It is equivalent to the nonce on the origin chain.
+	Nonce *big.Int `gorm:"column:nonce;type:UInt256"`
+	// Message is the message.
+	Message sql.NullString `gorm:"column:message"`
+	// Receiver is the receiver of the event.
+	Receiver sql.NullString `gorm:"column:receiver"`
+	// Options are the options chosen for the message.
+	Options sql.NullString `gorm:"column:options"`
+	// Fee is the fee of the message.
+	Fee *big.Int `gorm:"column:fee;type:UInt256"`
+	// RevertedReason is the reason a call was reverted.
+	RevertedReason sql.NullString `gorm:"column:reverted_reason"`
+	// TimeStamp is the timestamp in which the record was inserted.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
+}

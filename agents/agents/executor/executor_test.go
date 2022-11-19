@@ -2,6 +2,7 @@ package executor_test
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
@@ -68,29 +69,26 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	// Start the Scribe.
 	go func() {
-		err := scribe.Start(e.GetTestContext())
-		e.Nil(err)
+		_ = scribe.Start(e.GetTestContext())
 	}()
 
-	excA, err := executor.NewExecutor(testContractA.Address(), chainIDA, e.dbPath, "sqlite")
+	excA, err := executor.NewExecutor([]uint32{chainIDA}, map[uint32]common.Address{chainIDA: testContractA.Address()}, e.dbPath, "sqlite")
 	e.Nil(err)
-	excB, err := executor.NewExecutor(testContractB.Address(), chainIDB, e.dbPath, "sqlite")
+	excB, err := executor.NewExecutor([]uint32{chainIDB}, map[uint32]common.Address{chainIDB: testContractB.Address()}, e.dbPath, "sqlite")
 	e.Nil(err)
 
 	// Start the executor.
 	go func() {
-		err = excA.Start(e.GetTestContext())
-		e.Nil(err)
+		_ = excA.Start(e.GetTestContext())
 	}()
 	go func() {
-		err = excB.Start(e.GetTestContext())
-		e.Nil(err)
+		_ = excB.Start(e.GetTestContext())
 	}()
 
 	e.Eventually(func() bool {
-		if len(excA.LogChan) == 2 {
-			logA := <-excA.LogChan
-			logB := <-excA.LogChan
+		if len(excA.LogChans[chainIDA]) == 2 {
+			logA := <-excA.LogChans[chainIDA]
+			logB := <-excA.LogChans[chainIDA]
 			e.Assert().Less(logA.BlockNumber, logB.BlockNumber)
 			return true
 		}
@@ -99,13 +97,68 @@ func (e *ExecutorSuite) TestExecutor() {
 	})
 
 	e.Eventually(func() bool {
-		if len(excB.LogChan) == 2 {
-			logA := <-excB.LogChan
-			logB := <-excB.LogChan
+		if len(excB.LogChans[chainIDB]) == 2 {
+			logA := <-excB.LogChans[chainIDB]
+			logB := <-excB.LogChans[chainIDB]
 			e.Assert().LessOrEqual(logA.BlockNumber, logB.BlockNumber)
 			return true
 		}
 
 		return false
+	})
+}
+
+func (e *ExecutorSuite) TestLotsOfLogs() {
+	chainID := gofakeit.Uint32()
+	simulatedChain := simulated.NewSimulatedBackendWithChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
+	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
+	testContract, testRef := e.manager.GetTestContract(e.GetTestContext(), simulatedChain)
+	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
+
+	contractConfig := config.ContractConfig{
+		Address:    testContract.Address().String(),
+		StartBlock: 0,
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:               chainID,
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{contractConfig},
+	}
+	scribeConfig := config.Config{
+		Chains: []config.ChainConfig{chainConfig},
+	}
+	clients := map[uint32][]backfill.ScribeBackend{
+		chainID: {simulatedChain, simulatedChain},
+	}
+
+	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
+	e.Nil(err)
+
+	// Start the Scribe.
+	go func() {
+		err := scribe.Start(e.GetTestContext())
+		e.Nil(err)
+	}()
+
+	exec, err := executor.NewExecutor([]uint32{chainID}, map[uint32]common.Address{chainID: testContract.Address()}, e.dbPath, "sqlite")
+	e.Nil(err)
+
+	// Start the exec.
+	go func() {
+		err = exec.Start(e.GetTestContext())
+		e.Nil(err)
+	}()
+
+	// Emit 250 events.
+	go func() {
+		for i := 0; i < 250; i++ {
+			tx, err := testRef.EmitEventB(transactOpts.TransactOpts, []byte{byte(i)}, big.NewInt(int64(i)), big.NewInt(int64(i)))
+			e.Nil(err)
+			simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+		}
+	}()
+
+	e.Eventually(func() bool {
+		return len(exec.LogChans[chainID]) == 250
 	})
 }
