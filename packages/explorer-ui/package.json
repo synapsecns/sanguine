@@ -30,6 +30,7 @@
   "scripts": {
     "start": "DISABLE_ESLINT_PLUGIN=true craco start",
     "build": "DISABLE_ESLINT_PLUGIN=true craco build",
+    "ci:lint": "DISABLE_ESLINT_PLUGIN=true craco build",
     "test": "craco test"
   },
   "eslintConfig": {
