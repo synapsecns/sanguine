@@ -1,4 +1,4 @@
-name: Explorer UI
+name: Explorer UI Deploy
 on:
   push:
     branches: [master]
