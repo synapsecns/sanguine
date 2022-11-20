@@ -9,6 +9,17 @@ import { GlobalNotaryRegistry } from "../registry/GlobalNotaryRegistry.sol";
 import { GuardRegistry } from "../registry/GuardRegistry.sol";
 
 contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegistry, BondingManager {
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               STORAGE                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice id of the last "sync actors" request
+    uint256 internal requestID;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             CONSTRUCTOR                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     constructor(uint32 _domain) LocalDomainContext(_domain) {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }
@@ -23,59 +34,25 @@ contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegist
     function addNotary(uint32 _domain, address _notary) external onlyOwner {
         // Add a Notary, break execution if they are already active
         if (!_addNotary(_domain, _notary)) return;
-        // Forward information that a Notary "staked" their bond to relevant local contracts
-        // Forward information about the added Notary to remote chains (PINGs)
-        // See: this.bondNotary() for handling PONGs
-        _localUpdateNotary({
-            _selector: SystemContract.bondNotary.selector,
-            _domain: _domain,
-            _notary: _notary,
-            _callOrigin: 0, // there was no system call that initiated the bonding
-            _forwardUpdate: true
-        });
+        _updateAgentStatus(_notaryInfo({ _domain: _domain, _notary: _notary, _bonded: true }));
     }
 
     function removeNotary(uint32 _domain, address _notary) external onlyOwner {
         // Remove a Notary, break execution if they are not currently active
         if (!_removeNotary(_domain, _notary)) return;
-        // Pass information that a Notary "unstaked" their bond to relevant local contracts
-        // Forward information about the removed Notary to remote chains (PINGs)
-        // See: this.unbondNotary() for handling PONGs
-        _localUpdateNotary({
-            _selector: SystemContract.unbondNotary.selector,
-            _domain: _domain,
-            _notary: _notary,
-            _callOrigin: 0, // there was no system call that initiated the bonding
-            _forwardUpdate: true
-        });
+        _updateAgentStatus(_notaryInfo({ _domain: _domain, _notary: _notary, _bonded: false }));
     }
 
     function addGuard(address _guard) external onlyOwner {
         // Add a Guard, break execution if they are already active
         if (!_addGuard(_guard)) return;
-        // Pass information that a Guard "staked" their bond to relevant local contracts
-        // Forward information about the added Guard to remote chains (PINGs)
-        // See: this.bondGuard() for handling PONGs
-        _localUpdateGuard({
-            _selector: SystemContract.bondGuard.selector,
-            _guard: _guard,
-            _callOrigin: 0, // there was no system call that initiated the bonding
-            _forwardUpdate: true
-        });
+        _updateAgentStatus(_guardInfo({ _guard: _guard, _bonded: true }));
     }
 
     function removeGuard(address _guard) external onlyOwner {
         // Remove a Guard, break execution if they are not currently active
         if (!_removeGuard(_guard)) return;
-        // Pass information that Guard "unstaked" their bond to relevant local contracts
-        // Forward information about the removed Guard to remote chains (PINGs)
-        // See: this.unbondGuard() for handling PONGs
-        _localUpdateGuard({
-            _selector: SystemContract.unbondGuard.selector,
-            _guard: _guard,
-            _callOrigin: 0, // there was no system call that initiated the bonding
-            _forwardUpdate: true
-        });
+        _updateAgentStatus(_guardInfo({ _guard: _guard, _bonded: false }));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -83,108 +60,56 @@ contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegist
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Receive a system call indicating that a new Notary staked a bond.
-     * @dev Must be called from the BondingManager on remote chain, indicating
-     * BondingSecondary has successfully handled a new Notary bonding.
-     * @param _domain           Domain where the new Notary will be active
-     * @param _notary           New Notary that staked a bond
+     * @notice Receive a system call indicating the list of off-chain agents needs to be synced.
+     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
      * @param _callOrigin       Domain where the system call originated
      * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
+     * @param _requestID        Unique ID of the sync request
+     * @param _removeExisting   Whether the existing agents need to be removed first
+     * @param _infos            Information about a list of agents to sync
      */
-    function bondNotary(
-        uint32 _domain,
-        address _notary,
+    function syncAgents(
+        uint256 _rootSubmittedAt,
         uint32 _callOrigin,
         ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
+        uint256 _requestID,
+        bool _removeExisting,
+        AgentInfo[] memory _infos
     )
         external
         override
         onlySystemRouter
-        onlyCallers(BONDING_MANAGER, _caller)
         onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
-    {
-        // TODO: handle "notary added" PONG
-    }
-
-    /**
-     * @notice Receive a system call indicating that an active Notary unstaked their bond.
-     * @dev Must be called from the BondingManager on remote chain, indicating
-     * BondingSecondary has successfully handled an active Notary unbonding.
-     * @param _domain           Domain where the Notary was active
-     * @param _notary           Active Notary that unstaked their bond
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     */
-    function unbondNotary(
-        uint32 _domain,
-        address _notary,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
-    )
-        external
-        override
-        onlySystemRouter
         onlyCallers(BONDING_MANAGER, _caller)
-        onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
     {
-        // TODO: handle "notary removed" PONG
-    }
-
-    /**
-     * @notice Receive a system call indicating that a new Guard staked a bond.
-     * @dev Must be called from the BondingManager on remote chain, indicating
-     * BondingSecondary has successfully handled a new Guard bonding.
-     * @param _guard            New Guard that staked a bond
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     */
-    function bondGuard(
-        address _guard,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
-    )
-        external
-        override
-        onlySystemRouter
-        onlyCallers(BONDING_MANAGER, _caller)
-        onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
-    {
-        // TODO: handle "guard added" PONG
-    }
-
-    /**
-     * @notice Receive a system call indicating that an active Guard unstaked their bond.
-     * @dev Must be called from the BondingManager on remote chain, indicating
-     * BondingSecondary has successfully handled an active Notary unbonding.
-     * @param _guard            Active Guard that unstaked their bond
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     */
-    function unbondGuard(
-        address _guard,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
-    )
-        external
-        override
-        onlySystemRouter
-        onlyCallers(BONDING_MANAGER, _caller)
-        onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
-    {
-        // TODO: handle "guard removed" PONG
+        // TODO: handle PONGs
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║          INTERNAL HELPERS: UPDATE AGENT (BOND/UNBOND/SLASH)          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function _updateAgentStatus(AgentInfo memory _info) internal {
+        // Increase the request counter and use it as the new request ID
+        uint256 _requestID = ++requestID;
+        // Construct the array with the given agent info
+        // TODO: bulk bond/unbond requests in a single message
+        AgentInfo[] memory infos = new AgentInfo[](1);
+        infos[0] = _info;
+        // Pass information about the new agent status to the local registries
+        // Forward information about the new agent status to the remote chains (PINGs)
+        // Existing agents don't need to be removed on remote chains
+        // See: this.syncAgents() for handling PONGs
+        _updateLocalRegistries({
+            _data: _dataSyncAgents({
+                _requestID: _requestID,
+                _removeExisting: false,
+                _infos: infos
+            }),
+            _forwardUpdate: true,
+            _callOrigin: 0 // there was no system call that initiated the bonding
+        });
+    }
 
     /**
      * @notice Forward data with an agent status update (due to
@@ -205,13 +130,15 @@ contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegist
      * system call for slashing an agent.
      */
     function _assertCrossChainSlashing(
-        uint32,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
+        uint256 _rootSubmittedAt,
+        uint32 _callOrigin,
+        ISystemRouter.SystemEntity _caller
     ) internal view override {
-        // Slashing system call has to be done by Bonding Manager
-        _assertEntityAllowed(BONDING_MANAGER, _caller);
         // Optimistic period should be over
         _assertOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD);
+        // Slashing system call can originate on any chain
+        _callOrigin;
+        // Slashing system call has to be done by Bonding Manager
+        _assertEntityAllowed(BONDING_MANAGER, _caller);
     }
 }

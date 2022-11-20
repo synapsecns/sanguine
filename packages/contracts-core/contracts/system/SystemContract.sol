@@ -12,6 +12,26 @@ import {
  * @notice Shared utilities between Synapse System Contracts: Origin, Destination, etc.
  */
 abstract contract SystemContract is DomainContext, OwnableUpgradeable {
+    enum Agent {
+        Notary,
+        Guard
+    }
+
+    /**
+     * @notice Unified struct for off-chain agent storing
+     * @param agent     Type of agent: Notary, Guard
+     * @param bonded    Whether agent bonded or unbonded
+     * @param domain    Domain, where agent is active (0 means agent is active everywhere)
+     * @param account   Off-chain agent address
+     */
+    struct AgentInfo {
+        Agent agent;
+        bool bonded;
+        uint32 domain;
+        address account;
+        // TODO: 48 bits remaining
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -153,93 +173,35 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Receive a system call indicating that a new Notary staked a bond.
-     * @param _domain           Domain where the new Notary will be active
-     * @param _notary           New Notary that staked a bond
+     * @notice Receive a system call indicating the off-chain agent needs to be slashed.
+     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
      * @param _callOrigin       Domain where the system call originated
      * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
+     * @param _info             Information about agent to slash
      */
-    function bondNotary(
-        uint32 _domain,
-        address _notary,
+    function slashAgent(
+        uint256 _rootSubmittedAt,
         uint32 _callOrigin,
         ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
+        AgentInfo memory _info
     ) external virtual;
 
     /**
-     * @notice Receive a system call indicating that an active Notary unstaked their bond.
-     * @param _domain           Domain where the Notary was active
-     * @param _notary           Active Notary that unstaked their bond
+     * @notice Receive a system call indicating the list of off-chain agents needs to be synced.
+     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
      * @param _callOrigin       Domain where the system call originated
      * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
+     * @param _requestID        Unique ID of the sync request
+     * @param _removeExisting   Whether the existing agents need to be removed first
+     * @param _infos            Information about a list of agents to sync
      */
-    function unbondNotary(
-        uint32 _domain,
-        address _notary,
+    function syncAgents(
+        uint256 _rootSubmittedAt,
         uint32 _callOrigin,
         ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
-    ) external virtual;
-
-    /**
-     * @notice Receive a system call indicating that an active Notary was slashed.
-     * @param _domain           Domain where the slashed Notary was active
-     * @param _notary           Active Notary that was slashed
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     */
-    function slashNotary(
-        uint32 _domain,
-        address _notary,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
-    ) external virtual;
-
-    /**
-     * @notice Receive a system call indicating that a new Guard staked a bond.
-     * @param _guard            New Guard that staked a bond
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     */
-    function bondGuard(
-        address _guard,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
-    ) external virtual;
-
-    /**
-     * @notice Receive a system call indicating that an active Guard unstaked their bond.
-     * @param _guard            Active Guard that unstaked their bond
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     */
-    function unbondGuard(
-        address _guard,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
-    ) external virtual;
-
-    /**
-     * @notice Receive a system call indicating that an active Guard was slashed.
-     * @param _guard            Active Guard that was slashed
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     */
-    function slashGuard(
-        address _guard,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
+        uint256 _requestID,
+        bool _removeExisting,
+        AgentInfo[] memory _infos
     ) external virtual;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

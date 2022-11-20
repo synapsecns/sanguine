@@ -16,114 +16,89 @@ abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistr
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Receive a system call indicating that a new Notary staked a bond.
+     * @notice Receive a system call indicating the off-chain agent needs to be slashed.
      * @dev Must be called from a local BondingManager. Therefore
      * `uint256 _rootSubmittedAt` is ignored.
-     * @param _domain           Domain where the new Notary will be active
-     * @param _notary           New Notary that staked a bond
      * @param _callOrigin       Domain where the system call originated
      * @param _caller           Entity which performed the system call
+     * @param _info             Information about agent to slash
      */
-    function bondNotary(
-        uint32 _domain,
-        address _notary,
+    function slashAgent(
+        uint256,
         uint32 _callOrigin,
         ISystemRouter.SystemEntity _caller,
-        uint256
-    ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
-        // TODO: (applied below as well) _addNotary() can return false,
-        // if Notary is already active. Determine if we need to revert in this case.
-        _addNotary(_domain, _notary);
-    }
-
-    /**
-     * @notice Receive a system call indicating that an active Notary unstaked their bond.
-     * @dev Must be called from a local BondingManager. Therefore
-     * `uint256 _rootSubmittedAt` is ignored.
-     * @param _domain           Domain where the Notary was active
-     * @param _notary           Active Notary that unstaked their bond
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     */
-    function unbondNotary(
-        uint32 _domain,
-        address _notary,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256
-    ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
-        _removeNotary(_domain, _notary);
-    }
-
-    /**
-     * @notice Receive a system call indicating that an active Notary was slashed.
-     * @dev Must be called from a local BondingManager. Therefore
-     * `uint256 _rootSubmittedAt` is ignored.
-     * @param _domain           Domain where the slashed Notary was active
-     * @param _notary           Active Notary that was slashed
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     */
-    function slashNotary(
-        uint32 _domain,
-        address _notary,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256
+        AgentInfo memory _info
     ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
         // TODO: decide if we need to store anything, as the slashing occurred on another chain
-        _removeNotary(_domain, _notary);
+        if (_info.agent == Agent.Guard) {
+            address guard = _info.account;
+            _removeGuard(guard);
+        } else if (_info.agent == Agent.Notary) {
+            uint32 domain = _info.domain;
+            address notary = _info.account;
+            _removeNotary(domain, notary);
+        } else {
+            // Sanity check
+            assert(false);
+        }
     }
 
     /**
-     * @notice Receive a system call indicating that a new Guard staked a bond.
+     * @notice Receive a system call indicating the list of off-chain agents needs to be synced.
      * @dev Must be called from a local BondingManager. Therefore
      * `uint256 _rootSubmittedAt` is ignored.
-     * @param _guard            New Guard that staked a bond
      * @param _callOrigin       Domain where the system call originated
      * @param _caller           Entity which performed the system call
+     * @param _requestID        Unique ID of the sync request
+     * @param _removeExisting   Whether the existing agents need to be removed first
+     * @param _infos            Information about a list of agents to sync
      */
-    function bondGuard(
-        address _guard,
+    function syncAgents(
+        uint256,
         uint32 _callOrigin,
         ISystemRouter.SystemEntity _caller,
-        uint256
+        uint256 _requestID,
+        bool _removeExisting,
+        AgentInfo[] memory _infos
     ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
-        _addGuard(_guard);
+        // TODO: do we need to store this in any way?
+        _requestID;
+        // TODO: implement removeAllGuards(), removeAllNotaries()
+        _removeExisting;
+        // Sync every agent status one by one
+        uint256 amount = _infos.length;
+        for (uint256 i = 0; i < amount; ++i) {
+            _updateAgentStatus(_infos[i]);
+        }
     }
 
-    /**
-     * @notice Receive a system call indicating that an active Guard unstaked their bond.
-     * @dev Must be called from a local BondingManager. Therefore
-     * `uint256 _rootSubmittedAt` is ignored.
-     * @param _guard            Active Guard that unstaked their bond
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     */
-    function unbondGuard(
-        address _guard,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256
-    ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
-        _removeGuard(_guard);
-    }
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           INTERNAL HELPERS                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Receive a system call indicating that an active Guard was slashed.
-     * @dev Must be called from a local BondingManager. Therefore
-     * `uint256 _rootSubmittedAt` is ignored.
-     * @param _guard            Active Guard that was slashed
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
+     * @notice Perform a System Call to a local BondingManager with the given `_data`.
      */
-    function slashGuard(
-        address _guard,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256
-    ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
-        // TODO: decide if we need to store anything, as the slashing occurred on another chain
-        _removeGuard(_guard);
+    function _callLocalBondingManager(bytes memory _data) internal {
+        systemRouter.systemCall({
+            _destination: _localDomain(),
+            _optimisticSeconds: 0,
+            _recipient: ISystemRouter.SystemEntity.BondingManager,
+            _data: _data
+        });
+    }
+
+    function _updateAgentStatus(AgentInfo memory _info) internal {
+        if (_info.agent == Agent.Guard) {
+            address guard = _info.account;
+            (_info.bonded ? _addGuard : _removeGuard)(guard);
+        } else if (_info.agent == Agent.Notary) {
+            uint32 domain = _info.domain;
+            address notary = _info.account;
+            (_info.bonded ? _addNotary : _removeNotary)(domain, notary);
+        } else {
+            // Sanity check: unreachable code
+            assert(false);
+        }
     }
 }

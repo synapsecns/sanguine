@@ -16,129 +16,42 @@ contract BondingSecondary is LocalDomainContext, BondingManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Receive a system call indicating that a new Notary staked a bond.
+     * @notice Receive a system call indicating the list of off-chain agents needs to be synced.
      * @dev Must be called from the BondingManager on Synapse Chain.
-     * @param _domain           Domain where the new Notary will be active
-     * @param _notary           New Notary that staked a bond
+     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
      * @param _callOrigin       Domain where the system call originated
      * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
+     * @param _requestID        Unique ID of the sync request
+     * @param _removeExisting   Whether the existing agents need to be removed first
+     * @param _infos            Information about a list of agents to sync
      */
-    function bondNotary(
-        uint32 _domain,
-        address _notary,
+    function syncAgents(
+        uint256 _rootSubmittedAt,
         uint32 _callOrigin,
         ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
+        uint256 _requestID,
+        bool _removeExisting,
+        AgentInfo[] memory _infos
     )
         external
         override
         onlySystemRouter
-        onlySynapseChainBondingManager(_callOrigin, _caller)
         onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
-    {
-        // Pass information that Notary staked their bond to relevant local contracts
-        // Report back to Synapse Chain that a request has been handled
-        _localUpdateNotary({
-            _selector: SystemContract.bondNotary.selector,
-            _domain: _domain,
-            _notary: _notary,
-            _callOrigin: _callOrigin,
-            _forwardUpdate: true
-        });
-    }
-
-    /**
-     * @notice Receive a system call indicating that an active Notary unstaked their bond.
-     * @dev Must be called from the BondingManager on Synapse Chain.
-     * @param _domain           Domain where the Notary was active
-     * @param _notary           Active Notary that unstaked their bond
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     */
-    function unbondNotary(
-        uint32 _domain,
-        address _notary,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
-    )
-        external
-        override
-        onlySystemRouter
         onlySynapseChainBondingManager(_callOrigin, _caller)
-        onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
     {
-        // Pass information that Notary unstaked their bond to relevant local contracts
-        // Report back to Synapse Chain that a request has been handled
-        _localUpdateNotary({
-            _selector: SystemContract.unbondNotary.selector,
-            _domain: _domain,
-            _notary: _notary,
-            _callOrigin: _callOrigin,
-            _forwardUpdate: true
+        // Pass the list of agents to all local registries
+        // Don't forward the same array back to Synapse Chain
+        _updateLocalRegistries({
+            _data: _dataSyncAgents(_requestID, _removeExisting, _infos),
+            _forwardUpdate: false,
+            _callOrigin: _callOrigin
         });
-    }
-
-    /**
-     * @notice Receive a system call indicating that a new Guard staked a bond.
-     * @dev Must be called from the BondingManager on Synapse Chain.
-     * @param _guard            New Guard that staked a bond
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     */
-    function bondGuard(
-        address _guard,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
-    )
-        external
-        override
-        onlySystemRouter
-        onlySynapseChainBondingManager(_callOrigin, _caller)
-        onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
-    {
-        // Pass information that Guard staked their bond to relevant local contracts
         // Report back to Synapse Chain that a request has been handled
-        _localUpdateGuard({
-            _selector: SystemContract.bondGuard.selector,
-            _guard: _guard,
-            _callOrigin: _callOrigin,
-            _forwardUpdate: true
-        });
-    }
-
-    /**
-     * @notice Receive a system call indicating that an active Guard unstaked their bond.
-     * @dev Must be called from the BondingManager on Synapse Chain.
-     * @param _guard            Active Guard that unstaked their bond
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     */
-    function unbondGuard(
-        address _guard,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
-    )
-        external
-        override
-        onlySystemRouter
-        onlySynapseChainBondingManager(_callOrigin, _caller)
-        onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
-    {
-        // Pass information that Guard unstaked their bond to relevant local contracts
-        // Report back to Synapse Chain that a request has been handled
-        _localUpdateGuard({
-            _selector: SystemContract.unbondGuard.selector,
-            _guard: _guard,
-            _callOrigin: _callOrigin,
-            _forwardUpdate: true
-        });
+        // Request ID will be used for identifying, so we could pass an empty array here
+        _forwardUpdateData(
+            _dataSyncAgents(_requestID, _removeExisting, new AgentInfo[](0)),
+            _callOrigin
+        );
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -169,15 +82,15 @@ contract BondingSecondary is LocalDomainContext, BondingManager {
      * system call for slashing an agent.
      */
     function _assertCrossChainSlashing(
+        uint256 _rootSubmittedAt,
         uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
+        ISystemRouter.SystemEntity _caller
     ) internal view override {
+        // Optimistic period should be over
+        _assertOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD);
         // Slashing system call has to originate on Synapse Chain
         _assertSynapseChain(_callOrigin);
         // Slashing system call has to be done by Bonding Manager
         _assertEntityAllowed(BONDING_MANAGER, _caller);
-        // Optimistic period should be over
-        _assertOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD);
     }
 }

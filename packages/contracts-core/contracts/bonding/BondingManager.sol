@@ -10,77 +10,37 @@ abstract contract BondingManager is SystemContract {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Receive a system call indicating that an active Notary was slashed.
-     * @param _domain           Domain where the slashed Notary was active
-     * @param _notary           Active Notary that was slashed
+     * @notice Receive a system call indicating the off-chain agent needs to be slashed.
+     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
      * @param _callOrigin       Domain where the system call originated
      * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
+     * @param _info             Information about agent to slash
      */
-    function slashNotary(
-        uint32 _domain,
-        address _notary,
+    function slashAgent(
+        uint256 _rootSubmittedAt,
         uint32 _callOrigin,
         ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
+        AgentInfo memory _info
     ) external override onlySystemRouter {
         bool forwardUpdate;
         if (_callOrigin == _localDomain()) {
             // Only Origin can slash agents on local domain
             _assertEntityAllowed(ORIGIN, _caller);
-            // Forward information about slashed Notary to remote chains
+            // Forward information about slashed agent to remote chains
             forwardUpdate = true;
         } else {
             // Validate security params for cross-chain slashing
-            _assertCrossChainSlashing(_callOrigin, _caller, _rootSubmittedAt);
-            // Forward information about slashed Notary to remote chains
+            _assertCrossChainSlashing(_rootSubmittedAt, _callOrigin, _caller);
+            // Forward information about slashed agent to remote chains
             // only if BondingManager is deployed on Synapse Chain
             forwardUpdate = _onSynapseChain();
         }
-        // Forward information about slashed Notary to local system registries
-        // Forward information about slashed Notary to remote chains if needed
-        _localUpdateNotary({
-            _selector: SystemContract.slashNotary.selector,
-            _domain: _domain,
-            _notary: _notary,
-            _callOrigin: _callOrigin,
-            _forwardUpdate: forwardUpdate
-        });
-    }
-
-    /**
-     * @notice Receive a system call indicating that an active Guard was slashed.
-     * @param _guard            Active Guard that was slashed
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     */
-    function slashGuard(
-        address _guard,
-        uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
-    ) external override onlySystemRouter {
-        bool forwardUpdate;
-        if (_callOrigin == _localDomain()) {
-            // Only Origin can slash agents on local domain
-            _assertEntityAllowed(ORIGIN, _caller);
-            // Forward information about slashed Guard to remote chains
-            forwardUpdate = true;
-        } else {
-            // Validate security params for cross-chain slashing
-            _assertCrossChainSlashing(_callOrigin, _caller, _rootSubmittedAt);
-            // Forward information about slashed Guard to remote chains
-            // only if BondingManager is deployed on Synapse Chain
-            forwardUpdate = _onSynapseChain();
-        }
-        // Forward information about slashed Guard to local system registries
-        // Forward information about slashed Guard to remote chains if needed
-        _localUpdateGuard({
-            _selector: SystemContract.slashNotary.selector,
-            _guard: _guard,
-            _callOrigin: _callOrigin,
-            _forwardUpdate: forwardUpdate
+        // Forward information about the slashed agent to local Registries
+        // Forward information about slashed agent to remote chains if needed
+        _updateLocalRegistries({
+            _data: _dataSlashAgent(_info),
+            _forwardUpdate: forwardUpdate,
+            _callOrigin: _callOrigin
         });
     }
 
@@ -88,79 +48,23 @@ abstract contract BondingManager is SystemContract {
     ▏*║          INTERNAL HELPERS: UPDATE AGENT (BOND/UNBOND/SLASH)          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Update Notary status on local system registries.
-     * @dev Use selectors for bondNotary, unbondNotary or slashNotary based on the use case.
-     */
-    function _localUpdateNotary(
-        bytes4 _selector,
-        uint32 _domain,
-        address _notary,
-        uint32 _callOrigin,
-        bool _forwardUpdate
+    function _updateLocalRegistries(
+        bytes memory _data,
+        bool _forwardUpdate,
+        uint32 _callOrigin
     ) internal {
-        uint32 local = _localDomain();
-        bytes memory data = abi.encodeWithSelector(_selector, _domain, _notary);
-        // Notary is updated on Origin, only if domain matches the local domain
-        // Notary is updated on Destination, only if domain doesn't match the local domain
-        if (_domain == local) {
-            // If a system call originated on local domain, it means Origin was the caller.
-            // Meaning there's no need to call Origin again.
-            if (_callOrigin != local) {
-                systemRouter.systemCall({
-                    _destination: local,
-                    _optimisticSeconds: 0,
-                    _recipient: ISystemRouter.SystemEntity.Origin,
-                    _data: data
-                });
-            }
-        } else {
-            // Call Destination
-            systemRouter.systemCall({
-                _destination: local,
-                _optimisticSeconds: 0,
-                _recipient: ISystemRouter.SystemEntity.Destination,
-                _data: data
-            });
-        }
+        // Pass data to all System Registries. This could lead to duplicated data, meaning that
+        // every Registry is responsible for ignoring the data it already has. This makes Registries
+        // a bit more complex, but greatly reduces the complexity of BondingManager.
+        systemRouter.systemMultiCall({
+            _destination: _localDomain(),
+            _optimisticSeconds: 0,
+            _recipients: _localSystemRegistries(),
+            _data: _data
+        });
+        // Forward data cross-chain, if requested
         if (_forwardUpdate) {
-            _forwardUpdateData(data, _callOrigin);
-        }
-    }
-
-    /**
-     * @notice Update Guard status on local system registries.
-     * @dev Use selectors for bondGuard, unbondGuard or slashGuard based on the use case.
-     */
-    function _localUpdateGuard(
-        bytes4 _selector,
-        address _guard,
-        uint32 _callOrigin,
-        bool _forwardUpdate
-    ) internal {
-        bytes memory data = abi.encodeWithSelector(_selector, _guard);
-        if (_callOrigin == _localDomain()) {
-            // If a system call originated on local domain, it means Origin was the caller.
-            // Meaning there's no need to call Origin again.
-            systemRouter.systemCall({
-                _destination: _localDomain(),
-                _optimisticSeconds: 0,
-                _recipient: ISystemRouter.SystemEntity.Destination,
-                _data: data
-            });
-        } else {
-            bytes[] memory dataArray = new bytes[](2);
-            // TODO: use wrapper for system multicall instead
-            dataArray[0] = dataArray[1] = data;
-            systemRouter.systemMultiCall({
-                _destination: _localDomain(),
-                _optimisticSeconds: 0,
-                _recipients: _localSystemRegistries(),
-                _dataArray: dataArray
-            });
-        }
-        if (_forwardUpdate) {
-            _forwardUpdateData(data, _callOrigin);
+            _forwardUpdateData(_data, _callOrigin);
         }
     }
 
@@ -181,10 +85,65 @@ abstract contract BondingManager is SystemContract {
      * system call for slashing an agent.
      */
     function _assertCrossChainSlashing(
+        uint256 _rootSubmittedAt,
         uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
-        uint256 _rootSubmittedAt
+        ISystemRouter.SystemEntity _caller
     ) internal view virtual;
+
+    /**
+     * @notice Constructs data for the system call to slash a given agent.
+     */
+    function _dataSlashAgent(AgentInfo memory _info) internal pure returns (bytes memory) {
+        return
+            abi.encodeWithSelector(
+                SystemContract.slashAgent.selector,
+                0, // rootSubmittedAt
+                0, // callOrigin
+                0, // systemCaller
+                _info
+            );
+    }
+
+    /**
+     * @notice Constructs data for the system call to sync the given agents.
+     */
+    function _dataSyncAgents(
+        uint256 _requestID,
+        bool _removeExisting,
+        AgentInfo[] memory _infos
+    ) internal pure returns (bytes memory) {
+        return
+            abi.encodeWithSelector(
+                SystemContract.syncAgents.selector,
+                0, // rootSubmittedAt
+                0, // callOrigin
+                0, // systemCaller
+                _requestID,
+                _removeExisting,
+                _infos
+            );
+    }
+
+    /**
+     * @notice Constructs a universal "Agent Information" structure for the given Guard.
+     */
+    function _guardInfo(address _guard, bool _bonded) internal pure returns (AgentInfo memory) {
+        // We are using domain value of 0 to illustrate the point
+        // that Guards are active on all domains
+        return AgentInfo({ agent: Agent.Guard, bonded: _bonded, domain: 0, account: _guard });
+    }
+
+    /**
+     * @notice Constructs a universal "Agent Information" structure for the given Notary.
+     */
+    function _notaryInfo(
+        uint32 _domain,
+        address _notary,
+        bool _bonded
+    ) internal pure returns (AgentInfo memory) {
+        return
+            AgentInfo({ agent: Agent.Notary, bonded: _bonded, domain: _domain, account: _notary });
+    }
 
     /**
      * @notice Returns a list of local System Registries: system contracts, keeping track
