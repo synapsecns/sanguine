@@ -1,6 +1,7 @@
 # Explorer UI
 
-## TODO: add readme
+## TODO: add readme describing explorer ui
+## TODO: add integration tests
 
 # Getting Started with Create React App
 
