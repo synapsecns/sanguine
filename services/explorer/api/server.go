@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/testutil/clickhouse"
 	"golang.org/x/sync/errgroup"
 	"net/http"
+	"time"
 )
 
 // HealthCheck is the health check endpoint.
@@ -35,7 +36,12 @@ func Start(ctx context.Context, cfg Config) error {
 	router := gin.New()
 	router.Use(helmet.Default())
 	router.Use(gin.Recovery())
-	router.Use(cors.New(cors.DefaultConfig()))
+	router.Use(cors.New(cors.Config{
+		AllowAllOrigins: true,
+		AllowHeaders:    []string{"*"},
+		AllowMethods:    []string{"GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"},
+		MaxAge:          12 * time.Hour,
+	}))
 
 	// initialize the database
 	consumerDB, err := InitDB(ctx, cfg.Address, true)
