@@ -8,10 +8,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout files
-        uses: Bhacaz/checkout-files@v2
-        with:
-          files: packages/explorer-ui
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Deploy to Vercel Action
         uses: BetaHuhn/deploy-to-vercel-action@v1
         with:
@@ -19,3 +18,4 @@ jobs:
           VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}'
           VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
           VERCEL_PROJECT_ID: '${{ secrets.VERCEL_PROJECT_ID }}'
+          WORKING_DIRECTORY: packages/explorer-ui
