@@ -26,7 +26,6 @@ root
 ├── <a href="./agents">agents</a>: agents contain all the agents used in optimistic messaging
 </pre>
 
-
 ## Setup
 
 Clone the repository, open it, and install nodejs packages with `yarn`:
