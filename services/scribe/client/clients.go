@@ -21,10 +21,10 @@ type ScribeClient struct {
 type EmbeddedScribe struct {
 	// ScribeClient is the ScribeClient.
 	ScribeClient
-	// Database is the database type.
-	Database string
-	// Path is the path to the database or db connection.
-	Path string
+	// database is the database type.
+	database string
+	// path is the path to the database or db connection.
+	path string
 }
 
 // NewEmbeddedScribe creates a new EmbeddedScribe.
@@ -35,8 +35,8 @@ func NewEmbeddedScribe(database, path string) EmbeddedScribe {
 			GRPCPort: uint16(freeport.GetPort()),
 			URL:      "localhost",
 		},
-		Database: database,
-		Path:     path,
+		database: database,
+		path:     path,
 	}
 }
 
@@ -49,8 +49,8 @@ func (r RemoteScribe) OverrideURL(url string) {
 func (e EmbeddedScribe) Start(ctx context.Context) error {
 	apiConfig := api.Config{
 		HTTPPort: e.HTTPPort,
-		Database: e.Database,
-		Path:     e.Path,
+		Database: e.database,
+		Path:     e.path,
 		GRPCPort: e.GRPCPort,
 	}
 	err := api.Start(ctx, apiConfig)

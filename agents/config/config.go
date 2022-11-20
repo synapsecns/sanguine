@@ -11,7 +11,7 @@ type Config struct {
 	// Signer contains the signer config for agents
 	Signer SignerConfig `toml:"Signer"`
 	// DbConfig is the database config
-	Database DBConfig `toml:"Database"`
+	Database DBConfig `toml:"database"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
