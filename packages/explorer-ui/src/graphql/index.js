@@ -1,1 +1,1 @@
-export const API_URL = process.env.API_URL ? process.env.API_URL : 'http://localhost:4000/graphql'
+export const API_URL = process.env.REACT_API_URL ? process.env.REACT_API_URL : 'http://localhost:4000/graphql'
