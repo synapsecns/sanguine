@@ -11,18 +11,20 @@ import (
 type ScribeClient struct {
 	// HTTPPort is the port the Scribe is listening on for HTTP requests.
 	HTTPPort uint16
-	// Database is the database type.
-	Database string
-	// Path is the path to the database or db connection.
-	Path string
 	// GRPCPort is the port the Scribe is listening on for gRPC requests.
 	GRPCPort uint16
+	// URL is the URL for the connection.
+	URL string
 }
 
 // EmbeddedScribe is a ScribeClient that is used locally.
 type EmbeddedScribe struct {
 	// ScribeClient is the ScribeClient.
 	ScribeClient
+	// Database is the database type.
+	Database string
+	// Path is the path to the database or db connection.
+	Path string
 }
 
 // NewEmbeddedScribe creates a new EmbeddedScribe.
@@ -30,11 +32,17 @@ func NewEmbeddedScribe(database, path string) EmbeddedScribe {
 	return EmbeddedScribe{
 		ScribeClient: ScribeClient{
 			HTTPPort: uint16(freeport.GetPort()),
-			Database: database,
-			Path:     path,
 			GRPCPort: uint16(freeport.GetPort()),
+			URL:      "localhost",
 		},
+		Database: database,
+		Path:     path,
 	}
+}
+
+// OverrideURL overrides the URL for the RemoteScribe.
+func (r RemoteScribe) OverrideURL(url string) {
+	r.URL = url
 }
 
 // Start starts the EmbeddedScribe.
@@ -60,13 +68,12 @@ type RemoteScribe struct {
 }
 
 // NewRemoteScribe creates a new RemoteScribe.
-func NewRemoteScribe(httpPort uint16, database, path string, grpcPort uint16) RemoteScribe {
+func NewRemoteScribe(httpPort uint16, grpcPort uint16, url string) RemoteScribe {
 	return RemoteScribe{
 		ScribeClient: ScribeClient{
 			HTTPPort: httpPort,
-			Database: database,
-			Path:     path,
 			GRPCPort: grpcPort,
+			URL:      url,
 		},
 	}
 }
