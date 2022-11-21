@@ -49,7 +49,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 	startHeights := make(map[string]uint64)
 
 	if chainConfig.BlockTimeChunkCount == 0 {
-		chainConfig.BlockTimeChunkCount = 40
+		chainConfig.BlockTimeChunkCount = 80
 	}
 
 	if chainConfig.BlockTimeChunkSize == 0 {
