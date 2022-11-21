@@ -152,7 +152,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		e.Nil(err)
 	}()
 
-	exec, err := executor.NewExecutor([]uint32{chainID}, map[uint32]common.Address{chainID: testContract.Address()}, scribeClient.ScribeClient)``
+	exec, err := executor.NewExecutor([]uint32{chainID}, map[uint32]common.Address{chainID: testContract.Address()}, scribeClient.ScribeClient)
 	e.Nil(err)
 
 	// Start the exec.
