@@ -75,10 +75,10 @@ library TypedMemView {
     uint256 public constant BITS_EMPTY = 24;
 
     // `SHIFT_X` is how much bits to shift for `X` to be in the very bottom bits
-    uint256 public constant SHIFT_LEN = BITS_EMPTY;
-    uint256 public constant SHIFT_LOC = SHIFT_LEN + BITS_LEN;
-    uint256 public constant SHIFT_TYPE = SHIFT_LOC + BITS_LOC;
-
+    uint256 public constant SHIFT_LEN = BITS_EMPTY; // 24
+    uint256 public constant SHIFT_LOC = SHIFT_LEN + BITS_LEN; // 24 + 96 = 120
+    uint256 public constant SHIFT_TYPE = SHIFT_LOC + BITS_LOC; // 24 + 96 + 96 = 216
+    // Bitmask for the lowest 96 bits
     uint256 public constant LOW_96_BITS_MASK = type(uint96).max;
 
     // For nibble encoding
