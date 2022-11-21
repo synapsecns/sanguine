@@ -44,6 +44,8 @@ func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
 	}
 }
 
+const HealthCheckEndpoint = "/health-check"
+
 // Run runs the rpc server until context cancellation.
 func (r *RPCProxy) Run(ctx context.Context) {
 	go r.startProxyLoop(ctx)
@@ -81,7 +83,7 @@ func (r *RPCProxy) Run(ctx context.Context) {
 		}
 	})
 
-	router.GET("/health-check", func(c *gin.Context) {
+	router.GET(HealthCheckEndpoint, func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status": "UP",
 		})
@@ -164,4 +166,9 @@ func (r *RPCProxy) startProxyLoop(ctx context.Context) {
 			waitTime = scanInterval
 		}
 	}
+}
+
+// Port gets the port the proxy is running on
+func (r *RPCProxy) Port() uint16 {
+	return r.port
 }
