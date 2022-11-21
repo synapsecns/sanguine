@@ -138,13 +138,13 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			currentBlock = startHeight
 		}
 
-		LogEvent(InfoLevel, "Starting backfilling contracts", LogData{"cid": c.chainID, "bn": currentBlock})
+		LogEvent(InfoLevel, "Starting backfilling a contract", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "bn": currentBlock})
 		backfillGroup.Go(func() error {
 			timeout = time.Duration(0)
 			for {
 				select {
 				case <-backfillCtx.Done():
-					LogEvent(WarnLevel, "Could not backfill data, context canceled", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
+					LogEvent(WarnLevel, "Could not backfill data, context canceled", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
 
 					return fmt.Errorf("%s chain context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
 				case <-time.After(timeout):
@@ -152,17 +152,18 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 					if err != nil {
 						timeout = b.Duration()
-						LogEvent(WarnLevel, "Could not backfill data, retrying", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
+						LogEvent(WarnLevel, "Could not backfill data, retrying", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
 
 						continue
 					}
 					b.Reset()
 					timeout = time.Duration(0)
-
+					LogEvent(WarnLevel, "Done backfilling a contract", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
 					return nil
 				}
 			}
 		})
+
 	}
 
 	// Set the start height to the min height from all start blocks set in config

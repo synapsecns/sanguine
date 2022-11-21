@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -115,6 +116,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 //nolint:cyclop, gocognit
 func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	var returnedReceipt types.Receipt
+	startTime := time.Now()
 
 	// Parallelize storing logs, receipts, and transactions.
 	g, groupCtx := errgroup.WithContext(ctx)
@@ -250,10 +252,11 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	})
 
 	err := g.Wait()
-	if err != nil {
-		LogEvent(ErrorLevel, "Could not store data", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
-		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainID, log.BlockNumber, log.TxHash.String())
+	if err != nil {
+		LogEvent(ErrorLevel, "Could not backfill, go routine error", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
+		return fmt.Errorf("could not backfill, go routine error: %w\n%s on chain %d from %d to %s", err, c.address, c.chainID, log.BlockNumber, log.TxHash.String())
 	}
 
 	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainID, returnedReceipt.BlockNumber.Uint64())
@@ -262,6 +265,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 
 		return fmt.Errorf("could not store last indexed block: %w", err)
 	}
+	LogEvent(InfoLevel, "Stored log, receipts, and txs", LogData{"cid": c.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "ts": time.Since(startTime).Seconds(), "e": err.Error()})
 
 	c.cache.Add(log.TxHash, true)
 

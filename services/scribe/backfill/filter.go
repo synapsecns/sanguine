@@ -157,6 +157,7 @@ RETRY:
 				if err != nil {
 					timeout = b.Duration()
 					LogEvent(WarnLevel, "Could not filter logs for range", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "e": err})
+					return err
 				}
 				processedSubChunks.Store(subChunkStartHeight, logs)
 
