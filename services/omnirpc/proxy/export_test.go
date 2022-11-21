@@ -18,7 +18,7 @@ func IsConfirmable(body []byte) (bool, error) {
 	}
 
 	//nolint: wrapcheck
-	return parsedPayload[0].isConfirmable()
+	return parsedPayload.isConfirmable()
 }
 
 // ParseRPCPayload exports parseRPCPayload for testing.
