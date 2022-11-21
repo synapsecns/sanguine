@@ -13,8 +13,6 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
-	params "github.com/ethereum/go-ethereum/params"
-
 	rpc "github.com/ethereum/go-ethereum/rpc"
 
 	types "github.com/ethereum/go-ethereum/core/types"
@@ -167,22 +165,6 @@ func (_m *EVMClient) CallContract(ctx context.Context, call ethereum.CallMsg, bl
 	}
 
 	return r0, r1
-}
-
-// ChainConfig provides a mock function with given fields:
-func (_m *EVMClient) ChainConfig() *params.ChainConfig {
-	ret := _m.Called()
-
-	var r0 *params.ChainConfig
-	if rf, ok := ret.Get(0).(func() *params.ChainConfig); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*params.ChainConfig)
-		}
-	}
-
-	return r0
 }
 
 // ChainID provides a mock function with given fields: ctx
