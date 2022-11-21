@@ -75,49 +75,50 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 	}
 
 	for {
-		select {
-		case <-res.Context().Done():
+		var retrievedLogs []*types.Log
+
+		if nextFromBlock > fromBlock {
+			fromBlock = nextFromBlock
+		}
+
+		page := 1
+
+		for {
+			logs, err := s.db.RetrieveLogsInRangeAsc(res.Context(), logFilter, fromBlock, toBlock, page)
+			if err != nil {
+				return fmt.Errorf("could not retrieve logs: %w", err)
+			}
+
+			retrievedLogs = append(retrievedLogs, logs...)
+
+			// See if we do not need to get the next page.
+			if len(logs) < base.PageSize {
+				break
+			}
+
+			page++
+		}
+
+		// Convert the logs to the protobuf format and send them through the stream.
+		for _, log := range retrievedLogs {
+			err = res.Send(&pbscribe.StreamLogsResponse{
+				Log: pbscribe.FromNativeLog(log),
+			})
+			if err != nil {
+				return fmt.Errorf("could not send log: %w", err)
+			}
+		}
+
+		if !streamNewBlocks {
 			return nil
-		default:
-			var retrievedLogs []*types.Log
+		}
 
-			if nextFromBlock > fromBlock {
-				fromBlock = nextFromBlock
-			}
-
-			page := 1
-
-			for {
-				logs, err := s.db.RetrieveLogsInRangeAsc(res.Context(), logFilter, fromBlock, toBlock, page)
-				if err != nil {
-					return fmt.Errorf("could not retrieve logs: %w", err)
-				}
-
-				retrievedLogs = append(retrievedLogs, logs...)
-
-				// See if we do not need to get the next page.
-				if len(logs) < base.PageSize {
-					break
-				}
-
-				page++
-			}
-
-			// Convert the logs to the protobuf format and send them through the stream.
-			for _, log := range retrievedLogs {
-				err = res.Send(&pbscribe.StreamLogsResponse{
-					Log: pbscribe.FromNativeLog(log),
-				})
-				if err != nil {
-					return fmt.Errorf("could not send log: %w", err)
-				}
-			}
-
-			if !streamNewBlocks {
+	STREAM:
+		for {
+			select {
+			case <-res.Context().Done():
 				return nil
-			}
-
-			for {
+			default:
 				time.Sleep(time.Duration(wait) * time.Second)
 				latestScribeBlock, err := s.db.RetrieveLastIndexed(res.Context(), common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
 				if err != nil {
@@ -128,7 +129,7 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 					nextFromBlock = toBlock + 1
 					toBlock = latestScribeBlock
 					wait = 0
-					break
+					break STREAM
 				}
 				wait = 1
 			}
