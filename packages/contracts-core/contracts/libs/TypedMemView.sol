@@ -283,10 +283,10 @@ library TypedMemView {
      * @return          newView - The new view with the specified type
      */
     function castTo(bytes29 memView, uint40 _newType) internal pure returns (bytes29 newView) {
+        // How many bits are the "type bits" occupying
+        uint256 _bitsType = BITS_TYPE;
         // How many bits are the "type bits" shifted from the bottom
         uint256 _shiftType = SHIFT_TYPE;
-        // How many bits are the "type bits" occupying
-        uint256 _bitsType = BITS_TYPE; //
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             // shift off the "type bits" (shift left, then sift right)
@@ -416,9 +416,10 @@ library TypedMemView {
      * @return          _loc - The memory address
      */
     function loc(bytes29 memView) internal pure returns (uint96 _loc) {
-        uint256 _uint96Mask = LOW_96_BITS_MASK; // assembly can't use globals
         // How many bits are the "loc bits" shifted from the bottom
         uint256 _shiftLoc = SHIFT_LOC;
+        // Mask for the bottom 96 bits
+        uint256 _uint96Mask = LOW_96_BITS_MASK;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             // Shift out the bottom bits preceding "loc bits".
@@ -452,9 +453,10 @@ library TypedMemView {
      * @return          _len - The length of the view
      */
     function len(bytes29 memView) internal pure returns (uint96 _len) {
-        uint256 _uint96Mask = LOW_96_BITS_MASK; // assembly can't use globals
         // How many bits are the "len bits" shifted from the bottom
         uint256 _shiftLen = SHIFT_LEN;
+        // Mask for the bottom 96 bits
+        uint256 _uint96Mask = LOW_96_BITS_MASK;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             // Shift out the bottom bits preceding "len bits".
