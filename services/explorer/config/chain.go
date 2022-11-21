@@ -14,7 +14,7 @@ type ChainConfig struct {
 	// FetchBlockIncrement is the number of blocks to fetch at a time.
 	FetchBlockIncrement uint64 `yaml:"fetch_block_increment"`
 	// MaxGoroutines is the maximum number of goroutines that can be spawned.
-	MaxGoroutines int64 `yaml:"max_goroutines"`
+	MaxGoroutines int `yaml:"max_goroutines"`
 	// Contracts are the contracts.
 	Contracts ContractConfigs `yaml:"contracts"`
 }
@@ -42,9 +42,6 @@ func (c ChainConfigs) IsValid() (ok bool, err error) {
 func (c ChainConfig) IsValid() (ok bool, err error) {
 	if c.ChainID == 0 {
 		return false, fmt.Errorf("chain ID cannot be 0")
-	}
-	if c.RPCURL == "" {
-		return false, fmt.Errorf("field RPCURL: %w", ErrRequiredField)
 	}
 	if c.FetchBlockIncrement == 0 {
 		return false, fmt.Errorf("field FetchBlockIncrement: %w", ErrRequiredField)

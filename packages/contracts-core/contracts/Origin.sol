@@ -3,12 +3,13 @@ pragma solidity 0.8.17;
 
 // ============ Internal Imports ============
 import { LocalDomainContext } from "./context/LocalDomainContext.sol";
+import { OriginEvents } from "./events/OriginEvents.sol";
 import { Version0 } from "./Version0.sol";
 import { OriginHub } from "./hubs/OriginHub.sol";
 import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
-import { SystemMessage } from "./libs/SystemMessage.sol";
+import { SystemCall } from "./libs/SystemCall.sol";
 import { SystemContract } from "./system/SystemContract.sol";
 import { INotaryManager } from "./interfaces/INotaryManager.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
@@ -29,7 +30,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Origin accepts submissions of fraudulent signatures by the Guard in the form
  * of a Guard's report with said signature and slashes Guard in that case.
  */
-contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
+contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, OriginHub {
     using Tips for bytes;
     using Tips for bytes29;
 
@@ -51,50 +52,6 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
 
     // gap for upgrade safety
     uint256[49] private __GAP; //solhint-disable-line var-name-mixedcase
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Emitted when a new message is dispatched
-     * @param messageHash Hash of message; the leaf inserted to the Merkle tree
-     *        for the message
-     * @param nonce Nonce of sent message (starts from 1)
-     * @param destination Destination domain
-     * @param tips Tips paid for the remote off-chain agents
-     * @param message Raw bytes of message
-     */
-    event Dispatch(
-        bytes32 indexed messageHash,
-        uint32 indexed nonce,
-        uint32 indexed destination,
-        bytes tips,
-        bytes message
-    );
-
-    /**
-     * @notice Emitted when the Guard is slashed
-     * (should be paired with IncorrectReport event)
-     * @param guard     The address of the guard that signed the incorrect report
-     * @param reporter  The address of the entity that reported the guard misbehavior
-     */
-    event GuardSlashed(address indexed guard, address indexed reporter);
-
-    /**
-     * @notice Emitted when the Notary is slashed
-     * (should be paired with FraudAttestation event)
-     * @param notary    The address of the notary
-     * @param guard     The address of the guard that signed the fraud report
-     * @param reporter  The address of the entity that reported the notary misbehavior
-     */
-    event NotarySlashed(address indexed notary, address indexed guard, address indexed reporter);
-
-    /**
-     * @notice Emitted when the NotaryManager contract is changed
-     * @param notaryManager The address of the new notaryManager
-     */
-    event NewNotaryManager(address notaryManager);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -167,12 +124,12 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
      * @dev Format the message, insert its hash into Merkle tree,
      * enqueue the new Merkle root, and emit `Dispatch` event with message information.
      * @param _destination      Domain of destination chain
-     * @param _recipientAddress Address of recipient on destination chain as bytes32
+     * @param _recipient        Address of recipient on destination chain as bytes32
      * @param _messageBody      Raw bytes content of message
      */
     function dispatch(
         uint32 _destination,
-        bytes32 _recipientAddress,
+        bytes32 _recipient,
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
@@ -190,10 +147,10 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
         // format the message into packed bytes
         bytes memory message = Message.formatMessage({
             _origin: _localDomain(),
-            _sender: _getSender(_recipientAddress),
+            _sender: _checkForSystemRouter(_recipient),
             _nonce: messageNonce,
             _destination: _destination,
-            _recipient: _recipientAddress,
+            _recipient: _recipient,
             _optimisticSeconds: _optimisticSeconds,
             _tips: _tips,
             _messageBody: _messageBody
@@ -249,25 +206,25 @@ contract Origin is Version0, SystemContract, LocalDomainContext, OriginHub {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns "adjusted" sender address.
-     * @dev By default, "sender address" is msg.sender.
-     * However, if SystemRouter sends a message, specifying SYSTEM_ROUTER as the recipient,
-     * SYSTEM_ROUTER is used as "sender address" on origin chain.
+     * @notice Returns adjusted "sender" field.
+     * @dev By default, "sender" field is msg.sender address casted to bytes32.
+     * However, if SYSTEM_ROUTER is used for "recipient" field, and msg.sender is SystemRouter,
+     * SYSTEM_ROUTER is also used as "sender" field.
      * Note: tx will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
      */
-    function _getSender(bytes32 _recipientAddress) internal view returns (bytes32 sender) {
-        if (_recipientAddress != SystemMessage.SYSTEM_ROUTER) {
+    function _checkForSystemRouter(bytes32 _recipient) internal view returns (bytes32 sender) {
+        if (_recipient != SystemCall.SYSTEM_ROUTER) {
             sender = TypeCasts.addressToBytes32(msg.sender);
             /**
-             * @dev Note: SYSTEM_ROUTER has highest 12 bytes set,
-             *      whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
-             *      Thus, in this branch: sender != SystemMessage.SYSTEM_ROUTER
+             * @dev Note: SYSTEM_ROUTER has only the highest 12 bytes set,
+             * whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
+             * Thus, in this branch: sender != SystemCall.SYSTEM_ROUTER
              */
         } else {
             // Check that SystemRouter specified SYSTEM_ROUTER as recipient, revert otherwise.
             _assertSystemRouter();
-            // Adjust "sender address" for correct processing on remote chain.
-            sender = SystemMessage.SYSTEM_ROUTER;
+            // Adjust "sender" field for correct processing on remote chain.
+            sender = SystemCall.SYSTEM_ROUTER;
         }
     }
 }

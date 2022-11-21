@@ -8,8 +8,14 @@ import (
 // NewDeployManager creates a deploy manager.
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
+	parentManager := manager.NewDeployerManager(t,
+		NewBridgeConfigV3Deployer,
+		NewSynapseBridgeDeployer,
+		NewSwapFlashLoanDeployer,
+		NewSynapseBridgeV1Deployer,
+		NewMessageBusDeployer,
+	)
 
-	parentManager := manager.NewDeployerManager(t, NewBridgeConfigV3Deployer, NewSynapseBridgeDeployer, NewSwapFlashLoanDeployer)
 	return &DeployManager{parentManager}
 }
 

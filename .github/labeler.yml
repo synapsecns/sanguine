@@ -16,6 +16,9 @@ M-integration:
 M-contracts:
   - any: ['packages/contracts-core/**/*']
 
+M-explorer-ui:
+  - any: ['packages/explorer-ui/**/*']
+
 M-charts:
   - any: ['charts/**/*']
 

@@ -13,7 +13,7 @@ jobs:
           experimental_checks: 'notowned,avoid-shadowing'
       - name: Validate codecov
         run: |
-          # https://docs.codecov.io/docs/codecov-yaml curl, if respoonse code ok then exit 0 otherwise exit 1
+          # https://docs.codecov.io/docs/codecov-yaml curl, if response code ok then exit 0 otherwise exit 1
           curl -s -o /dev/null -w "%{http_code}" --data-binary @.codecov.yml https://codecov.io/validate  | grep --invert-match 200 && exit 1 || exit 0
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
@@ -29,7 +29,7 @@ jobs:
         with:
           config_file: .yamllint.yml
       - uses: actions/upload-artifact@v2
-        if: always()
+        if: steps.yaml-lint.outcome == 'success'
         with:
           name: yamllint-logfile
           path: ${{ steps.yaml-lint.outputs.logfile }}
