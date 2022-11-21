@@ -49,8 +49,8 @@ type LogFilterer interface {
 // bufferSize is how many ranges ahead should be fetched.
 const bufferSize = 15
 
-// chunkCount is how many chunks to process at a time.
-const chunkCount = 20
+// SubChunkSize is how many chunks to process at a time.
+const SubChunkSize = 20
 
 // maxAttempts is that maximum number of times a filter attempt should be made before giving up.
 const maxAttempts = 5
@@ -83,39 +83,73 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 			}
 
 			return nil
+		//default:
+		//
+		//	var wg sync.WaitGroup
+		//	startTime := time.Now()
+		//	processedChunks := make(map[int]*LogInfo)
+		//	nullChunkFlag := false
+		//	//TODO add backoff
+		//	for i := 0; i < chunkCount; i++ {
+		//		if nullChunkFlag {
+		//			continue
+		//		}
+		//		chunk := f.iterator.NextChunk()
+		//		if chunk == nil {
+		//			f.done = true
+		//			return nil
+		//		}
+		//		fmt.Println("CHUNKY", chunk)
+		//		wg.Add(1)
+		//
+		//		go func() {
+		//			gCtx := context.Background()
+		//			logs, err := f.FilterLogs(gCtx, chunk)
+		//			if err != nil {
+		//				fmt.Println("ERRORERROR", err)
+		//				return
+		//			}
+		//			processedChunks[i] = logs
+		//			fmt.Println("PENISlogs", processedChunks[i])
+		//
+		//			wg.Done()
+		//		}()
+		//	}
+		//	wg.Wait()
+		//	fmt.Println("POOO", processedChunks)
+		//	for i := 0; i < chunkCount; i++ {
+		//		fmt.Println("appending to channel", i)
+		//
+		//		if processedChunks[i] != nil {
+		//			fmt.Println("appending to channel-", i)
+		//			f.appendToChannel(ctx, processedChunks[i])
+		//		}
+		//	}
+		//	if nullChunkFlag {
+		//		f.done = true
+		//	}
+		//	LogEvent(InfoLevel, "Chunk completed", LogData{"ca": f.contractAddress, "ts": time.Since(startTime).Seconds()})
+		//}
 		default:
-			g, ctx := errgroup.WithContext(ctx)
 			startTime := time.Now()
-			processedChunks := make(map[int]*LogInfo)
-			nullChunkFlag := false
-			//TODO add backoff
-			for i := 0; i < chunkCount; i++ {
-				g.Go(func() error {
-					chunk := f.iterator.NextChunk()
-					if chunk == nil {
-						nullChunkFlag = true
-						return nil
-					}
-					logs, err := f.FilterLogs(ctx, chunk)
-					if err != nil {
-						return fmt.Errorf("could not filter logs: %w", err)
-					}
-					processedChunks[i] = logs
-					return nil
-				})
-			}
-			if err := g.Wait(); err != nil {
-				return err
-			}
-			for i := 0; i < chunkCount; i++ {
-				if processedChunks[i] != nil {
-					f.appendToChannel(ctx, processedChunks[i])
-				}
-			}
-			if nullChunkFlag {
+			chunk := f.iterator.NextChunk()
+			fmt.Println("CHUNKY", chunk)
+
+			if chunk == nil {
 				f.done = true
+
+				return nil
 			}
-			LogEvent(InfoLevel, "Chunk completed", LogData{"ca": f.contractAddress, "ts": time.Since(startTime).Seconds()})
+
+			logs, err := f.FilterLogs(ctx, chunk)
+
+			if err != nil {
+				fmt.Println("ERRORERROR", err)
+				return fmt.Errorf("could not filter logs: %w", err)
+			}
+
+			f.appendToChannel(ctx, logs)
+			LogEvent(InfoLevel, "Chunk completed", LogData{"ca": f.contractAddress, "sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
 		}
 	}
 }
@@ -132,8 +166,9 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 
 	attempt := 0
 	timeout := time.Duration(0)
-
+RETRY:
 	for {
+
 		select {
 		case <-ctx.Done():
 			return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
@@ -144,20 +179,46 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 				return nil, errors.New("maximum number of filter attempts exceeded")
 			}
 
-			logs, err := f.filterer.FilterLogs(ctx, ethereum.FilterQuery{
-				FromBlock: chunk.MinBlock(),
-				ToBlock:   chunk.MaxBlock(),
-				Addresses: []ethCommon.Address{f.contractAddress},
-			})
+			processedSubChunks := make(map[uint64][]types.Log)
+			fromBlock := chunk.MinBlock().Uint64()
 
-			if err != nil {
-				timeout = b.Duration()
-				LogEvent(WarnLevel, "Could not filter logs for range", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "e": err})
-				continue
+			backfillGroup, backfillCtx := errgroup.WithContext(ctx)
+
+			for fromBlock > chunk.MaxBlock().Uint64() {
+
+				toBlock := fromBlock + SubChunkSize
+
+				if toBlock >= chunk.MaxBlock().Uint64() {
+					toBlock = chunk.MaxBlock().Uint64()
+				}
+
+				backfillGroup.Go(func() error {
+					logs, err := f.filterer.FilterLogs(backfillCtx, ethereum.FilterQuery{
+						FromBlock: big.NewInt(int64(fromBlock)),
+						ToBlock:   big.NewInt(int64(toBlock)),
+						Addresses: []ethCommon.Address{f.contractAddress},
+					})
+
+					if err != nil {
+						timeout = b.Duration()
+						LogEvent(WarnLevel, "Could not filter logs for range", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "e": err})
+					}
+					processedSubChunks[fromBlock] = logs
+
+					return nil
+				})
+
+				fromBlock += toBlock
+			}
+			if err := backfillGroup.Wait(); err != nil {
+				return nil, fmt.Errorf("could wait for all subchunks %w", err)
+			}
+			for i := 0; i < chunkCount; i++ {
+				logsArr = append(logsArr, logs...)
 			}
 
 			return &LogInfo{
-				logs:  logs,
+				logs:  logsArr,
 				chunk: chunk,
 			}, nil
 		}
