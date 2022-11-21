@@ -29,8 +29,6 @@ type EVMClient interface {
 	ethereum.ChainStateReader
 	// ChainID gets the chain id from the rpc server
 	ChainID(ctx context.Context) (*big.Int, error)
-	// ChainConfig gets the chain config
-	ChainConfig() *params.ChainConfig
 	// CallContext is used for manual overrides
 	CallContext(ctx context.Context, result interface{}, method string, args ...interface{}) error
 	// BatchCallContext is used for manual overrides
@@ -45,6 +43,8 @@ type clientImpl struct {
 	*ethclient.Client
 	// rpcClient is the underlying rpc client
 	rpcClient *rpc.Client
+	// chainID contains the chain id
+	chainID *big.Int
 	// config is the chain config
 	config *params.ChainConfig
 	// wsURL is stored for reconnection attempts
@@ -108,11 +108,6 @@ func (c *clientImpl) AttemptReconnect() error {
 	return nil
 }
 
-// ChainConfig gets the chain config for the client chain.
-func (c *clientImpl) ChainConfig() *params.ChainConfig {
-	return c.config
-}
-
 // CallContext exposes the CallContext methods in the underlying ethereum rpc client.
 // nolint: wrapcheck
 func (c *clientImpl) CallContext(ctx context.Context, result interface{}, method string, args ...interface{}) (err error) {
@@ -126,11 +121,11 @@ func (c *clientImpl) BatchCallContext(ctx context.Context, b []rpc.BatchElem) er
 	return c.rpcClient.BatchCallContext(ctx, b)
 }
 
-// NewClient creates a client from a websocket url.
-func NewClient(ctx context.Context, wsURL string) (EVMClient, error) {
-	rpcClient, err := rpc.DialContext(ctx, wsURL)
+// NewClient creates a client from a url.
+func NewClient(ctx context.Context, url string) (EVMClient, error) {
+	rpcClient, err := rpc.DialContext(ctx, url)
 	if err != nil {
-		return nil, fmt.Errorf("could not connect to rpc server %s. Received error: %w", wsURL, err)
+		return nil, fmt.Errorf("could not connect to rpc server %s. Received error: %w", url, err)
 	}
 
 	ethClient := ethclient.NewClient(rpcClient)
@@ -141,10 +136,32 @@ func NewClient(ctx context.Context, wsURL string) (EVMClient, error) {
 	}
 
 	client := &clientImpl{
+		chainID:   chainID,
 		rpcClient: rpcClient,
 		Client:    ethClient,
-		config:    ConfigFromID(chainID),
-		wsURL:     wsURL,
+		wsURL:     url,
+		ctx:       ctx,
+	}
+
+	go client.StartConnectionResetTicker(ctx)
+
+	return client, nil
+}
+
+// NewClientFromChainID creates a new client from a chain id.
+func NewClientFromChainID(ctx context.Context, url string, chainID *big.Int) (EVMClient, error) {
+	rpcClient, err := rpc.DialContext(ctx, url)
+	if err != nil {
+		return nil, fmt.Errorf("could not connect to rpc server %s. Received error: %w", url, err)
+	}
+
+	ethClient := ethclient.NewClient(rpcClient)
+
+	client := &clientImpl{
+		chainID:   chainID,
+		rpcClient: rpcClient,
+		Client:    ethClient,
+		wsURL:     url,
 		ctx:       ctx,
 	}
 
