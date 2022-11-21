@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/node"
 	"math/big"
@@ -67,14 +68,20 @@ func (e *ExecutorSuite) TestExecutor() {
 	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
 	e.Nil(err)
 
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+
+	go func() {
+		_ = scribeClient.Start(e.GetTestContext())
+	}()
+
 	// Start the Scribe.
 	go func() {
 		_ = scribe.Start(e.GetTestContext())
 	}()
 
-	excA, err := executor.NewExecutor([]uint32{chainIDA}, map[uint32]common.Address{chainIDA: testContractA.Address()}, e.dbPath, "sqlite")
+	excA, err := executor.NewExecutor([]uint32{chainIDA}, map[uint32]common.Address{chainIDA: testContractA.Address()}, scribeClient.ScribeClient)
 	e.Nil(err)
-	excB, err := executor.NewExecutor([]uint32{chainIDB}, map[uint32]common.Address{chainIDB: testContractB.Address()}, e.dbPath, "sqlite")
+	excB, err := executor.NewExecutor([]uint32{chainIDB}, map[uint32]common.Address{chainIDB: testContractB.Address()}, scribeClient.ScribeClient)
 	e.Nil(err)
 
 	// Start the executor.
@@ -134,13 +141,18 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
 	e.Nil(err)
 
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+	go func() {
+		_ = scribeClient.Start(e.GetTestContext())
+	}()
+
 	// Start the Scribe.
 	go func() {
 		err := scribe.Start(e.GetTestContext())
 		e.Nil(err)
 	}()
 
-	exec, err := executor.NewExecutor([]uint32{chainID}, map[uint32]common.Address{chainID: testContract.Address()}, e.dbPath, "sqlite")
+	exec, err := executor.NewExecutor([]uint32{chainID}, map[uint32]common.Address{chainID: testContract.Address()}, scribeClient.ScribeClient)``
 	e.Nil(err)
 
 	// Start the exec.

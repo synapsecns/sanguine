@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/phayes/freeport"
-	"github.com/synapsecns/sanguine/services/scribe/api"
+	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -21,10 +20,8 @@ type Executor struct {
 	chainIDs []uint32
 	// addresses is a map from chain ID -> address.
 	addresses map[uint32]common.Address
-	// dbPath is the path to the database.
-	dbPath string
-	// dbType is the type of database.
-	dbType string
+	// scribeClient is the client to the Scribe gRPC server.
+	scribeClient client.ScribeClient
 	// lastLog is a map from chainID -> last log processed.
 	lastLog map[uint32]logOrderInfo
 	// LogChans is a mapping from chain ID -> log channel.
@@ -38,19 +35,18 @@ type logOrderInfo struct {
 }
 
 // NewExecutor creates a new executor agent.
-func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, dbPath string, dbType string) (*Executor, error) {
+func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeClient client.ScribeClient) (*Executor, error) {
 	channels := make(map[uint32]chan *types.Log)
 	for _, chainID := range chainIDs {
 		channels[chainID] = make(chan *types.Log, 1000)
 	}
 
 	return &Executor{
-		chainIDs:  chainIDs,
-		addresses: addresses,
-		dbPath:    dbPath,
-		dbType:    dbType,
-		lastLog:   make(map[uint32]logOrderInfo),
-		LogChans:  channels,
+		chainIDs:     chainIDs,
+		addresses:    addresses,
+		scribeClient: scribeClient,
+		lastLog:      make(map[uint32]logOrderInfo),
+		LogChans:     channels,
 	}, nil
 }
 
@@ -58,33 +54,16 @@ func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, dbPath 
 //
 //nolint:cyclop
 func (e Executor) Start(ctx context.Context) error {
-	// Start the GraphQL server for the Scribe, and expose the gRPC server.
-	apiConfig := api.Config{
-		HTTPPort: uint16(freeport.GetPort()),
-		Database: e.dbType,
-		Path:     e.dbPath,
-		GRPCPort: uint16(freeport.GetPort()),
-	}
-
-	go func() {
-		err := api.Start(ctx, apiConfig)
-		if err != nil {
-			logger.Warnf("could not start api: %s", err)
-
-			return
-		}
-	}()
-
 	// Consume the logs from gRPC.
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("localhost:%d", apiConfig.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", e.scribeClient.URL, e.scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("could not dial grpc: %w", err)
 	}
 
-	client := pbscribe.NewScribeServiceClient(conn)
+	grpcClient := pbscribe.NewScribeServiceClient(conn)
 
 	// Ensure that gRPC is up and running.
-	healthCheck, err := client.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
+	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
 	if err != nil {
 		return fmt.Errorf("could not check: %w", err)
 	}
@@ -98,7 +77,7 @@ func (e Executor) Start(ctx context.Context) error {
 		chainID := chainID
 
 		g.Go(func() error {
-			stream, err := client.StreamLogs(gCtx, &pbscribe.StreamLogsRequest{
+			stream, err := grpcClient.StreamLogs(gCtx, &pbscribe.StreamLogsRequest{
 				Filter: &pbscribe.LogFilter{
 					ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: e.addresses[chainID].Hex()}},
 					ChainId:         chainID,
