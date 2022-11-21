@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	common_base "github.com/synapsecns/sanguine/core/dbcommon"
-
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	//common_base "github.com/synapsecns/sanguine/core/dbcommon"
+	loggerS "gorm.io/gorm/logger"
 )
 
 // Store is the sqlite store. It extends the base store for sqlite specific queries.
@@ -31,8 +31,9 @@ func NewSqliteStore(ctx context.Context, dbPath string) (*Store, error) {
 
 	gdb, err := gorm.Open(sqlite.Open(fmt.Sprintf("%s/%s", dbPath, "synapse.db")), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
-		Logger:                                   common_base.GetGormLogger(logger),
-		FullSaveAssociations:                     true,
+		//Logger:                                   common_base.GetGormLogger(logger),
+		Logger:               loggerS.Default.LogMode(loggerS.Silent),
+		FullSaveAssociations: true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to db %s: %w", dbPath, err)

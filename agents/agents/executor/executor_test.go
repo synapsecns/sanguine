@@ -71,12 +71,14 @@ func (e *ExecutorSuite) TestExecutor() {
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
 
 	go func() {
-		_ = scribeClient.Start(e.GetTestContext())
+		scribeErr := scribeClient.Start(e.GetSuiteContext())
+		e.Nil(scribeErr)
 	}()
 
 	// Start the Scribe.
 	go func() {
-		_ = scribe.Start(e.GetTestContext())
+		scribeErr := scribe.Start(e.GetSuiteContext())
+		e.Nil(scribeErr)
 	}()
 
 	excA, err := executor.NewExecutor([]uint32{chainIDA}, map[uint32]common.Address{chainIDA: testContractA.Address()}, scribeClient.ScribeClient)
@@ -86,10 +88,12 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	// Start the executor.
 	go func() {
-		_ = excA.Start(e.GetTestContext())
+		excErr := excA.Start(e.GetSuiteContext())
+		e.Nil(excErr)
 	}()
 	go func() {
-		_ = excB.Start(e.GetTestContext())
+		excErr := excB.Start(e.GetSuiteContext())
+		e.Nil(excErr)
 	}()
 
 	e.Eventually(func() bool {
@@ -143,13 +147,14 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
 	go func() {
-		_ = scribeClient.Start(e.GetTestContext())
+		scribeErr := scribeClient.Start(e.GetTestContext())
+		e.Nil(scribeErr)
 	}()
 
 	// Start the Scribe.
 	go func() {
-		err := scribe.Start(e.GetTestContext())
-		e.Nil(err)
+		scribeErr := scribe.Start(e.GetTestContext())
+		e.Nil(scribeErr)
 	}()
 
 	exec, err := executor.NewExecutor([]uint32{chainID}, map[uint32]common.Address{chainID: testContract.Address()}, scribeClient.ScribeClient)
@@ -157,8 +162,8 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 
 	// Start the exec.
 	go func() {
-		err = exec.Start(e.GetTestContext())
-		e.Nil(err)
+		execErr := exec.Start(e.GetTestContext())
+		e.Nil(execErr)
 	}()
 
 	// Emit 250 events.

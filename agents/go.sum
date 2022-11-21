@@ -1076,8 +1076,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/subosito/gotenv v1.4.0 h1:yAzM1+SmVcz5R4tXGsNMu1jUl2aOJXoiWUCEwwnGrvs=
 github.com/subosito/gotenv v1.4.0/go.mod h1:mZd6rFysKEcUhUHXJk0C/08wAgyDBFuwEYL7vWWGaGo=
-github.com/synapsecns/sanguine/services/scribe v0.0.57 h1:jyOlCSaKLzXnXl23QuwyvaDag+wc27Y7LsU2QH+P4lY=
-github.com/synapsecns/sanguine/services/scribe v0.0.57/go.mod h1:VHfDM0Q7Y8WcCOGCEQKR0YvcpGnwFWU0GERH7pgv4+c=
+github.com/synapsecns/sanguine/services/scribe v0.0.63 h1:ZfeOrNcsZLbGQYspEuSQ2dDlci1SojVyztxEzL9im8c=
+github.com/synapsecns/sanguine/services/scribe v0.0.63/go.mod h1:VHfDM0Q7Y8WcCOGCEQKR0YvcpGnwFWU0GERH7pgv4+c=
 github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d/go.mod h1:9OrXJhf154huy1nPWmuSrkgjPUtUNhA+Zmy+6AESzuA=
 github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954/go.mod h1:u2MKkTVTVJWe5D1rCvame8WqhBd88EuIwODJZ1VHCPM=
 github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 h1:epCh84lMvA70Z7CTTCmYQn2CKbY8j86K7/FAIr141uY=
