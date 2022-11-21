@@ -13,7 +13,6 @@ import (
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
-	"github.com/pkg/errors"
 )
 
 // LogInfo is the log info.
@@ -50,8 +49,8 @@ type LogFilterer interface {
 // bufferSize is how many ranges ahead should be fetched.
 const bufferSize = 15
 
-// SubChunkCount is how many concurrent sub chunks to process at a time.
-const SubChunkCount = 20
+// subChunkCount is how many concurrent sub chunks to process at a time.
+const subChunkCount = 20
 
 // maxAttempts is that maximum number of times a filter attempt should be made before giving up.
 const maxAttempts = 5
@@ -120,7 +119,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 
 	attempt := 0
 	timeout := time.Duration(0)
-	subChunkSize := (chunk.MaxBlock().Uint64() - chunk.MinBlock().Uint64()) / uint64(SubChunkCount)
+	subChunkSize := (chunk.MaxBlock().Uint64() - chunk.MinBlock().Uint64()) / uint64(subChunkCount)
 	if subChunkSize < 10 {
 		subChunkSize = 10
 	}
@@ -130,7 +129,7 @@ RETRY:
 		return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
 	case <-time.After(timeout):
 		if attempt > maxAttempts {
-			return nil, errors.New("maximum number of filter attempts exceeded")
+			return nil, fmt.Errorf("maximum number of filter attempts exceeded")
 		}
 
 		attempt++
@@ -139,13 +138,13 @@ RETRY:
 		newCtx := context.Background()
 		g, gCtx := errgroup.WithContext(newCtx)
 
-		for chunkCountIdx < SubChunkCount {
+		for chunkCountIdx < subChunkCount {
 			subChunkStartHeight := chunk.MinBlock().Uint64() + (chunkCountIdx * subChunkSize)
 			subChunkEndHeight := subChunkStartHeight + subChunkSize - 1
 
 			if subChunkEndHeight >= chunk.MaxBlock().Uint64() {
 				subChunkEndHeight = chunk.MaxBlock().Uint64()
-				chunkCountIdx = SubChunkCount
+				chunkCountIdx = subChunkCount
 			}
 
 			g.Go(func() error {
@@ -172,14 +171,14 @@ RETRY:
 		}
 		var logsArr []types.Log
 		chunkCountIdx = uint64(0)
-		for chunkCountIdx < SubChunkCount {
+		for chunkCountIdx < subChunkCount {
 			subChunkStartHeight := chunk.MinBlock().Uint64() + (chunkCountIdx * subChunkSize)
 
 			subChunkEndHeight := subChunkStartHeight + subChunkSize - 1
 
 			if subChunkEndHeight >= chunk.MaxBlock().Uint64() {
 				subChunkEndHeight = chunk.MaxBlock().Uint64()
-				chunkCountIdx = SubChunkCount
+				chunkCountIdx = subChunkCount
 			}
 			logs, ok := processedSubChunks.Load(subChunkStartHeight)
 			if !ok {
