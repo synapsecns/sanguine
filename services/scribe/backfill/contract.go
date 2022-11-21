@@ -63,7 +63,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 	lastBlockIndexed, _ := c.eventDB.RetrieveLastIndexed(ctx, common.HexToAddress(c.address), c.chainID)
 
 	if lastBlockIndexed > startHeight {
-		LogEvent(WarnLevel, "Using last indexed block (lastIndexBlock > startHeight)", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight})
+		LogEvent(WarnLevel, "Using last indexed block (lastIndexBlock > startHeight)", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight, "ca": c.address})
 		startHeight = lastBlockIndexed
 	}
 

@@ -317,7 +317,7 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 		case <-time.After(timeoutBlockNum):
 			// If done with the range, exit go routine.
 			if blockNum > endHeight {
-				LogEvent(InfoLevel, "Exiting backfill", LogData{"cid": c.chainID, "bn": blockNum})
+				LogEvent(InfoLevel, "Exiting backfill", LogData{"cid": c.chainID, "bn": blockNum, "sh": startHeight, "eh": endHeight, "bt": true})
 
 				return nil
 			}
