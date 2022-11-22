@@ -75,13 +75,13 @@ func (c ClientSuite) TestLifecycleClient() {
 	// make sure underlying was called
 	// defer mockUnderlyingClient.AssertNumberOfCalls(c.T(), methodName, 1)
 	// 4 non-locking methods
-	mockPermitter.AssertNumberOfCalls(c.T(), permitReleases.Method, evmClienType.NumMethod()-3)
-	mockPermitter.AssertNumberOfCalls(c.T(), permitAcquires.Method, evmClienType.NumMethod()-3)
+	mockPermitter.AssertNumberOfCalls(c.T(), permitReleases.Method, evmClienType.NumMethod()-2)
+	mockPermitter.AssertNumberOfCalls(c.T(), permitAcquires.Method, evmClienType.NumMethod()-2)
 }
 
 // shouldSkip indicates an untestable method.
 func shouldSkip(name string) bool {
-	skipMethods := []string{"BatchCallContext", "CallContext", "BatchContext"}
+	skipMethods := []string{"BatchCallContext", "CallContext", "BatchContext", "SyncProgress"}
 	return toolbox.HasSliceAnyElements(skipMethods, name)
 }
 

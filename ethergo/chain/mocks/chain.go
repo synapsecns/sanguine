@@ -509,6 +509,29 @@ func (_m *Chain) HeaderByTime(ctx context.Context, startBlock *big.Int, searchTi
 	return r0, r1
 }
 
+// NetworkID provides a mock function with given fields: ctx
+func (_m *Chain) NetworkID(ctx context.Context) (*big.Int, error) {
+	ret := _m.Called(ctx)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(context.Context) *big.Int); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NonceAt provides a mock function with given fields: ctx, account, blockNumber
 func (_m *Chain) NonceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (uint64, error) {
 	ret := _m.Called(ctx, account, blockNumber)
@@ -523,6 +546,52 @@ func (_m *Chain) NonceAt(ctx context.Context, account common.Address, blockNumbe
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, common.Address, *big.Int) error); ok {
 		r1 = rf(ctx, account, blockNumber)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// PendingBalanceAt provides a mock function with given fields: ctx, account
+func (_m *Chain) PendingBalanceAt(ctx context.Context, account common.Address) (*big.Int, error) {
+	ret := _m.Called(ctx, account)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address) *big.Int); ok {
+		r0 = rf(ctx, account)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address) error); ok {
+		r1 = rf(ctx, account)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// PendingCallContract provides a mock function with given fields: ctx, call
+func (_m *Chain) PendingCallContract(ctx context.Context, call ethereum.CallMsg) ([]byte, error) {
+	ret := _m.Called(ctx, call)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(context.Context, ethereum.CallMsg) []byte); ok {
+		r0 = rf(ctx, call)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, ethereum.CallMsg) error); ok {
+		r1 = rf(ctx, call)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -567,6 +636,50 @@ func (_m *Chain) PendingNonceAt(ctx context.Context, account common.Address) (ui
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, common.Address) error); ok {
 		r1 = rf(ctx, account)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// PendingStorageAt provides a mock function with given fields: ctx, account, key
+func (_m *Chain) PendingStorageAt(ctx context.Context, account common.Address, key common.Hash) ([]byte, error) {
+	ret := _m.Called(ctx, account, key)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, common.Hash) []byte); ok {
+		r0 = rf(ctx, account, key)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, common.Hash) error); ok {
+		r1 = rf(ctx, account, key)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// PendingTransactionCount provides a mock function with given fields: ctx
+func (_m *Chain) PendingTransactionCount(ctx context.Context) (uint, error) {
+	ret := _m.Called(ctx)
+
+	var r0 uint
+	if rf, ok := ret.Get(0).(func(context.Context) uint); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(uint)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -723,6 +836,29 @@ func (_m *Chain) SuggestGasTipCap(ctx context.Context) (*big.Int, error) {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SyncProgress provides a mock function with given fields: ctx
+func (_m *Chain) SyncProgress(ctx context.Context) (*ethereum.SyncProgress, error) {
+	ret := _m.Called(ctx)
+
+	var r0 *ethereum.SyncProgress
+	if rf, ok := ret.Get(0).(func(context.Context) *ethereum.SyncProgress); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ethereum.SyncProgress)
 		}
 	}
 

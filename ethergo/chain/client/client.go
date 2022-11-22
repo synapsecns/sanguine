@@ -29,6 +29,14 @@ type EVMClient interface {
 	ethereum.TransactionReader
 	// ChainStateReader gets the chain state reader
 	ethereum.ChainStateReader
+	// PendingStateReader handles pending state calls
+	ethereum.PendingStateReader
+	// ChainSyncReader tracks state head
+	ethereum.ChainSyncReader
+	// PendingContractCaller tracks pending contract calls
+	ethereum.PendingContractCaller
+	// NetworkID returns the network ID (also known as the chain ID) for this chain.
+	NetworkID(ctx context.Context) (*big.Int, error)
 	// ChainID gets the chain id from the rpc server
 	ChainID(ctx context.Context) (*big.Int, error)
 	// CallContext is used for manual overrides
