@@ -49,6 +49,7 @@ func (p *ProxySuite) captureResponse(backendURL string, makeReq func(client ethC
 		var rpcMessage proxy.JSONRPCMessage
 		err = json.Unmarshal(fullResp, &rpcMessage)
 		Nil(p.T(), err)
+
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -566,7 +567,7 @@ func (p *ProxySuite) TestFeeHistory() {
 }
 
 func (p *ProxySuite) TestBatch() {
-	p.T().Skip("TODO: this works, we need to modify around it for the test to pass (our captureResponse method breaks)")
+	p.T().Skip("TODO: this works, we need to modify around it for the test to pass (our captureResponse method breaks). This is currently tested in scribe, but should be tested here.")
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
 	var chainID uint64

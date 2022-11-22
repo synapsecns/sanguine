@@ -1,11 +1,13 @@
 package proxy
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"fmt"
 	"github.com/ImVexed/fasturl"
 	"github.com/goccy/go-json"
+	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
 	"golang.org/x/exp/slices"
 	"strings"
@@ -25,29 +27,82 @@ type rawResponse struct {
 
 // newRawResponse produces a response with a unique hash based on json
 // regardless of formatting.
-func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string) (*rawResponse, error) {
+func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string) (_ *rawResponse, err error) {
 	// TODO: see if there's a faster way to do this. Canonical json?
+	// TODO: standardize batch request
 	// unmarshall and remarshall
-	var rpcMessage JSONRPCMessage
-	err := json.Unmarshal(body, &rpcMessage)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse response: %w", err)
-	}
-	var standardizedResponses []byte
-	for i := range f.rpcRequest {
-		standardizedResponse, err := standardizeResponse(ctx, &f.rpcRequest[i], rpcMessage)
+
+	var standardizedResponse []byte
+	var hasErr bool
+
+	if isBatch(body) {
+		standardizedResponse, hasErr, err = f.standardizeBatch(ctx, body)
+		if err != nil {
+			return nil, fmt.Errorf("could not standardize batch response: %w", err)
+		}
+	} else {
+		var rpcMessage JSONRPCMessage
+		err := json.Unmarshal(body, &rpcMessage)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse response: %w", err)
+		}
+
+		hasErr = rpcMessage.Error != nil
+
+		standardizedResponse, err = standardizeResponse(ctx, &f.rpcRequest[0], rpcMessage)
 		if err != nil {
 			return nil, fmt.Errorf("could not standardize response: %w", err)
 		}
-		standardizedResponses = append(standardizedResponses, standardizedResponse...)
 	}
 
 	return &rawResponse{
 		body:     body,
 		url:      url,
-		hash:     fmt.Sprintf("%x", sha256.Sum256(standardizedResponses)),
-		hasError: rpcMessage.Error != nil,
+		hash:     fmt.Sprintf("%x", sha256.Sum256(standardizedResponse)),
+		hasError: hasErr,
 	}, nil
+}
+
+// standardizes a batch request. anyErr indicates *any* response in the batch had an error
+// (not at the decoding step).
+func (f *Forwarder) standardizeBatch(ctx context.Context, body []byte) (res []byte, anyErr bool, err error) {
+	var standardizedResponses []json.RawMessage
+	dec := json.NewDecoder(bytes.NewReader(body))
+
+	_, err = dec.Token() // skip '['
+	if err != nil {
+		return nil, true, fmt.Errorf("could not decode %s: %w", ellipsis.Shorten(string(body), 10), err)
+	}
+
+	i := 0
+	for dec.More() {
+		response := new(JSONRPCMessage)
+		err = dec.Decode(&response)
+		if err != nil {
+			return nil, true, fmt.Errorf("could not decode response at index %d: %w", i, err)
+		}
+
+		if response.Error != nil {
+			anyErr = true
+		}
+
+		standardized, err := standardizeResponse(ctx, &f.rpcRequest[i], *response)
+		if err != nil {
+			return nil, true, fmt.Errorf("could not decode response at index %d: %w", i, err)
+		}
+
+		res := json.RawMessage(standardized)
+		standardizedResponses = append(standardizedResponses, res)
+
+		i++
+	}
+
+	standardizedResponse, err := json.Marshal(standardizedResponses)
+	if err != nil {
+		return nil, true, fmt.Errorf("could not unmarshall responses: %w", err)
+	}
+
+	return standardizedResponse, anyErr, nil
 }
 
 const (
