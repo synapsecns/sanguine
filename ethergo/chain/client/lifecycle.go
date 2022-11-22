@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/ethergo/chain/client/near"
 	"math/big"
 	"time"
@@ -418,7 +419,6 @@ func (m LifecycleClient) ChainConfig() *params.ChainConfig {
 }
 
 // ChainID calls ChainID on the underlying client.
-// This also sets chainID for chainconfig if needed
 // nolint: wrapcheck
 func (m LifecycleClient) ChainID(ctx context.Context) (chainID *big.Int, err error) {
 	err = m.AcquirePermit(ctx)
@@ -431,4 +431,19 @@ func (m LifecycleClient) ChainID(ctx context.Context) (chainID *big.Int, err err
 	defer cancel()
 
 	return m.underlyingClient.ChainID(requestCtx)
+}
+
+// BatchContext calls BatchContext on the underlying client
+// nolint: wrapcheck
+func (m LifecycleClient) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
+	err := m.AcquirePermit(ctx)
+	if err != nil {
+		return err
+	}
+	defer m.ReleasePermit()
+
+	requestCtx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	defer cancel()
+
+	return m.underlyingClient.BatchContext(requestCtx, calls...)
 }

@@ -167,7 +167,8 @@ func New(ctx context.Context, config *client.Config) (evmClient Chain, err error
 		return nil, errors.New("could not get ws url")
 	}
 
-	baseClient, err := client.NewPoolClientFromURLs(ctx, uint64(config.ChainID), config.RPCUrl)
+	// RPCUrl gets the rpc url from the client
+	baseClient, err := client.NewClientFromChainID(ctx, config.RPCUrl[0], big.NewInt(int64(config.ChainID)))
 	if err != nil {
 		return nil, fmt.Errorf("could not create pool client: %w", err)
 	}
