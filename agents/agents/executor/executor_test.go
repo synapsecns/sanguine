@@ -184,7 +184,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		return len(exec.LogChans[chainID]) == 250
 	})
 
-	e.DeferAfterTest(func() {
+	e.DeferAfterSuite(func() {
 		exec.Stop()
 	})
 }
