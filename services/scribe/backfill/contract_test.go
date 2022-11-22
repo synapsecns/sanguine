@@ -3,7 +3,8 @@ package backfill_test
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"math/big"
 	"os"
 
@@ -17,7 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 )
 
 // TestFailedStore tests that the ChainBackfiller continues backfilling after a failed store.
@@ -40,7 +40,11 @@ func (b BackfillSuite) TestFailedStore() {
 		On("RetrieveLastIndexed", mock.Anything, mock.Anything, mock.Anything).
 		Return(uint64(0), nil)
 	chainID := gofakeit.Uint32()
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
+
+	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
+	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress())
+	Nil(b.T(), err)
+
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
 	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
@@ -48,7 +52,7 @@ func (b BackfillSuite) TestFailedStore() {
 		Address:    testContract.Address().String(),
 		StartBlock: 0,
 	}
-	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
+	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	backfiller, err := backfill.NewContractBackfiller(chainID, contractConfig.Address, mockDB, simulatedChainArr)
 	Nil(b.T(), err)
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
@@ -70,7 +74,10 @@ func (b BackfillSuite) TestFailedStore() {
 //nolint:cyclop
 func (b BackfillSuite) TestGetLogsSimulated() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetSuiteContext(), b.T(), big.NewInt(3))
+	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetSuiteContext(), b.T(), big.NewInt(3))
+	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress())
+	Nil(b.T(), err)
+
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
 	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
@@ -78,7 +85,7 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 		Address:    testContract.Address().String(),
 		StartBlock: 0,
 	}
-	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
+	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	backfiller, err := backfill.NewContractBackfiller(3, contractConfig.Address, b.testDB, simulatedChainArr)
 	Nil(b.T(), err)
 
@@ -152,7 +159,10 @@ Done:
 // TestContractBackfill tests using a contractBackfiller for recording receipts and logs in a database.
 func (b BackfillSuite) TestContractBackfill() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetSuiteContext(), b.T(), big.NewInt(142))
+	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetSuiteContext(), b.T(), big.NewInt(142))
+	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress())
+	Nil(b.T(), err)
+
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
 	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
@@ -163,7 +173,7 @@ func (b BackfillSuite) TestContractBackfill() {
 		StartBlock: 0,
 	}
 
-	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
+	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	backfiller, err := backfill.NewContractBackfiller(142, contractConfig.Address, b.testDB, simulatedChainArr)
 	Nil(b.T(), err)
 
@@ -221,7 +231,7 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 
 	var backendClient backfill.ScribeBackend
 	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
-	backendClient, err := ethclient.DialContext(b.GetTestContext(), omnirpcURL)
+	backendClient, err := backfill.DialBackend(b.GetTestContext(), omnirpcURL)
 	Nil(b.T(), err)
 
 	// This config is using this block https://arbiscan.io/block/6262099
@@ -264,7 +274,7 @@ func (b BackfillSuite) TestInvalidTxVRS() {
 
 	var backendClient backfill.ScribeBackend
 	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/1313161554"
-	backendClient, err := ethclient.DialContext(b.GetTestContext(), omnirpcURL)
+	backendClient, err := backfill.DialBackend(b.GetTestContext(), omnirpcURL)
 	Nil(b.T(), err)
 
 	// This config is using this block https://aurorascan.dev/block/58621373
@@ -299,7 +309,7 @@ func (b BackfillSuite) TestInvalidTxVRS() {
 	Equal(b.T(), 1, len(receipts))
 }
 
-func (b BackfillSuite) getTxBlockNumber(chain *simulated.Backend, tx *types.Transaction) (uint64, error) {
+func (b BackfillSuite) getTxBlockNumber(chain backends.SimulatedTestBackend, tx *types.Transaction) (uint64, error) {
 	receipt, err := chain.TransactionReceipt(b.GetTestContext(), tx.Hash())
 	if err != nil {
 		return 0, fmt.Errorf("error getting receipt for tx: %w", err)

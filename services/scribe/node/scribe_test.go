@@ -4,7 +4,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -23,7 +23,10 @@ func (l LiveSuite) TestLive() {
 	managerB := testutil.NewDeployManager(l.T())
 	managerC := testutil.NewDeployManager(l.T())
 	// Get simulated blockchain, deploy three test contracts, and set up test variables.
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(l.GetTestContext(), l.T(), big.NewInt(int64(chainID)))
+	simulatedChain := geth.NewEmbeddedBackendForChainID(l.GetTestContext(), l.T(), big.NewInt(int64(chainID)))
+	simulatedClient, err := backfill.DialBackend(l.GetTestContext(), simulatedChain.RPCAddress())
+	Nil(l.T(), err)
+
 	simulatedChain.FundAccount(l.GetTestContext(), l.wallet.Address(), *big.NewInt(params.Ether))
 	testContractA, testRefA := l.manager.GetTestContract(l.GetTestContext(), simulatedChain)
 	testContractB, testRefB := managerB.GetTestContract(l.GetTestContext(), simulatedChain)
@@ -51,8 +54,8 @@ func (l LiveSuite) TestLive() {
 	}
 
 	clients := make(map[uint32][]backfill.ScribeBackend)
-	clients[chainID] = append(clients[chainID], simulatedChain)
-	clients[chainID] = append(clients[chainID], simulatedChain)
+	clients[chainID] = append(clients[chainID], simulatedClient)
+	clients[chainID] = append(clients[chainID], simulatedClient)
 
 	// Set up the scribe.
 	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig)
@@ -101,7 +104,10 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 	chainID := gofakeit.Uint32()
 
 	// Emit some events on the simulated blockchain.
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(l.GetTestContext(), l.T(), big.NewInt(int64(chainID)))
+	simulatedChain := geth.NewEmbeddedBackendForChainID(l.GetTestContext(), l.T(), big.NewInt(int64(chainID)))
+	simulatedClient, err := backfill.DialBackend(l.GetTestContext(), simulatedChain.RPCAddress())
+	Nil(l.T(), err)
+
 	simulatedChain.FundAccount(l.GetTestContext(), l.wallet.Address(), *big.NewInt(params.Ether))
 	testContract, testRef := l.manager.GetTestContract(l.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(l.GetTestContext(), nil)
@@ -121,8 +127,8 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 	}
 
 	clients := make(map[uint32][]backfill.ScribeBackend)
-	clients[chainID] = append(clients[chainID], simulatedChain)
-	clients[chainID] = append(clients[chainID], simulatedChain)
+	clients[chainID] = append(clients[chainID], simulatedClient)
+	clients[chainID] = append(clients[chainID], simulatedClient)
 
 	// Set up the scribe.
 	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig)
