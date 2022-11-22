@@ -34,13 +34,13 @@ func (t *testManagerImpl) GetChainID() *big.Int {
 // nolint: staticcheck
 func NewTestNonceManger(ctx context.Context, tb testing.TB, chain chain.Chain) TestManager {
 	tb.Helper()
-	manager := NewNonceManager(ctx, chain, chain.ChainConfig().ChainID)
+	manager := NewNonceManager(ctx, chain, chain.GetBigChainID())
 	castManager, ok := manager.(*nonceManagerImp)
 	True(tb, ok)
 	return &testManagerImpl{
 		nonceManagerImp: castManager,
 		tb:              tb,
-		chainID:         chain.ChainConfig().ChainID,
+		chainID:         chain.GetBigChainID(),
 	}
 }
 

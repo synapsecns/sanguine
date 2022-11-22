@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/synapsecns/sanguine/core"
 	evmMocks "github.com/synapsecns/sanguine/ethergo/chain/mocks"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
@@ -99,7 +100,7 @@ func (n NonceSuite) TestNonceManager() {
 	mockChain := evmMocks.Chain{}
 	// since this should only be alled on the first try, this always returns 0
 	mockChain.On("PendingNonceAt", mock.Anything, mock.Anything).Return(uint64(0), nil)
-	mockChain.On("ChainConfig").Return(params.MainnetChainConfig)
+	mockChain.On("GetBigChainID").Return(core.CopyBigInt(params.MainnetChainConfig.ChainID))
 
 	nonceManager := nonce.NewTestNonceManger(n.GetTestContext(), n.T(), &mockChain)
 
