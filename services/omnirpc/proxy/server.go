@@ -44,6 +44,7 @@ func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
 	}
 }
 
+// HealthCheckEndpoint is the health check endpoint.
 const HealthCheckEndpoint = "/health-check"
 
 // Run runs the rpc server until context cancellation.
@@ -168,7 +169,7 @@ func (r *RPCProxy) startProxyLoop(ctx context.Context) {
 	}
 }
 
-// Port gets the port the proxy is running on
+// Port gets the port the proxy is running on.
 func (r *RPCProxy) Port() uint16 {
 	return r.port
 }
