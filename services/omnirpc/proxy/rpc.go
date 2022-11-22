@@ -66,9 +66,21 @@ func init() {
 // rpcReqSchema contains the raw rpc request schema.
 var rpcReqSchema string
 
+// isBatch determines if a request is batch. This method's implementation is borrowed from
+// rpc/json.go in ethereum-go where it is unexported.
+func isBatch(body []byte) bool {
+	for _, c := range body {
+		// skip insignificant whitespace (http://www.ietf.org/rfc/rfc4627.txt)
+		if c == 0x20 || c == 0x09 || c == 0x0a || c == 0x0d {
+			continue
+		}
+		return c == '['
+	}
+	return false
+}
+
 func parseRPCPayload(body []byte) (_ RPCRequests, err error) {
-	isBatch := len(body) > 0 && body[0] == '['
-	if isBatch {
+	if isBatch(body) {
 		var rpcPayload []RPCRequest
 		err = json.Unmarshal(body, &rpcPayload)
 		if err != nil {
