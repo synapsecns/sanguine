@@ -717,6 +717,8 @@ github.com/libs4go/scf4go v0.0.1/go.mod h1:74xdNEfs//r9NmRVl1yJnmd63PZfMJfHyttRa
 github.com/libs4go/sdi4go v0.0.0-20191107032536-9900892950bc/go.mod h1:250zgwSJ6jRBGwEuk1iqXmT09fw9k4gxDhlIbbqFFSo=
 github.com/libs4go/sdi4go v0.0.6/go.mod h1:Svi0Rb3k+beTb28vHKIjs0KKSS/Ty7TMw1DM2hxQOTc=
 github.com/libs4go/slf4go v0.0.4/go.mod h1:OWacxmrtRCiUHnHF/ndzEdHCucKjB+eoUXg/yMbj5W4=
+github.com/lmittmann/w3 v0.10.0 h1:AjQJKfcwHSDLr7cnRbS+0Jio9xt/h1JDBAP/jvLWC58=
+github.com/lmittmann/w3 v0.10.0/go.mod h1:AydD3eqJiyg7tubFve39JL025kZr8QWO1lemXllK+Sw=
 github.com/logrusorgru/aurora v0.0.0-20190803045625-94edacc10f9b/go.mod h1:7rIyQOR62GCctdiQpZ/zOJlFyk6y+94wXzv6RNZgaR4=
 github.com/logrusorgru/aurora v2.0.3+incompatible h1:tOpm7WcpBTn4fjmVfgpQq0EfczGlG91VSDkswnjF5A8=
 github.com/logrusorgru/aurora v2.0.3+incompatible/go.mod h1:7rIyQOR62GCctdiQpZ/zOJlFyk6y+94wXzv6RNZgaR4=

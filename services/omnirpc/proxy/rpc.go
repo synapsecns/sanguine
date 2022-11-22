@@ -2,14 +2,46 @@ package proxy
 
 import (
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/ethereum/go-ethereum/eth/filters"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/goccy/go-json"
+	"github.com/hashicorp/go-multierror"
 	"github.com/hedzr/cmdr/tool"
 	"github.com/invopop/jsonschema"
 	"golang.org/x/exp/slices"
 	"math/big"
 )
+
+// Confirmable returns the confirmability of an interface.
+type Confirmable interface {
+	isConfirmable() (bool, error)
+}
+
+// RPCRequests is a list or rpc requests.
+type RPCRequests []RPCRequest
+
+func (r RPCRequests) isConfirmable() (_ bool, errs error) {
+	unconfirmable := false
+
+	for i, request := range r {
+		isConfirmable, err := request.isConfirmable()
+		if err != nil {
+			errs = multierror.Append(errs, fmt.Errorf("request at index %d: %s is not parsable", i, spew.Sprint(request)))
+		}
+
+		if !isConfirmable {
+			unconfirmable = true
+		}
+	}
+
+	if errs != nil {
+		// nolint: wrapcheck
+		return false, errs
+	}
+
+	return !unconfirmable, nil
+}
 
 // RPCRequest is a raw rpc request format.
 type RPCRequest struct {
@@ -17,6 +49,10 @@ type RPCRequest struct {
 	Method string            `json:"method"`
 	Params []json.RawMessage `json:"params"`
 }
+
+var _ Confirmable = RPCRequests{}
+
+var _ Confirmable = RPCRequest{}
 
 func init() {
 	schema := jsonschema.Reflect(&RPCRequest{})
@@ -30,14 +66,22 @@ func init() {
 // rpcReqSchema contains the raw rpc request schema.
 var rpcReqSchema string
 
-func parseRPCPayload(body []byte) (_ *RPCRequest, err error) {
-	rpcPayload := RPCRequest{}
-	err = json.Unmarshal(body, &rpcPayload)
+func parseRPCPayload(body []byte) (_ RPCRequests, err error) {
+	isBatch := len(body) > 0 && body[0] == '['
+	if isBatch {
+		var rpcPayload []RPCRequest
+		err = json.Unmarshal(body, &rpcPayload)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse batch json payload: %w, must conform to: %s", err, rpcReqSchema)
+		}
+		return rpcPayload, nil
+	}
+	rpcRequest := RPCRequest{}
+	err = json.Unmarshal(body, &rpcRequest)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse json payload: %w, must conform to: %s", err, rpcReqSchema)
 	}
-
-	return &rpcPayload, nil
+	return []RPCRequest{rpcRequest}, nil
 }
 
 func isBlockNumConfirmable(arg json.RawMessage) bool {
@@ -70,6 +114,7 @@ func isFilterArgConfirmable(arg json.RawMessage) (bool, error) {
 func (r RPCRequest) isConfirmable() (bool, error) {
 	// TODO: handle batch methods
 	// TODO: should we error on default?
+	// TODO: look at RPCMethod.Comparable for lower, necessary?
 	//nolint: exhaustive
 	switch RPCMethod(r.Method) {
 	case BlockByNumberMethod, PendingTransactionCountMethod:

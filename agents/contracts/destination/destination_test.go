@@ -35,7 +35,7 @@ func (d DestinationSuite) TestDestinationSuite() {
 	d.testBackendOrigin.WaitForConfirmation(d.GetTestContext(), tx)
 
 	// Create an attestation
-	localDomain := uint32(d.testBackendOrigin.ChainConfig().ChainID.Uint64())
+	localDomain := uint32(d.testBackendOrigin.GetBigChainID().Uint64())
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	unsignedAttestation := types.NewAttestation(localDomain, nonce, root)
