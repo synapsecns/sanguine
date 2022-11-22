@@ -113,6 +113,7 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 	return results, nil
 }
 
+// nolint:cyclop
 func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *string, txnHash *string, kappa *string, page int, tokenAddress *string, toInfos []*model.PartialInfo) ([]*model.BridgeTransaction, error) {
 	var results []*model.BridgeTransaction
 
