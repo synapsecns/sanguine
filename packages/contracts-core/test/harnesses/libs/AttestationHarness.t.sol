@@ -47,12 +47,24 @@ contract AttestationHarness {
         return (_view.typeOf(), _view.clone());
     }
 
-    function attestedDomain(uint40 _type, bytes memory _payload) public pure returns (uint32) {
-        return _payload.ref(_type).attestedDomain();
+    function attestedOrigin(uint40 _type, bytes memory _payload) public pure returns (uint32) {
+        return _payload.ref(_type).attestedOrigin();
+    }
+
+    function attestedDestination(uint40 _type, bytes memory _payload) public pure returns (uint32) {
+        return _payload.ref(_type).attestedDestination();
     }
 
     function attestedNonce(uint40 _type, bytes memory _payload) public pure returns (uint32) {
         return _payload.ref(_type).attestedNonce();
+    }
+
+    function attestedDomains(uint40 _type, bytes memory _payload) public pure returns (uint64) {
+        return _payload.ref(_type).attestedDomains();
+    }
+
+    function attestedKey(uint40 _type, bytes memory _payload) public pure returns (uint96) {
+        return _payload.ref(_type).attestedKey();
     }
 
     function attestedRoot(uint40 _type, bytes memory _payload) public pure returns (bytes32) {
@@ -68,12 +80,17 @@ contract AttestationHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatAttestation(
-        uint32 _domain,
+        uint32 _origin,
+        uint32 _destination,
         uint32 _nonce,
         bytes32 _root,
         bytes memory _signature
     ) public pure returns (bytes memory) {
-        return formatAttestation(formatAttestationData(_domain, _nonce, _root), _signature);
+        return
+            formatAttestation(
+                formatAttestationData(_origin, _destination, _nonce, _root),
+                _signature
+            );
     }
 
     function formatAttestation(bytes memory _data, bytes memory _signature)
@@ -85,11 +102,24 @@ contract AttestationHarness {
     }
 
     function formatAttestationData(
-        uint32 _domain,
+        uint32 _origin,
+        uint32 _destination,
         uint32 _nonce,
         bytes32 _root
     ) public pure returns (bytes memory) {
-        return Attestation.formatAttestationData(_domain, _nonce, _root);
+        return Attestation.formatAttestationData(_origin, _destination, _nonce, _root);
+    }
+
+    function attestationDomains(uint32 _origin, uint32 _destination) public pure returns (uint64) {
+        return Attestation.attestationDomains(_origin, _destination);
+    }
+
+    function attestationKey(
+        uint32 _origin,
+        uint32 _destination,
+        uint32 _nonce
+    ) public pure returns (uint96) {
+        return Attestation.attestationKey(_origin, _destination, _nonce);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -100,8 +130,16 @@ contract AttestationHarness {
         return Attestation.ATTESTATION_DATA_LENGTH;
     }
 
+    function attestationLength() public pure returns (uint256) {
+        return Attestation.ATTESTATION_LENGTH;
+    }
+
     function offsetOrigin() public pure returns (uint256) {
-        return Attestation.OFFSET_ORIGIN_DOMAIN;
+        return Attestation.OFFSET_ORIGIN;
+    }
+
+    function offsetDestination() public pure returns (uint256) {
+        return Attestation.OFFSET_DESTINATION;
     }
 
     function offsetNonce() public pure returns (uint256) {

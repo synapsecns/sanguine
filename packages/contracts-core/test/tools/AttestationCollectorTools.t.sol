@@ -14,21 +14,26 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
     uint32 internal constant NONCE_TEST = 12;
 
     AttestationCollectorHarness internal attestationCollector;
-    uint32 internal curDomain;
+    uint32 internal currentOrigin;
+    uint32 internal currentDestination;
+    // uint32 internal curDomain;
 
     // Saved attestation data
     // notary => [nonces]
-    mapping(address => uint32[]) internal notaryNonces;
+    // mapping(address => uint32[]) internal notaryNonces;
     // notary => [roots]
-    mapping(address => bytes32[]) internal notaryRoots;
-    // domain => (nonce => [roots])
-    mapping(uint32 => mapping(uint32 => bytes[])) internal domainAttestations;
-    // domain => (nonce => [roots])
-    mapping(uint32 => mapping(uint32 => bytes32[])) internal domainRoots;
+    // mapping(address => bytes32[]) internal notaryRoots;
+
+    // attestationKey => [attestations]
+    mapping(uint96 => bytes[]) internal keyAttestations;
+    // attestationKey => [roots]
+    mapping(uint96 => bytes32[]) internal keyRoots;
 
     // Latest attestation data
-    mapping(address => AttestationNonce) internal notaryLatestAttestation;
-    mapping(uint32 => AttestationNonce) internal domainLatestAttestation;
+    // (attestationDomains => (notary => [attestation+nonce]))
+    mapping(uint64 => mapping(address => AttestationNonce)) internal notaryLatestAttestation;
+    // (attestationDomains => [attestation+nonce])
+    mapping(uint64 => AttestationNonce) internal domainsLatestAttestation;
 
     function setupAttestationCollector() public {
         attestationCollector = new AttestationCollectorHarness();
@@ -36,37 +41,48 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
         attestationCollector.transferOwnership(owner);
     }
 
+    // solhint-disable-next-line code-complexity
     function checkLatestAttestations() public {
-        for (uint256 d = 0; d < DOMAINS; ++d) {
-            uint32 domain = domains[d];
-            AttestationNonce memory domainLatest = domainLatestAttestation[domain];
-            if (domainLatest.nonce == 0) {
-                attestationCollectorGetLatestDomainAttestation({
-                    domain: domain,
-                    revertMessage: "No attestations found"
-                });
-            } else {
-                assertEq(
-                    attestationCollector.getLatestAttestation(domain),
-                    domainLatest.attestation,
-                    "!getLatestAttestation(domain)"
-                );
-            }
-            for (uint256 index = 0; index < NOTARIES_PER_CHAIN; ++index) {
-                address notary = suiteNotary(domain, index);
-                AttestationNonce memory notaryLatest = notaryLatestAttestation[notary];
-                if (notaryLatest.nonce == 0) {
-                    attestationCollectorGetLatestNotaryAttestation({
-                        domain: domain,
-                        notaryIndex: index,
+        for (uint256 o = 0; o < DOMAINS; ++o) {
+            uint32 origin = domains[o];
+            for (uint256 d = 0; d < DOMAINS; ++d) {
+                // Ignore origin == destination
+                if (o == d) continue;
+                uint32 destination = domains[d];
+                uint64 _domains = Attestation.attestationDomains(origin, destination);
+                AttestationNonce memory domainLatest = domainsLatestAttestation[_domains];
+                if (domainLatest.nonce == 0) {
+                    attestationCollectorGetLatestDomainAttestation({
+                        origin: origin,
+                        destination: destination,
                         revertMessage: "No attestations found"
                     });
                 } else {
                     assertEq(
-                        attestationCollector.getLatestAttestation(domain, notary),
-                        notaryLatest.attestation,
-                        "!getLatestAttestation(domain,notary)"
+                        attestationCollector.getLatestAttestation(origin, destination),
+                        domainLatest.attestation,
+                        "!getLatestAttestation(domains)"
                     );
+                }
+                for (uint256 index = 0; index < NOTARIES_PER_CHAIN; ++index) {
+                    address notary = suiteNotary(origin, index);
+                    AttestationNonce memory notaryLatest = notaryLatestAttestation[_domains][
+                        notary
+                    ];
+                    if (notaryLatest.nonce == 0) {
+                        attestationCollectorGetLatestNotaryAttestation({
+                            origin: origin,
+                            destination: destination,
+                            notaryIndex: index,
+                            revertMessage: "No attestations found"
+                        });
+                    } else {
+                        assertEq(
+                            attestationCollector.getLatestAttestation(origin, destination, notary),
+                            notaryLatest.attestation,
+                            "!getLatestAttestation(domains,notary)"
+                        );
+                    }
                 }
             }
         }
@@ -92,28 +108,40 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
         bool isUnique
     ) public {
         createAttestationMock({
-            domain: curDomain,
+            origin: currentOrigin,
+            destination: currentDestination,
             nonce: nonce,
             notaryIndex: notaryIndex,
             salt: salt
         });
-        if (!isUnique) vm.expectRevert("Duplicated attestation");
+        if (isUnique) {
+            expectAttestationAccepted();
+        } else {
+            vm.expectRevert("Duplicated attestation");
+        }
         attestationCollectorSubmitAttestation({ returnValue: isUnique });
         if (isUnique) {
             // Save accepted attestation
-            notaryNonces[attestationNotary].push(attestationNonce);
-            notaryRoots[attestationNotary].push(attestationRoot);
-            domainRoots[attestationDomain][attestationNonce].push(attestationRoot);
-            domainAttestations[attestationDomain][attestationNonce].push(attestationRaw);
+            // notaryNonces[attestationNotary].push(attestationNonce);
+            // notaryRoots[attestationNotary].push(attestationRoot);
+            keyRoots[attestationKey].push(attestationRoot);
+            keyAttestations[attestationKey].push(attestationRaw);
             // Update latest Notary attestation if needed
-            if (attestationNonce > notaryLatestAttestation[attestationNotary].nonce) {
-                notaryLatestAttestation[attestationNotary].nonce = attestationNonce;
-                notaryLatestAttestation[attestationNotary].attestation = attestationRaw;
+            if (
+                attestationNonce >
+                notaryLatestAttestation[attestationDomains][attestationNotary].nonce
+            ) {
+                notaryLatestAttestation[attestationDomains][attestationNotary] = AttestationNonce(
+                    attestationRaw,
+                    attestationNonce
+                );
             }
             // Update latest domain attestation if needed
-            if (attestationNonce > domainLatestAttestation[attestationDomain].nonce) {
-                domainLatestAttestation[attestationDomain].nonce = attestationNonce;
-                domainLatestAttestation[attestationDomain].attestation = attestationRaw;
+            if (attestationNonce > domainsLatestAttestation[attestationDomains].nonce) {
+                domainsLatestAttestation[attestationDomains] = AttestationNonce(
+                    attestationRaw,
+                    attestationNonce
+                );
             }
             // Check getLatestAttestation()
             checkLatestAttestations();
@@ -124,9 +152,9 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
     ▏*║                            EXPECT EVENTS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function expectAttestationSubmitted() public {
+    function expectAttestationAccepted() public {
         vm.expectEmit(true, true, true, true);
-        emit AttestationSubmitted(attestationNotary, attestationRaw);
+        emit AttestationAccepted(attestationNotary, attestationRaw);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -201,51 +229,56 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function attestationCollectorGetAttestationByIndex(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 nonce,
         uint256 attestationIndex,
         bytes memory revertMessage
     ) public {
         vm.expectRevert(revertMessage);
-        attestationCollector.getAttestation(domain, nonce, attestationIndex);
+        attestationCollector.getAttestation(origin, destination, nonce, attestationIndex);
     }
 
     function attestationCollectorGetAttestationByRoot(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 nonce,
         bytes32 root,
         bytes memory revertMessage
     ) public {
         vm.expectRevert(revertMessage);
-        attestationCollector.getAttestation(domain, nonce, root);
+        attestationCollector.getAttestation(origin, destination, nonce, root);
     }
 
     function attestationCollectorGetLatestDomainAttestation(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         bytes memory revertMessage
     ) public {
         vm.expectRevert(revertMessage);
-        attestationCollector.getLatestAttestation(domain);
+        attestationCollector.getLatestAttestation(origin, destination);
     }
 
     function attestationCollectorGetLatestNotaryAttestation(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint256 notaryIndex,
         bytes memory revertMessage
     ) public {
-        address notary = suiteNotary(domain, notaryIndex);
+        address notary = suiteNotary(origin, notaryIndex);
         vm.expectRevert(revertMessage);
-        attestationCollector.getLatestAttestation(domain, notary);
+        attestationCollector.getLatestAttestation(origin, destination, notary);
     }
 
     function attestationCollectorGetRoot(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 nonce,
         uint256 attestationIndex,
         bytes memory revertMessage
     ) public {
         vm.expectRevert(revertMessage);
-        attestationCollector.getRoot(domain, nonce, attestationIndex);
+        attestationCollector.getRoot(origin, destination, nonce, attestationIndex);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -260,7 +293,8 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
     {
         return
             attestationCollector.getAttestation(
-                attestationDomain,
+                attestationOrigin,
+                attestationDestination,
                 attestationNonce,
                 attestationIndex
             );
@@ -272,12 +306,18 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
         view
         returns (bytes memory)
     {
-        return attestationCollector.getAttestation(attestationDomain, attestationNonce, root);
+        return
+            attestationCollector.getAttestation(
+                attestationOrigin,
+                attestationDestination,
+                attestationNonce,
+                root
+            );
     }
 
     // Calls getLatestAttestation(domain)
     function attestationCollectorGetLatestDomainAttestation() public view returns (bytes memory) {
-        return attestationCollector.getLatestAttestation(attestationDomain);
+        return attestationCollector.getLatestAttestation(attestationOrigin, attestationDestination);
     }
 
     // Calls getLatestAttestation(domain, notary)
@@ -288,13 +328,20 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
     {
         return
             attestationCollector.getLatestAttestation(
-                attestationDomain,
-                suiteNotary(attestationDomain, notaryIndex)
+                attestationOrigin,
+                attestationDestination,
+                suiteNotary(attestationOrigin, notaryIndex)
             );
     }
 
     // Calls getRoot(domain, nonce, index)
     function attestationCollectorGetRoot(uint256 attestationIndex) public view returns (bytes32) {
-        return attestationCollector.getRoot(attestationDomain, attestationNonce, attestationIndex);
+        return
+            attestationCollector.getRoot(
+                attestationOrigin,
+                attestationDestination,
+                attestationNonce,
+                attestationIndex
+            );
     }
 }

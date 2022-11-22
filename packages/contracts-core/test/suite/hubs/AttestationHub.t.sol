@@ -35,26 +35,30 @@ contract AttestationHubTest is AttestationTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_submitAttestation() public {
-        createAttestationMock(DOMAIN_LOCAL);
+        createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
         expectLogAttestation();
         attestationHubSubmitAttestation();
     }
 
     function test_submitAttestation_revert_notNotary() public {
-        createAttestationMock({ domain: DOMAIN_LOCAL, signer: attacker });
+        createAttestationMock({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            signer: attacker
+        });
         vm.expectRevert("Signer is not a notary");
         attestationHubSubmitAttestation();
     }
 
     function test_submitAttestation_revert_wrongDomain() public {
-        createAttestationMock(DOMAIN_REMOTE);
+        createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
         // notary is not active on REMOTE_DOMAIN
         vm.expectRevert("Signer is not a notary");
         attestationHubSubmitAttestation();
     }
 
     function test_submitAttestation_revert_noNotarySignature() public {
-        createAttestationMock(DOMAIN_LOCAL);
+        createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
         // Strip notary signature from attestation payload
         attestationRaw = Attestation.formatAttestation(
             attestationRaw.castToAttestation().attestationData().clone(),

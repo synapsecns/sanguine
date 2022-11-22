@@ -37,7 +37,7 @@ contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
         message = Message.formatMessage(
             _localDomain(),
             _checkForSystemRouter(_recipientAddress),
-            nonce() + 1,
+            nonce(_destination) + 1,
             _destination,
             _recipientAddress,
             _optimisticSeconds,
