@@ -4,6 +4,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/lmittmann/w3/module/eth"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
@@ -360,6 +361,25 @@ func (p *ProxySuite) TestParseRPCPayload() {
 
 	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.EstimateGas(p.GetTestContext(), ethereum.CallMsg{})
+	}, func(body []byte) {
+		confirmable, err := proxy.IsConfirmable(body)
+		Nil(p.T(), err)
+		False(p.T(), confirmable)
+	})
+
+	// try a confirmable batch
+	p.checkRequest(func(client client.EVMClient) {
+		_ = client.BatchContext(p.GetTestContext(), eth.ChainID().Returns(nil))
+	}, func(body []byte) {
+		confirmable, err := proxy.IsConfirmable(body)
+		Nil(p.T(), err)
+		True(p.T(), confirmable)
+	})
+
+	// try a non-confirmable batch
+	// try a confirmable batch
+	p.checkRequest(func(client client.EVMClient) {
+		_ = client.BatchContext(p.GetTestContext(), eth.ChainID().Returns(nil), eth.BlockNumber().Returns(nil))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
 		Nil(p.T(), err)

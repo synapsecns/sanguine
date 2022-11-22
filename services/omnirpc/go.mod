@@ -33,6 +33,7 @@ require (
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/josephburnett/jd v1.6.1
 	github.com/jpillora/backoff v1.0.0
+	github.com/lmittmann/w3 v0.10.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/puzpuzpuz/xsync v1.4.3
@@ -131,7 +132,6 @@ require (
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/lmittmann/w3 v0.10.0 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect

@@ -74,14 +74,14 @@ func (c ClientSuite) TestLifecycleClient() {
 	}
 	// make sure underlying was called
 	// defer mockUnderlyingClient.AssertNumberOfCalls(c.T(), methodName, 1)
-	// 4 non-locking methods
-	mockPermitter.AssertNumberOfCalls(c.T(), permitReleases.Method, evmClienType.NumMethod()-2)
-	mockPermitter.AssertNumberOfCalls(c.T(), permitAcquires.Method, evmClienType.NumMethod()-2)
+	// 4 non-locking methods + skipped
+	mockPermitter.AssertNumberOfCalls(c.T(), permitReleases.Method, evmClienType.NumMethod()-5)
+	mockPermitter.AssertNumberOfCalls(c.T(), permitAcquires.Method, evmClienType.NumMethod()-5)
 }
 
 // shouldSkip indicates an untestable method.
 func shouldSkip(name string) bool {
-	skipMethods := []string{"BatchCallContext", "CallContext", "BatchContext", "SyncProgress"}
+	skipMethods := []string{"BatchCallContext", "CallContext", "BatchContext", "SyncProgress", "FeeHistory"}
 	return toolbox.HasSliceAnyElements(skipMethods, name)
 }
 
@@ -120,6 +120,10 @@ func (c ClientSuite) createMockInputArgs(p reflect.Method) (res []reflect.Value)
 			val = []rpc.BatchElem{}
 		case reflect.TypeOf(uint(0)).String():
 			val = uint(0)
+		case reflect.TypeOf(uint64(0)).String():
+			val = uint64(0)
+		case reflect.TypeOf([]float64{}).String():
+			val = []float64{1, 2}
 		default:
 			panic(fmt.Errorf("type %s not handled", inputType.String()))
 		}

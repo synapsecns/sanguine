@@ -537,3 +537,18 @@ func (m LifecycleClient) BatchContext(ctx context.Context, calls ...w3types.Call
 
 	return m.underlyingClient.BatchContext(requestCtx, calls...)
 }
+
+// FeeHistory calls FeeHistory on the underlying client
+// nolint: wrapcheck
+func (m LifecycleClient) FeeHistory(ctx context.Context, blockCount uint64, lastBlock *big.Int, rewardPercentiles []float64) (*ethereum.FeeHistory, error) {
+	err := m.AcquirePermit(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer m.ReleasePermit()
+
+	requestCtx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	defer cancel()
+
+	return m.underlyingClient.FeeHistory(requestCtx, blockCount, lastBlock, rewardPercentiles)
+}
