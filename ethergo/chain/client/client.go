@@ -8,6 +8,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/lmittmann/w3"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/pkg/errors"
 	"math/big"
 	"net/url"
@@ -35,6 +37,8 @@ type EVMClient interface {
 	BatchCallContext(ctx context.Context, b []rpc.BatchElem) error
 	// BlockNumber gets the latest block number
 	BlockNumber(ctx context.Context) (uint64, error)
+	// BatchContext uses w3 as a helper method for batch calls
+	BatchContext(ctx context.Context, calls ...w3types.Caller) error
 }
 
 // clientImpl is a client implementation for an ethclient.
@@ -43,6 +47,8 @@ type clientImpl struct {
 	*ethclient.Client
 	// rpcClient is the underlying rpc client
 	rpcClient *rpc.Client
+	// w3Client is sued for batch calls
+	w3Client *w3.Client
 	// chainID contains the chain id
 	chainID *big.Int
 	// config is the chain config
@@ -52,6 +58,11 @@ type clientImpl struct {
 	// ctx stores the context of the original client
 	//nolint: containedctx
 	ctx context.Context
+}
+
+func (c *clientImpl) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
+	// nolint: wrapcheck
+	return c.w3Client.CallCtx(ctx, calls...)
 }
 
 // connectionResetTimeout is how long the client should wait before rehupping.
@@ -104,6 +115,7 @@ func (c *clientImpl) AttemptReconnect() error {
 
 	c.rpcClient = tmpRPCClient
 	c.Client = ethclient.NewClient(c.rpcClient)
+	c.w3Client = w3.NewClient(c.rpcClient)
 
 	return nil
 }
@@ -129,6 +141,7 @@ func NewClient(ctx context.Context, url string) (EVMClient, error) {
 	}
 
 	ethClient := ethclient.NewClient(rpcClient)
+	w3Client := w3.NewClient(rpcClient)
 
 	chainID, err := ethClient.ChainID(ctx)
 	if err != nil {
@@ -141,6 +154,7 @@ func NewClient(ctx context.Context, url string) (EVMClient, error) {
 		Client:    ethClient,
 		wsURL:     url,
 		ctx:       ctx,
+		w3Client:  w3Client,
 	}
 
 	go client.StartConnectionResetTicker(ctx)
@@ -156,6 +170,7 @@ func NewClientFromChainID(ctx context.Context, url string, chainID *big.Int) (EV
 	}
 
 	ethClient := ethclient.NewClient(rpcClient)
+	w3Client := w3.NewClient(rpcClient)
 
 	client := &clientImpl{
 		chainID:   chainID,
@@ -163,6 +178,7 @@ func NewClientFromChainID(ctx context.Context, url string, chainID *big.Int) (EV
 		Client:    ethClient,
 		wsURL:     url,
 		ctx:       ctx,
+		w3Client:  w3Client,
 	}
 
 	go client.StartConnectionResetTicker(ctx)

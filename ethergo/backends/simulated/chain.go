@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated/multibackend"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"golang.org/x/sync/errgroup"
@@ -31,13 +32,18 @@ func (s Client) Close() {
 	// do nothing
 }
 
-// CallContext calls the call context method on the underlying client.
+// CallContext panics here to bypass interface requirements for testing.
 func (s Client) CallContext(ctx context.Context, result interface{}, method string, args ...interface{}) error {
 	panic("CallContext is not supported on the simulated backend")
 }
 
-// BatchCallContext calls the batch call method on the underlying client.
+// BatchCallContext panics here to bypass interface requirements for testing.
 func (s Client) BatchCallContext(ctx context.Context, b []rpc.BatchElem) error {
+	panic("BatchCallContext is not supported on the simulated backend")
+}
+
+// BatchContext panics here to bypass interface requirements for testing.
+func (s Client) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
 	panic("BatchCallContext is not supported on the simulated backend")
 }
 
