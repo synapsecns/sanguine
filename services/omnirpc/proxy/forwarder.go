@@ -144,8 +144,7 @@ func (f *Forwarder) attemptForwardAndValidate() {
 		// request timeout
 		case <-f.c.Done():
 			return
-		case err := <-errChan:
-			_ = err
+		case <-errChan:
 			totalResponses++
 			// if we've checked every url
 			if totalResponses == len(f.chain.URLs()) {
