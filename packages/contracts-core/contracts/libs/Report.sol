@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import { TypedMemView } from "./TypedMemView.sol";
+import { ByteString } from "./ByteString.sol";
 import { Attestation } from "./Attestation.sol";
 import { SynapseTypes } from "./SynapseTypes.sol";
 
@@ -40,37 +41,37 @@ library Report {
     /**
      * @dev ReportData memory layout
      * [000 .. 001): flag           uint8    1 bytes
-     * [001 .. 041): attData        bytes   40 bytes
+     * [001 .. 045): attData        bytes   44 bytes
      *
      * guardSig is Guard's signature on ReportData
      *
      *      Report memory layout
      * [000 .. 001): flag           uint8    1 bytes
-     * [001 .. 106): attestation    bytes   105 bytes (40 + 65 bytes)
-     * [106 .. 171): guardSig       bytes   65 bytes
+     * [001 .. 110): attestation    bytes   109 bytes (44 + 65 bytes)
+     * [110 .. 175): guardSig       bytes   65 bytes
      *
      *      Unpack attestation field (see Attestation.sol)
      * [000 .. 001): flag           uint8    1 bytes
-     * [001 .. 041): attData        bytes   40 bytes
-     * [041 .. 106): notarySig      bytes   65 bytes
-     * [106 .. 171): guardSig       bytes   65 bytes
+     * [001 .. 045): attData        bytes   44 bytes
+     * [045 .. 110): notarySig      bytes   65 bytes
+     * [110 .. 175): guardSig       bytes   65 bytes
      *
      * notarySig is Notary's signature on AttestationData
      *
      * flag + attData = reportData (see above), so
      *
      *      Report memory layout (sliced alternatively)
-     * [000 .. 041): reportData     bytes   41 bytes
-     * [041 .. 106): notarySig      bytes   65 bytes
-     * [106 .. 171): guardSig       bytes   65 bytes
+     * [000 .. 045): reportData     bytes   45 bytes
+     * [045 .. 110): notarySig      bytes   65 bytes
+     * [110 .. 171): guardSig       bytes   61 bytes
      */
 
     uint256 internal constant OFFSET_FLAG = 0;
     uint256 internal constant OFFSET_ATTESTATION = 1;
 
-    uint256 internal constant ATTESTATION_DATA_LENGTH = 40;
+    uint256 internal constant ATTESTATION_DATA_LENGTH = 44;
     uint256 internal constant REPORT_DATA_LENGTH = 1 + ATTESTATION_DATA_LENGTH;
-    uint256 internal constant REPORT_LENGTH = 171;
+    uint256 internal constant REPORT_LENGTH = REPORT_DATA_LENGTH + 2 * 65;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -211,11 +212,11 @@ library Report {
      */
     function reportedAttestation(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
         return
-            _view.slice(
-                OFFSET_ATTESTATION,
-                Attestation.ATTESTATION_LENGTH,
-                SynapseTypes.ATTESTATION
-            );
+            _view.slice({
+                _index: OFFSET_ATTESTATION,
+                _len: Attestation.ATTESTATION_LENGTH,
+                newType: SynapseTypes.ATTESTATION
+            });
     }
 
     /**
@@ -223,7 +224,12 @@ library Report {
      */
     function reportData(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
         // reportData starts from Flag
-        return _view.slice(OFFSET_FLAG, REPORT_DATA_LENGTH, SynapseTypes.REPORT_DATA);
+        return
+            _view.slice({
+                _index: OFFSET_FLAG,
+                _len: REPORT_DATA_LENGTH,
+                newType: SynapseTypes.REPORT_DATA
+            });
     }
 
     /**
@@ -231,7 +237,12 @@ library Report {
      */
     function guardSignature(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
         uint256 offsetSignature = OFFSET_ATTESTATION + Attestation.ATTESTATION_LENGTH;
-        return _view.slice(offsetSignature, _view.len() - offsetSignature, SynapseTypes.SIGNATURE);
+        return
+            _view.slice({
+                _index: offsetSignature,
+                _len: ByteString.SIGNATURE_LENGTH,
+                newType: SynapseTypes.SIGNATURE
+            });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -243,6 +254,6 @@ library Report {
      *      Needed to prevent overflow when casting to Flag.
      */
     function _flagIntValue(bytes29 _view) private pure returns (uint8 flagIntValue) {
-        flagIntValue = uint8(_view.indexUint(OFFSET_FLAG, 1));
+        flagIntValue = uint8(_view.indexUint({ _index: OFFSET_FLAG, _bytes: 1 }));
     }
 }

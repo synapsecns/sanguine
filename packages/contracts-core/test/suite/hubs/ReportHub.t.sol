@@ -41,28 +41,36 @@ contract ReportHubTest is ReportTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_submitReport_fraud() public {
-        createAttestationMock(DOMAIN_LOCAL);
+        createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
         createReport(Report.Flag.Fraud);
         expectLogReport();
         reportHubSubmitReport();
     }
 
     function test_submitReport_valid() public {
-        createAttestationMock(DOMAIN_LOCAL);
+        createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
         createReport(Report.Flag.Valid);
         expectLogReport();
         reportHubSubmitReport();
     }
 
     function test_submitReport_revert_notNotary() public {
-        createAttestationMock({ domain: DOMAIN_LOCAL, signer: attacker });
+        createAttestationMock({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            signer: attacker
+        });
         createReport(Report.Flag.Fraud);
         vm.expectRevert("Signer is not a notary");
         reportHubSubmitReport();
     }
 
     function test_submitReport_revert_wrongDomain() public {
-        createAttestationMock({ domain: DOMAIN_REMOTE, signer: attacker });
+        createAttestationMock({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            signer: attacker
+        });
         createReport(Report.Flag.Fraud);
         // notary is not active on REMOTE_DOMAIN
         vm.expectRevert("Signer is not a notary");
@@ -70,7 +78,7 @@ contract ReportHubTest is ReportTools {
     }
 
     function test_submitReport_revert_noNotarySignature() public {
-        createAttestationMock(DOMAIN_LOCAL);
+        createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
         // Strip notary signature from attestation payload
         attestationRaw = Attestation.formatAttestation(
             attestationRaw.castToAttestation().attestationData().clone(),
@@ -83,7 +91,7 @@ contract ReportHubTest is ReportTools {
     }
 
     function test_submitReport_revert_noGuardSignature() public {
-        createAttestationMock(DOMAIN_LOCAL);
+        createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
         // Strip guard signature from report payload
         reportRaw = Report.formatFraudReport(attestationRaw, "");
         vm.expectRevert("Not a report");

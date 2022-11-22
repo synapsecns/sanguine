@@ -65,8 +65,8 @@ func DecodeSignature(toDecode []byte) (sig Signature, err error) {
 
 // attestationEncoder encodes attestations.
 type attestationEncoder struct {
-	Domain, Nonce uint32
-	Root          [32]byte
+	Origin, Destination, Nonce uint32
+	Root                       [32]byte
 }
 
 // EncodeAttestation encodes an attestation.
@@ -74,9 +74,10 @@ func EncodeAttestation(attestation Attestation) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
 	encodedUpdate := attestationEncoder{
-		Domain: attestation.Domain(),
-		Nonce:  attestation.Nonce(),
-		Root:   attestation.Root(),
+		Origin:      attestation.Origin(),
+		Destination: attestation.Destination(),
+		Nonce:       attestation.Nonce(),
+		Root:        attestation.Root(),
 	}
 
 	err := binary.Write(buf, binary.BigEndian, encodedUpdate)
@@ -104,9 +105,10 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 	}
 
 	return attestation{
-		domain: encodedAttestation.Domain,
-		nonce:  encodedAttestation.Nonce,
-		root:   encodedAttestation.Root,
+		origin:      encodedAttestation.Origin,
+		destination: encodedAttestation.Destination,
+		nonce:       encodedAttestation.Nonce,
+		root:        encodedAttestation.Root,
 	}, nil
 }
 

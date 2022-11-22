@@ -18,7 +18,7 @@ contract OriginTest is OriginTools {
         origin.initialize((suiteNotaryManager(DOMAIN_LOCAL)));
         assertEq(origin.owner(), owner, "!owner");
         assertTrue(origin.isNotary(suiteNotary(DOMAIN_LOCAL)), "!notaryAdded");
-        assertEq(origin.historicalRoots(0), origin.root(), "!historicalRoots(0)");
+        assertEq(origin.getHistoricalRoot(0, 0), origin.root(0), "!historicalRoots(0)");
     }
 
     function test_initializedCorrectly() public {
@@ -57,7 +57,7 @@ contract OriginTest is OriginTools {
                 );
             }
             // Root of an empty sparse Merkle tree should be stored with nonce=0
-            assertEq(origin.historicalRoots(0), origin.root(), "!historicalRoots(0)");
+            assertEq(origin.getHistoricalRoot(0, 0), origin.root(0), "!historicalRoots(0)");
         }
     }
 
@@ -213,11 +213,11 @@ contract OriginTest is OriginTools {
         for (uint256 i = 0; i < amount; ++i) {
             test_dispatch();
         }
-        (uint32 nonce, bytes32 root) = origin.suggestAttestation();
+        (uint32 nonce, bytes32 root) = origin.suggestAttestation(DOMAIN_REMOTE);
         // Should return latest values
         assertEq(nonce, amount, "!nonce");
-        assertEq(root, origin.root(), "!current root");
-        assertEq(root, origin.historicalRoots(nonce), "!historical root");
+        assertEq(root, origin.root(DOMAIN_REMOTE), "!current root");
+        assertEq(root, origin.getHistoricalRoot(DOMAIN_REMOTE, nonce), "!historical root");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -433,26 +433,30 @@ contract OriginTest is OriginTools {
     function _createAttestation_revert_wrongDomain() internal {
         test_dispatch();
         // DOMAIN_LOCAL is used for Origin testing
-        createAttestationMock(DOMAIN_REMOTE);
+        createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
     }
 
     // Create an attestation signed by not a Notary
     function _createAttestation_revert_notNotary() internal {
         test_dispatch();
-        createAttestationMock({ domain: DOMAIN_LOCAL, signer: attacker });
+        createAttestationMock({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            signer: attacker
+        });
     }
 
     // Create a valid attestation referring to the current Origin state
     function _createAttestation_valid_suggested() internal {
         test_dispatch();
-        createSuggestedAttestation(DOMAIN_LOCAL);
+        createSuggestedAttestation({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
         // Suggested attestation is valid
     }
 
     // Create a valid attestation referring to the past Origin state
     function _createAttestation_valid_outdated() internal {
         test_dispatch();
-        createSuggestedAttestation(DOMAIN_LOCAL);
+        createSuggestedAttestation({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
         // Dispatch a message to make the attestation older than new suggested one
         test_dispatch();
         // Outdated attestation is valid
@@ -461,7 +465,7 @@ contract OriginTest is OriginTools {
     // Create a fraud attestation: attested nonce does not exist yet
     function _createAttestation_fraud_nonExistingNonce() internal {
         test_dispatch();
-        createFraudAttestation({ domain: DOMAIN_LOCAL, fakeNonce: 2 });
+        createFraudAttestation({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE, fakeNonce: 2 });
         // nonce = 2 doesn't exist yet => fraud
     }
 
@@ -469,14 +473,18 @@ contract OriginTest is OriginTools {
     function _createAttestation_fraud_fakeNonce() internal {
         test_dispatch();
         test_dispatch();
-        createFraudAttestation({ domain: DOMAIN_LOCAL, fakeNonce: 1 });
+        createFraudAttestation({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE, fakeNonce: 1 });
         // correct nonce for current root would be 2 => fraud
     }
 
     // Create a fraud attestation: attested root does not exist
     function _createAttestation_fraud_fakeRoot() internal {
         test_dispatch();
-        createFraudAttestation({ domain: DOMAIN_LOCAL, fakeRoot: "fake root" });
+        createFraudAttestation({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            fakeRoot: "fake root"
+        });
         // this is obv incorrect root for current nonce => fraud
     }
 }
