@@ -143,7 +143,7 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 		TxHash:             event.GetTxHash().String(),
 		Amount:             event.GetAmount(),
 		EventIndex:         event.GetEventIndex(),
-		DestinationKappa:   crypto.Keccak256Hash(event.GetTxHash().Bytes()).String(),
+		DestinationKappa:   crypto.Keccak256Hash([]byte(event.GetTxHash().String())).String(),
 		Sender:             "",
 		Recipient:          recipient,
 		RecipientBytes:     recipientBytes,
