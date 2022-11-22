@@ -180,11 +180,17 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		}
 	}()
 
-	e.Eventually(func() bool {
-		return len(exec.LogChans[chainID]) == 250
-	})
+	for len(exec.LogChans[chainID]) != 250 {
 
-	e.DeferAfterTest(func() {
-		exec.Stop(chainID)
-	})
+	}
+
+	exec.Stop(chainID)
+
+	//e.Eventually(func() bool {
+	//	return len(exec.LogChans[chainID]) == 250
+	//})
+	//
+	//e.DeferAfterTest(func() {
+	//	exec.Stop(chainID)
+	//})
 }
