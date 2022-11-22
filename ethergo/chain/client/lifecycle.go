@@ -62,6 +62,21 @@ func (m LifecycleClient) CallContract(ctx context.Context, call ethereum.CallMsg
 	return m.underlyingClient.CallContract(requestCtx, call, blockNumber)
 }
 
+// PendingCallContract calls contract on the underlying client
+// nolint: wrapcheck
+func (m LifecycleClient) PendingCallContract(ctx context.Context, call ethereum.CallMsg) (contractResponse []byte, err error) {
+	err = m.AcquirePermit(ctx)
+	if err != nil {
+		return contractResponse, err
+	}
+	defer m.ReleasePermit()
+
+	requestCtx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	defer cancel()
+
+	return m.underlyingClient.PendingCallContract(requestCtx, call)
+}
+
 // PendingCodeAt calls PendingCodeAt on the underlying client
 // nolint: wrapcheck
 func (m LifecycleClient) PendingCodeAt(ctx context.Context, account common.Address) (codeResponse []byte, err error) {
@@ -77,6 +92,36 @@ func (m LifecycleClient) PendingCodeAt(ctx context.Context, account common.Addre
 	return m.underlyingClient.PendingCodeAt(requestCtx, account)
 }
 
+// PendingBalanceAt calls PendingBalanceAt on the underlying client
+// nolint: wrapcheck
+func (m LifecycleClient) PendingBalanceAt(ctx context.Context, account common.Address) (pendingBalance *big.Int, err error) {
+	err = m.AcquirePermit(ctx)
+	if err != nil {
+		return pendingBalance, err
+	}
+	defer m.ReleasePermit()
+
+	requestCtx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	defer cancel()
+
+	return m.underlyingClient.PendingBalanceAt(requestCtx, account)
+}
+
+// PendingStorageAt calls PendingStorageAt on the underlying client
+// nolint: wrapcheck
+func (m LifecycleClient) PendingStorageAt(ctx context.Context, account common.Address, key common.Hash) (pendingStorage []byte, err error) {
+	err = m.AcquirePermit(ctx)
+	if err != nil {
+		return pendingStorage, err
+	}
+	defer m.ReleasePermit()
+
+	requestCtx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	defer cancel()
+
+	return m.underlyingClient.PendingStorageAt(requestCtx, account, key)
+}
+
 // PendingNonceAt calls PendingNonceAt on the underlying client
 // nolint: wrapcheck
 func (m LifecycleClient) PendingNonceAt(ctx context.Context, account common.Address) (pendingNonce uint64, err error) {
@@ -90,6 +135,51 @@ func (m LifecycleClient) PendingNonceAt(ctx context.Context, account common.Addr
 	defer cancel()
 
 	return m.underlyingClient.PendingNonceAt(requestCtx, account)
+}
+
+// PendingTransactionCount calls PendingTransactionCount on the underlying client
+// nolint: wrapcheck
+func (m LifecycleClient) PendingTransactionCount(ctx context.Context) (count uint, err error) {
+	err = m.AcquirePermit(ctx)
+	if err != nil {
+		return count, err
+	}
+	defer m.ReleasePermit()
+
+	requestCtx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	defer cancel()
+
+	return m.underlyingClient.PendingTransactionCount(requestCtx)
+}
+
+// NetworkID calls NetworkID on the underlying client
+// nolint: wrapcheck
+func (m LifecycleClient) NetworkID(ctx context.Context) (id *big.Int, err error) {
+	err = m.AcquirePermit(ctx)
+	if err != nil {
+		return id, err
+	}
+	defer m.ReleasePermit()
+
+	requestCtx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	defer cancel()
+
+	return m.underlyingClient.NetworkID(requestCtx)
+}
+
+// SyncProgress calls SyncProgress on the underlying client
+// nolint: wrapcheck
+func (m LifecycleClient) SyncProgress(ctx context.Context) (syncProgress *ethereum.SyncProgress, err error) {
+	err = m.AcquirePermit(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer m.ReleasePermit()
+
+	requestCtx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	defer cancel()
+
+	return m.underlyingClient.SyncProgress(requestCtx)
 }
 
 // SuggestGasPrice calls SuggestGasPrice on the underlying client
@@ -446,4 +536,19 @@ func (m LifecycleClient) BatchContext(ctx context.Context, calls ...w3types.Call
 	defer cancel()
 
 	return m.underlyingClient.BatchContext(requestCtx, calls...)
+}
+
+// FeeHistory calls FeeHistory on the underlying client
+// nolint: wrapcheck
+func (m LifecycleClient) FeeHistory(ctx context.Context, blockCount uint64, lastBlock *big.Int, rewardPercentiles []float64) (*ethereum.FeeHistory, error) {
+	err := m.AcquirePermit(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer m.ReleasePermit()
+
+	requestCtx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	defer cancel()
+
+	return m.underlyingClient.FeeHistory(requestCtx, blockCount, lastBlock, rewardPercentiles)
 }

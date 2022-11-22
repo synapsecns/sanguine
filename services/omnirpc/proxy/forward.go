@@ -33,16 +33,19 @@ func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse response: %w", err)
 	}
-
-	standardizedResponse, err := standardizeResponse(ctx, f.rpcRequest, rpcMessage)
-	if err != nil {
-		return nil, fmt.Errorf("could not standardize response: %w", err)
+	var standardizedResponses []byte
+	for i := range f.rpcRequest {
+		standardizedResponse, err := standardizeResponse(ctx, &f.rpcRequest[i], rpcMessage)
+		if err != nil {
+			return nil, fmt.Errorf("could not standardize response: %w", err)
+		}
+		standardizedResponses = append(standardizedResponses, standardizedResponse...)
 	}
 
 	return &rawResponse{
 		body:     body,
 		url:      url,
-		hash:     fmt.Sprintf("%x", sha256.Sum256(standardizedResponse)),
+		hash:     fmt.Sprintf("%x", sha256.Sum256(standardizedResponses)),
 		hasError: rpcMessage.Error != nil,
 	}, nil
 }

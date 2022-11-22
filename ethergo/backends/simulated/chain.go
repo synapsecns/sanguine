@@ -3,6 +3,8 @@ package simulated
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/lmittmann/w3/w3types"
@@ -15,6 +17,40 @@ import (
 // Client is a simulated client for a simulated backend.
 type Client struct {
 	*multibackend.SimulatedBackend
+}
+
+// FeeHistory is not implemented on this backend.
+func (s Client) FeeHistory(ctx context.Context, blockCount uint64, lastBlock *big.Int, rewardPercentiles []float64) (*ethereum.FeeHistory, error) {
+	// TODO implement me
+	panic("cannot implement on this backend")
+}
+
+// PendingBalanceAt calls balance at since simulated backends are monotonic.
+func (s Client) PendingBalanceAt(ctx context.Context, account common.Address) (*big.Int, error) {
+	//nolint: wrapcheck
+	return s.SimulatedBackend.BalanceAt(ctx, account, nil)
+}
+
+// PendingStorageAt gets the storage at since simulated backends cannot have non-final storage.
+func (s Client) PendingStorageAt(ctx context.Context, account common.Address, key common.Hash) ([]byte, error) {
+	//nolint: wrapcheck
+	return s.SimulatedBackend.StorageAt(ctx, account, key, nil)
+}
+
+// PendingTransactionCount always returns 0 since simulated backends cannot have pending transactions.
+func (s Client) PendingTransactionCount(ctx context.Context) (uint, error) {
+	return 0, nil
+}
+
+// SyncProgress panics since this state is not accessible on the simulated backend.
+func (s Client) SyncProgress(ctx context.Context) (*ethereum.SyncProgress, error) {
+	panic("not implemented")
+}
+
+// NetworkID wraps network id on underlying backend.
+func (s Client) NetworkID(ctx context.Context) (*big.Int, error) {
+	//nolint: errwrap
+	return s.ChainID(ctx)
 }
 
 // ChainConfig gets the chain config for the backend.
