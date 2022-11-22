@@ -45,6 +45,7 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/holiman/uint256 v1.2.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc // indirect
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect

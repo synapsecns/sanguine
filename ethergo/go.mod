@@ -19,6 +19,7 @@ require (
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/jpillora/backoff v1.0.0
 	github.com/keep-network/keep-common v1.7.1-0.20211012131917-7102d7b9c6a0
+	github.com/lmittmann/w3 v0.10.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mattn/go-isatty v0.0.16
 	github.com/miguelmota/go-ethereum-hdwallet v0.1.1
@@ -116,7 +117,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
-	github.com/holiman/uint256 v1.2.0 // indirect
+	github.com/holiman/uint256 v1.2.1 // indirect
 	github.com/huin/goupnp v1.0.3 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect

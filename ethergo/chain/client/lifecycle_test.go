@@ -81,7 +81,7 @@ func (c ClientSuite) TestLifecycleClient() {
 
 // shouldSkip indicates an untestable method.
 func shouldSkip(name string) bool {
-	skipMethods := []string{"BatchCallContext", "CallContext"}
+	skipMethods := []string{"BatchCallContext", "CallContext", "BatchContext"}
 	return toolbox.HasSliceAnyElements(skipMethods, name)
 }
 

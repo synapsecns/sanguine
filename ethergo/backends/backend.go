@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
@@ -33,8 +32,6 @@ type SimulatedTestBackend interface {
 	suite.TestingSuite
 	// Manager is used for concurrent signing while generating nonce
 	nonce.Manager
-	// ChainConfig gets the chain config
-	ChainConfig() *params.ChainConfig
 	// ContractVerifier are contract verification hooks
 	ContractVerifier
 	// WaitForConfirmation waits for a tx confirmation
