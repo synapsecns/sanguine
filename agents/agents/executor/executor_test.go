@@ -181,10 +181,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	}()
 
 	e.Eventually(func() bool {
-		if len(exec.LogChans[chainID]) == 250 {
-			return true
-		}
-		return false
+		return len(exec.LogChans[chainID]) == 250
 	})
 
 	e.DeferAfterTest(func() {
