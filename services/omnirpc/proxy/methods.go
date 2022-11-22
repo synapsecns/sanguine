@@ -1,8 +1,15 @@
 package proxy
 
+import (
+	"github.com/benbjohnson/immutable"
+	"strings"
+)
+
 // RPCMethod is an enum type for an rpc method.
 type RPCMethod string
 
+// NOTE: any changes here must be added to allMethods list below.
+// TODO: this should be replaced by a go:generate in the near future.
 const (
 	// ChainIDMethod is used to retrieve the current chain ID for transaction replay protection.
 	ChainIDMethod RPCMethod = "eth_chainId"
@@ -47,3 +54,29 @@ const (
 	// SendRawTransactionMethod sends a raw tx.
 	SendRawTransactionMethod RPCMethod = "eth_sendRawTransaction"
 )
+
+// allMethods gets all available rpc methods.
+var allMethods = []RPCMethod{ChainIDMethod, BlockByHashMethod, BlockByNumberMethod, BlockNumberMethod,
+	BlockNumberMethod, TransactionByHashMethod, TransactionByBlockHashAndIndexMethod, TransactionCountByHashMethod,
+	TransactionReceiptByHashMethod, SyncProgressMethod, GetBalanceMethod}
+
+var methodMap *immutable.Map[RPCMethod, string]
+
+func init() {
+	methodLowerMap := immutable.NewMapBuilder[RPCMethod, string](nil)
+	for _, method := range allMethods {
+		methodLowerMap.Set(method, strings.ToLower(string(method)))
+	}
+	methodMap = methodLowerMap.Map()
+}
+
+// Comparable converts an rpc method to lowercase based on a preset map
+// can be used for case sensitive comparison.
+func (r RPCMethod) Comparable() string {
+	res, ok := methodMap.Get(r)
+	if !ok {
+		logger.Warnf("rpc method not found for %s", r)
+	}
+
+	return res
+}

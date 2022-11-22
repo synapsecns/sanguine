@@ -11,6 +11,7 @@ replace (
 require (
 	github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e
 	github.com/Soft/iter v0.1.0
+	github.com/benbjohnson/immutable v0.4.0
 	github.com/brianvoe/gofakeit/v6 v6.19.0
 	github.com/buger/jsonparser v1.1.1
 	github.com/danielkov/gin-helmet v0.0.0-20171108135313-1387e224435e

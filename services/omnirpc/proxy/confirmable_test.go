@@ -4,8 +4,8 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"io"
 	"math/big"
@@ -15,7 +15,7 @@ import (
 
 // checkRequest is a helper method for checking requests.
 // TODO: checkReq can be replaced w/ a confirmable call, we should do this once we're complete.
-func (p *ProxySuite) checkRequest(makeReq func(client *ethclient.Client), checkReq func(body []byte)) {
+func (p *ProxySuite) checkRequest(makeReq func(client client.EVMClient), checkReq func(body []byte)) {
 	doneChan := make(chan bool)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -31,10 +31,10 @@ func (p *ProxySuite) checkRequest(makeReq func(client *ethclient.Client), checkR
 
 	defer server.Close()
 
-	client, err := ethclient.DialContext(p.GetTestContext(), server.URL)
+	evmClient, err := client.NewClientFromChainID(p.GetTestContext(), server.URL, big.NewInt(1))
 	Nil(p.T(), err)
 
-	makeReq(client)
+	makeReq(evmClient)
 
 	<-doneChan
 }
@@ -48,7 +48,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 
 	// check latest block, should not be confirmable since
 	// rpcs might be on different  latest heights
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.BlockByNumber(p.GetTestContext(), nil)
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -57,7 +57,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// check non-latest block, should be confirmable
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.BlockByNumber(p.GetTestContext(), new(big.Int).SetUint64(gofakeit.Uint64()))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -70,7 +70,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	*/
 
 	// do the same thing, but check headers this time
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.HeaderByNumber(p.GetTestContext(), nil)
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -79,7 +79,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// check non-latest block, should be confirmable
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.HeaderByNumber(p.GetTestContext(), new(big.Int).SetUint64(gofakeit.Uint64()))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -88,7 +88,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// eth_blockNumber should not be confirmable, can differ based on rpc
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.BlockNumber(p.GetTestContext())
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -99,7 +99,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	/*
 	  CHECK Transaction Methods
 	*/
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _, _ = client.TransactionByHash(p.GetTestContext(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -107,7 +107,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		True(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.TransactionCount(p.GetTestContext(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -115,7 +115,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		True(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.PendingTransactionCount(p.GetTestContext())
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -123,7 +123,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		False(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.TransactionInBlock(p.GetTestContext(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())), 1)
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -131,7 +131,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		True(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.TransactionReceipt(p.GetTestContext(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -143,7 +143,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	  Sync Methods
 	*/
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.SyncProgress(p.GetTestContext())
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -151,7 +151,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		False(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.NetworkID(p.GetTestContext())
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -164,7 +164,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	*/
 
 	// latest block, should not be confirmable
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.BalanceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), nil)
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -173,7 +173,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// pending
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.PendingBalanceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -182,7 +182,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// non-latest block
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.BalanceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), new(big.Int).SetUint64(gofakeit.Uint64()))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -191,7 +191,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// latest block, should not be confirmable
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.StorageAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())), nil)
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -199,7 +199,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		False(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.PendingStorageAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -208,7 +208,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// non-latest block
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.StorageAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())), new(big.Int).SetUint64(gofakeit.Uint64()))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -216,7 +216,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		True(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.CodeAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), nil)
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -224,7 +224,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		False(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.PendingCodeAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -233,7 +233,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// non-latest block
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.CodeAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), new(big.Int).SetUint64(gofakeit.Uint64()))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -242,7 +242,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// storage:
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.NonceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), nil)
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -250,7 +250,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		False(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.PendingNonceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -259,7 +259,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// non-latest block
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.NonceAt(p.GetTestContext(), common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64())), new(big.Int).SetUint64(gofakeit.Uint64()))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -271,7 +271,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	  Filter Logs
 	*/
 	// this one's a bit more complicated. It should only return true if fromblock is set and toblock is not set if blockhash is not set
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.FilterLogs(p.GetTestContext(), ethereum.FilterQuery{
 			FromBlock: nil,
 			ToBlock:   nil,
@@ -285,7 +285,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// set just to block
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.FilterLogs(p.GetTestContext(), ethereum.FilterQuery{
 			FromBlock: nil,
 			ToBlock:   big.NewInt(1),
@@ -299,7 +299,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	})
 
 	// set only block hash
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		bhash := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 		_, _ = client.FilterLogs(p.GetTestContext(), ethereum.FilterQuery{
 			BlockHash: &bhash,
@@ -315,7 +315,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	/*
 	  Call Contract
 	*/
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.CallContract(p.GetTestContext(), ethereum.CallMsg{}, nil)
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -323,7 +323,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		False(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.CallContract(p.GetTestContext(), ethereum.CallMsg{}, big.NewInt(1))
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -331,7 +331,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		True(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.PendingCallContract(p.GetTestContext(), ethereum.CallMsg{})
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -342,7 +342,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 	/*
 	  Gas Pricing
 	*/
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.SuggestGasPrice(p.GetTestContext())
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -350,7 +350,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		False(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.SuggestGasTipCap(p.GetTestContext())
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)
@@ -358,7 +358,7 @@ func (p *ProxySuite) TestParseRPCPayload() {
 		False(p.T(), confirmable)
 	})
 
-	p.checkRequest(func(client *ethclient.Client) {
+	p.checkRequest(func(client client.EVMClient) {
 		_, _ = client.EstimateGas(p.GetTestContext(), ethereum.CallMsg{})
 	}, func(body []byte) {
 		confirmable, err := proxy.IsConfirmable(body)

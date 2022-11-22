@@ -13,11 +13,12 @@ import (
 	"math/big"
 )
 
-// Confirmable returns the confirmability of an interface
+// Confirmable returns the confirmability of an interface.
 type Confirmable interface {
 	isConfirmable() (bool, error)
 }
 
+// RPCRequests is a list or rpc requests.
 type RPCRequests []RPCRequest
 
 func (r RPCRequests) isConfirmable() (_ bool, errs error) {
@@ -35,6 +36,7 @@ func (r RPCRequests) isConfirmable() (_ bool, errs error) {
 	}
 
 	if errs != nil {
+		// nolint: wrapcheck
 		return false, errs
 	}
 
@@ -112,6 +114,7 @@ func isFilterArgConfirmable(arg json.RawMessage) (bool, error) {
 func (r RPCRequest) isConfirmable() (bool, error) {
 	// TODO: handle batch methods
 	// TODO: should we error on default?
+	// TODO: look at RPCMethod.Comparable for lower, necessary?
 	//nolint: exhaustive
 	switch RPCMethod(r.Method) {
 	case BlockByNumberMethod, PendingTransactionCountMethod:
