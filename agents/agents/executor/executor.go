@@ -99,6 +99,10 @@ func (e Executor) Start(ctx context.Context) error {
 					if err != nil {
 						return fmt.Errorf("could not close stream: %w", err)
 					}
+					err = conn.Close()
+					if err != nil {
+						return fmt.Errorf("could not close connection: %w", err)
+					}
 					return nil
 				default:
 					response, err := stream.Recv()
