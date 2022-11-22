@@ -30,7 +30,6 @@ func TestMakeRange(t *testing.T) {
 // startOmnirpcServer boots an omnirpc server for an rpc address.
 // the url for this rpc is returned.
 func (b *BackfillSuite) startOmnirpcServer(ctx context.Context, backend backends.SimulatedTestBackend) string {
-	b.T().Skip("waiting for #328")
 	// run an omnirpc proxy to our backend
 	server := proxy.NewProxy(config.Config{
 		Chains: map[uint32]config.ChainConfig{

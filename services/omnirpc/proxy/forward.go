@@ -27,6 +27,7 @@ type rawResponse struct {
 // regardless of formatting.
 func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string) (*rawResponse, error) {
 	// TODO: see if there's a faster way to do this. Canonical json?
+	// TODO: standardize batch request
 	// unmarshall and remarshall
 	var rpcMessage JSONRPCMessage
 	err := json.Unmarshal(body, &rpcMessage)
@@ -34,6 +35,7 @@ func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string)
 		return nil, fmt.Errorf("could not parse response: %w", err)
 	}
 	var standardizedResponses []byte
+
 	for i := range f.rpcRequest {
 		standardizedResponse, err := standardizeResponse(ctx, &f.rpcRequest[i], rpcMessage)
 		if err != nil {
