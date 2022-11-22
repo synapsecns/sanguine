@@ -45,7 +45,14 @@ RETRY:
 	case <-time.After(timeout):
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://coins.llama.fi/prices/historical/%d/coingecko:%s", timestamp, coinGeckoID), nil)
 		if err != nil {
-			return nil, nil
+			if retries >= tokenMetadataMaxRetry {
+				logger.Warnf("Max retries reached, could not get token metadata for %s: %v", coinGeckoID, err)
+				return nil, nil
+			}
+			timeout = b.Duration()
+			logger.Errorf("error getting response from defi llama %v", err)
+			retries++
+			goto RETRY
 		}
 		resRaw, err := client.Do(req)
 
@@ -65,6 +72,8 @@ RETRY:
 		err = json.NewDecoder(resRaw.Body).Decode(&res)
 
 		if err != nil {
+			logger.Warnf("failed decoding defillama data %s: %v", coinGeckoID, err)
+
 			return nil, nil
 		}
 
@@ -83,11 +92,13 @@ RETRY:
 		}
 
 		if price == nil || symbol == nil {
-			if retries >= tokenMetadataMaxRetry {
-				return nil, nil
+			if retries >= 1 {
+				logger.Errorf("error getting price or symbol from defi llama, skipping: retries: %d %s %d", retries, coinGeckoID, timestamp)
+				zero := float64(0)
+				return &zero, nil
 			}
 			timeout = b.Duration()
-			logger.Errorf("error getting price or symbol from defi llama")
+			logger.Errorf("error getting price or symbol from defi llama: retries: %d %s %d", retries, coinGeckoID, timestamp)
 			retries++
 
 			goto RETRY
