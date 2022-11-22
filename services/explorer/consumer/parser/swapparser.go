@@ -39,7 +39,7 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFet
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
-	symbolPath, err := filepath.Abs("./static/tokenSymbolToCoinGeckoID.yaml")
+	symbolPath, err := filepath.Abs("../static/tokenSymbolToCoinGeckoID.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("could find path to yaml file: %w", err)
 	}
@@ -241,9 +241,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 					return fmt.Errorf("could not get timestamp: %w", err)
 				}
 				coinGeckoID := p.coinGeckoIDs[strings.ToLower(*symbol)]
-				if coinGeckoID == "" {
-					fmt.Println("EMPYRY chainID", chainID, *symbol)
-				}
+
 				tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
 				if tokenPrice != nil {
 					tokenPrices[tokenIndex] = *tokenPrice
