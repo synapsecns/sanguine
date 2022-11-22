@@ -11,6 +11,7 @@ replace (
 require (
 	github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e
 	github.com/Soft/iter v0.1.0
+	github.com/benbjohnson/immutable v0.4.0
 	github.com/brianvoe/gofakeit/v6 v6.19.0
 	github.com/buger/jsonparser v1.1.1
 	github.com/danielkov/gin-helmet v0.0.0-20171108135313-1387e224435e
@@ -24,6 +25,7 @@ require (
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/goccy/go-json v0.9.7
 	github.com/google/uuid v1.3.0
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hedzr/cmdr v1.10.49
 	github.com/invopop/jsonschema v0.6.0
 	github.com/ipfs/go-log v1.0.5
@@ -31,6 +33,7 @@ require (
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/josephburnett/jd v1.6.1
 	github.com/jpillora/backoff v1.0.0
+	github.com/lmittmann/w3 v0.10.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/puzpuzpuz/xsync v1.4.3
@@ -105,7 +108,6 @@ require (
 	github.com/graph-gophers/graphql-go v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-bexpr v0.1.10 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -130,7 +132,6 @@ require (
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/lmittmann/w3 v0.10.0 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
