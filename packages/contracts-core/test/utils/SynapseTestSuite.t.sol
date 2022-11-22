@@ -131,35 +131,38 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
      * @notice Attestation signed by the chain's default Notary.
      */
     function signAttestation(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 nonce,
         bytes32 root
     ) public returns (bytes memory attestation, bytes memory signature) {
-        return signAttestation(domain, nonce, root, suiteNotary(domain));
+        return signAttestation(origin, destination, nonce, root, suiteNotary(origin));
     }
 
     /**
      * @notice Attestation signed by a chain's given Notary.
      */
     function signAttestation(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 nonce,
         bytes32 root,
         uint256 notaryIndex
     ) public returns (bytes memory attestation, bytes memory signature) {
-        return signAttestation(domain, nonce, root, suiteNotary(domain, notaryIndex));
+        return signAttestation(origin, destination, nonce, root, suiteNotary(origin, notaryIndex));
     }
 
     /**
      * @notice Attestation signed by a given signer.
      */
     function signAttestation(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 nonce,
         bytes32 root,
         address signer
     ) public returns (bytes memory attestation, bytes memory signature) {
-        bytes memory data = Attestation.formatAttestationData(domain, nonce, root);
+        bytes memory data = Attestation.formatAttestationData(origin, destination, nonce, root);
         signature = signMessage(signer, data);
         attestation = Attestation.formatAttestation(data, signature);
     }

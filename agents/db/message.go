@@ -23,6 +23,7 @@ type TxQueueDB interface {
 
 // MessageDB stores messages.
 // nolint
+// TODO (joe): This needs to be refactored after we do the GlobalRegistry stuff
 type MessageDB interface {
 	// RetrieveLatestCommittedMessageNonce gets the latest nonce of a committed message
 	// returns ErrNoNonceForDomain if no nonce exists
@@ -45,7 +46,7 @@ type MonitorDB interface {
 	// StoreDispatchMessage stores a dispatch message
 	StoreDispatchMessage(ctx context.Context, message types.Message) error
 	// StoreAcceptedAttestation stores an accepted attestation
-	StoreAcceptedAttestation(ctx context.Context, destinationDomain uint32, attestation types.Attestation) error
+	StoreAcceptedAttestation(ctx context.Context, attestation types.Attestation) error
 	// GetDelinquentMessage gets messages that were sent, but never received
 	GetDelinquentMessages(ctx context.Context, destinationDomain uint32) ([]types.Message, error)
 }
