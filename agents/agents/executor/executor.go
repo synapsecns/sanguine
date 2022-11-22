@@ -55,8 +55,8 @@ func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeC
 
 // Start starts the executor agent. This uses gRPC to process the logs.
 //
-//nolint:cyclop
-func (e *Executor) Start(ctx context.Context) error {
+//nolint:cyclop,gocognit
+func (e Executor) Start(ctx context.Context) error {
 	// Consume the logs from gRPC.
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", e.scribeClient.URL, e.scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -135,7 +135,7 @@ func (e *Executor) Start(ctx context.Context) error {
 }
 
 // Stop stops the executor agent.
-func (e *Executor) Stop() {
+func (e Executor) Stop() {
 	e.closeConnection <- true
 }
 
