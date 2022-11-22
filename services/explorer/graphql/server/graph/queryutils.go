@@ -7,11 +7,16 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
+	"math"
+	"strconv"
 	"time"
 )
 
 const sortingKeys = "event_index, block_number, event_type, tx_hash, chain_id, contract_address"
+const maxBlockNumberSortingKeys = "event_index, event_type, tx_hash, chain_id, contract_address"
+
 const deDupInQuery = "(" + sortingKeys + ", insert_time) IN (SELECT " + sortingKeys + ", max(insert_time) as insert_time FROM bridge_events GROUP BY " + sortingKeys + ")"
+const deDupInQueryLatest = "(" + maxBlockNumberSortingKeys + ", block_number, insert_time) IN (SELECT " + maxBlockNumberSortingKeys + ", max(block_number) as block_number, max(insert_time) as insert_time FROM bridge_events GROUP BY " + maxBlockNumberSortingKeys + ")"
 
 func (r *queryResolver) getChainIDs(ctx context.Context, chainID *int) ([]int, error) {
 	var chainIDs []int
@@ -65,7 +70,7 @@ func (r *queryResolver) originToDestinationBridge(ctx context.Context, address *
 			destinationKappa = *kappa
 		}
 
-		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(nil, address, tokenAddress, &destinationKappa, nil, page))
+		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(nil, address, tokenAddress, &destinationKappa, nil, page, true))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -158,7 +163,7 @@ func (r *queryResolver) destinationToOriginBridge(ctx context.Context, address *
 			originTxHash = &fromBridgeEvent.TxHash
 		}
 
-		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(nil, address, tokenAddress, nil, originTxHash, page))
+		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(nil, address, tokenAddress, nil, originTxHash, page, true))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -188,7 +193,7 @@ func (r *queryResolver) originOrDestinationBridge(ctx context.Context, chainID *
 	var toInfos []*model.PartialInfo
 	var fromInfos []*model.PartialInfo
 
-	infos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, kappa, txnHash, page))
+	infos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, kappa, txnHash, page, false))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 	}
@@ -308,14 +313,14 @@ func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *
 }
 
 // generatePartialInfoQuery returns the query for making the PartialInfo query.
-func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash *string, page int) string {
+func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash *string, page int, latest bool) string {
 	firstFilter := true
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "t1.")
 	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "t1.")
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "t1.")
 	kappaSpecifier := generateSingleSpecifierStringSQL(kappa, sql.KappaFieldName, &firstFilter, "t1.")
 	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "t1.")
-	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC LIMIT %d OFFSET %d", sql.BlockNumberFieldName, sql.PageSize, (page-1)*sql.PageSize)
+	pageSpecifier := fmt.Sprintf(" ORDER BY %s, %s DESC LIMIT %d OFFSET %d", sql.BlockNumberFieldName, sql.EventIndexFieldName, sql.PageSize, (page-1)*sql.PageSize)
 	compositeIdentifiers := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + kappaSpecifier + txHashSpecifier + pageSpecifier
 	selectParameters := fmt.Sprintf(
 		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
@@ -336,6 +341,10 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 		sql.TokenFieldName, sql.TokenFieldName, sql.AmountFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.EventIndexFieldName,
 		sql.DestinationKappaFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName, sql.SenderFieldName, sql.InsertTimeFieldName,
 	)
+	deDup := deDupInQuery
+	if latest {
+		deDup = deDupInQueryLatest
+	}
 	query := fmt.Sprintf(
 		`
 		SELECT t1.* FROM bridge_events t1
@@ -343,7 +352,7 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
     	SELECT %s AS insert_max_time
     	FROM bridge_events WHERE %s GROUP BY %s) t2
     	    ON (%s) %s `,
-		selectParameters, deDupInQuery, groupByParameters, joinOnParameters, compositeIdentifiers)
+		selectParameters, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
 
 	return query
 }
@@ -385,4 +394,207 @@ func (r *queryResolver) generateSubQuery(ctx context.Context, targetTime uint64,
 	}
 
 	return subQuery + ")", nil
+}
+
+func GetPartialInfoFromBridgeEvent(res []sql.BridgeEvent) ([]*model.PartialInfo, error) {
+	var partialInfos []*model.PartialInfo
+	var err error
+	for i := range res {
+		chainIDInt := int(res[i].ChainID)
+		blockNumberInt := int(res[i].BlockNumber)
+
+		var recipient string
+
+		switch {
+		case res[i].Recipient.Valid:
+			recipient = res[i].Recipient.String
+		case res[i].RecipientBytes.Valid:
+			recipient = res[i].RecipientBytes.String
+		default:
+			return nil, fmt.Errorf("recipient is not valid")
+		}
+
+		var tokenSymbol string
+
+		if res[i].TokenSymbol.Valid && res[i].TokenSymbol.String != "" {
+			tokenSymbol = res[i].TokenSymbol.String
+		} else {
+			return nil, fmt.Errorf("token symbol is not valid")
+		}
+
+		value := res[i].Amount.String()
+
+		var formattedValue float64
+
+		if res[i].TokenDecimal != nil {
+			formattedValue, err = strconv.ParseFloat(value, 64)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse float: %w", err)
+			}
+
+			formattedValue /= math.Pow10(int(*res[i].TokenDecimal))
+		} else {
+			return nil, fmt.Errorf("token decimal is not valid")
+		}
+
+		var timeStamp int
+
+		if res[i].TimeStamp != nil {
+			timeStamp = int(*res[i].TimeStamp)
+		} else {
+			return nil, fmt.Errorf("time stamp is not valid")
+		}
+
+		partialInfos = append(partialInfos, &model.PartialInfo{
+			ChainID:        &chainIDInt,
+			Address:        &recipient,
+			TxnHash:        &res[i].TxHash,
+			Value:          &value,
+			FormattedValue: &formattedValue,
+			USDValue:       res[i].AmountUSD,
+			TokenAddress:   &res[i].Token,
+			TokenSymbol:    &tokenSymbol,
+			BlockNumber:    &blockNumberInt,
+			Time:           &timeStamp,
+		})
+	}
+
+	return partialInfos, nil
+}
+
+// generateToPartialInfoQuery returns the query for making the PartialInfo query.
+func generateToPartialInfoQuery(toKappaChainStr string, page int) string {
+	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC LIMIT %d OFFSET %d", sql.BlockNumberFieldName, sql.PageSize, (page-1)*sql.PageSize)
+	compositeIdentifiers := fmt.Sprintf("WHERE (%s,%s) IN %s", sql.ChainIDFieldName, sql.KappaFieldName, toKappaChainStr) + pageSpecifier
+	selectParameters := fmt.Sprintf(
+		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
+		sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
+		sql.SenderFieldName, sql.TxHashFieldName, sql.InsertTimeFieldName,
+	)
+	groupByParameters := fmt.Sprintf(
+		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s`,
+		sql.TxHashFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName,
+	)
+	joinOnParameters := fmt.Sprintf(
+		`t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s
+		AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = insert_max_time`,
+		sql.TxHashFieldName, sql.TxHashFieldName, sql.ContractAddressFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName,
+		sql.ChainIDFieldName, sql.EventTypeFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName, sql.BlockNumberFieldName,
+		sql.TokenFieldName, sql.TokenFieldName, sql.AmountFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.EventIndexFieldName,
+		sql.DestinationKappaFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName, sql.SenderFieldName, sql.InsertTimeFieldName,
+	)
+	deDup := deDupInQueryLatest
+	query := fmt.Sprintf(
+		`
+		SELECT t1.* FROM bridge_events t1
+    	JOIN (
+    	SELECT %s AS insert_max_time
+    	FROM bridge_events WHERE %s  GROUP BY %s) t2
+    	    ON (%s) %s `,
+		selectParameters, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
+
+	return query
+}
+
+// generatePartialInfoQueryByChain returns the query for making the PartialInfo query.
+func generatePartialInfoQueryByChain(limitSize int) string {
+	pageSpecifier := fmt.Sprintf(" ORDER BY (%s,%s) DESC LIMIT %d BY %s", sql.BlockNumberFieldName, sql.EventIndexFieldName, limitSize, sql.ChainIDFieldName)
+	compositeIdentifiers := pageSpecifier
+	selectParameters := fmt.Sprintf(
+		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
+		sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
+		sql.SenderFieldName, sql.TxHashFieldName, sql.InsertTimeFieldName,
+	)
+	groupByParameters := fmt.Sprintf(
+		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s`,
+		sql.TxHashFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName,
+	)
+	joinOnParameters := fmt.Sprintf(
+		`t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s
+		AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = insert_max_time`,
+		sql.TxHashFieldName, sql.TxHashFieldName, sql.ContractAddressFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName,
+		sql.ChainIDFieldName, sql.EventTypeFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName, sql.BlockNumberFieldName,
+		sql.TokenFieldName, sql.TokenFieldName, sql.AmountFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.EventIndexFieldName,
+		sql.DestinationKappaFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName, sql.SenderFieldName, sql.InsertTimeFieldName,
+	)
+	query := fmt.Sprintf(
+		`
+
+		SELECT t1.* FROM bridge_events t1
+    	JOIN (
+    	SELECT %s AS insert_max_time
+    	FROM bridge_events WHERE %s GROUP BY %s) t2
+    	    ON (%s) %s`,
+		selectParameters, deDupInQuery, groupByParameters, joinOnParameters, compositeIdentifiers)
+
+	return query
+}
+func GetToPartialInfoFromBridgeEvent(res []sql.BridgeEvent) (map[string]*model.PartialInfo, error) {
+	partialInfos := make(map[string]*model.PartialInfo)
+	var err error
+	for i := range res {
+		chainIDInt := int(res[i].ChainID)
+		blockNumberInt := int(res[i].BlockNumber)
+
+		var recipient string
+
+		switch {
+		case res[i].Recipient.Valid:
+			recipient = res[i].Recipient.String
+		case res[i].RecipientBytes.Valid:
+			recipient = res[i].RecipientBytes.String
+		default:
+			return nil, fmt.Errorf("recipient is not valid")
+		}
+
+		var tokenSymbol string
+
+		if res[i].TokenSymbol.Valid && res[i].TokenSymbol.String != "" {
+			tokenSymbol = res[i].TokenSymbol.String
+		} else {
+			return nil, fmt.Errorf("token symbol is not valid")
+		}
+
+		value := res[i].Amount.String()
+
+		var formattedValue float64
+
+		if res[i].TokenDecimal != nil {
+			formattedValue, err = strconv.ParseFloat(value, 64)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse float: %w", err)
+			}
+
+			formattedValue /= math.Pow10(int(*res[i].TokenDecimal))
+		} else {
+			return nil, fmt.Errorf("token decimal is not valid")
+		}
+
+		var timeStamp int
+
+		if res[i].TimeStamp != nil {
+			timeStamp = int(*res[i].TimeStamp)
+		} else {
+			return nil, fmt.Errorf("time stamp is not valid")
+		}
+		key := fmt.Sprintf("%d", res[i].ChainID)
+		partialInfos[key] = &model.PartialInfo{
+			ChainID:        &chainIDInt,
+			Address:        &recipient,
+			TxnHash:        &res[i].TxHash,
+			Value:          &value,
+			FormattedValue: &formattedValue,
+			USDValue:       res[i].AmountUSD,
+			TokenAddress:   &res[i].Token,
+			TokenSymbol:    &tokenSymbol,
+			BlockNumber:    &blockNumberInt,
+			Time:           &timeStamp,
+		}
+	}
+
+	return partialInfos, nil
 }

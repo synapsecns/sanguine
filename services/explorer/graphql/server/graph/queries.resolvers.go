@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -31,7 +32,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	case txnHash != nil:
 		// If we are given a transaction hash, we search for the bridge transaction on the origin chain, then locate
 		// its counterpart on the destination chain using the kappa (the keccak256 hash of the transaction hash).
-		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, nil, txnHash, page))
+		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, nil, txnHash, page, false))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -43,7 +44,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
-		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, kappa, nil, page))
+		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, kappa, nil, page, false))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
@@ -67,30 +68,116 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 
 // LatestBridgeTransactions is the resolver for the latestBridgeTransactions field.
 func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePending bool, page int) ([]*model.BridgeTransaction, error) {
-	chainIDs, err := r.getChainIDs(ctx, nil)
+	// For each chain ID, get the latest bridge transaction.
+
+	//its getting the pending kappa and not the chaina one (shoudl only be getting the latest)
+	var results []*model.BridgeTransaction
+	//mapChains := make(map[uint32]string)
+	fromBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generatePartialInfoQueryByChain(100))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get chain IDs: %w", err)
+		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
+	}
+	fromBridgeEventsMap := make(map[string][]sql.BridgeEvent)
+	for _, fromBridgeEvent := range fromBridgeEvents {
+		key := fmt.Sprintf("%d", fromBridgeEvent.ChainID)
+		if fromBridgeEventsMap[key] == nil {
+			fromBridgeEventsMap[key] = append(fromBridgeEventsMap[key], fromBridgeEvent)
+		}
 	}
 
-	// For each chain ID, get the latest bridge transaction.
-	var results []*model.BridgeTransaction
+	var toKappaChainArr []string
+	for _, bridgeEvent := range fromBridgeEvents {
+		if bridgeEvent.DestinationChainID != nil {
+			toKappaChainArr = append(toKappaChainArr, fmt.Sprintf("(%d,'%s')", bridgeEvent.DestinationChainID, bridgeEvent.DestinationKappa))
+		}
+		//destinationKappaArr = append(destinationKappaArr, crypto.Keccak256Hash([]byte(*fromInfo.TxnHash)).String()[2:])
+	}
+	toKappaChainStr := "(" + strings.Join(toKappaChainArr, ",") + ")"
+	toBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generateToPartialInfoQuery(toKappaChainStr, page))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
+	}
+	toBridgeEventsMap := make(map[string][]sql.BridgeEvent)
+	for _, toBridgeEvent := range toBridgeEvents {
+		key := fmt.Sprintf("%d", toBridgeEvent.ChainID)
+		toBridgeEventsMap[key] = append(toBridgeEventsMap[key], toBridgeEvent)
+	}
 
-	for i := range chainIDs {
-		// Get the PartialInfo for the latest bridge transaction.
-		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(&chainIDs[i], nil, nil, nil, nil, page))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
+	// Check for pending
+
+	var fromBridgeEventsCleaned []sql.BridgeEvent
+	var toBridgeEventsCleaned []sql.BridgeEvent
+	toBridgeEventsMapCleaned := make(map[string][]sql.BridgeEvent)
+	if includePending {
+		for key := range fromBridgeEventsMap {
+			fromBridgeEventsCleaned = append(fromBridgeEventsCleaned, fromBridgeEventsMap[key][:1]...)
 		}
-		if len(fromInfos) != 0 {
-			// Take the fromInfo from the latest bridge transaction and use it to get the bridge transaction.
-			bridgeTxn, err := r.originToDestinationBridge(ctx, nil, nil, includePending, page, nil, fromInfos)
+		for key := range toBridgeEventsMap {
+			toBridgeEventsMapCleaned[key] = toBridgeEventsMap[key][:1]
+			toBridgeEventsCleaned = append(toBridgeEventsCleaned, toBridgeEventsMapCleaned[key]...)
+		}
+	} else {
+		for key := range toBridgeEventsMap {
+			for _, fromBridgeEvent := range fromBridgeEvents {
+				for _, toBridgeEvent := range toBridgeEventsMap[key] {
+
+					if fromBridgeEvent.DestinationKappa == toBridgeEvent.Kappa.String {
+						fromBridgeEventsCleaned = append(fromBridgeEventsCleaned, fromBridgeEvent)
+						toBridgeEventsCleaned = append(toBridgeEventsCleaned, toBridgeEvent)
+						toBridgeEventsMapCleaned[key] = []sql.BridgeEvent{toBridgeEvent}
+						goto NEXTCHAIN
+					}
+				}
+			}
+		NEXTCHAIN:
+		}
+	}
+
+	fromInfos, err := GetPartialInfoFromBridgeEvent(fromBridgeEventsCleaned)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
+	}
+	toInfos, err := GetToPartialInfoFromBridgeEvent(toBridgeEventsCleaned)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
+	}
+
+	for i, fromBridgeTx := range fromBridgeEventsCleaned {
+		// If we are not including pending transactions, and the transaction is pending, skip it.
+		toBridgeEvent := toBridgeEventsMapCleaned[fromBridgeTx.DestinationChainID.String()]
+		if fromBridgeTx.DestinationKappa == toBridgeEvent[0].Kappa.String {
+			var swapSuccess bool
+			if toBridgeEvent[0].SwapSuccess.Uint64() == 1 {
+				swapSuccess = true
+			}
 			if err != nil {
-				return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
+				return nil, fmt.Errorf("failed to get swap success: %w", err)
 			}
-			if len(bridgeTxn) != 0 {
-				results = append(results, bridgeTxn[0])
+
+			pending := false
+			results = append(results, &model.BridgeTransaction{
+				FromInfo:    fromInfos[i],
+				ToInfo:      toInfos[fromBridgeTx.DestinationChainID.String()],
+				Kappa:       &toBridgeEvent[0].Kappa.String,
+				Pending:     &pending,
+				SwapSuccess: &swapSuccess,
+			})
+		} else {
+			if includePending {
+				kappa := fromBridgeTx.DestinationKappa
+				results = append(results, &model.BridgeTransaction{
+					FromInfo:    fromInfos[i],
+					ToInfo:      nil,
+					Kappa:       &kappa,
+					Pending:     &includePending,
+					SwapSuccess: nil,
+				})
 			}
 		}
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
 
 	return results, nil

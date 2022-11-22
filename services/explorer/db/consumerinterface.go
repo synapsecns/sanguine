@@ -30,6 +30,8 @@ type ConsumerDBReader interface {
 	GetStringArray(ctx context.Context, query string) ([]string, error)
 	// GetBridgeEvent returns a bridge event.
 	GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error)
+	// GetBridgeEvents returns a bridge event.
+	GetBridgeEvents(ctx context.Context, query string) ([]sql.BridgeEvent, error)
 	// GetDateResults gets day by day data for a given query.
 	GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error)
 	// GetAddressRanking gets AddressRanking for a given query.
@@ -39,6 +41,8 @@ type ConsumerDBReader interface {
 	GetAllChainIDs(ctx context.Context) ([]int, error)
 	// PartialInfosFromIdentifiers returns events given identifiers.
 	PartialInfosFromIdentifiers(ctx context.Context, query string) ([]*model.PartialInfo, error)
+	// PartialInfosFromIdentifiersByChain returns events given identifiers.
+	PartialInfosFromIdentifiersByChain(ctx context.Context, query string) (map[int]*model.PartialInfo, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.

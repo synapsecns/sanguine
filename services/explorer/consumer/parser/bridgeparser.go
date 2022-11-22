@@ -143,7 +143,7 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 		TxHash:             event.GetTxHash().String(),
 		Amount:             event.GetAmount(),
 		EventIndex:         event.GetEventIndex(),
-		DestinationKappa:   crypto.Keccak256Hash([]byte(event.GetTxHash().String())).String(),
+		DestinationKappa:   crypto.Keccak256Hash([]byte(event.GetTxHash().String())).String()[2:],
 		Sender:             "",
 		Recipient:          recipient,
 		RecipientBytes:     recipientBytes,
@@ -367,10 +367,13 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 
 	bridgeEvent.Sender = sender
+
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
+
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
+	fmt.Println("STORED KAPPA, DESTINATION KAPPA", bridgeEvent.DestinationChainID, bridgeEvent.DestinationKappa, bridgeEvent.Kappa)
 
 	return nil
 }
