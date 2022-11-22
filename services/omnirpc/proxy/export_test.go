@@ -16,12 +16,13 @@ func IsConfirmable(body []byte) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("could not parse payload: %w", err)
 	}
+
 	//nolint: wrapcheck
 	return parsedPayload.isConfirmable()
 }
 
 // ParseRPCPayload exports parseRPCPayload for testing.
-func ParseRPCPayload(body []byte) (_ *RPCRequest, err error) {
+func ParseRPCPayload(body []byte) (_ []RPCRequest, err error) {
 	//nolint: wrapcheck
 	return parseRPCPayload(body)
 }
@@ -116,11 +117,11 @@ func (f *Forwarder) SetResMap(resMap *xsync.MapOf[[]rawResponse]) {
 	f.resMap = resMap
 }
 
-func (f *Forwarder) RPCRequest() *RPCRequest {
+func (f *Forwarder) RPCRequest() []RPCRequest {
 	return f.rpcRequest
 }
 
-func (f *Forwarder) SetRPCRequest(rpcRequest *RPCRequest) {
+func (f *Forwarder) SetRPCRequest(rpcRequest []RPCRequest) {
 	f.rpcRequest = rpcRequest
 }
 
@@ -135,20 +136,27 @@ func (f *Forwarder) SetBlankResMap() {
 	f.SetResMap(xsync.NewMapOf[[]rawResponse]())
 }
 
-func StandardizeResponse(ctx context.Context, req *RPCRequest, body []byte) ([]byte, error) {
+func StandardizeResponse(ctx context.Context, req []RPCRequest, body []byte) ([]byte, error) {
 	var rpcMessage JSONRPCMessage
 	err := json.Unmarshal(body, &rpcMessage)
 	if err != nil {
 		//nolint: wrapcheck
 		return nil, err
 	}
-
-	return standardizeResponse(ctx, req, rpcMessage)
+	var standardizedResponses []byte
+	for i := range req {
+		standardizedResponse, err := standardizeResponse(ctx, &req[i], rpcMessage)
+		if err != nil {
+			return nil, fmt.Errorf("could not standardize response: %w", err)
+		}
+		standardizedResponses = append(standardizedResponses, standardizedResponse...)
+	}
+	return standardizedResponses, nil
 }
 
 // StandardizeResponseFalseParams exports standardizeResponseFalseParams for testing.
 // this is only used when params[1] is false when calling eth_getBlockByNumber or eth_getBlockByHash.
-func StandardizeResponseFalseParams(ctx context.Context, req *RPCRequest, body []byte) ([]byte, error) {
+func StandardizeResponseFalseParams(ctx context.Context, req []RPCRequest, body []byte) ([]byte, error) {
 	var rpcMessage JSONRPCMessage
 	err := json.Unmarshal(body, &rpcMessage)
 	if err != nil {
@@ -158,7 +166,7 @@ func StandardizeResponseFalseParams(ctx context.Context, req *RPCRequest, body [
 	params := []json.RawMessage{rpcMessage.Params}
 
 	// Handle BlockByHash, BlockByNumber, and HeaderByNumber events.
-	if req.Method == string(BlockByHashMethod) || req.Method == string(BlockByNumberMethod) {
+	if req[0].Method == string(BlockByHashMethod) || req[0].Method == string(BlockByNumberMethod) {
 		blockNumber := "0x1"
 		flag := true
 		jsonBlockNumber, err := json.Marshal(&blockNumber)
@@ -174,12 +182,21 @@ func StandardizeResponseFalseParams(ctx context.Context, req *RPCRequest, body [
 		jsonRawParams := []json.RawMessage{jsonBlockNumber, jsonFlag}
 		params = jsonRawParams
 	}
-	rpcRequest := RPCRequest{
-		ID:     rpcMessage.ID,
-		Method: req.Method,
-		Params: params,
+	var standardizedResponses []byte
+	for i := range req {
+		rpcRequest := RPCRequest{
+			ID:     rpcMessage.ID,
+			Method: req[i].Method,
+			Params: params,
+		}
+		standardizedResponse, err := standardizeResponse(ctx, &rpcRequest, rpcMessage)
+		if err != nil {
+			return nil, fmt.Errorf("could not standardize response: %w", err)
+		}
+		standardizedResponses = append(standardizedResponses, standardizedResponse...)
 	}
-	return standardizeResponse(ctx, &rpcRequest, rpcMessage)
+
+	return standardizedResponses, nil
 }
 
 // CheckAndSetConfirmability exports checkAndSetConfirmability for testing.
