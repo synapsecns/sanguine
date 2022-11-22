@@ -2,9 +2,8 @@
 pragma solidity 0.8.17;
 
 // ============ Production events ============
-import "../../contracts/events/AttestationCollectorEvents.sol";
+import "../../contracts/events/AttestationHubEvents.sol";
 import "../../contracts/events/DestinationEvents.sol";
-import "../../contracts/events/DestinationHubEvents.sol";
 import "../../contracts/events/GuardRegistryEvents.sol";
 import "../../contracts/events/NotaryManagerEvents.sol";
 import "../../contracts/events/NotaryRegistryEvents.sol";
@@ -20,9 +19,8 @@ import "../harnesses/events/SystemContractHarnessEvents.sol";
 
 // solhint-disable-next-line no-empty-blocks
 abstract contract SynapseEvents is
-    AttestationCollectorEvents,
+    AttestationHubEvents,
     DestinationEvents,
-    DestinationHubEvents,
     GuardRegistryEvents,
     NotaryManagerEvents,
     NotaryRegistryEvents,
