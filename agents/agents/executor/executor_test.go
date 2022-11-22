@@ -101,6 +101,7 @@ func (e *ExecutorSuite) TestExecutor() {
 			logA := <-excA.LogChans[chainIDA]
 			logB := <-excA.LogChans[chainIDA]
 			e.Assert().Less(logA.BlockNumber, logB.BlockNumber)
+			excA.Stop()
 			return true
 		}
 
@@ -112,6 +113,7 @@ func (e *ExecutorSuite) TestExecutor() {
 			logA := <-excB.LogChans[chainIDB]
 			logB := <-excB.LogChans[chainIDB]
 			e.Assert().LessOrEqual(logA.BlockNumber, logB.BlockNumber)
+			excB.Stop()
 			return true
 		}
 
@@ -176,6 +178,10 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	}()
 
 	e.Eventually(func() bool {
-		return len(exec.LogChans[chainID]) == 250
+		if len(exec.LogChans[chainID]) == 250 {
+			exec.Stop()
+			return true
+		}
+		return false
 	})
 }

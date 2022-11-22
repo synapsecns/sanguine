@@ -26,6 +26,8 @@ type Executor struct {
 	lastLog map[uint32]logOrderInfo
 	// LogChans is a mapping from chain ID -> log channel.
 	LogChans map[uint32]chan *types.Log
+	// closeConnection is a channel to close the connection.
+	closeConnection chan bool
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -42,18 +44,19 @@ func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeC
 	}
 
 	return &Executor{
-		chainIDs:     chainIDs,
-		addresses:    addresses,
-		scribeClient: scribeClient,
-		lastLog:      make(map[uint32]logOrderInfo),
-		LogChans:     channels,
+		chainIDs:        chainIDs,
+		addresses:       addresses,
+		scribeClient:    scribeClient,
+		lastLog:         make(map[uint32]logOrderInfo),
+		LogChans:        channels,
+		closeConnection: make(chan bool, 1),
 	}, nil
 }
 
 // Start starts the executor agent. This uses gRPC to process the logs.
 //
 //nolint:cyclop
-func (e Executor) Start(ctx context.Context) error {
+func (e *Executor) Start(ctx context.Context) error {
 	// Consume the logs from gRPC.
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", e.scribeClient.URL, e.scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -90,26 +93,35 @@ func (e Executor) Start(ctx context.Context) error {
 			}
 
 			for {
-				response, err := stream.Recv()
-				if errors.Is(err, io.EOF) {
+				select {
+				case <-e.closeConnection:
+					err := stream.CloseSend()
+					if err != nil {
+						return fmt.Errorf("could not close stream: %w", err)
+					}
 					return nil
-				}
-				if err != nil {
-					return fmt.Errorf("could not receive: %w", err)
-				}
+				default:
+					response, err := stream.Recv()
+					if errors.Is(err, io.EOF) {
+						return nil
+					}
+					if err != nil {
+						return fmt.Errorf("could not receive: %w", err)
+					}
 
-				log := response.Log.ToLog()
-				if log == nil {
-					return fmt.Errorf("could not convert log")
-				}
-				if !e.lastLog[chainID].verifyAfter(*log) {
-					return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog[chainID].blockNumber, e.lastLog[chainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
-				}
+					log := response.Log.ToLog()
+					if log == nil {
+						return fmt.Errorf("could not convert log")
+					}
+					if !e.lastLog[chainID].verifyAfter(*log) {
+						return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog[chainID].blockNumber, e.lastLog[chainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+					}
 
-				e.LogChans[chainID] <- log
-				e.lastLog[chainID] = logOrderInfo{
-					blockNumber: log.BlockNumber,
-					blockIndex:  log.Index,
+					e.LogChans[chainID] <- log
+					e.lastLog[chainID] = logOrderInfo{
+						blockNumber: log.BlockNumber,
+						blockIndex:  log.Index,
+					}
 				}
 			}
 		})
@@ -120,6 +132,11 @@ func (e Executor) Start(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// Stop stops the executor agent.
+func (e *Executor) Stop() {
+	e.closeConnection <- true
 }
 
 func (l logOrderInfo) verifyAfter(log types.Log) bool {
