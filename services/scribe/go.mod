@@ -60,6 +60,7 @@ require (
 	gorm.io/driver/mysql v1.3.6
 	gorm.io/driver/sqlite v1.3.6
 	gorm.io/gorm v1.23.9
+	k8s.io/apimachinery v0.25.1
 )
 
 require (
@@ -257,7 +258,6 @@ require (
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apimachinery v0.25.1 // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
 )

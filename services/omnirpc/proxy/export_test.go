@@ -203,3 +203,7 @@ func StandardizeResponseFalseParams(ctx context.Context, req []RPCRequest, body 
 func (f *Forwarder) CheckAndSetConfirmability() (ok bool) {
 	return f.checkAndSetConfirmability()
 }
+
+func IsBatch(body []byte) bool {
+	return isBatch(body)
+}

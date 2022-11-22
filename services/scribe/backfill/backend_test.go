@@ -13,6 +13,7 @@ import (
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"math/big"
 	"net/http"
 	"sync"
@@ -127,5 +128,20 @@ func (b *BackfillSuite) TestBlockTimesInRange() {
 
 	res, err := backfill.BlockTimesInRange(b.GetTestContext(), scribeBackend, 1, 10)
 	Nil(b.T(), err)
-	fmt.Println(res)
+
+	// use to make sure we don't double use values
+	intSet := sets.NewInt64()
+
+	itr := res.Iterator()
+
+	var lastValue uint64
+
+	for !itr.Done() {
+		index, value, _ := itr.Next()
+
+		Falsef(b.T(), intSet.Has(int64(index)), "%d appears at least twice", index)
+		intSet.Insert(int64(index))
+		GreaterOrEqual(b.T(), value, lastValue)
+		lastValue = value
+	}
 }
