@@ -359,9 +359,9 @@ func generateBridgeEventCountQuery(chainID int, address *string, tokenAddress *s
 	chainIDSpecifier := generateSingleSpecifierI32SQL(&chainID, chainField, &firstFilter, "")
 	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.RecipientFieldName, &firstFilter, "")
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
-	blockSpecifier := generateTimestampSpecifierSQL(timestamp, sql.TimeStampFieldName, &firstFilter, "")
+	timestampSpecifier := generateTimestampSpecifierSQL(timestamp, sql.TimeStampFieldName, &firstFilter, "")
 	query := fmt.Sprintf(`SELECT COUNT(DISTINCT (%s, %s)) FROM bridge_events %s%s%s%s`,
-		sql.TxHashFieldName, sql.EventIndexFieldName, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, blockSpecifier)
+		sql.TxHashFieldName, sql.EventIndexFieldName, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, timestampSpecifier)
 
 	return query
 }

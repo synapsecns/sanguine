@@ -257,9 +257,12 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	var subQuery string
 	var query string
 
-	nowTime := time.Now().Unix()
-	startTime := nowTime - int64(*days*86400)
-	filter := fmt.Sprintf("WHERE %s = %d AND %s >= %d", sql.ChainIDFieldName, *chainID, sql.TimeStampFieldName, startTime)
+	startTime := uint64(time.Now().Unix() - int64(*days*86400))
+	firstFilter := true
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+	timeStampSpecifier := generateTimestampSpecifierSQL(&startTime, sql.TimeStampFieldName, &firstFilter, "")
+
+	filter := fmt.Sprintf("%s%s", chainIDSpecifier, timeStampSpecifier)
 
 	// Handle the different logic needed for each query type.
 	switch *typeArg {
