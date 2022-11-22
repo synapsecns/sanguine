@@ -112,12 +112,11 @@ func (t *Tenderly) StartListener(chn chain.Chain) error {
 	chainID := strconv.Itoa(int(chn.GetChainID()))
 
 	t.structMux.Lock()
-	ogChainConfig := chn.ChainConfig()
 	chainConfig, err := config.DefaultChainConfig.Config()
 	if err != nil {
 		logger.Errorf("could not get default chain: %s", err)
 	}
-	chainConfig.ChainID = ogChainConfig.ChainID
+	chainConfig.ChainID = chn.GetBigChainID()
 
 	// setup chain config network
 	client, err := debug.MakeClient(chn.RPCAddress(), chainID, t.projectSlug, chainConfig)
