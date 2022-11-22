@@ -68,8 +68,6 @@ jobs:
           export ALL=$(go work edit -json | jq -c -r '[.Use[].DiskPath]')
           echo "##[set-output name=ALL;]$(echo $ALL)"
 
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
 
   test:
     name: Go Coverage
@@ -132,6 +130,9 @@ jobs:
           while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
           sleep 1
           done
+
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
 
       - name: Test
         uses: nick-fields/retry@v2
