@@ -26,8 +26,8 @@ type Executor struct {
 	lastLog map[uint32]logOrderInfo
 	// LogChans is a mapping from chain ID -> log channel.
 	LogChans map[uint32]chan *types.Log
-	// closeConnection is a channel to close the connection.
-	closeConnection chan bool
+	// closeConnection is a map from chain ID -> channel to close the connection.
+	closeConnection map[uint32]chan bool
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -39,8 +39,10 @@ type logOrderInfo struct {
 // NewExecutor creates a new executor agent.
 func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeClient client.ScribeClient) (*Executor, error) {
 	channels := make(map[uint32]chan *types.Log)
+	closeChans := make(map[uint32]chan bool)
 	for _, chainID := range chainIDs {
 		channels[chainID] = make(chan *types.Log, 1000)
+		closeChans[chainID] = make(chan bool, 1)
 	}
 
 	return &Executor{
@@ -49,7 +51,7 @@ func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeC
 		scribeClient:    scribeClient,
 		lastLog:         make(map[uint32]logOrderInfo),
 		LogChans:        channels,
-		closeConnection: make(chan bool, 1),
+		closeConnection: closeChans,
 	}, nil
 }
 
@@ -94,7 +96,7 @@ func (e Executor) Start(ctx context.Context) error {
 
 			for {
 				select {
-				case <-e.closeConnection:
+				case <-e.closeConnection[chainID]:
 					err := stream.CloseSend()
 					if err != nil {
 						return fmt.Errorf("could not close stream: %w", err)
@@ -103,6 +105,7 @@ func (e Executor) Start(ctx context.Context) error {
 					if err != nil {
 						return fmt.Errorf("could not close connection: %w", err)
 					}
+
 					return nil
 				default:
 					response, err := stream.Recv()
@@ -139,8 +142,8 @@ func (e Executor) Start(ctx context.Context) error {
 }
 
 // Stop stops the executor agent.
-func (e Executor) Stop() {
-	e.closeConnection <- true
+func (e Executor) Stop(chainID uint32) {
+	e.closeConnection[chainID] <- true
 }
 
 func (l logOrderInfo) verifyAfter(log types.Log) bool {

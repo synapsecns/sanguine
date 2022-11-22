@@ -119,8 +119,8 @@ func (e *ExecutorSuite) TestExecutor() {
 	})
 
 	e.DeferAfterTest(func() {
-		excA.Stop()
-		excB.Stop()
+		excA.Stop(chainIDA)
+		excB.Stop(chainIDB)
 	})
 }
 
@@ -184,7 +184,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		return len(exec.LogChans[chainID]) == 250
 	})
 
-	e.DeferAfterSuite(func() {
-		exec.Stop()
+	e.DeferAfterTest(func() {
+		exec.Stop(chainID)
 	})
 }
