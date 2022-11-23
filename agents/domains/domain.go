@@ -3,6 +3,7 @@ package domains
 import (
 	"context"
 	"errors"
+
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -30,6 +31,7 @@ type OriginContract interface {
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
 	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
 	// ProduceAttestation suggests an update from the origin contract
+	// TODO (joe): this will be changed to "ProduceAttestations" and return an attestion per destination
 	ProduceAttestation(ctx context.Context) (types.Attestation, error)
 }
 
@@ -37,8 +39,8 @@ type OriginContract interface {
 type AttestationCollectorContract interface {
 	// SubmitAttestation submits an attestation to the attestation collector.
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
-	// LatestNonce gets the latest nonce for the domain on the attestation collector
-	LatestNonce(ctx context.Context, domain uint32, signer signer.Signer) (nonce uint32, err error)
+	// GetLatestNonce gets the latest nonce for the domain on the attestation collector
+	GetLatestNonce(ctx context.Context, origin uint32, destination uint32, signer signer.Signer) (nonce uint32, err error)
 }
 
 // ErrNoUpdate indicates no update has been produced.

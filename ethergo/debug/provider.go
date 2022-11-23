@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/pkg/errors"
+	client2 "github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/tenderly/tenderly-cli/stacktrace"
+	"math/big"
 	"os"
 )
 
@@ -28,8 +29,8 @@ func NewStackTraceProvider() *Provider {
 type Backend interface {
 	// RPCAddress is the rpc address
 	RPCAddress() string
-	// ChainConfig is the chain config
-	ChainConfig() *params.ChainConfig
+	// GetBigChainID gets the chainid
+	GetBigChainID() *big.Int
 }
 
 // GenerateStackTrace generates a stack trace for a failed tx.
@@ -51,7 +52,7 @@ func (p Provider) GenerateStackTrace(backend Backend, tx *types.Transaction) (st
 		return "", errors.New("tenderly must be enabled in order to retrieve stack traces")
 	}
 
-	client, err := MakeClient(backend.RPCAddress(), backend.ChainConfig().ChainID.String(), "", backend.ChainConfig())
+	client, err := MakeClient(backend.RPCAddress(), backend.GetBigChainID().String(), "", client2.ConfigFromID(backend.GetBigChainID()))
 	if err != nil {
 		return stackTrace, fmt.Errorf("could not connect to rpc server: %w", err)
 	}

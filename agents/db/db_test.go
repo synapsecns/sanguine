@@ -50,10 +50,18 @@ func (t *DBSuite) TestStoreMonitoring() {
 
 		err := testDB.StoreDispatchMessage(t.GetTestContext(), message)
 		Nil(t.T(), err)
+		origin := uint32(1)
+		destination := origin + 1
+		nonce := gofakeit.Uint32()
+		root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+		attestKey := types.AttestationKey{
+			Origin:      origin,
+			Destination: destination,
+			Nonce:       nonce,
+		}
+		attestation := types.NewAttestation(attestKey.GetRawKey(), root)
 
-		attestation := types.NewAttestation(1, gofakeit.Uint32(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
-
-		err = testDB.StoreAcceptedAttestation(t.GetTestContext(), gofakeit.Uint32(), attestation)
+		err = testDB.StoreAcceptedAttestation(t.GetTestContext(), attestation)
 		Nil(t.T(), err)
 	})
 }
@@ -104,9 +112,17 @@ func (t *DBSuite) TestGetDelinquentMessage() {
 			message = types.NewMessage(header, tips, []byte(gofakeit.Sentence(10)))
 			err = testDB.StoreDispatchMessage(t.GetTestContext(), message)
 			Nil(t.T(), err)
+			// TODO (joe): Look into this test more after we are further along with the refactor of
+			// having the GlobalNotaryRegistry and having attestations from many origins
 			if storeAttestation {
-				attestation = types.NewAttestation(targetedDomain, nonce, common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
-				err = testDB.StoreAcceptedAttestation(t.GetTestContext(), targetedDomain, attestation)
+				attestKey := types.AttestationKey{
+					Origin:      targetedDomain,
+					Destination: targetedDomain,
+					Nonce:       nonce,
+				}
+
+				attestation = types.NewAttestation(attestKey.GetRawKey(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
+				err = testDB.StoreAcceptedAttestation(t.GetTestContext(), attestation)
 				Nil(t.T(), err)
 			}
 		}

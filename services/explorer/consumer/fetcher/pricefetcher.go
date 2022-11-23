@@ -51,6 +51,7 @@ RETRY:
 
 		if err != nil {
 			if retries >= tokenMetadataMaxRetry {
+				logger.Warnf("Max retries reached, could not get token metadata for %s: %v", coinGeckoID, err)
 				return nil, nil
 			}
 

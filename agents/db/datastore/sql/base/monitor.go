@@ -33,13 +33,13 @@ func (s Store) StoreDispatchMessage(ctx context.Context, message types.Message) 
 }
 
 // StoreAcceptedAttestation stores an accepted attestation from a destination.
-func (s Store) StoreAcceptedAttestation(ctx context.Context, destinationDomain uint32, attestation types.Attestation) error {
+func (s Store) StoreAcceptedAttestation(ctx context.Context, attestation types.Attestation) error {
 	root := attestation.Root()
 	dxTx := s.DB().WithContext(ctx).Create(&AcceptedAttestation{
-		AAOriginDomain:      attestation.Domain(),
-		AANonce:             attestation.Nonce(),
-		AARoot:              "0x" + hex.EncodeToString(root[:]),
-		AADestinationDomain: destinationDomain,
+		AAOrigin:      attestation.Origin(),
+		AADestination: attestation.Destination(),
+		AANonce:       attestation.Nonce(),
+		AARoot:        "0x" + hex.EncodeToString(root[:]),
 	})
 	if dxTx.Error != nil {
 		return fmt.Errorf("could not insert accepted attestation: %w", dxTx.Error)
