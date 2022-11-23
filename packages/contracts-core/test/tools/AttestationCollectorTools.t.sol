@@ -344,4 +344,12 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
                 attestationIndex
             );
     }
+
+    function attestationCollectorIsNotary(uint32 domain, uint256 notaryIndex)
+        public
+        view
+        returns (bool)
+    {
+        return attestationCollector.isNotary(domain, suiteNotary(domain, notaryIndex));
+    }
 }
