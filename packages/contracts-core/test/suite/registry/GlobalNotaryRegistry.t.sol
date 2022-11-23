@@ -14,6 +14,25 @@ contract GlobalNotaryRegistryTest is EnumerableSetTools, GlobalNotaryRegistryToo
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                    TESTS: REVERT WHEN DOMAIN == 0                    ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_addNotary_revert_domainZero(address notary) public {
+        vm.expectRevert("!domain: zero");
+        globalNotaryRegistry.addNotary(0, notary);
+    }
+
+    function test_removeNotary_revert_domainZero(address notary) public {
+        vm.expectRevert("!domain: zero");
+        globalNotaryRegistry.removeNotary(0, notary);
+    }
+
+    function test_isNotary_revert_domainZero(address notary) public {
+        vm.expectRevert("!domain: zero");
+        globalNotaryRegistry.isNotary(0, notary);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          TESTS: ADD NOTARY                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 

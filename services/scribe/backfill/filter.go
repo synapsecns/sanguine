@@ -3,10 +3,11 @@ package backfill
 import (
 	"context"
 	"fmt"
-	"github.com/benbjohnson/immutable"
-	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 	"time"
+
+	"github.com/benbjohnson/immutable"
+	"github.com/synapsecns/sanguine/ethergo/util"
 
 	"github.com/ethereum/go-ethereum"
 	ethCommon "github.com/ethereum/go-ethereum/common"
@@ -36,6 +37,8 @@ type RangeFilter struct {
 	contractAddress ethCommon.Address
 	// done is whether the RangeFilter has completed. It cannot be restarted and the object must be recreated.
 	done bool
+	// subChunkCount is how many concurrent sub chunks to process at a time.
+	subChunkCount int
 }
 
 // LogFilterer is the interface for filtering logs.
@@ -49,9 +52,6 @@ type LogFilterer interface {
 
 // bufferSize is how many ranges ahead should be fetched.
 const bufferSize = 15
-
-// subChunkCount is how many concurrent sub chunks to process at a time.
-const subChunkCount = 50
 
 // maxAttempts is that maximum number of times a filter attempt should be made before giving up.
 const maxAttempts = 5
@@ -71,6 +71,7 @@ func NewRangeFilter(address ethCommon.Address, filterer LogFilterer, backend Scr
 		backend:         backend,
 		contractAddress: address,
 		done:            false,
+		subChunkCount:   subChunkCount,
 	}
 }
 

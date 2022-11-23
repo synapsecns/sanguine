@@ -23,13 +23,29 @@ abstract contract DomainNotaryRegistryTools is SynapseTestSuite {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function expectNotaryAdded(uint256 notaryIndex) public {
+        expectNotaryAdded(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL, notaryIndex));
+    }
+
+    function expectNotaryAdded(uint32 domain, address notary) public {
         vm.expectEmit(true, true, true, true);
-        emit NotaryAdded(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL, notaryIndex));
+        emit BeforeNotaryAdded(domain, notary);
+        vm.expectEmit(true, true, true, true);
+        emit NotaryAdded(domain, notary);
+        vm.expectEmit(true, true, true, true);
+        emit AfterNotaryAdded(domain, notary);
     }
 
     function expectNotaryRemoved(uint256 notaryIndex) public {
+        expectNotaryRemoved(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL, notaryIndex));
+    }
+
+    function expectNotaryRemoved(uint32 domain, address notary) public {
         vm.expectEmit(true, true, true, true);
-        emit NotaryRemoved(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL, notaryIndex));
+        emit BeforeNotaryRemoved(domain, notary);
+        vm.expectEmit(true, true, true, true);
+        emit NotaryRemoved(domain, notary);
+        vm.expectEmit(true, true, true, true);
+        emit AfterNotaryRemoved(domain, notary);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
