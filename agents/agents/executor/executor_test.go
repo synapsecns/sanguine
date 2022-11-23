@@ -125,6 +125,10 @@ func (e *ExecutorSuite) TestExecutor() {
 }
 
 func (e *ExecutorSuite) TestLotsOfLogs() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
 	chainID := gofakeit.Uint32()
 	simulatedChain := simulated.NewSimulatedBackendWithChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
 	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
@@ -159,7 +163,9 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	// Start the Scribe.
 	go func() {
 		scribeErr := scribe.Start(e.GetTestContext())
-		e.Nil(scribeErr)
+		if !testDone {
+			e.Nil(scribeErr)
+		}
 	}()
 
 	exec, err := executor.NewExecutor([]uint32{chainID}, map[uint32]common.Address{chainID: testContract.Address()}, scribeClient.ScribeClient)
@@ -168,7 +174,9 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	// Start the exec.
 	go func() {
 		execErr := exec.Start(e.GetTestContext())
-		e.Nil(execErr)
+		if !testDone {
+			e.Nil(execErr)
+		}
 	}()
 
 	// Emit 250 events.
