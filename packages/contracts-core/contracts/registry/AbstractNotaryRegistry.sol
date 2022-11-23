@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import { TypedMemView } from "../libs/TypedMemView.sol";
 import { Attestation } from "../libs/Attestation.sol";
 import { Auth } from "../libs/Auth.sol";
+import { NotaryRegistryEvents } from "../events/NotaryRegistryEvents.sol";
 
 /**
  * @notice Registry used for verifying Attestations signed by Notaries.
@@ -11,29 +12,11 @@ import { Auth } from "../libs/Auth.sol";
  * The child contract is responsible for implementing the Notaries storage.
  * @dev It is assumed that the Notary signature is only valid for a subset of origins.
  */
-abstract contract AbstractNotaryRegistry {
+abstract contract AbstractNotaryRegistry is NotaryRegistryEvents {
     using Attestation for bytes;
     using Attestation for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Emitted when a new Notary is added.
-     * @param domain    Domain where a Notary was added
-     * @param notary    Address of the added notary
-     */
-    event NotaryAdded(uint32 indexed domain, address indexed notary);
-
-    /**
-     * @notice Emitted when a new Notary is removed.
-     * @param domain    Domain where a Notary was removed
-     * @param notary    Address of the removed notary
-     */
-    event NotaryRemoved(uint32 indexed domain, address indexed notary);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
@@ -57,6 +40,28 @@ abstract contract AbstractNotaryRegistry {
      */
     function _removeNotary(uint32 _origin, address _notary) internal virtual returns (bool);
 
+    // solhint-disable no-empty-blocks
+    /**
+     * @notice Hook that is called just before a Notary is added for specified domain.
+     */
+    function _beforeNotaryAdded(uint32 _domain, address _notary) internal virtual {}
+
+    /**
+     * @notice Hook that is called right after a Notary is added for specified domain.
+     */
+    function _afterNotaryAdded(uint32 _domain, address _notary) internal virtual {}
+
+    /**
+     * @notice Hook that is called just before a Notary is removed from specified domain.
+     */
+    function _beforeNotaryRemoved(uint32 _domain, address _notary) internal virtual {}
+
+    /**
+     * @notice Hook that is called right after a Notary is removed from specified domain.
+     */
+    function _afterNotaryRemoved(uint32 _domain, address _notary) internal virtual {}
+
+    // solhint-enable no-empty-blocks
     /**
      * @notice  Checks all following statements are true:
      *          - `_attestation` is a formatted Attestation payload
@@ -86,7 +91,7 @@ abstract contract AbstractNotaryRegistry {
     function _checkNotaryAuth(bytes29 _view) internal view returns (address _notary) {
         require(_view.isAttestation(), "Not an attestation");
         _notary = Auth.recoverSigner(_view.attestationData(), _view.notarySignature().clone());
-        require(_isNotary(_view.attestedDomain(), _notary), "Signer is not a notary");
+        require(_isNotary(_view.attestedOrigin(), _notary), "Signer is not a notary");
     }
 
     /**

@@ -18,6 +18,8 @@ import (
 	"github.com/ethereum/go-ethereum/node"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/lmittmann/w3"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/backends"
@@ -229,6 +231,7 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 type wrappedClient struct {
 	*ethclient.Client
 	rpcClient   *rpc.Client
+	w3Client    *w3.Client
 	chainConfig *params.ChainConfig
 }
 
@@ -249,6 +252,11 @@ func (w wrappedClient) BatchCallContext(ctx context.Context, b []rpc.BatchElem) 
 	return w.rpcClient.BatchCallContext(ctx, b)
 }
 
+func (w wrappedClient) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
+	// nolint: wrapcheck
+	return w.w3Client.CallCtx(ctx, calls...)
+}
+
 // EVMClient gets a client for the backend.
 func (f *Backend) makeClient(tb testing.TB) *wrappedClient {
 	tb.Helper()
@@ -257,8 +265,9 @@ func (f *Backend) makeClient(tb testing.TB) *wrappedClient {
 
 	rpcClient := rpc.DialInProc(handler)
 	rawClient := ethclient.NewClient(rpcClient)
+	w3Client := w3.NewClient(rpcClient)
 
-	return &wrappedClient{Client: rawClient, chainConfig: f.ChainConfig(), rpcClient: rpcClient}
+	return &wrappedClient{Client: rawClient, chainConfig: f.ChainConfig(), rpcClient: rpcClient, w3Client: w3Client}
 }
 
 // ReachGasLimit spins an insta-mining client with no-op transactions until target gas limit is achieved

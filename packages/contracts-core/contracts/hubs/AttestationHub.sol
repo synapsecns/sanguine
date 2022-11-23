@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { AttestationHubEvents } from "../events/AttestationHubEvents.sol";
 import { AbstractNotaryRegistry } from "../registry/AbstractNotaryRegistry.sol";
 
-abstract contract AttestationHub is AbstractNotaryRegistry {
+abstract contract AttestationHub is AttestationHubEvents, AbstractNotaryRegistry {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

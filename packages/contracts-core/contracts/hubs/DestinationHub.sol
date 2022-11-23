@@ -63,23 +63,11 @@ abstract contract DestinationHub is
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // TODO: emit full attestation payload instead of signature?
-    event AttestationAccepted(
-        uint32 indexed origin,
-        uint32 indexed nonce,
-        bytes32 indexed root,
-        bytes signature
-    );
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function submittedAt(uint32 _originDomain, bytes32 _root) external view returns (uint96) {
-        return mirrorRoots[_originDomain][_root].submittedAt;
+    function submittedAt(uint32 _origin, bytes32 _root) external view returns (uint96) {
+        return mirrorRoots[_origin][_root].submittedAt;
     }
 
     /**
@@ -87,7 +75,7 @@ abstract contract DestinationHub is
      * and that the root's optimistic timeout period has expired,
      * meaning message proven against the root can be executed.
      * @dev This will revert if any of the checks fail.
-     * @param _originDomain         Domain of Origin
+     * @param _origin               Domain where merkle root originated
      * @param _optimisticSeconds    Optimistic period for a message
      * @param _root                 The Merkle root from Origin to check
      * @return TRUE if following requirements are fulfilled:
@@ -96,15 +84,15 @@ abstract contract DestinationHub is
      * - Optimistic period has passed
      */
     function acceptableRoot(
-        uint32 _originDomain,
+        uint32 _origin,
         uint32 _optimisticSeconds,
         bytes32 _root
     ) public view returns (bool) {
-        Root memory rootInfo = mirrorRoots[_originDomain][_root];
+        Root memory rootInfo = mirrorRoots[_origin][_root];
         // Check if root has been submitted
         require(rootInfo.submittedAt != 0, "Invalid root");
         // Check if Notary is an active Notary
-        require(_isNotary(_originDomain, rootInfo.notary), "Inactive notary");
+        require(_isNotary(_origin, rootInfo.notary), "Inactive notary");
         // Check if optimistic period has passed
         require(block.timestamp >= rootInfo.submittedAt + _optimisticSeconds, "!optimisticSeconds");
         return true;
@@ -123,25 +111,25 @@ abstract contract DestinationHub is
      *
      * @param _notary           Notary address
      * @param _attestationView  Memory view over attestation
+     * @param _attestation      Payload with Attestation data and signature
      * @return TRUE if Attestation was accepted (implying a new root was added to Mirror).
      */
     function _handleAttestation(
         address _notary,
         bytes29 _attestationView,
-        bytes memory
+        bytes memory _attestation
     ) internal override returns (bool) {
-        uint32 originDomain = _attestationView.attestedDomain();
-        require(originDomain != _localDomain(), "Attestation is from local chain");
+        uint32 local = _localDomain();
+        uint32 origin = _attestationView.attestedOrigin();
+        // Attestation must have Origin as remote chain and Destination as local
+        require(origin != local, "!attestationOrigin: local");
+        require(_attestationView.attestedDestination() == local, "!attestationDestination: !local");
         bytes32 root = _attestationView.attestedRoot();
+        // Empty root is clearly fraud, so should be rejected
         require(root != bytes32(0), "Empty root");
         uint32 nonce = _attestationView.attestedNonce();
-        _updateMirror(_notary, originDomain, nonce, root);
-        emit AttestationAccepted(
-            originDomain,
-            nonce,
-            root,
-            _attestationView.notarySignature().clone()
-        );
+        _updateMirror(_notary, origin, nonce, root);
+        emit AttestationAccepted(_notary, _attestation);
         return true;
     }
 
@@ -169,25 +157,25 @@ abstract contract DestinationHub is
         bytes memory _report
     ) internal override returns (bool) {
         require(_reportView.reportedFraud(), "Not a fraud report");
-        _blacklistNotary(_attestationView.attestedDomain(), _notary, _guard, _report);
+        _blacklistNotary(_attestationView.attestedOrigin(), _notary, _guard, _report);
         return true;
     }
 
     function _updateMirror(
         address _notary,
-        uint32 _originDomain,
+        uint32 _origin,
         uint32 _nonce,
         bytes32 _root
     ) internal {
-        Mirror storage mirror = mirrors[_originDomain];
+        Mirror storage mirror = mirrors[_origin];
         // New Attestation is accepted either if the nonce increased,
         // or the latest attestation was signed by an inactive notary.
         require(
-            _nonce > mirror.latestNonce || !_isNotary(_originDomain, _notary),
+            _nonce > mirror.latestNonce || !_isNotary(_origin, mirror.latestNotary),
             "Outdated attestation"
         );
         (mirror.latestNonce, mirror.latestNotary) = (_nonce, _notary);
-        mirrorRoots[_originDomain][_root] = Root({
+        mirrorRoots[_origin][_root] = Root({
             notary: _notary,
             submittedAt: uint96(block.timestamp)
         });

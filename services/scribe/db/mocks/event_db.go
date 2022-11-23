@@ -361,6 +361,29 @@ func (_m *EventDB) RetrieveLogsInRange(ctx context.Context, logFilter db.LogFilt
 	return r0, r1
 }
 
+// RetrieveLogsInRangeAsc provides a mock function with given fields: ctx, logFilter, startBlock, endBlock, page
+func (_m *EventDB) RetrieveLogsInRangeAsc(ctx context.Context, logFilter db.LogFilter, startBlock uint64, endBlock uint64, page int) ([]*types.Log, error) {
+	ret := _m.Called(ctx, logFilter, startBlock, endBlock, page)
+
+	var r0 []*types.Log
+	if rf, ok := ret.Get(0).(func(context.Context, db.LogFilter, uint64, uint64, int) []*types.Log); ok {
+		r0 = rf(ctx, logFilter, startBlock, endBlock, page)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*types.Log)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, db.LogFilter, uint64, uint64, int) error); ok {
+		r1 = rf(ctx, logFilter, startBlock, endBlock, page)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // RetrieveLogsWithFilter provides a mock function with given fields: ctx, logFilter, page
 func (_m *EventDB) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilter, page int) ([]*types.Log, error) {
 	ret := _m.Called(ctx, logFilter, page)
@@ -451,20 +474,6 @@ func (_m *EventDB) StoreEthTx(ctx context.Context, tx *types.Transaction, chainI
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, *types.Transaction, uint32, common.Hash, uint64, uint64) error); ok {
 		r0 = rf(ctx, tx, chainID, blockHash, blockNumber, transactionIndex)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// StoreLastBlockTime provides a mock function with given fields: ctx, chainID, blockNumber
-func (_m *EventDB) StoreLastBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) error {
-	ret := _m.Called(ctx, chainID, blockNumber)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint64) error); ok {
-		r0 = rf(ctx, chainID, blockNumber)
 	} else {
 		r0 = ret.Error(0)
 	}

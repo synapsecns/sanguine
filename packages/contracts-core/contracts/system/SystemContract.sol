@@ -45,7 +45,7 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      * System Contracts on all chains (either local or remote).
      * Note: any function protected by this modifier should have last three params:
      * - uint32 _callOrigin
-     * - SystemEntity _caller
+     * - SystemEntity _systemCaller
      * - uint256 _rootSubmittedAt
      * Make sure to check domain/caller, if a function should be only called
      * from a given domain / by a given caller.
@@ -75,10 +75,10 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
      * Note: check constants section for existing mask constants
      * E.g. to restrict the set of callers to three allowed system callers:
-     *  onlyCallers(MASK_0 | MASK_1 | MASK_2, _caller)
+     *  onlyCallers(MASK_0 | MASK_1 | MASK_2, _systemCaller)
      */
-    modifier onlyCallers(uint256 _allowedMask, ISystemRouter.SystemEntity _caller) {
-        _assertEntityAllowed(_allowedMask, _caller);
+    modifier onlyCallers(uint256 _allowedMask, ISystemRouter.SystemEntity _systemCaller) {
+        _assertEntityAllowed(_allowedMask, _systemCaller);
         _;
     }
 
@@ -102,10 +102,10 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      */
     modifier onlySynapseChainBondingManager(
         uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller
+        ISystemRouter.SystemEntity _systemCaller
     ) {
         _assertSynapseChain(_callOrigin);
-        _assertEntityAllowed(BONDING_MANAGER, _caller);
+        _assertEntityAllowed(BONDING_MANAGER, _systemCaller);
         _;
     }
 

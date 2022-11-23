@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import { LocalDomainContext } from "./context/LocalDomainContext.sol";
 import { DestinationHub } from "./hubs/DestinationHub.sol";
+import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { Version0 } from "./Version0.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
@@ -11,14 +12,14 @@ import { Header } from "./libs/Header.sol";
 import { Tips } from "./libs/Tips.sol";
 import { TypedMemView } from "./libs/TypedMemView.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
-import { SystemMessage } from "./libs/SystemMessage.sol";
+import { SystemCall } from "./libs/SystemCall.sol";
 
 /**
  * @title Destination
  * @notice Track merkle root state of Origin contracts on other chains,
  * prove and dispatch messages to end recipients.
  */
-contract Destination is Version0, DestinationHub, LocalDomainContext {
+contract Destination is Version0, DestinationEvents, DestinationHub, LocalDomainContext {
     using Message for bytes;
     using Message for bytes29;
     using Header for bytes29;
@@ -67,45 +68,6 @@ contract Destination is Version0, DestinationHub, LocalDomainContext {
     uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Emitted when message is executed
-     * @param remoteDomain  Remote domain where message originated
-     * @param messageHash   The keccak256 hash of the message that was executed
-     */
-    event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash);
-
-    /**
-     * @notice Emitted when a root's confirmation is modified by governance
-     * @param remoteDomain      The domain for which root's confirmAt has been set
-     * @param root              The root for which confirmAt has been set
-     * @param previousConfirmAt The previous value of confirmAt
-     * @param newConfirmAt      The new value of confirmAt
-     */
-    event SetConfirmation(
-        uint32 indexed remoteDomain,
-        bytes32 indexed root,
-        uint256 previousConfirmAt,
-        uint256 newConfirmAt
-    );
-
-    /**
-     * @notice Emitted when a Notary is blacklisted due to a submitted Guard's fraud Report
-     * @param notary    The notary that was blacklisted
-     * @param guard     The guard that signed the fraud report
-     * @param reporter  The actor who submitted signed fraud report
-     * @param report    Raw bytes of fraud report
-     */
-    event NotaryBlacklisted(
-        address indexed notary,
-        address indexed guard,
-        address indexed reporter,
-        bytes report
-    );
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -151,13 +113,13 @@ contract Destination is Version0, DestinationHub, LocalDomainContext {
      * @param _confirmAt The new confirmation time. Set to 0 to "delete" a root.
      */
     function setConfirmation(
-        uint32 _originDomain,
+        uint32 _origin,
         bytes32 _root,
         uint256 _confirmAt
     ) external onlyOwner {
-        uint256 _previousConfirmAt = mirrorRoots[_originDomain][_root].submittedAt;
-        mirrorRoots[_originDomain][_root].submittedAt = uint96(_confirmAt);
-        emit SetConfirmation(_originDomain, _root, _previousConfirmAt, _confirmAt);
+        uint256 _previousConfirmAt = mirrorRoots[_origin][_root].submittedAt;
+        mirrorRoots[_origin][_root].submittedAt = uint96(_confirmAt);
+        emit SetConfirmation(_origin, _root, _previousConfirmAt, _confirmAt);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -182,13 +144,13 @@ contract Destination is Version0, DestinationHub, LocalDomainContext {
     ) external {
         bytes29 message = _message.castToMessage();
         bytes29 header = message.header();
-        uint32 originDomain = header.origin();
+        uint32 origin = header.origin();
         // ensure message was meant for this domain
         require(header.destination() == _localDomain(), "!destination");
         bytes32 leaf = message.keccak();
         // ensure message can be proven against a confirmed root,
         // and that message's optimistic period has passed
-        bytes32 root = _prove(originDomain, leaf, _proof, _index, header.optimisticSeconds());
+        bytes32 root = _prove(origin, leaf, _proof, _index, header.optimisticSeconds());
         // check re-entrancy guard
         require(status == NOT_ENTERED, "!reentrant");
         status = ENTERED;
@@ -196,16 +158,16 @@ contract Destination is Version0, DestinationHub, LocalDomainContext {
         // it should not be possible to construct a merkle tree with a root = 0x0, but even then
         // attestations with empty root would be rejected: see DestinationHub._handleAttestation()
         // update message status as executed, new status is never bytes32(0)
-        messageStatus[originDomain][leaf] = root;
-        address recipient = _checkForSystemMessage(header.recipient());
+        messageStatus[origin][leaf] = root;
+        address recipient = _checkForSystemRouter(header.recipient());
         IMessageRecipient(recipient).handle(
-            originDomain,
+            origin,
             header.nonce(),
             header.sender(),
-            mirrorRoots[originDomain][root].submittedAt,
+            mirrorRoots[origin][root].submittedAt,
             message.body().clone()
         );
-        emit Executed(originDomain, leaf);
+        emit Executed(origin, leaf);
         // reset re-entrancy guard
         status = NOT_ENTERED;
     }
@@ -219,7 +181,7 @@ contract Destination is Version0, DestinationHub, LocalDomainContext {
      * - New attestations signed by Notary are not accepted
      * - Any old roots attested by Notary can not be used for proving/executing
      * @dev _notary is always an active Notary, _guard is always an active Guard.
-     * @param _domain   Origin domain where fraud was allegedly committed by Notary
+     * @param _domain   Domain where allegedly fraudulent Notary is active
      * @param _notary   Notary address who allegedly committed fraud attestation
      * @param _guard    Guard address that reported the Notary
      * @param _report   Payload with Report data and signature
@@ -248,13 +210,13 @@ contract Destination is Version0, DestinationHub, LocalDomainContext {
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _checkForSystemMessage(bytes32 _recipient) internal view returns (address recipient) {
+    function _checkForSystemRouter(bytes32 _recipient) internal view returns (address recipient) {
         // Check if SYSTEM_ROUTER was specified as message recipient
-        if (_recipient == SystemMessage.SYSTEM_ROUTER) {
+        if (_recipient == SystemCall.SYSTEM_ROUTER) {
             /**
              * @dev Route message to SystemRouter.
-             * Note: Only SystemRouter contract on origin chain
-             * can send such a message (enforced in Origin.sol).
+             * Note: Only SystemRouter contract on origin chain can send a message
+             * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
              */
             recipient = address(systemRouter);
         } else {
@@ -270,7 +232,7 @@ contract Destination is Version0, DestinationHub, LocalDomainContext {
      * already proven or executed)
      * @dev For convenience, we allow proving against any previous root.
      * This means that witnesses never need to be updated for the new root
-     * @param _originDomain         Domain of Origin
+     * @param _origin               Domain where message originated
      * @param _leaf                 Leaf (hash) of the message
      * @param _proof                Merkle proof of inclusion for leaf
      * @param _index                Index of leaf in Origin's merkle tree
@@ -278,19 +240,19 @@ contract Destination is Version0, DestinationHub, LocalDomainContext {
      * @return root                 Merkle root used for proving message inclusion
      **/
     function _prove(
-        uint32 _originDomain,
+        uint32 _origin,
         bytes32 _leaf,
         bytes32[32] calldata _proof,
         uint256 _index,
         uint32 _optimisticSeconds
     ) internal view returns (bytes32 root) {
         // ensure that mirror is active
-        require(mirrors[_originDomain].latestNonce != 0, "Mirror not active");
+        require(mirrors[_origin].latestNonce != 0, "Mirror not active");
         // ensure that message has not been executed
-        require(messageStatus[_originDomain][_leaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
+        require(messageStatus[_origin][_leaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
         // calculate the expected root based on the proof
         root = MerkleLib.branchRoot(_leaf, _proof, _index);
         // Sanity check: this either returns true or reverts
-        assert(acceptableRoot(_originDomain, _optimisticSeconds, root));
+        assert(acceptableRoot(_origin, _optimisticSeconds, root));
     }
 }

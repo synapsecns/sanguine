@@ -4,26 +4,28 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/params"
-	"github.com/go-http-utils/headers"
-	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/backends/geth"
-	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
-	"github.com/valyala/fasthttp"
+	"github.com/lmittmann/w3/module/eth"
+	ethClient "github.com/synapsecns/sanguine/ethergo/chain/client"
 	"io"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
 	"net/url"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
+	"github.com/go-http-utils/headers"
+	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
+	"github.com/valyala/fasthttp"
 )
 
 // captureResponse captures the response from geth so we can use it for testing.
-func (p *ProxySuite) captureResponse(backendURL string, makeReq func(client *ethclient.Client), checkResp func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, rawResponse []byte)) {
+func (p *ProxySuite) captureResponse(backendURL string, makeReq func(client ethClient.EVMClient), checkResp func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, rawResponse []byte)) {
 	doneChan := make(chan bool)
 
 	parsedURL, err := url.Parse(backendURL)
@@ -48,6 +50,10 @@ func (p *ProxySuite) captureResponse(backendURL string, makeReq func(client *eth
 		err = json.Unmarshal(fullResp, &rpcMessage)
 		Nil(p.T(), err)
 
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		checkResp(rpcReq, rpcMessage, fullResp)
 		return nil
 	}
@@ -67,7 +73,7 @@ func (p *ProxySuite) captureResponse(backendURL string, makeReq func(client *eth
 
 	defer server.Close()
 
-	client, err := ethclient.DialContext(p.GetTestContext(), server.URL)
+	client, err := ethClient.NewClientFromChainID(p.GetTestContext(), server.URL, params.AllCliqueProtocolChanges.ChainID)
 	Nil(p.T(), err)
 
 	makeReq(client)
@@ -124,10 +130,10 @@ func attemptAddGetBody(req *http.Request, w http.ResponseWriter) (shouldContinue
 func (p *ProxySuite) TestChainID() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
-	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 		_, err := client.ChainID(p.GetTestContext())
 		Nil(p.T(), err)
-	}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 		standardizedResponse, err := proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 		Nil(p.T(), err)
 
@@ -138,10 +144,10 @@ func (p *ProxySuite) TestChainID() {
 func (p *ProxySuite) TestStorageAt() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
-	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 		_, err := client.StorageAt(p.GetTestContext(), common.Address{}, common.Hash{}, nil)
 		Nil(p.T(), err)
-	}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 		standardizedResponse, err := proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 		Nil(p.T(), err)
 
@@ -152,10 +158,10 @@ func (p *ProxySuite) TestStorageAt() {
 func (p *ProxySuite) TestCodeAt() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
-	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 		_, err := client.CodeAt(p.GetTestContext(), common.Address{}, nil)
 		Nil(p.T(), err)
-	}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 		standardizedResponse, err := proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 		Nil(p.T(), err)
 
@@ -166,10 +172,10 @@ func (p *ProxySuite) TestCodeAt() {
 func (p *ProxySuite) TestNonceAt() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
-	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 		_, err := client.NonceAt(p.GetTestContext(), common.Address{}, nil)
 		Nil(p.T(), err)
-	}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 		standardizedResponse, err := proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 		Nil(p.T(), err)
 
@@ -182,14 +188,14 @@ func (p *ProxySuite) TestEstimateGas() {
 
 	fundedAccount := backend.GetFundedAccount(p.GetTestContext(), new(big.Int).SetUint64(params.Ether))
 
-	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 		_, err := client.EstimateGas(p.GetTestContext(), ethereum.CallMsg{
 			From:  fundedAccount.Address,
 			To:    &common.Address{},
 			Value: new(big.Int).SetUint64(params.Ether),
 		})
 		Nil(p.T(), err)
-	}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 		standardizedResponse, err := proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 		Nil(p.T(), err)
 
@@ -200,10 +206,10 @@ func (p *ProxySuite) TestEstimateGas() {
 func (p *ProxySuite) TestGasPrice() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
-	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 		_, err := client.SuggestGasPrice(p.GetTestContext())
 		Nil(p.T(), err)
-	}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 		standardizedResponse, err := proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 		Nil(p.T(), err)
 
@@ -214,10 +220,10 @@ func (p *ProxySuite) TestGasPrice() {
 func (p *ProxySuite) TestMaxPriority() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
-	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 		_, err := client.SuggestGasTipCap(p.GetTestContext())
 		Nil(p.T(), err)
-	}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 		standardizedResponse, err := proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 		Nil(p.T(), err)
 
@@ -230,10 +236,10 @@ func (p *ProxySuite) TestBalanceAt() {
 
 	fundedAccount := backend.GetFundedAccount(p.GetTestContext(), big.NewInt(params.Ether))
 
-	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 		_, err := client.BalanceAt(p.GetTestContext(), fundedAccount.Address, nil)
 		Nil(p.T(), err)
-	}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 		standardizedResponse, err := proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 		Nil(p.T(), err)
 
@@ -247,10 +253,10 @@ func (p *ProxySuite) TestTransactionCount() {
 	block, err := backend.BlockByNumber(p.GetTestContext(), nil)
 	Nil(p.T(), err)
 
-	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 		_, err := client.TransactionCount(p.GetTestContext(), block.Hash())
 		Nil(p.T(), err)
-	}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 		standardizedResponse, err := proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 		Nil(p.T(), err)
 
@@ -261,10 +267,10 @@ func (p *ProxySuite) TestTransactionCount() {
 func (p *ProxySuite) TestPendingTransactionCount() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
-	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 		_, err := client.PendingTransactionCount(p.GetTestContext())
 		Nil(p.T(), err)
-	}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 		standardizedResponse, err := proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 		Nil(p.T(), err)
 
@@ -275,10 +281,10 @@ func (p *ProxySuite) TestPendingTransactionCount() {
 func (p *ProxySuite) TestBlockNumber() {
 	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
 
-	p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 		_, err := client.BlockNumber(p.GetTestContext())
 		Nil(p.T(), err)
-	}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 		standardizedResponse, err := proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 		Nil(p.T(), err)
 
@@ -299,10 +305,10 @@ func (p *ProxySuite) TestBlockByHash() {
 	for i := 0; i < respCount; i++ {
 		i := i // capture func literal
 		// TODO: we should probably test txes for this as well and mock some
-		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 			_, err := client.BlockByHash(p.GetTestContext(), latestBlock.Hash())
 			Nil(p.T(), err)
-		}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+		}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 			resps[i], err = proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 			Nil(p.T(), err)
 		})
@@ -326,10 +332,10 @@ func (p *ProxySuite) TestBlockByNumber() {
 	for i := 0; i < respCount; i++ {
 		i := i
 		// TODO: we should probably test txes for this as well and mock some
-		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 			_, err := client.BlockByNumber(p.GetTestContext(), new(big.Int).SetUint64(latestNumber))
 			Nil(p.T(), err)
-		}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+		}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 			resps[i], err = proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 			Nil(p.T(), err)
 		})
@@ -352,11 +358,11 @@ func (p *ProxySuite) TestHeaderByNumber() {
 
 	for i := 0; i < respCount; i++ {
 		i := i
-		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 			// TODO: we should probably test txes for this as well and mock some
 			_, err := client.HeaderByNumber(p.GetTestContext(), new(big.Int).SetUint64(latestNumber))
 			Nil(p.T(), err)
-		}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+		}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 			resps[i], err = proxy.StandardizeResponseFalseParams(p.GetTestContext(), req, fullResp)
 			Nil(p.T(), err)
 		})
@@ -393,10 +399,10 @@ func (p *ProxySuite) TestTransactionByHash() {
 	for i := 0; i < respCount; i++ {
 		i := i // capture func literal
 		// TODO: we should probably test txes for this as well and mock some
-		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 			_, _, err := client.TransactionByHash(p.GetTestContext(), testTx.Hash())
 			Nil(p.T(), err)
-		}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+		}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 			resps[i], err = proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 			Nil(p.T(), err)
 		})
@@ -436,10 +442,10 @@ func (p *ProxySuite) TestTransactionInBlock() {
 	for i := 0; i < respCount; i++ {
 		i := i // capture func literal
 		// TODO: we should probably test txes for this as well and mock some
-		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 			_, err := client.TransactionInBlock(p.GetTestContext(), txReceipt.BlockHash, txReceipt.TransactionIndex)
 			Nil(p.T(), err)
-		}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+		}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 			resps[i], err = proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 			Nil(p.T(), err)
 		})
@@ -476,10 +482,10 @@ func (p *ProxySuite) TestTransactionReceipt() {
 	for i := 0; i < respCount; i++ {
 		i := i // capture func literal
 		// TODO: we should probably test txes for this as well and mock some
-		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 			_, err := client.TransactionReceipt(p.GetTestContext(), testTx.Hash())
 			Nil(p.T(), err)
-		}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+		}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 			resps[i], err = proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 			Nil(p.T(), err)
 		})
@@ -499,10 +505,10 @@ func (p *ProxySuite) TestSyncProgress() {
 	for i := 0; i < respCount; i++ {
 		i := i // capture func literal
 		// TODO: we should probably test txes for this as well and mock some
-		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 			_, err := client.SyncProgress(p.GetTestContext())
 			Nil(p.T(), err)
-		}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+		}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 			var err error
 			resps[i], err = proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 			Nil(p.T(), err)
@@ -547,10 +553,10 @@ func (p *ProxySuite) TestFeeHistory() {
 	for i := 0; i < respCount; i++ {
 		i := i // capture func literal
 		// TODO: we should probably test txes for this as well and mock some
-		p.captureResponse(backend.HTTPEndpoint(), func(client *ethclient.Client) {
+		p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
 			_, err := client.FeeHistory(p.GetTestContext(), lastBlock, new(big.Int).SetUint64(lastBlock), []float64{95, 99})
 			Nil(p.T(), err)
-		}, func(req *proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
+		}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, fullResp []byte) {
 			resps[i], err = proxy.StandardizeResponse(p.GetTestContext(), req, fullResp)
 			Nil(p.T(), err)
 		})
@@ -558,4 +564,20 @@ func (p *ProxySuite) TestFeeHistory() {
 
 	// ensure response parity after de/re-serialization
 	Equal(p.T(), resps[0], resps[1])
+}
+
+func (p *ProxySuite) TestBatch() {
+	p.T().Skip("TODO: this works, we need to modify around it for the test to pass (our captureResponse method breaks). This is currently tested in scribe, but should be tested here.")
+	backend := geth.NewEmbeddedBackend(p.GetTestContext(), p.T())
+
+	var chainID uint64
+	var blockNumber big.Int
+
+	p.captureResponse(backend.HTTPEndpoint(), func(client ethClient.EVMClient) {
+		err := client.BatchContext(p.GetTestContext(), eth.ChainID().Returns(&chainID), eth.BlockNumber().Returns(&blockNumber))
+		Nil(p.T(), err)
+	}, func(req []proxy.RPCRequest, response proxy.JSONRPCMessage, rawResponse []byte) {
+		Greater(p.T(), blockNumber, 1)
+		Equal(p.T(), chainID, params.AllCliqueProtocolChanges.ChainID.Uint64())
+	})
 }

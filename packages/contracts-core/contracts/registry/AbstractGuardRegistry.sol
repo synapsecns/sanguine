@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import { TypedMemView } from "../libs/TypedMemView.sol";
 import { Report } from "../libs/Report.sol";
 import { Auth } from "../libs/Auth.sol";
+import { GuardRegistryEvents } from "../events/GuardRegistryEvents.sol";
 
 /**
  * @notice Registry used for verifying Reports signed by Guards.
@@ -11,26 +12,10 @@ import { Auth } from "../libs/Auth.sol";
  * The child contract is responsible for implementing the Guards storage.
  * @dev It is assumed that the Guard signature is valid on all chains.
  */
-abstract contract AbstractGuardRegistry {
+abstract contract AbstractGuardRegistry is GuardRegistryEvents {
     using Report for bytes;
     using Report for bytes29;
     using TypedMemView for bytes29;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Emitted when a new Guard is added.
-     * @param guard    Address of the added guard
-     */
-    event GuardAdded(address indexed guard);
-
-    /**
-     * @notice Emitted when a Guard is removed.
-     * @param guard    Address of the removed guard
-     */
-    event GuardRemoved(address indexed guard);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕

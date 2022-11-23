@@ -3,6 +3,10 @@ package types_test
 import (
 	"context"
 	"crypto/rand"
+	"math/big"
+	"testing"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -10,9 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"math/big"
-	"testing"
-	"time"
 )
 
 func TestEncodeTipsParity(t *testing.T) {
@@ -83,16 +84,22 @@ func TestEncodeAttestationParity(t *testing.T) {
 	testBackend := simulated.NewSimulatedBackend(ctx, t)
 	deployManager := testutil.NewDeployManager(t)
 
-	domain := gofakeit.Uint32()
+	origin := gofakeit.Uint32()
+	destination := origin + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
 	_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
 
-	contractData, err := attesationContract.FormatAttestationData(&bind.CallOpts{Context: ctx}, domain, nonce, root)
+	contractData, err := attesationContract.FormatAttestationData(&bind.CallOpts{Context: ctx}, origin, destination, nonce, root)
 	Nil(t, err)
 
-	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(domain, nonce, root))
+	attestKey := types.AttestationKey{
+		Origin:      origin,
+		Destination: destination,
+		Nonce:       nonce,
+	}
+	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(attestKey.GetRawKey(), root))
 	Nil(t, err)
 	Equal(t, contractData, goFormattedData)
 }
@@ -106,21 +113,27 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 
 	_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
 
-	domain := gofakeit.Uint32()
+	origin := gofakeit.Uint32()
+	destination := origin + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
 	sig := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 
+	attestKey := types.AttestationKey{
+		Origin:      origin,
+		Destination: destination,
+		Nonce:       nonce,
+	}
 	signedAttestation := types.NewSignedAttestation(
-		types.NewAttestation(domain, nonce, root),
+		types.NewAttestation(attestKey.GetRawKey(), root),
 		sig,
 	)
 
 	encodedSignature, err := types.EncodeSignature(sig)
 	Nil(t, err)
 
-	signedContractAttestation, err := attesationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, domain, nonce, root, encodedSignature)
+	signedContractAttestation, err := attesationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, origin, destination, nonce, root, encodedSignature)
 	Nil(t, err)
 
 	goData, err := types.EncodeSignedAttestation(signedAttestation)
@@ -138,7 +151,7 @@ func TestMessageEncodeParity(t *testing.T) {
 	_, messageContract := deployManager.GetMessageHarness(ctx, testBackend)
 
 	// check constant parity
-	version, err := messageContract.MessageVersion(&bind.CallOpts{Context: ctx})
+	version, err := messageContract.MessageVersion0(&bind.CallOpts{Context: ctx})
 	Nil(t, err)
 	Equal(t, version, types.MessageVersion)
 
@@ -160,7 +173,7 @@ func TestMessageEncodeParity(t *testing.T) {
 	proverTip := randomUint96BigInt(t)
 	executorTip := randomUint96BigInt(t)
 
-	formattedMessage, err := messageContract.FormatMessage0(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, notaryTip, broadcasterTip, proverTip, executorTip, body)
+	formattedMessage, err := messageContract.FormatMessage1(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, notaryTip, broadcasterTip, proverTip, executorTip, body)
 	Nil(t, err)
 
 	decodedMessage, err := types.DecodeMessage(formattedMessage)
@@ -181,7 +194,7 @@ func TestHeaderEncodeParity(t *testing.T) {
 	deployManager := testutil.NewDeployManager(t)
 	_, headerHarnessContract := deployManager.GetHeaderHarness(ctx, testBackend)
 
-	domain := gofakeit.Uint32()
+	origin := gofakeit.Uint32()
 	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	nonce := gofakeit.Uint32()
 	destination := gofakeit.Uint32()
@@ -189,7 +202,7 @@ func TestHeaderEncodeParity(t *testing.T) {
 	optimisticSeconds := gofakeit.Uint32()
 
 	solHeader, err := headerHarnessContract.FormatHeader(&bind.CallOpts{Context: ctx},
-		domain,
+		origin,
 		sender,
 		nonce,
 		destination,
@@ -198,7 +211,7 @@ func TestHeaderEncodeParity(t *testing.T) {
 	)
 	Nil(t, err)
 
-	goHeader, err := types.EncodeHeader(types.NewHeader(domain, sender, nonce, destination, recipient, optimisticSeconds))
+	goHeader, err := types.EncodeHeader(types.NewHeader(origin, sender, nonce, destination, recipient, optimisticSeconds))
 	Nil(t, err)
 
 	Equal(t, goHeader, solHeader)
@@ -207,4 +220,33 @@ func TestHeaderEncodeParity(t *testing.T) {
 	Nil(t, err)
 
 	Equal(t, headerVersion, types.HeaderVersion)
+}
+
+func TestAttestationKey(t *testing.T) {
+	origin := uint32(1)
+	destination := uint32(2)
+	nonce := uint32(3)
+	attestKey := types.AttestationKey{
+		Origin:      origin,
+		Destination: destination,
+		Nonce:       nonce,
+	}
+	rawKey := attestKey.GetRawKey()
+	attestKeyFromRaw := types.NewAttestionKey(rawKey)
+	Equal(t, attestKey.Origin, attestKeyFromRaw.Origin)
+	Equal(t, attestKey.Destination, attestKeyFromRaw.Destination)
+	Equal(t, attestKey.Nonce, attestKeyFromRaw.Nonce)
+}
+
+func TestAttestedDomains(t *testing.T) {
+	origin := uint32(1)
+	destination := uint32(2)
+	attestDomains := types.AttestedDomains{
+		Origin:      origin,
+		Destination: destination,
+	}
+	rawDomains := attestDomains.GetRawDomains()
+	attestDomainsFromRaw := types.NewAttestedDomains(rawDomains)
+	Equal(t, attestDomains.Origin, attestDomainsFromRaw.Origin)
+	Equal(t, attestDomains.Destination, attestDomainsFromRaw.Destination)
 }

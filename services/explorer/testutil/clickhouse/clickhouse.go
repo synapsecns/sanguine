@@ -58,8 +58,8 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 	// Fetch port assigned to container
 	address := fmt.Sprintf("%s:%s", "localhost", resource.GetPort("9000/tcp"))
 
-	// Docker will hard kill the container in 360 seconds (this is a test env)
-	// in a continuous integration environment, this is increased to allow for the lower cpu count
+	// Docker will hard kill the container in 360 seconds (this is a test env).
+	// In a continuous integration environment, this is increased to allow for the lower cpu count
 	resourceLifetime := uint(360)
 	pool.MaxWait = time.Minute * 2
 

@@ -1,14 +1,15 @@
 package base_test
 
 import (
+	"math/big"
+	"testing"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
-	"math/big"
-	"testing"
 )
 
 func TestCommittedMessageAccessors(t *testing.T) {
@@ -57,14 +58,16 @@ func TestSignedAttestation(t *testing.T) {
 	Nil(t, err)
 
 	sa := base.SignedAttestation{
-		SADomain:    gofakeit.Uint32(),
-		SANonce:     gofakeit.Uint32(),
-		SARoot:      common.BytesToHash([]byte(gofakeit.Paragraph(4, 1, 4, " "))).Bytes(),
-		SASignature: rawSig,
+		SAOrigin:      gofakeit.Uint32(),
+		SADestination: gofakeit.Uint32(),
+		SANonce:       gofakeit.Uint32(),
+		SARoot:        common.BytesToHash([]byte(gofakeit.Paragraph(4, 1, 4, " "))).Bytes(),
+		SASignature:   rawSig,
 	}
 
 	Equal(t, core.BytesToSlice(sa.Attestation().Root()), sa.SARoot)
-	Equal(t, sa.Attestation().Domain(), sa.SADomain)
+	Equal(t, sa.Attestation().Origin(), sa.SAOrigin)
+	Equal(t, sa.Attestation().Destination(), sa.SADestination)
 	Equal(t, sa.Attestation().Nonce(), sa.SANonce)
 	Equal(t, sa.Signature().V(), sig.V())
 	Equal(t, sa.Signature().R(), sig.R())

@@ -15,6 +15,14 @@ type ChainConfig struct {
 	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// Contracts stores all the contract information for the chain.
 	Contracts ContractConfigs `yaml:"contracts"`
+	// BlockTimeChunkCount is the number of chunks (goroutines) to process at a time while backfilling blocktimes.
+	BlockTimeChunkCount uint64 `yaml:"block_time_chunk_count"`
+	// BlockTimeChunkSize is the number of blocks to process per chunk (goroutine) while backfilling blocktimes.
+	BlockTimeChunkSize uint64 `yaml:"block_time_chunk_size"`
+	// ContractSubChunkCount is the number of chunks (goroutines) to process at a time while backfilling contracts.
+	ContractSubChunkCount int `yaml:"contract_sub_chunk_count"`
+	// ContractChunkSize is the number of blocks to process per chunk (goroutine) while backfilling contracts.
+	ContractChunkSize int `yaml:"contract_chunk_size"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.
