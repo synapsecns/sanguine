@@ -104,26 +104,39 @@ func BlockTimesInRange(ctx context.Context, backend ScribeBackend, startHeight u
 
 // GetLogsInRange gets all logs in a range with a single batch request
 // in successful cases an immutable map is returned of [height->time], otherwise an error is returned.
-func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint64, endHeight uint64, subChunk int) (*immutable.Map[uint64, uint64], error) {
+func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint64, endHeight uint64, subChunkSize int, contractAddress common.Address) (*immutable.Map[uint64, []types.Log], error) {
+	subChunkCount := ((endHeight - startHeight) / uint64(subChunkSize)) + 1
 	// performance impact will be negligible here because of external constraints on blocksize
-	blocks := makeRange(startHeight, endHeight)
-	bulkSize := len(blocks)
+	batches := makeRange(0, subChunkCount)
+	bulkSize := len(batches)
 
 	calls := make([]w3types.Caller, bulkSize)
-	results := make([]types.Header, bulkSize)
+	results := make([][]types.Log, bulkSize)
 
-	for i, blockNumber := range blocks {
-		calls[i] = eth.HeaderByNumber(new(big.Int).SetUint64(blockNumber)).Returns(&results[i])
+	for i, batch := range batches {
+		subChunkStartHeight := startHeight + batch*uint64(subChunkSize)
+		subChunkEndHeight := subChunkStartHeight + uint64(subChunkSize) - 1
+		if subChunkEndHeight > endHeight {
+			subChunkEndHeight = endHeight
+		}
+		filter := ethereum.FilterQuery{
+			FromBlock: big.NewInt(int64(subChunkStartHeight)),
+			ToBlock:   big.NewInt(int64(subChunkEndHeight)),
+			Addresses: []common.Address{contractAddress},
+		}
+		calls[i] = eth.Logs(filter).Returns(&results[i])
 	}
 
 	if err := backend.Batch(ctx, calls...); err != nil {
-		return nil, fmt.Errorf("could not fetch blocks in range %d to %d: %w", startHeight, endHeight, err)
+		return nil, fmt.Errorf("could not fetch logs in range %d to %d: %w", startHeight, endHeight, err)
 	}
 
 	// use an immutable map for additional safety to the caller, don't allocate until batch returns successfully
-	res := immutable.NewMapBuilder[uint64, uint64](nil)
+	res := immutable.NewMapBuilder[uint64, []types.Log](nil)
 	for _, result := range results {
-		res.Set(result.Number.Uint64(), result.Time)
+		if len(result) > 0 {
+			res.Set(result[0].BlockNumber, result)
+		}
 	}
 
 	return res.Map(), nil
