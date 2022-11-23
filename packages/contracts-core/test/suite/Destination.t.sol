@@ -80,14 +80,6 @@ contract DestinationTest is DestinationTools {
         destination.setConfirmation(DOMAIN_REMOTE, "fake root", 0);
     }
 
-    function test_onlySystemRouter_revert_rejectOthers() public {
-        DestinationHarness destination = suiteDestination(DOMAIN_LOCAL);
-        vm.expectRevert("!systemRouter");
-        vm.prank(owner);
-        // setSensitiveValue has onlySystemRouter modifier
-        destination.setSensitiveValue(1337, 0, 0, 0);
-    }
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       TESTS: RESTRICTED ACCESS                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -121,17 +113,6 @@ contract DestinationTest is DestinationTools {
         destinationSetConfirmAt({ domain: DOMAIN_LOCAL, newConfirmAt: 0 });
         assertEq(destinationSubmittedAt(DOMAIN_LOCAL), 0, "Failed to change timestamp");
         vm.stopPrank();
-    }
-
-    function test_onlySystemRouter() public {
-        DestinationHarness destination = suiteDestination(DOMAIN_LOCAL);
-        SystemRouterHarness systemRouter = suiteSystemRouter(DOMAIN_LOCAL);
-        vm.expectEmit(true, true, true, true);
-        emit LogSystemCall(1, 2, 3);
-        vm.prank(address(systemRouter));
-        // Should emit corresponding event and change sensitive value
-        destination.setSensitiveValue(1337, 1, 2, 3);
-        assertEq(destination.sensitiveValue(), 1337);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
