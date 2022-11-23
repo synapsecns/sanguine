@@ -131,9 +131,6 @@ jobs:
           sleep 1
           done
 
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-
       - name: Test
         uses: nick-fields/retry@v2
         with:

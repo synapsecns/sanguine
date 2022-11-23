@@ -76,13 +76,15 @@ func (e Executor) Start(ctx context.Context) error {
 		return fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
 
-	g, gCtx := errgroup.WithContext(ctx)
+	contxt := context.Background()
+
+	g, _ := errgroup.WithContext(contxt)
 
 	for _, chainID := range e.chainIDs {
 		chainID := chainID
 
 		g.Go(func() error {
-			stream, err := grpcClient.StreamLogs(gCtx, &pbscribe.StreamLogsRequest{
+			stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 				Filter: &pbscribe.LogFilter{
 					ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: e.addresses[chainID].Hex()}},
 					ChainId:         chainID,
