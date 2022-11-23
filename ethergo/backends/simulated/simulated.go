@@ -94,7 +94,7 @@ func (s *Backend) AdjustTime(adjustment time.Duration) error {
 
 // getFaucetTxContext gets a signed transaction from the faucet address.
 func (s *Backend) getFaucetTxContext(ctx context.Context) *bind.TransactOpts {
-	auth, err := bind.NewKeyedTransactorWithChainID(s.faucetAddr.PrivateKey, s.Chain.ChainConfig().ChainID)
+	auth, err := bind.NewKeyedTransactorWithChainID(s.faucetAddr.PrivateKey, s.Chain.GetBigChainID())
 	assert.Nil(s.T(), err)
 
 	//nolint: ineffassign

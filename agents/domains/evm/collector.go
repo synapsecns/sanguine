@@ -3,7 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -65,11 +65,13 @@ func (a attestationCollectorContract) SubmitAttestation(ctx context.Context, sig
 	return nil
 }
 
-func (a attestationCollectorContract) LatestNonce(ctx context.Context, domain uint32, signer signer.Signer) (nonce uint32, err error) {
-	latestNonce, err := a.contract.LatestNonce(&bind.CallOpts{Context: ctx}, domain, signer.Address())
+func (a attestationCollectorContract) GetLatestNonce(ctx context.Context, origin uint32, destination uint32, signer signer.Signer) (nonce uint32, err error) {
+	// TODO (joe): This needs to be refactored after we do the GlobalRegistry stuff
+	return 0, nil
+	/*latestNonce, err := a.contract.GetLatestNonce(&bind.CallOpts{Context: ctx}, origin, destination, signer)
 	if err != nil {
 		return 0, fmt.Errorf("could not retrieve latest nonce: %w", err)
 	}
 
-	return latestNonce, nil
+	return latestNonce, nil*/
 }

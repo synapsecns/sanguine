@@ -2,8 +2,6 @@ package notary
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"time"
 
 	"github.com/synapsecns/sanguine/agents/db"
@@ -35,7 +33,9 @@ func NewAttestationSubmitter(domain domains.DomainClient, db db.SynapseDB, signe
 
 // Start runs the update submitter.
 func (u AttestationSubmitter) Start(ctx context.Context) error {
-	committedNonce, err := u.domain.AttestationCollector().LatestNonce(ctx, u.domain.Config().DomainID, u.signer)
+	// TODO (joe): this needs to be refactored after we do the GlobalRegistry stuff
+	return nil
+	/*committedNonce, err := u.domain.AttestationCollector().GetLatestNonce(ctx, u.domain.Config().DomainID, u.signer)
 	if err != nil {
 		return fmt.Errorf("could not get committed root: %w", err)
 	}
@@ -60,5 +60,5 @@ func (u AttestationSubmitter) Start(ctx context.Context) error {
 
 			committedNonce++
 		}
-	}
+	}*/
 }

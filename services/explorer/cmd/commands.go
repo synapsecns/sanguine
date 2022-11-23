@@ -12,7 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/api"
 	"github.com/synapsecns/sanguine/services/explorer/config"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/node"
+	"github.com/synapsecns/sanguine/services/explorer/node"
 	"github.com/urfave/cli/v2"
 )
 
@@ -87,7 +87,7 @@ var backfillCommand = &cli.Command{
 			return fmt.Errorf("could not decode config: %w", err)
 
 		}
-		db, err := api.InitDB(c.Context, c.String(clickhouseAddressFlag.Name))
+		db, err := api.InitDB(c.Context, c.String(clickhouseAddressFlag.Name), false)
 		if err != nil {
 			return fmt.Errorf("could not initialize database: %w", err)
 		}
