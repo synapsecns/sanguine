@@ -53,7 +53,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * `rootSubmittedAt` based modifier is a must for receiving cross-chain system calls. Any Notary
  * can potentially commit fraud, and try to execute an arbitrary message, including
  * a "message to System Router". By enforcing a minimum optimistic latency for the recipient this
- * attack can be militated, assuming there is at least one honest Guard willing to report the fraud.
+ * attack can be mitigated, assuming there is at least one honest Guard willing to report the fraud.
  */
 contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
     using Address for address;
