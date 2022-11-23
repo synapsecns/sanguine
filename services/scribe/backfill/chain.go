@@ -307,38 +307,43 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 
 	LogEvent(InfoLevel, "Starting backfilling blocktimes", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight, "bt": true})
 
-	for {
-		select {
-		case <-ctx.Done():
-			LogEvent(ErrorLevel, "Context canceled", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": ctx.Err()})
+RETRY:
+	select {
+	case <-ctx.Done():
+		LogEvent(ErrorLevel, "Context canceled", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": ctx.Err()})
 
-			return fmt.Errorf("%s context canceled: %w", ctx.Value(blocktimeContextKey), ctx.Err())
-		case <-time.After(timeoutBlockNum):
+		return fmt.Errorf("%s context canceled: %w", ctx.Value(blocktimeContextKey), ctx.Err())
+	case <-time.After(timeoutBlockNum):
 
-			res, err := BlockTimesInRange(ctx, c.client[0], startHeight, endHeight)
-			itr := res.Iterator()
-			for !itr.Done() {
-				blockNumIdx, blockTime, _ := itr.Next()
+		res, err := BlockTimesInRange(ctx, c.client[0], startHeight, endHeight)
+		if err != nil {
+			LogEvent(ErrorLevel, "Could not get block times", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": err.Error()})
+			timeoutBlockNum = bBlockNum.Duration()
 
-				// Check if the current block's already exists in database (to prevent unnecessary requests to omnirpc).
-				_, err = c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNumIdx)
-				if err == nil {
-					LogEvent(InfoLevel, "Skipping blocktime backfill", LogData{"cid": c.chainID, "bn": blockNumIdx, "bt": true})
-					continue
-				}
-				// Store the block time with the block retrieved above.
-				err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNumIdx, blockTime)
-				if err != nil {
-					timeoutBlockNum = bBlockNum.Duration()
-					LogEvent(WarnLevel, "Could not store blocktime", LogData{"cid": c.chainID, "bn": blockNumIdx, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": err.Error()})
-
-					continue
-				}
-
-			}
-			LogEvent(InfoLevel, "Exiting backfill", LogData{"cid": c.chainID})
-			return nil
+			goto RETRY
 		}
+
+		itr := res.Iterator()
+		for !itr.Done() {
+			blockNumIdx, blockTime, _ := itr.Next()
+
+			// Check if the current block's already exists in database (to prevent unnecessary requests to omnirpc).
+			_, err = c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNumIdx)
+			if err == nil {
+				LogEvent(InfoLevel, "Skipping blocktime backfill", LogData{"cid": c.chainID, "bn": blockNumIdx, "bt": true})
+				continue
+			}
+			// Store the block time with the block retrieved above.
+			err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNumIdx, blockTime)
+			if err != nil {
+				LogEvent(WarnLevel, "Could not store blocktime", LogData{"cid": c.chainID, "bn": blockNumIdx, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": err.Error()})
+				timeoutBlockNum = bBlockNum.Duration()
+
+				goto RETRY
+			}
+		}
+		LogEvent(InfoLevel, "Exiting backfill", LogData{"cid": c.chainID})
+		return nil
 	}
 }
 
