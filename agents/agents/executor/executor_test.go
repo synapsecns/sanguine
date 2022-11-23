@@ -195,18 +195,12 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 			simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 		}
 	}()
+	
+	e.Eventually(func() bool {
+		return len(exec.LogChans[chainID]) == 250
+	})
 
-	for len(exec.LogChans[chainID]) != 250 {
-
-	}
-
-	exec.Stop(chainID)
-
-	// e.Eventually(func() bool {
-	//	return len(exec.LogChans[chainID]) == 250
-	//})
-	//
-	//e.DeferAfterTest(func() {
-	//	exec.Stop(chainID)
-	//})
+	e.DeferAfterTest(func() {
+		exec.Stop(chainID)
+	})
 }
