@@ -274,6 +274,7 @@ const chunkSize = 100000
 // getLogs gets all logs for the contract through channels constructed and populated by the rangeFilter.
 func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
 	rangeFilter := NewRangeFilter(common.HexToAddress(c.address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
+	// Require 2 confirmations for Binance Smart Chain, due to "not found" error.
 	if c.chainID == 56 {
 		rangeFilter = NewRangeFilter(common.HexToAddress(c.address), c.client[1], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
 
