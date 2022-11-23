@@ -3,10 +3,9 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"github.com/benbjohnson/immutable"
 	"github.com/synapsecns/sanguine/ethergo/util"
-	"golang.org/x/sync/errgroup"
 	"math/big"
-	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
@@ -31,6 +30,8 @@ type RangeFilter struct {
 	// filterer contains the interface used to fetch logs for the given contract. Logs are fetched
 	// for contractAddress.
 	filterer LogFilterer
+	// backend is the ethereum backend used to fetch logs.
+	backend ScribeBackend
 	// contractAddress is the contractAddress that logs are fetched for.
 	contractAddress ethCommon.Address
 	// done is whether the RangeFilter has completed. It cannot be restarted and the object must be recreated.
@@ -62,11 +63,12 @@ var minBackoff = 1 * time.Second
 var maxBackoff = 5 * time.Second
 
 // NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
-func NewRangeFilter(address ethCommon.Address, filterer LogFilterer, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
+func NewRangeFilter(address ethCommon.Address, filterer LogFilterer, backend ScribeBackend, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
 	return &RangeFilter{
 		iterator:        util.NewChunkIterator(startBlock, endBlock, chunkSize, reverse),
 		logs:            make(chan *LogInfo, bufferSize),
 		filterer:        filterer,
+		backend:         backend,
 		contractAddress: address,
 		done:            false,
 	}
@@ -119,89 +121,130 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 
 	attempt := 0
 	timeout := time.Duration(0)
-	subChunkSize := (chunk.MaxBlock().Uint64() - chunk.MinBlock().Uint64()) / uint64(subChunkCount)
-	if subChunkSize < 10 {
-		subChunkSize = 10
-	}
-RETRY:
-	select {
-	case <-ctx.Done():
-		return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
-	case <-time.After(timeout):
-		if attempt > maxAttempts {
-			return nil, fmt.Errorf("maximum number of filter attempts exceeded")
-		}
 
-		attempt++
-		chunkCountIdx := uint64(0)
-		var processedSubChunks = sync.Map{}
-		newCtx := context.Background()
-		g, gCtx := errgroup.WithContext(newCtx)
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
+		case <-time.After(timeout):
+			attempt++
 
-		for chunkCountIdx < subChunkCount {
-			subChunkStartHeight := chunk.MinBlock().Uint64() + (chunkCountIdx * subChunkSize)
-			subChunkEndHeight := subChunkStartHeight + subChunkSize - 1
+			if attempt > maxAttempts {
+				return nil, fmt.Errorf("maximum number of filter attempts exceeded")
+			}
+			logs, err := GetLogsInRange(ctx, backend, chunk.MinBlock().Uint64(), chunk.MaxBlock().Uint64(), subChunkSize, contractAddress)(*immutable.Map[uint64, []types.Log], error)
+			//logs, err := f.filterer.FilterLogs(ctx, ethereum.FilterQuery{
+			//	FromBlock: chunk.MinBlock(),
+			//	ToBlock:   chunk.MaxBlock(),
+			//	Addresses: []ethCommon.Address{f.contractAddress},
+			//})
 
-			if subChunkEndHeight >= chunk.MaxBlock().Uint64() {
-				subChunkEndHeight = chunk.MaxBlock().Uint64()
-				chunkCountIdx = subChunkCount
+			if err != nil {
+				timeout = b.Duration()
+				LogEvent(WarnLevel, "Could not filter logs for range", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "e": err})
+				continue
 			}
 
-			g.Go(func() error {
-				startTime := time.Now()
-				LogEvent(InfoLevel, "begin backfilling subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock()})
-
-				logs, err := f.filterer.FilterLogs(gCtx, ethereum.FilterQuery{
-					FromBlock: big.NewInt(int64(subChunkStartHeight)),
-					ToBlock:   big.NewInt(int64(subChunkEndHeight)),
-					Addresses: []ethCommon.Address{f.contractAddress},
-				})
-
-				if err != nil {
-					LogEvent(WarnLevel, "Could not filter logs for range", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock(), "e": err})
-					return fmt.Errorf("could not filter logs for range: %w", err)
-				}
-				processedSubChunks.Store(subChunkStartHeight, logs)
-				LogEvent(InfoLevel, "backfilling subchunk", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
-
-				return nil
-			})
-
-			chunkCountIdx++
+			return &LogInfo{
+				logs:  logs,
+				chunk: chunk,
+			}, nil
 		}
-		if err := g.Wait(); err != nil {
-			timeout = b.Duration()
-			LogEvent(ErrorLevel, "Error waiting for subchunks, retrying", LogData{"ca": f.contractAddress, "e": err})
-			goto RETRY
-		}
-		var logsArr []types.Log
-		chunkCountIdx = uint64(0)
-		for chunkCountIdx < subChunkCount {
-			subChunkStartHeight := chunk.MinBlock().Uint64() + (chunkCountIdx * subChunkSize)
-
-			if subChunkStartHeight+subChunkSize-1 >= chunk.MaxBlock().Uint64() {
-				chunkCountIdx = subChunkCount
-			}
-
-			logs, ok := processedSubChunks.Load(subChunkStartHeight)
-			if !ok {
-				LogEvent(ErrorLevel, "could not load logs for subchunk", LogData{"ca": f.contractAddress, "sh": subChunkStartHeight})
-				goto RETRY
-			}
-			logsUnwrapped, ok := logs.([]types.Log)
-			if !ok {
-				LogEvent(ErrorLevel, "could not unwrap logs for subchunk", LogData{"ca": f.contractAddress, "sh": subChunkStartHeight})
-				goto RETRY
-			}
-			logsArr = append(logsArr, logsUnwrapped...)
-			chunkCountIdx++
-		}
-		return &LogInfo{
-			logs:  logsArr,
-			chunk: chunk,
-		}, nil
 	}
 }
+
+//	b := &backoff.Backoff{
+//		Factor: 2,
+//		Jitter: true,
+//		Min:    minBackoff,
+//		Max:    maxBackoff,
+//	}
+//
+//	attempt := 0
+//	timeout := time.Duration(0)
+//	subChunkSize := (chunk.MaxBlock().Uint64() - chunk.MinBlock().Uint64()) / uint64(subChunkCount)
+//	if subChunkSize < 10 {
+//		subChunkSize = 10
+//	}
+//RETRY:
+//	select {
+//	case <-ctx.Done():
+//		return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
+//	case <-time.After(timeout):
+//		if attempt > maxAttempts {
+//			return nil, fmt.Errorf("maximum number of filter attempts exceeded")
+//		}
+//
+//		attempt++
+//		chunkCountIdx := uint64(0)
+//		var processedSubChunks = sync.Map{}
+//		newCtx := context.Background()
+//		g, gCtx := errgroup.WithContext(newCtx)
+//
+//		for chunkCountIdx < subChunkCount {
+//			subChunkStartHeight := chunk.MinBlock().Uint64() + (chunkCountIdx * subChunkSize)
+//			subChunkEndHeight := subChunkStartHeight + subChunkSize - 1
+//
+//			if subChunkEndHeight >= chunk.MaxBlock().Uint64() {
+//				subChunkEndHeight = chunk.MaxBlock().Uint64()
+//				chunkCountIdx = subChunkCount
+//			}
+//
+//			g.Go(func() error {
+//				startTime := time.Now()
+//				LogEvent(InfoLevel, "begin backfilling subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock()})
+//
+//				logs, err := f.filterer.FilterLogs(gCtx, ethereum.FilterQuery{
+//					FromBlock: big.NewInt(int64(subChunkStartHeight)),
+//					ToBlock:   big.NewInt(int64(subChunkEndHeight)),
+//					Addresses: []ethCommon.Address{f.contractAddress},
+//				})
+//
+//				if err != nil {
+//					LogEvent(WarnLevel, "Could not filter logs for range", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock(), "e": err})
+//					return fmt.Errorf("could not filter logs for range: %w", err)
+//				}
+//				processedSubChunks.Store(subChunkStartHeight, logs)
+//				LogEvent(InfoLevel, "backfilling subchunk", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
+//
+//				return nil
+//			})
+//
+//			chunkCountIdx++
+//		}
+//		if err := g.Wait(); err != nil {
+//			timeout = b.Duration()
+//			LogEvent(ErrorLevel, "Error waiting for subchunks, retrying", LogData{"ca": f.contractAddress, "e": err})
+//			goto RETRY
+//		}
+//		var logsArr []types.Log
+//		chunkCountIdx = uint64(0)
+//		for chunkCountIdx < subChunkCount {
+//			subChunkStartHeight := chunk.MinBlock().Uint64() + (chunkCountIdx * subChunkSize)
+//
+//			if subChunkStartHeight+subChunkSize-1 >= chunk.MaxBlock().Uint64() {
+//				chunkCountIdx = subChunkCount
+//			}
+//
+//			logs, ok := processedSubChunks.Load(subChunkStartHeight)
+//			if !ok {
+//				LogEvent(ErrorLevel, "could not load logs for subchunk", LogData{"ca": f.contractAddress, "sh": subChunkStartHeight})
+//				goto RETRY
+//			}
+//			logsUnwrapped, ok := logs.([]types.Log)
+//			if !ok {
+//				LogEvent(ErrorLevel, "could not unwrap logs for subchunk", LogData{"ca": f.contractAddress, "sh": subChunkStartHeight})
+//				goto RETRY
+//			}
+//			logsArr = append(logsArr, logsUnwrapped...)
+//			chunkCountIdx++
+//		}
+//		return &LogInfo{
+//			logs:  logsArr,
+//			chunk: chunk,
+//		}, nil
+//	}
+//}
 
 // Drain fetches all logs and concatenated them into a single slice.
 func (f *RangeFilter) Drain(ctx context.Context) (filteredLogs []types.Log, err error) {
