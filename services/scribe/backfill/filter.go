@@ -50,7 +50,7 @@ type LogFilterer interface {
 const bufferSize = 15
 
 // subChunkCount is how many concurrent sub chunks to process at a time.
-const subChunkCount = 20
+const subChunkCount = 50
 
 // maxAttempts is that maximum number of times a filter attempt should be made before giving up.
 const maxAttempts = 5
