@@ -149,7 +149,7 @@ RETRY:
 
 			g.Go(func() error {
 				startTime := time.Now()
-				LogEvent(InfoLevel, "backfilling subchunk", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock()})
+				LogEvent(InfoLevel, "begin backfilling subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock()})
 
 				logs, err := f.filterer.FilterLogs(gCtx, ethereum.FilterQuery{
 					FromBlock: big.NewInt(int64(subChunkStartHeight)),
