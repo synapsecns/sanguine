@@ -40,6 +40,28 @@ abstract contract AbstractNotaryRegistry is NotaryRegistryEvents {
      */
     function _removeNotary(uint32 _origin, address _notary) internal virtual returns (bool);
 
+    // solhint-disable no-empty-blocks
+    /**
+     * @notice Hook that is called just before a Notary is added for specified domain.
+     */
+    function _beforeNotaryAdded(uint32 _domain, address _notary) internal virtual {}
+
+    /**
+     * @notice Hook that is called right after a Notary is added for specified domain.
+     */
+    function _afterNotaryAdded(uint32 _domain, address _notary) internal virtual {}
+
+    /**
+     * @notice Hook that is called just before a Notary is removed from specified domain.
+     */
+    function _beforeNotaryRemoved(uint32 _domain, address _notary) internal virtual {}
+
+    /**
+     * @notice Hook that is called right after a Notary is removed from specified domain.
+     */
+    function _afterNotaryRemoved(uint32 _domain, address _notary) internal virtual {}
+
+    // solhint-enable no-empty-blocks
     /**
      * @notice  Checks all following statements are true:
      *          - `_attestation` is a formatted Attestation payload

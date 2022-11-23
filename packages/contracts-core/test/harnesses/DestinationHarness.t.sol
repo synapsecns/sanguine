@@ -3,7 +3,7 @@
 pragma solidity 0.8.17;
 
 import { Destination } from "../../contracts/Destination.sol";
-import { GlobalNotaryRegistry } from "../../contracts/registry/GlobalNotaryRegistry.sol";
+import { AbstractNotaryRegistry } from "../../contracts/registry/AbstractNotaryRegistry.sol";
 
 import { Tips } from "../../contracts/libs/Tips.sol";
 import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
@@ -44,5 +44,49 @@ contract DestinationHarness is
             _tips.proverTip(),
             _tips.executorTip()
         );
+    }
+
+    /**
+     * @notice Hook that is called just before a Notary is added for specified domain.
+     */
+    function _beforeNotaryAdded(uint32 _domain, address _notary)
+        internal
+        virtual
+        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
+    {
+        AbstractNotaryRegistry._beforeNotaryAdded(_domain, _notary);
+    }
+
+    /**
+     * @notice Hook that is called right after a Notary is added for specified domain.
+     */
+    function _afterNotaryAdded(uint32 _domain, address _notary)
+        internal
+        virtual
+        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
+    {
+        AbstractNotaryRegistry._afterNotaryAdded(_domain, _notary);
+    }
+
+    /**
+     * @notice Hook that is called just before a Notary is removed from specified domain.
+     */
+    function _beforeNotaryRemoved(uint32 _domain, address _notary)
+        internal
+        virtual
+        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
+    {
+        AbstractNotaryRegistry._beforeNotaryRemoved(_domain, _notary);
+    }
+
+    /**
+     * @notice Hook that is called right after a Notary is removed from specified domain.
+     */
+    function _afterNotaryRemoved(uint32 _domain, address _notary)
+        internal
+        virtual
+        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
+    {
+        AbstractNotaryRegistry._afterNotaryRemoved(_domain, _notary);
     }
 }
