@@ -32,6 +32,20 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	case txnHash != nil:
 		// If we are given a transaction hash, we search for the bridge transaction on the origin chain, then locate
 		// its counterpart on the destination chain using the kappa (the keccak256 hash of the transaction hash).
+		fromBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, nil, txnHash, page, false))
+		var toKappaChainArr []string
+		for _, bridgeEvent := range fromBridgeEvents {
+			if bridgeEvent.DestinationChainID != nil {
+				toKappaChainArr = append(toKappaChainArr, fmt.Sprintf("(%d,'%s')", bridgeEvent.DestinationChainID, bridgeEvent.DestinationKappa))
+			}
+			//destinationKappaArr = append(destinationKappaArr, crypto.Keccak256Hash([]byte(*fromInfo.TxnHash)).String()[2:])
+		}
+		//toKappaChainStr := "(" + strings.Join(toKappaChainArr, ",") + ")"
+		//toBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generateToPartialInfoQuery(toKappaChainStr, page))
+		if err != nil {
+			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
+		}
+
 		fromInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, nil, txnHash, page, false))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
@@ -93,7 +107,7 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 		//destinationKappaArr = append(destinationKappaArr, crypto.Keccak256Hash([]byte(*fromInfo.TxnHash)).String()[2:])
 	}
 	toKappaChainStr := "(" + strings.Join(toKappaChainArr, ",") + ")"
-	toBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generateToPartialInfoQuery(toKappaChainStr, page))
+	toBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generateToKappaPartialInfoQuery(toKappaChainStr, nil, nil, nil, nil, nil, page, true))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 	}

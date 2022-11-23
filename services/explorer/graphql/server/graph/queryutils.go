@@ -463,9 +463,16 @@ func GetPartialInfoFromBridgeEvent(res []sql.BridgeEvent) ([]*model.PartialInfo,
 }
 
 // generateToPartialInfoQuery returns the query for making the PartialInfo query.
-func generateToPartialInfoQuery(toKappaChainStr string, page int) string {
+func generateToKappaPartialInfoQuery(toKappaChainStr string, chainID *int, address, tokenAddress, kappa, txHash *string, page int, latest bool) string {
+	firstFilter := false
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "t1.")
+	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "t1.")
+	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "t1.")
+	kappaSpecifier := generateSingleSpecifierStringSQL(kappa, sql.KappaFieldName, &firstFilter, "t1.")
+	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "t1.")
+
 	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC LIMIT %d OFFSET %d", sql.BlockNumberFieldName, sql.PageSize, (page-1)*sql.PageSize)
-	compositeIdentifiers := fmt.Sprintf("WHERE (%s,%s) IN %s", sql.ChainIDFieldName, sql.KappaFieldName, toKappaChainStr) + pageSpecifier
+	compositeIdentifiers := fmt.Sprintf("WHERE (%s,%s) IN %s", sql.ChainIDFieldName, sql.KappaFieldName, toKappaChainStr) + chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + kappaSpecifier + txHashSpecifier + pageSpecifier
 	selectParameters := fmt.Sprintf(
 		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
 		sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
@@ -485,7 +492,11 @@ func generateToPartialInfoQuery(toKappaChainStr string, page int) string {
 		sql.TokenFieldName, sql.TokenFieldName, sql.AmountFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.EventIndexFieldName,
 		sql.DestinationKappaFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName, sql.SenderFieldName, sql.InsertTimeFieldName,
 	)
-	deDup := deDupInQueryLatest
+	deDup := deDupInQuery
+	if latest {
+		deDup = deDupInQueryLatest
+
+	}
 	query := fmt.Sprintf(
 		`
 		SELECT t1.* FROM bridge_events t1
@@ -597,4 +608,8 @@ func GetToPartialInfoFromBridgeEvent(res []sql.BridgeEvent) (map[string]*model.P
 	}
 
 	return partialInfos, nil
+}
+
+func originToDestinationBridgePartials() {
+
 }
