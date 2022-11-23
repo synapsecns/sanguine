@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"math/big"
 	"time"
 
 	"github.com/jpillora/backoff"
@@ -49,11 +48,11 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 	startHeights := make(map[string]uint64)
 
 	if chainConfig.BlockTimeChunkCount == 0 {
-		chainConfig.BlockTimeChunkCount = 80
+		chainConfig.BlockTimeChunkCount = 40
 	}
 
 	if chainConfig.BlockTimeChunkSize == 0 {
-		chainConfig.BlockTimeChunkSize = 20
+		chainConfig.BlockTimeChunkSize = 50
 	}
 
 	minBlockHeight := uint64(math.MaxUint64)
@@ -305,59 +304,46 @@ func (c ChainBackfiller) blocktimeBackfiller(ctx context.Context, startHeight ui
 	}
 
 	timeoutBlockNum := time.Duration(0)
-	blockNum := startHeight
+
 	LogEvent(InfoLevel, "Starting backfilling blocktimes", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight, "bt": true})
 
-	for {
-		select {
-		case <-ctx.Done():
-			LogEvent(ErrorLevel, "Context canceled", LogData{"cid": c.chainID, "bn": blockNum, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": ctx.Err()})
+RETRY:
+	select {
+	case <-ctx.Done():
+		LogEvent(ErrorLevel, "Context canceled", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": ctx.Err()})
 
-			return fmt.Errorf("%s context canceled: %w", ctx.Value(blocktimeContextKey), ctx.Err())
-		case <-time.After(timeoutBlockNum):
-			// If done with the range, exit go routine.
-			if blockNum > endHeight {
-				LogEvent(InfoLevel, "Exiting backfill", LogData{"cid": c.chainID, "bn": blockNum})
+		return fmt.Errorf("%s context canceled: %w", ctx.Value(blocktimeContextKey), ctx.Err())
+	case <-time.After(timeoutBlockNum):
 
-				return nil
-			}
+		res, err := BlockTimesInRange(ctx, c.client[0], startHeight, endHeight)
+		if err != nil {
+			LogEvent(ErrorLevel, "Could not get block times", LogData{"cid": c.chainID, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": err.Error()})
+			timeoutBlockNum = bBlockNum.Duration()
+
+			goto RETRY
+		}
+
+		itr := res.Iterator()
+		for !itr.Done() {
+			blockNumIdx, blockTime, _ := itr.Next()
 
 			// Check if the current block's already exists in database (to prevent unnecessary requests to omnirpc).
-			_, err := c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNum)
-
+			_, err = c.eventDB.RetrieveBlockTime(ctx, c.chainID, blockNumIdx)
 			if err == nil {
-				LogEvent(InfoLevel, "Skipping blocktime backfill", LogData{"cid": c.chainID, "bn": blockNum, "bt": true})
-				blockNum++
-				bBlockNum.Reset()
-
+				LogEvent(InfoLevel, "Skipping blocktime backfill", LogData{"cid": c.chainID, "bn": blockNumIdx, "bt": true})
 				continue
 			}
-
-			// Get information on the current block for further processing.
-			rawBlock, err := c.client[0].HeaderByNumber(ctx, big.NewInt(int64(blockNum)))
-
-			if err != nil {
-				timeoutBlockNum = bBlockNum.Duration()
-				LogEvent(WarnLevel, "Could not get block time", LogData{"cid": c.chainID, "bn": blockNum, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": err.Error()})
-
-				continue
-			}
-
 			// Store the block time with the block retrieved above.
-			err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNum, rawBlock.Time)
+			err = c.eventDB.StoreBlockTime(ctx, c.chainID, blockNumIdx, blockTime)
 			if err != nil {
+				LogEvent(WarnLevel, "Could not store blocktime", LogData{"cid": c.chainID, "bn": blockNumIdx, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": err.Error()})
 				timeoutBlockNum = bBlockNum.Duration()
-				LogEvent(WarnLevel, "Could not store blocktime", LogData{"cid": c.chainID, "bn": blockNum, "sh": startHeight, "eh": endHeight, "bt": true, "a": bBlockNum.Attempt(), "bd": bBlockNum.Duration(), "e": err.Error()})
 
-				continue
+				goto RETRY
 			}
-
-			blockNum++
-
-			// Reset the backoff after successful block parse run to prevent bloated back offs.
-			bBlockNum.Reset()
-			timeoutBlockNum = time.Duration(0)
 		}
+		LogEvent(InfoLevel, "Exiting backfill", LogData{"cid": c.chainID})
+		return nil
 	}
 }
 
