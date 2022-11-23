@@ -35,6 +35,8 @@ type RangeFilter struct {
 	contractAddress ethCommon.Address
 	// done is whether the RangeFilter has completed. It cannot be restarted and the object must be recreated.
 	done bool
+	// subChunkCount is how many concurrent sub chunks to process at a time.
+	subChunkCount int
 }
 
 // LogFilterer is the interface for filtering logs.
@@ -49,9 +51,6 @@ type LogFilterer interface {
 // bufferSize is how many ranges ahead should be fetched.
 const bufferSize = 15
 
-// subChunkCount is how many concurrent sub chunks to process at a time.
-const subChunkCount = 60
-
 // maxAttempts is that maximum number of times a filter attempt should be made before giving up.
 const maxAttempts = 5
 
@@ -62,13 +61,14 @@ var minBackoff = 1 * time.Second
 var maxBackoff = 5 * time.Second
 
 // NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
-func NewRangeFilter(address ethCommon.Address, filterer LogFilterer, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
+func NewRangeFilter(address ethCommon.Address, filterer LogFilterer, startBlock, endBlock *big.Int, chunkSize int, reverse bool, subChunkCount int) *RangeFilter {
 	return &RangeFilter{
 		iterator:        util.NewChunkIterator(startBlock, endBlock, chunkSize, reverse),
 		logs:            make(chan *LogInfo, bufferSize),
 		filterer:        filterer,
 		contractAddress: address,
 		done:            false,
+		subChunkCount:   subChunkCount,
 	}
 }
 
@@ -119,7 +119,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 
 	attempt := 0
 	timeout := time.Duration(0)
-	subChunkSize := (chunk.MaxBlock().Uint64() - chunk.MinBlock().Uint64()) / uint64(subChunkCount)
+	subChunkSize := (chunk.MaxBlock().Uint64() - chunk.MinBlock().Uint64()) / uint64(f.subChunkCount)
 	if subChunkSize < 10 {
 		subChunkSize = 10
 	}
@@ -133,18 +133,18 @@ RETRY:
 		}
 
 		attempt++
-		chunkCountIdx := uint64(0)
+		chunkCountIdx := 0
 		var processedSubChunks = sync.Map{}
 		newCtx := context.Background()
 		g, gCtx := errgroup.WithContext(newCtx)
 
-		for chunkCountIdx < subChunkCount {
-			subChunkStartHeight := chunk.MinBlock().Uint64() + (chunkCountIdx * subChunkSize)
+		for chunkCountIdx < f.subChunkCount {
+			subChunkStartHeight := chunk.MinBlock().Uint64() + (uint64(chunkCountIdx) * subChunkSize)
 			subChunkEndHeight := subChunkStartHeight + subChunkSize - 1
 
 			if subChunkEndHeight >= chunk.MaxBlock().Uint64() {
 				subChunkEndHeight = chunk.MaxBlock().Uint64()
-				chunkCountIdx = subChunkCount
+				chunkCountIdx = f.subChunkCount
 			}
 
 			g.Go(func() error {
@@ -175,12 +175,12 @@ RETRY:
 			goto RETRY
 		}
 		var logsArr []types.Log
-		chunkCountIdx = uint64(0)
-		for chunkCountIdx < subChunkCount {
-			subChunkStartHeight := chunk.MinBlock().Uint64() + (chunkCountIdx * subChunkSize)
+		chunkCountIdx = 0
+		for chunkCountIdx < f.subChunkCount {
+			subChunkStartHeight := chunk.MinBlock().Uint64() + (uint64(chunkCountIdx) * subChunkSize)
 
 			if subChunkStartHeight+subChunkSize-1 >= chunk.MaxBlock().Uint64() {
-				chunkCountIdx = subChunkCount
+				chunkCountIdx = f.subChunkCount
 			}
 
 			logs, ok := processedSubChunks.Load(subChunkStartHeight)

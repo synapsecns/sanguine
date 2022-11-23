@@ -24,6 +24,10 @@ type ContractBackfiller struct {
 	client []ScribeBackend
 	// cache is a cache for txHashes.
 	cache *lru.Cache
+	// chunkSize is the number of blocks to get logs for at a time.
+	chunkSize int
+	// subChunkCount is the number of subchunks to split the backfill into.
+	subChunkCount int
 }
 
 var logsChanLenFrequency = 1000
@@ -38,18 +42,20 @@ const invalidTxVRSError = "invalid transaction v, r, s values"
 const txNotFoundError = "not found"
 
 // NewContractBackfiller creates a new backfiller for a contract.
-func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client []ScribeBackend) (*ContractBackfiller, error) {
+func NewContractBackfiller(chainID uint32, address string, eventDB db.EventDB, client []ScribeBackend, chunkSize int, subChunkCount int) (*ContractBackfiller, error) {
 	cache, err := lru.New(500)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize cache: %w", err)
 	}
 
 	return &ContractBackfiller{
-		chainID: chainID,
-		address: address,
-		eventDB: eventDB,
-		client:  client,
-		cache:   cache,
+		chainID:       chainID,
+		address:       address,
+		eventDB:       eventDB,
+		client:        client,
+		cache:         cache,
+		chunkSize:     chunkSize,
+		subChunkCount: subChunkCount,
 	}, nil
 }
 
@@ -268,12 +274,9 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	return nil
 }
 
-// chunkSize is how big to make the chunks when fetching.
-const chunkSize = 30000
-
 // getLogs gets all logs for the contract through channels constructed and populated by the rangeFilter.
 func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
-	rangeFilter := NewRangeFilter(common.HexToAddress(c.address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
+	rangeFilter := NewRangeFilter(common.HexToAddress(c.address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), c.chunkSize, true, c.subChunkCount)
 	g, ctx := errgroup.WithContext(ctx)
 
 	// Concurrently start the range filter.
