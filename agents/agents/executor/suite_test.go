@@ -38,6 +38,7 @@ func NewExecutorSuite(tb testing.TB) *ExecutorSuite {
 
 func (e *ExecutorSuite) SetupTest() {
 	e.TestSuite.SetupTest()
+	//runtime.GOMAXPROCS(1)
 	e.SetTestTimeout(time.Minute * 3)
 	e.dbPath = filet.TmpDir(e.T(), "")
 	sqliteStore, err := sqlite.NewSqliteStore(e.GetTestContext(), e.dbPath)

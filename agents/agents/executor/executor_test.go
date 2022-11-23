@@ -14,6 +14,10 @@ import (
 )
 
 func (e *ExecutorSuite) TestExecutor() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
 	chainIDA := gofakeit.Uint32()
 	chainIDB := chainIDA + 1
 
@@ -89,11 +93,15 @@ func (e *ExecutorSuite) TestExecutor() {
 	// Start the executor.
 	go func() {
 		excErr := excA.Start(e.GetSuiteContext())
-		e.Nil(excErr)
+		if !testDone {
+			e.Nil(excErr)
+		}
 	}()
 	go func() {
 		excErr := excB.Start(e.GetSuiteContext())
-		e.Nil(excErr)
+		if !testDone {
+			e.Nil(excErr)
+		}
 	}()
 
 	e.Eventually(func() bool {
