@@ -5,20 +5,45 @@ import (
 	"fmt"
 )
 
+//// StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
+// func (s *Store) StoreEvent(ctx context.Context, bridgeEvent *BridgeEvent, swapEvent *SwapEvent) error {
+//	if bridgeEvent != nil {
+//		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*bridgeEvent)
+//		if dbTx.Error != nil {
+//			return fmt.Errorf("failed to store bridge event: %w", dbTx.Error)
+//		}
+//	}
+//
+//	if swapEvent != nil {
+//		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*swapEvent)
+//		if dbTx.Error != nil {
+//			return fmt.Errorf("failed to store swap event: %w", dbTx.Error)
+//		}
+//	}
+//
+//	return nil
+//}
+
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
-func (s *Store) StoreEvent(ctx context.Context, bridgeEvent *BridgeEvent, swapEvent *SwapEvent) error {
-	if bridgeEvent != nil {
-		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*bridgeEvent)
+func (s *Store) StoreEvent(ctx context.Context, event interface{}) error {
+	switch conv := event.(type) {
+	case *BridgeEvent:
+		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(conv)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store bridge event: %w", dbTx.Error)
 		}
-	}
-	if swapEvent != nil {
-		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*swapEvent)
+	case *SwapEvent:
+		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(conv)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store swap event: %w", dbTx.Error)
 		}
+	case *MessageBusEvent:
+		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(conv)
+		if dbTx.Error != nil {
+			return fmt.Errorf("failed to store message event: %w", dbTx.Error)
+		}
 	}
+
 	return nil
 }
 
@@ -47,6 +72,7 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 
 		return nil
 	}
+
 	if blockNumber > entry.BlockNumber {
 		dbTx = s.db.WithContext(ctx).
 			Model(&LastBlock{}).
@@ -54,11 +80,12 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 				ChainID:     chainID,
 				BlockNumber: blockNumber,
 			})
-
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
 		}
+
 		s.db.WithContext(ctx).Exec(fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d ", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID))
 	}
+
 	return nil
 }

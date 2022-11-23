@@ -3,14 +3,14 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"math/big"
 )
 
 // NewOriginContract returns a new bound origin contract.
@@ -77,7 +77,10 @@ func (h originContract) FetchSortedMessages(ctx context.Context, from uint32, to
 }
 
 func (h originContract) ProduceAttestation(ctx context.Context) (types.Attestation, error) {
-	suggestedUpdate, err := h.contract.SuggestAttestation(&bind.CallOpts{Context: ctx})
+	// TODO: After origin.go inherits GlobalNotaryRegistry, we can implement suggestAttestations
+	// and change this to ProduceAttestations returning a slice []types.Attestation
+	return nil, domains.ErrNoUpdate
+	/*suggestedUpdate, err := h.contract.SuggestAttestation(&bind.CallOpts{Context: ctx}, 0)
 	if err != nil {
 		return nil, fmt.Errorf("could not suggest update: %w", err)
 	}
@@ -86,7 +89,7 @@ func (h originContract) ProduceAttestation(ctx context.Context) (types.Attestati
 		return nil, domains.ErrNoUpdate
 	}
 
-	// TODO, this can be cached
+	// TODO (joe), this can be cached
 	localDomain, err := h.contract.LocalDomain(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, fmt.Errorf("could not get local domain: %w", err)
@@ -94,7 +97,7 @@ func (h originContract) ProduceAttestation(ctx context.Context) (types.Attestati
 
 	update := types.NewAttestation(localDomain, suggestedUpdate.LatestNonce, suggestedUpdate.LatestRoot)
 
-	return update, nil
+	return update, nil*/
 }
 
 var _ domains.OriginContract = &originContract{}

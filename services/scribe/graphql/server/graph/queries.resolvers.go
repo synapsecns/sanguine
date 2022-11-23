@@ -23,6 +23,7 @@ func (r *queryResolver) Logs(ctx context.Context, contractAddress *string, chain
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving logs: %w", err)
 	}
+
 	return r.logsToModelLogs(logs, logsFilter.ChainID), nil
 }
 
@@ -34,6 +35,7 @@ func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, 
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving logs: %w", err)
 	}
+
 	return r.logsToModelLogs(logs, logsFilter.ChainID), nil
 }
 
@@ -45,6 +47,7 @@ func (r *queryResolver) Receipts(ctx context.Context, chainID int, txHash *strin
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving receipts: %w", err)
 	}
+
 	return r.receiptsToModelReceipts(receipts, receiptsFilter.ChainID), nil
 }
 
@@ -56,6 +59,7 @@ func (r *queryResolver) ReceiptsRange(ctx context.Context, chainID int, txHash *
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving receipts: %w", err)
 	}
+
 	return r.receiptsToModelReceipts(receipts, receiptsFilter.ChainID), nil
 }
 
@@ -67,6 +71,7 @@ func (r *queryResolver) Transactions(ctx context.Context, txHash *string, chainI
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving transactions: %w", err)
 	}
+
 	return r.ethTxsToModelTransactions(transactions, transactionsFilter.ChainID), nil
 }
 
@@ -78,6 +83,7 @@ func (r *queryResolver) TransactionsRange(ctx context.Context, txHash *string, c
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving transactions: %w", err)
 	}
+
 	return r.ethTxsToModelTransactions(transactions, transactionsFilter.ChainID), nil
 }
 
@@ -88,6 +94,7 @@ func (r *queryResolver) BlockTime(ctx context.Context, chainID int, blockNumber 
 		return nil, fmt.Errorf("error retrieving block time: %w", err)
 	}
 	blockTimeInt := int(blockTime)
+
 	return &blockTimeInt, nil
 }
 
@@ -97,7 +104,9 @@ func (r *queryResolver) LastStoredBlockNumber(ctx context.Context, chainID int) 
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving last block: %w", err)
 	}
+
 	blockNumberInt := int(blockNumber)
+
 	return &blockNumberInt, nil
 }
 
@@ -107,7 +116,9 @@ func (r *queryResolver) FirstStoredBlockNumber(ctx context.Context, chainID int)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving first block: %w", err)
 	}
+
 	blockNumberInt := int(blockNumber)
+
 	return &blockNumberInt, nil
 }
 
@@ -117,15 +128,19 @@ func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int
 		TxHash:  txHash,
 		ChainID: uint32(chainID),
 	}
+
 	ethTx, err := r.DB.RetrieveEthTxsWithFilter(ctx, filter, 1)
 	if err != nil || len(ethTx) == 0 {
 		return nil, fmt.Errorf("error retrieving transaction: %w", err)
 	}
+
 	msgFrom, err := ethTx[0].AsMessage(types.LatestSignerForChainID(ethTx[0].ChainId()), big.NewInt(1))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving ethtx: %w", err)
 	}
+
 	sender := msgFrom.From().String()
+
 	return &sender, nil
 }
 
@@ -135,7 +150,9 @@ func (r *queryResolver) LastIndexed(ctx context.Context, contractAddress string,
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving contract last block: %w", err)
 	}
+
 	blockNumberInt := int(blockNumber)
+
 	return &blockNumberInt, nil
 }
 
@@ -145,7 +162,9 @@ func (r *queryResolver) LogCount(ctx context.Context, contractAddress string, ch
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving contract last block: %w", err)
 	}
+
 	logCountInt := int(logCount)
+
 	return &logCountInt, nil
 }
 
@@ -155,7 +174,9 @@ func (r *queryResolver) BlockTimeCount(ctx context.Context, chainID int) (*int, 
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving contract last block: %w", err)
 	}
+
 	blockTimesCountInt := int(blockTimesCount)
+
 	return &blockTimesCountInt, nil
 }
 

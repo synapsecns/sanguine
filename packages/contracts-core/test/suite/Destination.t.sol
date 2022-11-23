@@ -103,7 +103,7 @@ contract DestinationTest is DestinationTools {
     }
 
     function test_setConfirmation() public {
-        attestationDomain = DOMAIN_REMOTE;
+        attestationOrigin = DOMAIN_REMOTE;
         attestationRoot = "test root";
         vm.startPrank(owner);
         // Sanity check
@@ -139,24 +139,43 @@ contract DestinationTest is DestinationTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_submitAttestation_revert_fakeNotary() public {
-        createAttestationMock({ domain: DOMAIN_REMOTE, signer: attacker });
+        createAttestationMock({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            signer: attacker
+        });
         // Should reject attestation signed by not a Notary
         destinationSubmitAttestation(DOMAIN_LOCAL, "Signer is not a notary");
     }
 
     function test_submitAttestation_revert_emptyRoot() public {
-        createAttestation({ domain: DOMAIN_REMOTE, nonce: 1, root: bytes32(0) });
+        createAttestation({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            nonce: 1,
+            root: bytes32(0)
+        });
         // Should reject attestations with empty merkle root (even a Notary's one)
         destinationSubmitAttestation(DOMAIN_LOCAL, "Empty root");
     }
 
-    function test_submitAttestation_revert_localDomain() public {
+    function test_submitAttestation_revert_fromLocalDomain() public {
         DestinationHarness destination = suiteDestination(DOMAIN_LOCAL);
         // By default Destination doesn't have info about local notaries, let's add one
         destination.addNotary(DOMAIN_LOCAL, attacker);
-        createAttestationMock({ domain: DOMAIN_LOCAL, signer: attacker });
-        // Should reject attestations for chain, where destination is deployed
-        destinationSubmitAttestation(DOMAIN_LOCAL, "Attestation is from local chain");
+        createAttestationMock({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            signer: attacker
+        });
+        // Should reject attestations with origin = local domain
+        destinationSubmitAttestation(DOMAIN_LOCAL, "!attestationOrigin: local");
+    }
+
+    function test_submitAttestation_revert_notForLocalDomain() public {
+        createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_SYNAPSE });
+        // Should reject attestations with destination != local domain
+        destinationSubmitAttestation(DOMAIN_LOCAL, "!attestationDestination: !local");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -166,7 +185,7 @@ contract DestinationTest is DestinationTools {
     function test_submitAttestation() public {
         // Create messages sent from remote domain and prepare attestation
         createMessages({ context: userRemoteToLocal, recipient: address(suiteApp(DOMAIN_LOCAL)) });
-        createSuggestedAttestation(DOMAIN_REMOTE);
+        createSuggestedAttestation({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
         expectAttestationAccepted();
         // Should emit corresponding event and mark root submission time
         destinationSubmitAttestation({ domain: DOMAIN_LOCAL, returnValue: true });
@@ -178,21 +197,25 @@ contract DestinationTest is DestinationTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_submitReport_revert_validFlag() public {
-        createAttestationMock(DOMAIN_REMOTE);
+        createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
         createReport(Report.Flag.Valid);
         // Destination should reject Reports with a Valid flag (they serve no purpose)
         destinationSubmitReport(DOMAIN_LOCAL, "Not a fraud report");
     }
 
     function test_submitReport_revert_notNotary() public {
-        createAttestationMock({ domain: DOMAIN_REMOTE, signer: attacker });
+        createAttestationMock({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            signer: attacker
+        });
         createReport(Report.Flag.Fraud);
         // Destination should reject Reports with Attestation signed by not a Notary
         destinationSubmitReport(DOMAIN_LOCAL, "Signer is not a notary");
     }
 
     function test_submitReport_revert_notGuard() public {
-        createAttestationMock(DOMAIN_REMOTE);
+        createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
         createReport({ flag: Report.Flag.Fraud, signer: attacker });
         // Destination should reject Reports signed by not a Guard
         destinationSubmitReport(DOMAIN_LOCAL, "Signer is not a guard");
@@ -200,7 +223,12 @@ contract DestinationTest is DestinationTools {
 
     function test_submitReport_revert_alreadyBlacklisted() public {
         test_submitReport();
-        createAttestation({ domain: DOMAIN_REMOTE, nonce: 123, root: "another fake root" });
+        createAttestation({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            nonce: 123,
+            root: "another fake root"
+        });
         createReport(Report.Flag.Fraud);
         // Destination should reject Reports for already blacklisted Notary
         destinationSubmitReport(DOMAIN_LOCAL, "Signer is not a notary");
@@ -216,7 +244,12 @@ contract DestinationTest is DestinationTools {
         // Save notary's valid root for later check
         bytes32 validRoot = attestationRoot;
         // Force the same notary to sign a fraud attestation
-        createAttestation({ domain: DOMAIN_REMOTE, nonce: 420, root: "clearly fake root" });
+        createAttestation({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            nonce: 420,
+            root: "clearly fake root"
+        });
         createReport(Report.Flag.Fraud);
         expectNotaryBlacklisted();
         destinationSubmitReport(DOMAIN_LOCAL, true);
@@ -236,7 +269,7 @@ contract DestinationTest is DestinationTools {
 
     function test_acceptableRoot_revert_invalidRoot() public {
         // Create attestation, but don't submit it to Destination
-        createAttestationMock(DOMAIN_REMOTE);
+        createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
         skip(APP_OPTIMISTIC_SECONDS);
         // Root is unknown, as it wasn't submitted in the attestation
         destinationAcceptableRoot({ domain: DOMAIN_LOCAL, revertMessage: "Invalid root" });

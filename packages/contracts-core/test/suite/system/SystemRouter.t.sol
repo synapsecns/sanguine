@@ -30,7 +30,7 @@ contract SystemRouterTest is SystemRouterTools {
             uint32 domain = domains[d];
             assertEq(
                 suiteSystemRouter(domain).trustedSender(remoteDomain),
-                SystemMessage.SYSTEM_ROUTER,
+                SystemCall.SYSTEM_ROUTER,
                 "!trustedSender"
             );
         }
@@ -56,7 +56,7 @@ contract SystemRouterTest is SystemRouterTools {
         suiteSystemRouter(DOMAIN_LOCAL).handle({
             _origin: DOMAIN_REMOTE,
             _nonce: 1,
-            _sender: SystemMessage.SYSTEM_ROUTER,
+            _sender: SystemCall.SYSTEM_ROUTER,
             _rootSubmittedAt: block.timestamp,
             _message: abi.encode(formattedSystemCalls)
         });
@@ -80,6 +80,21 @@ contract SystemRouterTest is SystemRouterTools {
                 systemRouterMultiCall({ revertMessage: "Unauthorized caller" });
             }
         }
+    }
+
+    function test_systemCall_revert_notSystemCall() public {
+        formattedSystemCalls = new bytes[](1);
+        // Try passing empty payload as "system call"
+        vm.expectRevert("Not a system call");
+        // Mock executing of the message on Destination
+        vm.prank(address(suiteDestination(DOMAIN_LOCAL)));
+        suiteSystemRouter(DOMAIN_LOCAL).handle({
+            _origin: DOMAIN_REMOTE,
+            _nonce: 1,
+            _sender: SystemCall.SYSTEM_ROUTER,
+            _rootSubmittedAt: block.timestamp,
+            _message: abi.encode(formattedSystemCalls)
+        });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -138,6 +153,36 @@ contract SystemRouterTest is SystemRouterTools {
             destination: DOMAIN_LOCAL,
             selector: selector,
             isMultiCall: true
+        });
+    }
+
+    function test_systemMultiCall_sameRecipient() public {
+        bytes4 selector = SystemContractHarness.setSensitiveValue.selector;
+        // Expect a bunch of "system call succeeded" events
+        expectSystemCallsWrapperTests({
+            domain: DOMAIN_LOCAL,
+            selector: selector,
+            sameRecipient: true
+        });
+        triggerTestWrapperMultiCall({
+            domain: DOMAIN_LOCAL,
+            selector: selector,
+            sameRecipient: true
+        });
+    }
+
+    function test_systemMultiCall_sameData() public {
+        bytes4 selector = SystemContractHarness.setSensitiveValue.selector;
+        // Expect a bunch of "system call succeeded" events
+        expectSystemCallsWrapperTests({
+            domain: DOMAIN_LOCAL,
+            selector: selector,
+            sameRecipient: false
+        });
+        triggerTestWrapperMultiCall({
+            domain: DOMAIN_LOCAL,
+            selector: selector,
+            sameRecipient: false
         });
     }
 

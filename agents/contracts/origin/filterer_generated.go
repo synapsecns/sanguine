@@ -11,6 +11,18 @@ import (
 
 // IOriginFilterer ...
 type IOriginFilterer interface {
+	// FilterAttestationAccepted is a free log retrieval operation binding the contract event 0x744faabf74c86a873d8f8256c1f071b7ac997f1a9fa1f506dc5a528d5bbb16f3.
+	//
+	// Solidity: event AttestationAccepted(address indexed notary, bytes attestation)
+	FilterAttestationAccepted(opts *bind.FilterOpts, notary []common.Address) (*OriginAttestationAcceptedIterator, error)
+	// WatchAttestationAccepted is a free log subscription operation binding the contract event 0x744faabf74c86a873d8f8256c1f071b7ac997f1a9fa1f506dc5a528d5bbb16f3.
+	//
+	// Solidity: event AttestationAccepted(address indexed notary, bytes attestation)
+	WatchAttestationAccepted(opts *bind.WatchOpts, sink chan<- *OriginAttestationAccepted, notary []common.Address) (event.Subscription, error)
+	// ParseAttestationAccepted is a log parse operation binding the contract event 0x744faabf74c86a873d8f8256c1f071b7ac997f1a9fa1f506dc5a528d5bbb16f3.
+	//
+	// Solidity: event AttestationAccepted(address indexed notary, bytes attestation)
+	ParseAttestationAccepted(log types.Log) (*OriginAttestationAccepted, error)
 	// FilterCorrectFraudReport is a free log retrieval operation binding the contract event 0xa0248f358d0f7bb4c63d2bd5a3e521bb7aba00ccfde9442154e4950711a912f8.
 	//
 	// Solidity: event CorrectFraudReport(address indexed guard, bytes report)

@@ -7,8 +7,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	baseServer "github.com/synapsecns/sanguine/core/server"
-	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	gqlServer "github.com/synapsecns/sanguine/services/explorer/graphql/server"
@@ -44,13 +44,13 @@ func Start(ctx context.Context, cfg Config) error {
 	}))
 
 	// initialize the database
-	consumerDB, err := InitDB(ctx, cfg.Address)
+	consumerDB, err := InitDB(ctx, cfg.Address, true)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
 
 	// get the fetcher
-	fetcher := consumer.NewFetcher(client.NewClient(http.DefaultClient, cfg.ScribeURL))
+	fetcher := fetcher.NewFetcher(client.NewClient(http.DefaultClient, cfg.ScribeURL))
 
 	gqlServer.EnableGraphql(router, consumerDB, *fetcher)
 
@@ -82,8 +82,7 @@ func Start(ctx context.Context, cfg Config) error {
 }
 
 // InitDB initializes a database given a database type and path.
-func InitDB(ctx context.Context, address string) (db.ConsumerDB, error) {
-	// TODO add connection to Google Cloud hosted clickhouse
+func InitDB(ctx context.Context, address string, readOnly bool) (db.ConsumerDB, error) {
 	if address == "default" {
 		cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 		if cleanup == nil {
@@ -95,7 +94,7 @@ func InitDB(ctx context.Context, address string) (db.ConsumerDB, error) {
 		}
 		address = "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
 	}
-	clickhouseDB, err := sql.OpenGormClickhouse(ctx, address)
+	clickhouseDB, err := sql.OpenGormClickhouse(ctx, address, readOnly)
 	if err != nil {
 		return nil, fmt.Errorf("could not open database: %w", err)
 	}

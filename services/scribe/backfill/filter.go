@@ -4,37 +4,36 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/ethergo/util"
+	"golang.org/x/sync/errgroup"
 	"math/big"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
-	"github.com/pkg/errors"
 )
 
 // LogInfo is the log info.
 type LogInfo struct {
-	// logs are logs
-	logs []types.Log
-	// chunk are chunks
+	logs  []types.Log
 	chunk *util.Chunk
 }
 
 // RangeFilter pre-fetches filter logs into a channel in deterministic order.
 type RangeFilter struct {
-	// iterator is the chunk iterator used for the range
+	// iterator is the chunk iterator used for the range.
 	iterator util.ChunkIterator
 	// logs is a channel with the filtered ahead logs. This channel is not closed
 	// and the user can rely on the garbage collection behavior of RangeFilter to remove it.
 	logs chan *LogInfo
-	// filterer contains the interface used to fetch logs for the given contract. Logs are fteched
-	// for contractAddress
+	// filterer contains the interface used to fetch logs for the given contract. Logs are fetched
+	// for contractAddress.
 	filterer LogFilterer
-	// contractAddress is the contractAddress that logs are fetched for
+	// contractAddress is the contractAddress that logs are fetched for.
 	contractAddress ethCommon.Address
-	// done is whether or not the RangeFilter has completed. It cannot be restarted and the object must be recreated
+	// done is whether the RangeFilter has completed. It cannot be restarted and the object must be recreated.
 	done bool
 }
 
@@ -48,7 +47,10 @@ type LogFilterer interface {
 }
 
 // bufferSize is how many ranges ahead should be fetched.
-const bufferSize = 10
+const bufferSize = 15
+
+// subChunkCount is how many concurrent sub chunks to process at a time.
+const subChunkCount = 50
 
 // maxAttempts is that maximum number of times a filter attempt should be made before giving up.
 const maxAttempts = 5
@@ -57,7 +59,7 @@ const maxAttempts = 5
 var minBackoff = 1 * time.Second
 
 // maxBackoff is the maximum backoff period between requests.
-var maxBackoff = 30 * time.Second
+var maxBackoff = 5 * time.Second
 
 // NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
 func NewRangeFilter(address ethCommon.Address, filterer LogFilterer, startBlock, endBlock *big.Int, chunkSize int, reverse bool) *RangeFilter {
@@ -70,8 +72,8 @@ func NewRangeFilter(address ethCommon.Address, filterer LogFilterer, startBlock,
 	}
 }
 
-// Start starts the filtering process. If the context is canceled, logs will stop being filtered. Returns an error.
-// this should be run on an independent goroutine.
+// Start starts the filtering process. If the context is canceled, logs will stop being filtered.
+// This should be run on an independent goroutine.
 func (f *RangeFilter) Start(ctx context.Context) error {
 	for {
 		select {
@@ -79,11 +81,15 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 			if !f.done && ctx.Err() != nil {
 				return fmt.Errorf("could not finish filtering range: %w", ctx.Err())
 			}
+
 			return nil
 		default:
+			startTime := time.Now()
 			chunk := f.iterator.NextChunk()
+
 			if chunk == nil {
 				f.done = true
+
 				return nil
 			}
 
@@ -94,12 +100,15 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 			}
 
 			f.appendToChannel(ctx, logs)
+			LogEvent(InfoLevel, "Contract backfill chunk completed", LogData{"ca": f.contractAddress, "sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
 		}
 	}
 }
 
 // FilterLogs safely calls FilterLogs with the filtering implementing a backoff in the case of
 // rate limiting and respecting context cancellation.
+//
+// nolint:cyclop
 func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogInfo, error) {
 	b := &backoff.Backoff{
 		Factor: 2,
@@ -109,35 +118,88 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 	}
 
 	attempt := 0
-	// timeout should always be 0 on the first attmept
 	timeout := time.Duration(0)
-	for {
-		select {
-		case <-ctx.Done():
-			return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
-		case <-time.After(timeout):
-			attempt++
-			if attempt > maxAttempts {
-				return nil, errors.New("maximum number of filter attempts exceeded")
+	subChunkSize := (chunk.MaxBlock().Uint64() - chunk.MinBlock().Uint64()) / uint64(subChunkCount)
+	if subChunkSize < 10 {
+		subChunkSize = 10
+	}
+RETRY:
+	select {
+	case <-ctx.Done():
+		return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
+	case <-time.After(timeout):
+		if attempt > maxAttempts {
+			return nil, fmt.Errorf("maximum number of filter attempts exceeded")
+		}
+
+		attempt++
+		chunkCountIdx := uint64(0)
+		var processedSubChunks = sync.Map{}
+		newCtx := context.Background()
+		g, gCtx := errgroup.WithContext(newCtx)
+
+		for chunkCountIdx < subChunkCount {
+			subChunkStartHeight := chunk.MinBlock().Uint64() + (chunkCountIdx * subChunkSize)
+			subChunkEndHeight := subChunkStartHeight + subChunkSize - 1
+
+			if subChunkEndHeight >= chunk.MaxBlock().Uint64() {
+				subChunkEndHeight = chunk.MaxBlock().Uint64()
+				chunkCountIdx = subChunkCount
 			}
 
-			logs, err := f.filterer.FilterLogs(ctx, ethereum.FilterQuery{
-				FromBlock: chunk.MinBlock(),
-				ToBlock:   chunk.MaxBlock(),
-				Addresses: []ethCommon.Address{f.contractAddress},
+			g.Go(func() error {
+				startTime := time.Now()
+				LogEvent(InfoLevel, "begin backfilling subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock()})
+
+				logs, err := f.filterer.FilterLogs(gCtx, ethereum.FilterQuery{
+					FromBlock: big.NewInt(int64(subChunkStartHeight)),
+					ToBlock:   big.NewInt(int64(subChunkEndHeight)),
+					Addresses: []ethCommon.Address{f.contractAddress},
+				})
+
+				if err != nil {
+					LogEvent(WarnLevel, "Could not filter logs for range", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock(), "e": err})
+					return fmt.Errorf("could not filter logs for range: %w", err)
+				}
+				processedSubChunks.Store(subChunkStartHeight, logs)
+				LogEvent(InfoLevel, "backfilling subchunk", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
+
+				return nil
 			})
 
-			if err != nil {
-				timeout = b.Duration()
-				logger.Warnf("could not filter logs for range %d to %d: %v", chunk.MinBlock(), chunk.MaxBlock(), err)
-				continue
+			chunkCountIdx++
+		}
+		if err := g.Wait(); err != nil {
+			timeout = b.Duration()
+			LogEvent(ErrorLevel, "Error waiting for subchunks, retrying", LogData{"ca": f.contractAddress, "e": err})
+			goto RETRY
+		}
+		var logsArr []types.Log
+		chunkCountIdx = uint64(0)
+		for chunkCountIdx < subChunkCount {
+			subChunkStartHeight := chunk.MinBlock().Uint64() + (chunkCountIdx * subChunkSize)
+
+			if subChunkStartHeight+subChunkSize-1 >= chunk.MaxBlock().Uint64() {
+				chunkCountIdx = subChunkCount
 			}
 
-			return &LogInfo{
-				logs:  logs,
-				chunk: chunk,
-			}, nil
+			logs, ok := processedSubChunks.Load(subChunkStartHeight)
+			if !ok {
+				LogEvent(ErrorLevel, "could not load logs for subchunk", LogData{"ca": f.contractAddress, "sh": subChunkStartHeight})
+				goto RETRY
+			}
+			logsUnwrapped, ok := logs.([]types.Log)
+			if !ok {
+				LogEvent(ErrorLevel, "could not unwrap logs for subchunk", LogData{"ca": f.contractAddress, "sh": subChunkStartHeight})
+				goto RETRY
+			}
+			logsArr = append(logsArr, logsUnwrapped...)
+			chunkCountIdx++
 		}
+		return &LogInfo{
+			logs:  logsArr,
+			chunk: chunk,
+		}, nil
 	}
 }
 
@@ -149,6 +211,7 @@ func (f *RangeFilter) Drain(ctx context.Context) (filteredLogs []types.Log, err 
 			return nil, fmt.Errorf("context ended: %w", ctx.Err())
 		case log := <-f.GetLogChan():
 			filteredLogs = append(filteredLogs, log.logs...)
+
 			if f.done {
 				return filteredLogs, nil
 			}
@@ -167,7 +230,7 @@ func (f *RangeFilter) appendToChannel(ctx context.Context, logs *LogInfo) {
 	}
 }
 
-// Done returns a bool indicating whether or not the filtering operation is done.
+// Done returns a bool indicating whether the filtering operation is done.
 func (f *RangeFilter) Done() bool {
 	return f.done
 }

@@ -22,7 +22,7 @@ func (s *Store) UNSAFE_DB() *gorm.DB {
 }
 
 // OpenGormClickhouse opens a gorm connection to clickhouse.
-func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
+func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*Store, error) {
 	clickhouseDB, err := gorm.Open(gormClickhouse.New(gormClickhouse.Config{
 		DSN: address,
 	}), &gorm.Config{
@@ -34,19 +34,28 @@ func OpenGormClickhouse(ctx context.Context, address string) (*Store, error) {
 		return nil, fmt.Errorf("failed to open gorm clickhouse: %w", err)
 	}
 
-	// load all models
-	err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY (event_index, block_number, event_type, tx_hash, chain_id, contract_address)").AutoMigrate(&SwapEvent{}, &BridgeEvent{})
+	if !readOnly {
+		// load all models
+		err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY (event_index, block_number, event_type, tx_hash, chain_id, contract_address)").AutoMigrate(&SwapEvent{}, &BridgeEvent{})
+
+		if err != nil {
+			return nil, fmt.Errorf("could not migrate on clickhouse: %w", err)
+		}
+		err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=MergeTree ORDER BY (chain_id)").AutoMigrate(&LastBlock{})
+		if err != nil {
+			return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
+		}
+
+		// Allow for synchronous ALTER TABLE statements
+		clickhouseDB.WithContext(ctx).Exec("set mutations_sync = 1")
+	}
+	db, err := clickhouseDB.DB()
 
 	if err != nil {
-		return nil, fmt.Errorf("could not migrate on clickhouse: %w", err)
-	}
-	err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=MergeTree ORDER BY (chain_id)").AutoMigrate(&LastBlock{})
-	if err != nil {
-		return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
+		return nil, fmt.Errorf("failed to get clickhouse db: %w", err)
 	}
 
-	// Allow for synchronous ALTER TABLE statements
-	clickhouseDB.WithContext(ctx).Exec("set mutations_sync = 1")
-
+	db.SetConnMaxIdleTime(12 * time.Hour)
+	db.SetConnMaxLifetime(12 * time.Hour)
 	return &Store{clickhouseDB}, nil
 }
