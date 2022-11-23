@@ -149,7 +149,7 @@ RETRY:
 
 			g.Go(func() error {
 				startTime := time.Now()
-				LogEvent(InfoLevel, "backfilling subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock()})
+				LogEvent(InfoLevel, "begin backfilling subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock()})
 
 				logs, err := f.filterer.FilterLogs(gCtx, ethereum.FilterQuery{
 					FromBlock: big.NewInt(int64(subChunkStartHeight)),
@@ -158,11 +158,11 @@ RETRY:
 				})
 
 				if err != nil {
-					LogEvent(WarnLevel, "Could not filter logs for range", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "e": err})
+					LogEvent(WarnLevel, "Could not filter logs for range", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock(), "e": err})
 					return fmt.Errorf("could not filter logs for range: %w", err)
 				}
 				processedSubChunks.Store(subChunkStartHeight, logs)
-				LogEvent(InfoLevel, "backfilling subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
+				LogEvent(InfoLevel, "backfilling subchunk", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
 
 				return nil
 			})
