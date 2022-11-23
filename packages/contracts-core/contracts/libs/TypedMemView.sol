@@ -48,7 +48,7 @@ library TypedMemView {
     // - recommended: implement modifiers that perform type checking
     // - - e.g.
     // - - `uint40 constant MY_TYPE = 3;`
-    // - - ` modifer onlyMyType(bytes29 myView) { myView.assertType(MY_TYPE); }`
+    // - - ` modifier onlyMyType(bytes29 myView) { myView.assertType(MY_TYPE); }`
     // - instantiate a typed view from a bytearray using `ref`
     // - use `index` to inspect the contents of the view
     // - use `slice` to create smaller views into the same memory
@@ -61,68 +61,37 @@ library TypedMemView {
 
     // The null view
     bytes29 public constant NULL = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-    uint256 public constant LOW_12_MASK = 0xffffffffffffffffffffffff;
-    uint8 public constant TWELVE_BYTES = 96;
 
     /**
-     * @notice      Returns the encoded hex character that represents
-     *              the lower 4 bits of the argument.
-     * @param _b    The byte
-     * @return      char - The encoded hex character
+     * @dev Memory layout for bytes29
+     * [000..005)   type     5 bytes    Type flag for the pointer
+     * [005..017)   loc     12 bytes    Memory address of underlying bytes
+     * [017..029)   len     12 bytes    Length of underlying bytes
+     * [029..032)   empty    3 bytes    Not used
      */
-    // solhint-disable-next-line code-complexity
-    function nibbleHex(uint8 _b) internal pure returns (uint8 char) {
-        // This can probably be done more efficiently, but it's only in error
-        // paths, so we don't really care :)
-        uint8 _nibble = _b | 0xf0; // set top 4, keep bottom 4
-        if (_nibble == 0xf0) {
-            return 0x30;
-        } // 0
-        if (_nibble == 0xf1) {
-            return 0x31;
-        } // 1
-        if (_nibble == 0xf2) {
-            return 0x32;
-        } // 2
-        if (_nibble == 0xf3) {
-            return 0x33;
-        } // 3
-        if (_nibble == 0xf4) {
-            return 0x34;
-        } // 4
-        if (_nibble == 0xf5) {
-            return 0x35;
-        } // 5
-        if (_nibble == 0xf6) {
-            return 0x36;
-        } // 6
-        if (_nibble == 0xf7) {
-            return 0x37;
-        } // 7
-        if (_nibble == 0xf8) {
-            return 0x38;
-        } // 8
-        if (_nibble == 0xf9) {
-            return 0x39;
-        } // 9
-        if (_nibble == 0xfa) {
-            return 0x61;
-        } // a
-        if (_nibble == 0xfb) {
-            return 0x62;
-        } // b
-        if (_nibble == 0xfc) {
-            return 0x63;
-        } // c
-        if (_nibble == 0xfd) {
-            return 0x64;
-        } // d
-        if (_nibble == 0xfe) {
-            return 0x65;
-        } // e
-        if (_nibble == 0xff) {
-            return 0x66;
-        } // f
+    uint256 public constant BITS_TYPE = 40;
+    uint256 public constant BITS_LOC = 96;
+    uint256 public constant BITS_LEN = 96;
+    uint256 public constant BITS_EMPTY = 24;
+
+    // `SHIFT_X` is how much bits to shift for `X` to be in the very bottom bits
+    uint256 public constant SHIFT_LEN = BITS_EMPTY; // 24
+    uint256 public constant SHIFT_LOC = SHIFT_LEN + BITS_LEN; // 24 + 96 = 120
+    uint256 public constant SHIFT_TYPE = SHIFT_LOC + BITS_LOC; // 24 + 96 + 96 = 216
+    // Bitmask for the lowest 96 bits
+    uint256 public constant LOW_96_BITS_MASK = type(uint96).max;
+
+    // For nibble encoding
+    bytes private constant NIBBLE_LOOKUP = "0123456789abcdef";
+
+    /**
+     * @notice Returns the encoded hex character that represents the lower 4 bits of the argument.
+     * @param _byte     The byte
+     * @return _char    The encoded hex character
+     */
+    function nibbleHex(uint8 _byte) internal pure returns (uint8 _char) {
+        uint8 _nibble = _byte & 0x0f; // keep bottom 4 bits, zero out top 4 bits
+        _char = uint8(NIBBLE_LOOKUP[_nibble]);
     }
 
     /**
@@ -256,6 +225,8 @@ library TypedMemView {
         uint256 _end = end(memView);
         assembly {
             // solhint-disable-previous-line no-inline-assembly
+            // View is valid if ("upper bound" <= "unallocated memory pointer")
+            // Upper bound is exclusive, hence "<="
             ret := not(gt(_end, mload(0x40)))
         }
     }
@@ -312,12 +283,16 @@ library TypedMemView {
      * @return          newView - The new view with the specified type
      */
     function castTo(bytes29 memView, uint40 _newType) internal pure returns (bytes29 newView) {
-        // then | in the new type
+        // How many bits are the "type bits" occupying
+        uint256 _bitsType = BITS_TYPE;
+        // How many bits are the "type bits" shifted from the bottom
+        uint256 _shiftType = SHIFT_TYPE;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            // shift off the top 5 bytes
-            newView := or(newView, shr(40, shl(40, memView)))
-            newView := or(newView, shl(216, _newType))
+            // shift off the "type bits" (shift left, then sift right)
+            newView := or(newView, shr(_bitsType, shl(_bitsType, memView)))
+            // set the new "type bits" (shift left, then OR)
+            newView := or(newView, shl(_shiftType, _newType))
         }
     }
 
@@ -336,16 +311,22 @@ library TypedMemView {
         uint256 _loc,
         uint256 _len
     ) private pure returns (bytes29 newView) {
-        /// @dev Ref memory layout
-        /// [000..005) 5 bytes of type
-        /// [005..017) 12 bytes of location
-        /// [017..029) 12 bytes of length
-        /// last 3 bits are blank and dropped in typecast
+        uint256 _bitsLoc = BITS_LOC;
+        uint256 _bitsLen = BITS_LEN;
+        uint256 _bitsEmpty = BITS_EMPTY;
+        // Ref memory layout
+        // [000..005) 5 bytes of type
+        // [005..017) 12 bytes of location
+        // [017..029) 12 bytes of length
+        // last 3 bits are blank and dropped in typecast
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            newView := shl(96, or(newView, _type)) // insert type
-            newView := shl(96, or(newView, _loc)) // insert loc
-            newView := shl(24, or(newView, _len)) // empty bottom 3 bytes
+            // insert `type`, shift to prepare empty bits for `loc`
+            newView := shl(_bitsLoc, or(newView, _type))
+            // insert `loc`, shift to prepare empty bits for `len`
+            newView := shl(_bitsLen, or(newView, _loc))
+            // insert `len`, shift to insert 3 blank lowest bits
+            newView := shl(_bitsEmpty, or(newView, _len))
         }
     }
 
@@ -389,11 +370,14 @@ library TypedMemView {
      */
     function ref(bytes memory arr, uint40 newType) internal pure returns (bytes29) {
         uint256 _len = arr.length;
-
+        // `bytes arr` is stored in memory in the following way
+        // 1. First, uint256 arr.length is stored. That requires 32 bytes (0x20).
+        // 2. Then, the array data is stored.
         uint256 _loc;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            _loc := add(arr, 0x20) // our view is of the data, not the struct
+            // We add 0x20, so that the view starts exactly where the array data starts
+            _loc := add(arr, 0x20)
         }
 
         return build(newType, _loc, _len);
@@ -405,10 +389,13 @@ library TypedMemView {
      * @return          _type - The type associated with the view
      */
     function typeOf(bytes29 memView) internal pure returns (uint40 _type) {
+        // How many bits are the "type bits" shifted from the bottom
+        uint256 _shiftType = SHIFT_TYPE;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            // 216 == 256 - 40
-            _type := shr(216, memView) // shift out lower 24 bytes
+            // Shift out the bottom bits preceding "type bits". "type bits" are occupying
+            // the highest bits, so all that's left is "type bits", OR is not required.
+            _type := shr(_shiftType, memView)
         }
     }
 
@@ -419,7 +406,8 @@ library TypedMemView {
      * @return          bool - True if the 5-byte type flag is equal
      */
     function sameType(bytes29 left, bytes29 right) internal pure returns (bool) {
-        return (left ^ right) >> (2 * TWELVE_BYTES) == 0;
+        // Check that the highest 5 bytes are equal: xor and shift out lower 27 bytes
+        return (left ^ right) >> SHIFT_TYPE == 0;
     }
 
     /**
@@ -428,11 +416,15 @@ library TypedMemView {
      * @return          _loc - The memory address
      */
     function loc(bytes29 memView) internal pure returns (uint96 _loc) {
-        uint256 _mask = LOW_12_MASK; // assembly can't use globals
+        // How many bits are the "loc bits" shifted from the bottom
+        uint256 _shiftLoc = SHIFT_LOC;
+        // Mask for the bottom 96 bits
+        uint256 _uint96Mask = LOW_96_BITS_MASK;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            // 120 bits = 12 bytes (the encoded loc) + 3 bytes (empty low space)
-            _loc := and(shr(120, memView), _mask)
+            // Shift out the bottom bits preceding "loc bits".
+            // Then use the lowest 96 bits to determine `loc` by applying the bit-mask.
+            _loc := and(shr(_shiftLoc, memView), _uint96Mask)
         }
     }
 
@@ -442,7 +434,8 @@ library TypedMemView {
      * @return          uint256 - The number of memory words
      */
     function words(bytes29 memView) internal pure returns (uint256) {
-        return (uint256(len(memView)) + 32) / 32;
+        // returning ceil(length / 32.0)
+        return (uint256(len(memView)) + 31) / 32;
     }
 
     /**
@@ -460,10 +453,15 @@ library TypedMemView {
      * @return          _len - The length of the view
      */
     function len(bytes29 memView) internal pure returns (uint96 _len) {
-        uint256 _mask = LOW_12_MASK; // assembly can't use globals
+        // How many bits are the "len bits" shifted from the bottom
+        uint256 _shiftLen = SHIFT_LEN;
+        // Mask for the bottom 96 bits
+        uint256 _uint96Mask = LOW_96_BITS_MASK;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            _len := and(shr(24, memView), _mask)
+            // Shift out the bottom bits preceding "len bits".
+            // Then use the lowest 96 bits to determine `len` by applying the bit-mask.
+            _len := and(shr(_shiftLen, memView), _uint96Mask)
         }
     }
 
@@ -610,9 +608,11 @@ library TypedMemView {
             bitLength = _bytes * 8;
         }
         uint256 _loc = loc(memView);
+        // Get a mask with `bitLength` highest bits set
         uint256 _mask = leftMask(bitLength);
         assembly {
             // solhint-disable-previous-line no-inline-assembly
+            // Load a full word using index offset, and apply mask to ignore non-relevant bytes
             result := and(mload(add(_loc, _index)), _mask)
         }
     }
@@ -630,6 +630,8 @@ library TypedMemView {
         uint256 _index,
         uint8 _bytes
     ) internal pure returns (uint256 result) {
+        // `index()` returns left-aligned `_bytes`, while integers are right-aligned
+        // Shifting here to right-align with the full 32 bytes word
         return uint256(index(memView, _index, _bytes)) >> ((32 - _bytes) * 8);
     }
 
@@ -656,6 +658,7 @@ library TypedMemView {
      * @return          address - The address
      */
     function indexAddress(bytes29 memView, uint256 _index) internal pure returns (address) {
+        // index 20 bytes as `uint160`, and then cast to `address`
         return address(uint160(indexUint(memView, _index, 20)));
     }
 
@@ -682,12 +685,15 @@ library TypedMemView {
     function sha2(bytes29 memView) internal view returns (bytes32 digest) {
         uint256 _loc = loc(memView);
         uint256 _len = len(memView);
+        bool res;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             let ptr := mload(0x40)
-            pop(staticcall(gas(), 2, _loc, _len, ptr, 0x20)) // sha2 #1
+            // sha2 precompile is 0x02
+            res := staticcall(gas(), 0x02, _loc, _len, ptr, 0x20)
             digest := mload(ptr)
         }
+        require(res, "sha2: out of gas");
     }
 
     /**
@@ -698,13 +704,17 @@ library TypedMemView {
     function hash160(bytes29 memView) internal view returns (bytes20 digest) {
         uint256 _loc = loc(memView);
         uint256 _len = len(memView);
+        bool res;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             let ptr := mload(0x40)
-            pop(staticcall(gas(), 2, _loc, _len, ptr, 0x20)) // sha2
-            pop(staticcall(gas(), 3, ptr, 0x20, ptr, 0x20)) // rmd160
+            // sha2 precompile is 0x02
+            res := staticcall(gas(), 0x02, _loc, _len, ptr, 0x20)
+            // rmd160 precompile is 0x03
+            res := and(res, staticcall(gas(), 0x03, ptr, 0x20, ptr, 0x20))
             digest := mload(add(ptr, 0xc)) // return value is 0-prefixed.
         }
+        require(res, "hash160: out of gas");
     }
 
     /**
@@ -715,13 +725,16 @@ library TypedMemView {
     function hash256(bytes29 memView) internal view returns (bytes32 digest) {
         uint256 _loc = loc(memView);
         uint256 _len = len(memView);
+        bool res;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             let ptr := mload(0x40)
-            pop(staticcall(gas(), 2, _loc, _len, ptr, 0x20)) // sha2 #1
-            pop(staticcall(gas(), 2, ptr, 0x20, ptr, 0x20)) // sha2 #2
+            // sha2 precompile is 0x02
+            res := staticcall(gas(), 0x02, _loc, _len, ptr, 0x20)
+            res := and(res, staticcall(gas(), 0x02, ptr, 0x20, ptr, 0x20))
             digest := mload(ptr)
         }
+        require(res, "hash256: out of gas");
     }
 
     /**
@@ -785,6 +798,7 @@ library TypedMemView {
         uint256 _oldLoc = loc(memView);
 
         uint256 ptr;
+        bool res;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             ptr := mload(0x40)
@@ -793,10 +807,10 @@ library TypedMemView {
                 revert(0x60, 0x20) // empty revert message
             }
 
-            // use the identity precompile to copy
-            // guaranteed not to fail, so pop the success
-            pop(staticcall(gas(), 4, _oldLoc, _len, _newLoc, _len))
+            // use the identity precompile (0x04) to copy
+            res := staticcall(gas(), 0x04, _oldLoc, _len, _newLoc, _len)
         }
+        require(res, "identity: out of gas");
 
         written = unsafeBuildUnchecked(typeOf(memView), _newLoc, _len);
     }
@@ -910,7 +924,7 @@ library TypedMemView {
 
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            // store the legnth
+            // store the length
             mstore(ptr, _written)
             // new pointer is old + 0x20 + the footprint of the body
             mstore(0x40, add(add(ptr, _footprint), 0x20))
