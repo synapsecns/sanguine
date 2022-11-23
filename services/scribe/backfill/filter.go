@@ -148,6 +148,9 @@ RETRY:
 			}
 
 			g.Go(func() error {
+				startTime := time.Now()
+				LogEvent(InfoLevel, "backfilling subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock()})
+
 				logs, err := f.filterer.FilterLogs(gCtx, ethereum.FilterQuery{
 					FromBlock: big.NewInt(int64(subChunkStartHeight)),
 					ToBlock:   big.NewInt(int64(subChunkEndHeight)),
@@ -155,10 +158,11 @@ RETRY:
 				})
 
 				if err != nil {
-					timeout = b.Duration()
 					LogEvent(WarnLevel, "Could not filter logs for range", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "e": err})
+					return fmt.Errorf("could not filter logs for range: %w", err)
 				}
 				processedSubChunks.Store(subChunkStartHeight, logs)
+				LogEvent(InfoLevel, "backfilling subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
 
 				return nil
 			})
@@ -166,7 +170,8 @@ RETRY:
 			chunkCountIdx++
 		}
 		if err := g.Wait(); err != nil {
-			LogEvent(ErrorLevel, "Error waiting for subchunks", LogData{"ca": f.contractAddress, "e": err})
+			timeout = b.Duration()
+			LogEvent(ErrorLevel, "Error waiting for subchunks, retrying", LogData{"ca": f.contractAddress, "e": err})
 			goto RETRY
 		}
 		var logsArr []types.Log
@@ -174,20 +179,18 @@ RETRY:
 		for chunkCountIdx < subChunkCount {
 			subChunkStartHeight := chunk.MinBlock().Uint64() + (chunkCountIdx * subChunkSize)
 
-			subChunkEndHeight := subChunkStartHeight + subChunkSize - 1
-
-			if subChunkEndHeight >= chunk.MaxBlock().Uint64() {
-				subChunkEndHeight = chunk.MaxBlock().Uint64()
+			if subChunkStartHeight+subChunkSize-1 >= chunk.MaxBlock().Uint64() {
 				chunkCountIdx = subChunkCount
 			}
+
 			logs, ok := processedSubChunks.Load(subChunkStartHeight)
 			if !ok {
-				LogEvent(ErrorLevel, "could not load logs for subchunk", LogData{"ca": f.contractAddress, "sh": subChunkStartHeight, "eh": subChunkEndHeight})
+				LogEvent(ErrorLevel, "could not load logs for subchunk", LogData{"ca": f.contractAddress, "sh": subChunkStartHeight})
 				goto RETRY
 			}
 			logsUnwrapped, ok := logs.([]types.Log)
 			if !ok {
-				LogEvent(ErrorLevel, "could not unwrap logs for subchunk", LogData{"ca": f.contractAddress, "sh": subChunkStartHeight, "eh": subChunkEndHeight})
+				LogEvent(ErrorLevel, "could not unwrap logs for subchunk", LogData{"ca": f.contractAddress, "sh": subChunkStartHeight})
 				goto RETRY
 			}
 			logsArr = append(logsArr, logsUnwrapped...)
