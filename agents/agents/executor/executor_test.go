@@ -195,7 +195,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 			simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 		}
 	}()
-	
+
 	e.Eventually(func() bool {
 		return len(exec.LogChans[chainID]) == 250
 	})
