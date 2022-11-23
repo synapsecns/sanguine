@@ -92,6 +92,7 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 	swapParsers := make(map[common.Address]*parser.SwapParser)
 
 	var bridgeParser *parser.BridgeParser
+	var messageBusParser *parser.MessageBusParser
 
 	for i := range chainConfig.Contracts {
 		switch chainConfig.Contracts[i].ContractType {
@@ -112,10 +113,15 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 			}
 
 			swapParsers[common.HexToAddress(chainConfig.Contracts[i].Address)] = swapParser
+		case "messagebus":
+			messageBusParser, err = parser.NewMessageBusParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher)
+			if err != nil || messageBusParser == nil {
+				return nil, fmt.Errorf("could not create message bus parser: %w", err)
+			}
 		}
 	}
 
-	chainBackfiller := backfill.NewChainBackfiller(consumerDB, bridgeParser, swapParsers, *fetcher, chainConfig)
+	chainBackfiller := backfill.NewChainBackfiller(consumerDB, bridgeParser, swapParsers, messageBusParser, *fetcher, chainConfig)
 
 	return chainBackfiller, nil
 }

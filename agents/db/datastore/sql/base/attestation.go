@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/agents/db"
 
 	"github.com/synapsecns/sanguine/agents/types"
@@ -23,10 +24,11 @@ func (s Store) StoreSignedAttestations(ctx context.Context, attestation types.Si
 		Columns:   []clause.Column{{Name: DomainIDFieldName}, {Name: NonceFieldName}},
 		DoNothing: true,
 	}).Create(&SignedAttestation{
-		SADomain:    attestation.Attestation().Domain(),
-		SANonce:     attestation.Attestation().Nonce(),
-		SARoot:      core.BytesToSlice(attestation.Attestation().Root()),
-		SASignature: sig,
+		SAOrigin:      attestation.Attestation().Origin(),
+		SADestination: attestation.Attestation().Destination(),
+		SANonce:       attestation.Attestation().Nonce(),
+		SARoot:        core.BytesToSlice(attestation.Attestation().Root()),
+		SASignature:   sig,
 	})
 
 	if tx.Error != nil {
@@ -36,10 +38,11 @@ func (s Store) StoreSignedAttestations(ctx context.Context, attestation types.Si
 }
 
 // RetrieveSignedAttestationByNonce retrieves a signed attestation by nonce.
+// TODO (joe): This will need to be updated after we make the Global Registry changes.
 func (s Store) RetrieveSignedAttestationByNonce(ctx context.Context, domainID, nonce uint32) (attestation types.SignedAttestation, err error) {
 	var signedAttestation SignedAttestation
 	tx := s.DB().WithContext(ctx).Model(&SignedAttestation{}).Where(&SignedAttestation{
-		SADomain: domainID,
+		SAOrigin: domainID,
 		SANonce:  nonce,
 	}).First(&signedAttestation)
 

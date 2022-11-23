@@ -2,7 +2,10 @@ package client_test
 
 import (
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/lmittmann/w3/module/eth"
+	"github.com/lmittmann/w3/w3types"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
@@ -78,4 +81,27 @@ func (c *ClientSuite) maxHeightSubscription(testClient client.TestClient) *maxHe
 		}
 	}()
 	return &tracker
+}
+
+func (c *ClientSuite) TestBatch() {
+	backend := geth.NewEmbeddedBackend(c.GetTestContext(), c.T())
+
+	caller, err := client.NewClient(c.GetTestContext(), backend.RPCAddress())
+	Nil(c.T(), err)
+
+	const callCount = 10
+
+	calls := make([]w3types.Caller, callCount)
+	res := make([]uint64, callCount)
+
+	for i := 0; i < callCount; i++ {
+		calls[i] = eth.ChainID().Returns(&res[i])
+	}
+
+	err = caller.BatchContext(c.GetTestContext(), calls...)
+	Nil(c.T(), err)
+
+	for _, chainID := range res {
+		Equal(c.T(), chainID, uint64(backend.GetChainID()))
+	}
 }

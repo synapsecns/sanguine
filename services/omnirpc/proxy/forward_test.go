@@ -87,10 +87,10 @@ func (p *ProxySuite) TestAcquireReleaseForwarder() {
 	forwarder.SetRequestID([]byte(uuid.New().String()))
 	forwarder.SetRequiredConfirmations(gofakeit.Uint16())
 	forwarder.SetBlankResMap()
-	forwarder.SetRPCRequest(&proxy.RPCRequest{
+	forwarder.SetRPCRequest([]proxy.RPCRequest{{
 		ID:     []byte(strconv.Itoa(gofakeit.Number(1, 2))),
 		Method: gofakeit.Word(),
-	})
+	}})
 	prxy.ReleaseForwarder(forwarder)
 
 	forwarder = prxy.AcquireForwarder()
@@ -155,7 +155,7 @@ func (p *ProxySuite) TestForwardRequest() {
 	forwarder := prxy.AcquireForwarder()
 	forwarder.SetBody(testBody)
 	forwarder.SetRequestID([]byte(testRequestID))
-	forwarder.SetRPCRequest(&proxy.RPCRequest{Method: methodName})
+	forwarder.SetRPCRequest([]proxy.RPCRequest{{Method: methodName}})
 
 	_, err := forwarder.ForwardRequest(p.GetTestContext(), testURL)
 	Nil(p.T(), err)

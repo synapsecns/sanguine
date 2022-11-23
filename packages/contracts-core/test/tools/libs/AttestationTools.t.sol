@@ -12,9 +12,13 @@ abstract contract AttestationTools is SynapseTestSuite {
     uint32 private mockNonce = 42;
     // Saved attestation data
     address internal attestationNotary;
-    uint32 internal attestationDomain;
+    uint32 internal attestationOrigin;
+    uint32 internal attestationDestination;
     uint32 internal attestationNonce;
     bytes32 internal attestationRoot;
+    // Saved attestation ids
+    uint64 internal attestationDomains;
+    uint96 internal attestationKey;
     // Saved attestation payloads
     bytes internal attestationRaw;
     bytes internal signatureNotary;
@@ -25,47 +29,59 @@ abstract contract AttestationTools is SynapseTestSuite {
 
     // Chain's default notary attestation with given nonce and given root
     function createAttestation(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 nonce,
         bytes32 root
     ) public {
         // Use first Notary by default
-        createAttestation({ domain: domain, nonce: nonce, root: root, notaryIndex: 0 });
+        createAttestation({
+            origin: origin,
+            destination: destination,
+            nonce: nonce,
+            root: root,
+            notaryIndex: 0
+        });
     }
 
     // Chain's given notary attestation with given nonce and given root
     function createAttestation(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 nonce,
         bytes32 root,
         uint256 notaryIndex
     ) public {
         createAttestation({
-            domain: domain,
+            origin: origin,
+            destination: destination,
             nonce: nonce,
             root: root,
-            signer: suiteNotary(domain, notaryIndex),
+            signer: suiteNotary(origin, notaryIndex),
             salt: notaryIndex
         });
     }
 
     // Signer's attestation with given nonce and given root
     function createAttestation(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 nonce,
         bytes32 root,
         address signer,
         uint256 salt
     ) public {
-        saveAttestationData(domain, signer);
+        saveAttestationData(origin, destination, signer);
         saveMockableAttestationData(nonce, root, salt);
+        saveAttestationIDs();
         createAttestation();
     }
 
     // Create attestation using all the saved data
     function createAttestation() public {
         (attestationRaw, signatureNotary) = signAttestation(
-            attestationDomain,
+            attestationOrigin,
+            attestationDestination,
             attestationNonce,
             attestationRoot,
             attestationNotary
@@ -77,35 +93,52 @@ abstract contract AttestationTools is SynapseTestSuite {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // Chain's default notary attestation with mocked nonce and root
-    function createAttestationMock(uint32 domain) public {
-        createAttestationMock(domain, MOCK_ATTESTATION_NONCE);
+    function createAttestationMock(uint32 origin, uint32 destination) public {
+        createAttestationMock(origin, destination, MOCK_ATTESTATION_NONCE);
     }
 
     // Chain's default notary attestation with given nonce and mocked root
-    function createAttestationMock(uint32 domain, uint32 nonce) public {
-        createAttestationMock({ domain: domain, nonce: nonce, notaryIndex: 0, salt: 0 });
+    function createAttestationMock(
+        uint32 origin,
+        uint32 destination,
+        uint32 nonce
+    ) public {
+        createAttestationMock({
+            origin: origin,
+            destination: destination,
+            nonce: nonce,
+            notaryIndex: 0,
+            salt: 0
+        });
     }
 
     // Chain's given notary attestation with given nonce and mocked root
     function createAttestationMock(
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 nonce,
         uint256 notaryIndex,
         uint256 salt
     ) public {
         createAttestation({
-            domain: domain,
+            origin: origin,
+            destination: destination,
             nonce: nonce,
             root: MOCK_ATTESTATION_ROOT,
-            signer: suiteNotary(domain, notaryIndex),
+            signer: suiteNotary(origin, notaryIndex),
             salt: salt
         });
     }
 
     // Signer's attestation with mocked nonce and root
-    function createAttestationMock(uint32 domain, address signer) public {
+    function createAttestationMock(
+        uint32 origin,
+        uint32 destination,
+        address signer
+    ) public {
         createAttestation({
-            domain: domain,
+            origin: origin,
+            destination: destination,
             nonce: MOCK_ATTESTATION_NONCE,
             root: MOCK_ATTESTATION_ROOT,
             signer: signer,
@@ -117,8 +150,13 @@ abstract contract AttestationTools is SynapseTestSuite {
     ▏*║                            SAVE TEST DATA                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function saveAttestationData(uint32 domain, address signer) public {
-        attestationDomain = domain;
+    function saveAttestationData(
+        uint32 origin,
+        uint32 destination,
+        address signer
+    ) public {
+        attestationOrigin = origin;
+        attestationDestination = destination;
         attestationNotary = signer;
     }
 
@@ -133,6 +171,18 @@ abstract contract AttestationTools is SynapseTestSuite {
         attestationRoot = root == MOCK_ATTESTATION_ROOT
             ? _createMockRoot(attestationNonce, salt)
             : root;
+    }
+
+    function saveAttestationIDs() public {
+        attestationDomains = Attestation.attestationDomains(
+            attestationOrigin,
+            attestationDestination
+        );
+        attestationKey = Attestation.attestationKey(
+            attestationOrigin,
+            attestationDestination,
+            attestationNonce
+        );
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

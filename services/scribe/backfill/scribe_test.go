@@ -1,11 +1,12 @@
 package backfill_test
 
 import (
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"math/big"
+	"sync"
 
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -23,17 +24,40 @@ func (b BackfillSuite) TestScribeBackfill() {
 	chainB := chainA + 1
 	chainC := chainB + 1
 	chains := []uint32{chainA, chainB, chainC}
-	simulatedBackends := []*simulated.Backend{}
-	for _, chain := range chains {
-		simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chain)))
-		simulatedBackends = append(simulatedBackends, simulatedChain)
+
+	simulatedBackends := make([]*geth.Backend, len(chains))
+	simulatedClients := make([]backfill.ScribeBackend, len(chains))
+
+	var wg sync.WaitGroup
+	var mux sync.Mutex
+
+	for i, chain := range chains {
+		// capture func literals
+		chain := chain
+		i := i
+
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			simulatedBackend := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chain)))
+			simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedBackend.RPCAddress())
+			Nil(b.T(), err)
+
+			mux.Lock()
+			defer mux.Unlock()
+			simulatedBackends[i] = simulatedBackend
+			simulatedClients[i] = simulatedClient
+		}()
 	}
+	wg.Wait()
+
 	type deployedContracts []contracts.DeployedContract
 	type contractRefs []*testcontract.TestContractRef
 	type startBlocks []uint64
-	allDeployedContracts := []deployedContracts{}
-	allContractRefs := []contractRefs{}
-	allStartBlocks := []startBlocks{}
+	var allDeployedContracts []deployedContracts
+	var allContractRefs []contractRefs
+	var allStartBlocks []startBlocks
 	// Deploy test contracts to each chain.
 	for _, backend := range simulatedBackends {
 		// We need to set up multiple deploy managers, one for each contract. We will use
@@ -88,15 +112,18 @@ func (b BackfillSuite) TestScribeBackfill() {
 	// Set up all chain backfillers.
 	chainBackfillers := []*backfill.ChainBackfiller{}
 	for i, chainConfig := range allChainConfigs {
-		simulatedChainArr := []backfill.ScribeBackend{simulatedBackends[i], simulatedBackends[i]}
+		simulatedChainArr := []backfill.ScribeBackend{simulatedClients[i], simulatedClients[i]}
 		chainBackfiller, err := backfill.NewChainBackfiller(chainConfig.ChainID, b.testDB, simulatedChainArr, chainConfig)
 		Nil(b.T(), err)
 		chainBackfillers = append(chainBackfillers, chainBackfiller)
 	}
 
 	scribeBackends := make(map[uint32][]backfill.ScribeBackend)
-	for _, backend := range simulatedBackends {
-		simulatedChainArr := []backfill.ScribeBackend{backend, backend}
+	for i := range simulatedBackends {
+		client := simulatedClients[i]
+		backend := simulatedBackends[i]
+
+		simulatedChainArr := []backfill.ScribeBackend{client, client}
 		scribeBackends[uint32(backend.GetChainID())] = simulatedChainArr
 	}
 

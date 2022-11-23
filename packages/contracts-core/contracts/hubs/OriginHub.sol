@@ -14,8 +14,8 @@ import { ReportHub } from "./ReportHub.sol";
 import { MerkleLib } from "../libs/Merkle.sol";
 
 /**
- * @notice Inserts new message hashes into the Merkle Tree,
- * and keeps track of the historical merkle state.
+ * @notice Inserts new message hashes into the Merkle Trees by destination chain domain,
+ * and keeps track of the historical merkle state for each destination.
  * Keeps track of this domain's Notaries and all Guards: accepts
  * and checks their attestations/reports related to Origin.
  */
@@ -36,45 +36,81 @@ abstract contract OriginHub is
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // Merkle Tree containing all hashes of sent messages
-    MerkleLib.Tree internal tree;
-    // Merkle tree roots after inserting a sent message
-    bytes32[] public historicalRoots;
+    // [destination domain] => [Merkle Tree containing all hashes of sent messages to that domain]
+    mapping(uint32 => MerkleLib.Tree) internal trees;
+    // [destination domain] => [Merkle tree roots after inserting a sent message to that domain]
+    mapping(uint32 => bytes32[]) internal historicalRoots;
 
     // gap for upgrade safety
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
+
+    // Merkle root for an empty merkle tree.
+    bytes32 internal constant EMPTY_TREE_ROOT =
+        hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757";
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Suggest an attestation for the off-chain actors to sign and submit.
+     * @notice Suggest attestation for the off-chain actors to sign for a specific destination.
+     * Note: signing the suggested attestation will will never lead
+     * to slashing of the actor, assuming they have confirmed that the block, where the merkle root
+     * was updated, is not subject to reorganization (which is different for every observed chain).
      * @dev If no messages have been sent, following values are returned:
      * - nonce = 0
      * - root = 0x27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757
-     * Which is the merkle root for an empty sparse merkle tree.
+     * Which is the merkle root for an empty merkle tree.
      * @return latestNonce Current nonce
      * @return latestRoot  Current merkle root
      */
-    function suggestAttestation() external view returns (uint32 latestNonce, bytes32 latestRoot) {
-        latestNonce = nonce();
-        latestRoot = historicalRoots[latestNonce];
+    function suggestAttestation(uint32 _destination)
+        external
+        view
+        returns (uint32 latestNonce, bytes32 latestRoot)
+    {
+        latestNonce = nonce(_destination);
+        latestRoot = getHistoricalRoot(_destination, latestNonce);
+    }
+
+    // TODO: add suggestAttestations() once OriginHub inherits from GlobalNotaryRegistry
+
+    /**
+     * @notice Returns a historical merkle root for the given destination.
+     * Note: signing the attestation with the given historical root will never lead
+     * to slashing of the actor, assuming they have confirmed that the block, where the merkle root
+     * was updated, is not subject to reorganization (which is different for every observed chain).
+     * @param _destination  Destination domain
+     * @param _nonce        Historical nonce
+     * @return Root for destination's merkle tree right after message to `_destination`
+     * with `nonce = _nonce` was dispatched.
+     */
+    function getHistoricalRoot(uint32 _destination, uint32 _nonce) public view returns (bytes32) {
+        // Check if destination is known
+        if (historicalRoots[_destination].length > 0) {
+            // Check if nonce exists
+            require(_nonce < historicalRoots[_destination].length, "!nonce: existing destination");
+            return historicalRoots[_destination][_nonce];
+        } else {
+            // If destination is unknown, we have the root of an empty merkle tree
+            require(_nonce == 0, "!nonce: unknown destination");
+            return EMPTY_TREE_ROOT;
+        }
     }
 
     /**
-     * @notice Returns nonce of the last inserted Merkle root, which is also
-     * the number of inserted leaves in the tree (current index).
+     * @notice Returns nonce of the last inserted Merkle root for the given destination,
+     * which is also the number of inserted leaves in the destination merkle tree (current index).
      */
-    function nonce() public view returns (uint32 latestNonce) {
-        latestNonce = uint32(_getTreeCount());
+    function nonce(uint32 _destination) public view returns (uint32 latestNonce) {
+        latestNonce = uint32(_getTreeCount(_destination));
     }
 
     /**
-     * @notice Calculates and returns tree's current root.
+     * @notice Calculates and returns tree's current root for the given destination.
      */
-    function root() public view returns (bytes32) {
-        return tree.root(_getTreeCount());
+    function root(uint32 _destination) public view returns (bytes32) {
+        return trees[_destination].root(_getTreeCount(_destination));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -84,10 +120,10 @@ abstract contract OriginHub is
     /**
      * @notice Checks if a submitted Attestation is a valid Attestation.
      * Attestation Flag can be either "Fraud" or "Valid".
-     * A "Fraud" Attestation is a (_nonce, _root) attestation that doesn't correspond with
-     * the historical state of Origin contract. Either of these needs to be true:
-     * - _nonce is higher than current nonce (no root exists for this nonce)
-     * - _root is not equal to the historical root of _nonce
+     * A "Fraud" Attestation is a (_destination, _nonce, _root) attestation that doesn't correspond
+     * with the historical state of Origin contract. Either of these needs to be true:
+     * - _nonce is higher than current nonce for _destination (no root exists for this nonce)
+     * - _root is not equal to the historical root of _nonce for _destination
      * This would mean that message(s) that were not truly
      * dispatched on Origin were falsely included in the signed root.
      *
@@ -109,13 +145,14 @@ abstract contract OriginHub is
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool isValid) {
+        uint32 attestedDestination = _attestationView.attestedDestination();
         uint32 attestedNonce = _attestationView.attestedNonce();
         bytes32 attestedRoot = _attestationView.attestedRoot();
-        isValid = _isValidAttestation(attestedNonce, attestedRoot);
+        isValid = _isValidAttestation(attestedDestination, attestedNonce, attestedRoot);
         if (!isValid) {
             emit FraudAttestation(_notary, _attestation);
             // Guard doesn't receive anything, as Notary wasn't slashed using the Fraud Report
-            _slashNotary(_notary, address(0));
+            _slashNotary({ _domain: _localDomain(), _notary: _notary, _guard: address(0) });
             /**
              * TODO: design incentives for the reporter in a way, where they get less
              * by reporting directly instead of using a correct Fraud Report.
@@ -140,10 +177,10 @@ abstract contract OriginHub is
      *      Notary is slashed (if they haven't been already), but Guard doesn't receive
      *      any rewards (as their report indicated that the attestation was valid).
      *
-     * A Fraud Attestation is a (_nonce, _root) attestation that doesn't correspond with
-     * the historical state of Origin contract. Either of those needs to be true:
-     * - _nonce is higher than current nonce (no root exists for this nonce)
-     * - _root is not equal to the historical root of _nonce
+     * A "Fraud" Attestation is a (_destination, _nonce, _root) attestation that doesn't correspond
+     * with the historical state of Origin contract. Either of these needs to be true:
+     * - _nonce is higher than current nonce for _destination (no root exists for this nonce)
+     * - _root is not equal to the historical root of _nonce for _destination
      * This would mean that message(s) that were not truly
      * dispatched on Origin were falsely included in the signed root.
      *
@@ -169,9 +206,10 @@ abstract contract OriginHub is
         bytes29 _reportView,
         bytes memory _report
     ) internal override returns (bool) {
+        uint32 attestedDestination = _attestationView.attestedDestination();
         uint32 attestedNonce = _attestationView.attestedNonce();
         bytes32 attestedRoot = _attestationView.attestedRoot();
-        if (_isValidAttestation(attestedNonce, attestedRoot)) {
+        if (_isValidAttestation(attestedDestination, attestedNonce, attestedRoot)) {
             // Attestation: Valid
             if (_reportView.reportedFraud()) {
                 // Flag: Fraud
@@ -191,7 +229,7 @@ abstract contract OriginHub is
                 // Report is correct, slash the Notary
                 emit CorrectFraudReport(_guard, _report);
                 emit FraudAttestation(_notary, _attestationView.clone());
-                _slashNotary(_notary, _guard);
+                _slashNotary({ _domain: _localDomain(), _notary: _notary, _guard: _guard });
                 return true;
             } else {
                 // Flag: Valid
@@ -200,50 +238,64 @@ abstract contract OriginHub is
                 _slashGuard(_guard);
                 emit FraudAttestation(_notary, _attestationView.clone());
                 // Guard doesn't receive anything due to Valid flag on the Report
-                _slashNotary(_notary, address(0));
+                _slashNotary({ _domain: _localDomain(), _notary: _notary, _guard: address(0) });
                 return false;
             }
         }
     }
 
     /**
-     * @notice Inserts a merkle root for an empty sparse merkle tree
-     * into the historical roots array.
+     * @notice Inserts a merkle root for an empty merkle tree into the historical roots array
+     * for the given destination.
      * @dev This enables:
      * - Counting nonces from 1 (nonce=0 meaning no messages have been sent).
      * - Not slashing the Notaries for signing an attestation for an empty tree
      * (assuming they sign the correct root outlined below).
      */
-    function _initializeHistoricalRoots() internal {
-        // This function should only be called only if array is empty
-        assert(historicalRoots.length == 0);
+    function _initializeHistoricalRoots(uint32 _destination) internal {
+        // This function should only be called only if the array is empty
+        assert(historicalRoots[_destination].length == 0);
         // Insert a historical root so nonces start at 1 rather then 0.
-        // Here we insert the default root of a sparse merkle tree
-        historicalRoots.push(hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757");
+        // Here we insert the root of an empty merkle tree
+        historicalRoots[_destination].push(EMPTY_TREE_ROOT);
     }
 
     /**
-     * @notice Inserts new message into the Merkle tree and stores the new merkle root.
+     * @notice Inserts new message into the Merkle tree for the given destination
+     * and stores the new merkle root.
+     * @param _destination  Destination domain of the dispatched message
      * @param _messageNonce Nonce of the dispatched message
      * @param _messageHash  Hash of the dispatched message
      */
-    function _insertMessage(uint32 _messageNonce, bytes32 _messageHash) internal {
+    function _insertMessage(
+        uint32 _destination,
+        uint32 _messageNonce,
+        bytes32 _messageHash
+    ) internal {
+        // TODO: when Notary is active on Destination, initialize historical roots
+        // upon adding a first Notary for given destination
+        if (historicalRoots[_destination].length == 0) _initializeHistoricalRoots(_destination);
         /// @dev _messageNonce == tree.count() + 1
         // tree.insert() requires amount of leaves AFTER the leaf insertion (i.e. tree.count() + 1)
-        tree.insert(_messageNonce, _messageHash);
+        trees[_destination].insert(_messageNonce, _messageHash);
         /// @dev leaf is inserted => _messageNonce == tree.count()
         // tree.root() requires current amount of leaves (i.e. tree.count())
-        historicalRoots.push(tree.root(_messageNonce));
+        historicalRoots[_destination].push(trees[_destination].root(_messageNonce));
     }
 
     /**
      * @notice Child contract should implement the slashing logic for Notaries
      * with all the required system calls.
      * @dev Called when fraud is proven (Fraud Attestation).
+     * @param _domain   Domain where the reported Notary is active
      * @param _notary   Notary to slash
      * @param _guard    Guard who reported fraudulent Notary [address(0) if not a Guard report]
      */
-    function _slashNotary(address _notary, address _guard) internal virtual;
+    function _slashNotary(
+        uint32 _domain,
+        address _notary,
+        address _guard
+    ) internal virtual;
 
     /**
      * @notice Child contract should implement the slashing logic for Guards
@@ -258,25 +310,40 @@ abstract contract OriginHub is
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns whether (_nonce, _root) matches the historical state
-     * of the Merkle Tree.
+     * @notice Returns whether (_destination, _nonce, _root) matches the historical state
+     * of the Merkle Tree for that destination.
+     * @dev For `_nonce == 0`: root has to match `EMPTY_TREE_ROOT` (root of an empty merkle tree)
+     * For `_nonce != 0`:
+     * - There has to be at least `_nonce` messages sent to `_destination`
+     * - Merkle root after sending message with `nonce == _nonce` should match `_root`
      */
-    function _isValidAttestation(uint32 _nonce, bytes32 _root) internal view returns (bool) {
-        // Check if nonce is valid, if not => attestation is fraud
-        // Check if root the same as the historical one, if not => attestation is fraud
-        return (_nonce < historicalRoots.length && _root == historicalRoots[_nonce]);
+    function _isValidAttestation(
+        uint32 _destination,
+        uint32 _nonce,
+        bytes32 _root
+    ) internal view returns (bool) {
+        if (_nonce < historicalRoots[_destination].length) {
+            // If a nonce exists for a given destination,
+            // a root should match the historical root
+            return _root == historicalRoots[_destination][_nonce];
+        }
+        // If a nonce doesn't exist for a given destination,
+        // it should be a zero nonce with a root of an empty merkle tree
+        return _nonce == 0 && _root == EMPTY_TREE_ROOT;
     }
 
     /**
-     * @notice Returns amount of leaves in the merkle tree.
+     * @notice Returns amount of leaves in the merkle tree for the given destination.
      * @dev Every inserted leaf leads to adding a historical root,
      * removing the necessity to store amount of leaves separately.
-     * Historical roots array is initialized with a root of an empty Sparse Merkle tree,
+     * Historical roots array is initialized with a root of an empty Merkle tree,
      * thus actual amount of leaves is lower by one.
      */
-    function _getTreeCount() internal view returns (uint256) {
-        // historicalRoots has length of 1 upon initializing,
-        // so this never underflows assuming contract was initialized
-        return historicalRoots.length - 1;
+    function _getTreeCount(uint32 _destination) internal view returns (uint256) {
+        // if no historical roots are saved, destination is unknown, and there were
+        // no dispatched messages to that destination
+        if (historicalRoots[_destination].length == 0) return 0;
+        // We subtract 1, as the very first inserted root is EMPTY_TREE_ROOT
+        return historicalRoots[_destination].length - 1;
     }
 }

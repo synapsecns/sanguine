@@ -11,6 +11,14 @@ contract TestMemView is Test {
 
     event DEBUG(bytes29 indexed a, bytes29 indexed b);
 
+    function test_hashing(uint8 length) public {
+        bytes memory data = new bytes(length);
+        bytes29 dataView = TypedMemView.ref(data, 0);
+        assertEq(dataView.sha2(), sha256(data), "!sha2");
+        assertEq(dataView.hash160(), ripemd160(bytes.concat(sha256(data))), "!hash160");
+        assertEq(dataView.hash256(), sha256(bytes.concat(sha256(data))), "!hash256");
+    }
+
     function test_SameBody() public pure {
         // 38 bytes
         // Same body, different locations

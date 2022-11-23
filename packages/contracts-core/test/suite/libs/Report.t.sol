@@ -28,12 +28,18 @@ contract ReportLibraryTest is SynapseLibraryTest {
 
     function test_formattedCorrectly(
         bool isFraud,
-        uint32 domain,
+        uint32 origin,
+        uint32 destination,
         uint32 nonce,
         bytes32 root
     ) public {
         // Prepare attestation - this has been tested in a dedicated unit test
-        bytes memory attestationData = Attestation.formatAttestationData(domain, nonce, root);
+        bytes memory attestationData = Attestation.formatAttestationData(
+            origin,
+            destination,
+            nonce,
+            root
+        );
         bytes memory notarySig = signMessage(NOTARY_PRIV_KEY, attestationData);
         bytes memory attestation = Attestation.formatAttestation(attestationData, notarySig);
         // Prepare report data
@@ -86,7 +92,7 @@ contract ReportLibraryTest is SynapseLibraryTest {
             payload: report,
             expectedType: SynapseTypes.REPORT_DATA,
             expectedData: reportData,
-            revertMessage: "!reportedAttestation"
+            revertMessage: "!reportData"
         });
         checkBytes29Getter({
             getter: libHarness.guardSignature,
@@ -94,7 +100,7 @@ contract ReportLibraryTest is SynapseLibraryTest {
             payload: report,
             expectedType: SynapseTypes.SIGNATURE,
             expectedData: guardSig,
-            revertMessage: "!reportedAttestation"
+            revertMessage: "!guardSignature"
         });
     }
 

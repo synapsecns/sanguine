@@ -34,6 +34,8 @@ func (b *BackfillSuite) TestBackfill() {
 	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
 	bridgeV1Contract, bridgeV1Ref := b.testDeployManager.GetTestSynapseBridgeV1(b.GetTestContext(), b.testBackend)
 	swapContractA, swapRefA := b.testDeployManager.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
+	messageBusContract, _ := b.testDeployManager.GetTestMessageBusUpgradeable(b.GetTestContext(), b.testBackend)
+
 	testDeployManagerB := testcontracts.NewDeployManager(b.T())
 	swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
 
@@ -61,6 +63,11 @@ func (b *BackfillSuite) TestBackfill() {
 		Address:      swapContractB.Address().String(),
 		StartBlock:   0,
 	}
+	contractMessageBus := config.ContractConfig{
+		ContractType: "messagebus",
+		Address:      messageBusContract.Address().String(),
+		StartBlock:   0,
+	}
 
 	// Create the chain configs
 	chainConfigs := []config.ChainConfig{
@@ -69,7 +76,7 @@ func (b *BackfillSuite) TestBackfill() {
 			RPCURL:              gofakeit.URL(),
 			FetchBlockIncrement: 100,
 			MaxGoroutines:       5,
-			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2},
+			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus},
 		},
 	}
 	chainConfigsV1 := []config.ChainConfig{
@@ -78,7 +85,7 @@ func (b *BackfillSuite) TestBackfill() {
 			RPCURL:              gofakeit.URL(),
 			FetchBlockIncrement: 100,
 			MaxGoroutines:       5,
-			Contracts:           []config.ContractConfig{contractConfigBridgeV1, contractConfigSwap1, contractConfigSwap2},
+			Contracts:           []config.ContractConfig{contractConfigBridgeV1, contractConfigSwap1, contractConfigSwap2, contractMessageBus},
 		},
 	}
 
@@ -284,9 +291,13 @@ func (b *BackfillSuite) TestBackfill() {
 	spMap[swapContractB.Address()] = spB
 	f := fetcher.NewFetcher(b.gqlClient)
 
+	// Set up message bus parser
+	mbp, err := parser.NewMessageBusParser(b.db, messageBusContract.Address(), b.consumerFetcher)
+	Nil(b.T(), err)
+
 	// Test the first chain in the config file
-	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, *f, chainConfigs[0])
-	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, *f, chainConfigsV1[0])
+	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, mbp, *f, chainConfigs[0])
+	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, *f, chainConfigsV1[0])
 
 	// Backfill the blocks
 	// TODO: store the latest block number to query to in scribe db

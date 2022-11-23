@@ -42,7 +42,7 @@ func (s GasSuite) TestGasPriceEstimator() {
 		GasPrice: price,
 		To:       &to,
 		Value:    big.NewInt(params.GWei),
-	}), types.LatestSignerForChainID(testChain.Chain.ChainConfig().ChainID), acct.PrivateKey)
+	}), types.LatestSignerForChainID(testChain.Chain.GetBigChainID()), acct.PrivateKey)
 	Nil(s.T(), err)
 
 	err = testChain.SendTransaction(s.GetTestContext(), signedTx)
