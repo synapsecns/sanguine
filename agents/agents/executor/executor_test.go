@@ -194,7 +194,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 
 	exec.Stop(chainID)
 
-	//e.Eventually(func() bool {
+	// e.Eventually(func() bool {
 	//	return len(exec.LogChans[chainID]) == 250
 	//})
 	//
