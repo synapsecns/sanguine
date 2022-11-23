@@ -277,7 +277,6 @@ func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight 
 	// Require 2 confirmations for Binance Smart Chain, due to "not found" error.
 	if c.chainID == 56 {
 		rangeFilter = NewRangeFilter(common.HexToAddress(c.address), c.client[1], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
-
 	}
 	g, ctx := errgroup.WithContext(ctx)
 
