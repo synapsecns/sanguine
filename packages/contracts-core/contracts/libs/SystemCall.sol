@@ -31,11 +31,11 @@ library SystemCall {
     uint256 internal constant OFFSET_CALL_PAYLOAD = 1;
 
     /**
-     * @dev System Router is supposed to append (origin, caller) to the given payload,
-     * meaning for a valid system call payload there have to exist at least two arguments,
-     * occupying at least two words in total.
+     * @dev System Router is supposed to modify (rootSubmittedAt, origin, caller)
+     * in the given payload, meaning for a valid system call payload
+     * there has to exist at least three arguments, occupying at least three words in total.
      */
-    uint256 internal constant PAYLOAD_MIN_ARGUMENT_WORDS = 2;
+    uint256 internal constant PAYLOAD_MIN_ARGUMENT_WORDS = 3;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -51,25 +51,70 @@ library SystemCall {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
+     * @notice Returns a formatted System Call payload with provided fields.
+     * See: formatAdjustedCallPayload() for more details.
+     * @param _systemRecipient  System Contract to receive message
+     *                          (see ISystemRouter.SystemEntity)
+     * @param _payload  Memory view over call payload where the first arguments need to be replaced
+     * @param _prefix   abi encoded arguments to use as the first arguments in the adjusted payload
+     * @return Formatted System Call payload.
+     */
+    function formatSystemCall(
+        uint8 _systemRecipient,
+        bytes29 _payload,
+        bytes29 _prefix
+    ) internal view returns (bytes memory) {
+        bytes29 arguments = _payload.argumentsPayload();
+        // Arguments payload should be at least as long as the replacement prefix
+        require(arguments.len() >= _prefix.len(), "Payload too short");
+        bytes29[] memory views = new bytes29[](4);
+        // First byte is encoded system recipient
+        views[0] = abi.encodePacked(_systemRecipient).ref(SynapseTypes.RAW_BYTES);
+        // Use payload's function selector
+        views[1] = _payload.callSelector();
+        // Use prefix as the first arguments
+        views[2] = _prefix;
+        // Use payload's remaining arguments (following prefix)
+        views[3] = arguments.sliceFrom({ _index: _prefix.len(), newType: SynapseTypes.RAW_BYTES });
+        return TypedMemView.join(views);
+    }
+
+    /**
+     * @notice Constructs the call payload having the first arguments replaced with given prefix.
+     * @dev Given:
+     * - `payload = abi.encodeWithSelector(foo.selector, a0, b0, c0, d0, e0);`
+     * - `prefix = abi.encode(a1, b1, c1);`
+     * - `a`, `b`, `c` are static type arguments
+     *      Then:
+     * - Existing payload will trigger `foo(a0, b0, c0, d0, e0)`
+     * - Adjusted payload will trigger `foo(a1, b1, c1, d0, e0)`
+     * @param _payload  Memory view over call payload where the first arguments need to be replaced
+     * @param _prefix   abi encoded arguments to use as the first arguments in the adjusted payload
+     * @return Adjusted call payload with replaced first arguments
+     */
+    function formatAdjustedCallPayload(bytes29 _payload, bytes29 _prefix)
+        internal
+        view
+        returns (bytes memory)
+    {
+        bytes29 arguments = _payload.argumentsPayload();
+        // Arguments payload should be at least as long as the replacement prefix
+        require(arguments.len() >= _prefix.len(), "Payload too short");
+        bytes29[] memory views = new bytes29[](3);
+        // Use payload's function selector
+        views[0] = _payload.callSelector();
+        // Use prefix as the first arguments
+        views[1] = _prefix;
+        // Use payload's remaining arguments (following prefix)
+        views[2] = arguments.sliceFrom({ _index: _prefix.len(), newType: SynapseTypes.RAW_BYTES });
+        return TypedMemView.join(views);
+    }
+
+    /**
      * @notice Returns a properly typed bytes29 pointer for a system call payload.
      */
     function castToSystemCall(bytes memory _payload) internal pure returns (bytes29) {
         return _payload.ref(SynapseTypes.SYSTEM_CALL);
-    }
-
-    /**
-     * @notice Returns a formatted System Call payload with provided fields
-     * @param _systemRecipient  System Contract to receive message
-     *                          (see ISystemRouter.SystemEntity)
-     * @param _payload          Payload for call on destination chain
-     * @return Formatted System Call
-     **/
-    function formatSystemCall(uint8 _systemRecipient, bytes memory _payload)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return abi.encodePacked(_systemRecipient, _payload);
     }
 
     /**

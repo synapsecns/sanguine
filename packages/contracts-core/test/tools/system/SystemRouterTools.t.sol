@@ -5,6 +5,8 @@ import "../DestinationTools.t.sol";
 import "../../../contracts/interfaces/ISystemRouter.sol";
 
 abstract contract SystemRouterTools is DestinationTools {
+    using ByteString for bytes;
+
     // domain => (list of all domain's system contracts)
     mapping(uint32 => address[]) internal systemContracts;
 
@@ -105,8 +107,9 @@ abstract contract SystemRouterTools is DestinationTools {
         systemCallRecipients.push(
             _getSystemEntity({ domain: context.destination, addr: recipient })
         );
+        // Use (0, 0, 0) for security arguments
         systemCallDataArray.push(
-            abi.encodeWithSelector(selector, _createMockSensitiveValue(index))
+            abi.encodeWithSelector(selector, 0, 0, 0, _createMockSensitiveValue(index))
         );
         // Format calls. Abi encoded array of formatted calls forms a cross-chain message body.
         if (formatCalls) formatSystemCalls();
@@ -129,16 +132,14 @@ abstract contract SystemRouterTools is DestinationTools {
         formattedSystemCalls = new bytes[](amount);
         for (uint256 i = 0; i < amount; ++i) {
             // Reconstruct payload created by System Router.
-            // It appends two parameters to the passed calldata:
-            // Domain of origin chain, and system entity that sent the message
-            bytes memory payload = abi.encodePacked(
-                systemCallDataArray[i],
-                abi.encode(systemCallOrigin, systemCallSender)
-            );
+            // It adjusts three parameters to the passed calldata arguments:
+            // Root timestamp, domain of origin chain, and system entity that sent the message
+            bytes memory prefix = abi.encode(block.timestamp, systemCallOrigin, systemCallSender);
             // Save formatted system call
             formattedSystemCalls[i] = SystemCall.formatSystemCall({
                 _systemRecipient: uint8(systemCallRecipients[i]),
-                _payload: payload
+                _payload: systemCallDataArray[i].castToCallPayload(),
+                _prefix: prefix.castToRawBytes()
             });
         }
     }
