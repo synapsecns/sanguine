@@ -76,9 +76,7 @@ func (e Executor) Start(ctx context.Context) error {
 		return fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
 
-	contxt := context.Background()
-
-	g, _ := errgroup.WithContext(contxt)
+	g, _ := errgroup.WithContext(ctx)
 
 	for _, chainID := range e.chainIDs {
 		chainID := chainID
