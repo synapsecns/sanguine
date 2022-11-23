@@ -269,11 +269,15 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 }
 
 // chunkSize is how big to make the chunks when fetching.
-const chunkSize = 5000
+const chunkSize = 100000
 
 // getLogs gets all logs for the contract through channels constructed and populated by the rangeFilter.
 func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
 	rangeFilter := NewRangeFilter(common.HexToAddress(c.address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
+	// Require 2 confirmations for Binance Smart Chain, due to "not found" error.
+	if c.chainID == 56 {
+		rangeFilter = NewRangeFilter(common.HexToAddress(c.address), c.client[1], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), chunkSize, true)
+	}
 	g, ctx := errgroup.WithContext(ctx)
 
 	// Concurrently start the range filter.
