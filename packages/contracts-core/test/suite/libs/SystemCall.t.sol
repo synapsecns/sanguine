@@ -3,21 +3,22 @@ pragma solidity 0.8.17;
 
 import "../../utils/SynapseLibraryTest.t.sol";
 import "../../harnesses/libs/SystemCallHarness.t.sol";
+import "../../tools/libs/ByteStringTools.t.sol";
 
 import "../../../contracts/libs/SystemCall.sol";
 
 // solhint-disable func-name-mixedcase
-contract SystemCallLibraryTest is SynapseLibraryTest {
+contract SystemCallLibraryTest is ByteStringTools, SynapseLibraryTest {
     using TypedMemView for bytes;
 
-    // Mock payload for tests: a selector and two values
+    // Mock payload for tests: a selector and values for three security arguments
     bytes internal constant TEST_MESSAGE_PAYLOAD =
-        abi.encodeWithSelector(this.setUp.selector, 1, 2);
+        abi.encodeWithSelector(this.setUp.selector, 1, 2, 3);
 
     // First element is (uint8 recipient)
     uint8 internal constant FIRST_ELEMENT_BYTES = 8 / 8;
 
-    uint8 internal constant MIN_ARGUMENT_WORDS = 2;
+    uint8 internal constant MIN_ARGUMENT_WORDS = 3;
     uint8 internal constant MIN_SYSTEM_CALL_LENGTH = 1 + 4 + 32 * MIN_ARGUMENT_WORDS;
 
     SystemCallHarness internal libHarness;
@@ -27,15 +28,47 @@ contract SystemCallLibraryTest is SynapseLibraryTest {
         libHarness = new SystemCallHarness();
     }
 
-    function test_formattedCorrectly(uint8 recipient) public {
-        // Test formatting
-        bytes memory payload = libHarness.formatSystemCall(recipient, TEST_MESSAGE_PAYLOAD);
-        assertEq(payload, abi.encodePacked(recipient, TEST_MESSAGE_PAYLOAD), "!formatSystemCall");
-        // Test formatting checker
-        assertTrue(libHarness.isSystemCall(payload));
+    function test_formattedCorrectly(
+        uint8 recipient,
+        uint8 wordsPrefix,
+        uint8 wordsFollowing
+    ) public {
+        // Set a sensible limit for the total payload length
+        vm.assume((uint256(wordsPrefix) + wordsFollowing) * 32 <= MAX_MESSAGE_BODY_BYTES);
+        bytes4 selector = this.setUp.selector;
+        // Create "random" arguments and new/old prefix with different random seeds
+        bytes memory prefixOld = createTestArguments(wordsPrefix, "prefixOld");
+        bytes memory following = createTestArguments(wordsFollowing, "following");
+        bytes memory prefixNew = createTestArguments(wordsPrefix, "prefixNew");
+        bytes memory payload = bytes.concat(selector, prefixOld, following);
+        // Format the calldata payload
+        bytes memory adjustedCallPayload = libHarness.formatAdjustedCallPayload({
+            _type: SynapseTypes.CALL_PAYLOAD,
+            _payload: payload,
+            _prefix: prefixNew
+        });
+        // Test formatter against manually constructed payload
+        assertEq(
+            adjustedCallPayload,
+            bytes.concat(selector, prefixNew, following),
+            "!formatAdjustedCallPayload"
+        );
+        // Format the system call
+        bytes memory adjustedSystemCall = libHarness.formatSystemCall({
+            _systemRecipient: recipient,
+            _type: SynapseTypes.CALL_PAYLOAD,
+            _payload: payload,
+            _prefix: prefixNew
+        });
+        // Test formatter against manually constructed payload
+        assertEq(
+            adjustedSystemCall,
+            abi.encodePacked(recipient, selector, prefixNew, following),
+            "!formatSystemCall"
+        );
         // Test getters
         assertEq(
-            libHarness.callRecipient(SynapseTypes.SYSTEM_CALL, payload),
+            libHarness.callRecipient(SynapseTypes.SYSTEM_CALL, adjustedSystemCall),
             recipient,
             "!callRecipient"
         );
@@ -43,18 +76,45 @@ contract SystemCallLibraryTest is SynapseLibraryTest {
         checkBytes29Getter({
             getter: libHarness.castToSystemCall,
             payloadType: SynapseTypes.SYSTEM_CALL,
-            payload: payload,
+            payload: adjustedSystemCall,
             expectedType: SynapseTypes.SYSTEM_CALL,
-            expectedData: payload,
+            expectedData: adjustedSystemCall,
             revertMessage: "!castToSystemCall"
         });
         checkBytes29Getter({
             getter: libHarness.callPayload,
             payloadType: SynapseTypes.SYSTEM_CALL,
-            payload: payload,
+            payload: adjustedSystemCall,
             expectedType: SynapseTypes.CALL_PAYLOAD,
-            expectedData: TEST_MESSAGE_PAYLOAD,
-            revertMessage: "!systemMessageBody"
+            expectedData: adjustedCallPayload,
+            revertMessage: "!callPayload"
+        });
+    }
+
+    function test_formatAdjusted_revert_shortPayload(
+        uint8 recipient,
+        uint8 wordsPayload,
+        uint8 bytesExtra
+    ) public {
+        uint256 length = uint256(wordsPayload) * 32;
+        // Set a sensible limit for the total payload length
+        vm.assume(length <= MAX_MESSAGE_BODY_BYTES);
+        vm.assume(bytesExtra != 0);
+        // Let payload arguments be shorter than the prefix
+        bytes memory payload = bytes.concat(this.setUp.selector, new bytes(length));
+        bytes memory prefix = new bytes(length + bytesExtra);
+        vm.expectRevert("Payload too short");
+        libHarness.formatAdjustedCallPayload({
+            _type: SynapseTypes.CALL_PAYLOAD,
+            _payload: payload,
+            _prefix: prefix
+        });
+        vm.expectRevert("Payload too short");
+        libHarness.formatSystemCall({
+            _systemRecipient: recipient,
+            _type: SynapseTypes.CALL_PAYLOAD,
+            _payload: payload,
+            _prefix: prefix
         });
     }
 
@@ -113,6 +173,25 @@ contract SystemCallLibraryTest is SynapseLibraryTest {
         libHarness.callRecipient(wrongType, payload);
     }
 
+    function test_wrongTypeRevert_formatAdjustedCallPayload(uint40 wrongType) public {
+        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.CALL_PAYLOAD });
+        libHarness.formatAdjustedCallPayload({
+            _type: wrongType,
+            _payload: TEST_MESSAGE_PAYLOAD,
+            _prefix: ""
+        });
+    }
+
+    function test_wrongTypeRevert_formatSystemCall(uint40 wrongType) public {
+        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.CALL_PAYLOAD });
+        libHarness.formatSystemCall({
+            _systemRecipient: 0,
+            _type: wrongType,
+            _payload: TEST_MESSAGE_PAYLOAD,
+            _prefix: ""
+        });
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           TESTS: CONSTANTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -138,6 +217,12 @@ contract SystemCallLibraryTest is SynapseLibraryTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function createTestPayload() public view returns (bytes memory) {
-        return libHarness.formatSystemCall(0, TEST_MESSAGE_PAYLOAD);
+        return
+            libHarness.formatSystemCall({
+                _systemRecipient: 0,
+                _type: SynapseTypes.CALL_PAYLOAD,
+                _payload: TEST_MESSAGE_PAYLOAD,
+                _prefix: ""
+            });
     }
 }

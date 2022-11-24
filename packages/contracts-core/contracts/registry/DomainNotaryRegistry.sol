@@ -83,9 +83,17 @@ abstract contract DomainNotaryRegistry is AbstractNotaryRegistry, DomainContext 
      * @notice Tries to add a new notary, emits an event only if notary was added.
      */
     function _addNotary(address _notary) internal returns (bool notaryAdded) {
-        notaryAdded = notaries.add(_notary);
+        // Notary is added only if they were not previously active
+        notaryAdded = !_isNotary(_notary);
         if (notaryAdded) {
-            emit NotaryAdded(_localDomain(), _notary);
+            uint32 local = _localDomain();
+            // Trigger "before added" hook
+            _beforeNotaryAdded(local, _notary);
+            // Add Notary to local domain
+            notaries.add(_notary);
+            emit NotaryAdded(local, _notary);
+            // Trigger "after added" hook
+            _afterNotaryAdded(local, _notary);
         }
     }
 
@@ -106,9 +114,17 @@ abstract contract DomainNotaryRegistry is AbstractNotaryRegistry, DomainContext 
      * @notice Tries to remove a notary, emits an event only if notary was removed.
      */
     function _removeNotary(address _notary) internal returns (bool notaryRemoved) {
-        notaryRemoved = notaries.remove(_notary);
+        // Notary is removed only if they were previously active
+        notaryRemoved = _isNotary(_notary);
         if (notaryRemoved) {
-            emit NotaryRemoved(_localDomain(), _notary);
+            uint32 local = _localDomain();
+            // Trigger "before removed" hook
+            _beforeNotaryRemoved(local, _notary);
+            // Remove Notary from local domain
+            notaries.remove(_notary);
+            emit NotaryRemoved(local, _notary);
+            // Trigger "after removed" hook
+            _afterNotaryRemoved(local, _notary);
         }
     }
 

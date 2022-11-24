@@ -17,7 +17,7 @@ func (b BackfillSuite) TestFilterLogsMaxAttempts() {
 	b.T().Skip("flake")
 	mockFilterer := new(mocks.EVMClient)
 	contractAddress := etherMocks.MockAddress()
-	rangeFilter := backfill.NewRangeFilter(contractAddress, mockFilterer, big.NewInt(1), big.NewInt(10), 1, true)
+	rangeFilter := backfill.NewRangeFilter(contractAddress, mockFilterer, big.NewInt(1), big.NewInt(10), 1, true, 1)
 
 	// Use the range filterer created above to create a mock log filter.
 	mockFilterer.

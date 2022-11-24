@@ -82,7 +82,7 @@ func MockTx(ctx context.Context, t *testing.T, simulatedBackend backends.Simulat
 		assert.Nil(t, err)
 
 		rawTx = types.NewTx(&types.DynamicFeeTx{
-			ChainID:   simulatedBackend.ChainConfig().ChainID,
+			ChainID:   simulatedBackend.GetBigChainID(),
 			Nonce:     nonce,
 			GasTipCap: gasTipCap,
 			GasFeeCap: big.NewInt(0).Add(latestBlock.BaseFee(), gasTipCap),

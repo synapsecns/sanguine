@@ -38,7 +38,7 @@ type Forwarder struct {
 	// Note: because we use an array here, this is not thread safe for writes
 	resMap *xsync.MapOf[[]rawResponse]
 	// rpcRequest is the parsed rpc request
-	rpcRequest *RPCRequest
+	rpcRequest RPCRequests
 	// mux is used to track the release of the forwarder. This should only be used in async methods
 	// as RLock
 	mux sync.RWMutex
@@ -235,7 +235,6 @@ func (f *Forwarder) checkResponses(responseCount int) (done bool) {
 		f.resMap.Range(func(key string, responses []rawResponse) bool {
 			for _, response := range responses {
 				erroredUrls.Delete(response.url)
-
 				rpcErr := ErroredRPCResponse{
 					URL: response.url,
 					Raw: response.body,
@@ -323,7 +322,6 @@ func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 	if f.requiredConfirmations == 0 {
 		f.requiredConfirmations = f.chain.ConfirmationsThreshold()
 	}
-
 	var err error
 	f.rpcRequest, err = parseRPCPayload(f.body)
 	if err != nil {
@@ -333,6 +331,7 @@ func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 		return false
 	}
 
+	// If any request ina  batch is not confirmable, the entire batch is marks as non-confirmable
 	confirmable, err := f.rpcRequest.isConfirmable()
 	if err != nil {
 		f.c.JSON(http.StatusBadRequest, gin.H{
