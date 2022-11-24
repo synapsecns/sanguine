@@ -56,7 +56,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 	}
 
 	if chainConfig.ContractSubChunkCount == 0 {
-		chainConfig.ContractSubChunkCount = 60
+		chainConfig.ContractSubChunkCount = 50
 	}
 
 	if chainConfig.ContractChunkSize == 0 {

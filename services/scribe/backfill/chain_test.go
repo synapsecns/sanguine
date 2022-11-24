@@ -1,6 +1,7 @@
 package backfill_test
 
 import (
+	"fmt"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"math/big"
@@ -72,6 +73,8 @@ func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContrac
 
 	// Emit events from each contract.
 	for _, testRef := range testRefs {
+		fmt.Println("Jj")
+		// simulatedChain.FundAccount(ctx, common.BigToAddress(big.NewInt(int64(i))), *big.NewInt(params.Wei))
 		tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
 		Nil(b.T(), err)
 		simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
@@ -88,6 +91,12 @@ func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContrac
 		Nil(b.T(), err)
 
 		for _, contract := range contracts {
+			// logFilterw := db.LogFilter{
+			//	ChainID: chainConfig.ChainID,
+			//}
+			// logst, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), logFilterw, 1)
+			// fmt.Println("logst", len(logst))
+
 			logFilter := db.LogFilter{
 				ChainID:         chainConfig.ChainID,
 				ContractAddress: contract.Address().String(),

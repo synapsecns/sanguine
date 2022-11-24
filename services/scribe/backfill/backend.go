@@ -13,6 +13,7 @@ import (
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
 	"golang.org/x/exp/constraints"
+	"math"
 	"math/big"
 )
 
@@ -104,42 +105,53 @@ func BlockTimesInRange(ctx context.Context, backend ScribeBackend, startHeight u
 
 // GetLogsInRange gets all logs in a range with a single batch request
 // in successful cases an immutable map is returned of [height->time], otherwise an error is returned.
-func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint64, endHeight uint64, subChunkSize int, contractAddress common.Address) (*immutable.Map[uint64, []types.Log], error) {
-	subChunkCount := ((endHeight - startHeight) / uint64(subChunkSize)) + 1
+func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint64, endHeight uint64, subChunkCount uint64, contractAddress common.Address) (*immutable.List[*[]types.Log], error) {
+	blockRange := endHeight - startHeight
+	subChunkSize := uint64(math.Ceil(float64(blockRange) / float64(subChunkCount)))
 	// performance impact will be negligible here because of external constraints on blocksize
-	batches := makeRange(0, subChunkCount)
-	bulkSize := len(batches)
+	totalBlockCov := subChunkSize * subChunkCount
+	if blockRange < totalBlockCov {
+		subChunkCount = totalBlockCov - (totalBlockCov - blockRange)
+	}
+	calls := make([]w3types.Caller, subChunkCount)
+	results := make([][]types.Log, subChunkCount)
 
-	calls := make([]w3types.Caller, bulkSize)
-	results := make([][]types.Log, bulkSize)
+	subChunkIdx := uint64(0)
+	breakFlag := false
+	for subChunkIdx < subChunkCount {
+		subChunkStartHeight := startHeight + subChunkIdx*subChunkSize
+		subChunkEndHeight := subChunkStartHeight + subChunkSize - 1
 
-	for i, batch := range batches {
-		subChunkStartHeight := startHeight + batch*uint64(subChunkSize)
-		subChunkEndHeight := subChunkStartHeight + uint64(subChunkSize) - 1
-		if subChunkEndHeight > endHeight {
+		if subChunkEndHeight >= endHeight-1 {
 			subChunkEndHeight = endHeight
+			breakFlag = true
 		}
 		filter := ethereum.FilterQuery{
 			FromBlock: big.NewInt(int64(subChunkStartHeight)),
 			ToBlock:   big.NewInt(int64(subChunkEndHeight)),
 			Addresses: []common.Address{contractAddress},
 		}
-		calls[i] = eth.Logs(filter).Returns(&results[i])
-	}
 
+		calls[subChunkIdx] = eth.Logs(filter).Returns(&results[subChunkIdx])
+		if breakFlag {
+			break
+		}
+
+		subChunkIdx++
+	}
 	if err := backend.Batch(ctx, calls...); err != nil {
 		return nil, fmt.Errorf("could not fetch logs in range %d to %d: %w", startHeight, endHeight, err)
 	}
-
 	// use an immutable map for additional safety to the caller, don't allocate until batch returns successfully
-	res := immutable.NewMapBuilder[uint64, []types.Log](nil)
+	res := immutable.NewListBuilder[*[]types.Log]()
 	for _, result := range results {
+		logChunk := result
 		if len(result) > 0 {
-			res.Set(result[0].BlockNumber, result)
+			res.Append(&logChunk)
 		}
 	}
 
-	return res.Map(), nil
+	return res.List(), nil
 }
 
 // make range.
