@@ -5,7 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -21,8 +21,12 @@ func (e *ExecutorSuite) TestExecutor() {
 	chainIDA := gofakeit.Uint32()
 	chainIDB := chainIDA + 1
 
-	simulatedChainA := simulated.NewSimulatedBackendWithChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainIDA)))
-	simulatedChainB := simulated.NewSimulatedBackendWithChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainIDB)))
+	simulatedChainA := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainIDA)))
+	simulatedChainB := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainIDB)))
+	simulatedClientA, err := backfill.DialBackend(e.GetTestContext(), simulatedChainA.RPCAddress())
+	e.Nil(err)
+	simulatedClientB, err := backfill.DialBackend(e.GetTestContext(), simulatedChainB.RPCAddress())
+	e.Nil(err)
 	simulatedChainA.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
 	simulatedChainB.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
 	testContractA, testRefA := e.manager.GetTestContract(e.GetTestContext(), simulatedChainA)
@@ -65,8 +69,8 @@ func (e *ExecutorSuite) TestExecutor() {
 	}
 
 	clients := map[uint32][]backfill.ScribeBackend{
-		chainIDA: {simulatedChainA, simulatedChainA},
-		chainIDB: {simulatedChainB, simulatedChainB},
+		chainIDA: {simulatedClientA, simulatedClientA},
+		chainIDB: {simulatedClientB, simulatedClientB},
 	}
 
 	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
@@ -138,7 +142,9 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		testDone = true
 	}()
 	chainID := gofakeit.Uint32()
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
+	simulatedChain := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
+	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), simulatedChain.RPCAddress())
+	e.Nil(err)
 	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
 	testContract, testRef := e.manager.GetTestContract(e.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
@@ -156,7 +162,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		Chains: []config.ChainConfig{chainConfig},
 	}
 	clients := map[uint32][]backfill.ScribeBackend{
-		chainID: {simulatedChain, simulatedChain},
+		chainID: {simulatedClient, simulatedClient},
 	}
 
 	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
