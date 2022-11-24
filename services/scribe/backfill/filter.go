@@ -27,9 +27,6 @@ type RangeFilter struct {
 	// logs is a channel with the filtered ahead logs. This channel is not closed
 	// and the user can rely on the garbage collection behavior of RangeFilter to remove it.
 	logs chan *LogInfo
-	// filterer contains the interface used to fetch logs for the given contract. Logs are fetched
-	// for contractAddress.
-	filterer LogFilterer
 	// backend is the ethereum backend used to fetch logs.
 	backend ScribeBackend
 	// contractAddress is the contractAddress that logs are fetched for.
@@ -63,11 +60,9 @@ var maxBackoff = 5 * time.Second
 
 // NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
 func NewRangeFilter(address ethCommon.Address, backend ScribeBackend, startBlock, endBlock *big.Int, chunkSize int, reverse bool, subChunkCount int) *RangeFilter {
-	filterer, _ := backend.(LogFilterer)
 	return &RangeFilter{
 		iterator:        util.NewChunkIterator(startBlock, endBlock, chunkSize, reverse),
 		logs:            make(chan *LogInfo, bufferSize),
-		filterer:        filterer,
 		backend:         backend,
 		contractAddress: address,
 		done:            false,

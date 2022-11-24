@@ -216,19 +216,4 @@ func (b *BackfillSuite) TestLogsInRange() {
 		Falsef(b.T(), intSet.Has(int64(index)), "%d appears at least twice", index)
 		intSet.Insert(int64(index))
 	}
-
-	// for subChunkIdx < subChunkCount {
-	//	logsChunk, ok := res.Get(chunk.MinBlock().Uint64() + subChunkIdx*uint64(f.subChunkSize))
-	//	fmt.Println("logsChunk", logsChunk)
-	//
-	//	if logsChunk == nil || !ok {
-	//		LogEvent(WarnLevel, "empty subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "e": err})
-	//		subChunkIdx++
-	//
-	//		continue
-	//	}
-	//
-	//	logs = append(logs, logsChunk...)
-	//	subChunkIdx++
-	//}
 }
