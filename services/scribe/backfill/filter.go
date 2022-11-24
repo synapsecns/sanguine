@@ -146,7 +146,6 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 			for !itr.Done() {
 				_, resLogChunk := itr.Next()
 
-				// logsChunk, ok := res.Get(chunk.MinBlock().Uint64() + uint64(subChunkIdx)*subChunkSize)
 				if resLogChunk == nil || len(*resLogChunk) == 0 {
 					LogEvent(WarnLevel, "empty subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock()})
 					continue
@@ -155,6 +154,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 
 				logs = append(logs, logsChunk...)
 			}
+			
 			return &LogInfo{
 				logs:  logs,
 				chunk: chunk,
