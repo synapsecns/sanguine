@@ -154,7 +154,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 
 				logs = append(logs, logsChunk...)
 			}
-			
+
 			return &LogInfo{
 				logs:  logs,
 				chunk: chunk,
