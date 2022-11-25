@@ -84,14 +84,9 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // Setup destination
         destination.initialize();
         destination.setSystemRouter(systemRouter);
-        // Add notaries to Destination
-        for (uint256 i = 0; i < DOMAINS; ++i) {
-            uint32 domainToAdd = domains[i];
-            if (domainToAdd != domain) {
-                for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
-                    destination.addNotary(domainToAdd, suiteNotary(domainToAdd, j));
-                }
-            }
+        // Add local notaries to Destination
+        for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
+            destination.addNotary(domain, suiteNotary(domain, i));
         }
         // Setup origin
         origin.initialize();

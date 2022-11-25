@@ -9,7 +9,6 @@ import { Tips } from "../../contracts/libs/Tips.sol";
 import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
 
 import { GuardRegistryHarness } from "./registry/GuardRegistryHarness.t.sol";
-import { GlobalNotaryRegistryHarness } from "./registry/GlobalNotaryRegistryHarness.t.sol";
 import { SystemContractHarness } from "./system/SystemContractHarness.t.sol";
 import { DestinationHarnessEvents } from "./events/DestinationHarnessEvents.sol";
 
@@ -17,13 +16,12 @@ contract DestinationHarness is
     DestinationHarnessEvents,
     Destination,
     SystemContractHarness,
-    GlobalNotaryRegistryHarness,
     GuardRegistryHarness
 {
     using Tips for bytes29;
 
     //solhint-disable-next-line no-empty-blocks
-    constructor(uint32 _localDomain) Destination(_localDomain) {}
+    constructor(uint32 _domain) Destination(_domain) {}
 
     function setSensitiveValue(uint256 _newValue) external onlySystemRouter {
         sensitiveValue = _newValue;
@@ -37,6 +35,18 @@ contract DestinationHarness is
         messageStatus[_originDomain][_messageHash] = _status;
     }
 
+    function addNotary(uint32 _domain, address _notary) public returns (bool) {
+        return _addNotary(_domain, _notary);
+    }
+
+    function removeNotary(uint32 _domain, address _notary) public returns (bool) {
+        return _removeNotary(_domain, _notary);
+    }
+
+    function isNotary(uint32 _domain, address _notary) public view returns (bool) {
+        return _isNotary(_domain, _notary);
+    }
+
     function _storeTips(bytes29 _tips) internal override {
         emit LogTips(
             _tips.notaryTip(),
@@ -44,49 +54,5 @@ contract DestinationHarness is
             _tips.proverTip(),
             _tips.executorTip()
         );
-    }
-
-    /**
-     * @notice Hook that is called just before a Notary is added for specified domain.
-     */
-    function _beforeNotaryAdded(uint32 _domain, address _notary)
-        internal
-        virtual
-        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
-    {
-        AbstractNotaryRegistry._beforeNotaryAdded(_domain, _notary);
-    }
-
-    /**
-     * @notice Hook that is called right after a Notary is added for specified domain.
-     */
-    function _afterNotaryAdded(uint32 _domain, address _notary)
-        internal
-        virtual
-        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
-    {
-        AbstractNotaryRegistry._afterNotaryAdded(_domain, _notary);
-    }
-
-    /**
-     * @notice Hook that is called just before a Notary is removed from specified domain.
-     */
-    function _beforeNotaryRemoved(uint32 _domain, address _notary)
-        internal
-        virtual
-        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
-    {
-        AbstractNotaryRegistry._beforeNotaryRemoved(_domain, _notary);
-    }
-
-    /**
-     * @notice Hook that is called right after a Notary is removed from specified domain.
-     */
-    function _afterNotaryRemoved(uint32 _domain, address _notary)
-        internal
-        virtual
-        override(AbstractNotaryRegistry, GlobalNotaryRegistryHarness)
-    {
-        AbstractNotaryRegistry._afterNotaryRemoved(_domain, _notary);
     }
 }
