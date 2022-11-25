@@ -12,6 +12,7 @@ import (
 	"github.com/lmittmann/w3"
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"golang.org/x/exp/constraints"
 	"math"
 	"math/big"
@@ -82,7 +83,6 @@ func BlockTimesInRange(ctx context.Context, backend ScribeBackend, startHeight u
 	// performance impact will be negligible here because of external constraints on blocksize
 	blocks := makeRange(startHeight, endHeight)
 	bulkSize := len(blocks)
-
 	calls := make([]w3types.Caller, bulkSize)
 	results := make([]types.Header, bulkSize)
 
@@ -105,39 +105,23 @@ func BlockTimesInRange(ctx context.Context, backend ScribeBackend, startHeight u
 
 // GetLogsInRange gets all logs in a range with a single batch request
 // in successful cases an immutable list is returned, otherwise an error is returned.
-func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint64, endHeight uint64, subChunkCount uint64, contractAddress common.Address) (*immutable.List[*[]types.Log], error) {
-	blockRange := endHeight - startHeight
-	subChunkSize := uint64(math.Ceil(float64(blockRange) / float64(subChunkCount)))
-	// performance impact will be negligible here because of external constraints on blocksize
-	totalBlockCov := subChunkSize * subChunkCount
-	if blockRange < totalBlockCov {
-		subChunkCount = totalBlockCov - (totalBlockCov - blockRange)
-	}
+func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint64, endHeight uint64, subChunkSize uint64, contractAddress common.Address) (*immutable.List[*[]types.Log], error) {
+	blockRange := (endHeight - startHeight) + 1
+	subChunkCount := int(math.Ceil(float64(blockRange) / float64(subChunkSize)))
+	iterator := util.NewChunkIterator(big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), int(subChunkSize)-1, true)
 	calls := make([]w3types.Caller, subChunkCount)
 	results := make([][]types.Log, subChunkCount)
-
 	subChunkIdx := uint64(0)
-	breakFlag := false
-	for subChunkIdx < subChunkCount {
-		subChunkStartHeight := startHeight + subChunkIdx*subChunkSize
-		subChunkEndHeight := subChunkStartHeight + subChunkSize - 1
-
-		if subChunkEndHeight >= endHeight-1 {
-			subChunkEndHeight = endHeight
-			breakFlag = true
-		}
+	chunk := iterator.NextChunk()
+	for chunk != nil {
 		filter := ethereum.FilterQuery{
-			FromBlock: big.NewInt(int64(subChunkStartHeight)),
-			ToBlock:   big.NewInt(int64(subChunkEndHeight)),
+			FromBlock: chunk.StartBlock,
+			ToBlock:   chunk.EndBlock,
 			Addresses: []common.Address{contractAddress},
 		}
-
 		calls[subChunkIdx] = eth.Logs(filter).Returns(&results[subChunkIdx])
-		if breakFlag {
-			break
-		}
-
 		subChunkIdx++
+		chunk = iterator.NextChunk()
 	}
 	if err := backend.Batch(ctx, calls...); err != nil {
 		return nil, fmt.Errorf("could not fetch logs in range %d to %d: %w", startHeight, endHeight, err)
@@ -150,7 +134,6 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint
 			res.Append(&logChunk)
 		}
 	}
-
 	return res.List(), nil
 }
 
