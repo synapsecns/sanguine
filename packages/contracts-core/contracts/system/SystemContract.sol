@@ -205,7 +205,7 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
     ) external virtual;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
+    ▏*║                 INTERNAL VIEWS: SECURITY ASSERTIONS                  ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function _onSynapseChain() internal view returns (bool) {
@@ -263,5 +263,64 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      */
     function _getSystemMask(ISystemRouter.SystemEntity _entity) internal pure returns (uint256) {
         return 1 << uint8(_entity);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                      INTERNAL VIEWS: AGENT DATA                      ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Constructs data for the system call to slash a given agent.
+     */
+    function _dataSlashAgent(AgentInfo memory _info) internal pure returns (bytes memory) {
+        return
+            abi.encodeWithSelector(
+                SystemContract.slashAgent.selector,
+                0, // rootSubmittedAt
+                0, // callOrigin
+                0, // systemCaller
+                _info
+            );
+    }
+
+    /**
+     * @notice Constructs data for the system call to sync the given agents.
+     */
+    function _dataSyncAgents(
+        uint256 _requestID,
+        bool _removeExisting,
+        AgentInfo[] memory _infos
+    ) internal pure returns (bytes memory) {
+        return
+            abi.encodeWithSelector(
+                SystemContract.syncAgents.selector,
+                0, // rootSubmittedAt
+                0, // callOrigin
+                0, // systemCaller
+                _requestID,
+                _removeExisting,
+                _infos
+            );
+    }
+
+    /**
+     * @notice Constructs a universal "Agent Information" structure for the given Guard.
+     */
+    function _guardInfo(address _guard, bool _bonded) internal pure returns (AgentInfo memory) {
+        // We are using domain value of 0 to illustrate the point
+        // that Guards are active on all domains
+        return AgentInfo({ agent: Agent.Guard, bonded: _bonded, domain: 0, account: _guard });
+    }
+
+    /**
+     * @notice Constructs a universal "Agent Information" structure for the given Notary.
+     */
+    function _notaryInfo(
+        uint32 _domain,
+        address _notary,
+        bool _bonded
+    ) internal pure returns (AgentInfo memory) {
+        return
+            AgentInfo({ agent: Agent.Notary, bonded: _bonded, domain: _domain, account: _notary });
     }
 }
