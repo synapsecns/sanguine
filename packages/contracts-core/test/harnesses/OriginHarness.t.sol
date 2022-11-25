@@ -45,4 +45,13 @@ contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
             _messageBody
         );
     }
+
+    function suggestNonceRoot(uint32 _destination)
+        public
+        view
+        returns (uint32 latestNonce, bytes32 latestRoot)
+    {
+        latestNonce = nonce(_destination);
+        latestRoot = getHistoricalRoot(_destination, latestNonce);
+    }
 }

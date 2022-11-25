@@ -142,11 +142,17 @@ contract OriginTest is OriginTools {
         for (uint256 i = 0; i < amount; ++i) {
             test_dispatch();
         }
-        (uint32 nonce, bytes32 root) = origin.suggestAttestation(DOMAIN_REMOTE);
-        // Should return latest values
-        assertEq(nonce, amount, "!nonce");
-        assertEq(root, origin.root(DOMAIN_REMOTE), "!current root");
-        assertEq(root, origin.getHistoricalRoot(DOMAIN_REMOTE, nonce), "!historical root");
+        bytes memory data = origin.suggestAttestation(DOMAIN_REMOTE);
+        // Should match latest values
+        assertEq(
+            data,
+            Attestation.formatAttestationData({
+                _origin: DOMAIN_LOCAL,
+                _destination: DOMAIN_REMOTE,
+                _nonce: uint32(amount),
+                _root: origin.root(DOMAIN_REMOTE)
+            })
+        );
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -63,16 +63,21 @@ abstract contract OriginHub is
      * - nonce = 0
      * - root = 0x27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757
      * Which is the merkle root for an empty merkle tree.
-     * @return latestNonce Current nonce
-     * @return latestRoot  Current merkle root
+     * @return attestationData Data for the suggested attestation
      */
     function suggestAttestation(uint32 _destination)
         external
         view
-        returns (uint32 latestNonce, bytes32 latestRoot)
+        returns (bytes memory attestationData)
     {
-        latestNonce = nonce(_destination);
-        latestRoot = getHistoricalRoot(_destination, latestNonce);
+        uint32 latestNonce = nonce(_destination);
+        return
+            Attestation.formatAttestationData({
+                _origin: _localDomain(),
+                _destination: _destination,
+                _nonce: latestNonce,
+                _root: getHistoricalRoot(_destination, latestNonce)
+            });
     }
 
     // TODO: add suggestAttestations() once OriginHub inherits from GlobalNotaryRegistry
