@@ -121,6 +121,47 @@
           "ScribeService"
         ]
       }
+    },
+    "/grpc/v1/stream_logs": {
+      "post": {
+        "operationId": "ScribeService_StreamLogs",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/v1StreamLogsResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of v1StreamLogsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StreamLogsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ScribeService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -326,6 +367,28 @@
         "data": {
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "v1StreamLogsRequest": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/v1LogFilter"
+        },
+        "fromBlock": {
+          "type": "string"
+        },
+        "toBlock": {
+          "type": "string"
+        }
+      }
+    },
+    "v1StreamLogsResponse": {
+      "type": "object",
+      "properties": {
+        "log": {
+          "$ref": "#/definitions/v1Log"
         }
       }
     }
