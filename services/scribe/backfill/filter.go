@@ -33,8 +33,8 @@ type RangeFilter struct {
 	contractAddress ethCommon.Address
 	// done is whether the RangeFilter has completed. It cannot be restarted and the object must be recreated.
 	done bool
-	// subChunkCount is how many concurrent sub chunks to process at a time.
-	subChunkCount int
+	// subChunkSize is the size of each batch.
+	subChunkSize int
 }
 
 // LogFilterer is the interface for filtering logs.
@@ -59,14 +59,14 @@ var minBackoff = 1 * time.Second
 var maxBackoff = 5 * time.Second
 
 // NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
-func NewRangeFilter(address ethCommon.Address, backend ScribeBackend, startBlock, endBlock *big.Int, chunkSize int, reverse bool, subChunkCount int) *RangeFilter {
+func NewRangeFilter(address ethCommon.Address, backend ScribeBackend, startBlock, endBlock *big.Int, chunkSize int, reverse bool, subChunkSize int) *RangeFilter {
 	return &RangeFilter{
 		iterator:        util.NewChunkIterator(startBlock, endBlock, chunkSize, reverse),
 		logs:            make(chan *LogInfo, bufferSize),
 		backend:         backend,
 		contractAddress: address,
 		done:            false,
-		subChunkCount:   subChunkCount,
+		subChunkSize:    subChunkSize,
 	}
 }
 
@@ -129,7 +129,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 				return nil, fmt.Errorf("maximum number of filter attempts exceeded")
 			}
 
-			res, err := GetLogsInRange(ctx, f.backend, chunk.MinBlock().Uint64(), chunk.MaxBlock().Uint64(), uint64(f.subChunkCount), f.contractAddress)
+			res, err := GetLogsInRange(ctx, f.backend, chunk.MinBlock().Uint64(), chunk.MaxBlock().Uint64(), uint64(f.subChunkSize), f.contractAddress)
 			if err != nil {
 				timeout = b.Duration()
 				LogEvent(WarnLevel, "Could not filter logs for range, retrying", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "e": err})
