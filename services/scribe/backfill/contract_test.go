@@ -356,5 +356,6 @@ func (b BackfillSuite) TestBSC() {
 	Equal(b.T(), contractConfig.StartBlock, lastIndexed)
 	timeElasped := time.Since(startTime)
 	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
-	fmt.Println("1000 blocks backfilled in ", timeElasped, " logs collected: ", len(logs))
+	Nil(b.T(), err)
+	fmt.Println("1000 blocks backfilled in", timeElasped, "logs collected:", len(logs))
 }
