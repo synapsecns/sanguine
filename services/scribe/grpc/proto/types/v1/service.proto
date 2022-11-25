@@ -11,7 +11,7 @@ import "types/v1/log.proto";
 
 message FilterLogsRequest {
   LogFilter filter = 1;
-  uint32  page = 2;
+  uint32 page = 2;
 }
 
 message FilterLogsResponse {
@@ -32,6 +32,16 @@ message HealthCheckResponse {
   ServingStatus status = 1;
 }
 
+message StreamLogsRequest {
+  LogFilter filter = 1;
+  string fromBlock = 2;
+  string toBlock = 3;
+}
+
+message StreamLogsResponse {
+  Log log = 1;
+}
+
 service ScribeService {
   //see: https://github.com/grpc/grpc/blob/master/doc/health-checking.md
   rpc Check(HealthCheckRequest) returns (HealthCheckResponse) {
@@ -48,7 +58,6 @@ service ScribeService {
     };
   }
 
-
   rpc FilterLogs(FilterLogsRequest) returns (FilterLogsResponse) {
     option (google.api.http) = {
       post: "/grpc/v1/filter_logs"
@@ -56,5 +65,10 @@ service ScribeService {
     };
   }
 
-
+  rpc StreamLogs(StreamLogsRequest) returns (stream StreamLogsResponse) {
+    option (google.api.http) = {
+      post: "/grpc/v1/stream_logs"
+      body: "*"
+    };
+  }
 }
