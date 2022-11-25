@@ -113,6 +113,7 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint
 	results := make([][]types.Log, subChunkCount)
 	subChunkIdx := uint64(0)
 	chunk := iterator.NextChunk()
+	fmt.Println("chunk", subChunkSize)
 	for chunk != nil {
 		filter := ethereum.FilterQuery{
 			FromBlock: chunk.StartBlock,
