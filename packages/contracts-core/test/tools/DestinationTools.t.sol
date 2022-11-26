@@ -79,12 +79,7 @@ abstract contract DestinationTools is OriginTools {
 
     function expectAttestationAccepted() public {
         vm.expectEmit(true, true, true, true);
-        emit AttestationAccepted(
-            attestationDomain,
-            attestationNonce,
-            attestationRoot,
-            signatureNotary
-        );
+        emit AttestationAccepted(attestationNotary, attestationRaw);
     }
 
     function expectExecuted(uint32 domain, uint256 index) public {
@@ -104,7 +99,7 @@ abstract contract DestinationTools is OriginTools {
 
     function expectSetConfirmation(uint256 prevConfirmAt, uint256 newConfirmAt) public {
         vm.expectEmit(true, true, true, true);
-        emit SetConfirmation(attestationDomain, attestationRoot, prevConfirmAt, newConfirmAt);
+        emit SetConfirmation(attestationOrigin, attestationRoot, prevConfirmAt, newConfirmAt);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -156,7 +151,7 @@ abstract contract DestinationTools is OriginTools {
     // Trigger destination.setConfirmation() with given and saved data
     function destinationSetConfirmAt(uint32 domain, uint256 newConfirmAt) public {
         DestinationHarness destination = suiteDestination(domain);
-        destination.setConfirmation(attestationDomain, attestationRoot, newConfirmAt);
+        destination.setConfirmation(attestationOrigin, attestationRoot, newConfirmAt);
     }
 
     // Trigger destination.submitAttestation() with saved data and check the return value
@@ -182,7 +177,7 @@ abstract contract DestinationTools is OriginTools {
         uint32 destination,
         bool returnValue
     ) public {
-        createSuggestedAttestation({ domain: origin });
+        createSuggestedAttestation(origin, destination);
         destinationSubmitAttestation({ domain: destination, returnValue: returnValue });
     }
 
@@ -216,7 +211,7 @@ abstract contract DestinationTools is OriginTools {
     function destinationAcceptableRoot(uint32 domain, bytes memory revertMessage) public {
         DestinationHarness destination = suiteDestination(domain);
         vm.expectRevert(revertMessage);
-        destination.acceptableRoot(attestationDomain, APP_OPTIMISTIC_SECONDS, attestationRoot);
+        destination.acceptableRoot(attestationOrigin, APP_OPTIMISTIC_SECONDS, attestationRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -227,7 +222,7 @@ abstract contract DestinationTools is OriginTools {
     function destinationAcceptableRoot(uint32 domain) public view returns (bool) {
         return
             suiteDestination(domain).acceptableRoot(
-                attestationDomain,
+                attestationOrigin,
                 APP_OPTIMISTIC_SECONDS,
                 attestationRoot
             );
@@ -248,7 +243,7 @@ abstract contract DestinationTools is OriginTools {
 
     // Trigger destination.submittedAt() for saved data and pass over its return value
     function destinationSubmittedAt(uint32 domain) public view returns (uint256) {
-        return suiteDestination(domain).submittedAt(attestationDomain, attestationRoot);
+        return suiteDestination(domain).submittedAt(attestationOrigin, attestationRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

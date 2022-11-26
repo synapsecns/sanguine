@@ -1,12 +1,13 @@
 package backfill_test
 
 import (
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -24,7 +25,11 @@ func (b BackfillSuite) TestChainBackfill() {
 
 	// Get simulated blockchain, deploy three test contracts, and set up test variables.
 	chainID := gofakeit.Uint32()
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
+
+	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
+	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress())
+	Nil(b.T(), err)
+
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
 	testContractA, testRefA := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
 	testContractB, testRefB := managerB.GetTestContract(b.GetTestContext(), simulatedChain)
@@ -54,7 +59,7 @@ func (b BackfillSuite) TestChainBackfill() {
 		ChainID:   chainID,
 		Contracts: contractConfigs,
 	}
-	simulatedChainArr := []backfill.ScribeBackend{simulatedChain, simulatedChain}
+	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChainArr, chainConfig)
 	Nil(b.T(), err)
 	b.EmitEventsForAChain(contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)
@@ -62,7 +67,7 @@ func (b BackfillSuite) TestChainBackfill() {
 
 // EmitEventsForAChain emits events for a chain. If `backfill` is set to true, the function will store the events
 // whilst checking their existence in the database.
-func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContract, testRefs []*testcontract.TestContractRef, simulatedChain *simulated.Backend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig, backfill bool) {
+func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContract, testRefs []*testcontract.TestContractRef, simulatedChain backends.SimulatedTestBackend, chainBackfiller *backfill.ChainBackfiller, chainConfig config.ChainConfig, backfill bool) {
 	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
 
 	// Emit events from each contract.

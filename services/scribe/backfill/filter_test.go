@@ -1,6 +1,7 @@
 package backfill_test
 
 import (
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/chain/client/mocks"
 	etherMocks "github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/util"
@@ -15,9 +16,12 @@ import (
 // TestFilterLogsMaxAttempts ensures after the maximum number of attempts, an error is returned.
 func (b BackfillSuite) TestFilterLogsMaxAttempts() {
 	b.T().Skip("flake")
+	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(1)))
+	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress())
+	Nil(b.T(), err)
 	mockFilterer := new(mocks.EVMClient)
 	contractAddress := etherMocks.MockAddress()
-	rangeFilter := backfill.NewRangeFilter(contractAddress, mockFilterer, big.NewInt(1), big.NewInt(10), 1, true)
+	rangeFilter := backfill.NewRangeFilter(contractAddress, simulatedClient, big.NewInt(1), big.NewInt(10), 1, true, 1)
 
 	// Use the range filterer created above to create a mock log filter.
 	mockFilterer.

@@ -2,6 +2,7 @@
 
 pragma solidity 0.8.17;
 
+import { SynapseTypes } from "../../../contracts/libs/SynapseTypes.sol";
 import { SystemCall } from "../../../contracts/libs/SystemCall.sol";
 import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
 
@@ -13,6 +14,36 @@ contract SystemCallHarness {
     using SystemCall for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              FORMATTERS                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function formatSystemCall(
+        uint8 _systemRecipient,
+        uint40 _type,
+        bytes memory _payload,
+        bytes memory _prefix
+    ) public view returns (bytes memory) {
+        return
+            SystemCall.formatSystemCall(
+                _systemRecipient,
+                _payload.ref(_type),
+                _prefix.ref(SynapseTypes.RAW_BYTES)
+            );
+    }
+
+    function formatAdjustedCallPayload(
+        uint40 _type,
+        bytes memory _payload,
+        bytes memory _prefix
+    ) public view returns (bytes memory) {
+        return
+            SystemCall.formatAdjustedCallPayload(
+                _payload.ref(_type),
+                _prefix.ref(SynapseTypes.RAW_BYTES)
+            );
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               GETTERS                                ║*▕
@@ -44,18 +75,6 @@ contract SystemCallHarness {
 
     function isSystemCall(bytes memory _payload) public pure returns (bool) {
         return _payload.castToSystemCall().isSystemCall();
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              FORMATTERS                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function formatSystemCall(uint8 _systemRecipient, bytes memory _payload)
-        public
-        pure
-        returns (bytes memory)
-    {
-        return SystemCall.formatSystemCall(_systemRecipient, _payload);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

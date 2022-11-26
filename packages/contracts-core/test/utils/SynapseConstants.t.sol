@@ -15,4 +15,8 @@ contract SynapseConstants {
     uint32 internal constant APP_OPTIMISTIC_SECONDS = 60;
     // ============ Merkle ============
     uint256 internal constant TREE_DEPTH = 32;
+    // ============ Message ============
+    // Maximum bytes per message = 2 KiB
+    // (somewhat arbitrarily set to begin)
+    uint256 public constant MAX_MESSAGE_BODY_BYTES = 2 * 2**10;
 }

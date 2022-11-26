@@ -67,6 +67,7 @@ func (a AttestationProducer) FindLatestNonce(ctx context.Context) (nonce uint32,
 // update runs the update producer to produce an update.
 // nolint: cyclop
 func (a AttestationProducer) update(ctx context.Context) error {
+	// TODO (joe): we want to go through and update attestations for each destination.
 	latestNonce, err := a.FindLatestNonce(ctx)
 	if err != nil {
 		return fmt.Errorf("could not find latest root: %w", err)
