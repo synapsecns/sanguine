@@ -24,10 +24,12 @@ type Executor struct {
 	scribeClient client.ScribeClient
 	// lastLog is a map from chainID -> last log processed.
 	lastLog map[uint32]logOrderInfo
-	// LogChans is a mapping from chain ID -> log channel.
-	LogChans map[uint32]chan *types.Log
 	// closeConnection is a map from chain ID -> channel to close the connection.
 	closeConnection map[uint32]chan bool
+	// LogChans is a mapping from chain ID -> log channel.
+	LogChans map[uint32]chan *types.Log
+	// Roots is a slice of merkle roots. The root at [i] is the root of nonce i.
+	Roots [][32]byte
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -50,8 +52,9 @@ func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeC
 		addresses:       addresses,
 		scribeClient:    scribeClient,
 		lastLog:         make(map[uint32]logOrderInfo),
-		LogChans:        channels,
 		closeConnection: closeChans,
+		LogChans:        channels,
+		Roots:           [][32]byte{},
 	}, nil
 }
 
