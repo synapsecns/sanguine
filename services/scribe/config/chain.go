@@ -19,9 +19,9 @@ type ChainConfig struct {
 	BlockTimeChunkCount uint64 `yaml:"block_time_chunk_count"`
 	// BlockTimeChunkSize is the number of blocks to process per chunk (goroutine) while backfilling blocktimes.
 	BlockTimeChunkSize uint64 `yaml:"block_time_chunk_size"`
-	// ContractSubChunkCount is the number of chunks (goroutines) to process at a time while backfilling contracts.
-	ContractSubChunkCount int `yaml:"contract_sub_chunk_count"`
-	// ContractChunkSize is the number of blocks to process per chunk (goroutine) while backfilling contracts.
+	// ContractSubChunkSize is the number of blocks to request for in each get logs request in the batch request.
+	ContractSubChunkSize int `yaml:"contract_sub_chunk_size"`
+	// ContractChunkSize is the number of blocks to process per chunk while backfilling contracts.
 	ContractChunkSize int `yaml:"contract_chunk_size"`
 }
 
