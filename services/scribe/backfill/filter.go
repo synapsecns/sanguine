@@ -132,7 +132,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 			res, err := GetLogsInRange(ctx, f.backend, chunk.MinBlock().Uint64(), chunk.MaxBlock().Uint64(), uint64(f.subChunkSize), f.contractAddress)
 			if err != nil {
 				timeout = b.Duration()
-				LogEvent(WarnLevel, "Could not filter logs for range, retrying", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "e": err})
+				LogEvent(WarnLevel, "Could not filter logs for range, retrying", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock(), "e": err})
 				continue
 			}
 
@@ -142,7 +142,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 				_, resLogChunk := itr.Next()
 
 				if resLogChunk == nil || len(*resLogChunk) == 0 {
-					LogEvent(WarnLevel, "empty subchunk", LogData{"sh": chunk.MinBlock(), "eh": chunk.MaxBlock()})
+					LogEvent(WarnLevel, "empty subchunk", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock()})
 					continue
 				}
 				logsChunk := *resLogChunk
