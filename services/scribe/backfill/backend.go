@@ -16,6 +16,7 @@ import (
 	"golang.org/x/exp/constraints"
 	"math"
 	"math/big"
+	"time"
 )
 
 // ScribeBackend is the set of functions that the scribe needs from a client.
@@ -123,6 +124,9 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint
 		subChunkIdx++
 		chunk = iterator.NextChunk()
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Millisecond*80))
+	defer cancel()
+
 	if err := backend.Batch(ctx, calls...); err != nil {
 		return nil, fmt.Errorf("could not fetch logs in range %d to %d: %w", startHeight, endHeight, err)
 	}
