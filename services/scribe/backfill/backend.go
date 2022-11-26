@@ -124,7 +124,7 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint
 		subChunkIdx++
 		chunk = iterator.NextChunk()
 	}
-	
+
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Minute*5)
 	defer cancel()
 
