@@ -462,6 +462,70 @@ func GetPartialInfoFromBridgeEvent(res []sql.BridgeEvent) ([]*model.PartialInfo,
 	return partialInfos, nil
 }
 
+func GetPartialInfoFromBridgeEventSingle(res sql.BridgeEvent) (*model.PartialInfo, error) {
+	var partialInfos *model.PartialInfo
+	var err error
+	chainIDInt := int(res.ChainID)
+	blockNumberInt := int(res.BlockNumber)
+
+	var recipient string
+
+	switch {
+	case res.Recipient.Valid:
+		recipient = res.Recipient.String
+	case res.RecipientBytes.Valid:
+		recipient = res.RecipientBytes.String
+	default:
+		return nil, fmt.Errorf("recipient is not valid")
+	}
+
+	var tokenSymbol string
+
+	if res.TokenSymbol.Valid && res.TokenSymbol.String != "" {
+		tokenSymbol = res.TokenSymbol.String
+	} else {
+		return nil, fmt.Errorf("token symbol is not valid")
+	}
+
+	value := res.Amount.String()
+
+	var formattedValue float64
+
+	if res.TokenDecimal != nil {
+		formattedValue, err = strconv.ParseFloat(value, 64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse float: %w", err)
+		}
+
+		formattedValue /= math.Pow10(int(*res.TokenDecimal))
+	} else {
+		return nil, fmt.Errorf("token decimal is not valid")
+	}
+
+	var timeStamp int
+
+	if res.TimeStamp != nil {
+		timeStamp = int(*res.TimeStamp)
+	} else {
+		return nil, fmt.Errorf("time stamp is not valid")
+	}
+
+	partialInfos = &model.PartialInfo{
+		ChainID:        &chainIDInt,
+		Address:        &recipient,
+		TxnHash:        &res.TxHash,
+		Value:          &value,
+		FormattedValue: &formattedValue,
+		USDValue:       res.AmountUSD,
+		TokenAddress:   &res.Token,
+		TokenSymbol:    &tokenSymbol,
+		BlockNumber:    &blockNumberInt,
+		Time:           &timeStamp,
+	}
+
+	return partialInfos, nil
+}
+
 // generateToPartialInfoQuery returns the query for making the PartialInfo query.
 func generateToKappaPartialInfoQuery(toKappaChainStr string, chainID *int, address, tokenAddress, kappa, txHash *string, page int, latest bool) string {
 	firstFilter := false
