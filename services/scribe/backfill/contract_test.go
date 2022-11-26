@@ -2,17 +2,17 @@ package backfill_test
 
 import (
 	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
-	"math/big"
-	"os"
-
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/mocks"
+	"math/big"
+	"os"
+	"time"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
@@ -315,4 +315,45 @@ func (b BackfillSuite) getTxBlockNumber(chain backends.SimulatedTestBackend, tx 
 		return 0, fmt.Errorf("error getting receipt for tx: %w", err)
 	}
 	return receipt.BlockNumber.Uint64(), nil
+}
+
+// TestBSC tests how fast the backfiller can backfill 1000 BSC blocks.
+func (b BackfillSuite) TestBSC() {
+	if os.Getenv("CI") != "" {
+		b.T().Skip("Network test flake")
+	}
+
+	var backendClient backfill.ScribeBackend
+	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/56"
+	backendClient, err := backfill.DialBackend(b.GetTestContext(), omnirpcURL)
+	Nil(b.T(), err)
+	currentBlock, err := backendClient.BlockNumber(b.GetTestContext())
+	Nil(b.T(), err)
+	startBlock := currentBlock - 1000
+
+	contractConfig := config.ContractConfig{
+		Address:    "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
+		StartBlock: startBlock,
+	}
+
+	chainConfig := config.ChainConfig{
+		ChainID:               56,
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{contractConfig},
+	}
+	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
+	chainBackfiller, err := backfill.NewChainBackfiller(56, b.testDB, backendClientArr, chainConfig)
+	Nil(b.T(), err)
+	startTime := time.Now()
+	err = chainBackfiller.Backfill(b.GetTestContext(), false)
+	Nil(b.T(), err)
+
+	// Check to see if one log is recorded, one receipt is recorded, but no transactions.
+	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID)
+	Nil(b.T(), err)
+	Equal(b.T(), contractConfig.StartBlock, lastIndexed)
+	timeElasped := time.Since(startTime)
+	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
+	Nil(b.T(), err)
+	fmt.Println("1000 blocks backfilled in", timeElasped, "logs collected:", len(logs))
 }
