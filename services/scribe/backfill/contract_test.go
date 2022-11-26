@@ -317,7 +317,7 @@ func (b BackfillSuite) getTxBlockNumber(chain backends.SimulatedTestBackend, tx 
 	return receipt.BlockNumber.Uint64(), nil
 }
 
-// TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
+// TestBSC tests how fast the backfiller can backfill 1000 BSC blocks.
 func (b BackfillSuite) TestBSC() {
 	if os.Getenv("CI") != "" {
 		b.T().Skip("Network test flake")
@@ -330,9 +330,7 @@ func (b BackfillSuite) TestBSC() {
 	currentBlock, err := backendClient.BlockNumber(b.GetTestContext())
 	Nil(b.T(), err)
 	startBlock := currentBlock - 1000
-	// This config is using this block https://aurorascan.dev/block/58621373
-	// and this tx https://aurorascan.dev/tx/0x687282d7bd6c3d591f9ad79784e0983afabcac2a9074d368b7ca3d7caf4edee5
-	// to test handling of the v,r,s tx not found error.
+
 	contractConfig := config.ContractConfig{
 		Address:    "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
 		StartBlock: startBlock,
