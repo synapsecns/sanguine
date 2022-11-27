@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/prysmaticlabs/prysm/shared/trieutil"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
@@ -26,10 +27,12 @@ type Executor struct {
 	lastLog map[uint32]logOrderInfo
 	// closeConnection is a map from chain ID -> channel to close the connection.
 	closeConnection map[uint32]chan bool
+	// roots is a slice of merkle roots. The root at [i] is the root of nonce i.
+	roots [][32]byte
 	// LogChans is a mapping from chain ID -> log channel.
 	LogChans map[uint32]chan *types.Log
-	// Roots is a slice of merkle roots. The root at [i] is the root of nonce i.
-	Roots [][32]byte
+	// MerkleTree is the merkle tree.
+	MerkleTree *trieutil.SparseMerkleTrie
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -38,13 +41,21 @@ type logOrderInfo struct {
 	blockIndex  uint
 }
 
+const treeDepth uint64 = 32
+
 // NewExecutor creates a new executor agent.
 func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeClient client.ScribeClient) (*Executor, error) {
 	channels := make(map[uint32]chan *types.Log)
 	closeChans := make(map[uint32]chan bool)
+
 	for _, chainID := range chainIDs {
 		channels[chainID] = make(chan *types.Log, 1000)
 		closeChans[chainID] = make(chan bool, 1)
+	}
+
+	merkleTree, err := trieutil.NewTrie(treeDepth)
+	if err != nil {
+		return nil, fmt.Errorf("could not create merkle tree: %w", err)
 	}
 
 	return &Executor{
@@ -53,8 +64,9 @@ func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeC
 		scribeClient:    scribeClient,
 		lastLog:         make(map[uint32]logOrderInfo),
 		closeConnection: closeChans,
+		roots:           [][32]byte{},
 		LogChans:        channels,
-		Roots:           [][32]byte{},
+		MerkleTree:      merkleTree,
 	}, nil
 }
 
@@ -147,6 +159,47 @@ func (e Executor) Start(ctx context.Context) error {
 // Stop stops the executor agent.
 func (e Executor) Stop(chainID uint32) {
 	e.closeConnection[chainID] <- true
+}
+
+// Listen listens to the log channel and processes the logs.
+func (e Executor) Listen(ctx context.Context, chainID uint32) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case log := <-e.LogChans[chainID]:
+			if log == nil {
+				return fmt.Errorf("log is nil")
+			}
+
+			e.processLog(*log)
+		}
+	}
+}
+
+// processLog processes the log and updates the merkle tree.
+func (e Executor) processLog(log types.Log) {
+	merkleIndex := e.MerkleTree.NumOfItems()
+	leafData := e.logToLeaf(log)
+	e.MerkleTree.Insert(leafData, merkleIndex)
+	e.roots = append(e.roots, e.MerkleTree.Root())
+}
+
+// getRoot returns the merkle root at the given index.
+func (e Executor) getRoot(index uint64) ([32]byte, error) {
+	if index >= uint64(len(e.roots)) {
+		return [32]byte{}, fmt.Errorf("index out of range")
+	}
+
+	return e.roots[index], nil
+}
+
+// logToLeaf converts the log to a leaf data.
+func (e Executor) logToLeaf(log types.Log) []byte {
+	// TODO: This is going to parse the emitted events from the log topics
+	//  from the origin and attestationcollector contracts and convert them to a message
+	//  to hash.
+	return []byte{}
 }
 
 func (l logOrderInfo) verifyAfter(log types.Log) bool {
