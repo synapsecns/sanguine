@@ -15,6 +15,7 @@ import (
 
 // ContractBackfiller is a backfiller that fetches logs for a specific contract.
 type ContractBackfiller struct {
+	// chainConfig is the chain config for the chain that the contract is on.
 	chainConfig config.ChainConfig
 	// address is the contract address to get logs for.
 	address string
