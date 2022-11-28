@@ -136,80 +136,80 @@ func (e *ExecutorSuite) TestExecutor() {
 	})
 }
 
-//func (e *ExecutorSuite) TestLotsOfLogs() {
-//	testDone := false
-//	defer func() {
-//		testDone = true
-//	}()
-//	chainID := gofakeit.Uint32()
-//	simulatedChain := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
-//	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), simulatedChain.RPCAddress())
-//	e.Nil(err)
-//	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-//	testContract, testRef := e.manager.GetTestContract(e.GetTestContext(), simulatedChain)
-//	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
-//
-//	contractConfig := config.ContractConfig{
-//		Address:    testContract.Address().String(),
-//		StartBlock: 0,
-//	}
-//	chainConfig := config.ChainConfig{
-//		ChainID:               chainID,
-//		RequiredConfirmations: 0,
-//		Contracts:             []config.ContractConfig{contractConfig},
-//	}
-//	scribeConfig := config.Config{
-//		Chains: []config.ChainConfig{chainConfig},
-//	}
-//	clients := map[uint32][]backfill.ScribeBackend{
-//		chainID: {simulatedClient, simulatedClient},
-//	}
-//
-//	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
-//	e.Nil(err)
-//
-//	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
-//	go func() {
-//		scribeErr := scribeClient.Start(e.GetTestContext())
-//		e.Nil(scribeErr)
-//	}()
-//
-//	// Start the Scribe.
-//	go func() {
-//		scribeErr := scribe.Start(e.GetTestContext())
-//		if !testDone {
-//			e.Nil(scribeErr)
-//		}
-//	}()
-//
-//	exec, err := executor.NewExecutor([]uint32{chainID}, map[uint32]common.Address{chainID: testContract.Address()}, scribeClient.ScribeClient)
-//	e.Nil(err)
-//
-//	// Start the exec.
-//	go func() {
-//		execErr := exec.Start(e.GetTestContext())
-//		if !testDone {
-//			e.Nil(execErr)
-//		}
-//	}()
-//
-//	// Emit 250 events.
-//	go func() {
-//		for i := 0; i < 250; i++ {
-//			tx, err := testRef.EmitEventB(transactOpts.TransactOpts, []byte{byte(i)}, big.NewInt(int64(i)), big.NewInt(int64(i)))
-//			e.Nil(err)
-//			simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
-//		}
-//	}()
-//
-//	e.Eventually(func() bool {
-//		return len(exec.LogChans[chainID]) == 250
-//	})
-//
-//	e.DeferAfterTest(func() {
-//		exec.Stop(chainID)
-//	})
-//}
+func (e *ExecutorSuite) TestLotsOfLogs() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+	chainID := gofakeit.Uint32()
+	simulatedChain := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
+	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), simulatedChain.RPCAddress())
+	e.Nil(err)
+	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
+	testContract, testRef := e.manager.GetTestContract(e.GetTestContext(), simulatedChain)
+	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
+
+	contractConfig := config.ContractConfig{
+		Address:    testContract.Address().String(),
+		StartBlock: 0,
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:               chainID,
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{contractConfig},
+	}
+	scribeConfig := config.Config{
+		Chains: []config.ChainConfig{chainConfig},
+	}
+	clients := map[uint32][]backfill.ScribeBackend{
+		chainID: {simulatedClient, simulatedClient},
+	}
+
+	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
+	e.Nil(err)
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+	go func() {
+		scribeErr := scribeClient.Start(e.GetTestContext())
+		e.Nil(scribeErr)
+	}()
+
+	// Start the Scribe.
+	go func() {
+		scribeErr := scribe.Start(e.GetTestContext())
+		if !testDone {
+			e.Nil(scribeErr)
+		}
+	}()
+
+	exec, err := executor.NewExecutor([]uint32{chainID}, map[uint32]common.Address{chainID: testContract.Address()}, scribeClient.ScribeClient)
+	e.Nil(err)
+
+	// Start the exec.
+	go func() {
+		execErr := exec.Start(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
+	// Emit 250 events.
+	go func() {
+		for i := 0; i < 250; i++ {
+			tx, err := testRef.EmitEventB(transactOpts.TransactOpts, []byte{byte(i)}, big.NewInt(int64(i)), big.NewInt(int64(i)))
+			e.Nil(err)
+			simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+		}
+	}()
+
+	e.Eventually(func() bool {
+		return len(exec.LogChans[chainID]) == 250
+	})
+
+	e.DeferAfterTest(func() {
+		exec.Stop(chainID)
+	})
+}
 
 func (e *ExecutorSuite) TestMerkleTree() {
 
