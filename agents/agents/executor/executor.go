@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/prysmaticlabs/prysm/shared/trieutil"
+	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
+	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
@@ -29,8 +32,12 @@ type Executor struct {
 	closeConnection map[uint32]chan bool
 	// roots is a slice of merkle roots. The root at [i] is the root of nonce i.
 	roots [][32]byte
+	// originParsers is a map from chain ID -> origin parser.
+	originParsers map[uint32]origin.Parser
+	// attestationcollectorParsers is a map from chain ID -> attestationcollector parser.
+	attestationcollectorParsers map[uint32]attestationcollector.Parser
 	// LogChans is a mapping from chain ID -> log channel.
-	LogChans map[uint32]chan *types.Log
+	LogChans map[uint32]chan *ethTypes.Log
 	// MerkleTree is the merkle tree.
 	MerkleTree *trieutil.SparseMerkleTrie
 }
@@ -45,12 +52,27 @@ const treeDepth uint64 = 32
 
 // NewExecutor creates a new executor agent.
 func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeClient client.ScribeClient) (*Executor, error) {
-	channels := make(map[uint32]chan *types.Log)
+	channels := make(map[uint32]chan *ethTypes.Log)
 	closeChans := make(map[uint32]chan bool)
+	originParsers := make(map[uint32]origin.Parser)
+	attestationcollectorParsers := make(map[uint32]attestationcollector.Parser)
 
 	for _, chainID := range chainIDs {
-		channels[chainID] = make(chan *types.Log, 1000)
+		channels[chainID] = make(chan *ethTypes.Log, 1000)
 		closeChans[chainID] = make(chan bool, 1)
+		originParser, err := origin.NewParser(addresses[chainID])
+		if err != nil {
+			return nil, fmt.Errorf("could not create origin parser: %w", err)
+		}
+
+		originParsers[chainID] = originParser
+		attestationcollectorParser, err := attestationcollector.NewParser(addresses[chainID])
+		if err != nil {
+			return nil, fmt.Errorf("could not create attestationcollector parser: %w", err)
+		}
+
+		attestationcollectorParsers[chainID] = attestationcollectorParser
+
 	}
 
 	merkleTree, err := trieutil.NewTrie(treeDepth)
@@ -59,14 +81,16 @@ func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeC
 	}
 
 	return &Executor{
-		chainIDs:        chainIDs,
-		addresses:       addresses,
-		scribeClient:    scribeClient,
-		lastLog:         make(map[uint32]logOrderInfo),
-		closeConnection: closeChans,
-		roots:           [][32]byte{},
-		LogChans:        channels,
-		MerkleTree:      merkleTree,
+		chainIDs:                    chainIDs,
+		addresses:                   addresses,
+		scribeClient:                scribeClient,
+		lastLog:                     make(map[uint32]logOrderInfo),
+		closeConnection:             closeChans,
+		roots:                       [][32]byte{},
+		originParsers:               originParsers,
+		attestationcollectorParsers: attestationcollectorParsers,
+		LogChans:                    channels,
+		MerkleTree:                  merkleTree,
 	}, nil
 }
 
@@ -172,17 +196,26 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 				return fmt.Errorf("log is nil")
 			}
 
-			e.processLog(*log)
+			err := e.processLog(*log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not process log: %w", err)
+			}
 		}
 	}
 }
 
 // processLog processes the log and updates the merkle tree.
-func (e Executor) processLog(log types.Log) {
+func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
 	merkleIndex := e.MerkleTree.NumOfItems()
-	leafData := e.logToLeaf(log)
+	leafData, err := e.logToLeaf(log, chainID)
+	if err != nil {
+		return fmt.Errorf("could not convert log to leaf: %w", err)
+	}
+
 	e.MerkleTree.Insert(leafData, merkleIndex)
 	e.roots = append(e.roots, e.MerkleTree.Root())
+
+	return nil
 }
 
 // getRoot returns the merkle root at the given index.
@@ -195,14 +228,34 @@ func (e Executor) getRoot(index uint64) ([32]byte, error) {
 }
 
 // logToLeaf converts the log to a leaf data.
-func (e Executor) logToLeaf(log types.Log) []byte {
-	// TODO: This is going to parse the emitted events from the log topics
-	//  from the origin and attestationcollector contracts and convert them to a message
-	//  to hash.
-	return []byte{}
+func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
+	if eventType, ok := e.originParsers[chainID].EventType(log); ok && eventType == origin.DispatchEvent {
+		committedMessage, ok := e.originParsers[chainID].ParseDispatch(log)
+		if !ok {
+			return nil, fmt.Errorf("could not parse committed message")
+		}
+
+		message, err := types.DecodeMessage(committedMessage.Message())
+		if err != nil {
+			return nil, fmt.Errorf("could not decode message: %w", err)
+		}
+
+		leaf, err := message.ToLeaf()
+		if err != nil {
+			return nil, fmt.Errorf("could not convert message to leaf: %w", err)
+		}
+
+		return leaf[:], nil
+	} else if eventType, ok := e.attestationcollectorParsers[chainID].EventType(log); ok && eventType == 0 {
+		// TODO: handle this case with attestationcollector properly.
+		return nil, nil
+	} else {
+		return nil, fmt.Errorf("could not parse committed message")
+	}
+
 }
 
-func (l logOrderInfo) verifyAfter(log types.Log) bool {
+func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
 	if log.BlockNumber < l.blockNumber {
 		return false
 	}
