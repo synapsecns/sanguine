@@ -2,13 +2,14 @@ package evm_test
 
 import (
 	"bytes"
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
-	"math/big"
 )
 
 // TestDispatch is a test dispatch call.

@@ -1,6 +1,8 @@
 package evm_test
 
 import (
+	"math/big"
+
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
@@ -16,7 +18,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	signerMocks "github.com/synapsecns/sanguine/ethergo/signer/signer/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"math/big"
 )
 
 func (t *TxQueueSuite) TestGetNonce() {
@@ -42,28 +43,7 @@ func (t *TxQueueSuite) TestGetTransactor() {
 	chn := simulated.NewSimulatedBackend(t.GetTestContext(), t.T())
 	manager := testutil.NewDeployManager(t.T())
 
-	originDeployment, originHarness := manager.GetOriginHarness(t.GetTestContext(), chn)
-	notaryManagerDeployment, notaryManager := manager.GetNotaryManager(t.GetTestContext(), chn)
-
-	notaryManagerOpts := chn.GetTxContext(t.GetTestContext(), notaryManagerDeployment.OwnerPtr())
-
-	// setup the origin on the notary contract
-	setOriginTx, err := notaryManager.SetOrigin(notaryManagerOpts.TransactOpts, originHarness.Address())
-	Nil(t.T(), err)
-	chn.WaitForConfirmation(t.GetTestContext(), setOriginTx)
-
-	// setup the notary on the origin contract
-	originOwnerTxOpts := chn.GetTxContext(t.GetTestContext(), originDeployment.OwnerPtr())
-	Nil(t.T(), err)
-
-	setNotaryManagerTx, err := originHarness.SetNotaryManager(originOwnerTxOpts.TransactOpts, notaryManagerDeployment.Address())
-	Nil(t.T(), err)
-	chn.WaitForConfirmation(t.GetTestContext(), setNotaryManagerTx)
-
-	// add the notary
-	setNotaryTx, err := notaryManager.SetNotary(notaryManagerOpts.TransactOpts, notaryManagerDeployment.Owner())
-	Nil(t.T(), err)
-	chn.WaitForConfirmation(t.GetTestContext(), setNotaryTx)
+	_, originHarness := manager.GetOriginHarness(t.GetTestContext(), chn)
 
 	// create a test signer
 	wllt, err := wallet.FromRandom()

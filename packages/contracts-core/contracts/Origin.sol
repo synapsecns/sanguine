@@ -80,8 +80,9 @@ contract Origin is Version0, OriginEvents, OriginHub, LocalDomainContext {
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
-    ) external payable haveActiveNotary returns (uint32 messageNonce, bytes32 messageHash) {
+    ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
         // TODO: add unit tests covering return values
+        // TODO: haveActiveNotary was removed, should we enforce that the bonding manager has added a notary for the destination??
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         bytes29 tips = _tips.castToTips();
         // Check: tips payload is correctly formatted

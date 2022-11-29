@@ -314,29 +314,6 @@ func (_m *IOrigin) FilterInitialized(opts *bind.FilterOpts) (*origin.OriginIniti
 	return r0, r1
 }
 
-// FilterNewNotaryManager provides a mock function with given fields: opts
-func (_m *IOrigin) FilterNewNotaryManager(opts *bind.FilterOpts) (*origin.OriginNewNotaryManagerIterator, error) {
-	ret := _m.Called(opts)
-
-	var r0 *origin.OriginNewNotaryManagerIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *origin.OriginNewNotaryManagerIterator); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*origin.OriginNewNotaryManagerIterator)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // FilterNotaryAdded provides a mock function with given fields: opts, domain
 func (_m *IOrigin) FilterNotaryAdded(opts *bind.FilterOpts, domain []uint32) (*origin.OriginNotaryAddedIterator, error) {
 	ret := _m.Called(opts, domain)
@@ -521,13 +498,13 @@ func (_m *IOrigin) GuardsAmount(opts *bind.CallOpts) (*big.Int, error) {
 	return r0, r1
 }
 
-// Initialize provides a mock function with given fields: opts, _notaryManager
-func (_m *IOrigin) Initialize(opts *bind.TransactOpts, _notaryManager common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, _notaryManager)
+// Initialize provides a mock function with given fields: opts
+func (_m *IOrigin) Initialize(opts *bind.TransactOpts) (*types.Transaction, error) {
+	ret := _m.Called(opts)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, _notaryManager)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts) *types.Transaction); ok {
+		r0 = rf(opts)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -535,8 +512,8 @@ func (_m *IOrigin) Initialize(opts *bind.TransactOpts, _notaryManager common.Add
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
-		r1 = rf(opts, _notaryManager)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -619,29 +596,6 @@ func (_m *IOrigin) NotariesAmount(opts *bind.CallOpts) (*big.Int, error) {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// NotaryManager provides a mock function with given fields: opts
-func (_m *IOrigin) NotaryManager(opts *bind.CallOpts) (common.Address, error) {
-	ret := _m.Called(opts)
-
-	var r0 common.Address
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(common.Address)
 		}
 	}
 
@@ -885,29 +839,6 @@ func (_m *IOrigin) ParseInitialized(log types.Log) (*origin.OriginInitialized, e
 	return r0, r1
 }
 
-// ParseNewNotaryManager provides a mock function with given fields: log
-func (_m *IOrigin) ParseNewNotaryManager(log types.Log) (*origin.OriginNewNotaryManager, error) {
-	ret := _m.Called(log)
-
-	var r0 *origin.OriginNewNotaryManager
-	if rf, ok := ret.Get(0).(func(types.Log) *origin.OriginNewNotaryManager); ok {
-		r0 = rf(log)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*origin.OriginNewNotaryManager)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
-		r1 = rf(log)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // ParseNotaryAdded provides a mock function with given fields: log
 func (_m *IOrigin) ParseNotaryAdded(log types.Log) (*origin.OriginNotaryAdded, error) {
 	ret := _m.Called(log)
@@ -1083,52 +1014,6 @@ func (_m *IOrigin) SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error) {
 	return r0, r1
 }
 
-// SetNotary provides a mock function with given fields: opts, _notary
-func (_m *IOrigin) SetNotary(opts *bind.TransactOpts, _notary common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, _notary)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, _notary)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
-		r1 = rf(opts, _notary)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// SetNotaryManager provides a mock function with given fields: opts, _notaryManager
-func (_m *IOrigin) SetNotaryManager(opts *bind.TransactOpts, _notaryManager common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, _notaryManager)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, _notaryManager)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
-		r1 = rf(opts, _notaryManager)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // SetSystemRouter provides a mock function with given fields: opts, _systemRouter
 func (_m *IOrigin) SetSystemRouter(opts *bind.TransactOpts, _systemRouter common.Address) (*types.Transaction, error) {
 	ret := _m.Called(opts, _systemRouter)
@@ -1145,6 +1030,29 @@ func (_m *IOrigin) SetSystemRouter(opts *bind.TransactOpts, _systemRouter common
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
 		r1 = rf(opts, _systemRouter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SlashAgent provides a mock function with given fields: opts, arg0, _callOrigin, _caller, _info
+func (_m *IOrigin) SlashAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _info origin.SystemContractAgentInfo) (*types.Transaction, error) {
+	ret := _m.Called(opts, arg0, _callOrigin, _caller, _info)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, uint32, uint8, origin.SystemContractAgentInfo) *types.Transaction); ok {
+		r0 = rf(opts, arg0, _callOrigin, _caller, _info)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, uint32, uint8, origin.SystemContractAgentInfo) error); ok {
+		r1 = rf(opts, arg0, _callOrigin, _caller, _info)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1224,6 +1132,29 @@ func (_m *IOrigin) SuggestAttestation(opts *bind.CallOpts, _destination uint32) 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
 		r1 = rf(opts, _destination)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SyncAgents provides a mock function with given fields: opts, arg0, _callOrigin, _caller, _requestID, _removeExisting, _infos
+func (_m *IOrigin) SyncAgents(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _requestID *big.Int, _removeExisting bool, _infos []origin.SystemContractAgentInfo) (*types.Transaction, error) {
+	ret := _m.Called(opts, arg0, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, uint32, uint8, *big.Int, bool, []origin.SystemContractAgentInfo) *types.Transaction); ok {
+		r0 = rf(opts, arg0, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, uint32, uint8, *big.Int, bool, []origin.SystemContractAgentInfo) error); ok {
+		r1 = rf(opts, arg0, _callOrigin, _caller, _requestID, _removeExisting, _infos)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1497,29 +1428,6 @@ func (_m *IOrigin) WatchInitialized(opts *bind.WatchOpts, sink chan<- *origin.Or
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginInitialized) error); ok {
-		r1 = rf(opts, sink)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// WatchNewNotaryManager provides a mock function with given fields: opts, sink
-func (_m *IOrigin) WatchNewNotaryManager(opts *bind.WatchOpts, sink chan<- *origin.OriginNewNotaryManager) (event.Subscription, error) {
-	ret := _m.Called(opts, sink)
-
-	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginNewNotaryManager) event.Subscription); ok {
-		r0 = rf(opts, sink)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(event.Subscription)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginNewNotaryManager) error); ok {
 		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)
