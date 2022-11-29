@@ -115,13 +115,13 @@ func (e Executor) Start(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
 	for _, chain := range e.config.Chains {
-		chainID := chain.ChainID
+		chain := chain
 
 		g.Go(func() error {
 			stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 				Filter: &pbscribe.LogFilter{
 					ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: chain.OriginAddress}},
-					ChainId:         chainID,
+					ChainId:         chain.ChainID,
 				},
 				FromBlock: "earliest",
 				ToBlock:   "latest",
@@ -132,7 +132,7 @@ func (e Executor) Start(ctx context.Context) error {
 
 			for {
 				select {
-				case <-e.closeConnection[chainID]:
+				case <-e.closeConnection[chain.ChainID]:
 					err := stream.CloseSend()
 					if err != nil {
 						return fmt.Errorf("could not close stream: %w", err)
@@ -156,12 +156,12 @@ func (e Executor) Start(ctx context.Context) error {
 					if log == nil {
 						return fmt.Errorf("could not convert log")
 					}
-					if !e.lastLog[chainID].verifyAfter(*log) {
-						return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog[chainID].blockNumber, e.lastLog[chainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+					if !e.lastLog[chain.ChainID].verifyAfter(*log) {
+						return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog[chain.ChainID].blockNumber, e.lastLog[chain.ChainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 					}
 
-					e.LogChans[chainID] <- log
-					e.lastLog[chainID] = logOrderInfo{
+					e.LogChans[chain.ChainID] <- log
+					e.lastLog[chain.ChainID] = logOrderInfo{
 						blockNumber: log.BlockNumber,
 						blockIndex:  log.Index,
 					}
