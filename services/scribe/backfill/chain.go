@@ -66,7 +66,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 	minBlockHeight := uint64(math.MaxUint64)
 
 	for _, contract := range chainConfig.Contracts {
-		contractBackfiller, err := NewContractBackfiller(chainConfig.ChainID, contract.Address, eventDB, client, chainConfig.ContractChunkSize, chainConfig.ContractSubChunkSize)
+		contractBackfiller, err := NewContractBackfiller(chainConfig, contract.Address, eventDB, client)
 
 		if err != nil {
 			return nil, fmt.Errorf("could not create contract backfiller: %w", err)
