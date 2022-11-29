@@ -101,7 +101,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         bondingManager.setSystemRouter(systemRouter);
         // Add domain notaries to Origin
         for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
-            origin.addNotary(suiteNotary(domain, i));
+            origin.addNotary(domain, suiteNotary(domain, i));
         }
         // Add guards
         for (uint256 i = 0; i < GUARDS; ++i) {
