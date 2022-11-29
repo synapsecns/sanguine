@@ -136,7 +136,7 @@ func (e *ExecutorSuite) TestExecutor() {
 	})
 }
 
-//func (e *ExecutorSuite) TestLotsOfLogs() {
+// func (e *ExecutorSuite) TestLotsOfLogs() {
 //	testDone := false
 //	defer func() {
 //		testDone = true
