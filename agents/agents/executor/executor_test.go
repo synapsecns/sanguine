@@ -2,15 +2,19 @@ package executor_test
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
+	"github.com/synapsecns/sanguine/agents/testutil"
+	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/node"
 	"math/big"
+	"time"
 )
 
 func (e *ExecutorSuite) TestExecutor() {
@@ -89,17 +93,12 @@ func (e *ExecutorSuite) TestExecutor() {
 		e.Nil(scribeErr)
 	}()
 
-	excCfgA := executorCfg.Config{
+	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
 			{
 				ChainID:       chainIDA,
 				OriginAddress: testContractA.Address().String(),
 			},
-		},
-	}
-
-	excCfgB := executorCfg.Config{
-		Chains: []executorCfg.ChainConfig{
 			{
 				ChainID:       chainIDB,
 				OriginAddress: testContractB.Address().String(),
@@ -107,41 +106,25 @@ func (e *ExecutorSuite) TestExecutor() {
 		},
 	}
 
-	excA, err := executor.NewExecutor(excCfgA, scribeClient.ScribeClient)
-	e.Nil(err)
-	excB, err := executor.NewExecutor(excCfgB, scribeClient.ScribeClient)
+	exc, err := executor.NewExecutor(excCfg, scribeClient.ScribeClient)
 	e.Nil(err)
 
 	// Start the executor.
 	go func() {
-		excErr := excA.Start(e.GetSuiteContext())
-		if !testDone {
-			e.Nil(excErr)
-		}
-	}()
-	go func() {
-		excErr := excB.Start(e.GetSuiteContext())
+		excErr := exc.Start(e.GetSuiteContext())
 		if !testDone {
 			e.Nil(excErr)
 		}
 	}()
 
 	e.Eventually(func() bool {
-		if len(excA.LogChans[chainIDA]) == 2 {
-			logA := <-excA.LogChans[chainIDA]
-			logB := <-excA.LogChans[chainIDA]
+		if len(exc.LogChans[chainIDA]) == 2 && len(exc.LogChans[chainIDB]) == 2 {
+			logA := <-exc.LogChans[chainIDA]
+			logB := <-exc.LogChans[chainIDA]
 			e.Assert().Less(logA.BlockNumber, logB.BlockNumber)
-			return true
-		}
-
-		return false
-	})
-
-	e.Eventually(func() bool {
-		if len(excB.LogChans[chainIDB]) == 2 {
-			logA := <-excB.LogChans[chainIDB]
-			logB := <-excB.LogChans[chainIDB]
-			e.Assert().LessOrEqual(logA.BlockNumber, logB.BlockNumber)
+			logC := <-exc.LogChans[chainIDB]
+			logD := <-exc.LogChans[chainIDB]
+			e.Assert().LessOrEqual(logC.BlockNumber, logD.BlockNumber)
 			return true
 		}
 
@@ -149,26 +132,113 @@ func (e *ExecutorSuite) TestExecutor() {
 	})
 
 	e.DeferAfterTest(func() {
-		excA.Stop(chainIDA)
-		excB.Stop(chainIDB)
+		exc.Stop(chainIDA)
 	})
 }
 
-func (e *ExecutorSuite) TestLotsOfLogs() {
+//func (e *ExecutorSuite) TestLotsOfLogs() {
+//	testDone := false
+//	defer func() {
+//		testDone = true
+//	}()
+//	chainID := gofakeit.Uint32()
+//	simulatedChain := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
+//	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), simulatedChain.RPCAddress())
+//	e.Nil(err)
+//	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
+//	testContract, testRef := e.manager.GetTestContract(e.GetTestContext(), simulatedChain)
+//	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
+//
+//	contractConfig := config.ContractConfig{
+//		Address:    testContract.Address().String(),
+//		StartBlock: 0,
+//	}
+//	chainConfig := config.ChainConfig{
+//		ChainID:               chainID,
+//		RequiredConfirmations: 0,
+//		Contracts:             []config.ContractConfig{contractConfig},
+//	}
+//	scribeConfig := config.Config{
+//		Chains: []config.ChainConfig{chainConfig},
+//	}
+//	clients := map[uint32][]backfill.ScribeBackend{
+//		chainID: {simulatedClient, simulatedClient},
+//	}
+//
+//	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
+//	e.Nil(err)
+//
+//	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+//	go func() {
+//		scribeErr := scribeClient.Start(e.GetTestContext())
+//		e.Nil(scribeErr)
+//	}()
+//
+//	// Start the Scribe.
+//	go func() {
+//		scribeErr := scribe.Start(e.GetTestContext())
+//		if !testDone {
+//			e.Nil(scribeErr)
+//		}
+//	}()
+//
+//	excCfg := executorCfg.Config{
+//		Chains: []executorCfg.ChainConfig{
+//			{
+//				ChainID:       chainID,
+//				OriginAddress: testContract.Address().String(),
+//			},
+//		},
+//	}
+//
+//	exec, err := executor.NewExecutor(excCfg, scribeClient.ScribeClient)
+//	e.Nil(err)
+//
+//	// Start the exec.
+//	go func() {
+//		execErr := exec.Start(e.GetTestContext())
+//		if !testDone {
+//			e.Nil(execErr)
+//		}
+//	}()
+//
+//	// Emit 250 events.
+//	go func() {
+//		for i := 0; i < 250; i++ {
+//			tx, err := testRef.EmitEventB(transactOpts.TransactOpts, []byte{byte(i)}, big.NewInt(int64(i)), big.NewInt(int64(i)))
+//			e.Nil(err)
+//			simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+//		}
+//	}()
+//
+//	e.Eventually(func() bool {
+//		return len(exec.LogChans[chainID]) == 250
+//	})
+//
+//	e.DeferAfterTest(func() {
+//		exec.Stop(chainID)
+//	})
+//}
+
+func (e *ExecutorSuite) TestMerkleInsert() {
 	testDone := false
 	defer func() {
 		testDone = true
 	}()
 	chainID := gofakeit.Uint32()
+	deployManager := testutil.NewDeployManager(e.T())
 	simulatedChain := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
 	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), simulatedChain.RPCAddress())
 	e.Nil(err)
 	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-	testContract, testRef := e.manager.GetTestContract(e.GetTestContext(), simulatedChain)
+	originContract, originRef := deployManager.GetOrigin(e.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
 
+	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
+	e.Nil(err)
+
 	contractConfig := config.ContractConfig{
-		Address:    testContract.Address().String(),
+		Address:    originContract.Address().String(),
 		StartBlock: 0,
 	}
 	chainConfig := config.ChainConfig{
@@ -204,13 +274,23 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		Chains: []executorCfg.ChainConfig{
 			{
 				ChainID:       chainID,
-				OriginAddress: testContract.Address().String(),
+				OriginAddress: originContract.Address().String(),
 			},
 		},
 	}
 
 	exec, err := executor.NewExecutor(excCfg, scribeClient.ScribeClient)
 	e.Nil(err)
+
+	header := types.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), 1, 1, common.BigToHash(big.NewInt(gofakeit.Int64())), 1)
+	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+	body := []byte{1}
+	message := types.NewMessage(header, tips, body)
+	_ = message
+
+	tx, err := originRef.Dispatch(transactOpts.TransactOpts, 1, [32]byte{}, 1, encodedTips, []byte{1})
+	e.Nil(err)
+	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 
 	// Start the exec.
 	go func() {
@@ -220,24 +300,18 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		}
 	}()
 
-	// Emit 250 events.
+	// Listen with the exec.
 	go func() {
-		for i := 0; i < 250; i++ {
-			tx, err := testRef.EmitEventB(transactOpts.TransactOpts, []byte{byte(i)}, big.NewInt(int64(i)), big.NewInt(int64(i)))
-			e.Nil(err)
-			simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+		execErr := exec.Listen(e.GetTestContext(), chainID)
+		if !testDone {
+			e.Nil(execErr)
 		}
 	}()
 
-	e.Eventually(func() bool {
-		return len(exec.LogChans[chainID]) == 250
-	})
+	time.Sleep(30 * time.Second)
 
-	e.DeferAfterTest(func() {
-		exec.Stop(chainID)
-	})
-}
+	root, err := exec.GetRoot(0)
+	e.Nil(err)
 
-func (e *ExecutorSuite) TestMerkleTree() {
-
+	e.NotNil(root)
 }

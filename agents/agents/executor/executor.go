@@ -17,6 +17,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
+	"sync"
 )
 
 // Executor is the executor agent.
@@ -27,6 +28,8 @@ type Executor struct {
 	scribeClient client.ScribeClient
 	// lastLog is a map from chainID -> last log processed.
 	lastLog map[uint32]logOrderInfo
+	// lastLogMutex is a mutex for the lastLog map.
+	lastLogMutex *sync.Mutex
 	// closeConnection is a map from chain ID -> channel to close the connection.
 	closeConnection map[uint32]chan bool
 	// roots is a slice of merkle roots. The root at [i] is the root of nonce i.
@@ -82,6 +85,7 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 		config:                      config,
 		scribeClient:                scribeClient,
 		lastLog:                     make(map[uint32]logOrderInfo),
+		lastLogMutex:                &sync.Mutex{},
 		closeConnection:             closeChans,
 		roots:                       [][32]byte{},
 		originParsers:               originParsers,
@@ -92,8 +96,6 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 }
 
 // Start starts the executor agent. This uses gRPC to process the logs.
-//
-//nolint:cyclop,gocognit
 func (e Executor) Start(ctx context.Context) error {
 	// Consume the logs from gRPC.
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", e.scribeClient.URL, e.scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -118,55 +120,7 @@ func (e Executor) Start(ctx context.Context) error {
 		chain := chain
 
 		g.Go(func() error {
-			stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
-				Filter: &pbscribe.LogFilter{
-					ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: chain.OriginAddress}},
-					ChainId:         chain.ChainID,
-				},
-				FromBlock: "earliest",
-				ToBlock:   "latest",
-			})
-			if err != nil {
-				return fmt.Errorf("could not stream logs: %w", err)
-			}
-
-			for {
-				select {
-				case <-e.closeConnection[chain.ChainID]:
-					err := stream.CloseSend()
-					if err != nil {
-						return fmt.Errorf("could not close stream: %w", err)
-					}
-					err = conn.Close()
-					if err != nil {
-						return fmt.Errorf("could not close connection: %w", err)
-					}
-
-					return nil
-				default:
-					response, err := stream.Recv()
-					if errors.Is(err, io.EOF) {
-						return nil
-					}
-					if err != nil {
-						return fmt.Errorf("could not receive: %w", err)
-					}
-
-					log := response.Log.ToLog()
-					if log == nil {
-						return fmt.Errorf("could not convert log")
-					}
-					if !e.lastLog[chain.ChainID].verifyAfter(*log) {
-						return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog[chain.ChainID].blockNumber, e.lastLog[chain.ChainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
-					}
-
-					e.LogChans[chain.ChainID] <- log
-					e.lastLog[chain.ChainID] = logOrderInfo{
-						blockNumber: log.BlockNumber,
-						blockIndex:  log.Index,
-					}
-				}
-			}
+			return e.streamLogs(ctx, grpcClient, conn, chain, originContract)
 		})
 	}
 
@@ -189,6 +143,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 		case <-ctx.Done():
 			return nil
 		case log := <-e.LogChans[chainID]:
+			fmt.Println("POOOOOO")
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
@@ -197,6 +152,80 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 			if err != nil {
 				return fmt.Errorf("could not process log: %w", err)
 			}
+		}
+	}
+}
+
+type contractType int
+
+const (
+	originContract contractType = iota
+	attestationcollectorContract
+)
+
+// streamLogs uses gRPC to stream logs into a channel.
+//
+//nolint:cyclop
+func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chain config.ChainConfig, contract contractType) error {
+	var address string
+	switch contract {
+	case originContract:
+		address = chain.OriginAddress
+	case attestationcollectorContract:
+		address = chain.AttestationCollectorAddress
+	default:
+		return fmt.Errorf("contract type not supported")
+	}
+
+	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
+		Filter: &pbscribe.LogFilter{
+			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
+			ChainId:         chain.ChainID,
+		},
+		FromBlock: "earliest",
+		ToBlock:   "latest",
+	})
+	if err != nil {
+		return fmt.Errorf("could not stream logs: %w", err)
+	}
+
+	for {
+		select {
+		case <-e.closeConnection[chain.ChainID]:
+			err := stream.CloseSend()
+			if err != nil {
+				return fmt.Errorf("could not close stream: %w", err)
+			}
+			err = conn.Close()
+			if err != nil {
+				return fmt.Errorf("could not close connection: %w", err)
+			}
+
+			return nil
+		default:
+			response, err := stream.Recv()
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
+			if err != nil {
+				return fmt.Errorf("could not receive: %w", err)
+			}
+
+			log := response.Log.ToLog()
+			if log == nil {
+				return fmt.Errorf("could not convert log")
+			}
+			if !e.lastLog[chain.ChainID].verifyAfter(*log) {
+				return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog[chain.ChainID].blockNumber, e.lastLog[chain.ChainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+			}
+
+			e.LogChans[chain.ChainID] <- log
+			e.lastLogMutex.Lock()
+			e.lastLog[chain.ChainID] = logOrderInfo{
+				blockNumber: log.BlockNumber,
+				blockIndex:  log.Index,
+			}
+			e.lastLogMutex.Unlock()
 		}
 	}
 }
@@ -215,8 +244,8 @@ func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
 	return nil
 }
 
-// getRoot returns the merkle root at the given index.
-func (e Executor) getRoot(index uint64) ([32]byte, error) {
+// GetRoot returns the merkle root at the given index.
+func (e Executor) GetRoot(index uint64) ([32]byte, error) {
 	if index >= uint64(len(e.roots)) {
 		return [32]byte{}, fmt.Errorf("index out of range")
 	}
@@ -247,7 +276,7 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
 		// TODO: handle this case with attestationcollector properly.
 		return nil, nil
 	} else {
-		return nil, fmt.Errorf("could not parse committed message")
+		return nil, fmt.Errorf("could not match the log's event type")
 	}
 }
 
