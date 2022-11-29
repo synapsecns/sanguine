@@ -2,9 +2,9 @@ package executor_test
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
+	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -89,9 +89,27 @@ func (e *ExecutorSuite) TestExecutor() {
 		e.Nil(scribeErr)
 	}()
 
-	excA, err := executor.NewExecutor([]uint32{chainIDA}, map[uint32]common.Address{chainIDA: testContractA.Address()}, scribeClient.ScribeClient)
+	excCfgA := executorCfg.Config{
+		Chains: []executorCfg.ChainConfig{
+			{
+				ChainID:       chainIDA,
+				OriginAddress: testContractA.Address().String(),
+			},
+		},
+	}
+
+	excCfgB := executorCfg.Config{
+		Chains: []executorCfg.ChainConfig{
+			{
+				ChainID:       chainIDB,
+				OriginAddress: testContractB.Address().String(),
+			},
+		},
+	}
+
+	excA, err := executor.NewExecutor(excCfgA, scribeClient.ScribeClient)
 	e.Nil(err)
-	excB, err := executor.NewExecutor([]uint32{chainIDB}, map[uint32]common.Address{chainIDB: testContractB.Address()}, scribeClient.ScribeClient)
+	excB, err := executor.NewExecutor(excCfgB, scribeClient.ScribeClient)
 	e.Nil(err)
 
 	// Start the executor.
@@ -182,7 +200,16 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		}
 	}()
 
-	exec, err := executor.NewExecutor([]uint32{chainID}, map[uint32]common.Address{chainID: testContract.Address()}, scribeClient.ScribeClient)
+	excCfg := executorCfg.Config{
+		Chains: []executorCfg.ChainConfig{
+			{
+				ChainID:       chainID,
+				OriginAddress: testContract.Address().String(),
+			},
+		},
+	}
+
+	exec, err := executor.NewExecutor(excCfg, scribeClient.ScribeClient)
 	e.Nil(err)
 
 	// Start the exec.

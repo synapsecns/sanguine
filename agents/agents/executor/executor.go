@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/prysmaticlabs/prysm/shared/trieutil"
+	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -20,10 +21,8 @@ import (
 
 // Executor is the executor agent.
 type Executor struct {
-	// chainIDs are the chain IDs for the Executor to process.
-	chainIDs []uint32
-	// addresses is a map from chain ID -> address.
-	addresses map[uint32]common.Address
+	// config is the executor agent config.
+	config config.Config
 	// scribeClient is the client to the Scribe gRPC server.
 	scribeClient client.ScribeClient
 	// lastLog is a map from chainID -> last log processed.
@@ -51,28 +50,27 @@ type logOrderInfo struct {
 const treeDepth uint64 = 32
 
 // NewExecutor creates a new executor agent.
-func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeClient client.ScribeClient) (*Executor, error) {
+func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Executor, error) {
 	channels := make(map[uint32]chan *ethTypes.Log)
 	closeChans := make(map[uint32]chan bool)
 	originParsers := make(map[uint32]origin.Parser)
 	attestationcollectorParsers := make(map[uint32]attestationcollector.Parser)
 
-	for _, chainID := range chainIDs {
-		channels[chainID] = make(chan *ethTypes.Log, 1000)
-		closeChans[chainID] = make(chan bool, 1)
-		originParser, err := origin.NewParser(addresses[chainID])
+	for _, chain := range config.Chains {
+		channels[chain.ChainID] = make(chan *ethTypes.Log, 1000)
+		closeChans[chain.ChainID] = make(chan bool, 1)
+		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create origin parser: %w", err)
 		}
 
-		originParsers[chainID] = originParser
-		attestationcollectorParser, err := attestationcollector.NewParser(addresses[chainID])
+		originParsers[chain.ChainID] = originParser
+		attestationcollectorParser, err := attestationcollector.NewParser(common.HexToAddress(chain.AttestationCollectorAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create attestationcollector parser: %w", err)
 		}
 
-		attestationcollectorParsers[chainID] = attestationcollectorParser
-
+		attestationcollectorParsers[chain.ChainID] = attestationcollectorParser
 	}
 
 	merkleTree, err := trieutil.NewTrie(treeDepth)
@@ -81,8 +79,7 @@ func NewExecutor(chainIDs []uint32, addresses map[uint32]common.Address, scribeC
 	}
 
 	return &Executor{
-		chainIDs:                    chainIDs,
-		addresses:                   addresses,
+		config:                      config,
 		scribeClient:                scribeClient,
 		lastLog:                     make(map[uint32]logOrderInfo),
 		closeConnection:             closeChans,
@@ -117,13 +114,13 @@ func (e Executor) Start(ctx context.Context) error {
 
 	g, _ := errgroup.WithContext(ctx)
 
-	for _, chainID := range e.chainIDs {
-		chainID := chainID
+	for _, chain := range e.config.Chains {
+		chainID := chain.ChainID
 
 		g.Go(func() error {
 			stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 				Filter: &pbscribe.LogFilter{
-					ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: e.addresses[chainID].Hex()}},
+					ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: chain.OriginAddress}},
 					ChainId:         chainID,
 				},
 				FromBlock: "earliest",
@@ -252,7 +249,6 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
 	} else {
 		return nil, fmt.Errorf("could not parse committed message")
 	}
-
 }
 
 func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
