@@ -32,8 +32,8 @@ type Executor struct {
 	lastLogMutex *sync.Mutex
 	// closeConnection is a map from chain ID -> channel to close the connection.
 	closeConnection map[uint32]chan bool
-	// roots is a slice of merkle roots. The root at [i] is the root of nonce i.
-	roots [][32]byte
+	// roots is a map from chain ID -> slice of merkle roots. The root at [i] is the root of nonce i.
+	roots map[uint32][][32]byte
 	// originParsers is a map from chain ID -> origin parser.
 	originParsers map[uint32]origin.Parser
 	// attestationcollectorParsers is a map from chain ID -> attestationcollector parser.
@@ -56,12 +56,14 @@ const treeDepth uint64 = 32
 func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Executor, error) {
 	channels := make(map[uint32]chan *ethTypes.Log)
 	closeChans := make(map[uint32]chan bool)
+	roots := make(map[uint32][][32]byte)
 	originParsers := make(map[uint32]origin.Parser)
 	attestationcollectorParsers := make(map[uint32]attestationcollector.Parser)
 
 	for _, chain := range config.Chains {
 		channels[chain.ChainID] = make(chan *ethTypes.Log, 1000)
 		closeChans[chain.ChainID] = make(chan bool, 1)
+		roots[chain.ChainID] = [][32]byte{}
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create origin parser: %w", err)
@@ -87,7 +89,7 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 		lastLog:                     make(map[uint32]logOrderInfo),
 		lastLogMutex:                &sync.Mutex{},
 		closeConnection:             closeChans,
-		roots:                       [][32]byte{},
+		roots:                       roots,
 		originParsers:               originParsers,
 		attestationcollectorParsers: attestationcollectorParsers,
 		LogChans:                    channels,
@@ -136,7 +138,7 @@ func (e Executor) Stop(chainID uint32) {
 	e.closeConnection[chainID] <- true
 }
 
-// Listen listens to the log channel and processes the logs.
+// Listen listens to the log channel and processes the logs. Requires Start to be called first.
 func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 	for {
 		select {
@@ -237,25 +239,39 @@ func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
 	if err != nil {
 		return fmt.Errorf("could not convert log to leaf: %w", err)
 	}
+	if leafData == nil {
+		fmt.Println("NIL LOG")
+		return nil
+	}
 
+	fmt.Println("OK OK OK OK OK OK OK OK OK OK", merkleIndex)
 	e.MerkleTree.Insert(leafData, merkleIndex)
-	e.roots = append(e.roots, e.MerkleTree.Root())
+	fmt.Println("the len is", len(e.roots[chainID]))
+	e.roots[chainID] = append(e.roots[chainID], e.MerkleTree.Root())
+	fmt.Println("the len is then", len(e.roots[chainID]))
 
 	return nil
 }
 
 // GetRoot returns the merkle root at the given index.
-func (e Executor) GetRoot(index uint64) ([32]byte, error) {
-	if index >= uint64(len(e.roots)) {
+func (e Executor) GetRoot(index uint64, chainID uint32) ([32]byte, error) {
+	if index >= uint64(len(e.roots[chainID])) {
 		return [32]byte{}, fmt.Errorf("index out of range")
 	}
 
-	return e.roots[index], nil
+	return e.roots[chainID][index], nil
 }
 
 // logToLeaf converts the log to a leaf data.
 func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
+	a, b := e.originParsers[chainID].EventType(log)
+	fmt.Println("SHMERP", a, b)
+	fmt.Println("log tx hash", log.TxHash.String())
+	fmt.Println("log address", log.Address.String())
+	fmt.Println("log topics", log.Topics)
+	fmt.Println("log chain id", chainID)
 	if eventType, ok := e.originParsers[chainID].EventType(log); ok && eventType == origin.DispatchEvent {
+		fmt.Println("GOT HERE!")
 		committedMessage, ok := e.originParsers[chainID].ParseDispatch(log)
 		if !ok {
 			return nil, fmt.Errorf("could not parse committed message")
@@ -265,6 +281,25 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not decode message: %w", err)
 		}
+
+		decodedMessage := message
+
+		fmt.Println("poopy message version", decodedMessage.Version())
+		fmt.Println("poopy message header", decodedMessage.Header())
+		fmt.Println("poopy header version", decodedMessage.Header().Version())
+		fmt.Println("poopy header origin domain", decodedMessage.Header().OriginDomain())
+		fmt.Println("poopy header destination domain", decodedMessage.Header().DestinationDomain())
+		fmt.Println("poopy header recipient", decodedMessage.Header().Recipient())
+		fmt.Println("poopy header optimistic seconds", decodedMessage.Header().OptimisticSeconds())
+		fmt.Println("poopy header nonce", decodedMessage.Header().Nonce())
+		fmt.Println("poopy message tips", decodedMessage.Tips())
+		fmt.Println("poopy message body", decodedMessage.Body())
+		fmt.Println("poopy message origin domain", decodedMessage.OriginDomain())
+		fmt.Println("poopy message sender", decodedMessage.Sender())
+		fmt.Println("poopy message nonce", decodedMessage.Nonce())
+		fmt.Println("poopy message destination", decodedMessage.DestinationDomain())
+		fmt.Println("poopy message recipient", decodedMessage.Recipient())
+		fmt.Println("poopy message optimistic seconds", decodedMessage.OptimisticSeconds())
 
 		leaf, err := message.ToLeaf()
 		if err != nil {
@@ -276,7 +311,8 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
 		// TODO: handle this case with attestationcollector properly.
 		return nil, nil
 	} else {
-		return nil, fmt.Errorf("could not match the log's event type")
+		logger.Warnf("could not match the log's event type")
+		return nil, nil
 	}
 }
 

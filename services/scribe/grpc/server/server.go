@@ -101,6 +101,7 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 
 		// Convert the logs to the protobuf format and send them through the stream.
 		for _, log := range retrievedLogs {
+			fmt.Println("take the fucking log", log.TxHash.String())
 			err = res.Send(&pbscribe.StreamLogsResponse{
 				Log: pbscribe.FromNativeLog(log),
 			})

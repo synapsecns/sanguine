@@ -1,9 +1,11 @@
 package executor_test
 
 import (
+	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/prysmaticlabs/prysm/shared/trieutil"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/testutil"
@@ -17,126 +19,126 @@ import (
 	"time"
 )
 
-func (e *ExecutorSuite) TestExecutor() {
-	testDone := false
-	defer func() {
-		testDone = true
-	}()
-	chainIDA := gofakeit.Uint32()
-	chainIDB := chainIDA + 1
-
-	simulatedChainA := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainIDA)))
-	simulatedChainB := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainIDB)))
-	simulatedClientA, err := backfill.DialBackend(e.GetTestContext(), simulatedChainA.RPCAddress())
-	e.Nil(err)
-	simulatedClientB, err := backfill.DialBackend(e.GetTestContext(), simulatedChainB.RPCAddress())
-	e.Nil(err)
-	simulatedChainA.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-	simulatedChainB.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-	testContractA, testRefA := e.manager.GetTestContract(e.GetTestContext(), simulatedChainA)
-	testContractB, testRefB := e.manager.GetTestContract(e.GetTestContext(), simulatedChainB)
-	transactOptsA := simulatedChainA.GetTxContext(e.GetTestContext(), nil)
-	transactOptsB := simulatedChainB.GetTxContext(e.GetTestContext(), nil)
-
-	// Emit two events on each chain.
-	tx, err := testRefA.EmitEventA(transactOptsA.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
-	e.Nil(err)
-	simulatedChainA.WaitForConfirmation(e.GetTestContext(), tx)
-	tx, err = testRefA.EmitEventB(transactOptsA.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
-	e.Nil(err)
-	simulatedChainA.WaitForConfirmation(e.GetTestContext(), tx)
-	tx, err = testRefB.EmitEventAandB(transactOptsB.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
-	e.Nil(err)
-	simulatedChainB.WaitForConfirmation(e.GetTestContext(), tx)
-
-	contractConfigA := config.ContractConfig{
-		Address:    testContractA.Address().String(),
-		StartBlock: 0,
-	}
-	contractConfigB := config.ContractConfig{
-		Address:    testContractB.Address().String(),
-		StartBlock: 0,
-	}
-	chainConfigA := config.ChainConfig{
-		ChainID:               chainIDA,
-		RequiredConfirmations: 0,
-		Contracts:             []config.ContractConfig{contractConfigA},
-	}
-	chainConfigB := config.ChainConfig{
-		ChainID:               chainIDB,
-		RequiredConfirmations: 0,
-		Contracts:             []config.ContractConfig{contractConfigB},
-	}
-	chainConfigs := []config.ChainConfig{chainConfigA, chainConfigB}
-	scribeConfig := config.Config{
-		Chains: chainConfigs,
-	}
-
-	clients := map[uint32][]backfill.ScribeBackend{
-		chainIDA: {simulatedClientA, simulatedClientA},
-		chainIDB: {simulatedClientB, simulatedClientB},
-	}
-
-	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
-	e.Nil(err)
-
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
-
-	go func() {
-		scribeErr := scribeClient.Start(e.GetSuiteContext())
-		e.Nil(scribeErr)
-	}()
-
-	// Start the Scribe.
-	go func() {
-		scribeErr := scribe.Start(e.GetSuiteContext())
-		e.Nil(scribeErr)
-	}()
-
-	excCfg := executorCfg.Config{
-		Chains: []executorCfg.ChainConfig{
-			{
-				ChainID:       chainIDA,
-				OriginAddress: testContractA.Address().String(),
-			},
-			{
-				ChainID:       chainIDB,
-				OriginAddress: testContractB.Address().String(),
-			},
-		},
-	}
-
-	exc, err := executor.NewExecutor(excCfg, scribeClient.ScribeClient)
-	e.Nil(err)
-
-	// Start the executor.
-	go func() {
-		excErr := exc.Start(e.GetSuiteContext())
-		if !testDone {
-			e.Nil(excErr)
-		}
-	}()
-
-	e.Eventually(func() bool {
-		if len(exc.LogChans[chainIDA]) == 2 && len(exc.LogChans[chainIDB]) == 2 {
-			logA := <-exc.LogChans[chainIDA]
-			logB := <-exc.LogChans[chainIDA]
-			e.Assert().Less(logA.BlockNumber, logB.BlockNumber)
-			logC := <-exc.LogChans[chainIDB]
-			logD := <-exc.LogChans[chainIDB]
-			e.Assert().LessOrEqual(logC.BlockNumber, logD.BlockNumber)
-			return true
-		}
-
-		return false
-	})
-
-	e.DeferAfterTest(func() {
-		exc.Stop(chainIDA)
-	})
-}
-
-// func (e *ExecutorSuite) TestLotsOfLogs() {
+//func (e *ExecutorSuite) TestExecutor() {
+//	testDone := false
+//	defer func() {
+//		testDone = true
+//	}()
+//	chainIDA := gofakeit.Uint32()
+//	chainIDB := chainIDA + 1
+//
+//	simulatedChainA := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainIDA)))
+//	simulatedChainB := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainIDB)))
+//	simulatedClientA, err := backfill.DialBackend(e.GetTestContext(), simulatedChainA.RPCAddress())
+//	e.Nil(err)
+//	simulatedClientB, err := backfill.DialBackend(e.GetTestContext(), simulatedChainB.RPCAddress())
+//	e.Nil(err)
+//	simulatedChainA.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
+//	simulatedChainB.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
+//	testContractA, testRefA := e.manager.GetTestContract(e.GetTestContext(), simulatedChainA)
+//	testContractB, testRefB := e.manager.GetTestContract(e.GetTestContext(), simulatedChainB)
+//	transactOptsA := simulatedChainA.GetTxContext(e.GetTestContext(), nil)
+//	transactOptsB := simulatedChainB.GetTxContext(e.GetTestContext(), nil)
+//
+//	// Emit two events on each chain.
+//	tx, err := testRefA.EmitEventA(transactOptsA.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+//	e.Nil(err)
+//	simulatedChainA.WaitForConfirmation(e.GetTestContext(), tx)
+//	tx, err = testRefA.EmitEventB(transactOptsA.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
+//	e.Nil(err)
+//	simulatedChainA.WaitForConfirmation(e.GetTestContext(), tx)
+//	tx, err = testRefB.EmitEventAandB(transactOptsB.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
+//	e.Nil(err)
+//	simulatedChainB.WaitForConfirmation(e.GetTestContext(), tx)
+//
+//	contractConfigA := config.ContractConfig{
+//		Address:    testContractA.Address().String(),
+//		StartBlock: 0,
+//	}
+//	contractConfigB := config.ContractConfig{
+//		Address:    testContractB.Address().String(),
+//		StartBlock: 0,
+//	}
+//	chainConfigA := config.ChainConfig{
+//		ChainID:               chainIDA,
+//		RequiredConfirmations: 0,
+//		Contracts:             []config.ContractConfig{contractConfigA},
+//	}
+//	chainConfigB := config.ChainConfig{
+//		ChainID:               chainIDB,
+//		RequiredConfirmations: 0,
+//		Contracts:             []config.ContractConfig{contractConfigB},
+//	}
+//	chainConfigs := []config.ChainConfig{chainConfigA, chainConfigB}
+//	scribeConfig := config.Config{
+//		Chains: chainConfigs,
+//	}
+//
+//	clients := map[uint32][]backfill.ScribeBackend{
+//		chainIDA: {simulatedClientA, simulatedClientA},
+//		chainIDB: {simulatedClientB, simulatedClientB},
+//	}
+//
+//	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
+//	e.Nil(err)
+//
+//	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+//
+//	go func() {
+//		scribeErr := scribeClient.Start(e.GetSuiteContext())
+//		e.Nil(scribeErr)
+//	}()
+//
+//	// Start the Scribe.
+//	go func() {
+//		scribeErr := scribe.Start(e.GetSuiteContext())
+//		e.Nil(scribeErr)
+//	}()
+//
+//	excCfg := executorCfg.Config{
+//		Chains: []executorCfg.ChainConfig{
+//			{
+//				ChainID:       chainIDA,
+//				OriginAddress: testContractA.Address().String(),
+//			},
+//			{
+//				ChainID:       chainIDB,
+//				OriginAddress: testContractB.Address().String(),
+//			},
+//		},
+//	}
+//
+//	exc, err := executor.NewExecutor(excCfg, scribeClient.ScribeClient)
+//	e.Nil(err)
+//
+//	// Start the executor.
+//	go func() {
+//		excErr := exc.Start(e.GetSuiteContext())
+//		if !testDone {
+//			e.Nil(excErr)
+//		}
+//	}()
+//
+//	e.Eventually(func() bool {
+//		if len(exc.LogChans[chainIDA]) == 2 && len(exc.LogChans[chainIDB]) == 2 {
+//			logA := <-exc.LogChans[chainIDA]
+//			logB := <-exc.LogChans[chainIDA]
+//			e.Assert().Less(logA.BlockNumber, logB.BlockNumber)
+//			logC := <-exc.LogChans[chainIDB]
+//			logD := <-exc.LogChans[chainIDB]
+//			e.Assert().LessOrEqual(logC.BlockNumber, logD.BlockNumber)
+//			return true
+//		}
+//
+//		return false
+//	})
+//
+//	e.DeferAfterTest(func() {
+//		exc.Stop(chainIDA)
+//	})
+//}
+//
+//func (e *ExecutorSuite) TestLotsOfLogs() {
 //	testDone := false
 //	defer func() {
 //		testDone = true
@@ -234,9 +236,6 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	originContract, originRef := deployManager.GetOrigin(e.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
 
-	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
-	e.Nil(err)
-
 	contractConfig := config.ContractConfig{
 		Address:    originContract.Address().String(),
 		StartBlock: 0,
@@ -282,15 +281,57 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	exec, err := executor.NewExecutor(excCfg, scribeClient.ScribeClient)
 	e.Nil(err)
 
-	header := types.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), 1, 1, common.BigToHash(big.NewInt(gofakeit.Int64())), 1)
-	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-	body := []byte{1}
-	message := types.NewMessage(header, tips, body)
-	_ = message
+	testTree, err := trieutil.NewTrie(32)
+	e.Nil(err)
 
-	tx, err := originRef.Dispatch(transactOpts.TransactOpts, 1, [32]byte{}, 1, encodedTips, []byte{1})
+	const (
+		destination = iota
+		nonce
+		recipient
+		optimisticSeconds
+		body
+		notaryTip
+		broadcasterTip
+		proverTip
+		executorTip
+	)
+
+	header := types.NewHeader(chainID, e.signer.Address().Hash(), nonce, destination, common.BigToHash(big.NewInt(recipient)), optimisticSeconds)
+	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+	encodedTips, err := types.EncodeTips(tips)
+	decodedTips, err := types.DecodeTips(encodedTips)
+
+	e.Nil(err)
+	message, err := types.EncodeMessage(types.NewMessage(header, decodedTips, []byte{body}))
+	decodedMessage, err := types.DecodeMessage(message)
+	e.Nil(err)
+	fmt.Println("fucking message version", decodedMessage.Version())
+	fmt.Println("fucking message header", decodedMessage.Header())
+	fmt.Println("fucking header version", decodedMessage.Header().Version())
+	fmt.Println("fucking header origin domain", decodedMessage.Header().OriginDomain())
+	fmt.Println("fucking header destination domain", decodedMessage.Header().DestinationDomain())
+	fmt.Println("fucking header recipient", decodedMessage.Header().Recipient())
+	fmt.Println("fucking header optimistic seconds", decodedMessage.Header().OptimisticSeconds())
+	fmt.Println("fucking header nonce", decodedMessage.Header().Nonce())
+	fmt.Println("fucking message tips", decodedMessage.Tips())
+	fmt.Println("fucking message body", decodedMessage.Body())
+	fmt.Println("fucking message origin domain", decodedMessage.OriginDomain())
+	fmt.Println("fucking message sender", decodedMessage.Sender())
+	fmt.Println("fucking message nonce", decodedMessage.Nonce())
+	fmt.Println("fucking message destination", decodedMessage.DestinationDomain())
+	fmt.Println("fucking message recipient", decodedMessage.Recipient())
+	fmt.Println("fucking message optimistic seconds", decodedMessage.OptimisticSeconds())
+	_ = message
+	testTree.Insert(message, 0)
+	testRoot := testTree.Root()
+	//tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+	//message := types.NewMessage(header, tips, body)
+	//_ = message
+
+	tx, err := originRef.Dispatch(transactOpts.TransactOpts, destination, [32]byte{recipient}, optimisticSeconds, encodedTips, []byte{body})
 	e.Nil(err)
 	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+	fmt.Println("DA TX HASH IS", tx.Hash().String())
 
 	// Start the exec.
 	go func() {
@@ -310,8 +351,9 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	time.Sleep(30 * time.Second)
 
-	root, err := exec.GetRoot(0)
+	root, err := exec.GetRoot(0, chainID)
 	e.Nil(err)
 
 	e.NotNil(root)
+	e.Equal(testRoot, root)
 }
