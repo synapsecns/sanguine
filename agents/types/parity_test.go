@@ -179,11 +179,22 @@ func TestMessageEncodeParity(t *testing.T) {
 	decodedMessage, err := types.DecodeMessage(formattedMessage)
 	Nil(t, err)
 
+	// create a new encoded message to test against
+	header := types.NewHeader(origin, sender, nonce, destination, recipient, optimisticSeconds)
+	tips := types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip)
+	message := types.NewMessage(header, tips, body)
+	testMessageLeaf, err := message.ToLeaf()
+	Nil(t, err)
+
+	messageLeaf, err := decodedMessage.ToLeaf()
+	Nil(t, err)
+
 	Equal(t, decodedMessage.OriginDomain(), origin)
 	Equal(t, decodedMessage.Sender(), sender)
 	Equal(t, decodedMessage.Nonce(), nonce)
 	Equal(t, decodedMessage.DestinationDomain(), destination)
 	Equal(t, decodedMessage.Body(), body)
+	Equal(t, messageLeaf, testMessageLeaf)
 }
 
 func TestHeaderEncodeParity(t *testing.T) {
