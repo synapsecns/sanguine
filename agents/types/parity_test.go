@@ -186,6 +186,9 @@ func TestMessageEncodeParity(t *testing.T) {
 	tips := types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip)
 	tipsBytes, err := types.EncodeTips(tips)
 	Nil(t, err)
+	testMessage := types.NewMessage(header, tips, body)
+	testMessageLeaf, err := testMessage.ToLeaf()
+	Nil(t, err)
 
 	messageLeaf, err := messageContract.MessageHash(&bind.CallOpts{Context: ctx}, headerBytes, tipsBytes, body)
 	Nil(t, err)
@@ -199,6 +202,7 @@ func TestMessageEncodeParity(t *testing.T) {
 	Equal(t, decodedMessage.DestinationDomain(), destination)
 	Equal(t, decodedMessage.Body(), body)
 	Equal(t, messageLeaf, decodedMessageLeaf)
+	Equal(t, messageLeaf, testMessageLeaf)
 }
 
 func TestHeaderEncodeParity(t *testing.T) {
