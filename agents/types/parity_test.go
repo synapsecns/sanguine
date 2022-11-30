@@ -3,6 +3,10 @@ package types_test
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"math/big"
 	"testing"
 	"time"
@@ -203,6 +207,76 @@ func TestMessageEncodeParity(t *testing.T) {
 	Equal(t, decodedMessage.Body(), body)
 	Equal(t, messageLeaf, decodedMessageLeaf)
 	Equal(t, messageLeaf, testMessageLeaf)
+}
+
+func TestDispatchMessageParity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*45)
+	defer cancel()
+	chainID := gofakeit.Uint32()
+	deployManager := testutil.NewDeployManager(t)
+	simulatedChain := geth.NewEmbeddedBackendForChainID(ctx, t, big.NewInt(int64(chainID)))
+
+	originContract, originRef := deployManager.GetOrigin(ctx, simulatedChain)
+	transactOpts := simulatedChain.GetTxContext(ctx, nil)
+
+	dispatchSink := make(chan *origin.OriginDispatch)
+	sub, err := originRef.WatchDispatch(&bind.WatchOpts{Context: ctx}, dispatchSink, [][32]byte{}, []uint32{}, []uint32{})
+	Nil(t, err)
+
+	destination := chainID + 1
+	recipient := [32]byte{byte(gofakeit.Uint32())}
+	optimisticSeconds := gofakeit.Uint32()
+	notaryTip := big.NewInt(int64(int(gofakeit.Uint32())))
+	broadcasterTip := big.NewInt(int64(int(gofakeit.Uint32())))
+	proverTip := big.NewInt(int64(int(gofakeit.Uint32())))
+	executorTip := big.NewInt(int64(int(gofakeit.Uint32())))
+	tips := types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip)
+	encodedTips, err := types.EncodeTips(tips)
+	_ = encodedTips
+	message := []byte{byte(gofakeit.Uint32())}
+
+	tips_ := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+	encodedTips_, err := types.EncodeTips(tips_)
+	Nil(t, err)
+
+	tx, err := originRef.Dispatch(transactOpts.TransactOpts, destination, recipient, optimisticSeconds, encodedTips_, message)
+	Nil(t, err)
+	simulatedChain.WaitForConfirmation(ctx, tx)
+
+	msgFrom, _ := tx.AsMessage(ethTypes.NewEIP2930Signer(tx.ChainId()), big.NewInt(1))
+
+	// create the agents type message
+	testHeader := types.NewHeader(chainID, msgFrom.From().Hash(), uint32(tx.Nonce()), destination, recipient, optimisticSeconds)
+	testMessage := types.NewMessage(testHeader, tips_, message)
+	testMessageLeaf, err := testMessage.ToLeaf()
+	Nil(t, err)
+
+	watchCtx, cancelWatch := context.WithTimeout(ctx, time.Second*30)
+	defer cancelWatch()
+
+	select {
+	// check for errors and fail
+	case <-watchCtx.Done():
+		t.Error(t, fmt.Errorf("test context completed %w", ctx.Err()))
+	case <-sub.Err():
+		t.Error(t, sub.Err())
+	// get dispatch event
+	case item := <-dispatchSink:
+		parser, err := origin.NewParser(originContract.Address())
+		Nil(t, err)
+
+		committedMessage, ok := parser.ParseDispatch(item.Raw)
+		True(t, ok)
+		message, err := types.DecodeMessage(committedMessage.Message())
+		Nil(t, err)
+
+		messageLeaf, err := message.ToLeaf()
+
+		Equal(t, messageLeaf, testMessageLeaf)
+
+		break
+	}
+
 }
 
 func TestHeaderEncodeParity(t *testing.T) {
