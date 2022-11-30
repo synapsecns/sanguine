@@ -347,15 +347,12 @@ contract OriginTest is OriginTools {
     ▏*║                            TESTS: HALTING                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // TODO (joe): For now, I removed the constaint that the origin should have
-    // a Notary. We should check BondingManager to check that destination has active Notaries.
-    // Also, should we ensure at least one active Guard?
-    /*function test_halts_noNotaries() public {
+    function test_halts_noNotaries() public {
         createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
         OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
         origin.removeAllNotaries();
         originDispatch({ revertMessage: "!notaries" });
-    }*/
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           CREATE TEST DATA                           ║*▕

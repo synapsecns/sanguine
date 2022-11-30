@@ -12,6 +12,10 @@ import (
 
 // IOriginTransactor ...
 type IOriginTransactor interface {
+	// AddNotary is a paid mutator transaction binding the contract method 0x2af678b0.
+	//
+	// Solidity: function addNotary(uint32 _domain, address _notary) returns(bool)
+	AddNotary(opts *bind.TransactOpts, _domain uint32, _notary common.Address) (*types.Transaction, error)
 	// Dispatch is a paid mutator transaction binding the contract method 0xf7560e40.
 	//
 	// Solidity: function dispatch(uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds, bytes _tips, bytes _messageBody) payable returns(uint32 messageNonce, bytes32 messageHash)
