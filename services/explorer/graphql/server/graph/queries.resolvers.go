@@ -32,92 +32,32 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	case txnHash != nil:
 		// If we are given a transaction hash, we search for the bridge transaction on the origin chain, then locate
 		// its counterpart on the destination chain using the kappa (the keccak256 hash of the transaction hash).
-		fromBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, nil, txnHash, page, false))
-		var toKappaChainArr []string
-		var fromBridgeEventsKappaStatusMap = make(map[string]bool)
-		for _, bridgeEvent := range fromBridgeEvents {
-			if bridgeEvent.DestinationChainID != nil {
-				key := keyGen(bridgeEvent.DestinationChainID.String(), bridgeEvent.DestinationKappa)
-				toKappaChainArr = append(toKappaChainArr, fmt.Sprintf("(%d,'%s')", bridgeEvent.DestinationChainID, bridgeEvent.DestinationKappa))
-				fromBridgeEventsKappaStatusMap[key] = false
-			}
-		}
-		toKappaChainStr := strings.Join(toKappaChainArr, ",") // (1,'0x123'),(2,'0x456')
-		toBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generateToKappaPartialInfoQuery(toKappaChainStr, chainID, address, tokenAddress, nil, nil, page, true))
+		results, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, includePending, page, tokenAddress, false)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
-		}
-
-		toBridgeEventsMap := make(map[string]sql.BridgeEvent)
-
-		// Define pending status on from kappa events
-		for _, toBridgeEvent := range toBridgeEvents {
-			if toBridgeEvent.Kappa.Valid {
-				key := keyGen(fmt.Sprintf("%d", toBridgeEvent.ChainID), toBridgeEvent.Kappa.String)
-				fromBridgeEventsKappaStatusMap[key] = true
-				toBridgeEventsMap[key] = toBridgeEvent
-			}
-		}
-
-		for i := range fromBridgeEvents {
-			fromBridgeEvent := fromBridgeEvents[i]
-			key := keyGen(fromBridgeEvent.DestinationChainID.String(), fromBridgeEvent.DestinationKappa)
-			toBridgeEvent := toBridgeEventsMap[key]
-			if toBridgeEvent.TxHash == "" {
-				return nil, nil
-			}
-			fromInfo, err := GetPartialInfoFromBridgeEventSingle(fromBridgeEvent)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
-			}
-			if fromBridgeEventsKappaStatusMap[key] {
-				var swapSuccess bool
-				if toBridgeEvent.SwapSuccess.Uint64() == 1 {
-					swapSuccess = true
-				}
-
-				pending := false
-
-				toInfo, err := GetPartialInfoFromBridgeEventSingle(toBridgeEvent)
-				if err != nil {
-					return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
-				}
-				results = append(results, &model.BridgeTransaction{
-					FromInfo:    fromInfo,
-					ToInfo:      toInfo,
-					Kappa:       &toBridgeEvent.Kappa.String,
-					Pending:     &pending,
-					SwapSuccess: &swapSuccess,
-				})
-			} else {
-				if includePending {
-					results = append(results, &model.BridgeTransaction{
-						FromInfo:    fromInfo,
-						ToInfo:      nil,
-						Kappa:       &fromBridgeEvent.Kappa.String,
-						Pending:     &includePending,
-						SwapSuccess: nil,
-					})
-				}
-			}
+			return nil, err
 		}
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
-		toInfos, err := r.DB.PartialInfosFromIdentifiers(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, kappa, nil, page, false))
+		results, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, page, tokenAddress)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
+			return nil, err
 		}
 
-		results, err = r.destinationToOriginBridge(ctx, address, txnHash, kappa, page, tokenAddress, toInfos)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
-		}
 	default:
 		// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for
 		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
 		// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
-		results, err = r.originOrDestinationBridge(ctx, chainID, address, txnHash, kappa, includePending, page, tokenAddress)
+		fromResults, err := r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, includePending, page, tokenAddress, false)
+		if err != nil {
+			return nil, err
+		}
+		toResults, err := r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, page, tokenAddress)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println("LENS", len(fromResults), len(toResults))
+		results = r.mergeBridgeTransactions(fromResults, toResults)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
@@ -129,6 +69,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 // LatestBridgeTransactions is the resolver for the latestBridgeTransactions field.
 func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePending bool, page int) ([]*model.BridgeTransaction, error) {
 	// For each chain ID, get the latest bridge transaction.
+	//return r.GetBridgeTxsFromOrigin(ctx, nil, nil, nil, includePending, page, nil, true)
 
 	//its getting the pending kappa and not the chaina one (shoudl only be getting the latest)
 	var results []*model.BridgeTransaction
@@ -238,7 +179,6 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
-
 	return results, nil
 }
 

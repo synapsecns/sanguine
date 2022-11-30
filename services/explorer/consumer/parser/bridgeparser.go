@@ -48,7 +48,7 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bri
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridgev1.SynapseBridgeFilterer{}, err)
 	}
-	idPath := filepath.Clean("../static/tokenIDToCoinGeckoID.yaml")
+	idPath := filepath.Clean("./static/tokenIDToCoinGeckoID.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("could find path to yaml file: %w", err)
 	}
@@ -373,7 +373,5 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	if err != nil {
 		return fmt.Errorf("could not store event: %w", err)
 	}
-	fmt.Println("STORED KAPPA, DESTINATION KAPPA", bridgeEvent.DestinationChainID, bridgeEvent.DestinationKappa, bridgeEvent.Kappa)
-
 	return nil
 }
