@@ -64,6 +64,13 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
         assertEq(bondingManager.owner(), owner, "!owner");
     }
 
+    function test_initialize() public {
+        bondingManager = _deployBondingManager(localDomain);
+        assertEq(bondingManager.owner(), address(0), "owner existed pre initialize");
+        bondingManager.initialize();
+        assertEq(bondingManager.owner(), address(this), "failed to initialize owner");
+    }
+
     function test_initialize_revert_onlyOnce() public {
         expectRevertAlreadyInitialized();
         bondingManager.initialize();
