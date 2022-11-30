@@ -268,10 +268,12 @@ func TestDispatchMessageParity(t *testing.T) {
 
 		committedMessage, ok := parser.ParseDispatch(item.Raw)
 		True(t, ok)
+
 		message, err := types.DecodeMessage(committedMessage.Message())
 		Nil(t, err)
 
 		messageLeaf, err := message.ToLeaf()
+		Nil(t, err)
 
 		Equal(t, messageLeaf, testMessageLeaf)
 
