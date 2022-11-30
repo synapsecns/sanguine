@@ -67,6 +67,9 @@ contract Origin is Version0, OriginEvents, OriginHub, LocalDomainContext {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // TODO: add/remove notaries upon bonding/unbonding
+    // Keep in mind that we will want Origin to inherit from GlobalNotaryRegistry and GuardRegistry
+    // and the haveActiveNotary should be updated in dispatch to assert that we have a Notary
+    // registered for the destination and also that we have at least one Guard
 
     function addNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
         return _addNotary(_domain, _notary);
