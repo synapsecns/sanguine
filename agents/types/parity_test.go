@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"math/big"
@@ -243,10 +242,11 @@ func TestDispatchMessageParity(t *testing.T) {
 	Nil(t, err)
 	simulatedChain.WaitForConfirmation(ctx, tx)
 
-	msgFrom, _ := tx.AsMessage(ethTypes.NewEIP2930Signer(tx.ChainId()), big.NewInt(1))
+	sender, err := simulatedChain.Signer().Sender(tx)
+	Nil(t, err)
 
 	// create the agents type message
-	testHeader := types.NewHeader(chainID, msgFrom.From().Hash(), uint32(tx.Nonce()), destination, recipient, optimisticSeconds)
+	testHeader := types.NewHeader(chainID, sender.Hash(), uint32(tx.Nonce()), destination, recipient, optimisticSeconds)
 	testMessage := types.NewMessage(testHeader, tips_, message)
 	testMessageLeaf, err := testMessage.ToLeaf()
 	Nil(t, err)
