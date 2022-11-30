@@ -56,6 +56,7 @@ func (s Scribe) Start(ctx context.Context) error {
 
 	for _, chainConfig := range s.config.Chains {
 		chainConfig := chainConfig
+
 		g.Go(func() error {
 			b := &backoff.Backoff{
 				Factor: 2,
@@ -69,7 +70,8 @@ func (s Scribe) Start(ctx context.Context) error {
 			for {
 				select {
 				case <-groupCtx.Done():
-					return fmt.Errorf("context finished: %w", groupCtx.Err())
+					logger.Warnf("scribe for chain %d shutting down", chainConfig.ChainID)
+					return nil
 				case <-time.After(timeout):
 					err := s.processRange(groupCtx, chainConfig.ChainID, chainConfig.RequiredConfirmations)
 					if err != nil {

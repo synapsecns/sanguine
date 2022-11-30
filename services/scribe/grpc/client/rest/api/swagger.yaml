@@ -83,6 +83,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/rpcStatus'
       x-codegen-request-body-name: body
+  /grpc/v1/stream_logs:
+    post:
+      tags:
+      - ScribeService
+      operationId: ScribeService_StreamLogs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/v1StreamLogsRequest'
+        required: true
+      responses:
+        "200":
+          description: A successful response.(streaming responses)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stream result of v1StreamLogsResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/rpcStatus'
+      x-codegen-request-body-name: body
 components:
   schemas:
     HealthCheckResponseServingStatus:
@@ -285,6 +310,34 @@ components:
         data:
           type: string
           format: uint64
+    v1StreamLogsRequest:
+      type: object
+      properties:
+        filter:
+          $ref: '#/components/schemas/v1LogFilter'
+        fromBlock:
+          type: string
+        toBlock:
+          type: string
+    v1StreamLogsResponse:
+      type: object
+      properties:
+        log:
+          $ref: '#/components/schemas/v1Log'
+      example:
+        log:
+          blockHash: null
+          address:
+            bytes: ""
+          data: ""
+          removed: true
+          topics:
+          - bytes: ""
+          - bytes: ""
+          blockNumber: blockNumber
+          index: index
+          txHash: null
+          txIndex: txIndex
     Stream result of v1HealthCheckResponse:
       title: Stream result of v1HealthCheckResponse
       type: object
@@ -296,6 +349,35 @@ components:
       example:
         result:
           status: UNKNOWN
+        error:
+          code: 0
+          details:
+          - key: {}
+          - key: {}
+          message: message
+    Stream result of v1StreamLogsResponse:
+      title: Stream result of v1StreamLogsResponse
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/v1StreamLogsResponse'
+        error:
+          $ref: '#/components/schemas/rpcStatus'
+      example:
+        result:
+          log:
+            blockHash: null
+            address:
+              bytes: ""
+            data: ""
+            removed: true
+            topics:
+            - bytes: ""
+            - bytes: ""
+            blockNumber: blockNumber
+            index: index
+            txHash: null
+            txIndex: txIndex
         error:
           code: 0
           details:
