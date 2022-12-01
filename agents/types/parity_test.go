@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"math/big"
 	"testing"
 	"time"
@@ -212,7 +213,7 @@ func TestDispatchMessageParity(t *testing.T) {
 	defer cancel()
 	chainID := gofakeit.Uint32()
 	deployManager := testutil.NewDeployManager(t)
-	simulatedChain := simulated.NewSimulatedBackendWithChainID(ctx, t, big.NewInt(int64(chainID)))
+	simulatedChain := geth.NewEmbeddedBackendForChainID(ctx, t, big.NewInt(int64(chainID)))
 
 	originContract, originRef := deployManager.GetOrigin(ctx, simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(ctx, nil)
