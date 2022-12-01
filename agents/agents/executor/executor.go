@@ -259,7 +259,6 @@ func (e Executor) GetRoot(index uint64, chainID uint32) ([32]byte, error) {
 
 // logToLeaf converts the log to a leaf data.
 func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
-	//nolint:nestif
 	if eventType, ok := e.originParsers[chainID].EventType(log); ok && eventType == origin.DispatchEvent {
 		committedMessage, ok := e.originParsers[chainID].ParseDispatch(log)
 		if !ok {
@@ -280,11 +279,11 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
 	} else if eventType, ok := e.attestationcollectorParsers[chainID].EventType(log); ok && eventType == 0 {
 		// TODO: handle this case with attestationcollector properly.
 		return nil, nil
-	} else {
-		logger.Warnf("could not match the log's event type")
-
-		return nil, nil
 	}
+
+	logger.Warnf("could not match the log's event type")
+
+	return nil, nil
 }
 
 func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
