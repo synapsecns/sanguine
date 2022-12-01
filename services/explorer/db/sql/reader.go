@@ -75,6 +75,18 @@ func (s *Store) GetBridgeEvents(ctx context.Context, query string) ([]BridgeEven
 func (s *Store) GetTxCounts(ctx context.Context, query string) ([]*model.TransactionCountResult, error) {
 	var res []*model.TransactionCountResult
 	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
+
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
+// GetTokenCounts returns Tx counts.
+func (s *Store) GetTokenCounts(ctx context.Context, query string) ([]*model.TokenCountResult, error) {
+	var res []*model.TokenCountResult
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -85,8 +97,8 @@ func (s *Store) GetTxCounts(ctx context.Context, query string) ([]*model.Transac
 // GetDateResults returns the dya by day data.
 func (s *Store) GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error) {
 	var res []*model.DateResult
-
 	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Scan(&res)
+
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get date results: %w", dbTx.Error)
 	}
@@ -208,7 +220,6 @@ func (s *Store) PartialInfosFromIdentifiersByChain(ctx context.Context, query st
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
-	fmt.Println("res", res)
 	for i := range res {
 		chainIDInt := int(res[i].ChainID)
 		blockNumberInt := int(res[i].BlockNumber)
@@ -269,7 +280,6 @@ func (s *Store) PartialInfosFromIdentifiersByChain(ctx context.Context, query st
 
 // getAdjustedValue gets the adjusted value
 func getAdjustedValue(amount *big.Int, decimals uint8) *float64 {
-	fmt.Println(decimals, amount)
 	decimalMultiplier := new(big.Float).SetInt(big.NewInt(0).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
 	adjustedAmount := new(big.Float).Quo(new(big.Float).SetInt(amount), decimalMultiplier)
 	trueAmountStr := adjustedAmount.SetMode(big.AwayFromZero).Text('f', 4)

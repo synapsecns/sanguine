@@ -24,7 +24,6 @@ const BRIDGE_TRANSACTION_INFO_FRAGMENT = gql`
 
     kappa
     pending
-    status
     swapSuccess
   }
 
@@ -36,9 +35,9 @@ export const GET_BRIDGE_TRANSACTIONS_QUERY = gql`
     $txnHash:         String
     $address:         String
     $chainId:         Int
-    $page:            Int
+    $page:            Int!
     $tokenAddress:    String
-    $includePending:  Boolean
+    $includePending:  Boolean!
     $kappa:           String
   ) {
     bridgeTransactions(
@@ -58,8 +57,8 @@ export const GET_BRIDGE_TRANSACTIONS_QUERY = gql`
 
 export const GET_LATEST_BRIDGE_TRANSACTIONS_QUERY = gql`
   query LatestBridgeTransactions(
-    $page:           Int
-    $includePending: Boolean
+    $page:           Int!
+    $includePending: Boolean!
   ) {
     latestBridgeTransactions(
       page:           $page

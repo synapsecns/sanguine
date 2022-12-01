@@ -28,8 +28,10 @@ type ConsumerDBReader interface {
 	GetFloat64(ctx context.Context, query string) (float64, error)
 	// GetStringArray gets an array of strings from a given query.
 	GetStringArray(ctx context.Context, query string) ([]string, error)
-	// GetTxCounts gets an array of strings from a given query.
+	// GetTxCounts gets the counts for each of tx_hash from a given query.
 	GetTxCounts(ctx context.Context, query string) ([]*model.TransactionCountResult, error)
+	// GetTokenCounts gets the counts for each of token address from a given query.
+	GetTokenCounts(ctx context.Context, query string) ([]*model.TokenCountResult, error)
 	// GetBridgeEvent returns a bridge event.
 	GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error)
 	// GetBridgeEvents returns a bridge event.

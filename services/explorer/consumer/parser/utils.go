@@ -75,6 +75,5 @@ func GetAmountUSD(amount *big.Int, decimals uint8, price *float64) *float64 {
 	if err != nil {
 		return nil
 	}
-	//fmt.Println("decimals", decimals, "amount", amount, "price", *price, "TOTAL", priceFloat)
 	return &priceFloat
 }

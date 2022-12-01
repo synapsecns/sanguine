@@ -56,13 +56,11 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("LENS", len(fromResults), len(toResults))
 		results = r.mergeBridgeTransactions(fromResults, toResults)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
-
 	return results, nil
 }
 
@@ -70,10 +68,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePending bool, page int) ([]*model.BridgeTransaction, error) {
 	// For each chain ID, get the latest bridge transaction.
 	//return r.GetBridgeTxsFromOrigin(ctx, nil, nil, nil, includePending, page, nil, true)
-
-	//its getting the pending kappa and not the chaina one (shoudl only be getting the latest)
 	var results []*model.BridgeTransaction
-	//mapChains := make(map[uint32]string)
 	fromBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generatePartialInfoQueryByChain(100))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
@@ -233,7 +228,6 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 		blockNumberFilter, chainIDFilter, tokenAddressFilter, addressFilter,
 	)
 	finalSQL := fmt.Sprintf("\nSELECT %s(toUInt256(%s)) FROM %s %s", operation, sql.AmountUSDFieldName, subQuery, additionalFilters)
-	fmt.Println("DA POOPY", finalSQL)
 	res, err := r.DB.GetFloat64(ctx, finalSQL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
@@ -254,71 +248,21 @@ func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, addres
 	targetTime := r.getTargetTime(hours)
 
 	var results []*model.TransactionCountResult
-	fmt.Println("j", generateBridgeEventCountQuery(chainID, address, nil, directionIn, &targetTime))
-	results, err := r.DB.GetTxCounts(ctx, generateBridgeEventCountQuery(chainID, address, nil, directionIn, &targetTime))
+	results, err := r.DB.GetTxCounts(ctx, generateBridgeEventCountQuery(chainID, address, nil, directionIn, &targetTime, false))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}
-	//for i := range chainIDs {
-	//	count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(chainIDs[i], address, nil, directionIn, &targetTime))
-	//	if err != nil {
-	//		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
-	//	}
-	//
-	//	chainInt := chainIDs[i]
-	//	countInt := int(count)
-	//	results = append(results, &model.TransactionCountResult{
-	//		ChainID: &chainInt,
-	//		Count:   &countInt,
-	//	})
-	//}
-
 	return results, nil
 }
 
 // CountByTokenAddress is the resolver for the countByTokenAddress field.
 func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error) {
-	chainIDs, err := r.getChainIDs(ctx, chainID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get chain IDs: %w", err)
-	}
-
-	chainIDsToTokenAddresses := make(map[int][]string)
-
-	for _, chain := range chainIDs {
-		query := fmt.Sprintf(
-			`SELECT DISTINCT %s FROM bridge_events WHERE %s = %d OR %s = %d AND %s`,
-			sql.TokenFieldName, sql.ChainIDFieldName, chain, sql.DestinationChainIDFieldName, chain, deDupInQuery,
-		)
-		tokenAddresses, err := r.DB.GetStringArray(ctx, query)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get token addresses: %w", err)
-		}
-
-		chainIDsToTokenAddresses[chain] = tokenAddresses
-	}
-
 	directionIn := r.getDirectionIn(direction)
 	targetTime := r.getTargetTime(hours)
+	results, err := r.DB.GetTokenCounts(ctx, generateBridgeEventCountQuery(chainID, address, nil, directionIn, &targetTime, true))
 
-	// Get the number of transactions for each token address, for each chain ID.
-	var results []*model.TokenCountResult
-
-	for chain, tokenAddresses := range chainIDsToTokenAddresses {
-		for i := range tokenAddresses {
-			count, err := r.DB.GetUint64(ctx, generateBridgeEventCountQuery(&chain, address, &tokenAddresses[i], directionIn, &targetTime))
-			if err != nil {
-				return nil, fmt.Errorf("failed to get count by token address: %w", err)
-			}
-
-			chainInt := chain
-			countInt := int(count)
-			results = append(results, &model.TokenCountResult{
-				ChainID:      &chainInt,
-				TokenAddress: &tokenAddresses[i],
-				Count:        &countInt,
-			})
-		}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}
 
 	return results, nil
