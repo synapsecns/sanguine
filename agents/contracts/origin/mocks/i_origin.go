@@ -453,7 +453,7 @@ func (_m *IOrigin) GetGuard(opts *bind.CallOpts, _index *big.Int) (common.Addres
 }
 
 // GetHistoricalRoot provides a mock function with given fields: opts, _destination, _nonce
-func (_m *IOrigin) GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, error) {
+func (_m *IOrigin) GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, *big.Int, *big.Int, error) {
 	ret := _m.Called(opts, _destination, _nonce)
 
 	var r0 [32]byte
@@ -465,14 +465,32 @@ func (_m *IOrigin) GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _
 		}
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32, uint32) error); ok {
+	var r1 *big.Int
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32, uint32) *big.Int); ok {
 		r1 = rf(opts, _destination, _nonce)
 	} else {
-		r1 = ret.Error(1)
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*big.Int)
+		}
 	}
 
-	return r0, r1
+	var r2 *big.Int
+	if rf, ok := ret.Get(2).(func(*bind.CallOpts, uint32, uint32) *big.Int); ok {
+		r2 = rf(opts, _destination, _nonce)
+	} else {
+		if ret.Get(2) != nil {
+			r2 = ret.Get(2).(*big.Int)
+		}
+	}
+
+	var r3 error
+	if rf, ok := ret.Get(3).(func(*bind.CallOpts, uint32, uint32) error); ok {
+		r3 = rf(opts, _destination, _nonce)
+	} else {
+		r3 = ret.Error(3)
+	}
+
+	return r0, r1, r2, r3
 }
 
 // GetNotary provides a mock function with given fields: opts, _index

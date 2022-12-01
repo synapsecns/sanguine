@@ -142,12 +142,12 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
         uint32 _origin,
         uint32 _destination,
         address _notary
-    ) external view returns (uint32) {
+    ) external view returns (uint32, uint256) {
         uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
         uint32 latestNonce = latestNonces[attestationDomains][_notary];
         // Check if we found anything
         require(latestNonce != 0, "No nonce found");
-        return latestNonce;
+        return (latestNonce, block.number);
     }
 
     /**

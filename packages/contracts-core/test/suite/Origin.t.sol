@@ -18,7 +18,8 @@ contract OriginTest is OriginTools {
         origin.initialize((suiteNotaryManager(DOMAIN_LOCAL)));
         assertEq(origin.owner(), owner, "!owner");
         assertTrue(origin.isNotary(suiteNotary(DOMAIN_LOCAL)), "!notaryAdded");
-        assertEq(origin.getHistoricalRoot(0, 0), origin.root(0), "!historicalRoots(0)");
+        (histRoot, dispatchBlockNumber, currBlockNumber) = origin.getHistoricalRoot(0, 0);
+        assertEq(histRoot, origin.root(0), "!historicalRoots(0)");
     }
 
     function test_initializedCorrectly() public {
@@ -57,7 +58,8 @@ contract OriginTest is OriginTools {
                 );
             }
             // Root of an empty sparse Merkle tree should be stored with nonce=0
-            assertEq(origin.getHistoricalRoot(0, 0), origin.root(0), "!historicalRoots(0)");
+            (histRoot, dispatchBlockNumber, currBlockNumber) = origin.getHistoricalRoot(0, 0);
+            assertEq(histRoot, origin.root(0), "!historicalRoots(0)");
         }
     }
 
@@ -200,7 +202,11 @@ contract OriginTest is OriginTools {
         // Should return latest values
         assertEq(nonce, amount, "!nonce");
         assertEq(root, origin.root(DOMAIN_REMOTE), "!current root");
-        assertEq(root, origin.getHistoricalRoot(DOMAIN_REMOTE, nonce), "!historical root");
+        (histRoot, dispatchBlockNumber, currBlockNumber) = origin.getHistoricalRoot(
+            DOMAIN_REMOTE,
+            nonce
+        );
+        assertEq(root, histRoot, "!historical root");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

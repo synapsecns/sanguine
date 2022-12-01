@@ -52,7 +52,7 @@ func (u NotarySuite) TestNotaryE2E() {
 	u.Eventually(func() bool {
 		// TODO (joe): Figure out why attestationContract points to old version and fix this test after the GlobalRegistry changes
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		latestNonce, err := u.attestationContract.GetLatestNonce(&bind.CallOpts{Context: u.GetTestContext()}, u.domainClient.Config().DomainID, desinationDomain, u.signer.Address())
+		latestNonce, _, err := u.attestationContract.GetLatestNonce(&bind.CallOpts{Context: u.GetTestContext()}, u.domainClient.Config().DomainID, desinationDomain, u.signer.Address())
 		Nil(u.T(), err)
 
 		return latestNonce != 0

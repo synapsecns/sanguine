@@ -37,8 +37,8 @@ type IOriginCaller interface {
 	GetGuard(opts *bind.CallOpts, _index *big.Int) (common.Address, error)
 	// GetHistoricalRoot is a free data retrieval call binding the contract method 0xf94adcb4.
 	//
-	// Solidity: function getHistoricalRoot(uint32 _destination, uint32 _nonce) view returns(bytes32)
-	GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, error)
+	// Solidity: function getHistoricalRoot(uint32 _destination, uint32 _nonce) view returns(bytes32, uint256, uint256)
+	GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, *big.Int, *big.Int, error)
 	// GetNotary is a free data retrieval call binding the contract method 0xc07dc7f5.
 	//
 	// Solidity: function getNotary(uint256 _index) view returns(address)

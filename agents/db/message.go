@@ -51,9 +51,34 @@ type MonitorDB interface {
 	GetDelinquentMessages(ctx context.Context, destinationDomain uint32) ([]types.Message, error)
 }
 
+// InProgressAttestationDB stores in-progress attesations.
+// nolint
+type InProgressAttestationDB interface {
+	// RetrieveLatestCachedNonce gets the latest nonce cached for a particular origin-destination pair
+	// returns ErrNoNonceForDomain if no nonce exists
+	RetrieveLatestCachedNonce(ctx context.Context, originID, destinationID uint32) (nonce uint32, err error)
+	// StoreNewInProgressAttestation stores a in-progress attestation only if it hasn't already been stored
+	StoreNewInProgressAttestation(ctx context.Context, attestation types.Attestation, originDispathBlockNumber uint64) error
+	// UpdateSignature sets the signature of the in-progress Attestation
+	UpdateSignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
+	// UpdateSubmittedToAttestationCollectorTime sets the time attestation was sent to Attesttion Collector
+	UpdateSubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
+	// UpdateConfirmedOnAttestationCollectorBlockNumber sets the block number we confirmed the attestation on the Attesttion Collector
+	UpdateConfirmedOnAttestationCollectorBlockNumber(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
+	// RetrieveInProgressAttestation retrieves an in-progress attestation by <origin, destination, nonce>
+	RetrieveInProgressAttestation(ctx context.Context, originID, destinationID, nonce uint32) (inProgressAttestation types.InProgressAttestation, err error)
+	// RetrieveOldestUnsignedInProgressAttestation retrieves the oldest in-progress attestation that has not yet been signed
+	RetrieveOldestUnsignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
+	// RetrieveOldestUnsubmittedSignedInProgressAttestation retrieves the oldest in-progress attestation that has been signed but not yet submitted
+	RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
+	// RetrieveOldestUnconfirmedSubmittedInProgressAttestation retrieves the oldest in-progress attestation that has been signed and submitted but not yet confirmed on the AttestationCollector
+	RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
+}
+
 // SynapseDB combines db types.
 type SynapseDB interface {
 	MessageDB
 	TxQueueDB
 	MonitorDB
+	InProgressAttestationDB
 }

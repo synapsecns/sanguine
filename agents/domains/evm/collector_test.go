@@ -38,7 +38,8 @@ func (i ContractSuite) TestSubmitAttestation() {
 	Nil(i.T(), err)
 
 	// TODO (joe): get this working after global registry changes
-	/*latestNonce, err := attestationCollector.GetLatestNonce(i.GetTestContext(), localDomain, destination, i.signer)
+	latestNonce, currBlock, err := attestationCollector.GetLatestNonce(i.GetTestContext(), localDomain, destination, i.signer)
 	Nil(i.T(), err)
-	Equal(i.T(), nonce, latestNonce)*/
+	Equal(i.T(), nonce, latestNonce)
+	Greater(i.T(), latestNonce, 0)
 }
