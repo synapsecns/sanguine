@@ -232,14 +232,11 @@ func TestDispatchMessageParity(t *testing.T) {
 	tips := types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip)
 	encodedTips, err := types.EncodeTips(tips)
 	Nil(t, err)
-	_ = encodedTips
-	messageBody := []byte{byte(gofakeit.Uint32())}
+	messageBytes := []byte{byte(gofakeit.Uint32())}
 
-	zeroTips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-	encodedZeroTips, err := types.EncodeTips(zeroTips)
-	Nil(t, err)
+	transactOpts.Value = types.TotalTips(tips)
 
-	tx, err := originRef.Dispatch(transactOpts.TransactOpts, destination, recipient, optimisticSeconds, encodedZeroTips, messageBody)
+	tx, err := originRef.Dispatch(transactOpts.TransactOpts, destination, recipient, optimisticSeconds, encodedTips, messageBytes)
 	Nil(t, err)
 	simulatedChain.WaitForConfirmation(ctx, tx)
 
@@ -247,8 +244,8 @@ func TestDispatchMessageParity(t *testing.T) {
 	Nil(t, err)
 
 	// create the agents type message
-	testHeader := types.NewHeader(chainID, sender.Hash(), uint32(tx.Nonce()), destination, recipient, optimisticSeconds)
-	testMessage := types.NewMessage(testHeader, zeroTips, messageBody)
+	testHeader := types.NewHeader(chainID, sender.Hash(), uint32(tx.Nonce()+1), destination, recipient, optimisticSeconds)
+	testMessage := types.NewMessage(testHeader, tips, messageBytes)
 	testMessageLeaf, err := testMessage.ToLeaf()
 	Nil(t, err)
 
@@ -272,6 +269,7 @@ func TestDispatchMessageParity(t *testing.T) {
 		Nil(t, err)
 
 		messageLeaf, err := message.ToLeaf()
+		Nil(t, err)
 
 		Equal(t, messageLeaf, testMessageLeaf)
 
