@@ -10,8 +10,6 @@ import { Header } from "./libs/Header.sol";
 import { Message } from "./libs/Message.sol";
 import { Tips } from "./libs/Tips.sol";
 import { SystemCall } from "./libs/SystemCall.sol";
-import { SystemContract } from "./system/SystemContract.sol";
-import { INotaryManager } from "./interfaces/INotaryManager.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
 // ============ External Imports ============
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
@@ -30,7 +28,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Origin accepts submissions of fraudulent signatures by the Guard in the form
  * of a Guard's report with said signature and slashes Guard in that case.
  */
-contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, OriginHub {
+contract Origin is Version0, OriginEvents, OriginHub, LocalDomainContext {
     using Tips for bytes;
     using Tips for bytes29;
 
@@ -46,24 +44,8 @@ contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, O
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // contract responsible for Notary bonding, slashing and rotation
-    // TODO: use "bonding manager" instead when implemented
-    INotaryManager public notaryManager;
-
     // gap for upgrade safety
-    uint256[49] private __GAP; //solhint-disable-line var-name-mixedcase
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Ensures that function is called by the NotaryManager contract
-     */
-    modifier onlyNotaryManager() {
-        require(msg.sender == address(notaryManager), "!notaryManager");
-        _;
-    }
+    uint256[50] private __GAP; //solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
@@ -76,47 +58,22 @@ contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, O
     ▏*║                             INITIALIZER                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function initialize(INotaryManager _notaryManager) external initializer {
+    function initialize() external initializer {
         __SystemContract_initialize();
-        _setNotaryManager(_notaryManager);
-        _addNotary(notaryManager.notary());
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                    EXTERNAL FUNCTIONS: RESTRICTED                    ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Set a new Notary
-     * @dev To be set when rotating Notary after Fraud
-     * @param _notary the new Notary
-     */
-    function setNotary(address _notary) external onlyNotaryManager {
-        /**
-         * TODO: do this properly
-         * @dev 1. New Notaries should be added to all System Contracts
-         *      from "secondary" Bonding contracts (global Notary/Guard registry)
-         *      1a. onlyNotaryManager -> onlyBondingManager (or w/e the name would be)
-         *      2. There is supposed to be more than one active Notary
-         *      2a. setNotary() -> addNotary()
-         */
-        _addNotary(_notary);
-    }
-
-    /**
-     * @notice Set a new NotaryManager contract
-     * @dev Origin(s) will initially be initialized using a trusted NotaryManager contract;
-     * we will progressively decentralize by swapping the trusted contract with a new implementation
-     * that implements Notary bonding & slashing, and rules for Notary selection & rotation
-     * @param _notaryManager the new NotaryManager contract
-     */
-    function setNotaryManager(address _notaryManager) external onlyOwner {
-        _setNotaryManager(INotaryManager(_notaryManager));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // TODO: add/remove notaries upon bonding/unbonding
+    // Keep in mind that we will want Origin to inherit from GlobalNotaryRegistry and GuardRegistry
+    // and the haveActiveNotary should be updated in dispatch to assert that we have a Notary
+    // registered for the destination and also that we have at least one Guard
+
+    function addNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
+        return _addNotary(_domain, _notary);
+    }
 
     /**
      * @notice Dispatch the message to the destination domain & recipient
@@ -167,16 +124,6 @@ contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, O
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Set the NotaryManager
-     * @param _notaryManager Address of the NotaryManager
-     */
-    function _setNotaryManager(INotaryManager _notaryManager) internal {
-        require(Address.isContract(address(_notaryManager)), "!contract notaryManager");
-        notaryManager = INotaryManager(_notaryManager);
-        emit NewNotaryManager(address(_notaryManager));
-    }
-
-    /**
      * @notice Slash the Notary.
      * @dev Called when fraud is proven (Fraud Attestation).
      * @param _notary   Notary to slash
@@ -189,7 +136,6 @@ contract Origin is Version0, OriginEvents, SystemContract, LocalDomainContext, O
     ) internal override {
         // _notary is always an active Notary at this point
         _removeNotary(_domain, _notary);
-        notaryManager.slashNotary(payable(msg.sender));
         // TODO: add domain to the event (decide what fields need to be indexed)
         emit NotarySlashed(_notary, _guard, msg.sender);
     }

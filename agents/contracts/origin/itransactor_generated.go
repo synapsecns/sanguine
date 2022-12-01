@@ -3,6 +3,8 @@
 package origin
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -10,30 +12,30 @@ import (
 
 // IOriginTransactor ...
 type IOriginTransactor interface {
+	// AddNotary is a paid mutator transaction binding the contract method 0x2af678b0.
+	//
+	// Solidity: function addNotary(uint32 _domain, address _notary) returns(bool)
+	AddNotary(opts *bind.TransactOpts, _domain uint32, _notary common.Address) (*types.Transaction, error)
 	// Dispatch is a paid mutator transaction binding the contract method 0xf7560e40.
 	//
 	// Solidity: function dispatch(uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds, bytes _tips, bytes _messageBody) payable returns(uint32 messageNonce, bytes32 messageHash)
 	Dispatch(opts *bind.TransactOpts, _destination uint32, _recipient [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) (*types.Transaction, error)
-	// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+	// Initialize is a paid mutator transaction binding the contract method 0x8129fc1c.
 	//
-	// Solidity: function initialize(address _notaryManager) returns()
-	Initialize(opts *bind.TransactOpts, _notaryManager common.Address) (*types.Transaction, error)
+	// Solidity: function initialize() returns()
+	Initialize(opts *bind.TransactOpts) (*types.Transaction, error)
 	// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 	//
 	// Solidity: function renounceOwnership() returns()
 	RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
-	// SetNotary is a paid mutator transaction binding the contract method 0xa394a0e6.
-	//
-	// Solidity: function setNotary(address _notary) returns()
-	SetNotary(opts *bind.TransactOpts, _notary common.Address) (*types.Transaction, error)
-	// SetNotaryManager is a paid mutator transaction binding the contract method 0xa340abc1.
-	//
-	// Solidity: function setNotaryManager(address _notaryManager) returns()
-	SetNotaryManager(opts *bind.TransactOpts, _notaryManager common.Address) (*types.Transaction, error)
 	// SetSystemRouter is a paid mutator transaction binding the contract method 0xfbde22f7.
 	//
 	// Solidity: function setSystemRouter(address _systemRouter) returns()
 	SetSystemRouter(opts *bind.TransactOpts, _systemRouter common.Address) (*types.Transaction, error)
+	// SlashAgent is a paid mutator transaction binding the contract method 0x11ebc1ad.
+	//
+	// Solidity: function slashAgent(uint256 , uint32 _callOrigin, uint8 _caller, (uint8,bool,uint32,address) _info) returns()
+	SlashAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _info SystemContractAgentInfo) (*types.Transaction, error)
 	// SubmitAttestation is a paid mutator transaction binding the contract method 0xf646a512.
 	//
 	// Solidity: function submitAttestation(bytes _attestation) returns(bool)
@@ -42,6 +44,10 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function submitReport(bytes _report) returns(bool)
 	SubmitReport(opts *bind.TransactOpts, _report []byte) (*types.Transaction, error)
+	// SyncAgents is a paid mutator transaction binding the contract method 0x86cd8f91.
+	//
+	// Solidity: function syncAgents(uint256 , uint32 _callOrigin, uint8 _caller, uint256 _requestID, bool _removeExisting, (uint8,bool,uint32,address)[] _infos) returns()
+	SyncAgents(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _requestID *big.Int, _removeExisting bool, _infos []SystemContractAgentInfo) (*types.Transaction, error)
 	// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()

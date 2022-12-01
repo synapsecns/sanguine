@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
-	"github.com/synapsecns/sanguine/agents/contracts/notarymanager"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
@@ -76,17 +75,6 @@ func (d *DeployManager) GetDestinationHarness(ctx context.Context, backend backe
 	assert.True(d.T(), ok)
 
 	return destinationHarnessContract, destinationHarness
-}
-
-// GetNotaryManager gets the notary manager.
-func (d *DeployManager) GetNotaryManager(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *notarymanager.NotaryManagerRef) {
-	d.T().Helper()
-
-	notaryManagerContract := d.GetContractRegistry(backend).Get(ctx, NotaryManagerType)
-	notaryManager, ok := notaryManagerContract.ContractHandle().(*notarymanager.NotaryManagerRef)
-	assert.True(d.T(), ok)
-
-	return notaryManagerContract, notaryManager
 }
 
 // GetAttestationCollector gets the attestation collector contract.

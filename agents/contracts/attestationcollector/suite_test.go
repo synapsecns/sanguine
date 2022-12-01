@@ -1,12 +1,12 @@
 package attestationcollector_test
 
 import (
-	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
+
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
@@ -62,24 +62,9 @@ func (a *AttestationCollectorSuite) SetupTest() {
 		a.T().Fatal(err)
 	}
 
-	_, notaryManager := deployManager.GetNotaryManager(a.GetTestContext(), a.testBackendOrigin)
-	owner, err := notaryManager.Owner(&bind.CallOpts{Context: a.GetTestContext()})
-	if err != nil {
-		a.T().Fatal(err)
-	}
-
 	a.signer = localsigner.NewSigner(a.wallet.PrivateKey())
 	a.testBackendOrigin.FundAccount(a.GetTestContext(), a.signer.Address(), *big.NewInt(params.Ether))
 	a.testBackendDestination.FundAccount(a.GetTestContext(), a.signer.Address(), *big.NewInt(params.Ether))
-
-	transactOpts := a.testBackendOrigin.GetTxContext(a.GetTestContext(), &owner)
-
-	tx, err := notaryManager.SetNotary(transactOpts.TransactOpts, a.signer.Address())
-	if err != nil {
-		a.T().Fatal(err)
-	}
-
-	a.testBackendOrigin.WaitForConfirmation(a.GetTestContext(), tx)
 }
 
 // TestAttestationCollectorSuite runs the integration test suite.

@@ -12,6 +12,26 @@ import {
  * @notice Shared utilities between Synapse System Contracts: Origin, Destination, etc.
  */
 abstract contract SystemContract is DomainContext, OwnableUpgradeable {
+    enum Agent {
+        Notary,
+        Guard
+    }
+
+    /**
+     * @notice Unified struct for off-chain agent storing
+     * @param agent     Type of agent: Notary, Guard
+     * @param bonded    Whether agent bonded or unbonded
+     * @param domain    Domain, where agent is active (0 means agent is active everywhere)
+     * @param account   Off-chain agent address
+     */
+    struct AgentInfo {
+        Agent agent;
+        bool bonded;
+        uint32 domain;
+        address account;
+        // TODO: 48 bits remaining
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -24,6 +44,11 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
 
     uint256 internal constant ORIGIN = 1 << uint8(ISystemRouter.SystemEntity.Origin);
     uint256 internal constant DESTINATION = 1 << uint8(ISystemRouter.SystemEntity.Destination);
+    uint256 internal constant BONDING_MANAGER =
+        1 << uint8(ISystemRouter.SystemEntity.BondingManager);
+
+    // TODO: reevaluate optimistic period for staking/unstaking bonds
+    uint32 internal constant BONDING_OPTIMISTIC_PERIOD = 1 days;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
@@ -58,8 +83,8 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      * Note: has to be used alongside with `onlySystemRouter`
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
      */
-    modifier onlySynapseChain(uint32 _originDomain) {
-        require(_originDomain == SYNAPSE_DOMAIN, "!synapseDomain");
+    modifier onlySynapseChain(uint32 _callOrigin) {
+        _assertSynapseChain(_callOrigin);
         _;
     }
 
@@ -73,7 +98,34 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      *  onlyCallers(MASK_0 | MASK_1 | MASK_2, _systemCaller)
      */
     modifier onlyCallers(uint256 _allowedMask, ISystemRouter.SystemEntity _systemCaller) {
-        require(_entityAllowed(_allowedMask, _systemCaller), "!allowedCaller");
+        _assertEntityAllowed(_allowedMask, _systemCaller);
+        _;
+    }
+
+    /**
+     * @dev Modifier for functions that are supposed to be called only from
+     * BondingManager on their local chain.
+     * Note: has to be used alongside with `onlySystemRouter`
+     * See `onlySystemRouter` for details about the functions protected by such modifiers.
+     */
+    modifier onlyLocalBondingManager(uint32 _callOrigin, ISystemRouter.SystemEntity _caller) {
+        _assertLocalDomain(_callOrigin);
+        _assertEntityAllowed(BONDING_MANAGER, _caller);
+        _;
+    }
+
+    /**
+     * @dev Modifier for functions that are supposed to be called only from
+     * BondingManager on Synapse Chain.
+     * Note: has to be used alongside with `onlySystemRouter`
+     * See `onlySystemRouter` for details about the functions protected by such modifiers.
+     */
+    modifier onlySynapseChainBondingManager(
+        uint32 _callOrigin,
+        ISystemRouter.SystemEntity _systemCaller
+    ) {
+        _assertSynapseChain(_callOrigin);
+        _assertEntityAllowed(BONDING_MANAGER, _systemCaller);
         _;
     }
 
@@ -117,8 +169,48 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
     function renounceOwnership() public override onlyOwner {} //solhint-disable-line no-empty-blocks
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
+    ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Receive a system call indicating the off-chain agent needs to be slashed.
+     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
+     * @param _callOrigin       Domain where the system call originated
+     * @param _caller           Entity which performed the system call
+     * @param _info             Information about agent to slash
+     */
+    function slashAgent(
+        uint256 _rootSubmittedAt,
+        uint32 _callOrigin,
+        ISystemRouter.SystemEntity _caller,
+        AgentInfo memory _info
+    ) external virtual;
+
+    /**
+     * @notice Receive a system call indicating the list of off-chain agents needs to be synced.
+     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
+     * @param _callOrigin       Domain where the system call originated
+     * @param _caller           Entity which performed the system call
+     * @param _requestID        Unique ID of the sync request
+     * @param _removeExisting   Whether the existing agents need to be removed first
+     * @param _infos            Information about a list of agents to sync
+     */
+    function syncAgents(
+        uint256 _rootSubmittedAt,
+        uint32 _callOrigin,
+        ISystemRouter.SystemEntity _caller,
+        uint256 _requestID,
+        bool _removeExisting,
+        AgentInfo[] memory _infos
+    ) external virtual;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                 INTERNAL VIEWS: SECURITY ASSERTIONS                  ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function _onSynapseChain() internal view returns (bool) {
+        return _localDomain() == SYNAPSE_DOMAIN;
+    }
 
     function _assertSystemRouter() internal view {
         require(msg.sender == address(systemRouter), "!systemRouter");
@@ -129,6 +221,17 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
         view
     {
         require(block.timestamp >= _rootSubmittedAt + _optimisticSeconds, "!optimisticPeriod");
+    }
+
+    function _assertEntityAllowed(uint256 _allowedMask, ISystemRouter.SystemEntity _caller)
+        internal
+        pure
+    {
+        require(_entityAllowed(_allowedMask, _caller), "!allowedCaller");
+    }
+
+    function _assertSynapseChain(uint32 _domain) internal pure {
+        require(_domain == SYNAPSE_DOMAIN, "!synapseDomain");
     }
 
     /**
@@ -160,5 +263,64 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
      */
     function _getSystemMask(ISystemRouter.SystemEntity _entity) internal pure returns (uint256) {
         return 1 << uint8(_entity);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                      INTERNAL VIEWS: AGENT DATA                      ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Constructs data for the system call to slash a given agent.
+     */
+    function _dataSlashAgent(AgentInfo memory _info) internal pure returns (bytes memory) {
+        return
+            abi.encodeWithSelector(
+                SystemContract.slashAgent.selector,
+                0, // rootSubmittedAt
+                0, // callOrigin
+                0, // systemCaller
+                _info
+            );
+    }
+
+    /**
+     * @notice Constructs data for the system call to sync the given agents.
+     */
+    function _dataSyncAgents(
+        uint256 _requestID,
+        bool _removeExisting,
+        AgentInfo[] memory _infos
+    ) internal pure returns (bytes memory) {
+        return
+            abi.encodeWithSelector(
+                SystemContract.syncAgents.selector,
+                0, // rootSubmittedAt
+                0, // callOrigin
+                0, // systemCaller
+                _requestID,
+                _removeExisting,
+                _infos
+            );
+    }
+
+    /**
+     * @notice Constructs a universal "Agent Information" structure for the given Guard.
+     */
+    function _guardInfo(address _guard, bool _bonded) internal pure returns (AgentInfo memory) {
+        // We are using domain value of 0 to illustrate the point
+        // that Guards are active on all domains
+        return AgentInfo({ agent: Agent.Guard, bonded: _bonded, domain: 0, account: _guard });
+    }
+
+    /**
+     * @notice Constructs a universal "Agent Information" structure for the given Notary.
+     */
+    function _notaryInfo(
+        uint32 _domain,
+        address _notary,
+        bool _bonded
+    ) internal pure returns (AgentInfo memory) {
+        return
+            AgentInfo({ agent: Agent.Notary, bonded: _bonded, domain: _domain, account: _notary });
     }
 }
