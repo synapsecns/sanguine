@@ -265,6 +265,7 @@ func TestDispatchMessageParity(t *testing.T) {
 
 		committedMessage, ok := parser.ParseDispatch(item.Raw)
 		True(t, ok)
+
 		message, err := types.DecodeMessage(committedMessage.Message())
 		Nil(t, err)
 
