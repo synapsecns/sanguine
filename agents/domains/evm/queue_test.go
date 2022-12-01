@@ -44,6 +44,8 @@ func (t *TxQueueSuite) TestGetTransactor() {
 	chn := simulated.NewSimulatedBackend(t.GetTestContext(), t.T())
 	manager := testutil.NewDeployManager(t.T())
 
+	destinationID := uint32(1)
+
 	originContract, originHarness := manager.GetOriginHarness(t.GetTestContext(), chn)
 
 	// create a test signer
@@ -64,19 +66,16 @@ func (t *TxQueueSuite) TestGetTransactor() {
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(t.T(), err)
 
-	originDomain, err := originHarness.LocalDomain(&bind.CallOpts{Context: t.GetTestContext()})
-	Nil(t.T(), err)
-
 	originOwnerAuth := chn.GetTxContext(t.GetTestContext(), originContract.OwnerPtr())
-	tx, err := originHarness.AddNotary0(originOwnerAuth.TransactOpts, originDomain, msigner.Address())
+	tx, err := originHarness.AddNotary(originOwnerAuth.TransactOpts, destinationID, msigner.Address())
 	Nil(t.T(), err)
 	chn.WaitForConfirmation(t.GetTestContext(), tx)
 
-	notaries, err := originHarness.AllNotaries(&bind.CallOpts{Context: t.GetTestContext()})
+	notaries, err := originHarness.AllNotaries(&bind.CallOpts{Context: t.GetTestContext()}, destinationID)
 	Nil(t.T(), err)
 	Len(t.T(), notaries, 1)
 
-	tx, err = originHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, encodedTips, []byte("hello world"))
+	tx, err = originHarness.Dispatch(testTransactor, destinationID, [32]byte{}, 1, encodedTips, []byte("hello world"))
 	Nil(t.T(), err)
 
 	chn.WaitForConfirmation(t.GetTestContext(), tx)

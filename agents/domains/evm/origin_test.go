@@ -13,6 +13,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 )
 
+const destinationID = uint32(453)
+
 // TestDispatch is a test dispatch call.
 type TestDispatch struct {
 	// domain we're sending to
@@ -27,7 +29,7 @@ type TestDispatch struct {
 
 func NewTestDispatch() TestDispatch {
 	return TestDispatch{
-		domain:            gofakeit.Uint32(),
+		domain:            destinationID,
 		recipientAddress:  common.BytesToHash(mocks.MockAddress().Bytes()),
 		message:           []byte(gofakeit.Paragraph(4, 1, 4, " ")),
 		optimisticSeconds: gofakeit.Uint32(),
@@ -73,15 +75,12 @@ func (i ContractSuite) TestFetchSortedOriginUpdates() {
 	ownerPtr, err := i.originContract.OriginCaller.Owner(&bind.CallOpts{Context: i.GetTestContext()})
 	Nil(i.T(), err)
 
-	originDomain, err := i.originContract.LocalDomain(&bind.CallOpts{Context: i.GetTestContext()})
-	Nil(i.T(), err)
-
 	originOwnerAuth := i.testBackend.GetTxContext(i.GetTestContext(), &ownerPtr)
-	tx, err := i.originContract.AddNotary(originOwnerAuth.TransactOpts, originDomain, i.signer.Address())
+	tx, err := i.originContract.AddNotary(originOwnerAuth.TransactOpts, destinationID, i.signer.Address())
 	Nil(i.T(), err)
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
-	notaries, err := i.originContract.AllNotaries(&bind.CallOpts{Context: i.GetTestContext()})
+	notaries, err := i.originContract.AllNotaries(&bind.CallOpts{Context: i.GetTestContext()}, destinationID)
 	Nil(i.T(), err)
 	Len(i.T(), notaries, 1)
 
