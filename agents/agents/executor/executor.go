@@ -145,7 +145,6 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 		case <-ctx.Done():
 			return nil
 		case log := <-e.LogChans[chainID]:
-			fmt.Println("POOOOOO")
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
@@ -240,15 +239,11 @@ func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
 		return fmt.Errorf("could not convert log to leaf: %w", err)
 	}
 	if leafData == nil {
-		fmt.Println("NIL LOG")
 		return nil
 	}
 
-	fmt.Println("OK OK OK OK OK OK OK OK OK OK", merkleIndex)
 	e.MerkleTree.Insert(leafData, merkleIndex)
-	fmt.Println("the len is", len(e.roots[chainID]))
 	e.roots[chainID] = append(e.roots[chainID], e.MerkleTree.Root())
-	fmt.Println("the len is then", len(e.roots[chainID]))
 
 	return nil
 }
@@ -264,14 +259,7 @@ func (e Executor) GetRoot(index uint64, chainID uint32) ([32]byte, error) {
 
 // logToLeaf converts the log to a leaf data.
 func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
-	a, b := e.originParsers[chainID].EventType(log)
-	fmt.Println("SHMERP", a, b)
-	fmt.Println("log tx hash", log.TxHash.String())
-	fmt.Println("log address", log.Address.String())
-	fmt.Println("log topics", log.Topics)
-	fmt.Println("log chain id", chainID)
 	if eventType, ok := e.originParsers[chainID].EventType(log); ok && eventType == origin.DispatchEvent {
-		fmt.Println("GOT HERE!")
 		committedMessage, ok := e.originParsers[chainID].ParseDispatch(log)
 		if !ok {
 			return nil, fmt.Errorf("could not parse committed message")
@@ -281,25 +269,6 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not decode message: %w", err)
 		}
-
-		decodedMessage := message
-
-		fmt.Println("poopy message version", decodedMessage.Version())
-		fmt.Println("poopy message header", decodedMessage.Header())
-		fmt.Println("poopy header version", decodedMessage.Header().Version())
-		fmt.Println("poopy header origin domain", decodedMessage.Header().OriginDomain())
-		fmt.Println("poopy header destination domain", decodedMessage.Header().DestinationDomain())
-		fmt.Println("poopy header recipient", decodedMessage.Header().Recipient())
-		fmt.Println("poopy header optimistic seconds", decodedMessage.Header().OptimisticSeconds())
-		fmt.Println("poopy header nonce", decodedMessage.Header().Nonce())
-		fmt.Println("poopy message tips", decodedMessage.Tips())
-		fmt.Println("poopy message body", decodedMessage.Body())
-		fmt.Println("poopy message origin domain", decodedMessage.OriginDomain())
-		fmt.Println("poopy message sender", decodedMessage.Sender())
-		fmt.Println("poopy message nonce", decodedMessage.Nonce())
-		fmt.Println("poopy message destination", decodedMessage.DestinationDomain())
-		fmt.Println("poopy message recipient", decodedMessage.Recipient())
-		fmt.Println("poopy message optimistic seconds", decodedMessage.OptimisticSeconds())
 
 		leaf, err := message.ToLeaf()
 		if err != nil {
@@ -312,6 +281,7 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
 		return nil, nil
 	} else {
 		logger.Warnf("could not match the log's event type")
+
 		return nil, nil
 	}
 }

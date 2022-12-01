@@ -1,9 +1,7 @@
 package executor_test
 
 import (
-	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/prysmaticlabs/prysm/shared/trieutil"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
@@ -284,54 +282,47 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	testTree, err := trieutil.NewTrie(32)
 	e.Nil(err)
 
-	const (
-		destination = iota
-		nonce
-		recipient
-		optimisticSeconds
-		body
-		notaryTip
-		broadcasterTip
-		proverTip
-		executorTip
-	)
+	//const (
+	//	destination = iota + 1
+	//	recipient
+	//	optimisticSeconds
+	//	body
+	//	//notaryTip
+	//	//broadcasterTip
+	//	//proverTip
+	//	//executorTip
+	//)
 
-	header := types.NewHeader(chainID, e.signer.Address().Hash(), nonce, destination, common.BigToHash(big.NewInt(recipient)), optimisticSeconds)
-	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+	destination := chainID + 1
+	recipient := [32]byte{byte(gofakeit.Uint32())}
+	optimisticSeconds := gofakeit.Uint32()
+	notaryTip := big.NewInt(int64(int(gofakeit.Uint32())))
+	broadcasterTip := big.NewInt(int64(int(gofakeit.Uint32())))
+	proverTip := big.NewInt(int64(int(gofakeit.Uint32())))
+	executorTip := big.NewInt(int64(int(gofakeit.Uint32())))
+	tips := types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip)
 	encodedTips, err := types.EncodeTips(tips)
-	decodedTips, err := types.DecodeTips(encodedTips)
-
 	e.Nil(err)
-	message, err := types.EncodeMessage(types.NewMessage(header, decodedTips, []byte{body}))
-	decodedMessage, err := types.DecodeMessage(message)
-	e.Nil(err)
-	fmt.Println("fucking message version", decodedMessage.Version())
-	fmt.Println("fucking message header", decodedMessage.Header())
-	fmt.Println("fucking header version", decodedMessage.Header().Version())
-	fmt.Println("fucking header origin domain", decodedMessage.Header().OriginDomain())
-	fmt.Println("fucking header destination domain", decodedMessage.Header().DestinationDomain())
-	fmt.Println("fucking header recipient", decodedMessage.Header().Recipient())
-	fmt.Println("fucking header optimistic seconds", decodedMessage.Header().OptimisticSeconds())
-	fmt.Println("fucking header nonce", decodedMessage.Header().Nonce())
-	fmt.Println("fucking message tips", decodedMessage.Tips())
-	fmt.Println("fucking message body", decodedMessage.Body())
-	fmt.Println("fucking message origin domain", decodedMessage.OriginDomain())
-	fmt.Println("fucking message sender", decodedMessage.Sender())
-	fmt.Println("fucking message nonce", decodedMessage.Nonce())
-	fmt.Println("fucking message destination", decodedMessage.DestinationDomain())
-	fmt.Println("fucking message recipient", decodedMessage.Recipient())
-	fmt.Println("fucking message optimistic seconds", decodedMessage.OptimisticSeconds())
-	_ = message
-	testTree.Insert(message, 0)
-	testRoot := testTree.Root()
-	//tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-	//message := types.NewMessage(header, tips, body)
-	//_ = message
+	messageBytes := []byte{byte(gofakeit.Uint32())}
 
-	tx, err := originRef.Dispatch(transactOpts.TransactOpts, destination, [32]byte{recipient}, optimisticSeconds, encodedTips, []byte{body})
+	transactOpts.Value = types.TotalTips(tips)
+
+	tx, err := originRef.Dispatch(transactOpts.TransactOpts, destination, recipient, optimisticSeconds, encodedTips, messageBytes)
 	e.Nil(err)
 	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
-	fmt.Println("DA TX HASH IS", tx.Hash().String())
+
+	sender, err := simulatedChain.Signer().Sender(tx)
+	e.Nil(err)
+
+	header := types.NewHeader(chainID, sender.Hash(), uint32(tx.Nonce()+1), destination, recipient, optimisticSeconds)
+
+	message := types.NewMessage(header, tips, messageBytes)
+	e.Nil(err)
+
+	leaf, err := message.ToLeaf()
+	e.Nil(err)
+	testTree.Insert(leaf[:], 0)
+	testRoot := testTree.Root()
 
 	// Start the exec.
 	go func() {
