@@ -242,13 +242,13 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     ) internal {
         // Check if given Notary was removed
         assertEq(
-            origin.isNotary(attestationNotary),
+            origin.isNotary(attestationDestination, attestationNotary),
             isValidAttestation,
             "Wrong Notary active status"
         );
         // Check if amount of Notaries changed
         assertEq(
-            origin.notariesAmount(),
+            origin.notariesAmount(attestationDestination),
             notariesAmount - (isValidAttestation ? 0 : 1),
             "Wrong amount of notaries"
         );
@@ -325,9 +325,9 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         returns (OriginHarness origin, uint256 notariesAmount)
     {
         origin = suiteOrigin(domain);
-        notariesAmount = origin.notariesAmount();
+        notariesAmount = origin.notariesAmount(attestationDestination);
         // Sanity check: notary was active
-        require(origin.isNotary(attestationNotary), "Notary wasn't active");
+        require(origin.isNotary(attestationDestination, attestationNotary), "Notary wasn't active");
     }
 
     // Returns state before submitting report and checks that Guard and Notary are active
