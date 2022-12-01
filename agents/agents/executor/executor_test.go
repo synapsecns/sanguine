@@ -14,10 +14,9 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/node"
 	"math/big"
-	"time"
 )
 
-//func (e *ExecutorSuite) TestExecutor() {
+// func (e *ExecutorSuite) TestExecutor() {
 //	testDone := false
 //	defer func() {
 //		testDone = true
@@ -136,7 +135,7 @@ import (
 //	})
 //}
 //
-//func (e *ExecutorSuite) TestLotsOfLogs() {
+// func (e *ExecutorSuite) TestLotsOfLogs() {
 //	testDone := false
 //	defer func() {
 //		testDone = true
@@ -332,14 +331,17 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		}
 	}()
 
-	time.Sleep(10 * time.Second)
+	e.Eventually(func() bool {
+		rootA, err := exec.GetRoot(0, chainID)
+		if err != nil {
+			return false
+		}
 
-	rootA, err := exec.GetRoot(0, chainID)
-	e.Nil(err)
-
-	e.Equal(testRootA, rootA)
+		return testRootA == rootA
+	})
 
 	encodedTips, err = types.EncodeTips(tips[1])
+	e.Nil(err)
 
 	transactOpts.Value = types.TotalTips(tips[1])
 
@@ -357,10 +359,12 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	testTree.Insert(leaf[:], 1)
 	testRootB := testTree.Root()
 
-	time.Sleep(10 * time.Second)
+	e.Eventually(func() bool {
+		rootB, err := exec.GetRoot(1, chainID)
+		if err != nil {
+			return false
+		}
 
-	rootB, err := exec.GetRoot(1, chainID)
-	e.Nil(err)
-
-	e.Equal(testRootB, rootB)
+		return testRootB == rootB
+	})
 }
