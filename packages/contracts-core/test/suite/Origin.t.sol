@@ -15,9 +15,8 @@ contract OriginTest is OriginTools {
     function test_initialize() public {
         OriginHarness origin = new OriginHarness(DOMAIN_LOCAL);
         vm.prank(owner);
-        origin.initialize((suiteNotaryManager(DOMAIN_LOCAL)));
+        origin.initialize();
         assertEq(origin.owner(), owner, "!owner");
-        assertTrue(origin.isNotary(suiteNotary(DOMAIN_LOCAL)), "!notaryAdded");
         assertEq(origin.getHistoricalRoot(0, 0), origin.root(0), "!historicalRoots(0)");
     }
 
@@ -30,11 +29,6 @@ contract OriginTest is OriginTools {
             // Check owner
             assertEq(origin.owner(), owner, "!owner");
             // Check contract addresses
-            assertEq(
-                address(origin.notaryManager()),
-                address(suiteNotaryManager(domain)),
-                "!notaryManager"
-            );
             assertEq(
                 address(origin.systemRouter()),
                 address(suiteSystemRouter(domain)),
@@ -63,55 +57,7 @@ contract OriginTest is OriginTools {
 
     function test_initialize_revert_onlyOnce() public {
         expectRevertAlreadyInitialized();
-        suiteOrigin(DOMAIN_LOCAL).initialize(INotaryManager(address(0)));
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                  TESTS: RESTRICTED ACCESS (REVERTS)                  ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_setNotary_revert_notNotaryManager() public {
-        OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        vm.expectRevert("!notaryManager");
-        // owner should not be able to set Notaries
-        vm.prank(owner);
-        origin.setNotary(address(0));
-    }
-
-    function test_setNotaryManager_revert_notOwner(address caller) public {
-        vm.assume(caller != owner);
-        OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        expectRevertNotOwner();
-        vm.prank(caller);
-        origin.setNotaryManager(address(origin));
-    }
-
-    function test_setNotaryManager_revert_notContract() public {
-        OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        vm.expectRevert("!contract notaryManager");
-        vm.prank(owner);
-        origin.setNotaryManager(attacker);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       TESTS: RESTRICTED ACCESS                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_setNotary() public {
-        OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        // Take one of agents that was never registered as Notary
-        address notary = owner;
-        assertFalse(origin.isNotary(notary), "WTF: already a Notary");
-        vm.prank(address(suiteNotaryManager(DOMAIN_LOCAL)));
-        origin.setNotary(notary);
-        assertTrue(origin.isNotary(notary), "Failed to add a new Notary");
-    }
-
-    function test_setNotaryManager() public {
-        OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        vm.prank(owner);
-        origin.setNotaryManager(address(origin));
-        assertEq(address(origin.notaryManager()), address(origin), "Failed to set notaryManager");
+        suiteOrigin(DOMAIN_LOCAL).initialize();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

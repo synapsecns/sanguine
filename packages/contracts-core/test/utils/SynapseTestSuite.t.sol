@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "../../contracts/bonding/BondingPrimary.sol";
+import "../../contracts/bonding/BondingSecondary.sol";
 import "../../contracts/libs/SystemCall.sol";
 import "../../contracts/libs/Report.sol";
 import "./SynapseTestStorage.t.sol";
@@ -67,17 +69,18 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     // All contracts are deployed by this contract, the ownership is then transferred to `owner`
     // solhint-disable-next-line code-complexity
     function setupChain(uint32 domain, string memory chainName) public {
-        address domainNotary = suiteNotary(domain);
         // Deploy messaging contracts
         DestinationHarness destination = new DestinationHarness(domain);
         OriginHarness origin = new OriginHarness(domain);
+        BondingManager bondingManager = domain == DOMAIN_SYNAPSE
+            ? BondingManager(new BondingPrimary(domain))
+            : BondingManager(new BondingSecondary(domain));
         SystemRouterHarness systemRouter = new SystemRouterHarness(
             domain,
             address(origin),
-            address(destination)
+            address(destination),
+            address(bondingManager)
         );
-        NotaryManager notaryManager = new NotaryManager(domainNotary);
-        notaryManager.setOrigin(address(origin));
         // Setup destination
         destination.initialize();
         destination.setSystemRouter(systemRouter);
@@ -91,8 +94,11 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
             }
         }
         // Setup origin
-        origin.initialize(notaryManager);
+        origin.initialize();
         origin.setSystemRouter(systemRouter);
+        // Setup BondingManager
+        bondingManager.initialize();
+        bondingManager.setSystemRouter(systemRouter);
         // Add domain notaries to Origin
         for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
             origin.addNotary(suiteNotary(domain, i));
@@ -108,18 +114,18 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // Transfer ownership everywhere
         destination.transferOwnership(owner);
         origin.transferOwnership(owner);
-        notaryManager.transferOwnership(owner);
+        bondingManager.transferOwnership(owner);
         // Label deployments
         vm.label(address(destination), string.concat("Destination ", chainName));
         vm.label(address(origin), string.concat("Origin ", chainName));
+        vm.label(address(bondingManager), string.concat("BondingManager ", chainName));
         vm.label(address(systemRouter), string.concat("SystemRouter ", chainName));
-        vm.label(address(notaryManager), string.concat("NotaryManager ", chainName));
         vm.label(address(app), string.concat("App ", chainName));
         // Save deployments
         chains[domain].destination = destination;
         chains[domain].origin = origin;
+        chains[domain].bondingManager = bondingManager;
         chains[domain].systemRouter = systemRouter;
-        chains[domain].notaryManager = notaryManager;
         chains[domain].app = app;
     }
 

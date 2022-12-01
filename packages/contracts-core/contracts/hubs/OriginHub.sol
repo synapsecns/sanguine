@@ -5,6 +5,7 @@ import { Attestation } from "../libs/Attestation.sol";
 import { Report } from "../libs/Report.sol";
 import { TypedMemView } from "../libs/TypedMemView.sol";
 
+import { SystemRegistry } from "../system/SystemRegistry.sol";
 import { DomainNotaryRegistry } from "../registry/DomainNotaryRegistry.sol";
 import { GuardRegistry } from "../registry/GuardRegistry.sol";
 import { OriginHubEvents } from "../events/OriginHubEvents.sol";
@@ -21,6 +22,7 @@ import { MerkleLib } from "../libs/Merkle.sol";
  */
 abstract contract OriginHub is
     OriginHubEvents,
+    SystemRegistry,
     AttestationHub,
     ReportHub,
     DomainNotaryRegistry,

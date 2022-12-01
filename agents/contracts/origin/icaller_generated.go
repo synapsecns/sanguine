@@ -59,10 +59,6 @@ type IOriginCaller interface {
 	//
 	// Solidity: function notariesAmount() view returns(uint256)
 	NotariesAmount(opts *bind.CallOpts) (*big.Int, error)
-	// NotaryManager is a free data retrieval call binding the contract method 0xf85b597e.
-	//
-	// Solidity: function notaryManager() view returns(address)
-	NotaryManager(opts *bind.CallOpts) (common.Address, error)
 	// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 	//
 	// Solidity: function owner() view returns(address)
