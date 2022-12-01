@@ -7,6 +7,7 @@ import (
 	"github.com/jpillora/backoff"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -77,11 +78,34 @@ RETRY:
 			return nil, nil
 		}
 
-		var price *float64
 		var symbol *string
-		if priceRes, ok := res["coins"][fmt.Sprintf("coingecko:%s", coinGeckoID)]["price"].(float64); ok {
-			price = &priceRes
+		priceRaw := res["coins"][fmt.Sprintf("coingecko:%s", coinGeckoID)]["price"]
+		if priceRaw == nil {
+			if retries >= 1 {
+				logger.Errorf("error getting price from defi llama, skipping: retries: %d %s %d", retries, coinGeckoID, timestamp)
+				zero := float64(0)
+				return &zero, nil
+			}
+			timeout = b.Duration()
+			logger.Errorf("error getting price from defi llama: retries: %d %s %d", retries, coinGeckoID, timestamp)
+			retries++
+
+			goto RETRY
 		}
+		priceStr := fmt.Sprintf("%.4f", priceRaw)
+		priceFloat, err := strconv.ParseFloat(priceStr, 64)
+		if err != nil {
+			if retries >= tokenMetadataMaxRetry {
+				logger.Warnf("Max retries reached, could not unwrap float %s: %v", coinGeckoID, err)
+				return nil, nil
+			}
+			timeout = b.Duration()
+			logger.Errorf("error unwrapping price from defi llama %v", err)
+			retries++
+			goto RETRY
+		}
+
+		price := &priceFloat
 
 		if stringRes, ok := res["coins"][fmt.Sprintf("coingecko:%s", coinGeckoID)]["symbol"].(string); ok {
 			symbol = &stringRes
@@ -90,20 +114,18 @@ RETRY:
 		if resRaw.Body.Close() != nil {
 			log.Printf("Error closing http connection.")
 		}
-
-		if price == nil || symbol == nil {
+		if symbol == nil {
 			if retries >= 1 {
-				logger.Errorf("error getting price or symbol from defi llama, skipping: retries: %d %s %d", retries, coinGeckoID, timestamp)
+				logger.Errorf("error getting symbol from defi llama, skipping: retries: %d %s %d", retries, coinGeckoID, timestamp)
 				zero := float64(0)
 				return &zero, nil
 			}
 			timeout = b.Duration()
-			logger.Errorf("error getting price or symbol from defi llama: retries: %d %s %d", retries, coinGeckoID, timestamp)
+			logger.Errorf("error getting symbol from defi llama: retries: %d %s %d", retries, coinGeckoID, timestamp)
 			retries++
 
 			goto RETRY
 		}
-
 		return price, symbol
 	}
 }

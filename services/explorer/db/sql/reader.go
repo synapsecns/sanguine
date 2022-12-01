@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
-	"math"
+	"math/big"
 	"strconv"
 )
 
@@ -71,6 +71,17 @@ func (s *Store) GetBridgeEvents(ctx context.Context, query string) ([]BridgeEven
 	return res, nil
 }
 
+// GetTxCounts returns Tx counts.
+func (s *Store) GetTxCounts(ctx context.Context, query string) ([]*model.TransactionCountResult, error) {
+	var res []*model.TransactionCountResult
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
 // GetDateResults returns the dya by day data.
 func (s *Store) GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error) {
 	var res []*model.DateResult
@@ -106,7 +117,6 @@ func (s *Store) GetAddressRanking(ctx context.Context, query string) ([]*model.A
 //
 //nolint:cyclop
 func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) ([]*model.PartialInfo, error) {
-	var err error
 	var res []BridgeEvent
 	var partialInfos []*model.PartialInfo
 
@@ -140,15 +150,10 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) (
 
 		value := res[i].Amount.String()
 
-		var formattedValue float64
+		var formattedValue *float64
 
 		if res[i].TokenDecimal != nil {
-			formattedValue, err = strconv.ParseFloat(value, 64)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse float: %w", err)
-			}
-
-			formattedValue /= math.Pow10(int(*res[i].TokenDecimal))
+			formattedValue = getAdjustedValue(res[i].Amount, *res[i].TokenDecimal)
 		} else {
 			return nil, fmt.Errorf("token decimal is not valid")
 		}
@@ -166,7 +171,7 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) (
 			Address:        &recipient,
 			TxnHash:        &res[i].TxHash,
 			Value:          &value,
-			FormattedValue: &formattedValue,
+			FormattedValue: formattedValue,
 			USDValue:       res[i].AmountUSD,
 			TokenAddress:   &res[i].Token,
 			TokenSymbol:    &tokenSymbol,
@@ -197,7 +202,6 @@ func (s *Store) GetAllChainIDs(ctx context.Context) ([]int, error) {
 //
 //nolint:cyclop
 func (s *Store) PartialInfosFromIdentifiersByChain(ctx context.Context, query string) (map[int]*model.PartialInfo, error) {
-	var err error
 	var res []BridgeEvent
 	output := make(map[int]*model.PartialInfo)
 	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
@@ -230,15 +234,10 @@ func (s *Store) PartialInfosFromIdentifiersByChain(ctx context.Context, query st
 
 		value := res[i].Amount.String()
 
-		var formattedValue float64
+		var formattedValue *float64
 
 		if res[i].TokenDecimal != nil {
-			formattedValue, err = strconv.ParseFloat(value, 64)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse float: %w", err)
-			}
-
-			formattedValue /= math.Pow10(int(*res[i].TokenDecimal))
+			formattedValue = getAdjustedValue(res[i].Amount, *res[i].TokenDecimal)
 		} else {
 			return nil, fmt.Errorf("token decimal is not valid")
 		}
@@ -256,7 +255,7 @@ func (s *Store) PartialInfosFromIdentifiersByChain(ctx context.Context, query st
 			Address:        &recipient,
 			TxnHash:        &res[i].TxHash,
 			Value:          &value,
-			FormattedValue: &formattedValue,
+			FormattedValue: formattedValue,
 			USDValue:       res[i].AmountUSD,
 			TokenAddress:   &res[i].Token,
 			TokenSymbol:    &tokenSymbol,
@@ -266,4 +265,17 @@ func (s *Store) PartialInfosFromIdentifiersByChain(ctx context.Context, query st
 	}
 
 	return output, nil
+}
+
+// getAdjustedValue gets the adjusted value
+func getAdjustedValue(amount *big.Int, decimals uint8) *float64 {
+	fmt.Println(decimals, amount)
+	decimalMultiplier := new(big.Float).SetInt(big.NewInt(0).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
+	adjustedAmount := new(big.Float).Quo(new(big.Float).SetInt(amount), decimalMultiplier)
+	trueAmountStr := adjustedAmount.SetMode(big.AwayFromZero).Text('f', 4)
+	priceFloat, err := strconv.ParseFloat(trueAmountStr, 64)
+	if err != nil {
+		return nil
+	}
+	return &priceFloat
 }

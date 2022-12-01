@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
-	"math"
+	"math/big"
 	"strconv"
 	"strings"
 	"time"
@@ -219,7 +219,7 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 }
 
 // generateBridgeEventCountQuery creates the query for bridge event count.
-func generateBridgeEventCountQuery(chainID int, address *string, tokenAddress *string, directionIn bool, timestamp *uint64) string {
+func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *string, directionIn bool, timestamp *uint64) string {
 	chainField := sql.ChainIDFieldName
 
 	if directionIn {
@@ -227,12 +227,12 @@ func generateBridgeEventCountQuery(chainID int, address *string, tokenAddress *s
 	}
 
 	firstFilter := true
-	chainIDSpecifier := generateSingleSpecifierI32SQL(&chainID, chainField, &firstFilter, "")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, chainField, &firstFilter, "")
 	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.RecipientFieldName, &firstFilter, "")
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
 	timestampSpecifier := generateTimestampSpecifierSQL(timestamp, sql.TimeStampFieldName, &firstFilter, "")
-	query := fmt.Sprintf(`SELECT COUNT(DISTINCT (%s, %s)) FROM bridge_events %s%s%s%s`,
-		sql.TxHashFieldName, sql.EventIndexFieldName, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, timestampSpecifier)
+	query := fmt.Sprintf(`SELECT %s, COUNT(DISTINCT (%s)) AS Count FROM bridge_events %s%s%s%s GROUP BY %s`,
+		sql.ChainIDFieldName, sql.TxHashFieldName, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, timestampSpecifier, sql.ChainIDFieldName)
 
 	return query
 }
@@ -259,7 +259,6 @@ func (r *queryResolver) generateSubQuery(ctx context.Context, targetTime uint64,
 
 func GetPartialInfoFromBridgeEvent(res []sql.BridgeEvent) ([]*model.PartialInfo, error) {
 	var partialInfos []*model.PartialInfo
-	var err error
 	for i := range res {
 		chainIDInt := int(res[i].ChainID)
 		blockNumberInt := int(res[i].BlockNumber)
@@ -285,15 +284,10 @@ func GetPartialInfoFromBridgeEvent(res []sql.BridgeEvent) ([]*model.PartialInfo,
 
 		value := res[i].Amount.String()
 
-		var formattedValue float64
+		var formattedValue *float64
 
 		if res[i].TokenDecimal != nil {
-			formattedValue, err = strconv.ParseFloat(value, 64)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse float: %w", err)
-			}
-
-			formattedValue /= math.Pow10(int(*res[i].TokenDecimal))
+			formattedValue = getAdjustedValue(res[i].Amount, *res[i].TokenDecimal)
 		} else {
 			return nil, fmt.Errorf("token decimal is not valid")
 		}
@@ -311,7 +305,7 @@ func GetPartialInfoFromBridgeEvent(res []sql.BridgeEvent) ([]*model.PartialInfo,
 			Address:        &recipient,
 			TxnHash:        &res[i].TxHash,
 			Value:          &value,
-			FormattedValue: &formattedValue,
+			FormattedValue: formattedValue,
 			USDValue:       res[i].AmountUSD,
 			TokenAddress:   &res[i].Token,
 			TokenSymbol:    &tokenSymbol,
@@ -325,7 +319,6 @@ func GetPartialInfoFromBridgeEvent(res []sql.BridgeEvent) ([]*model.PartialInfo,
 
 func GetPartialInfoFromBridgeEventSingle(res sql.BridgeEvent) (*model.PartialInfo, error) {
 	var partialInfos *model.PartialInfo
-	var err error
 	chainIDInt := int(res.ChainID)
 	blockNumberInt := int(res.BlockNumber)
 
@@ -350,15 +343,10 @@ func GetPartialInfoFromBridgeEventSingle(res sql.BridgeEvent) (*model.PartialInf
 
 	value := res.Amount.String()
 
-	var formattedValue float64
+	var formattedValue *float64
 
 	if res.TokenDecimal != nil {
-		formattedValue, err = strconv.ParseFloat(value, 64)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse float: %w", err)
-		}
-
-		formattedValue /= math.Pow10(int(*res.TokenDecimal))
+		formattedValue = getAdjustedValue(res.Amount, *res.TokenDecimal)
 	} else {
 		return nil, fmt.Errorf("token decimal is not valid")
 	}
@@ -376,7 +364,7 @@ func GetPartialInfoFromBridgeEventSingle(res sql.BridgeEvent) (*model.PartialInf
 		Address:        &recipient,
 		TxnHash:        &res.TxHash,
 		Value:          &value,
-		FormattedValue: &formattedValue,
+		FormattedValue: formattedValue,
 		USDValue:       res.AmountUSD,
 		TokenAddress:   &res.Token,
 		TokenSymbol:    &tokenSymbol,
@@ -471,7 +459,6 @@ func generatePartialInfoQueryByChain(limitSize int) string {
 }
 func GetToPartialInfoFromBridgeEvent(res []sql.BridgeEvent) (map[string]*model.PartialInfo, error) {
 	partialInfos := make(map[string]*model.PartialInfo)
-	var err error
 	for i := range res {
 		chainIDInt := int(res[i].ChainID)
 		blockNumberInt := int(res[i].BlockNumber)
@@ -497,15 +484,10 @@ func GetToPartialInfoFromBridgeEvent(res []sql.BridgeEvent) (map[string]*model.P
 
 		value := res[i].Amount.String()
 
-		var formattedValue float64
+		var formattedValue *float64
 
 		if res[i].TokenDecimal != nil {
-			formattedValue, err = strconv.ParseFloat(value, 64)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse float: %w", err)
-			}
-
-			formattedValue /= math.Pow10(int(*res[i].TokenDecimal))
+			formattedValue = getAdjustedValue(res[i].Amount, *res[i].TokenDecimal)
 		} else {
 			return nil, fmt.Errorf("token decimal is not valid")
 		}
@@ -523,7 +505,7 @@ func GetToPartialInfoFromBridgeEvent(res []sql.BridgeEvent) (map[string]*model.P
 			Address:        &recipient,
 			TxnHash:        &res[i].TxHash,
 			Value:          &value,
-			FormattedValue: &formattedValue,
+			FormattedValue: formattedValue,
 			USDValue:       res[i].AmountUSD,
 			TokenAddress:   &res[i].Token,
 			TokenSymbol:    &tokenSymbol,
@@ -618,7 +600,6 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 
 	} else {
 		toKappaChainStr = strings.Join(toKappaChainArr, ",") // (1,'0x123'),(2,'0x456')
-
 	}
 	// Get all destination/to bridge events that match the kappa
 	toBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generateToKappaPartialInfoQuery(toKappaChainStr, nil, nil, nil, nil, nil, page, true))
@@ -717,7 +698,14 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID
 		}
 	}
 
-	fromKappaChainStr := strings.Join(fromKappaChainArr, ",") // (1,'0x123'),(2,'0x456')
+	var fromKappaChainStr string
+	if len(fromKappaChainArr) > 1 {
+		fromKappaChainStr = "(" + strings.Join(fromKappaChainArr, ",") + ")" // (1,'0x123'),(2,'0x456')
+
+	} else {
+		fromKappaChainStr = strings.Join(fromKappaChainArr, ",") // (1,'0x123'),(2,'0x456')
+	}
+
 	// Get all destination/to bridge events that match the kappa
 	fromBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generateFromKappaPartialInfoQuery(fromKappaChainStr, nil, nil, nil, nil, nil, page, true))
 	if err != nil {
@@ -774,4 +762,16 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID
 		})
 	}
 	return results, nil
+}
+
+// getAdjustedValue gets the adjusted value
+func getAdjustedValue(amount *big.Int, decimals uint8) *float64 {
+	decimalMultiplier := new(big.Float).SetInt(big.NewInt(0).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
+	adjustedAmount := new(big.Float).Quo(new(big.Float).SetInt(amount), decimalMultiplier)
+	trueAmountStr := adjustedAmount.SetMode(big.AwayFromZero).Text('f', 4)
+	priceFloat, err := strconv.ParseFloat(trueAmountStr, 64)
+	if err != nil {
+		return nil
+	}
+	return &priceFloat
 }
