@@ -80,7 +80,7 @@ func (t *TxQueueSuite) TestGetTransactor() {
 
 	chn.WaitForConfirmation(t.GetTestContext(), tx)
 
-	_, err = originHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, encodedTips, []byte("hello world"))
+	_, err = originHarness.Dispatch(testTransactor, destinationID, [32]byte{}, 1, encodedTips, []byte("hello world"))
 	Nil(t.T(), err)
 	chn.WaitForConfirmation(t.GetTestContext(), tx)
 }
