@@ -34,6 +34,9 @@ type OriginContract interface {
 	// ProduceAttestation suggests an update from the origin contract
 	// TODO (joe): this will be changed to "ProduceAttestations" and return an attestion per destination
 	ProduceAttestation(ctx context.Context) (types.Attestation, error)
+	// GetHistoricalAttestation gets the root corresponding to destination and nonce,
+	// as well as the block number the message was dispatched and the current block number
+	GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, uint64, error)
 }
 
 // AttestationCollectorContract contains the interface for the attestation collector.
@@ -43,7 +46,7 @@ type AttestationCollectorContract interface {
 	// SubmitAttestation submits an attestation to the attestation collector.
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// GetLatestNonce gets the latest nonce for the domain on the attestation collector
-	GetLatestNonce(ctx context.Context, origin uint32, destination uint32, signer signer.Signer) (nonce uint32, err error)
+	GetLatestNonce(ctx context.Context, origin uint32, destination uint32, signer signer.Signer) (nonce uint32, currBlock uint64, err error)
 }
 
 // ErrNoUpdate indicates no update has been produced.

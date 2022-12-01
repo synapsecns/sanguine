@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/binary"
 	"math/big"
+	"time"
 )
 
 const sizeOfUint256 = uint32(32)
@@ -145,6 +146,56 @@ func (s signedAttestation) Signature() Signature {
 	return s.signature
 }
 
+var _ SignedAttestation = signedAttestation{}
+
+// InProgressAttestation is an attestation to be processed by offline agent.
+type InProgressAttestation interface {
+	// SignedAttestation gets the signed attestation
+	SignedAttestation() SignedAttestation
+	// DispatchedBlockNumber when message was dispatched on origin
+	OriginDispatchBlockNumber() uint64
+	// SubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
+	SubmittedToAttestationCollectorTime() *time.Time
+	// ConfirmedOnAttestationCollectorBlockNumber is block number when we confirmed the attesation posted on AttestationCollector
+	ConfirmedOnAttestationCollectorBlockNumber() uint64
+}
+
+// inProgressAttestation is a struct that conforms to InProgressAttestation.
+type inProgressAttestation struct {
+	signedAttestation                          SignedAttestation
+	originDispatchBlockNumber                  uint64
+	submittedToAttestationCollectorTime        *time.Time
+	confirmedOnAttestationCollectorBlockNumber uint64
+}
+
+// NewInProgressAttestation creates a new to process attestation.
+func NewInProgressAttestation(signedAttestation SignedAttestation, originDispatchBlockNumber uint64, submittedToAttestationCollectorTime *time.Time, confirmedOnAttestationCollectorBlockNumber uint64) InProgressAttestation {
+	return inProgressAttestation{
+		signedAttestation:                          signedAttestation,
+		originDispatchBlockNumber:                  originDispatchBlockNumber,
+		submittedToAttestationCollectorTime:        submittedToAttestationCollectorTime,
+		confirmedOnAttestationCollectorBlockNumber: confirmedOnAttestationCollectorBlockNumber,
+	}
+}
+
+func (t inProgressAttestation) SignedAttestation() SignedAttestation {
+	return t.signedAttestation
+}
+
+func (t inProgressAttestation) OriginDispatchBlockNumber() uint64 {
+	return t.originDispatchBlockNumber
+}
+
+func (t inProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time {
+	return t.submittedToAttestationCollectorTime
+}
+
+func (t inProgressAttestation) ConfirmedOnAttestationCollectorBlockNumber() uint64 {
+	return t.confirmedOnAttestationCollectorBlockNumber
+}
+
+var _ InProgressAttestation = inProgressAttestation{}
+
 // NewAttestionKey takes the raw AttestationKey serialized as a big endian big.Int
 // and converts it to AttestationKey which is a tuple of (origin, destination, nonce).
 func NewAttestionKey(rawKey *big.Int) AttestationKey {
@@ -211,5 +262,3 @@ func (a AttestedDomains) GetRawDomains() *big.Int {
 	rawDomains.SetBytes(rawBytes)
 	return rawDomains
 }
-
-var _ SignedAttestation = signedAttestation{}
