@@ -276,8 +276,6 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
 			return nil, fmt.Errorf("could not convert message to leaf: %w", err)
 		}
 
-		fmt.Println("executor nonce: ", message.Nonce())
-
 		return leaf[:], nil
 	} else if eventType, ok := e.attestationcollectorParsers[chainID].EventType(log); ok && eventType == 0 {
 		// TODO: handle this case with attestationcollector properly.
