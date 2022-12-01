@@ -5,7 +5,7 @@ import { Attestation } from "../libs/Attestation.sol";
 import { AttestationHub } from "./AttestationHub.sol";
 import { Report } from "../libs/Report.sol";
 import { ReportHub } from "./ReportHub.sol";
-import { DomainContext } from "../context/DomainContext.sol";
+import { SystemRegistry } from "../system/SystemRegistry.sol";
 import { GlobalNotaryRegistry } from "../registry/GlobalNotaryRegistry.sol";
 import { GuardRegistry } from "../registry/GuardRegistry.sol";
 
@@ -16,7 +16,7 @@ import { TypedMemView } from "../libs/TypedMemView.sol";
  * merkle state in a separate Mirror.
  */
 abstract contract DestinationHub is
-    DomainContext,
+    SystemRegistry,
     AttestationHub,
     ReportHub,
     GlobalNotaryRegistry,

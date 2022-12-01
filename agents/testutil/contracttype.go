@@ -4,7 +4,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
-	"github.com/synapsecns/sanguine/agents/contracts/notarymanager"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
@@ -62,8 +61,6 @@ const (
 	HeaderHarnessType contractTypeImpl = iota
 	// DestinationHarnessType is the destination harness type.
 	DestinationHarnessType contractTypeImpl = iota // DestinationHarness
-	// NotaryManagerType is the type of the update manager.
-	NotaryManagerType contractTypeImpl = iota // NotaryManager
 	// AttestationCollectorType is the type of the attestation collector.
 	AttestationCollectorType contractTypeImpl = iota // AttestationCollector
 	// DestinationType is the type of the destination.
@@ -99,8 +96,6 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return attestationharness.Contracts["solidity/AttestationHarness.t.sol:AttestationHarness"]
 	case DestinationHarnessType:
 		return destinationharness.Contracts["solidity/DestinationHarness.t.sol:DestinationHarness"]
-	case NotaryManagerType:
-		return notarymanager.Contracts["solidity/NotaryManager.sol:NotaryManager"]
 	case TipsHarnessType:
 		return tipsharness.Contracts["solidity/TipsHarness.t.sol:TipsHarness"]
 	case AttestationCollectorType:
