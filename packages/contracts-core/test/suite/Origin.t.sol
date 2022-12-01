@@ -61,6 +61,20 @@ contract OriginTest is OriginTools {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          TESTS: OWNER ONLY                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_addNotary_revert_notOwner(address caller) public {
+        vm.assume(caller != owner);
+        for (uint256 d = 0; d < DOMAINS; ++d) {
+            OriginHarness origin = suiteOrigin(domains[d]);
+            expectRevertNotOwner();
+            vm.prank(caller);
+            origin.addNotary(1, address(1));
+        }
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                     TESTS: DISPATCHING MESSAGES                      ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -160,6 +174,9 @@ contract OriginTest is OriginTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_submitAttestation_revert_wrongDomain() public {
+        // Add local Notary: Origin is not supposed to track them
+        vm.prank(owner);
+        suiteOrigin(DOMAIN_LOCAL).addNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL));
         _createAttestation_revert_wrongDomain();
         originSubmitAttestation({ domain: DOMAIN_LOCAL, revertMessage: "!localDomain" });
     }
@@ -207,6 +224,9 @@ contract OriginTest is OriginTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_submitReport_revert_wrongDomain() public {
+        // Add local Notary: Origin is not supposed to track them
+        vm.prank(owner);
+        suiteOrigin(DOMAIN_LOCAL).addNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL));
         _createAttestation_revert_wrongDomain();
         createReport(Report.Flag.Fraud);
         originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "!localDomain" });

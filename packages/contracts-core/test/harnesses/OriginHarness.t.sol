@@ -11,10 +11,6 @@ contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
     //solhint-disable-next-line no-empty-blocks
     constructor(uint32 _domain) Origin(_domain) {}
 
-    function addNotary(address _notary) public returns (bool) {
-        return _addNotary(_notary);
-    }
-
     function removeAllNotaries() public {
         uint256 amount = notariesAmount();
         // Remove every Notary to halt the contract
