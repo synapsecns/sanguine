@@ -282,47 +282,39 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	testTree, err := trieutil.NewTrie(32)
 	e.Nil(err)
 
-	//const (
-	//	destination = iota + 1
-	//	recipient
-	//	optimisticSeconds
-	//	body
-	//	//notaryTip
-	//	//broadcasterTip
-	//	//proverTip
-	//	//executorTip
-	//)
-
-	destination := chainID + 1
-	recipient := [32]byte{byte(gofakeit.Uint32())}
-	optimisticSeconds := gofakeit.Uint32()
-	notaryTip := big.NewInt(int64(int(gofakeit.Uint32())))
-	broadcasterTip := big.NewInt(int64(int(gofakeit.Uint32())))
-	proverTip := big.NewInt(int64(int(gofakeit.Uint32())))
-	executorTip := big.NewInt(int64(int(gofakeit.Uint32())))
-	tips := types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip)
-	encodedTips, err := types.EncodeTips(tips)
+	destinations := []uint32{chainID + 1, chainID + 2}
+	recipients := [][32]byte{{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())}}
+	optimisticSeconds := []uint32{gofakeit.Uint32(), gofakeit.Uint32()}
+	notaryTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
+	broadcasterTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
+	proverTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
+	executorTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
+	tips := []types.Tips{
+		types.NewTips(notaryTips[0], broadcasterTips[0], proverTips[0], executorTips[0]),
+		types.NewTips(notaryTips[1], broadcasterTips[1], proverTips[1], executorTips[1]),
+	}
+	encodedTips, err := types.EncodeTips(tips[0])
 	e.Nil(err)
 	messageBytes := []byte{byte(gofakeit.Uint32())}
 
-	transactOpts.Value = types.TotalTips(tips)
+	transactOpts.Value = types.TotalTips(tips[0])
 
-	tx, err := originRef.Dispatch(transactOpts.TransactOpts, destination, recipient, optimisticSeconds, encodedTips, messageBytes)
+	tx, err := originRef.Dispatch(transactOpts.TransactOpts, destinations[0], recipients[0], optimisticSeconds[0], encodedTips, messageBytes)
 	e.Nil(err)
 	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 
 	sender, err := simulatedChain.Signer().Sender(tx)
 	e.Nil(err)
 
-	header := types.NewHeader(chainID, sender.Hash(), uint32(tx.Nonce()+1), destination, recipient, optimisticSeconds)
+	header := types.NewHeader(chainID, sender.Hash(), 1, destinations[0], recipients[0], optimisticSeconds[0])
 
-	message := types.NewMessage(header, tips, messageBytes)
+	message := types.NewMessage(header, tips[0], messageBytes)
 	e.Nil(err)
 
 	leaf, err := message.ToLeaf()
 	e.Nil(err)
 	testTree.Insert(leaf[:], 0)
-	testRoot := testTree.Root()
+	testRootA := testTree.Root()
 
 	// Start the exec.
 	go func() {
@@ -340,11 +332,35 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		}
 	}()
 
-	time.Sleep(30 * time.Second)
+	time.Sleep(10 * time.Second)
 
-	root, err := exec.GetRoot(0, chainID)
+	rootA, err := exec.GetRoot(0, chainID)
 	e.Nil(err)
 
-	e.NotNil(root)
-	e.Equal(testRoot, root)
+	e.Equal(testRootA, rootA)
+
+	encodedTips, err = types.EncodeTips(tips[1])
+
+	transactOpts.Value = types.TotalTips(tips[1])
+
+	tx, err = originRef.Dispatch(transactOpts.TransactOpts, destinations[1], recipients[1], optimisticSeconds[1], encodedTips, messageBytes)
+	e.Nil(err)
+	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+
+	header = types.NewHeader(chainID, sender.Hash(), 1, destinations[1], recipients[1], optimisticSeconds[1])
+
+	message = types.NewMessage(header, tips[1], messageBytes)
+	e.Nil(err)
+
+	leaf, err = message.ToLeaf()
+	e.Nil(err)
+	testTree.Insert(leaf[:], 1)
+	testRootB := testTree.Root()
+
+	time.Sleep(10 * time.Second)
+
+	rootB, err := exec.GetRoot(1, chainID)
+	e.Nil(err)
+
+	e.Equal(testRootB, rootB)
 }
