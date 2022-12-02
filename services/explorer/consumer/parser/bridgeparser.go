@@ -48,7 +48,7 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bri
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridgev1.SynapseBridgeFilterer{}, err)
 	}
-	idPath := filepath.Clean("./static/tokenIDToCoinGeckoID.yaml")
+	idPath := filepath.Clean("../static/tokenIDToCoinGeckoID.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("could find path to yaml file: %w", err)
 	}
@@ -96,9 +96,10 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 	}
 
 	var destinationChainID *big.Int
-
+	var destinationKappa string
 	if event.GetDestinationChainID() != nil {
 		destinationChainID = big.NewInt(int64(event.GetDestinationChainID().Uint64()))
+		destinationKappa = crypto.Keccak256Hash([]byte(event.GetTxHash().String())).String()[2:]
 	}
 
 	var tokenIndexFrom *big.Int
@@ -143,7 +144,7 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 		TxHash:             event.GetTxHash().String(),
 		Amount:             event.GetAmount(),
 		EventIndex:         event.GetEventIndex(),
-		DestinationKappa:   crypto.Keccak256Hash([]byte(event.GetTxHash().String())).String()[2:],
+		DestinationKappa:   destinationKappa,
 		Sender:             "",
 		Recipient:          recipient,
 		RecipientBytes:     recipientBytes,

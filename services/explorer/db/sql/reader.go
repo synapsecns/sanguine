@@ -278,7 +278,7 @@ func (s *Store) PartialInfosFromIdentifiersByChain(ctx context.Context, query st
 	return output, nil
 }
 
-// getAdjustedValue gets the adjusted value
+// getAdjustedValue gets the adjusted value.
 func getAdjustedValue(amount *big.Int, decimals uint8) *float64 {
 	decimalMultiplier := new(big.Float).SetInt(big.NewInt(0).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
 	adjustedAmount := new(big.Float).Quo(new(big.Float).SetInt(amount), decimalMultiplier)

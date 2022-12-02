@@ -16,6 +16,7 @@ import (
 )
 
 //nolint:cyclop
+
 func (g APISuite) TestAddressRanking() {
 	var chainID uint32
 	chainIDs := []uint32{g.chainIDs[0], g.chainIDs[1], g.chainIDs[2]}
@@ -204,7 +205,6 @@ func (g APISuite) TestBridgeAmountStatistic() {
 }
 
 //nolint:cyclop
-
 func (g APISuite) TestGetCountByChainID() {
 	chainID := g.chainIDs[0]
 	chainID2 := g.chainIDs[1]
@@ -221,11 +221,9 @@ func (g APISuite) TestGetCountByChainID() {
 			if blockNumber%2 == 0 {
 				inputChain = chainID2
 				destinationChainID = int64(g.chainIDs[2])
-
 			} else {
 				inputChain = chainID3
 				destinationChainID = int64(g.chainIDs[0])
-
 			}
 		}
 
@@ -286,7 +284,7 @@ func (g APISuite) TestGetCountByChainID() {
 			Equal(g.T(), 1, *res.Count)
 			reached++
 		case int(chainID2):
-			Equal(g.T(), 4, *res.Count)
+			Equal(g.T(), 5, *res.Count)
 			reached++
 		case int(chainID3):
 			Equal(g.T(), 4, *res.Count)
@@ -297,7 +295,6 @@ func (g APISuite) TestGetCountByChainID() {
 }
 
 // nolint (needed for testing all possibilities)
-
 func (g APISuite) TestGetCountByTokenAddress() {
 	chainID := g.chainIDs[0]
 	destinationChainID := g.chainIDs[1]
@@ -341,38 +338,38 @@ func (g APISuite) TestGetCountByTokenAddress() {
 
 	// There should be 4 results, two for each token on two chain. Each on the source chain ID should have 5 events,
 	// while each on the destination chain ID should have 0 events.
-	Equal(g.T(), len(resultOut.Response), 4)
+	Equal(g.T(), 2, len(resultOut.Response))
 	reached := 0
 	for _, res := range resultOut.Response {
 		if *res.ChainID == int(chainID) {
 			if *res.TokenAddress == tokenAddressA.String() {
-				Equal(g.T(), *res.Count, 5)
+				Equal(g.T(), 5, *res.Count)
 				reached++
 			}
 			if *res.TokenAddress == tokenAddressB.String() {
-				Equal(g.T(), *res.Count, 5)
+				Equal(g.T(), 5, *res.Count)
 				reached++
 			}
 		}
 		if *res.ChainID == int(destinationChainID) {
 			if *res.TokenAddress == tokenAddressA.String() {
-				Equal(g.T(), *res.Count, 0)
+				Equal(g.T(), 5, *res.Count)
 				reached++
 			}
 			if *res.TokenAddress == tokenAddressB.String() {
-				Equal(g.T(), *res.Count, 0)
+				Equal(g.T(), 5, *res.Count)
 				reached++
 			}
 		}
 	}
-	Equal(g.T(), reached, 4)
+	Equal(g.T(), 2, reached)
 
 	directionRef = model.DirectionIn
 	resultIn, err := g.client.GetCountByTokenAddress(g.GetTestContext(), nil, nil, &directionRef, nil)
 	Nil(g.T(), err)
 	// Again, there should be 4 results, two for each token on two chain. Each on the source chain ID should have 0 events,
 	// while each on the destination chain ID should have 5 events.
-	Equal(g.T(), len(resultIn.Response), 4)
+	Equal(g.T(), 2, len(resultIn.Response))
 	reached = 0
 	for _, res := range resultIn.Response {
 		if *res.ChainID == int(destinationChainID) {
@@ -387,16 +384,16 @@ func (g APISuite) TestGetCountByTokenAddress() {
 		}
 		if *res.ChainID == int(chainID) {
 			if *res.TokenAddress == tokenAddressA.String() {
-				Equal(g.T(), *res.Count, 0)
+				Equal(g.T(), 5, *res.Count)
 				reached++
 			}
 			if *res.TokenAddress == tokenAddressB.String() {
-				Equal(g.T(), *res.Count, 0)
+				Equal(g.T(), 5, *res.Count)
 				reached++
 			}
 		}
 	}
-	Equal(g.T(), reached, 4)
+	Equal(g.T(), 2, reached)
 }
 
 //nolint:cyclop
@@ -475,7 +472,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 	chainID := g.chainIDs[0]
 	destinationChainID := g.chainIDs[1]
 
-	tokenAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+	tokenAddress := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
 	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	senderAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	senderString := senderAddress.String()
@@ -498,7 +495,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 		Sender:             senderString,
 		Recipient:          gosql.NullString{String: address.String(), Valid: true},
 		DestinationChainID: big.NewInt(int64(destinationChainID)),
-		Token:              tokenAddress.String(),
+		Token:              tokenAddress,
 		BlockNumber:        1,
 		TxHash:             txHashA.String(),
 		DestinationKappa:   kappaString,
@@ -510,24 +507,23 @@ func (g APISuite) TestGetBridgeTransactions() {
 		TimeStamp:          &timestamp,
 	})
 	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
-		InsertTime:         1,
-		ContractAddress:    common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
-		ChainID:            destinationChainID,
-		EventType:          gofakeit.Uint8(),
-		Recipient:          gosql.NullString{String: address.String(), Valid: true},
-		DestinationChainID: big.NewInt(int64(chainID)),
-		Token:              tokenAddress.String(),
-		BlockNumber:        1,
-		TxHash:             txHashB.String(),
-		Kappa:              gosql.NullString{String: kappaString, Valid: true},
-		SwapSuccess:        big.NewInt(1),
-		EventIndex:         gofakeit.Uint64(),
-		Amount:             amount,
-		AmountUSD:          &amountUSD,
-		TokenDecimal:       &tokenDecimals,
-		Sender:             gofakeit.Word(),
-		TokenSymbol:        gosql.NullString{String: tokenSymbol, Valid: true},
-		TimeStamp:          &timestamp,
+		InsertTime:      1,
+		ContractAddress: common.BigToAddress(big.NewInt(gofakeit.Int64())).String(),
+		ChainID:         destinationChainID,
+		EventType:       gofakeit.Uint8(),
+		Recipient:       gosql.NullString{String: address.String(), Valid: true},
+		Token:           tokenAddress,
+		BlockNumber:     1,
+		TxHash:          txHashB.String(),
+		Kappa:           gosql.NullString{String: kappaString, Valid: true},
+		SwapSuccess:     big.NewInt(1),
+		EventIndex:      gofakeit.Uint64(),
+		Amount:          amount,
+		AmountUSD:       &amountUSD,
+		TokenDecimal:    &tokenDecimals,
+		Sender:          gofakeit.Word(),
+		TokenSymbol:     gosql.NullString{String: tokenSymbol, Valid: true},
+		TimeStamp:       &timestamp,
 	})
 	err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, 1, timestamp)
 	Nil(g.T(), err)
@@ -537,42 +533,42 @@ func (g APISuite) TestGetBridgeTransactions() {
 
 	originRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, &txHashString, nil, &pending, &page, nil)
 	Nil(g.T(), err)
-	Equal(g.T(), len(originRes.Response), 1)
+	Equal(g.T(), 1, len(originRes.Response))
 	originResOne := *originRes.Response[0]
 	Equal(g.T(), kappaString, *originResOne.Kappa)
 	// do pending
 	Equal(g.T(), *originResOne.SwapSuccess, true)
 
 	fromInfo := *originResOne.FromInfo
-	Equal(g.T(), *fromInfo.ChainID, int(chainID))
-	Equal(g.T(), *fromInfo.Address, address.String())
-	Equal(g.T(), *fromInfo.TxnHash, txHashA.String())
-	Equal(g.T(), *fromInfo.Value, amount.String())
-	Equal(g.T(), *fromInfo.USDValue, amountUSD)
+	Equal(g.T(), int(chainID), *fromInfo.ChainID)
+	Equal(g.T(), address.String(), *fromInfo.Address)
+	Equal(g.T(), txHashA.String(), *fromInfo.TxnHash)
+	Equal(g.T(), amount.String(), *fromInfo.Value)
+	Equal(g.T(), amountUSD, *fromInfo.USDValue)
 	formattedValue := float64(amount.Int64()) / math.Pow10(int(tokenDecimals))
-	Equal(g.T(), *fromInfo.FormattedValue, formattedValue)
-	Equal(g.T(), *fromInfo.TokenSymbol, tokenSymbol)
-	Equal(g.T(), *fromInfo.TokenAddress, tokenAddress.String())
-	Equal(g.T(), *fromInfo.BlockNumber, 1)
-	Equal(g.T(), *fromInfo.Time, int(timestamp))
+	Equal(g.T(), formattedValue, *fromInfo.FormattedValue)
+	Equal(g.T(), tokenSymbol, *fromInfo.TokenSymbol)
+	Equal(g.T(), tokenAddress, *fromInfo.TokenAddress)
+	Equal(g.T(), 1, *fromInfo.BlockNumber)
+	Equal(g.T(), int(timestamp), *fromInfo.Time)
 
 	toInfo := *originResOne.ToInfo
-	Equal(g.T(), *toInfo.ChainID, int(destinationChainID))
-	Equal(g.T(), *toInfo.Address, address.String())
-	Equal(g.T(), *toInfo.TxnHash, txHashB.String())
-	Equal(g.T(), *toInfo.Value, amount.String())
-	Equal(g.T(), *toInfo.USDValue, amountUSD)
-	Equal(g.T(), *toInfo.FormattedValue, formattedValue)
-	Equal(g.T(), *toInfo.TokenSymbol, tokenSymbol)
-	Equal(g.T(), *toInfo.TokenAddress, tokenAddress.String())
-	Equal(g.T(), *toInfo.BlockNumber, 1)
-	Equal(g.T(), *toInfo.Time, int(timestamp))
+	Equal(g.T(), int(destinationChainID), *toInfo.ChainID)
+	Equal(g.T(), address.String(), *toInfo.Address)
+	Equal(g.T(), txHashB.String(), *toInfo.TxnHash)
+	Equal(g.T(), amount.String(), *toInfo.Value)
+	Equal(g.T(), amountUSD, *toInfo.USDValue)
+	Equal(g.T(), formattedValue, *toInfo.FormattedValue)
+	Equal(g.T(), tokenSymbol, *toInfo.TokenSymbol)
+	Equal(g.T(), tokenAddress, *toInfo.TokenAddress)
+	Equal(g.T(), 1, *toInfo.BlockNumber)
+	Equal(g.T(), int(timestamp), *toInfo.Time)
 
 	pending = false
 
 	destinationRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, nil, &kappaString, &pending, &page, nil)
 	Nil(g.T(), err)
-	Equal(g.T(), len(destinationRes.Response), 1)
+	Equal(g.T(), 1, len(destinationRes.Response))
 	destinationResOne := *destinationRes.Response[0]
 	Equal(g.T(), originResOne, destinationResOne)
 
@@ -582,10 +578,6 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Equal(g.T(), 1, len(addressRes.Response))
 
 	addressResOne := *addressRes.Response[0]
-	fmt.Println("JO1", originResOne.Kappa, originResOne.FromInfo.TxnHash)
-	fmt.Println("JOw", senderString)
-	fmt.Println("JOe", *addressRes.Response[0])
-
 	Equal(g.T(), originResOne, addressResOne)
 }
 
@@ -669,7 +661,7 @@ func (g APISuite) TestLatestBridgeTransaction() {
 	err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainIDA, newBlockNumber, newBlockNumber)
 	Nil(g.T(), err)
 	// Get the latest bridge transactions.
-	// Start with pending being true.
+	// Start with pending being false.
 	pending := false
 	bridgeTransactions, err := g.client.GetLatestBridgeTransactions(g.GetTestContext(), &pending, &page)
 	Nil(g.T(), err)
@@ -682,7 +674,7 @@ func (g APISuite) TestLatestBridgeTransaction() {
 			Equal(g.T(), kappaStringB, *bridgeTransaction.Kappa)
 		}
 	}
-	// Then with pending being false
+	// Then with pending being true
 	pending = true
 	bridgeTransactions, err = g.client.GetLatestBridgeTransactions(g.GetTestContext(), &pending, &page)
 	Nil(g.T(), err)

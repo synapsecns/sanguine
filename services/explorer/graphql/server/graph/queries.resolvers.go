@@ -20,21 +20,10 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		return nil, fmt.Errorf("must provide at least one of chainID, address, txnHash, or kappa")
 	}
 
-	if !*includePending && kappa != nil {
-		return nil, fmt.Errorf("cannot filter by kappa without including pending transactions")
-	}
-
 	var err error
 	var results []*model.BridgeTransaction
 
 	switch {
-	//case txnHash != nil:
-	//	// If we are given a transaction hash, we search for the bridge transaction on the origin chain, then locate
-	//	// its counterpart on the destination chain using the kappa (the keccak256 hash of the transaction hash).
-	//	results, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *includePending, *page, tokenAddress, false)
-	//	if err != nil {
-	//		return nil, err
-	//	}
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
@@ -42,7 +31,6 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		if err != nil {
 			return nil, err
 		}
-
 	default:
 		// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for
 		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
@@ -66,7 +54,6 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 // LatestBridgeTransactions is the resolver for the latestBridgeTransactions field.
 func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePending *bool, page *int) ([]*model.BridgeTransaction, error) {
 	// For each chain ID, get the latest bridge transaction.
-	//return r.GetBridgeTxsFromOrigin(ctx, nil, nil, nil, includePending, page, nil, true)
 	var results []*model.BridgeTransaction
 	var err error
 	results, err = r.GetBridgeTxsFromOrigin(ctx, nil, nil, nil, *includePending, *page, nil, true)
@@ -192,7 +179,6 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	firstFilter := true
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 	timeStampSpecifier := generateTimestampSpecifierSQL(&startTime, sql.TimeStampFieldName, &firstFilter, "")
-
 	filter := fmt.Sprintf("%s%s", chainIDSpecifier, timeStampSpecifier)
 
 	// Handle the different logic needed for each query type.
