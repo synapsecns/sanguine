@@ -480,7 +480,9 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 			if err != nil {
 				return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 			}
-
+			if latest {
+				chainCheck[fmt.Sprintf("%d", fromBridgeEvent.ChainID)] = true
+			}
 			results = append(results, &model.BridgeTransaction{
 				FromInfo:    fromInfo,
 				ToInfo:      toInfo,
@@ -489,6 +491,9 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 				SwapSuccess: &swapSuccess,
 			})
 		} else if includePending {
+			if latest {
+				chainCheck[fmt.Sprintf("%d", fromBridgeEvent.ChainID)] = true
+			}
 			results = append(results, &model.BridgeTransaction{
 				FromInfo:    fromInfo,
 				ToInfo:      nil,
@@ -497,9 +502,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 				SwapSuccess: nil,
 			})
 		}
-		if latest {
-			chainCheck[fmt.Sprintf("%d", fromBridgeEvent.ChainID)] = true
-		}
+
 	}
 	return results, nil
 }
