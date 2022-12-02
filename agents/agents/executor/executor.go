@@ -8,6 +8,8 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/prysmaticlabs/prysm/shared/trieutil"
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db"
+	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -17,6 +19,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
+	"strconv"
 	"sync"
 )
 
@@ -24,6 +27,8 @@ import (
 type Executor struct {
 	// config is the executor agent config.
 	config config.Config
+	// executorDB is the executor agent database.
+	executorDB db.ExecutorDB
 	// scribeClient is the client to the Scribe gRPC server.
 	scribeClient client.ScribeClient
 	// lastLog is a map from chainID -> last log processed.
@@ -32,8 +37,6 @@ type Executor struct {
 	lastLogMutex *sync.Mutex
 	// closeConnection is a map from chain ID -> channel to close the connection.
 	closeConnection map[uint32]chan bool
-	// roots is a map from chain ID -> slice of merkle roots. The root at [i] is the root of nonce i.
-	roots map[uint32][][32]byte
 	// originParsers is a map from chain ID -> origin parser.
 	originParsers map[uint32]origin.Parser
 	// attestationcollectorParsers is a map from chain ID -> attestationcollector parser.
@@ -53,17 +56,15 @@ type logOrderInfo struct {
 const treeDepth uint64 = 32
 
 // NewExecutor creates a new executor agent.
-func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Executor, error) {
+func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient) (*Executor, error) {
 	channels := make(map[uint32]chan *ethTypes.Log)
 	closeChans := make(map[uint32]chan bool)
-	roots := make(map[uint32][][32]byte)
 	originParsers := make(map[uint32]origin.Parser)
 	attestationcollectorParsers := make(map[uint32]attestationcollector.Parser)
 
 	for _, chain := range config.Chains {
 		channels[chain.ChainID] = make(chan *ethTypes.Log, 1000)
 		closeChans[chain.ChainID] = make(chan bool, 1)
-		roots[chain.ChainID] = [][32]byte{}
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create origin parser: %w", err)
@@ -85,11 +86,11 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 
 	return &Executor{
 		config:                      config,
+		executorDB:                  executorDB,
 		scribeClient:                scribeClient,
 		lastLog:                     make(map[uint32]logOrderInfo),
 		lastLogMutex:                &sync.Mutex{},
 		closeConnection:             closeChans,
-		roots:                       roots,
 		originParsers:               originParsers,
 		attestationcollectorParsers: attestationcollectorParsers,
 		LogChans:                    channels,
@@ -149,7 +150,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 				return fmt.Errorf("log is nil")
 			}
 
-			err := e.processLog(*log, chainID)
+			err := e.processLog(ctx, *log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not process log: %w", err)
 			}
@@ -178,12 +179,19 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 		return fmt.Errorf("contract type not supported")
 	}
 
+	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chain.ChainID)
+	if err != nil {
+		return fmt.Errorf("could not get last stored block: %w", err)
+	}
+
+	fromBlock := strconv.FormatUint(lastStoredBlock, 10)
+
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
 			ChainId:         chain.ChainID,
 		},
-		FromBlock: "earliest",
+		FromBlock: fromBlock,
 		ToBlock:   "latest",
 	})
 	if err != nil {
@@ -232,34 +240,49 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 }
 
 // processLog processes the log and updates the merkle tree.
-func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
+func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	merkleIndex := e.MerkleTree.NumOfItems()
-	leafData, err := e.logToLeaf(log, chainID)
+	message, err := e.logToMessage(log, chainID)
 	if err != nil {
 		return fmt.Errorf("could not convert log to leaf: %w", err)
 	}
-	if leafData == nil {
+	if message == nil {
 		return nil
 	}
 
-	fmt.Println("getting here and merkle index of", merkleIndex)
-	e.MerkleTree.Insert(leafData, merkleIndex)
-	e.roots[chainID] = append(e.roots[chainID], e.MerkleTree.Root())
+	e.MerkleTree.Insert(message.Leaf.Bytes(), merkleIndex)
+	root := e.MerkleTree.Root()
+	rootHash := common.BytesToHash(root[:])
+	message.Root = &rootHash
+	err = e.executorDB.StoreMessage(ctx, *message)
+	if err != nil {
+		return fmt.Errorf("could not store message: %w", err)
+	}
 
 	return nil
 }
 
-// GetRoot returns the merkle root at the given index.
-func (e Executor) GetRoot(index uint64, chainID uint32) ([32]byte, error) {
-	if index >= uint64(len(e.roots[chainID])) {
-		return [32]byte{}, fmt.Errorf("index out of range")
+// GetRoot returns the merkle root at the given nonce.
+func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32) (*[32]byte, error) {
+	if nonce == 0 || nonce > uint32(e.MerkleTree.NumOfItems()) {
+		return nil, fmt.Errorf("nonce is out of range")
 	}
 
-	return e.roots[chainID][index], nil
+	messageMask := execTypes.DBMessage{
+		ChainID: &chainID,
+		Nonce:   &nonce,
+	}
+	message, err := e.executorDB.GetMessage(ctx, messageMask)
+	if err != nil {
+		return nil, fmt.Errorf("could not get message: %w", err)
+	}
+
+	return (*[32]byte)(message.Root.Bytes()), nil
 }
 
-// logToLeaf converts the log to a leaf data.
-func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
+// logToMessage converts the log to a leaf data.
+func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*execTypes.DBMessage, error) {
+	var dbMessage *execTypes.DBMessage
 	if eventType, ok := e.originParsers[chainID].EventType(log); ok && eventType == origin.DispatchEvent {
 		committedMessage, ok := e.originParsers[chainID].ParseDispatch(log)
 		if !ok {
@@ -276,7 +299,22 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
 			return nil, fmt.Errorf("could not convert message to leaf: %w", err)
 		}
 
-		return leaf[:], nil
+		messageChainID := chainID
+		messageNonce := message.Nonce()
+		messageMessage := message.Body()
+		messageLeaf := common.BytesToHash(leaf[:])
+		messageBlockNumber := log.BlockNumber
+
+		dbMessage = &execTypes.DBMessage{
+			ChainID:     &messageChainID,
+			Nonce:       &messageNonce,
+			Root:        nil,
+			Message:     &messageMessage,
+			Leaf:        &messageLeaf,
+			BlockNumber: &messageBlockNumber,
+		}
+
+		return dbMessage, nil
 	} else if eventType, ok := e.attestationcollectorParsers[chainID].EventType(log); ok && eventType == 0 {
 		// TODO: handle this case with attestationcollector properly.
 		return nil, nil

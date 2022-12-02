@@ -33,7 +33,6 @@ func (s Store) GetMessage(ctx context.Context, messageMask types.DBMessage) (*ty
 
 	dbMessageMask := DBMessageToMessage(messageMask)
 	dbTx := s.DB().WithContext(ctx).Where(&dbMessageMask).First(&message)
-
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get message: %w", dbTx.Error)
 	}
@@ -48,12 +47,15 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, 
 	var message Message
 
 	dbTx := s.DB().WithContext(ctx).
+		Model(&message).
 		Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
 		Order(fmt.Sprintf("%s DESC", BlockNumberFieldName)).
-		First(&message)
-
+		Scan(&message)
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("failed to get last block number: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		return 0, nil
 	}
 
 	return message.BlockNumber, nil

@@ -10,7 +10,6 @@ func init() {
 	ChainIDFieldName = namer.GetConsistentName("ChainID")
 	NonceFieldName = namer.GetConsistentName("Nonce")
 	RootFieldName = namer.GetConsistentName("Root")
-	MessageFieldName = namer.GetConsistentName("Message")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
 }
 
@@ -21,8 +20,6 @@ var (
 	NonceFieldName string
 	// RootFieldName is the name of the block number field.
 	RootFieldName string
-	// MessageFieldName is the address of the contract.
-	MessageFieldName string
 	// BlockNumberFieldName is the index field name.
 	BlockNumberFieldName string
 )
@@ -32,7 +29,7 @@ type Message struct {
 	// ChainID is the chain id.
 	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// Nonce is the nonce.
-	Nonce uint64 `gorm:"column:nonce;primaryKey"`
+	Nonce uint32 `gorm:"column:nonce;primaryKey"`
 	// Root is the root.
 	Root string `gorm:"column:root;primaryKey"`
 	// Message is the message.

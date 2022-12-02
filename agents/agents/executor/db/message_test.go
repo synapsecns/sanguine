@@ -13,7 +13,7 @@ import (
 func (t *DBSuite) TestStoreRetrieveMessage() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainIDA := gofakeit.Uint32()
-		nonceA := gofakeit.Uint64()
+		nonceA := gofakeit.Uint32()
 		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageA := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		leafA := common.BigToHash(big.NewInt(gofakeit.Int64()))
@@ -30,7 +30,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		Nil(t.T(), err)
 
 		chainIDB := gofakeit.Uint32()
-		nonceB := gofakeit.Uint64()
+		nonceB := gofakeit.Uint32()
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageB := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		leafB := common.BigToHash(big.NewInt(gofakeit.Int64()))
@@ -69,7 +69,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 func (t *DBSuite) TestGetLastBlockNumber() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainID := gofakeit.Uint32()
-		nonceA := gofakeit.Uint64()
+		nonceA := gofakeit.Uint32()
 		nonceB := nonceA + 1
 		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
@@ -111,7 +111,7 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 
 func (t *DBSuite) TestMessageDBMessageParity() {
 	chainID := gofakeit.Uint32()
-	nonce := gofakeit.Uint64()
+	nonce := gofakeit.Uint32()
 	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 	leaf := common.BigToHash(big.NewInt(gofakeit.Int64()))

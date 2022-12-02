@@ -6,7 +6,7 @@ type DBMessage struct {
 	// ChainID is the chain ID of the chain that the message is for.
 	ChainID *uint32
 	// Nonce is the nonce of the message.
-	Nonce *uint64
+	Nonce *uint32
 	// Root is the root of the message.
 	Root *common.Hash
 	// Message is the message.
