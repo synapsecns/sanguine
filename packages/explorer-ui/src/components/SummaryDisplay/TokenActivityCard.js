@@ -26,7 +26,7 @@ export function TokenActivityCard({ chainId }) {
   )
 }
 
-export function popularTokens({ direction, hours = 24 }) {
+export function popularTokens({ direction, hours = 720 }) {
   const { data } = useQuery(COUNT_BY_TOKEN_ADDRESS, {
     variables: {
       direction,
