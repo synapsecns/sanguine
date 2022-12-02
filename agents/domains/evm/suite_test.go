@@ -66,7 +66,7 @@ func NewContractSuite(tb testing.TB) *ContractSuite {
 }
 
 const attestationDomain = uint32(4)
-const testDestinationDomain = uint32(attestationDomain + 1)
+const testDestinationDomain = attestationDomain + 1
 
 func (i *ContractSuite) SetupTest() {
 	i.TestSuite.SetupTest()

@@ -107,5 +107,4 @@ func (a AttestationCollectorSuite) TestAttestationCollectorSuite() {
 
 		break
 	}
-
 }

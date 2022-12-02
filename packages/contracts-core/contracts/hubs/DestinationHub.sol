@@ -91,7 +91,7 @@ abstract contract DestinationHub is
         Root memory rootInfo = mirrorRoots[_origin][_root];
         // Check if root has been submitted
         require(rootInfo.submittedAt != 0, "Invalid root");
-        // Check if Notary is an active on the local chain
+        // Check if Notary is active on the local chain
         require(_isNotary(_localDomain(), rootInfo.notary), "Inactive notary");
         // Check if optimistic period has passed
         require(block.timestamp >= rootInfo.submittedAt + _optimisticSeconds, "!optimisticSeconds");

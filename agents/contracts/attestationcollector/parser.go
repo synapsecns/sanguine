@@ -68,7 +68,7 @@ func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestat
 type EventType uint
 
 const (
-	// AttestationAccetpedEvent is a AttestationAccepted event.
+	// AttestationAcceptedEvent is a AttestationAccepted event.
 	AttestationAcceptedEvent EventType = 0
 )
 
