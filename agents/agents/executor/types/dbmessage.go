@@ -2,6 +2,7 @@ package types
 
 import "github.com/ethereum/go-ethereum/common"
 
+// DBMessage is the executor type for interacting with the database representation of a message.
 type DBMessage struct {
 	// ChainID is the chain ID of the chain that the message is for.
 	ChainID *uint32
