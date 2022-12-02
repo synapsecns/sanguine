@@ -39,7 +39,7 @@ type Query {
     chainId:    Int
     address:    String
     direction:  Direction = IN
-    hours:      Int = 20000
+    hours:      Int = 720
   ): [TransactionCountResult]
   """
   Returns counts of token addresses source and time.

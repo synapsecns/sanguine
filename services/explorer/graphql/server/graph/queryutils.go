@@ -502,7 +502,6 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 				SwapSuccess: nil,
 			})
 		}
-
 	}
 	return results, nil
 }

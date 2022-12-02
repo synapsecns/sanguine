@@ -131,8 +131,6 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error) {
 	directionIn := r.getDirectionIn(direction)
 	targetTime := r.getTargetTime(hours)
-
-	var results []*model.TransactionCountResult
 	results, err := r.DB.GetTxCounts(ctx, generateBridgeEventCountQuery(chainID, address, nil, directionIn, &targetTime, false))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
@@ -145,7 +143,6 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 	directionIn := r.getDirectionIn(direction)
 	targetTime := r.getTargetTime(hours)
 	results, err := r.DB.GetTokenCounts(ctx, generateBridgeEventCountQuery(chainID, address, nil, directionIn, &targetTime, true))
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}
