@@ -242,6 +242,7 @@ func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
 		return nil
 	}
 
+	fmt.Println("getting here and merkle index of", merkleIndex)
 	e.MerkleTree.Insert(leafData, merkleIndex)
 	e.roots[chainID] = append(e.roots[chainID], e.MerkleTree.Root())
 
@@ -279,11 +280,11 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
 	} else if eventType, ok := e.attestationcollectorParsers[chainID].EventType(log); ok && eventType == 0 {
 		// TODO: handle this case with attestationcollector properly.
 		return nil, nil
+	} else {
+		logger.Warnf("could not match the log's event type")
+
+		return nil, nil
 	}
-
-	logger.Warnf("could not match the log's event type")
-
-	return nil, nil
 }
 
 func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
