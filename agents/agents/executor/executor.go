@@ -317,12 +317,14 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*execTypes.DBM
 		return dbMessage, nil
 	} else if eventType, ok := e.attestationcollectorParsers[chainID].EventType(log); ok && eventType == 0 {
 		// TODO: handle this case with attestationcollector properly.
-		return nil, nil
-	} else {
-		logger.Warnf("could not match the log's event type")
-
+		//nolint:nilnil
 		return nil, nil
 	}
+
+	logger.Warnf("could not match the log's event type")
+
+	//nolint:nilnil
+	return nil, nil
 }
 
 func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
