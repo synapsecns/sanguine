@@ -16,7 +16,7 @@ import (
 	"math/big"
 )
 
-//func (e *ExecutorSuite) TestExecutor() {
+// func (e *ExecutorSuite) TestExecutor() {
 //	testDone := false
 //	defer func() {
 //		testDone = true
@@ -135,7 +135,7 @@ import (
 //	})
 //}
 //
-//func (e *ExecutorSuite) TestLotsOfLogs() {
+// func (e *ExecutorSuite) TestLotsOfLogs() {
 //	testDone := false
 //	defer func() {
 //		testDone = true
@@ -384,8 +384,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	<-waitChan
 	<-waitChan
-
 	exec.Stop(chainID)
+
 	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID)
 	e.Nil(err)
 
