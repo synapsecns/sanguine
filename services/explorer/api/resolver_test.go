@@ -207,26 +207,35 @@ func (g APISuite) TestBridgeAmountStatistic() {
 
 func (g APISuite) TestGetCountByChainID() {
 	chainID := g.chainIDs[0]
-	destinationChainIDA := g.chainIDs[1]
-	destinationChainIDB := g.chainIDs[2]
+	chainID2 := g.chainIDs[1]
+	chainID3 := g.chainIDs[2]
 	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
 	// Generate bridge events for different chain IDs.
 	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
-		var destinationChainID uint32
-		if blockNumber%2 == 0 {
-			destinationChainID = destinationChainIDA
-		} else {
-			destinationChainID = destinationChainIDB
+		var destinationChainID int64
+		var inputChain uint32
+		destinationChainID = int64(g.chainIDs[1])
+		inputChain = chainID
+		if blockNumber > 1 {
+			if blockNumber%2 == 0 {
+				inputChain = chainID2
+				destinationChainID = int64(g.chainIDs[2])
+
+			} else {
+				inputChain = chainID3
+				destinationChainID = int64(g.chainIDs[0])
+
+			}
 		}
 
 		currentTime := uint64(time.Now().Unix())
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			InsertTime:         1,
-			ChainID:            chainID,
+			ChainID:            inputChain,
+			DestinationChainID: big.NewInt(destinationChainID),
 			Recipient:          gosql.NullString{String: address.String(), Valid: true},
-			DestinationChainID: big.NewInt(int64(destinationChainID)),
 			BlockNumber:        blockNumber,
 			TxHash:             txHash.String(),
 			EventIndex:         gofakeit.Uint64(),
@@ -235,9 +244,9 @@ func (g APISuite) TestGetCountByChainID() {
 		// Set all times after current time, so we can get the events.
 		err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, uint64(time.Now().Unix())*blockNumber)
 		Nil(g.T(), err)
-		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDA, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), chainID2, blockNumber, uint64(time.Now().Unix())*blockNumber)
 		Nil(g.T(), err)
-		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDB, blockNumber, uint64(time.Now().Unix())*blockNumber)
+		err = g.eventDB.StoreBlockTime(g.GetTestContext(), chainID3, blockNumber, uint64(time.Now().Unix())*blockNumber)
 		Nil(g.T(), err)
 	}
 
@@ -246,45 +255,45 @@ func (g APISuite) TestGetCountByChainID() {
 	resultOut, err := g.client.GetCountByChainID(g.GetTestContext(), nil, &addressRef, &directionRef, nil)
 	Nil(g.T(), err)
 	// There should be 3 chains, 2 for the destination chain IDs and 1 for the source chain ID.
-	Equal(g.T(), len(resultOut.Response), 3)
+	Equal(g.T(), 3, len(resultOut.Response))
 	// The source chain ID should have 10 events out, and the destination chain IDs should have 0 events out.
 	var reached = 0
 	for _, res := range resultOut.Response {
 		switch *res.ChainID {
 		case int(chainID):
-			Equal(g.T(), *res.Count, 10)
+			Equal(g.T(), 1, *res.Count)
 			reached++
-		case int(destinationChainIDA):
-			Equal(g.T(), *res.Count, 0)
+		case int(chainID2):
+			Equal(g.T(), 5, *res.Count)
 			reached++
-		case int(destinationChainIDB):
-			Equal(g.T(), *res.Count, 0)
+		case int(chainID3):
+			Equal(g.T(), 4, *res.Count)
 			reached++
 		}
 	}
-	Equal(g.T(), reached, 3)
+	Equal(g.T(), 3, reached)
 
 	directionRef = model.DirectionIn
 	resultIn, err := g.client.GetCountByChainID(g.GetTestContext(), nil, &addressRef, &directionRef, nil)
 	Nil(g.T(), err)
 	// Again, there should be 3 chains, 2 for the destination chain IDs and 1 for the source chain ID.
-	Equal(g.T(), len(resultIn.Response), 3)
+	Equal(g.T(), 3, len(resultIn.Response))
 	// The source chain ID should have 0 events in, and the destination chain IDs should have 5 events in.
 	reached = 0
 	for _, res := range resultIn.Response {
 		switch *res.ChainID {
 		case int(chainID):
-			Equal(g.T(), *res.Count, 0)
+			Equal(g.T(), 1, *res.Count)
 			reached++
-		case int(destinationChainIDA):
-			Equal(g.T(), *res.Count, 5)
+		case int(chainID2):
+			Equal(g.T(), 4, *res.Count)
 			reached++
-		case int(destinationChainIDB):
-			Equal(g.T(), *res.Count, 5)
+		case int(chainID3):
+			Equal(g.T(), 4, *res.Count)
 			reached++
 		}
 	}
-	Equal(g.T(), reached, 3)
+	Equal(g.T(), 3, reached)
 }
 
 // nolint (needed for testing all possibilities)
@@ -524,8 +533,9 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Nil(g.T(), err)
 	err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainID, 1, timestamp)
 	Nil(g.T(), err)
+	pending := true
 
-	originRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, &txHashString, nil, true, page, nil)
+	originRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, &txHashString, nil, &pending, &page, nil)
 	Nil(g.T(), err)
 	Equal(g.T(), len(originRes.Response), 1)
 	originResOne := *originRes.Response[0]
@@ -558,13 +568,16 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Equal(g.T(), *toInfo.BlockNumber, 1)
 	Equal(g.T(), *toInfo.Time, int(timestamp))
 
-	destinationRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, nil, &kappaString, true, page, nil)
+	pending = false
+
+	destinationRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, nil, &kappaString, &pending, &page, nil)
 	Nil(g.T(), err)
 	Equal(g.T(), len(destinationRes.Response), 1)
 	destinationResOne := *destinationRes.Response[0]
 	Equal(g.T(), originResOne, destinationResOne)
 
-	addressRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, &senderString, nil, nil, true, page, nil)
+	pending = true
+	addressRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, &senderString, nil, nil, &pending, &page, nil)
 	Nil(g.T(), err)
 	Equal(g.T(), 1, len(addressRes.Response))
 
@@ -657,7 +670,8 @@ func (g APISuite) TestLatestBridgeTransaction() {
 	Nil(g.T(), err)
 	// Get the latest bridge transactions.
 	// Start with pending being true.
-	bridgeTransactions, err := g.client.GetLatestBridgeTransactions(g.GetTestContext(), false, page)
+	pending := false
+	bridgeTransactions, err := g.client.GetLatestBridgeTransactions(g.GetTestContext(), &pending, &page)
 	Nil(g.T(), err)
 	Equal(g.T(), 2, len(bridgeTransactions.Response))
 	for _, bridgeTransaction := range bridgeTransactions.Response {
@@ -669,7 +683,8 @@ func (g APISuite) TestLatestBridgeTransaction() {
 		}
 	}
 	// Then with pending being false
-	bridgeTransactions, err = g.client.GetLatestBridgeTransactions(g.GetTestContext(), true, page)
+	pending = true
+	bridgeTransactions, err = g.client.GetLatestBridgeTransactions(g.GetTestContext(), &pending, &page)
 	Nil(g.T(), err)
 	Equal(g.T(), 2, len(bridgeTransactions.Response))
 	for _, bridgeTransaction := range bridgeTransactions.Response {

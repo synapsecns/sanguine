@@ -2,14 +2,15 @@ import numeral from 'numeral'
 
 export function Chart({ data }) {
   if (data) {
-    const dailies = data.map((entry) => entry.total)
-    const numbers = normalize(dailies)
+
+    const numbers = normalize(data)
+    console.log(numbers)
 
     return (
-      <div className="flex flex-col items-center w-full max-w-screen-md p-6 pb-6 rounded-lg shadow-xl sm:p-8">
-        <div className="flex items-end flex-grow w-full mt-2 space-x-2 sm:space-x-3">
-          {numbers.map(({ value, normalizedValue }, i) => (
-            <BarMaker value={value} height={normalizedValue} key={i} />
+      <div className="flex flex-col items-center w-full pb-6 rounded-lg shadow-xl sm:p-8">
+        <div className="flex items-end flex-grow w-full mt-2 content-between">
+          {numbers.map(({ value, normalizedValue, date }, i) => (
+            <BarMaker value={value} height={normalizedValue} date={date} key={i} />
           ))}
         </div>
       </div>
@@ -17,26 +18,28 @@ export function Chart({ data }) {
   }
 }
 
-function BarMaker({ value, height }) {
+function BarMaker({ value, height, date }) {
   let h = `h-[${height}px]`
   let showValue = numeral(value).format('0,0')
 
   return (
-    <div className="relative flex flex-col items-center flex-grow pb-5 group">
+    <div className="relative flex flex-col items-center flex-grow pb-5 ml-1 mr-1 group">
       <span className="absolute top-0 z-10 hidden -mt-6 text-xs text-white group-hover:block">
         {showValue}
       </span>
       <div
         className={`relative flex justify-center w-full ${h} bg-gradient-to-b from-[#FF00FF] to-[#AC8FFF] hover:opacity-50`}
       ></div>
+            <span className='-rotate-45 text-white text-[6px] mt-3 l-0 pr-0'>{date.substring(0,date.length - 5)}</span>
+
     </div>
   )
 }
 
 export function ChartLoading() {
   return (
-    <div className="flex flex-col items-center w-full max-w-screen-md p-6 pb-6 rounded-lg shadow-xl sm:p-8">
-      <div className="flex items-end flex-grow w-full mt-2 space-x-2 sm:space-x-3">
+    <div className="flex flex-col items-center w-full pb-6 rounded-lg shadow-xl sm:p-8">
+      <div className="flex items-end flex-grow w-full mt-2 content-between">
         {[...Array(30).keys()].map((i) => (
           <BarMakerLoading key={i} />
         ))}
@@ -47,7 +50,7 @@ export function ChartLoading() {
 
 function BarMakerLoading() {
   return (
-    <div className="relative flex flex-col items-center flex-grow pb-5 group">
+    <div className="relative flex flex-col items-center flex-grow pb-5 ml-1 mr-1 group">
       <div
         className={`relative flex justify-center w-full h-[200px] animate-pulse bg-gradient-to-b from-slate-700 to-slate-500 hover:opacity-50`}
       ></div>
@@ -55,15 +58,18 @@ function BarMakerLoading() {
   )
 }
 
-function normalize(list) {
+function normalize(data) {
   let maxHeight = 300
 
-  let max = _.max(list)
+  let max = 0
+  data.map((entry) => (entry.total > max)? max = entry.total : null)
+  console.log(max)
 
-  let newList = list.map((num) => {
-    let n = (num / max) * maxHeight
+  let newList = data.map((day) => {
+    let n = (day.total / max) * maxHeight
     return {
-      value: num,
+      value: day.total,
+      date: day.date,
       normalizedValue: Math.trunc(n),
     }
   })

@@ -44,14 +44,14 @@ function TokenActivity({ chainId }) {
     variables: {
       chainId: Number(chainId),
       direction: 'OUT',
-      hours: 24,
+      hours: 20000,
     },
   })
   const { data: toData } = useQuery(COUNT_BY_TOKEN_ADDRESS, {
     variables: {
       chainId: Number(chainId),
       direction: 'IN',
-      hours: 24,
+      hours: 20000,
     },
   })
 

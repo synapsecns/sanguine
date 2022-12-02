@@ -82,11 +82,11 @@ type ComplexityRoot struct {
 	Query struct {
 		AddressRanking           func(childComplexity int, hours *int) int
 		BridgeAmountStatistic    func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) int
-		BridgeTransactions       func(childComplexity int, chainID *int, address *string, txnHash *string, kappa *string, includePending bool, page int, tokenAddress *string) int
+		BridgeTransactions       func(childComplexity int, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) int
 		CountByChainID           func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress      func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		HistoricalStatistics     func(childComplexity int, chainID *int, typeArg *model.HistoricalResultType, days *int) int
-		LatestBridgeTransactions func(childComplexity int, includePending bool, page int) int
+		LatestBridgeTransactions func(childComplexity int, includePending *bool, page *int) int
 	}
 
 	TokenCountResult struct {
@@ -106,8 +106,8 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	BridgeTransactions(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending bool, page int, tokenAddress *string) ([]*model.BridgeTransaction, error)
-	LatestBridgeTransactions(ctx context.Context, includePending bool, page int) ([]*model.BridgeTransaction, error)
+	BridgeTransactions(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) ([]*model.BridgeTransaction, error)
+	LatestBridgeTransactions(ctx context.Context, includePending *bool, page *int) ([]*model.BridgeTransaction, error)
 	BridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error)
 	CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error)
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
@@ -318,7 +318,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.BridgeTransactions(childComplexity, args["chainId"].(*int), args["address"].(*string), args["txnHash"].(*string), args["kappa"].(*string), args["includePending"].(bool), args["page"].(int), args["tokenAddress"].(*string)), true
+		return e.complexity.Query.BridgeTransactions(childComplexity, args["chainId"].(*int), args["address"].(*string), args["txnHash"].(*string), args["kappa"].(*string), args["includePending"].(*bool), args["page"].(*int), args["tokenAddress"].(*string)), true
 
 	case "Query.countByChainId":
 		if e.complexity.Query.CountByChainID == nil {
@@ -366,7 +366,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.LatestBridgeTransactions(childComplexity, args["includePending"].(bool), args["page"].(int)), true
+		return e.complexity.Query.LatestBridgeTransactions(childComplexity, args["includePending"].(*bool), args["page"].(*int)), true
 
 	case "TokenCountResult.chainId":
 		if e.complexity.TokenCountResult.ChainID == nil {
@@ -482,16 +482,16 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     address:        String
     txnHash:        String
     kappa:          String
-    includePending: Boolean!
-    page:           Int!
+    includePending: Boolean = true
+    page:           Int = 1
     tokenAddress:   String
   ): [BridgeTransaction]
   """
   Returns the latest bridged transactions across all chains.
   """
   latestBridgeTransactions(
-    includePending: Boolean!
-    page:           Int!
+    includePending: Boolean = true
+    page:           Int = 1
   ): [BridgeTransaction]
   """
   Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
@@ -513,7 +513,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     chainId:    Int
     address:    String
     direction:  Direction = IN
-    hours:      Int = 24
+    hours:      Int = 20000
   ): [TransactionCountResult]
   """
   Returns counts of token addresses source and time.
@@ -759,19 +759,19 @@ func (ec *executionContext) field_Query_bridgeTransactions_args(ctx context.Cont
 		}
 	}
 	args["kappa"] = arg3
-	var arg4 bool
+	var arg4 *bool
 	if tmp, ok := rawArgs["includePending"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("includePending"))
-		arg4, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		arg4, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["includePending"] = arg4
-	var arg5 int
+	var arg5 *int
 	if tmp, ok := rawArgs["page"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
-		arg5, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg5, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -909,19 +909,19 @@ func (ec *executionContext) field_Query_historicalStatistics_args(ctx context.Co
 func (ec *executionContext) field_Query_latestBridgeTransactions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 bool
+	var arg0 *bool
 	if tmp, ok := rawArgs["includePending"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("includePending"))
-		arg0, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		arg0, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["includePending"] = arg0
-	var arg1 int
+	var arg1 *int
 	if tmp, ok := rawArgs["page"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1934,7 +1934,7 @@ func (ec *executionContext) _Query_bridgeTransactions(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().BridgeTransactions(rctx, fc.Args["chainId"].(*int), fc.Args["address"].(*string), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["includePending"].(bool), fc.Args["page"].(int), fc.Args["tokenAddress"].(*string))
+		return ec.resolvers.Query().BridgeTransactions(rctx, fc.Args["chainId"].(*int), fc.Args["address"].(*string), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["includePending"].(*bool), fc.Args["page"].(*int), fc.Args["tokenAddress"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1998,7 +1998,7 @@ func (ec *executionContext) _Query_latestBridgeTransactions(ctx context.Context,
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().LatestBridgeTransactions(rctx, fc.Args["includePending"].(bool), fc.Args["page"].(int))
+		return ec.resolvers.Query().LatestBridgeTransactions(rctx, fc.Args["includePending"].(*bool), fc.Args["page"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5283,21 +5283,6 @@ func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interf
 
 func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.SelectionSet, v bool) graphql.Marshaler {
 	res := graphql.MarshalBoolean(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

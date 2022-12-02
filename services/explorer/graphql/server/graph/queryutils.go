@@ -169,19 +169,14 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "t1.")
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "t1.")
 	kappaSpecifier := generateKappaSpecifierStringSQL(kappa, sql.KappaFieldName, &firstFilter, "t1.", destination)
-	//if destination && kappaSpecifier == "" {
-	//	if firstFilter {
-	//		kappaSpecifier = fmt.Sprintf("WHERE %s != NULL", sql.KappaFieldName)
-	//		firstFilter = false
-	//	} else {
-	//		kappaSpecifier = fmt.Sprintf("AND %s != NULL", sql.KappaFieldName)
-	//	}
-	//
-	//}
+	destinationChainIDSpecifier := ""
+	if !destination {
+		destinationChainIDSpecifier = fmt.Sprintf(" AND %s > 0", sql.DestinationChainIDFieldName)
+	}
 	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "t1.")
-	pageSpecifier := fmt.Sprintf(" ORDER BY %s, %s DESC LIMIT %d OFFSET %d", sql.BlockNumberFieldName, sql.EventIndexFieldName, sql.PageSize, (page-1)*sql.PageSize)
+	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC, %s DESC LIMIT %d OFFSET %d", sql.BlockNumberFieldName, sql.EventIndexFieldName, sql.PageSize, (page-1)*sql.PageSize)
 
-	compositeIdentifiers := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + kappaSpecifier + txHashSpecifier + pageSpecifier
+	compositeIdentifiers := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + kappaSpecifier + destinationChainIDSpecifier + txHashSpecifier + pageSpecifier
 
 	selectParameters := fmt.Sprintf(
 		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
@@ -233,11 +228,11 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 	timestampSpecifier := generateTimestampSpecifierSQL(timestamp, sql.TimeStampFieldName, &firstFilter, "")
 	var query string
 	if isTokenCount {
-		query = fmt.Sprintf(`SELECT %s, %s AS TokenAddress, COUNT(DISTINCT (%s)) AS Count FROM bridge_events %s%s%s%s GROUP BY %s, %s`,
+		query = fmt.Sprintf(`SELECT %s, %s AS TokenAddress, COUNT(DISTINCT (%s)) AS Count FROM bridge_events %s%s%s%s GROUP BY %s, %s ORDER BY Count Desc`,
 			sql.ChainIDFieldName, sql.TokenFieldName, sql.TxHashFieldName, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, timestampSpecifier, sql.TokenFieldName, sql.ChainIDFieldName)
 
 	} else {
-		query = fmt.Sprintf(`SELECT %s, COUNT(DISTINCT (%s)) AS Count FROM bridge_events %s%s%s%s GROUP BY %s`,
+		query = fmt.Sprintf(`SELECT %s, COUNT(DISTINCT (%s)) AS Count FROM bridge_events %s%s%s%s GROUP BY %s ORDER BY Count Desc`,
 			sql.ChainIDFieldName, sql.TxHashFieldName, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, timestampSpecifier, sql.ChainIDFieldName)
 	}
 	return query
@@ -453,7 +448,6 @@ func generatePartialInfoQueryByChain(limitSize int) string {
 	)
 	query := fmt.Sprintf(
 		`
-
 		SELECT t1.* FROM bridge_events t1
     	JOIN (
     	SELECT %s AS insert_max_time
@@ -607,6 +601,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 	} else {
 		toKappaChainStr = strings.Join(toKappaChainArr, ",") // (1,'0x123'),(2,'0x456')
 	}
+
 	// Get all destination/to bridge events that match the kappa
 	toBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generateToKappaPartialInfoQuery(toKappaChainStr, nil, nil, nil, nil, nil, page, true))
 	if err != nil {
@@ -628,7 +623,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 	// Iterate through all bridge events and return all partials
 	for i := range fromBridgeEvents {
 		fromBridgeEvent := fromBridgeEvents[i]
-		if latest && chainCheck[fmt.Sprintf("%d", fromBridgeEvent.DestinationChainID)] {
+		if latest && chainCheck[fmt.Sprintf("%d", fromBridgeEvent.ChainID)] {
 			continue
 		}
 		key := keyGen(fromBridgeEvent.DestinationChainID.String(), fromBridgeEvent.DestinationKappa)
@@ -656,7 +651,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 				return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 			}
 			if latest {
-				chainCheck[fmt.Sprintf("%d", fromBridgeEvent.DestinationChainID)] = true
+				chainCheck[fmt.Sprintf("%d", fromBridgeEvent.ChainID)] = true
 			}
 			results = append(results, &model.BridgeTransaction{
 				FromInfo:    fromInfo,
@@ -668,7 +663,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 		} else {
 			if includePending {
 				if latest {
-					chainCheck[fmt.Sprintf("%d", fromBridgeEvent.DestinationChainID)] = true
+					chainCheck[fmt.Sprintf("%d", fromBridgeEvent.ChainID)] = true
 				}
 				results = append(results, &model.BridgeTransaction{
 					FromInfo:    fromInfo,
@@ -687,7 +682,7 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID
 	var err error
 	var results []*model.BridgeTransaction
 	// Get all bridge transactions
-	toBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, kappa, txnHash, page, false, true))
+	toBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generatePartialInfoQuery(nil, nil, nil, kappa, txnHash, page, false, true))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
 	}
@@ -713,7 +708,7 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID
 	}
 
 	// Get all destination/to bridge events that match the kappa
-	fromBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generateFromKappaPartialInfoQuery(fromKappaChainStr, nil, nil, nil, nil, nil, page, true))
+	fromBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generateFromKappaPartialInfoQuery(fromKappaChainStr, chainID, address, tokenAddress, nil, nil, page, true))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get origin bridge events from identifiers: %w", err)
 	}
@@ -740,7 +735,7 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID
 			return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
 		}
 
-		// If not pending, return a non pending parital, otherwise, a pending partial.
+		// If not pending, return a nonpending parital, otherwise, a pending partial.
 
 		// Get a "to" bridge event
 		toBridgeEvent := toBridgeEventsMap[key]
@@ -780,4 +775,7 @@ func getAdjustedValue(amount *big.Int, decimals uint8) *float64 {
 		return nil
 	}
 	return &priceFloat
+}
+func keyGen(chainID string, kappa string) string {
+	return fmt.Sprintf("%s-%s", chainID, kappa)
 }

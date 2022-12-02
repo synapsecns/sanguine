@@ -2,7 +2,11 @@
 import { useEffect, useState } from 'react'
 import { Bar } from 'react-chartjs-2'
 import { useQuery } from '@apollo/client'
-
+import { COUNT_BY_TOKEN_ADDRESS } from '@graphql/queries'
+import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import { COIN_COLORS } from '@utils/styles/coins'
+import { directColors, chartOptions } from './constants'
+import { CHAIN_INFO_MAP } from '@constants/networks'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,11 +19,7 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
-import { COUNT_BY_TOKEN_ADDRESS } from '@graphql/queries'
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
-import { COIN_COLORS } from '@utils/styles/coins'
-import { directColors, chartOptions } from './constants'
-import { CHAIN_INFO_MAP } from '@constants/networks'
+
 
 export function TopTokens() {
   const [countByToken, setCount] = useState([])

@@ -6,7 +6,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -15,13 +14,13 @@ import (
 )
 
 // BridgeTransactions is the resolver for the bridgeTransactions field.
-func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending bool, page int, tokenAddress *string) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) ([]*model.BridgeTransaction, error) {
 	// If no search parameters are provided, throw an error.
 	if chainID == nil && address == nil && txnHash == nil && kappa == nil {
 		return nil, fmt.Errorf("must provide at least one of chainID, address, txnHash, or kappa")
 	}
 
-	if !includePending && kappa != nil {
+	if !*includePending && kappa != nil {
 		return nil, fmt.Errorf("cannot filter by kappa without including pending transactions")
 	}
 
@@ -29,17 +28,17 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	var results []*model.BridgeTransaction
 
 	switch {
-	case txnHash != nil:
-		// If we are given a transaction hash, we search for the bridge transaction on the origin chain, then locate
-		// its counterpart on the destination chain using the kappa (the keccak256 hash of the transaction hash).
-		results, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, includePending, page, tokenAddress, false)
-		if err != nil {
-			return nil, err
-		}
+	//case txnHash != nil:
+	//	// If we are given a transaction hash, we search for the bridge transaction on the origin chain, then locate
+	//	// its counterpart on the destination chain using the kappa (the keccak256 hash of the transaction hash).
+	//	results, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *includePending, *page, tokenAddress, false)
+	//	if err != nil {
+	//		return nil, err
+	//	}
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
-		results, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, page, tokenAddress)
+		results, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, *page, tokenAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -48,11 +47,11 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for
 		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
 		// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
-		fromResults, err := r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, includePending, page, tokenAddress, false)
+		fromResults, err := r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *includePending, *page, tokenAddress, false)
 		if err != nil {
 			return nil, err
 		}
-		toResults, err := r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, page, tokenAddress)
+		toResults, err := r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, *page, tokenAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -65,117 +64,17 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 }
 
 // LatestBridgeTransactions is the resolver for the latestBridgeTransactions field.
-func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePending bool, page int) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePending *bool, page *int) ([]*model.BridgeTransaction, error) {
 	// For each chain ID, get the latest bridge transaction.
 	//return r.GetBridgeTxsFromOrigin(ctx, nil, nil, nil, includePending, page, nil, true)
 	var results []*model.BridgeTransaction
-	fromBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generatePartialInfoQueryByChain(100))
-	if err != nil {
-		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
-	}
-	fromBridgeEventsMap := make(map[string][]sql.BridgeEvent)
-	for _, fromBridgeEvent := range fromBridgeEvents {
-		key := fmt.Sprintf("%d", fromBridgeEvent.ChainID)
-		if fromBridgeEventsMap[key] == nil {
-			fromBridgeEventsMap[key] = append(fromBridgeEventsMap[key], fromBridgeEvent)
-		}
-	}
-
-	var toKappaChainArr []string
-	for _, bridgeEvent := range fromBridgeEvents {
-		if bridgeEvent.DestinationChainID != nil {
-			toKappaChainArr = append(toKappaChainArr, fmt.Sprintf("(%d,'%s')", bridgeEvent.DestinationChainID, bridgeEvent.DestinationKappa))
-		}
-	}
-	toKappaChainStr := "(" + strings.Join(toKappaChainArr, ",") + ")"
-	toBridgeEvents, err := r.DB.GetBridgeEvents(ctx, generateToKappaPartialInfoQuery(toKappaChainStr, nil, nil, nil, nil, nil, page, true))
-	if err != nil {
-		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
-	}
-	toBridgeEventsMap := make(map[string][]sql.BridgeEvent)
-	for _, toBridgeEvent := range toBridgeEvents {
-		key := fmt.Sprintf("%d", toBridgeEvent.ChainID)
-		toBridgeEventsMap[key] = append(toBridgeEventsMap[key], toBridgeEvent)
-	}
-
-	// Check for pending
-
-	var fromBridgeEventsCleaned []sql.BridgeEvent
-	var toBridgeEventsCleaned []sql.BridgeEvent
-	toBridgeEventsMapCleaned := make(map[string][]sql.BridgeEvent)
-	if includePending {
-		for key := range fromBridgeEventsMap {
-			fromBridgeEventsCleaned = append(fromBridgeEventsCleaned, fromBridgeEventsMap[key][:1]...)
-		}
-		for key := range toBridgeEventsMap {
-			toBridgeEventsMapCleaned[key] = toBridgeEventsMap[key][:1]
-			toBridgeEventsCleaned = append(toBridgeEventsCleaned, toBridgeEventsMapCleaned[key]...)
-		}
-	} else {
-		for key := range toBridgeEventsMap {
-			for _, fromBridgeEvent := range fromBridgeEvents {
-				for _, toBridgeEvent := range toBridgeEventsMap[key] {
-
-					if fromBridgeEvent.DestinationKappa == toBridgeEvent.Kappa.String {
-						fromBridgeEventsCleaned = append(fromBridgeEventsCleaned, fromBridgeEvent)
-						toBridgeEventsCleaned = append(toBridgeEventsCleaned, toBridgeEvent)
-						toBridgeEventsMapCleaned[key] = []sql.BridgeEvent{toBridgeEvent}
-						goto NEXTCHAIN
-					}
-				}
-			}
-		NEXTCHAIN:
-		}
-	}
-
-	fromInfos, err := GetPartialInfoFromBridgeEvent(fromBridgeEventsCleaned)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
-	}
-	toInfos, err := GetToPartialInfoFromBridgeEvent(toBridgeEventsCleaned)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get bridge events from identifiers: %w", err)
-	}
-
-	for i, fromBridgeTx := range fromBridgeEventsCleaned {
-		// If we are not including pending transactions, and the transaction is pending, skip it.
-		toBridgeEvent := toBridgeEventsMapCleaned[fromBridgeTx.DestinationChainID.String()]
-		if len(toBridgeEvent) > 0 && fromBridgeTx.DestinationKappa == toBridgeEvent[0].Kappa.String {
-			var swapSuccess bool
-
-			if toBridgeEvent[0].SwapSuccess.Uint64() == 1 {
-				swapSuccess = true
-			}
-			if err != nil {
-				return nil, fmt.Errorf("failed to get swap success: %w", err)
-			}
-
-			pending := false
-			results = append(results, &model.BridgeTransaction{
-				FromInfo:    fromInfos[i],
-				ToInfo:      toInfos[fromBridgeTx.DestinationChainID.String()],
-				Kappa:       &toBridgeEvent[0].Kappa.String,
-				Pending:     &pending,
-				SwapSuccess: &swapSuccess,
-			})
-		} else {
-			if includePending {
-				kappa := fromBridgeTx.DestinationKappa
-				results = append(results, &model.BridgeTransaction{
-					FromInfo:    fromInfos[i],
-					ToInfo:      nil,
-					Kappa:       &kappa,
-					Pending:     &includePending,
-					SwapSuccess: nil,
-				})
-			}
-		}
-	}
+	var err error
+	results, err = r.GetBridgeTxsFromOrigin(ctx, nil, nil, nil, *includePending, *page, nil, true)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
+
 	return results, nil
 }
 
@@ -243,7 +142,6 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 
 // CountByChainID is the resolver for the countByChainId field.
 func (r *queryResolver) CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error) {
-
 	directionIn := r.getDirectionIn(direction)
 	targetTime := r.getTargetTime(hours)
 
@@ -300,13 +198,13 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	// Handle the different logic needed for each query type.
 	switch *typeArg {
 	case model.HistoricalResultTypeBridgevolume:
-		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM bridge_events %s AND %s GROUP BY date ORDER BY total DESC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%d/%m/%Y'", filter, deDupInQuery)
+		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM bridge_events %s AND %s GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", filter, deDupInQuery)
 		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 	case model.HistoricalResultTypeAddresses:
-		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME( %s, %s) AS date FROM  bridge_events %s AND %s GROUP BY date ORDER BY total DESC", sql.SenderFieldName, sql.TimeStampFieldName, "'%d/%m/%Y'", filter, deDupInQuery)
+		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME( %s, %s) AS date FROM  bridge_events %s AND %s GROUP BY date ORDER BY date ASC", sql.SenderFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", filter, deDupInQuery)
 		query = fmt.Sprintf("SELECT uniqExact(%s) FROM bridge_events %s AND %s", sql.SenderFieldName, filter, deDupInQuery)
 	case model.HistoricalResultTypeTransactions:
-		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM  bridge_events %s AND %s GROUP BY date ORDER BY total DESC", sql.TxHashFieldName, sql.TimeStampFieldName, "'%d/%m/%Y'", filter, deDupInQuery)
+		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM  bridge_events %s AND %s GROUP BY date ORDER BY date ASC", sql.TxHashFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", filter, deDupInQuery)
 		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 	default:
 		return nil, fmt.Errorf("invalid type argument")
@@ -335,7 +233,3 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
-
-func keyGen(chainID string, kappa string) string {
-	return fmt.Sprintf("%s-%s", chainID, kappa)
-}

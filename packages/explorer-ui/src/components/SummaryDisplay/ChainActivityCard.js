@@ -27,7 +27,7 @@ export function getChainActivity({ chainId, direction }) {
     variables: {
       chainId: Number(chainId),
       direction,
-      hours: 24,
+      hours: 20000,
     },
   })
 

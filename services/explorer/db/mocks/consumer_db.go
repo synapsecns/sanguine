@@ -88,6 +88,29 @@ func (_m *ConsumerDB) GetBridgeEvent(ctx context.Context, query string) (*sql.Br
 	return r0, r1
 }
 
+// GetBridgeEvents provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetBridgeEvents(ctx context.Context, query string) ([]sql.BridgeEvent, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 []sql.BridgeEvent
+	if rf, ok := ret.Get(0).(func(context.Context, string) []sql.BridgeEvent); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]sql.BridgeEvent)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetDateResults provides a mock function with given fields: ctx, query
 func (_m *ConsumerDB) GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error) {
 	ret := _m.Called(ctx, query)
@@ -155,6 +178,52 @@ func (_m *ConsumerDB) GetStringArray(ctx context.Context, query string) ([]strin
 	return r0, r1
 }
 
+// GetTokenCounts provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetTokenCounts(ctx context.Context, query string) ([]*model.TokenCountResult, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 []*model.TokenCountResult
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.TokenCountResult); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.TokenCountResult)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetTxCounts provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetTxCounts(ctx context.Context, query string) ([]*model.TransactionCountResult, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 []*model.TransactionCountResult
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.TransactionCountResult); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.TransactionCountResult)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetUint64 provides a mock function with given fields: ctx, query
 func (_m *ConsumerDB) GetUint64(ctx context.Context, query string) (uint64, error) {
 	ret := _m.Called(ctx, query)
@@ -186,6 +255,29 @@ func (_m *ConsumerDB) PartialInfosFromIdentifiers(ctx context.Context, query str
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*model.PartialInfo)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// PartialInfosFromIdentifiersByChain provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) PartialInfosFromIdentifiersByChain(ctx context.Context, query string) (map[int]*model.PartialInfo, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 map[int]*model.PartialInfo
+	if rf, ok := ret.Get(0).(func(context.Context, string) map[int]*model.PartialInfo); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[int]*model.PartialInfo)
 		}
 	}
 

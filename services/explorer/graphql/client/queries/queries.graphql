@@ -1,4 +1,4 @@
-query GetBridgeTransactions($chainId: Int, $address: String, $txHash: String, $kappa: String, $includePending: Boolean!, $page: Int!, $tokenAddress: String) {
+query GetBridgeTransactions($chainId: Int, $address: String, $txHash: String, $kappa: String, $includePending: Boolean, $page: Int, $tokenAddress: String) {
   response: bridgeTransactions(
     chainId: $chainId
     address: $address
@@ -38,7 +38,7 @@ query GetBridgeTransactions($chainId: Int, $address: String, $txHash: String, $k
   }
 }
 
-query GetLatestBridgeTransactions($includePending: Boolean!, $page: Int!) {
+query GetLatestBridgeTransactions($includePending: Boolean, $page: Int) {
   response: latestBridgeTransactions(
     includePending: $includePending
     page: $page
