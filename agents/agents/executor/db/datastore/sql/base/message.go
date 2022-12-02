@@ -32,9 +32,16 @@ func (s Store) GetMessage(ctx context.Context, messageMask types.DBMessage) (*ty
 	var message Message
 
 	dbMessageMask := DBMessageToMessage(messageMask)
-	dbTx := s.DB().WithContext(ctx).Where(&dbMessageMask).First(&message)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&message).
+		Where(&dbMessageMask).
+		Scan(&message)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get message: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
+		return nil, nil
 	}
 
 	returnMessage := MessageToDBMessage(message)

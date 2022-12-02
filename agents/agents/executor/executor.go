@@ -37,6 +37,8 @@ type Executor struct {
 	lastLogMutex *sync.Mutex
 	// closeConnection is a map from chain ID -> channel to close the connection.
 	closeConnection map[uint32]chan bool
+	// stopListenChan is a map from chain ID -> channel to stop listening for logs.
+	stopListenChan map[uint32]chan bool
 	// originParsers is a map from chain ID -> origin parser.
 	originParsers map[uint32]origin.Parser
 	// attestationcollectorParsers is a map from chain ID -> attestationcollector parser.
@@ -59,12 +61,14 @@ const treeDepth uint64 = 32
 func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient) (*Executor, error) {
 	channels := make(map[uint32]chan *ethTypes.Log)
 	closeChans := make(map[uint32]chan bool)
+	stopListenChans := make(map[uint32]chan bool)
 	originParsers := make(map[uint32]origin.Parser)
 	attestationcollectorParsers := make(map[uint32]attestationcollector.Parser)
 
 	for _, chain := range config.Chains {
 		channels[chain.ChainID] = make(chan *ethTypes.Log, 1000)
 		closeChans[chain.ChainID] = make(chan bool, 1)
+		stopListenChans[chain.ChainID] = make(chan bool, 1)
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create origin parser: %w", err)
@@ -91,6 +95,7 @@ func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient cl
 		lastLog:                     make(map[uint32]logOrderInfo),
 		lastLogMutex:                &sync.Mutex{},
 		closeConnection:             closeChans,
+		stopListenChan:              stopListenChans,
 		originParsers:               originParsers,
 		attestationcollectorParsers: attestationcollectorParsers,
 		LogChans:                    channels,
@@ -137,6 +142,7 @@ func (e Executor) Start(ctx context.Context) error {
 // Stop stops the executor agent.
 func (e Executor) Stop(chainID uint32) {
 	e.closeConnection[chainID] <- true
+	e.stopListenChan[chainID] <- true
 }
 
 // Listen listens to the log channel and processes the logs. Requires Start to be called first.
@@ -144,6 +150,8 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 	for {
 		select {
 		case <-ctx.Done():
+			return nil
+		case <-e.stopListenChan[chainID]:
 			return nil
 		case log := <-e.LogChans[chainID]:
 			if log == nil {
@@ -156,6 +164,62 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 			}
 		}
 	}
+}
+
+// GetRoot returns the merkle root at the given nonce.
+func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32) (*[32]byte, error) {
+	if nonce == 0 || nonce > uint32(e.MerkleTree.NumOfItems()) {
+		return nil, fmt.Errorf("nonce is out of range")
+	}
+
+	messageMask := execTypes.DBMessage{
+		ChainID: &chainID,
+		Nonce:   &nonce,
+	}
+	message, err := e.executorDB.GetMessage(ctx, messageMask)
+	if err != nil {
+		return nil, fmt.Errorf("could not get message: %w", err)
+	}
+	if message == nil {
+		return nil, fmt.Errorf("no message found for chainID %d and nonce %d", chainID, nonce)
+	}
+
+	return (*[32]byte)(message.Root.Bytes()), nil
+}
+
+// BuildTreeFromDB builds the merkle tree from the database's messages. This function will
+// reset the current merkle tree and replace it with the one built from the database.
+// This function should also not be called while Start or Listen are running.
+func (e Executor) BuildTreeFromDB(ctx context.Context, chainID uint32) error {
+	merkleTree, err := trieutil.NewTrie(treeDepth)
+	if err != nil {
+		return fmt.Errorf("could not create merkle tree: %w", err)
+	}
+
+	nonce := uint32(1)
+
+	for {
+		messageMask := execTypes.DBMessage{
+			ChainID: &chainID,
+			Nonce:   &nonce,
+		}
+		message, err := e.executorDB.GetMessage(ctx, messageMask)
+		if err != nil {
+			return fmt.Errorf("could not get message: %w", err)
+		}
+
+		if message == nil {
+			break
+		}
+
+		merkleTree.Insert(message.Root.Bytes(), int(nonce-1))
+
+		nonce++
+	}
+
+	e.MerkleTree = merkleTree
+
+	return nil
 }
 
 type contractType int
@@ -260,24 +324,6 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 	}
 
 	return nil
-}
-
-// GetRoot returns the merkle root at the given nonce.
-func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32) (*[32]byte, error) {
-	if nonce == 0 || nonce > uint32(e.MerkleTree.NumOfItems()) {
-		return nil, fmt.Errorf("nonce is out of range")
-	}
-
-	messageMask := execTypes.DBMessage{
-		ChainID: &chainID,
-		Nonce:   &nonce,
-	}
-	message, err := e.executorDB.GetMessage(ctx, messageMask)
-	if err != nil {
-		return nil, fmt.Errorf("could not get message: %w", err)
-	}
-
-	return (*[32]byte)(message.Root.Bytes()), nil
 }
 
 // logToMessage converts the log to a leaf data.
