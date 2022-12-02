@@ -242,6 +242,7 @@ func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
 		return nil
 	}
 
+	fmt.Println("getting here and merkle index of", merkleIndex)
 	e.MerkleTree.Insert(leafData, merkleIndex)
 	e.roots[chainID] = append(e.roots[chainID], e.MerkleTree.Root())
 
@@ -259,7 +260,6 @@ func (e Executor) GetRoot(index uint64, chainID uint32) ([32]byte, error) {
 
 // logToLeaf converts the log to a leaf data.
 func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
-	//nolint:nestif
 	if eventType, ok := e.originParsers[chainID].EventType(log); ok && eventType == origin.DispatchEvent {
 		committedMessage, ok := e.originParsers[chainID].ParseDispatch(log)
 		if !ok {
