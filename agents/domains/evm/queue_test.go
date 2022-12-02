@@ -1,7 +1,10 @@
 package evm_test
 
 import (
+	"math/big"
+
 	"github.com/Flaque/filet"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
@@ -16,7 +19,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	signerMocks "github.com/synapsecns/sanguine/ethergo/signer/signer/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"math/big"
 )
 
 func (t *TxQueueSuite) TestGetNonce() {
@@ -42,28 +44,9 @@ func (t *TxQueueSuite) TestGetTransactor() {
 	chn := simulated.NewSimulatedBackend(t.GetTestContext(), t.T())
 	manager := testutil.NewDeployManager(t.T())
 
-	originDeployment, originHarness := manager.GetOriginHarness(t.GetTestContext(), chn)
-	notaryManagerDeployment, notaryManager := manager.GetNotaryManager(t.GetTestContext(), chn)
+	destinationID := uint32(1)
 
-	notaryManagerOpts := chn.GetTxContext(t.GetTestContext(), notaryManagerDeployment.OwnerPtr())
-
-	// setup the origin on the notary contract
-	setOriginTx, err := notaryManager.SetOrigin(notaryManagerOpts.TransactOpts, originHarness.Address())
-	Nil(t.T(), err)
-	chn.WaitForConfirmation(t.GetTestContext(), setOriginTx)
-
-	// setup the notary on the origin contract
-	originOwnerTxOpts := chn.GetTxContext(t.GetTestContext(), originDeployment.OwnerPtr())
-	Nil(t.T(), err)
-
-	setNotaryManagerTx, err := originHarness.SetNotaryManager(originOwnerTxOpts.TransactOpts, notaryManagerDeployment.Address())
-	Nil(t.T(), err)
-	chn.WaitForConfirmation(t.GetTestContext(), setNotaryManagerTx)
-
-	// add the notary
-	setNotaryTx, err := notaryManager.SetNotary(notaryManagerOpts.TransactOpts, notaryManagerDeployment.Owner())
-	Nil(t.T(), err)
-	chn.WaitForConfirmation(t.GetTestContext(), setNotaryTx)
+	originContract, originHarness := manager.GetOriginHarness(t.GetTestContext(), chn)
 
 	// create a test signer
 	wllt, err := wallet.FromRandom()
@@ -83,12 +66,21 @@ func (t *TxQueueSuite) TestGetTransactor() {
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(t.T(), err)
 
-	tx, err := originHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, encodedTips, []byte("hello world"))
+	originOwnerAuth := chn.GetTxContext(t.GetTestContext(), originContract.OwnerPtr())
+	tx, err := originHarness.AddNotary(originOwnerAuth.TransactOpts, destinationID, msigner.Address())
+	Nil(t.T(), err)
+	chn.WaitForConfirmation(t.GetTestContext(), tx)
+
+	notaries, err := originHarness.AllNotaries(&bind.CallOpts{Context: t.GetTestContext()}, destinationID)
+	Nil(t.T(), err)
+	Len(t.T(), notaries, 1)
+
+	tx, err = originHarness.Dispatch(testTransactor, destinationID, [32]byte{}, 1, encodedTips, []byte("hello world"))
 	Nil(t.T(), err)
 
 	chn.WaitForConfirmation(t.GetTestContext(), tx)
 
-	_, err = originHarness.Dispatch(testTransactor, 1, [32]byte{}, 1, encodedTips, []byte("hello world"))
+	_, err = originHarness.Dispatch(testTransactor, destinationID, [32]byte{}, 1, encodedTips, []byte("hello world"))
 	Nil(t.T(), err)
 	chn.WaitForConfirmation(t.GetTestContext(), tx)
 }

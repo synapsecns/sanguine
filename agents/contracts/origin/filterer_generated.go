@@ -119,18 +119,6 @@ type IOriginFilterer interface {
 	//
 	// Solidity: event Initialized(uint8 version)
 	ParseInitialized(log types.Log) (*OriginInitialized, error)
-	// FilterNewNotaryManager is a free log retrieval operation binding the contract event 0xe3befd3a32a53f50ff7d1421555fbd40e5ead3a7ed75417db43a23faffe09316.
-	//
-	// Solidity: event NewNotaryManager(address notaryManager)
-	FilterNewNotaryManager(opts *bind.FilterOpts) (*OriginNewNotaryManagerIterator, error)
-	// WatchNewNotaryManager is a free log subscription operation binding the contract event 0xe3befd3a32a53f50ff7d1421555fbd40e5ead3a7ed75417db43a23faffe09316.
-	//
-	// Solidity: event NewNotaryManager(address notaryManager)
-	WatchNewNotaryManager(opts *bind.WatchOpts, sink chan<- *OriginNewNotaryManager) (event.Subscription, error)
-	// ParseNewNotaryManager is a log parse operation binding the contract event 0xe3befd3a32a53f50ff7d1421555fbd40e5ead3a7ed75417db43a23faffe09316.
-	//
-	// Solidity: event NewNotaryManager(address notaryManager)
-	ParseNewNotaryManager(log types.Log) (*OriginNewNotaryManager, error)
 	// FilterNotaryAdded is a free log retrieval operation binding the contract event 0x62d8d15324cce2626119bb61d595f59e655486b1ab41b52c0793d814fe03c355.
 	//
 	// Solidity: event NotaryAdded(uint32 indexed domain, address notary)

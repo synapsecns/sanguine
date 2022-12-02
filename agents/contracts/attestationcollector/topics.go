@@ -17,18 +17,18 @@ func init() {
 		panic(err)
 	}
 
-	AttestationSubmittedTopic = parsedAttestationCollector.Events["AttestationSubmitted"].ID
+	AttestationAcceptedTopic = parsedAttestationCollector.Events["AttestationAccepted"].ID
 }
 
-// AttestationSubmittedTopic is the topic that gets emitted
+// AttestationAcceptedTopic is the topic that gets emitted
 // when the AttestationSubmitted event is called.
-var AttestationSubmittedTopic common.Hash
+var AttestationAcceptedTopic common.Hash
 
 // topicMap maps events to topics.
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
-		AttestationSubmittedEvent: AttestationSubmittedTopic,
+		AttestationAcceptedEvent: AttestationAcceptedTopic,
 	}
 }
 

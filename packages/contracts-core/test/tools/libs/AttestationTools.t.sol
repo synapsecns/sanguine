@@ -57,7 +57,7 @@ abstract contract AttestationTools is SynapseTestSuite {
             destination: destination,
             nonce: nonce,
             root: root,
-            signer: suiteNotary(origin, notaryIndex),
+            signer: suiteNotary(destination, notaryIndex),
             salt: notaryIndex
         });
     }
@@ -125,7 +125,7 @@ abstract contract AttestationTools is SynapseTestSuite {
             destination: destination,
             nonce: nonce,
             root: MOCK_ATTESTATION_ROOT,
-            signer: suiteNotary(origin, notaryIndex),
+            signer: suiteNotary(destination, notaryIndex),
             salt: salt
         });
     }

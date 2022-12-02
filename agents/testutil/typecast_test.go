@@ -23,13 +23,6 @@ func (s SimulatedSuite) TestTypecastOriginHarness() {
 	})
 }
 
-func (s SimulatedSuite) TestTypecastNotaryManager() {
-	NotPanics(s.T(), func() {
-		_, notaryManager := s.deployManager.GetNotaryManager(s.GetTestContext(), s.testBackend)
-		NotNil(s.T(), notaryManager)
-	})
-}
-
 func (s SimulatedSuite) TestTypecastAttesationCollector() {
 	NotPanics(s.T(), func() {
 		_, attestationCollector := s.deployManager.GetAttestationCollector(s.GetTestContext(), s.testBackend)

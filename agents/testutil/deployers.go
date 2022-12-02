@@ -11,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
-	"github.com/synapsecns/sanguine/agents/contracts/notarymanager"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
@@ -29,8 +28,6 @@ func NewOriginDeployer(registry deployer.GetOnlyContractRegistry, backend backen
 
 // Deploy deploys the origin contract.
 func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	notaryManagerContract := d.Registry().Get(ctx, NotaryManagerType)
-
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// deploy the origin contract
 		var rawHandle *origin.Origin
@@ -41,26 +38,11 @@ func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract,
 		d.Backend().WaitForConfirmation(ctx, tx)
 
 		// initialize the origin contract
-		initializationTx, err := rawHandle.Initialize(transactOps, notaryManagerContract.Address())
+		initializationTx, err := rawHandle.Initialize(transactOps)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not initialize contract: %w", err)
 		}
 		d.Backend().WaitForConfirmation(ctx, initializationTx)
-
-		// get the owner of the notary manager contract
-		notaryTransactOps := d.Backend().GetTxContext(ctx, notaryManagerContract.OwnerPtr())
-
-		// set the notary contract on the notary manager
-		updateManager, ok := notaryManagerContract.ContractHandle().(*notarymanager.NotaryManagerRef)
-		if !ok {
-			return common.Address{}, nil, nil, fmt.Errorf("could not update contract: %w", err)
-		}
-
-		setTx, err := updateManager.SetOrigin(notaryTransactOps.TransactOpts, address)
-		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not set origin: %w", err)
-		}
-		d.Backend().WaitForConfirmation(ctx, setTx)
 
 		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -70,26 +52,7 @@ func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract,
 
 // Dependencies gets a list of dependencies used to deploy the origin contract.
 func (d OriginDeployer) Dependencies() []contracts.ContractType {
-	return []contracts.ContractType{NotaryManagerType}
-}
-
-// NotaryManagerDeployer deploys the update manager.
-type NotaryManagerDeployer struct {
-	*deployer.BaseDeployer
-}
-
-// NewNotaryManagerDeployer deploys a new notary manager.
-func NewNotaryManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return NotaryManagerDeployer{deployer.NewSimpleDeployer(registry, backend, NotaryManagerType)}
-}
-
-// Deploy deploys the notary contract.
-func (n NotaryManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return notarymanager.DeployNotaryManager(transactOps, backend, transactOps.From)
-	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return notarymanager.NewNotaryManagerRef(address, backend)
-	})
+	return []contracts.ContractType{}
 }
 
 // AttestationCollectorDeployer deploys the attestation collector.
@@ -162,5 +125,5 @@ func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 
 // Dependencies gets a list of dependencies used to deploy the destination contract.
 func (d DestinationDeployer) Dependencies() []contracts.ContractType {
-	return []contracts.ContractType{OriginType, NotaryManagerType}
+	return []contracts.ContractType{OriginType}
 }
