@@ -18,7 +18,7 @@ export function TokenActivityCard({ chainId }) {
   return (
     <ContainerCard
       title="Token Activity"
-      subtitle="24 hours"
+      subtitle="30 days"
       icon={<PresentationChartLineIcon className="w-5 h-5 text-purple-500" />}
     >
       <TokenActivity chainId={chainId} />
@@ -44,14 +44,14 @@ function TokenActivity({ chainId }) {
     variables: {
       chainId: Number(chainId),
       direction: 'OUT',
-      hours: 20000,
+      hours: 720,
     },
   })
   const { data: toData } = useQuery(COUNT_BY_TOKEN_ADDRESS, {
     variables: {
       chainId: Number(chainId),
       direction: 'IN',
-      hours: 20000,
+      hours: 720,
     },
   })
 

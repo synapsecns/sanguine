@@ -14,7 +14,7 @@ export function ChainActivityCard({ chainId }) {
   return (
     <ContainerCard
       title="Chain Activity"
-      subtitle="24 hours"
+      subtitle="30 days"
       icon={<FireIcon className="w-5 h-5 text-orange-500" />}
     >
       <ChainActivity chainId={chainId} />
@@ -27,7 +27,7 @@ export function getChainActivity({ chainId, direction }) {
     variables: {
       chainId: Number(chainId),
       direction,
-      hours: 20000,
+      hours: 720,
     },
   })
 

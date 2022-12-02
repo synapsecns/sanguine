@@ -85,7 +85,7 @@ export function LeaderCard({ rank, address, count }) {
           <InfoBlock
             title="Most Bridged"
             logo={<LightningBoltIcon className={infoBlockIconClassName} />}
-            content={<GetMostCommonTokens address={address} hours={24} />}
+            content={<GetMostCommonTokens address={address} hours={720} />}
           />
         </Grid>
       </ContainerCard>
