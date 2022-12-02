@@ -6,7 +6,7 @@ import { Report } from "../libs/Report.sol";
 import { TypedMemView } from "../libs/TypedMemView.sol";
 
 import { SystemRegistry } from "../system/SystemRegistry.sol";
-import { DomainNotaryRegistry } from "../registry/DomainNotaryRegistry.sol";
+import { GlobalNotaryRegistry } from "../registry/GlobalNotaryRegistry.sol";
 import { GuardRegistry } from "../registry/GuardRegistry.sol";
 import { OriginHubEvents } from "../events/OriginHubEvents.sol";
 import { AttestationHub } from "./AttestationHub.sol";
@@ -25,7 +25,7 @@ abstract contract OriginHub is
     SystemRegistry,
     AttestationHub,
     ReportHub,
-    DomainNotaryRegistry,
+    GlobalNotaryRegistry,
     GuardRegistry
 {
     using Attestation for bytes29;
@@ -33,6 +33,14 @@ abstract contract OriginHub is
     using TypedMemView for bytes29;
 
     using MerkleLib for MerkleLib.Tree;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              CONSTANTS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // Merkle root for an empty merkle tree.
+    bytes32 internal constant EMPTY_TREE_ROOT =
+        hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757";
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
@@ -46,13 +54,22 @@ abstract contract OriginHub is
     // gap for upgrade safety
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
 
-    // Merkle root for an empty merkle tree.
-    bytes32 internal constant EMPTY_TREE_ROOT =
-        hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757";
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Suggest a list of attestations for the off-chain actors to sign.
+     * Returns attestation data for every destination domain having at least one active Notary.
+     */
+    function suggestAttestations() external view returns (bytes[] memory attestationDataArray) {
+        uint256 amount = domainsAmount();
+        attestationDataArray = new bytes[](amount);
+        for (uint256 i = 0; i < amount; ++i) {
+            uint32 domain = getDomain(i);
+            attestationDataArray[i] = suggestAttestation({ _destination: domain });
+        }
+    }
 
     /**
      * @notice Suggest attestation for the off-chain actors to sign for a specific destination.
@@ -63,19 +80,22 @@ abstract contract OriginHub is
      * - nonce = 0
      * - root = 0x27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757
      * Which is the merkle root for an empty merkle tree.
-     * @return latestNonce Current nonce
-     * @return latestRoot  Current merkle root
+     * @return attestationData Data for the suggested attestation
      */
     function suggestAttestation(uint32 _destination)
-        external
+        public
         view
-        returns (uint32 latestNonce, bytes32 latestRoot)
+        returns (bytes memory attestationData)
     {
-        latestNonce = nonce(_destination);
-        latestRoot = getHistoricalRoot(_destination, latestNonce);
+        uint32 latestNonce = nonce(_destination);
+        return
+            Attestation.formatAttestationData({
+                _origin: _localDomain(),
+                _destination: _destination,
+                _nonce: latestNonce,
+                _root: getHistoricalRoot(_destination, latestNonce)
+            });
     }
-
-    // TODO: add suggestAttestations() once OriginHub inherits from GlobalNotaryRegistry
 
     /**
      * @notice Returns a historical merkle root for the given destination.
@@ -147,14 +167,15 @@ abstract contract OriginHub is
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool isValid) {
-        uint32 attestedDestination = _attestationView.attestedDestination();
-        uint32 attestedNonce = _attestationView.attestedNonce();
-        bytes32 attestedRoot = _attestationView.attestedRoot();
-        isValid = _isValidAttestation(attestedDestination, attestedNonce, attestedRoot);
+        uint32 _origin = _attestationView.attestedOrigin();
+        uint32 _destination = _attestationView.attestedDestination();
+        uint32 _nonce = _attestationView.attestedNonce();
+        bytes32 _root = _attestationView.attestedRoot();
+        isValid = _isValidAttestation(_origin, _destination, _nonce, _root);
         if (!isValid) {
             emit FraudAttestation(_notary, _attestation);
             // Guard doesn't receive anything, as Notary wasn't slashed using the Fraud Report
-            _slashNotary({ _domain: _localDomain(), _notary: _notary, _guard: address(0) });
+            _slashNotary({ _domain: _destination, _notary: _notary, _guard: address(0) });
             /**
              * TODO: design incentives for the reporter in a way, where they get less
              * by reporting directly instead of using a correct Fraud Report.
@@ -208,10 +229,11 @@ abstract contract OriginHub is
         bytes29 _reportView,
         bytes memory _report
     ) internal override returns (bool) {
-        uint32 attestedDestination = _attestationView.attestedDestination();
-        uint32 attestedNonce = _attestationView.attestedNonce();
-        bytes32 attestedRoot = _attestationView.attestedRoot();
-        if (_isValidAttestation(attestedDestination, attestedNonce, attestedRoot)) {
+        uint32 _origin = _attestationView.attestedOrigin();
+        uint32 _destination = _attestationView.attestedDestination();
+        uint32 _nonce = _attestationView.attestedNonce();
+        bytes32 _root = _attestationView.attestedRoot();
+        if (_isValidAttestation(_origin, _destination, _nonce, _root)) {
             // Attestation: Valid
             if (_reportView.reportedFraud()) {
                 // Flag: Fraud
@@ -231,7 +253,7 @@ abstract contract OriginHub is
                 // Report is correct, slash the Notary
                 emit CorrectFraudReport(_guard, _report);
                 emit FraudAttestation(_notary, _attestationView.clone());
-                _slashNotary({ _domain: _localDomain(), _notary: _notary, _guard: _guard });
+                _slashNotary({ _domain: _destination, _notary: _notary, _guard: _guard });
                 return true;
             } else {
                 // Flag: Valid
@@ -240,7 +262,7 @@ abstract contract OriginHub is
                 _slashGuard(_guard);
                 emit FraudAttestation(_notary, _attestationView.clone());
                 // Guard doesn't receive anything due to Valid flag on the Report
-                _slashNotary({ _domain: _localDomain(), _notary: _notary, _guard: address(0) });
+                _slashNotary({ _domain: _destination, _notary: _notary, _guard: address(0) });
                 return false;
             }
         }
@@ -320,10 +342,13 @@ abstract contract OriginHub is
      * - Merkle root after sending message with `nonce == _nonce` should match `_root`
      */
     function _isValidAttestation(
+        uint32 _origin,
         uint32 _destination,
         uint32 _nonce,
         bytes32 _root
     ) internal view returns (bool) {
+        // Attestation with origin domain not matching local domain should be discarded
+        require(_origin == _localDomain(), "!attestationOrigin: !local");
         if (_nonce < historicalRoots[_destination].length) {
             // If a nonce exists for a given destination,
             // a root should match the historical root

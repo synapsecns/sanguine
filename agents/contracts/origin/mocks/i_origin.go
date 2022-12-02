@@ -61,6 +61,29 @@ func (_m *IOrigin) Address() common.Address {
 	return r0
 }
 
+// AllDomains provides a mock function with given fields: opts
+func (_m *IOrigin) AllDomains(opts *bind.CallOpts) ([]uint32, error) {
+	ret := _m.Called(opts)
+
+	var r0 []uint32
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) []uint32); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uint32)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // AllGuards provides a mock function with given fields: opts
 func (_m *IOrigin) AllGuards(opts *bind.CallOpts) ([]common.Address, error) {
 	ret := _m.Called(opts)
@@ -84,13 +107,13 @@ func (_m *IOrigin) AllGuards(opts *bind.CallOpts) ([]common.Address, error) {
 	return r0, r1
 }
 
-// AllNotaries provides a mock function with given fields: opts
-func (_m *IOrigin) AllNotaries(opts *bind.CallOpts) ([]common.Address, error) {
-	ret := _m.Called(opts)
+// AllNotaries provides a mock function with given fields: opts, _domain
+func (_m *IOrigin) AllNotaries(opts *bind.CallOpts, _domain uint32) ([]common.Address, error) {
+	ret := _m.Called(opts, _domain)
 
 	var r0 []common.Address
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) []common.Address); ok {
-		r0 = rf(opts)
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) []common.Address); ok {
+		r0 = rf(opts, _domain)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]common.Address)
@@ -98,8 +121,8 @@ func (_m *IOrigin) AllNotaries(opts *bind.CallOpts) ([]common.Address, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
+		r1 = rf(opts, _domain)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -123,6 +146,29 @@ func (_m *IOrigin) Dispatch(opts *bind.TransactOpts, _destination uint32, _recip
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, [32]byte, uint32, []byte, []byte) error); ok {
 		r1 = rf(opts, _destination, _recipient, _optimisticSeconds, _tips, _messageBody)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DomainsAmount provides a mock function with given fields: opts
+func (_m *IOrigin) DomainsAmount(opts *bind.CallOpts) (*big.Int, error) {
+	ret := _m.Called(opts)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) *big.Int); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -429,6 +475,27 @@ func (_m *IOrigin) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwn
 	return r0, r1
 }
 
+// GetDomain provides a mock function with given fields: opts, _index
+func (_m *IOrigin) GetDomain(opts *bind.CallOpts, _index *big.Int) (uint32, error) {
+	ret := _m.Called(opts, _index)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, *big.Int) uint32); ok {
+		r0 = rf(opts, _index)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, *big.Int) error); ok {
+		r1 = rf(opts, _index)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetGuard provides a mock function with given fields: opts, _index
 func (_m *IOrigin) GetGuard(opts *bind.CallOpts, _index *big.Int) (common.Address, error) {
 	ret := _m.Called(opts, _index)
@@ -475,13 +542,13 @@ func (_m *IOrigin) GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _
 	return r0, r1
 }
 
-// GetNotary provides a mock function with given fields: opts, _index
-func (_m *IOrigin) GetNotary(opts *bind.CallOpts, _index *big.Int) (common.Address, error) {
-	ret := _m.Called(opts, _index)
+// GetNotary provides a mock function with given fields: opts, _domain, _index
+func (_m *IOrigin) GetNotary(opts *bind.CallOpts, _domain uint32, _index *big.Int) (common.Address, error) {
+	ret := _m.Called(opts, _domain, _index)
 
 	var r0 common.Address
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts, *big.Int) common.Address); ok {
-		r0 = rf(opts, _index)
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32, *big.Int) common.Address); ok {
+		r0 = rf(opts, _domain, _index)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(common.Address)
@@ -489,8 +556,8 @@ func (_m *IOrigin) GetNotary(opts *bind.CallOpts, _index *big.Int) (common.Addre
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts, *big.Int) error); ok {
-		r1 = rf(opts, _index)
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32, *big.Int) error); ok {
+		r1 = rf(opts, _domain, _index)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -609,13 +676,13 @@ func (_m *IOrigin) Nonce(opts *bind.CallOpts, _destination uint32) (uint32, erro
 	return r0, r1
 }
 
-// NotariesAmount provides a mock function with given fields: opts
-func (_m *IOrigin) NotariesAmount(opts *bind.CallOpts) (*big.Int, error) {
-	ret := _m.Called(opts)
+// NotariesAmount provides a mock function with given fields: opts, _domain
+func (_m *IOrigin) NotariesAmount(opts *bind.CallOpts, _domain uint32) (*big.Int, error) {
+	ret := _m.Called(opts, _domain)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) *big.Int); ok {
-		r0 = rf(opts)
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) *big.Int); ok {
+		r0 = rf(opts, _domain)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -623,8 +690,8 @@ func (_m *IOrigin) NotariesAmount(opts *bind.CallOpts) (*big.Int, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
+		r1 = rf(opts, _domain)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1130,31 +1197,44 @@ func (_m *IOrigin) SubmitReport(opts *bind.TransactOpts, _report []byte) (*types
 }
 
 // SuggestAttestation provides a mock function with given fields: opts, _destination
-func (_m *IOrigin) SuggestAttestation(opts *bind.CallOpts, _destination uint32) (struct {
-	LatestNonce uint32
-	LatestRoot  [32]byte
-}, error) {
+func (_m *IOrigin) SuggestAttestation(opts *bind.CallOpts, _destination uint32) ([]byte, error) {
 	ret := _m.Called(opts, _destination)
 
-	var r0 struct {
-		LatestNonce uint32
-		LatestRoot  [32]byte
-	}
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) struct {
-		LatestNonce uint32
-		LatestRoot  [32]byte
-	}); ok {
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) []byte); ok {
 		r0 = rf(opts, _destination)
 	} else {
-		r0 = ret.Get(0).(struct {
-			LatestNonce uint32
-			LatestRoot  [32]byte
-		})
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
 		r1 = rf(opts, _destination)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SuggestAttestations provides a mock function with given fields: opts
+func (_m *IOrigin) SuggestAttestations(opts *bind.CallOpts) ([][]byte, error) {
+	ret := _m.Called(opts)
+
+	var r0 [][]byte
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) [][]byte); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}

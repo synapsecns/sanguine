@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
@@ -61,6 +62,17 @@ func (d *DestinationSuite) SetupTest() {
 	d.signer = localsigner.NewSigner(d.wallet.PrivateKey())
 	d.testBackendOrigin.FundAccount(d.GetTestContext(), d.signer.Address(), *big.NewInt(params.Ether))
 	d.testBackendDestination.FundAccount(d.GetTestContext(), d.signer.Address(), *big.NewInt(params.Ether))
+
+	destOwnerPtr, err := d.destinationContract.DestinationCaller.Owner(&bind.CallOpts{Context: d.GetTestContext()})
+	if err != nil {
+		d.T().Fatal(err)
+	}
+
+	destOwnerAuth := d.testBackendDestination.GetTxContext(d.GetTestContext(), &destOwnerPtr)
+	_, err = d.destinationContract.SetNotary(destOwnerAuth.TransactOpts, uint32(d.testBackendDestination.GetChainID()), d.signer.Address())
+	if err != nil {
+		d.T().Fatal(err)
+	}
 }
 
 // TestDestinationSuite runs the integration test suite.

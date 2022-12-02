@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
@@ -65,6 +66,28 @@ func (a *AttestationCollectorSuite) SetupTest() {
 	a.signer = localsigner.NewSigner(a.wallet.PrivateKey())
 	a.testBackendOrigin.FundAccount(a.GetTestContext(), a.signer.Address(), *big.NewInt(params.Ether))
 	a.testBackendDestination.FundAccount(a.GetTestContext(), a.signer.Address(), *big.NewInt(params.Ether))
+
+	destOwnerPtr, err := a.destinationContract.DestinationCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
+	if err != nil {
+		a.T().Fatal(err)
+	}
+
+	destOwnerAuth := a.testBackendDestination.GetTxContext(a.GetTestContext(), &destOwnerPtr)
+	_, err = a.destinationContract.SetNotary(destOwnerAuth.TransactOpts, uint32(a.testBackendDestination.GetChainID()), a.signer.Address())
+	if err != nil {
+		a.T().Fatal(err)
+	}
+
+	originOwnerPtr, err := a.originContract.OriginCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
+	if err != nil {
+		a.T().Fatal(err)
+	}
+
+	originOwnerAuth := a.testBackendOrigin.GetTxContext(a.GetTestContext(), &originOwnerPtr)
+	_, err = a.originContract.AddNotary(originOwnerAuth.TransactOpts, uint32(a.testBackendOrigin.GetChainID()), a.signer.Address())
+	if err != nil {
+		a.T().Fatal(err)
+	}
 }
 
 // TestAttestationCollectorSuite runs the integration test suite.

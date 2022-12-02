@@ -19,6 +19,12 @@ abstract contract AbstractNotaryRegistry is NotaryRegistryEvents {
     using TypedMemView for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    modifier haveActiveNotary(uint32 _domain) virtual;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -91,7 +97,7 @@ abstract contract AbstractNotaryRegistry is NotaryRegistryEvents {
     function _checkNotaryAuth(bytes29 _view) internal view returns (address _notary) {
         require(_view.isAttestation(), "Not an attestation");
         _notary = Auth.recoverSigner(_view.attestationData(), _view.notarySignature().clone());
-        require(_isNotary(_view.attestedOrigin(), _notary), "Signer is not a notary");
+        require(_isNotary(_view.attestedDestination(), _notary), "Signer is not a notary");
     }
 
     /**

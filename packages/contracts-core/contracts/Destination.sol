@@ -180,24 +180,26 @@ contract Destination is Version0, DestinationEvents, DestinationHub, LocalDomain
      * @notice Blacklists Notary:
      * - New attestations signed by Notary are not accepted
      * - Any old roots attested by Notary can not be used for proving/executing
-     * @dev _notary is always an active Notary, _guard is always an active Guard.
-     * @param _domain   Domain where allegedly fraudulent Notary is active
-     * @param _notary   Notary address who allegedly committed fraud attestation
-     * @param _guard    Guard address that reported the Notary
-     * @param _report   Payload with Report data and signature
+     * @dev `_guard` is always an active Guard, `_notary` is always an active Notary.
+     * @param _guard            Guard address that reported the Notary
+     * @param _notary           Notary address who allegedly committed fraud attestation
+     * @param _attestationView  Memory view over reported Attestation
+     * @param _report           Payload with Report data and signature
      */
     function _blacklistNotary(
-        uint32 _domain,
-        address _notary,
         address _guard,
+        address _notary,
+        bytes29 _attestationView,
         bytes memory _report
     ) internal override {
-        _removeNotary(_domain, _notary);
+        _removeNotary(_localDomain(), _notary);
         emit NotaryBlacklisted(_notary, _guard, msg.sender, _report);
         blacklistedNotaries[_notary] = Blacklist({
             guard: _guard,
             blacklistedAt: uint96(block.timestamp)
         });
+        // TODO: save the reported attestation for dispute resolution
+        _attestationView;
         // TODO: Send system message indicating that a Notary was reported?
     }
 
