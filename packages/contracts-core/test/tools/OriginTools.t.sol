@@ -45,7 +45,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
 
     // Chain's default Notary attestation for given domain's Origin: current root and current nonce
     function createSuggestedAttestation(uint32 origin, uint32 destination) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
         createAttestation(origin, destination, nonce, root);
     }
 
@@ -55,7 +55,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         uint32 destination,
         uint256 notaryIndex
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
         createAttestation(origin, destination, nonce, root, notaryIndex);
     }
 
@@ -65,7 +65,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         uint32 destination,
         uint32 fakeNonce
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
         require(nonce != fakeNonce, "Failed to provide wrong nonce");
         createAttestation(origin, destination, fakeNonce, root);
     }
@@ -77,7 +77,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         uint32 fakeNonce,
         uint256 notaryIndex
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
         require(nonce != fakeNonce, "Failed to provide wrong nonce");
         createAttestation(origin, destination, fakeNonce, root, notaryIndex);
     }
@@ -88,7 +88,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         uint32 destination,
         bytes32 fakeRoot
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
         require(root != fakeRoot, "Failed to provide wrong nonce");
         createAttestation(origin, destination, nonce, fakeRoot);
     }
@@ -100,7 +100,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         bytes32 fakeRoot,
         uint256 notaryIndex
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestAttestation(destination);
+        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
         require(root != fakeRoot, "Failed to provide wrong nonce");
         createAttestation(origin, destination, nonce, fakeRoot, notaryIndex);
     }
@@ -242,13 +242,13 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     ) internal {
         // Check if given Notary was removed
         assertEq(
-            origin.isNotary(attestationNotary),
+            origin.isNotary(attestationDestination, attestationNotary),
             isValidAttestation,
             "Wrong Notary active status"
         );
         // Check if amount of Notaries changed
         assertEq(
-            origin.notariesAmount(),
+            origin.notariesAmount(attestationDestination),
             notariesAmount - (isValidAttestation ? 0 : 1),
             "Wrong amount of notaries"
         );
@@ -325,9 +325,9 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         returns (OriginHarness origin, uint256 notariesAmount)
     {
         origin = suiteOrigin(domain);
-        notariesAmount = origin.notariesAmount();
+        notariesAmount = origin.notariesAmount(attestationDestination);
         // Sanity check: notary was active
-        require(origin.isNotary(attestationNotary), "Notary wasn't active");
+        require(origin.isNotary(attestationDestination, attestationNotary), "Notary wasn't active");
     }
 
     // Returns state before submitting report and checks that Guard and Notary are active

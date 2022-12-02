@@ -89,7 +89,12 @@ contract Origin is Version0, OriginEvents, OriginHub, LocalDomainContext {
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
-    ) external payable haveActiveNotary returns (uint32 messageNonce, bytes32 messageHash) {
+    )
+        external
+        payable
+        haveActiveNotary(_destination)
+        returns (uint32 messageNonce, bytes32 messageHash)
+    {
         // TODO: add unit tests covering return values
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         bytes29 tips = _tips.castToTips();
@@ -98,7 +103,7 @@ contract Origin is Version0, OriginEvents, OriginHub, LocalDomainContext {
         // Check: total tips value matches msg.value
         require(tips.totalTips() == msg.value, "!tips: totalTips");
         // Latest nonce (i.e. "last message" nonce) is current amount of leaves in the tree.
-        // Message nonce is the amount of leaves after the new leaf insertion
+        // Message nonce is the amount of leaves after the leaf insertion
         messageNonce = nonce(_destination) + 1;
         // format the message into packed bytes
         bytes memory message = Message.formatMessage({

@@ -65,7 +65,8 @@ func NewContractSuite(tb testing.TB) *ContractSuite {
 	}
 }
 
-const attestationDomain = 4
+const attestationDomain = uint32(4)
+const testDestinationDomain = attestationDomain + 1
 
 func (i *ContractSuite) SetupTest() {
 	i.TestSuite.SetupTest()
@@ -89,7 +90,7 @@ func (i *ContractSuite) SetupTest() {
 	// add the notary to attestation contract
 	auth := i.attestationBackend.GetTxContext(i.GetTestContext(), attestationContract.OwnerPtr())
 
-	tx, err := i.attestationContract.AddNotary(auth.TransactOpts, attestationDomain, i.signer.Address())
+	tx, err := i.attestationContract.AddNotary(auth.TransactOpts, testDestinationDomain, i.signer.Address())
 	Nil(i.T(), err)
 	i.attestationBackend.WaitForConfirmation(i.GetTestContext(), tx)
 }

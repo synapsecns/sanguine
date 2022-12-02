@@ -22,26 +22,45 @@ contract OriginTest is OriginTools {
 
     function test_initializedCorrectly() public {
         for (uint256 d = 0; d < DOMAINS; ++d) {
-            uint32 domain = domains[d];
-            OriginHarness origin = suiteOrigin(domain);
+            uint32 localDomain = domains[d];
+            OriginHarness origin = suiteOrigin(localDomain);
             // Check local domain
-            assertEq(origin.localDomain(), domain, "!localDomain");
+            assertEq(origin.localDomain(), localDomain, "!localDomain");
             // Check owner
             assertEq(origin.owner(), owner, "!owner");
             // Check contract addresses
             assertEq(
                 address(origin.systemRouter()),
-                address(suiteSystemRouter(domain)),
+                address(suiteSystemRouter(localDomain)),
                 "!systemRouter"
             );
-            // Check chain notaries
-            assertEq(origin.notariesAmount(), NOTARIES_PER_CHAIN, "!notariesAmount");
-            for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
-                assertTrue(
-                    origin.isNotary(suiteNotary(domain, i)),
-                    string.concat("!notary", getActorSuffix(i))
-                );
+            // Check all notaries
+            for (uint256 dest = 0; dest < DOMAINS; ++dest) {
+                uint32 destDomain = domains[dest];
+                if (destDomain == localDomain) {
+                    // Origin should not keep track of local Notaries
+                    assertEq(origin.notariesAmount(destDomain), 0, "!notariesAmount: local domain");
+                    for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
+                        assertFalse(
+                            origin.isNotary(destDomain, suiteNotary(destDomain, i)),
+                            string.concat("!notary", getActorSuffix(i), ": local domain")
+                        );
+                    }
+                } else {
+                    assertEq(
+                        origin.notariesAmount(destDomain),
+                        NOTARIES_PER_CHAIN,
+                        "!notariesAmount: remote domain"
+                    );
+                    for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
+                        assertTrue(
+                            origin.isNotary(destDomain, suiteNotary(destDomain, i)),
+                            string.concat("!notary", getActorSuffix(i), ": remote domain")
+                        );
+                    }
+                }
             }
+
             // Check global guards
             assertEq(origin.guardsAmount(), GUARDS, "!guardsAmount");
             for (uint256 i = 0; i < GUARDS; ++i) {
@@ -58,6 +77,20 @@ contract OriginTest is OriginTools {
     function test_initialize_revert_onlyOnce() public {
         expectRevertAlreadyInitialized();
         suiteOrigin(DOMAIN_LOCAL).initialize();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          TESTS: OWNER ONLY                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_addNotary_revert_notOwner(address caller) public {
+        vm.assume(caller != owner);
+        for (uint256 d = 0; d < DOMAINS; ++d) {
+            OriginHarness origin = suiteOrigin(domains[d]);
+            expectRevertNotOwner();
+            vm.prank(caller);
+            origin.addNotary(1, address(1));
+        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -142,11 +175,17 @@ contract OriginTest is OriginTools {
         for (uint256 i = 0; i < amount; ++i) {
             test_dispatch();
         }
-        (uint32 nonce, bytes32 root) = origin.suggestAttestation(DOMAIN_REMOTE);
-        // Should return latest values
-        assertEq(nonce, amount, "!nonce");
-        assertEq(root, origin.root(DOMAIN_REMOTE), "!current root");
-        assertEq(root, origin.getHistoricalRoot(DOMAIN_REMOTE, nonce), "!historical root");
+        bytes memory data = origin.suggestAttestation(DOMAIN_REMOTE);
+        // Should match latest values
+        assertEq(
+            data,
+            Attestation.formatAttestationData({
+                _origin: DOMAIN_LOCAL,
+                _destination: DOMAIN_REMOTE,
+                _nonce: uint32(amount),
+                _root: origin.root(DOMAIN_REMOTE)
+            })
+        );
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -154,8 +193,14 @@ contract OriginTest is OriginTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_submitAttestation_revert_wrongDomain() public {
+        // Add local Notary: Origin is not supposed to track them
+        vm.prank(owner);
+        suiteOrigin(DOMAIN_LOCAL).addNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL));
         _createAttestation_revert_wrongDomain();
-        originSubmitAttestation({ domain: DOMAIN_LOCAL, revertMessage: "!localDomain" });
+        originSubmitAttestation({
+            domain: DOMAIN_LOCAL,
+            revertMessage: "!attestationOrigin: !local"
+        });
     }
 
     function test_submitAttestation_revert_notNotary() public {
@@ -201,9 +246,12 @@ contract OriginTest is OriginTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_submitReport_revert_wrongDomain() public {
+        // Add local Notary: Origin is not supposed to track them
+        vm.prank(owner);
+        suiteOrigin(DOMAIN_LOCAL).addNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL));
         _createAttestation_revert_wrongDomain();
         createReport(Report.Flag.Fraud);
-        originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "!localDomain" });
+        originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "!attestationOrigin: !local" });
     }
 
     function test_submitReport_revert_notNotary() public {
@@ -350,7 +398,7 @@ contract OriginTest is OriginTools {
     function test_halts_noNotaries() public {
         createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
         OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        origin.removeAllNotaries();
+        origin.removeAllNotaries(DOMAIN_REMOTE);
         originDispatch({ revertMessage: "!notaries" });
     }
 

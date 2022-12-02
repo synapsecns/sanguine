@@ -6,7 +6,7 @@ import { AttestationHub } from "./AttestationHub.sol";
 import { Report } from "../libs/Report.sol";
 import { ReportHub } from "./ReportHub.sol";
 import { SystemRegistry } from "../system/SystemRegistry.sol";
-import { GlobalNotaryRegistry } from "../registry/GlobalNotaryRegistry.sol";
+import { DomainNotaryRegistry } from "../registry/DomainNotaryRegistry.sol";
 import { GuardRegistry } from "../registry/GuardRegistry.sol";
 
 import { TypedMemView } from "../libs/TypedMemView.sol";
@@ -19,7 +19,7 @@ abstract contract DestinationHub is
     SystemRegistry,
     AttestationHub,
     ReportHub,
-    GlobalNotaryRegistry,
+    DomainNotaryRegistry,
     GuardRegistry
 {
     using Attestation for bytes29;
@@ -91,8 +91,8 @@ abstract contract DestinationHub is
         Root memory rootInfo = mirrorRoots[_origin][_root];
         // Check if root has been submitted
         require(rootInfo.submittedAt != 0, "Invalid root");
-        // Check if Notary is an active Notary
-        require(_isNotary(_origin, rootInfo.notary), "Inactive notary");
+        // Check if Notary is active on the local chain
+        require(_isNotary(_localDomain(), rootInfo.notary), "Inactive notary");
         // Check if optimistic period has passed
         require(block.timestamp >= rootInfo.submittedAt + _optimisticSeconds, "!optimisticSeconds");
         return true;
@@ -119,14 +119,11 @@ abstract contract DestinationHub is
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool) {
-        uint32 local = _localDomain();
-        uint32 origin = _attestationView.attestedOrigin();
-        // Attestation must have Origin as remote chain and Destination as local
-        require(origin != local, "!attestationOrigin: local");
-        require(_attestationView.attestedDestination() == local, "!attestationDestination: !local");
+        _checkAttestationDomains(_attestationView);
         bytes32 root = _attestationView.attestedRoot();
         // Empty root is clearly fraud, so should be rejected
         require(root != bytes32(0), "Empty root");
+        uint32 origin = _attestationView.attestedOrigin();
         uint32 nonce = _attestationView.attestedNonce();
         _updateMirror(_notary, origin, nonce, root);
         emit AttestationAccepted(_notary, _attestation);
@@ -156,8 +153,9 @@ abstract contract DestinationHub is
         bytes29 _reportView,
         bytes memory _report
     ) internal override returns (bool) {
+        _checkAttestationDomains(_attestationView);
         require(_reportView.reportedFraud(), "Not a fraud report");
-        _blacklistNotary(_attestationView.attestedOrigin(), _notary, _guard, _report);
+        _blacklistNotary(_guard, _notary, _attestationView, _report);
         return true;
     }
 
@@ -168,10 +166,10 @@ abstract contract DestinationHub is
         bytes32 _root
     ) internal {
         Mirror storage mirror = mirrors[_origin];
-        // New Attestation is accepted either if the nonce increased,
-        // or the latest attestation was signed by an inactive notary.
+        // New Attestation is accepted either if the nonce increased, or if the latest
+        // attestation was signed by a notary that is no longer active on the local domain.
         require(
-            _nonce > mirror.latestNonce || !_isNotary(_origin, mirror.latestNotary),
+            _nonce > mirror.latestNonce || !_isNotary(_localDomain(), mirror.latestNotary),
             "Outdated attestation"
         );
         (mirror.latestNonce, mirror.latestNotary) = (_nonce, _notary);
@@ -183,16 +181,23 @@ abstract contract DestinationHub is
 
     /**
      * @notice Child contracts should implement the blacklisting logic.
-     * @dev _notary is always an active Notary, _guard is always an active Guard.
-     * @param _domain   Origin domain where fraud was allegedly committed by Notary
-     * @param _notary   Notary address who allegedly committed fraud attestation
-     * @param _guard    Guard address that reported the Notary
-     * @param _report   Payload with Report data and signature
+     * @dev `_guard` is always an active Guard, `_notary` is always an active Notary.
+     * @param _guard            Guard address that reported the Notary
+     * @param _notary           Notary address who allegedly committed fraud attestation
+     * @param _attestationView  Memory view over reported Attestation
+     * @param _report           Payload with Report data and signature
      */
     function _blacklistNotary(
-        uint32 _domain,
-        address _notary,
         address _guard,
+        address _notary,
+        bytes29 _attestationView,
         bytes memory _report
     ) internal virtual;
+
+    function _checkAttestationDomains(bytes29 _attestationView) internal view {
+        uint32 local = _localDomain();
+        // Attestation must have Origin as remote chain and Destination as local
+        require(_attestationView.attestedOrigin() != local, "!attestationOrigin: local");
+        require(_attestationView.attestedDestination() == local, "!attestationDestination: !local");
+    }
 }
