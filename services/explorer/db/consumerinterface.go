@@ -41,8 +41,6 @@ type ConsumerDBReader interface {
 	// GetAddressRanking gets AddressRanking for a given query.
 	GetAddressRanking(ctx context.Context, query string) ([]*model.AddressRanking, error)
 
-	// GetAllChainIDs gets all chain IDs that have been used in bridge events.
-	GetAllChainIDs(ctx context.Context) ([]int, error)
 	// PartialInfosFromIdentifiers returns events given identifiers.
 	PartialInfosFromIdentifiers(ctx context.Context, query string) ([]*model.PartialInfo, error)
 	// PartialInfosFromIdentifiersByChain returns events given identifiers.

@@ -45,7 +45,7 @@ export function Stats({ bridgeVolume, transactions, addresses, setChartType }) {
   )
 }
 
-export function StatCard({ onClick, title, children, active = false }) {
+export function StatCard({ onClick, title, children, active = false,  duration = "30-day" }) {
   const activeClass = active ? 'opacity-100' : 'opacity-20 hover:opacity-100'
   return (
     <Card
@@ -56,7 +56,7 @@ export function StatCard({ onClick, title, children, active = false }) {
       {children}
       <div className="flex space-x-2 text-sm font-medium">
         <div className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-400">
-          30-day
+          {duration}
         </div>
       </div>
     </Card>

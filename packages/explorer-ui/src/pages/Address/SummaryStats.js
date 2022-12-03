@@ -32,27 +32,27 @@ export function SummaryStats({
             title="Total Bridge Transactions"
             logo={<FireIcon className={iconClassName} />}
             address={address}
-            type="COUNT"
+            type="COUNT_TRANSACTIONS"
           />
           <StatisticBlock
             title="Total Bridge Volume"
             logo={<CurrencyDollarIcon className={iconClassName} />}
             address={address}
-            type="TOTAL"
+            type="TOTAL_VOLUME_USD"
             prefix="$"
           />
           <StatisticBlock
             title="Mean Value"
             logo={<ScaleIcon className={iconClassName} />}
             address={address}
-            type="MEAN"
+            type="MEAN_VOLUME_USD"
             prefix="$"
           />
           <StatisticBlock
             title="Median Value"
             logo={<VariableIcon className={iconClassName} />}
             address={address}
-            type="MEDIAN"
+            type="MEDIAN_VOLUME_USD"
             prefix="$"
           />
         </Grid>

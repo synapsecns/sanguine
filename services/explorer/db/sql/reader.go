@@ -195,21 +195,6 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) (
 	return partialInfos, nil
 }
 
-// GetAllChainIDs gets all chain IDs that have been used in bridge events.
-func (s *Store) GetAllChainIDs(ctx context.Context) ([]int, error) {
-	var res []int
-
-	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-		`SELECT DISTINCT %s FROM bridge_events UNION DISTINCT SELECT DISTINCT toUInt32(%s) FROM bridge_events SETTINGS readonly=1`,
-		ChainIDFieldName, DestinationChainIDFieldName,
-	)).Find(&res)
-	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
-	}
-
-	return res, nil
-}
-
 // PartialInfosFromIdentifiersByChain returns events given identifiers. If order is true, the events are ordered by block number.
 //
 //nolint:cyclop

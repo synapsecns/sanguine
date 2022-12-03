@@ -71,7 +71,7 @@ export function LeaderCard({ rank, address, count }) {
             title="Total Bridge Volume"
             logo={<CurrencyDollarIcon className={iconClassName} />}
             address={address}
-            type="TOTAL"
+            type="TOTAL_VOLUME_USD"
             duration="PAST_DAY"
             prefix="$"
           />
@@ -79,7 +79,7 @@ export function LeaderCard({ rank, address, count }) {
             title="Total Bridge Transactions"
             logo={<FireIcon className={iconClassName} />}
             address={address}
-            type="COUNT"
+            type="COUNT_TRANSACTIONS"
             duration="PAST_DAY"
           />
           <InfoBlock

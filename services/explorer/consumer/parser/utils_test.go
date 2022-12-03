@@ -1,12 +1,12 @@
 package parser_test
 
 import (
-	"fmt"
-	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	"math/big"
 	"path/filepath"
 	"testing"
+
+	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 )
 
 func TestOpenYaml(t *testing.T) {
@@ -20,6 +20,5 @@ func TestOpenYaml(t *testing.T) {
 func TestGetAmountUSD(t *testing.T) {
 	price := 0.44
 	amount := parser.GetAmountUSD(big.NewInt(111100011), 2, &price)
-	fmt.Println(amount)
 	NotNil(t, amount)
 }

@@ -131,7 +131,7 @@ export const BRIDGE_AMOUNT_STATISTIC = gql`
       address:        $address
       tokenAddress:   $tokenAddress
     ) {
-      USDValue
+      value
     }
   }
 `

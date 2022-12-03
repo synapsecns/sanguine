@@ -2,10 +2,7 @@ import numeral from 'numeral'
 
 export function Chart({ data }) {
   if (data) {
-
     const numbers = normalize(data)
-    console.log(numbers)
-
     return (
       <div className="flex flex-col items-center w-full pb-6 rounded-lg shadow-xl sm:p-8">
         <div className="flex items-end flex-grow w-full mt-2 content-between">

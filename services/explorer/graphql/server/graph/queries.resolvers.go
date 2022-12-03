@@ -68,60 +68,50 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 // BridgeAmountStatistic is the resolver for the bridgeAmountStatistic field.
 func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error) {
 	var err error
-	var blockNumberFilter string
-	var chainIDFilter string
-
-	subQuery := "bridge_events"
+	var timestampSpecifier string
 	firstFilter := true
 
-	switch *duration {
-	case model.DurationPastDay:
+	if *duration == model.DurationPastDay {
 		hours := 24
 		targetTime := r.getTargetTime(&hours)
-
-		if chainID == nil {
-			subQuery, err = r.generateSubQuery(ctx, targetTime, sql.TokenFieldName, sql.ContractAddressFieldName)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			chainIDFilter = generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
-			blockNumberFilter = fmt.Sprintf("AND %s >= %d", sql.InsertTimeFieldName, targetTime)
-		}
-	case model.DurationAllTime:
-		chainIDFilter = generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
 	}
 
 	var operation string
 
 	switch typeArg {
-	case model.StatisticTypeMean:
-		operation = "AVG"
-	case model.StatisticTypeTotal:
-		operation = "sumKahan"
-	case model.StatisticTypeMedian:
-		operation = "median"
-	case model.StatisticTypeCount:
-		operation = "COUNT"
+	case model.StatisticTypeMeanVolumeUsd:
+		operation = fmt.Sprintf("AVG(%s)", sql.AmountUSDFieldName)
+	case model.StatisticTypeMedianVolumeUsd:
+		operation = fmt.Sprintf("median(%s)", sql.AmountUSDFieldName)
+	case model.StatisticTypeTotalVolumeUsd:
+		operation = fmt.Sprintf("sumKahan(%s)", sql.AmountUSDFieldName)
+	case model.StatisticTypeCountTransactions:
+		operation = fmt.Sprintf("COUNT(DISTINCT %s)", sql.TxHashFieldName)
+	case model.StatisticTypeCountAddresses:
+		operation = fmt.Sprintf("COUNT(DISTINCT %s)", sql.SenderFieldName)
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
 
-	tokenAddressFilter := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
-	addressFilter := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "")
+	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
+	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+
 	additionalFilters := fmt.Sprintf(
 		`%s%s%s%s`,
-		blockNumberFilter, chainIDFilter, tokenAddressFilter, addressFilter,
+		timestampSpecifier, tokenAddressSpecifier, addressSpecifier, chainIDSpecifier,
 	)
-	finalSQL := fmt.Sprintf("\nSELECT %s(toUInt256(%s)) FROM %s %s", operation, sql.AmountUSDFieldName, subQuery, additionalFilters)
+	finalSQL := fmt.Sprintf("\nSELECT %s FROM bridge_events %s", operation, additionalFilters)
 	res, err := r.DB.GetFloat64(ctx, finalSQL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}
 
-	usdValue := fmt.Sprintf("%f", res)
+	value := fmt.Sprintf("%f", res)
+	fmt.Println(value)
 	output := model.ValueResult{
-		USDValue: &usdValue,
+		Value: &value,
 	}
 
 	return &output, nil
@@ -153,12 +143,9 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 // AddressRanking is the resolver for the addressRanking field.
 func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*model.AddressRanking, error) {
 	targetTime := r.getTargetTime(hours)
-	subQuery, err := r.generateSubQuery(ctx, targetTime, sql.TokenFieldName, sql.TxHashFieldName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate subquery: %w", err)
-	}
-
-	query := fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS count FROM %s GROUP BY address ORDER BY count DESC`, sql.TokenFieldName, sql.TxHashFieldName, subQuery)
+	firstFilter := true
+	timeStampSpecifier := generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	query := fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS count FROM bridge_events %s GROUP BY address ORDER BY count DESC`, sql.TokenFieldName, sql.TxHashFieldName, timeStampSpecifier)
 	res, err := r.DB.GetAddressRanking(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)

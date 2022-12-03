@@ -3,20 +3,20 @@ package api_test
 import (
 	gosql "database/sql"
 	"fmt"
+	"math"
+	"math/big"
+	"sort"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
-	"math"
-	"math/big"
-	"sort"
-	"time"
 )
 
 //nolint:cyclop
-
 func (g APISuite) TestAddressRanking() {
 	var chainID uint32
 	chainIDs := []uint32{g.chainIDs[0], g.chainIDs[1], g.chainIDs[2]}
@@ -117,14 +117,13 @@ func (g APISuite) TestAddressRanking() {
 }
 
 // nolint:cyclop
-
 func (g APISuite) TestBridgeAmountStatistic() {
 	chainID := g.chainIDs[0]
 	destinationChainIDA := g.chainIDs[1]
 	destinationChainIDB := g.chainIDs[2]
 	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	tokenAddr := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
-
+	sender := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
 	cumulativePrice := []float64{}
 	// Generate bridge events for different chain IDs.
 	for blockNumber := uint64(1); blockNumber <= 10; blockNumber++ {
@@ -151,6 +150,7 @@ func (g APISuite) TestBridgeAmountStatistic() {
 			Amount:             big.NewInt(int64(gofakeit.Number(1, 300))),
 			AmountUSD:          &price,
 			TimeStamp:          &currentTime,
+			Sender:             sender,
 		})
 		// Set all times after current time, so we can get the events.
 		err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, uint64(time.Now().Unix())*blockNumber)
@@ -178,30 +178,36 @@ func (g APISuite) TestBridgeAmountStatistic() {
 		median = cumulativePrice[len(cumulativePrice)/2]
 	}
 
-	statType := model.StatisticTypeTotal
+	statType := model.StatisticTypeTotalVolumeUsd
 	duration := model.DurationPastDay
 	result, err := g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
-	Equal(g.T(), fmt.Sprintf("%f", total), *result.Response.USDValue)
+	Equal(g.T(), fmt.Sprintf("%f", total), *result.Response.Value)
 
-	statType = model.StatisticTypeCount
+	statType = model.StatisticTypeCountTransactions
 	result, err = g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
-	Equal(g.T(), fmt.Sprintf("%f", count), *result.Response.USDValue)
+	Equal(g.T(), fmt.Sprintf("%f", count), *result.Response.Value)
 
-	statType = model.StatisticTypeMean
+	statType = model.StatisticTypeMeanVolumeUsd
 	result, err = g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
-	Equal(g.T(), fmt.Sprintf("%f", mean), *result.Response.USDValue)
+	Equal(g.T(), fmt.Sprintf("%f", mean), *result.Response.Value)
 
-	statType = model.StatisticTypeMedian
+	statType = model.StatisticTypeMedianVolumeUsd
 	result, err = g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
-	Equal(g.T(), fmt.Sprintf("%f", median), *result.Response.USDValue)
+	Equal(g.T(), fmt.Sprintf("%f", median), *result.Response.Value)
+
+	statType = model.StatisticTypeCountAddresses
+	result, err = g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
+	Nil(g.T(), err)
+	NotNil(g.T(), result)
+	Equal(g.T(), "1.000000", *result.Response.Value)
 }
 
 //nolint:cyclop
@@ -598,8 +604,6 @@ func (g APISuite) TestLatestBridgeTransaction() {
 		txHashB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		kappaStringA = crypto.Keccak256Hash([]byte(txHashA.String())).String()[2:]
 		kappaStringB = crypto.Keccak256Hash([]byte(txHashB.String())).String()[2:]
-		fmt.Println("rnnnn", kappaStringA, "kappaStringB", kappaStringB)
-
 		currentTime := uint64(time.Now().Unix())
 		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
 			InsertTime:         1,

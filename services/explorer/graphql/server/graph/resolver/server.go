@@ -101,7 +101,7 @@ type ComplexityRoot struct {
 	}
 
 	ValueResult struct {
-		USDValue func(childComplexity int) int
+		Value func(childComplexity int) int
 	}
 }
 
@@ -403,12 +403,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TransactionCountResult.Count(childComplexity), true
 
-	case "ValueResult.USDValue":
-		if e.complexity.ValueResult.USDValue == nil {
+	case "ValueResult.value":
+		if e.complexity.ValueResult.Value == nil {
 			break
 		}
 
-		return e.complexity.ValueResult.USDValue(childComplexity), true
+		return e.complexity.ValueResult.Value(childComplexity), true
 
 	}
 	return 0, false
@@ -513,7 +513,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     chainId:    Int
     address:    String
     direction:  Direction = IN
-    hours:      Int = 20000
+    hours:      Int = 720
   ): [TransactionCountResult]
   """
   Returns counts of token addresses source and time.
@@ -584,10 +584,10 @@ type HistoricalResult {
   type:         HistoricalResultType
 }
 """
-ValueResult is a USDValue result.
+ValueResult is a value result of either USD or numeric value.
 """
 type ValueResult {
-  USDValue: String
+  value: String
 }
 """
 TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
@@ -621,10 +621,11 @@ enum Direction {
   OUT
 }
 enum StatisticType {
-  MEAN
-  MEDIAN
-  TOTAL
-  COUNT
+  MEAN_VOLUME_USD
+  MEDIAN_VOLUME_USD
+  TOTAL_VOLUME_USD
+  COUNT_TRANSACTIONS
+  COUNT_ADDRESSES
 }
 enum HistoricalResultType {
   BRIDGEVOLUME
@@ -2084,8 +2085,8 @@ func (ec *executionContext) fieldContext_Query_bridgeAmountStatistic(ctx context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "USDValue":
-				return ec.fieldContext_ValueResult_USDValue(ctx, field)
+			case "value":
+				return ec.fieldContext_ValueResult_value(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ValueResult", field.Name)
 		},
@@ -2674,8 +2675,8 @@ func (ec *executionContext) fieldContext_TransactionCountResult_count(ctx contex
 	return fc, nil
 }
 
-func (ec *executionContext) _ValueResult_USDValue(ctx context.Context, field graphql.CollectedField, obj *model.ValueResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ValueResult_USDValue(ctx, field)
+func (ec *executionContext) _ValueResult_value(ctx context.Context, field graphql.CollectedField, obj *model.ValueResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ValueResult_value(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2688,7 +2689,7 @@ func (ec *executionContext) _ValueResult_USDValue(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.USDValue, nil
+		return obj.Value, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2702,7 +2703,7 @@ func (ec *executionContext) _ValueResult_USDValue(ctx context.Context, field gra
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ValueResult_USDValue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ValueResult_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ValueResult",
 		Field:      field,
@@ -4943,9 +4944,9 @@ func (ec *executionContext) _ValueResult(ctx context.Context, sel ast.SelectionS
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ValueResult")
-		case "USDValue":
+		case "value":
 
-			out.Values[i] = ec._ValueResult_USDValue(ctx, field, obj)
+			out.Values[i] = ec._ValueResult_value(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

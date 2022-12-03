@@ -81,7 +81,7 @@ query GetBridgeAmountStatistic($type: StatisticType!, $duration: Duration, $chai
     address: $address
     tokenAddress: $tokenAddress
   ) {
-    USDValue
+    value
   }
 }
 

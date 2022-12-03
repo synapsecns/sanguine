@@ -91,7 +91,7 @@ type GetLatestBridgeTransactions struct {
 }
 type GetBridgeAmountStatistic struct {
 	Response *struct {
-		USDValue *string "json:\"USDValue\" graphql:\"USDValue\""
+		Value *string "json:\"value\" graphql:\"value\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetCountByChainID struct {
@@ -225,7 +225,7 @@ func (c *Client) GetLatestBridgeTransactions(ctx context.Context, includePending
 
 const GetBridgeAmountStatisticDocument = `query GetBridgeAmountStatistic ($type: StatisticType!, $duration: Duration, $chainId: Int, $address: String, $tokenAddress: String) {
 	response: bridgeAmountStatistic(type: $type, duration: $duration, chainId: $chainId, address: $address, tokenAddress: $tokenAddress) {
-		USDValue
+		value
 	}
 }
 `

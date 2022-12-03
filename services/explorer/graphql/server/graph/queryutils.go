@@ -93,6 +93,8 @@ func generateSingleSpecifierI32SQL(value *int, field string, firstFilter *bool, 
 }
 
 // generateTimestampSpecifierSQL generates a where function with an uint64.
+//
+// nolint:unparam
 func generateTimestampSpecifierSQL(value *uint64, field string, firstFilter *bool, tablePrefix string) string {
 	if value != nil {
 		if *firstFilter {
@@ -227,26 +229,6 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 			sql.ChainIDFieldName, sql.TxHashFieldName, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, timestampSpecifier, sql.ChainIDFieldName)
 	}
 	return query
-}
-
-func (r *queryResolver) generateSubQuery(ctx context.Context, targetTime uint64, colOne string, colTwo string) (string, error) {
-	subQuery := "("
-	chainIDs, err := r.DB.GetAllChainIDs(ctx)
-	if err != nil {
-		return subQuery, fmt.Errorf("failed to get chain IDs: %w", err)
-	}
-
-	for i, chain := range chainIDs {
-		sqlString := fmt.Sprintf("\nSELECT %s, %s, amount_usd FROM bridge_events WHERE %s = %d AND  %s >= %d AND %s", colOne, colTwo, sql.ChainIDFieldName, chain, sql.TimeStampFieldName, targetTime, deDupInQuery)
-
-		if i != len(chainIDs)-1 {
-			sqlString += " UNION ALL"
-		}
-
-		subQuery += sqlString
-	}
-
-	return subQuery + ")", nil
 }
 
 // GetPartialInfoFromBridgeEventSingle returns the partial info from bridge event.

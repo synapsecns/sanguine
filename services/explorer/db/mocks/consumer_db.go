@@ -42,29 +42,6 @@ func (_m *ConsumerDB) GetAddressRanking(ctx context.Context, query string) ([]*m
 	return r0, r1
 }
 
-// GetAllChainIDs provides a mock function with given fields: ctx
-func (_m *ConsumerDB) GetAllChainIDs(ctx context.Context) ([]int, error) {
-	ret := _m.Called(ctx)
-
-	var r0 []int
-	if rf, ok := ret.Get(0).(func(context.Context) []int); ok {
-		r0 = rf(ctx)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetBridgeEvent provides a mock function with given fields: ctx, query
 func (_m *ConsumerDB) GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error) {
 	ret := _m.Called(ctx, query)
