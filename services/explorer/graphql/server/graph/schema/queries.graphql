@@ -8,16 +8,16 @@ type Query {
     address:        String
     txnHash:        String
     kappa:          String
-    includePending: Boolean!
-    page:           Int!
+    includePending: Boolean = true
+    page:           Int = 1
     tokenAddress:   String
   ): [BridgeTransaction]
   """
   Returns the latest bridged transactions across all chains.
   """
   latestBridgeTransactions(
-    includePending: Boolean!
-    page:           Int!
+    includePending: Boolean = true
+    page:           Int = 1
   ): [BridgeTransaction]
   """
   Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
@@ -39,7 +39,7 @@ type Query {
     chainId:    Int
     address:    String
     direction:  Direction = IN
-    hours:      Int = 24
+    hours:      Int = 720
   ): [TransactionCountResult]
   """
   Returns counts of token addresses source and time.

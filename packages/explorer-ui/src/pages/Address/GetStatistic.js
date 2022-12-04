@@ -12,7 +12,7 @@ export function GetStatistic({ address, type, prefix, duration = 'ALL_TIME' }) {
     },
   })
 
-  let value = data?.bridgeAmountStatistic?.USDValue
+  let value = data?.bridgeAmountStatistic?.value
 
   if (value) {
     return formatValue(value, prefix)

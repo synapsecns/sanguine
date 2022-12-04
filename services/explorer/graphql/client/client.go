@@ -91,7 +91,7 @@ type GetLatestBridgeTransactions struct {
 }
 type GetBridgeAmountStatistic struct {
 	Response *struct {
-		USDValue *string "json:\"USDValue\" graphql:\"USDValue\""
+		Value *string "json:\"value\" graphql:\"value\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetCountByChainID struct {
@@ -124,7 +124,7 @@ type GetHistoricalStatistics struct {
 	} "json:\"response\" graphql:\"response\""
 }
 
-const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainId: Int, $address: String, $txHash: String, $kappa: String, $includePending: Boolean!, $page: Int!, $tokenAddress: String) {
+const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainId: Int, $address: String, $txHash: String, $kappa: String, $includePending: Boolean, $page: Int, $tokenAddress: String) {
 	response: bridgeTransactions(chainId: $chainId, address: $address, txnHash: $txHash, kappa: $kappa, includePending: $includePending, page: $page, tokenAddress: $tokenAddress) {
 		fromInfo {
 			chainId
@@ -157,7 +157,7 @@ const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainId: In
 }
 `
 
-func (c *Client) GetBridgeTransactions(ctx context.Context, chainID *int, address *string, txHash *string, kappa *string, includePending bool, page int, tokenAddress *string, httpRequestOptions ...client.HTTPRequestOption) (*GetBridgeTransactions, error) {
+func (c *Client) GetBridgeTransactions(ctx context.Context, chainID *int, address *string, txHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string, httpRequestOptions ...client.HTTPRequestOption) (*GetBridgeTransactions, error) {
 	vars := map[string]interface{}{
 		"chainId":        chainID,
 		"address":        address,
@@ -176,7 +176,7 @@ func (c *Client) GetBridgeTransactions(ctx context.Context, chainID *int, addres
 	return &res, nil
 }
 
-const GetLatestBridgeTransactionsDocument = `query GetLatestBridgeTransactions ($includePending: Boolean!, $page: Int!) {
+const GetLatestBridgeTransactionsDocument = `query GetLatestBridgeTransactions ($includePending: Boolean, $page: Int) {
 	response: latestBridgeTransactions(includePending: $includePending, page: $page) {
 		fromInfo {
 			chainId
@@ -209,7 +209,7 @@ const GetLatestBridgeTransactionsDocument = `query GetLatestBridgeTransactions (
 }
 `
 
-func (c *Client) GetLatestBridgeTransactions(ctx context.Context, includePending bool, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetLatestBridgeTransactions, error) {
+func (c *Client) GetLatestBridgeTransactions(ctx context.Context, includePending *bool, page *int, httpRequestOptions ...client.HTTPRequestOption) (*GetLatestBridgeTransactions, error) {
 	vars := map[string]interface{}{
 		"includePending": includePending,
 		"page":           page,
@@ -225,7 +225,7 @@ func (c *Client) GetLatestBridgeTransactions(ctx context.Context, includePending
 
 const GetBridgeAmountStatisticDocument = `query GetBridgeAmountStatistic ($type: StatisticType!, $duration: Duration, $chainId: Int, $address: String, $tokenAddress: String) {
 	response: bridgeAmountStatistic(type: $type, duration: $duration, chainId: $chainId, address: $address, tokenAddress: $tokenAddress) {
-		USDValue
+		value
 	}
 }
 `
