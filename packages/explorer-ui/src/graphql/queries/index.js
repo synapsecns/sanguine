@@ -24,7 +24,6 @@ const BRIDGE_TRANSACTION_INFO_FRAGMENT = gql`
 
     kappa
     pending
-    status
     swapSuccess
   }
 
@@ -132,7 +131,7 @@ export const BRIDGE_AMOUNT_STATISTIC = gql`
       address:        $address
       tokenAddress:   $tokenAddress
     ) {
-      USDValue
+      value
     }
   }
 `

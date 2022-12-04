@@ -134,27 +134,36 @@ export function TokenAddress() {
   return (
     <StandardPageContainer title={title}>
       <Grid cols={{ sm: 1, md: 3, lg: 3 }} gap={4} className="my-5">
-        <StatCard title="Transaction Count" active={true}>
+        <StatCard title="Volume" active={true} duration="All-Time">
           <div className="text-4xl font-bold text-white">
-            {numeral(
-              getTransactionCount({
+            ${
+              getBridgeVolume({
                 chainId,
                 tokenAddress,
                 duration: 'ALL_TIME',
               })
-            ).format('0,0')}
+            }
           </div>
         </StatCard>
-        <StatCard title="Transaction Count" active={true}>
+        <StatCard title="Transaction Count" active={true}  duration="All-Time">
           <div className="text-4xl font-bold text-white">
-            {numeral(
-              getBridgeVolume({ chainId, tokenAddress, duration: 'ALL_TIME' })
-            ).format('$0,0')}
-            m
+            {getTransactionCount({
+              chainId,
+              tokenAddress,
+              duration: 'ALL_TIME',
+            })}
           </div>
         </StatCard>
-        <StatCard title="Addresses" active={true}>
-          <div className="text-4xl font-bold text-white">24,490</div>
+        <StatCard title="Addresses" active={true}  duration="All-Time">
+          <div className="text-4xl font-bold text-white">
+          {
+              getAddressCount({
+                chainId,
+                tokenAddress,
+                duration: 'ALL_TIME',
+              })
+            }
+          </div>
         </StatCard>
       </Grid>
       {content}
@@ -168,30 +177,51 @@ export function TokenAddress() {
   )
 }
 
-function getBridgeVolume({ chainId, tokenAddress, duration }) {
+function getTransactionCount({ chainId, tokenAddress, duration }) {
   const { data } = useQuery(BRIDGE_AMOUNT_STATISTIC, {
     variables: {
       chainId: chainId && Number(chainId),
       duration,
-      tokenAddress,
-      type: 'TOTAL',
+      tokenAddress: getAddress(tokenAddress),
+      type: 'COUNT_TRANSACTIONS',
     },
   })
 
-  const totalVolume = data?.bridgeAmountStatistic?.USDValue
-
-  return totalVolume / 1000000
+  return normalizeValue(data?.bridgeAmountStatistic?.value)
 }
 
-function getTransactionCount({ chainId, tokenAddress, duration }) {
+function getBridgeVolume({ chainId, tokenAddress, duration }) {
   const { data } = useQuery(BRIDGE_AMOUNT_STATISTIC, {
     variables: {
       chainId: Number(chainId),
       duration,
       tokenAddress: getAddress(tokenAddress),
-      type: 'COUNT',
+      type: 'TOTAL_VOLUME_USD',
     },
   })
 
-  return data?.bridgeAmountStatistic?.USDValue
+  return normalizeValue(data?.bridgeAmountStatistic?.value)
+}
+
+function getAddressCount({ chainId, tokenAddress, duration }) {
+  const { data } = useQuery(BRIDGE_AMOUNT_STATISTIC, {
+    variables: {
+      chainId: Number(chainId),
+      duration,
+      tokenAddress: getAddress(tokenAddress),
+      type: 'COUNT_ADDRESSES',
+    },
+  })
+
+  return normalizeValue(data?.bridgeAmountStatistic?.value)
+}
+
+function normalizeValue(value) {
+  if (value >= 1000000000) {
+    return numeral(value / 1000000000).format('0.00').toString() + "B"
+  }
+  else if (value >= 1000000) {
+    return numeral(value / 1000000).format('0.00').toString() + "M"
+  }
+  return numeral(value).format('0,0').toString()
 }
