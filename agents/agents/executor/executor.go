@@ -26,7 +26,7 @@ type Executor struct {
 	config config.Config
 	// scribeClient is the client to the Scribe gRPC server.
 	scribeClient client.ScribeClient
-	// lastLog is a map from chainID -> last log processed.
+	// lastLog is a map from chain ID -> last log processed.
 	lastLog map[uint32]logOrderInfo
 	// lastLogMutex is a mutex for the lastLog map.
 	lastLogMutex *sync.Mutex
@@ -40,8 +40,8 @@ type Executor struct {
 	attestationcollectorParsers map[uint32]attestationcollector.Parser
 	// LogChans is a mapping from chain ID -> log channel.
 	LogChans map[uint32]chan *ethTypes.Log
-	// MerkleTree is the merkle tree.
-	MerkleTree *trieutil.SparseMerkleTrie
+	// MerkleTrees is a map from chain ID -> merkle tree.
+	MerkleTrees map[uint32]*trieutil.SparseMerkleTrie
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -59,6 +59,7 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 	roots := make(map[uint32][][32]byte)
 	originParsers := make(map[uint32]origin.Parser)
 	attestationcollectorParsers := make(map[uint32]attestationcollector.Parser)
+	merkleTrees := make(map[uint32]*trieutil.SparseMerkleTrie)
 
 	for _, chain := range config.Chains {
 		channels[chain.ChainID] = make(chan *ethTypes.Log, 1000)
@@ -76,11 +77,13 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 		}
 
 		attestationcollectorParsers[chain.ChainID] = attestationcollectorParser
-	}
 
-	merkleTree, err := trieutil.NewTrie(treeDepth)
-	if err != nil {
-		return nil, fmt.Errorf("could not create merkle tree: %w", err)
+		merkleTree, err := trieutil.NewTrie(treeDepth)
+		if err != nil {
+			return nil, fmt.Errorf("could not create merkle tree: %w", err)
+		}
+
+		merkleTrees[chain.ChainID] = merkleTree
 	}
 
 	return &Executor{
@@ -93,7 +96,7 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 		originParsers:               originParsers,
 		attestationcollectorParsers: attestationcollectorParsers,
 		LogChans:                    channels,
-		MerkleTree:                  merkleTree,
+		MerkleTrees:                 merkleTrees,
 	}, nil
 }
 
@@ -233,7 +236,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 // processLog processes the log and updates the merkle tree.
 func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
-	merkleIndex := e.MerkleTree.NumOfItems()
+	merkleIndex := e.MerkleTrees[chainID].NumOfItems()
 	leafData, err := e.logToLeaf(log, chainID)
 	if err != nil {
 		return fmt.Errorf("could not convert log to leaf: %w", err)
@@ -242,8 +245,8 @@ func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
 		return nil
 	}
 
-	e.MerkleTree.Insert(leafData, merkleIndex)
-	e.roots[chainID] = append(e.roots[chainID], e.MerkleTree.Root())
+	e.MerkleTrees[chainID].Insert(leafData, merkleIndex)
+	e.roots[chainID] = append(e.roots[chainID], e.MerkleTrees[chainID].Root())
 
 	return nil
 }
