@@ -65,6 +65,18 @@ contract ByteStringHarness {
         return (_view.typeOf(), _view.clone());
     }
 
+    function toRSV(uint40 _type, bytes memory _payload)
+        public
+        pure
+        returns (
+            bytes32,
+            bytes32,
+            uint8
+        )
+    {
+        return _payload.ref(_type).toRSV();
+    }
+
     function argumentWords(uint40 _type, bytes memory _payload) public pure returns (uint256) {
         return _payload.ref(_type).argumentWords();
     }
