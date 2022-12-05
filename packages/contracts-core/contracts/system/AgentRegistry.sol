@@ -34,9 +34,19 @@ abstract contract AgentRegistry is AgentRegistryEvents {
      */
     uint256 private epoch;
 
+    /**
+     * @notice All active domains, i.e. domains having at least one active agent.
+     * Note: guards are stored with domain = 0, meaning a zero domain will be included
+     * in the list of active domains, should there be at least one active Guard.
+     */
     // (epoch => [active domains])
     mapping(uint256 => EnumerableSet.UintSet) internal domains;
 
+    /**
+     * @notice DomainAddressSet implies that every agent is stored as a (domain, account) tuple.
+     * Guard is active on all domains => Guards are stored as (domain = 0, account).
+     * Notary is active on one (non-zero) domain => Notaries are stored as (domain > 0, account).
+     */
     // (epoch => [set of active agents for all domains])
     mapping(uint256 => AgentSet.DomainAddressSet) internal agents;
 
@@ -96,6 +106,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
 
     /**
      * @notice Returns true if the agent is active on the given domain.
+     * Note: domain == 0 refers to a Guard, while _domain > 0 refers to a Notary.
      */
     function isActiveAgent(uint32 _domain, address _account) external view returns (bool) {
         return _isActiveAgent(_domain, _account);
@@ -130,6 +141,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     /**
      * @notice Returns i-th agent for a given domain.
      * @dev Will revert if index is out of range
+     * Note: domain == 0 refers to a Guard, while _domain > 0 refers to a Notary.
      */
     function getAgent(uint32 _domain, uint256 _agentIndex) public view returns (address) {
         return agents[_currentEpoch()].at(_domain, _agentIndex);
@@ -151,6 +163,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     /**
      * @dev Tries to add an agent to the domain. If added, emits a corresponding event,
      * updates the list of active domains if necessary, and triggers a corresponding hook.
+     * Note: use _domain == 0 to add a Guard, _domain > 0 to add a Notary.
      */
     function _addAgent(uint32 _domain, address _account) internal returns (bool wasAdded) {
         // Some Registries may want to ignore certain agents
@@ -174,6 +187,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     /**
      * @dev Tries to remove an agent from the domain. If removed, emits a corresponding event,
      * updates the list of active domains if necessary, and triggers a corresponding hook.
+     * Note: use _domain == 0 to remove a Guard, _domain > 0 to remove a Notary.
      */
     function _removeAgent(uint32 _domain, address _account) internal returns (bool wasRemoved) {
         // Some Registries may want to ignore certain agents
@@ -237,6 +251,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     /**
      * @dev Recovers a signer from digest and signature, and checks if they are
      * active on the given domain.
+     * Note: domain == 0 refers to a Guard, while _domain > 0 refers to a Notary.
      */
     function _checkAgentAuth(
         uint32 _domain,
@@ -257,6 +272,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
 
     /**
      * @dev Checks if agent is active on the given domain.
+     * Note: domain == 0 refers to a Guard, while _domain > 0 refers to a Notary.
      */
     function _isActiveAgent(uint32 _domain, address _account) internal view returns (bool) {
         // Check the list of the domain's agents in the current epoch
@@ -278,6 +294,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
      * In other words, do not use any values that might change over time, when implementing.
      * Otherwise, unexpected behavior might be expected. For instance, if an agent was added,
      * and then it became "ignored", it would be not possible to remove such agent.
+     * Note: domain == 0 refers to a Guard, while _domain > 0 refers to a Notary.
      */
     function _isIgnoredAgent(uint32 _domain, address _account) internal view virtual returns (bool);
 }
