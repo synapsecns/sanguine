@@ -28,8 +28,8 @@ type Executor struct {
 	scribeClient client.ScribeClient
 	// lastLog is a map from chain ID -> last log processed.
 	lastLog map[uint32]logOrderInfo
-	// lastLogMutex is a mutex for the lastLog map.
-	lastLogMutex *sync.Mutex
+	// lastLogMutexes is a map from chain ID -> mutex for the lastLog map.
+	lastLogMutexes map[uint32]*sync.Mutex
 	// closeConnection is a map from chain ID -> channel to close the connection.
 	closeConnection map[uint32]chan bool
 	// roots is a map from chain ID -> slice of merkle roots. The root at [i] is the root of nonce i.
@@ -54,6 +54,7 @@ const treeDepth uint64 = 32
 
 // NewExecutor creates a new executor agent.
 func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Executor, error) {
+	lastLogMutexes := make(map[uint32]*sync.Mutex)
 	channels := make(map[uint32]chan *ethTypes.Log)
 	closeChans := make(map[uint32]chan bool)
 	roots := make(map[uint32][][32]byte)
@@ -62,6 +63,7 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 	merkleTrees := make(map[uint32]*trieutil.SparseMerkleTrie)
 
 	for _, chain := range config.Chains {
+		lastLogMutexes[chain.ChainID] = &sync.Mutex{}
 		channels[chain.ChainID] = make(chan *ethTypes.Log, 1000)
 		closeChans[chain.ChainID] = make(chan bool, 1)
 		roots[chain.ChainID] = [][32]byte{}
@@ -90,7 +92,7 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 		config:                      config,
 		scribeClient:                scribeClient,
 		lastLog:                     make(map[uint32]logOrderInfo),
-		lastLogMutex:                &sync.Mutex{},
+		lastLogMutexes:              lastLogMutexes,
 		closeConnection:             closeChans,
 		roots:                       roots,
 		originParsers:               originParsers,
@@ -224,12 +226,12 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			}
 
 			e.LogChans[chain.ChainID] <- log
-			e.lastLogMutex.Lock()
+			e.lastLogMutexes[chain.ChainID].Lock()
 			e.lastLog[chain.ChainID] = logOrderInfo{
 				blockNumber: log.BlockNumber,
 				blockIndex:  log.Index,
 			}
-			e.lastLogMutex.Unlock()
+			e.lastLogMutexes[chain.ChainID].Unlock()
 		}
 	}
 }
