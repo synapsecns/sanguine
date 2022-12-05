@@ -38,7 +38,7 @@ const invalidTxVRSError = "invalid transaction v, r, s values"
 const txNotFoundError = "not found"
 
 // retryTolerance is the number of times to retry a failed operation.
-const retryTolerance = 10
+const retryTolerance = 15
 
 // NewContractBackfiller creates a new backfiller for a contract.
 func NewContractBackfiller(chainConfig config.ChainConfig, address string, eventDB db.EventDB, client []ScribeBackend) (*ContractBackfiller, error) {
