@@ -23,42 +23,46 @@ type IOriginCaller interface {
 	//
 	// Solidity: function VERSION() view returns(uint8)
 	VERSION(opts *bind.CallOpts) (uint8, error)
+	// AllAgents is a free data retrieval call binding the contract method 0x64ecb518.
+	//
+	// Solidity: function allAgents(uint32 _domain) view returns(address[])
+	AllAgents(opts *bind.CallOpts, _domain uint32) ([]common.Address, error)
 	// AllDomains is a free data retrieval call binding the contract method 0x6f225878.
 	//
 	// Solidity: function allDomains() view returns(uint32[] domains_)
 	AllDomains(opts *bind.CallOpts) ([]uint32, error)
-	// AllGuards is a free data retrieval call binding the contract method 0x9fe03fa2.
+	// AmountAgents is a free data retrieval call binding the contract method 0x32254098.
 	//
-	// Solidity: function allGuards() view returns(address[])
-	AllGuards(opts *bind.CallOpts) ([]common.Address, error)
-	// AllNotaries is a free data retrieval call binding the contract method 0xd9b3cdcc.
+	// Solidity: function amountAgents(uint32 _domain) view returns(uint256)
+	AmountAgents(opts *bind.CallOpts, _domain uint32) (*big.Int, error)
+	// AmountDomains is a free data retrieval call binding the contract method 0x61b0b357.
 	//
-	// Solidity: function allNotaries(uint32 _domain) view returns(address[])
-	AllNotaries(opts *bind.CallOpts, _domain uint32) ([]common.Address, error)
-	// DomainsAmount is a free data retrieval call binding the contract method 0x30dcf706.
+	// Solidity: function amountDomains() view returns(uint256)
+	AmountDomains(opts *bind.CallOpts) (*big.Int, error)
+	// GetAgent is a free data retrieval call binding the contract method 0x1d82873b.
 	//
-	// Solidity: function domainsAmount() view returns(uint256)
-	DomainsAmount(opts *bind.CallOpts) (*big.Int, error)
+	// Solidity: function getAgent(uint32 _domain, uint256 _agentIndex) view returns(address)
+	GetAgent(opts *bind.CallOpts, _domain uint32, _agentIndex *big.Int) (common.Address, error)
 	// GetDomain is a free data retrieval call binding the contract method 0x1a7a98e2.
 	//
-	// Solidity: function getDomain(uint256 _index) view returns(uint32)
-	GetDomain(opts *bind.CallOpts, _index *big.Int) (uint32, error)
-	// GetGuard is a free data retrieval call binding the contract method 0x629ddf69.
-	//
-	// Solidity: function getGuard(uint256 _index) view returns(address)
-	GetGuard(opts *bind.CallOpts, _index *big.Int) (common.Address, error)
+	// Solidity: function getDomain(uint256 _domainIndex) view returns(uint32)
+	GetDomain(opts *bind.CallOpts, _domainIndex *big.Int) (uint32, error)
 	// GetHistoricalRoot is a free data retrieval call binding the contract method 0xf94adcb4.
 	//
 	// Solidity: function getHistoricalRoot(uint32 _destination, uint32 _nonce) view returns(bytes32)
 	GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, error)
-	// GetNotary is a free data retrieval call binding the contract method 0x6a39aefa.
+	// IsActiveAgent is a free data retrieval call binding the contract method 0x0958117d.
 	//
-	// Solidity: function getNotary(uint32 _domain, uint256 _index) view returns(address)
-	GetNotary(opts *bind.CallOpts, _domain uint32, _index *big.Int) (common.Address, error)
-	// GuardsAmount is a free data retrieval call binding the contract method 0x246c2449.
+	// Solidity: function isActiveAgent(uint32 _domain, address _account) view returns(bool)
+	IsActiveAgent(opts *bind.CallOpts, _domain uint32, _account common.Address) (bool, error)
+	// IsActiveAgent0 is a free data retrieval call binding the contract method 0x65e1e466.
 	//
-	// Solidity: function guardsAmount() view returns(uint256)
-	GuardsAmount(opts *bind.CallOpts) (*big.Int, error)
+	// Solidity: function isActiveAgent(address _account) view returns(bool)
+	IsActiveAgent0(opts *bind.CallOpts, _account common.Address) (bool, error)
+	// IsActiveDomain is a free data retrieval call binding the contract method 0x4f5dbc0d.
+	//
+	// Solidity: function isActiveDomain(uint32 _domain) view returns(bool)
+	IsActiveDomain(opts *bind.CallOpts, _domain uint32) (bool, error)
 	// LocalDomain is a free data retrieval call binding the contract method 0x8d3638f4.
 	//
 	// Solidity: function localDomain() view returns(uint32)
@@ -67,10 +71,6 @@ type IOriginCaller interface {
 	//
 	// Solidity: function nonce(uint32 _destination) view returns(uint32 latestNonce)
 	Nonce(opts *bind.CallOpts, _destination uint32) (uint32, error)
-	// NotariesAmount is a free data retrieval call binding the contract method 0x40dbb5a7.
-	//
-	// Solidity: function notariesAmount(uint32 _domain) view returns(uint256)
-	NotariesAmount(opts *bind.CallOpts, _domain uint32) (*big.Int, error)
 	// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 	//
 	// Solidity: function owner() view returns(address)
