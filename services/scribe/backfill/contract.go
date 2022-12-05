@@ -117,7 +117,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	var returnedReceipt types.Receipt
 	retryCount := 0
 RETRY:
-	retryCount += 1
+	retryCount++
 	// Parallelize storing logs, receipts, and transactions.
 	g, groupCtx := errgroup.WithContext(context.Background())
 
