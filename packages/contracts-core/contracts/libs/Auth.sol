@@ -16,12 +16,12 @@ library Auth {
      * https://eth.wiki/json-rpc/API#eth_sign[`eth_sign`]
      * JSON-RPC method as part of EIP-191.
      * See {recoverSigner}.
-     * @param _view     Memory view over the data that needs to be signed
+     * @param _dataView Memory view over the data that needs to be signed
      * @return digest   An Ethereum Signed Message for the given data
      */
-    function toEthSignedMessageHash(bytes29 _view) internal pure returns (bytes32 digest) {
+    function toEthSignedMessageHash(bytes29 _dataView) internal pure returns (bytes32 digest) {
         // Derive hash of the original data and use that for forming an Ethereum Signed Message
-        digest = ECDSA.toEthSignedMessageHash(_view.keccak());
+        digest = ECDSA.toEthSignedMessageHash(_dataView.keccak());
     }
 
     /**
@@ -32,7 +32,7 @@ library Auth {
      * this is by receiving a hash of the original message (which may otherwise
      * be too long), and then calling {toEthSignedMessageHash} on it.
      * @param _digest           Digest that was signed
-     * @param _signatureView    `_digest` signed by `signer`
+     * @param _signatureView    Memory view over `signer` signature on `_digest`
      * @return signer           Address that signed the data
      */
     function recoverSigner(bytes32 _digest, bytes29 _signatureView)

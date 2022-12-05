@@ -6,6 +6,9 @@ import { Attestation } from "../libs/Attestation.sol";
 import { AttestationHubEvents } from "../events/AttestationHubEvents.sol";
 import { AgentRegistry } from "../system/AgentRegistry.sol";
 
+/**
+ * @notice Keeps track of the agents and verifies signed attestations.
+ */
 abstract contract AttestationHub is AttestationHubEvents, AgentRegistry {
     using Attestation for bytes;
     using Attestation for bytes29;

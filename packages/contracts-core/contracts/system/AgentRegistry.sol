@@ -8,6 +8,15 @@ import { Auth } from "../libs/Auth.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
+/**
+ * @notice Registry used for verifying signatures of any of the Agents.
+ * Both Guards and Notaries could be stored in a single AgentRegistry.
+ * An option to ignore certain agents is available, see {_isIgnoredAgent}.
+ * @dev Following assumptions are implied:
+ * 1. Guard is active on all domains at once.
+ * 2. Notary is active on a single domain.
+ * 3. Same account can't be both a Guard and a Notary.
+ */
 abstract contract AgentRegistry is AgentRegistryEvents {
     using AgentSet for AgentSet.DomainAddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
