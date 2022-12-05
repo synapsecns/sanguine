@@ -52,6 +52,8 @@ type logOrderInfo struct {
 
 const treeDepth uint64 = 32
 
+const logChanSize = 1000
+
 // NewExecutor creates a new executor agent.
 func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Executor, error) {
 	lastLogMutexes := make(map[uint32]*sync.Mutex)
@@ -64,7 +66,7 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 
 	for _, chain := range config.Chains {
 		lastLogMutexes[chain.ChainID] = &sync.Mutex{}
-		channels[chain.ChainID] = make(chan *ethTypes.Log, 1000)
+		channels[chain.ChainID] = make(chan *ethTypes.Log, logChanSize)
 		closeChans[chain.ChainID] = make(chan bool, 1)
 		roots[chain.ChainID] = [][32]byte{}
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
