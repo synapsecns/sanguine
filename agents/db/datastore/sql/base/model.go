@@ -20,8 +20,8 @@ func init() {
 	NonceFieldName = namer.GetConsistentName("Nonce")
 	DomainIDFieldName = namer.GetConsistentName("DomainID")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
-	OriginIDFieldName = namer.GetConsistentName("OriginID")
-	DestinationIDFieldName = namer.GetConsistentName("DestinationID")
+	OriginFieldName = namer.GetConsistentName("Origin")
+	DestinationFieldName = namer.GetConsistentName("Destination")
 	SignatureFieldName = namer.GetConsistentName("Signature")
 }
 
@@ -34,10 +34,10 @@ var (
 	BlockNumberFieldName string
 	// LeafIndexFieldName is the field name of the leaf index.
 	LeafIndexFieldName string
-	// OriginIDFieldName gets the origin chain id field name.
-	OriginIDFieldName string
-	// DestinationIDFieldName gets the destination chain id field name.
-	DestinationIDFieldName string
+	// OriginFieldName gets the origin chain id field name.
+	OriginFieldName string
+	// DestinationFieldName gets the destination chain id field name.
+	DestinationFieldName string
 	// SignatureFieldName gets the signature field name.
 	SignatureFieldName string
 )
@@ -297,9 +297,9 @@ func (s SignedAttestation) Root() [32]byte {
 type InProgressAttestation struct {
 	gorm.Model
 	// IPOrigin is the origin of the attestation
-	IPOrigin uint32 `gorm:"column:origin_id;primaryKey;autoIncrement:false;->;<-:create"`
+	IPOrigin uint32 `gorm:"column:origin;primaryKey;autoIncrement:false;->;<-:create"`
 	// IPDestination is the destination of the attestation
-	IPDestination uint32 `gorm:"column:destination_id;primaryKey;autoIncrement:false;->;<-:create"`
+	IPDestination uint32 `gorm:"column:destination;primaryKey;autoIncrement:false;->;<-:create"`
 	// IPNonce is the nonce of the attestation
 	IPNonce uint32 `gorm:"column:nonce;primaryKey;autoIncrement:false;->;<-:create"`
 	// IPRoot is the root of the signed attestation

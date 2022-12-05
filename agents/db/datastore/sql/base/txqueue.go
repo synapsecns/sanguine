@@ -4,8 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/db"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/agents/db"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -31,7 +32,7 @@ func (s Store) DB() *gorm.DB {
 // see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels,
-		&RawEthTX{}, &ProcessedEthTx{}, &BlockEndModel{}, &CommittedMessage{}, &SignedAttestation{}, &DispatchMessage{}, &AcceptedAttestation{})
+		&RawEthTX{}, &ProcessedEthTx{}, &BlockEndModel{}, &CommittedMessage{}, &SignedAttestation{}, &DispatchMessage{}, &AcceptedAttestation{}, &InProgressAttestation{})
 	return allModels
 }
 

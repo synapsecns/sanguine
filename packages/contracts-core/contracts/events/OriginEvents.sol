@@ -35,10 +35,4 @@ abstract contract OriginEvents {
      * @param reporter  The address of the entity that reported the notary misbehavior
      */
     event NotarySlashed(address indexed notary, address indexed guard, address indexed reporter);
-
-    /**
-     * @notice Emitted when the NotaryManager contract is changed
-     * @param notaryManager The address of the new notaryManager
-     */
-    event NewNotaryManager(address notaryManager);
 }

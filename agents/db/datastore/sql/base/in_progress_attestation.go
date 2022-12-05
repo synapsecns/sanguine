@@ -18,7 +18,7 @@ import (
 func (s Store) StoreNewInProgressAttestation(ctx context.Context, attestation types.Attestation, originDispathBlockNumber uint64) error {
 	// We only want to store if not already stored
 	tx := s.DB().WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: OriginIDFieldName}, {Name: DestinationIDFieldName}, {Name: NonceFieldName}},
+		Columns:   []clause.Column{{Name: OriginFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName}},
 		DoNothing: true,
 	}).Create(&InProgressAttestation{
 		IPOrigin:                    attestation.Origin(),

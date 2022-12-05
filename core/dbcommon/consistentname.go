@@ -2,9 +2,10 @@ package dbcommon
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/fatih/structtag"
 	"gorm.io/gorm/schema"
-	"reflect"
 )
 
 // getGormFieldName gets a gorm field name by name
@@ -82,6 +83,8 @@ func (n Namer) GetConsistentName(fieldName string) string {
 		// check if the model has the field
 		_, ok := reflect.TypeOf(model).Elem().FieldByName(fieldName)
 		if !ok {
+			fmt.Printf("\nCRONIN\n %v \nCRONIN\n", reflect.TypeOf(model))
+			fmt.Printf("\nCRONIN !ok fieldName\n %v \nCRONIN\n", fieldName)
 			continue
 		}
 		newTagName := getGormFieldName(model, fieldName)

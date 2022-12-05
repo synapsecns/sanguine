@@ -1,6 +1,10 @@
 package notary_test
 
 import (
+	"math/big"
+	"testing"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
@@ -19,9 +23,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"math/big"
-	"testing"
-	"time"
 )
 
 // NotarySuite tests the notary agent.
@@ -69,29 +70,16 @@ func (u *NotarySuite) SetupTest() {
 	u.wallet, err = wallet.FromRandom()
 	Nil(u.T(), err)
 
-	// fund the signer
-	_, notaryManager := u.deployManager.GetNotaryManager(u.GetTestContext(), u.testBackend)
-	owner, err := notaryManager.Owner(&bind.CallOpts{Context: u.GetTestContext()})
-	Nil(u.T(), err)
-
 	u.signer = localsigner.NewSigner(u.wallet.PrivateKey())
 	u.testBackend.FundAccount(u.GetTestContext(), u.signer.Address(), *big.NewInt(params.Ether))
 
+	// set the notary on the attestation collector
+	owner, err := u.attestationContract.Owner(&bind.CallOpts{Context: u.GetTestContext()})
+	Nil(u.T(), err)
+
 	auth := u.testBackend.GetTxContext(u.GetTestContext(), &owner)
 
-	// set the notary on the notary manager
-	tx, err := notaryManager.SetNotary(auth.TransactOpts, u.signer.Address())
-	Nil(u.T(), err)
-
-	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
-
-	// set the notary on the attestation collector
-	owner, err = u.attestationContract.Owner(&bind.CallOpts{Context: u.GetTestContext()})
-	Nil(u.T(), err)
-
-	auth = u.testBackend.GetTxContext(u.GetTestContext(), &owner)
-
-	tx, err = u.attestationContract.AddNotary(auth.TransactOpts, u.domainClient.Config().DomainID, u.signer.Address())
+	tx, err := u.attestationContract.AddNotary(auth.TransactOpts, u.domainClient.Config().DomainID, u.signer.Address())
 	Nil(u.T(), err)
 
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)

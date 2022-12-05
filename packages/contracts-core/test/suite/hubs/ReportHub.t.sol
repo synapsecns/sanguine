@@ -17,18 +17,18 @@ contract ReportHubTest is ReportTools {
     function setUp() public override {
         super.setUp();
         reportHub = new ReportHubHarness();
-        reportHub.addNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL));
+        reportHub.addNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE));
         reportHub.addGuard(suiteGuard());
     }
 
     function test_setUp() public {
         assertTrue(
-            reportHub.isNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL)),
+            reportHub.isNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE)),
             "Failed to add notary"
         );
-        assertFalse(reportHub.isNotary(DOMAIN_LOCAL, attacker), "Attacker is Notary");
+        assertFalse(reportHub.isNotary(DOMAIN_REMOTE, attacker), "Attacker is Notary");
         assertFalse(
-            reportHub.isNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_LOCAL)),
+            reportHub.isNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_REMOTE)),
             "Added Notary on another domain"
         );
 

@@ -23,14 +23,26 @@ type IOriginCaller interface {
 	//
 	// Solidity: function VERSION() view returns(uint8)
 	VERSION(opts *bind.CallOpts) (uint8, error)
+	// AllDomains is a free data retrieval call binding the contract method 0x6f225878.
+	//
+	// Solidity: function allDomains() view returns(uint32[] domains_)
+	AllDomains(opts *bind.CallOpts) ([]uint32, error)
 	// AllGuards is a free data retrieval call binding the contract method 0x9fe03fa2.
 	//
 	// Solidity: function allGuards() view returns(address[])
 	AllGuards(opts *bind.CallOpts) ([]common.Address, error)
-	// AllNotaries is a free data retrieval call binding the contract method 0x9817e315.
+	// AllNotaries is a free data retrieval call binding the contract method 0xd9b3cdcc.
 	//
-	// Solidity: function allNotaries() view returns(address[])
-	AllNotaries(opts *bind.CallOpts) ([]common.Address, error)
+	// Solidity: function allNotaries(uint32 _domain) view returns(address[])
+	AllNotaries(opts *bind.CallOpts, _domain uint32) ([]common.Address, error)
+	// DomainsAmount is a free data retrieval call binding the contract method 0x30dcf706.
+	//
+	// Solidity: function domainsAmount() view returns(uint256)
+	DomainsAmount(opts *bind.CallOpts) (*big.Int, error)
+	// GetDomain is a free data retrieval call binding the contract method 0x1a7a98e2.
+	//
+	// Solidity: function getDomain(uint256 _index) view returns(uint32)
+	GetDomain(opts *bind.CallOpts, _index *big.Int) (uint32, error)
 	// GetGuard is a free data retrieval call binding the contract method 0x629ddf69.
 	//
 	// Solidity: function getGuard(uint256 _index) view returns(address)
@@ -39,10 +51,10 @@ type IOriginCaller interface {
 	//
 	// Solidity: function getHistoricalRoot(uint32 _destination, uint32 _nonce) view returns(bytes32, uint256, uint256)
 	GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, *big.Int, *big.Int, error)
-	// GetNotary is a free data retrieval call binding the contract method 0xc07dc7f5.
+	// GetNotary is a free data retrieval call binding the contract method 0x6a39aefa.
 	//
-	// Solidity: function getNotary(uint256 _index) view returns(address)
-	GetNotary(opts *bind.CallOpts, _index *big.Int) (common.Address, error)
+	// Solidity: function getNotary(uint32 _domain, uint256 _index) view returns(address)
+	GetNotary(opts *bind.CallOpts, _domain uint32, _index *big.Int) (common.Address, error)
 	// GuardsAmount is a free data retrieval call binding the contract method 0x246c2449.
 	//
 	// Solidity: function guardsAmount() view returns(uint256)
@@ -55,14 +67,10 @@ type IOriginCaller interface {
 	//
 	// Solidity: function nonce(uint32 _destination) view returns(uint32 latestNonce)
 	Nonce(opts *bind.CallOpts, _destination uint32) (uint32, error)
-	// NotariesAmount is a free data retrieval call binding the contract method 0x8e62e9ef.
+	// NotariesAmount is a free data retrieval call binding the contract method 0x40dbb5a7.
 	//
-	// Solidity: function notariesAmount() view returns(uint256)
-	NotariesAmount(opts *bind.CallOpts) (*big.Int, error)
-	// NotaryManager is a free data retrieval call binding the contract method 0xf85b597e.
-	//
-	// Solidity: function notaryManager() view returns(address)
-	NotaryManager(opts *bind.CallOpts) (common.Address, error)
+	// Solidity: function notariesAmount(uint32 _domain) view returns(uint256)
+	NotariesAmount(opts *bind.CallOpts, _domain uint32) (*big.Int, error)
 	// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 	//
 	// Solidity: function owner() view returns(address)
@@ -73,11 +81,12 @@ type IOriginCaller interface {
 	Root(opts *bind.CallOpts, _destination uint32) ([32]byte, error)
 	// SuggestAttestation is a free data retrieval call binding the contract method 0xdd0f1f74.
 	//
-	// Solidity: function suggestAttestation(uint32 _destination) view returns(uint32 latestNonce, bytes32 latestRoot)
-	SuggestAttestation(opts *bind.CallOpts, _destination uint32) (struct {
-		LatestNonce uint32
-		LatestRoot  [32]byte
-	}, error)
+	// Solidity: function suggestAttestation(uint32 _destination) view returns(bytes attestationData)
+	SuggestAttestation(opts *bind.CallOpts, _destination uint32) ([]byte, error)
+	// SuggestAttestations is a free data retrieval call binding the contract method 0x2d55b866.
+	//
+	// Solidity: function suggestAttestations() view returns(bytes[] attestationDataArray)
+	SuggestAttestations(opts *bind.CallOpts) ([][]byte, error)
 	// SystemRouter is a free data retrieval call binding the contract method 0x529d1549.
 	//
 	// Solidity: function systemRouter() view returns(address)

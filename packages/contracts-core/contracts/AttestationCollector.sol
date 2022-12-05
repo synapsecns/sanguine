@@ -119,7 +119,7 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
         bytes32 latestRoot = bytes32(0);
         uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
         for (uint256 i = 0; i < amount; ) {
-            address notary = getNotary(_origin, i);
+            address notary = getNotary(_destination, i);
             uint32 nonce = latestNonces[attestationDomains][notary];
             // Check latest Notary's nonce against current latest nonce
             if (nonce > latestNonce) {

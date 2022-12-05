@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -40,6 +41,8 @@ type OriginContract interface {
 
 // AttestationCollectorContract contains the interface for the attestation collector.
 type AttestationCollectorContract interface {
+	// AddNotary adds a notary to the attesation collector
+	AddNotary(transactOpts *bind.TransactOpts, destination uint32, signer signer.Signer) error
 	// SubmitAttestation submits an attestation to the attestation collector.
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// GetLatestNonce gets the latest nonce for the domain on the attestation collector
