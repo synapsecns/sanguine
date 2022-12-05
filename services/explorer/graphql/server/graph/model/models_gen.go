@@ -65,9 +65,9 @@ type TransactionCountResult struct {
 	Count   *int `json:"count"`
 }
 
-// ValueResult is a USDValue result.
+// ValueResult is a value result of either USD or numeric value.
 type ValueResult struct {
-	USDValue *string `json:"USDValue"`
+	Value *string `json:"value"`
 }
 
 type Direction string
@@ -198,22 +198,24 @@ func (e HistoricalResultType) MarshalGQL(w io.Writer) {
 type StatisticType string
 
 const (
-	StatisticTypeMean   StatisticType = "MEAN"
-	StatisticTypeMedian StatisticType = "MEDIAN"
-	StatisticTypeTotal  StatisticType = "TOTAL"
-	StatisticTypeCount  StatisticType = "COUNT"
+	StatisticTypeMeanVolumeUsd     StatisticType = "MEAN_VOLUME_USD"
+	StatisticTypeMedianVolumeUsd   StatisticType = "MEDIAN_VOLUME_USD"
+	StatisticTypeTotalVolumeUsd    StatisticType = "TOTAL_VOLUME_USD"
+	StatisticTypeCountTransactions StatisticType = "COUNT_TRANSACTIONS"
+	StatisticTypeCountAddresses    StatisticType = "COUNT_ADDRESSES"
 )
 
 var AllStatisticType = []StatisticType{
-	StatisticTypeMean,
-	StatisticTypeMedian,
-	StatisticTypeTotal,
-	StatisticTypeCount,
+	StatisticTypeMeanVolumeUsd,
+	StatisticTypeMedianVolumeUsd,
+	StatisticTypeTotalVolumeUsd,
+	StatisticTypeCountTransactions,
+	StatisticTypeCountAddresses,
 }
 
 func (e StatisticType) IsValid() bool {
 	switch e {
-	case StatisticTypeMean, StatisticTypeMedian, StatisticTypeTotal, StatisticTypeCount:
+	case StatisticTypeMeanVolumeUsd, StatisticTypeMedianVolumeUsd, StatisticTypeTotalVolumeUsd, StatisticTypeCountTransactions, StatisticTypeCountAddresses:
 		return true
 	}
 	return false

@@ -18,7 +18,7 @@ export function TokenActivityCard({ chainId }) {
   return (
     <ContainerCard
       title="Token Activity"
-      subtitle="24 hours"
+      subtitle="30 days"
       icon={<PresentationChartLineIcon className="w-5 h-5 text-purple-500" />}
     >
       <TokenActivity chainId={chainId} />
@@ -26,7 +26,7 @@ export function TokenActivityCard({ chainId }) {
   )
 }
 
-export function popularTokens({ direction, hours = 24 }) {
+export function popularTokens({ direction, hours = 720 }) {
   const { data } = useQuery(COUNT_BY_TOKEN_ADDRESS, {
     variables: {
       direction,
@@ -44,14 +44,14 @@ function TokenActivity({ chainId }) {
     variables: {
       chainId: Number(chainId),
       direction: 'OUT',
-      hours: 24,
+      hours: 720,
     },
   })
   const { data: toData } = useQuery(COUNT_BY_TOKEN_ADDRESS, {
     variables: {
       chainId: Number(chainId),
       direction: 'IN',
-      hours: 24,
+      hours: 720,
     },
   })
 

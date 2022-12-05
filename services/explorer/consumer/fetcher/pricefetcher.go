@@ -7,6 +7,7 @@ import (
 	"github.com/jpillora/backoff"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -16,7 +17,7 @@ var tokenMetadataMaxRetry = 10
 
 // GetDefiLlamaData does a get request to defi llama for the symbol and price for a token.
 //
-//nolint:cyclop
+//nolint:cyclop,gocognit
 func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID string) (*float64, *string) {
 	if coinGeckoID == "NO_TOKEN" || coinGeckoID == "NO_PRICE" {
 		// if there is no data on the token, the amount returned will be 1:1 (price will be same as the amount of token
@@ -45,7 +46,14 @@ RETRY:
 	case <-time.After(timeout):
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://coins.llama.fi/prices/historical/%d/coingecko:%s", timestamp, coinGeckoID), nil)
 		if err != nil {
-			return nil, nil
+			if retries >= tokenMetadataMaxRetry {
+				logger.Warnf("Max retries reached, could not get token metadata for %s: %v", coinGeckoID, err)
+				return nil, nil
+			}
+			timeout = b.Duration()
+			logger.Errorf("error getting response from defi llama %v", err)
+			retries++
+			goto RETRY
 		}
 		resRaw, err := client.Do(req)
 
@@ -65,14 +73,39 @@ RETRY:
 		err = json.NewDecoder(resRaw.Body).Decode(&res)
 
 		if err != nil {
+			logger.Warnf("failed decoding defillama data %s: %v", coinGeckoID, err)
+
 			return nil, nil
 		}
 
-		var price *float64
 		var symbol *string
-		if priceRes, ok := res["coins"][fmt.Sprintf("coingecko:%s", coinGeckoID)]["price"].(float64); ok {
-			price = &priceRes
+		priceRaw := res["coins"][fmt.Sprintf("coingecko:%s", coinGeckoID)]["price"]
+		if priceRaw == nil {
+			if retries >= 1 {
+				logger.Errorf("error getting price from defi llama, skipping: retries: %d %s %d", retries, coinGeckoID, timestamp)
+				zero := float64(0)
+				return &zero, nil
+			}
+			timeout = b.Duration()
+			logger.Errorf("error getting price from defi llama: retries: %d %s %d", retries, coinGeckoID, timestamp)
+			retries++
+
+			goto RETRY
 		}
+		priceStr := fmt.Sprintf("%.4f", priceRaw)
+		priceFloat, err := strconv.ParseFloat(priceStr, 64)
+		if err != nil {
+			if retries >= tokenMetadataMaxRetry {
+				logger.Warnf("Max retries reached, could not unwrap float %s: %v", coinGeckoID, err)
+				return nil, nil
+			}
+			timeout = b.Duration()
+			logger.Errorf("error unwrapping price from defi llama %v", err)
+			retries++
+			goto RETRY
+		}
+
+		price := &priceFloat
 
 		if stringRes, ok := res["coins"][fmt.Sprintf("coingecko:%s", coinGeckoID)]["symbol"].(string); ok {
 			symbol = &stringRes
@@ -81,18 +114,18 @@ RETRY:
 		if resRaw.Body.Close() != nil {
 			log.Printf("Error closing http connection.")
 		}
-
-		if price == nil || symbol == nil {
-			if retries >= tokenMetadataMaxRetry {
-				return nil, nil
+		if symbol == nil {
+			if retries >= 1 {
+				logger.Errorf("error getting symbol from defi llama, skipping: retries: %d %s %d", retries, coinGeckoID, timestamp)
+				zero := float64(0)
+				return &zero, nil
 			}
 			timeout = b.Duration()
-			logger.Errorf("error getting price or symbol from defi llama")
+			logger.Errorf("error getting symbol from defi llama: retries: %d %s %d", retries, coinGeckoID, timestamp)
 			retries++
 
 			goto RETRY
 		}
-
 		return price, symbol
 	}
 }

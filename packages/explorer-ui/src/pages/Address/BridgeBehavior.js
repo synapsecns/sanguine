@@ -36,7 +36,7 @@ export function BridgeBehavior({
         />
         <InfoBlock
           className="col-span-2"
-          title="Commonly Bridges"
+          title="Commonly Bridged"
           logo={<LightningBoltIcon className={infoBlockIconClassName} />}
           content={<GetMostCommonTokens address={address} />}
         />

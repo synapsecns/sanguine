@@ -396,9 +396,10 @@ abstract contract SystemRouterTools is DestinationTools {
     function prepareMisconfiguredTest(uint32 origin, uint32 destination) public {
         // Deploy a test router with Origin not configured
         SystemRouterHarness systemRouter = new SystemRouterHarness({
-            _localDomain: DOMAIN_LOCAL,
+            _domain: destination,
             _origin: address(0),
-            _destination: address(suiteDestination(destination))
+            _destination: address(suiteDestination(destination)),
+            _bondingManager: address(suiteBondingManager(destination))
         });
         vm.prank(owner);
         suiteDestination(destination).setSystemRouter(systemRouter);
@@ -445,6 +446,8 @@ abstract contract SystemRouterTools is DestinationTools {
             return ISystemRouter.SystemEntity.Origin;
         } else if (addr == address(suiteDestination(domain))) {
             return ISystemRouter.SystemEntity.Destination;
+        } else if (addr == address(suiteBondingManager(domain))) {
+            return ISystemRouter.SystemEntity.BondingManager;
         } else {
             revert("Unknown system entity");
         }
@@ -452,7 +455,10 @@ abstract contract SystemRouterTools is DestinationTools {
 
     // Check if address is a system entity
     function _isSystemEntity(uint32 domain, address addr) internal view returns (bool) {
-        return addr == address(suiteOrigin(domain)) || addr == address(suiteDestination(domain));
+        return
+            addr == address(suiteOrigin(domain)) ||
+            addr == address(suiteDestination(domain)) ||
+            addr == address(suiteBondingManager(domain));
     }
 
     // Create a mock data for system call tests. Data is different for every new call.

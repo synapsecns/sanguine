@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import "../../tools/system/SystemRouterTools.t.sol";
-import { SystemContractMock } from "../../harnesses/system/SystemContractHarness.t.sol";
+import { SystemContractMock } from "../../mocks/system/SystemContractMock.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract SystemContractTest is SystemRouterTools {
@@ -28,6 +28,11 @@ contract SystemContractTest is SystemRouterTools {
             systemContract.DESTINATION_MASK(),
             1 << uint256(ISystemRouter.SystemEntity.Destination),
             "!destinationMask"
+        );
+        assertEq(
+            systemContract.BONDING_MANAGER_MASK(),
+            1 << uint256(ISystemRouter.SystemEntity.BondingManager),
+            "!bondingManagerMask"
         );
     }
 

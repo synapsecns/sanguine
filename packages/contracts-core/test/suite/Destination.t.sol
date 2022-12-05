@@ -30,17 +30,12 @@ contract DestinationTest is DestinationTools {
                 address(suiteSystemRouter(domain)),
                 "!systemRouter"
             );
-            // Check global notaries
-            for (uint256 i = 0; i < DOMAINS; ++i) {
-                uint32 _domain = domains[i];
-                for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
-                    // Destination should know about notaries from all other chains
-                    assertEq(
-                        destination.isNotary(_domain, suiteNotary(_domain, j)),
-                        _domain != domain,
-                        string.concat("!notary", getActorSuffix(j))
-                    );
-                }
+            for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
+                // Destination should know about local notaries
+                assertTrue(
+                    destination.isNotary(domain, suiteNotary(domain, j)),
+                    string.concat("!notary", getActorSuffix(j))
+                );
             }
             // Check global guards
             assertEq(destination.guardsAmount(), GUARDS, "!guardsAmount");
@@ -68,7 +63,7 @@ contract DestinationTest is DestinationTools {
         expectRevertNotOwner();
         vm.prank(caller);
         // setNotary has onlyOwner modifier
-        destination.setNotary({ _domain: DOMAIN_REMOTE, _notary: attacker });
+        destination.setNotary({ _domain: DOMAIN_LOCAL, _notary: attacker });
     }
 
     function test_setConfirmation_revert_notOwner(address caller) public {
@@ -88,10 +83,10 @@ contract DestinationTest is DestinationTools {
         DestinationHarness destination = suiteDestination(DOMAIN_LOCAL);
         // Take one of agents that was never registered as Notary
         address notary = owner;
-        assertFalse(destination.isNotary(DOMAIN_REMOTE, notary), "WTF: already a Notary");
+        assertFalse(destination.isNotary(DOMAIN_LOCAL, notary), "WTF: already a Notary");
         vm.prank(owner);
-        destination.setNotary(DOMAIN_REMOTE, notary);
-        assertTrue(destination.isNotary(DOMAIN_REMOTE, notary), "Failed to add a new Notary");
+        destination.setNotary(DOMAIN_LOCAL, notary);
+        assertTrue(destination.isNotary(DOMAIN_LOCAL, notary), "Failed to add a new Notary");
     }
 
     function test_setConfirmation() public {
@@ -140,23 +135,24 @@ contract DestinationTest is DestinationTools {
         destinationSubmitAttestation(DOMAIN_LOCAL, "Empty root");
     }
 
-    function test_submitAttestation_revert_fromLocalDomain() public {
-        DestinationHarness destination = suiteDestination(DOMAIN_LOCAL);
-        // By default Destination doesn't have info about local notaries, let's add one
-        destination.addNotary(DOMAIN_LOCAL, attacker);
-        createAttestationMock({
-            origin: DOMAIN_LOCAL,
-            destination: DOMAIN_REMOTE,
-            signer: attacker
-        });
-        // Should reject attestations with origin = local domain
-        destinationSubmitAttestation(DOMAIN_LOCAL, "!attestationOrigin: local");
-    }
+    // TODO (Chi): enable test once/if DomainNotaryRegistry is deprecated
+    // function test_submitAttestation_revert_fromLocalDomain() public {
+    //     DestinationHarness destination = suiteDestination(DOMAIN_LOCAL);
+    //     // By default Destination doesn't have info about local notaries, let's add one
+    //     destination.addNotary(DOMAIN_LOCAL, attacker);
+    //     createAttestationMock({
+    //         origin: DOMAIN_LOCAL,
+    //         destination: DOMAIN_REMOTE,
+    //         signer: attacker
+    //     });
+    //     // Should reject attestations with origin = local domain
+    //     destinationSubmitAttestation(DOMAIN_LOCAL, "!attestationOrigin: local");
+    // }
 
     function test_submitAttestation_revert_notForLocalDomain() public {
         createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_SYNAPSE });
         // Should reject attestations with destination != local domain
-        destinationSubmitAttestation(DOMAIN_LOCAL, "!attestationDestination: !local");
+        destinationSubmitAttestation(DOMAIN_LOCAL, "!localDomain");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -235,7 +231,7 @@ contract DestinationTest is DestinationTools {
         expectNotaryBlacklisted();
         destinationSubmitReport(DOMAIN_LOCAL, true);
         assertFalse(
-            suiteDestination(DOMAIN_LOCAL).isNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE)),
+            suiteDestination(DOMAIN_LOCAL).isNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL)),
             "Notary not blacklisted"
         );
         // Check previously valid root
@@ -259,7 +255,7 @@ contract DestinationTest is DestinationTools {
     function test_acceptableRoot_revert_inactiveNotary() public {
         test_submitAttestation();
         // Remove Notary who signed a valid root
-        suiteDestination(DOMAIN_LOCAL).removeNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE));
+        suiteDestination(DOMAIN_LOCAL).removeNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL));
         skip(APP_OPTIMISTIC_SECONDS);
         // Previously singed root should become invalid, as Notary is not active anymore
         destinationAcceptableRoot({ domain: DOMAIN_LOCAL, revertMessage: "Inactive notary" });
