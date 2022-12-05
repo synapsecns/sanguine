@@ -239,7 +239,7 @@ func (e Executor) VerifyMessage(ctx context.Context, merkleIndex uint32, message
 		return false, fmt.Errorf("could not get root: %w", err)
 	}
 
-	proof, err := e.MerkleTree.MerkleProof(int(merkleIndex))
+	proof, err := e.MerkleTrees[chainID].MerkleProof(int(merkleIndex))
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
@@ -250,11 +250,11 @@ func (e Executor) VerifyMessage(ctx context.Context, merkleIndex uint32, message
 
 // GetProof returns the merkle proof for the given nonce.
 func (e Executor) GetProof(nonce uint32, chainID uint32) ([][]byte, error) {
-	if nonce == 0 || nonce > uint32(e.MerkleTree.NumOfItems()) {
+	if nonce == 0 || nonce > uint32(e.MerkleTrees[chainID].NumOfItems()) {
 		return nil, fmt.Errorf("nonce is out of range")
 	}
 
-	proof, err := e.MerkleTree.MerkleProof(int(nonce - 1))
+	proof, err := e.MerkleTrees[chainID].MerkleProof(int(nonce - 1))
 	if err != nil {
 		return nil, fmt.Errorf("could not get merkle proof: %w", err)
 	}
