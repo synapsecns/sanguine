@@ -71,7 +71,7 @@ func (t *TxQueueSuite) TestGetTransactor() {
 	Nil(t.T(), err)
 	chn.WaitForConfirmation(t.GetTestContext(), tx)
 
-	notaries, err := originHarness.AllNotaries(&bind.CallOpts{Context: t.GetTestContext()}, destinationID)
+	notaries, err := originHarness.AllAgents(&bind.CallOpts{Context: t.GetTestContext()}, destinationID)
 	Nil(t.T(), err)
 	Len(t.T(), notaries, 1)
 
