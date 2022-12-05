@@ -11,7 +11,7 @@ import { timeAgo } from '@utils/timeAgo'
 import { getBridgeTransactionUrl } from '@urls'
 
 export function TransactionCard({ txn, ordinal }) {
-  const { kappa, status, fromInfo, toInfo } = txn
+  const { kappa, pending, fromInfo, toInfo } = txn
   const navigate = useNavigate()
 
   const backgroundColor =
@@ -57,22 +57,25 @@ export function TransactionCard({ txn, ordinal }) {
             />
           </div>
           <div className="flex items-center text-sm text-white">
-            <span className="mr-2 text-gray-400">to</span>
-            <div className="mr-1">
-              <StyleAddress sourceInfo={toInfo} />
-            </div>
-            <span className="ml-2 mr-2 text-gray-400">on</span>
-            <ChainInfo
-              chainId={toInfo.chainId}
-              imgClassName="w-4 h-4"
-              textClassName="text-white"
-            />
+            {pending ? (<span className="mr-2 text-gray-400">tx pending on destination chain</span>) : (<>
+              <span className="mr-2 text-gray-400">to</span>
+              <div className="mr-1">
+                <StyleAddress sourceInfo={toInfo} />
+              </div>
+              <span className="ml-2 mr-2 text-gray-400">on</span>
+              <ChainInfo
+                chainId={toInfo.chainId}
+                imgClassName="w-4 h-4"
+                textClassName="text-white"
+              />
+            </>)}
+
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="hidden md:block lg:block">
-            <Indicator indicatorType={status} />
+            <Indicator indicatorType={pending} />
           </div>
           <div className="text-sm text-gray-400">
             {fromInfo.time

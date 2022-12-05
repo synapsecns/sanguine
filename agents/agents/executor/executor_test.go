@@ -2,6 +2,7 @@ package executor_test
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/prysmaticlabs/prysm/shared/trieutil"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
@@ -231,7 +232,6 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
 	originContract, originRef := deployManager.GetOrigin(e.GetTestContext(), simulatedChain)
-	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
 
 	contractConfig := config.ContractConfig{
 		Address:    originContract.Address().String(),
@@ -299,9 +299,18 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	messageBytes := []byte{byte(gofakeit.Uint32())}
 
+	ownerPtr, err := originRef.OriginCaller.Owner(&bind.CallOpts{Context: e.GetTestContext()})
+	e.Nil(err)
+
+	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), &ownerPtr)
+
+	tx, err := originRef.AddNotary(transactOpts.TransactOpts, destination, e.signer.Address())
+	e.Nil(err)
+	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+
 	transactOpts.Value = types.TotalTips(tips[0])
 
-	tx, err := originRef.Dispatch(transactOpts.TransactOpts, destination, recipients[0], optimisticSeconds[0], encodedTips, messageBytes)
+	tx, err = originRef.Dispatch(transactOpts.TransactOpts, destination, recipients[0], optimisticSeconds[0], encodedTips, messageBytes)
 	e.Nil(err)
 	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 

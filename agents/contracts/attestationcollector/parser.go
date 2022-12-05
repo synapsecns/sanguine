@@ -51,7 +51,7 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 	return EventType(len(AllEventTypes) + 2), false
 }
 
-// ParseAttestationAccepted parses an AttestationSubmitted event.
+// ParseAttestationAccepted parses an AttestationAccepted event.
 func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool) {
 	attestationCollectorAttestation, err := p.filterer.ParseAttestationAccepted(log)
 	if err != nil {
@@ -68,8 +68,8 @@ func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestat
 type EventType uint
 
 const (
-	// AttestationSubmittedEvent is a AttestationSubmitted event.
-	AttestationSubmittedEvent EventType = 0
+	// AttestationAcceptedEvent is a AttestationAccepted event.
+	AttestationAcceptedEvent EventType = 0
 )
 
 // Int gets the int for an event type.
@@ -78,4 +78,4 @@ func (i EventType) Int() uint8 {
 }
 
 // AllEventTypes contains all event types.
-var AllEventTypes = []EventType{AttestationSubmittedEvent}
+var AllEventTypes = []EventType{AttestationAcceptedEvent}

@@ -15,17 +15,17 @@ contract AttestationHubTest is AttestationTools {
     function setUp() public override {
         super.setUp();
         attestationHub = new AttestationHubHarness();
-        attestationHub.addNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL));
+        attestationHub.addNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE));
     }
 
     function test_setup() public {
         assertTrue(
-            attestationHub.isNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL)),
+            attestationHub.isNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE)),
             "Failed to add notary"
         );
-        assertFalse(attestationHub.isNotary(DOMAIN_LOCAL, attacker), "Attacker is Notary");
+        assertFalse(attestationHub.isNotary(DOMAIN_REMOTE, attacker), "Attacker is Notary");
         assertFalse(
-            attestationHub.isNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_LOCAL)),
+            attestationHub.isNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_REMOTE)),
             "Added Notary on another domain"
         );
     }

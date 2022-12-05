@@ -6,9 +6,9 @@ import (
 	"fmt"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"gopkg.in/yaml.v2"
-	"math"
 	"math/big"
 	"os"
+	"strconv"
 )
 
 // Parser parses events and stores them.
@@ -67,7 +67,13 @@ func OpenYaml(path string) (map[string]string, error) {
 
 // GetAmountUSD computes the USD value of a token amount.
 func GetAmountUSD(amount *big.Int, decimals uint8, price *float64) *float64 {
-	trueAmount := (float64(amount.Uint64()) / math.Pow(10.0, float64(decimals))) * *price
-
-	return &trueAmount
+	decimalMultiplier := new(big.Float).SetInt(big.NewInt(0).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
+	adjustedAmount := new(big.Float).Quo(new(big.Float).SetInt(amount), decimalMultiplier)
+	trueAmount := big.NewFloat(0).Mul(adjustedAmount, big.NewFloat(*price))
+	trueAmountStr := trueAmount.SetMode(big.AwayFromZero).Text('f', 2)
+	priceFloat, err := strconv.ParseFloat(trueAmountStr, 64)
+	if err != nil {
+		return nil
+	}
+	return &priceFloat
 }

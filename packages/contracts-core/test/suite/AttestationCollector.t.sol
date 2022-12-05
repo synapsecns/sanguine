@@ -115,10 +115,10 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         createAttestationMock({
             origin: DOMAIN_LOCAL,
             destination: DOMAIN_REMOTE,
-            signer: suiteNotary(DOMAIN_REMOTE)
+            signer: suiteNotary(DOMAIN_LOCAL)
         });
-        // Check that Notary from another domain can't sign the attestation for `DOMAIN_LOCAL`
-        // Notary from `DOMAIN_REMOTE` should not be considered as a Notary for `DOMAIN_LOCAL`
+        // Check that Notary from another domain can't sign the attestation to `DOMAIN_REMOTE`
+        // Notary from `DOMAIN_LOCAL` should not be considered as a Notary for `DOMAIN_REMOTE`
         attestationCollectorSubmitAttestation({ revertMessage: "Signer is not a notary" });
     }
 

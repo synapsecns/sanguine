@@ -3,6 +3,8 @@ package backfill_test
 import (
 	gosql "database/sql"
 	"fmt"
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -17,7 +19,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
-	"math/big"
 )
 
 func arrayToTokenIndexMap(input []*big.Int) map[uint8]string {
@@ -159,7 +160,6 @@ func (b *BackfillSuite) TestBackfill() {
 	// Store every bridge event using the V1 contract.
 	bridgeTx, err = bridgeV1Ref.TestDeposit(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint32())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())))
 	Nil(b.T(), err)
-	fmt.Println("hoshh", bridgeTx.Hash().String())
 	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(3)), 1)
 	depositV1Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 3)
 	Nil(b.T(), err)

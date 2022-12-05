@@ -48,6 +48,18 @@ contract GlobalNotaryRegistry is AbstractNotaryRegistry {
     uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              MODIFIERS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Ensures that there is at least one active Notary.
+     */
+    modifier haveActiveNotary(uint32 _domain) override {
+        require(notariesAmount(_domain) != 0, "!notaries");
+        _;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 

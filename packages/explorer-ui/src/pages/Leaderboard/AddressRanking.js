@@ -36,7 +36,7 @@ export function AddressRanking() {
               from-purple-600 to-blue-600
             `}
         >
-          Top Transacting Addresses in Last 24 Hours
+          Top Transacting Addresses in Last 30 days
         </span>
         {content}
       </>

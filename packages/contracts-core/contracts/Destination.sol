@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 import { LocalDomainContext } from "./context/LocalDomainContext.sol";
 import { DestinationHub } from "./hubs/DestinationHub.sol";
-import { SystemContract } from "./system/SystemContract.sol";
 import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { Version0 } from "./Version0.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
@@ -20,13 +19,7 @@ import { SystemCall } from "./libs/SystemCall.sol";
  * @notice Track merkle root state of Origin contracts on other chains,
  * prove and dispatch messages to end recipients.
  */
-contract Destination is
-    Version0,
-    DestinationEvents,
-    SystemContract,
-    LocalDomainContext,
-    DestinationHub
-{
+contract Destination is Version0, DestinationEvents, DestinationHub, LocalDomainContext {
     using Message for bytes;
     using Message for bytes29;
     using Header for bytes29;
@@ -187,24 +180,26 @@ contract Destination is
      * @notice Blacklists Notary:
      * - New attestations signed by Notary are not accepted
      * - Any old roots attested by Notary can not be used for proving/executing
-     * @dev _notary is always an active Notary, _guard is always an active Guard.
-     * @param _domain   Domain where allegedly fraudulent Notary is active
-     * @param _notary   Notary address who allegedly committed fraud attestation
-     * @param _guard    Guard address that reported the Notary
-     * @param _report   Payload with Report data and signature
+     * @dev `_guard` is always an active Guard, `_notary` is always an active Notary.
+     * @param _guard            Guard address that reported the Notary
+     * @param _notary           Notary address who allegedly committed fraud attestation
+     * @param _attestationView  Memory view over reported Attestation
+     * @param _report           Payload with Report data and signature
      */
     function _blacklistNotary(
-        uint32 _domain,
-        address _notary,
         address _guard,
+        address _notary,
+        bytes29 _attestationView,
         bytes memory _report
     ) internal override {
-        _removeNotary(_domain, _notary);
+        _removeNotary(_localDomain(), _notary);
         emit NotaryBlacklisted(_notary, _guard, msg.sender, _report);
         blacklistedNotaries[_notary] = Blacklist({
             guard: _guard,
             blacklistedAt: uint96(block.timestamp)
         });
+        // TODO: save the reported attestation for dispute resolution
+        _attestationView;
         // TODO: Send system message indicating that a Notary was reported?
     }
 
