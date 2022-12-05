@@ -29,7 +29,8 @@ abstract contract DomainNotaryRegistry is AbstractNotaryRegistry, DomainContext 
     /**
      * @notice Ensures that there is at least one active Notary.
      */
-    modifier haveActiveNotary() {
+    modifier haveActiveNotary(uint32 _domain) override {
+        _assertLocalDomain(_domain);
         require(notariesAmount() != 0, "!notaries");
         _;
     }

@@ -11,20 +11,16 @@ contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
     //solhint-disable-next-line no-empty-blocks
     constructor(uint32 _domain) Origin(_domain) {}
 
-    function addNotary(address _notary) public returns (bool) {
-        return _addNotary(_notary);
-    }
-
-    function removeAllNotaries() public {
-        uint256 amount = notariesAmount();
+    function removeAllNotaries(uint32 _domain) public {
+        uint256 amount = notariesAmount(_domain);
         // Remove every Notary to halt the contract
         for (uint256 i = 0; i < amount; ++i) {
-            _removeNotary(getNotary(0));
+            _removeNotary(_domain, getNotary({ _domain: _domain, _index: 0 }));
         }
     }
 
-    function isNotary(address _notary) public view returns (bool) {
-        return _isNotary(_localDomain(), _notary);
+    function isNotary(uint32 _domain, address _notary) public view returns (bool) {
+        return _isNotary(_domain, _notary);
     }
 
     function getNextMessage(
@@ -44,5 +40,14 @@ contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
             _tips,
             _messageBody
         );
+    }
+
+    function suggestNonceRoot(uint32 _destination)
+        public
+        view
+        returns (uint32 latestNonce, bytes32 latestRoot)
+    {
+        latestNonce = nonce(_destination);
+        latestRoot = getHistoricalRoot(_destination, latestNonce);
     }
 }

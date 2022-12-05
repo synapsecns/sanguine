@@ -41,10 +41,10 @@ type HistoricalResult {
   type:         HistoricalResultType
 }
 """
-ValueResult is a USDValue result.
+ValueResult is a value result of either USD or numeric value.
 """
 type ValueResult {
-  USDValue: String
+  value: String
 }
 """
 TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
@@ -78,10 +78,11 @@ enum Direction {
   OUT
 }
 enum StatisticType {
-  MEAN
-  MEDIAN
-  TOTAL
-  COUNT
+  MEAN_VOLUME_USD
+  MEDIAN_VOLUME_USD
+  TOTAL_VOLUME_USD
+  COUNT_TRANSACTIONS
+  COUNT_ADDRESSES
 }
 enum HistoricalResultType {
   BRIDGEVOLUME

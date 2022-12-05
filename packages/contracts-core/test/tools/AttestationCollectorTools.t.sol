@@ -65,7 +65,7 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
                     );
                 }
                 for (uint256 index = 0; index < NOTARIES_PER_CHAIN; ++index) {
-                    address notary = suiteNotary(origin, index);
+                    address notary = suiteNotary(destination, index);
                     AttestationNonce memory notaryLatest = notaryLatestAttestation[_domains][
                         notary
                     ];
@@ -265,7 +265,7 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
         uint256 notaryIndex,
         bytes memory revertMessage
     ) public {
-        address notary = suiteNotary(origin, notaryIndex);
+        address notary = suiteNotary(destination, notaryIndex);
         vm.expectRevert(revertMessage);
         attestationCollector.getLatestAttestation(origin, destination, notary);
     }
@@ -330,7 +330,7 @@ abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, Attest
             attestationCollector.getLatestAttestation(
                 attestationOrigin,
                 attestationDestination,
-                suiteNotary(attestationOrigin, notaryIndex)
+                suiteNotary(attestationDestination, notaryIndex)
             );
     }
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
-	"math"
+	"math/big"
 	"strconv"
 )
 
@@ -60,11 +60,45 @@ func (s *Store) GetBridgeEvent(ctx context.Context, query string) (*BridgeEvent,
 	return &res, nil
 }
 
+// GetBridgeEvents returns bridge events.
+func (s *Store) GetBridgeEvents(ctx context.Context, query string) ([]BridgeEvent, error) {
+	var res []BridgeEvent
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
+// GetTxCounts returns Tx counts.
+func (s *Store) GetTxCounts(ctx context.Context, query string) ([]*model.TransactionCountResult, error) {
+	var res []*model.TransactionCountResult
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
+
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
+// GetTokenCounts returns Tx counts.
+func (s *Store) GetTokenCounts(ctx context.Context, query string) ([]*model.TokenCountResult, error) {
+	var res []*model.TokenCountResult
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
 // GetDateResults returns the dya by day data.
 func (s *Store) GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error) {
 	var res []*model.DateResult
-
 	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Scan(&res)
+
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get date results: %w", dbTx.Error)
 	}
@@ -95,7 +129,6 @@ func (s *Store) GetAddressRanking(ctx context.Context, query string) ([]*model.A
 //
 //nolint:cyclop
 func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) ([]*model.PartialInfo, error) {
-	var err error
 	var res []BridgeEvent
 	var partialInfos []*model.PartialInfo
 
@@ -129,15 +162,10 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) (
 
 		value := res[i].Amount.String()
 
-		var formattedValue float64
+		var formattedValue *float64
 
 		if res[i].TokenDecimal != nil {
-			formattedValue, err = strconv.ParseFloat(value, 64)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse float: %w", err)
-			}
-
-			formattedValue /= math.Pow10(int(*res[i].TokenDecimal))
+			formattedValue = getAdjustedValue(res[i].Amount, *res[i].TokenDecimal)
 		} else {
 			return nil, fmt.Errorf("token decimal is not valid")
 		}
@@ -155,7 +183,7 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) (
 			Address:        &recipient,
 			TxnHash:        &res[i].TxHash,
 			Value:          &value,
-			FormattedValue: &formattedValue,
+			FormattedValue: formattedValue,
 			USDValue:       res[i].AmountUSD,
 			TokenAddress:   &res[i].Token,
 			TokenSymbol:    &tokenSymbol,
@@ -167,17 +195,82 @@ func (s *Store) PartialInfosFromIdentifiers(ctx context.Context, query string) (
 	return partialInfos, nil
 }
 
-// GetAllChainIDs gets all chain IDs that have been used in bridge events.
-func (s *Store) GetAllChainIDs(ctx context.Context) ([]int, error) {
-	var res []int
-
-	dbTx := s.db.WithContext(ctx).Raw(fmt.Sprintf(
-		`SELECT DISTINCT %s FROM bridge_events UNION DISTINCT SELECT DISTINCT toUInt32(%s) FROM bridge_events SETTINGS readonly=1`,
-		ChainIDFieldName, DestinationChainIDFieldName,
-	)).Find(&res)
+// PartialInfosFromIdentifiersByChain returns events given identifiers. If order is true, the events are ordered by block number.
+//
+//nolint:cyclop
+func (s *Store) PartialInfosFromIdentifiersByChain(ctx context.Context, query string) (map[int]*model.PartialInfo, error) {
+	var res []BridgeEvent
+	output := make(map[int]*model.PartialInfo)
+	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
+	for i := range res {
+		chainIDInt := int(res[i].ChainID)
+		blockNumberInt := int(res[i].BlockNumber)
 
-	return res, nil
+		var recipient string
+
+		switch {
+		case res[i].Recipient.Valid:
+			recipient = res[i].Recipient.String
+		case res[i].RecipientBytes.Valid:
+			recipient = res[i].RecipientBytes.String
+		default:
+			return nil, fmt.Errorf("recipient is not valid")
+		}
+
+		var tokenSymbol string
+
+		if res[i].TokenSymbol.Valid && res[i].TokenSymbol.String != "" {
+			tokenSymbol = res[i].TokenSymbol.String
+		} else {
+			return nil, fmt.Errorf("token symbol is not valid")
+		}
+
+		value := res[i].Amount.String()
+
+		var formattedValue *float64
+
+		if res[i].TokenDecimal != nil {
+			formattedValue = getAdjustedValue(res[i].Amount, *res[i].TokenDecimal)
+		} else {
+			return nil, fmt.Errorf("token decimal is not valid")
+		}
+
+		var timeStamp int
+
+		if res[i].TimeStamp != nil {
+			timeStamp = int(*res[i].TimeStamp)
+		} else {
+			return nil, fmt.Errorf("time stamp is not valid")
+		}
+
+		output[chainIDInt] = &model.PartialInfo{
+			ChainID:        &chainIDInt,
+			Address:        &recipient,
+			TxnHash:        &res[i].TxHash,
+			Value:          &value,
+			FormattedValue: formattedValue,
+			USDValue:       res[i].AmountUSD,
+			TokenAddress:   &res[i].Token,
+			TokenSymbol:    &tokenSymbol,
+			BlockNumber:    &blockNumberInt,
+			Time:           &timeStamp,
+		}
+	}
+
+	return output, nil
+}
+
+// getAdjustedValue gets the adjusted value.
+func getAdjustedValue(amount *big.Int, decimals uint8) *float64 {
+	decimalMultiplier := new(big.Float).SetInt(big.NewInt(0).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
+	adjustedAmount := new(big.Float).Quo(new(big.Float).SetInt(amount), decimalMultiplier)
+	trueAmountStr := adjustedAmount.SetMode(big.AwayFromZero).Text('f', 4)
+	priceFloat, err := strconv.ParseFloat(trueAmountStr, 64)
+	if err != nil {
+		return nil
+	}
+	return &priceFloat
 }

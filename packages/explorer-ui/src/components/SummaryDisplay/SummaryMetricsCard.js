@@ -25,7 +25,7 @@ export function SummaryMetricsCard({ chainId }) {
 function SummaryMetrics({ chainId }) {
   const { data: volume } = useQuery(BRIDGE_AMOUNT_STATISTIC, {
     variables: {
-      type: 'TOTAL',
+      type: 'TOTAL_VOLUME_USD',
       chainId: Number(chainId),
       duration: 'ALL_TIME',
     },
@@ -33,14 +33,14 @@ function SummaryMetrics({ chainId }) {
 
   const { data: count } = useQuery(BRIDGE_AMOUNT_STATISTIC, {
     variables: {
-      type: 'COUNT',
+      type: 'COUNT_TRANSACTIONS',
       chainId: Number(chainId),
       duration: 'ALL_TIME',
     },
   })
 
-  const totalVolume = volume?.bridgeAmountStatistic?.USDValue
-  const totalCount = count?.bridgeAmountStatistic?.USDValue
+  const totalVolume = volume?.bridgeAmountStatistic?.value
+  const totalCount = count?.bridgeAmountStatistic?.value
 
   return (
     <Grid gap={4} cols={{ sm: 1 }}>

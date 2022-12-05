@@ -14,7 +14,7 @@ export function Leaderboard() {
       <Grid gap={4} cols={{ xs: 1, sm: 1, md: 1, lg: 2 }} className="mb-5">
         <ContainerCard
           title="Top Chains by Transaction Count"
-          subtitle="24 hours"
+          subtitle="30 days"
           className="mt-10"
           icon={<BeakerIcon className="w-5 h-5 text-purple-500" />}
         >
@@ -22,7 +22,7 @@ export function Leaderboard() {
         </ContainerCard>
         <ContainerCard
           title="Top Tokens by Transaction Count"
-          subtitle="24 hours"
+          subtitle="30 days"
           className="mt-10"
           icon={<FireIcon className="w-5 h-5 text-red-500" />}
         >

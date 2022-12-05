@@ -38,7 +38,7 @@ export function Address() {
     data: totalData,
   } = useQuery(BRIDGE_AMOUNT_STATISTIC, {
     variables: {
-      type: 'COUNT',
+      type: 'COUNT_TRANSACTIONS',
       duration: 'ALL_TIME',
       address: address,
     },
@@ -77,7 +77,7 @@ export function Address() {
 
   useEffect(() => {
     if (totalData) {
-      setTotalCount(totalData.bridgeAmountStatistic.USDValue)
+      setTotalCount(totalData.bridgeAmountStatistic.value)
     }
   }, [totalData])
 

@@ -1,7 +1,10 @@
 package evm_test
 
 import (
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"math/big"
+	"testing"
+	"time"
+
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -17,9 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"math/big"
-	"testing"
-	"time"
 )
 
 // RPCSuite defines a suite where we need live rpc endpoints (as opposed to a simulated backend) to test.
@@ -65,7 +65,8 @@ func NewContractSuite(tb testing.TB) *ContractSuite {
 	}
 }
 
-const attestationDomain = 4
+const attestationDomain = uint32(4)
+const testDestinationDomain = attestationDomain + 1
 
 func (i *ContractSuite) SetupTest() {
 	i.TestSuite.SetupTest()
@@ -86,22 +87,10 @@ func (i *ContractSuite) SetupTest() {
 	i.testBackend.FundAccount(i.GetTestContext(), wall.Address(), *big.NewInt(params.Ether))
 	i.attestationBackend.FundAccount(i.GetTestContext(), wall.Address(), *big.NewInt(params.Ether))
 
-	// change the notary as defined by the update manager contract
-	_, notaryManager := deployManager.GetNotaryManager(i.GetTestContext(), i.testBackend)
-	owner, err := notaryManager.Owner(&bind.CallOpts{Context: i.GetTestContext()})
-	Nil(i.T(), err)
-
-	transactOpts := i.testBackend.GetTxContext(i.GetTestContext(), &owner)
-
-	// set the signer address to the notary
-	tx, err := notaryManager.SetNotary(transactOpts.TransactOpts, i.signer.Address())
-	Nil(i.T(), err)
-	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
-
 	// add the notary to attestation contract
 	auth := i.attestationBackend.GetTxContext(i.GetTestContext(), attestationContract.OwnerPtr())
 
-	tx, err = i.attestationContract.AddNotary(auth.TransactOpts, attestationDomain, i.signer.Address())
+	tx, err := i.attestationContract.AddNotary(auth.TransactOpts, testDestinationDomain, i.signer.Address())
 	Nil(i.T(), err)
 	i.attestationBackend.WaitForConfirmation(i.GetTestContext(), tx)
 }

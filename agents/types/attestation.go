@@ -25,8 +25,6 @@ const attestedDomainsOriginStartingByte = uint32(4)
 const attestedDomainsSize = uint32(8)
 
 // Attestation is the attestation.
-// TODO (joe): Add tests for the AttestationKey and AttestedDomains,
-// converting to and from serialized big.Int form.
 type Attestation interface {
 	// Origin gets the origin of the attestation
 	Origin() uint32
