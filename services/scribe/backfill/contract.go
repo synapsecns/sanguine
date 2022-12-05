@@ -37,6 +37,9 @@ const invalidTxVRSError = "invalid transaction v, r, s values"
 // txNotFoundError is for handling omniRPC errors for BSC.
 const txNotFoundError = "not found"
 
+// retryTolerance is the number of times to retry a failed operation.
+const retryTolerance = 10
+
 // NewContractBackfiller creates a new backfiller for a contract.
 func NewContractBackfiller(chainConfig config.ChainConfig, address string, eventDB db.EventDB, client []ScribeBackend) (*ContractBackfiller, error) {
 	cache, err := lru.New(500)
@@ -255,7 +258,7 @@ RETRY:
 	if err != nil {
 		LogEvent(ErrorLevel, "Could not store data, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
-		if retryCount < 10 {
+		if retryCount < retryTolerance {
 			goto RETRY
 		}
 
