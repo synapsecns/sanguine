@@ -17,7 +17,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
-	"sync"
 )
 
 // Executor is the executor agent.
@@ -26,18 +25,16 @@ type Executor struct {
 	config config.Config
 	// scribeClient is the client to the Scribe gRPC server.
 	scribeClient client.ScribeClient
-	// lastLog is a map from chain ID -> last log processed.
-	lastLog map[uint32]logOrderInfo
-	// lastLogMutexes is a map from chain ID -> mutex for the lastLog map.
-	lastLogMutexes map[uint32]*sync.Mutex
+	// lastLogs is a map from chain ID -> last log processed.
+	lastLogs map[uint32]*logOrderInfo
 	// closeConnection is a map from chain ID -> channel to close the connection.
 	closeConnection map[uint32]chan bool
 	// roots is a map from chain ID -> slice of merkle roots. The root at [i] is the root of nonce i.
 	roots map[uint32][][32]byte
 	// originParsers is a map from chain ID -> origin parser.
 	originParsers map[uint32]origin.Parser
-	// attestationcollectorParsers is a map from chain ID -> attestationcollector parser.
-	attestationcollectorParsers map[uint32]attestationcollector.Parser
+	// attestationCollectorParsers is a map from chain ID -> attestationCollector parser.
+	attestationCollectorParsers map[uint32]attestationcollector.Parser
 	// LogChans is a mapping from chain ID -> log channel.
 	LogChans map[uint32]chan *ethTypes.Log
 	// MerkleTrees is a map from chain ID -> merkle tree.
@@ -56,7 +53,7 @@ const logChanSize = 1000
 
 // NewExecutor creates a new executor agent.
 func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Executor, error) {
-	lastLogMutexes := make(map[uint32]*sync.Mutex)
+	lastLogs := make(map[uint32]*logOrderInfo)
 	channels := make(map[uint32]chan *ethTypes.Log)
 	closeChans := make(map[uint32]chan bool)
 	roots := make(map[uint32][][32]byte)
@@ -65,7 +62,10 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 	merkleTrees := make(map[uint32]*trieutil.SparseMerkleTrie)
 
 	for _, chain := range config.Chains {
-		lastLogMutexes[chain.ChainID] = &sync.Mutex{}
+		lastLogs[chain.ChainID] = &logOrderInfo{
+			blockNumber: 0,
+			blockIndex:  0,
+		}
 		channels[chain.ChainID] = make(chan *ethTypes.Log, logChanSize)
 		closeChans[chain.ChainID] = make(chan bool, 1)
 		roots[chain.ChainID] = [][32]byte{}
@@ -93,12 +93,11 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 	return &Executor{
 		config:                      config,
 		scribeClient:                scribeClient,
-		lastLog:                     make(map[uint32]logOrderInfo),
-		lastLogMutexes:              lastLogMutexes,
+		lastLogs:                    lastLogs,
 		closeConnection:             closeChans,
 		roots:                       roots,
 		originParsers:               originParsers,
-		attestationcollectorParsers: attestationcollectorParsers,
+		attestationCollectorParsers: attestationcollectorParsers,
 		LogChans:                    channels,
 		MerkleTrees:                 merkleTrees,
 	}, nil
@@ -223,17 +222,13 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			if log == nil {
 				return fmt.Errorf("could not convert log")
 			}
-			if !e.lastLog[chain.ChainID].verifyAfter(*log) {
-				return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog[chain.ChainID].blockNumber, e.lastLog[chain.ChainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+			if !e.lastLogs[chain.ChainID].verifyAfter(*log) {
+				return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLogs[chain.ChainID].blockNumber, e.lastLogs[chain.ChainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 			}
 
 			e.LogChans[chain.ChainID] <- log
-			e.lastLogMutexes[chain.ChainID].Lock()
-			e.lastLog[chain.ChainID] = logOrderInfo{
-				blockNumber: log.BlockNumber,
-				blockIndex:  log.Index,
-			}
-			e.lastLogMutexes[chain.ChainID].Unlock()
+			e.lastLogs[chain.ChainID].blockNumber = log.BlockNumber
+			e.lastLogs[chain.ChainID].blockIndex = log.Index
 		}
 	}
 }
@@ -283,7 +278,7 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
 		}
 
 		return leaf[:], nil
-	} else if eventType, ok := e.attestationcollectorParsers[chainID].EventType(log); ok && eventType == 0 {
+	} else if eventType, ok := e.attestationCollectorParsers[chainID].EventType(log); ok && eventType == 0 {
 		// TODO: handle this case with attestationcollector properly.
 		return nil, nil
 	}
@@ -299,6 +294,7 @@ func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
 	}
 
 	if log.BlockNumber == l.blockNumber {
+		// TODO: duplicates?
 		return log.Index > l.blockIndex
 	}
 
