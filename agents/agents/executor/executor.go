@@ -31,7 +31,7 @@ type Executor struct {
 	executorDB db.ExecutorDB
 	// scribeClient is the client to the Scribe gRPC server.
 	scribeClient client.ScribeClient
-	// lastLog is a map from chainID -> last log processed.
+	// lastLog is a map from chain ID -> last log processed.
 	lastLog map[uint32]logOrderInfo
 	// lastLogMutex is a mutex for the lastLog map.
 	lastLogMutex *sync.Mutex
@@ -45,8 +45,8 @@ type Executor struct {
 	attestationcollectorParsers map[uint32]attestationcollector.Parser
 	// LogChans is a mapping from chain ID -> log channel.
 	LogChans map[uint32]chan *ethTypes.Log
-	// MerkleTree is the merkle tree.
-	MerkleTree *trieutil.SparseMerkleTrie
+	// MerkleTrees is a map from chain ID -> merkle tree.
+	MerkleTrees map[uint32]*trieutil.SparseMerkleTrie
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -64,6 +64,7 @@ func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient cl
 	stopListenChans := make(map[uint32]chan bool)
 	originParsers := make(map[uint32]origin.Parser)
 	attestationcollectorParsers := make(map[uint32]attestationcollector.Parser)
+	merkleTrees := make(map[uint32]*trieutil.SparseMerkleTrie)
 
 	for _, chain := range config.Chains {
 		channels[chain.ChainID] = make(chan *ethTypes.Log, 1000)
@@ -81,11 +82,13 @@ func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient cl
 		}
 
 		attestationcollectorParsers[chain.ChainID] = attestationcollectorParser
-	}
 
-	merkleTree, err := trieutil.NewTrie(treeDepth)
-	if err != nil {
-		return nil, fmt.Errorf("could not create merkle tree: %w", err)
+		merkleTree, err := trieutil.NewTrie(treeDepth)
+		if err != nil {
+			return nil, fmt.Errorf("could not create merkle tree: %w", err)
+		}
+
+		merkleTrees[chain.ChainID] = merkleTree
 	}
 
 	return &Executor{
@@ -99,7 +102,7 @@ func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient cl
 		originParsers:               originParsers,
 		attestationcollectorParsers: attestationcollectorParsers,
 		LogChans:                    channels,
-		MerkleTree:                  merkleTree,
+		MerkleTrees:                 merkleTrees,
 	}, nil
 }
 
@@ -168,7 +171,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 
 // GetRoot returns the merkle root at the given nonce.
 func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32) (*[32]byte, error) {
-	if nonce == 0 || nonce > uint32(e.MerkleTree.NumOfItems()) {
+	if nonce == 0 || nonce > uint32(e.MerkleTrees[chainID].NumOfItems()) {
 		return nil, fmt.Errorf("nonce is out of range")
 	}
 
@@ -217,7 +220,7 @@ func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32) error {
 		nonce++
 	}
 
-	e.MerkleTree = merkleTree
+	e.MerkleTrees[chainID] = merkleTree
 
 	return nil
 }
@@ -305,7 +308,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 // processLog processes the log and updates the merkle tree.
 func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	merkleIndex := e.MerkleTree.NumOfItems()
+	merkleIndex := e.MerkleTrees[chainID].NumOfItems()
 	message, err := e.logToMessage(log, chainID)
 	if err != nil {
 		return fmt.Errorf("could not convert log to leaf: %w", err)
@@ -314,8 +317,8 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		return nil
 	}
 
-	e.MerkleTree.Insert(message.Leaf.Bytes(), merkleIndex)
-	root := e.MerkleTree.Root()
+	e.MerkleTrees[chainID].Insert(message.Leaf.Bytes(), merkleIndex)
+	root := e.MerkleTrees[chainID].Root()
 	rootHash := common.BytesToHash(root[:])
 	message.Root = &rootHash
 	err = e.executorDB.StoreMessage(ctx, *message)

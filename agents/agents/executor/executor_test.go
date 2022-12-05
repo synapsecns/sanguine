@@ -278,7 +278,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	exec, err := executor.NewExecutor(excCfg, e.testDB, scribeClient.ScribeClient)
 	e.Nil(err)
 
-	_, err = exec.GetRoot(e.GetTestContext(), 1, 0)
+	_, err = exec.GetRoot(e.GetTestContext(), 1, chainID)
 	e.NotNil(err)
 
 	testTree, err := trieutil.NewTrie(32)
