@@ -397,12 +397,13 @@ contract OriginTest is OriginTools {
     ▏*║                            TESTS: HALTING                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_halts_noGuards() public {
-        createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
-        OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        origin.removeAllAgents(0);
-        originDispatch({ revertMessage: "No active guards" });
-    }
+    // TODO: enable Guards check once Go tests are updated
+    // function test_halts_noGuards() public {
+    //     createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
+    //     OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
+    //     origin.removeAllAgents(0);
+    //     originDispatch({ revertMessage: "No active guards" });
+    // }
 
     function test_halts_noNotaries() public {
         createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
