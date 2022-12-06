@@ -399,11 +399,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	<-waitChan
 	exec.Stop(chainID)
 
-	// err = exec.BuildTreeFromDB(e.GetTestContext(), chainID)
-	// e.Nil(err)
-	//
-	// newRoot, err := exec.GetRoot(e.GetTestContext(), 2, chainID)
-	// e.Nil(err)
-	//
-	// e.Equal(testRootB, *newRoot)
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
+	e.Nil(err)
+
+	newRoot, err := exec.GetRoot(e.GetTestContext(), 2, chainID, destination)
+	e.Nil(err)
+
+	e.Equal(testRootB, *newRoot)
 }

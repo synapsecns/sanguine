@@ -206,40 +206,41 @@ func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, des
 	return (*[32]byte)(message.Root.Bytes()), nil
 }
 
-//// BuildTreeFromDB builds the merkle tree from the database's messages. This function will
-//// reset the current merkle tree and replace it with the one built from the database.
-//// This function should also not be called while Start or Listen are running.
-// func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32) error {
-//	merkleTree, err := trieutil.NewTrie(treeDepth)
-//	if err != nil {
-//		return fmt.Errorf("could not create merkle tree: %w", err)
-//	}
-//
-//	nonce := uint32(1)
-//
-//	for {
-//		messageMask := execTypes.DBMessage{
-//			ChainID: &chainID,
-//			Nonce:   &nonce,
-//		}
-//		message, err := e.executorDB.GetMessage(ctx, messageMask)
-//		if err != nil {
-//			return fmt.Errorf("could not get message: %w", err)
-//		}
-//
-//		if message == nil {
-//			break
-//		}
-//
-//		merkleTree.Insert(message.Root.Bytes(), int(nonce-1))
-//
-//		nonce++
-//	}
-//
-//	e.MerkleTrees[chainID] = merkleTree
-//
-//	return nil
-//}
+// BuildTreeFromDB builds the merkle tree from the database's messages. This function will
+// reset the current merkle tree and replace it with the one built from the database.
+// This function should also not be called while Start or Listen are running.
+func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
+	merkleTree, err := trieutil.NewTrie(treeDepth)
+	if err != nil {
+		return fmt.Errorf("could not create merkle tree: %w", err)
+	}
+
+	nonce := uint32(1)
+
+	for {
+		messageMask := execTypes.DBMessage{
+			ChainID:     &chainID,
+			Destination: &destination,
+			Nonce:       &nonce,
+		}
+		message, err := e.executorDB.GetMessage(ctx, messageMask)
+		if err != nil {
+			return fmt.Errorf("could not get message: %w", err)
+		}
+
+		if message == nil {
+			break
+		}
+
+		merkleTree.Insert(message.Root.Bytes(), int(nonce-1))
+
+		nonce++
+	}
+
+	e.MerkleTrees[chainID][destination] = merkleTree
+
+	return nil
+}
 
 type contractType int
 
