@@ -402,8 +402,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	// err = exec.BuildTreeFromDB(e.GetTestContext(), chainID)
 	// e.Nil(err)
 	//
-	//newRoot, err := exec.GetRoot(e.GetTestContext(), 2, chainID)
-	//e.Nil(err)
+	// newRoot, err := exec.GetRoot(e.GetTestContext(), 2, chainID)
+	// e.Nil(err)
 	//
-	//e.Equal(testRootB, *newRoot)
+	// e.Equal(testRootB, *newRoot)
 }
