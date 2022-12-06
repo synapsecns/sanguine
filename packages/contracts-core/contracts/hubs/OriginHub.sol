@@ -40,6 +40,8 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     mapping(uint32 => MerkleLib.Tree) internal trees;
     // [destination domain] => [Merkle tree roots after inserting a sent message to that domain]
     mapping(uint32 => bytes32[]) internal historicalRoots;
+    // [destination domain] => [block numbers for each nonce written so far]
+    mapping(uint32 => uint256[]) internal historicalNonceBlockNumbers;
 
     // gap for upgrade safety
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -78,12 +80,20 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         returns (bytes memory attestationData)
     {
         uint32 latestNonce = nonce(_destination);
+        uint256 rootDispatchBlockNumber;
+        uint256 currentBlockNumer;
+        bytes32 latestRoot;
+        (latestRoot, rootDispatchBlockNumber, currentBlockNumer) = getHistoricalRoot(
+            _destination,
+            latestNonce
+        );
+
         return
             Attestation.formatAttestationData({
                 _origin: _localDomain(),
                 _destination: _destination,
                 _nonce: latestNonce,
-                _root: getHistoricalRoot(_destination, latestNonce)
+                _root: latestRoot
             });
     }
 
@@ -97,16 +107,28 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
      * @return Root for destination's merkle tree right after message to `_destination`
      * with `nonce = _nonce` was dispatched.
      */
-    function getHistoricalRoot(uint32 _destination, uint32 _nonce) public view returns (bytes32) {
+    function getHistoricalRoot(uint32 _destination, uint32 _nonce)
+        public
+        view
+        returns (
+            bytes32,
+            uint256,
+            uint256
+        )
+    {
         // Check if destination is known
         if (historicalRoots[_destination].length > 0) {
             // Check if nonce exists
             require(_nonce < historicalRoots[_destination].length, "!nonce: existing destination");
-            return historicalRoots[_destination][_nonce];
+            return (
+                historicalRoots[_destination][_nonce],
+                historicalNonceBlockNumbers[_destination][_nonce],
+                block.number
+            );
         } else {
             // If destination is unknown, we have the root of an empty merkle tree
             require(_nonce == 0, "!nonce: unknown destination");
-            return EMPTY_TREE_ROOT;
+            return (EMPTY_TREE_ROOT, uint256(0), block.number);
         }
     }
 
@@ -272,6 +294,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         // Insert a historical root so nonces start at 1 rather then 0.
         // Here we insert the root of an empty merkle tree
         historicalRoots[_destination].push(EMPTY_TREE_ROOT);
+        historicalNonceBlockNumbers[_destination].push(0);
     }
 
     /**
@@ -295,6 +318,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         /// @dev leaf is inserted => _messageNonce == tree.count()
         // tree.root() requires current amount of leaves (i.e. tree.count())
         historicalRoots[_destination].push(trees[_destination].root(_messageNonce));
+        historicalNonceBlockNumbers[_destination].push(block.number);
     }
 
     /**
