@@ -18,17 +18,21 @@ contract AgentRegistryTest is AgentRegistryTools, EnumerableSetTools {
     function setUp() public override {
         super.setUp();
         registry = new AgentRegistryHarness();
+        domainsExtended.push(0);
         for (uint256 d = 0; d < DOMAINS; ++d) {
             domainsExtended.push(domains[d]);
         }
-        domainsExtended.push(0);
         for (uint256 d = 0; d < DOMAINS + 1; ++d) {
             uint32 domain = domainsExtended[d];
             for (uint256 i = 0; i < AGENTS_PER_DOMAIN; ++i) {
                 allAgents.push(suiteAgent(domain, i));
             }
         }
-        createExpectedStates();
+        expectedStates = new uint256[][](ELEMENTS);
+        expectedStates[0] = [1, 2, 3]; // (2) is removed
+        expectedStates[1] = [1, 3]; // (0) is removed (but is not stored)
+        expectedStates[2] = [1, 3]; // (1) is removed
+        expectedStates[3] = [3]; // (3) is removed
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -117,12 +121,22 @@ contract AgentRegistryTest is AgentRegistryTools, EnumerableSetTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_haveActiveNotary(uint32 domain) public {
+        vm.assume(domain != 0);
         address agent = address(1);
         test_addAgent(domain, agent);
         // Should not revert with an active agent
         registry.onlyActiveNotary(domain);
         test_removeAgent(domain, agent);
         // Should revert with no active agents
+        vm.expectRevert("No active notaries");
+        registry.onlyActiveNotary(domain);
+    }
+
+    function test_haveActiveNotary_zeroDomain() public {
+        uint32 domain = 0;
+        address agent = address(1);
+        test_addAgent(domain, agent);
+        // Should revert, as this is not a Notary
         vm.expectRevert("No active notaries");
         registry.onlyActiveNotary(domain);
     }
@@ -206,7 +220,7 @@ contract AgentRegistryTest is AgentRegistryTools, EnumerableSetTools {
             registry.isActiveAgent(domain, account),
             "!isActiveAgent(domain, account): added"
         );
-        assertFalse(registry.isActiveDomain(domain), "!isActiveDomain: added");
+        if (domain != 0) assertFalse(registry.isActiveDomain(domain), "!isActiveDomain: added");
         // Should add agent w/o ignore mode
         registry.toggleIgnoreMode(false);
         test_addAgent(domain, account);
@@ -218,7 +232,7 @@ contract AgentRegistryTest is AgentRegistryTools, EnumerableSetTools {
             registry.isActiveAgent(domain, account),
             "!isActiveAgent(domain, account): removed"
         );
-        assertTrue(registry.isActiveDomain(domain), "!isActiveDomain: removed");
+        if (domain != 0) assertTrue(registry.isActiveDomain(domain), "!isActiveDomain: removed");
         // Should remove agent w/o ignore mode
         registry.toggleIgnoreMode(false);
         test_removeAgent(domain, account);
@@ -235,6 +249,7 @@ contract AgentRegistryTest is AgentRegistryTools, EnumerableSetTools {
         _checkAgentViews(0);
     }
 
+    // solhint-disable-next-line code-complexity
     function test_domainViews() public {
         uint256 amount = domainsExtended.length;
         // Sanity check: test is setup correctly
@@ -244,17 +259,23 @@ contract AgentRegistryTest is AgentRegistryTools, EnumerableSetTools {
             test_addAgent(domain, suiteAgent(domain, 0));
             for (uint256 i = 0; i < amount; ++i) {
                 uint32 domainToCheck = domainsExtended[i];
-                // Domain should be active only if an agent was added there
-                assertEq(registry.isActiveDomain(domainToCheck), i <= d, "!isActiveDomain");
+                // Domain should be active only if a Notary was added there
+                assertEq(
+                    registry.isActiveDomain(domainToCheck),
+                    domainToCheck != 0 && i <= d,
+                    "!isActiveDomain"
+                );
             }
-            assertEq(registry.amountDomains(), d + 1, "!amountDomains: adding[0]");
+            // Zero domain in stored first in domainsExtended,
+            // so amount of active domains should be `d`
+            assertEq(registry.amountDomains(), d, "!amountDomains: adding[0]");
             test_addAgent(domain, suiteAgent(domain, 1));
-            assertEq(registry.amountDomains(), d + 1, "!amountDomains: adding[1]");
+            assertEq(registry.amountDomains(), d, "!amountDomains: adding[1]");
         }
         for (uint256 d = 0; d < amount; ++d) {
             // Check getters
             uint32[] memory values = registry.allDomains();
-            assertEq(values.length, ELEMENTS - d, "!values.length");
+            assertEq(values.length, expectedStates[d].length, "!values.length");
             for (uint256 i = 0; i < values.length; ++i) {
                 uint32 expectedDomain = domainsExtended[expectedStates[d][i]];
                 assertEq(values[i], expectedDomain, "!values");
@@ -264,9 +285,17 @@ contract AgentRegistryTest is AgentRegistryTools, EnumerableSetTools {
             uint256 index = removalOrder[d];
             uint32 domain = domainsExtended[index];
             test_removeAgent(domain, suiteAgent(domain, 0));
-            assertTrue(registry.isActiveDomain(domain), "!isActiveDomain: 1 agent left");
+            if (domain == 0) {
+                assertFalse(registry.isActiveDomain(domain), "!isActiveDomain: zero domain");
+            } else {
+                assertTrue(registry.isActiveDomain(domain), "!isActiveDomain: 1 agent left");
+            }
             test_removeAgent(domain, suiteAgent(domain, 1));
-            assertFalse(registry.isActiveDomain(domain), "!isActiveDomain: 1 agent left");
+            if (domain == 0) {
+                assertFalse(registry.isActiveDomain(domain), "!isActiveDomain: zero domain");
+            } else {
+                assertFalse(registry.isActiveDomain(domain), "!isActiveDomain: 0 agents left");
+            }
         }
     }
 
