@@ -25,7 +25,7 @@ abstract contract AgentRegistryTools is SynapseTestSuite {
     ) public {
         vm.expectEmit(true, true, true, true);
         emit AgentAdded(_domain, _account);
-        if (_isFirst) {
+        if (_isFirst && _domain != 0) {
             vm.expectEmit(true, true, true, true);
             emit DomainActivated(_domain);
         }
@@ -48,7 +48,7 @@ abstract contract AgentRegistryTools is SynapseTestSuite {
     ) public {
         vm.expectEmit(true, true, true, true);
         emit AgentRemoved(_domain, _account);
-        if (_isLast) {
+        if (_isLast && _domain != 0) {
             vm.expectEmit(true, true, true, true);
             emit DomainDeactivated(_domain);
         }
