@@ -271,9 +271,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
 			{
-				ChainID:            chainID,
-				OriginAddress:      originContract.Address().String(),
-				DestinationDomains: []uint32{destination},
+				ChainID:       chainID,
+				OriginAddress: originContract.Address().String(),
+			},
+			{
+				ChainID: destination,
 			},
 		},
 	}

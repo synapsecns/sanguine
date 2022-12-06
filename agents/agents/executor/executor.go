@@ -33,8 +33,12 @@ type Executor struct {
 	roots map[uint32]map[uint32][][32]byte
 	// originParsers is a map from chain ID -> origin parser.
 	originParsers map[uint32]origin.Parser
-	// attestationCollectorParsers is a map from chain ID -> attestationCollector parser.
-	attestationCollectorParsers map[uint32]attestationcollector.Parser
+	// attestationCollectorParser is an attestationCollector parser.
+	attestationCollectorParser attestationcollector.Parser
+	// synChainID is the chain ID of the Synapse chain.
+	synChainID uint32
+	// attestationCollectorAddress is the address of the attestation collector contract.
+	attestationCollectorAddress common.Address
 	// LogChans is a mapping from chain ID -> log channel.
 	LogChans map[uint32]chan *ethTypes.Log
 	// MerkleTrees is a map from chain ID -> destination domain -> merkle tree.
@@ -58,7 +62,11 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 	closeChans := make(map[uint32]chan bool)
 	roots := make(map[uint32]map[uint32][][32]byte)
 	originParsers := make(map[uint32]origin.Parser)
-	attestationcollectorParsers := make(map[uint32]attestationcollector.Parser)
+	attestationCollectorParser, err := attestationcollector.NewParser(common.HexToAddress(config.AttestationCollectorAddress))
+	if err != nil {
+		return nil, fmt.Errorf("could not create attestationcollector parser: %w", err)
+	}
+
 	merkleTrees := make(map[uint32]map[uint32]*trieutil.SparseMerkleTrie)
 
 	for _, chain := range config.Chains {
@@ -74,25 +82,22 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 		}
 
 		originParsers[chain.ChainID] = originParser
-		attestationcollectorParser, err := attestationcollector.NewParser(common.HexToAddress(chain.AttestationCollectorAddress))
-		if err != nil {
-			return nil, fmt.Errorf("could not create attestationcollector parser: %w", err)
-		}
-
-		attestationcollectorParsers[chain.ChainID] = attestationcollectorParser
 
 		roots[chain.ChainID] = make(map[uint32][][32]byte)
 		merkleTrees[chain.ChainID] = make(map[uint32]*trieutil.SparseMerkleTrie)
 
-		for _, destination := range chain.DestinationDomains {
-			roots[chain.ChainID][destination] = [][32]byte{}
+		for _, destination := range config.Chains {
+			if destination.ChainID == chain.ChainID {
+				continue
+			}
+			roots[chain.ChainID][destination.ChainID] = [][32]byte{}
 
 			merkleTree, err := trieutil.NewTrie(treeDepth)
 			if err != nil {
 				return nil, fmt.Errorf("could not create merkle tree: %w", err)
 			}
 
-			merkleTrees[chain.ChainID][destination] = merkleTree
+			merkleTrees[chain.ChainID][destination.ChainID] = merkleTree
 		}
 	}
 
@@ -103,7 +108,9 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 		closeConnection:             closeChans,
 		roots:                       roots,
 		originParsers:               originParsers,
-		attestationCollectorParsers: attestationcollectorParsers,
+		attestationCollectorParser:  attestationCollectorParser,
+		synChainID:                  config.SYNChainID,
+		attestationCollectorAddress: common.HexToAddress(config.AttestationCollectorAddress),
 		LogChans:                    channels,
 		MerkleTrees:                 merkleTrees,
 	}, nil
@@ -185,7 +192,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	case originContract:
 		address = chain.OriginAddress
 	case attestationcollectorContract:
-		address = chain.AttestationCollectorAddress
+		address = e.attestationCollectorAddress.String()
 	default:
 		return fmt.Errorf("contract type not supported")
 	}
@@ -285,9 +292,6 @@ func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, uint32, e
 		}
 
 		return leaf[:], message.DestinationDomain(), nil
-	} else if eventType, ok := e.attestationCollectorParsers[chainID].EventType(log); ok && eventType == 0 {
-		// TODO: handle this case with attestationcollector properly.
-		return nil, 0, nil
 	}
 
 	logger.Warnf("could not match the log's event type")
@@ -301,7 +305,7 @@ func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
 	}
 
 	if log.BlockNumber == l.blockNumber {
-		// TODO: duplicates?
+		// TODO: duplicates
 		return log.Index > l.blockIndex
 	}
 
