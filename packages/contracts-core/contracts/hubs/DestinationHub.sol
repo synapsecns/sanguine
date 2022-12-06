@@ -145,10 +145,12 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
         bytes29 _reportView,
         bytes memory _report
     ) internal override returns (bool) {
+        /* TODO(Chi): enable reports once co-signed Attestation is implemented
         _checkAttestationDomains(_attestationView);
         require(_reportView.reportedFraud(), "Not a fraud report");
         _blacklistNotary(_guard, _notary, _attestationView, _report);
         return true;
+        */
     }
 
     function _updateMirror(

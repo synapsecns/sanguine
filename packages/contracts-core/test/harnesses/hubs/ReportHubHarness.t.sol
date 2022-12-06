@@ -18,7 +18,9 @@ contract ReportHubHarness is ReportHubHarnessEvents, ReportHub, AttestationHubHa
         bytes29 _reportView,
         bytes memory _report
     ) internal override returns (bool) {
+        /* TODO(Chi): enable reports once co-signed Attestation is implemented
         emit LogReport(_guard, _notary, _attestationView.clone(), _reportView.clone(), _report);
         return true;
+        */
     }
 }

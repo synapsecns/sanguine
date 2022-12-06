@@ -219,6 +219,8 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         bytes29 _reportView,
         bytes memory _report
     ) internal override returns (bool) {
+        // TODO(Chi): enable reports once co-signed Attestation is implemented
+        /*
         uint32 _origin = _attestationView.attestedOrigin();
         uint32 _destination = _attestationView.attestedDestination();
         uint32 _nonce = _attestationView.attestedNonce();
@@ -256,6 +258,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
                 return false;
             }
         }
+        */
     }
 
     /**
