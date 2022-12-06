@@ -11,7 +11,7 @@ contract AuthLibraryTest is SynapseLibraryTest {
 
     uint256 internal constant MAX_PRIV_KEY =
         115792089237316195423570985008687907852837564279074904382605163141518161494337;
-    bytes internal constant REVERT_WRONG_SIG_LENGTH = "ECDSA: invalid signature length";
+    bytes internal constant REVERT_WRONG_SIG_LENGTH = "Not a signature";
     bytes internal constant TEST_MESSAGE = "Nothing to see here, please disperse";
     AuthHarness internal libHarness;
 
@@ -20,12 +20,20 @@ contract AuthLibraryTest is SynapseLibraryTest {
         libHarness = new AuthHarness();
     }
 
+    function test_toEthSignedMessageHash() public {
+        assertEq(
+            libHarness.toEthSignedMessageHash(TEST_MESSAGE),
+            _createDigest(),
+            "!toEthSignedMessageHash"
+        );
+    }
+
     function test_recoverSigner(uint256 privKey) public {
         vm.assume(privKey != 0);
         vm.assume(privKey < MAX_PRIV_KEY);
         address signer = vm.addr(privKey);
         bytes memory signature = signMessage(privKey, TEST_MESSAGE);
-        assertEq(libHarness.recoverSigner(TEST_MESSAGE, signature), signer, "!recoverSigner");
+        assertEq(libHarness.recoverSigner(_createDigest(), signature), signer, "!recoverSigner");
     }
 
     function test_recoverSigner_revert_shortSignature() public {
@@ -36,7 +44,7 @@ contract AuthLibraryTest is SynapseLibraryTest {
             .slice({ _index: 0, _len: signature.length - 1, newType: 0 })
             .clone();
         vm.expectRevert(REVERT_WRONG_SIG_LENGTH);
-        libHarness.recoverSigner(TEST_MESSAGE, signature);
+        libHarness.recoverSigner(_createDigest(), signature);
     }
 
     function test_recoverSigner_revert_longSignature() public {
@@ -44,6 +52,13 @@ contract AuthLibraryTest is SynapseLibraryTest {
         // Add 1 byte to signature
         signature = bytes.concat(signature, bytes1(0));
         vm.expectRevert(REVERT_WRONG_SIG_LENGTH);
-        libHarness.recoverSigner(TEST_MESSAGE, signature);
+        libHarness.recoverSigner(_createDigest(), signature);
+    }
+
+    function _createDigest() internal pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(TEST_MESSAGE))
+            );
     }
 }

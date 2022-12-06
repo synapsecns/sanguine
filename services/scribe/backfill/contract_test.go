@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
+	. "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -13,11 +17,6 @@ import (
 	"math/big"
 	"os"
 	"time"
-
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/params"
-	. "github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 // TestFailedStore tests that the ChainBackfiller continues backfilling after a failed store.

@@ -20,6 +20,7 @@ contract OriginTest is OriginTools {
         assertEq(origin.getHistoricalRoot(0, 0), origin.root(0), "!historicalRoots(0)");
     }
 
+    // solhint-disable-next-line code-complexity
     function test_initializedCorrectly() public {
         for (uint256 d = 0; d < DOMAINS; ++d) {
             uint32 localDomain = domains[d];
@@ -36,36 +37,36 @@ contract OriginTest is OriginTools {
             );
             // Check all notaries
             for (uint256 dest = 0; dest < DOMAINS; ++dest) {
-                uint32 destDomain = domains[dest];
-                if (destDomain == localDomain) {
+                uint32 domain = domains[dest];
+                if (domain == localDomain) {
                     // Origin should not keep track of local Notaries
-                    assertEq(origin.notariesAmount(destDomain), 0, "!notariesAmount: local domain");
+                    assertEq(origin.amountAgents(domain), 0, "!notariesAmount: local domain");
                     for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
                         assertFalse(
-                            origin.isNotary(destDomain, suiteNotary(destDomain, i)),
+                            origin.isActiveAgent(domain, suiteNotary(domain, i)),
                             string.concat("!notary", getActorSuffix(i), ": local domain")
                         );
                     }
                 } else {
+                    // Origin should keep track of all remote notaries
                     assertEq(
-                        origin.notariesAmount(destDomain),
+                        origin.amountAgents(domain),
                         NOTARIES_PER_CHAIN,
                         "!notariesAmount: remote domain"
                     );
                     for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
                         assertTrue(
-                            origin.isNotary(destDomain, suiteNotary(destDomain, i)),
+                            origin.isActiveAgent(domain, suiteNotary(domain, i)),
                             string.concat("!notary", getActorSuffix(i), ": remote domain")
                         );
                     }
                 }
             }
-
             // Check global guards
-            assertEq(origin.guardsAmount(), GUARDS, "!guardsAmount");
+            assertEq(origin.amountAgents({ _domain: 0 }), GUARDS, "!guardsAmount");
             for (uint256 i = 0; i < GUARDS; ++i) {
                 assertTrue(
-                    origin.isGuard(suiteGuard(i)),
+                    origin.isActiveAgent({ _domain: 0, _account: suiteGuard(i) }),
                     string.concat("!guard", getActorSuffix(i))
                 );
             }
@@ -194,8 +195,7 @@ contract OriginTest is OriginTools {
 
     function test_submitAttestation_revert_wrongDomain() public {
         // Add local Notary: Origin is not supposed to track them
-        vm.prank(owner);
-        suiteOrigin(DOMAIN_LOCAL).addNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL));
+        suiteOrigin(DOMAIN_LOCAL).addLocalNotary(suiteNotary(DOMAIN_LOCAL));
         _createAttestation_revert_wrongDomain();
         originSubmitAttestation({
             domain: DOMAIN_LOCAL,
@@ -205,7 +205,10 @@ contract OriginTest is OriginTools {
 
     function test_submitAttestation_revert_notNotary() public {
         _createAttestation_revert_notNotary();
-        originSubmitAttestation({ domain: DOMAIN_LOCAL, revertMessage: "Signer is not a notary" });
+        originSubmitAttestation({
+            domain: DOMAIN_LOCAL,
+            revertMessage: "Signer is not authorized"
+        });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -247,8 +250,7 @@ contract OriginTest is OriginTools {
 
     function test_submitReport_revert_wrongDomain() public {
         // Add local Notary: Origin is not supposed to track them
-        vm.prank(owner);
-        suiteOrigin(DOMAIN_LOCAL).addNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL));
+        suiteOrigin(DOMAIN_LOCAL).addLocalNotary(suiteNotary(DOMAIN_LOCAL));
         _createAttestation_revert_wrongDomain();
         createReport(Report.Flag.Fraud);
         originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "!attestationOrigin: !local" });
@@ -257,13 +259,13 @@ contract OriginTest is OriginTools {
     function test_submitReport_revert_notNotary() public {
         _createAttestation_revert_notNotary();
         createReport(Report.Flag.Fraud);
-        originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "Signer is not a notary" });
+        originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "Signer is not authorized" });
     }
 
     function test_submitReport_revert_notGuard() public {
         _createAttestation_valid_suggested();
         createReport({ flag: Report.Flag.Fraud, signer: attacker });
-        originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "Signer is not a guard" });
+        originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "Signer is not authorized" });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -395,11 +397,19 @@ contract OriginTest is OriginTools {
     ▏*║                            TESTS: HALTING                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // TODO: enable Guards check once Go tests are updated
+    // function test_halts_noGuards() public {
+    //     createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
+    //     OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
+    //     origin.removeAllAgents(0);
+    //     originDispatch({ revertMessage: "No active guards" });
+    // }
+
     function test_halts_noNotaries() public {
         createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
         OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        origin.removeAllNotaries(DOMAIN_REMOTE);
-        originDispatch({ revertMessage: "!notaries" });
+        origin.removeAllAgents(DOMAIN_REMOTE);
+        originDispatch({ revertMessage: "No active notaries" });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
