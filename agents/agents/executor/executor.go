@@ -30,15 +30,15 @@ type Executor struct {
 	// closeConnection is a map from chain ID -> channel to close the connection.
 	closeConnection map[uint32]chan bool
 	// roots is a map from chain ID -> slice of merkle roots. The root at [i] is the root of nonce i.
-	roots map[uint32][][32]byte
+	roots map[uint32]map[uint32][][32]byte
 	// originParsers is a map from chain ID -> origin parser.
 	originParsers map[uint32]origin.Parser
 	// attestationCollectorParsers is a map from chain ID -> attestationCollector parser.
 	attestationCollectorParsers map[uint32]attestationcollector.Parser
 	// LogChans is a mapping from chain ID -> log channel.
 	LogChans map[uint32]chan *ethTypes.Log
-	// MerkleTrees is a map from chain ID -> merkle tree.
-	MerkleTrees map[uint32]*trieutil.SparseMerkleTrie
+	// MerkleTrees is a map from chain ID -> destination domain -> merkle tree.
+	MerkleTrees map[uint32]map[uint32]*trieutil.SparseMerkleTrie
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -56,10 +56,10 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 	lastLogs := make(map[uint32]*logOrderInfo)
 	channels := make(map[uint32]chan *ethTypes.Log)
 	closeChans := make(map[uint32]chan bool)
-	roots := make(map[uint32][][32]byte)
+	roots := make(map[uint32]map[uint32][][32]byte)
 	originParsers := make(map[uint32]origin.Parser)
 	attestationcollectorParsers := make(map[uint32]attestationcollector.Parser)
-	merkleTrees := make(map[uint32]*trieutil.SparseMerkleTrie)
+	merkleTrees := make(map[uint32]map[uint32]*trieutil.SparseMerkleTrie)
 
 	for _, chain := range config.Chains {
 		lastLogs[chain.ChainID] = &logOrderInfo{
@@ -68,7 +68,6 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 		}
 		channels[chain.ChainID] = make(chan *ethTypes.Log, logChanSize)
 		closeChans[chain.ChainID] = make(chan bool, 1)
-		roots[chain.ChainID] = [][32]byte{}
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create origin parser: %w", err)
@@ -82,12 +81,19 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 
 		attestationcollectorParsers[chain.ChainID] = attestationcollectorParser
 
-		merkleTree, err := trieutil.NewTrie(treeDepth)
-		if err != nil {
-			return nil, fmt.Errorf("could not create merkle tree: %w", err)
-		}
+		roots[chain.ChainID] = make(map[uint32][][32]byte)
+		merkleTrees[chain.ChainID] = make(map[uint32]*trieutil.SparseMerkleTrie)
 
-		merkleTrees[chain.ChainID] = merkleTree
+		for _, destination := range chain.DestinationDomains {
+			roots[chain.ChainID][destination] = [][32]byte{}
+
+			merkleTree, err := trieutil.NewTrie(treeDepth)
+			if err != nil {
+				return nil, fmt.Errorf("could not create merkle tree: %w", err)
+			}
+
+			merkleTrees[chain.ChainID][destination] = merkleTree
+		}
 	}
 
 	return &Executor{
@@ -235,8 +241,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 // processLog processes the log and updates the merkle tree.
 func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
-	merkleIndex := e.MerkleTrees[chainID].NumOfItems()
-	leafData, err := e.logToLeaf(log, chainID)
+	leafData, destination, err := e.logToLeaf(log, chainID)
 	if err != nil {
 		return fmt.Errorf("could not convert log to leaf: %w", err)
 	}
@@ -244,48 +249,50 @@ func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
 		return nil
 	}
 
-	e.MerkleTrees[chainID].Insert(leafData, merkleIndex)
-	e.roots[chainID] = append(e.roots[chainID], e.MerkleTrees[chainID].Root())
+	merkleIndex := e.MerkleTrees[chainID][destination].NumOfItems()
+
+	e.MerkleTrees[chainID][destination].Insert(leafData, merkleIndex)
+	e.roots[chainID][destination] = append(e.roots[chainID][destination], e.MerkleTrees[chainID][destination].Root())
 
 	return nil
 }
 
 // GetRoot returns the merkle root at the given index.
-func (e Executor) GetRoot(index uint64, chainID uint32) ([32]byte, error) {
-	if index >= uint64(len(e.roots[chainID])) {
+func (e Executor) GetRoot(index uint64, chainID uint32, destination uint32) ([32]byte, error) {
+	if index >= uint64(len(e.roots[chainID][destination])) {
 		return [32]byte{}, fmt.Errorf("index out of range")
 	}
 
-	return e.roots[chainID][index], nil
+	return e.roots[chainID][destination][index], nil
 }
 
 // logToLeaf converts the log to a leaf data.
-func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, error) {
+func (e Executor) logToLeaf(log ethTypes.Log, chainID uint32) ([]byte, uint32, error) {
 	if eventType, ok := e.originParsers[chainID].EventType(log); ok && eventType == origin.DispatchEvent {
 		committedMessage, ok := e.originParsers[chainID].ParseDispatch(log)
 		if !ok {
-			return nil, fmt.Errorf("could not parse committed message")
+			return nil, 0, fmt.Errorf("could not parse committed message")
 		}
 
 		message, err := types.DecodeMessage(committedMessage.Message())
 		if err != nil {
-			return nil, fmt.Errorf("could not decode message: %w", err)
+			return nil, 0, fmt.Errorf("could not decode message: %w", err)
 		}
 
 		leaf, err := message.ToLeaf()
 		if err != nil {
-			return nil, fmt.Errorf("could not convert message to leaf: %w", err)
+			return nil, 0, fmt.Errorf("could not convert message to leaf: %w", err)
 		}
 
-		return leaf[:], nil
+		return leaf[:], message.DestinationDomain(), nil
 	} else if eventType, ok := e.attestationCollectorParsers[chainID].EventType(log); ok && eventType == 0 {
 		// TODO: handle this case with attestationcollector properly.
-		return nil, nil
+		return nil, 0, nil
 	}
 
 	logger.Warnf("could not match the log's event type")
 
-	return nil, nil
+	return nil, 0, nil
 }
 
 func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
