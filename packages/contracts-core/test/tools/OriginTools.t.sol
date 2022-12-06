@@ -242,13 +242,13 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     ) internal {
         // Check if given Notary was removed
         assertEq(
-            origin.isNotary(attestationDestination, attestationNotary),
+            origin.isActiveAgent(attestationDestination, attestationNotary),
             isValidAttestation,
             "Wrong Notary active status"
         );
         // Check if amount of Notaries changed
         assertEq(
-            origin.notariesAmount(attestationDestination),
+            origin.amountAgents(attestationDestination),
             notariesAmount - (isValidAttestation ? 0 : 1),
             "Wrong amount of notaries"
         );
@@ -305,10 +305,14 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         // Do the checks for Notary
         _postSubmitAttestation(origin, notariesAmount, isValidAttestation);
         // Check if given Guard was removed
-        assertEq(origin.isGuard(reportGuard), isCorrectReport, "Wrong Guard active status");
+        assertEq(
+            origin.isActiveAgent({ _domain: 0, _account: reportGuard }),
+            isCorrectReport,
+            "Wrong Guard active status"
+        );
         // Check if amount of Guards changed
         assertEq(
-            origin.guardsAmount(),
+            origin.amountAgents({ _domain: 0 }),
             guardsAmount - (isCorrectReport ? 0 : 1),
             "Wrong amount of guards"
         );
@@ -325,9 +329,12 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         returns (OriginHarness origin, uint256 notariesAmount)
     {
         origin = suiteOrigin(domain);
-        notariesAmount = origin.notariesAmount(attestationDestination);
+        notariesAmount = origin.amountAgents(attestationDestination);
         // Sanity check: notary was active
-        require(origin.isNotary(attestationDestination, attestationNotary), "Notary wasn't active");
+        require(
+            origin.isActiveAgent(attestationDestination, attestationNotary),
+            "Notary wasn't active"
+        );
     }
 
     // Returns state before submitting report and checks that Guard and Notary are active
@@ -342,9 +349,9 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     {
         // Get Notary-related state and perform Notary check
         (origin, notariesAmount) = _preSubmitAttestation(domain);
-        guardsAmount = origin.guardsAmount();
+        guardsAmount = origin.amountAgents({ _domain: 0 });
         // Sanity check: guard was active
-        require(origin.isGuard(reportGuard), "Guard wasn't active");
+        require(origin.isActiveAgent({ _domain: 0, _account: reportGuard }), "Guard wasn't active");
     }
 
     // Returns nonce for the next message dispatched via Origin on given domain

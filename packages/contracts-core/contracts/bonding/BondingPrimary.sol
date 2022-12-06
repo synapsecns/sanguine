@@ -5,10 +5,9 @@ import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
 import { SystemContract } from "../system/SystemContract.sol";
 import { LocalDomainContext } from "../context/LocalDomainContext.sol";
 import { BondingManager } from "./BondingManager.sol";
-import { GlobalNotaryRegistry } from "../registry/GlobalNotaryRegistry.sol";
-import { GuardRegistry } from "../registry/GuardRegistry.sol";
+import { AgentRegistry } from "../system/AgentRegistry.sol";
 
-contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegistry, BondingManager {
+contract BondingPrimary is LocalDomainContext, AgentRegistry, BondingManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -33,25 +32,25 @@ contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegist
 
     function addNotary(uint32 _domain, address _notary) external onlyOwner {
         // Add a Notary, break execution if they are already active
-        if (!_addNotary(_domain, _notary)) return;
+        if (!_addAgent(_domain, _notary)) return;
         _updateAgentStatus(_notaryInfo({ _domain: _domain, _notary: _notary, _bonded: true }));
     }
 
     function removeNotary(uint32 _domain, address _notary) external onlyOwner {
         // Remove a Notary, break execution if they are not currently active
-        if (!_removeNotary(_domain, _notary)) return;
+        if (!_removeAgent(_domain, _notary)) return;
         _updateAgentStatus(_notaryInfo({ _domain: _domain, _notary: _notary, _bonded: false }));
     }
 
     function addGuard(address _guard) external onlyOwner {
         // Add a Guard, break execution if they are already active
-        if (!_addGuard(_guard)) return;
+        if (!_addAgent({ _domain: 0, _account: _guard })) return;
         _updateAgentStatus(_guardInfo({ _guard: _guard, _bonded: true }));
     }
 
     function removeGuard(address _guard) external onlyOwner {
         // Remove a Guard, break execution if they are not currently active
-        if (!_removeGuard(_guard)) return;
+        if (!_removeAgent({ _domain: 0, _account: _guard })) return;
         _updateAgentStatus(_guardInfo({ _guard: _guard, _bonded: false }));
     }
 
@@ -140,5 +139,10 @@ contract BondingPrimary is LocalDomainContext, GlobalNotaryRegistry, GuardRegist
         _callOrigin;
         // Slashing system call has to be done by Bonding Manager
         _assertEntityAllowed(BONDING_MANAGER, _caller);
+    }
+
+    function _isIgnoredAgent(uint32, address) internal pure override returns (bool) {
+        // BondingPrimary doesn't ignore anything
+        return false;
     }
 }
