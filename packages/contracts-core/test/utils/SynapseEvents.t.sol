@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 // ============ Production events ============
+import "../../contracts/events/AgentRegistryEvents.sol";
 import "../../contracts/events/AttestationHubEvents.sol";
 import "../../contracts/events/DestinationEvents.sol";
 import "../../contracts/events/GuardRegistryEvents.sol";
@@ -9,6 +10,7 @@ import "../../contracts/events/NotaryRegistryEvents.sol";
 import "../../contracts/events/OriginEvents.sol";
 import "../../contracts/events/OriginHubEvents.sol";
 // ============ Harness events ============
+import "../harnesses/events/AgentRegistryHarnessEvents.sol";
 import "../harnesses/events/AttestationHubHarnessEvents.sol";
 import "../harnesses/events/BasicClientHarnessEvents.sol";
 import "../harnesses/events/ClientHarnessEvents.sol";
@@ -21,6 +23,7 @@ import "../mocks/events/SystemContractMockEvents.sol";
 
 // solhint-disable-next-line no-empty-blocks
 abstract contract SynapseEvents is
+    AgentRegistryEvents,
     AttestationHubEvents,
     DestinationEvents,
     GuardRegistryEvents,
@@ -28,6 +31,7 @@ abstract contract SynapseEvents is
     OriginEvents,
     OriginHubEvents,
     // Harnesses events
+    AgentRegistryHarnessEvents,
     AttestationHubHarnessEvents,
     BasicClientHarnessEvents,
     ClientHarnessEvents,

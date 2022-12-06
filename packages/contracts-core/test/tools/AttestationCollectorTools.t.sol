@@ -2,10 +2,9 @@
 pragma solidity 0.8.17;
 
 import "./libs/AttestationTools.t.sol";
-import "./registry/GlobalNotaryRegistryTools.t.sol";
 import { AttestationCollectorHarness } from "../harnesses/AttestationCollectorHarness.t.sol";
 
-abstract contract AttestationCollectorTools is GlobalNotaryRegistryTools, AttestationTools {
+abstract contract AttestationCollectorTools is AttestationTools {
     struct AttestationNonce {
         bytes attestation;
         uint32 nonce;

@@ -94,18 +94,6 @@ contract Destination is Version0, DestinationEvents, DestinationHub, LocalDomain
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Set Notary role
-     * @dev MUST ensure that all roots signed by previous Notary have
-     * been relayed before calling. Only callable by owner (Governance)
-     * @param _notary New Notary
-     */
-    function setNotary(uint32 _domain, address _notary) external onlyOwner {
-        // TODO: proper implementation
-        // Notaries and Guards should be added/removed by a BondingManager contract
-        _addNotary(_domain, _notary);
-    }
-
-    /**
      * @notice Set confirmAt for a given root
      * @dev To be used if in the case that fraud is proven
      * and roots need to be deleted / added. Only callable by owner (Governance)
@@ -192,7 +180,7 @@ contract Destination is Version0, DestinationEvents, DestinationHub, LocalDomain
         bytes29 _attestationView,
         bytes memory _report
     ) internal override {
-        _removeNotary(_localDomain(), _notary);
+        _removeAgent({ _domain: _localDomain(), _account: _notary });
         emit NotaryBlacklisted(_notary, _guard, msg.sender, _report);
         blacklistedNotaries[_notary] = Blacklist({
             guard: _guard,

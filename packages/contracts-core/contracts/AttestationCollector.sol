@@ -4,13 +4,12 @@ pragma solidity 0.8.17;
 import { Attestation } from "./libs/Attestation.sol";
 import { AttestationHub } from "./hubs/AttestationHub.sol";
 import { TypedMemView } from "./libs/TypedMemView.sol";
-import { GlobalNotaryRegistry } from "./registry/GlobalNotaryRegistry.sol";
 
 import {
     OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUpgradeable {
+contract AttestationCollector is AttestationHub, OwnableUpgradeable {
     using Attestation for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -64,11 +63,11 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
     // TODO: add/remove notaries upon bonding/unbonding
 
     function addNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
-        return _addNotary(_domain, _notary);
+        return _addAgent(_domain, _notary);
     }
 
     function removeNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
-        return _removeNotary(_domain, _notary);
+        return _removeAgent(_domain, _notary);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -113,13 +112,13 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
         view
         returns (bytes memory)
     {
-        uint256 amount = notariesAmount(_origin);
+        uint256 amount = amountAgents(_destination);
         require(amount != 0, "!notaries");
         uint32 latestNonce = 0;
         bytes32 latestRoot = bytes32(0);
         uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
         for (uint256 i = 0; i < amount; ) {
-            address notary = getNotary(_destination, i);
+            address notary = getAgent(_destination, i);
             uint32 nonce = latestNonces[attestationDomains][notary];
             // Check latest Notary's nonce against current latest nonce
             if (nonce > latestNonce) {
@@ -273,5 +272,10 @@ contract AttestationCollector is AttestationHub, GlobalNotaryRegistry, OwnableUp
     ) internal view returns (bool) {
         uint96 attestationKey = Attestation.attestationKey(_origin, _destination, _nonce);
         return signatures[attestationKey][_root].length > 0;
+    }
+
+    function _isIgnoredAgent(uint32 _domain, address) internal pure override returns (bool) {
+        // AttestationCollector ignores Guards for the time being
+        return _domain == 0;
     }
 }

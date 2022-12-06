@@ -2,25 +2,27 @@
 
 pragma solidity 0.8.17;
 
+import { AgentSet } from "../../contracts/libs/AgentSet.sol";
 import { Message } from "../../contracts/libs/Message.sol";
 import { Origin } from "../../contracts/Origin.sol";
-import { GuardRegistryHarness } from "./registry/GuardRegistryHarness.t.sol";
 import { SystemContractHarness } from "./system/SystemContractHarness.t.sol";
 
-contract OriginHarness is Origin, SystemContractHarness, GuardRegistryHarness {
+contract OriginHarness is Origin, SystemContractHarness {
+    using AgentSet for AgentSet.DomainAddressSet;
+
     //solhint-disable-next-line no-empty-blocks
     constructor(uint32 _domain) Origin(_domain) {}
 
-    function removeAllNotaries(uint32 _domain) public {
-        uint256 amount = notariesAmount(_domain);
-        // Remove every Notary to halt the contract
-        for (uint256 i = 0; i < amount; ++i) {
-            _removeNotary(_domain, getNotary({ _domain: _domain, _index: 0 }));
-        }
+    function addLocalNotary(address _notary) external {
+        agents[_currentEpoch()].add(_localDomain(), _notary);
     }
 
-    function isNotary(uint32 _domain, address _notary) public view returns (bool) {
-        return _isNotary(_domain, _notary);
+    function removeAllAgents(uint32 _domain) public {
+        uint256 amount = amountAgents(_domain);
+        // Remove every Agent to halt the contract
+        for (uint256 i = 0; i < amount; ++i) {
+            _removeAgent(_domain, getAgent({ _domain: _domain, _agentIndex: 0 }));
+        }
     }
 
     function getNextMessage(

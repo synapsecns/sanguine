@@ -40,7 +40,7 @@ func (h OriginSuite) TestDispatchTopic() {
 	Nil(h.T(), err)
 	h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)
 
-	notaries, err := h.originContract.AllNotaries(&bind.CallOpts{Context: h.GetTestContext()}, destinationID)
+	notaries, err := h.originContract.AllAgents(&bind.CallOpts{Context: h.GetTestContext()}, destinationID)
 	Nil(h.T(), err)
 	Len(h.T(), notaries, 1)
 

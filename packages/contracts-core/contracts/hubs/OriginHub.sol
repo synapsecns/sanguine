@@ -5,12 +5,9 @@ import { Attestation } from "../libs/Attestation.sol";
 import { Report } from "../libs/Report.sol";
 import { TypedMemView } from "../libs/TypedMemView.sol";
 
-import { SystemRegistry } from "../system/SystemRegistry.sol";
-import { GlobalNotaryRegistry } from "../registry/GlobalNotaryRegistry.sol";
-import { GuardRegistry } from "../registry/GuardRegistry.sol";
 import { OriginHubEvents } from "../events/OriginHubEvents.sol";
-import { AttestationHub } from "./AttestationHub.sol";
 import { ReportHub } from "./ReportHub.sol";
+import { SystemRegistry } from "../system/SystemRegistry.sol";
 
 import { MerkleLib } from "../libs/Merkle.sol";
 
@@ -20,14 +17,7 @@ import { MerkleLib } from "../libs/Merkle.sol";
  * Keeps track of this domain's Notaries and all Guards: accepts
  * and checks their attestations/reports related to Origin.
  */
-abstract contract OriginHub is
-    OriginHubEvents,
-    SystemRegistry,
-    AttestationHub,
-    ReportHub,
-    GlobalNotaryRegistry,
-    GuardRegistry
-{
+abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     using Attestation for bytes29;
     using Report for bytes29;
     using TypedMemView for bytes29;
@@ -63,7 +53,7 @@ abstract contract OriginHub is
      * Returns attestation data for every destination domain having at least one active Notary.
      */
     function suggestAttestations() external view returns (bytes[] memory attestationDataArray) {
-        uint256 amount = domainsAmount();
+        uint256 amount = amountDomains();
         attestationDataArray = new bytes[](amount);
         for (uint256 i = 0; i < amount; ++i) {
             uint32 domain = getDomain(i);
@@ -332,6 +322,11 @@ abstract contract OriginHub is
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function _isIgnoredAgent(uint32 _domain, address) internal view override returns (bool) {
+        // Origin only keeps track of remote Notaries
+        return _domain == _localDomain();
+    }
 
     /**
      * @notice Returns whether (_destination, _nonce, _root) matches the historical state
