@@ -151,7 +151,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			for {
 				select {
 				case <-backfillCtx.Done():
-					LogEvent(WarnLevel, "Could not backfill data, context canceled", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
+					LogEvent(ErrorLevel, "Could not backfill data, context canceled", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
 
 					return fmt.Errorf("%s chain context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
 				case <-time.After(timeout):
@@ -159,7 +159,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 					if err != nil {
 						timeout = b.Duration()
-						LogEvent(WarnLevel, "Could not backfill data, retrying", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
+						LogEvent(WarnLevel, "Could not backfill contract, retrying", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
 
 						continue
 					}

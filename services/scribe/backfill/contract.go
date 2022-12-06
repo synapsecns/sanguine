@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"golang.org/x/sync/errgroup"
 	"math/big"
+	"time"
 )
 
 // ContractBackfiller is a backfiller that fetches logs for a specific contract.
@@ -117,12 +118,13 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 //
 //nolint:cyclop, gocognit
 func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
-	var returnedReceipt types.Receipt
+	startTime := time.Now()
 	retryCount := 0
-RETRY:
+	// logCtx := context.WithValue(ctx, chainContextKey, fmt.Sprintf("%d-%s", c.chainConfig.ChainID, c.address))
+	var returnedReceipt types.Receipt
 	retryCount++
 	// Parallelize storing logs, receipts, and transactions.
-	g, groupCtx := errgroup.WithContext(context.Background())
+	g, groupCtx := errgroup.WithContext(ctx)
 
 	doneChan := make(chan bool, 2)
 
@@ -135,6 +137,8 @@ RETRY:
 			// txNotFoundError handles a null return from omnirpc, re-queries with a client with >1 confirmations.
 			case txNotFoundError:
 				// Try with client(s) with additional confirmations.
+				LogEvent(ErrorLevel, "receipt is nil - txNotFoundError", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+
 				for i := range c.client[1:] {
 					client := c.client[i]
 					receipt, err = client.TransactionReceipt(ctx, log.TxHash)
@@ -143,9 +147,13 @@ RETRY:
 					}
 				}
 				if err != nil {
+					LogEvent(ErrorLevel, "receipt is nil - txNotFoundError", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+
 					return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s", err, c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 				}
 			default:
+				LogEvent(ErrorLevel, "receipt is nil", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+
 				return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s", err, c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
 			}
 		}
@@ -259,13 +267,13 @@ RETRY:
 		LogEvent(ErrorLevel, "Could not store data, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
 		if retryCount < retryTolerance {
-			goto RETRY
+			// Retry the log.
 		}
 
 		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainConfig.ChainID, log.BlockNumber, log.TxHash.String())
 	}
 
-	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, returnedReceipt.BlockNumber.Uint64())
+	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
 	if err != nil {
 		LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
@@ -273,6 +281,7 @@ RETRY:
 	}
 
 	c.cache.Add(log.TxHash, true)
+	LogEvent(InfoLevel, "Log, Receipt, and Tx stored", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "ts": time.Since(startTime).Seconds()})
 
 	return nil
 }
