@@ -35,11 +35,12 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     uint256 private epoch;
 
     /**
-     * @notice All active domains, i.e. domains having at least one active agent.
-     * Note: guards are stored with domain = 0, meaning a zero domain will be included
-     * in the list of active domains, should there be at least one active Guard.
+     * @notice All active domains, i.e. domains having at least one active Notary.
+     * Note: guards are stored with domain = 0, but we don't want to mix
+     * "domains with at least one active Notary" and "zero domain with at least one active Guard",
+     * so we are NOT storing domain == 0 in this set.
      */
-    // (epoch => [active domains])
+    // (epoch => [domains with at least one active Notary])
     mapping(uint256 => EnumerableSet.UintSet) internal domains;
 
     /**
@@ -66,7 +67,8 @@ abstract contract AgentRegistry is AgentRegistryEvents {
      * @notice Ensures that there is at least one active Guard.
      */
     modifier haveActiveGuard() {
-        require(_isActiveDomain(0), "No active guards");
+        // Guards are stored with `_domain == 0`
+        require(amountAgents({ _domain: 0 }) != 0, "No active guards");
         _;
     }
 
@@ -84,8 +86,8 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     }
 
     /**
-     * @notice Returns all active domains in an array.
-     * @dev This also includes the zero domain, which is used for storing the guards.
+     * @notice Returns all domains having at least one active Notary in an array.
+     * @dev This always excludes the zero domain, which is used for storing the guards.
      */
     function allDomains() external view returns (uint32[] memory domains_) {
         uint256[] memory values = domains[_currentEpoch()].values();
@@ -113,7 +115,8 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     }
 
     /**
-     * @notice Returns true if there is at least one active agent for the domain
+     * @notice Returns true if there is at least one active notary for the domain
+     * Note: will return false for `_domain == 0`, even if there are active Guards.
      */
     function isActiveDomain(uint32 _domain) external view returns (bool) {
         return _isActiveDomain(_domain);
@@ -149,8 +152,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
 
     /**
      * @notice Returns i-th domain from the list of active domains.
-     * @dev This also includes the zero domain, which is used for storing the guards.
-     * Will revert if index is out of range.
+     * @dev Will revert if index is out of range.
      */
     function getDomain(uint256 _domainIndex) public view returns (uint32) {
         return uint32(domains[_currentEpoch()].at(_domainIndex));
@@ -174,10 +176,13 @@ abstract contract AgentRegistry is AgentRegistryEvents {
         wasAdded = agents[_epoch].add(_domain, _account);
         if (wasAdded) {
             emit AgentAdded(_domain, _account);
-            // We can skip the "already exists" check here, as EnumerableSet.add() does that for us
-            if (domains[_epoch].add(_domain)) {
-                // Emit the event if domain was added to the list of active domains
-                emit DomainActivated(_domain);
+            // Consider adding domain to the list of "active domains" only if a Notary was added
+            if (_domain != 0) {
+                // We can skip the "already exists" check here, as EnumerableSet.add() does that
+                if (domains[_epoch].add(_domain)) {
+                    // Emit the event if domain was added to the list of active domains
+                    emit DomainActivated(_domain);
+                }
             }
             // Trigger the hook after the work is done
             _afterAgentAdded(_domain, _account);
@@ -198,7 +203,8 @@ abstract contract AgentRegistry is AgentRegistryEvents {
         wasRemoved = agents[_epoch].remove(_domain, _account);
         if (wasRemoved) {
             emit AgentRemoved(_domain, _account);
-            if (amountAgents(_domain) == 0) {
+            // Consider removing domain to the list of "active domains" only if a Notary was removed
+            if (_domain != 0 && amountAgents(_domain) == 0) {
                 // Remove domain for the "active list", if that was the last agent
                 domains[_epoch].remove(_domain);
                 emit DomainDeactivated(_domain);
@@ -280,7 +286,8 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     }
 
     /**
-     * @dev Checks if there is at least one active agent for the given domain.
+     * @dev Checks if there is at least one active Notary for the given domain.
+     * Note: will return false for `_domain == 0`, even if there are active Guards.
      */
     function _isActiveDomain(uint32 _domain) internal view returns (bool) {
         return domains[_currentEpoch()].contains(_domain);
