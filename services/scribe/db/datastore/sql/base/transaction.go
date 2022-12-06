@@ -14,11 +14,11 @@ import (
 
 // StoreEthTx stores a processed text.
 func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error {
+
 	marshalledTx, err := tx.MarshalBinary()
 	if err != nil {
 		return fmt.Errorf("could not marshall tx to binary: %w", err)
 	}
-
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: TxHashFieldName}, {Name: ChainIDFieldName}},
