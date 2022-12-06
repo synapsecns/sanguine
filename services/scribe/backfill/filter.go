@@ -190,7 +190,7 @@ func (f *RangeFilter) Done() bool {
 	return f.done
 }
 
-// GetLogChan retursn a log chan with the logs filtered ahead to bufferSize. Iteration oder is only guaranteed with up to one
+// GetLogChan returns a log chan with the logs filtered ahead to bufferSize. Iteration oder is only guaranteed with up to one
 // consumer.
 func (f *RangeFilter) GetLogChan() chan *LogInfo {
 	return f.logs

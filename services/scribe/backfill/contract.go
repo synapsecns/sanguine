@@ -87,7 +87,9 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 		for {
 			select {
 			case <-groupCtx.Done():
-				return nil
+				LogEvent(InfoLevel, "Context cancelled while storing and retrieving logs", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
+
+				return fmt.Errorf("context cancelled while storing and retrieving logs: %w", groupCtx.Err())
 			case log := <-logsChan:
 				// Check if the txHash has already been stored in the cache.
 				if _, ok := c.cache.Get(log.TxHash); ok {
@@ -102,8 +104,11 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 				if err != nil {
 					return fmt.Errorf("could not store log: %w \nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 				}
-			case <-doneChan:
-				return nil
+			case doneFlag := <-doneChan:
+				if doneFlag {
+					return nil
+				}
+				return fmt.Errorf("doneChan returned false, context cancel while storing and retrieving logs")
 			}
 		}
 	})
@@ -307,29 +312,25 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 // getLogs gets all logs for the contract through channels constructed and populated by the rangeFilter.
 func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
 	rangeFilter := NewRangeFilter(common.HexToAddress(c.address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), c.chainConfig.ContractChunkSize, true, c.chainConfig.ContractSubChunkSize)
-	g, ctx := errgroup.WithContext(ctx)
+	logsChan := make(chan types.Log)
+	doneChan := make(chan bool)
 
-	// Concurrently start the range filter.
-	g.Go(func() error {
+	go func() error {
 		err := rangeFilter.Start(ctx)
 		if err != nil {
 			return fmt.Errorf("could not filter range: %w \nChain: %d\nstart height: %d, end: %d\nContract Address: %s", err, c.chainConfig.ChainID, startHeight, endHeight, c.address)
 		}
 
 		return nil
-	})
-
-	logsChan := make(chan types.Log)
-	doneChan := make(chan bool)
+	}()
 
 	// Concurrently read from the range filter and send to the logsChan.
-	g.Go(func() error {
-	OUTER:
+	go func() error {
 		for {
 			select {
 			case <-ctx.Done():
 				LogEvent(ErrorLevel, "Context canceled while getting log", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight})
-
+				doneChan <- false
 				return nil
 			case logInfos := <-rangeFilter.GetLogChan():
 				for _, log := range logInfos.logs {
@@ -345,13 +346,11 @@ func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight 
 
 					doneChan <- true
 
-					break OUTER
+					return nil
 				}
 			}
 		}
-
-		return nil
-	})
+	}()
 
 	return logsChan, doneChan
 }
