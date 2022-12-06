@@ -3,14 +3,16 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	lru "github.com/hashicorp/golang-lru"
+	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"time"
 )
 
 // ContractBackfiller is a backfiller that fetches logs for a specific contract.
@@ -118,61 +120,73 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 //
 //nolint:cyclop, gocognit
 func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
-	startTime := time.Now()
-	retryCount := 0
-	// logCtx := context.WithValue(ctx, chainContextKey, fmt.Sprintf("%d-%s", c.chainConfig.ChainID, c.address))
 	var returnedReceipt types.Receipt
-	retryCount++
+	startTime := time.Now()
+
 	// Parallelize storing logs, receipts, and transactions.
 	g, groupCtx := errgroup.WithContext(ctx)
-
-	doneChan := make(chan bool, 2)
 
 	// Get the receipt for the log and notify the other goroutines that depend on it that
 	// it has been retrieved via doneChan.
 	g.Go(func() error {
-		receipt, err := c.client[0].TransactionReceipt(ctx, log.TxHash)
-		if err != nil {
-			switch err.Error() {
-			// txNotFoundError handles a null return from omnirpc, re-queries with a client with >1 confirmations.
-			case txNotFoundError:
-				// Try with client(s) with additional confirmations.
-				LogEvent(ErrorLevel, "receipt is nil - txNotFoundError", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
 
-				for i := range c.client[1:] {
-					client := c.client[i]
-					receipt, err = client.TransactionReceipt(ctx, log.TxHash)
-					if err == nil {
-						break
-					}
-				}
-				if err != nil {
-					LogEvent(ErrorLevel, "receipt is nil - txNotFoundError", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
-
-					return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s", err, c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
-				}
-			default:
-				LogEvent(ErrorLevel, "receipt is nil", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
-
-				return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s", err, c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
-			}
+		b := &backoff.Backoff{
+			Factor: 2,
+			Jitter: true,
+			Min:    1 * time.Second,
+			Max:    10 * time.Second,
+		}
+		timeout := time.Duration(0)
+		retryCount := 0
+	RETRY:
+		retryCount++
+		if retryCount > retryTolerance {
+			return fmt.Errorf("retry tolerance exceeded")
 		}
 
-		returnedReceipt = *receipt
-		doneChan <- true
-		doneChan <- true
-
-		return nil
-	})
-
-	// Get the logs from the receipt and store them in the EventDB.
-	g.Go(func() error {
 		select {
 		case <-groupCtx.Done():
-			LogEvent(ErrorLevel, "Context canceled", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+			LogEvent(ErrorLevel, "Context canceled while storing logs/receipts", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": groupCtx.Err()})
 
-			return fmt.Errorf("context canceled\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
-		case <-doneChan:
+			return fmt.Errorf("context canceled while storing logs/receipts: %w", groupCtx.Err())
+
+		case <-time.After(timeout):
+			receipt, err := c.client[0].TransactionReceipt(ctx, log.TxHash)
+			if err != nil {
+				switch err.Error() {
+				// txNotFoundError handles a null return from omnirpc, re-queries with a client with >1 confirmations.
+				case txNotFoundError:
+					// Try with client(s) with additional confirmations.
+					for i := range c.client[1:] {
+						client := c.client[i]
+						receipt, err = client.TransactionReceipt(ctx, log.TxHash)
+						if err == nil {
+							break
+						}
+					}
+					if err != nil {
+						timeout = b.Duration()
+						LogEvent(ErrorLevel, "Could not get transaction receipt for txHash, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
+						goto RETRY
+					}
+				default:
+					return fmt.Errorf("could not get transaction receipt for txHash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s", err, c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String())
+				}
+			}
+
+			returnedReceipt = *receipt
+
+			// Store receipt in the EventDB.
+			err = c.eventDB.StoreReceipt(groupCtx, returnedReceipt, c.chainConfig.ChainID)
+			if err != nil {
+				timeout = b.Duration()
+				LogEvent(ErrorLevel, "Could not store receipt, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
+				goto RETRY
+			}
+
+			// Store the logs in the EventDB.
 			for _, log := range returnedReceipt.Logs {
 				if log == nil {
 					LogEvent(ErrorLevel, "log is nil", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
@@ -182,93 +196,97 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 
 				err := c.eventDB.StoreLog(groupCtx, *log, c.chainConfig.ChainID)
 				if err != nil {
-					LogEvent(ErrorLevel, "Could not store log", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+					timeout = b.Duration()
+					LogEvent(ErrorLevel, "Could not store log, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
-					return fmt.Errorf("could not store log: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+					goto RETRY
 				}
 			}
 
 			return nil
 		}
-	})
 
-	// Get the transaction from the receipt and store it in the EventDB.
-	g.Go(func() error {
-		select {
-		case <-groupCtx.Done():
-			LogEvent(ErrorLevel, "Context canceled", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
-
-			return fmt.Errorf("context canceled\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
-		case <-doneChan:
-			err := c.eventDB.StoreReceipt(groupCtx, returnedReceipt, c.chainConfig.ChainID)
-			if err != nil {
-				return fmt.Errorf("could not store receipt: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
-			}
-
-			return nil
-		}
 	})
 
 	// Store the transaction in the EventDB, while checking for and handling common errors.
 	g.Go(func() error {
-		txn, isPending, err := c.client[0].TransactionByHash(groupCtx, log.TxHash)
-		if err != nil {
-			switch err.Error() {
-			// txNotSupportedError handles an unsupported tx (typically legacy arbitrum txs), skips the tx entirely.
-			case txNotSupportedError:
-				LogEvent(InfoLevel, "Invalid tx", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
-				return nil
+		b := &backoff.Backoff{
+			Factor: 2,
+			Jitter: true,
+			Min:    1 * time.Second,
+			Max:    10 * time.Second,
+		}
+		timeout := time.Duration(0)
+		retryCount := 0
+	RETRY:
+		retryCount++
+		if retryCount > retryTolerance {
+			return fmt.Errorf("retry tolerance exceeded")
+		}
+		select {
+		case <-groupCtx.Done():
+			LogEvent(ErrorLevel, "Context canceled while storing logs/receipts", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": groupCtx.Err()})
 
-			// invalidTxVRSError handles an invalid tx (typically aurora v,r,s not found txs), skips the tx entirely.
-			case invalidTxVRSError:
-				LogEvent(InfoLevel, "Invalid tx", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
-				return nil
+			return fmt.Errorf("context canceled while storing logs/receipts: %w", groupCtx.Err())
 
-			// txNotFoundError handles a null return from omnirpc, re-queries with a client with >1 confirmations.
-			case txNotFoundError:
-				LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
-				// Try with client(s) with additional confirmations.
-				for i := range c.client[1:] {
-					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "cn": i, "e": err.Error()})
+		case <-time.After(timeout):
+			txn, isPending, err := c.client[0].TransactionByHash(groupCtx, log.TxHash)
+			if err != nil {
+				switch err.Error() {
+				// txNotSupportedError handles an unsupported tx (typically legacy arbitrum txs), skips the tx entirely.
+				case txNotSupportedError:
+					LogEvent(InfoLevel, "Invalid tx", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+					return nil
 
-					client := c.client[i]
-					txn, isPending, err = client.TransactionByHash(groupCtx, log.TxHash)
-					if err == nil {
-						break
+				// invalidTxVRSError handles an invalid tx (typically aurora v,r,s not found txs), skips the tx entirely.
+				case invalidTxVRSError:
+					LogEvent(InfoLevel, "Invalid tx", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+					return nil
+
+				// txNotFoundError handles a null return from omnirpc, re-queries with a client with >1 confirmations.
+				case txNotFoundError:
+					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+					// Try with client(s) with additional confirmations.
+					for i := range c.client[1:] {
+						LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "cn": i, "e": err.Error()})
+
+						client := c.client[i]
+						txn, isPending, err = client.TransactionByHash(groupCtx, log.TxHash)
+						if err == nil {
+							break
+						}
 					}
-				}
-				if err != nil {
-					LogEvent(ErrorLevel, "Could not get tx for txHash", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+					if err != nil {
+						timeout = b.Duration()
+						LogEvent(ErrorLevel, "Could not get tx for txHash", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
-					return fmt.Errorf("could not get transaction receipt for txHash")
-				}
+						goto RETRY
+					}
 
-			default:
-				return fmt.Errorf("could not get transaction by hash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+				default:
+					return fmt.Errorf("could not get transaction by hash: %w\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+				}
 			}
+
+			if isPending {
+				return fmt.Errorf("transaction is pending")
+			}
+
+			err = c.eventDB.StoreEthTx(groupCtx, txn, c.chainConfig.ChainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
+			if err != nil {
+				timeout = b.Duration()
+				LogEvent(ErrorLevel, "Could not store eth tx", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
+				goto RETRY
+			}
+
+			return nil
 		}
-
-		if isPending {
-			return fmt.Errorf("transaction is pending")
-		}
-
-		err = c.eventDB.StoreEthTx(groupCtx, txn, c.chainConfig.ChainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
-		if err != nil {
-			LogEvent(ErrorLevel, "Could not store transaction", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
-
-			return fmt.Errorf("could not store transaction: %w", err)
-		}
-
-		return nil
 	})
 
 	err := g.Wait()
 	if err != nil {
-		LogEvent(ErrorLevel, "Could not store data, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
-
-		if retryCount < retryTolerance {
-			// Retry the log.
-		}
+		LogEvent(ErrorLevel, "Could not store data", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
 		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainConfig.ChainID, log.BlockNumber, log.TxHash.String())
 	}
