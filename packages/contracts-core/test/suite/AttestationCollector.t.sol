@@ -107,7 +107,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         });
         // Check that attacker (address unknown to AttestationCollector) can't sign the attestation
         // Some random address should not be considered a Notary for `DOMAIN_LOCAL`
-        attestationCollectorSubmitAttestation({ revertMessage: "Signer is not a notary" });
+        attestationCollectorSubmitAttestation({ revertMessage: "Signer is not authorized" });
     }
 
     function test_submitAttestation_revert_notNotary_notaryAnotherDomain() public {
@@ -119,7 +119,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         });
         // Check that Notary from another domain can't sign the attestation to `DOMAIN_REMOTE`
         // Notary from `DOMAIN_LOCAL` should not be considered as a Notary for `DOMAIN_REMOTE`
-        attestationCollectorSubmitAttestation({ revertMessage: "Signer is not a notary" });
+        attestationCollectorSubmitAttestation({ revertMessage: "Signer is not authorized" });
     }
 
     function test_submitAttestation_revert_zeroNonce() public {

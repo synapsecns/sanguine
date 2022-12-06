@@ -111,7 +111,7 @@ func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 		}
 		d.Backend().WaitForConfirmation(ctx, initTx)
 
-		setTx, err := destination.SetNotary(auth.TransactOpts, uint32(d.Registry().Get(ctx, OriginType).ChainID().Uint64()), common.Address{})
+		setTx, err := destination.AddNotary(auth.TransactOpts, uint32(d.Registry().Get(ctx, OriginType).ChainID().Uint64()), common.Address{})
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not set notary: %w", err)
 		}

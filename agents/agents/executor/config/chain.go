@@ -12,8 +12,8 @@ type ChainConfig struct {
 	ChainID uint32 `yaml:"chain_id"`
 	// OriginAddress is the address of the origin contract.
 	OriginAddress string `yaml:"origin_address"`
-	// AttestationCollectorAddress is the address of the attestation collector contract.
-	AttestationCollectorAddress string `yaml:"attestation_collector_address"`
+	// DestinationAddress is the address of the destination contract.
+	DestinationAddress string `yaml:"destination_address"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

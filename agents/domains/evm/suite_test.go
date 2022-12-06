@@ -5,11 +5,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Flaque/filet"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/core/testsuite"
@@ -102,6 +105,10 @@ func TestContractSuite(t *testing.T) {
 // TxQueueSuite tests out the transaction queue.
 type TxQueueSuite struct {
 	*testsuite.TestSuite
+	chn            backends.SimulatedTestBackend
+	originContract *origin.OriginRef
+	testTransactor *bind.TransactOpts
+	destinationID  uint32
 }
 
 // NewQueueSuite creates the queue.
@@ -111,6 +118,43 @@ func NewQueueSuite(tb testing.TB) *TxQueueSuite {
 	return &TxQueueSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 	}
+}
+
+func (t *TxQueueSuite) SetupTest() {
+	t.TestSuite.SetupTest()
+
+	// create a test chain
+	t.chn = simulated.NewSimulatedBackend(t.GetTestContext(), t.T())
+	manager := testutil.NewDeployManager(t.T())
+
+	t.destinationID = uint32(1)
+
+	originContract, originContractRef := manager.GetOrigin(t.GetTestContext(), t.chn)
+	t.originContract = originContractRef
+
+	// create a test signer
+	wllt, err := wallet.FromRandom()
+	Nil(t.T(), err)
+
+	msigner := localsigner.NewSigner(wllt.PrivateKey())
+	testDB, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""))
+	Nil(t.T(), err)
+
+	testQueue := evm.NewTxQueue(msigner, testDB, t.chn)
+
+	t.testTransactor, err = testQueue.GetTransactor(t.GetTestContext(), t.chn.GetBigChainID())
+	Nil(t.T(), err)
+
+	t.chn.FundAccount(t.GetTestContext(), msigner.Address(), *big.NewInt(params.Ether))
+
+	originOwnerAuth := t.chn.GetTxContext(t.GetTestContext(), originContract.OwnerPtr())
+	tx, err := t.originContract.AddNotary(originOwnerAuth.TransactOpts, destinationID, msigner.Address())
+	Nil(t.T(), err)
+	t.chn.WaitForConfirmation(t.GetTestContext(), tx)
+
+	notaries, err := t.originContract.AllAgents(&bind.CallOpts{Context: t.GetTestContext()}, destinationID)
+	Nil(t.T(), err)
+	Len(t.T(), notaries, 1)
 }
 
 func TestQueueSuite(t *testing.T) {

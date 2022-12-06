@@ -17,23 +17,23 @@ contract ReportHubTest is ReportTools {
     function setUp() public override {
         super.setUp();
         reportHub = new ReportHubHarness();
-        reportHub.addNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE));
-        reportHub.addGuard(suiteGuard());
+        reportHub.addAgent(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE));
+        reportHub.addAgent({ _domain: 0, _account: suiteGuard() });
     }
 
     function test_setUp() public {
         assertTrue(
-            reportHub.isNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE)),
+            reportHub.isActiveAgent(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE)),
             "Failed to add notary"
         );
-        assertFalse(reportHub.isNotary(DOMAIN_REMOTE, attacker), "Attacker is Notary");
+        assertFalse(reportHub.isActiveAgent(DOMAIN_REMOTE, attacker), "Attacker is Notary");
         assertFalse(
-            reportHub.isNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_REMOTE)),
+            reportHub.isActiveAgent(DOMAIN_LOCAL, suiteNotary(DOMAIN_REMOTE)),
             "Added Notary on another domain"
         );
 
-        assertTrue(reportHub.isGuard(suiteGuard()), "Failed to add Guard");
-        assertFalse(reportHub.isGuard(attacker), "Attacker is Guard");
+        assertTrue(reportHub.isActiveAgent(0, suiteGuard()), "Failed to add Guard");
+        assertFalse(reportHub.isActiveAgent(0, attacker), "Attacker is Guard");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -61,7 +61,14 @@ contract ReportHubTest is ReportTools {
             signer: attacker
         });
         createReport(Report.Flag.Fraud);
-        vm.expectRevert("Signer is not a notary");
+        vm.expectRevert("Signer is not authorized");
+        reportHubSubmitReport();
+    }
+
+    function test_submitReport_revert_notGuard() public {
+        createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
+        createReport({ flag: Report.Flag.Fraud, signer: attacker });
+        vm.expectRevert("Signer is not authorized");
         reportHubSubmitReport();
     }
 
@@ -73,7 +80,7 @@ contract ReportHubTest is ReportTools {
         });
         createReport(Report.Flag.Fraud);
         // notary is not active on REMOTE_DOMAIN
-        vm.expectRevert("Signer is not a notary");
+        vm.expectRevert("Signer is not authorized");
         reportHubSubmitReport();
     }
 

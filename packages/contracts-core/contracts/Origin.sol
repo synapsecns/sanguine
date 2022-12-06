@@ -66,15 +66,6 @@ contract Origin is Version0, OriginEvents, OriginHub, LocalDomainContext {
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // TODO: add/remove notaries upon bonding/unbonding
-    // Keep in mind that we will want Origin to inherit from GlobalNotaryRegistry and GuardRegistry
-    // and the haveActiveNotary should be updated in dispatch to assert that we have a Notary
-    // registered for the destination and also that we have at least one Guard
-
-    function addNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
-        return _addNotary(_domain, _notary);
-    }
-
     /**
      * @notice Dispatch the message to the destination domain & recipient
      * @dev Format the message, insert its hash into Merkle tree,
@@ -92,6 +83,8 @@ contract Origin is Version0, OriginEvents, OriginHub, LocalDomainContext {
     )
         external
         payable
+        // TODO: enable Guards check once Go tests are updated
+        // haveActiveGuard
         haveActiveNotary(_destination)
         returns (uint32 messageNonce, bytes32 messageHash)
     {
@@ -140,7 +133,7 @@ contract Origin is Version0, OriginEvents, OriginHub, LocalDomainContext {
         address _guard
     ) internal override {
         // _notary is always an active Notary at this point
-        _removeNotary(_domain, _notary);
+        _removeAgent(_domain, _notary);
         // TODO: add domain to the event (decide what fields need to be indexed)
         emit NotarySlashed(_notary, _guard, msg.sender);
     }
@@ -152,7 +145,7 @@ contract Origin is Version0, OriginEvents, OriginHub, LocalDomainContext {
      */
     function _slashGuard(address _guard) internal override {
         // _guard is always an active Guard at this point
-        _removeGuard(_guard);
+        _removeAgent({ _domain: 0, _account: _guard });
         emit GuardSlashed(_guard, msg.sender);
     }
 

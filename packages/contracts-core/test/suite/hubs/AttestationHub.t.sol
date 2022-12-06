@@ -15,17 +15,17 @@ contract AttestationHubTest is AttestationTools {
     function setUp() public override {
         super.setUp();
         attestationHub = new AttestationHubHarness();
-        attestationHub.addNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE));
+        attestationHub.addAgent(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE));
     }
 
     function test_setup() public {
         assertTrue(
-            attestationHub.isNotary(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE)),
+            attestationHub.isActiveAgent(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE)),
             "Failed to add notary"
         );
-        assertFalse(attestationHub.isNotary(DOMAIN_REMOTE, attacker), "Attacker is Notary");
+        assertFalse(attestationHub.isActiveAgent(DOMAIN_REMOTE, attacker), "Attacker is Notary");
         assertFalse(
-            attestationHub.isNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_REMOTE)),
+            attestationHub.isActiveAgent(DOMAIN_LOCAL, suiteNotary(DOMAIN_REMOTE)),
             "Added Notary on another domain"
         );
     }
@@ -46,14 +46,14 @@ contract AttestationHubTest is AttestationTools {
             destination: DOMAIN_REMOTE,
             signer: attacker
         });
-        vm.expectRevert("Signer is not a notary");
+        vm.expectRevert("Signer is not authorized");
         attestationHubSubmitAttestation();
     }
 
     function test_submitAttestation_revert_wrongDomain() public {
         createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
         // notary is not active on REMOTE_DOMAIN
-        vm.expectRevert("Signer is not a notary");
+        vm.expectRevert("Signer is not authorized");
         attestationHubSubmitAttestation();
     }
 

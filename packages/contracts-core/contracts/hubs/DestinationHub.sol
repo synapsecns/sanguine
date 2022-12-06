@@ -2,29 +2,18 @@
 pragma solidity 0.8.17;
 
 import { Attestation } from "../libs/Attestation.sol";
-import { AttestationHub } from "./AttestationHub.sol";
 import { Report } from "../libs/Report.sol";
+
 import { ReportHub } from "./ReportHub.sol";
 import { SystemRegistry } from "../system/SystemRegistry.sol";
-import { DomainNotaryRegistry } from "../registry/DomainNotaryRegistry.sol";
-import { GuardRegistry } from "../registry/GuardRegistry.sol";
-
-import { TypedMemView } from "../libs/TypedMemView.sol";
 
 /**
  * @notice Keeps track of remote Origins by storing each Origin
  * merkle state in a separate Mirror.
  */
-abstract contract DestinationHub is
-    SystemRegistry,
-    AttestationHub,
-    ReportHub,
-    DomainNotaryRegistry,
-    GuardRegistry
-{
+abstract contract DestinationHub is SystemRegistry, ReportHub {
     using Attestation for bytes29;
     using Report for bytes29;
-    using TypedMemView for bytes29;
 
     /**
      * @notice Information stored for every submitted merkle root.
@@ -92,7 +81,10 @@ abstract contract DestinationHub is
         // Check if root has been submitted
         require(rootInfo.submittedAt != 0, "Invalid root");
         // Check if Notary is active on the local chain
-        require(_isNotary(_localDomain(), rootInfo.notary), "Inactive notary");
+        require(
+            _isActiveAgent({ _domain: _localDomain(), _account: rootInfo.notary }),
+            "Inactive notary"
+        );
         // Check if optimistic period has passed
         require(block.timestamp >= rootInfo.submittedAt + _optimisticSeconds, "!optimisticSeconds");
         return true;
@@ -169,7 +161,8 @@ abstract contract DestinationHub is
         // New Attestation is accepted either if the nonce increased, or if the latest
         // attestation was signed by a notary that is no longer active on the local domain.
         require(
-            _nonce > mirror.latestNonce || !_isNotary(_localDomain(), mirror.latestNotary),
+            _nonce > mirror.latestNonce ||
+                !_isActiveAgent({ _domain: _localDomain(), _account: mirror.latestNotary }),
             "Outdated attestation"
         );
         (mirror.latestNonce, mirror.latestNotary) = (_nonce, _notary);
@@ -193,6 +186,15 @@ abstract contract DestinationHub is
         bytes29 _attestationView,
         bytes memory _report
     ) internal virtual;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL VIEWS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function _isIgnoredAgent(uint32 _domain, address) internal view override returns (bool) {
+        // Destination only keeps track of local Notaries and Guards
+        return _domain != _localDomain() && _domain != 0;
+    }
 
     function _checkAttestationDomains(bytes29 _attestationView) internal view {
         uint32 local = _localDomain();

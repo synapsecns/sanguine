@@ -73,7 +73,7 @@ func (a *AttestationCollectorSuite) SetupTest() {
 	}
 
 	destOwnerAuth := a.testBackendDestination.GetTxContext(a.GetTestContext(), &destOwnerPtr)
-	_, err = a.destinationContract.SetNotary(destOwnerAuth.TransactOpts, uint32(a.testBackendDestination.GetChainID()), a.signer.Address())
+	_, err = a.destinationContract.AddNotary(destOwnerAuth.TransactOpts, uint32(a.testBackendDestination.GetChainID()), a.signer.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}

@@ -13,6 +13,7 @@ import (
 func (t *DBSuite) TestStoreRetrieveMessage() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainIDA := gofakeit.Uint32()
+		destinationA := gofakeit.Uint32()
 		nonceA := gofakeit.Uint32()
 		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageA := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
@@ -20,6 +21,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		blockNumberA := gofakeit.Uint64()
 		dbMessageA := types.DBMessage{
 			ChainID:     &chainIDA,
+			Destination: &destinationA,
 			Nonce:       &nonceA,
 			Root:        &rootA,
 			Message:     &messageA,
@@ -30,6 +32,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		Nil(t.T(), err)
 
 		chainIDB := gofakeit.Uint32()
+		destinationB := gofakeit.Uint32()
 		nonceB := gofakeit.Uint32()
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageB := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
@@ -37,6 +40,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		blockNumberB := gofakeit.Uint64()
 		dbMessageB := types.DBMessage{
 			ChainID:     &chainIDB,
+			Destination: &destinationB,
 			Nonce:       &nonceB,
 			Root:        &rootB,
 			Message:     &messageB,
@@ -48,6 +52,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 
 		messageAMask := types.DBMessage{
 			ChainID:     dbMessageA.ChainID,
+			Destination: dbMessageA.Destination,
 			Nonce:       dbMessageA.Nonce,
 			BlockNumber: dbMessageA.BlockNumber,
 		}
@@ -69,6 +74,8 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 func (t *DBSuite) TestGetLastBlockNumber() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainID := gofakeit.Uint32()
+		destinationA := gofakeit.Uint32()
+		destinationB := destinationA + 1
 		nonceA := gofakeit.Uint32()
 		nonceB := nonceA + 1
 		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
@@ -82,6 +89,7 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 
 		dbMessageA := types.DBMessage{
 			ChainID:     &chainID,
+			Destination: &destinationA,
 			Nonce:       &nonceA,
 			Root:        &rootA,
 			Message:     &messageA,
@@ -90,6 +98,7 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 		}
 		dbMessageB := types.DBMessage{
 			ChainID:     &chainID,
+			Destination: &destinationB,
 			Nonce:       &nonceB,
 			Root:        &rootB,
 			Message:     &messageB,
@@ -111,6 +120,7 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 
 func (t *DBSuite) TestMessageDBMessageParity() {
 	chainID := gofakeit.Uint32()
+	destination := gofakeit.Uint32()
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
@@ -118,6 +128,7 @@ func (t *DBSuite) TestMessageDBMessageParity() {
 	blockNumber := gofakeit.Uint64()
 	initialDBMessage := types.DBMessage{
 		ChainID:     &chainID,
+		Destination: &destination,
 		Nonce:       &nonce,
 		Root:        &root,
 		Message:     &message,

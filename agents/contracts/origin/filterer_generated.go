@@ -11,6 +11,30 @@ import (
 
 // IOriginFilterer ...
 type IOriginFilterer interface {
+	// FilterAgentAdded is a free log retrieval operation binding the contract event 0xf317002dd4275e311428a6702ca0c0dd258ccd819733937b3c325f9fa7d2dd6d.
+	//
+	// Solidity: event AgentAdded(uint32 indexed domain, address indexed account)
+	FilterAgentAdded(opts *bind.FilterOpts, domain []uint32, account []common.Address) (*OriginAgentAddedIterator, error)
+	// WatchAgentAdded is a free log subscription operation binding the contract event 0xf317002dd4275e311428a6702ca0c0dd258ccd819733937b3c325f9fa7d2dd6d.
+	//
+	// Solidity: event AgentAdded(uint32 indexed domain, address indexed account)
+	WatchAgentAdded(opts *bind.WatchOpts, sink chan<- *OriginAgentAdded, domain []uint32, account []common.Address) (event.Subscription, error)
+	// ParseAgentAdded is a log parse operation binding the contract event 0xf317002dd4275e311428a6702ca0c0dd258ccd819733937b3c325f9fa7d2dd6d.
+	//
+	// Solidity: event AgentAdded(uint32 indexed domain, address indexed account)
+	ParseAgentAdded(log types.Log) (*OriginAgentAdded, error)
+	// FilterAgentRemoved is a free log retrieval operation binding the contract event 0x36c9058f377a833904163847910be07fdfc0d1f90d885d7f2749713d9913852e.
+	//
+	// Solidity: event AgentRemoved(uint32 indexed domain, address indexed account)
+	FilterAgentRemoved(opts *bind.FilterOpts, domain []uint32, account []common.Address) (*OriginAgentRemovedIterator, error)
+	// WatchAgentRemoved is a free log subscription operation binding the contract event 0x36c9058f377a833904163847910be07fdfc0d1f90d885d7f2749713d9913852e.
+	//
+	// Solidity: event AgentRemoved(uint32 indexed domain, address indexed account)
+	WatchAgentRemoved(opts *bind.WatchOpts, sink chan<- *OriginAgentRemoved, domain []uint32, account []common.Address) (event.Subscription, error)
+	// ParseAgentRemoved is a log parse operation binding the contract event 0x36c9058f377a833904163847910be07fdfc0d1f90d885d7f2749713d9913852e.
+	//
+	// Solidity: event AgentRemoved(uint32 indexed domain, address indexed account)
+	ParseAgentRemoved(log types.Log) (*OriginAgentRemoved, error)
 	// FilterAttestationAccepted is a free log retrieval operation binding the contract event 0x744faabf74c86a873d8f8256c1f071b7ac997f1a9fa1f506dc5a528d5bbb16f3.
 	//
 	// Solidity: event AttestationAccepted(address indexed notary, bytes attestation)
@@ -47,6 +71,30 @@ type IOriginFilterer interface {
 	//
 	// Solidity: event Dispatch(bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes tips, bytes message)
 	ParseDispatch(log types.Log) (*OriginDispatch, error)
+	// FilterDomainActivated is a free log retrieval operation binding the contract event 0x05b9ad808d73157589dfae619d8942273dafcd3ec0a49b8f33a573410c0f1222.
+	//
+	// Solidity: event DomainActivated(uint32 indexed domain)
+	FilterDomainActivated(opts *bind.FilterOpts, domain []uint32) (*OriginDomainActivatedIterator, error)
+	// WatchDomainActivated is a free log subscription operation binding the contract event 0x05b9ad808d73157589dfae619d8942273dafcd3ec0a49b8f33a573410c0f1222.
+	//
+	// Solidity: event DomainActivated(uint32 indexed domain)
+	WatchDomainActivated(opts *bind.WatchOpts, sink chan<- *OriginDomainActivated, domain []uint32) (event.Subscription, error)
+	// ParseDomainActivated is a log parse operation binding the contract event 0x05b9ad808d73157589dfae619d8942273dafcd3ec0a49b8f33a573410c0f1222.
+	//
+	// Solidity: event DomainActivated(uint32 indexed domain)
+	ParseDomainActivated(log types.Log) (*OriginDomainActivated, error)
+	// FilterDomainDeactivated is a free log retrieval operation binding the contract event 0xa7654f2ff76a0d100f23fd02cae38d87b3fdf3c5d36b7f4df3bd5cc285816a19.
+	//
+	// Solidity: event DomainDeactivated(uint32 indexed domain)
+	FilterDomainDeactivated(opts *bind.FilterOpts, domain []uint32) (*OriginDomainDeactivatedIterator, error)
+	// WatchDomainDeactivated is a free log subscription operation binding the contract event 0xa7654f2ff76a0d100f23fd02cae38d87b3fdf3c5d36b7f4df3bd5cc285816a19.
+	//
+	// Solidity: event DomainDeactivated(uint32 indexed domain)
+	WatchDomainDeactivated(opts *bind.WatchOpts, sink chan<- *OriginDomainDeactivated, domain []uint32) (event.Subscription, error)
+	// ParseDomainDeactivated is a log parse operation binding the contract event 0xa7654f2ff76a0d100f23fd02cae38d87b3fdf3c5d36b7f4df3bd5cc285816a19.
+	//
+	// Solidity: event DomainDeactivated(uint32 indexed domain)
+	ParseDomainDeactivated(log types.Log) (*OriginDomainDeactivated, error)
 	// FilterFraudAttestation is a free log retrieval operation binding the contract event 0xa458d78fa8902ff24cc896d608e762eb06543f0541124e5582e928e1e4789423.
 	//
 	// Solidity: event FraudAttestation(address indexed notary, bytes attestation)
@@ -59,30 +107,6 @@ type IOriginFilterer interface {
 	//
 	// Solidity: event FraudAttestation(address indexed notary, bytes attestation)
 	ParseFraudAttestation(log types.Log) (*OriginFraudAttestation, error)
-	// FilterGuardAdded is a free log retrieval operation binding the contract event 0x93405f05cd04f0d1bd875f2de00f1f3890484ffd0589248953bdfd29ba7f2f59.
-	//
-	// Solidity: event GuardAdded(address guard)
-	FilterGuardAdded(opts *bind.FilterOpts) (*OriginGuardAddedIterator, error)
-	// WatchGuardAdded is a free log subscription operation binding the contract event 0x93405f05cd04f0d1bd875f2de00f1f3890484ffd0589248953bdfd29ba7f2f59.
-	//
-	// Solidity: event GuardAdded(address guard)
-	WatchGuardAdded(opts *bind.WatchOpts, sink chan<- *OriginGuardAdded) (event.Subscription, error)
-	// ParseGuardAdded is a log parse operation binding the contract event 0x93405f05cd04f0d1bd875f2de00f1f3890484ffd0589248953bdfd29ba7f2f59.
-	//
-	// Solidity: event GuardAdded(address guard)
-	ParseGuardAdded(log types.Log) (*OriginGuardAdded, error)
-	// FilterGuardRemoved is a free log retrieval operation binding the contract event 0x59926e0a78d12238b668b31c8e3f6ece235a59a00ede111d883e255b68c4d048.
-	//
-	// Solidity: event GuardRemoved(address guard)
-	FilterGuardRemoved(opts *bind.FilterOpts) (*OriginGuardRemovedIterator, error)
-	// WatchGuardRemoved is a free log subscription operation binding the contract event 0x59926e0a78d12238b668b31c8e3f6ece235a59a00ede111d883e255b68c4d048.
-	//
-	// Solidity: event GuardRemoved(address guard)
-	WatchGuardRemoved(opts *bind.WatchOpts, sink chan<- *OriginGuardRemoved) (event.Subscription, error)
-	// ParseGuardRemoved is a log parse operation binding the contract event 0x59926e0a78d12238b668b31c8e3f6ece235a59a00ede111d883e255b68c4d048.
-	//
-	// Solidity: event GuardRemoved(address guard)
-	ParseGuardRemoved(log types.Log) (*OriginGuardRemoved, error)
 	// FilterGuardSlashed is a free log retrieval operation binding the contract event 0xf2b3869e9727d6dfa6823415649eb18a3bbb7cf9aa2af02af10aaf8d10e14095.
 	//
 	// Solidity: event GuardSlashed(address indexed guard, address indexed reporter)
@@ -119,30 +143,6 @@ type IOriginFilterer interface {
 	//
 	// Solidity: event Initialized(uint8 version)
 	ParseInitialized(log types.Log) (*OriginInitialized, error)
-	// FilterNotaryAdded is a free log retrieval operation binding the contract event 0x62d8d15324cce2626119bb61d595f59e655486b1ab41b52c0793d814fe03c355.
-	//
-	// Solidity: event NotaryAdded(uint32 indexed domain, address notary)
-	FilterNotaryAdded(opts *bind.FilterOpts, domain []uint32) (*OriginNotaryAddedIterator, error)
-	// WatchNotaryAdded is a free log subscription operation binding the contract event 0x62d8d15324cce2626119bb61d595f59e655486b1ab41b52c0793d814fe03c355.
-	//
-	// Solidity: event NotaryAdded(uint32 indexed domain, address notary)
-	WatchNotaryAdded(opts *bind.WatchOpts, sink chan<- *OriginNotaryAdded, domain []uint32) (event.Subscription, error)
-	// ParseNotaryAdded is a log parse operation binding the contract event 0x62d8d15324cce2626119bb61d595f59e655486b1ab41b52c0793d814fe03c355.
-	//
-	// Solidity: event NotaryAdded(uint32 indexed domain, address notary)
-	ParseNotaryAdded(log types.Log) (*OriginNotaryAdded, error)
-	// FilterNotaryRemoved is a free log retrieval operation binding the contract event 0x3e006f5b97c04e82df349064761281b0981d45330c2f3e57cc032203b0e31b6b.
-	//
-	// Solidity: event NotaryRemoved(uint32 indexed domain, address notary)
-	FilterNotaryRemoved(opts *bind.FilterOpts, domain []uint32) (*OriginNotaryRemovedIterator, error)
-	// WatchNotaryRemoved is a free log subscription operation binding the contract event 0x3e006f5b97c04e82df349064761281b0981d45330c2f3e57cc032203b0e31b6b.
-	//
-	// Solidity: event NotaryRemoved(uint32 indexed domain, address notary)
-	WatchNotaryRemoved(opts *bind.WatchOpts, sink chan<- *OriginNotaryRemoved, domain []uint32) (event.Subscription, error)
-	// ParseNotaryRemoved is a log parse operation binding the contract event 0x3e006f5b97c04e82df349064761281b0981d45330c2f3e57cc032203b0e31b6b.
-	//
-	// Solidity: event NotaryRemoved(uint32 indexed domain, address notary)
-	ParseNotaryRemoved(log types.Log) (*OriginNotaryRemoved, error)
 	// FilterNotarySlashed is a free log retrieval operation binding the contract event 0x70f97c2b606c3d7af38fff3f924c8396f5a05d266b5dc523d863ad27a1d7518a.
 	//
 	// Solidity: event NotarySlashed(address indexed notary, address indexed guard, address indexed reporter)

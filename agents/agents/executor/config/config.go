@@ -14,6 +14,10 @@ import (
 type Config struct {
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
+	// SYNChainID is the ID of the Synapse Chain.
+	SYNChainID uint32 `yaml:"synapse_chain_id"`
+	// AttestationCollectorAddress is the address of the Attestation Collector on SYN Chain.
+	AttestationCollectorAddress string `yaml:"attestation_collector_address"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
