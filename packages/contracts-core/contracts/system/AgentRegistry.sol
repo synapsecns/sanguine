@@ -78,6 +78,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
 
     /**
      * @notice Returns all active Agents for a given domain in an array.
+     * Note: will return the list of active Guards, if `_domain == 0`.
      * @dev This copies storage into memory, so can consume a lof of gas, if
      * amount of agents is large (see EnumerableSet.values())
      */
@@ -101,6 +102,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
 
     /**
      * @notice Returns true if the agent is active on any domain.
+     * Note: that includes both Guards and Notaries.
      */
     function isActiveAgent(address _account) external view returns (bool) {
         return _isActiveAgent(_account);
@@ -128,6 +130,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
 
     /**
      * @notice Returns the amount of active agents for the given domain.
+     * Note: will return the amount of active Guards, if `_domain == 0`.
      */
     function amountAgents(uint32 _domain) public view returns (uint256) {
         return agents[_currentEpoch()].length(_domain);
@@ -135,7 +138,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
 
     /**
      * @notice Returns the amount of active domains.
-     * @dev This also includes the zero domain, which is used for storing the guards.
+     * @dev This always excludes the zero domain, which is used for storing the guards.
      */
     function amountDomains() public view returns (uint256) {
         return domains[_currentEpoch()].length();
@@ -143,7 +146,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
 
     /**
      * @notice Returns i-th agent for a given domain.
-     * @dev Will revert if index is out of range
+     * @dev Will revert if index is out of range.
      * Note: domain == 0 refers to a Guard, while _domain > 0 refers to a Notary.
      */
     function getAgent(uint32 _domain, uint256 _agentIndex) public view returns (address) {
@@ -153,6 +156,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     /**
      * @notice Returns i-th domain from the list of active domains.
      * @dev Will revert if index is out of range.
+     * Note: this never returns the zero domain, which is used for storing the guards.
      */
     function getDomain(uint256 _domainIndex) public view returns (uint32) {
         return uint32(domains[_currentEpoch()].at(_domainIndex));
@@ -270,6 +274,7 @@ abstract contract AgentRegistry is AgentRegistryEvents {
 
     /**
      * @dev Checks if agent is active on any of the domains.
+     * Note: this checks if agent is an active Guard or Notary.
      */
     function _isActiveAgent(address _account) internal view returns (bool) {
         // Check the list of global agents in the current epoch
