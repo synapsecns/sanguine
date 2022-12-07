@@ -124,11 +124,9 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 		case <-ctx.Done():
 			return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
 		case <-time.After(timeout):
-			fmt.Println("trying again")
 			attempt++
 
 			if attempt > retryTolerance {
-				fmt.Println("max attempts reached")
 				return nil, fmt.Errorf("maximum number of filter attempts exceeded")
 			}
 
