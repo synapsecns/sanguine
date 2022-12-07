@@ -15,36 +15,81 @@ contract AttestationHubTest is AttestationTools {
     function setUp() public override {
         super.setUp();
         attestationHub = new AttestationHubHarness();
-        attestationHub.addAgent(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE));
+        // Add suite Guards
+        for (uint256 i = 0; i < GUARDS; ++i) {
+            attestationHub.addAgent(0, suiteGuard(i));
+        }
+        // Add suite Notaries
+        for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
+            attestationHub.addAgent(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE, i));
+        }
     }
 
     function test_setup() public {
-        assertTrue(
-            attestationHub.isActiveAgent(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE)),
-            "Failed to add notary"
-        );
+        for (uint256 i = 0; i < GUARDS; ++i) {
+            assertTrue(attestationHub.isActiveAgent(0, suiteGuard(i)), "Failed to add guard");
+        }
+        assertFalse(attestationHub.isActiveAgent(0, attacker), "Attacker is Guard");
+
+        for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
+            assertTrue(
+                attestationHub.isActiveAgent(DOMAIN_REMOTE, suiteNotary(DOMAIN_REMOTE, i)),
+                "Failed to add notary"
+            );
+            assertFalse(
+                attestationHub.isActiveAgent(DOMAIN_LOCAL, suiteNotary(DOMAIN_REMOTE, i)),
+                "Added Notary on another domain"
+            );
+        }
         assertFalse(attestationHub.isActiveAgent(DOMAIN_REMOTE, attacker), "Attacker is Notary");
-        assertFalse(
-            attestationHub.isActiveAgent(DOMAIN_LOCAL, suiteNotary(DOMAIN_REMOTE)),
-            "Added Notary on another domain"
-        );
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      TESTS: SUBMIT ATTESTATION                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_submitAttestation() public {
-        createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
+    function test_submitAttestation(uint256 guardSigs, uint256 notarySigs) public {
+        guardSigs = guardSigs % GUARDS;
+        notarySigs = notarySigs % NOTARIES_PER_CHAIN;
+        // Should be at least one signature
+        vm.assume(guardSigs + notarySigs != 0);
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_REMOTE,
+            guardSigs: guardSigs,
+            notarySigs: notarySigs
+        });
+        createAttestationMock({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
+        });
         expectLogAttestation();
         attestationHubSubmitAttestation();
     }
 
-    function test_submitAttestation_revert_notNotary() public {
+    function test_submitAttestation_revert_notAgent(
+        uint256 guardSigs,
+        uint256 notarySigs,
+        uint256 attackerIndex
+    ) public {
+        guardSigs = guardSigs % GUARDS;
+        notarySigs = notarySigs % NOTARIES_PER_CHAIN;
+        // Should be at least one signature
+        vm.assume(guardSigs + notarySigs != 0);
+        // Pick one agent to substitute to attacker: this could be a Guard or a Notary
+        attackerIndex = attackerIndex % (guardSigs + notarySigs);
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_REMOTE,
+            guardSigs: guardSigs,
+            notarySigs: notarySigs,
+            attackerIndex: attackerIndex
+        });
         createAttestationMock({
             origin: DOMAIN_LOCAL,
             destination: DOMAIN_REMOTE,
-            signer: attacker
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
         });
         vm.expectRevert("Signer is not authorized");
         attestationHubSubmitAttestation();
@@ -57,13 +102,13 @@ contract AttestationHubTest is AttestationTools {
         attestationHubSubmitAttestation();
     }
 
-    function test_submitAttestation_revert_noNotarySignature() public {
-        createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
-        // Strip notary signature from attestation payload
-        attestationRaw = Attestation.formatAttestation(
-            attestationRaw.castToAttestation().attestationData().clone(),
-            ""
-        );
+    function test_submitAttestation_revert_noSignatures() public {
+        createAttestationMock({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            guardSigners: new address[](0),
+            notarySigners: new address[](0)
+        });
         vm.expectRevert("Not an attestation");
         attestationHubSubmitAttestation();
     }
