@@ -135,11 +135,12 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 								logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 								continue
 							}
-
+							fmt.Println("DONE WITH CHUNK", funcHeight, rangeEnd, contract.Address, contract.ContractType, c.chainConfig.ChainID)
 							return nil
 						}
 					}
 				})
+
 			}
 
 			if err := g.Wait(); err != nil {
@@ -182,7 +183,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			}
 			err := eventParser.ParseAndStore(ctx, logs[logIdx], c.chainConfig.ChainID)
 			if err != nil {
-				logger.Warnf("could not parse and store log: %w", err)
+				logger.Errorf("could not parse and store log: %w", err)
 				timeout = b.Duration()
 				continue
 			}
@@ -190,7 +191,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			// Store the last block in clickhouse
 			err = c.consumerDB.StoreLastBlock(ctx, c.chainConfig.ChainID, logs[logIdx].BlockNumber)
 			if err != nil {
-				logger.Warnf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
+				logger.Errorf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
 				timeout = b.Duration()
 				continue
 			}

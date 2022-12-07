@@ -82,7 +82,7 @@ RETRY:
 		priceRaw := res["coins"][fmt.Sprintf("coingecko:%s", coinGeckoID)]["price"]
 		if priceRaw == nil {
 			if retries >= 1 {
-				logger.Warnf("error getting price from defi llama, skipping: retries: %d %s %d", retries, coinGeckoID, timestamp)
+				logger.Errorf("error getting price from defi llama, skipping: retries: %d %s %d", retries, coinGeckoID, timestamp)
 				return nil, nil
 			}
 			timeout = b.Duration()
