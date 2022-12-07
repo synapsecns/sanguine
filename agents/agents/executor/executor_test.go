@@ -412,16 +412,28 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 func (e *ExecutorSuite) TestVerifyMessage() {
 	chainID := gofakeit.Uint32()
+	destination := chainID + 1
 
 	testTree, err := trieutil.NewTrie(32)
 	e.Nil(err)
 
-	exec, err := executor.NewExecutor(executorCfg.Config{}, e.testDB, client.ScribeClient{})
+	excCfg := executorCfg.Config{
+		Chains: []executorCfg.ChainConfig{
+			{
+				ChainID: chainID,
+				//OriginAddress: originContract.Address().String(),
+			},
+			{
+				ChainID: destination,
+			},
+		},
+	}
+
+	exec, err := executor.NewExecutor(excCfg, e.testDB, client.ScribeClient{})
 	e.Nil(err)
 
 	_ = exec
 
-	destination := chainID + 1
 	nonces := []uint32{1, 2, 3, 4}
 	blockNumbers := []uint64{10, 20, 30, 40}
 	recipients := [][32]byte{
@@ -462,7 +474,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
 		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
 	}
-	//encodedTips0, err := types.EncodeTips(tips[0])
+	// encodedTips0, err := types.EncodeTips(tips[0])
 	//e.Nil(err)
 	//encodedTips1, err := types.EncodeTips(tips[1])
 	//e.Nil(err)
@@ -513,6 +525,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 
 	dbMessage0 := execTypes.DBMessage{
 		ChainID:     &chainID,
+		Destination: &destination,
 		Nonce:       &nonces[0],
 		Root:        &hashRoot0,
 		Message:     &messageBytes[0],
@@ -521,6 +534,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	}
 	dbMessage1 := execTypes.DBMessage{
 		ChainID:     &chainID,
+		Destination: &destination,
 		Nonce:       &nonces[1],
 		Root:        &hashRoot1,
 		Message:     &messageBytes[1],
@@ -529,6 +543,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	}
 	dbMessage2 := execTypes.DBMessage{
 		ChainID:     &chainID,
+		Destination: &destination,
 		Nonce:       &nonces[2],
 		Root:        &hashRoot2,
 		Message:     &messageBytes[2],
@@ -537,6 +552,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	}
 	dbMessage3 := execTypes.DBMessage{
 		ChainID:     &chainID,
+		Destination: &destination,
 		Nonce:       &nonces[3],
 		Root:        &hashRoot3,
 		Message:     &messageBytes[3],
@@ -552,13 +568,24 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	e.Nil(err)
 	err = e.testDB.StoreMessage(e.GetTestContext(), dbMessage2)
 	e.Nil(err)
-	//err = e.testDB.StoreMessage(e.GetTestContext(), dbMessage3)
-	//e.Nil(err)
 
-	//err = exec.BuildTreeFromDB(e.GetTestContext(), chainID)
-	//e.Nil(err)
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
+	e.Nil(err)
 
-	//encodedMessage0, err := types.EncodeMessage(message0)
+	proof, err := exec.MerkleTrees[chainID][destination].MerkleProof(2)
+	e.Nil(err)
+
+	err = e.testDB.StoreMessage(e.GetTestContext(), dbMessage3)
+	e.Nil(err)
+
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
+	e.Nil(err)
+
+	nonceProof, err := exec.GetLatestNonceProof(3, chainID, destination)
+	e.Nil(err)
+	e.Equal(nonceProof, proof)
+
+	// encodedMessage0, err := types.EncodeMessage(message0)
 	//e.Nil(err)
 	//
 	//inTree0, err := exec.VerifyMessage(e.GetTestContext(), 0, encodedMessage0, chainID)

@@ -262,6 +262,7 @@ func (e Executor) VerifyMessage(ctx context.Context, merkleIndex uint32, message
 	}
 
 	inTree := trieutil.VerifyMerkleBranch(root[:], message, int(merkleIndex), proof, treeDepth)
+
 	return inTree, nil
 }
 
@@ -272,6 +273,28 @@ func (e Executor) GetProof(nonce uint32, chainID uint32, destination uint32) ([]
 	}
 
 	proof, err := e.MerkleTrees[chainID][destination].MerkleProof(int(nonce - 1))
+	if err != nil {
+		return nil, fmt.Errorf("could not get merkle proof: %w", err)
+	}
+
+	return proof, nil
+}
+
+// GetLatestNonceProof returns the merkle proof for a nonce, with a tree where that nonce is the last item added.
+// This is done by copying the current merkle tree's items and generating a new tree with the items from the range
+// [0, nonce).
+func (e Executor) GetLatestNonceProof(nonce, chainID, destination uint32) ([][]byte, error) {
+	if nonce == 0 || nonce > uint32(e.MerkleTrees[chainID][destination].NumOfItems()) {
+		return nil, fmt.Errorf("nonce is out of range")
+	}
+
+	items := e.MerkleTrees[chainID][destination].Items()
+	tree, err := trieutil.GenerateTrieFromItems(items[:nonce], treeDepth)
+	if err != nil {
+		return nil, fmt.Errorf("could not generate trie: %w", err)
+	}
+
+	proof, err := tree.MerkleProof(int(nonce - 1))
 	if err != nil {
 		return nil, fmt.Errorf("could not get merkle proof: %w", err)
 	}
@@ -319,6 +342,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			if err != nil {
 				return fmt.Errorf("could not close stream: %w", err)
 			}
+
 			err = conn.Close()
 			if err != nil {
 				return fmt.Errorf("could not close connection: %w", err)
@@ -377,6 +401,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 // logToMessage converts the log to a leaf data.
 func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*execTypes.DBMessage, error) {
 	var dbMessage *execTypes.DBMessage
+
 	if eventType, ok := e.originParsers[chainID].EventType(log); ok && eventType == origin.DispatchEvent {
 		committedMessage, ok := e.originParsers[chainID].ParseDispatch(log)
 		if !ok {
@@ -399,7 +424,6 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*execTypes.DBM
 		messageMessage := message.Body()
 		messageLeaf := common.BytesToHash(leaf[:])
 		messageBlockNumber := log.BlockNumber
-
 		dbMessage = &execTypes.DBMessage{
 			ChainID:     &messageChainID,
 			Destination: &messageDestination,
