@@ -18,7 +18,7 @@ import (
 func (s Store) StoreNewInProgressAttestation(ctx context.Context, attestation types.Attestation, originDispathBlockNumber uint64) error {
 	// We only want to store if not already stored
 	tx := s.DB().WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: OriginIDFieldName}, {Name: DestinationIDFieldName}, {Name: NonceFieldName}},
+		Columns:   []clause.Column{{Name: "Origin"}, {Name: "Destination"}, {Name: NonceFieldName}},
 		DoNothing: true,
 	}).Create(&InProgressAttestation{
 		IPOrigin:                    attestation.Origin(),
@@ -41,7 +41,7 @@ func (s Store) UpdateSignature(ctx context.Context, inProgressAttestation types.
 		return fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	tx := s.DB().WithContext(ctx).Model(&inProgressAttestation).Where("origin_dispatch_block_number", inProgressAttestation.OriginDispatchBlockNumber()).Where(SignatureFieldName, "NULL").Update(SignatureFieldName, sig)
+	tx := s.DB().WithContext(ctx).Model(&inProgressAttestation).Where("origin_dispatch_block_number", inProgressAttestation.OriginDispatchBlockNumber()).Where("signature", "NULL").Update("signature", sig)
 
 	if tx.Error != nil {
 		return fmt.Errorf("could not set signature for in-progress attestations: %w", tx.Error)
@@ -56,7 +56,7 @@ func (s Store) UpdateSubmittedToAttestationCollectorTime(ctx context.Context, in
 		return fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	tx := s.DB().WithContext(ctx).Model(&inProgressAttestation).Where("origin_dispatch_block_number", inProgressAttestation.OriginDispatchBlockNumber()).Where(SignatureFieldName, sig).Where("submitted_to_attestation_collector_time < ?", inProgressAttestation.SubmittedToAttestationCollectorTime()).Update("submitted_to_attestation_collector_time", inProgressAttestation.SubmittedToAttestationCollectorTime())
+	tx := s.DB().WithContext(ctx).Model(&inProgressAttestation).Where("origin_dispatch_block_number", inProgressAttestation.OriginDispatchBlockNumber()).Where("signature", sig).Where("submitted_to_attestation_collector_time < ?", inProgressAttestation.SubmittedToAttestationCollectorTime()).Update("submitted_to_attestation_collector_time", inProgressAttestation.SubmittedToAttestationCollectorTime())
 
 	if tx.Error != nil {
 		return fmt.Errorf("could not update SubmittedToAttestationCollectorTime for in-progress attestations: %w", tx.Error)
@@ -71,7 +71,7 @@ func (s Store) UpdateConfirmedOnAttestationCollectorBlockNumber(ctx context.Cont
 		return fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	tx := s.DB().WithContext(ctx).Model(&inProgressAttestation).Where("origin_dispatch_block_number", inProgressAttestation.OriginDispatchBlockNumber()).Where(SignatureFieldName, sig).Where("submitted_to_attestation_collector_time", inProgressAttestation.SubmittedToAttestationCollectorTime()).Update("confirmed_on_attestation_collector_block_number", inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber())
+	tx := s.DB().WithContext(ctx).Model(&inProgressAttestation).Where("origin_dispatch_block_number", inProgressAttestation.OriginDispatchBlockNumber()).Where("signature", sig).Where("submitted_to_attestation_collector_time", inProgressAttestation.SubmittedToAttestationCollectorTime()).Update("confirmed_on_attestation_collector_block_number", inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber())
 
 	if tx.Error != nil {
 		return fmt.Errorf("could not set ConfirmedOnAttestationCollectorBlockNumber for in-progress attestation: %w", tx.Error)
@@ -120,7 +120,7 @@ func (s Store) RetrieveInProgressAttestation(ctx context.Context, originID, dest
 func (s Store) RetrieveOldestUnsignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
 	orderByNonceAsc := fmt.Sprintf("`%s` asc", NonceFieldName)
 	var inProgressAttestation InProgressAttestation
-	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).Where(&InProgressAttestation{IPOrigin: originID, IPDestination: destinationID}).Where(SignatureFieldName, "NULL").Order(orderByNonceAsc).First(&inProgressAttestation)
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).Where(&InProgressAttestation{IPOrigin: originID, IPDestination: destinationID}).Where("signature", "NULL").Order(orderByNonceAsc).First(&inProgressAttestation)
 
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
@@ -134,7 +134,7 @@ func (s Store) RetrieveOldestUnsignedInProgressAttestation(ctx context.Context, 
 // RetrieveOldestUnsubmittedSignedInProgressAttestation retrieves the oldest in-progress attestation that has been signed but not yet submitted
 func (s Store) RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
 	orderByNonceAsc := fmt.Sprintf("`%s` asc", NonceFieldName)
-	signatureNotNull := fmt.Sprintf("`%s` <> '' and %s IS NOT NULL", SignatureFieldName, SignatureFieldName)
+	signatureNotNull := fmt.Sprintf("`%s` <> '' and %s IS NOT NULL", "signature", "signature")
 	submittedTimeIsNull := fmt.Sprintf("`%s` IS NULL", "submitted_to_attestation_collector_time")
 
 	var inProgressAttestation InProgressAttestation
@@ -152,7 +152,7 @@ func (s Store) RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx context.
 // RetrieveOldestUnconfirmedSubmittedInProgressAttestation retrieves the oldest in-progress attestation that has been signed and submitted but not yet confirmed on the AttestationCollector
 func (s Store) RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
 	orderByNonceAsc := fmt.Sprintf("`%s` asc", NonceFieldName)
-	signatureNotNull := fmt.Sprintf("`%s` <> '' and %s IS NOT NULL", SignatureFieldName, SignatureFieldName)
+	signatureNotNull := fmt.Sprintf("`%s` <> '' and %s IS NOT NULL", "signature", "signature")
 	submittedTimeIsNotNull := fmt.Sprintf("`%s` IS NOT NULL", "submitted_to_attestation_collector_time")
 	confirmationBlockNumberIsZero := fmt.Sprintf("`%s` IS NULL or `%s` = 0", "submitted_to_attestation_collector_time", "submitted_to_attestation_collector_time")
 
