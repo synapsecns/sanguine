@@ -52,94 +52,109 @@ func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgePar
 // Backfill fetches logs from the GraphQL database, parses them, and stores them in the consumer database.
 // nolint:cyclop,gocognit
 func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
+	chainCtx := context.WithValue(ctx, chainKey, fmt.Sprintf("%d", c.chainConfig.ChainID))
+	contractsGroup, _ := errgroup.WithContext(chainCtx)
+
 	for i := range c.chainConfig.Contracts {
 		contract := c.chainConfig.Contracts[i]
+		var eventParser parser.Parser
 
-		// Create a new context for the chain so all chains don't halt when backfilling is completed.
-		chainCtx := context.WithValue(ctx, chainKey, fmt.Sprintf("%d", c.chainConfig.ChainID))
-		g, groupCtx := errgroup.WithContext(chainCtx)
-		g.SetLimit(c.chainConfig.MaxGoroutines)
-		startHeight := uint64(contract.StartBlock)
+		switch contract.ContractType {
+		case "bridge":
+			fmt.Println("bridge")
+			eventParser = c.bridgeParser
+		case "swap":
+			fmt.Println("swap")
+			eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
+		case "messagebus":
+			fmt.Println("messagebus")
+			eventParser = c.messageBusParser
+		}
+		contractsGroup.Go(func() error {
+			g, groupCtx := errgroup.WithContext(chainCtx)
 
-		// Set start block to -1 to trigger backfill from last block stored by explorer,
-		// otherwise backfilling will begin at the block number specified in the config file.
-		if contract.StartBlock < 0 {
-			startHeight, err = c.consumerDB.GetUint64(ctx, fmt.Sprintf(
-				"SELECT ifNull(%s, 0) FROM last_blocks WHERE %s = %d",
-				sql.BlockNumberFieldName, sql.ChainIDFieldName, c.chainConfig.ChainID,
-			))
-			if err != nil {
-				return fmt.Errorf("could not get last block number: %w", err)
+			fmt.Println("contract", contract.Address, contract.ContractType)
+
+			// Create a new context for the chain so all chains don't halt when backfilling is completed.
+			g.SetLimit(c.chainConfig.MaxGoroutines)
+			startHeight := uint64(contract.StartBlock)
+
+			// Set start block to -1 to trigger backfill from last block stored by explorer,
+			// otherwise backfilling will begin at the block number specified in the config file.
+			if contract.StartBlock < 0 {
+				startHeight, err = c.consumerDB.GetUint64(ctx, fmt.Sprintf(
+					"SELECT ifNull(%s, 0) FROM last_blocks WHERE %s = %d",
+					sql.BlockNumberFieldName, sql.ChainIDFieldName, c.chainConfig.ChainID,
+				))
+				if err != nil {
+					return fmt.Errorf("could not get last block number: %w", err)
+				}
 			}
-		}
 
-		endHeight, err := c.Fetcher.FetchLastIndexed(ctx, c.chainConfig.ChainID, contract.Address)
-		if err != nil {
-			return fmt.Errorf("could not get last indexed for contract %s: %w", contract.Address, err)
-		}
+			endHeight, err := c.Fetcher.FetchLastIndexed(ctx, c.chainConfig.ChainID, contract.Address)
+			if err != nil {
+				return fmt.Errorf("could not get last indexed for contract %s: %w", contract.Address, err)
+			}
 
-		// Iterate over all blocks and fetch logs with the current contract address.
-		for currentHeight := startHeight; currentHeight < endHeight; currentHeight += c.chainConfig.FetchBlockIncrement {
-			funcHeight := currentHeight
+			// Iterate over all blocks and fetch logs with the current contract address.
+			for currentHeight := startHeight; currentHeight < endHeight; currentHeight += c.chainConfig.FetchBlockIncrement {
+				funcHeight := currentHeight
 
-			g.Go(func() error {
-				b := &backoff.Backoff{
-					Factor: 2,
-					Jitter: true,
-					Min:    1 * time.Second,
-					Max:    10 * time.Second,
-				}
-
-				timeout := time.Duration(0)
-
-				for {
-					select {
-					case <-groupCtx.Done():
-						return fmt.Errorf("context canceled: %w", groupCtx.Err())
-					case <-time.After(timeout):
-						rangeEnd := funcHeight + c.chainConfig.FetchBlockIncrement - 1
-
-						if rangeEnd > endHeight {
-							rangeEnd = endHeight
-						}
-
-						// Fetch the logs from Scribe.
-						logs, err := c.Fetcher.FetchLogsInRange(groupCtx, c.chainConfig.ChainID, funcHeight, rangeEnd, common.HexToAddress(contract.Address))
-						if err != nil {
-							timeout = b.Duration()
-							logger.Warnf("could not fetch logs for chain %d: %s. Retrying in %s", c.chainConfig.ChainID, err, timeout)
-
-							continue
-						}
-
-						var eventParser parser.Parser
-
-						switch contract.ContractType {
-						case "bridge":
-							eventParser = c.bridgeParser
-						case "swap":
-							eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
-						case "messagebus":
-							eventParser = c.messageBusParser
-						}
-
-						err = c.processLogs(groupCtx, logs, eventParser)
-						if err != nil {
-							logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
-							continue
-						}
-
-						return nil
+				g.Go(func() error {
+					b := &backoff.Backoff{
+						Factor: 2,
+						Jitter: true,
+						Min:    1 * time.Second,
+						Max:    10 * time.Second,
 					}
-				}
-			})
-		}
 
-		if err := g.Wait(); err != nil {
-			return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
-		}
+					timeout := time.Duration(0)
+
+					for {
+						select {
+						case <-groupCtx.Done():
+							return fmt.Errorf("context canceled: %w", groupCtx.Err())
+						case <-time.After(timeout):
+							rangeEnd := funcHeight + c.chainConfig.FetchBlockIncrement - 1
+
+							if rangeEnd > endHeight {
+								rangeEnd = endHeight
+							}
+
+							// Fetch the logs from Scribe.
+							logs, err := c.Fetcher.FetchLogsInRange(groupCtx, c.chainConfig.ChainID, funcHeight, rangeEnd, common.HexToAddress(contract.Address))
+							if err != nil {
+								timeout = b.Duration()
+								logger.Warnf("could not fetch logs for chain %d: %s. Retrying in %s", c.chainConfig.ChainID, err, timeout)
+
+								continue
+							}
+
+							err = c.processLogs(groupCtx, logs, eventParser)
+							if err != nil {
+								logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
+								continue
+							}
+
+							return nil
+						}
+					}
+				})
+			}
+
+			if err := g.Wait(); err != nil {
+				return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
+			}
+			logger.Infof("backfilling contract %s completed", contract.Address)
+
+			return nil
+		})
+
 	}
-
+	if err := contractsGroup.Wait(); err != nil {
+		return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
+	}
+	logger.Infof("backfilling chain %d completed", c.chainConfig.ChainID)
 	return nil
 }
 
