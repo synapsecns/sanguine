@@ -85,6 +85,8 @@ type EventDBReader interface {
 	RetrieveFirstBlockStored(ctx context.Context, chainID uint32) (uint64, error)
 	// RetrieveLogCountForContract retrieves the number of logs for a contract.
 	RetrieveLogCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error)
+	// RetrieveReceiptCountForContract retrieves the number of receipts for a contract.
+	RetrieveReceiptCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error)
 	// RetrieveBlockTimesCountForChain retrieves the number of block times stored for a chain.
 	RetrieveBlockTimesCountForChain(ctx context.Context, chainID uint32) (int64, error)
 }

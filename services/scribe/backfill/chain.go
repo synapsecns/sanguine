@@ -163,8 +163,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 						continue
 					}
-					b.Reset()
-					timeout = time.Duration(0)
 
 					return nil
 				}
@@ -225,7 +223,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 
 			return nil
 		})
-
 	}
 
 	// Backfill from the earliest block to last stored block.
