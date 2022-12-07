@@ -6,6 +6,8 @@ import { TypedMemView } from "./TypedMemView.sol";
 import { ByteString } from "./ByteString.sol";
 
 library Attestation {
+    using ByteString for bytes;
+
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
@@ -18,7 +20,14 @@ library Attestation {
      *
      *      Attestation memory layout
      * [000 .. 044): attData        bytes   44 bytes (see above)
-     * [044 .. 109): signature      bytes   65 bytes (65 bytes)
+     * [044 .. 045): G = guardSigs  uint8    1 byte
+     * [045 .. 046): N = notarySigs uint8    1 byte
+     * [046 .. 111): guardSig[0]    bytes   65 bytes
+     *      ..
+     * [AAA .. BBB): guardSig[G-1]  bytes   65 bytes
+     * [BBB .. CCC): notarySig[0]   bytes   65 bytes
+     *      ..
+     * [DDD .. END): notarySig[N-1] bytes   65 bytes
      */
 
     uint256 internal constant OFFSET_ORIGIN = 0;
@@ -26,8 +35,9 @@ library Attestation {
     uint256 internal constant OFFSET_NONCE = 8;
     uint256 internal constant OFFSET_ROOT = 12;
     uint256 internal constant ATTESTATION_DATA_LENGTH = 44;
-    uint256 internal constant OFFSET_SIGNATURE = ATTESTATION_DATA_LENGTH;
-    uint256 internal constant ATTESTATION_LENGTH = ATTESTATION_DATA_LENGTH + 65;
+
+    uint256 internal constant OFFSET_AGENT_SIGS = ATTESTATION_DATA_LENGTH;
+    uint256 internal constant OFFSET_FIRST_SIGNATURE = OFFSET_AGENT_SIGS + 2;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -43,24 +53,34 @@ library Attestation {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns a properly typed bytes29 pointer for an attestation payload.
-     */
-    function castToAttestation(bytes memory _payload) internal pure returns (bytes29) {
-        return _payload.ref(SynapseTypes.ATTESTATION);
-    }
-
-    /**
      * @notice Returns a formatted Attestation payload with provided fields
-     * @param _data         Attestation Data (see above)
-     * @param _signature    Notary's signature on `_data`
+     * @param _data                 Attestation Data (see above)
+     * @param _guardSignatures      Guard signatures on `_data`
+     * @param _notarySignatures     Notary signatures on `_data`
      * @return Formatted attestation
      **/
-    function formatAttestation(bytes memory _data, bytes memory _signature)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return abi.encodePacked(_data, _signature);
+    function formatAttestation(
+        bytes memory _data,
+        bytes[] memory _guardSignatures,
+        bytes[] memory _notarySignatures
+    ) internal view returns (bytes memory) {
+        uint8 guardSigs = uint8(_guardSignatures.length);
+        uint8 notarySigs = uint8(_notarySignatures.length);
+        // Pack (guardSigs, notarySigs) into a single 16-byte value
+        uint16 agentSigs = (uint16(guardSigs) << 8) | notarySigs;
+        bytes29[] memory guardSigViews = ByteString.castToSignatures(_guardSignatures);
+        bytes29[] memory notarySigViews = ByteString.castToSignatures(_notarySignatures);
+        // We need to join: `_data`, `agentSigs`, `guardSigViews`, `notarySigViews`
+        bytes29[] memory allViews = new bytes29[](2 + guardSigs + notarySigs);
+        allViews[0] = _data.castToRawBytes();
+        allViews[1] = abi.encodePacked(agentSigs).castToRawBytes();
+        for (uint256 i = 0; i < guardSigs; ++i) {
+            allViews[2 + i] = guardSigViews[i];
+        }
+        for (uint256 i = 0; i < notarySigs; ++i) {
+            allViews[2 + guardSigs + i] = notarySigViews[i];
+        }
+        return TypedMemView.join(allViews);
     }
 
     /**
@@ -81,10 +101,25 @@ library Attestation {
     }
 
     /**
+     * @notice Returns a properly typed bytes29 pointer for an attestation payload.
+     */
+    function castToAttestation(bytes memory _payload) internal pure returns (bytes29) {
+        return _payload.ref(SynapseTypes.ATTESTATION);
+    }
+
+    /**
      * @notice Checks that a payload is a formatted Attestation payload.
      */
     function isAttestation(bytes29 _view) internal pure returns (bool) {
-        return _view.len() == ATTESTATION_LENGTH;
+        uint256 length = _view.len();
+        // (attData, guardSigs, notarySigs) need to exist
+        if (length < OFFSET_FIRST_SIGNATURE) return false;
+        (uint256 guardSigs, uint256 notarySigs) = _agentSignatures(_view);
+        uint256 totalSigs = guardSigs + notarySigs;
+        // There should be at least one signature
+        if (totalSigs == 0) return false;
+        // Every signature has length of exactly `ByteString.SIGNATURE_LENGTH`
+        return length == OFFSET_FIRST_SIGNATURE + totalSigs * ByteString.SIGNATURE_LENGTH;
     }
 
     /**
@@ -177,14 +212,101 @@ library Attestation {
     }
 
     /**
-     * @notice Returns Notary's signature on AttestationData
+     * @notice Returns the amount of guard and notary signatures present in the Attestation.
      */
-    function notarySignature(bytes29 _view) internal pure onlyAttestation(_view) returns (bytes29) {
+    function agentSignatures(bytes29 _view)
+        internal
+        pure
+        onlyAttestation(_view)
+        returns (uint8 guardSigs, uint8 notarySigs)
+    {
+        (guardSigs, notarySigs) = _agentSignatures(_view);
+    }
+
+    /**
+     * @notice Returns the amount of guard signatures present in the Attestation.
+     */
+    function guardSignatures(bytes29 _view)
+        internal
+        pure
+        onlyAttestation(_view)
+        returns (uint8 guardSigs)
+    {
+        (guardSigs, ) = _agentSignatures(_view);
+    }
+
+    /**
+     * @notice Returns the amount of notary signatures present in the Attestation.
+     */
+    function notarySignatures(bytes29 _view)
+        internal
+        pure
+        onlyAttestation(_view)
+        returns (uint8 notarySigs)
+    {
+        (, notarySigs) = _agentSignatures(_view);
+    }
+
+    /**
+     * @notice Returns signature of the i-th Guard on AttestationData,
+     * @dev Will revert if index is out of range.
+     */
+    function guardSignature(bytes29 _view, uint256 _guardIndex)
+        internal
+        pure
+        onlyAttestation(_view)
+        returns (bytes29)
+    {
+        (uint8 guardSigs, ) = _agentSignatures(_view);
+        require(_guardIndex < guardSigs, "Out of range");
         return
             _view.slice({
-                _index: OFFSET_SIGNATURE,
+                _index: OFFSET_FIRST_SIGNATURE + _guardIndex * ByteString.SIGNATURE_LENGTH,
                 _len: ByteString.SIGNATURE_LENGTH,
                 newType: SynapseTypes.SIGNATURE
             });
+    }
+
+    /**
+     * @notice Returns signature of the i-th Notary on AttestationData,
+     * @dev Will revert if index is out of range.
+     */
+    function notarySignature(bytes29 _view, uint256 _notaryIndex)
+        internal
+        pure
+        onlyAttestation(_view)
+        returns (bytes29)
+    {
+        (uint8 guardSigs, uint8 notarySigs) = _agentSignatures(_view);
+        require(_notaryIndex < notarySigs, "Out of range");
+        return
+            _view.slice({
+                _index: OFFSET_FIRST_SIGNATURE +
+                    (_notaryIndex + guardSigs) *
+                    ByteString.SIGNATURE_LENGTH,
+                _len: ByteString.SIGNATURE_LENGTH,
+                newType: SynapseTypes.SIGNATURE
+            });
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           PRIVATE HELPERS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @dev Returns the amount of guard and notary signatures present in the Attestation.
+     * Doesn't check the pointer type - to be used in functions that perform the typecheck.
+     */
+    function _agentSignatures(bytes29 _view)
+        private
+        pure
+        returns (uint8 guardSigs, uint8 notarySigs)
+    {
+        // Read both amounts at once
+        uint16 combinedAmounts = uint16(_view.indexUint({ _index: OFFSET_AGENT_SIGS, _bytes: 2 }));
+        // First 8 bits is the amount of guard signatures
+        guardSigs = uint8(combinedAmounts >> 8);
+        // Last 8 bits is the amount of notary signatures
+        notarySigs = uint8(combinedAmounts & 0xFF);
     }
 }
