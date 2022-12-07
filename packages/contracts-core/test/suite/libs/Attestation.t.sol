@@ -234,45 +234,38 @@ contract AttestationLibraryTest is SynapseLibraryTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_wrongTypeRevert_attestedOrigin(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.ATTESTATION });
-        libHarness.attestedOrigin(wrongType, payload);
+        libHarness.attestedOrigin(wrongType, createTestPayload());
     }
 
     function test_wrongTypeRevert_attestedDestination(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.ATTESTATION });
-        libHarness.attestedDestination(wrongType, payload);
+        libHarness.attestedDestination(wrongType, createTestPayload());
     }
 
     function test_wrongTypeRevert_attestedNonce(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.ATTESTATION });
-        libHarness.attestedNonce(wrongType, payload);
+        libHarness.attestedNonce(wrongType, createTestPayload());
     }
 
     function test_wrongTypeRevert_attestedRoot(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.ATTESTATION });
-        libHarness.attestedRoot(wrongType, payload);
+        libHarness.attestedRoot(wrongType, createTestPayload());
     }
 
     function test_wrongTypeRevert_attestedDomains(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.ATTESTATION });
-        libHarness.attestedDomains(wrongType, payload);
+        libHarness.attestedDomains(wrongType, createTestPayload());
     }
 
     function test_wrongTypeRevert_attestedKey(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.ATTESTATION });
-        libHarness.attestedKey(wrongType, payload);
+        libHarness.attestedKey(wrongType, createTestPayload());
     }
 
     function test_wrongTypeRevert_attestationData(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.ATTESTATION });
-        libHarness.attestationData(wrongType, payload);
+        libHarness.attestationData(wrongType, createTestPayload());
     }
 
     function test_wrongTypeRevert_guardSignature(uint40 wrongType) public {
