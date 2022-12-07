@@ -17,7 +17,8 @@ import (
 
 func (u NotarySuite) TestNotaryE2E() {
 	u.T().Skip()
-	testConfig := config.Config{
+	testConfig := config.NotaryConfig{
+		DestinationID: gofakeit.Uint32(),
 		Domains: map[string]config.DomainConfig{
 			"test": u.domainClient.Config(),
 		},
@@ -39,8 +40,7 @@ func (u NotarySuite) TestNotaryE2E() {
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(u.T(), err)
 
-	desinationDomain := gofakeit.Uint32()
-	tx, err := u.originContract.Dispatch(auth.TransactOpts, desinationDomain, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
+	tx, err := u.originContract.Dispatch(auth.TransactOpts, testConfig.DestinationID, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
 	Nil(u.T(), err)
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
 
@@ -52,7 +52,7 @@ func (u NotarySuite) TestNotaryE2E() {
 	u.Eventually(func() bool {
 		// TODO (joe): Figure out why attestationContract points to old version and fix this test after the GlobalRegistry changes
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		latestNonce, _, err := u.attestationContract.GetLatestNonce(&bind.CallOpts{Context: u.GetTestContext()}, u.domainClient.Config().DomainID, desinationDomain, u.signer.Address())
+		latestNonce, _, err := u.attestationContract.GetLatestNonce(&bind.CallOpts{Context: u.GetTestContext()}, u.domainClient.Config().DomainID, testConfig.DestinationID, u.signer.Address())
 		Nil(u.T(), err)
 
 		return latestNonce != 0
