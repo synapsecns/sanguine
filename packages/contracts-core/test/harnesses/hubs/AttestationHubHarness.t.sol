@@ -16,11 +16,12 @@ contract AttestationHubHarness is
     using TypedMemView for bytes29;
 
     function _handleAttestation(
-        address _notary,
+        address[] memory _guards,
+        address[] memory _notaries,
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool) {
-        emit LogAttestation(_notary, _attestationView.clone(), _attestation);
+        emit LogAttestation(_guards, _notaries, _attestationView.clone(), _attestation);
         return true;
     }
 }
