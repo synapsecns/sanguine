@@ -111,7 +111,8 @@ func (g APISuite) TestLogDataEquality() {
 func (g APISuite) TestReceiptDataEquality() {
 	// create a receipt
 	chainID := gofakeit.Uint32()
-	receipt := g.buildReceipt(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()))
+	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+	receipt := g.buildReceipt(address, uint64(gofakeit.Uint32()))
 
 	// store it
 	err := g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
@@ -123,17 +124,36 @@ func (g APISuite) TestReceiptDataEquality() {
 	retrievedReceipt := receipts.Response[0]
 
 	// check that the data is equal
-	Equal(g.T(), retrievedReceipt.ChainID, int(chainID))
-	Equal(g.T(), retrievedReceipt.Type, int(receipt.Type))
-	Equal(g.T(), retrievedReceipt.PostState, string(receipt.PostState))
-	Equal(g.T(), retrievedReceipt.Status, int(receipt.Status))
-	Equal(g.T(), retrievedReceipt.CumulativeGasUsed, int(receipt.CumulativeGasUsed))
-	Equal(g.T(), retrievedReceipt.Bloom, common.Bytes2Hex(receipt.Bloom.Bytes()))
-	Equal(g.T(), retrievedReceipt.TxHash, receipt.TxHash.String())
-	Equal(g.T(), retrievedReceipt.ContractAddress, receipt.ContractAddress.String())
-	Equal(g.T(), retrievedReceipt.GasUsed, int(receipt.GasUsed))
-	Equal(g.T(), retrievedReceipt.BlockNumber, int(receipt.BlockNumber.Int64()))
-	Equal(g.T(), retrievedReceipt.TransactionIndex, int(receipt.TransactionIndex))
+	Equal(g.T(), int(chainID), retrievedReceipt.ChainID)
+	Equal(g.T(), int(receipt.Type), retrievedReceipt.Type)
+	Equal(g.T(), string(receipt.PostState), retrievedReceipt.PostState)
+	Equal(g.T(), int(receipt.Status), retrievedReceipt.Status)
+	Equal(g.T(), int(receipt.CumulativeGasUsed), retrievedReceipt.CumulativeGasUsed)
+	Equal(g.T(), common.Bytes2Hex(receipt.Bloom.Bytes()), retrievedReceipt.Bloom)
+	Equal(g.T(), receipt.TxHash.String(), retrievedReceipt.TxHash)
+	Equal(g.T(), receipt.ContractAddress.String(), retrievedReceipt.ContractAddress)
+	Equal(g.T(), int(receipt.GasUsed), retrievedReceipt.GasUsed)
+	Equal(g.T(), int(receipt.BlockNumber.Int64()), retrievedReceipt.BlockNumber)
+	Equal(g.T(), int(receipt.TransactionIndex), retrievedReceipt.TransactionIndex)
+
+	// retrieve it
+	// receiptWithAddress, err := g.gqlClient. .GetReceipts(g.GetTestContext(), int(chainID), 1, address)
+	Nil(g.T(), err)
+
+	retrievedReceipt = receipts.Response[0]
+
+	// check that the data is equal
+	Equal(g.T(), int(chainID), retrievedReceipt.ChainID)
+	Equal(g.T(), int(receipt.Type), retrievedReceipt.Type)
+	Equal(g.T(), string(receipt.PostState), retrievedReceipt.PostState)
+	Equal(g.T(), int(receipt.Status), retrievedReceipt.Status)
+	Equal(g.T(), int(receipt.CumulativeGasUsed), retrievedReceipt.CumulativeGasUsed)
+	Equal(g.T(), common.Bytes2Hex(receipt.Bloom.Bytes()), retrievedReceipt.Bloom)
+	Equal(g.T(), receipt.TxHash.String(), retrievedReceipt.TxHash)
+	Equal(g.T(), receipt.ContractAddress.String(), retrievedReceipt.ContractAddress)
+	Equal(g.T(), int(receipt.GasUsed), retrievedReceipt.GasUsed)
+	Equal(g.T(), int(receipt.BlockNumber.Int64()), retrievedReceipt.BlockNumber)
+	Equal(g.T(), int(receipt.TransactionIndex), retrievedReceipt.TransactionIndex)
 }
 
 func (g APISuite) TestTransactionDataEquality() {
@@ -262,6 +282,7 @@ func (g APISuite) TestLastContractIndexed() {
 	Equal(g.T(), *retrievedBlockTime.Response, int(blockNumber))
 }
 
+// nolint:dupl
 func (g APISuite) TestLogCount() {
 	// create data for storing a block time
 	chainID := gofakeit.Uint32()
@@ -289,9 +310,42 @@ func (g APISuite) TestLogCount() {
 	Nil(g.T(), err)
 	Equal(g.T(), 5, *logCountA.Response)
 	// store last indexed
-	logCountB, err := g.gqlClient.GetLogCount(g.GetTestContext(), int(chainID), contractAddressA.String())
+	logCountB, err := g.gqlClient.GetLogCount(g.GetTestContext(), int(chainID), contractAddressB.String())
 	Nil(g.T(), err)
 	Equal(g.T(), 5, *logCountB.Response)
+}
+
+// nolint:dupl
+func (g APISuite) TestReceiptCount() {
+	// create data for storing a block time
+	chainID := gofakeit.Uint32()
+	contractAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+	contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+	// create and store logs, receipts, and txs
+	var receipt types.Receipt
+	var err error
+	for blockNumber := 0; blockNumber < 10; blockNumber++ {
+		// create and store logs
+		if blockNumber%2 == 0 {
+			receipt = g.buildReceipt(contractAddressA, uint64(blockNumber))
+			err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
+			Nil(g.T(), err)
+		} else {
+			receipt = g.buildReceipt(contractAddressB, uint64(blockNumber))
+			err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
+			Nil(g.T(), err)
+		}
+	}
+
+	// test get logs and get logs in a range (Graphql)
+	receiptCountA, err := g.gqlClient.GetReceiptCount(g.GetTestContext(), int(chainID), contractAddressA.String())
+	Nil(g.T(), err)
+	Equal(g.T(), 5, *receiptCountA.Response)
+	// store last indexed
+	receiptCountB, err := g.gqlClient.GetReceiptCount(g.GetTestContext(), int(chainID), contractAddressB.String())
+	Nil(g.T(), err)
+	Equal(g.T(), 5, *receiptCountB.Response)
 }
 
 func (g APISuite) TestRetrieveBlockTimesCountForChain() {

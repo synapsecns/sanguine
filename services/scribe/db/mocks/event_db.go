@@ -407,6 +407,27 @@ func (_m *EventDB) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogF
 	return r0, r1
 }
 
+// RetrieveReceiptCountForContract provides a mock function with given fields: ctx, contractAddress, chainID
+func (_m *EventDB) RetrieveReceiptCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error) {
+	ret := _m.Called(ctx, contractAddress, chainID)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32) int64); ok {
+		r0 = rf(ctx, contractAddress, chainID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, uint32) error); ok {
+		r1 = rf(ctx, contractAddress, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // RetrieveReceiptsInRange provides a mock function with given fields: ctx, receiptFilter, startBlock, endBlock, page
 func (_m *EventDB) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.ReceiptFilter, startBlock uint64, endBlock uint64, page int) ([]types.Receipt, error) {
 	ret := _m.Called(ctx, receiptFilter, startBlock, endBlock, page)

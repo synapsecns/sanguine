@@ -160,10 +160,22 @@ func (r *queryResolver) LastIndexed(ctx context.Context, contractAddress string,
 func (r *queryResolver) LogCount(ctx context.Context, contractAddress string, chainID int) (*int, error) {
 	logCount, err := r.DB.RetrieveLogCountForContract(ctx, common.HexToAddress(contractAddress), uint32(chainID))
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving contract last block: %w", err)
+		return nil, fmt.Errorf("error retrieving log count: %w", err)
 	}
 
 	logCountInt := int(logCount)
+
+	return &logCountInt, nil
+}
+
+// ReceiptCount is the resolver for the receiptCount field.
+func (r *queryResolver) ReceiptCount(ctx context.Context, contractAddress string, chainID int) (*int, error) {
+	receiptCount, err := r.DB.RetrieveReceiptCountForContract(ctx, common.HexToAddress(contractAddress), uint32(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving receipt count: %w", err)
+	}
+
+	logCountInt := int(receiptCount)
 
 	return &logCountInt, nil
 }
