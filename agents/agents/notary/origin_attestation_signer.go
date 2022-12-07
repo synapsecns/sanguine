@@ -69,15 +69,15 @@ func (a OriginAttestationSigner) FindOldestUnsignedAttestation(ctx context.Conte
 // update runs the job of th signer
 // nolint: cyclop
 func (a OriginAttestationSigner) update(ctx context.Context) error {
-	inProgressAttesationToSign, err := a.FindOldestUnsignedAttestation(ctx)
+	inProgressAttestationToSign, err := a.FindOldestUnsignedAttestation(ctx)
 	if err != nil {
 		return fmt.Errorf("could not find oldest unsigned attestation: %w", err)
 	}
-	if inProgressAttesationToSign == nil {
+	if inProgressAttestationToSign == nil {
 		return nil
 	}
 
-	hashedUpdate, err := HashAttestation(inProgressAttesationToSign.SignedAttestation().Attestation())
+	hashedUpdate, err := inProgressAttestationToSign.SignedAttestation().Attestation().Hash()
 	if err != nil {
 		return fmt.Errorf("could not hash update: %w", err)
 	}
@@ -86,8 +86,8 @@ func (a OriginAttestationSigner) update(ctx context.Context) error {
 		return fmt.Errorf("could not sign message: %w", err)
 	}
 
-	signedAttestation := types.NewSignedAttestation(inProgressAttesationToSign.SignedAttestation().Attestation(), signature)
-	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttesationToSign.OriginDispatchBlockNumber(), nil, 0)
+	signedAttestation := types.NewSignedAttestation(inProgressAttestationToSign.SignedAttestation().Attestation(), signature)
+	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttestationToSign.OriginDispatchBlockNumber(), nil, 0)
 	err = a.db.UpdateSignature(ctx, signedInProgressAttestation)
 	if err != nil {
 		return fmt.Errorf("could not store signature for attestation: %w", err)

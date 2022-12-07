@@ -2,8 +2,11 @@ package types
 
 import (
 	"encoding/binary"
+	"fmt"
 	"math/big"
 	"time"
+
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 const sizeOfUint256 = uint32(32)
@@ -35,6 +38,8 @@ type Attestation interface {
 	Nonce() uint32
 	// Root gets the root of the contract
 	Root() [32]byte
+	// Hash gets the hash of the attestation
+	Hash() ([32]byte, error)
 }
 
 type attestation struct {
@@ -112,6 +117,18 @@ func (a attestation) Nonce() uint32 {
 
 func (a attestation) Root() [32]byte {
 	return a.root
+}
+
+func (a attestation) Hash() ([32]byte, error) {
+	encodedAttestation, err := EncodeAttestation(a)
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("could not encode attestation: %w", err)
+	}
+
+	hashedDigest := crypto.Keccak256Hash(encodedAttestation)
+
+	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
+	return signedHash, nil
 }
 
 var _ Attestation = attestation{}

@@ -59,11 +59,11 @@ func (u *NotarySuite) SetupTest() {
 
 	var err error
 	u.domainClient, err = evm.NewEVM(u.GetTestContext(), "notary", config.DomainConfig{
-		DomainID:                   uint32(u.testBackend.GetBigChainID().Uint64()),
-		Type:                       types.EVM.String(),
-		OriginAddress:              u.originContract.Address().String(),
-		AttesationCollectorAddress: u.attestationContract.Address().String(),
-		RPCUrl:                     u.testBackend.RPCAddress(),
+		DomainID:                    uint32(u.testBackend.GetBigChainID().Uint64()),
+		Type:                        types.EVM.String(),
+		OriginAddress:               u.originContract.Address().String(),
+		AttestationCollectorAddress: u.attestationContract.Address().String(),
+		RPCUrl:                      u.testBackend.RPCAddress(),
 	})
 	Nil(u.T(), err)
 

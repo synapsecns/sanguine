@@ -69,11 +69,11 @@ func (a OriginAttestationVerifier) FindOldestUnconfirmedAttestation(ctx context.
 // nolint: cyclop
 func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	// TODO (joe): we want to go through and update attestations for each destination.
-	inProgressAttesationToConfirm, err := a.FindOldestUnconfirmedAttestation(ctx)
+	inProgressAttestationToConfirm, err := a.FindOldestUnconfirmedAttestation(ctx)
 	if err != nil {
 		return fmt.Errorf("could not find oldest unconfirmed attestation: %w", err)
 	}
-	if inProgressAttesationToConfirm == nil {
+	if inProgressAttestationToConfirm == nil {
 		return nil
 	}
 
@@ -81,8 +81,8 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	// figure out if confirmation is enough in terms of currBlock - blockNumWhenWritten, etc
 	latestNonce, currBlock, err := a.domain.AttestationCollector().GetLatestNonce(ctx, a.domain.Config().DomainID, a.destinationID, a.signer)
 
-	if latestNonce >= inProgressAttesationToConfirm.SignedAttestation().Attestation().Nonce() {
-		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttesationToConfirm.SignedAttestation(), inProgressAttesationToConfirm.OriginDispatchBlockNumber(), inProgressAttesationToConfirm.SubmittedToAttestationCollectorTime(), currBlock)
+	if latestNonce >= inProgressAttestationToConfirm.SignedAttestation().Attestation().Nonce() {
+		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime(), currBlock)
 
 		err = a.db.UpdateConfirmedOnAttestationCollectorBlockNumber(ctx, confirmedInProgressAttestation)
 		if err != nil {
@@ -90,14 +90,14 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 		}
 	}
 
-	if a.shouldResubmit(inProgressAttesationToConfirm.SubmittedToAttestationCollectorTime()) {
-		err = a.domain.AttestationCollector().SubmitAttestation(ctx, a.signer, inProgressAttesationToConfirm.SignedAttestation())
+	if a.shouldResubmit(inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime()) {
+		err = a.domain.AttestationCollector().SubmitAttestation(ctx, a.signer, inProgressAttestationToConfirm.SignedAttestation())
 		if err != nil {
 			return fmt.Errorf("could not find submit attestation: %w", err)
 		}
 
 		nowTime := time.Now()
-		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttesationToConfirm.SignedAttestation(), inProgressAttesationToConfirm.OriginDispatchBlockNumber(), &nowTime, 0)
+		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), &nowTime, 0)
 		err = a.db.UpdateSubmittedToAttestationCollectorTime(ctx, submittedInProgressAttestation)
 		if err != nil {
 			return fmt.Errorf("could not store submission time for attestation: %w", err)

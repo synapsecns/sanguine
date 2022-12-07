@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+
 	"github.com/coinbase/rosetta-sdk-go/utils"
 	"github.com/richardwilkes/toolbox/collection"
 )
@@ -41,8 +42,8 @@ type DomainConfig struct {
 	RequiredConfirmations uint32 `toml:"ConfirmationsThreshold"`
 	// OriginAddress gets origin contract address
 	OriginAddress string `toml:"OriginAddress"`
-	// AttesationCollectorAddress contains the attestation collector address (if present)
-	AttesationCollectorAddress string `toml:"AttesationCollectorAddress"`
+	// AttestationCollectorAddress contains the attestation collector address (if present)
+	AttestationCollectorAddress string `toml:"AttestationCollectorAddress"`
 	// RPCUrl to use for the chain
 	RPCUrl string `toml:"RPCURL"`
 	// Minimum start height

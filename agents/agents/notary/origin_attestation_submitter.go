@@ -68,21 +68,21 @@ func (a OriginAttestationSubmitter) FindOldestUnsubmittedAttestation(ctx context
 // update runs the job for the submitter
 // nolint: cyclop
 func (a OriginAttestationSubmitter) update(ctx context.Context) error {
-	inProgressAttesationToSubmit, err := a.FindOldestUnsubmittedAttestation(ctx)
+	inProgressAttestationToSubmit, err := a.FindOldestUnsubmittedAttestation(ctx)
 	if err != nil {
 		return fmt.Errorf("could not find oldest unsubmitted attestation: %w", err)
 	}
-	if inProgressAttesationToSubmit == nil {
+	if inProgressAttestationToSubmit == nil {
 		return nil
 	}
 
-	err = a.domain.AttestationCollector().SubmitAttestation(ctx, a.signer, inProgressAttesationToSubmit.SignedAttestation())
+	err = a.domain.AttestationCollector().SubmitAttestation(ctx, a.signer, inProgressAttestationToSubmit.SignedAttestation())
 	if err != nil {
 		return fmt.Errorf("could not find submit attestation: %w", err)
 	}
 
 	nowTime := time.Now()
-	submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttesationToSubmit.SignedAttestation(), inProgressAttesationToSubmit.OriginDispatchBlockNumber(), &nowTime, 0)
+	submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToSubmit.SignedAttestation(), inProgressAttestationToSubmit.OriginDispatchBlockNumber(), &nowTime, 0)
 	err = a.db.UpdateSubmittedToAttestationCollectorTime(ctx, submittedInProgressAttestation)
 	if err != nil {
 		return fmt.Errorf("could not store submission time for attestation: %w", err)

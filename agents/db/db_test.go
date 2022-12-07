@@ -10,6 +10,9 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
 
 func (t *DBSuite) TestRetrieveLatestNonce() {
@@ -138,6 +141,156 @@ func (t *DBSuite) TestGetDelinquentMessage() {
 		Equal(t.T(), len(otherDelinquentMessages), len(otherDelinquentNonces))
 		for index, otherDelinquentMessage := range otherDelinquentMessages {
 			Equal(t.T(), otherDelinquentMessage.Nonce(), otherDelinquentNonces[index])
+		}
+	})
+}
+
+func (t *DBSuite) TestNotaryHappyPath() {
+	t.RunOnAllDBs(func(testDB db.SynapseDB) {
+		fakeOrigin := uint32(1)
+		fakeDestination := fakeOrigin + 1
+
+		fakeNonces := []uint32{}
+		fakeRoots := []common.Hash{}
+		fakeDispatchBlockNumbers := []uint64{}
+		fakeSignatures := []types.Signature{}
+		fakeSumbittedTimes := []time.Time{}
+		fakeConfirmedBlockNumbers := []uint64{}
+
+		fakeWallet, err := wallet.FromRandom()
+		Nil(t.T(), err)
+
+		fakeSigner := localsigner.NewSigner(fakeWallet.PrivateKey())
+
+		numMessages := 4
+		for i := 0; i <= numMessages; i++ {
+			fakeNonce := gofakeit.Uint32()
+			fakeRoot := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+			fakeDispatchBlockNumber := uint64(i)
+
+			fakeNonces = append(fakeNonces, fakeNonce)
+			fakeRoots = append(fakeRoots, fakeRoot)
+			fakeDispatchBlockNumbers = append(fakeDispatchBlockNumbers, fakeDispatchBlockNumber)
+
+			fakeAttestKey := types.AttestationKey{
+				Origin:      fakeOrigin,
+				Destination: fakeDestination,
+				Nonce:       fakeNonce,
+			}
+			fakeUnsignedAttestation := types.NewAttestation(fakeAttestKey.GetRawKey(), fakeRoot)
+
+			err := testDB.StoreNewInProgressAttestation(t.GetTestContext(), fakeUnsignedAttestation, fakeDispatchBlockNumber)
+			Nil(t.T(), err)
+
+			latestNonce, err := testDB.RetrieveLatestCachedNonce(t.GetTestContext(), fakeOrigin, fakeDestination)
+			Nil(t.T(), err)
+			Equal(t.T(), fakeNonce, latestNonce)
+		}
+		for i := 0; i <= numMessages; i++ {
+			fakeNonce := fakeNonces[i]
+			fakeRoot := fakeRoots[i]
+			fakeDispatchBlockNumber := fakeDispatchBlockNumbers[i]
+
+			inProgressAttestation, err := testDB.RetrieveOldestUnsignedInProgressAttestation(t.GetTestContext(), fakeOrigin, fakeDestination)
+			Nil(t.T(), err)
+			Equal(t.T(), fakeDispatchBlockNumber, inProgressAttestation.OriginDispatchBlockNumber())
+			Equal(t.T(), uint64(0), inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber())
+			Equal(t.T(), nil, inProgressAttestation.SubmittedToAttestationCollectorTime())
+			Equal(t.T(), nil, inProgressAttestation.SignedAttestation().Signature())
+			Equal(t.T(), fakeNonce, inProgressAttestation.SignedAttestation().Attestation().Nonce())
+			Equal(t.T(), fakeRoot, inProgressAttestation.SignedAttestation().Attestation().Root())
+			Equal(t.T(), fakeOrigin, inProgressAttestation.SignedAttestation().Attestation().Origin())
+			Equal(t.T(), fakeDestination, inProgressAttestation.SignedAttestation().Attestation().Destination())
+
+			hashedUpdate, err := inProgressAttestation.SignedAttestation().Attestation().Hash()
+			Nil(t.T(), err)
+
+			signature, err := fakeSigner.SignMessage(t.GetTestContext(), core.BytesToSlice(hashedUpdate), false)
+			Nil(t.T(), err)
+			fakeSignatures = append(fakeSignatures, signature)
+
+			signedAttestation := types.NewSignedAttestation(inProgressAttestation.SignedAttestation().Attestation(), signature)
+			signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttestation.OriginDispatchBlockNumber(), nil, 0)
+			err = testDB.UpdateSignature(t.GetTestContext(), signedInProgressAttestation)
+			Nil(t.T(), err)
+		}
+		inProgressAttestation, err := testDB.RetrieveOldestUnsignedInProgressAttestation(t.GetTestContext(), fakeOrigin, fakeDestination)
+		Nil(t.T(), err)
+		Nil(t.T(), inProgressAttestation)
+
+		for i := 0; i <= numMessages; i++ {
+			fakeNonce := fakeNonces[i]
+			fakeRoot := fakeRoots[i]
+			fakeDispatchBlockNumber := fakeDispatchBlockNumbers[i]
+			fakeSignature := fakeSignatures[i]
+
+			inProgressAttestation, err := testDB.RetrieveOldestUnsubmittedSignedInProgressAttestation(t.GetTestContext(), fakeOrigin, fakeDestination)
+			Nil(t.T(), err)
+			Equal(t.T(), fakeDispatchBlockNumber, inProgressAttestation.OriginDispatchBlockNumber())
+			Equal(t.T(), uint64(0), inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber())
+			Equal(t.T(), nil, inProgressAttestation.SubmittedToAttestationCollectorTime())
+			Equal(t.T(), fakeSignature, inProgressAttestation.SignedAttestation().Signature())
+			Equal(t.T(), fakeNonce, inProgressAttestation.SignedAttestation().Attestation().Nonce())
+			Equal(t.T(), fakeRoot, inProgressAttestation.SignedAttestation().Attestation().Root())
+			Equal(t.T(), fakeOrigin, inProgressAttestation.SignedAttestation().Attestation().Origin())
+			Equal(t.T(), fakeDestination, inProgressAttestation.SignedAttestation().Attestation().Destination())
+
+			nowTime := time.Now()
+			fakeSumbittedTimes = append(fakeSumbittedTimes, nowTime)
+			submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestation.SignedAttestation(), inProgressAttestation.OriginDispatchBlockNumber(), &nowTime, 0)
+			err = testDB.UpdateSubmittedToAttestationCollectorTime(t.GetTestContext(), submittedInProgressAttestation)
+			Nil(t.T(), err)
+		}
+		inProgressAttestation, err = testDB.RetrieveOldestUnsubmittedSignedInProgressAttestation(t.GetTestContext(), fakeOrigin, fakeDestination)
+		Nil(t.T(), err)
+		Nil(t.T(), inProgressAttestation)
+
+		for i := 0; i <= numMessages; i++ {
+			fakeNonce := fakeNonces[i]
+			fakeRoot := fakeRoots[i]
+			fakeDispatchBlockNumber := fakeDispatchBlockNumbers[i]
+			fakeSignature := fakeSignatures[i]
+			fakeSubmittedTime := fakeSumbittedTimes[i]
+
+			inProgressAttestation, err := testDB.RetrieveOldestUnconfirmedSubmittedInProgressAttestation(t.GetTestContext(), fakeOrigin, fakeDestination)
+			Nil(t.T(), err)
+			Equal(t.T(), fakeDispatchBlockNumber, inProgressAttestation.OriginDispatchBlockNumber())
+			Equal(t.T(), uint64(0), inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber())
+			Equal(t.T(), fakeSubmittedTime, inProgressAttestation.SubmittedToAttestationCollectorTime())
+			Equal(t.T(), fakeSignature, inProgressAttestation.SignedAttestation().Signature())
+			Equal(t.T(), fakeNonce, inProgressAttestation.SignedAttestation().Attestation().Nonce())
+			Equal(t.T(), fakeRoot, inProgressAttestation.SignedAttestation().Attestation().Root())
+			Equal(t.T(), fakeOrigin, inProgressAttestation.SignedAttestation().Attestation().Origin())
+			Equal(t.T(), fakeDestination, inProgressAttestation.SignedAttestation().Attestation().Destination())
+
+			fakeConfirmedBlockNumer := uint64(numMessages) + uint64(i)
+			fakeConfirmedBlockNumbers = append(fakeConfirmedBlockNumbers, fakeConfirmedBlockNumer)
+			confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestation.SignedAttestation(), inProgressAttestation.OriginDispatchBlockNumber(), inProgressAttestation.SubmittedToAttestationCollectorTime(), fakeConfirmedBlockNumer)
+			err = testDB.UpdateConfirmedOnAttestationCollectorBlockNumber(t.GetTestContext(), confirmedInProgressAttestation)
+			Nil(t.T(), err)
+		}
+		inProgressAttestation, err = testDB.RetrieveOldestUnconfirmedSubmittedInProgressAttestation(t.GetTestContext(), fakeOrigin, fakeDestination)
+		Nil(t.T(), err)
+		Nil(t.T(), inProgressAttestation)
+
+		for i := 0; i <= numMessages; i++ {
+			fakeNonce := fakeNonces[i]
+			fakeRoot := fakeRoots[i]
+			fakeDispatchBlockNumber := fakeDispatchBlockNumbers[i]
+			fakeSignature := fakeSignatures[i]
+			fakeSubmittedTime := fakeSumbittedTimes[i]
+			fakeConfirmedBlockNumber := fakeConfirmedBlockNumbers[i]
+
+			inProgressAttestation, err := testDB.RetrieveInProgressAttestation(t.GetTestContext(), fakeOrigin, fakeDestination, fakeNonce)
+			Nil(t.T(), err)
+			Equal(t.T(), fakeDispatchBlockNumber, inProgressAttestation.OriginDispatchBlockNumber())
+			Equal(t.T(), fakeConfirmedBlockNumber, inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber())
+			Equal(t.T(), fakeSubmittedTime, inProgressAttestation.SubmittedToAttestationCollectorTime())
+			Equal(t.T(), fakeSignature, inProgressAttestation.SignedAttestation().Signature())
+			Equal(t.T(), fakeNonce, inProgressAttestation.SignedAttestation().Attestation().Nonce())
+			Equal(t.T(), fakeRoot, inProgressAttestation.SignedAttestation().Attestation().Root())
+			Equal(t.T(), fakeOrigin, inProgressAttestation.SignedAttestation().Attestation().Origin())
+			Equal(t.T(), fakeDestination, inProgressAttestation.SignedAttestation().Attestation().Destination())
 		}
 	})
 }
