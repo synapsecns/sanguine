@@ -419,6 +419,8 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	exec, err := executor.NewExecutor(executorCfg.Config{}, e.testDB, client.ScribeClient{})
 	e.Nil(err)
 
+	_ = exec
+
 	destination := chainID + 1
 	nonces := []uint32{1, 2, 3, 4}
 	blockNumbers := []uint64{10, 20, 30, 40}
@@ -553,13 +555,13 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	//err = e.testDB.StoreMessage(e.GetTestContext(), dbMessage3)
 	//e.Nil(err)
 
-	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID)
-	e.Nil(err)
+	//err = exec.BuildTreeFromDB(e.GetTestContext(), chainID)
+	//e.Nil(err)
 
-	encodedMessage0, err := types.EncodeMessage(message0)
-	e.Nil(err)
-
-	inTree0, err := exec.VerifyMessage(e.GetTestContext(), 0, encodedMessage0, chainID)
-	e.Nil(err)
-	e.True(inTree0)
+	//encodedMessage0, err := types.EncodeMessage(message0)
+	//e.Nil(err)
+	//
+	//inTree0, err := exec.VerifyMessage(e.GetTestContext(), 0, encodedMessage0, chainID)
+	//e.Nil(err)
+	//e.True(inTree0)
 }
