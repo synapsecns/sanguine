@@ -284,6 +284,11 @@ func (s SignedAttestation) Root() [32]byte {
 	return common.BytesToHash(s.SARoot)
 }
 
+// Hash gets the attestation hash.
+func (s SignedAttestation) Hash() ([32]byte, error) {
+	return s.Attestation().Hash()
+}
+
 // InProgressAttestation stores attestations to be processed.
 type InProgressAttestation struct {
 	gorm.Model
@@ -348,6 +353,11 @@ func (t InProgressAttestation) Nonce() uint32 {
 // Root gets the root of the in-progress attestation.
 func (t InProgressAttestation) Root() [32]byte {
 	return common.BytesToHash(t.IPRoot)
+}
+
+// Hash gets the attestation hash.
+func (t InProgressAttestation) Hash() ([32]byte, error) {
+	return t.SignedAttestation().Attestation().Hash()
 }
 
 // OriginDispatchBlockNumber gets the block number when message was dispatched on origin.
