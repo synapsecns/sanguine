@@ -38,5 +38,14 @@ func (c ChainConfig) IsValid(ctx context.Context) (ok bool, err error) {
 	if c.ChainID == 0 {
 		return false, fmt.Errorf("%s: chain ID cannot be 0", "invalid chain id")
 	}
+
+	if c.OriginAddress == "" {
+		return false, fmt.Errorf("field OriginAddress is required")
+	}
+
+	if c.DestinationAddress == "" {
+		return false, fmt.Errorf("field DestinationAddress is required")
+	}
+
 	return true, nil
 }

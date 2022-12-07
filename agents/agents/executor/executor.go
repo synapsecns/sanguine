@@ -35,14 +35,14 @@ type Executor struct {
 	originParsers map[uint32]origin.Parser
 	// attestationCollectorParser is an attestationCollector parser.
 	attestationCollectorParser attestationcollector.Parser
-	// synChainID is the chain ID of the Synapse chain.
-	synChainID uint32
+	// attestationCollectorChainID is the chain ID of the Synapse chain.
+	attestationCollectorChainID uint32
 	// attestationCollectorAddress is the address of the attestation collector contract.
 	attestationCollectorAddress common.Address
-	// LogChans is a mapping from chain ID -> log channel.
-	LogChans map[uint32]chan *ethTypes.Log
-	// MerkleTrees is a map from chain ID -> destination domain -> merkle tree.
-	MerkleTrees map[uint32]map[uint32]*trieutil.SparseMerkleTrie
+	// logChans is a mapping from chain ID -> log channel.
+	logChans map[uint32]chan *ethTypes.Log
+	// merkleTrees is a map from chain ID -> destination domain -> merkle tree.
+	merkleTrees map[uint32]map[uint32]*trieutil.SparseMerkleTrie
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -59,7 +59,7 @@ const logChanSize = 1000
 func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Executor, error) {
 	lastLogs := make(map[uint32]*logOrderInfo)
 	channels := make(map[uint32]chan *ethTypes.Log)
-	closeChans := make(map[uint32]chan bool)
+	closeConnectionChans := make(map[uint32]chan bool)
 	roots := make(map[uint32]map[uint32][][32]byte)
 	originParsers := make(map[uint32]origin.Parser)
 	attestationCollectorParser, err := attestationcollector.NewParser(common.HexToAddress(config.AttestationCollectorAddress))
@@ -75,7 +75,7 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 			blockIndex:  0,
 		}
 		channels[chain.ChainID] = make(chan *ethTypes.Log, logChanSize)
-		closeChans[chain.ChainID] = make(chan bool, 1)
+		closeConnectionChans[chain.ChainID] = make(chan bool, 1)
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create origin parser: %w", err)
@@ -105,14 +105,14 @@ func NewExecutor(config config.Config, scribeClient client.ScribeClient) (*Execu
 		config:                      config,
 		scribeClient:                scribeClient,
 		lastLogs:                    lastLogs,
-		closeConnection:             closeChans,
+		closeConnection:             closeConnectionChans,
 		roots:                       roots,
 		originParsers:               originParsers,
 		attestationCollectorParser:  attestationCollectorParser,
-		synChainID:                  config.SYNChainID,
+		attestationCollectorChainID: config.AttestationCollectorChainID,
 		attestationCollectorAddress: common.HexToAddress(config.AttestationCollectorAddress),
-		LogChans:                    channels,
-		MerkleTrees:                 merkleTrees,
+		logChans:                    channels,
+		merkleTrees:                 merkleTrees,
 	}, nil
 }
 
@@ -163,7 +163,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case log := <-e.LogChans[chainID]:
+		case log := <-e.logChans[chainID]:
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
@@ -239,7 +239,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 				return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLogs[chain.ChainID].blockNumber, e.lastLogs[chain.ChainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 			}
 
-			e.LogChans[chain.ChainID] <- log
+			e.logChans[chain.ChainID] <- log
 			e.lastLogs[chain.ChainID].blockNumber = log.BlockNumber
 			e.lastLogs[chain.ChainID].blockIndex = log.Index
 		}
@@ -256,10 +256,10 @@ func (e Executor) processLog(log ethTypes.Log, chainID uint32) error {
 		return nil
 	}
 
-	merkleIndex := e.MerkleTrees[chainID][destination].NumOfItems()
+	merkleIndex := e.merkleTrees[chainID][destination].NumOfItems()
 
-	e.MerkleTrees[chainID][destination].Insert(leafData, merkleIndex)
-	e.roots[chainID][destination] = append(e.roots[chainID][destination], e.MerkleTrees[chainID][destination].Root())
+	e.merkleTrees[chainID][destination].Insert(leafData, merkleIndex)
+	e.roots[chainID][destination] = append(e.roots[chainID][destination], e.merkleTrees[chainID][destination].Root())
 
 	return nil
 }

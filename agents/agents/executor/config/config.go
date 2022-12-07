@@ -14,8 +14,8 @@ import (
 type Config struct {
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
-	// SYNChainID is the ID of the Synapse Chain.
-	SYNChainID uint32 `yaml:"synapse_chain_id"`
+	// AttestationCollectorChainID is the chain ID of the attestation collector.
+	AttestationCollectorChainID uint32 `yaml:"attestation_collector_chain_id"`
 	// AttestationCollectorAddress is the address of the Attestation Collector on SYN Chain.
 	AttestationCollectorAddress string `yaml:"attestation_collector_address"`
 }
@@ -27,6 +27,15 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 	if ok, err = c.Chains.IsValid(ctx); !ok {
 		return false, err
 	}
+
+	if c.AttestationCollectorChainID == 0 {
+		return false, fmt.Errorf("attestation collector chain ID is not set")
+	}
+
+	if c.AttestationCollectorAddress == "" {
+		return false, fmt.Errorf("attestation collector address is not set")
+	}
+
 	return true, nil
 }
 
