@@ -32,7 +32,7 @@ type ContractBackfiller struct {
 var logsChanLenFrequency = 1000
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
-const retryTolerance = 2
+const retryTolerance = 20
 
 // txNotSupportedError is for handling the legacy Arbitrum tx type.
 const txNotSupportedError = "transaction type not supported"

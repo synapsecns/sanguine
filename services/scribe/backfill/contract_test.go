@@ -346,13 +346,13 @@ func (b BackfillSuite) TestBSC() {
 	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/56"
 	backendClient, err := backfill.DialBackend(b.GetTestContext(), omnirpcURL)
 	Nil(b.T(), err)
-	// currentBlock, err := backendClient.BlockNumber(b.GetTestContext())
-	// Nil(b.T(), err)
-	//startBlock := currentBlock - 1000
+	currentBlock, err := backendClient.BlockNumber(b.GetTestContext())
+	Nil(b.T(), err)
+	startBlock := currentBlock - 1000
 
 	contractConfig := config.ContractConfig{
 		Address:    "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
-		StartBlock: 10147889,
+		StartBlock: startBlock,
 	}
 
 	chainConfig := config.ChainConfig{
@@ -428,7 +428,6 @@ func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
 	// Get the block that the last transaction was executed in.
 	txBlockNumber, err := b.getTxBlockNumber(simulatedChain, tx)
 	Nil(b.T(), err)
-	fmt.Println("BACKFILLING TEST1 ", contractConfig.StartBlock, txBlockNumber, contractConfig.Address)
 
 	err = b.testDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID, txBlockNumber)
 	Nil(b.T(), err)
@@ -451,7 +450,6 @@ func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
 	txBlockNumber, err = b.getTxBlockNumber(simulatedChain, tx)
 	Nil(b.T(), err)
 
-	fmt.Println("BACKFILLING TEST", contractConfig.StartBlock, txBlockNumber, contractConfig.Address)
 	err = backfiller.Backfill(b.GetTestContext(), contractConfig.StartBlock, txBlockNumber)
 	Nil(b.T(), err)
 
