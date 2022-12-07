@@ -8,8 +8,18 @@ library ByteString {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
-    // @dev non-compact ECDSA signatures are enforced as of OZ 4.7.3
+    /**
+     * @dev non-compact ECDSA signatures are enforced as of OZ 4.7.3
+     *
+     *      Signature payload memory layout
+     * [000 .. 032) r   bytes32 32 bytes
+     * [032 .. 064) s   bytes32 32 bytes
+     * [064 .. 065) v   uint8    1 byte
+     */
     uint256 internal constant SIGNATURE_LENGTH = 65;
+    uint256 internal constant OFFSET_R = 0;
+    uint256 internal constant OFFSET_S = 32;
+    uint256 internal constant OFFSET_V = 64;
 
     /**
      * @dev Call payload memory layout
@@ -122,5 +132,26 @@ library ByteString {
         returns (bytes29)
     {
         return _view.sliceFrom({ _index: OFFSET_ARGUMENTS, newType: SynapseTypes.RAW_BYTES });
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SIGNATURE SLICING                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Unpacks signature payload into (r, s, v) parameters.
+    /// @dev Make sure to verify signature length with isSignature() beforehand.
+    function toRSV(bytes29 _view)
+        internal
+        pure
+        onlyType(_view, SynapseTypes.SIGNATURE)
+        returns (
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        )
+    {
+        r = _view.index({ _index: OFFSET_R, _bytes: 32 });
+        s = _view.index({ _index: OFFSET_S, _bytes: 32 });
+        v = uint8(_view.indexUint({ _index: OFFSET_V, _bytes: 1 }));
     }
 }

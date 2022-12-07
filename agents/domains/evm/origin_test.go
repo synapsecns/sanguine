@@ -80,7 +80,7 @@ func (i ContractSuite) TestFetchSortedOriginUpdates() {
 	Nil(i.T(), err)
 	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
-	notaries, err := i.originContract.AllNotaries(&bind.CallOpts{Context: i.GetTestContext()}, destinationID)
+	notaries, err := i.originContract.AllAgents(&bind.CallOpts{Context: i.GetTestContext()}, destinationID)
 	Nil(i.T(), err)
 	Len(i.T(), notaries, 1)
 

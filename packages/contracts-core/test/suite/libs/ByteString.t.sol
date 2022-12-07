@@ -139,6 +139,11 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
             expectedData: signature,
             revertMessage: "!castToSignature"
         });
+        (bytes32 r, bytes32 s, uint8 v) = libHarness.toRSV({
+            _type: SynapseTypes.SIGNATURE,
+            _payload: signature
+        });
+        assertEq(abi.encodePacked(r, s, v), signature, "!toRSV");
     }
 
     function test_formattedCorrectly_rawBytes() public {
@@ -230,6 +235,12 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         bytes memory payload = bytes.concat(selector);
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.CALL_PAYLOAD });
         libHarness.argumentsPayload(wrongType, payload);
+    }
+
+    function test_wrongTypeRevert_toRSV(uint40 wrongType) public {
+        bytes memory payload = new bytes(ByteString.SIGNATURE_LENGTH);
+        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.SIGNATURE });
+        libHarness.toRSV(wrongType, payload);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

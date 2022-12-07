@@ -20,7 +20,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"strconv"
-	"sync"
 )
 
 // Executor is the executor agent.
@@ -31,22 +30,24 @@ type Executor struct {
 	executorDB db.ExecutorDB
 	// scribeClient is the client to the Scribe gRPC server.
 	scribeClient client.ScribeClient
-	// lastLog is a map from chain ID -> last log processed.
-	lastLog map[uint32]logOrderInfo
-	// lastLogMutex is a mutex for the lastLog map.
-	lastLogMutex *sync.Mutex
+	// lastLogs is a map from chain ID -> last log processed.
+	lastLogs map[uint32]*logOrderInfo
 	// closeConnection is a map from chain ID -> channel to close the connection.
 	closeConnection map[uint32]chan bool
 	// stopListenChan is a map from chain ID -> channel to stop listening for logs.
 	stopListenChan map[uint32]chan bool
 	// originParsers is a map from chain ID -> origin parser.
 	originParsers map[uint32]origin.Parser
-	// attestationcollectorParsers is a map from chain ID -> attestationcollector parser.
-	attestationcollectorParsers map[uint32]attestationcollector.Parser
+	// attestationCollectorParser is an attestationCollector parser.
+	attestationCollectorParser attestationcollector.Parser
+	// synChainID is the chain ID of the Synapse chain.
+	synChainID uint32
+	// attestationCollectorAddress is the address of the attestation collector contract.
+	attestationCollectorAddress common.Address
 	// LogChans is a mapping from chain ID -> log channel.
 	LogChans map[uint32]chan *ethTypes.Log
-	// MerkleTrees is a map from chain ID -> merkle tree.
-	MerkleTrees map[uint32]*trieutil.SparseMerkleTrie
+	// MerkleTrees is a map from chain ID -> destination domain -> merkle tree.
+	MerkleTrees map[uint32]map[uint32]*trieutil.SparseMerkleTrie
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -57,17 +58,28 @@ type logOrderInfo struct {
 
 const treeDepth uint64 = 32
 
+const logChanSize = 1000
+
 // NewExecutor creates a new executor agent.
 func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient) (*Executor, error) {
+	lastLogs := make(map[uint32]*logOrderInfo)
 	channels := make(map[uint32]chan *ethTypes.Log)
 	closeChans := make(map[uint32]chan bool)
 	stopListenChans := make(map[uint32]chan bool)
 	originParsers := make(map[uint32]origin.Parser)
-	attestationcollectorParsers := make(map[uint32]attestationcollector.Parser)
-	merkleTrees := make(map[uint32]*trieutil.SparseMerkleTrie)
+	attestationCollectorParser, err := attestationcollector.NewParser(common.HexToAddress(config.AttestationCollectorAddress))
+	if err != nil {
+		return nil, fmt.Errorf("could not create attestationcollector parser: %w", err)
+	}
+
+	merkleTrees := make(map[uint32]map[uint32]*trieutil.SparseMerkleTrie)
 
 	for _, chain := range config.Chains {
-		channels[chain.ChainID] = make(chan *ethTypes.Log, 1000)
+		lastLogs[chain.ChainID] = &logOrderInfo{
+			blockNumber: 0,
+			blockIndex:  0,
+		}
+		channels[chain.ChainID] = make(chan *ethTypes.Log, logChanSize)
 		closeChans[chain.ChainID] = make(chan bool, 1)
 		stopListenChans[chain.ChainID] = make(chan bool, 1)
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
@@ -76,31 +88,34 @@ func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient cl
 		}
 
 		originParsers[chain.ChainID] = originParser
-		attestationcollectorParser, err := attestationcollector.NewParser(common.HexToAddress(chain.AttestationCollectorAddress))
-		if err != nil {
-			return nil, fmt.Errorf("could not create attestationcollector parser: %w", err)
+
+		merkleTrees[chain.ChainID] = make(map[uint32]*trieutil.SparseMerkleTrie)
+
+		for _, destination := range config.Chains {
+			if destination.ChainID == chain.ChainID {
+				continue
+			}
+
+			merkleTree, err := trieutil.NewTrie(treeDepth)
+			if err != nil {
+				return nil, fmt.Errorf("could not create merkle tree: %w", err)
+			}
+
+			merkleTrees[chain.ChainID][destination.ChainID] = merkleTree
 		}
-
-		attestationcollectorParsers[chain.ChainID] = attestationcollectorParser
-
-		merkleTree, err := trieutil.NewTrie(treeDepth)
-		if err != nil {
-			return nil, fmt.Errorf("could not create merkle tree: %w", err)
-		}
-
-		merkleTrees[chain.ChainID] = merkleTree
 	}
 
 	return &Executor{
 		config:                      config,
 		executorDB:                  executorDB,
 		scribeClient:                scribeClient,
-		lastLog:                     make(map[uint32]logOrderInfo),
-		lastLogMutex:                &sync.Mutex{},
+		lastLogs:                    lastLogs,
 		closeConnection:             closeChans,
 		stopListenChan:              stopListenChans,
 		originParsers:               originParsers,
-		attestationcollectorParsers: attestationcollectorParsers,
+		attestationCollectorParser:  attestationCollectorParser,
+		synChainID:                  config.SYNChainID,
+		attestationCollectorAddress: common.HexToAddress(config.AttestationCollectorAddress),
 		LogChans:                    channels,
 		MerkleTrees:                 merkleTrees,
 	}, nil
@@ -170,14 +185,15 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 }
 
 // GetRoot returns the merkle root at the given nonce.
-func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32) (*[32]byte, error) {
-	if nonce == 0 || nonce > uint32(e.MerkleTrees[chainID].NumOfItems()) {
+func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, destination uint32) (*[32]byte, error) {
+	if nonce == 0 || nonce > uint32(e.MerkleTrees[chainID][destination].NumOfItems()) {
 		return nil, fmt.Errorf("nonce is out of range")
 	}
 
 	messageMask := execTypes.DBMessage{
-		ChainID: &chainID,
-		Nonce:   &nonce,
+		ChainID:     &chainID,
+		Destination: &destination,
+		Nonce:       &nonce,
 	}
 	message, err := e.executorDB.GetMessage(ctx, messageMask)
 	if err != nil {
@@ -193,7 +209,7 @@ func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32) (*[
 // BuildTreeFromDB builds the merkle tree from the database's messages. This function will
 // reset the current merkle tree and replace it with the one built from the database.
 // This function should also not be called while Start or Listen are running.
-func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32) error {
+func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
 	merkleTree, err := trieutil.NewTrie(treeDepth)
 	if err != nil {
 		return fmt.Errorf("could not create merkle tree: %w", err)
@@ -203,8 +219,9 @@ func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32) error {
 
 	for {
 		messageMask := execTypes.DBMessage{
-			ChainID: &chainID,
-			Nonce:   &nonce,
+			ChainID:     &chainID,
+			Destination: &destination,
+			Nonce:       &nonce,
 		}
 		message, err := e.executorDB.GetMessage(ctx, messageMask)
 		if err != nil {
@@ -220,7 +237,7 @@ func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32) error {
 		nonce++
 	}
 
-	e.MerkleTrees[chainID] = merkleTree
+	e.MerkleTrees[chainID][destination] = merkleTree
 
 	return nil
 }
@@ -271,7 +288,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	case originContract:
 		address = chain.OriginAddress
 	case attestationcollectorContract:
-		address = chain.AttestationCollectorAddress
+		address = e.attestationCollectorAddress.String()
 	default:
 		return fmt.Errorf("contract type not supported")
 	}
@@ -321,24 +338,19 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			if log == nil {
 				return fmt.Errorf("could not convert log")
 			}
-			if !e.lastLog[chain.ChainID].verifyAfter(*log) {
-				return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLog[chain.ChainID].blockNumber, e.lastLog[chain.ChainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+			if !e.lastLogs[chain.ChainID].verifyAfter(*log) {
+				return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLogs[chain.ChainID].blockNumber, e.lastLogs[chain.ChainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 			}
 
 			e.LogChans[chain.ChainID] <- log
-			e.lastLogMutex.Lock()
-			e.lastLog[chain.ChainID] = logOrderInfo{
-				blockNumber: log.BlockNumber,
-				blockIndex:  log.Index,
-			}
-			e.lastLogMutex.Unlock()
+			e.lastLogs[chain.ChainID].blockNumber = log.BlockNumber
+			e.lastLogs[chain.ChainID].blockIndex = log.Index
 		}
 	}
 }
 
 // processLog processes the log and updates the merkle tree.
 func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	merkleIndex := e.MerkleTrees[chainID].NumOfItems()
 	message, err := e.logToMessage(log, chainID)
 	if err != nil {
 		return fmt.Errorf("could not convert log to leaf: %w", err)
@@ -347,8 +359,11 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		return nil
 	}
 
-	e.MerkleTrees[chainID].Insert(message.Leaf.Bytes(), merkleIndex)
-	root := e.MerkleTrees[chainID].Root()
+	destination := *message.Destination
+
+	merkleIndex := e.MerkleTrees[chainID][destination].NumOfItems()
+	e.MerkleTrees[chainID][destination].Insert(message.Leaf.Bytes(), merkleIndex)
+	root := e.MerkleTrees[chainID][destination].Root()
 	rootHash := common.BytesToHash(root[:])
 	message.Root = &rootHash
 	err = e.executorDB.StoreMessage(ctx, *message)
@@ -379,6 +394,7 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*execTypes.DBM
 		}
 
 		messageChainID := chainID
+		messageDestination := message.DestinationDomain()
 		messageNonce := message.Nonce()
 		messageMessage := message.Body()
 		messageLeaf := common.BytesToHash(leaf[:])
@@ -386,6 +402,7 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*execTypes.DBM
 
 		dbMessage = &execTypes.DBMessage{
 			ChainID:     &messageChainID,
+			Destination: &messageDestination,
 			Nonce:       &messageNonce,
 			Root:        nil,
 			Message:     &messageMessage,
@@ -394,10 +411,6 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*execTypes.DBM
 		}
 
 		return dbMessage, nil
-	} else if eventType, ok := e.attestationcollectorParsers[chainID].EventType(log); ok && eventType == 0 {
-		// TODO: handle this case with attestationcollector properly.
-		//nolint:nilnil
-		return nil, nil
 	}
 
 	logger.Warnf("could not match the log's event type")
@@ -412,6 +425,7 @@ func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
 	}
 
 	if log.BlockNumber == l.blockNumber {
+		// TODO: duplicates
 		return log.Index > l.blockIndex
 	}
 

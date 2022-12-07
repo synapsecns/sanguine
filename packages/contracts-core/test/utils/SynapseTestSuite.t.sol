@@ -94,14 +94,14 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // Setup BondingManager
         bondingManager.initialize();
         bondingManager.setSystemRouter(systemRouter);
-        // Add global notaries to Origin
+        // TODO(Chi): setup Notaries/Guards via BondingManager
+        // Add global notaries
         for (uint256 i = 0; i < DOMAINS; ++i) {
             uint32 domainToAdd = domains[i];
-            // Don't add local notaries to Origin
-            if (domainToAdd != domain) {
-                for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
-                    origin.addNotary(domainToAdd, suiteNotary(domainToAdd, j));
-                }
+            // Origin and Destination will filter our agents themselves
+            for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
+                destination.addNotary(domainToAdd, suiteNotary(domainToAdd, j));
+                origin.addNotary(domainToAdd, suiteNotary(domainToAdd, j));
             }
         }
         // Add guards

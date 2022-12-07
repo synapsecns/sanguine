@@ -12,6 +12,10 @@ import (
 
 // IOriginTransactor ...
 type IOriginTransactor interface {
+	// AddGuard is a paid mutator transaction binding the contract method 0x6913a63c.
+	//
+	// Solidity: function addGuard(address _guard) returns(bool)
+	AddGuard(opts *bind.TransactOpts, _guard common.Address) (*types.Transaction, error)
 	// AddNotary is a paid mutator transaction binding the contract method 0x2af678b0.
 	//
 	// Solidity: function addNotary(uint32 _domain, address _notary) returns(bool)
@@ -24,6 +28,14 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function initialize() returns()
 	Initialize(opts *bind.TransactOpts) (*types.Transaction, error)
+	// RemoveGuard is a paid mutator transaction binding the contract method 0xb6235016.
+	//
+	// Solidity: function removeGuard(address _guard) returns(bool)
+	RemoveGuard(opts *bind.TransactOpts, _guard common.Address) (*types.Transaction, error)
+	// RemoveNotary is a paid mutator transaction binding the contract method 0x4b82bad7.
+	//
+	// Solidity: function removeNotary(uint32 _domain, address _notary) returns(bool)
+	RemoveNotary(opts *bind.TransactOpts, _domain uint32, _notary common.Address) (*types.Transaction, error)
 	// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 	//
 	// Solidity: function renounceOwnership() returns()

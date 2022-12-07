@@ -6,6 +6,8 @@ import "github.com/ethereum/go-ethereum/common"
 type DBMessage struct {
 	// ChainID is the chain ID of the chain that the message is for.
 	ChainID *uint32
+	// Destination is the destination chain id of the message.
+	Destination *uint32
 	// Nonce is the nonce of the message.
 	Nonce *uint32
 	// Root is the root of the message.

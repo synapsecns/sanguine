@@ -3,22 +3,14 @@ package evm_test
 import (
 	"math/big"
 
-	"github.com/Flaque/filet"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
 	dbMocks "github.com/synapsecns/sanguine/agents/db/mocks"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
-	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	chainMocks "github.com/synapsecns/sanguine/ethergo/chain/mocks"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	signerMocks "github.com/synapsecns/sanguine/ethergo/signer/signer/mocks"
-	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
 
 func (t *TxQueueSuite) TestGetNonce() {
@@ -40,47 +32,15 @@ func (t *TxQueueSuite) TestGetNonce() {
 }
 
 func (t *TxQueueSuite) TestGetTransactor() {
-	// create a test chain
-	chn := simulated.NewSimulatedBackend(t.GetTestContext(), t.T())
-	manager := testutil.NewDeployManager(t.T())
-
-	destinationID := uint32(1)
-
-	originContract, originHarness := manager.GetOriginHarness(t.GetTestContext(), chn)
-
-	// create a test signer
-	wllt, err := wallet.FromRandom()
-	Nil(t.T(), err)
-
-	msigner := localsigner.NewSigner(wllt.PrivateKey())
-	testDB, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""))
-	Nil(t.T(), err)
-
-	testQueue := evm.NewTxQueue(msigner, testDB, chn)
-
-	testTransactor, err := testQueue.GetTransactor(t.GetTestContext(), chn.GetBigChainID())
-	Nil(t.T(), err)
-
-	chn.FundAccount(t.GetTestContext(), msigner.Address(), *big.NewInt(params.Ether))
-
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(t.T(), err)
 
-	originOwnerAuth := chn.GetTxContext(t.GetTestContext(), originContract.OwnerPtr())
-	tx, err := originHarness.AddNotary(originOwnerAuth.TransactOpts, destinationID, msigner.Address())
-	Nil(t.T(), err)
-	chn.WaitForConfirmation(t.GetTestContext(), tx)
-
-	notaries, err := originHarness.AllNotaries(&bind.CallOpts{Context: t.GetTestContext()}, destinationID)
-	Nil(t.T(), err)
-	Len(t.T(), notaries, 1)
-
-	tx, err = originHarness.Dispatch(testTransactor, destinationID, [32]byte{}, 1, encodedTips, []byte("hello world"))
+	tx, err := t.originContract.Dispatch(t.testTransactor, destinationID, [32]byte{}, 1, encodedTips, []byte("hello world"))
 	Nil(t.T(), err)
 
-	chn.WaitForConfirmation(t.GetTestContext(), tx)
+	t.chn.WaitForConfirmation(t.GetTestContext(), tx)
 
-	_, err = originHarness.Dispatch(testTransactor, destinationID, [32]byte{}, 1, encodedTips, []byte("hello world"))
+	_, err = t.originContract.Dispatch(t.testTransactor, destinationID, [32]byte{}, 1, encodedTips, []byte("hello world"))
 	Nil(t.T(), err)
-	chn.WaitForConfirmation(t.GetTestContext(), tx)
+	t.chn.WaitForConfirmation(t.GetTestContext(), tx)
 }

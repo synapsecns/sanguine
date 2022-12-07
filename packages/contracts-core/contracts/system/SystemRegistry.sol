@@ -2,15 +2,35 @@
 pragma solidity 0.8.17;
 
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
+import { AgentRegistry } from "./AgentRegistry.sol";
 import { SystemContract } from "./SystemContract.sol";
-import { AbstractGuardRegistry } from "../registry/AbstractGuardRegistry.sol";
-import { AbstractNotaryRegistry } from "../registry/AbstractNotaryRegistry.sol";
 
 /**
  * @notice Shared agents registry utilities for Origin, Destination.
  * Agents are added/removed via a system call from a local BondingManager.
  */
-abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistry, SystemContract {
+abstract contract SystemRegistry is AgentRegistry, SystemContract {
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        ADDING AGENTS (MOCKS)                         ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // TODO (Chi): add/remove agents via system calls from local BondingManager
+
+    function addGuard(address _guard) external onlyOwner returns (bool) {
+        return _addAgent({ _domain: 0, _account: _guard });
+    }
+
+    function addNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
+        return _addAgent(_domain, _notary);
+    }
+
+    function removeGuard(address _guard) external onlyOwner returns (bool) {
+        return _removeAgent({ _domain: 0, _account: _guard });
+    }
+
+    function removeNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
+        return _removeAgent(_domain, _notary);
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -31,14 +51,7 @@ abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistr
     ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
         // TODO: decide if we need to store anything, as the slashing occurred on another chain
         _beforeAgentSlashed(_info);
-        if (_info.agent == Agent.Guard) {
-            _removeGuard({ _guard: _info.account });
-        } else if (_info.agent == Agent.Notary) {
-            _removeNotary({ _origin: _info.domain, _notary: _info.account });
-        } else {
-            // Sanity check
-            assert(false);
-        }
+        _removeAgent(_info.domain, _info.account);
     }
 
     /**
@@ -87,16 +100,10 @@ abstract contract SystemRegistry is AbstractGuardRegistry, AbstractNotaryRegistr
     }
 
     function _updateAgentStatus(AgentInfo memory _info) internal {
-        if (_info.agent == Agent.Guard) {
-            address guard = _info.account;
-            (_info.bonded ? _addGuard : _removeGuard)(guard);
-        } else if (_info.agent == Agent.Notary) {
-            uint32 domain = _info.domain;
-            address notary = _info.account;
-            (_info.bonded ? _addNotary : _removeNotary)(domain, notary);
+        if (_info.bonded) {
+            _addAgent(_info.domain, _info.account);
         } else {
-            // Sanity check: unreachable code
-            assert(false);
+            _removeAgent(_info.domain, _info.account);
         }
     }
 

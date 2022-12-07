@@ -110,6 +110,18 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
         return chains[domain].app;
     }
 
+    function suiteAgent(uint32 domain) public view returns (address) {
+        return suiteAgent(domain, 0);
+    }
+
+    function suiteAgent(uint32 domain, uint256 index) public view returns (address) {
+        if (domain == 0) {
+            return suiteGuard(index);
+        } else {
+            return suiteNotary(domain, index);
+        }
+    }
+
     function suiteGuard() public view returns (address) {
         return suiteGuard(0);
     }

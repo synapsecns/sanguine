@@ -3,14 +3,13 @@ package backfill
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/scribe/config"
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	lru "github.com/hashicorp/golang-lru"
+	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"golang.org/x/sync/errgroup"
+	"math/big"
 )
 
 // ContractBackfiller is a backfiller that fetches logs for a specific contract.
@@ -37,6 +36,9 @@ const invalidTxVRSError = "invalid transaction v, r, s values"
 
 // txNotFoundError is for handling omniRPC errors for BSC.
 const txNotFoundError = "not found"
+
+// retryTolerance is the number of times to retry a failed operation.
+const retryTolerance = 15
 
 // NewContractBackfiller creates a new backfiller for a contract.
 func NewContractBackfiller(chainConfig config.ChainConfig, address string, eventDB db.EventDB, client []ScribeBackend) (*ContractBackfiller, error) {
@@ -116,9 +118,11 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 //nolint:cyclop, gocognit
 func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	var returnedReceipt types.Receipt
-
+	retryCount := 0
+RETRY:
+	retryCount++
 	// Parallelize storing logs, receipts, and transactions.
-	g, groupCtx := errgroup.WithContext(ctx)
+	g, groupCtx := errgroup.WithContext(context.Background())
 
 	doneChan := make(chan bool, 2)
 
@@ -252,7 +256,11 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 
 	err := g.Wait()
 	if err != nil {
-		LogEvent(ErrorLevel, "Could not store data", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+		LogEvent(ErrorLevel, "Could not store data, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
+		if retryCount < retryTolerance {
+			goto RETRY
+		}
 
 		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainConfig.ChainID, log.BlockNumber, log.TxHash.String())
 	}

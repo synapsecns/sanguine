@@ -8,6 +8,7 @@ import "github.com/synapsecns/sanguine/core/dbcommon"
 func init() {
 	namer := dbcommon.NewNamer(GetAllModels())
 	ChainIDFieldName = namer.GetConsistentName("ChainID")
+	DestinationFieldName = namer.GetConsistentName("Destination")
 	NonceFieldName = namer.GetConsistentName("Nonce")
 	RootFieldName = namer.GetConsistentName("Root")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
@@ -16,6 +17,8 @@ func init() {
 var (
 	// ChainIDFieldName gets the chain id field name.
 	ChainIDFieldName string
+	// DestinationFieldName is the field name of the destination.
+	DestinationFieldName string
 	// NonceFieldName is the field name of the tx hash.
 	NonceFieldName string
 	// RootFieldName is the name of the block number field.
@@ -28,6 +31,8 @@ var (
 type Message struct {
 	// ChainID is the chain id.
 	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	// Destination is the destination.
+	Destination uint32 `gorm:"column:destination;primaryKey"`
 	// Nonce is the nonce.
 	Nonce uint32 `gorm:"column:nonce;primaryKey"`
 	// Root is the root.

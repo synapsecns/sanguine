@@ -268,11 +268,16 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		}
 	}()
 
+	destination := chainID + 1
+
 	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
 			{
 				ChainID:       chainID,
 				OriginAddress: originContract.Address().String(),
+			},
+			{
+				ChainID: destination,
 			},
 		},
 	}
@@ -280,13 +285,12 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	exec, err := executor.NewExecutor(excCfg, e.testDB, scribeClient.ScribeClient)
 	e.Nil(err)
 
-	_, err = exec.GetRoot(e.GetTestContext(), 1, chainID)
+	_, err = exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
 	e.NotNil(err)
 
 	testTree, err := trieutil.NewTrie(32)
 	e.Nil(err)
 
-	destination := chainID + 1
 	recipients := [][32]byte{{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())}}
 	optimisticSeconds := []uint32{gofakeit.Uint32(), gofakeit.Uint32()}
 	notaryTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
@@ -348,7 +352,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	waitChan := make(chan bool, 2)
 
 	e.Eventually(func() bool {
-		rootA, err := exec.GetRoot(e.GetTestContext(), 1, chainID)
+		rootA, err := exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
 		if err != nil {
 			return false
 		}
@@ -381,7 +385,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	testRootB := testTree.Root()
 
 	e.Eventually(func() bool {
-		rootB, err := exec.GetRoot(e.GetTestContext(), 2, chainID)
+		rootB, err := exec.GetRoot(e.GetTestContext(), 2, chainID, destination)
 		if err != nil {
 			return false
 		}
@@ -397,10 +401,10 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	<-waitChan
 	exec.Stop(chainID)
 
-	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID)
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	newRoot, err := exec.GetRoot(e.GetTestContext(), 2, chainID)
+	newRoot, err := exec.GetRoot(e.GetTestContext(), 2, chainID, destination)
 	e.Nil(err)
 
 	e.Equal(testRootB, *newRoot)

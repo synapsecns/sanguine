@@ -14,7 +14,7 @@ func (s Store) StoreMessage(ctx context.Context, message types.DBMessage) error 
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: ChainIDFieldName}, {Name: NonceFieldName}, {Name: RootFieldName},
+				{Name: ChainIDFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName}, {Name: RootFieldName},
 			},
 			DoNothing: true,
 		}).
@@ -76,6 +76,10 @@ func DBMessageToMessage(dbMessage types.DBMessage) Message {
 		message.ChainID = *dbMessage.ChainID
 	}
 
+	if dbMessage.Destination != nil {
+		message.Destination = *dbMessage.Destination
+	}
+
 	if dbMessage.Nonce != nil {
 		message.Nonce = *dbMessage.Nonce
 	}
@@ -102,6 +106,7 @@ func DBMessageToMessage(dbMessage types.DBMessage) Message {
 // MessageToDBMessage converts a Message to a DBMessage.
 func MessageToDBMessage(message Message) types.DBMessage {
 	chainID := message.ChainID
+	destination := message.Destination
 	nonce := message.Nonce
 	root := common.HexToHash(message.Root)
 	messageBytes := common.HexToHash(message.Message).Bytes()
@@ -110,6 +115,7 @@ func MessageToDBMessage(message Message) types.DBMessage {
 
 	return types.DBMessage{
 		ChainID:     &chainID,
+		Destination: &destination,
 		Nonce:       &nonce,
 		Root:        &root,
 		Message:     &messageBytes,

@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { Auth } from "../libs/Auth.sol";
+import { AttestationHub } from "./AttestationHub.sol";
 import { Report } from "../libs/Report.sol";
-import { AbstractGuardRegistry } from "../registry/AbstractGuardRegistry.sol";
-import { AbstractNotaryRegistry } from "../registry/AbstractNotaryRegistry.sol";
 
-abstract contract ReportHub is AbstractGuardRegistry, AbstractNotaryRegistry {
+/**
+ * @notice Keeps track of the agents and verifies signed reports.
+ */
+abstract contract ReportHub is AttestationHub {
+    using Report for bytes;
     using Report for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -22,17 +26,13 @@ abstract contract ReportHub is AbstractGuardRegistry, AbstractNotaryRegistry {
      * @return TRUE if Report was handled correctly.
      */
     function submitReport(bytes memory _report) external returns (bool) {
-        // Check if real Guard & signature.
-        // This also checks if Report payload is properly formatted.
-        (address _guard, bytes29 _reportView) = _checkGuardAuth(_report);
-        bytes29 _attestationView = _reportView.reportedAttestation();
-        // Check if real Notary & signature.
-        // This also checks if Attestation payload is properly formatted,
-        // though it's already been checked in _checkGuardAuth(_report) [see Report.sol].
-        address _notary = _checkNotaryAuth(_attestationView);
-        // Pass _reportView as the existing bytes29 pointer to report payload.
-        // Pass _report to avoid extra memory copy when emitting report payload.
-        return _handleReport(_guard, _notary, _attestationView, _reportView, _report);
+        // Verify the report signature and recover an active guard address
+        bytes29 reportView = _report.castToReport();
+        address guard = _verifyReport(reportView);
+        // Verify the attestation signature and recover an active notary address
+        bytes29 attestationView = reportView.reportedAttestation();
+        address notary = _verifyAttestation(attestationView);
+        return _handleReport(guard, notary, attestationView, reportView, _report);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -56,4 +56,22 @@ abstract contract ReportHub is AbstractGuardRegistry, AbstractNotaryRegistry {
         bytes29 _reportView,
         bytes memory _report
     ) internal virtual returns (bool);
+
+    /**
+     * @notice Checks if report signer is authorized.
+     * @dev Signer needs to be an active Guard.
+     * @param _reportView  Memory view over the Report to check
+     * @return guard Address of the report signer
+     */
+    function _verifyReport(bytes29 _reportView) internal view returns (address guard) {
+        // Check if Report payload is properly formatted.
+        require(_reportView.isReport(), "Not a report");
+        bytes32 digest = Auth.toEthSignedMessageHash(_reportView.reportData());
+        // Check if Guard signature is valid.
+        guard = _checkAgentAuth({
+            _domain: 0,
+            _digest: digest,
+            _signatureView: _reportView.guardSignature()
+        });
+    }
 }

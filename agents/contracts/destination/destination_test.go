@@ -70,7 +70,7 @@ func (d DestinationSuite) TestDestinationSuite() {
 	Nil(d.T(), err)
 
 	// Set notary to the testing address so we can submit attestations.
-	tx, err = d.destinationContract.SetNotary(txContextDestination.TransactOpts, uint32(d.testBackendOrigin.GetChainID()), d.signer.Address())
+	tx, err = d.destinationContract.AddNotary(txContextDestination.TransactOpts, uint32(d.testBackendOrigin.GetChainID()), d.signer.Address())
 	Nil(d.T(), err)
 	d.testBackendDestination.WaitForConfirmation(d.GetTestContext(), tx)
 
