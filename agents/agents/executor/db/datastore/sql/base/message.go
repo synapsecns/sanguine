@@ -11,7 +11,11 @@ import (
 
 // StoreMessage stores a message in the database.
 func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, root common.Hash, blockNumber uint64) error {
-	dbMessage := AgentsTypesMessageToMessage(message, root, blockNumber)
+	dbMessage, err := AgentsTypesMessageToMessage(message, root, blockNumber)
+	if err != nil {
+		return fmt.Errorf("failed to convert message: %w", err)
+	}
+
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
@@ -173,13 +177,17 @@ func MessageToDBMessage(message Message) types.DBMessage {
 }
 
 // AgentsTypesMessageToMessage converts an agentsTypes.Message to a Message.
-func AgentsTypesMessageToMessage(message agentsTypes.Message, root common.Hash, blockNumber uint64) Message {
+func AgentsTypesMessageToMessage(message agentsTypes.Message, root common.Hash, blockNumber uint64) (Message, error) {
+	rawMessage, err := agentsTypes.EncodeMessage(message)
+	if err != nil {
+		return Message{}, fmt.Errorf("failed to encode message: %w", err)
+	}
 	return Message{
 		ChainID:     message.OriginDomain(),
 		Destination: message.DestinationDomain(),
 		Nonce:       message.Nonce(),
 		Root:        root.String(),
-		Message:     message.Body(),
+		Message:     rawMessage,
 		BlockNumber: blockNumber,
-	}
+	}, nil
 }
