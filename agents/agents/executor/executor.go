@@ -168,7 +168,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case <-e.stopListenChan[chainID]:
 			return nil
 		case log := <-e.LogChans[chainID]:

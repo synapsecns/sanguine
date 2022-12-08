@@ -110,12 +110,13 @@ func (s Store) GetRoot(ctx context.Context, messageMask types.DBMessage) (common
 // GetLastBlockNumber gets the last block number that had a message in the database.
 func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error) {
 	var message Message
+	var lastBlockNumber uint64
 
 	dbTx := s.DB().WithContext(ctx).
 		Model(&message).
 		Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
-		Order(fmt.Sprintf("%s DESC", BlockNumberFieldName)).
-		Scan(&message)
+		Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
+		Scan(&lastBlockNumber)
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("failed to get last block number: %w", dbTx.Error)
 	}
@@ -123,7 +124,7 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, 
 		return 0, nil
 	}
 
-	return message.BlockNumber, nil
+	return lastBlockNumber, nil
 }
 
 // DBMessageToMessage converts a DBMessage to a Message.

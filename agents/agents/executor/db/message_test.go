@@ -24,14 +24,6 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		tipsA := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 		typesMessageA := agentsTypes.NewMessage(headerA, tipsA, messageA)
 
-		// dbMessageA := types.DBMessage{
-		//	ChainID:     &chainIDA,
-		//	Destination: &destinationA,
-		//	Nonce:       &nonceA,
-		//	Root:        &rootA,
-		//	Message:     &messageA,
-		//	BlockNumber: &blockNumberA,
-		//}
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, rootA, blockNumberA)
 		Nil(t.T(), err)
 
@@ -41,15 +33,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageB := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		blockNumberB := gofakeit.Uint64()
-		// dbMessageB := types.DBMessage{
-		//	ChainID:     &chainIDB,
-		//	Destination: &destinationB,
-		//	Nonce:       &nonceB,
-		//	Root:        &rootB,
-		//	Message:     &messageB,
-		//	BlockNumber: &blockNumberB,
-		//}
-
+		
 		headerB := agentsTypes.NewHeader(chainIDB, common.BigToHash(big.NewInt(gofakeit.Int64())), nonceB, destinationB, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
 		tipsB := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 		typesMessageB := agentsTypes.NewMessage(headerB, tipsB, messageB)
