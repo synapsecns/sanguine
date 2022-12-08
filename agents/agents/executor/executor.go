@@ -185,9 +185,9 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 }
 
 // GetRoot returns the merkle root at the given nonce.
-func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, destination uint32) (*[32]byte, error) {
+func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, destination uint32) ([32]byte, error) {
 	if nonce == 0 || nonce > uint32(e.MerkleTrees[chainID][destination].NumOfItems()) {
-		return nil, fmt.Errorf("nonce is out of range")
+		return [32]byte{}, fmt.Errorf("nonce is out of range")
 	}
 
 	messageMask := execTypes.DBMessage{
@@ -195,46 +195,51 @@ func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, des
 		Destination: &destination,
 		Nonce:       &nonce,
 	}
-	message, err := e.executorDB.GetMessage(ctx, messageMask)
+	root, err := e.executorDB.GetRoot(ctx, messageMask)
 	if err != nil {
-		return nil, fmt.Errorf("could not get message: %w", err)
-	}
-	if message == nil {
-		return nil, fmt.Errorf("no message found for chainID %d and nonce %d", chainID, nonce)
+		return [32]byte{}, fmt.Errorf("could not get message: %w", err)
 	}
 
-	return (*[32]byte)(message.Root.Bytes()), nil
+	return root, nil
 }
 
 // BuildTreeFromDB builds the merkle tree from the database's messages. This function will
 // reset the current merkle tree and replace it with the one built from the database.
 // This function should also not be called while Start or Listen are running.
 func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
-	merkleTree, err := trieutil.NewTrie(treeDepth)
-	if err != nil {
-		return fmt.Errorf("could not create merkle tree: %w", err)
+	messageMask := execTypes.DBMessage{
+		ChainID:     &chainID,
+		Destination: &destination,
 	}
 
-	nonce := uint32(1)
-
+	var allMessages []types.Message
+	page := 1
 	for {
-		messageMask := execTypes.DBMessage{
-			ChainID:     &chainID,
-			Destination: &destination,
-			Nonce:       &nonce,
-		}
-		message, err := e.executorDB.GetMessage(ctx, messageMask)
+		messages, err := e.executorDB.GetMessages(ctx, messageMask, 1)
 		if err != nil {
-			return fmt.Errorf("could not get message: %w", err)
+			return fmt.Errorf("could not get messages: %w", err)
 		}
-
-		if message == nil {
+		if len(messages) == 0 {
 			break
 		}
 
-		//merkleTree.Insert([]byte{}, int(nonce-1))
+		allMessages = append(allMessages, messages...)
+		page++
+	}
 
-		nonce++
+	rawMessages := make([][]byte, len(allMessages))
+	for i, message := range allMessages {
+		rawMessage, err := message.ToLeaf()
+		if err != nil {
+			return fmt.Errorf("could not convert message to leaf: %w", err)
+		}
+
+		rawMessages[i] = rawMessage[:]
+	}
+
+	merkleTree, err := trieutil.GenerateTrieFromItems(rawMessages, treeDepth)
+	if err != nil {
+		return fmt.Errorf("could not generate trie from items: %w", err)
 	}
 
 	e.MerkleTrees[chainID][destination] = merkleTree
@@ -329,14 +334,16 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		return nil
 	}
 
-	destination := *message.Destination
+	destination := (*message).DestinationDomain()
 
 	merkleIndex := e.MerkleTrees[chainID][destination].NumOfItems()
-	e.MerkleTrees[chainID][destination].Insert(message.Leaf.Bytes(), merkleIndex)
+	leaf, err := (*message).ToLeaf()
+	if err != nil {
+		return fmt.Errorf("could not convert message to leaf: %w", err)
+	}
+	e.MerkleTrees[chainID][destination].Insert(leaf[:], merkleIndex)
 	root := e.MerkleTrees[chainID][destination].Root()
-	rootHash := common.BytesToHash(root[:])
-	message.Root = &rootHash
-	err = e.executorDB.StoreMessage(ctx, *message)
+	err = e.executorDB.StoreMessage(ctx, *message, root, log.BlockNumber)
 	if err != nil {
 		return fmt.Errorf("could not store message: %w", err)
 	}
@@ -345,9 +352,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 }
 
 // logToMessage converts the log to a leaf data.
-func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*execTypes.DBMessage, error) {
-	var dbMessage *execTypes.DBMessage
-
+func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message, error) {
 	if eventType, ok := e.originParsers[chainID].EventType(log); ok && eventType == origin.DispatchEvent {
 		committedMessage, ok := e.originParsers[chainID].ParseDispatch(log)
 		if !ok {
@@ -359,29 +364,7 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*execTypes.DBM
 			return nil, fmt.Errorf("could not decode message: %w", err)
 		}
 
-		leaf, err := message.ToLeaf()
-		if err != nil {
-			return nil, fmt.Errorf("could not convert message to leaf: %w", err)
-		}
-
-		messageChainID := chainID
-		messageDestination := message.DestinationDomain()
-		messageNonce := message.Nonce()
-		messageMessage := message.Body()
-		messageLeaf := common.BytesToHash(leaf[:])
-		messageBlockNumber := log.BlockNumber
-
-		dbMessage = &execTypes.DBMessage{
-			ChainID:     &messageChainID,
-			Destination: &messageDestination,
-			Nonce:       &messageNonce,
-			Root:        nil,
-			Message:     &messageMessage,
-			Leaf:        &messageLeaf,
-			BlockNumber: &messageBlockNumber,
-		}
-
-		return dbMessage, nil
+		return &message, nil
 	}
 
 	logger.Warnf("could not match the log's event type")

@@ -355,7 +355,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 			return false
 		}
 
-		if testRootA == *rootA {
+		if testRootA == rootA {
 			waitChan <- true
 			return true
 		}
@@ -388,7 +388,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 			return false
 		}
 
-		if testRootB == *rootB {
+		if testRootB == rootB {
 			waitChan <- true
 			return true
 		}

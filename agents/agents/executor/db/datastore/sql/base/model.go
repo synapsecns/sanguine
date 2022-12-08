@@ -41,9 +41,7 @@ type Message struct {
 	// Root is the root.
 	Root string `gorm:"column:root;primaryKey"`
 	// Message is the message.
-	Message string `gorm:"column:message"`
-	// Leaf is the leaf representation of the message.
-	Leaf string `gorm:"column:leaf"`
+	Message []byte `gorm:"column:message"`
 	// BlockNumber is the block number.
 	BlockNumber uint64 `gorm:"column:block_number"`
 }

@@ -14,8 +14,6 @@ type DBMessage struct {
 	Root *common.Hash
 	// Message is the message.
 	Message *[]byte
-	// Leaf is the leaf representation of the message.
-	Leaf *common.Hash
 	// BlockNumber is the block number of the message.
 	BlockNumber *uint64
 }
