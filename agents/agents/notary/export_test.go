@@ -6,3 +6,8 @@ import "context"
 func (a AttestationProducer) Update(ctx context.Context) error {
 	return a.update(ctx)
 }
+
+// Update wraps update for OriginAttestationScanner.
+func (a OriginAttestationScanner) Update(ctx context.Context) error {
+	return a.update(ctx)
+}

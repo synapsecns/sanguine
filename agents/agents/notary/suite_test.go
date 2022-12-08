@@ -34,8 +34,9 @@ type NotarySuite struct {
 	attestationContract *attestationcollector.AttestationCollectorRef
 	domainClient        domains.DomainClient
 	// wallet is the wallet used for the signer
-	wallet wallet.Wallet
-	signer signer.Signer
+	wallet        wallet.Wallet
+	signer        signer.Signer
+	destinationID uint32
 }
 
 // NewNotarySuite creates a new notary suite.
@@ -57,6 +58,7 @@ func (u *NotarySuite) SetupTest() {
 	_, u.originContract = u.deployManager.GetOrigin(u.GetTestContext(), u.testBackend)
 	_, u.attestationContract = u.deployManager.GetAttestationCollector(u.GetTestContext(), u.testBackend)
 
+	u.destinationID = uint32(u.testBackend.GetBigChainID().Uint64()) + 1
 	var err error
 	u.domainClient, err = evm.NewEVM(u.GetTestContext(), "notary", config.DomainConfig{
 		DomainID:                    uint32(u.testBackend.GetBigChainID().Uint64()),
@@ -79,10 +81,22 @@ func (u *NotarySuite) SetupTest() {
 
 	auth := u.testBackend.GetTxContext(u.GetTestContext(), &owner)
 
-	tx, err := u.attestationContract.AddNotary(auth.TransactOpts, u.domainClient.Config().DomainID, u.signer.Address())
+	tx, err := u.attestationContract.AddNotary(auth.TransactOpts, u.destinationID, u.signer.Address())
 	Nil(u.T(), err)
 
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
+
+	ownerPtr, err := u.originContract.OriginCaller.Owner(&bind.CallOpts{Context: u.GetTestContext()})
+	Nil(u.T(), err)
+
+	originOwnerAuth := u.testBackend.GetTxContext(u.GetTestContext(), &ownerPtr)
+	tx, err = u.originContract.AddNotary(originOwnerAuth.TransactOpts, u.destinationID, u.signer.Address())
+	Nil(u.T(), err)
+	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
+
+	notaries, err := u.originContract.AllAgents(&bind.CallOpts{Context: u.GetTestContext()}, u.destinationID)
+	Nil(u.T(), err)
+	Len(u.T(), notaries, 1)
 }
 
 func TestNotarySuite(t *testing.T) {
