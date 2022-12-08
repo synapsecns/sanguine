@@ -108,14 +108,15 @@ var backfillCommand = &cli.Command{
 
 		// TODO delete once livefilling done
 		ctx, cancel := context.WithTimeout(c.Context, time.Minute*5)
-		defer cancel()
+		cancelVar := cancel
 		for {
 			err = scribeBackfiller.Backfill(ctx)
 			if err != nil {
-				ctx, _ = context.WithTimeout(c.Context, time.Minute*5)
+				cancelVar()
+				ctx, cancel = context.WithTimeout(c.Context, time.Minute*5)
+				cancelVar = cancel
 			}
 		}
-
 	},
 }
 
