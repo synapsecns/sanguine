@@ -131,6 +131,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 								logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 								continue
 							}
+							fmt.Println("processed Chunk logs for chain", contract.ContractType, c.chainConfig.ChainID, "from block", funcHeight, "to block", rangeEnd)
 							return nil
 						}
 					}
@@ -176,7 +177,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			}
 			err := eventParser.ParseAndStore(ctx, logs[logIdx], c.chainConfig.ChainID)
 			if err != nil {
-				logger.Errorf("could not parse and store log: %w", err)
+				logger.Errorf("could not parse and store log %d, %s: %s", c.chainConfig.ChainID, logs[logIdx].Address, err)
 				timeout = b.Duration()
 				continue
 			}

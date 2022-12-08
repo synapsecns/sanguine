@@ -48,7 +48,7 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bri
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridgev1.SynapseBridgeFilterer{}, err)
 	}
-	idPath := filepath.Clean("../static/tokenIDToCoinGeckoID.yaml")
+	idPath := filepath.Clean("./static/tokenIDToCoinGeckoID.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("could find path to yaml file: %w", err)
 	}
@@ -326,48 +326,8 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		// unknown topic.
 		return nil
 	}
-	// Get TokenID from BridgeConfig data.
-	tokenID, err := p.fetcher.GetTokenID(ctx, big.NewInt(int64(chainID)), iFace.GetToken())
-	if err != nil {
-		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
-	}
-
-	// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
-	token, err := p.fetcher.GetToken(ctx, chainID, tokenID, uint32(iFace.GetBlockNumber()))
-	if err != nil {
-		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
-	}
 
 	bridgeEvent := eventToBridgeEvent(iFace, chainID)
-	bridgeEvent.TokenID = ToNullString(tokenID) // TODO Change to coingecko ID.
-	bridgeEvent.TokenDecimal = &token.TokenDecimals
-	timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
-	if err != nil {
-		return fmt.Errorf("could not get block time: %w", err)
-	}
-
-	timeStampBig := uint64(*timeStamp.Response)
-	bridgeEvent.TimeStamp = &timeStampBig
-
-	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
-	coinGeckoID := p.coinGeckoIDs[*tokenID]
-
-	// Add TokenSymbol to bridgeEvent.
-	bridgeEvent.TokenSymbol = ToNullString(tokenID)
-	var tokenPrice *float64
-	if !(coinGeckoID == "xjewel" && *timeStamp.Response < 1649030400) {
-		tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
-	}
-	if tokenPrice != nil {
-		// Add AmountUSD to bridgeEvent (if price is not nil).
-		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
-
-		// Add FeeAmountUSD to bridgeEvent (if price is not nil).
-		if iFace.GetFee() != nil {
-			bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
-		}
-	}
-
 	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
 	if err != nil {
 		logger.Errorf("could not get tx sender: %v", err)
@@ -375,6 +335,50 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 	bridgeEvent.Sender = sender
 
+	// Get TokenID from BridgeConfig data.
+	tokenID, err := p.fetcher.GetTokenID(ctx, big.NewInt(int64(chainID)), iFace.GetToken())
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
+
+	bridgeEvent.TokenID = ToNullString(tokenID) // TODO Change to coingecko ID.
+
+	if *tokenID != fetcher.NoTokenID {
+
+		// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
+		token, err := p.fetcher.GetToken(ctx, chainID, tokenID, uint32(iFace.GetBlockNumber()))
+		if err != nil {
+			return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+		}
+
+		bridgeEvent.TokenDecimal = &token.TokenDecimals
+		timeStamp, err := p.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+		if err != nil {
+			return fmt.Errorf("could not get block time: %w", err)
+		}
+
+		timeStampBig := uint64(*timeStamp)
+		bridgeEvent.TimeStamp = &timeStampBig
+
+		// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
+		coinGeckoID := p.coinGeckoIDs[*tokenID]
+
+		// Add TokenSymbol to bridgeEvent.
+		bridgeEvent.TokenSymbol = ToNullString(tokenID)
+		var tokenPrice *float64
+		if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) {
+			tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, *timeStamp, coinGeckoID)
+		}
+		if tokenPrice != nil {
+			// Add AmountUSD to bridgeEvent (if price is not nil).
+			bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
+
+			// Add FeeAmountUSD to bridgeEvent (if price is not nil).
+			if iFace.GetFee() != nil {
+				bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
+			}
+		}
+	}
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
 
 	if err != nil {

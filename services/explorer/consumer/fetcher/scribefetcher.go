@@ -29,7 +29,7 @@ func (s ScribeFetcher) FetchTxSender(ctx context.Context, chainID uint32, txHash
 		Factor: 2,
 		Jitter: true,
 		Min:    1 * time.Second,
-		Max:    30 * time.Second,
+		Max:    10 * time.Second,
 	}
 	timeout := time.Duration(0)
 RETRY:
@@ -97,4 +97,37 @@ func (s ScribeFetcher) FetchLogsInRange(ctx context.Context, chainID uint32, sta
 	}
 
 	return parsedLogs, nil
+}
+
+// FetchBlockTime fetches the timestamp of a block.
+func (s ScribeFetcher) FetchBlockTime(ctx context.Context, chainID int, blockNumber int) (*int, error) {
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    10 * time.Second,
+	}
+	timeout := time.Duration(0)
+RETRY:
+	select {
+	case <-ctx.Done():
+
+		return nil, fmt.Errorf("could not get timestamp for block, context cancelled %d: %d", chainID, blockNumber)
+	case <-time.After(timeout):
+
+		timeStamp, err := s.FetchClient.GetBlockTime(ctx, chainID, blockNumber)
+
+		if err != nil {
+			logger.Warnf("could not get timestamp for block, trying again %d: %v", blockNumber, err)
+			timeout = b.Duration()
+			goto RETRY
+		}
+
+		if timeStamp == nil || timeStamp.Response == nil {
+			logger.Warnf("could not get timestamp for block, invalid blocktime %d: %d", chainID, blockNumber)
+			return nil, nil
+		}
+
+		return timeStamp.Response, nil
+	}
 }
