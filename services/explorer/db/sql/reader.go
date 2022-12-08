@@ -27,7 +27,7 @@ func (s *Store) GetUint64(ctx context.Context, query string) (uint64, error) {
 // GetFloat64 gets a float64 from a given query.
 func (s *Store) GetFloat64(ctx context.Context, query string) (float64, error) {
 	var res float64
-
+	fmt.Println("LASSSS", query)
 	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)

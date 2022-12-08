@@ -83,8 +83,8 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 			// otherwise backfilling will begin at the block number specified in the config file.
 			if contract.StartBlock < 0 {
 				startHeight, err = c.consumerDB.GetUint64(ctx, fmt.Sprintf(
-					"SELECT ifNull(%s, 0) FROM last_blocks WHERE %s = %d",
-					sql.BlockNumberFieldName, sql.ChainIDFieldName, c.chainConfig.ChainID,
+					"SELECT ifNull(%s, 0) FROM last_blocks WHERE %s = %d AND %s = '%s'",
+					sql.BlockNumberFieldName, sql.ChainIDFieldName, c.chainConfig.ChainID, sql.ContractAddressFieldName, contract.Address,
 				))
 				if err != nil {
 					return fmt.Errorf("could not get last block number: %w", err)
@@ -140,7 +140,6 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 						}
 					}
 				})
-
 			}
 
 			if err := g.Wait(); err != nil {
@@ -150,7 +149,6 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 
 			return nil
 		})
-
 	}
 	if err := contractsGroup.Wait(); err != nil {
 		return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
@@ -189,7 +187,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			}
 
 			// Store the last block in clickhouse
-			err = c.consumerDB.StoreLastBlock(ctx, c.chainConfig.ChainID, logs[logIdx].BlockNumber)
+			err = c.consumerDB.StoreLastBlock(ctx, c.chainConfig.ChainID, logs[logIdx].BlockNumber, logs[logIdx].Address.String())
 			if err != nil {
 				logger.Errorf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
 				timeout = b.Duration()
