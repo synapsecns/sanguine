@@ -19,20 +19,21 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	Logs                   []*model.Log         "json:\"logs\" graphql:\"logs\""
-	LogsRange              []*model.Log         "json:\"logsRange\" graphql:\"logsRange\""
-	Receipts               []*model.Receipt     "json:\"receipts\" graphql:\"receipts\""
-	ReceiptsRange          []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
-	Transactions           []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
-	TransactionsRange      []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
-	BlockTime              *int                 "json:\"blockTime\" graphql:\"blockTime\""
-	LastStoredBlockNumber  *int                 "json:\"lastStoredBlockNumber\" graphql:\"lastStoredBlockNumber\""
-	FirstStoredBlockNumber *int                 "json:\"firstStoredBlockNumber\" graphql:\"firstStoredBlockNumber\""
-	TxSender               *string              "json:\"txSender\" graphql:\"txSender\""
-	LastIndexed            *int                 "json:\"lastIndexed\" graphql:\"lastIndexed\""
-	LogCount               *int                 "json:\"logCount\" graphql:\"logCount\""
-	ReceiptCount           *int                 "json:\"receiptCount\" graphql:\"receiptCount\""
-	BlockTimeCount         *int                 "json:\"blockTimeCount\" graphql:\"blockTimeCount\""
+	Logs                     []*model.Log         "json:\"logs\" graphql:\"logs\""
+	LogsRange                []*model.Log         "json:\"logsRange\" graphql:\"logsRange\""
+	Receipts                 []*model.Receipt     "json:\"receipts\" graphql:\"receipts\""
+	ReceiptsRange            []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
+	Transactions             []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
+	TransactionsRange        []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
+	BlockTime                *int                 "json:\"blockTime\" graphql:\"blockTime\""
+	LastStoredBlockNumber    *int                 "json:\"lastStoredBlockNumber\" graphql:\"lastStoredBlockNumber\""
+	FirstStoredBlockNumber   *int                 "json:\"firstStoredBlockNumber\" graphql:\"firstStoredBlockNumber\""
+	LastConfirmedBlockNumber *int                 "json:\"lastConfirmedBlockNumber\" graphql:\"lastConfirmedBlockNumber\""
+	TxSender                 *string              "json:\"txSender\" graphql:\"txSender\""
+	LastIndexed              *int                 "json:\"lastIndexed\" graphql:\"lastIndexed\""
+	LogCount                 *int                 "json:\"logCount\" graphql:\"logCount\""
+	ReceiptCount             *int                 "json:\"receiptCount\" graphql:\"receiptCount\""
+	BlockTimeCount           *int                 "json:\"blockTimeCount\" graphql:\"blockTimeCount\""
 }
 type GetLogs struct {
 	Response []*struct {
@@ -227,6 +228,9 @@ type GetTxSender struct {
 	Response *string "json:\"response\" graphql:\"response\""
 }
 type GetLastIndexed struct {
+	Response *int "json:\"response\" graphql:\"response\""
+}
+type GetLastConfirmedBlockNumber struct {
 	Response *int "json:\"response\" graphql:\"response\""
 }
 type GetLogCount struct {
@@ -656,6 +660,24 @@ func (c *Client) GetLastIndexed(ctx context.Context, chainID int, contractAddres
 
 	var res GetLastIndexed
 	if err := c.Client.Post(ctx, "GetLastIndexed", GetLastIndexedDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetLastConfirmedBlockNumberDocument = `query GetLastConfirmedBlockNumber ($chain_id: Int!) {
+	response: lastConfirmedBlockNumber(chain_id: $chain_id)
+}
+`
+
+func (c *Client) GetLastConfirmedBlockNumber(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetLastConfirmedBlockNumber, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+	}
+
+	var res GetLastConfirmedBlockNumber
+	if err := c.Client.Post(ctx, "GetLastConfirmedBlockNumber", GetLastConfirmedBlockNumberDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

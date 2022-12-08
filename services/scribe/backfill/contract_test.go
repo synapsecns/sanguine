@@ -370,7 +370,7 @@ func (b BackfillSuite) TestBSC() {
 	// Check to see if one log is recorded, one receipt is recorded, but no transactions.
 	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID)
 	Nil(b.T(), err)
-	Equal(b.T(), contractConfig.StartBlock, lastIndexed)
+	Equal(b.T(), currentBlock, lastIndexed)
 	timeElasped := time.Since(startTime)
 	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
 	Nil(b.T(), err)
