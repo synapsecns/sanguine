@@ -74,7 +74,7 @@ func (s Scribe) Start(ctx context.Context) error {
 					err := s.processRange(ctx, chainConfig.ChainID, chainConfig.RequiredConfirmations)
 					if err != nil {
 						timeout = b.Duration()
-						logger.Warnf("could not get current block number: %v", err)
+						logger.Warnf("could not livefill chain %d: %v", chainConfig.ChainID, err)
 
 						continue
 					}
@@ -221,6 +221,7 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 		if err != nil {
 			return fmt.Errorf("could not store last confirmed block: %w", err)
 		}
+		logger.Warnf("Confirmed block %d chainID: %d", i, chainID)
 	}
 
 	return nil
