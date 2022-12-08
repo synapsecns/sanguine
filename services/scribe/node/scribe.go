@@ -86,7 +86,6 @@ func (s Scribe) Start(ctx context.Context) error {
 				}
 			}
 		})
-
 	}
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("livefill failed: %w", err)
