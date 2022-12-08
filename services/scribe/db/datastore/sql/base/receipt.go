@@ -126,7 +126,7 @@ func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
 			return []types.Receipt{}, fmt.Errorf("could not find receipts with filter %+v: %w", receiptFilter, db.ErrNotFound)
 		}
-		return []types.Receipt{}, fmt.Errorf("could not store receipt: %w", dbTx.Error)
+		return []types.Receipt{}, fmt.Errorf("could not retrieve receipts: %w", dbTx.Error)
 	}
 
 	parsedReceipts, err := s.buildReceiptsFromDBReceipts(ctx, dbReceipts, receiptFilter.ChainID)
@@ -158,7 +158,7 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
 			return []types.Receipt{}, fmt.Errorf("could not find receipts with filter %+v: %w", receiptFilter, db.ErrNotFound)
 		}
-		return []types.Receipt{}, fmt.Errorf("could not store receipt: %w", dbTx.Error)
+		return []types.Receipt{}, fmt.Errorf("could not retrieve receipts: %w", dbTx.Error)
 	}
 
 	parsedReceipts, err := s.buildReceiptsFromDBReceipts(ctx, dbReceipts, receiptFilter.ChainID)
@@ -210,4 +210,20 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 	}
 
 	return receipts, nil
+}
+
+// RetrieveReceiptCountForContract retrieves the count of receipts per contract.
+func (s Store) RetrieveReceiptCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error) {
+	var count int64
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Receipt{}).
+		Where(&Receipt{ChainID: chainID}).
+		Where(&Receipt{ContractAddress: contractAddress.String()}).
+		Count(&count)
+
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("could not count receipts: %w", dbTx.Error)
+	}
+
+	return count, nil
 }
