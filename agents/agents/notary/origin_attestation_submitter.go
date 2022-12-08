@@ -82,7 +82,7 @@ func (a OriginAttestationSubmitter) update(ctx context.Context) error {
 	}
 
 	nowTime := time.Now()
-	submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToSubmit.SignedAttestation(), inProgressAttestationToSubmit.OriginDispatchBlockNumber(), &nowTime, 0)
+	submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToSubmit.SignedAttestation(), inProgressAttestationToSubmit.OriginDispatchBlockNumber(), &nowTime, 0, 0)
 	err = a.db.UpdateSubmittedToAttestationCollectorTime(ctx, submittedInProgressAttestation)
 	if err != nil {
 		return fmt.Errorf("could not store submission time for attestation: %w", err)

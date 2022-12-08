@@ -82,7 +82,7 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	latestNonce, currBlock, err := a.domain.AttestationCollector().GetLatestNonce(ctx, a.domain.Config().DomainID, a.destinationID, a.signer)
 
 	if latestNonce >= inProgressAttestationToConfirm.SignedAttestation().Attestation().Nonce() {
-		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime(), currBlock)
+		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime(), currBlock, 0)
 
 		err = a.db.UpdateConfirmedOnAttestationCollectorBlockNumber(ctx, confirmedInProgressAttestation)
 		if err != nil {
@@ -97,7 +97,7 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 		}
 
 		nowTime := time.Now()
-		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), &nowTime, 0)
+		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), &nowTime, 0, 0)
 		err = a.db.UpdateSubmittedToAttestationCollectorTime(ctx, submittedInProgressAttestation)
 		if err != nil {
 			return fmt.Errorf("could not store submission time for attestation: %w", err)

@@ -6,6 +6,15 @@ import (
 	"time"
 )
 
+type AttestationState uint32
+
+const (
+	AttestationStateNotaryUnsigned             AttestationState = iota // 0
+	AttestationStateNotarySignedUnsubmitted                            // 1
+	AttestationStateNotarySubmittedUnconfirmed                         // 2
+	AttestationStateNotaryConfirmed                                    // 3
+)
+
 const sizeOfUint256 = uint32(32)
 const sizeOfUint32 = uint32(4)
 
@@ -158,6 +167,8 @@ type InProgressAttestation interface {
 	SubmittedToAttestationCollectorTime() *time.Time
 	// ConfirmedOnAttestationCollectorBlockNumber is block number when we confirmed the attesation posted on AttestationCollector
 	ConfirmedOnAttestationCollectorBlockNumber() uint64
+	// AttestationState is the state the in-progress attestation is in right now
+	AttestationState() AttestationState
 }
 
 // inProgressAttestation is a struct that conforms to InProgressAttestation.
@@ -166,15 +177,17 @@ type inProgressAttestation struct {
 	originDispatchBlockNumber                  uint64
 	submittedToAttestationCollectorTime        *time.Time
 	confirmedOnAttestationCollectorBlockNumber uint64
+	attestationState                           AttestationState
 }
 
 // NewInProgressAttestation creates a new to process attestation.
-func NewInProgressAttestation(signedAttestation SignedAttestation, originDispatchBlockNumber uint64, submittedToAttestationCollectorTime *time.Time, confirmedOnAttestationCollectorBlockNumber uint64) InProgressAttestation {
+func NewInProgressAttestation(signedAttestation SignedAttestation, originDispatchBlockNumber uint64, submittedToAttestationCollectorTime *time.Time, confirmedOnAttestationCollectorBlockNumber uint64, state AttestationState) InProgressAttestation {
 	return inProgressAttestation{
 		signedAttestation:                          signedAttestation,
 		originDispatchBlockNumber:                  originDispatchBlockNumber,
 		submittedToAttestationCollectorTime:        submittedToAttestationCollectorTime,
 		confirmedOnAttestationCollectorBlockNumber: confirmedOnAttestationCollectorBlockNumber,
+		attestationState:                           state,
 	}
 }
 
@@ -192,6 +205,10 @@ func (t inProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time 
 
 func (t inProgressAttestation) ConfirmedOnAttestationCollectorBlockNumber() uint64 {
 	return t.confirmedOnAttestationCollectorBlockNumber
+}
+
+func (t inProgressAttestation) AttestationState() AttestationState {
+	return t.attestationState
 }
 
 var _ InProgressAttestation = inProgressAttestation{}

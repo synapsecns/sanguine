@@ -287,9 +287,9 @@ func (s SignedAttestation) Root() [32]byte {
 // InProgressAttestation stores attestations to be processed.
 type InProgressAttestation struct {
 	// IPOrigin is the origin of the attestation
-	IPOrigin uint32 `gorm:"column:origin;primaryKey;autoIncrement:false;->;<-:create"`
+	IPOrigin uint32 `gorm:"column:origin;primaryKey;index:idx_origin_destination_state;autoIncrement:false;->;<-:create"`
 	// IPDestination is the destination of the attestation
-	IPDestination uint32 `gorm:"column:destination;primaryKey;autoIncrement:false;->;<-:create"`
+	IPDestination uint32 `gorm:"column:destination;primaryKey;index:idx_origin_destination_state;autoIncrement:false;->;<-:create"`
 	// IPNonce is the nonce of the attestation
 	IPNonce uint32 `gorm:"column:nonce;primaryKey;autoIncrement:false;->;<-:create"`
 	// IPRoot is the root of the signed attestation
@@ -302,6 +302,8 @@ type InProgressAttestation struct {
 	IPSubmittedToAttestationCollectorTime sql.NullTime `gorm:"column:submitted_to_attestation_collector_time;type:TIMESTAMP NULL;<-:update"`
 	// IPConfirmedOnAttestationCollectorBlockNumber is block number when we confirmed the attesation posted on AttestationCollector
 	IPConfirmedOnAttestationCollectorBlockNumber uint64 `gorm:"column:confirmed_on_attestation_collector_block_number;default:0;<-:update"`
+	// IPAttestationState is the current state of the attestation
+	IPAttestationState uint32 `gorm:"column:attestation_state;index:idx_origin_destination_state;autoIncrement:false;->;<-:create"`
 }
 
 // Attestation gets the attestation.
@@ -366,6 +368,11 @@ func (t InProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time 
 // ConfirmedOnAttestationCollectorBlockNumber gets the block number when we confirmed the attestation was posted on AttestationCollector.
 func (t InProgressAttestation) ConfirmedOnAttestationCollectorBlockNumber() uint64 {
 	return t.IPConfirmedOnAttestationCollectorBlockNumber
+}
+
+// AttestationState gets the state of the attestation.
+func (t InProgressAttestation) AttestationState() types.AttestationState {
+	return types.AttestationState(t.IPAttestationState)
 }
 
 var _ types.Attestation = SignedAttestation{}
