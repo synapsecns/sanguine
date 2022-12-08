@@ -367,3 +367,20 @@ func (g APISuite) TestRetrieveBlockTimesCountForChain() {
 	Nil(g.T(), err)
 	Equal(g.T(), 10, *blockTimeCountB.Response)
 }
+
+func (g APISuite) TestLastConfirmedBlock() {
+	// create data for storing a block time
+	chainID := gofakeit.Uint32()
+	blockNumber := uint64(gofakeit.Uint32())
+
+	// store last indexed
+	err := g.db.StoreLastConfirmedBlock(g.GetTestContext(), chainID, blockNumber)
+	Nil(g.T(), err)
+
+	// retrieve last indexed
+	retrievedBlockTime, err := g.gqlClient.GetLastConfirmedBlockNumber(g.GetTestContext(), int(chainID))
+	Nil(g.T(), err)
+
+	// check that the data is equal
+	Equal(g.T(), *retrievedBlockTime.Response, int(blockNumber))
+}

@@ -82,6 +82,10 @@ type Query {
   firstStoredBlockNumber(
     chain_id: Int!
   ): Int
+  # returns the last confirmed block number for a chain
+  lastConfirmedBlockNumber(
+    chain_id: Int!
+  ): Int
   # returns the sender of a transaction
   txSender(
     tx_hash: String!

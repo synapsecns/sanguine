@@ -33,6 +33,10 @@ query GetLastIndexed ($chain_id: Int!, $contract_address: String!) {
   response: lastIndexed (chain_id: $chain_id, contract_address: $contract_address)
 }
 
+query GetLastConfirmedBlockNumber ($chain_id: Int!) {
+  response: lastConfirmedBlockNumber (chain_id: $chain_id)
+}
+
 query GetLogCount ($chain_id: Int!, $contract_address: String!) {
   response: logCount (chain_id: $chain_id, contract_address: $contract_address)
 }
