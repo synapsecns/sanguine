@@ -131,7 +131,6 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 								logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 								continue
 							}
-							fmt.Println("processed Chunk logs for chain", contract.ContractType, c.chainConfig.ChainID, "from block", funcHeight, "to block", rangeEnd)
 							return nil
 						}
 					}
