@@ -51,11 +51,12 @@ func (s Scribe) Start(ctx context.Context) error {
 	if refreshRate == 0 {
 		refreshRate = 1
 	}
+	g, groupCtx := errgroup.WithContext(ctx)
 
 	for i := range s.config.Chains {
 		chainConfig := s.config.Chains[i]
 
-		go func() {
+		g.Go(func() error {
 			b := &backoff.Backoff{
 				Factor: 2,
 				Jitter: true,
@@ -67,11 +68,11 @@ func (s Scribe) Start(ctx context.Context) error {
 
 			for {
 				select {
-				case <-ctx.Done():
+				case <-groupCtx.Done():
 					logger.Warnf("scribe for chain %d shutting down", chainConfig.ChainID)
-					return
+					return fmt.Errorf("scribe for chain %d shutting down: %w", chainConfig.ChainID, groupCtx.Err())
 				case <-time.After(timeout):
-					err := s.processRange(ctx, chainConfig.ChainID, chainConfig.RequiredConfirmations)
+					err := s.processRange(groupCtx, chainConfig.ChainID, chainConfig.RequiredConfirmations)
 					if err != nil {
 						timeout = b.Duration()
 						logger.Warnf("could not livefill chain %d: %v", chainConfig.ChainID, err)
@@ -84,7 +85,11 @@ func (s Scribe) Start(ctx context.Context) error {
 					logger.Infof("processed range for chain %d, continuing to livefill", chainConfig.ChainID)
 				}
 			}
-		}()
+		})
+
+	}
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("livefill failed: %w", err)
 	}
 
 	return nil
