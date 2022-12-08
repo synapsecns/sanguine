@@ -19,6 +19,10 @@ func getOrderByNonceAsc() string {
 	return fmt.Sprintf("`%s` asc", NonceFieldName)
 }
 
+func getOrderByNonceDesc() string {
+	return fmt.Sprintf("`%s` desc", NonceFieldName)
+}
+
 // StoreNewInProgressAttestation stores in-progress attestation only if it hasn't already been stored
 func (s Store) StoreNewInProgressAttestation(ctx context.Context, attestation types.Attestation, originDispathBlockNumber uint64) error {
 	if originDispathBlockNumber == uint64(0) {
@@ -199,10 +203,8 @@ func (s Store) RetrieveOldestUnsignedInProgressAttestation(ctx context.Context, 
 	}
 	var inProgressAttestation InProgressAttestation
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
-		Where(&InProgressAttestation{
-			IPOrigin:      originID,
-			IPDestination: destinationID,
-		}).
+		Where("origin", originID).
+		Where("destination", destinationID).
 		Where("attestation_state", uint32(types.AttestationStateNotaryUnsigned)).
 		Order(getOrderByNonceAsc()).
 		First(&inProgressAttestation)
@@ -226,10 +228,8 @@ func (s Store) RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx context.
 	}
 	var inProgressAttestation InProgressAttestation
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
-		Where(&InProgressAttestation{
-			IPOrigin:      originID,
-			IPDestination: destinationID,
-		}).
+		Where("origin", originID).
+		Where("destination", destinationID).
 		Where("attestation_state", uint32(types.AttestationStateNotarySignedUnsubmitted)).
 		Order(getOrderByNonceAsc()).
 		First(&inProgressAttestation)
@@ -251,21 +251,44 @@ func (s Store) RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx conte
 	if destinationID == uint32(0) {
 		return nil, fmt.Errorf("RetrieveOldestUnconfirmedSubmittedInProgressAttestation called with 0 destination")
 	}
-	orderByNonceAsc := fmt.Sprintf("`%s` asc", NonceFieldName)
 
 	var inProgressAttestation InProgressAttestation
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
-		Where(&InProgressAttestation{
-			IPOrigin:      originID,
-			IPDestination: destinationID,
-		}).
+		Where("origin", originID).
+		Where("destination", destinationID).
 		Where("attestation_state", uint32(types.AttestationStateNotarySubmittedUnconfirmed)).
-		Order(orderByNonceAsc).
+		Order(getOrderByNonceAsc()).
 		First(&inProgressAttestation)
 
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("could not find submitted attestation waiting to be confirmed with origin %d and destination %d: %w", originID, destinationID, db.ErrNotFound)
+		}
+		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
+	}
+	return inProgressAttestation, err
+}
+
+// RetrieveNewestConfirmedInProgressAttestation retrieves the newest in-progress attestation that has been confirmed on the AttestationCollector
+func (s Store) RetrieveNewestConfirmedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
+	if originID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveNewestConfirmedInProgressAttestation called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveNewestConfirmedInProgressAttestation called with 0 destination")
+	}
+
+	var inProgressAttestation InProgressAttestation
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where("origin", originID).
+		Where("destination", destinationID).
+		Where("attestation_state", uint32(types.AttestationStateNotaryConfirmed)).
+		Order(getOrderByNonceDesc()).
+		First(&inProgressAttestation)
+
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("could not find confirmed attestation with origin %d and destination %d: %w", originID, destinationID, db.ErrNotFound)
 		}
 		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
 	}

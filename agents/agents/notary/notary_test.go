@@ -7,10 +7,10 @@ import (
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/db/datastore/sql"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
@@ -18,7 +18,7 @@ import (
 func (u NotarySuite) TestNotaryE2E() {
 	u.T().Skip()
 	testConfig := config.NotaryConfig{
-		DestinationID: gofakeit.Uint32(),
+		DestinationID: u.destinationID,
 		Domains: map[string]config.DomainConfig{
 			"test": u.domainClient.Config(),
 		},
@@ -33,6 +33,12 @@ func (u NotarySuite) TestNotaryE2E() {
 		},
 	}
 	ud, err := notary.NewNotary(u.GetTestContext(), testConfig)
+	Nil(u.T(), err)
+
+	dbType, err := dbcommon.DBTypeFromString(testConfig.Database.Type)
+	Nil(u.T(), err)
+
+	dbHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), dbType, testConfig.Database.ConnString)
 	Nil(u.T(), err)
 
 	auth := u.testBackend.GetTxContext(u.GetTestContext(), nil)
@@ -52,9 +58,15 @@ func (u NotarySuite) TestNotaryE2E() {
 	u.Eventually(func() bool {
 		// TODO (joe): Figure out why attestationContract points to old version and fix this test after the GlobalRegistry changes
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		latestNonce, _, err := u.attestationContract.GetLatestNonce(&bind.CallOpts{Context: u.GetTestContext()}, u.domainClient.Config().DomainID, testConfig.DestinationID, u.signer.Address())
+		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveNewestConfirmedInProgressAttestation(u.GetTestContext(), u.domainClient.Config().DomainID, testConfig.DestinationID)
 		Nil(u.T(), err)
+		NotNil(u.T(), retrievedConfirmedInProgressAttestation)
 
-		return latestNonce != 0
+		Equal(u.T(), u.domainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin())
+		Equal(u.T(), testConfig.DestinationID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination())
+		Equal(u.T(), types.AttestationStateNotaryConfirmed, retrievedConfirmedInProgressAttestation.AttestationState())
+
+		return retrievedConfirmedInProgressAttestation != nil &&
+			retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Nonce() != 0
 	})
 }
