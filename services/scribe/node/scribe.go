@@ -61,7 +61,7 @@ func (s Scribe) Start(ctx context.Context) error {
 				Factor: 2,
 				Jitter: true,
 				Min:    1 * time.Second,
-				Max:    30 * time.Second,
+				Max:    10 * time.Second,
 			}
 
 			timeout := time.Duration(0)
@@ -70,7 +70,7 @@ func (s Scribe) Start(ctx context.Context) error {
 				select {
 				case <-groupCtx.Done():
 					logger.Warnf("scribe for chain %d shutting down", chainConfig.ChainID)
-					return fmt.Errorf("scribe for chain %d shutting down: %w", chainConfig.ChainID, groupCtx.Err())
+					return nil
 				case <-time.After(timeout):
 					err := s.processRange(groupCtx, chainConfig.ChainID, chainConfig.RequiredConfirmations)
 					if err != nil {
