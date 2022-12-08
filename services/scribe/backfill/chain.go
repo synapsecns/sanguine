@@ -219,7 +219,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				return fmt.Errorf("could not backfill block times from last stored block time: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, currentBlock, b.Attempt(), b.Duration())
 			}
 
-			LogEvent(ErrorLevel, "Completed adding later blocks", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "bt": true})
+			LogEvent(WarnLevel, "Completed adding later blocks", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "bt": true})
 
 			return nil
 		})
