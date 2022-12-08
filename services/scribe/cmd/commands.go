@@ -106,16 +106,15 @@ var backfillCommand = &cli.Command{
 			return fmt.Errorf("could not create scribe backfiller: %w", err)
 		}
 
-	LIVEFILL:
 		// TODO delete once livefilling done
 		ctx, cancel := context.WithTimeout(c.Context, time.Minute*5)
 		defer cancel()
-
-		err = scribeBackfiller.Backfill(ctx)
-		if err != nil {
-			goto LIVEFILL
+		for {
+			err = scribeBackfiller.Backfill(ctx)
+			if err != nil {
+				ctx, _ = context.WithTimeout(c.Context, time.Minute*5)
+			}
 		}
-		return nil
 
 	},
 }
