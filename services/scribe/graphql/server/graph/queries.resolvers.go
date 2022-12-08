@@ -122,6 +122,18 @@ func (r *queryResolver) FirstStoredBlockNumber(ctx context.Context, chainID int)
 	return &blockNumberInt, nil
 }
 
+// LastConfirmedBlockNumber is the resolver for the lastConfirmedBlockNumber field.
+func (r *queryResolver) LastConfirmedBlockNumber(ctx context.Context, chainID int) (*int, error) {
+	blockNumber, err := r.DB.RetrieveLastConfirmedBlock(ctx, uint32(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving first block: %w", err)
+	}
+
+	blockNumberInt := int(blockNumber)
+
+	return &blockNumberInt, nil
+}
+
 // TxSender is the resolver for the txSender field.
 func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int) (*string, error) {
 	filter := db.EthTxFilter{
