@@ -21,3 +21,8 @@ func (a OriginAttestationSigner) Update(ctx context.Context) error {
 func (a OriginAttestationSubmitter) Update(ctx context.Context) error {
 	return a.update(ctx)
 }
+
+// Update wraps update for OriginAttestationVerifier.
+func (a OriginAttestationVerifier) Update(ctx context.Context) error {
+	return a.update(ctx)
+}

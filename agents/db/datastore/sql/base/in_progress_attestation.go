@@ -134,6 +134,12 @@ func (s Store) UpdateConfirmedOnAttestationCollectorBlockNumber(ctx context.Cont
 // Later, we will replace this with calling suggestAttestation for our particular destination
 // and only getting the latest one.
 func (s Store) RetrieveLatestCachedNonce(ctx context.Context, originID, destinationID uint32) (_ uint32, err error) {
+	if originID == uint32(0) {
+		return uint32(0), fmt.Errorf("RetrieveLatestCachedNonce called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return uint32(0), fmt.Errorf("RetrieveLatestCachedNonce called with 0 destination")
+	}
 	var nonce nullable.Uint32
 
 	selectMaxNonce := fmt.Sprintf("max(`%s`)", NonceFieldName)
@@ -157,6 +163,15 @@ func (s Store) RetrieveLatestCachedNonce(ctx context.Context, originID, destinat
 // RetrieveInProgressAttestation retrieves a in-progress attestation by <origin, destination, nonce>
 // This is mainly used for testing
 func (s Store) RetrieveInProgressAttestation(ctx context.Context, originID, destinationID, nonce uint32) (attestation types.InProgressAttestation, err error) {
+	if originID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveInProgressAttestation called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveInProgressAttestation called with 0 destination")
+	}
+	if nonce == uint32(0) {
+		return nil, fmt.Errorf("RetrieveInProgressAttestation called with 0 nonce")
+	}
 	var inProgressAttestation InProgressAttestation
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
 		Where(&InProgressAttestation{IPOrigin: originID, IPDestination: destinationID, IPNonce: nonce}).
@@ -176,6 +191,12 @@ func (s Store) RetrieveInProgressAttestation(ctx context.Context, originID, dest
 // want to replace this with RetrieveNewestUnsignedInProgressAttestation. For Notary MVP, we want to sign all the nonces though
 // so we will just get the oldest and go in order
 func (s Store) RetrieveOldestUnsignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
+	if originID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestUnsignedInProgressAttestation called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestUnsignedInProgressAttestation called with 0 destination")
+	}
 	var inProgressAttestation InProgressAttestation
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
 		Where(&InProgressAttestation{
@@ -197,6 +218,12 @@ func (s Store) RetrieveOldestUnsignedInProgressAttestation(ctx context.Context, 
 
 // RetrieveOldestUnsubmittedSignedInProgressAttestation retrieves the oldest in-progress attestation that has been signed but not yet submitted.
 func (s Store) RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
+	if originID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestUnsubmittedSignedInProgressAttestation called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestUnsubmittedSignedInProgressAttestation called with 0 destination")
+	}
 	var inProgressAttestation InProgressAttestation
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
 		Where(&InProgressAttestation{
@@ -218,6 +245,12 @@ func (s Store) RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx context.
 
 // RetrieveOldestUnconfirmedSubmittedInProgressAttestation retrieves the oldest in-progress attestation that has been signed and submitted but not yet confirmed on the AttestationCollector
 func (s Store) RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
+	if originID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestUnconfirmedSubmittedInProgressAttestation called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestUnconfirmedSubmittedInProgressAttestation called with 0 destination")
+	}
 	orderByNonceAsc := fmt.Sprintf("`%s` asc", NonceFieldName)
 
 	var inProgressAttestation InProgressAttestation
