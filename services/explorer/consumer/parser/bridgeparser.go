@@ -343,42 +343,53 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 	bridgeEvent.TokenID = ToNullString(tokenID) // TODO Change to coingecko ID.
 
-	if *tokenID != fetcher.NoTokenID {
+	if *tokenID == fetcher.NoTokenID {
+		// handle an inauthentic token.
+		err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
 
-		// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
-		token, err := p.fetcher.GetToken(ctx, chainID, tokenID, uint32(iFace.GetBlockNumber()))
 		if err != nil {
-			return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+			return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.Hex())
 		}
+		return nil
+	}
+	// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
+	token, err := p.fetcher.GetToken(ctx, chainID, tokenID, uint32(iFace.GetBlockNumber()))
+	if err != nil {
+		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+	}
 
-		bridgeEvent.TokenDecimal = &token.TokenDecimals
-		timeStamp, err := p.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
-		if err != nil {
-			return fmt.Errorf("could not get block time: %w", err)
-		}
+	bridgeEvent.TokenDecimal = &token.TokenDecimals
+	timeStamp, err := p.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	if err != nil {
+		return fmt.Errorf("could not get block time: %w", err)
+	}
+	if *timeStamp == 0 {
+		logger.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
+		return nil
+	}
 
-		timeStampBig := uint64(*timeStamp)
-		bridgeEvent.TimeStamp = &timeStampBig
+	timeStampBig := uint64(*timeStamp)
+	bridgeEvent.TimeStamp = &timeStampBig
 
-		// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
-		coinGeckoID := p.coinGeckoIDs[*tokenID]
+	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
+	coinGeckoID := p.coinGeckoIDs[*tokenID]
 
-		// Add TokenSymbol to bridgeEvent.
-		bridgeEvent.TokenSymbol = ToNullString(tokenID)
-		var tokenPrice *float64
-		if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) {
-			tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, *timeStamp, coinGeckoID)
-		}
-		if tokenPrice != nil {
-			// Add AmountUSD to bridgeEvent (if price is not nil).
-			bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
+	// Add TokenSymbol to bridgeEvent.
+	bridgeEvent.TokenSymbol = ToNullString(tokenID)
+	var tokenPrice *float64
+	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) {
+		tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, *timeStamp, coinGeckoID)
+	}
+	if tokenPrice != nil {
+		// Add AmountUSD to bridgeEvent (if price is not nil).
+		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
 
-			// Add FeeAmountUSD to bridgeEvent (if price is not nil).
-			if iFace.GetFee() != nil {
-				bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
-			}
+		// Add FeeAmountUSD to bridgeEvent (if price is not nil).
+		if iFace.GetFee() != nil {
+			bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
 		}
 	}
+
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
 
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"math/big"
 )
 
+// NoTokenID is the string returned when a token id is not found (not an authentic token).
 const NoTokenID = "NO_TOKEN_ID"
 
 // BridgeConfigFetcher is the fetcher for the bridge config contract.

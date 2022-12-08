@@ -112,7 +112,7 @@ RETRY:
 	select {
 	case <-ctx.Done():
 
-		return nil, fmt.Errorf("could not get timestamp for block, context cancelled %d: %d", chainID, blockNumber)
+		return nil, fmt.Errorf("could not get timestamp for block, context canceled %d: %d", chainID, blockNumber)
 	case <-time.After(timeout):
 
 		timeStamp, err := s.FetchClient.GetBlockTime(ctx, chainID, blockNumber)
@@ -125,7 +125,8 @@ RETRY:
 
 		if timeStamp == nil || timeStamp.Response == nil {
 			logger.Warnf("could not get timestamp for block, invalid blocktime %d: %d", chainID, blockNumber)
-			return nil, nil
+			zero := 0
+			return &zero, nil
 		}
 
 		return timeStamp.Response, nil
