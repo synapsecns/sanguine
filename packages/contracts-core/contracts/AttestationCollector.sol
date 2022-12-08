@@ -229,27 +229,29 @@ contract AttestationCollector is AttestationHub, OwnableUpgradeable {
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool) {
-        // // Get attestation fields
-        // uint32 origin = _attestationView.attestedOrigin();
-        // uint32 destination = _attestationView.attestedDestination();
-        // uint32 nonce = _attestationView.attestedNonce();
-        // bytes32 root = _attestationView.attestedRoot();
-        // // Get attestation IDs
-        // uint96 attestedKey = _attestationView.attestedKey();
-        // uint64 attestedDomains = _attestationView.attestedDomains();
-        // // Check if the same Notary have already submitted a more recent attestation
-        // require(nonce > latestNonces[attestedDomains][_notary], "Outdated attestation");
-        // // Don't store Attestation, if another Notary
-        // // have submitted the same (origin, destination, nonce, root) before.
-        // require(!_signatureExists(origin, destination, nonce, root), "Duplicated attestation");
-        // // Update Notary's "latest attestation" for (origin, destination)
-        // latestNonces[attestedDomains][_notary] = nonce;
-        // latestRoots[attestedDomains][_notary] = root;
-        // // Save signature and root
-        // signatures[attestedKey][root] = _attestationView.notarySignature().clone();
-        // attestedRoots[attestedKey].push(root);
-        // emit AttestationAccepted(_notary, _attestation);
-        // return true;
+        /* TODO (Chi): update AttestationCollector to handle the co-signed attestations
+        // Get attestation fields
+        uint32 origin = _attestationView.attestedOrigin();
+        uint32 destination = _attestationView.attestedDestination();
+        uint32 nonce = _attestationView.attestedNonce();
+        bytes32 root = _attestationView.attestedRoot();
+        // Get attestation IDs
+        uint96 attestedKey = _attestationView.attestedKey();
+        uint64 attestedDomains = _attestationView.attestedDomains();
+        // Check if the same Notary have already submitted a more recent attestation
+        require(nonce > latestNonces[attestedDomains][_notary], "Outdated attestation");
+        // Don't store Attestation, if another Notary
+        // have submitted the same (origin, destination, nonce, root) before.
+        require(!_signatureExists(origin, destination, nonce, root), "Duplicated attestation");
+        // Update Notary's "latest attestation" for (origin, destination)
+        latestNonces[attestedDomains][_notary] = nonce;
+        latestRoots[attestedDomains][_notary] = root;
+        // Save signature and root
+        signatures[attestedKey][root] = _attestationView.notarySignature().clone();
+        attestedRoots[attestedKey].push(root);
+        emit AttestationAccepted(_notary, _attestation);
+        return true;
+        */
     }
 
     function _formatAttestation(
@@ -258,12 +260,14 @@ contract AttestationCollector is AttestationHub, OwnableUpgradeable {
         uint32 _nonce,
         bytes32 _root
     ) internal view returns (bytes memory) {
-        // uint96 attestationKey = Attestation.attestationKey(_origin, _destination, _nonce);
-        // return
-        //     Attestation.formatAttestation(
-        //         Attestation.formatAttestationData(_origin, _destination, _nonce, _root),
-        //         signatures[attestationKey][_root]
-        //     );
+        /* TODO (Chi): update AttestationCollector to handle the co-signed attestations
+        uint96 attestationKey = Attestation.attestationKey(_origin, _destination, _nonce);
+        return
+            Attestation.formatAttestation(
+                Attestation.formatAttestationData(_origin, _destination, _nonce, _root),
+                signatures[attestationKey][_root]
+            );
+        */
     }
 
     function _signatureExists(
