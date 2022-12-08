@@ -87,7 +87,6 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
 		}
 		alterQuery := fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d AND %s = '%s'", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID, ContractAddressFieldName, contractAddress)
-		fmt.Println("QUE", alterQuery)
 		s.db.WithContext(ctx).Exec(alterQuery)
 	}
 

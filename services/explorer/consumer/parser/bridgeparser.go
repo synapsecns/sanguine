@@ -313,7 +313,8 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 			return iFace, nil
 		default:
-			return nil, fmt.Errorf("unknown topic: %s %s", logTopic.Hex(), logTopic.String())
+			logger.Errorf("unknown bridge topic: %s %s chain: %d add: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+			return nil, nil
 		}
 	}(log)
 
@@ -321,7 +322,10 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		// Switch failed.
 		return err
 	}
-
+	if iFace == nil {
+		// unknown topic.
+		return nil
+	}
 	// Get TokenID from BridgeConfig data.
 	tokenID, err := p.fetcher.GetTokenID(ctx, big.NewInt(int64(chainID)), iFace.GetToken())
 	if err != nil {
@@ -350,8 +354,10 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 	// Add TokenSymbol to bridgeEvent.
 	bridgeEvent.TokenSymbol = ToNullString(tokenID)
-
-	tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
+	var tokenPrice *float64
+	if !(coinGeckoID == "xjewel" && *timeStamp.Response < 1649030400) {
+		tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
+	}
 	if tokenPrice != nil {
 		// Add AmountUSD to bridgeEvent (if price is not nil).
 		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
@@ -372,7 +378,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
 
 	if err != nil {
-		return fmt.Errorf("could not store event: %w", err)
+		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.Hex())
 	}
 	return nil
 }

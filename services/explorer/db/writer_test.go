@@ -3,12 +3,13 @@ package db_test
 import (
 	"database/sql"
 	"fmt"
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
-	"math/big"
 )
 
 func (t *DBSuite) TestBridgeWrite() {
@@ -55,7 +56,6 @@ func (t *DBSuite) TestLastBlockWrite() {
 	chainID := gofakeit.Uint32()
 	blockNumber := gofakeit.Uint64()
 	contract := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
-	fmt.Println(chainID, blockNumber, contract)
 	err := t.db.StoreLastBlock(t.GetTestContext(), chainID, blockNumber, contract)
 	Nil(t.T(), err)
 	blockNumber++

@@ -109,7 +109,6 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	}
 
 	value := fmt.Sprintf("%f", res)
-	fmt.Println(value)
 	output := model.ValueResult{
 		Value: &value,
 	}

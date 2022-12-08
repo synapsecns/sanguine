@@ -3,6 +3,8 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
@@ -12,7 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"golang.org/x/sync/errgroup"
-	"time"
 )
 
 // ChainBackfiller is an explorer backfiller for a chain.
@@ -61,19 +62,14 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 
 		switch contract.ContractType {
 		case "bridge":
-			fmt.Println("bridge")
 			eventParser = c.bridgeParser
 		case "swap":
-			fmt.Println("swap")
 			eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
 		case "messagebus":
-			fmt.Println("messagebus")
 			eventParser = c.messageBusParser
 		}
 		contractsGroup.Go(func() error {
 			g, groupCtx := errgroup.WithContext(chainCtx)
-
-			fmt.Println("contract", contract.Address, contract.ContractType)
 
 			// Create a new context for the chain so all chains don't halt when backfilling is completed.
 			g.SetLimit(c.chainConfig.MaxGoroutines)
@@ -135,7 +131,6 @@ func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
 								logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 								continue
 							}
-							fmt.Println("DONE WITH CHUNK", funcHeight, rangeEnd, contract.Address, contract.ContractType, c.chainConfig.ChainID)
 							return nil
 						}
 					}
