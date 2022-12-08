@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"github.com/libs4go/crypto/ecdsa"
 )
@@ -86,6 +87,18 @@ func EncodeAttestation(attestation Attestation) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func Hash(a Attestation) ([32]byte, error) {
+	encodedAttestation, err := EncodeAttestation(a)
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("could not encode attestation: %w", err)
+	}
+
+	hashedDigest := crypto.Keccak256Hash(encodedAttestation)
+
+	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
+	return signedHash, nil
 }
 
 // DecodeAttestation decodes an attestation.

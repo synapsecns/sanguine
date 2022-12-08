@@ -284,14 +284,8 @@ func (s SignedAttestation) Root() [32]byte {
 	return common.BytesToHash(s.SARoot)
 }
 
-// Hash gets the attestation hash.
-func (s SignedAttestation) Hash() ([32]byte, error) {
-	return s.Attestation().Hash()
-}
-
 // InProgressAttestation stores attestations to be processed.
 type InProgressAttestation struct {
-	gorm.Model
 	// IPOrigin is the origin of the attestation
 	IPOrigin uint32 `gorm:"column:origin;primaryKey;autoIncrement:false;->;<-:create"`
 	// IPDestination is the destination of the attestation
@@ -307,7 +301,7 @@ type InProgressAttestation struct {
 	// IPSubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
 	IPSubmittedToAttestationCollectorTime sql.NullTime `gorm:"column:submitted_to_attestation_collector_time;type:TIMESTAMP NULL;<-:update"`
 	// IPConfirmedOnAttestationCollectorBlockNumber is block number when we confirmed the attesation posted on AttestationCollector
-	IPConfirmedOnAttestationCollectorBlockNumber uint64 `gorm:"column:confirmed_on_attestation_collector_block_number;<-:update"`
+	IPConfirmedOnAttestationCollectorBlockNumber uint64 `gorm:"column:confirmed_on_attestation_collector_block_number;default:0;<-:update"`
 }
 
 // Attestation gets the attestation.
@@ -353,11 +347,6 @@ func (t InProgressAttestation) Nonce() uint32 {
 // Root gets the root of the in-progress attestation.
 func (t InProgressAttestation) Root() [32]byte {
 	return common.BytesToHash(t.IPRoot)
-}
-
-// Hash gets the attestation hash.
-func (t InProgressAttestation) Hash() ([32]byte, error) {
-	return t.SignedAttestation().Attestation().Hash()
 }
 
 // OriginDispatchBlockNumber gets the block number when message was dispatched on origin.

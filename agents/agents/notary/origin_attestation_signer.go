@@ -77,7 +77,7 @@ func (a OriginAttestationSigner) update(ctx context.Context) error {
 		return nil
 	}
 
-	hashedUpdate, err := inProgressAttestationToSign.SignedAttestation().Attestation().Hash()
+	hashedUpdate, err := types.Hash(inProgressAttestationToSign.SignedAttestation().Attestation())
 	if err != nil {
 		return fmt.Errorf("could not hash update: %w", err)
 	}
