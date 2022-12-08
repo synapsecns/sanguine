@@ -116,11 +116,69 @@ contract DestinationTest is DestinationTools {
     ▏*║                 TESTS: SUBMIT ATTESTATION (REVERTS)                  ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_submitAttestation_revert_fakeNotary() public {
+    function test_submitAttestation_revert_noGuards() public {
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_LOCAL,
+            guardSigs: 0,
+            notarySigs: 1
+        });
         createAttestationMock({
             origin: DOMAIN_REMOTE,
             destination: DOMAIN_LOCAL,
-            signer: attacker
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
+        });
+        // Should reject attestation with no Guard signatures
+        destinationSubmitAttestation(DOMAIN_LOCAL, "No guard signatures");
+    }
+
+    function test_submitAttestation_revert_noNotaries() public {
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_LOCAL,
+            guardSigs: 1,
+            notarySigs: 0
+        });
+        createAttestationMock({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
+        });
+        // Should reject attestation with no Notary signatures
+        destinationSubmitAttestation(DOMAIN_LOCAL, "No notary signatures");
+    }
+
+    function test_submitAttestation_revert_fakeGuard() public {
+        // index 0 refers to first Guard
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_LOCAL,
+            guardSigs: 1,
+            notarySigs: 1,
+            attackerIndex: 0
+        });
+        createAttestationMock({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
+        });
+        // Should reject attestation signed by not a Guard
+        destinationSubmitAttestation(DOMAIN_LOCAL, "Signer is not authorized");
+    }
+
+    function test_submitAttestation_revert_fakeNotary() public {
+        // index 1 refers to first Guard
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_LOCAL,
+            guardSigs: 1,
+            notarySigs: 1,
+            attackerIndex: 1
+        });
+        createAttestationMock({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
         });
         // Should reject attestation signed by not a Notary
         destinationSubmitAttestation(DOMAIN_LOCAL, "Signer is not authorized");
@@ -137,12 +195,14 @@ contract DestinationTest is DestinationTools {
         destinationSubmitAttestation(DOMAIN_LOCAL, "Empty root");
     }
 
-    // TODO (Chi): enable test once/if DomainNotaryRegistry is deprecated
     function test_submitAttestation_revert_fromLocalDomain() public {
         // Create attestation for (LOCAL -> REMOTE) direction
         createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
         // Destination doesn't track REMOTE Notaries, let's artificially add one
-        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(attestationDestination, attestationNotary);
+        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(
+            attestationDestination,
+            attestationNotaries[0]
+        );
         // Should reject attestations with origin = local domain
         destinationSubmitAttestation(DOMAIN_LOCAL, "!attestationOrigin: local");
     }
@@ -151,7 +211,10 @@ contract DestinationTest is DestinationTools {
         // Create attestation for (SYNAPSE -> REMOTE) direction
         createAttestationMock({ origin: DOMAIN_SYNAPSE, destination: DOMAIN_REMOTE });
         // Destination doesn't track REMOTE Notaries, let's artificially add one
-        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(attestationDestination, attestationNotary);
+        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(
+            attestationDestination,
+            attestationNotaries[0]
+        );
         // Should reject attestations with destination != local domain
         destinationSubmitAttestation(DOMAIN_LOCAL, "!attestationDestination: !local");
     }

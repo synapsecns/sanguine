@@ -425,13 +425,39 @@ contract OriginTest is OriginTools {
         createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
     }
 
-    // Create an attestation signed by not a Notary
-    function _createAttestation_revert_notNotary() internal {
+    // Create an attestation signed by not a Guard
+    function _createAttestation_revert_notGuard() internal {
         test_dispatch();
+        // index 0 refers to first Guard
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_REMOTE,
+            guardSigs: 1,
+            notarySigs: 1,
+            attackerIndex: 0
+        });
         createAttestationMock({
             origin: DOMAIN_LOCAL,
             destination: DOMAIN_REMOTE,
-            signer: attacker
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
+        });
+    }
+
+    // Create an attestation signed by not a Notary
+    function _createAttestation_revert_notNotary() internal {
+        test_dispatch();
+        // index 1 refers to first Guard
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_REMOTE,
+            guardSigs: 1,
+            notarySigs: 1,
+            attackerIndex: 1
+        });
+        createAttestationMock({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
         });
     }
 

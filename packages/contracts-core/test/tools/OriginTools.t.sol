@@ -56,7 +56,14 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         uint256 notaryIndex
     ) public {
         (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
-        createAttestation(origin, destination, nonce, root, notaryIndex);
+        createAttestation({
+            origin: origin,
+            destination: destination,
+            nonce: nonce,
+            root: root,
+            guardIndex: 0,
+            notaryIndex: notaryIndex
+        });
     }
 
     // Chain's default Notary attestation for given domain's Origin: current root and fake nonce
@@ -79,7 +86,14 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     ) public {
         (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
         require(nonce != fakeNonce, "Failed to provide wrong nonce");
-        createAttestation(origin, destination, fakeNonce, root, notaryIndex);
+        createAttestation({
+            origin: origin,
+            destination: destination,
+            nonce: fakeNonce,
+            root: root,
+            guardIndex: 0,
+            notaryIndex: notaryIndex
+        });
     }
 
     // Chain's default Notary attestation for given domain's Origin: fake root and current nonce
@@ -102,7 +116,14 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     ) public {
         (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
         require(root != fakeRoot, "Failed to provide wrong nonce");
-        createAttestation(origin, destination, nonce, fakeRoot, notaryIndex);
+        createAttestation({
+            origin: origin,
+            destination: destination,
+            nonce: nonce,
+            root: fakeRoot,
+            guardIndex: 0,
+            notaryIndex: notaryIndex
+        });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -117,17 +138,21 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     // Events when a valid fraud report is presented
     function expectFraudAttestationEvents() public {
         vm.expectEmit(true, true, true, true);
-        emit FraudAttestation(attestationNotary, attestationRaw);
-        vm.expectEmit(true, true, true, true);
-        emit NotarySlashed(attestationNotary, reportGuard, broadcaster);
+        emit FraudAttestation(attestationGuards, attestationNotaries, attestationRaw);
+        for (uint256 i = 0; i < attestationGuards.length; ++i) {
+            vm.expectEmit(true, true, true, true);
+            emit GuardSlashed(attestationGuards[i], broadcaster);
+        }
+        for (uint256 i = 0; i < attestationNotaries.length; ++i) {
+            vm.expectEmit(true, true, true, true);
+            emit NotarySlashed(attestationNotaries[i], reportGuard, broadcaster);
+        }
     }
 
     // Events when Notary fraud is reported without a guard's fraud report
     function expectFraudAttestationEventsNoGuard() public {
-        vm.expectEmit(true, true, true, true);
-        emit FraudAttestation(attestationNotary, attestationRaw);
-        vm.expectEmit(true, true, true, true);
-        emit NotarySlashed(attestationNotary, address(0), broadcaster);
+        reportGuard = address(0);
+        expectFraudAttestationEvents();
     }
 
     function expectIncorrectReportEvents() public {
@@ -224,32 +249,53 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     // Checks whether given Notary is active, submits attestation and does the final checks
     function _testSubmitAttestation(uint32 domain, bool isValidAttestation) internal {
         // Get initial state and check if Notary is active
-        (OriginHarness origin, uint256 notariesAmount) = _preSubmitAttestation(domain);
+        (
+            OriginHarness origin,
+            uint256 guardsAmount,
+            uint256 notariesAmount
+        ) = _preSubmitAttestation(domain);
         // If attestation is fraud, expect corresponding events
         if (!isValidAttestation) expectFraudAttestationEvents();
         // Should return true, if and only if the attestation is valid
         originSubmitAttestation(domain, isValidAttestation);
         // Check if the Notary was removed
-        _postSubmitAttestation(origin, notariesAmount, isValidAttestation);
+        _postSubmitAttestation(origin, guardsAmount, notariesAmount, isValidAttestation);
     }
 
     // Checks after attestation was submitted
     // Notary was removed if and only if their attestation was fraud
     function _postSubmitAttestation(
         OriginHarness origin,
+        uint256 _guardsAmount,
         uint256 notariesAmount,
         bool isValidAttestation
     ) internal {
-        // Check if given Notary was removed
+        // Check if every Guard signer was removed
+        for (uint256 i = 0; i < attestationGuards.length; ++i) {
+            assertEq(
+                origin.isActiveAgent({ _domain: 0, _account: attestationGuards[i] }),
+                isValidAttestation,
+                "Wrong Guard active status"
+            );
+        }
+        // Check if amount of Guards changed
         assertEq(
-            origin.isActiveAgent(attestationDestination, attestationNotary),
-            isValidAttestation,
-            "Wrong Notary active status"
+            origin.amountAgents({ _domain: 0 }),
+            _guardsAmount - (isValidAttestation ? 0 : attestationGuards.length),
+            "Wrong amount of notaries"
         );
+        // Check if every Notary signer was removed
+        for (uint256 i = 0; i < attestationNotaries.length; ++i) {
+            assertEq(
+                origin.isActiveAgent(attestationDestination, attestationNotaries[i]),
+                isValidAttestation,
+                "Wrong Notary active status"
+            );
+        }
         // Check if amount of Notaries changed
         assertEq(
             origin.amountAgents(attestationDestination),
-            notariesAmount - (isValidAttestation ? 0 : 1),
+            notariesAmount - (isValidAttestation ? 0 : attestationNotaries.length),
             "Wrong amount of notaries"
         );
     }
@@ -303,7 +349,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         bool isCorrectReport
     ) internal {
         // Do the checks for Notary
-        _postSubmitAttestation(origin, notariesAmount, isValidAttestation);
+        _postSubmitAttestation(origin, guardsAmount, notariesAmount, isValidAttestation);
         // Check if given Guard was removed
         assertEq(
             origin.isActiveAgent({ _domain: 0, _account: reportGuard }),
@@ -326,15 +372,29 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     function _preSubmitAttestation(uint32 domain)
         internal
         view
-        returns (OriginHarness origin, uint256 notariesAmount)
+        returns (
+            OriginHarness origin,
+            uint256 guardsAmount,
+            uint256 notariesAmount
+        )
     {
         origin = suiteOrigin(domain);
+        guardsAmount = origin.amountAgents({ _domain: 0 });
         notariesAmount = origin.amountAgents(attestationDestination);
-        // Sanity check: notary was active
-        require(
-            origin.isActiveAgent(attestationDestination, attestationNotary),
-            "Notary wasn't active"
-        );
+        // Sanity check: guards were active
+        for (uint256 i = 0; i < attestationGuards.length; ++i) {
+            require(
+                origin.isActiveAgent({ _domain: 0, _account: attestationGuards[i] }),
+                "Guard wasn't active"
+            );
+        }
+        // Sanity check: notaries were active
+        for (uint256 i = 0; i < attestationNotaries.length; ++i) {
+            require(
+                origin.isActiveAgent(attestationDestination, attestationNotaries[i]),
+                "Notary wasn't active"
+            );
+        }
     }
 
     // Returns state before submitting report and checks that Guard and Notary are active
@@ -348,8 +408,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         )
     {
         // Get Notary-related state and perform Notary check
-        (origin, notariesAmount) = _preSubmitAttestation(domain);
-        guardsAmount = origin.amountAgents({ _domain: 0 });
+        (origin, guardsAmount, notariesAmount) = _preSubmitAttestation(domain);
         // Sanity check: guard was active
         require(origin.isActiveAgent({ _domain: 0, _account: reportGuard }), "Guard wasn't active");
     }
