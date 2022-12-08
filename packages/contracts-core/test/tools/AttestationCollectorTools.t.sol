@@ -106,45 +106,45 @@ abstract contract AttestationCollectorTools is AttestationTools {
         uint256 salt,
         bool isUnique
     ) public {
-        createAttestationMock({
-            origin: currentOrigin,
-            destination: currentDestination,
-            nonce: nonce,
-            notaryIndex: notaryIndex,
-            salt: salt
-        });
-        if (isUnique) {
-            expectAttestationAccepted();
-        } else {
-            vm.expectRevert("Duplicated attestation");
-        }
-        attestationCollectorSubmitAttestation({ returnValue: isUnique });
-        if (isUnique) {
-            // Save accepted attestation
-            // notaryNonces[attestationNotary].push(attestationNonce);
-            // notaryRoots[attestationNotary].push(attestationRoot);
-            keyRoots[attestationKey].push(attestationRoot);
-            keyAttestations[attestationKey].push(attestationRaw);
-            // Update latest Notary attestation if needed
-            if (
-                attestationNonce >
-                notaryLatestAttestation[attestationDomains][attestationNotary].nonce
-            ) {
-                notaryLatestAttestation[attestationDomains][attestationNotary] = AttestationNonce(
-                    attestationRaw,
-                    attestationNonce
-                );
-            }
-            // Update latest domain attestation if needed
-            if (attestationNonce > domainsLatestAttestation[attestationDomains].nonce) {
-                domainsLatestAttestation[attestationDomains] = AttestationNonce(
-                    attestationRaw,
-                    attestationNonce
-                );
-            }
-            // Check getLatestAttestation()
-            checkLatestAttestations();
-        }
+        // createAttestationMock({
+        //     origin: currentOrigin,
+        //     destination: currentDestination,
+        //     nonce: nonce,
+        //     notaryIndex: notaryIndex,
+        //     salt: salt
+        // });
+        // if (isUnique) {
+        //     expectAttestationAccepted();
+        // } else {
+        //     vm.expectRevert("Duplicated attestation");
+        // }
+        // attestationCollectorSubmitAttestation({ returnValue: isUnique });
+        // if (isUnique) {
+        //     // Save accepted attestation
+        //     // notaryNonces[attestationNotary].push(attestationNonce);
+        //     // notaryRoots[attestationNotary].push(attestationRoot);
+        //     keyRoots[attestationKey].push(attestationRoot);
+        //     keyAttestations[attestationKey].push(attestationRaw);
+        //     // Update latest Notary attestation if needed
+        //     if (
+        //         attestationNonce >
+        //         notaryLatestAttestation[attestationDomains][attestationNotary].nonce
+        //     ) {
+        //         notaryLatestAttestation[attestationDomains][attestationNotary] = AttestationNonce(
+        //             attestationRaw,
+        //             attestationNonce
+        //         );
+        //     }
+        //     // Update latest domain attestation if needed
+        //     if (attestationNonce > domainsLatestAttestation[attestationDomains].nonce) {
+        //         domainsLatestAttestation[attestationDomains] = AttestationNonce(
+        //             attestationRaw,
+        //             attestationNonce
+        //         );
+        //     }
+        //     // Check getLatestAttestation()
+        //     checkLatestAttestations();
+        // }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -153,7 +153,7 @@ abstract contract AttestationCollectorTools is AttestationTools {
 
     function expectAttestationAccepted() public {
         vm.expectEmit(true, true, true, true);
-        emit AttestationAccepted(attestationNotary, attestationRaw);
+        emit AttestationAccepted(attestationGuards, attestationNotaries, attestationRaw);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
