@@ -303,7 +303,7 @@ type InProgressAttestation struct {
 	// IPConfirmedOnAttestationCollectorBlockNumber is block number when we confirmed the attesation posted on AttestationCollector
 	IPConfirmedOnAttestationCollectorBlockNumber uint64 `gorm:"column:confirmed_on_attestation_collector_block_number;default:0;<-:update"`
 	// IPAttestationState is the current state of the attestation
-	IPAttestationState uint32 `gorm:"column:attestation_state;index:idx_origin_destination_state;autoIncrement:false;->;<-:create"`
+	IPAttestationState uint32 `gorm:"column:attestation_state;index:idx_origin_destination_state;autoIncrement:false;<-"`
 }
 
 // Attestation gets the attestation.
