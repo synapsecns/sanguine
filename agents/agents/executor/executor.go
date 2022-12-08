@@ -232,7 +232,7 @@ func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destinat
 			break
 		}
 
-		merkleTree.Insert(message.Root.Bytes(), int(nonce-1))
+		//merkleTree.Insert([]byte{}, int(nonce-1))
 
 		nonce++
 	}
@@ -347,6 +347,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 // logToMessage converts the log to a leaf data.
 func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*execTypes.DBMessage, error) {
 	var dbMessage *execTypes.DBMessage
+
 	if eventType, ok := e.originParsers[chainID].EventType(log); ok && eventType == origin.DispatchEvent {
 		committedMessage, ok := e.originParsers[chainID].ParseDispatch(log)
 		if !ok {

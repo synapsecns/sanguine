@@ -27,6 +27,9 @@ var (
 	BlockNumberFieldName string
 )
 
+// PageSize is the amount of entries per page of logs.
+var PageSize = 50_000
+
 // Message is the information about a message parsed by the Executor.
 type Message struct {
 	// ChainID is the chain id.

@@ -49,6 +49,37 @@ func (s Store) GetMessage(ctx context.Context, messageMask types.DBMessage) (*ty
 	return &returnMessage, nil
 }
 
+// GetMessages gets messages from the database, paginated and ordered in ascending order by nonce.
+func (s Store) GetMessages(ctx context.Context, messageMask types.DBMessage, page int) ([]types.DBMessage, error) {
+	if page < 1 {
+		page = 1
+	}
+
+	var messages []Message
+
+	dbMessageMask := DBMessageToMessage(messageMask)
+
+	dbTx := s.DB().WithContext(ctx).
+		Model(&messages).
+		Where(&dbMessageMask).
+		Order(fmt.Sprintf("%s ASC", NonceFieldName)).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
+		Scan(&messages)
+
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get messages: %w", dbTx.Error)
+	}
+
+	var returnMessages []types.DBMessage
+
+	for _, message := range messages {
+		returnMessages = append(returnMessages, MessageToDBMessage(message))
+	}
+
+	return returnMessages, nil
+}
+
 // GetLastBlockNumber gets the last block number that had a message in the database.
 func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error) {
 	var message Message
