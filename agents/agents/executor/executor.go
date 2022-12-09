@@ -307,7 +307,8 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 				return fmt.Errorf("could not convert log")
 			}
 			if !e.chainExecutors[chain.ChainID].lastLog.verifyAfter(*log) {
-				return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chain.ChainID].lastLog.blockNumber, e.chainExecutors[chain.ChainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+				logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chain.ChainID].lastLog.blockNumber, e.chainExecutors[chain.ChainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+				continue
 			}
 
 			e.chainExecutors[chain.ChainID].logChan <- log
@@ -372,7 +373,6 @@ func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
 	}
 
 	if log.BlockNumber == l.blockNumber {
-		// TODO: duplicates
 		return log.Index > l.blockIndex
 	}
 
