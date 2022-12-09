@@ -75,10 +75,25 @@ func eventToMessageEvent(event messageBusTypes.EventLog, chainID uint32) model.M
 	}
 }
 
-// ParseAndStore parses the message logs and stores them in the database.
+// ParseAndStore parses the message logs and returns a model that can be stored
+// Deprecated: use Parse and store separately.
+func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	messageEvent, err := m.Parse(ctx, log, chainID)
+	if err != nil {
+		return fmt.Errorf("could not parse event: %w", err)
+	}
+	err = m.consumerDB.StoreEvent(ctx, messageEvent)
+
+	if err != nil {
+		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.String())
+	}
+	return nil
+}
+
+// Parse parses the message logs.
 //
 // nolint:gocognit,cyclop,dupl
-func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (m *MessageBusParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32) (interface{}, error) {
 	logTopic := log.Topics[0]
 	iFace, err := func(log ethTypes.Log) (messageBusTypes.EventLog, error) {
 		switch logTopic {
@@ -109,11 +124,11 @@ func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, 
 
 	if err != nil {
 		// Switch failed.
-		return err
+		return nil, err
 	}
 	if iFace == nil {
 		// Unknown topic.
-		return nil
+		return nil, err
 	}
 
 	// populate message event type so following operations can mature the event data.
@@ -122,16 +137,11 @@ func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, 
 	// Get timestamp from consumer
 	timeStamp, err := m.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	if err != nil {
-		return fmt.Errorf("could not get block time: %w", err)
+		return nil, fmt.Errorf("could not get block time: %w", err)
 	}
 	// If we have a timestamp, populate the following attributes of messageEvent.
 	timeStampBig := uint64(*timeStamp.Response)
 	messageEvent.TimeStamp = &timeStampBig
 
-	err = m.consumerDB.StoreEvent(ctx, &messageEvent)
-	if err != nil {
-		return fmt.Errorf("could not store event: %w", err)
-	}
-
-	return nil
+	return &messageEvent, nil
 }
