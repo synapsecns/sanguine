@@ -3,6 +3,8 @@ package parser
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
@@ -10,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	messageBusTypes "github.com/synapsecns/sanguine/services/explorer/types/messagebus"
-	"time"
 )
 
 // MessageBusParser parses messagebus logs.
@@ -117,17 +118,15 @@ func (m *MessageBusParser) Parse(ctx context.Context, log ethTypes.Log, chainID 
 			return iFace, nil
 
 		default:
-			logger.Errorf("unknown message bus topic, skipping: %s block: %d", logTopic.Hex(), log.BlockNumber)
-			return nil, nil
+			logger.Errorf("ErrUnknownTopic in messagebus: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+
+			return nil, fmt.Errorf(ErrUnknownTopic)
 		}
 	}(log)
 
 	if err != nil {
 		// Switch failed.
-		return nil, err
-	}
-	if iFace == nil {
-		// Unknown topic.
+
 		return nil, err
 	}
 
@@ -135,12 +134,13 @@ func (m *MessageBusParser) Parse(ctx context.Context, log ethTypes.Log, chainID 
 	messageEvent := eventToMessageEvent(iFace, chainID)
 
 	// Get timestamp from consumer
-	timeStamp, err := m.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	timeStamp, err := m.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	if err != nil {
 		return nil, fmt.Errorf("could not get block time: %w", err)
 	}
+
 	// If we have a timestamp, populate the following attributes of messageEvent.
-	timeStampBig := uint64(*timeStamp.Response)
+	timeStampBig := uint64(*timeStamp)
 	messageEvent.TimeStamp = &timeStampBig
 
 	return messageEvent, nil

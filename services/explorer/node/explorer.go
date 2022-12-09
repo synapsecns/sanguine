@@ -97,7 +97,7 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 	for i := range chainConfig.Contracts {
 		switch chainConfig.Contracts[i].ContractType {
 		case "bridge":
-			bridgeParser, err = parser.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), *newConfigFetcher, fetcher)
+			bridgeParser, err = parser.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), newConfigFetcher, fetcher)
 			if err != nil || bridgeParser == nil {
 				return nil, fmt.Errorf("could not create bridge parser: %w", err)
 			}

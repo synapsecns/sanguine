@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
@@ -13,8 +16,6 @@ import (
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
-	"strings"
-	"time"
 )
 
 // SwapParser parses events from the swap contract.
@@ -225,16 +226,22 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 
 			return iFace, nil
 		default:
-			return nil, fmt.Errorf("unknown topic: %s", logTopic.Hex())
+			logger.Errorf("ErrUnknownTopic in swap: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+
+			return nil, fmt.Errorf(ErrUnknownTopic)
 		}
 	}(log)
 	if err != nil {
 		// Switch failed.
 		return nil, err
 	}
-
 	swapEvent := eventToSwapEvent(iFace, chainID)
+	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
+	if err != nil {
+		logger.Errorf("could not get tx sender: %v", err)
+	}
 
+	swapEvent.Sender = sender
 	// nolint:nestif
 	if swapEvent.Amount != nil {
 		tokenPrices := map[uint8]float64{}
@@ -265,13 +272,6 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 			swapEvent.TokenSymbol = tokenSymbols
 		}
 	}
-
-	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
-	if err != nil {
-		logger.Errorf("could not get tx sender: %v", err)
-	}
-
-	swapEvent.Sender = sender
 
 	return swapEvent, nil
 }

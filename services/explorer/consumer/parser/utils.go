@@ -10,6 +10,9 @@ import (
 	"strconv"
 )
 
+// ErrUnknownTopic is returned when the topic is unknown.
+const ErrUnknownTopic = "unknown topic"
+
 // Parser parses events and stores them.
 type Parser interface {
 	// ParseAndStore parses the logs and stores them in the database.
