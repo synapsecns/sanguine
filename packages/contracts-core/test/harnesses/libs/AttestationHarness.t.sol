@@ -14,6 +14,12 @@ contract AttestationHarness {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
+    uint256 internal requestedIndex;
+
+    function setIndex(uint256 index) external {
+        requestedIndex = index;
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -38,12 +44,21 @@ contract AttestationHarness {
         return (_view.typeOf(), _view.clone());
     }
 
+    function guardSignature(uint40 _type, bytes memory _payload)
+        public
+        view
+        returns (uint40, bytes memory)
+    {
+        bytes29 _view = _payload.ref(_type).guardSignature(requestedIndex);
+        return (_view.typeOf(), _view.clone());
+    }
+
     function notarySignature(uint40 _type, bytes memory _payload)
         public
         view
         returns (uint40, bytes memory)
     {
-        bytes29 _view = _payload.ref(_type).notarySignature();
+        bytes29 _view = _payload.ref(_type).notarySignature(requestedIndex);
         return (_view.typeOf(), _view.clone());
     }
 
@@ -71,6 +86,22 @@ contract AttestationHarness {
         return _payload.ref(_type).attestedRoot();
     }
 
+    function agentSignatures(uint40 _type, bytes memory _payload)
+        public
+        pure
+        returns (uint8, uint8)
+    {
+        return _payload.ref(_type).agentSignatures();
+    }
+
+    function guardSignatures(uint40 _type, bytes memory _payload) public pure returns (uint8) {
+        return _payload.ref(_type).guardSignatures();
+    }
+
+    function notarySignatures(uint40 _type, bytes memory _payload) public pure returns (uint8) {
+        return _payload.ref(_type).notarySignatures();
+    }
+
     function isAttestation(bytes memory _payload) public pure returns (bool) {
         return _payload.castToAttestation().isAttestation();
     }
@@ -79,26 +110,13 @@ contract AttestationHarness {
     ▏*║                              FORMATTERS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // solhint-disable-next-line ordering
     function formatAttestation(
-        uint32 _origin,
-        uint32 _destination,
-        uint32 _nonce,
-        bytes32 _root,
-        bytes memory _signature
-    ) public pure returns (bytes memory) {
-        return
-            formatAttestation(
-                formatAttestationData(_origin, _destination, _nonce, _root),
-                _signature
-            );
-    }
-
-    function formatAttestation(bytes memory _data, bytes memory _signature)
-        public
-        pure
-        returns (bytes memory)
-    {
-        return Attestation.formatAttestation(_data, _signature);
+        bytes memory _data,
+        bytes[] memory _guardSignatures,
+        bytes[] memory _notarySignatures
+    ) public view returns (bytes memory) {
+        return Attestation.formatAttestation(_data, _guardSignatures, _notarySignatures);
     }
 
     function formatAttestationData(
@@ -130,10 +148,6 @@ contract AttestationHarness {
         return Attestation.ATTESTATION_DATA_LENGTH;
     }
 
-    function attestationLength() public pure returns (uint256) {
-        return Attestation.ATTESTATION_LENGTH;
-    }
-
     function offsetOrigin() public pure returns (uint256) {
         return Attestation.OFFSET_ORIGIN;
     }
@@ -150,7 +164,11 @@ contract AttestationHarness {
         return Attestation.OFFSET_ROOT;
     }
 
-    function offsetSignature() public pure returns (uint256) {
-        return Attestation.OFFSET_SIGNATURE;
+    function offsetAgentSignatures() public pure returns (uint256) {
+        return Attestation.OFFSET_AGENT_SIGS;
+    }
+
+    function offsetFirstSignature() public pure returns (uint256) {
+        return Attestation.OFFSET_FIRST_SIGNATURE;
     }
 }

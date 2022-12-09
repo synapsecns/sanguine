@@ -127,7 +127,7 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     }
 
     function suiteGuard(uint256 index) public view returns (address) {
-        require(index < guards.length, "Guard index out of range");
+        if (index >= guards.length) return address(0);
         return guards[index];
     }
 
@@ -136,7 +136,7 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     }
 
     function suiteNotary(uint32 domain, uint256 index) public view returns (address) {
-        require(index < chains[domain].notaries.length, "Notary index out of range");
+        if (index >= chains[domain].notaries.length) return address(0);
         return chains[domain].notaries[index];
     }
 

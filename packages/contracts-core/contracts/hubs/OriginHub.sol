@@ -144,16 +144,17 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
      * submit a Fraud Report using Origin.submitReport()
      * in order to slash the Notary with a Fraud Attestation.
      *
-     * @dev Notary signature and role have been checked in AttestationHub,
-     * hence `_notary` is an active Notary at this point.
+     * @dev Guards and Notaries signatures and roles have been checked in AttestationHub.
      *
-     * @param _notary           Notary address (signature&role already verified)
-     * @param _attestationView  Memory view over reported Attestation for convenience
+     * @param _guards           Guard addresses (signatures&roles already verified)
+     * @param _notaries         Notary addresses (signatures&roles already verified)
+     * @param _attestationView  Memory view over the Attestation for convenience
      * @param _attestation      Payload with Attestation data and signature
-     * @return isValid          TRUE if Attestation was valid (implying Notary was not slashed).
+     * @return isValid          TRUE if Attestation was valid (implying no agent was slashed).
      */
     function _handleAttestation(
-        address _notary,
+        address[] memory _guards,
+        address[] memory _notaries,
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool isValid) {
@@ -163,9 +164,10 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         bytes32 _root = _attestationView.attestedRoot();
         isValid = _isValidAttestation(_origin, _destination, _nonce, _root);
         if (!isValid) {
-            emit FraudAttestation(_notary, _attestation);
-            // Guard doesn't receive anything, as Notary wasn't slashed using the Fraud Report
-            _slashNotary({ _domain: _destination, _notary: _notary, _guard: address(0) });
+            emit FraudAttestation(_guards, _notaries, _attestation);
+            // Guard doesn't receive anything, as Agents weren't slashed using the Fraud Report
+            _slashAgents({ _domain: 0, _accounts: _guards, _guard: address(0) });
+            _slashAgents({ _domain: _destination, _accounts: _notaries, _guard: address(0) });
             /**
              * TODO: design incentives for the reporter in a way, where they get less
              * by reporting directly instead of using a correct Fraud Report.
@@ -219,6 +221,8 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         bytes29 _reportView,
         bytes memory _report
     ) internal override returns (bool) {
+        // TODO(Chi): enable reports once co-signed Attestation is implemented
+        /*
         uint32 _origin = _attestationView.attestedOrigin();
         uint32 _destination = _attestationView.attestedDestination();
         uint32 _nonce = _attestationView.attestedNonce();
@@ -256,6 +260,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
                 return false;
             }
         }
+        */
     }
 
     /**
@@ -298,26 +303,36 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     }
 
     /**
-     * @notice Child contract should implement the slashing logic for Notaries
-     * with all the required system calls.
-     * @dev Called when fraud is proven (Fraud Attestation).
-     * @param _domain   Domain where the reported Notary is active
-     * @param _notary   Notary to slash
-     * @param _guard    Guard who reported fraudulent Notary [address(0) if not a Guard report]
+     * @notice Slashes a few agents, that are active on the same domain.
+     * @dev Called when agent fraud is proven.
+     * @param _domain   Domain where the reported Agents are active
+     * @param _accounts Addresses of the fraudulent Agents
+     * @param _guard    Guard who reported the fraudulent Agents [address(0) if not a Guard report]
      */
-    function _slashNotary(
+    function _slashAgents(
         uint32 _domain,
-        address _notary,
+        address[] memory _accounts,
         address _guard
-    ) internal virtual;
+    ) internal {
+        uint256 amount = _accounts.length;
+        for (uint256 i = 0; i < amount; ++i) {
+            _slashAgent(_domain, _accounts[i], _guard);
+        }
+    }
 
     /**
-     * @notice Child contract should implement the slashing logic for Guards
+     * @notice Child contract should implement the slashing logic for Agents
      * with all the required system calls.
-     * @dev Called when guard misbehavior is proven (Incorrect Report).
-     * @param _guard    Guard to slash
+     * @dev Called when agent fraud is proven.
+     * @param _domain   Domain where the reported Agent is active
+     * @param _account  Address of the fraudulent Agent
+     * @param _guard    Guard who reported the fraudulent Agent [address(0) if not a Guard report]
      */
-    function _slashGuard(address _guard) internal virtual;
+    function _slashAgent(
+        uint32 _domain,
+        address _account,
+        address _guard
+    ) internal virtual;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL VIEWS                            ║*▕

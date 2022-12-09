@@ -25,7 +25,7 @@ contract ReportLibraryTest is SynapseLibraryTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          TESTS: FORMATTING                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
+    /* TODO (Chi): enable once Reports are reimplemented
     function test_formattedCorrectly(
         bool isFraud,
         uint32 origin,
@@ -148,7 +148,7 @@ contract ReportLibraryTest is SynapseLibraryTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          TESTS: WRONG TYPE                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
+    /* TODO (Chi): enable once Reports are reimplemented
     function test_wrongTypeRevert_reportedAttestation(uint40 wrongType) public {
         bytes memory payload = createTestPayload();
         expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.REPORT });

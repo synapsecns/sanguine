@@ -244,29 +244,31 @@ contract OriginTest is OriginTools {
         _testSubmitAttestation({ domain: DOMAIN_LOCAL, isValidAttestation: false });
     }
 
+    // TODO(Chi): enable Reports tests once reimplemented
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                    TESTS: SUBMIT REPORT (REVERTS)                    ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_submitReport_revert_wrongDomain() public {
-        // Add local Notary: Origin is not supposed to track them
-        suiteOrigin(DOMAIN_LOCAL).addLocalNotary(suiteNotary(DOMAIN_LOCAL));
-        _createAttestation_revert_wrongDomain();
-        createReport(Report.Flag.Fraud);
-        originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "!attestationOrigin: !local" });
-    }
+    // function test_submitReport_revert_wrongDomain() public {
+    //     // Add local Notary: Origin is not supposed to track them
+    //     suiteOrigin(DOMAIN_LOCAL).addLocalNotary(suiteNotary(DOMAIN_LOCAL));
+    //     _createAttestation_revert_wrongDomain();
+    //     createReport(Report.Flag.Fraud);
+    //     originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "!attestationOrigin: !local" });
+    // }
 
-    function test_submitReport_revert_notNotary() public {
-        _createAttestation_revert_notNotary();
-        createReport(Report.Flag.Fraud);
-        originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "Signer is not authorized" });
-    }
+    // function test_submitReport_revert_notNotary() public {
+    //     _createAttestation_revert_notNotary();
+    //     createReport(Report.Flag.Fraud);
+    //     originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "Signer is not authorized" });
+    // }
 
-    function test_submitReport_revert_notGuard() public {
-        _createAttestation_valid_suggested();
-        createReport({ flag: Report.Flag.Fraud, signer: attacker });
-        originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "Signer is not authorized" });
-    }
+    // function test_submitReport_revert_notGuard() public {
+    //     _createAttestation_valid_suggested();
+    //     createReport({ flag: Report.Flag.Fraud, signer: attacker });
+    //     originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "Signer is not authorized" });
+    // }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                TESTS: SUBMIT REPORT (VALID, CORRECT)                 ║*▕
@@ -274,25 +276,25 @@ contract OriginTest is OriginTools {
     // In these tests Guard signs a Flag.Valid Report on a Valid attestation
     // No one is getting slashed
 
-    function test_submitReport_valid_correct_suggested() public {
-        _createAttestation_valid_suggested();
-        createReport(Report.Flag.Valid); // Correct report
-        _testSubmitReport({
-            domain: DOMAIN_LOCAL,
-            isValidAttestation: true,
-            isCorrectReport: true
-        });
-    }
+    // function test_submitReport_valid_correct_suggested() public {
+    //     _createAttestation_valid_suggested();
+    //     createReport(Report.Flag.Valid); // Correct report
+    //     _testSubmitReport({
+    //         domain: DOMAIN_LOCAL,
+    //         isValidAttestation: true,
+    //         isCorrectReport: true
+    //     });
+    // }
 
-    function test_submitReport_valid_correct_outdated() public {
-        _createAttestation_valid_outdated();
-        createReport(Report.Flag.Valid); // Correct report
-        _testSubmitReport({
-            domain: DOMAIN_LOCAL,
-            isValidAttestation: true,
-            isCorrectReport: true
-        });
-    }
+    // function test_submitReport_valid_correct_outdated() public {
+    //     _createAttestation_valid_outdated();
+    //     createReport(Report.Flag.Valid); // Correct report
+    //     _testSubmitReport({
+    //         domain: DOMAIN_LOCAL,
+    //         isValidAttestation: true,
+    //         isCorrectReport: true
+    //     });
+    // }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║               TESTS: SUBMIT REPORT (FRAUD, INCORRECT)                ║*▕
@@ -300,25 +302,25 @@ contract OriginTest is OriginTools {
     // In these tests Guard signs a Flag.Fraud Report on a Valid attestation
     // Guard is slashed as a result
 
-    function test_submitReport_fraud_incorrect_suggested() public {
-        _createAttestation_valid_suggested();
-        createReport(Report.Flag.Fraud); // Incorrect report
-        _testSubmitReport({
-            domain: DOMAIN_LOCAL,
-            isValidAttestation: true,
-            isCorrectReport: false
-        });
-    }
+    // function test_submitReport_fraud_incorrect_suggested() public {
+    //     _createAttestation_valid_suggested();
+    //     createReport(Report.Flag.Fraud); // Incorrect report
+    //     _testSubmitReport({
+    //         domain: DOMAIN_LOCAL,
+    //         isValidAttestation: true,
+    //         isCorrectReport: false
+    //     });
+    // }
 
-    function test_submitReport_fraud_incorrect_outdated() public {
-        _createAttestation_valid_outdated();
-        createReport(Report.Flag.Fraud); // Incorrect report
-        _testSubmitReport({
-            domain: DOMAIN_LOCAL,
-            isValidAttestation: true,
-            isCorrectReport: false
-        });
-    }
+    // function test_submitReport_fraud_incorrect_outdated() public {
+    //     _createAttestation_valid_outdated();
+    //     createReport(Report.Flag.Fraud); // Incorrect report
+    //     _testSubmitReport({
+    //         domain: DOMAIN_LOCAL,
+    //         isValidAttestation: true,
+    //         isCorrectReport: false
+    //     });
+    // }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                TESTS: SUBMIT REPORT (FRAUD, CORRECT)                 ║*▕
@@ -326,35 +328,35 @@ contract OriginTest is OriginTools {
     // In these tests Guard signs a Flag.Fraud Report on a Fraud attestation
     // Notary is slashed as a result, Guard gets a reward
 
-    function submitReport_fraud_correct_nonExistingNonce() public {
-        _createAttestation_fraud_nonExistingNonce();
-        createReport(Report.Flag.Fraud); // Correct report
-        _testSubmitReport({
-            domain: DOMAIN_LOCAL,
-            isValidAttestation: false,
-            isCorrectReport: true
-        });
-    }
+    // function submitReport_fraud_correct_nonExistingNonce() public {
+    //     _createAttestation_fraud_nonExistingNonce();
+    //     createReport(Report.Flag.Fraud); // Correct report
+    //     _testSubmitReport({
+    //         domain: DOMAIN_LOCAL,
+    //         isValidAttestation: false,
+    //         isCorrectReport: true
+    //     });
+    // }
 
-    function submitReport_fraud_correct_fakeNonce() public {
-        _createAttestation_fraud_fakeNonce();
-        createReport(Report.Flag.Fraud); // Correct report
-        _testSubmitReport({
-            domain: DOMAIN_LOCAL,
-            isValidAttestation: false,
-            isCorrectReport: true
-        });
-    }
+    // function submitReport_fraud_correct_fakeNonce() public {
+    //     _createAttestation_fraud_fakeNonce();
+    //     createReport(Report.Flag.Fraud); // Correct report
+    //     _testSubmitReport({
+    //         domain: DOMAIN_LOCAL,
+    //         isValidAttestation: false,
+    //         isCorrectReport: true
+    //     });
+    // }
 
-    function test_submitReport_fraud_correct_fakeRoot() public {
-        _createAttestation_fraud_fakeRoot();
-        createReport(Report.Flag.Fraud); // Correct report
-        _testSubmitReport({
-            domain: DOMAIN_LOCAL,
-            isValidAttestation: false,
-            isCorrectReport: true
-        });
-    }
+    // function test_submitReport_fraud_correct_fakeRoot() public {
+    //     _createAttestation_fraud_fakeRoot();
+    //     createReport(Report.Flag.Fraud); // Correct report
+    //     _testSubmitReport({
+    //         domain: DOMAIN_LOCAL,
+    //         isValidAttestation: false,
+    //         isCorrectReport: true
+    //     });
+    // }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║               TESTS: SUBMIT REPORT (VALID, INCORRECT)                ║*▕
@@ -363,35 +365,35 @@ contract OriginTest is OriginTools {
     // Notary is slashed as a result, Guard does NOT get a reward
     // Guard is slashed as a result
 
-    function test_submitReport_fraud_incorrect_nonExistingNonce() public {
-        _createAttestation_fraud_nonExistingNonce();
-        createReport(Report.Flag.Valid); // Incorrect report
-        _testSubmitReport({
-            domain: DOMAIN_LOCAL,
-            isValidAttestation: false,
-            isCorrectReport: false
-        });
-    }
+    // function test_submitReport_fraud_incorrect_nonExistingNonce() public {
+    //     _createAttestation_fraud_nonExistingNonce();
+    //     createReport(Report.Flag.Valid); // Incorrect report
+    //     _testSubmitReport({
+    //         domain: DOMAIN_LOCAL,
+    //         isValidAttestation: false,
+    //         isCorrectReport: false
+    //     });
+    // }
 
-    function test_submitReport_fraud_incorrect_fakeNonce() public {
-        _createAttestation_fraud_fakeNonce();
-        createReport(Report.Flag.Valid); // Incorrect report
-        _testSubmitReport({
-            domain: DOMAIN_LOCAL,
-            isValidAttestation: false,
-            isCorrectReport: false
-        });
-    }
+    // function test_submitReport_fraud_incorrect_fakeNonce() public {
+    //     _createAttestation_fraud_fakeNonce();
+    //     createReport(Report.Flag.Valid); // Incorrect report
+    //     _testSubmitReport({
+    //         domain: DOMAIN_LOCAL,
+    //         isValidAttestation: false,
+    //         isCorrectReport: false
+    //     });
+    // }
 
-    function test_submitReport_fraud_incorrect_fakeRoot() public {
-        _createAttestation_fraud_fakeRoot();
-        createReport(Report.Flag.Valid); // Incorrect report
-        _testSubmitReport({
-            domain: DOMAIN_LOCAL,
-            isValidAttestation: false,
-            isCorrectReport: false
-        });
-    }
+    // function test_submitReport_fraud_incorrect_fakeRoot() public {
+    //     _createAttestation_fraud_fakeRoot();
+    //     createReport(Report.Flag.Valid); // Incorrect report
+    //     _testSubmitReport({
+    //         domain: DOMAIN_LOCAL,
+    //         isValidAttestation: false,
+    //         isCorrectReport: false
+    //     });
+    // }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            TESTS: HALTING                            ║*▕
@@ -423,13 +425,39 @@ contract OriginTest is OriginTools {
         createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
     }
 
-    // Create an attestation signed by not a Notary
-    function _createAttestation_revert_notNotary() internal {
+    // Create an attestation signed by not a Guard
+    function _createAttestation_revert_notGuard() internal {
         test_dispatch();
+        // index 0 refers to first Guard
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_REMOTE,
+            guardSigs: 1,
+            notarySigs: 1,
+            attackerIndex: 0
+        });
         createAttestationMock({
             origin: DOMAIN_LOCAL,
             destination: DOMAIN_REMOTE,
-            signer: attacker
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
+        });
+    }
+
+    // Create an attestation signed by not a Notary
+    function _createAttestation_revert_notNotary() internal {
+        test_dispatch();
+        // index 1 refers to first Guard
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_REMOTE,
+            guardSigs: 1,
+            notarySigs: 1,
+            attackerIndex: 1
+        });
+        createAttestationMock({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
         });
     }
 

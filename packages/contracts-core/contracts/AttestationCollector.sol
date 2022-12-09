@@ -217,16 +217,19 @@ contract AttestationCollector is AttestationHub, OwnableUpgradeable {
      * @dev Both Notary and Guard signatures
      * have been checked at this point (see ReportHub.sol).
      *
-     * @param _notary           Notary address (signature&role already verified)
-     * @param _attestationView  Memory view over reported Attestation for convenience
+     * @param _guards           Guard addresses (signatures&roles already verified)
+     * @param _notaries         Notary addresses (signatures&roles already verified)
+     * @param _attestationView  Memory view over the Attestation for convenience
      * @param _attestation      Payload with Attestation data and signature
      * @return TRUE if Attestation was stored.
      */
     function _handleAttestation(
-        address _notary,
+        address[] memory _guards,
+        address[] memory _notaries,
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool) {
+        /* TODO (Chi): update AttestationCollector to handle the co-signed attestations
         // Get attestation fields
         uint32 origin = _attestationView.attestedOrigin();
         uint32 destination = _attestationView.attestedDestination();
@@ -248,6 +251,7 @@ contract AttestationCollector is AttestationHub, OwnableUpgradeable {
         attestedRoots[attestedKey].push(root);
         emit AttestationAccepted(_notary, _attestation);
         return true;
+        */
     }
 
     function _formatAttestation(
@@ -256,12 +260,14 @@ contract AttestationCollector is AttestationHub, OwnableUpgradeable {
         uint32 _nonce,
         bytes32 _root
     ) internal view returns (bytes memory) {
+        /* TODO (Chi): update AttestationCollector to handle the co-signed attestations
         uint96 attestationKey = Attestation.attestationKey(_origin, _destination, _nonce);
         return
             Attestation.formatAttestation(
                 Attestation.formatAttestationData(_origin, _destination, _nonce, _root),
                 signatures[attestationKey][_root]
             );
+        */
     }
 
     function _signatureExists(

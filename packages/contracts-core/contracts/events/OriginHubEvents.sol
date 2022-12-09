@@ -17,9 +17,10 @@ abstract contract OriginHubEvents {
     event IncorrectReport(address indexed guard, bytes report);
 
     /**
-     * @notice Emitted when proof of an fraud attestation is submitted.
-     * @param notary        Notary who signed fraud attestation
+     * @notice Emitted when proof of a fraud attestation is submitted.
+     * @param guards        Guards who signed the fraud attestation
+     * @param notaries      Notaries who signed the fraud attestation
      * @param attestation   Attestation data and signature
      */
-    event FraudAttestation(address indexed notary, bytes attestation);
+    event FraudAttestation(address[] guards, address[] notaries, bytes attestation);
 }
