@@ -107,7 +107,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 	// otherwise backfilling will begin at the block number specified in the config file.
 	if contract.StartBlock < 0 {
 		startHeight, err = c.consumerDB.GetUint64(parentCtx, fmt.Sprintf(
-			"SELECT ifNull(%s, 0) FROM last_blocks WHERE %s = %d AND %s = '%s'",
+			"SELECT ifNull(MAX(%s), 0) FROM last_blocks WHERE %s = %d AND %s = '%s'",
 			sql.BlockNumberFieldName, sql.ChainIDFieldName, c.chainConfig.ChainID, sql.ContractAddressFieldName, contract.Address,
 		))
 		if err != nil {
@@ -182,6 +182,10 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 			return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
 		}
 		logger.Infof("backfilling contract %s chunk completed, %d to %d", contract.Address, chunkStart, chunkEnd)
+		if c.chainConfig.ChainID == 1 {
+			fmt.Println("fuck")
+			fmt.Println(chunkEnd)
+		}
 		// Store the last block in clickhouse
 		err = c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
 		if err != nil {

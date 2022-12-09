@@ -111,7 +111,7 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
 		}
-		alterQuery := fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d AND %s = '%s'", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID, ContractAddressFieldName, contractAddress)
+		alterQuery := fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d AND %s = '%s' AND %s < %d", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID, ContractAddressFieldName, contractAddress, BlockNumberFieldName, blockNumber)
 
 		err := s.db.Transaction(func(tx *gorm.DB) error {
 			prepareAlter := tx.WithContext(ctx).Exec("set mutations_sync = 2")
