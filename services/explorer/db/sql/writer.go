@@ -81,7 +81,7 @@ func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
 	}
 
 	if len(messageBusEvents) > 0 {
-		dbTx := s.db.WithContext(ctx).Create(&swapEvents)
+		dbTx := s.db.WithContext(ctx).Create(&messageBusEvents)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store message event: %w", dbTx.Error)
 		}

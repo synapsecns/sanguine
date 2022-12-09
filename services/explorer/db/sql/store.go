@@ -3,9 +3,9 @@ package sql
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	gormClickhouse "gorm.io/driver/clickhouse"
 	"gorm.io/gorm"
+	gormLogger "gorm.io/gorm/logger"
 	"time"
 )
 
@@ -26,7 +26,7 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 	clickhouseDB, err := gorm.Open(gormClickhouse.New(gormClickhouse.Config{
 		DSN: address,
 	}), &gorm.Config{
-		Logger:               dbcommon.GetGormLogger(logger),
+		Logger:               gormLogger.Default.LogMode(gormLogger.Silent),
 		FullSaveAssociations: true,
 		NowFunc:              time.Now,
 	})
