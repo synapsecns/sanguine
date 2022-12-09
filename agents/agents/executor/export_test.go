@@ -7,10 +7,10 @@ import (
 
 // GetLogChan gets a log channel.
 func (e Executor) GetLogChan(chainID uint32) chan *ethTypes.Log {
-	return e.logChans[chainID]
+	return e.chainExecutors[chainID].logChan
 }
 
 // GetMerkleTree gets a merkle tree.
 func (e Executor) GetMerkleTree(chainID uint32, domain uint32) *trieutil.SparseMerkleTrie {
-	return e.merkleTrees[chainID][domain]
+	return e.chainExecutors[chainID].merkleTrees[domain]
 }
