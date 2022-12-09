@@ -116,11 +116,69 @@ contract DestinationTest is DestinationTools {
     ▏*║                 TESTS: SUBMIT ATTESTATION (REVERTS)                  ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_submitAttestation_revert_fakeNotary() public {
+    function test_submitAttestation_revert_noGuards() public {
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_LOCAL,
+            guardSigs: 0,
+            notarySigs: 1
+        });
         createAttestationMock({
             origin: DOMAIN_REMOTE,
             destination: DOMAIN_LOCAL,
-            signer: attacker
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
+        });
+        // Should reject attestation with no Guard signatures
+        destinationSubmitAttestation(DOMAIN_LOCAL, "No guard signatures");
+    }
+
+    function test_submitAttestation_revert_noNotaries() public {
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_LOCAL,
+            guardSigs: 1,
+            notarySigs: 0
+        });
+        createAttestationMock({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
+        });
+        // Should reject attestation with no Notary signatures
+        destinationSubmitAttestation(DOMAIN_LOCAL, "No notary signatures");
+    }
+
+    function test_submitAttestation_revert_fakeGuard() public {
+        // index 0 refers to first Guard
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_LOCAL,
+            guardSigs: 1,
+            notarySigs: 1,
+            attackerIndex: 0
+        });
+        createAttestationMock({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
+        });
+        // Should reject attestation signed by not a Guard
+        destinationSubmitAttestation(DOMAIN_LOCAL, "Signer is not authorized");
+    }
+
+    function test_submitAttestation_revert_fakeNotary() public {
+        // index 1 refers to first Guard
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_LOCAL,
+            guardSigs: 1,
+            notarySigs: 1,
+            attackerIndex: 1
+        });
+        createAttestationMock({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
         });
         // Should reject attestation signed by not a Notary
         destinationSubmitAttestation(DOMAIN_LOCAL, "Signer is not authorized");
@@ -137,12 +195,14 @@ contract DestinationTest is DestinationTools {
         destinationSubmitAttestation(DOMAIN_LOCAL, "Empty root");
     }
 
-    // TODO (Chi): enable test once/if DomainNotaryRegistry is deprecated
     function test_submitAttestation_revert_fromLocalDomain() public {
         // Create attestation for (LOCAL -> REMOTE) direction
         createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
         // Destination doesn't track REMOTE Notaries, let's artificially add one
-        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(attestationDestination, attestationNotary);
+        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(
+            attestationDestination,
+            attestationNotaries[0]
+        );
         // Should reject attestations with origin = local domain
         destinationSubmitAttestation(DOMAIN_LOCAL, "!attestationOrigin: local");
     }
@@ -151,7 +211,10 @@ contract DestinationTest is DestinationTools {
         // Create attestation for (SYNAPSE -> REMOTE) direction
         createAttestationMock({ origin: DOMAIN_SYNAPSE, destination: DOMAIN_REMOTE });
         // Destination doesn't track REMOTE Notaries, let's artificially add one
-        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(attestationDestination, attestationNotary);
+        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(
+            attestationDestination,
+            attestationNotaries[0]
+        );
         // Should reject attestations with destination != local domain
         destinationSubmitAttestation(DOMAIN_LOCAL, "!attestationDestination: !local");
     }
@@ -170,76 +233,78 @@ contract DestinationTest is DestinationTools {
         assertEq(destinationSubmittedAt(DOMAIN_LOCAL), block.timestamp, "!rootSubmittedAt");
     }
 
+    // TODO(Chi): enable Reports tests once reimplemented
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                    TESTS: SUBMIT REPORT (REVERTS)                    ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_submitReport_revert_validFlag() public {
-        createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
-        createReport(Report.Flag.Valid);
-        // Destination should reject Reports with a Valid flag (they serve no purpose)
-        destinationSubmitReport(DOMAIN_LOCAL, "Not a fraud report");
-    }
+    // function test_submitReport_revert_validFlag() public {
+    //     createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
+    //     createReport(Report.Flag.Valid);
+    //     // Destination should reject Reports with a Valid flag (they serve no purpose)
+    //     destinationSubmitReport(DOMAIN_LOCAL, "Not a fraud report");
+    // }
 
-    function test_submitReport_revert_notNotary() public {
-        createAttestationMock({
-            origin: DOMAIN_REMOTE,
-            destination: DOMAIN_LOCAL,
-            signer: attacker
-        });
-        createReport(Report.Flag.Fraud);
-        // Destination should reject Reports with Attestation signed by not a Notary
-        destinationSubmitReport(DOMAIN_LOCAL, "Signer is not authorized");
-    }
+    // function test_submitReport_revert_notNotary() public {
+    //     createAttestationMock({
+    //         origin: DOMAIN_REMOTE,
+    //         destination: DOMAIN_LOCAL,
+    //         signer: attacker
+    //     });
+    //     createReport(Report.Flag.Fraud);
+    //     // Destination should reject Reports with Attestation signed by not a Notary
+    //     destinationSubmitReport(DOMAIN_LOCAL, "Signer is not authorized");
+    // }
 
-    function test_submitReport_revert_notGuard() public {
-        createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
-        createReport({ flag: Report.Flag.Fraud, signer: attacker });
-        // Destination should reject Reports signed by not a Guard
-        destinationSubmitReport(DOMAIN_LOCAL, "Signer is not authorized");
-    }
+    // function test_submitReport_revert_notGuard() public {
+    //     createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
+    //     createReport({ flag: Report.Flag.Fraud, signer: attacker });
+    //     // Destination should reject Reports signed by not a Guard
+    //     destinationSubmitReport(DOMAIN_LOCAL, "Signer is not authorized");
+    // }
 
-    function test_submitReport_revert_alreadyBlacklisted() public {
-        test_submitReport();
-        createAttestation({
-            origin: DOMAIN_REMOTE,
-            destination: DOMAIN_LOCAL,
-            nonce: 123,
-            root: "another fake root"
-        });
-        createReport(Report.Flag.Fraud);
-        // Destination should reject Reports for already blacklisted Notary
-        destinationSubmitReport(DOMAIN_LOCAL, "Signer is not authorized");
-    }
+    // function test_submitReport_revert_alreadyBlacklisted() public {
+    //     test_submitReport();
+    //     createAttestation({
+    //         origin: DOMAIN_REMOTE,
+    //         destination: DOMAIN_LOCAL,
+    //         nonce: 123,
+    //         root: "another fake root"
+    //     });
+    //     createReport(Report.Flag.Fraud);
+    //     // Destination should reject Reports for already blacklisted Notary
+    //     destinationSubmitReport(DOMAIN_LOCAL, "Signer is not authorized");
+    // }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         TESTS: SUBMIT REPORT                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_submitReport() public {
-        // Submit attestation and wait enough time for root to become valid
-        test_acceptableRoot();
-        // Save notary's valid root for later check
-        bytes32 validRoot = attestationRoot;
-        // Force the same notary to sign a fraud attestation
-        createAttestation({
-            origin: DOMAIN_REMOTE,
-            destination: DOMAIN_LOCAL,
-            nonce: 420,
-            root: "clearly fake root"
-        });
-        createReport(Report.Flag.Fraud);
-        expectNotaryBlacklisted();
-        destinationSubmitReport(DOMAIN_LOCAL, true);
-        assertFalse(
-            suiteDestination(DOMAIN_LOCAL).isActiveAgent(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL)),
-            "Notary not blacklisted"
-        );
-        // Check previously valid root
-        attestationRoot = validRoot;
-        // Even a valid root signed by fraud Notary should be blacklisted
-        destinationAcceptableRoot(DOMAIN_LOCAL, "Inactive notary");
-    }
+    // function test_submitReport() public {
+    //     // Submit attestation and wait enough time for root to become valid
+    //     test_acceptableRoot();
+    //     // Save notary's valid root for later check
+    //     bytes32 validRoot = attestationRoot;
+    //     // Force the same notary to sign a fraud attestation
+    //     createAttestation({
+    //         origin: DOMAIN_REMOTE,
+    //         destination: DOMAIN_LOCAL,
+    //         nonce: 420,
+    //         root: "clearly fake root"
+    //     });
+    //     createReport(Report.Flag.Fraud);
+    //     expectNotaryBlacklisted();
+    //     destinationSubmitReport(DOMAIN_LOCAL, true);
+    //     assertFalse(
+    //         suiteDestination(DOMAIN_LOCAL).isActiveAgent(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL)),
+    //         "Notary not blacklisted"
+    //     );
+    //     // Check previously valid root
+    //     attestationRoot = validRoot;
+    //     // Even a valid root signed by fraud Notary should be blacklisted
+    //     destinationAcceptableRoot(DOMAIN_LOCAL, "Inactive notary");
+    // }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                   TESTS: ACCEPTABLE ROOT (REVERTS)                   ║*▕

@@ -129,6 +129,10 @@ func (m *MessageBusParser) Parse(ctx context.Context, log ethTypes.Log, chainID 
 
 		return nil, err
 	}
+	if iFace == nil {
+		// Unknown topic.
+		return nil, fmt.Errorf("unknwn topic")
+	}
 
 	// populate message event type so following operations can mature the event data.
 	messageEvent := eventToMessageEvent(iFace, chainID)

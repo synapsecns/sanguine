@@ -34,9 +34,10 @@ abstract contract SynapseLibraryTest is SynapseTestSuite {
         uint8 payloadLength,
         uint8 firstElementLength,
         bytes32 data
-    ) public returns (bytes memory) {
-        vm.assume(payloadLength < firstElementLength);
-        bytes memory payload = abi.encodePacked(data);
+    ) public view returns (bytes memory) {
+        payloadLength = payloadLength % firstElementLength;
+        // 8 bytes should be enough
+        bytes memory payload = abi.encodePacked(data, data, data, data, data, data, data, data);
         // Use first `payloadLength` bytes
         return payload.ref(0).slice({ _index: 0, _len: payloadLength, newType: 0 }).clone();
     }

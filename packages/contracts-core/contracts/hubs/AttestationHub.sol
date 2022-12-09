@@ -13,6 +13,9 @@ abstract contract AttestationHub is AttestationHubEvents, AgentRegistry {
     using Attestation for bytes;
     using Attestation for bytes29;
 
+    // TODO: implement a way to store the submitted Attestations, so that
+    // the off-chain actors don't need to rely on eth_getLogs in order to query the latest ones.
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -28,8 +31,8 @@ abstract contract AttestationHub is AttestationHubEvents, AgentRegistry {
     function submitAttestation(bytes memory _attestation) external returns (bool) {
         bytes29 attestationView = _attestation.castToAttestation();
         // Verify the attestation signature and recover an active notary address
-        address notary = _verifyAttestation(attestationView);
-        return _handleAttestation(notary, attestationView, _attestation);
+        (address[] memory guards, address[] memory notaries) = _verifyAttestation(attestationView);
+        return _handleAttestation(guards, notaries, attestationView, _attestation);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -38,32 +41,56 @@ abstract contract AttestationHub is AttestationHubEvents, AgentRegistry {
 
     /**
      * @dev Child contract should implement logic for handling the Attestation.
-     * @param _notary           Notary address (signature&role already verified)
+     * @param _guards           Guard addresses (signatures&roles already verified)
+     * @param _notaries         Notary addresses (signatures&roles already verified)
      * @param _attestationView  Memory view over the Attestation for convenience
      * @param _attestation      Payload with Attestation data and signature
      * @return TRUE if Attestation was handled correctly.
      */
     function _handleAttestation(
-        address _notary,
+        address[] memory _guards,
+        address[] memory _notaries,
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal virtual returns (bool);
 
     /**
      * @notice Checks if attestation signer is authorized.
-     * @dev Signer needs to be an active Notary on destination domain.
+     * @dev Guard signers need to be active globally.
+     * Notary signers need to be active on destination domain.
      * @param _attestationView  Memory view over the Attestation to check
-     * @return notary Address of the attestation signer
+     * @return guards   Addresses of the Guards who signed the Attestation
+     * @return notaries Addresses of the Notaries who signed the Attestation
      */
-    function _verifyAttestation(bytes29 _attestationView) internal view returns (address notary) {
-        // Check if Attestation payload is properly formatted.
+    function _verifyAttestation(bytes29 _attestationView)
+        internal
+        view
+        returns (address[] memory guards, address[] memory notaries)
+    {
+        // Check if Attestation payload is properly formatted, i.e that it
+        // contains attestation data and at least one agent signature for that data
         require(_attestationView.isAttestation(), "Not an attestation");
         bytes32 digest = Auth.toEthSignedMessageHash(_attestationView.attestationData());
-        // Check if Notary signature is valid. Should be active on destination domain
-        notary = _checkAgentAuth({
-            _domain: _attestationView.attestedDestination(),
-            _digest: digest,
-            _signatureView: _attestationView.notarySignature()
-        });
+        // Get amount of signatures, and initiate the returned arrays
+        (uint256 guardSigs, uint256 notarySigs) = _attestationView.agentSignatures();
+        guards = new address[](guardSigs);
+        notaries = new address[](notarySigs);
+        // Check if all Guard signatures are valid. Guards are stored with `_domain == 0`.
+        for (uint256 i = 0; i < guardSigs; ++i) {
+            guards[i] = _checkAgentAuth({
+                _domain: 0,
+                _digest: digest,
+                _signatureView: _attestationView.guardSignature(i)
+            });
+        }
+        // Check if all Notary signatures are valid. Should be active on destination domain.
+        uint32 destination = _attestationView.attestedDestination();
+        for (uint256 i = 0; i < notarySigs; ++i) {
+            notaries[i] = _checkAgentAuth({
+                _domain: destination,
+                _digest: digest,
+                _signatureView: _attestationView.notarySignature(i)
+            });
+        }
     }
 }

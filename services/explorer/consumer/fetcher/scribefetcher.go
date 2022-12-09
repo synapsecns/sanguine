@@ -3,12 +3,13 @@ package fetcher
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/scribe/graphql"
-	"time"
 )
 
 // ScribeFetcher is the fetcher for the events. It uses GQL.

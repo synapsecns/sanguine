@@ -98,27 +98,33 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
      * @notice Called by external agent. Submits the signed attestation,
      * updates Mirror state for the attested origin, and emits an `AttestationAccepted` event.
      *
-     * @dev Notary role and signature have been checked (see ReportHub.sol),
-     * meaning `_notary` is an active Notary at this point.
+     * @dev Guards and Notaries signatures and roles have been checked in AttestationHub.
      *
-     * @param _notary           Notary address
-     * @param _attestationView  Memory view over attestation
+     * @param _guards           Guard addresses (signatures&roles already verified)
+     * @param _notaries         Notary addresses (signatures&roles already verified)
+     * @param _attestationView  Memory view over the Attestation for convenience
      * @param _attestation      Payload with Attestation data and signature
      * @return TRUE if Attestation was accepted (implying a new root was added to Mirror).
      */
     function _handleAttestation(
-        address _notary,
+        address[] memory _guards,
+        address[] memory _notaries,
         bytes29 _attestationView,
         bytes memory _attestation
     ) internal override returns (bool) {
+        // Check that there is at least one Guard and Notary signature
+        require(_attestationView.guardSignatures() != 0, "No guard signatures");
+        require(_attestationView.notarySignatures() != 0, "No notary signatures");
         _checkAttestationDomains(_attestationView);
         bytes32 root = _attestationView.attestedRoot();
         // Empty root is clearly fraud, so should be rejected
         require(root != bytes32(0), "Empty root");
         uint32 origin = _attestationView.attestedOrigin();
         uint32 nonce = _attestationView.attestedNonce();
-        _updateMirror(_notary, origin, nonce, root);
-        emit AttestationAccepted(_notary, _attestation);
+        // TODO: Use more than one notary here?
+        address notary = _notaries[0];
+        _updateMirror(notary, origin, nonce, root);
+        emit AttestationAccepted(_guards, _notaries, _attestation);
         return true;
     }
 
@@ -145,10 +151,12 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
         bytes29 _reportView,
         bytes memory _report
     ) internal override returns (bool) {
+        /* TODO(Chi): enable reports once co-signed Attestation is implemented
         _checkAttestationDomains(_attestationView);
         require(_reportView.reportedFraud(), "Not a fraud report");
         _blacklistNotary(_guard, _notary, _attestationView, _report);
         return true;
+        */
     }
 
     function _updateMirror(
