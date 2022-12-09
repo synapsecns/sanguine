@@ -3,12 +3,13 @@ package db_test
 import (
 	"database/sql"
 	"fmt"
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
-	"math/big"
 )
 
 func (t *DBSuite) TestBridgeWrite() {
@@ -54,27 +55,28 @@ func (t *DBSuite) TestLastBlockWrite() {
 	defer t.cleanup()
 	chainID := gofakeit.Uint32()
 	blockNumber := gofakeit.Uint64()
-	err := t.db.StoreLastBlock(t.GetTestContext(), chainID, blockNumber)
+	contract := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
+	err := t.db.StoreLastBlock(t.GetTestContext(), chainID, blockNumber, contract)
 	Nil(t.T(), err)
 	blockNumber++
-	err = t.db.StoreLastBlock(t.GetTestContext(), chainID, blockNumber)
+	err = t.db.StoreLastBlock(t.GetTestContext(), chainID, blockNumber, contract)
 	Nil(t.T(), err)
-	storedBlockNum, err := t.db.GetUint64(t.GetTestContext(), fmt.Sprintf("SELECT ifNull(%s, 0) FROM last_blocks WHERE %s = %d", model.BlockNumberFieldName, model.ChainIDFieldName, chainID))
+	storedBlockNum, err := t.db.GetUint64(t.GetTestContext(), fmt.Sprintf("SELECT %s FROM last_blocks WHERE %s = %d AND %s = '%s'", model.BlockNumberFieldName, model.ChainIDFieldName, chainID, model.ContractAddressFieldName, contract))
 	Nil(t.T(), err)
 	Equal(t.T(), blockNumber, storedBlockNum)
 
 	chainID2 := gofakeit.Uint32()
 	blockNumber2 := gofakeit.Uint64()
-	err = t.db.StoreLastBlock(t.GetTestContext(), chainID2, blockNumber2)
+	err = t.db.StoreLastBlock(t.GetTestContext(), chainID2, blockNumber2, contract)
 	Nil(t.T(), err)
 	blockNumber2--
-	err = t.db.StoreLastBlock(t.GetTestContext(), chainID2, blockNumber2)
+	err = t.db.StoreLastBlock(t.GetTestContext(), chainID2, blockNumber2, contract)
 	Nil(t.T(), err)
-	storedBlockNum2, err := t.db.GetUint64(t.GetTestContext(), fmt.Sprintf("SELECT ifNull(%s, 0) FROM last_blocks WHERE %s = %d", model.BlockNumberFieldName, model.ChainIDFieldName, chainID2))
+	storedBlockNum2, err := t.db.GetUint64(t.GetTestContext(), fmt.Sprintf("SELECT %s FROM last_blocks WHERE %s = %d AND %s = '%s'", model.BlockNumberFieldName, model.ChainIDFieldName, chainID2, model.ContractAddressFieldName, contract))
 	Nil(t.T(), err)
 	Equal(t.T(), blockNumber2+1, storedBlockNum2)
 
-	storedBlockNumOg, err := t.db.GetUint64(t.GetTestContext(), fmt.Sprintf("SELECT ifNull(%s, 0) FROM last_blocks WHERE %s = %d", model.BlockNumberFieldName, model.ChainIDFieldName, chainID))
+	storedBlockNumOg, err := t.db.GetUint64(t.GetTestContext(), fmt.Sprintf("SELECT %s FROM last_blocks WHERE %s = %d AND %s = '%s'", model.BlockNumberFieldName, model.ChainIDFieldName, chainID, model.ContractAddressFieldName, contract))
 	Nil(t.T(), err)
 	Equal(t.T(), blockNumber, storedBlockNumOg)
 }

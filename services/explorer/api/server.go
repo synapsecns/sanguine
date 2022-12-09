@@ -3,6 +3,9 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"time"
+
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -14,8 +17,6 @@ import (
 	gqlServer "github.com/synapsecns/sanguine/services/explorer/graphql/server"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/clickhouse"
 	"golang.org/x/sync/errgroup"
-	"net/http"
-	"time"
 )
 
 // HealthCheck is the health check endpoint.
