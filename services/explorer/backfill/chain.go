@@ -161,12 +161,17 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 							continue
 						}
 
-						err = c.processLogs(groupCtx, logs, eventParser)
+						parsedLogs, err := c.processLogs(groupCtx, logs, eventParser)
 						if err != nil {
 							timeout = b.Duration()
 							logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 							continue
 						}
+
+						g.Go(func() error {
+							return c.storeParsedLogs(groupCtx, parsedLogs)
+						})
+
 						return nil
 					}
 				}
@@ -192,7 +197,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 // processLogs processes the logs and stores them in the consumer database.
 //
 //nolint:gocognit,cyclop
-func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, eventParser parser.Parser) error {
+func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, eventParser parser.Parser) (parsedLogs []interface{}, _ error) {
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
@@ -200,25 +205,15 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 		Max:    10 * time.Second,
 	}
 
-	var parsedLogs []interface{}
-
 	timeout := time.Duration(0)
 	logIdx := 0
 	for {
 		select {
 		case <-ctx.Done():
-
-			return fmt.Errorf("context canceled: %w", ctx.Err())
+			return parsedLogs, fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
 			if logIdx >= len(logs) {
-				if len(parsedLogs) > 0 {
-					err := c.storeParsedLogs(ctx, parsedLogs)
-					if err != nil {
-						return fmt.Errorf("could not store events: %w", err)
-					}
-				}
-
-				return nil
+				return parsedLogs, nil
 			}
 			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], c.chainConfig.ChainID)
 			if err != nil {
