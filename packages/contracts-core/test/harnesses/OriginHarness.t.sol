@@ -52,7 +52,6 @@ contract OriginHarness is Origin, SystemContractHarness {
         latestNonce = nonce(_destination);
         uint256 rootDispatchBlockNumber;
         uint256 currentBlockNumer;
-        bytes32 latestRoot;
         (latestRoot, rootDispatchBlockNumber, currentBlockNumer) = getHistoricalRoot(
             _destination,
             latestNonce
