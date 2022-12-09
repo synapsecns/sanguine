@@ -118,7 +118,7 @@ func (m *MessageBusParser) Parse(ctx context.Context, log ethTypes.Log, chainID 
 			return iFace, nil
 
 		default:
-			logger.Errorf("errUnknownMessageBusTopic: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+			logger.Errorf("ErrUnknownTopic in messagebus: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
 
 			return nil, fmt.Errorf(ErrUnknownTopic)
 		}

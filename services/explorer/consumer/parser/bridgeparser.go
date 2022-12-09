@@ -326,7 +326,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 			return iFace, nil
 		default:
-			logger.Errorf("ErrUnknownTopic: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+			logger.Errorf("ErrUnknownTopic in bridge: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
 
 			return nil, fmt.Errorf(ErrUnknownTopic)
 		}

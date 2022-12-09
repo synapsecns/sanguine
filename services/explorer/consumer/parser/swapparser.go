@@ -226,7 +226,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 
 			return iFace, nil
 		default:
-			logger.Errorf("errUnknownSwapTopic: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+			logger.Errorf("ErrUnknownTopic in swap: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
 
 			return nil, fmt.Errorf(ErrUnknownTopic)
 		}
