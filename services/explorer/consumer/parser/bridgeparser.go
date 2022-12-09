@@ -352,7 +352,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 	timeStamp, err := p.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	if err != nil {
-		return fmt.Errorf("could not get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
+		return nil, fmt.Errorf("could not get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
 	}
 
 	timeStampBig := uint64(*timeStamp)
@@ -384,7 +384,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	// Add TokenSymbol to bridgeEvent.
 	bridgeEvent.TokenSymbol = ToNullString(tokenID)
 	var tokenPrice *float64
-	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1661817600) {
+	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1619827200) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1668646800) {
 		tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, *timeStamp, coinGeckoID)
 	}
 	if tokenPrice != nil {
