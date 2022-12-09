@@ -75,8 +75,8 @@ func (b *BackfillSuite) TestBackfill() {
 		{
 			ChainID:             uint32(testChainID.Uint64()),
 			RPCURL:              gofakeit.URL(),
-			FetchBlockIncrement: 100,
-			MaxGoroutines:       5,
+			FetchBlockIncrement: 2,
+			MaxGoroutines:       2,
 			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus},
 		},
 	}
@@ -84,8 +84,8 @@ func (b *BackfillSuite) TestBackfill() {
 		{
 			ChainID:             uint32(testChainID.Uint64()),
 			RPCURL:              gofakeit.URL(),
-			FetchBlockIncrement: 100,
-			MaxGoroutines:       5,
+			FetchBlockIncrement: 2,
+			MaxGoroutines:       2,
 			Contracts:           []config.ContractConfig{contractConfigBridgeV1, contractConfigSwap1, contractConfigSwap2, contractMessageBus},
 		},
 	}
