@@ -18,7 +18,7 @@ chains:
       - contract_type: bridge
         address: '0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9'
         start_block: -1
-  - chain_id: -1
+  - chain_id: 1313161554
     fetch_block_increment: 100000
     max_goroutines: 20
     contracts:
