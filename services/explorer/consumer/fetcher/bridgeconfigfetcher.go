@@ -12,20 +12,30 @@ import (
 // NoTokenID is the string returned when a token id is not found (not an authentic token).
 const NoTokenID = "NO_TOKEN_ID"
 
-// BridgeConfigFetcher is the fetcher for the bridge config contract.
-type BridgeConfigFetcher struct {
+// Service is the interface for the fetcher service.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name=Service --output=mocks --case=underscore
+type Service interface {
+	// GetTokenID gets the token id from the bridge config contract.
+	GetTokenID(ctx context.Context, chainID *big.Int, tokenAddress common.Address) (tokenID *string, err error)
+	// GetToken gets the token from the bridge config contract.
+	GetToken(ctx context.Context, chainID uint32, tokenAddress common.Address) (token *bridgeconfig.BridgeConfigV3Token, err error)
+}
+
+// bridgeConfigFetcher is the fetcher for the bridge config contract.
+type bridgeConfigFetcher struct {
 	bridgeConfigRef     *bridgeconfig.BridgeConfigRef
 	bridgeConfigAddress common.Address
 } // TODO switch bridge config based on block number
 
 // NewBridgeConfigFetcher creates a new config fetcher.
 // Backend must be an archive backend.
-func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, bridgeConfigRef *bridgeconfig.BridgeConfigRef) (*BridgeConfigFetcher, error) {
-	return &BridgeConfigFetcher{bridgeConfigRef, bridgeConfigAddress}, nil
+func NewBridgeConfigFetcher(bridgeConfigAddress common.Address, bridgeConfigRef *bridgeconfig.BridgeConfigRef) (Service, error) {
+	return &bridgeConfigFetcher{bridgeConfigRef, bridgeConfigAddress}, nil
 }
 
 // GetTokenID gets the token id from the bridge config contract.
-func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID *big.Int, tokenAddress common.Address) (tokenID *string, err error) {
+func (b *bridgeConfigFetcher) GetTokenID(ctx context.Context, chainID *big.Int, tokenAddress common.Address) (tokenID *string, err error) {
 	tokenIDStr, err := b.bridgeConfigRef.GetTokenID(&bind.CallOpts{
 		Context: ctx,
 	}, tokenAddress, chainID)
@@ -42,13 +52,15 @@ func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID *big.Int, 
 }
 
 // GetToken gets the token from the bridge config contract. Requires an archived note.
-func (b *BridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, tokenAddress common.Address, blockNumber uint32) (token *bridgeconfig.BridgeConfigV3Token, err error) {
+func (b *bridgeConfigFetcher) GetToken(ctx context.Context, chainID uint32, tokenAddress common.Address) (token *bridgeconfig.BridgeConfigV3Token, err error) {
 	tok, err := b.bridgeConfigRef.GetTokenByAddress(&bind.CallOpts{
 		Context: ctx,
 	}, tokenAddress.String(), big.NewInt(int64(chainID)))
 	if err != nil {
-		return nil, fmt.Errorf("could not get token at block number %d: %w", blockNumber, err)
+		return nil, fmt.Errorf("could not get token at block number %w", err)
 	}
 
 	return &tok, nil
 }
+
+var _ Service = &bridgeConfigFetcher{}

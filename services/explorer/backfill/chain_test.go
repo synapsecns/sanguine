@@ -286,9 +286,9 @@ func (b *BackfillSuite) TestBackfill() {
 	// Set up a ChainBackfiller
 	bcf, err := fetcher.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
-	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), *bcf, b.consumerFetcher)
+	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), bcf, b.consumerFetcher)
 	Nil(b.T(), err)
-	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), *bcf, b.consumerFetcher)
+	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), bcf, b.consumerFetcher)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data

@@ -19,9 +19,9 @@ import {
 } from 'hooks/getHistoricalStats'
 
 export function Home() {
-  const bridgeVolume = getBridgeVolume({ days: 30 })
-  const transactions = getTransactions({ days: 30 })
-  const addresses = getAddresses({ days: 30 })
+  const bridgeVolume = getBridgeVolume({ days: 3000 })
+  const transactions = getTransactions({ days: 3000 })
+  const addresses = getAddresses({ days: 3000 })
 
   const [chartType, setChartType] = useState('BRIDGEVOLUME')
 
