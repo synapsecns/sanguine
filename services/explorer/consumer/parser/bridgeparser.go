@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"golang.org/x/sync/errgroup"
 	"math/big"
 	"time"
 
@@ -338,37 +340,59 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	}
 
 	bridgeEvent := eventToBridgeEvent(iFace, chainID)
-	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
+	g, groupCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		bridgeEvent.Sender, err = p.consumerFetcher.FetchTxSender(groupCtx, chainID, iFace.GetTxHash().String())
+		if err != nil {
+			logger.Errorf("could not get tx sender: %v", err)
+		}
+		return nil
+	})
+
+	var timeStampBig uint64
+	var timeStamp *int
+	g.Go(func() error {
+		timeStamp, err = p.consumerFetcher.FetchBlockTime(groupCtx, int(chainID), int(iFace.GetBlockNumber()))
+		if err != nil {
+			return fmt.Errorf("could unknownTopic get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
+		}
+		timeStampBig = uint64(*timeStamp)
+		return nil
+	})
+
+	var tokenID *string
+	var token *bridgeconfig.BridgeConfigV3Token
+
+	g.Go(func() error {
+		// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
+		token, err = p.fetcher.GetToken(ctx, chainID, iFace.GetToken(), uint32(iFace.GetBlockNumber()))
+		if err != nil {
+			return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+		}
+
+		return nil
+	})
+
+	g.Go(func() error {
+		// Get TokenID from BridgeConfig data.
+		tokenID, err = p.fetcher.GetTokenID(groupCtx, big.NewInt(int64(chainID)), iFace.GetToken())
+		if err != nil {
+			return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+		}
+		return nil
+	})
+
+	err = g.Wait()
 	if err != nil {
-		logger.Errorf("could not get tx sender: %v", err)
+		return nil, fmt.Errorf("could not parse bridge event: %w", err)
 	}
 
-	bridgeEvent.Sender = sender
-
-	timeStamp, err := p.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
-	if err != nil {
-		return nil, fmt.Errorf("could unknownTopic get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
-	}
-
-	timeStampBig := uint64(*timeStamp)
 	bridgeEvent.TimeStamp = &timeStampBig
-
-	// Get TokenID from BridgeConfig data.
-	tokenID, err := p.fetcher.GetTokenID(ctx, big.NewInt(int64(chainID)), iFace.GetToken())
-	if err != nil {
-		return nil, fmt.Errorf("could not parse get token from bridge config event: %w", err)
-	}
-
-	bridgeEvent.TokenID = ToNullString(tokenID) // TODO Change to coingecko ID.
 
 	if *tokenID == fetcher.NoTokenID {
 		// handle an inauthentic token.
 		return &bridgeEvent, nil
-	}
-	// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
-	token, err := p.fetcher.GetToken(ctx, chainID, tokenID, uint32(iFace.GetBlockNumber()))
-	if err != nil {
-		return nil, fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
 
 	bridgeEvent.TokenDecimal = &token.TokenDecimals
