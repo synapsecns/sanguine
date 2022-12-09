@@ -192,10 +192,30 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 
 			returnedReceipt = *receipt
 
-			// Store the receipt.
-			err = c.storeReceipt(groupCtx, returnedReceipt)
+			// Store receipt in the EventDB.
+			err = c.eventDB.StoreReceipt(groupCtx, returnedReceipt, c.chainConfig.ChainID)
 			if err != nil {
+				timeout = b.Duration()
+				LogEvent(ErrorLevel, "Could not store receipt, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
 				goto RETRY
+			}
+
+			// Store the logs in the EventDB.
+			for _, log := range returnedReceipt.Logs {
+				if log == nil {
+					LogEvent(ErrorLevel, "log is nil", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+
+					return fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+				}
+
+				err := c.eventDB.StoreLog(groupCtx, *log, c.chainConfig.ChainID)
+				if err != nil {
+					timeout = b.Duration()
+					LogEvent(ErrorLevel, "Could not store log, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
+					goto RETRY
+				}
 			}
 
 			return nil
@@ -285,7 +305,6 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainConfig.ChainID, log.BlockNumber, log.TxHash.String())
 	}
 
-	c.cache.Add(log.TxHash, true)
 	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
 	if err != nil {
 		LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
@@ -293,6 +312,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		return fmt.Errorf("could not store last indexed block: %w", err)
 	}
 
+	c.cache.Add(log.TxHash, true)
 	LogEvent(InfoLevel, "Log, Receipt, and Tx stored", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "ts": time.Since(startTime).Seconds()})
 
 	return nil
@@ -340,39 +360,4 @@ func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight 
 		}
 	}()
 	return logsChan, doneChan
-}
-
-func (c *ContractBackfiller) storeReceipt(ctx context.Context, receipt types.Receipt) error {
-	g, ctx := errgroup.WithContext(ctx)
-	g.Go(func() error {
-		err := c.eventDB.StoreReceipt(ctx, receipt, c.chainConfig.ChainID)
-		if err != nil {
-			return fmt.Errorf("could not store receipt: %w", err)
-		}
-		return nil
-	})
-
-	// Store the logs in the EventDB.
-	for _, log := range receipt.Logs {
-		if log == nil {
-			LogEvent(ErrorLevel, "log is nil", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
-
-			return fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
-		}
-
-		// capture func literal
-		log := log
-
-		g.Go(func() error {
-			err := c.eventDB.StoreLog(ctx, *log, c.chainConfig.ChainID)
-			if err != nil {
-				LogEvent(ErrorLevel, "Could not store log, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
-				return fmt.Errorf("could not store log: %w", err)
-			}
-			return nil
-		})
-	}
-
-	//nolint: wrapcheck
-	return g.Wait()
 }
