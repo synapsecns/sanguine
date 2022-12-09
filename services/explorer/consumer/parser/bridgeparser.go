@@ -313,7 +313,8 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 			return iFace, nil
 		default:
-			return nil, fmt.Errorf("unknown topic: %s %s", logTopic.Hex(), logTopic.String())
+			logger.Errorf("unknown bridge topic: %s %s chain: %d add: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+			return nil, nil
 		}
 	}(log)
 
@@ -321,6 +322,18 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		// Switch failed.
 		return err
 	}
+	if iFace == nil {
+		// unknown topic.
+		return nil
+	}
+
+	bridgeEvent := eventToBridgeEvent(iFace, chainID)
+	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
+	if err != nil {
+		logger.Errorf("could not get tx sender: %v", err)
+	}
+
+	bridgeEvent.Sender = sender
 
 	// Get TokenID from BridgeConfig data.
 	tokenID, err := p.fetcher.GetTokenID(ctx, big.NewInt(int64(chainID)), iFace.GetToken())
@@ -328,21 +341,34 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
 
+	bridgeEvent.TokenID = ToNullString(tokenID) // TODO Change to coingecko ID.
+
+	if *tokenID == fetcher.NoTokenID {
+		// handle an inauthentic token.
+		err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
+
+		if err != nil {
+			return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.Hex())
+		}
+		return nil
+	}
 	// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
 	token, err := p.fetcher.GetToken(ctx, chainID, tokenID, uint32(iFace.GetBlockNumber()))
 	if err != nil {
 		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
 
-	bridgeEvent := eventToBridgeEvent(iFace, chainID)
-	bridgeEvent.TokenID = ToNullString(tokenID) // TODO Change to coingecko ID.
 	bridgeEvent.TokenDecimal = &token.TokenDecimals
-	timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	timeStamp, err := p.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	if err != nil {
 		return fmt.Errorf("could not get block time: %w", err)
 	}
+	if *timeStamp == 0 {
+		logger.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
+		return nil
+	}
 
-	timeStampBig := uint64(*timeStamp.Response)
+	timeStampBig := uint64(*timeStamp)
 	bridgeEvent.TimeStamp = &timeStampBig
 
 	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
@@ -350,8 +376,10 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 	// Add TokenSymbol to bridgeEvent.
 	bridgeEvent.TokenSymbol = ToNullString(tokenID)
-
-	tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
+	var tokenPrice *float64
+	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) {
+		tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, *timeStamp, coinGeckoID)
+	}
 	if tokenPrice != nil {
 		// Add AmountUSD to bridgeEvent (if price is not nil).
 		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
@@ -362,17 +390,10 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		}
 	}
 
-	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
-	if err != nil {
-		logger.Errorf("could not get tx sender: %v", err)
-	}
-
-	bridgeEvent.Sender = sender
-
 	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
 
 	if err != nil {
-		return fmt.Errorf("could not store event: %w", err)
+		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.Hex())
 	}
 	return nil
 }

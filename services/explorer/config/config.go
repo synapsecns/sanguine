@@ -11,6 +11,16 @@ import (
 	"path/filepath"
 )
 
+// TODO: these should be put into the contracts themselves and implement a custom type.
+const (
+	// BridgeContractType is the type of a bridge contract.
+	BridgeContractType = "bridge"
+	// SwapContractType is the type of the swap contract.
+	SwapContractType = "swap"
+	// MessageBusContractType is the type of a message bus contract.
+	MessageBusContractType = "messagebus"
+)
+
 // Config is used to configure the explorer's data consumption.
 type Config struct {
 	// RefreshRate is the rate at which the explorer will refresh the last block height in seconds.

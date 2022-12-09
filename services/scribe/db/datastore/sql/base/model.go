@@ -152,7 +152,7 @@ type LastConfirmedBlockInfo struct {
 // BlockTime contains the timestamp of a block.
 type BlockTime struct {
 	// ChainID is the chain id of the contract
-	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;index:idx_block_time_chain,priority:1"`
 	// BlockNumber is the block number
 	BlockNumber uint64 `gorm:"column:block_number;primaryKey"`
 	// Timestamp is the timestamp of the block

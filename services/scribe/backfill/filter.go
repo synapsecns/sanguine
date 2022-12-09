@@ -141,15 +141,20 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 			var logs []types.Log
 			itr := res.Iterator()
 			for !itr.Done() {
-				_, resLogChunk := itr.Next()
+				select {
+				case <-ctx.Done():
+					return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
+				default:
+					_, resLogChunk := itr.Next()
 
-				if resLogChunk == nil || len(*resLogChunk) == 0 {
-					LogEvent(WarnLevel, "empty subchunk", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock()})
-					continue
+					if resLogChunk == nil || len(*resLogChunk) == 0 {
+						LogEvent(WarnLevel, "empty subchunk", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock()})
+						continue
+					}
+					logsChunk := *resLogChunk
+
+					logs = append(logs, logsChunk...)
 				}
-				logsChunk := *resLogChunk
-
-				logs = append(logs, logsChunk...)
 			}
 
 			return &LogInfo{
