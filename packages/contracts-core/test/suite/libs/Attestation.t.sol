@@ -207,11 +207,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
             uint32(0),
             bytes32(0)
         );
-        bytes memory payload = libHarness.formatAttestation(
-            attData,
-            new bytes(0),
-            new bytes(0)
-        );
+        bytes memory payload = libHarness.formatAttestation(attData, new bytes(0), new bytes(0));
         assertFalse(libHarness.isAttestation(payload), "!isAttestation: no signatures");
     }
 
