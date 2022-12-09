@@ -89,8 +89,7 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	// Start the Scribe.
 	go func() {
-		scribeErr := scribe.Start(e.GetSuiteContext())
-		e.Nil(scribeErr)
+		_ = scribe.Start(e.GetSuiteContext())
 	}()
 
 	excCfg := executorCfg.Config{
@@ -178,10 +177,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 
 	// Start the Scribe.
 	go func() {
-		scribeErr := scribe.Start(e.GetTestContext())
-		if !testDone {
-			e.Nil(scribeErr)
-		}
+		_ = scribe.Start(e.GetTestContext())
 	}()
 
 	excCfg := executorCfg.Config{
@@ -262,10 +258,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	// Start the Scribe.
 	go func() {
-		scribeErr := scribe.Start(e.GetTestContext())
-		if !testDone {
-			e.Nil(scribeErr)
-		}
+		_ = scribe.Start(e.GetTestContext())
 	}()
 
 	destination := chainID + 1
