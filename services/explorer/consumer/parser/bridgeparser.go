@@ -48,7 +48,7 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bri
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridgev1.SynapseBridgeFilterer{}, err)
 	}
-	idPath := filepath.Clean("../static/tokenIDToCoinGeckoID.yaml")
+	idPath := filepath.Clean("./static/tokenIDToCoinGeckoID.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("could find path to yaml file: %w", err)
 	}
@@ -361,7 +361,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	bridgeEvent.TokenDecimal = &token.TokenDecimals
 	timeStamp, err := p.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	if err != nil {
-		return fmt.Errorf("could not get block time: %w", err)
+		return fmt.Errorf("could not get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
 	}
 	if *timeStamp == 0 {
 		logger.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
@@ -377,7 +377,7 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	// Add TokenSymbol to bridgeEvent.
 	bridgeEvent.TokenSymbol = ToNullString(tokenID)
 	var tokenPrice *float64
-	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) {
+	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1661817600) {
 		tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, *timeStamp, coinGeckoID)
 	}
 	if tokenPrice != nil {

@@ -212,7 +212,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			}
 			err := eventParser.ParseAndStore(ctx, logs[logIdx], c.chainConfig.ChainID)
 			if err != nil {
-				logger.Errorf("could not parse and store log %d, %s: %s", c.chainConfig.ChainID, logs[logIdx].Address, err)
+				logger.Errorf("could not parse and store log %d, %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
 				timeout = b.Duration()
 				continue
 			}

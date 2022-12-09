@@ -120,12 +120,16 @@ func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, 
 	messageEvent := eventToMessageEvent(iFace, chainID)
 
 	// Get timestamp from consumer
-	timeStamp, err := m.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	timeStamp, err := m.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	if err != nil {
-		return fmt.Errorf("could not get block time: %w", err)
+		return fmt.Errorf("could not get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
+	}
+	if *timeStamp == 0 {
+		logger.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
+		return nil
 	}
 	// If we have a timestamp, populate the following attributes of messageEvent.
-	timeStampBig := uint64(*timeStamp.Response)
+	timeStampBig := uint64(*timeStamp)
 	messageEvent.TimeStamp = &timeStampBig
 
 	err = m.consumerDB.StoreEvent(ctx, &messageEvent)
