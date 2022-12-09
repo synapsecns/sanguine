@@ -212,6 +212,8 @@ type LastBlock struct {
 	ChainID uint32 `gorm:"column:chain_id"`
 	// BlockNumber is the last block number that the explorer has backfilled to.
 	BlockNumber uint64 `gorm:"column:block_number"`
+	// ContractAddress is the address of the contract that generated the event.
+	ContractAddress string `gorm:"column:contract_address"`
 }
 
 // MessageBusEvent stores data for emitted events from the message bus contract.

@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/phayes/freeport"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
@@ -49,7 +50,7 @@ func (b *BackfillSuite) startOmnirpcServer(ctx context.Context, backend backends
 	}()
 
 	baseHost := fmt.Sprintf("http://0.0.0.0:%d", server.Port())
-	healthCheck := fmt.Sprintf("%s%s", baseHost, proxy.HealthCheckEndpoint)
+	healthCheck := fmt.Sprintf("%s%s", baseHost, ginhelper.HealthCheck)
 
 	// wait for server to start
 	b.Eventually(func() bool {
