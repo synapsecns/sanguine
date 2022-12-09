@@ -54,32 +54,28 @@ library Attestation {
 
     /**
      * @notice Returns a formatted Attestation payload with provided fields
+     * @dev `_guardSignatures` and `_notarySignatures` payloads could be empty.
+     * They have to contain exactly 65 * N bytes, otherwise the execution will be reverted.
      * @param _data                 Attestation Data (see above)
-     * @param _guardSignatures      Guard signatures on `_data`
-     * @param _notarySignatures     Notary signatures on `_data`
+     * @param _guardSignatures      Payload with all Guard signatures on `_data`
+     * @param _notarySignatures     Payload with all Notary signatures on `_data`
      * @return Formatted attestation
      **/
     function formatAttestation(
         bytes memory _data,
-        bytes[] memory _guardSignatures,
-        bytes[] memory _notarySignatures
+        bytes memory _guardSignatures,
+        bytes memory _notarySignatures
     ) internal view returns (bytes memory) {
-        uint8 guardSigs = uint8(_guardSignatures.length);
-        uint8 notarySigs = uint8(_notarySignatures.length);
+        uint8 guardSigs = _amountSignatures(_guardSignatures);
+        uint8 notarySigs = _amountSignatures(_notarySignatures);
         // Pack (guardSigs, notarySigs) into a single 16-byte value
         uint16 agentSigs = (uint16(guardSigs) << 8) | notarySigs;
-        bytes29[] memory guardSigViews = ByteString.castToSignatures(_guardSignatures);
-        bytes29[] memory notarySigViews = ByteString.castToSignatures(_notarySignatures);
-        // We need to join: `_data`, `agentSigs`, `guardSigViews`, `notarySigViews`
-        bytes29[] memory allViews = new bytes29[](2 + guardSigs + notarySigs);
+        // We need to join: `_data`, `agentSigs`, `_guardSignatures`, `_notarySignatures`
+        bytes29[] memory allViews = new bytes29[](4);
         allViews[0] = _data.castToRawBytes();
         allViews[1] = abi.encodePacked(agentSigs).castToRawBytes();
-        for (uint256 i = 0; i < guardSigs; ++i) {
-            allViews[2 + i] = guardSigViews[i];
-        }
-        for (uint256 i = 0; i < notarySigs; ++i) {
-            allViews[2 + guardSigs + i] = notarySigViews[i];
-        }
+        allViews[2] = _guardSignatures.castToRawBytes();
+        allViews[3] = _notarySignatures.castToRawBytes();
         return TypedMemView.join(allViews);
     }
 
@@ -308,5 +304,17 @@ library Attestation {
         guardSigs = uint8(combinedAmounts >> 8);
         // Last 8 bits is the amount of notary signatures
         notarySigs = uint8(combinedAmounts & 0xFF);
+    }
+
+    /**
+     * @dev Returns the amount of signatures in the "signatures" payload.
+     * Reverts, if payload length is not exactly 65 * N bytes.
+     * Reverts, if amount of signatures does not fit in `uint8`.
+     */
+    function _amountSignatures(bytes memory _signatures) private pure returns (uint8 amount) {
+        uint256 _amount = _signatures.length / ByteString.SIGNATURE_LENGTH;
+        require(_amount * ByteString.SIGNATURE_LENGTH == _signatures.length, "!signaturesLength");
+        require(_amount < type(uint8).max, "Too many signatures");
+        amount = uint8(_amount);
     }
 }
