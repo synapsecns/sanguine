@@ -71,21 +71,21 @@ func (g APISuite) TestRetrieveData() {
 	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	// there were 20 receipts created (2 per loop, in a loop of 10)
-	Equal(g.T(), len(receipts.Response), 20)
+	Equal(g.T(), 20, len(receipts.Response))
 	receiptsRange, err := g.gqlClient.GetReceiptsRange(g.GetTestContext(), int(chainID), 1, 7, 1)
 	Nil(g.T(), err)
 	// from 1-7, there were 14 receipts created (2 per loop, in a range of 7)
-	Equal(g.T(), len(receiptsRange.Response), 14)
+	Equal(g.T(), 14, len(receiptsRange.Response))
 
 	// test get transactions and get transactions in a range
 	txs, err := g.gqlClient.GetTransactions(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	// there were 20 txs created (2 per loop, in a loop of 10)
-	Equal(g.T(), len(txs.Response), 20)
+	Equal(g.T(), 20, len(txs.Response))
 	txsRange, err := g.gqlClient.GetTransactionsRange(g.GetTestContext(), int(chainID), 3, 8, 1)
 	Nil(g.T(), err)
 	// from 3-8, there were 12 txs created (2 per loop, in a range of 6)
-	Equal(g.T(), len(txsRange.Response), 12)
+	Equal(g.T(), 12, len(txsRange.Response))
 }
 
 func (g APISuite) TestLogDataEquality() {

@@ -10,5 +10,6 @@ import "github.com/synapsecns/sanguine/services/scribe/db"
 //
 //go:generate go run github.com/synapsecns/sanguine/services/scribe/graphql/contrib
 type Resolver struct {
-	DB db.EventDB
+	OmniRPCURL string
+	DB         db.EventDB
 }

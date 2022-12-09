@@ -6,7 +6,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
+	"math/big"
 	"time"
 )
 
@@ -69,8 +71,16 @@ func (r Resolver) logToModelLog(log *types.Log, chainID uint32) *model.Log {
 func (r Resolver) ethTxsToModelTransactions(ethTxs []types.Transaction, chainID uint32) []*model.Transaction {
 	modelTxs := make([]*model.Transaction, len(ethTxs))
 
-	for i, ethTx := range ethTxs {
+	for i := range ethTxs {
+		ethTx := ethTxs[i]
 		modelTxs[i] = r.ethTxToModelTransaction(ethTx, chainID)
+
+		msgFrom, err := ethTx.AsMessage(types.LatestSignerForChainID(ethTx.ChainId()), big.NewInt(1))
+		if err != nil {
+			continue
+		}
+
+		modelTxs[i].Sender = msgFrom.From().String()
 	}
 
 	return modelTxs
@@ -98,7 +108,7 @@ func (r Resolver) ethTxToModelTransaction(ethTx types.Transaction, chainID uint3
 // getBlockTime retrieves a singular blocktime.
 //
 //nolint:gocognit,cyclop
-func (r Resolver) getBlockTime(ctx context.Context, logs []ethTypes.Log, eventParser parser.Parser) error {
+func (r Resolver) getBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) (*uint64, error) {
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
@@ -107,20 +117,25 @@ func (r Resolver) getBlockTime(ctx context.Context, logs []ethTypes.Log, eventPa
 	}
 
 	timeout := time.Duration(0)
+	var backendClient backfill.ScribeBackend
+	backendClient, err := backfill.DialBackend(ctx, fmt.Sprintf("%s/%d", r.OmniRPCURL, chainID))
+	if err != nil {
+		return nil, fmt.Errorf("could not create backend client: %w", err)
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
 
-			return fmt.Errorf("context canceled: %w", ctx.Err())
+			return nil, fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
-
-			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], c.chainConfig.ChainID)
+			block, err := backendClient.BlockByNumber(ctx, big.NewInt(int64(blockNumber)))
 			if err != nil {
-				logger.Errorf("could not parse and store log %d, %s: %s", c.chainConfig.ChainID, logs[logIdx].Address, err)
 				timeout = b.Duration()
 				continue
 			}
-
+			blockTime := block.Time()
+			return &blockTime, nil
 		}
 	}
 }

@@ -61,6 +61,7 @@ type Transaction struct {
 	Nonce     int        `json:"nonce"`
 	To        string     `json:"to"`
 	Page      int        `json:"page"`
+	Sender    string     `json:"sender"`
 	Logs      []*Log     `json:"logs"`
 	Receipt   *Receipt   `json:"receipt"`
 	JSON      types.JSON `json:"json"`

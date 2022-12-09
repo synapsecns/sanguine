@@ -209,4 +209,3 @@ func (r *queryResolver) BlockTimeCount(ctx context.Context, chainID int) (*int, 
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
-

@@ -50,7 +50,7 @@ func Start(ctx context.Context, cfg Config) error {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
 
-	gqlServer.EnableGraphql(router, eventDB)
+	gqlServer.EnableGraphql(router, eventDB, cfg.OmniRPCURL)
 	grpcServer, err := server.SetupGRPCServer(ctx, router, eventDB)
 	if err != nil {
 		return fmt.Errorf("could not create grpc server: %w", err)
