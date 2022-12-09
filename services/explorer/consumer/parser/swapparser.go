@@ -226,14 +226,15 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 
 			return iFace, nil
 		default:
-			return nil, fmt.Errorf("unknown topic: %s", logTopic.Hex())
+			logger.Errorf("errUnknownSwapTopic: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+
+			return nil, fmt.Errorf(ErrUnknownTopic)
 		}
 	}(log)
 	if err != nil {
 		// Switch failed.
 		return nil, err
 	}
-
 	swapEvent := eventToSwapEvent(iFace, chainID)
 	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
 	if err != nil {

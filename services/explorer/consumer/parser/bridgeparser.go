@@ -326,20 +326,15 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 			return iFace, nil
 		default:
-			logger.Errorf("unknown bridge topic: %s %s chain: %d add: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
-			return nil, nil
+			logger.Errorf("ErrUnknownTopic: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+
+			return nil, fmt.Errorf(ErrUnknownTopic)
 		}
 	}(log)
 
 	if err != nil {
 		// Switch failed.
 		return nil, err
-	}
-
-	// TODO: investigate better way to implement this
-	if iFace == nil {
-		// unknown topic.
-		return nil, fmt.Errorf("unknown topic: %s", logTopic.String())
 	}
 
 	bridgeEvent := eventToBridgeEvent(iFace, chainID)
@@ -352,7 +347,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 	timeStamp, err := p.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	if err != nil {
-		return nil, fmt.Errorf("could not get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
+		return nil, fmt.Errorf("could unknownTopic get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
 	}
 
 	timeStampBig := uint64(*timeStamp)

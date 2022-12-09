@@ -197,7 +197,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 		Factor: 2,
 		Jitter: true,
 		Min:    1 * time.Second,
-		Max:    10 * time.Second,
+		Max:    3 * time.Second,
 	}
 
 	var parsedLogs []interface{}
@@ -221,13 +221,15 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 				return nil
 			}
 			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], c.chainConfig.ChainID)
-			if err != nil {
+			if err != nil && err.Error() != parser.ErrUnknownTopic {
 				logger.Errorf("could not parse and store log %d, %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
 				timeout = b.Duration()
 				continue
 			}
+			if parsedLog != nil {
+				parsedLogs = append(parsedLogs, parsedLog)
+			}
 
-			parsedLogs = append(parsedLogs, parsedLog)
 			logIdx++
 
 			// Reset the backoff after successful log parse run to prevent bloated back offs.
@@ -242,7 +244,7 @@ func (c *ChainBackfiller) storeParsedLogs(ctx context.Context, parsedEvents []in
 		Factor: 2,
 		Jitter: true,
 		Min:    1 * time.Second,
-		Max:    10 * time.Second,
+		Max:    3 * time.Second,
 	}
 	timeout := time.Duration(0)
 
