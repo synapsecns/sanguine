@@ -7,14 +7,16 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"gopkg.in/yaml.v2"
 	"math/big"
-	"os"
 	"strconv"
 )
 
 // Parser parses events and stores them.
 type Parser interface {
 	// ParseAndStore parses the logs and stores them in the database.
+	// Deprecated: use Parse
 	ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error
+	// Parse parses the logs and returns the parsed data.
+	Parse(ctx context.Context, log ethTypes.Log, chainID uint32) (interface{}, error)
 }
 
 // BoolToUint8 is a helper function to handle bool to uint8 conversion for clickhouse.
@@ -46,17 +48,13 @@ func ToNullString(str *string) sql.NullString {
 	return newNullStr
 }
 
-// OpenYaml opens yaml file with coin gecko ID mapping and returns it.
-func OpenYaml(path string) (map[string]string, error) {
-	// nolint:gosec
-	input, err := os.ReadFile(path)
-
+// ParseYaml opens yaml file with coin gecko ID mapping and returns it.
+func ParseYaml(yamlFile []byte) (res map[string]string, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("error opening yaml file %w", err)
 	}
 
-	var res map[string]string
-	err = yaml.Unmarshal(input, &res)
+	err = yaml.Unmarshal(yamlFile, &res)
 
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling yaml file %w", err)
