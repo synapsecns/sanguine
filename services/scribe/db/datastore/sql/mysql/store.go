@@ -3,12 +3,12 @@ package mysql
 import (
 	"context"
 	"fmt"
+	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"time"
 
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	gormLogger "gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
 
@@ -30,7 +30,7 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 	logger.Debug("creating mysql store")
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
-		Logger:               gormLogger.Default.LogMode(gormLogger.Silent),
+		Logger:               common_base.GetGormLogger(logger),
 		FullSaveAssociations: true,
 		NamingStrategy:       NamingStrategy,
 		NowFunc:              time.Now,
