@@ -3,9 +3,9 @@ package api
 import (
 	"context"
 	"fmt"
-	helmet "github.com/danielkov/gin-helmet"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/ipfs/go-log"
+	"github.com/synapsecns/sanguine/core/ginhelper"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
@@ -15,7 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/testutil/clickhouse"
 	"golang.org/x/sync/errgroup"
 	"net/http"
-	"time"
 )
 
 // HealthCheck is the health check endpoint.
@@ -31,18 +30,11 @@ type Config struct {
 	ScribeURL string
 }
 
+var logger = log.Logger("explorer-api")
+
 // Start starts the api server.
 func Start(ctx context.Context, cfg Config) error {
-	router := gin.New()
-	router.Use(helmet.Default())
-	router.Use(gin.Recovery())
-	router.Use(cors.New(cors.Config{
-		AllowAllOrigins: true,
-		AllowHeaders:    []string{"*"},
-		AllowMethods:    []string{"GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"},
-		MaxAge:          12 * time.Hour,
-	}))
-
+	router := ginhelper.New(logger)
 	// initialize the database
 	consumerDB, err := InitDB(ctx, cfg.Address, true)
 	if err != nil {
