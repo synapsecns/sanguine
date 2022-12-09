@@ -114,12 +114,12 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 		alterQuery := fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d AND %s = '%s'", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID, ContractAddressFieldName, contractAddress)
 
 		err := s.db.Transaction(func(tx *gorm.DB) error {
-			prepareAlter := tx.Exec("set mutations_sync = 2")
+			prepareAlter := tx.WithContext(ctx).Exec("set mutations_sync = 2")
 			if prepareAlter.Error != nil {
 				return fmt.Errorf("could not prepare alter: %w", prepareAlter.Error)
 			}
 
-			alterDB := s.db.WithContext(ctx).Exec(alterQuery)
+			alterDB := tx.WithContext(ctx).Exec(alterQuery)
 			if alterDB.Error != nil {
 				return fmt.Errorf("could not alter db: %w", prepareAlter.Error)
 			}
