@@ -5,7 +5,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"math/big"
@@ -33,7 +32,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageB := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		blockNumberB := gofakeit.Uint64()
-		
+
 		headerB := agentsTypes.NewHeader(chainIDB, common.BigToHash(big.NewInt(gofakeit.Int64())), nonceB, destinationB, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
 		tipsB := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 		typesMessageB := agentsTypes.NewMessage(headerB, tipsB, messageB)
@@ -105,30 +104,4 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 
 		Equal(t.T(), blockNumberB, lastBlockNumber)
 	})
-}
-
-func (t *DBSuite) TestMessageDBMessageParity() {
-	chainID := gofakeit.Uint32()
-	destination := gofakeit.Uint32()
-	nonce := gofakeit.Uint32()
-	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
-	message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
-	blockNumber := gofakeit.Uint64()
-	initialDBMessage := types.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-		Nonce:       &nonce,
-		Root:        &root,
-		Message:     &message,
-		BlockNumber: &blockNumber,
-	}
-
-	initialMessage := base.DBMessageToMessage(initialDBMessage)
-
-	finalDBMessage := base.MessageToDBMessage(initialMessage)
-
-	finalMessage := base.DBMessageToMessage(finalDBMessage)
-
-	Equal(t.T(), initialDBMessage, finalDBMessage)
-	Equal(t.T(), initialMessage, finalMessage)
 }
