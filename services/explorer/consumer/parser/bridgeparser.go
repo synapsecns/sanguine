@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -12,10 +15,8 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
+	"github.com/synapsecns/sanguine/services/explorer/static"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
-	"math/big"
-	"path/filepath"
-	"time"
 )
 
 // BridgeParser parses events from the bridge contract.
@@ -48,11 +49,8 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bri
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridgev1.SynapseBridgeFilterer{}, err)
 	}
-	idPath := filepath.Clean("./static/tokenIDToCoinGeckoID.yaml")
-	if err != nil {
-		return nil, fmt.Errorf("could find path to yaml file: %w", err)
-	}
-	idCoinGeckoIDs, err := OpenYaml(idPath)
+
+	idCoinGeckoIDs, err := ParseYaml(static.GetTokenIDToCoingekoConfig())
 	if err != nil {
 		return nil, fmt.Errorf("could not open yaml file: %w", err)
 	}
@@ -171,10 +169,25 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 	}
 }
 
-// ParseAndStore parses the bridge logs and stores them in the database.
+// ParseAndStore parses the bridge logs and returns a model that can be stored
+// Deprecated: use Parse and store separately.
+func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	bridgeEvent, err := p.Parse(ctx, log, chainID)
+	if err != nil {
+		return fmt.Errorf("could not parse event: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
+
+	if err != nil {
+		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.String())
+	}
+	return nil
+}
+
+// Parse parses the bridge logs and returns a model that can be stored
 //
 // nolint:gocognit,cyclop,dupl,maintidx
-func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32) (interface{}, error) {
 	logTopic := log.Topics[0]
 
 	iFace, err := func(log ethTypes.Log) (bridgeTypes.EventLog, error) {
@@ -320,11 +333,13 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 	if err != nil {
 		// Switch failed.
-		return err
+		return nil, err
 	}
+
+	// TODO: investigate better way to implement this
 	if iFace == nil {
 		// unknown topic.
-		return nil
+		return nil, fmt.Errorf("unknown topic: %s", logTopic.String())
 	}
 
 	bridgeEvent := eventToBridgeEvent(iFace, chainID)
@@ -346,24 +361,19 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	// Get TokenID from BridgeConfig data.
 	tokenID, err := p.fetcher.GetTokenID(ctx, big.NewInt(int64(chainID)), iFace.GetToken())
 	if err != nil {
-		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+		return nil, fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
 
 	bridgeEvent.TokenID = ToNullString(tokenID) // TODO Change to coingecko ID.
 
 	if *tokenID == fetcher.NoTokenID {
 		// handle an inauthentic token.
-		err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
-
-		if err != nil {
-			return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.Hex())
-		}
-		return nil
+		return &bridgeEvent, nil
 	}
 	// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
 	token, err := p.fetcher.GetToken(ctx, chainID, tokenID, uint32(iFace.GetBlockNumber()))
 	if err != nil {
-		return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+		return nil, fmt.Errorf("could not parse get token from bridge config event: %w", err)
 	}
 
 	bridgeEvent.TokenDecimal = &token.TokenDecimals
@@ -387,10 +397,5 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 		}
 	}
 
-	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
-
-	if err != nil {
-		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.Hex())
-	}
-	return nil
+	return bridgeEvent, nil
 }

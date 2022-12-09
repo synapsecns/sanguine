@@ -3,9 +3,10 @@ package backfill
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 	"time"
+
+	"github.com/synapsecns/sanguine/ethergo/util"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -198,7 +199,9 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 		Min:    1 * time.Second,
 		Max:    10 * time.Second,
 	}
+
 	var parsedLogs []interface{}
+
 	timeout := time.Duration(0)
 	logIdx := 0
 	for {

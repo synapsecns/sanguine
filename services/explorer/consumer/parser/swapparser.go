@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
@@ -11,10 +14,8 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
+	"github.com/synapsecns/sanguine/services/explorer/static"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 // SwapParser parses events from the swap contract.
@@ -39,11 +40,8 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, swapFet
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
-	symbolPath, err := filepath.Abs("./static/tokenSymbolToCoinGeckoID.yaml")
-	if err != nil {
-		return nil, fmt.Errorf("could find path to yaml file: %w", err)
-	}
-	symbolCoinGeckoIDs, err := OpenYaml(symbolPath)
+
+	symbolCoinGeckoIDs, err := ParseYaml(static.GetTokenSymbolToCoingeckoConfig())
 	if err != nil {
 		return nil, fmt.Errorf("could not open yaml file: %w", err)
 	}
