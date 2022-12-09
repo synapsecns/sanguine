@@ -17,7 +17,7 @@ import (
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
-
+)
 
 // BridgeParser parses events from the bridge contract.
 type BridgeParser struct {
