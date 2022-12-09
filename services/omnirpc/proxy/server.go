@@ -3,17 +3,13 @@ package proxy
 import (
 	"context"
 	"fmt"
-	helmet "github.com/danielkov/gin-helmet"
-	"github.com/gin-contrib/requestid"
-	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/ipfs/go-log"
+	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
-	"go.uber.org/zap/zapcore"
 	"net/http"
 	"strconv"
 	"sync"
@@ -44,51 +40,12 @@ func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
 	}
 }
 
-// HealthCheckEndpoint is the health check endpoint.
-const HealthCheckEndpoint = "/health-check"
-
 // Run runs the rpc server until context cancellation.
 func (r *RPCProxy) Run(ctx context.Context) {
 	go r.startProxyLoop(ctx)
 
-	router := gin.New()
-	router.Use(requestid.New(
-		requestid.WithCustomHeaderStrKey(requestid.HeaderStrKey(omniHTTP.XRequestIDString)),
-		requestid.WithGenerator(func() string {
-			return uuid.New().String()
-		})))
-
-	router.Use(helmet.Default())
-	router.Use(gin.Recovery())
+	router := ginhelper.New(logger)
 	log.SetAllLoggers(log.LevelDebug)
-	router.Use(ginzap.GinzapWithConfig(logger.Desugar(), &ginzap.Config{
-		TimeFormat: time.RFC3339,
-		UTC:        true,
-		Context: func(c *gin.Context) (fields []zapcore.Field) {
-			requestID := c.GetHeader(omniHTTP.XRequestIDString)
-			fields = append(fields, zapcore.Field{
-				Key:    "request-id",
-				Type:   zapcore.StringType,
-				String: requestID,
-			})
-
-			return fields
-		},
-	}))
-	router.Use(ginzap.RecoveryWithZap(logger.Desugar(), true))
-
-	router.Use(func(c *gin.Context) {
-		// set on request as well
-		if c.Request.Header.Get(omniHTTP.XRequestIDString) == "" {
-			c.Request.Header.Set(omniHTTP.XRequestIDString, c.Writer.Header().Get(omniHTTP.XRequestIDString))
-		}
-	})
-
-	router.GET(HealthCheckEndpoint, func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status": "UP",
-		})
-	})
 
 	router.POST("/rpc/:id", func(c *gin.Context) {
 		chainID, err := strconv.Atoi(c.Param("id"))
