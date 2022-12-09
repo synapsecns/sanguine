@@ -206,7 +206,7 @@ func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, des
 // BuildTreeFromDB builds the merkle tree from the database's messages. This function will
 // reset the current merkle tree and replace it with the one built from the database.
 // This function should also not be called while Start or Listen are running.
-func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
+func (e Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
 	messageMask := execTypes.DBMessage{
 		ChainID:     &chainID,
 		Destination: &destination,
@@ -215,7 +215,7 @@ func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destinat
 	var allMessages []types.Message
 	page := 1
 	for {
-		messages, err := e.executorDB.GetMessages(ctx, messageMask, 1)
+		messages, err := e.executorDB.GetMessages(ctx, messageMask, page)
 		if err != nil {
 			return fmt.Errorf("could not get messages: %w", err)
 		}

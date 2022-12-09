@@ -133,9 +133,6 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, 
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("failed to get last block number: %w", dbTx.Error)
 	}
-	if dbTx.RowsAffected == 0 {
-		return 0, nil
-	}
 
 	return lastBlockNumber, nil
 }
