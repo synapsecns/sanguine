@@ -395,7 +395,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	}
 	if *timeStamp == 0 {
 		logger.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
-		return nil
+		return nil, fmt.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
 	}
 
 	bridgeEvent.TimeStamp = &timeStampBig
