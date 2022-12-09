@@ -45,9 +45,6 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 		if err != nil {
 			return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
 		}
-
-		// Allow for synchronous ALTER TABLE statements
-		clickhouseDB.WithContext(ctx).Exec("set mutations_sync = 1")
 	}
 	db, err := clickhouseDB.DB()
 
