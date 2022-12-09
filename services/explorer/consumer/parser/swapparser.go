@@ -138,7 +138,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 	if err != nil {
 		return fmt.Errorf("could not parse event: %w", err)
 	}
-	err = p.consumerDB.StoreEvent(ctx, swapEvent)
+	err = p.consumerDB.StoreEvent(ctx, &swapEvent)
 
 	if err != nil {
 		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.String())
@@ -273,5 +273,5 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 
 	swapEvent.Sender = sender
 
-	return nil, fmt.Errorf("could not get parser data: %w", err)
+	return swapEvent, nil
 }

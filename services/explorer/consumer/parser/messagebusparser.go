@@ -82,7 +82,7 @@ func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, 
 	if err != nil {
 		return fmt.Errorf("could not parse event: %w", err)
 	}
-	err = m.consumerDB.StoreEvent(ctx, messageEvent)
+	err = m.consumerDB.StoreEvent(ctx, &messageEvent)
 
 	if err != nil {
 		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.String())
@@ -143,5 +143,5 @@ func (m *MessageBusParser) Parse(ctx context.Context, log ethTypes.Log, chainID 
 	timeStampBig := uint64(*timeStamp.Response)
 	messageEvent.TimeStamp = &timeStampBig
 
-	return &messageEvent, nil
+	return messageEvent, nil
 }
