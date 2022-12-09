@@ -8,14 +8,14 @@ import (
 //// StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
 // func (s *Store) StoreEvent(ctx context.Context, bridgeEvent *BridgeEvent, swapEvent *SwapEvent) error {
 //	if bridgeEvent != nil {
-//		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*bridgeEvent)
+//		dbTx := s.db.WithContext(ctx).Create(*bridgeEvent)
 //		if dbTx.Error != nil {
 //			return fmt.Errorf("failed to store bridge event: %w", dbTx.Error)
 //		}
 //	}
 //
 //	if swapEvent != nil {
-//		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(*swapEvent)
+//		dbTx := s.db.WithContext(ctx).Create(*swapEvent)
 //		if dbTx.Error != nil {
 //			return fmt.Errorf("failed to store swap event: %w", dbTx.Error)
 //		}
@@ -28,17 +28,60 @@ import (
 func (s *Store) StoreEvent(ctx context.Context, event interface{}) error {
 	switch conv := event.(type) {
 	case *BridgeEvent:
-		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(conv)
+		dbTx := s.db.WithContext(ctx).Create(conv)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store bridge event: %w", dbTx.Error)
 		}
 	case *SwapEvent:
-		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(conv)
+		dbTx := s.db.WithContext(ctx).Create(conv)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store swap event: %w", dbTx.Error)
 		}
 	case *MessageBusEvent:
-		dbTx := s.UNSAFE_DB().WithContext(ctx).Create(conv)
+		dbTx := s.db.WithContext(ctx).Create(conv)
+		if dbTx.Error != nil {
+			return fmt.Errorf("failed to store message event: %w", dbTx.Error)
+		}
+	}
+	return nil
+}
+
+// StoreEvents stores a list of events in batches.
+//
+//nolint:cyclop
+func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
+	var bridgeEvents []BridgeEvent
+	var swapEvents []SwapEvent
+	var messageBusEvents []MessageBusEvent
+
+	for _, event := range events {
+		switch conv := event.(type) {
+		case BridgeEvent:
+			bridgeEvents = append(bridgeEvents, conv)
+		case SwapEvent:
+			swapEvents = append(swapEvents, conv)
+		case MessageBusEvent:
+			messageBusEvents = append(messageBusEvents, conv)
+		}
+	}
+
+	// TODO: maybe switch this out with a generic
+	if len(bridgeEvents) > 0 {
+		dbTx := s.db.WithContext(ctx).Create(&bridgeEvents)
+		if dbTx.Error != nil {
+			return fmt.Errorf("failed to store message event: %w", dbTx.Error)
+		}
+	}
+
+	if len(swapEvents) > 0 {
+		dbTx := s.db.WithContext(ctx).Create(&swapEvents)
+		if dbTx.Error != nil {
+			return fmt.Errorf("failed to store message event: %w", dbTx.Error)
+		}
+	}
+
+	if len(messageBusEvents) > 0 {
+		dbTx := s.db.WithContext(ctx).Create(&messageBusEvents)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store message event: %w", dbTx.Error)
 		}

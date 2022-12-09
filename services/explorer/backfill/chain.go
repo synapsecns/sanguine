@@ -198,7 +198,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 		Min:    1 * time.Second,
 		Max:    10 * time.Second,
 	}
-
+	var parsedLogs []interface{}
 	timeout := time.Duration(0)
 	logIdx := 0
 	for {
@@ -208,15 +208,24 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
 			if logIdx >= len(logs) {
+				if len(parsedLogs) > 0 {
+					// TODO: add a retry here
+					err := c.consumerDB.StoreEvents(ctx, parsedLogs)
+					if err != nil {
+						return fmt.Errorf("could not store events: %w", err)
+					}
+				}
+
 				return nil
 			}
-			err := eventParser.ParseAndStore(ctx, logs[logIdx], c.chainConfig.ChainID)
+			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], c.chainConfig.ChainID)
 			if err != nil {
 				logger.Errorf("could not parse and store log %d, %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
 				timeout = b.Duration()
 				continue
 			}
 
+			parsedLogs = append(parsedLogs, parsedLog)
 			logIdx++
 
 			// Reset the backoff after successful log parse run to prevent bloated back offs.

@@ -134,10 +134,25 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 	}
 }
 
-// ParseAndStore parses and stores the swap logs.
+// ParseAndStore parses the swap logs and returns a model that can be stored
+// Deprecated: use Parse and store separately.
+func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	swapEvent, err := p.Parse(ctx, log, chainID)
+	if err != nil {
+		return fmt.Errorf("could not parse event: %w", err)
+	}
+	err = p.consumerDB.StoreEvent(ctx, &swapEvent)
+
+	if err != nil {
+		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.String())
+	}
+	return nil
+}
+
+// Parse parses the swap logs.
 //
 //nolint:gocognit,cyclop,dupl
-func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32) (interface{}, error) {
 	logTopic := log.Topics[0]
 
 	iFace, err := func(log ethTypes.Log) (swapTypes.EventLog, error) {
@@ -218,11 +233,16 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 	}(log)
 	if err != nil {
 		// Switch failed.
-		return err
+		return nil, err
 	}
 
 	swapEvent := eventToSwapEvent(iFace, chainID)
+	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
+	if err != nil {
+		logger.Errorf("could not get tx sender: %v", err)
+	}
 
+	swapEvent.Sender = sender
 	// nolint:nestif
 	if swapEvent.Amount != nil {
 		tokenPrices := map[uint8]float64{}
@@ -238,7 +258,7 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 				tokenDecimals[tokenIndex] = *decimals
 				timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 				if err != nil {
-					return fmt.Errorf("could not get timestamp: %w", err)
+					return nil, fmt.Errorf("could not get timestamp: %w", err)
 				}
 				coinGeckoID := p.coinGeckoIDs[strings.ToLower(*symbol)]
 
@@ -254,16 +274,5 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 		}
 	}
 
-	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
-	if err != nil {
-		logger.Errorf("could not get tx sender: %v", err)
-	}
-
-	swapEvent.Sender = sender
-	err = p.consumerDB.StoreEvent(ctx, &swapEvent)
-	if err != nil {
-		return fmt.Errorf("could not store event: %w", err)
-	}
-
-	return nil
+	return swapEvent, nil
 }
