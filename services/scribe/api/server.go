@@ -35,6 +35,8 @@ type Config struct {
 	Path string
 	// GRPCPort is the path to the grpc service.
 	GRPCPort uint16
+	// OmniRPCURL is the url of the omnirpc service.
+	OmniRPCURL string
 }
 
 var logger = log.Logger("scribe-api")

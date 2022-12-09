@@ -93,6 +93,7 @@ func (r *queryResolver) BlockTime(ctx context.Context, chainID int, blockNumber 
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving block time: %w", err)
 	}
+
 	blockTimeInt := int(blockTime)
 
 	return &blockTimeInt, nil
@@ -208,3 +209,4 @@ func (r *queryResolver) BlockTimeCount(ctx context.Context, chainID int) (*int, 
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
+

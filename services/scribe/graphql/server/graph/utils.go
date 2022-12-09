@@ -1,9 +1,13 @@
 package graph
 
 import (
+	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
+	"time"
 )
 
 func (r Resolver) receiptsToModelReceipts(receipts []types.Receipt, chainID uint32) []*model.Receipt {
@@ -88,5 +92,35 @@ func (r Resolver) ethTxToModelTransaction(ethTx types.Transaction, chainID uint3
 		Value:     ethTx.Value().String(),
 		Nonce:     int(ethTx.Nonce()),
 		To:        ethTx.To().String(),
+	}
+}
+
+// getBlockTime retrieves a singular blocktime.
+//
+//nolint:gocognit,cyclop
+func (r Resolver) getBlockTime(ctx context.Context, logs []ethTypes.Log, eventParser parser.Parser) error {
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    10 * time.Second,
+	}
+
+	timeout := time.Duration(0)
+	for {
+		select {
+		case <-ctx.Done():
+
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(timeout):
+
+			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], c.chainConfig.ChainID)
+			if err != nil {
+				logger.Errorf("could not parse and store log %d, %s: %s", c.chainConfig.ChainID, logs[logIdx].Address, err)
+				timeout = b.Duration()
+				continue
+			}
+
+		}
 	}
 }
