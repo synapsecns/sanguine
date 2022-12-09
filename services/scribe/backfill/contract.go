@@ -146,8 +146,8 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		b := &backoff.Backoff{
 			Factor: 2,
 			Jitter: true,
-			Min:    1 * time.Second,
-			Max:    10 * time.Second,
+			Min:    3 * time.Millisecond,
+			Max:    2 * time.Second,
 		}
 		timeout := time.Duration(0)
 		tryCount := 0
@@ -227,8 +227,8 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		b := &backoff.Backoff{
 			Factor: 2,
 			Jitter: true,
-			Min:    1 * time.Second,
-			Max:    10 * time.Second,
+			Min:    3 * time.Millisecond,
+			Max:    2 * time.Second,
 		}
 		timeout := time.Duration(0)
 		tryCount := 0
