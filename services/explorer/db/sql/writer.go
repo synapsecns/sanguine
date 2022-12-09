@@ -111,9 +111,16 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
 		}
 		// Allow for synchronous ALTER TABLE statements
-		s.db.WithContext(ctx).Exec("set mutations_sync = 1")
+		dbTx = s.db.WithContext(ctx).Exec("set mutations_sync = 2")
+		if dbTx.Error != nil {
+			return fmt.Errorf("could set mutation sync for block %d on chain %d: %w", blockNumber, chainID, dbTx.Error)
+		}
+
 		alterQuery := fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d AND %s = '%s'", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID, ContractAddressFieldName, contractAddress)
-		s.db.WithContext(ctx).Exec(alterQuery)
+		dbTx = s.db.WithContext(ctx).Exec(alterQuery)
+		if dbTx.Error != nil {
+			return fmt.Errorf("could not update last block %d on chain %d: %w", blockNumber, chainID, dbTx.Error)
+		}
 	}
 
 	return nil
