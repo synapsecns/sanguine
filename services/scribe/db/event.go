@@ -67,9 +67,9 @@ type EventDBReader interface {
 	RetrieveReceiptsInRange(ctx context.Context, receiptFilter ReceiptFilter, startBlock, endBlock uint64, page int) (receipts []types.Receipt, err error)
 
 	// RetrieveEthTxsWithFilter retrieves eth transactions with a filter given a page.
-	RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter EthTxFilter, page int) ([]types.Transaction, error)
+	RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter EthTxFilter, page int) ([]TxWithBlockNumber, error)
 	// RetrieveEthTxsInRange retrieves eth transactions that match an inputted filter and are within a range given a page.
-	RetrieveEthTxsInRange(ctx context.Context, ethTxFilter EthTxFilter, startBlock, endBlock uint64, page int) ([]types.Transaction, error)
+	RetrieveEthTxsInRange(ctx context.Context, ethTxFilter EthTxFilter, startBlock, endBlock uint64, page int) ([]TxWithBlockNumber, error)
 
 	// RetrieveLastIndexed retrieves the last indexed for a contract address
 	RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32) (uint64, error)
@@ -97,4 +97,10 @@ type EventDBReader interface {
 type EventDB interface {
 	EventDBWriter
 	EventDBReader
+}
+
+// TxWithBlockNumber is a transaction with a block number and is used for specifically for batching data in explorer.
+type TxWithBlockNumber struct {
+	Tx          types.Transaction
+	BlockNumber uint64
 }

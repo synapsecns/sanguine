@@ -86,7 +86,7 @@ func (t *DBSuite) TestStoreAndRetrieveEthTx() {
 			}
 			tx, err := testDB.RetrieveEthTxsWithFilter(t.GetTestContext(), ethTxFilter, 1)
 			Nil(t.T(), err)
-			resA, err := tx[0].MarshalJSON()
+			resA, err := tx[0].Tx.MarshalJSON()
 			Nil(t.T(), err)
 			resB, err := signedTx.MarshalJSON()
 			Nil(t.T(), err)

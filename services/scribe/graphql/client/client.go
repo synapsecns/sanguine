@@ -168,6 +168,8 @@ type GetTransactions struct {
 		Value     string "json:\"value\" graphql:\"value\""
 		Nonce     int    "json:\"nonce\" graphql:\"nonce\""
 		To        string "json:\"to\" graphql:\"to\""
+		Timestamp int    "json:\"timestamp\" graphql:\"timestamp\""
+		Sender    string "json:\"sender\" graphql:\"sender\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetTransactionsRange struct {
@@ -184,6 +186,8 @@ type GetTransactionsRange struct {
 		Value     string "json:\"value\" graphql:\"value\""
 		Nonce     int    "json:\"nonce\" graphql:\"nonce\""
 		To        string "json:\"to\" graphql:\"to\""
+		Timestamp int    "json:\"timestamp\" graphql:\"timestamp\""
+		Sender    string "json:\"sender\" graphql:\"sender\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetTransactionsResolvers struct {
@@ -476,6 +480,8 @@ const GetTransactionsDocument = `query GetTransactions ($chain_id: Int!, $page: 
 		value
 		nonce
 		to
+		timestamp
+		sender
 	}
 }
 `
@@ -508,6 +514,8 @@ const GetTransactionsRangeDocument = `query GetTransactionsRange ($chain_id: Int
 		value
 		nonce
 		to
+		timestamp
+		sender
 	}
 }
 `

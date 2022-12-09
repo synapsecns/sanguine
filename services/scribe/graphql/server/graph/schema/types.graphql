@@ -31,9 +31,9 @@ type Transaction {
   value: String!
   nonce: Int!
   to: String!
-  timestamp: String!
   page: Int!
   sender: String!
+  timestamp: Int!
   logs: [Log!] @goField(forceResolver: true)
   receipt: Receipt! @goField(forceResolver: true)
   json: JSON! @goField(forceResolver:true)
