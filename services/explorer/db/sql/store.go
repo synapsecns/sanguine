@@ -45,7 +45,6 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 		if err != nil {
 			return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
 		}
-
 	}
 	db, err := clickhouseDB.DB()
 
@@ -53,7 +52,7 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 		return nil, fmt.Errorf("failed to get clickhouse db: %w", err)
 	}
 
-	db.SetConnMaxIdleTime(12 * time.Hour)
-	db.SetConnMaxLifetime(12 * time.Hour)
+	db.SetConnMaxIdleTime(300 * time.Second)
+	db.SetConnMaxLifetime(300 * time.Second)
 	return &Store{clickhouseDB}, nil
 }
