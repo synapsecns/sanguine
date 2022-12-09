@@ -48,3 +48,13 @@ func (c ContractConfig) IsValid() (ok bool, err error) {
 	}
 	return true, nil
 }
+
+// TODO: these should be put into the contracts themselves and implement a custom type.
+const (
+	// BridgeContractType is the type of a bridge contract.
+	BridgeContractType = "bridge"
+	// SwapContractType is the type of the swap contract.
+	SwapContractType = "swap"
+	// MessageBusContractType is the type of a message bus contract.
+	MessageBusContractType = "messagebus"
+)
