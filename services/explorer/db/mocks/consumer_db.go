@@ -282,13 +282,13 @@ func (_m *ConsumerDB) StoreEvent(ctx context.Context, event interface{}) error {
 	return r0
 }
 
-// StoreLastBlock provides a mock function with given fields: ctx, chainID, blockNumber
-func (_m *ConsumerDB) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64) error {
-	ret := _m.Called(ctx, chainID, blockNumber)
+// StoreLastBlock provides a mock function with given fields: ctx, chainID, blockNumber, contractAddress
+func (_m *ConsumerDB) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error {
+	ret := _m.Called(ctx, chainID, blockNumber, contractAddress)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint64) error); ok {
-		r0 = rf(ctx, chainID, blockNumber)
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint64, string) error); ok {
+		r0 = rf(ctx, chainID, blockNumber, contractAddress)
 	} else {
 		r0 = ret.Error(0)
 	}

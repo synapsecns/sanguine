@@ -102,13 +102,18 @@ func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, 
 			return iFace, nil
 
 		default:
-			return nil, fmt.Errorf("unknown topic: %s", logTopic.Hex())
+			logger.Errorf("unknown message bus topic, skipping: %s block: %d", logTopic.Hex(), log.BlockNumber)
+			return nil, nil
 		}
 	}(log)
 
 	if err != nil {
 		// Switch failed.
 		return err
+	}
+	if iFace == nil {
+		// Unknown topic.
+		return nil
 	}
 
 	// populate message event type so following operations can mature the event data.
