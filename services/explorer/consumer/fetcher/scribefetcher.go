@@ -125,8 +125,7 @@ RETRY:
 
 		if timeStamp == nil || timeStamp.Response == nil {
 			logger.Warnf("could not get timestamp for block, invalid blocktime %d: %d", chainID, blockNumber)
-			zero := 0
-			return &zero, nil
+			return nil, fmt.Errorf("could not get timestamp for block, invalid blocktime %d: %d", chainID, blockNumber)
 		}
 
 		return timeStamp.Response, nil

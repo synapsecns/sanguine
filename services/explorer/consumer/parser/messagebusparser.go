@@ -124,10 +124,7 @@ func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, 
 	if err != nil {
 		return fmt.Errorf("could not get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
 	}
-	if *timeStamp == 0 {
-		logger.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
-		return nil
-	}
+
 	// If we have a timestamp, populate the following attributes of messageEvent.
 	timeStampBig := uint64(*timeStamp)
 	messageEvent.TimeStamp = &timeStampBig

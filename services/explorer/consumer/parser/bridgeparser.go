@@ -335,6 +335,14 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 
 	bridgeEvent.Sender = sender
 
+	timeStamp, err := p.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	if err != nil {
+		return fmt.Errorf("could not get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
+	}
+
+	timeStampBig := uint64(*timeStamp)
+	bridgeEvent.TimeStamp = &timeStampBig
+
 	// Get TokenID from BridgeConfig data.
 	tokenID, err := p.fetcher.GetTokenID(ctx, big.NewInt(int64(chainID)), iFace.GetToken())
 	if err != nil {
@@ -359,17 +367,6 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 	}
 
 	bridgeEvent.TokenDecimal = &token.TokenDecimals
-	timeStamp, err := p.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
-	if err != nil {
-		return fmt.Errorf("could not get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
-	}
-	if *timeStamp == 0 {
-		logger.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
-		return nil
-	}
-
-	timeStampBig := uint64(*timeStamp)
-	bridgeEvent.TimeStamp = &timeStampBig
 
 	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
 	coinGeckoID := p.coinGeckoIDs[*tokenID]
