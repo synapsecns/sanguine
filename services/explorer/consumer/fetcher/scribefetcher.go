@@ -108,7 +108,13 @@ func (s ScribeFetcher) FetchBlockTime(ctx context.Context, chainID int, blockNum
 		Max:    10 * time.Second,
 	}
 	timeout := time.Duration(0)
+	retryThreshold := 5
+	tryCount := 0
 RETRY:
+	if tryCount > retryThreshold {
+		return nil, fmt.Errorf("could not get block time for block %d", blockNumber)
+	}
+	tryCount++
 	select {
 	case <-ctx.Done():
 
