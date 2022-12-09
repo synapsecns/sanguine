@@ -23,6 +23,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/friendsofgo/graphiql v0.2.2
 	github.com/gin-gonic/gin v1.8.1
+	github.com/hashicorp/golang-lru/v2 v2.0.1
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
