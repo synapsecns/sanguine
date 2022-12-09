@@ -31,6 +31,7 @@ func (u NotarySuite) TestNotaryE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
+		RefreshIntervalInSeconds: 1,
 	}
 	ud, err := notary.NewNotary(u.GetTestContext(), testConfig)
 	Nil(u.T(), err)
@@ -56,7 +57,6 @@ func (u NotarySuite) TestNotaryE2E() {
 	}()
 
 	u.Eventually(func() bool {
-		// TODO (joe): Figure out why attestationContract points to old version and fix this test after the GlobalRegistry changes
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveNewestConfirmedInProgressAttestation(u.GetTestContext(), u.domainClient.Config().DomainID, testConfig.DestinationID)
 		Nil(u.T(), err)
