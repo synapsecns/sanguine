@@ -27,7 +27,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
-		results, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, *page, tokenAddress)
+		results, err = r.GetBridgeTxsFromDestination(ctx, nil, address, txnHash, kappa, *page, tokenAddress)
 		if err != nil {
 			return nil, err
 		}

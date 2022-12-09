@@ -4,6 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
+	"golang.org/x/sync/errgroup"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -14,8 +19,6 @@ import (
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
-	"math/big"
-	"time"
 )
 
 // BridgeParser parses events from the bridge contract.
@@ -29,7 +32,9 @@ type BridgeParser struct {
 	// bridgeAddress is the address of the bridge.
 	bridgeAddress common.Address
 	// fetcher is a Bridge Config ScribeFetcher.
-	fetcher fetcher.BridgeConfigFetcher
+	fetcher fetcher.Service
+	// tokenDataService contains the token data service/cache
+	tokenDataService tokendata.Service
 	// consumerFetcher is the ScribeFetcher for sender and timestamp.
 	consumerFetcher *fetcher.ScribeFetcher
 	// coinGeckoIDs is the mapping of token id to coin gecko ID
@@ -37,7 +42,7 @@ type BridgeParser struct {
 }
 
 // NewBridgeParser creates a new parser for a given bridge.
-func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bridgeConfigFetcher fetcher.BridgeConfigFetcher, consumerFetcher *fetcher.ScribeFetcher) (*BridgeParser, error) {
+func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bridgeConfigFetcher fetcher.Service, consumerFetcher *fetcher.ScribeFetcher) (*BridgeParser, error) {
 	filterer, err := bridge.NewSynapseBridgeFilterer(bridgeAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
@@ -54,7 +59,21 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, bri
 		return nil, fmt.Errorf("could not open yaml file: %w", err)
 	}
 
-	return &BridgeParser{consumerDB, filterer, filtererV1, bridgeAddress, bridgeConfigFetcher, consumerFetcher, idCoinGeckoIDs}, nil
+	tokenDataService, err := tokendata.NewTokenDataService(bridgeConfigFetcher)
+	if err != nil {
+		return nil, fmt.Errorf("could not create token data service: %w", err)
+	}
+
+	return &BridgeParser{
+		consumerDB:       consumerDB,
+		Filterer:         filterer,
+		FiltererV1:       filtererV1,
+		bridgeAddress:    bridgeAddress,
+		fetcher:          bridgeConfigFetcher,
+		tokenDataService: tokenDataService,
+		consumerFetcher:  consumerFetcher,
+		coinGeckoIDs:     idCoinGeckoIDs,
+	}, nil
 }
 
 // EventType returns the event type of a bridge log.
@@ -325,8 +344,9 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 			return iFace, nil
 		default:
-			logger.Errorf("unknown bridge topic: %s %s chain: %d add: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
-			return nil, nil
+			logger.Errorf("ErrUnknownTopic in bridge: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+
+			return nil, fmt.Errorf(ErrUnknownTopic)
 		}
 	}(log)
 
@@ -335,65 +355,71 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 		return nil, err
 	}
 
-	// TODO: investigate better way to implement this
-	if iFace == nil {
-		// unknown topic.
-		return nil, fmt.Errorf("unknown topic: %s", logTopic.String())
-	}
-
 	bridgeEvent := eventToBridgeEvent(iFace, chainID)
-	sender, err := p.consumerFetcher.FetchTxSender(ctx, chainID, iFace.GetTxHash().String())
+	g, groupCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		bridgeEvent.Sender, err = p.consumerFetcher.FetchTxSender(groupCtx, chainID, iFace.GetTxHash().String())
+		if err != nil {
+			logger.Errorf("could not get tx sender: %v", err)
+		}
+		return nil
+	})
+
+	var timeStampBig uint64
+	var timeStamp *int
+	g.Go(func() error {
+		timeStamp, err = p.consumerFetcher.FetchBlockTime(groupCtx, int(chainID), int(iFace.GetBlockNumber()))
+		if err != nil {
+			return fmt.Errorf("could unknownTopic get block time: %w, %d, %d", err, int(chainID), int(iFace.GetBlockNumber()))
+		}
+		timeStampBig = uint64(*timeStamp)
+		return nil
+	})
+
+	var tokenData tokendata.ImmutableTokenData
+	g.Go(func() error {
+		// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
+		tokenData, err = p.tokenDataService.GetTokenData(ctx, chainID, iFace.GetToken())
+		if err != nil {
+			return fmt.Errorf("could not parse get token from bridge config event: %w", err)
+		}
+
+		return nil
+	})
+
+	err = g.Wait()
 	if err != nil {
-		logger.Errorf("could not get tx sender: %v", err)
+		return nil, fmt.Errorf("could not parse bridge event: %w", err)
 	}
 
-	bridgeEvent.Sender = sender
+	bridgeEvent.TimeStamp = &timeStampBig
 
-	// Get TokenID from BridgeConfig data.
-	tokenID, err := p.fetcher.GetTokenID(ctx, big.NewInt(int64(chainID)), iFace.GetToken())
-	if err != nil {
-		return nil, fmt.Errorf("could not parse get token from bridge config event: %w", err)
-	}
-
-	bridgeEvent.TokenID = ToNullString(tokenID) // TODO Change to coingecko ID.
-
-	if *tokenID == fetcher.NoTokenID {
+	if tokenData.TokenID() == fetcher.NoTokenID {
 		// handle an inauthentic token.
 		return &bridgeEvent, nil
 	}
-	// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
-	token, err := p.fetcher.GetToken(ctx, chainID, tokenID, uint32(iFace.GetBlockNumber()))
-	if err != nil {
-		return nil, fmt.Errorf("could not parse get token from bridge config event: %w", err)
-	}
 
-	bridgeEvent.TokenDecimal = &token.TokenDecimals
-	timeStamp, err := p.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
-	if err != nil {
-		return nil, fmt.Errorf("could not get block time: %w", err)
-	}
-
-	timeStampBig := uint64(*timeStamp)
-	bridgeEvent.TimeStamp = &timeStampBig
+	realDecimals := tokenData.Decimals()
+	realID := tokenData.TokenID()
+	bridgeEvent.TokenDecimal = &realDecimals
 
 	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
-	coinGeckoID := p.coinGeckoIDs[*tokenID]
+	coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
 
 	// Add TokenSymbol to bridgeEvent.
-	bridgeEvent.TokenSymbol = ToNullString(tokenID)
+	bridgeEvent.TokenSymbol = ToNullString(&realID)
 	var tokenPrice *float64
-
-	// TODO: this should be done in a separate interface
-	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) {
+	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1619827200) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1668646800) {
 		tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, *timeStamp, coinGeckoID)
 	}
 	if tokenPrice != nil {
 		// Add AmountUSD to bridgeEvent (if price is not nil).
-		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), token.TokenDecimals, tokenPrice)
+		bridgeEvent.AmountUSD = GetAmountUSD(iFace.GetAmount(), tokenData.Decimals(), tokenPrice)
 
 		// Add FeeAmountUSD to bridgeEvent (if price is not nil).
 		if iFace.GetFee() != nil {
-			bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), token.TokenDecimals, tokenPrice)
+			bridgeEvent.FeeAmountUSD = GetAmountUSD(iFace.GetFee(), tokenData.Decimals(), tokenPrice)
 		}
 	}
 
