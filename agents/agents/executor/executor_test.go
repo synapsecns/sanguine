@@ -83,7 +83,8 @@ func (e *ExecutorSuite) TestExecutor() {
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
 
 	go func() {
-		_ = scribeClient.Start(e.GetSuiteContext())
+		scribeErr := scribeClient.Start(e.GetSuiteContext())
+		e.Nil(scribeErr)
 	}()
 
 	// Start the Scribe.
@@ -94,14 +95,16 @@ func (e *ExecutorSuite) TestExecutor() {
 	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
 			{
-				ChainID:       chainIDA,
-				OriginAddress: testContractA.Address().String(),
+				ChainID:            chainIDA,
+				OriginAddress:      testContractA.Address().String(),
+				DestinationAddress: "not_needed",
 			},
 			{
 				ChainID:       chainIDB,
 				OriginAddress: testContractB.Address().String(),
 			},
 		},
+		AttestationCollectorChainID: gofakeit.Uint32(),
 	}
 
 	exc, err := executor.NewExecutor(excCfg, e.testDB, scribeClient.ScribeClient)
@@ -116,12 +119,12 @@ func (e *ExecutorSuite) TestExecutor() {
 	}()
 
 	e.Eventually(func() bool {
-		if len(exc.LogChans[chainIDA]) == 2 && len(exc.LogChans[chainIDB]) == 2 {
-			logA := <-exc.LogChans[chainIDA]
-			logB := <-exc.LogChans[chainIDA]
+		if len(exc.GetLogChan(chainIDA)) == 2 && len(exc.GetLogChan(chainIDB)) == 2 {
+			logA := <-exc.GetLogChan(chainIDA)
+			logB := <-exc.GetLogChan(chainIDA)
 			e.Assert().Less(logA.BlockNumber, logB.BlockNumber)
-			logC := <-exc.LogChans[chainIDB]
-			logD := <-exc.LogChans[chainIDB]
+			logC := <-exc.GetLogChan(chainIDB)
+			logD := <-exc.GetLogChan(chainIDB)
 			e.Assert().LessOrEqual(logC.BlockNumber, logD.BlockNumber)
 			return true
 		}
@@ -168,7 +171,8 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
 	go func() {
-		_ = scribeClient.Start(e.GetTestContext())
+		scribeErr := scribeClient.Start(e.GetTestContext())
+		e.Nil(scribeErr)
 	}()
 
 	// Start the Scribe.
@@ -206,7 +210,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	}()
 
 	e.Eventually(func() bool {
-		return len(exec.LogChans[chainID]) == 250
+		return len(exec.GetLogChan(chainID)) == 250
 	})
 
 	e.DeferAfterTest(func() {

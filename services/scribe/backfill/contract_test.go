@@ -1,6 +1,7 @@
 package backfill_test
 
 import (
+	"context"
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,6 +21,7 @@ import (
 )
 
 // TestFailedStore tests that the ChainBackfiller continues backfilling after a failed store.
+
 func (b BackfillSuite) TestFailedStore() {
 	mockDB := new(mocks.EventDB)
 	mockDB.
@@ -141,6 +143,7 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 	}
 
 Next:
+
 	// Check to see if 2 logs were collected.
 	Equal(b.T(), 2, len(collectedLogs))
 
@@ -166,6 +169,7 @@ Done:
 }
 
 // TestContractBackfill tests using a contractBackfiller for recording receipts and logs in a database.
+
 func (b BackfillSuite) TestContractBackfill() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
 	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetSuiteContext(), b.T(), big.NewInt(142))
@@ -238,6 +242,7 @@ func (b BackfillSuite) TestContractBackfill() {
 }
 
 // TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
+
 func (b BackfillSuite) TestTxTypeNotSupported() {
 	if os.Getenv("CI") != "" {
 		b.T().Skip("Network test flake")
@@ -281,6 +286,7 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 }
 
 // TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
+
 func (b BackfillSuite) TestInvalidTxVRS() {
 	if os.Getenv("CI") != "" {
 		b.T().Skip("Network test flake")
@@ -322,7 +328,6 @@ func (b BackfillSuite) TestInvalidTxVRS() {
 	Nil(b.T(), err)
 	Equal(b.T(), 1, len(receipts))
 }
-
 func (b BackfillSuite) getTxBlockNumber(chain backends.SimulatedTestBackend, tx *types.Transaction) (uint64, error) {
 	receipt, err := chain.TransactionReceipt(b.GetTestContext(), tx.Hash())
 	if err != nil {
@@ -359,15 +364,114 @@ func (b BackfillSuite) TestBSC() {
 	chainBackfiller, err := backfill.NewChainBackfiller(56, b.testDB, backendClientArr, chainConfig)
 	Nil(b.T(), err)
 	startTime := time.Now()
-	err = chainBackfiller.Backfill(b.GetTestContext(), false)
+	err = chainBackfiller.Backfill(context.Background(), false)
 	Nil(b.T(), err)
 
 	// Check to see if one log is recorded, one receipt is recorded, but no transactions.
 	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID)
 	Nil(b.T(), err)
-	Equal(b.T(), contractConfig.StartBlock, lastIndexed)
+	Equal(b.T(), currentBlock, lastIndexed)
 	timeElasped := time.Since(startTime)
 	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
 	Nil(b.T(), err)
-	fmt.Println("1000 blocks backfilled in", timeElasped, "logs collected:", len(logs))
+
+	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
+	Nil(b.T(), err)
+
+	txs, err := b.testDB.RetrieveEthTxsWithFilter(b.GetTestContext(), db.EthTxFilter{}, 1)
+
+	Nil(b.T(), err)
+	fmt.Println("1000 blocks backfilled in", timeElasped, "logs collected:", len(logs), len(receipts), len(txs))
+}
+
+// TestContractBackfill tests using a contractBackfiller for recording receipts and logs in a database.
+func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
+	// Get simulated blockchain, deploy the test contract, and set up test variables.
+	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetSuiteContext(), b.T(), big.NewInt(142))
+	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress())
+	Nil(b.T(), err)
+
+	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
+	testContract, testRef := b.manager.GetTestContract(b.GetTestContext(), simulatedChain)
+	transactOpts := simulatedChain.GetTxContext(b.GetTestContext(), nil)
+
+	// Set config.
+	contractConfig := config.ContractConfig{
+		Address:    testContract.Address().String(),
+		StartBlock: 0,
+	}
+
+	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
+	chainConfig := config.ChainConfig{
+		ChainID:              142,
+		ContractChunkSize:    1,
+		ContractSubChunkSize: 1,
+	}
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig.Address, b.testDB, simulatedChainArr)
+	Nil(b.T(), err)
+
+	// Emit events for the backfiller to read.
+	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	Nil(b.T(), err)
+
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+	tx, err = testRef.EmitEventB(transactOpts.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
+	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+
+	// Emit two logs in one receipt.
+	tx, err = testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
+	Nil(b.T(), err)
+
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+
+	// Get the block that the last transaction was executed in.
+	txBlockNumber, err := b.getTxBlockNumber(simulatedChain, tx)
+	Nil(b.T(), err)
+
+	err = b.testDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID, txBlockNumber)
+	Nil(b.T(), err)
+
+	tx, err = testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(10), big.NewInt(11), big.NewInt(12))
+	Nil(b.T(), err)
+
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+	tx, err = testRef.EmitEventB(transactOpts.TransactOpts, []byte{13}, big.NewInt(14), big.NewInt(15))
+	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+
+	// Emit two logs in one receipt.
+	tx, err = testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(16), big.NewInt(17), big.NewInt(18))
+	Nil(b.T(), err)
+
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+
+	// Get the block that the last transaction was executed in.
+	txBlockNumber, err = b.getTxBlockNumber(simulatedChain, tx)
+	Nil(b.T(), err)
+
+	err = backfiller.Backfill(b.GetTestContext(), contractConfig.StartBlock, txBlockNumber)
+	Nil(b.T(), err)
+
+	// Get all receipts.
+	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
+	Nil(b.T(), err)
+
+	// Check to see if 3 receipts were collected.
+	Equal(b.T(), 3, len(receipts))
+
+	// Get all logs.
+	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
+	Nil(b.T(), err)
+
+	// Check to see if 4 logs were collected.
+	Equal(b.T(), 4, len(logs))
+
+	// Check to see if the last receipt has two logs.
+	Equal(b.T(), 2, len(receipts[0].Logs))
+
+	// Ensure last indexed block is correct.
+	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()))
+	Nil(b.T(), err)
+	Equal(b.T(), txBlockNumber, lastIndexed)
 }

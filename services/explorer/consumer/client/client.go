@@ -19,19 +19,21 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	Logs                   []*model.Log         "json:\"logs\" graphql:\"logs\""
-	LogsRange              []*model.Log         "json:\"logsRange\" graphql:\"logsRange\""
-	Receipts               []*model.Receipt     "json:\"receipts\" graphql:\"receipts\""
-	ReceiptsRange          []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
-	Transactions           []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
-	TransactionsRange      []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
-	BlockTime              *int                 "json:\"blockTime\" graphql:\"blockTime\""
-	LastStoredBlockNumber  *int                 "json:\"lastStoredBlockNumber\" graphql:\"lastStoredBlockNumber\""
-	FirstStoredBlockNumber *int                 "json:\"firstStoredBlockNumber\" graphql:\"firstStoredBlockNumber\""
-	TxSender               *string              "json:\"txSender\" graphql:\"txSender\""
-	LastIndexed            *int                 "json:\"lastIndexed\" graphql:\"lastIndexed\""
-	LogCount               *int                 "json:\"logCount\" graphql:\"logCount\""
-	BlockTimeCount         *int                 "json:\"blockTimeCount\" graphql:\"blockTimeCount\""
+	Logs                     []*model.Log         "json:\"logs\" graphql:\"logs\""
+	LogsRange                []*model.Log         "json:\"logsRange\" graphql:\"logsRange\""
+	Receipts                 []*model.Receipt     "json:\"receipts\" graphql:\"receipts\""
+	ReceiptsRange            []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
+	Transactions             []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
+	TransactionsRange        []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
+	BlockTime                *int                 "json:\"blockTime\" graphql:\"blockTime\""
+	LastStoredBlockNumber    *int                 "json:\"lastStoredBlockNumber\" graphql:\"lastStoredBlockNumber\""
+	FirstStoredBlockNumber   *int                 "json:\"firstStoredBlockNumber\" graphql:\"firstStoredBlockNumber\""
+	LastConfirmedBlockNumber *int                 "json:\"lastConfirmedBlockNumber\" graphql:\"lastConfirmedBlockNumber\""
+	TxSender                 *string              "json:\"txSender\" graphql:\"txSender\""
+	LastIndexed              *int                 "json:\"lastIndexed\" graphql:\"lastIndexed\""
+	LogCount                 *int                 "json:\"logCount\" graphql:\"logCount\""
+	ReceiptCount             *int                 "json:\"receiptCount\" graphql:\"receiptCount\""
+	BlockTimeCount           *int                 "json:\"blockTimeCount\" graphql:\"blockTimeCount\""
 }
 type GetLogsRange struct {
 	Response []*struct {
@@ -62,7 +64,13 @@ type GetTxSender struct {
 type GetLastIndexed struct {
 	Response *int "json:\"response\" graphql:\"response\""
 }
+type GetLastConfirmedBlockNumber struct {
+	Response *int "json:\"response\" graphql:\"response\""
+}
 type GetLogCount struct {
+	Response *int "json:\"response\" graphql:\"response\""
+}
+type GetReceiptCount struct {
 	Response *int "json:\"response\" graphql:\"response\""
 }
 type GetBlockTimeCount struct {
@@ -195,6 +203,24 @@ func (c *Client) GetLastIndexed(ctx context.Context, chainID int, contractAddres
 	return &res, nil
 }
 
+const GetLastConfirmedBlockNumberDocument = `query GetLastConfirmedBlockNumber ($chain_id: Int!) {
+	response: lastConfirmedBlockNumber(chain_id: $chain_id)
+}
+`
+
+func (c *Client) GetLastConfirmedBlockNumber(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetLastConfirmedBlockNumber, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+	}
+
+	var res GetLastConfirmedBlockNumber
+	if err := c.Client.Post(ctx, "GetLastConfirmedBlockNumber", GetLastConfirmedBlockNumberDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 const GetLogCountDocument = `query GetLogCount ($chain_id: Int!, $contract_address: String!) {
 	response: logCount(chain_id: $chain_id, contract_address: $contract_address)
 }
@@ -208,6 +234,25 @@ func (c *Client) GetLogCount(ctx context.Context, chainID int, contractAddress s
 
 	var res GetLogCount
 	if err := c.Client.Post(ctx, "GetLogCount", GetLogCountDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetReceiptCountDocument = `query GetReceiptCount ($chain_id: Int!, $contract_address: String!) {
+	response: receiptCount(chain_id: $chain_id, contract_address: $contract_address)
+}
+`
+
+func (c *Client) GetReceiptCount(ctx context.Context, chainID int, contractAddress string, httpRequestOptions ...client.HTTPRequestOption) (*GetReceiptCount, error) {
+	vars := map[string]interface{}{
+		"chain_id":         chainID,
+		"contract_address": contractAddress,
+	}
+
+	var res GetReceiptCount
+	if err := c.Client.Post(ctx, "GetReceiptCount", GetReceiptCountDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

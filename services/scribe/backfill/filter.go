@@ -49,14 +49,11 @@ type LogFilterer interface {
 // bufferSize is how many ranges ahead should be fetched.
 const bufferSize = 15
 
-// maxAttempts is that maximum number of times a filter attempt should be made before giving up.
-const maxAttempts = 5
-
 // minBackoff is the minimum backoff period between requests.
 var minBackoff = 1 * time.Second
 
 // maxBackoff is the maximum backoff period between requests.
-var maxBackoff = 5 * time.Second
+var maxBackoff = 10 * time.Second
 
 // NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
 func NewRangeFilter(address ethCommon.Address, backend ScribeBackend, startBlock, endBlock *big.Int, chunkSize int, reverse bool, subChunkSize int) *RangeFilter {
@@ -76,7 +73,11 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
+			LogEvent(InfoLevel, "Contract backfill context completed", LogData{"ca": f.contractAddress})
+
 			if !f.done && ctx.Err() != nil {
+				LogEvent(InfoLevel, "could not finish filtering range", LogData{"ca": f.contractAddress})
+
 				return fmt.Errorf("could not finish filtering range: %w", ctx.Err())
 			}
 
@@ -125,7 +126,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 		case <-time.After(timeout):
 			attempt++
 
-			if attempt > maxAttempts {
+			if attempt > retryTolerance {
 				return nil, fmt.Errorf("maximum number of filter attempts exceeded")
 			}
 
@@ -133,6 +134,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunk *util.Chunk) (*LogIn
 			if err != nil {
 				timeout = b.Duration()
 				LogEvent(WarnLevel, "Could not filter logs for range, retrying", LogData{"sh": chunk.MinBlock(), "ca": f.contractAddress, "eh": chunk.MaxBlock(), "e": err})
+
 				continue
 			}
 
@@ -190,7 +192,7 @@ func (f *RangeFilter) Done() bool {
 	return f.done
 }
 
-// GetLogChan retursn a log chan with the logs filtered ahead to bufferSize. Iteration oder is only guaranteed with up to one
+// GetLogChan returns a log chan with the logs filtered ahead to bufferSize. Iteration oder is only guaranteed with up to one
 // consumer.
 func (f *RangeFilter) GetLogChan() chan *LogInfo {
 	return f.logs

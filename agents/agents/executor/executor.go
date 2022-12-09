@@ -40,14 +40,14 @@ type Executor struct {
 	originParsers map[uint32]origin.Parser
 	// attestationCollectorParser is an attestationCollector parser.
 	attestationCollectorParser attestationcollector.Parser
-	// synChainID is the chain ID of the Synapse chain.
-	synChainID uint32
+	// attestationCollectorChainID is the chain ID of the Synapse chain.
+	attestationCollectorChainID uint32
 	// attestationCollectorAddress is the address of the attestation collector contract.
 	attestationCollectorAddress common.Address
-	// LogChans is a mapping from chain ID -> log channel.
-	LogChans map[uint32]chan *ethTypes.Log
-	// MerkleTrees is a map from chain ID -> destination domain -> merkle tree.
-	MerkleTrees map[uint32]map[uint32]*trieutil.SparseMerkleTrie
+	// logChans is a mapping from chain ID -> log channel.
+	logChans map[uint32]chan *ethTypes.Log
+	// merkleTrees is a map from chain ID -> destination domain -> merkle tree.
+	merkleTrees map[uint32]map[uint32]*trieutil.SparseMerkleTrie
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -64,7 +64,7 @@ const logChanSize = 1000
 func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient) (*Executor, error) {
 	lastLogs := make(map[uint32]*logOrderInfo)
 	channels := make(map[uint32]chan *ethTypes.Log)
-	closeChans := make(map[uint32]chan bool)
+	closeConnectionChans := make(map[uint32]chan bool)
 	stopListenChans := make(map[uint32]chan bool)
 	originParsers := make(map[uint32]origin.Parser)
 	attestationCollectorParser, err := attestationcollector.NewParser(common.HexToAddress(config.AttestationCollectorAddress))
@@ -80,7 +80,7 @@ func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient cl
 			blockIndex:  0,
 		}
 		channels[chain.ChainID] = make(chan *ethTypes.Log, logChanSize)
-		closeChans[chain.ChainID] = make(chan bool, 1)
+		closeConnectionChans[chain.ChainID] = make(chan bool, 1)
 		stopListenChans[chain.ChainID] = make(chan bool, 1)
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
@@ -110,14 +110,14 @@ func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient cl
 		executorDB:                  executorDB,
 		scribeClient:                scribeClient,
 		lastLogs:                    lastLogs,
-		closeConnection:             closeChans,
+		closeConnection:             closeConnectionChans,
 		stopListenChan:              stopListenChans,
 		originParsers:               originParsers,
 		attestationCollectorParser:  attestationCollectorParser,
-		synChainID:                  config.SYNChainID,
+		attestationCollectorChainID: config.AttestationCollectorChainID,
 		attestationCollectorAddress: common.HexToAddress(config.AttestationCollectorAddress),
-		LogChans:                    channels,
-		MerkleTrees:                 merkleTrees,
+		logChans:                    channels,
+		merkleTrees:                 merkleTrees,
 	}, nil
 }
 
@@ -171,7 +171,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-e.stopListenChan[chainID]:
 			return nil
-		case log := <-e.LogChans[chainID]:
+		case log := <-e.logChans[chainID]:
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
@@ -186,7 +186,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 
 // GetRoot returns the merkle root at the given nonce.
 func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, destination uint32) ([32]byte, error) {
-	if nonce == 0 || nonce > uint32(e.MerkleTrees[chainID][destination].NumOfItems()) {
+	if nonce == 0 || nonce > uint32(e.merkleTrees[chainID][destination].NumOfItems()) {
 		return [32]byte{}, fmt.Errorf("nonce is out of range")
 	}
 
@@ -242,7 +242,7 @@ func (e *Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destinat
 		return fmt.Errorf("could not generate trie from items: %w", err)
 	}
 
-	e.MerkleTrees[chainID][destination] = merkleTree
+	e.merkleTrees[chainID][destination] = merkleTree
 
 	return nil
 }
@@ -317,7 +317,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 				return fmt.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.lastLogs[chain.ChainID].blockNumber, e.lastLogs[chain.ChainID].blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 			}
 
-			e.LogChans[chain.ChainID] <- log
+			e.logChans[chain.ChainID] <- log
 			e.lastLogs[chain.ChainID].blockNumber = log.BlockNumber
 			e.lastLogs[chain.ChainID].blockIndex = log.Index
 		}
@@ -336,13 +336,13 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 
 	destination := (*message).DestinationDomain()
 
-	merkleIndex := e.MerkleTrees[chainID][destination].NumOfItems()
+	merkleIndex := e.merkleTrees[chainID][destination].NumOfItems()
 	leaf, err := (*message).ToLeaf()
 	if err != nil {
 		return fmt.Errorf("could not convert message to leaf: %w", err)
 	}
-	e.MerkleTrees[chainID][destination].Insert(leaf[:], merkleIndex)
-	root := e.MerkleTrees[chainID][destination].Root()
+	e.merkleTrees[chainID][destination].Insert(leaf[:], merkleIndex)
+	root := e.merkleTrees[chainID][destination].Root()
 	err = e.executorDB.StoreMessage(ctx, *message, root, log.BlockNumber)
 	if err != nil {
 		return fmt.Errorf("could not store message: %w", err)

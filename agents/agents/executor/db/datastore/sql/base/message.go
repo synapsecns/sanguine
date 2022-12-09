@@ -111,12 +111,25 @@ func (s Store) GetRoot(ctx context.Context, messageMask types.DBMessage) (common
 func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error) {
 	var message Message
 	var lastBlockNumber uint64
+	var numMessages int64
 
+	// Get the total amount of messages stored in the database.
 	dbTx := s.DB().WithContext(ctx).
+		Model(&message).
+		Where(&Message{ChainID: chainID}).
+		Count(&numMessages)
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("failed to get number of messages: %w", dbTx.Error)
+	}
+	if numMessages == 0 {
+		return 0, nil
+	}
+
+	dbTx = s.DB().WithContext(ctx).
 		Model(&message).
 		Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
 		Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
-		Scan(&lastBlockNumber)
+		Find(&lastBlockNumber)
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("failed to get last block number: %w", dbTx.Error)
 	}

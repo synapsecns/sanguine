@@ -71,19 +71,21 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		BlockTime              func(childComplexity int, chainID int, blockNumber int) int
-		BlockTimeCount         func(childComplexity int, chainID int) int
-		FirstStoredBlockNumber func(childComplexity int, chainID int) int
-		LastIndexed            func(childComplexity int, contractAddress string, chainID int) int
-		LastStoredBlockNumber  func(childComplexity int, chainID int) int
-		LogCount               func(childComplexity int, contractAddress string, chainID int) int
-		Logs                   func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, page int) int
-		LogsRange              func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) int
-		Receipts               func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, page int) int
-		ReceiptsRange          func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) int
-		Transactions           func(childComplexity int, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, page int) int
-		TransactionsRange      func(childComplexity int, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, page int) int
-		TxSender               func(childComplexity int, txHash string, chainID int) int
+		BlockTime                func(childComplexity int, chainID int, blockNumber int) int
+		BlockTimeCount           func(childComplexity int, chainID int) int
+		FirstStoredBlockNumber   func(childComplexity int, chainID int) int
+		LastConfirmedBlockNumber func(childComplexity int, chainID int) int
+		LastIndexed              func(childComplexity int, contractAddress string, chainID int) int
+		LastStoredBlockNumber    func(childComplexity int, chainID int) int
+		LogCount                 func(childComplexity int, contractAddress string, chainID int) int
+		Logs                     func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, page int) int
+		LogsRange                func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) int
+		ReceiptCount             func(childComplexity int, contractAddress string, chainID int) int
+		Receipts                 func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, page int) int
+		ReceiptsRange            func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) int
+		Transactions             func(childComplexity int, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, page int) int
+		TransactionsRange        func(childComplexity int, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, page int) int
+		TxSender                 func(childComplexity int, txHash string, chainID int) int
 	}
 
 	Receipt struct {
@@ -139,9 +141,11 @@ type QueryResolver interface {
 	BlockTime(ctx context.Context, chainID int, blockNumber int) (*int, error)
 	LastStoredBlockNumber(ctx context.Context, chainID int) (*int, error)
 	FirstStoredBlockNumber(ctx context.Context, chainID int) (*int, error)
+	LastConfirmedBlockNumber(ctx context.Context, chainID int) (*int, error)
 	TxSender(ctx context.Context, txHash string, chainID int) (*string, error)
 	LastIndexed(ctx context.Context, contractAddress string, chainID int) (*int, error)
 	LogCount(ctx context.Context, contractAddress string, chainID int) (*int, error)
+	ReceiptCount(ctx context.Context, contractAddress string, chainID int) (*int, error)
 	BlockTimeCount(ctx context.Context, chainID int) (*int, error)
 }
 type ReceiptResolver interface {
@@ -325,6 +329,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FirstStoredBlockNumber(childComplexity, args["chain_id"].(int)), true
 
+	case "Query.lastConfirmedBlockNumber":
+		if e.complexity.Query.LastConfirmedBlockNumber == nil {
+			break
+		}
+
+		args, err := ec.field_Query_lastConfirmedBlockNumber_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.LastConfirmedBlockNumber(childComplexity, args["chain_id"].(int)), true
+
 	case "Query.lastIndexed":
 		if e.complexity.Query.LastIndexed == nil {
 			break
@@ -384,6 +400,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.LogsRange(childComplexity, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int), args["confirmed"].(*bool), args["start_block"].(int), args["end_block"].(int), args["page"].(int)), true
+
+	case "Query.receiptCount":
+		if e.complexity.Query.ReceiptCount == nil {
+			break
+		}
+
+		args, err := ec.field_Query_receiptCount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ReceiptCount(childComplexity, args["contract_address"].(string), args["chain_id"].(int)), true
 
 	case "Query.receipts":
 		if e.complexity.Query.Receipts == nil {
@@ -808,6 +836,10 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   firstStoredBlockNumber(
     chain_id: Int!
   ): Int
+  # returns the last confirmed block number for a chain
+  lastConfirmedBlockNumber(
+    chain_id: Int!
+  ): Int
   # returns the sender of a transaction
   txSender(
     tx_hash: String!
@@ -823,7 +855,11 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   contract_address: String!
   chain_id: Int!
   ): Int
-
+  # returns the amount of receipts stored per contract address
+  receiptCount(
+    contract_address: String!
+    chain_id: Int!
+  ): Int
   # returns the amount of block times stored per chain
   blockTimeCount(
     chain_id: Int!
@@ -954,6 +990,21 @@ func (ec *executionContext) field_Query_blockTime_args(ctx context.Context, rawA
 }
 
 func (ec *executionContext) field_Query_firstStoredBlockNumber_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chain_id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_lastConfirmedBlockNumber_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
@@ -1220,6 +1271,30 @@ func (ec *executionContext) field_Query_logs_args(ctx context.Context, rawArgs m
 		}
 	}
 	args["page"] = arg8
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_receiptCount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["contract_address"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contract_address"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["contract_address"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chain_id"] = arg1
 	return args, nil
 }
 
@@ -3071,6 +3146,58 @@ func (ec *executionContext) fieldContext_Query_firstStoredBlockNumber(ctx contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_lastConfirmedBlockNumber(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_lastConfirmedBlockNumber(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().LastConfirmedBlockNumber(rctx, fc.Args["chain_id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_lastConfirmedBlockNumber(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_lastConfirmedBlockNumber_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_txSender(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_txSender(ctx, field)
 	if err != nil {
@@ -3221,6 +3348,58 @@ func (ec *executionContext) fieldContext_Query_logCount(ctx context.Context, fie
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_logCount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_receiptCount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_receiptCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ReceiptCount(rctx, fc.Args["contract_address"].(string), fc.Args["chain_id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_receiptCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_receiptCount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -7072,6 +7251,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "lastConfirmedBlockNumber":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_lastConfirmedBlockNumber(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "txSender":
 			field := field
 
@@ -7122,6 +7321,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_logCount(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "receiptCount":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_receiptCount(ctx, field)
 				return res
 			}
 
