@@ -48,12 +48,13 @@ func (s *Store) StoreEvent(ctx context.Context, event interface{}) error {
 }
 
 // StoreLastBlock stores the last block number that has been backfilled for a given chain.
-func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64) error {
+func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error {
 	entry := LastBlock{}
 	dbTx := s.db.WithContext(ctx).
 		Model(&LastBlock{}).
 		Where(&LastBlock{
-			ChainID: chainID,
+			ChainID:         chainID,
+			ContractAddress: contractAddress,
 		}).
 		Scan(&entry)
 	if dbTx.Error != nil {
@@ -63,8 +64,9 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 		dbTx = s.db.WithContext(ctx).
 			Model(&LastBlock{}).
 			Create(&LastBlock{
-				ChainID:     chainID,
-				BlockNumber: blockNumber,
+				ChainID:         chainID,
+				BlockNumber:     blockNumber,
+				ContractAddress: contractAddress,
 			})
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
@@ -77,14 +79,15 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 		dbTx = s.db.WithContext(ctx).
 			Model(&LastBlock{}).
 			Create(&LastBlock{
-				ChainID:     chainID,
-				BlockNumber: blockNumber,
+				ChainID:         chainID,
+				BlockNumber:     blockNumber,
+				ContractAddress: contractAddress,
 			})
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
 		}
-
-		s.db.WithContext(ctx).Exec(fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d ", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID))
+		alterQuery := fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d AND %s = '%s'", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID, ContractAddressFieldName, contractAddress)
+		s.db.WithContext(ctx).Exec(alterQuery)
 	}
 
 	return nil

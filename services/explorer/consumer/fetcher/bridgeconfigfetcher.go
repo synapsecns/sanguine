@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/services/explorer/consumer"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"math/big"
 )
+
+// NoTokenID is the string returned when a token id is not found (not an authentic token).
+const NoTokenID = "NO_TOKEN_ID"
 
 // BridgeConfigFetcher is the fetcher for the bridge config contract.
 type BridgeConfigFetcher struct {
@@ -32,7 +34,8 @@ func (b *BridgeConfigFetcher) GetTokenID(ctx context.Context, chainID *big.Int, 
 	}
 
 	if tokenIDStr == "" {
-		return nil, fmt.Errorf("couldn't find token id for address %s and chain id %d: %w", tokenAddress, chainID, consumer.ErrTokenDoesNotExist)
+		payload := NoTokenID
+		return &payload, nil
 	}
 
 	return &tokenIDStr, nil
