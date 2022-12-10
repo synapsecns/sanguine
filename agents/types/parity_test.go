@@ -136,18 +136,13 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	encodedAttestation, err := types.EncodeAttestation(signedAttestation.Attestation())
 	Nil(t, err)
 
-	guardSignatures := [][]byte{}
-	notarySignatures := [][]byte{}
-
-	guardSignatures = append(guardSignatures, encodedSignature)
-
 	// TODO (joe): This isn't working because we are leaving out the number of signatures for notaries and guards. Fix this.
 	/*signedContractAttestation*/
 	_, err = attesationContract.FormatAttestation(
 		&bind.CallOpts{Context: ctx},
 		encodedAttestation,
-		guardSignatures,
-		notarySignatures,
+		[]byte{},
+		encodedSignature,
 	)
 	Nil(t, err)
 
