@@ -16,11 +16,12 @@ const (
 )
 
 // EnableGraphql enables the scribe graphql service.
-func EnableGraphql(engine *gin.Engine, eventDB db.EventDB) {
+func EnableGraphql(engine *gin.Engine, eventDB db.EventDB, omniRPCURL string) {
 	server := handler.NewDefaultServer(
 		resolvers.NewExecutableSchema(
 			resolvers.Config{Resolvers: &graph.Resolver{
-				DB: eventDB,
+				DB:         eventDB,
+				OmniRPCURL: omniRPCURL,
 			}},
 		),
 	)

@@ -104,7 +104,7 @@ func ethTxFilterToQuery(ethTxFilter db.EthTxFilter) EthTx {
 }
 
 // RetrieveEthTxsWithFilter retrieves eth transactions with a filter given a page.
-func (s Store) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthTxFilter, page int) ([]types.Transaction, error) {
+func (s Store) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthTxFilter, page int) ([]db.TxWithBlockNumber, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -120,21 +120,21 @@ func (s Store) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthT
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return []types.Transaction{}, fmt.Errorf("could not find eth txs with filter %+v: %w", ethTxFilter, db.ErrNotFound)
+			return []db.TxWithBlockNumber{}, fmt.Errorf("could not find eth txs with filter %+v: %w", ethTxFilter, db.ErrNotFound)
 		}
-		return []types.Transaction{}, fmt.Errorf("could not retrieve eth txs: %w", dbTx.Error)
+		return []db.TxWithBlockNumber{}, fmt.Errorf("could not retrieve eth txs: %w", dbTx.Error)
 	}
 
 	parsedEthTxs, err := buildEthTxsFromDBEthTxs(dbEthTxs)
 	if err != nil {
-		return []types.Transaction{}, fmt.Errorf("could not build eth txs: %w", err)
+		return []db.TxWithBlockNumber{}, fmt.Errorf("could not build eth txs: %w", err)
 	}
 
 	return parsedEthTxs, nil
 }
 
 // RetrieveEthTxsInRange retrieves eth transactions that match an inputted filter and are within a range given a page.
-func (s Store) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock, endBlock uint64, page int) ([]types.Transaction, error) {
+func (s Store) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock, endBlock uint64, page int) ([]db.TxWithBlockNumber, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -152,27 +152,27 @@ func (s Store) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFi
 
 	if dbTx.Error != nil {
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
-			return []types.Transaction{}, fmt.Errorf("could not find eth txs with filter %+v: %w", ethTxFilter, db.ErrNotFound)
+			return []db.TxWithBlockNumber{}, fmt.Errorf("could not find eth txs with filter %+v: %w", ethTxFilter, db.ErrNotFound)
 		}
-		return []types.Transaction{}, fmt.Errorf("could not retrieve eth txs: %w", dbTx.Error)
+		return []db.TxWithBlockNumber{}, fmt.Errorf("could not retrieve eth txs: %w", dbTx.Error)
 	}
 
 	parsedEthTxs, err := buildEthTxsFromDBEthTxs(dbEthTxs)
 	if err != nil {
-		return []types.Transaction{}, fmt.Errorf("could not build eth txs: %w", err)
+		return []db.TxWithBlockNumber{}, fmt.Errorf("could not build eth txs: %w", err)
 	}
 
 	return parsedEthTxs, nil
 }
 
-func buildEthTxsFromDBEthTxs(dbEthTxs []EthTx) ([]types.Transaction, error) {
-	ethTxs := []types.Transaction{}
+func buildEthTxsFromDBEthTxs(dbEthTxs []EthTx) ([]db.TxWithBlockNumber, error) {
+	ethTxs := []db.TxWithBlockNumber{}
 	for _, dbEthTx := range dbEthTxs {
 		ethTx := types.Transaction{}
 		if err := ethTx.UnmarshalBinary(dbEthTx.RawTx); err != nil {
-			return []types.Transaction{}, fmt.Errorf("could not unmarshall eth tx: %w", err)
+			return []db.TxWithBlockNumber{}, fmt.Errorf("could not unmarshall eth tx: %w", err)
 		}
-		ethTxs = append(ethTxs, ethTx)
+		ethTxs = append(ethTxs, db.TxWithBlockNumber{Tx: ethTx, BlockNumber: dbEthTx.BlockNumber})
 	}
 
 	return ethTxs, nil

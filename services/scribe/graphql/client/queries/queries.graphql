@@ -137,6 +137,8 @@ query GetTransactions ($chain_id: Int!, $page: Int!) {
         value
         nonce
         to
+        timestamp
+        sender
     }
 }
 
@@ -154,6 +156,8 @@ query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int
         value
         nonce
         to
+        timestamp
+        sender
     }
 }
 
