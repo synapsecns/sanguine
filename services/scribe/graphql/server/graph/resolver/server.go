@@ -119,6 +119,8 @@ type ComplexityRoot struct {
 		Page      func(childComplexity int) int
 		Protected func(childComplexity int) int
 		Receipt   func(childComplexity int) int
+		Sender    func(childComplexity int) int
+		Timestamp func(childComplexity int) int
 		To        func(childComplexity int) int
 		TxHash    func(childComplexity int) int
 		Type      func(childComplexity int) int
@@ -662,6 +664,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Transaction.Receipt(childComplexity), true
 
+	case "Transaction.sender":
+		if e.complexity.Transaction.Sender == nil {
+			break
+		}
+
+		return e.complexity.Transaction.Sender(childComplexity), true
+
+	case "Transaction.timestamp":
+		if e.complexity.Transaction.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.Transaction.Timestamp(childComplexity), true
+
 	case "Transaction.to":
 		if e.complexity.Transaction.To == nil {
 			break
@@ -900,6 +916,8 @@ type Transaction {
   nonce: Int!
   to: String!
   page: Int!
+  sender: String!
+  timestamp: Int!
   logs: [Log!] @goField(forceResolver: true)
   receipt: Receipt! @goField(forceResolver: true)
   json: JSON! @goField(forceResolver:true)
@@ -926,6 +944,7 @@ type BlockTime {
   chain_id: Int!
   block_number: Int!
   timestamp: Int!
+
 }
 `, BuiltIn: false},
 }
@@ -2353,6 +2372,10 @@ func (ec *executionContext) fieldContext_Log_transaction(ctx context.Context, fi
 				return ec.fieldContext_Transaction_to(ctx, field)
 			case "page":
 				return ec.fieldContext_Transaction_page(ctx, field)
+			case "sender":
+				return ec.fieldContext_Transaction_sender(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_Transaction_timestamp(ctx, field)
 			case "logs":
 				return ec.fieldContext_Transaction_logs(ctx, field)
 			case "receipt":
@@ -2880,6 +2903,10 @@ func (ec *executionContext) fieldContext_Query_transactions(ctx context.Context,
 				return ec.fieldContext_Transaction_to(ctx, field)
 			case "page":
 				return ec.fieldContext_Transaction_page(ctx, field)
+			case "sender":
+				return ec.fieldContext_Transaction_sender(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_Transaction_timestamp(ctx, field)
 			case "logs":
 				return ec.fieldContext_Transaction_logs(ctx, field)
 			case "receipt":
@@ -2966,6 +2993,10 @@ func (ec *executionContext) fieldContext_Query_transactionsRange(ctx context.Con
 				return ec.fieldContext_Transaction_to(ctx, field)
 			case "page":
 				return ec.fieldContext_Transaction_page(ctx, field)
+			case "sender":
+				return ec.fieldContext_Transaction_sender(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_Transaction_timestamp(ctx, field)
 			case "logs":
 				return ec.fieldContext_Transaction_logs(ctx, field)
 			case "receipt":
@@ -4251,6 +4282,10 @@ func (ec *executionContext) fieldContext_Receipt_transaction(ctx context.Context
 				return ec.fieldContext_Transaction_to(ctx, field)
 			case "page":
 				return ec.fieldContext_Transaction_page(ctx, field)
+			case "sender":
+				return ec.fieldContext_Transaction_sender(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_Transaction_timestamp(ctx, field)
 			case "logs":
 				return ec.fieldContext_Transaction_logs(ctx, field)
 			case "receipt":
@@ -4868,6 +4903,94 @@ func (ec *executionContext) _Transaction_page(ctx context.Context, field graphql
 }
 
 func (ec *executionContext) fieldContext_Transaction_page(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_sender(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_sender(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Sender, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_sender(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_timestamp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Timestamp, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_timestamp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Transaction",
 		Field:      field,
@@ -7653,6 +7776,20 @@ func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionS
 		case "page":
 
 			out.Values[i] = ec._Transaction_page(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "sender":
+
+			out.Values[i] = ec._Transaction_sender(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "timestamp":
+
+			out.Values[i] = ec._Transaction_timestamp(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
