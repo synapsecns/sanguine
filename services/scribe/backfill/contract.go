@@ -89,7 +89,6 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 		gS, storeCtx := errgroup.WithContext(ctx)
 		currentBlock := startHeight
 		for {
-
 			select {
 			case <-groupCtx.Done():
 				LogEvent(ErrorLevel, "Context canceled while storing and retrieving logs", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
@@ -117,7 +116,6 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 
 						return fmt.Errorf("could not store last indexed block: %w", err)
 					}
-
 				}
 
 			case doneFlag := <-doneChan:
