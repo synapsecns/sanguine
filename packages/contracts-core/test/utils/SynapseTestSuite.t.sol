@@ -146,8 +146,8 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         public
         returns (
             bytes memory attestation,
-            bytes[] memory guardSignatures,
-            bytes[] memory notarySignatures
+            bytes memory guardSignatures,
+            bytes memory notarySignatures
         )
     {
         return signAttestation(origin, destination, nonce, root, 0, 0);
@@ -169,8 +169,8 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         public
         returns (
             bytes memory attestation,
-            bytes[] memory guardSignatures,
-            bytes[] memory notarySignatures
+            bytes memory guardSignatures,
+            bytes memory notarySignatures
         )
     {
         return
@@ -199,8 +199,8 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         public
         returns (
             bytes memory attestation,
-            bytes[] memory guardSignatures,
-            bytes[] memory notarySignatures
+            bytes memory guardSignatures,
+            bytes memory notarySignatures
         )
     {
         // castToArray() will return empty array for address(0)
@@ -226,8 +226,8 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         public
         returns (
             bytes memory attestation,
-            bytes[] memory guardSignatures,
-            bytes[] memory notarySignatures
+            bytes memory guardSignatures,
+            bytes memory notarySignatures
         )
     {
         bytes memory data = Attestation.formatAttestationData(origin, destination, nonce, root);
@@ -297,13 +297,23 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         return signMessage(privKey, message);
     }
 
+    function signMessage(uint256[] memory keys, bytes memory message)
+        public
+        returns (bytes memory signatures)
+    {
+        for (uint256 i = 0; i < keys.length; ++i) {
+            // There probably exists a more efficient way to do this without relying on TypedMemView
+            signatures = bytes.concat(signatures, signMessage(keys[i], message));
+        }
+    }
+
     function signMessage(address[] memory signers, bytes memory message)
         public
-        returns (bytes[] memory signatures)
+        returns (bytes memory signatures)
     {
-        signatures = new bytes[](signers.length);
         for (uint256 i = 0; i < signers.length; ++i) {
-            signatures[i] = signMessage(signers[i], message);
+            // There probably exists a more efficient way to do this without relying on TypedMemView
+            signatures = bytes.concat(signatures, signMessage(signers[i], message));
         }
     }
 

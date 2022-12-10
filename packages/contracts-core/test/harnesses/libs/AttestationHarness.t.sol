@@ -113,8 +113,8 @@ contract AttestationHarness {
     // solhint-disable-next-line ordering
     function formatAttestation(
         bytes memory _data,
-        bytes[] memory _guardSignatures,
-        bytes[] memory _notarySignatures
+        bytes memory _guardSignatures,
+        bytes memory _notarySignatures
     ) public view returns (bytes memory) {
         return Attestation.formatAttestation(_data, _guardSignatures, _notarySignatures);
     }

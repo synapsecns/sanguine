@@ -22,8 +22,8 @@ abstract contract AttestationTools is SynapseTestSuite {
     uint96 internal attestationKey;
     // Saved attestation payloads
     bytes internal attestationRaw;
-    bytes[] internal signaturesGuard;
-    bytes[] internal signaturesNotary;
+    bytes internal signaturesGuard;
+    bytes internal signaturesNotary;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                   CREATE ATTESTATION (GIVEN ROOT)                    ║*▕
