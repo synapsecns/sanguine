@@ -50,20 +50,29 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         );
         // Test formatting of attestation
         bytes[] memory guardSignatures = new bytes[](guardSigs);
-        for (uint256 i = 0; i < guardSigs; ++i) {
-            // Use unique PK for each agent
-            guardSignatures[i] = signMessage(GUARD_PRIV_KEY + i, attData);
-        }
         bytes[] memory notarySignatures = new bytes[](notarySigs);
-        for (uint256 i = 0; i < notarySigs; ++i) {
-            // Use unique PK for each agent
-            notarySignatures[i] = signMessage(NOTARY_PRIV_KEY + i, attData);
+        bytes memory attestation;
+        {
+            uint256[] memory guardPrivKeys = new uint256[](guardSigs);
+            for (uint256 i = 0; i < guardSigs; ++i) {
+                // Use unique PK for each agent
+                guardPrivKeys[i] = GUARD_PRIV_KEY + i;
+                guardSignatures[i] = signMessage(guardPrivKeys[i], attData);
+            }
+            bytes memory guardSignaturesPayload = signMessage(guardPrivKeys, attData);
+            uint256[] memory notaryPrivKeys = new uint256[](notarySigs);
+            for (uint256 i = 0; i < notarySigs; ++i) {
+                // Use unique PK for each agent
+                notaryPrivKeys[i] = NOTARY_PRIV_KEY + i;
+                notarySignatures[i] = signMessage(notaryPrivKeys[i], attData);
+            }
+            bytes memory notarySignaturesPayload = signMessage(notaryPrivKeys, attData);
+            attestation = libHarness.formatAttestation(
+                attData,
+                guardSignaturesPayload,
+                notarySignaturesPayload
+            );
         }
-        bytes memory attestation = libHarness.formatAttestation(
-            attData,
-            guardSignatures,
-            notarySignatures
-        );
         {
             bytes memory allSigs = "";
             // Test formatting of attestation
@@ -198,11 +207,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
             uint32(0),
             bytes32(0)
         );
-        bytes memory payload = libHarness.formatAttestation(
-            attData,
-            new bytes[](0),
-            new bytes[](0)
-        );
+        bytes memory payload = libHarness.formatAttestation(attData, new bytes(0), new bytes(0));
         assertFalse(libHarness.isAttestation(payload), "!isAttestation: no signatures");
     }
 
