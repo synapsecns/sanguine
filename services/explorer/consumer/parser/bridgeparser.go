@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
-	"golang.org/x/sync/errgroup"
 	"math/big"
 	"time"
+
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -391,6 +392,10 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	err = g.Wait()
 	if err != nil {
 		return nil, fmt.Errorf("could not parse bridge event: %w", err)
+	}
+	if *timeStamp == 0 {
+		logger.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
+		return nil, fmt.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
 	}
 
 	bridgeEvent.TimeStamp = &timeStampBig

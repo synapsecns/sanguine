@@ -79,7 +79,7 @@ abstract contract DestinationTools is OriginTools {
 
     function expectAttestationAccepted() public {
         vm.expectEmit(true, true, true, true);
-        emit AttestationAccepted(attestationNotary, attestationRaw);
+        emit AttestationAccepted(attestationGuards, attestationNotaries, attestationRaw);
     }
 
     function expectExecuted(uint32 domain, uint256 index) public {
@@ -89,7 +89,7 @@ abstract contract DestinationTools is OriginTools {
 
     function expectNotaryBlacklisted() public {
         vm.expectEmit(true, true, true, true);
-        emit NotaryBlacklisted(attestationNotary, reportGuard, broadcaster, reportRaw);
+        emit NotaryBlacklisted(attestationNotaries[0], reportGuard, broadcaster, reportRaw);
     }
 
     function expectLogTips() public {

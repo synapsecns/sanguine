@@ -25,6 +25,13 @@ contract SynapseUtilities is Test {
         return address(uint160(uint256(buf)));
     }
 
+    function castToArray(address addr) public pure returns (address[] memory) {
+        if (addr == address(0)) return new address[](0);
+        address[] memory array = new address[](1);
+        array[0] = addr;
+        return array;
+    }
+
     function generateAddress(bytes memory salt) public pure returns (address) {
         return bytes32ToAddress(keccak256(salt));
     }

@@ -3,10 +3,11 @@ package fetcher
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
-	"math/big"
 )
 
 // NoTokenID is the string returned when a token id is not found (not an authentic token).
