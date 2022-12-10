@@ -64,17 +64,11 @@ func (a AttestationCollectorSuite) TestAttestationCollectorSuite() {
 	guardEncodedSig, err := types.EncodeSignature(guardSignedAttestation.Signature())
 	Nil(a.T(), err)
 
-	guardSignatures := [][]byte{}
-	notarySignatures := [][]byte{}
-
-	guardSignatures = append(guardSignatures, guardEncodedSig)
-	notarySignatures = append(notarySignatures, notaryEncodedSig)
-
 	attestation, err := a.attestationHarness.FormatAttestation(
 		&bind.CallOpts{Context: a.GetTestContext()},
 		encodedAttestation,
-		guardSignatures,
-		notarySignatures,
+		guardEncodedSig,
+		notaryEncodedSig,
 	)
 	Nil(a.T(), err)
 
