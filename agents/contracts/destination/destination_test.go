@@ -58,19 +58,14 @@ func (d DestinationSuite) TestDestinationSuite() {
 	encodedSig, err := types.EncodeSignature(signedAttestation.Signature())
 	Nil(d.T(), err)
 
-	guardSignatures := [][]byte{}
-	notarySignatures := [][]byte{}
-
-	notarySignatures = append(notarySignatures, encodedSig)
-
 	encodedAttestation, err := types.EncodeAttestation(unsignedAttestation)
 	Nil(d.T(), err)
 
 	attestation, err := d.attestationHarness.FormatAttestation(
 		&bind.CallOpts{Context: d.GetTestContext()},
 		encodedAttestation,
-		guardSignatures,
-		notarySignatures,
+		[]byte{},
+		encodedSig,
 	)
 	Nil(d.T(), err)
 
