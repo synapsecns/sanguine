@@ -29,8 +29,6 @@ type ContractBackfiller struct {
 	cache *lru.Cache
 }
 
-var logsChanLenFrequency = 1000
-
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
 const retryTolerance = 20
 
@@ -87,7 +85,11 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 
 	// Reads from the local logsChan and stores the logs and associated receipts / txs.
 	g.Go(func() error {
+		concurrentCalls := 0
+		gS, storeCtx := errgroup.WithContext(ctx)
+		currentBlock := startHeight
 		for {
+
 			select {
 			case <-groupCtx.Done():
 				LogEvent(ErrorLevel, "Context canceled while storing and retrieving logs", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
@@ -98,17 +100,36 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
 				}
+				concurrentCalls++
+				currentBlock = log.BlockNumber
+				gS.Go(func() error {
+					// Stores the log, and it's associated receipt / tx in the EventDB.
+					return c.store(storeCtx, log)
+				})
+				if concurrentCalls == 20 {
+					if err = gS.Wait(); err != nil {
+						return fmt.Errorf("error waiting for go routines: %w", err)
+					}
+					concurrentCalls = 0
+					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
+					if err != nil {
+						LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
-				if len(logsChan)%logsChanLenFrequency == 0 && len(logsChan) != 0 {
-					LogEvent(InfoLevel, "logsChan length", LogData{"lc": len(logsChan)})
+						return fmt.Errorf("could not store last indexed block: %w", err)
+					}
+
 				}
 
-				// Stores the log, and it's associated receipt / tx in the EventDB.
-				err := c.store(groupCtx, log)
-				if err != nil {
-					return fmt.Errorf("could not store log: %w \nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
-				}
 			case doneFlag := <-doneChan:
+				if err = gS.Wait(); err != nil {
+					return fmt.Errorf("error waiting for go routines: %w", err)
+				}
+				err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, currentBlock)
+				if err != nil {
+					LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": currentBlock, "ca": c.address, "e": err.Error()})
+
+					return fmt.Errorf("could not store last indexed block: %w", err)
+				}
 				if doneFlag {
 					LogEvent(InfoLevel, "Received Done Can", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
 
@@ -303,13 +324,6 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 		LogEvent(ErrorLevel, "Could not store data", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
 		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, c.address, c.chainConfig.ChainID, log.BlockNumber, log.TxHash.String())
-	}
-
-	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
-	if err != nil {
-		LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
-
-		return fmt.Errorf("could not store last indexed block: %w", err)
 	}
 
 	c.cache.Add(log.TxHash, true)
