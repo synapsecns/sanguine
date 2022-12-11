@@ -212,13 +212,12 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 	return receipts, nil
 }
 
-// RetrieveReceiptCountForContract retrieves the count of receipts per contract.
-func (s Store) RetrieveReceiptCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error) {
+// RetrieveReceiptCountForChain retrieves the count of receipts per chain.
+func (s Store) RetrieveReceiptCountForChain(ctx context.Context, chainID uint32) (int64, error) {
 	var count int64
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Receipt{}).
 		Where(&Receipt{ChainID: chainID}).
-		Where(&Receipt{ContractAddress: contractAddress.String()}).
 		Count(&count)
 
 	if dbTx.Error != nil {

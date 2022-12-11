@@ -327,34 +327,32 @@ func (g APISuite) TestLogCount() {
 // nolint:dupl
 func (g APISuite) TestReceiptCount() {
 	// create data for storing a block time
-	chainID := gofakeit.Uint32()
-	contractAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-	contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+	chainIDA := gofakeit.Uint32()
+	chainIDB := gofakeit.Uint32()
+
+	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
 	// create and store logs, receipts, and txs
 	var receipt types.Receipt
 	var err error
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
-		// create and store logs
-		if blockNumber%2 == 0 {
-			receipt = g.buildReceipt(contractAddressA, uint64(blockNumber))
-			err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
-			Nil(g.T(), err)
-		} else {
-			receipt = g.buildReceipt(contractAddressB, uint64(blockNumber))
-			err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
-			Nil(g.T(), err)
-		}
+
+		receipt = g.buildReceipt(contractAddress, uint64(blockNumber))
+		err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainIDA)
+		Nil(g.T(), err)
+		err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainIDB)
+		Nil(g.T(), err)
+
 	}
 
 	// test get logs and get logs in a range (Graphql)
-	receiptCountA, err := g.gqlClient.GetReceiptCount(g.GetTestContext(), int(chainID), contractAddressA.String())
+	receiptCountA, err := g.gqlClient.GetReceiptCount(g.GetTestContext(), int(chainIDA))
 	Nil(g.T(), err)
-	Equal(g.T(), 5, *receiptCountA.Response)
+	Equal(g.T(), 10, *receiptCountA.Response)
 	// store last indexed
-	receiptCountB, err := g.gqlClient.GetReceiptCount(g.GetTestContext(), int(chainID), contractAddressB.String())
+	receiptCountB, err := g.gqlClient.GetReceiptCount(g.GetTestContext(), int(chainIDB))
 	Nil(g.T(), err)
-	Equal(g.T(), 5, *receiptCountB.Response)
+	Equal(g.T(), 10, *receiptCountB.Response)
 }
 
 func (g APISuite) TestRetrieveBlockTimesCountForChain() {
