@@ -101,7 +101,7 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 		return fmt.Errorf("could not get current block number: %w", err)
 	}
 
-	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, false)
+	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
@@ -203,7 +203,8 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 				return fmt.Errorf("could not delete block: %w", err)
 			}
 
-			err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, true)
+			blockNumber := block.Number().Uint64()
+			err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, &blockNumber)
 			if err != nil {
 				logger.Errorf(" [LIVEFILL] could not backfill %d chain: %d, block: %d, %v", newBlock-uint64(requiredConfirmations), chainID, i, err)
 
