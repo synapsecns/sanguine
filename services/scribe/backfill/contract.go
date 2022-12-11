@@ -140,7 +140,6 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 					return fmt.Errorf("could not store last indexed block: %w", err)
 				}
 				return nil
-
 			}
 		}
 	})

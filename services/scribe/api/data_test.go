@@ -336,13 +336,11 @@ func (g APISuite) TestReceiptCount() {
 	var receipt types.Receipt
 	var err error
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
-
 		receipt = g.buildReceipt(contractAddress, uint64(blockNumber))
 		err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainIDA)
 		Nil(g.T(), err)
 		err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainIDB)
 		Nil(g.T(), err)
-
 	}
 
 	// test get logs and get logs in a range (Graphql)
