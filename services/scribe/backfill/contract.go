@@ -29,8 +29,11 @@ type ContractBackfiller struct {
 	cache *lru.Cache
 }
 
+// storeConcurrency is the number of goroutines to use when storing logs/receipts/txs.
+const storeConcurrency = 20
+
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
-const retryTolerance = 20
+const retryTolerance = 1
 
 // txNotSupportedError is for handling the legacy Arbitrum tx type.
 const txNotSupportedError = "transaction type not supported"
@@ -87,7 +90,6 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 	g.Go(func() error {
 		concurrentCalls := 0
 		gS, storeCtx := errgroup.WithContext(ctx)
-		currentBlock := startHeight
 		for {
 			select {
 			case <-groupCtx.Done():
@@ -100,15 +102,19 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 					continue
 				}
 				concurrentCalls++
-				currentBlock = log.BlockNumber
 				gS.Go(func() error {
 					// Stores the log, and it's associated receipt / tx in the EventDB.
 					return c.store(storeCtx, log)
 				})
-				if concurrentCalls == 20 {
+
+				// Stop spawning store threads and wait
+				if concurrentCalls == storeConcurrency {
 					if err = gS.Wait(); err != nil {
 						return fmt.Errorf("error waiting for go routines: %w", err)
 					}
+
+					// Reset context TODO make this better
+					gS, storeCtx = errgroup.WithContext(ctx)
 					concurrentCalls = 0
 					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
 					if err != nil {
@@ -118,22 +124,23 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 					}
 				}
 
-			case doneFlag := <-doneChan:
+			case lastBlock := <-doneChan:
+
 				if err = gS.Wait(); err != nil {
 					return fmt.Errorf("error waiting for go routines: %w", err)
 				}
-				err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, currentBlock)
+				if lastBlock == -1 {
+					return fmt.Errorf("doneChan returned false, context cancel while storing and retrieving logs")
+				}
+				LogEvent(InfoLevel, "Received last logged block in doneChan", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
+				err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, uint64(lastBlock))
 				if err != nil {
-					LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": currentBlock, "ca": c.address, "e": err.Error()})
+					LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": lastBlock, "ca": c.address, "e": err.Error()})
 
 					return fmt.Errorf("could not store last indexed block: %w", err)
 				}
-				if doneFlag {
-					LogEvent(InfoLevel, "Received Done Can", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
+				return nil
 
-					return nil
-				}
-				return fmt.Errorf("doneChan returned false, context cancel while storing and retrieving logs")
 			}
 		}
 	})
@@ -330,41 +337,44 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 	return nil
 }
 
-func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
+func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan int) {
 	// rangeFilter generates filter type that will retrives logs from omnirpc in chunks of batch requests specified in the config.
 	rangeFilter := NewRangeFilter(common.HexToAddress(c.address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), c.chainConfig.ContractChunkSize, true, c.chainConfig.ContractSubChunkSize)
 	logsChan := make(chan types.Log)
-	doneChan := make(chan bool)
+	doneChan := make(chan int)
 	// This go routine is responsible for running the range filter and collect logs from omnirpc and put it into it's logChan (see filter.go).
 	go func() {
 		err := rangeFilter.Start(ctx)
 		if err != nil {
-			doneChan <- false
+			doneChan <- -1
 			return
 		}
 	}()
 
 	// Reads from the range filter's logsChan and puts the logs into the local logsChan until completion.
 	go func() {
+		lastBlock := 0
 		for {
 			select {
 			case <-ctx.Done():
 				LogEvent(ErrorLevel, "Context canceled while getting log", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": ctx.Err()})
-				doneChan <- false
+				doneChan <- -1
 				return
 			case logInfos := <-rangeFilter.GetLogChan():
 				for _, log := range logInfos.logs {
 					logsChan <- log
+					lastBlock = int(log.BlockNumber)
 				}
+
 			default:
 				if rangeFilter.Done() {
 					finLogs, _ := rangeFilter.Drain(ctx)
 
 					for _, log := range finLogs {
 						logsChan <- log
+						lastBlock = int(log.BlockNumber)
 					}
-
-					doneChan <- true
+					doneChan <- lastBlock
 
 					return
 				}
