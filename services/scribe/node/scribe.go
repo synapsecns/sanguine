@@ -150,7 +150,7 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 			return fmt.Errorf("could not retrieve receipts with filter: %w", err)
 		}
 		if len(receipts) == 0 {
-			logger.Errorf(" [LIVEFILL] no receipts found for block %d chain: %d, block: %d, %v", newBlock-uint64(requiredConfirmations), chainID, i, err)
+			logger.Errorf(" [LIVEFILL] no receipts found for block %d chain: %d, block: %d, with filter %v", newBlock-uint64(requiredConfirmations), chainID, i, receiptFilter)
 
 			return fmt.Errorf("no receipts found for block %d", i)
 		}

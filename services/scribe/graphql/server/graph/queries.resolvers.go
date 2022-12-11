@@ -182,8 +182,8 @@ func (r *queryResolver) LogCount(ctx context.Context, contractAddress string, ch
 }
 
 // ReceiptCount is the resolver for the receiptCount field.
-func (r *queryResolver) ReceiptCount(ctx context.Context, contractAddress string, chainID int) (*int, error) {
-	receiptCount, err := r.DB.RetrieveReceiptCountForContract(ctx, common.HexToAddress(contractAddress), uint32(chainID))
+func (r *queryResolver) ReceiptCount(ctx context.Context, chainID int) (*int, error) {
+	receiptCount, err := r.DB.RetrieveReceiptCountForChain(ctx, uint32(chainID))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving receipt count: %w", err)
 	}

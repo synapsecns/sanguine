@@ -227,8 +227,8 @@ query GetLogCount ($chain_id: Int!, $contract_address: String!) {
   response: logCount (chain_id: $chain_id, contract_address: $contract_address)
 }
 
-query GetReceiptCount ($chain_id: Int!, $contract_address: String!) {
-  response: receiptCount(chain_id: $chain_id, contract_address: $contract_address)
+query GetReceiptCount ($chain_id: Int!) {
+  response: receiptCount(chain_id: $chain_id)
 }
 
 query GetBlockTimeCount ($chain_id: Int!) {
