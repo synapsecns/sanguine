@@ -132,3 +132,38 @@ RETRY:
 		return timeStamp.Response, nil
 	}
 }
+
+// FetchTx fetches the transaction of a log.
+func (s ScribeFetcher) FetchTx(ctx context.Context, tx string, chainID int) (*ethTypes.TxData, error) {
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    10 * time.Second,
+	}
+	timeout := time.Duration(0)
+RETRY:
+	select {
+	case <-ctx.Done():
+
+		return nil, fmt.Errorf("could not get tx for log, context canceled %d: %s", chainID, tx)
+	case <-time.After(timeout):
+
+		res, err := s.FetchClient.GetTransactions(ctx, chainID, 1, &tx)
+
+		if err != nil {
+			logger.Warnf("could not get tx for log, trying again %s: %v", tx, err)
+			timeout = b.Duration()
+			goto RETRY
+		}
+
+		// TODO check if tx is bad
+		if transaction == nil || transaction.Response == nil {
+			logger.Warnf("could not get tx for log,  invalid blocktime %d: %d", chainID, tx)
+			return nil, fmt.Errorf("could not get timestamp for block, invalid blocktime %d: %d", chainID, tx)
+		}
+		resTx := res.Response[0]
+		// TODO make the correct type here
+		return resTx, nil
+	}
+}
