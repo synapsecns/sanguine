@@ -49,8 +49,8 @@ func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Receipt{}).
 		Where(&Receipt{
-			BlockHash: blockHash.String(),
 			ChainID:   chainID,
+			BlockHash: blockHash.String(),
 		}).
 		Update(ConfirmedFieldName, true)
 
@@ -65,7 +65,7 @@ func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common
 func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
-		Model(&Receipt{}).
+		Model(&Receipt{ChainID: chainID}).
 		Order(BlockNumberFieldName+" desc").
 		Where(rangeQuery, startBlock, endBlock).
 		Update(ConfirmedFieldName, true)
@@ -81,8 +81,8 @@ func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock 
 func (s Store) DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
 	dbTx := s.DB().WithContext(ctx).
 		Where(&Receipt{
-			BlockHash: blockHash.String(),
 			ChainID:   chainID,
+			BlockHash: blockHash.String(),
 		}).
 		Delete(&Receipt{})
 

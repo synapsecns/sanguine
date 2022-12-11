@@ -149,15 +149,19 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 
 			return fmt.Errorf("could not retrieve receipts with filter: %w", err)
 		}
-		if len(receipts) == 0 {
-			logger.Errorf(" [LIVEFILL] no receipts found for block %d chain: %d, block: %d, with filter %v", newBlock-uint64(requiredConfirmations), chainID, i, receiptFilter)
 
-			return fmt.Errorf("no receipts found for block %d", i)
+		// No receipts for this block, so we can't confirm it.
+		if len(receipts) == 0 {
+			logger.Infof("[LIVEFILL] no receipts found for block %d chain: %d, block: %d, with filter %v", newBlock-uint64(requiredConfirmations), chainID, i, receiptFilter)
+
+			continue
 		}
 
 		// If the block hash is not the same, then the block is invalid. Otherwise, mark the block as valid.
 		//nolint:nestif
 		if block.Hash() != receipts[0].BlockHash {
+			logger.Errorf(" [LIVEFILL] DELETING  %d chain: %d,  %v", receipts[0].BlockHash, chainID, err)
+
 			g, groupCtx := errgroup.WithContext(ctx)
 
 			g.Go(func() error {
