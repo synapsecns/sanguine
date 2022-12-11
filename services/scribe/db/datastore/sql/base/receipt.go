@@ -180,6 +180,8 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 		logs := []*types.Log{}
 		page := 1
 		for {
+			// TODO DELETE
+			logger.Infof("[RECEIPT QUERY] logFilter: %v, page: %d", logFilter, page)
 			logGroup, err := s.RetrieveLogsWithFilter(ctx, logFilter, page)
 			if err != nil {
 				return []types.Receipt{}, fmt.Errorf("could not retrieve logs with tx hash %s and chain id %d: %w", dbReceipt.TxHash, chainID, err)

@@ -1,13 +1,15 @@
 package api_test
 
 import (
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql"
 	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
-	"math/big"
 )
 
 func (g APISuite) TestRetrieveData() {
@@ -67,10 +69,10 @@ func (g APISuite) TestRetrieveData() {
 	_ = res.Body.Close()
 
 	// test get receipts and get receipts in a range
-	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1)
+	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1, 8)
 	Nil(g.T(), err)
 	// there were 20 receipts created (2 per loop, in a loop of 10)
-	Equal(g.T(), 20, len(receipts.Response))
+	Equal(g.T(), 2, len(receipts.Response))
 	receiptsRange, err := g.gqlClient.GetReceiptsRange(g.GetTestContext(), int(chainID), 1, 7, 1)
 	Nil(g.T(), err)
 	// from 1-7, there were 14 receipts created (2 per loop, in a range of 7)
@@ -111,14 +113,15 @@ func (g APISuite) TestReceiptDataEquality() {
 	// create a receipt
 	chainID := gofakeit.Uint32()
 	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-	receipt := g.buildReceipt(address, uint64(gofakeit.Uint32()))
+	blockNumber := uint64(gofakeit.Uint32())
+	receipt := g.buildReceipt(address, blockNumber)
 
 	// store it
 	err := g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
 	Nil(g.T(), err)
 
 	// retrieve it
-	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1)
+	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1, int(blockNumber))
 	Nil(g.T(), err)
 	retrievedReceipt := receipts.Response[0]
 
@@ -388,4 +391,33 @@ func (g APISuite) TestLastConfirmedBlock() {
 
 	// check that the data is equal
 	Equal(g.T(), *retrievedBlockTime.Response, int(blockNumber))
+}
+
+// nolint:dupl
+func (g APISuite) TestReceiptEmptyBlock() {
+	// create data for storing a block time
+	chainID := gofakeit.Uint32()
+
+	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+	// create and store logs, receipts, and txs
+	var receipt types.Receipt
+	var err error
+	for blockNumber := 0; blockNumber < 10; blockNumber++ {
+		if blockNumber%2 == 0 {
+			receipt = g.buildReceipt(contractAddress, uint64(blockNumber))
+			err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
+			Nil(g.T(), err)
+		}
+	}
+
+	receiptFilter := db.ReceiptFilter{
+		ChainID:     chainID,
+		BlockNumber: 9,
+	}
+
+	receipts, err := g.db.RetrieveReceiptsWithFilter(g.GetTestContext(), receiptFilter, 1)
+	Nil(g.T(), err)
+	Equal(g.T(), 0, len(receipts))
+
 }

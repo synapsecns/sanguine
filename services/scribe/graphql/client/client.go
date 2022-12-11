@@ -356,8 +356,8 @@ func (c *Client) GetLogsResolvers(ctx context.Context, chainID int, page int, ht
 	return &res, nil
 }
 
-const GetReceiptsDocument = `query GetReceipts ($chain_id: Int!, $page: Int!) {
-	response: receipts(chain_id: $chain_id, page: $page) {
+const GetReceiptsDocument = `query GetReceipts ($chain_id: Int!, $page: Int!, $block_number: Int!) {
+	response: receipts(chain_id: $chain_id, page: $page, block_number: $block_number) {
 		chain_id
 		type
 		post_state
@@ -373,10 +373,11 @@ const GetReceiptsDocument = `query GetReceipts ($chain_id: Int!, $page: Int!) {
 }
 `
 
-func (c *Client) GetReceipts(ctx context.Context, chainID int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceipts, error) {
+func (c *Client) GetReceipts(ctx context.Context, chainID int, page int, blockNumber int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceipts, error) {
 	vars := map[string]interface{}{
-		"chain_id": chainID,
-		"page":     page,
+		"chain_id":     chainID,
+		"page":         page,
+		"block_number": blockNumber,
 	}
 
 	var res GetReceipts
