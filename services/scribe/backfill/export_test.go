@@ -2,9 +2,8 @@ package backfill
 
 import (
 	"context"
-	"golang.org/x/exp/constraints"
-
 	"github.com/ethereum/go-ethereum/core/types"
+	"golang.org/x/exp/constraints"
 )
 
 // GetLogs exports logs for testing.

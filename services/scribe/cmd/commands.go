@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"context"
+	"time"
+
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
@@ -102,12 +105,18 @@ var backfillCommand = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("could not create scribe backfiller: %w", err)
 		}
-		err = scribeBackfiller.Backfill(c.Context)
-		if err != nil {
-			return fmt.Errorf("could not backfill backfiller: %w", err)
-		}
-		return nil
 
+		// TODO delete once livefilling done
+		ctx, cancel := context.WithTimeout(c.Context, time.Minute*5)
+		cancelVar := cancel
+		for {
+			err = scribeBackfiller.Backfill(ctx)
+			if err != nil {
+				cancelVar()
+				ctx, cancel = context.WithTimeout(c.Context, time.Minute*5)
+				cancelVar = cancel
+			}
+		}
 	},
 }
 

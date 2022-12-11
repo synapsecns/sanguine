@@ -5,8 +5,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
+	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"math/big"
 )
 
@@ -17,18 +17,13 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		nonceA := gofakeit.Uint32()
 		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageA := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
-		leafA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberA := gofakeit.Uint64()
-		dbMessageA := types.DBMessage{
-			ChainID:     &chainIDA,
-			Destination: &destinationA,
-			Nonce:       &nonceA,
-			Root:        &rootA,
-			Message:     &messageA,
-			Leaf:        &leafA,
-			BlockNumber: &blockNumberA,
-		}
-		err := testDB.StoreMessage(t.GetTestContext(), dbMessageA)
+
+		headerA := agentsTypes.NewHeader(chainIDA, common.BigToHash(big.NewInt(gofakeit.Int64())), nonceA, destinationA, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
+		tipsA := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+		typesMessageA := agentsTypes.NewMessage(headerA, tipsA, messageA)
+
+		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, rootA, blockNumberA)
 		Nil(t.T(), err)
 
 		chainIDB := gofakeit.Uint32()
@@ -36,38 +31,43 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		nonceB := gofakeit.Uint32()
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageB := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
-		leafB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberB := gofakeit.Uint64()
-		dbMessageB := types.DBMessage{
-			ChainID:     &chainIDB,
-			Destination: &destinationB,
-			Nonce:       &nonceB,
-			Root:        &rootB,
-			Message:     &messageB,
-			Leaf:        &leafB,
-			BlockNumber: &blockNumberB,
-		}
-		err = testDB.StoreMessage(t.GetTestContext(), dbMessageB)
+
+		headerB := agentsTypes.NewHeader(chainIDB, common.BigToHash(big.NewInt(gofakeit.Int64())), nonceB, destinationB, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
+		tipsB := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+		typesMessageB := agentsTypes.NewMessage(headerB, tipsB, messageB)
+
+		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, rootB, blockNumberB)
 		Nil(t.T(), err)
 
 		messageAMask := types.DBMessage{
-			ChainID:     dbMessageA.ChainID,
-			Destination: dbMessageA.Destination,
-			Nonce:       dbMessageA.Nonce,
-			BlockNumber: dbMessageA.BlockNumber,
+			ChainID:     &chainIDA,
+			Destination: &destinationA,
+			Nonce:       &nonceA,
+			BlockNumber: &blockNumberA,
 		}
 		retrievedMessageA, err := testDB.GetMessage(t.GetTestContext(), messageAMask)
 		Nil(t.T(), err)
-		Equal(t.T(), dbMessageA, *retrievedMessageA)
+
+		encodeTypesMessageA, err := agentsTypes.EncodeMessage(typesMessageA)
+		Nil(t.T(), err)
+		encodeRetrievedMessageA, err := agentsTypes.EncodeMessage(*retrievedMessageA)
+		Nil(t.T(), err)
+
+		Equal(t.T(), encodeTypesMessageA, encodeRetrievedMessageA)
 
 		messageBMask := types.DBMessage{
-			Root:    dbMessageB.Root,
-			Message: dbMessageB.Message,
-			Leaf:    dbMessageB.Leaf,
+			Root: &rootB,
 		}
 		retrievedMessageB, err := testDB.GetMessage(t.GetTestContext(), messageBMask)
 		Nil(t.T(), err)
-		Equal(t.T(), dbMessageB, *retrievedMessageB)
+
+		encodeTypesMessageB, err := agentsTypes.EncodeMessage(typesMessageB)
+		Nil(t.T(), err)
+		encodeRetrievedMessageB, err := agentsTypes.EncodeMessage(*retrievedMessageB)
+		Nil(t.T(), err)
+
+		Equal(t.T(), encodeTypesMessageB, encodeRetrievedMessageB)
 	})
 }
 
@@ -82,33 +82,21 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageA := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		messageB := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
-		leafA := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		leafB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberA := gofakeit.Uint64()
 		blockNumberB := blockNumberA + 1
 
-		dbMessageA := types.DBMessage{
-			ChainID:     &chainID,
-			Destination: &destinationA,
-			Nonce:       &nonceA,
-			Root:        &rootA,
-			Message:     &messageA,
-			Leaf:        &leafA,
-			BlockNumber: &blockNumberA,
-		}
-		dbMessageB := types.DBMessage{
-			ChainID:     &chainID,
-			Destination: &destinationB,
-			Nonce:       &nonceB,
-			Root:        &rootB,
-			Message:     &messageB,
-			Leaf:        &leafB,
-			BlockNumber: &blockNumberB,
-		}
+		headerA := agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonceA, destinationA, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
+		tipsA := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+		typesMessageA := agentsTypes.NewMessage(headerA, tipsA, messageA)
 
-		err := testDB.StoreMessage(t.GetTestContext(), dbMessageA)
+		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, rootA, blockNumberA)
 		Nil(t.T(), err)
-		err = testDB.StoreMessage(t.GetTestContext(), dbMessageB)
+
+		headerB := agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonceB, destinationB, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
+		tipsB := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+		typesMessageB := agentsTypes.NewMessage(headerB, tipsB, messageB)
+
+		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, rootB, blockNumberB)
 		Nil(t.T(), err)
 
 		lastBlockNumber, err := testDB.GetLastBlockNumber(t.GetTestContext(), chainID)
@@ -116,32 +104,4 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 
 		Equal(t.T(), blockNumberB, lastBlockNumber)
 	})
-}
-
-func (t *DBSuite) TestMessageDBMessageParity() {
-	chainID := gofakeit.Uint32()
-	destination := gofakeit.Uint32()
-	nonce := gofakeit.Uint32()
-	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
-	message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
-	leaf := common.BigToHash(big.NewInt(gofakeit.Int64()))
-	blockNumber := gofakeit.Uint64()
-	initialDBMessage := types.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-		Nonce:       &nonce,
-		Root:        &root,
-		Message:     &message,
-		Leaf:        &leaf,
-		BlockNumber: &blockNumber,
-	}
-
-	initialMessage := base.DBMessageToMessage(initialDBMessage)
-
-	finalDBMessage := base.MessageToDBMessage(initialMessage)
-
-	finalMessage := base.DBMessageToMessage(finalDBMessage)
-
-	Equal(t.T(), initialDBMessage, finalDBMessage)
-	Equal(t.T(), initialMessage, finalMessage)
 }

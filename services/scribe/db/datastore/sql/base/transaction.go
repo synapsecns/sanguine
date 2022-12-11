@@ -18,7 +18,6 @@ func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID ui
 	if err != nil {
 		return fmt.Errorf("could not marshall tx to binary: %w", err)
 	}
-
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: TxHashFieldName}, {Name: ChainIDFieldName}},

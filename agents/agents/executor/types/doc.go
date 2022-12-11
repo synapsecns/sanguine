@@ -1,2 +1,2 @@
-// Package types contains the types for the Executor.
+// Package types contains the database types for the Executor.
 package types

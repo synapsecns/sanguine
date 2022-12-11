@@ -83,11 +83,10 @@ RETRY:
 		if priceRaw == nil {
 			if retries >= 1 {
 				logger.Errorf("error getting price from defi llama, skipping: retries: %d %s %d", retries, coinGeckoID, timestamp)
-				zero := float64(0)
-				return &zero, nil
+				return nil, nil
 			}
 			timeout = b.Duration()
-			logger.Errorf("error getting price from defi llama: retries: %d %s %d", retries, coinGeckoID, timestamp)
+			logger.Warnf("error getting price from defi llama: retries: %d %s %d", retries, coinGeckoID, timestamp)
 			retries++
 
 			goto RETRY
@@ -117,8 +116,7 @@ RETRY:
 		if symbol == nil {
 			if retries >= 1 {
 				logger.Errorf("error getting symbol from defi llama, skipping: retries: %d %s %d", retries, coinGeckoID, timestamp)
-				zero := float64(0)
-				return &zero, nil
+				return nil, nil
 			}
 			timeout = b.Duration()
 			logger.Errorf("error getting symbol from defi llama: retries: %d %s %d", retries, coinGeckoID, timestamp)

@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-http-utils/headers"
+	"github.com/synapsecns/sanguine/core/ginhelper"
 	"net/http"
 )
 
@@ -15,7 +16,7 @@ var (
 	// Accept is a byte encoded accept header.
 	Accept = []byte(headers.Accept)
 	// XRequestIDString is the string request id header.
-	XRequestIDString = "X-Request-ID"
+	XRequestIDString = ginhelper.RequestIDHeader
 	// XRequestID is the byte encoded request id.
 	XRequestID = []byte(XRequestIDString)
 	// Encoding is a bytes encoded Accept-Encoding header.

@@ -144,7 +144,7 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
 			return []*types.Log{}, fmt.Errorf("could not find logs with filter %v: %w", logFilter, db.ErrNotFound)
 		}
-		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
+		return []*types.Log{}, fmt.Errorf("could not retrieve logs: %w", dbTx.Error)
 	}
 
 	return buildLogsFromDBLogs(dbLogs), nil
@@ -246,7 +246,7 @@ func (s Store) retrieveLogsInRangeQuery(ctx context.Context, logFilter db.LogFil
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
 			return []*types.Log{}, fmt.Errorf("could not find logs with filter %v, in range %v-%v: %w", logFilter, startBlock, endBlock, db.ErrNotFound)
 		}
-		return []*types.Log{}, fmt.Errorf("could not store log: %w", dbTx.Error)
+		return []*types.Log{}, fmt.Errorf("could not retrieve logs: %w", dbTx.Error)
 	}
 
 	return buildLogsFromDBLogs(dbLogs), nil
