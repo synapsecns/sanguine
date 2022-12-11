@@ -419,5 +419,4 @@ func (g APISuite) TestReceiptEmptyBlock() {
 	receipts, err := g.db.RetrieveReceiptsWithFilter(g.GetTestContext(), receiptFilter, 1)
 	Nil(g.T(), err)
 	Equal(g.T(), 0, len(receipts))
-
 }
