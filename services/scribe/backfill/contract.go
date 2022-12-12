@@ -33,7 +33,7 @@ type ContractBackfiller struct {
 const storeConcurrency = 5
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
-const retryTolerance = 1
+const retryTolerance = 20
 
 // txNotSupportedError is for handling the legacy Arbitrum tx type.
 const txNotSupportedError = "transaction type not supported"
@@ -349,7 +349,6 @@ func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight 
 	// Reads from the range filter's logsChan and puts the logs into the local logsChan until completion.
 	go func() {
 		for {
-
 			select {
 			case <-ctx.Done():
 				LogEvent(ErrorLevel, "Context canceled while getting log", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": ctx.Err()})

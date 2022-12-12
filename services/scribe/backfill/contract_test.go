@@ -244,7 +244,8 @@ func (b BackfillSuite) TestContractBackfill() {
 }
 
 // TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
-
+//
+// nolint:dupl
 func (b BackfillSuite) TestTxTypeNotSupported() {
 	if os.Getenv("CI") != "" {
 		b.T().Skip("Network test flake")
@@ -283,7 +284,8 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 }
 
 // TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
-
+//
+// nolint:dupl
 func (b BackfillSuite) TestInvalidTxVRS() {
 	if os.Getenv("CI") != "" {
 		b.T().Skip("Network test flake")
