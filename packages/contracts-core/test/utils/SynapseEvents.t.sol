@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // ============ Production events ============
 import "../../contracts/events/AgentRegistryEvents.sol";
 import "../../contracts/events/AttestationHubEvents.sol";
+import "../../contracts/events/CollectorEvents.sol";
 import "../../contracts/events/DestinationEvents.sol";
 import "../../contracts/events/GuardRegistryEvents.sol";
 import "../../contracts/events/NotaryRegistryEvents.sol";
@@ -25,6 +26,7 @@ import "../mocks/events/SystemContractMockEvents.sol";
 abstract contract SynapseEvents is
     AgentRegistryEvents,
     AttestationHubEvents,
+    CollectorEvents,
     DestinationEvents,
     GuardRegistryEvents,
     NotaryRegistryEvents,

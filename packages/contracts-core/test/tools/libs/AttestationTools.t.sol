@@ -9,7 +9,7 @@ abstract contract AttestationTools is SynapseTestSuite {
     bytes32 internal constant MOCK_ATTESTATION_ROOT = "Mock the attestation root";
 
     // Mock nonce
-    uint32 private mockNonce = 42;
+    uint32 internal mockNonce = 42;
     // Saved attestation data
     address[] internal attestationGuards;
     address[] internal attestationNotaries;
@@ -114,6 +114,39 @@ abstract contract AttestationTools is SynapseTestSuite {
             attestationGuards,
             attestationNotaries
         );
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                    CREATE ATTESTATION (SAME DATA)                    ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function createSameAttestation() public returns (bytes memory) {
+        createAttestation();
+        return attestationRaw;
+    }
+
+    function createSameAttestation(bool isGuard, address agent) public returns (bytes memory) {
+        if (isGuard) {
+            attestationGuards = castToArray(agent);
+            delete attestationNotaries;
+        } else {
+            delete attestationGuards;
+            attestationNotaries = castToArray(agent);
+        }
+        return createSameAttestation();
+    }
+
+    // Create attestation with the same data, having exactly one signature
+    function createSameAttestation(uint256 guardSigs, uint256 notarySigs)
+        public
+        returns (bytes memory)
+    {
+        (attestationGuards, attestationNotaries) = _createSigners(
+            attestationDestination,
+            guardSigs,
+            notarySigs
+        );
+        return createSameAttestation();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -223,6 +256,11 @@ abstract contract AttestationTools is SynapseTestSuite {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            EXPECT EVENTS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function expectAttestationAccepted() public {
+        vm.expectEmit(true, true, true, true);
+        emit AttestationAccepted(attestationGuards, attestationNotaries, attestationRaw);
+    }
 
     function expectLogAttestation() public {
         vm.expectEmit(true, true, true, true);
