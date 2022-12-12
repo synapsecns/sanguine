@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.17;
 
-import { Collector } from "../../contracts/Collector.sol";
+import { AttestationCollector } from "../../contracts/AttestationCollector.sol";
 
-contract CollectorHarness is Collector {
+contract AttestationCollectorHarness is AttestationCollector {
     function isGuard(address _guard) external view returns (bool) {
         return _isActiveAgent(0, _guard);
     }

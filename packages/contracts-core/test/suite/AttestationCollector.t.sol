@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../tools/CollectorTools.t.sol";
+import "../tools/AttestationCollectorTools.t.sol";
 
 // solhint-disable func-name-mixedcase
-contract CollectorTest is CollectorTools {
+contract AttestationCollectorTest is AttestationCollectorTools {
     uint256 internal savedSignatures;
     mapping(uint64 => mapping(address => uint32)) internal latestAgentNonce;
     mapping(uint64 => mapping(address => uint256)) internal savedAttestations;
@@ -30,7 +30,7 @@ contract CollectorTest is CollectorTools {
     }
 
     function test_initialize() public {
-        collector = new CollectorHarness();
+        collector = new AttestationCollectorHarness();
         assertEq(collector.owner(), address(0), "!owner: pre init");
         collector.initialize();
         assertEq(collector.owner(), address(this), "!owner: post init");
@@ -43,7 +43,7 @@ contract CollectorTest is CollectorTools {
 
     function test_addRemoveNotary(uint32 domain, address notary) public {
         vm.assume(domain != 0);
-        collector = new CollectorHarness();
+        collector = new AttestationCollectorHarness();
         collector.initialize();
         collector.addNotary(domain, notary);
         assertTrue(collector.isNotary(domain, notary), "!added");
@@ -52,7 +52,7 @@ contract CollectorTest is CollectorTools {
     }
 
     function test_addRemoveGuard(address guard) public {
-        collector = new CollectorHarness();
+        collector = new AttestationCollectorHarness();
         collector.initialize();
         collector.addGuard(guard);
         assertTrue(collector.isGuard(guard), "!added");

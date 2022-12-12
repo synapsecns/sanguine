@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { Attestation } from "./libs/Attestation.sol";
 import { AttestationHub } from "./hubs/AttestationHub.sol";
-import { CollectorEvents } from "./events/CollectorEvents.sol";
+import { AttestationCollectorEvents } from "./events/AttestationCollectorEvents.sol";
 
 import { ByteString } from "./libs/Attestation.sol";
 
@@ -11,7 +11,7 @@ import {
     OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract Collector is CollectorEvents, AttestationHub, OwnableUpgradeable {
+contract AttestationCollector is AttestationCollectorEvents, AttestationHub, OwnableUpgradeable {
     using Attestation for bytes29;
     using ByteString for bytes;
     using ByteString for bytes29;
@@ -419,7 +419,7 @@ contract Collector is CollectorEvents, AttestationHub, OwnableUpgradeable {
     }
 
     function _isIgnoredAgent(uint32, address) internal pure override returns (bool) {
-        // Collector doesn't ignore anything
+        // AttestationCollector doesn't ignore anything
         return false;
     }
 }

@@ -2,13 +2,13 @@
 pragma solidity 0.8.17;
 
 import "./libs/AttestationTools.t.sol";
-import { CollectorHarness } from "../harnesses/CollectorHarness.t.sol";
+import { AttestationCollectorHarness } from "../harnesses/AttestationCollectorHarness.t.sol";
 
-abstract contract CollectorTools is AttestationTools {
-    CollectorHarness internal collector;
+abstract contract AttestationCollectorTools is AttestationTools {
+    AttestationCollectorHarness internal collector;
 
     function setupCollector() public {
-        collector = new CollectorHarness();
+        collector = new AttestationCollectorHarness();
         collector.initialize();
         for (uint256 i = 0; i < GUARDS; ++i) {
             collector.addGuard(suiteGuard(i));
