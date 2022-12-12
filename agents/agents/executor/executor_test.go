@@ -10,7 +10,7 @@ import (
 	"math/big"
 )
 
-//func (e *ExecutorSuite) TestExecutor() {
+// func (e *ExecutorSuite) TestExecutor() {
 //	testDone := false
 //	defer func() {
 //		testDone = true
@@ -467,7 +467,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	}
 	// encodedTips0, err := types.EncodeTips(tips[0])
 	// e.Nil(err)
-	//encodedTips1, err := types.EncodeTips(tips[1])
+	// encodedTips1, err := types.EncodeTips(tips[1])
 	//e.Nil(err)
 	//encodedTips2, err := types.EncodeTips(tips[2])
 	//e.Nil(err)
@@ -480,88 +480,26 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	header3 := types.NewHeader(chainID, senders[3], nonces[3], destination, recipients[3], optimisticSeconds[3])
 
 	message0 := types.NewMessage(header0, tips[0], messageBytes[0])
-	e.Nil(err)
 	message1 := types.NewMessage(header1, tips[1], messageBytes[1])
-	e.Nil(err)
 	message2 := types.NewMessage(header2, tips[2], messageBytes[2])
-	e.Nil(err)
 	message3 := types.NewMessage(header3, tips[3], messageBytes[3])
-	e.Nil(err)
 
 	leaf0, err := message0.ToLeaf()
 	e.Nil(err)
-	// hashLeaf0 := common.BytesToHash(leaf0[:])
 	leaf1, err := message1.ToLeaf()
 	e.Nil(err)
-	// hashLeaf1 := common.BytesToHash(leaf1[:])
 	leaf2, err := message2.ToLeaf()
 	e.Nil(err)
-	// hashLeaf2 := common.BytesToHash(leaf2[:])
 	leaf3, err := message3.ToLeaf()
 	e.Nil(err)
-	// hashLeaf3 := common.BytesToHash(leaf3[:])
 
 	testTree.Insert(leaf0[:], 0)
 	root0 := testTree.Root()
-	// hashRoot0 := common.BytesToHash(root0[:])
 	testTree.Insert(leaf1[:], 1)
 	root1 := testTree.Root()
-	// hashRoot1 := common.BytesToHash(root1[:])
 	testTree.Insert(leaf2[:], 2)
 	root2 := testTree.Root()
-	// hashRoot2 := common.BytesToHash(root2[:])
 	testTree.Insert(leaf3[:], 3)
-	// root3 := testTree.Root()
-	//hashRoot3 := common.BytesToHash(root3[:])
-
-	// header0Types := types.NewHeader(chainID, senders[0], nonces[0], destination, recipients[0], optimisticSeconds[0])
-	//header1Types := types.NewHeader(chainID, senders[1], nonces[1], destination, recipients[1], optimisticSeconds[1])
-	//header2Types := types.NewHeader(chainID, senders[2], nonces[2], destination, recipients[2], optimisticSeconds[2])
-	//header3Types := types.NewHeader(chainID, senders[3], nonces[3], destination, recipients[3], optimisticSeconds[3])
-	//
-	//tips0 := types.NewTips(notaryTips[0], broadcasterTips[0], proverTips[0], executorTips[0])
-	//tips1 := types.NewTips(notaryTips[1], broadcasterTips[1], proverTips[1], executorTips[1])
-	//tips2 := types.NewTips(notaryTips[2], broadcasterTips[2], proverTips[2], executorTips[2])
-	//tips3 := types.NewTips(notaryTips[3], broadcasterTips[3], proverTips[3], executorTips[3])
-	//
-	//message0 := types.NewMessage(header0, tips0, messageBytes[0])
-	//message1 := types.NewMessage(header1, tips1, messageBytes[1])
-	//message2 := types.NewMessage(header2, tips2, messageBytes[2])
-	//message3 := types.NewMessage(header3, tips3, messageBytes[3])
-
-	// dbMessage0 := execTypes.DBMessage{
-	//	ChainID:     &chainID,
-	//	Destination: &destination,
-	//	Nonce:       &nonces[0],
-	//	Root:        &hashRoot0,
-	//	Message:     &messageBytes[0],
-	//	BlockNumber: &blockNumbers[0],
-	//}
-	//dbMessage1 := execTypes.DBMessage{
-	//	ChainID:     &chainID,
-	//	Destination: &destination,
-	//	Nonce:       &nonces[1],
-	//	Root:        &hashRoot1,
-	//	Message:     &messageBytes[1],
-	//	BlockNumber: &blockNumbers[1],
-	//}
-	//dbMessage2 := execTypes.DBMessage{
-	//	ChainID:     &chainID,
-	//	Destination: &destination,
-	//	Nonce:       &nonces[2],
-	//	Root:        &hashRoot2,
-	//	Message:     &messageBytes[2],
-	//	BlockNumber: &blockNumbers[2],
-	//}
-	//dbMessage3 := execTypes.DBMessage{
-	//	ChainID:     &chainID,
-	//	Destination: &destination,
-	//	Nonce:       &nonces[3],
-	//	Root:        &hashRoot3,
-	//	Message:     &messageBytes[3],
-	//	BlockNumber: &blockNumbers[3],
-	//}
-	//_ = dbMessage3
 
 	// Insert messages into the database.
 	err = e.testDB.StoreMessage(e.GetTestContext(), message0, root0, blockNumbers[0])
@@ -574,15 +512,16 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	message2Encoded, err := types.EncodeMessage(message2)
-	e.Nil(err)
-
-	inTree, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message2Encoded, chainID, destination)
+	inTree, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message2, chainID, destination)
 	e.Nil(err)
 	e.True(inTree)
 
-	// proof, err := exec.MerkleTrees[chainID][destination].MerkleProof(2)
+	// inTree, err = exec.VerifyMessageNonce(e.GetTestContext(), nonces[3], message3, chainID, destination)
 	//e.Nil(err)
+	//e.False(inTree)
+
+	// proof, err := exec.MerkleTrees[chainID][destination].MerkleProof(2)
+	// e.Nil(err)
 	//
 	//err = e.testDB.StoreMessage(e.GetTestContext(), dbMessage3)
 	//e.Nil(err)
@@ -597,7 +536,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	// encodedMessage0, err := types.EncodeMessage(message0)
 	// e.Nil(err)
 	//
-	//inTree0, err := exec.VerifyMessage(e.GetTestContext(), 0, encodedMessage0, chainID)
+	// inTree0, err := exec.VerifyMessage(e.GetTestContext(), 0, encodedMessage0, chainID)
 	//e.Nil(err)
 	//e.True(inTree0)
 }

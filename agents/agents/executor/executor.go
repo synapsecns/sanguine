@@ -267,7 +267,7 @@ func (e Executor) VerifyMessage(ctx context.Context, merkleIndex uint32, message
 }
 
 // VerifyMessageNonce verifies a message against the merkle tree at the state of the given nonce.
-func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message []byte, chainID uint32, destination uint32) (bool, error) {
+func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message types.Message, chainID uint32, destination uint32) (bool, error) {
 	root, err := e.GetRoot(ctx, nonce, chainID, destination)
 	if err != nil {
 		return false, fmt.Errorf("could not get root: %w", err)
@@ -278,29 +278,20 @@ func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message 
 		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
 	}
 
-	inTree := trieutil.VerifyMerkleBranch(root[:], message, int(nonce-1), proof, treeDepth)
+	leaf, err := message.ToLeaf()
+	if err != nil {
+		return false, fmt.Errorf("could not convert message to leaf: %w", err)
+	}
+
+	inTree := trieutil.VerifyMerkleBranch(root[:], leaf[:], int(nonce-1), proof, treeDepth)
 
 	return inTree, nil
 }
 
 //// VerifyOptimisticPeriod verifies that the optimistic period is valid.
-//func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message) (bool, error) {
+// func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message) (bool, error) {
 //
 //}
-
-// GetProof returns the merkle proof for the given nonce.
-func (e Executor) GetProof(nonce uint32, chainID uint32, destination uint32) ([][]byte, error) {
-	if nonce == 0 || nonce > uint32(e.chainExecutors[chainID].merkleTrees[destination].NumOfItems()) {
-		return nil, fmt.Errorf("nonce is out of range")
-	}
-
-	proof, err := e.chainExecutors[chainID].merkleTrees[destination].MerkleProof(int(nonce - 1))
-	if err != nil {
-		return nil, fmt.Errorf("could not get merkle proof: %w", err)
-	}
-
-	return proof, nil
-}
 
 // GetLatestNonceProof returns the merkle proof for a nonce, with a tree where that nonce is the last item added.
 // This is done by copying the current merkle tree's items and generating a new tree with the items from the range

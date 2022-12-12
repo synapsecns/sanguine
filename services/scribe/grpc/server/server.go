@@ -137,6 +137,17 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 	}
 }
 
+func (s *server) GetBlockTime(ctx context.Context, req *pbscribe.GetBlockTimeRequest) (*pbscribe.GetBlockTimeResponse, error) {
+	blockTime, err := s.db.RetrieveBlockTime(ctx, req.ChainID, req.BlockNumber)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve block time: %w", err)
+	}
+
+	return &pbscribe.GetBlockTimeResponse{
+		BlockTime: blockTime,
+	}, nil
+}
+
 func (s *server) Check(context.Context, *pbscribe.HealthCheckRequest) (*pbscribe.HealthCheckResponse, error) {
 	return &pbscribe.HealthCheckResponse{Status: pbscribe.HealthCheckResponse_SERVING}, nil
 }
