@@ -133,7 +133,7 @@ func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.
 	if err != nil {
 		return []types.Receipt{}, fmt.Errorf("could not build receipts from db receipts: %w", err)
 	}
-
+	logger.Infof("[RECEIPT QUERY] Retrieved %d receipts with filter %+v", len(parsedReceipts), receiptFilter)
 	return parsedReceipts, nil
 }
 
@@ -171,7 +171,8 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 
 func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Receipt, chainID uint32) ([]types.Receipt, error) {
 	receipts := []types.Receipt{}
-	for _, dbReceipt := range dbReceipts {
+	for i := range dbReceipts {
+		dbReceipt := dbReceipts[i]
 		// Retrieve Logs that match the receipt's tx hash in order to add them to the Receipt.
 		logFilter := db.LogFilter{}
 		logFilter.TxHash = dbReceipt.TxHash
@@ -192,6 +193,7 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 			page++
 			logs = append(logs, logGroup...)
 		}
+		logger.Infof("[RECEIPT QUERY] logs collected: %d, %v, page: %d", len(logs), logFilter, page)
 
 		parsedReceipt := types.Receipt{
 			Type:              dbReceipt.Type,
@@ -207,9 +209,11 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 			BlockNumber:       big.NewInt(int64(dbReceipt.BlockNumber)),
 			TransactionIndex:  uint(dbReceipt.TransactionIndex),
 		}
+		logger.Infof("[RECEIPT QUERY] parsedReceipt:, %v", parsedReceipt)
 
 		receipts = append(receipts, parsedReceipt)
 	}
+	logger.Infof("[RECEIPT QUERY] parsedReceipt: %d", len(receipts))
 
 	return receipts, nil
 }
