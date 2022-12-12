@@ -6,7 +6,6 @@ import { AttestationHub } from "./hubs/AttestationHub.sol";
 import { CollectorEvents } from "./events/CollectorEvents.sol";
 
 import { ByteString } from "./libs/Attestation.sol";
-import { TypedMemView } from "./libs/TypedMemView.sol";
 
 import {
     OwnableUpgradeable
@@ -14,6 +13,7 @@ import {
 
 contract Collector is CollectorEvents, AttestationHub, OwnableUpgradeable {
     using Attestation for bytes29;
+    using ByteString for bytes;
     using ByteString for bytes29;
 
     /**
@@ -323,6 +323,8 @@ contract Collector is CollectorEvents, AttestationHub, OwnableUpgradeable {
                 ? _attestationView.guardSignature(_agentIndex)
                 : _attestationView.notarySignature(_agentIndex)
         );
+        // Second agent signature will be left empty
+        bytes29 emptySig = bytes("").castToSignature();
         // Construct the signature struct to save
         AgentSignature memory agentSig;
         (agentSig.r, agentSig.s, agentSig.v) = signature.toRSV();
@@ -337,8 +339,8 @@ contract Collector is CollectorEvents, AttestationHub, OwnableUpgradeable {
         // Here we pass views over the existing byte arrays to reduce amount of copying into memory
         bytes memory agentAttestation = Attestation.formatAttestation({
             _dataView: _attestationView.attestationData(),
-            _guardSigsView: _isGuard ? signature : TypedMemView.NULL,
-            _notarySigsView: _isGuard ? TypedMemView.NULL : signature
+            _guardSigsView: _isGuard ? signature : emptySig,
+            _notarySigsView: _isGuard ? emptySig : signature
         });
         // Use the actual signature position in `savedSignatures` for the event
         emit AttestationSaved(signatureIndex - 1, agentAttestation);
