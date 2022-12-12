@@ -32,6 +32,8 @@ type Transaction {
   nonce: Int!
   to: String!
   page: Int!
+  sender: String!
+  timestamp: Int!
   logs: [Log!] @goField(forceResolver: true)
   receipt: Receipt! @goField(forceResolver: true)
   json: JSON! @goField(forceResolver:true)
@@ -58,4 +60,5 @@ type BlockTime {
   chain_id: Int!
   block_number: Int!
   timestamp: Int!
+
 }
