@@ -30,10 +30,10 @@ type ContractBackfiller struct {
 }
 
 // storeConcurrency is the number of goroutines to use when storing logs/receipts/txs.
-const storeConcurrency = 1
+const storeConcurrency = 5
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
-const retryTolerance = 20
+const retryTolerance = 1
 
 // txNotSupportedError is for handling the legacy Arbitrum tx type.
 const txNotSupportedError = "transaction type not supported"
@@ -80,8 +80,6 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 		LogEvent(WarnLevel, "Using last indexed block (lastIndexBlock > startHeight)", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight})
 		startHeight = lastBlockIndexed + 1
 	}
-	fmt.Println("startHeight", startHeight, "endHeight", endHeight)
-
 	LogEvent(InfoLevel, "Beginning to backfill contract ", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight})
 
 	// logsChain and doneChan are used to pass logs from rangeFilter onto the next stage of the backfill process.
@@ -91,8 +89,8 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 	g.Go(func() error {
 		concurrentCalls := 0
 		gS, storeCtx := errgroup.WithContext(ctx)
+		startTime := time.Now()
 		for {
-			fmt.Println("AA")
 			select {
 			case <-groupCtx.Done():
 				LogEvent(ErrorLevel, "Context canceled while storing and retrieving logs", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
@@ -115,8 +113,8 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 						return fmt.Errorf("error waiting for go routines: %w", err)
 					}
 
-					//// Reset context TODO make this better
-					// gS, storeCtx = errgroup.WithContext(ctx)
+					// Reset context TODO make this better
+					gS, storeCtx = errgroup.WithContext(ctx)
 					concurrentCalls = 0
 					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
 					if err != nil {
@@ -124,18 +122,14 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 
 						return fmt.Errorf("could not store last indexed block: %w", err)
 					}
+					LogEvent(ErrorLevel, "Time to store 5 logs", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "ts": time.Since(startTime).String()})
+					startTime = time.Now()
 				}
 
 			case doneFlag := <-doneChan:
 				if err = gS.Wait(); err != nil {
 					return fmt.Errorf("error waiting for go routines: %w", err)
 				}
-				// err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, currentBlock)
-				//if err != nil {
-				//	LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID,  "ca": c.address, "e": err.Error()})
-				//
-				//	return fmt.Errorf("could not store last indexed block: %w", err)
-				//}
 				if doneFlag {
 					LogEvent(InfoLevel, "Received Done Can", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
 
@@ -363,7 +357,6 @@ func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight 
 				return
 			case logInfos := <-rangeFilter.GetLogChan():
 				for _, log := range logInfos.logs {
-					fmt.Println("yum")
 					logsChan <- log
 				}
 

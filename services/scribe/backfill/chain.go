@@ -113,7 +113,6 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64) err
 	startTime := time.Now()
 
 	if onlyOneBlock == nil {
-		fmt.Println("Starting backfill for chain", c.chainID, onlyOneBlock)
 		// Retry until block height for the current chain is retrieved.
 		for {
 			select {
@@ -173,74 +172,74 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64) err
 		})
 	}
 
-	//// Set the start height to the min height from all start blocks set in config
-	// startHeight := c.minBlockHeight
-	//
-	//// Set the end height to the latest block height.
-	//endHeight := currentBlock
-	//
-	//// Check if there are any block times stored in the database for the given chain
-	//count, err := c.eventDB.RetrieveBlockTimesCountForChain(backfillCtx, c.chainID)
-	//if err != nil {
-	//	LogEvent(ErrorLevel, "could not retrieve block times count for chain", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
-	//
-	//	return fmt.Errorf("could not retrieve block times count for chain: %w", err)
-	//}
-	//
-	//// Create another backfiller to start from the last stored block time if there are any block times stored.
-	//if count > 0 {
-	//	LogEvent(WarnLevel, "Additional blocktime backfiller created", LogData{"cid": c.chainID, "bt": true})
-	//	// Set the second backfiller's start height to the last stored block time.
-	//	// This will also be used as the start height for this additional backfiller.
-	//	lastStored, err := c.eventDB.RetrieveLastBlockStored(backfillCtx, c.chainID)
-	//	if err != nil {
-	//		LogEvent(ErrorLevel, "Could not retrieve last block stored", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
-	//
-	//		return fmt.Errorf("could not retrieve last block stored: %w", err)
-	//	}
-	//
-	//	// Get first stored block time to compare with the current start height.
-	//	firstStoredBlockTime, err := c.eventDB.RetrieveFirstBlockStored(backfillCtx, c.chainID)
-	//	if err != nil {
-	//		LogEvent(ErrorLevel, "Could not retrieve first block stored", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
-	//
-	//		return fmt.Errorf("could not retrieve first block stored: %w", err)
-	//	}
-	//
-	//	// Handle other backfiller
-	//	if startHeight > firstStoredBlockTime {
-	//		startHeight = firstStoredBlockTime
-	//	}
-	//	endHeight = firstStoredBlockTime
-	//
-	//	// Backfill from last stored block to current height.
-	//	backfillGroup.Go(func() error {
-	//		err = c.blocktimeBackfillManager(backfillCtx, decrementIfNotZero(lastStored), currentBlock)
-	//		if err != nil {
-	//			LogEvent(ErrorLevel, "Could not backfill block times from last stored block time", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
-	//
-	//			return fmt.Errorf("could not backfill block times from last stored block time: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, currentBlock, b.Attempt(), b.Duration())
-	//		}
-	//
-	//		LogEvent(WarnLevel, "Completed adding later blocks", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "bt": true})
-	//
-	//		return nil
-	//	})
-	//}
-	//
-	//// Backfill from the earliest block to last stored block.
-	//backfillGroup.Go(func() error {
-	//	err = c.blocktimeBackfillManager(backfillCtx, decrementIfNotZero(startHeight), endHeight)
-	//	if err != nil {
-	//		LogEvent(ErrorLevel, "Could not backfill block times from min block height", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
-	//
-	//		return fmt.Errorf("could not backfill block times from min block height: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
-	//	}
-	//
-	//	LogEvent(WarnLevel, "Completed adding earlier blocks", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "bt": true})
-	//
-	//	return nil
-	//})
+	// Set the start height to the min height from all start blocks set in config
+	startHeight := c.minBlockHeight
+
+	// Set the end height to the latest block height.
+	endHeight := currentBlock
+
+	// Check if there are any block times stored in the database for the given chain
+	count, err := c.eventDB.RetrieveBlockTimesCountForChain(backfillCtx, c.chainID)
+	if err != nil {
+		LogEvent(ErrorLevel, "could not retrieve block times count for chain", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
+		return fmt.Errorf("could not retrieve block times count for chain: %w", err)
+	}
+
+	// Create another backfiller to start from the last stored block time if there are any block times stored.
+	if count > 0 {
+		LogEvent(WarnLevel, "Additional blocktime backfiller created", LogData{"cid": c.chainID, "bt": true})
+		// Set the second backfiller's start height to the last stored block time.
+		// This will also be used as the start height for this additional backfiller.
+		lastStored, err := c.eventDB.RetrieveLastBlockStored(backfillCtx, c.chainID)
+		if err != nil {
+			LogEvent(ErrorLevel, "Could not retrieve last block stored", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
+			return fmt.Errorf("could not retrieve last block stored: %w", err)
+		}
+
+		// Get first stored block time to compare with the current start height.
+		firstStoredBlockTime, err := c.eventDB.RetrieveFirstBlockStored(backfillCtx, c.chainID)
+		if err != nil {
+			LogEvent(ErrorLevel, "Could not retrieve first block stored", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
+			return fmt.Errorf("could not retrieve first block stored: %w", err)
+		}
+
+		// Handle other backfiller
+		if startHeight > firstStoredBlockTime {
+			startHeight = firstStoredBlockTime
+		}
+		endHeight = firstStoredBlockTime
+
+		// Backfill from last stored block to current height.
+		backfillGroup.Go(func() error {
+			err = c.blocktimeBackfillManager(backfillCtx, decrementIfNotZero(lastStored), currentBlock)
+			if err != nil {
+				LogEvent(ErrorLevel, "Could not backfill block times from last stored block time", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
+				return fmt.Errorf("could not backfill block times from last stored block time: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, currentBlock, b.Attempt(), b.Duration())
+			}
+
+			LogEvent(WarnLevel, "Completed adding later blocks", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "bt": true})
+
+			return nil
+		})
+	}
+
+	// Backfill from the earliest block to last stored block.
+	backfillGroup.Go(func() error {
+		err = c.blocktimeBackfillManager(backfillCtx, decrementIfNotZero(startHeight), endHeight)
+		if err != nil {
+			LogEvent(ErrorLevel, "Could not backfill block times from min block height", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
+
+			return fmt.Errorf("could not backfill block times from min block height: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, endHeight, b.Attempt(), b.Duration())
+		}
+
+		LogEvent(WarnLevel, "Completed adding earlier blocks", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "bt": true})
+
+		return nil
+	})
 
 	if err := backfillGroup.Wait(); err != nil {
 		LogEvent(ErrorLevel, "Could not backfill with error group", LogData{"cid": c.chainID, "bn": currentBlock, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
