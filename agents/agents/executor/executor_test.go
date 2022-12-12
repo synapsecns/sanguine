@@ -77,7 +77,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		chainIDB: {simulatedClientB, simulatedClientB},
 	}
 
-	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(e.scribeTestDB, clients, scribeConfig)
 	e.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
@@ -107,7 +107,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		AttestationCollectorChainID: gofakeit.Uint32(),
 	}
 
-	exc, err := executor.NewExecutor(excCfg, scribeClient.ScribeClient)
+	exc, err := executor.NewExecutor(excCfg, e.testDB, scribeClient.ScribeClient)
 	e.Nil(err)
 
 	// Start the executor.
@@ -166,7 +166,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		chainID: {simulatedClient, simulatedClient},
 	}
 
-	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(e.scribeTestDB, clients, scribeConfig)
 	e.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
@@ -189,7 +189,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		},
 	}
 
-	exec, err := executor.NewExecutor(excCfg, scribeClient.ScribeClient)
+	exec, err := executor.NewExecutor(excCfg, e.testDB, scribeClient.ScribeClient)
 	e.Nil(err)
 
 	// Start the exec.
@@ -247,7 +247,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		chainID: {simulatedClient, simulatedClient},
 	}
 
-	scribe, err := node.NewScribe(e.testDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(e.scribeTestDB, clients, scribeConfig)
 	e.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
@@ -275,8 +275,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		},
 	}
 
-	exec, err := executor.NewExecutor(excCfg, scribeClient.ScribeClient)
+	exec, err := executor.NewExecutor(excCfg, e.testDB, scribeClient.ScribeClient)
 	e.Nil(err)
+
+	_, err = exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
+	e.NotNil(err)
 
 	testTree, err := trieutil.NewTrie(32)
 	e.Nil(err)
@@ -339,13 +342,19 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		}
 	}()
 
+	waitChan := make(chan bool, 2)
+
 	e.Eventually(func() bool {
-		rootA, err := exec.GetRoot(0, chainID, destination)
+		rootA, err := exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
 		if err != nil {
 			return false
 		}
 
-		return testRootA == rootA
+		if testRootA == rootA {
+			waitChan <- true
+			return true
+		}
+		return false
 	})
 
 	encodedTips, err = types.EncodeTips(tips[1])
@@ -365,14 +374,36 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	leaf, err = message.ToLeaf()
 	e.Nil(err)
 	testTree.Insert(leaf[:], 1)
+
 	testRootB := testTree.Root()
 
 	e.Eventually(func() bool {
-		rootB, err := exec.GetRoot(1, chainID, destination)
+		rootB, err := exec.GetRoot(e.GetTestContext(), 2, chainID, destination)
 		if err != nil {
 			return false
 		}
 
-		return testRootB == rootB
+		if testRootB == rootB {
+			waitChan <- true
+			return true
+		}
+		return false
 	})
+
+	<-waitChan
+	<-waitChan
+	exec.Stop(chainID)
+
+	oldTreeItems := exec.GetMerkleTree(chainID, destination).Items()
+
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
+	e.Nil(err)
+
+	newRoot, err := exec.GetRoot(e.GetTestContext(), 2, chainID, destination)
+	e.Nil(err)
+
+	newTreeItems := exec.GetMerkleTree(chainID, destination).Items()
+
+	e.Equal(testRootB, newRoot)
+	e.Equal(oldTreeItems, newTreeItems)
 }
