@@ -144,6 +144,7 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
             _payload: signature
         });
         assertEq(abi.encodePacked(r, s, v), signature, "!toRSV");
+        assertEq(libHarness.formatSignature(r, s, v), signature, "!formatSignature");
     }
 
     function test_formattedCorrectly_rawBytes() public {

@@ -119,6 +119,19 @@ contract AttestationHarness {
         return Attestation.formatAttestation(_data, _guardSignatures, _notarySignatures);
     }
 
+    function formatAttestationFromViews(
+        bytes memory _data,
+        bytes memory _guardSignatures,
+        bytes memory _notarySignatures
+    ) public view returns (bytes memory) {
+        return
+            Attestation.formatAttestation({
+                _dataView: _data.ref(0),
+                _guardSigsView: _guardSignatures.ref(0),
+                _notarySigsView: _notarySignatures.ref(0)
+            });
+    }
+
     function formatAttestationData(
         uint32 _origin,
         uint32 _destination,
@@ -138,6 +151,14 @@ contract AttestationHarness {
         uint32 _nonce
     ) public pure returns (uint96) {
         return Attestation.attestationKey(_origin, _destination, _nonce);
+    }
+
+    function unpackDomains(uint64 _attestationDomains) public pure returns (uint32, uint32) {
+        return Attestation.unpackDomains(_attestationDomains);
+    }
+
+    function unpackKey(uint96 _attestationKey) public pure returns (uint64 domains, uint32 nonce) {
+        return Attestation.unpackKey(_attestationKey);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
