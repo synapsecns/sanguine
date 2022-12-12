@@ -118,27 +118,35 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
-	sig := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	sigGuard1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	encodedGuardSignature1, err := types.EncodeSignature(sigGuard1)
+	Nil(t, err)
+	sigGuard2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	encodedGuardSignature2, err := types.EncodeSignature(sigGuard2)
+	Nil(t, err)
+	sigGuard3 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	encodedGuardSignature3, err := types.EncodeSignature(sigGuard3)
+	Nil(t, err)
+
+	sigNotary1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	encodedNotarySignature1, err := types.EncodeSignature(sigNotary1)
+	Nil(t, err)
+	sigNotary2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	encodedNotarySignature2, err := types.EncodeSignature(sigNotary2)
+	Nil(t, err)
 
 	attestKey := types.AttestationKey{
 		Origin:      origin,
 		Destination: destination,
 		Nonce:       nonce,
 	}
-	signedAttestation := types.NewSignedAttestation(
-		types.NewAttestation(attestKey.GetRawKey(), root),
-		sig,
-	)
 
-	encodedSignature, err := types.EncodeSignature(sig)
+	attestation := types.NewAttestation(attestKey.GetRawKey(), root)
+
+	encodedAttestation, err := types.EncodeAttestation(attestation)
 	Nil(t, err)
 
-	encodedAttestation, err := types.EncodeAttestation(signedAttestation.Attestation())
-	Nil(t, err)
-
-	// TODO (joe): This isn't working because we are leaving out the number of signatures for notaries and guards. Fix this.
-	/*signedContractAttestation*/
-	_, err = attesationContract.FormatAttestation(
+	signedContractAttestation, err := attesationContract.FormatAttestation(
 		&bind.CallOpts{Context: ctx},
 		encodedAttestation,
 		[]byte{},
@@ -146,11 +154,10 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	)
 	Nil(t, err)
 
-	/*goData*/
-	_, err = types.EncodeSignedAttestation(signedAttestation)
+	goData, err := types.EncodeSignedAttestation(signedAttestation)
 	Nil(t, err)
 
-	// Equal(t, signedContractAttestation, goData)
+	Equal(t, signedContractAttestation, goData)
 }
 
 func TestMessageEncodeParity(t *testing.T) {
