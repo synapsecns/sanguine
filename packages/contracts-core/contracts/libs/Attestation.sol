@@ -66,16 +66,29 @@ library Attestation {
         bytes memory _guardSignatures,
         bytes memory _notarySignatures
     ) internal view returns (bytes memory) {
-        uint8 guardSigs = _amountSignatures(_guardSignatures);
-        uint8 notarySigs = _amountSignatures(_notarySignatures);
+        return
+            formatAttestation({
+                _dataView: _data.castToRawBytes(),
+                _guardSigsView: _guardSignatures.castToRawBytes(),
+                _notarySigsView: _notarySignatures.castToRawBytes()
+            });
+    }
+
+    function formatAttestation(
+        bytes29 _dataView,
+        bytes29 _guardSigsView,
+        bytes29 _notarySigsView
+    ) internal view returns (bytes memory) {
+        uint8 guardSigs = _amountSignatures(_guardSigsView);
+        uint8 notarySigs = _amountSignatures(_notarySigsView);
         // Pack (guardSigs, notarySigs) into a single 16-byte value
         uint16 agentSigs = (uint16(guardSigs) << 8) | notarySigs;
         // We need to join: `_data`, `agentSigs`, `_guardSignatures`, `_notarySignatures`
         bytes29[] memory allViews = new bytes29[](4);
-        allViews[0] = _data.castToRawBytes();
+        allViews[0] = _dataView;
         allViews[1] = abi.encodePacked(agentSigs).castToRawBytes();
-        allViews[2] = _guardSignatures.castToRawBytes();
-        allViews[3] = _notarySignatures.castToRawBytes();
+        allViews[2] = _guardSigsView;
+        allViews[3] = _notarySigsView;
         return TypedMemView.join(allViews);
     }
 
@@ -142,6 +155,28 @@ library Attestation {
         uint32 _nonce
     ) internal pure returns (uint96) {
         return (uint96(_origin) << 64) | (uint96(_destination) << 32) | _nonce;
+    }
+
+    function unpackDomains(uint64 _attestationDomains)
+        internal
+        pure
+        returns (uint32 origin, uint32 destination)
+    {
+        // Shift out lower 32 bytes
+        origin = uint32(_attestationDomains >> 32);
+        // Use lower 32 bytes
+        destination = uint32(_attestationDomains & type(uint32).max);
+    }
+
+    function unpackKey(uint96 _attestationKey)
+        internal
+        pure
+        returns (uint64 domains, uint32 nonce)
+    {
+        // Shift out lower 32 bytes
+        domains = uint64(_attestationKey >> 32);
+        // Use lower 32 bytes
+        nonce = uint32(_attestationKey & type(uint32).max);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -311,9 +346,10 @@ library Attestation {
      * Reverts, if payload length is not exactly 65 * N bytes.
      * Reverts, if amount of signatures does not fit in `uint8`.
      */
-    function _amountSignatures(bytes memory _signatures) private pure returns (uint8 amount) {
-        uint256 _amount = _signatures.length / ByteString.SIGNATURE_LENGTH;
-        require(_amount * ByteString.SIGNATURE_LENGTH == _signatures.length, "!signaturesLength");
+    function _amountSignatures(bytes29 _sigsView) private pure returns (uint8 amount) {
+        uint256 length = _sigsView.len();
+        uint256 _amount = length / ByteString.SIGNATURE_LENGTH;
+        require(_amount * ByteString.SIGNATURE_LENGTH == length, "!signaturesLength");
         require(_amount < type(uint8).max, "Too many signatures");
         amount = uint8(_amount);
     }

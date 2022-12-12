@@ -47,6 +47,19 @@ library ByteString {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
+     * @notice Constructs the signature payload from the given values.
+     * @dev Using ByteString.formatSignature({r: r, s: s, v: v}) will make sure
+     * that params are given in the right order.
+     */
+    function formatSignature(
+        bytes32 r,
+        bytes32 s,
+        uint8 v
+    ) internal pure returns (bytes memory) {
+        return abi.encodePacked(r, s, v);
+    }
+
+    /**
      * @notice Returns a properly typed bytes29 pointer for a raw bytes payload.
      */
     function castToRawBytes(bytes memory _payload) internal pure returns (bytes29) {
