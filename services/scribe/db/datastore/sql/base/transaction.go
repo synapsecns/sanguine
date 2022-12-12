@@ -50,7 +50,7 @@ func (s Store) ConfirmEthTxsForBlockHash(ctx context.Context, blockHash common.H
 			ChainID:   chainID,
 			BlockHash: blockHash.String(),
 		}).
-		Update("confirmed", true)
+		Update(ConfirmedFieldName, true)
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not confirm eth tx: %w", dbTx.Error)
@@ -64,6 +64,7 @@ func (s Store) ConfirmEthTxsInRange(ctx context.Context, startBlock, endBlock ui
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&EthTx{}).
+		Model(&EthTx{ChainID: chainID}).
 		Order(BlockNumberFieldName+" desc").
 		Where(rangeQuery, startBlock, endBlock).
 		Update(ConfirmedFieldName, true)

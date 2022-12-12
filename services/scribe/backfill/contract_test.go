@@ -267,7 +267,7 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
 	chainBackfiller, err := backfill.NewChainBackfiller(42161, b.testDB, backendClientArr, chainConfig)
 	Nil(b.T(), err)
-	err = chainBackfiller.Backfill(b.GetTestContext(), true)
+	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock)
 	Nil(b.T(), err)
 
 	// Check to see if one log is recorded, one receipt is recorded, but no transactions.
@@ -311,7 +311,7 @@ func (b BackfillSuite) TestInvalidTxVRS() {
 	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
 	chainBackfiller, err := backfill.NewChainBackfiller(1313161554, b.testDB, backendClientArr, chainConfig)
 	Nil(b.T(), err)
-	err = chainBackfiller.Backfill(b.GetTestContext(), true)
+	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock)
 	Nil(b.T(), err)
 
 	// Check to see if one log is recorded, one receipt is recorded, but no transactions.
