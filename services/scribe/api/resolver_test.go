@@ -11,18 +11,19 @@ import (
 )
 
 func (g APISuite) TestLogResolvers() {
-	chainID := gofakeit.Uint32()
+	chainID := uint32(1)
+	blockNumber := uint64(16131419)
 	// store a transaction
 	tx := g.buildEthTx()
-	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint64(), gofakeit.Uint64())
+	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), blockNumber, gofakeit.Uint64())
 	Nil(g.T(), err)
 	// store a log
-	log := g.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint64())
+	log := g.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), blockNumber)
 	log.TxHash = tx.Hash()
 	err = g.db.StoreLog(g.GetTestContext(), log, chainID)
 	Nil(g.T(), err)
 	// store a receipt
-	receipt := g.buildReceipt(common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint64())
+	receipt := g.buildReceipt(common.BigToAddress(big.NewInt(gofakeit.Int64())), blockNumber)
 	receipt.TxHash = tx.Hash()
 	receipt.Logs = []*types.Log{&log}
 	err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)

@@ -188,15 +188,15 @@ func (_m *EventDB) RetrieveBlockTimesCountForChain(ctx context.Context, chainID 
 }
 
 // RetrieveEthTxsInRange provides a mock function with given fields: ctx, ethTxFilter, startBlock, endBlock, page
-func (_m *EventDB) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock uint64, endBlock uint64, page int) ([]types.Transaction, error) {
+func (_m *EventDB) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock uint64, endBlock uint64, page int) ([]db.TxWithBlockNumber, error) {
 	ret := _m.Called(ctx, ethTxFilter, startBlock, endBlock, page)
 
-	var r0 []types.Transaction
-	if rf, ok := ret.Get(0).(func(context.Context, db.EthTxFilter, uint64, uint64, int) []types.Transaction); ok {
+	var r0 []db.TxWithBlockNumber
+	if rf, ok := ret.Get(0).(func(context.Context, db.EthTxFilter, uint64, uint64, int) []db.TxWithBlockNumber); ok {
 		r0 = rf(ctx, ethTxFilter, startBlock, endBlock, page)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]types.Transaction)
+			r0 = ret.Get(0).([]db.TxWithBlockNumber)
 		}
 	}
 
@@ -211,15 +211,15 @@ func (_m *EventDB) RetrieveEthTxsInRange(ctx context.Context, ethTxFilter db.Eth
 }
 
 // RetrieveEthTxsWithFilter provides a mock function with given fields: ctx, ethTxFilter, page
-func (_m *EventDB) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthTxFilter, page int) ([]types.Transaction, error) {
+func (_m *EventDB) RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter db.EthTxFilter, page int) ([]db.TxWithBlockNumber, error) {
 	ret := _m.Called(ctx, ethTxFilter, page)
 
-	var r0 []types.Transaction
-	if rf, ok := ret.Get(0).(func(context.Context, db.EthTxFilter, int) []types.Transaction); ok {
+	var r0 []db.TxWithBlockNumber
+	if rf, ok := ret.Get(0).(func(context.Context, db.EthTxFilter, int) []db.TxWithBlockNumber); ok {
 		r0 = rf(ctx, ethTxFilter, page)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]types.Transaction)
+			r0 = ret.Get(0).([]db.TxWithBlockNumber)
 		}
 	}
 
@@ -407,20 +407,20 @@ func (_m *EventDB) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogF
 	return r0, r1
 }
 
-// RetrieveReceiptCountForContract provides a mock function with given fields: ctx, contractAddress, chainID
-func (_m *EventDB) RetrieveReceiptCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error) {
-	ret := _m.Called(ctx, contractAddress, chainID)
+// RetrieveReceiptCountForChain provides a mock function with given fields: ctx, chainID
+func (_m *EventDB) RetrieveReceiptCountForChain(ctx context.Context, chainID uint32) (int64, error) {
+	ret := _m.Called(ctx, chainID)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32) int64); ok {
-		r0 = rf(ctx, contractAddress, chainID)
+	if rf, ok := ret.Get(0).(func(context.Context, uint32) int64); ok {
+		r0 = rf(ctx, chainID)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, common.Address, uint32) error); ok {
-		r1 = rf(ctx, contractAddress, chainID)
+	if rf, ok := ret.Get(1).(func(context.Context, uint32) error); ok {
+		r1 = rf(ctx, chainID)
 	} else {
 		r1 = ret.Error(1)
 	}

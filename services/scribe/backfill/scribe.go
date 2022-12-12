@@ -49,7 +49,7 @@ func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 		chainBackfiller := s.ChainBackfillers[i]
 		g.Go(func() error {
 			LogEvent(InfoLevel, "Scribe backfilling chain", LogData{"cid": chainBackfiller.chainID})
-			err := chainBackfiller.Backfill(groupCtx, false)
+			err := chainBackfiller.Backfill(groupCtx, nil)
 			if err != nil {
 				return fmt.Errorf("could not backfill chain: %w", err)
 			}

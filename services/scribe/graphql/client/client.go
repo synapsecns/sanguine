@@ -168,6 +168,8 @@ type GetTransactions struct {
 		Value     string "json:\"value\" graphql:\"value\""
 		Nonce     int    "json:\"nonce\" graphql:\"nonce\""
 		To        string "json:\"to\" graphql:\"to\""
+		Timestamp int    "json:\"timestamp\" graphql:\"timestamp\""
+		Sender    string "json:\"sender\" graphql:\"sender\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetTransactionsRange struct {
@@ -184,6 +186,8 @@ type GetTransactionsRange struct {
 		Value     string "json:\"value\" graphql:\"value\""
 		Nonce     int    "json:\"nonce\" graphql:\"nonce\""
 		To        string "json:\"to\" graphql:\"to\""
+		Timestamp int    "json:\"timestamp\" graphql:\"timestamp\""
+		Sender    string "json:\"sender\" graphql:\"sender\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetTransactionsResolvers struct {
@@ -352,8 +356,8 @@ func (c *Client) GetLogsResolvers(ctx context.Context, chainID int, page int, ht
 	return &res, nil
 }
 
-const GetReceiptsDocument = `query GetReceipts ($chain_id: Int!, $page: Int!) {
-	response: receipts(chain_id: $chain_id, page: $page) {
+const GetReceiptsDocument = `query GetReceipts ($chain_id: Int!, $page: Int!, $block_number: Int!) {
+	response: receipts(chain_id: $chain_id, page: $page, block_number: $block_number) {
 		chain_id
 		type
 		post_state
@@ -369,10 +373,11 @@ const GetReceiptsDocument = `query GetReceipts ($chain_id: Int!, $page: Int!) {
 }
 `
 
-func (c *Client) GetReceipts(ctx context.Context, chainID int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceipts, error) {
+func (c *Client) GetReceipts(ctx context.Context, chainID int, page int, blockNumber int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceipts, error) {
 	vars := map[string]interface{}{
-		"chain_id": chainID,
-		"page":     page,
+		"chain_id":     chainID,
+		"page":         page,
+		"block_number": blockNumber,
 	}
 
 	var res GetReceipts
@@ -476,6 +481,8 @@ const GetTransactionsDocument = `query GetTransactions ($chain_id: Int!, $page: 
 		value
 		nonce
 		to
+		timestamp
+		sender
 	}
 }
 `
@@ -508,6 +515,8 @@ const GetTransactionsRangeDocument = `query GetTransactionsRange ($chain_id: Int
 		value
 		nonce
 		to
+		timestamp
+		sender
 	}
 }
 `
@@ -703,15 +712,14 @@ func (c *Client) GetLogCount(ctx context.Context, chainID int, contractAddress s
 	return &res, nil
 }
 
-const GetReceiptCountDocument = `query GetReceiptCount ($chain_id: Int!, $contract_address: String!) {
-	response: receiptCount(chain_id: $chain_id, contract_address: $contract_address)
+const GetReceiptCountDocument = `query GetReceiptCount ($chain_id: Int!) {
+	response: receiptCount(chain_id: $chain_id)
 }
 `
 
-func (c *Client) GetReceiptCount(ctx context.Context, chainID int, contractAddress string, httpRequestOptions ...client.HTTPRequestOption) (*GetReceiptCount, error) {
+func (c *Client) GetReceiptCount(ctx context.Context, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetReceiptCount, error) {
 	vars := map[string]interface{}{
-		"chain_id":         chainID,
-		"contract_address": contractAddress,
+		"chain_id": chainID,
 	}
 
 	var res GetReceiptCount

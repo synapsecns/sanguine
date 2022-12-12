@@ -47,9 +47,9 @@ var PageSize = 100
 // Log stores the log of an event.
 type Log struct {
 	// ContractAddress is the address of the contract that generated the event
-	ContractAddress string `gorm:"column:contract_address;primaryKey"`
+	ContractAddress string `gorm:"column:contract_address;primaryKey;index:idx_address,priority:1,sort:desc"`
 	// ChainID is the chain id of the contract that generated the event
-	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;index:idx_address,priority:2,sort:desc"`
 	// PrimaryTopic is the primary topic of the event. Topics[0]
 	PrimaryTopic sql.NullString `gorm:"primary_topic"`
 	// TopicA is the first topic. Topics[1]
@@ -152,7 +152,7 @@ type LastConfirmedBlockInfo struct {
 // BlockTime contains the timestamp of a block.
 type BlockTime struct {
 	// ChainID is the chain id of the contract
-	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;index:idx_block_time_chain,priority:1"`
 	// BlockNumber is the block number
 	BlockNumber uint64 `gorm:"column:block_number;primaryKey"`
 	// Timestamp is the timestamp of the block

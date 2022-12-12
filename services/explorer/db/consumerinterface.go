@@ -11,8 +11,10 @@ import (
 type ConsumerDBWriter interface {
 	// StoreEvent stores an event.
 	StoreEvent(ctx context.Context, event interface{}) error
+	// StoreEvents stores a list of events.
+	StoreEvents(ctx context.Context, events []interface{}) error
 	// StoreLastBlock stores the last block number that has been backfilled for a given chain.
-	StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64) error
+	StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error
 	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
 	//
 	//nolint:golint

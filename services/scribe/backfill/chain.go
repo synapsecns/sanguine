@@ -94,7 +94,7 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 // If `onlyOneBlock` is true, the backfiller will only backfill the block at `currentBlock`.
 //
 //nolint:gocognit,cyclop
-func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error {
+func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64) error {
 	var currentBlock uint64
 	var err error
 
@@ -112,7 +112,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 	timeout := time.Duration(0)
 	startTime := time.Now()
 
-	if !onlyOneBlock {
+	if onlyOneBlock == nil {
 		// Retry until block height for the current chain is retrieved.
 		for {
 			select {
@@ -134,15 +134,17 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 			break
 		}
 	} else {
-		currentBlock = c.minBlockHeight + 1
+		c.minBlockHeight = *onlyOneBlock
+		currentBlock = *onlyOneBlock + 1
 	}
 
 	for i := range c.contractBackfillers {
 		contractBackfiller := c.contractBackfillers[i]
 		startHeight := c.startHeights[contractBackfiller.address]
 
-		if onlyOneBlock {
-			currentBlock = startHeight
+		if onlyOneBlock != nil {
+			startHeight = *onlyOneBlock
+			currentBlock = *onlyOneBlock
 		}
 
 		LogEvent(InfoLevel, "Starting backfilling contracts", LogData{"cid": c.chainID, "bn": currentBlock})
@@ -219,7 +221,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock bool) error 
 				return fmt.Errorf("could not backfill block times from last stored block time: %w\nChain: %d\nStart Block: %d\nEnd Block: %d\nBackoff Atempts: %f\nBackoff Duration: %d", err, c.chainID, startHeight, currentBlock, b.Attempt(), b.Duration())
 			}
 
-			LogEvent(ErrorLevel, "Completed adding later blocks", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "bt": true})
+			LogEvent(WarnLevel, "Completed adding later blocks", LogData{"cid": c.chainID, "bn": currentBlock, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "bt": true})
 
 			return nil
 		})

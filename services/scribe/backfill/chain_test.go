@@ -84,7 +84,7 @@ func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContrac
 	}
 
 	if backfill {
-		err := chainBackfiller.Backfill(b.GetTestContext(), false)
+		err := chainBackfiller.Backfill(b.GetTestContext(), nil)
 		Nil(b.T(), err)
 
 		for _, contract := range contracts {

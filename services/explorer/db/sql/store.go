@@ -3,9 +3,9 @@ package sql
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	gormClickhouse "gorm.io/driver/clickhouse"
 	"gorm.io/gorm"
+	gormLogger "gorm.io/gorm/logger"
 	"time"
 )
 
@@ -26,7 +26,7 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 	clickhouseDB, err := gorm.Open(gormClickhouse.New(gormClickhouse.Config{
 		DSN: address,
 	}), &gorm.Config{
-		Logger:               dbcommon.GetGormLogger(logger),
+		Logger:               gormLogger.Default.LogMode(gormLogger.Silent),
 		FullSaveAssociations: true,
 		NowFunc:              time.Now,
 	})
@@ -36,18 +36,15 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 
 	if !readOnly {
 		// load all models
-		err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY (event_index, block_number, event_type, tx_hash, chain_id, contract_address)").AutoMigrate(&SwapEvent{}, &BridgeEvent{})
+		err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY (event_index, block_number, event_type, tx_hash, chain_id, contract_address)").AutoMigrate(&SwapEvent{}, &BridgeEvent{}, MessageBusEvent{})
 
 		if err != nil {
 			return nil, fmt.Errorf("could not migrate on clickhouse: %w", err)
 		}
-		err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=MergeTree ORDER BY (chain_id)").AutoMigrate(&LastBlock{})
+		err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=MergeTree ORDER BY (chain_id, contract_address)").AutoMigrate(&LastBlock{})
 		if err != nil {
 			return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
 		}
-
-		// Allow for synchronous ALTER TABLE statements
-		clickhouseDB.WithContext(ctx).Exec("set mutations_sync = 1")
 	}
 	db, err := clickhouseDB.DB()
 
@@ -55,7 +52,7 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 		return nil, fmt.Errorf("failed to get clickhouse db: %w", err)
 	}
 
-	db.SetConnMaxIdleTime(12 * time.Hour)
-	db.SetConnMaxLifetime(12 * time.Hour)
+	db.SetConnMaxIdleTime(300 * time.Second)
+	db.SetConnMaxLifetime(300 * time.Second)
 	return &Store{clickhouseDB}, nil
 }

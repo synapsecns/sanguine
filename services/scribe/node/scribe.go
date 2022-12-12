@@ -51,18 +51,17 @@ func (s Scribe) Start(ctx context.Context) error {
 	if refreshRate == 0 {
 		refreshRate = 1
 	}
-
 	g, groupCtx := errgroup.WithContext(ctx)
 
-	for _, chainConfig := range s.config.Chains {
-		chainConfig := chainConfig
+	for i := range s.config.Chains {
+		chainConfig := s.config.Chains[i]
 
 		g.Go(func() error {
 			b := &backoff.Backoff{
 				Factor: 2,
 				Jitter: true,
 				Min:    1 * time.Second,
-				Max:    30 * time.Second,
+				Max:    10 * time.Second,
 			}
 
 			timeout := time.Duration(0)
@@ -76,20 +75,20 @@ func (s Scribe) Start(ctx context.Context) error {
 					err := s.processRange(groupCtx, chainConfig.ChainID, chainConfig.RequiredConfirmations)
 					if err != nil {
 						timeout = b.Duration()
-						logger.Warnf("could not get current block number: %v", err)
+						logger.Warnf("could not livefill chain %d: %v", chainConfig.ChainID, err)
 
 						continue
 					}
 
 					b.Reset()
 					timeout = time.Duration(refreshRate) * time.Second
+					logger.Infof("processed range for chain %d, continuing to livefill", chainConfig.ChainID)
 				}
 			}
 		})
 	}
-
 	if err := g.Wait(); err != nil {
-		return fmt.Errorf("could not backfill: %w", err)
+		return fmt.Errorf("livefill failed: %w", err)
 	}
 
 	return nil
@@ -102,7 +101,7 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 		return fmt.Errorf("could not get current block number: %w", err)
 	}
 
-	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, false)
+	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("could not backfill: %w", err)
 	}
@@ -119,11 +118,14 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 	if lastBlockNumber == 0 && newBlock > uint64(requiredConfirmations) {
 		err := s.confirmToBlockNumber(ctx, newBlock-uint64(requiredConfirmations), chainID)
 		if err != nil {
+			logger.Errorf("[LIVEFILL] could not confirm to block number %d chain: %d: %v", newBlock-uint64(requiredConfirmations), chainID, err)
 			return fmt.Errorf("could not confirm blocks: %w", err)
 		}
 
 		lastBlockNumber, err = s.eventDB.RetrieveLastConfirmedBlock(ctx, chainID)
 		if err != nil {
+			logger.Errorf("[LIVEFILL] could not retrieve last confirmed block %d chain: %d: %v", newBlock-uint64(requiredConfirmations), chainID, err)
+
 			return fmt.Errorf("could not retrieve last confirmed block: %w", err)
 		}
 	}
@@ -131,6 +133,8 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 	for i := lastBlockNumber + 1; i <= newBlock-uint64(requiredConfirmations); i++ {
 		block, err := s.clients[chainID][0].BlockByNumber(ctx, big.NewInt(int64(i)))
 		if err != nil {
+			logger.Errorf("[LIVEFILL] could not get block by number %d chain: %d, block: %d, %v", newBlock-uint64(requiredConfirmations), chainID, i, err)
+
 			return fmt.Errorf("could not get block by number: %w", err)
 		}
 
@@ -141,20 +145,30 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 
 		receipts, err := s.eventDB.RetrieveReceiptsWithFilter(ctx, receiptFilter, 1)
 		if err != nil {
+			logger.Errorf("[LIVEFILL] could not retrieve receipts with filter %d chain: %d, block: %d, %v", newBlock-uint64(requiredConfirmations), chainID, i, err)
+
 			return fmt.Errorf("could not retrieve receipts with filter: %w", err)
 		}
+
+		// No receipts for this block, so we can't confirm it.
 		if len(receipts) == 0 {
-			return fmt.Errorf("no receipts found for block %d", i)
+			logger.Infof("[LIVEFILL] no receipts found for block %d chain: %d, block: %d, with filter %v", newBlock-uint64(requiredConfirmations), chainID, i, receiptFilter)
+
+			continue
 		}
 
 		// If the block hash is not the same, then the block is invalid. Otherwise, mark the block as valid.
 		//nolint:nestif
 		if block.Hash() != receipts[0].BlockHash {
+			logger.Errorf(" [LIVEFILL] DELETING  %d chain: %d,  %v", receipts[0].BlockHash, chainID, err)
+
 			g, groupCtx := errgroup.WithContext(ctx)
 
 			g.Go(func() error {
 				err := s.eventDB.DeleteLogsForBlockHash(groupCtx, receipts[0].BlockHash, chainID)
 				if err != nil {
+					logger.Errorf(" [LIVEFILL] could not delete logs %d chain: %d,  %v", receipts[0].BlockHash, chainID, err)
+
 					return fmt.Errorf("could not delete logs: %w", err)
 				}
 
@@ -164,6 +178,8 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 			g.Go(func() error {
 				err := s.eventDB.DeleteReceiptsForBlockHash(groupCtx, receipts[0].BlockHash, chainID)
 				if err != nil {
+					logger.Errorf(" [LIVEFILL] could not delete receipts %d chain: %d, %v", receipts[0].BlockHash, chainID, err)
+
 					return fmt.Errorf("could not delete receipts: %w", err)
 				}
 
@@ -173,6 +189,8 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 			g.Go(func() error {
 				err := s.eventDB.DeleteEthTxsForBlockHash(groupCtx, receipts[0].BlockHash, chainID)
 				if err != nil {
+					logger.Errorf(" [LIVEFILL] could not delete eth txs %d chain: %d, %v", receipts[0].BlockHash, chainID, err)
+
 					return fmt.Errorf("could not delete eth txs: %w", err)
 				}
 
@@ -180,11 +198,16 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 			})
 
 			if err := g.Wait(); err != nil {
+				logger.Errorf(" [LIVEFILL] could not delete block %d chain: %d, block: %d, %v", newBlock-uint64(requiredConfirmations), chainID, i, err)
+
 				return fmt.Errorf("could not delete block: %w", err)
 			}
 
-			err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, true)
+			blockNumber := block.Number().Uint64()
+			err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, &blockNumber)
 			if err != nil {
+				logger.Errorf(" [LIVEFILL] could not backfill %d chain: %d, block: %d, %v", newBlock-uint64(requiredConfirmations), chainID, i, err)
+
 				return fmt.Errorf("could not backfill: %w", err)
 			}
 		} else {
@@ -194,6 +217,8 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 			g.Go(func() error {
 				err := s.eventDB.ConfirmLogsForBlockHash(groupCtx, block.Hash(), chainID)
 				if err != nil {
+					logger.Errorf(" [LIVEFILL] could not confirm log %d chain: %d,  %v", block.Hash(), chainID, err)
+
 					return fmt.Errorf("could not confirm log: %w", err)
 				}
 
@@ -202,6 +227,8 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 			g.Go(func() error {
 				err := s.eventDB.ConfirmReceiptsForBlockHash(groupCtx, block.Hash(), chainID)
 				if err != nil {
+					logger.Errorf(" [LIVEFILL] could not confirm transaction %d chain: %d,  %v", block.Hash(), chainID, err)
+
 					return fmt.Errorf("could not confirm transaction: %w", err)
 				}
 
@@ -210,6 +237,8 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 			g.Go(func() error {
 				err := s.eventDB.ConfirmEthTxsForBlockHash(groupCtx, block.Hash(), chainID)
 				if err != nil {
+					logger.Errorf(" [LIVEFILL] could not confirm transaction %d chain: %d,  %v", block.Hash(), chainID, err)
+
 					return fmt.Errorf("could not confirm transaction: %w", err)
 				}
 
@@ -217,6 +246,8 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 			})
 
 			if err := g.Wait(); err != nil {
+				logger.Errorf(" [LIVEFILL] could not confirm block %d chain: %d, block: %d, %v", newBlock-uint64(requiredConfirmations), chainID, i, err)
+
 				return fmt.Errorf("could not confirm block: %w", err)
 			}
 		}
@@ -224,8 +255,11 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 		// update the last confirmed block number
 		err = s.eventDB.StoreLastConfirmedBlock(ctx, chainID, i)
 		if err != nil {
+			logger.Errorf(" [LIVEFILL] could not store last confirmed block %d chain: %d, block: %d, %v", newBlock-uint64(requiredConfirmations), chainID, i, err)
+
 			return fmt.Errorf("could not store last confirmed block: %w", err)
 		}
+		logger.Warnf("Confirmed block %d chainID: %d", i, chainID)
 	}
 
 	return nil
@@ -237,6 +271,8 @@ func (s Scribe) confirmToBlockNumber(ctx context.Context, blockNumber uint64, ch
 	g.Go(func() error {
 		err := s.eventDB.ConfirmLogsInRange(groupCtx, 0, blockNumber, chainID)
 		if err != nil {
+			logger.Errorf(" [LIVEFILL] confirmToBlockNumber() could not confirm log %d chain: %d, %v", blockNumber, chainID, err)
+
 			return fmt.Errorf("could not confirm log: %w", err)
 		}
 
@@ -244,8 +280,11 @@ func (s Scribe) confirmToBlockNumber(ctx context.Context, blockNumber uint64, ch
 	})
 	g.Go(func() error {
 		err := s.eventDB.ConfirmReceiptsInRange(groupCtx, 0, blockNumber, chainID)
+
 		if err != nil {
-			return fmt.Errorf("could not confirm transaction: %w", err)
+			logger.Errorf(" [LIVEFILL] confirmToBlockNumber() could not confirm receipt %d chain: %d, %v", blockNumber, chainID, err)
+
+			return fmt.Errorf("could not confirm receipt: %w", err)
 		}
 
 		return nil
@@ -254,6 +293,8 @@ func (s Scribe) confirmToBlockNumber(ctx context.Context, blockNumber uint64, ch
 	g.Go(func() error {
 		err := s.eventDB.ConfirmEthTxsInRange(groupCtx, 0, blockNumber, chainID)
 		if err != nil {
+			logger.Errorf(" [LIVEFILL] confirmToBlockNumber() could not confirm tx %d chain: %d, %v", blockNumber, chainID, err)
+
 			return fmt.Errorf("could not confirm transaction: %w", err)
 		}
 
@@ -261,11 +302,15 @@ func (s Scribe) confirmToBlockNumber(ctx context.Context, blockNumber uint64, ch
 	})
 
 	if err := g.Wait(); err != nil {
-		return fmt.Errorf("could not confirm block: %w", err)
+		logger.Errorf(" [LIVEFILL] confirmToBlockNumber() could not confirm blocks %d chain: %d, %v", blockNumber, chainID, err)
+
+		return fmt.Errorf("could not confirm blocks: %w", err)
 	}
 
 	err := s.eventDB.StoreLastConfirmedBlock(ctx, chainID, blockNumber)
 	if err != nil {
+		logger.Errorf(" [LIVEFILL] confirmToBlockNumber() could not store last confirmed blocks %d chain: %d, %v", blockNumber, chainID, err)
+
 		return fmt.Errorf("could not store last confirmed block: %w", err)
 	}
 

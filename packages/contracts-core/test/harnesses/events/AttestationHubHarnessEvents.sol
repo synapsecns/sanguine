@@ -2,5 +2,10 @@
 pragma solidity 0.8.17;
 
 abstract contract AttestationHubHarnessEvents {
-    event LogAttestation(address notary, bytes attestationView, bytes attestation);
+    event LogAttestation(
+        address[] guards,
+        address[] notaries,
+        bytes attestationView,
+        bytes attestation
+    );
 }

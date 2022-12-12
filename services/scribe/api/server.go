@@ -4,10 +4,10 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	helmet "github.com/danielkov/gin-helmet"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/ginhelper"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
@@ -18,11 +18,7 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"time"
 )
-
-// HealthCheck is the health check endpoint.
-const HealthCheck string = "/health-check"
 
 //go:embed static
 var static embed.FS
@@ -39,37 +35,26 @@ type Config struct {
 	Path string
 	// GRPCPort is the path to the grpc service.
 	GRPCPort uint16
+	// OmniRPCURL is the url of the omnirpc service.
+	OmniRPCURL string
 }
+
+var logger = log.Logger("scribe-api")
 
 // Start starts the api server.
 func Start(ctx context.Context, cfg Config) error {
-	router := gin.New()
-	router.Use(helmet.Default())
-	router.Use(gin.Recovery())
-
-	router.Use(cors.New(cors.Config{
-		AllowAllOrigins: true,
-		AllowHeaders:    []string{"*"},
-		AllowMethods:    []string{"GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"},
-		MaxAge:          12 * time.Hour,
-	}))
+	router := ginhelper.New(logger)
 
 	eventDB, err := InitDB(ctx, cfg.Database, cfg.Path)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
 
-	gqlServer.EnableGraphql(router, eventDB)
+	gqlServer.EnableGraphql(router, eventDB, cfg.OmniRPCURL)
 	grpcServer, err := server.SetupGRPCServer(ctx, router, eventDB)
 	if err != nil {
 		return fmt.Errorf("could not create grpc server: %w", err)
 	}
-
-	router.GET(HealthCheck, func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status": "UP",
-		})
-	})
 
 	router.GET("static", gin.WrapH(http.FileServer(http.FS(static))))
 	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.HTTPPort)
