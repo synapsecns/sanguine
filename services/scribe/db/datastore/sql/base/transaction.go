@@ -64,7 +64,7 @@ func (s Store) ConfirmEthTxsInRange(ctx context.Context, startBlock, endBlock ui
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&EthTx{}).
-		Model(&EthTx{ChainID: chainID}).
+		Where(&EthTx{ChainID: chainID}).
 		Order(BlockNumberFieldName+" desc").
 		Where(rangeQuery, startBlock, endBlock).
 		Update(ConfirmedFieldName, true)

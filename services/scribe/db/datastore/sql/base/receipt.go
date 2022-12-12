@@ -173,10 +173,10 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 	receipts := []types.Receipt{}
 	for _, dbReceipt := range dbReceipts {
 		// Retrieve Logs that match the receipt's tx hash in order to add them to the Receipt.
-		logFilter := db.LogFilter{
-			TxHash:  dbReceipt.TxHash,
-			ChainID: chainID,
-		}
+		logFilter := db.LogFilter{}
+		logFilter.TxHash = dbReceipt.TxHash
+		logFilter.ChainID = chainID
+
 		logs := []*types.Log{}
 		page := 1
 		for {
