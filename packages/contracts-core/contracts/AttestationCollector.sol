@@ -276,6 +276,12 @@ contract AttestationCollector is AttestationCollectorEvents, AttestationHub, Own
         }
     }
 
+    /**
+     * @notice Saves not-outdated signatures for either all guard or notary signers
+     * form the attestation.
+     * Signature is considered outdated, if the same signer has already submitted
+     * an attestation with an equal or bigger nonce.
+     */
     function _handleSignatures(
         bytes29 _attestationView,
         SignedRoot memory _existingRoot,
@@ -307,6 +313,11 @@ contract AttestationCollector is AttestationCollectorEvents, AttestationHub, Own
         }
     }
 
+    /**
+     * @notice Saves signature of a given attestation signer, if it is not outdated.
+     * Signature is considered outdated, if the same signer has already submitted
+     * an attestation with an equal or bigger nonce.
+     */
     function _insertAttestation(
         bytes29 _attestationView,
         uint256 _agentIndex,
@@ -351,6 +362,12 @@ contract AttestationCollector is AttestationCollectorEvents, AttestationHub, Own
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /**
+     * @notice Returns a previously saved attestation.
+     * @dev The default index value of 0 means there is no saved agent signature.
+     * This is abstracted away from the off-chain agents.
+     * @param _signatureIndex   Signature position in `savedSignatures` plus 1
+     */
     function _getSignature(uint256 _signatureIndex) internal view returns (bytes memory signature) {
         if (_signatureIndex != 0) {
             AgentSignature memory agentSig = savedSignatures[_signatureIndex - 1];
@@ -358,6 +375,10 @@ contract AttestationCollector is AttestationCollectorEvents, AttestationHub, Own
         }
     }
 
+    /**
+     * @notice Forms a "single-agent" attestation using a previously saved signature.
+     * @param _signatureIndex   Signature position in `savedSignatures` plus 1
+     */
     function _formatAgentAttestation(uint256 _signatureIndex) internal view returns (bytes memory) {
         // Invariant: we always save "index in the array plus 1" as `_signatureIndex`
         assert(_signatureIndex != 0);
@@ -393,6 +414,10 @@ contract AttestationCollector is AttestationCollectorEvents, AttestationHub, Own
             });
     }
 
+    /**
+     * @notice Forms an attestation with one guard signature (if present)
+     * and one notary signature (if present).
+     */
     function _formatDualAttestation(
         bytes memory _attestationData,
         uint256 _guardSignatureIndex,
@@ -406,6 +431,11 @@ contract AttestationCollector is AttestationCollectorEvents, AttestationHub, Own
             });
     }
 
+    /**
+     * @notice Returns the latest known nonce that was used in an attestation
+     * by a given agent.
+     * @dev Will return 0, if an agent hasn't submitted a single attestation yet.
+     */
     function _latestAgentNonce(uint64 _attDomains, address _agent)
         internal
         view
