@@ -200,13 +200,14 @@ func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, des
 // reset the current merkle tree and replace it with the one built from the database.
 // This function should also not be called while Start or Listen are running.
 func (e Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
+	var allMessages []types.Message
+
 	messageMask := execTypes.DBMessage{
 		ChainID:     &chainID,
 		Destination: &destination,
 	}
-
-	var allMessages []types.Message
 	page := 1
+
 	for {
 		messages, err := e.executorDB.GetMessages(ctx, messageMask, page)
 		if err != nil {
@@ -221,6 +222,7 @@ func (e Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destinati
 	}
 
 	rawMessages := make([][]byte, len(allMessages))
+
 	for i, message := range allMessages {
 		rawMessage, err := message.ToLeaf()
 		if err != nil {
@@ -264,6 +266,28 @@ func (e Executor) VerifyMessage(ctx context.Context, merkleIndex uint32, message
 	return inTree, nil
 }
 
+// VerifyMessageNonce verifies a message against the merkle tree at the state of the given nonce.
+func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message []byte, chainID uint32, destination uint32) (bool, error) {
+	root, err := e.GetRoot(ctx, nonce, chainID, destination)
+	if err != nil {
+		return false, fmt.Errorf("could not get root: %w", err)
+	}
+
+	proof, err := e.GetLatestNonceProof(nonce, chainID, destination)
+	if err != nil {
+		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
+	}
+
+	inTree := trieutil.VerifyMerkleBranch(root[:], message, int(nonce-1), proof, treeDepth)
+
+	return inTree, nil
+}
+
+//// VerifyOptimisticPeriod verifies that the optimistic period is valid.
+//func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message) (bool, error) {
+//
+//}
+
 // GetProof returns the merkle proof for the given nonce.
 func (e Executor) GetProof(nonce uint32, chainID uint32, destination uint32) ([][]byte, error) {
 	if nonce == 0 || nonce > uint32(e.chainExecutors[chainID].merkleTrees[destination].NumOfItems()) {
@@ -305,6 +329,7 @@ func (e Executor) GetLatestNonceProof(nonce, chainID, destination uint32) ([][]b
 //nolint:cyclop
 func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chain config.ChainConfig, contract contractType) error {
 	var address string
+
 	switch contract {
 	case originContract:
 		address = chain.OriginAddress
@@ -360,6 +385,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			if log == nil {
 				return fmt.Errorf("could not convert log")
 			}
+
 			if !e.chainExecutors[chain.ChainID].lastLog.verifyAfter(*log) {
 				logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chain.ChainID].lastLog.blockNumber, e.chainExecutors[chain.ChainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 				continue
@@ -383,7 +409,6 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 	}
 
 	destination := (*message).DestinationDomain()
-
 	merkleIndex := e.chainExecutors[chainID].merkleTrees[destination].NumOfItems()
 	leaf, err := (*message).ToLeaf()
 	if err != nil {
