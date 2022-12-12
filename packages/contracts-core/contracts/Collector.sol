@@ -328,6 +328,7 @@ contract Collector is CollectorEvents, AttestationHub, OwnableUpgradeable {
         // Construct the signature struct to save
         AgentSignature memory agentSig;
         (agentSig.r, agentSig.s, agentSig.v) = signature.toRSV();
+        agentSig.isGuard = _isGuard;
         (agentSig.origin, agentSig.destination) = Attestation.unpackDomains(attDomains);
         agentSig.nonce = nonce;
         savedSignatures.push(agentSig);
