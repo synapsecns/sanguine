@@ -122,31 +122,23 @@ contract Origin is Version0, OriginEvents, OriginHub, LocalDomainContext {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Slash the Notary.
-     * @dev Called when fraud is proven (Fraud Attestation).
-     * @param _notary   Notary to slash
-     * @param _guard    Guard who reported fraudulent Notary [address(0) if not a Guard report]
+     * @notice Slash the fraudulent Agent.
+     * @dev Called when agent fraud is proven.
+     * @param _domain   Domain where the reported Agent is active
+     * @param _account  Address of the fraudulent Agent
+     * @param _guard    Guard who reported the fraudulent Agent [address(0) if not a Guard report]
      */
-    function _slashNotary(
+    function _slashAgent(
         uint32 _domain,
-        address _notary,
+        address _account,
         address _guard
     ) internal override {
-        // _notary is always an active Notary at this point
-        _removeAgent(_domain, _notary);
-        // TODO: add domain to the event (decide what fields need to be indexed)
-        emit NotarySlashed(_notary, _guard, msg.sender);
-    }
-
-    /**
-     * @notice Slash the Guard.
-     * @dev Called when guard misbehavior is proven (Incorrect Report).
-     * @param _guard    Guard to slash
-     */
-    function _slashGuard(address _guard) internal override {
-        // _guard is always an active Guard at this point
-        _removeAgent({ _domain: 0, _account: _guard });
-        emit GuardSlashed(_guard, msg.sender);
+        _removeAgent(_domain, _account);
+        if (_domain == 0) {
+            emit GuardSlashed({ guard: _account, reporter: msg.sender });
+        } else {
+            emit NotarySlashed({ notary: _account, guard: _guard, reporter: msg.sender });
+        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

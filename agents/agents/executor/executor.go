@@ -249,23 +249,6 @@ const (
 	attestationcollectorContract
 )
 
-// VerifyMessage verifies the message against the merkle tree.
-func (e Executor) VerifyMessage(ctx context.Context, merkleIndex uint32, message []byte, chainID uint32, destination uint32) (bool, error) {
-	root, err := e.GetRoot(ctx, merkleIndex+1, chainID, destination)
-	if err != nil {
-		return false, fmt.Errorf("could not get root: %w", err)
-	}
-
-	proof, err := e.chainExecutors[chainID].merkleTrees[destination].MerkleProof(int(merkleIndex))
-	if err != nil {
-		return false, fmt.Errorf("could not get merkle proof: %w", err)
-	}
-
-	inTree := trieutil.VerifyMerkleBranch(root[:], message, int(merkleIndex), proof, treeDepth)
-
-	return inTree, nil
-}
-
 // VerifyMessageNonce verifies a message against the merkle tree at the state of the given nonce.
 func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message types.Message, chainID uint32, destination uint32) (bool, error) {
 	root, err := e.GetRoot(ctx, nonce, chainID, destination)

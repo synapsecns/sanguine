@@ -26,6 +26,7 @@ abstract contract ReportHub is AttestationHub {
      * @return TRUE if Report was handled correctly.
      */
     function submitReport(bytes memory _report) external returns (bool) {
+        /* TODO(Chi): enable reports once co-signed Attestation is implemented
         // Verify the report signature and recover an active guard address
         bytes29 reportView = _report.castToReport();
         address guard = _verifyReport(reportView);
@@ -33,6 +34,7 @@ abstract contract ReportHub is AttestationHub {
         bytes29 attestationView = reportView.reportedAttestation();
         address notary = _verifyAttestation(attestationView);
         return _handleReport(guard, notary, attestationView, reportView, _report);
+        */
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -64,6 +66,7 @@ abstract contract ReportHub is AttestationHub {
      * @return guard Address of the report signer
      */
     function _verifyReport(bytes29 _reportView) internal view returns (address guard) {
+        /* TODO(Chi): enable reports once co-signed Attestation is implemented
         // Check if Report payload is properly formatted.
         require(_reportView.isReport(), "Not a report");
         bytes32 digest = Auth.toEthSignedMessageHash(_reportView.reportData());
@@ -73,5 +76,6 @@ abstract contract ReportHub is AttestationHub {
             _digest: digest,
             _signatureView: _reportView.guardSignature()
         });
+        */
     }
 }

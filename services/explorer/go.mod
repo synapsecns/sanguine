@@ -9,6 +9,7 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/synapsecns/sanguine/core => ./../../core
 	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
+	github.com/synapsecns/sanguine/services/omnirpc => ../omnirpc
 	github.com/synapsecns/sanguine/services/scribe => ../scribe
 )
 
@@ -23,6 +24,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/friendsofgo/graphiql v0.2.2
 	github.com/gin-gonic/gin v1.8.1
+	github.com/hashicorp/golang-lru/v2 v2.0.1
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
@@ -46,6 +48,7 @@ require (
 )
 
 require (
+	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/ClickHouse/ch-go v0.47.3 // indirect
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
@@ -58,7 +61,9 @@ require (
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/alecthomas/chroma v0.7.1 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
+	github.com/aws/smithy-go v1.13.3 // indirect
 	github.com/badoux/checkmail v0.0.0-20181210160741-9661bd69e9ad // indirect
+	github.com/benbjohnson/immutable v0.4.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/briandowns/spinner v1.6.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.0 // indirect
@@ -237,6 +242,7 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/exp v0.0.0-20221012211006-4de253d81b95 // indirect
 	golang.org/x/image v0.0.0-20220902085622-e7cb96979f69 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.1.0 // indirect

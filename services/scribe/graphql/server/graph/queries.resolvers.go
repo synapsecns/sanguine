@@ -72,7 +72,7 @@ func (r *queryResolver) Transactions(ctx context.Context, txHash *string, chainI
 		return nil, fmt.Errorf("error retrieving transactions: %w", err)
 	}
 
-	return r.ethTxsToModelTransactions(transactions, transactionsFilter.ChainID), nil
+	return r.ethTxsToModelTransactions(ctx, transactions, transactionsFilter.ChainID), nil
 }
 
 // TransactionsRange is the resolver for the transactionsRange field.
@@ -84,7 +84,7 @@ func (r *queryResolver) TransactionsRange(ctx context.Context, txHash *string, c
 		return nil, fmt.Errorf("error retrieving transactions: %w", err)
 	}
 
-	return r.ethTxsToModelTransactions(transactions, transactionsFilter.ChainID), nil
+	return r.ethTxsToModelTransactions(ctx, transactions, transactionsFilter.ChainID), nil
 }
 
 // BlockTime is the resolver for the blockTime field.
@@ -93,6 +93,7 @@ func (r *queryResolver) BlockTime(ctx context.Context, chainID int, blockNumber 
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving block time: %w", err)
 	}
+
 	blockTimeInt := int(blockTime)
 
 	return &blockTimeInt, nil
@@ -146,7 +147,7 @@ func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int
 		return nil, fmt.Errorf("error retrieving transaction: %w", err)
 	}
 
-	msgFrom, err := ethTx[0].AsMessage(types.LatestSignerForChainID(ethTx[0].ChainId()), big.NewInt(1))
+	msgFrom, err := ethTx[0].Tx.AsMessage(types.LatestSignerForChainID(ethTx[0].Tx.ChainId()), big.NewInt(1))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving ethtx: %w", err)
 	}
@@ -181,8 +182,8 @@ func (r *queryResolver) LogCount(ctx context.Context, contractAddress string, ch
 }
 
 // ReceiptCount is the resolver for the receiptCount field.
-func (r *queryResolver) ReceiptCount(ctx context.Context, contractAddress string, chainID int) (*int, error) {
-	receiptCount, err := r.DB.RetrieveReceiptCountForContract(ctx, common.HexToAddress(contractAddress), uint32(chainID))
+func (r *queryResolver) ReceiptCount(ctx context.Context, chainID int) (*int, error) {
+	receiptCount, err := r.DB.RetrieveReceiptCountForChain(ctx, uint32(chainID))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving receipt count: %w", err)
 	}

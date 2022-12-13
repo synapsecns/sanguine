@@ -211,12 +211,12 @@ library Report {
      * @notice Returns Report's Attestation (which is supposed to be signed by the Notary already).
      */
     function reportedAttestation(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
-        return
-            _view.slice({
-                _index: OFFSET_ATTESTATION,
-                _len: Attestation.ATTESTATION_LENGTH,
-                newType: SynapseTypes.ATTESTATION
-            });
+        // return
+        //     _view.slice({
+        //         _index: OFFSET_ATTESTATION,
+        //         _len: Attestation.ATTESTATION_LENGTH,
+        //         newType: SynapseTypes.ATTESTATION
+        //     });
     }
 
     /**
@@ -236,13 +236,13 @@ library Report {
      * @notice Returns Guard's signature on ReportData.
      */
     function guardSignature(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
-        uint256 offsetSignature = OFFSET_ATTESTATION + Attestation.ATTESTATION_LENGTH;
-        return
-            _view.slice({
-                _index: offsetSignature,
-                _len: ByteString.SIGNATURE_LENGTH,
-                newType: SynapseTypes.SIGNATURE
-            });
+        // uint256 offsetSignature = OFFSET_ATTESTATION + Attestation.ATTESTATION_LENGTH;
+        // return
+        //     _view.slice({
+        //         _index: offsetSignature,
+        //         _len: ByteString.SIGNATURE_LENGTH,
+        //         newType: SynapseTypes.SIGNATURE
+        //     });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

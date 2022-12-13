@@ -3,9 +3,10 @@ package backfill
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 	"time"
+
+	"github.com/synapsecns/sanguine/ethergo/util"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -106,7 +107,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 	// otherwise backfilling will begin at the block number specified in the config file.
 	if contract.StartBlock < 0 {
 		startHeight, err = c.consumerDB.GetUint64(parentCtx, fmt.Sprintf(
-			"SELECT ifNull(%s, 0) FROM last_blocks WHERE %s = %d AND %s = '%s'",
+			"SELECT ifNull(MAX(%s), 0) FROM last_blocks WHERE %s = %d AND %s = '%s'",
 			sql.BlockNumberFieldName, sql.ChainIDFieldName, c.chainConfig.ChainID, sql.ContractAddressFieldName, contract.Address,
 		))
 		if err != nil {
@@ -160,12 +161,17 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 							continue
 						}
 
-						err = c.processLogs(groupCtx, logs, eventParser)
+						parsedLogs, err := c.processLogs(groupCtx, logs, eventParser)
 						if err != nil {
 							timeout = b.Duration()
 							logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 							continue
 						}
+
+						g.Go(func() error {
+							return c.storeParsedLogs(groupCtx, parsedLogs)
+						})
+
 						return nil
 					}
 				}
@@ -176,6 +182,10 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 			return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
 		}
 		logger.Infof("backfilling contract %s chunk completed, %d to %d", contract.Address, chunkStart, chunkEnd)
+		if c.chainConfig.ChainID == 1 {
+			fmt.Println("fuck")
+			fmt.Println(chunkEnd)
+		}
 		// Store the last block in clickhouse
 		err = c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
 		if err != nil {
@@ -191,12 +201,12 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 // processLogs processes the logs and stores them in the consumer database.
 //
 //nolint:gocognit,cyclop
-func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, eventParser parser.Parser) error {
+func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, eventParser parser.Parser) (parsedLogs []interface{}, _ error) {
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
 		Min:    1 * time.Second,
-		Max:    10 * time.Second,
+		Max:    3 * time.Second,
 	}
 
 	timeout := time.Duration(0)
@@ -204,17 +214,19 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 	for {
 		select {
 		case <-ctx.Done():
-
-			return fmt.Errorf("context canceled: %w", ctx.Err())
+			return parsedLogs, fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
 			if logIdx >= len(logs) {
-				return nil
+				return parsedLogs, nil
 			}
-			err := eventParser.ParseAndStore(ctx, logs[logIdx], c.chainConfig.ChainID)
-			if err != nil {
-				logger.Errorf("could not parse and store log %d, %s: %s", c.chainConfig.ChainID, logs[logIdx].Address, err)
+			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], c.chainConfig.ChainID)
+			if err != nil && err.Error() != parser.ErrUnknownTopic {
+				logger.Errorf("could not parse and store log %d, %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
 				timeout = b.Duration()
 				continue
+			}
+			if parsedLog != nil {
+				parsedLogs = append(parsedLogs, parsedLog)
 			}
 
 			logIdx++
@@ -222,6 +234,31 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			// Reset the backoff after successful log parse run to prevent bloated back offs.
 			b.Reset()
 			timeout = time.Duration(0)
+		}
+	}
+}
+
+func (c *ChainBackfiller) storeParsedLogs(ctx context.Context, parsedEvents []interface{}) error {
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    3 * time.Second,
+	}
+	timeout := time.Duration(0)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context canceled while storing events: %w", ctx.Err())
+		case <-time.After(timeout):
+			err := c.consumerDB.StoreEvents(ctx, parsedEvents)
+			if err != nil {
+				logger.Errorf("Error storing events: %v", err)
+				timeout = b.Duration()
+				continue
+			}
+			return nil
 		}
 	}
 }
