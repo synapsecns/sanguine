@@ -338,7 +338,13 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _isIgnoredAgent(uint32 _domain, address) internal view override returns (bool) {
+    function _isIgnoredAgent(uint32 _domain, address)
+        internal
+        view
+        virtual
+        override
+        returns (bool)
+    {
         // Origin only keeps track of remote Notaries
         return _domain == _localDomain();
     }
