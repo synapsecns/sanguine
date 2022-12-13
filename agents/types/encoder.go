@@ -19,12 +19,12 @@ func EncodeSignedAttestation(signed SignedAttestation) ([]byte, error) {
 		return nil, fmt.Errorf("could not encode attestation: %w", err)
 	}
 
-	encodedSignature, err := EncodeSignature(signed.Signature())
+	encodedAgentSignatures, err := EncodeAgentSignatures(signed.GuardSignatures(), signed.NotarySignatures())
 	if err != nil {
-		return nil, fmt.Errorf("could not encode signature: %w", err)
+		return nil, fmt.Errorf("could not encode agent signatures: %w", err)
 	}
 
-	return append(encodedAttestation, encodedSignature...), nil
+	return append(encodedAttestation, encodedAgentSignatures...), nil
 }
 
 // DecodeSignedAttestation decodes a signed attestation.
@@ -41,12 +41,12 @@ func DecodeSignedAttestation(toDecode []byte) (SignedAttestation, error) {
 		return nil, fmt.Errorf("could not decode attestation: %w", err)
 	}
 
-	sig, err := DecodeSignature(signBin)
+	guardSignatures, notarySignatures, err := DecodeAgentSignatures(signBin)
 	if err != nil {
-		return nil, fmt.Errorf("could not decode signature: %w", err)
+		return nil, fmt.Errorf("could not decode agent signatures: %w", err)
 	}
 
-	return NewSignedAttestation(att, sig), nil
+	return NewSignedAttestation(att, guardSignatures, notarySignatures), nil
 }
 
 // EncodeSignature encodes a signature.
@@ -62,6 +62,93 @@ func DecodeSignature(toDecode []byte) (sig Signature, err error) {
 	}
 
 	return NewSignature(v, r, s), nil
+}
+
+// EncodeSignatures encodes the  signatures.
+func EncodeSignatures(signatures []Signature) ([]byte, error) {
+	rawBytes := []byte{}
+	for _, signature := range signatures {
+		rawSig, err := EncodeSignature(signature)
+		if err != nil {
+			return nil, fmt.Errorf("could not encode signature: %w", err)
+		}
+		rawBytes = append(rawBytes, rawSig...)
+	}
+
+	return rawBytes, nil
+}
+
+// DecodeSignatures decodes signatures.
+func DecodeSignatures(toDecode []byte) ([]Signature, error) {
+	signatures := []Signature{}
+
+	toDecodeLen := len(toDecode)
+	if toDecodeLen%SignatureLength != 0 {
+		return nil, fmt.Errorf("could not decode signatures from raw bytes. Raw bytes size: %d", toDecodeLen)
+	}
+	count := len(toDecode) / SignatureLength
+	currOffset := 0
+
+	for i := 0; i < count; i++ {
+		newSignature, err := DecodeSignature(toDecode[currOffset : currOffset+SignatureLength])
+		if err != nil {
+			return nil, fmt.Errorf("could not decode signature: %w", err)
+		}
+		signatures = append(signatures, newSignature)
+		currOffset += SignatureLength
+	}
+
+	return signatures, nil
+}
+
+// EncodeAgentSignatures encodes the guard and notary signatures.
+func EncodeAgentSignatures(guardSignatures, notarySignatures []Signature) ([]byte, error) {
+	guardCount := uint32(len(guardSignatures))
+	notaryCount := uint32(len(notarySignatures))
+	agentCounts := AttestationAgentCounts{
+		GuardCount:  guardCount,
+		NotaryCount: notaryCount,
+	}
+	rawBytes := agentCounts.GetRawAgentCounts().Bytes()
+
+	rawGuardSignatures, err := EncodeSignatures(guardSignatures)
+	if err != nil {
+		return nil, fmt.Errorf("could not encode guard signatures: %w", err)
+	}
+	rawBytes = append(rawBytes, rawGuardSignatures...)
+
+	rawNotarySignatures, err := EncodeSignatures(notarySignatures)
+	if err != nil {
+		return nil, fmt.Errorf("could not encode notary signatures: %w", err)
+	}
+	rawBytes = append(rawBytes, rawNotarySignatures...)
+	return rawBytes, nil
+}
+
+// DecodeAgentSignatures decodes agent signatures.
+func DecodeAgentSignatures(toDecode []byte) ([]Signature, []Signature, error) {
+	toDecodeLen := len(toDecode)
+	if toDecodeLen < 2 {
+		return nil, nil, fmt.Errorf("could not decode signatures from raw bytes. Raw bytes size: %d", toDecodeLen)
+	}
+	// currOffset := 0
+	guardCount := int(toDecode[attestationAgentCountsGuardCountStartingByte])
+	notaryCount := int(toDecode[attestationAgentCountsNotaryCountStartingByte])
+	currOffset := 2
+
+	guardSignatures, err := DecodeSignatures(toDecode[currOffset : currOffset+guardCount*SignatureLength])
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not decode guard signatures: %w", err)
+	}
+	currOffset += guardCount * SignatureLength
+
+	notarySignatures, err := DecodeSignatures(toDecode[currOffset : currOffset+notaryCount*SignatureLength])
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not decode notary signatures: %w", err)
+	}
+	// currOffset = currOffset + notaryCount*SignatureLength
+
+	return guardSignatures, notarySignatures, nil
 }
 
 // attestationEncoder encodes attestations.

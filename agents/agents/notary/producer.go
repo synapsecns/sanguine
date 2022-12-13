@@ -111,7 +111,7 @@ func (a AttestationProducer) update(ctx context.Context) error {
 		return fmt.Errorf("could not sign message: %w", err)
 	}
 
-	signedAttestation := types.NewSignedAttestation(suggestedAttestation, signature)
+	signedAttestation := types.NewSignedAttestation(suggestedAttestation, []types.Signature{signature}, []types.Signature{})
 	err = a.db.StoreSignedAttestations(ctx, signedAttestation)
 	if err != nil {
 		return fmt.Errorf("could not store signed attestations: %w", err)
