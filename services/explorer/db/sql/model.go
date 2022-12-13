@@ -2,8 +2,9 @@ package sql
 
 import (
 	"database/sql"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
 // init define common field names. See package docs for an explanation of why we have to do this.
