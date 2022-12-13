@@ -482,10 +482,68 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         );
     }
 
+    function test_getLatest() public {
+        address guard0 = suiteGuard(0);
+        address guard1 = suiteGuard(1);
+        address notary0 = suiteNotary(DOMAIN_REMOTE, 0);
+        address notary1 = suiteNotary(DOMAIN_REMOTE, 1);
+        // Step1: guard0, notary0
+        test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
+        uint32 nonce0 = attestationNonce;
+        bytes memory notaryLatest0 = createSameAttestation({ isGuard: false, agent: notary0 });
+        // Step1: guard0, guard1
+        test_submitAttestation({ guardSigs: 2, notarySigs: 0 });
+        uint32 nonce1 = attestationNonce;
+        bytes memory guardLatest0 = createSameAttestation({ isGuard: true, agent: guard0 });
+        bytes memory guardLatest1 = createSameAttestation({ isGuard: true, agent: guard1 });
+        // Check guard0
+        assertEq(
+            collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, guard0),
+            nonce1,
+            "!guard0: nonce"
+        );
+        assertEq(
+            collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard0),
+            guardLatest0,
+            "!guard0: attestation"
+        );
+        // Check guard1
+        assertEq(
+            collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, guard1),
+            nonce1,
+            "!guard1: nonce"
+        );
+        assertEq(
+            collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard1),
+            guardLatest1,
+            "!guard1: attestation"
+        );
+        // Check notary0
+        assertEq(
+            collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, notary0),
+            nonce0,
+            "!notary0: nonce"
+        );
+        assertEq(
+            collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, notary0),
+            notaryLatest0,
+            "!notary0: attestation"
+        );
+        // Check notary1
+        assertEq(
+            collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, notary1),
+            0,
+            "!notary1: nonce"
+        );
+        vm.expectRevert("No attestations found");
+        collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, notary1);
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           INTERNAL HELPERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // solhint-disable-next-line code-complexity
     function _checkTotalGetters() internal {
         for (uint32 o = 0; o < DOMAINS; ++o) {
             uint32 _origin = domains[o];

@@ -159,6 +159,33 @@ contract AttestationCollector is AttestationCollectorEvents, AttestationHub, Own
     }
 
     /**
+     * @notice Get the latest known nonce for (origin, destination) signed by the given agent.
+     * @dev Will return 0, if an agent hasn't submitted a single attestation yet.
+     */
+    function getLatestNonce(
+        uint32 _origin,
+        uint32 _destination,
+        address _agent
+    ) external view returns (uint32) {
+        return _latestAgentNonce(Attestation.attestationDomains(_origin, _destination), _agent);
+    }
+
+    /**
+     * @notice Get latest attestation for (origin, destination) signed by given agent.
+     */
+    function getLatestAttestation(
+        uint32 _origin,
+        uint32 _destination,
+        address _agent
+    ) external view returns (bytes memory) {
+        uint64 attDomains = Attestation.attestationDomains(_origin, _destination);
+        uint256 amount = agentSigIndexes[attDomains][_agent].length;
+        require(amount != 0, "No attestations found");
+        uint256 signatureIndex = agentSigIndexes[attDomains][_agent][amount - 1];
+        return _formatAgentAttestation(signatureIndex);
+    }
+
+    /**
      * @notice Get Attestation for (origin, destination, nonce), if it was previously saved.
      * Will contain at least one agent signature.
      * Will contain a single guard signature, if it was previously saved.
