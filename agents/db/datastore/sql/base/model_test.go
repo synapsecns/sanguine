@@ -69,7 +69,8 @@ func TestSignedAttestation(t *testing.T) {
 	Equal(t, sa.Attestation().Origin(), sa.SAOrigin)
 	Equal(t, sa.Attestation().Destination(), sa.SADestination)
 	Equal(t, sa.Attestation().Nonce(), sa.SANonce)
-	Equal(t, sa.Signature().V(), sig.V())
-	Equal(t, sa.Signature().R(), sig.R())
-	Equal(t, sa.Signature().S(), sig.S())
+	// TODO (joe): For now, just grabbing the guard signature at index 0 until this is fixed.
+	Equal(t, sa.GuardSignatures()[0].V(), sig.V())
+	Equal(t, sa.GuardSignatures()[0].R(), sig.R())
+	Equal(t, sa.GuardSignatures()[0].S(), sig.S())
 }
