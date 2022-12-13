@@ -5,367 +5,579 @@ import "../tools/AttestationCollectorTools.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract AttestationCollectorTest is AttestationCollectorTools {
+    uint256 internal savedSignatures;
+    mapping(uint64 => mapping(address => uint32)) internal latestAgentNonce;
+    mapping(uint64 => mapping(address => uint256)) internal savedAttestations;
+
     function setUp() public override {
         super.setUp();
-        setupAttestationCollector();
+        setupCollector();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                   TESTS: CONSTRUCTOR & INITIALIZER                   ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    function test_setup() public {
+        assertEq(collector.owner(), owner, "!owner");
+        for (uint256 i = 0; i < GUARDS; ++i) {
+            address guard = suiteGuard(i);
+            assertTrue(collector.isGuard(guard), "!isGuard");
+        }
+        for (uint256 d = 0; d < DOMAINS; ++d) {
+            uint32 domain = domains[d];
+            for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
+                address notary = suiteNotary(domain, i);
+                assertTrue(collector.isNotary(domain, notary), "!isNotary");
+            }
+        }
+    }
 
-    function test_initializedCorrectly() public {
-        setupAttestationCollector();
-        assertEq(attestationCollector.owner(), owner, "!owner");
+    function test_initialize() public {
+        collector = new AttestationCollectorHarness();
+        assertEq(collector.owner(), address(0), "!owner: pre init");
+        collector.initialize();
+        assertEq(collector.owner(), address(this), "!owner: post init");
     }
 
     function test_initialize_revert_onlyOnce() public {
         expectRevertAlreadyInitialized();
-        attestationCollector.initialize();
+        collector.initialize();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          TESTS: ADD NOTARY                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_addNotary() public {
-        vm.startPrank(owner);
-        for (uint256 d = 0; d < DOMAINS; ++d) {
-            uint32 domain = domains[d];
-            for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
-                attestationCollectorAddNotary({
-                    domain: domain,
-                    notaryIndex: i,
-                    returnValue: true
-                });
-                assertTrue(
-                    attestationCollectorIsNotary({ domain: domain, notaryIndex: i }),
-                    "Failed to add Notary"
-                );
-            }
-        }
-        vm.stopPrank();
+    function test_addRemoveNotary(uint32 domain, address notary) public {
+        vm.assume(domain != 0);
+        collector = new AttestationCollectorHarness();
+        collector.initialize();
+        collector.addNotary(domain, notary);
+        assertTrue(collector.isNotary(domain, notary), "!added");
+        collector.removeNotary(domain, notary);
+        assertFalse(collector.isNotary(domain, notary), "!removed");
     }
 
-    function test_addNotary_revert_notOwner(address caller) public {
-        vm.assume(caller != owner);
-        vm.startPrank(caller);
-        attestationCollectorAddNotary({
-            domain: DOMAIN_LOCAL,
-            notaryIndex: 0,
-            revertMessage: REVERT_NOT_OWNER
-        });
-        vm.stopPrank();
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         TESTS: REMOVE NOTARY                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_removeNotary() public {
-        test_addNotary();
-        vm.startPrank(owner);
-        for (uint256 d = 0; d < DOMAINS; ++d) {
-            uint32 domain = domains[d];
-            for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
-                attestationCollectorRemoveNotary({
-                    domain: domain,
-                    notaryIndex: i,
-                    returnValue: true
-                });
-                assertFalse(
-                    attestationCollectorIsNotary({ domain: domain, notaryIndex: i }),
-                    "Failed to add Notary"
-                );
-            }
-        }
-        vm.stopPrank();
-    }
-
-    function test_removeNotary_revert_notOwner(address caller) public {
-        vm.assume(caller != owner);
-        test_addNotary();
-        vm.startPrank(caller);
-        attestationCollectorRemoveNotary({
-            domain: DOMAIN_LOCAL,
-            notaryIndex: 0,
-            revertMessage: REVERT_NOT_OWNER
-        });
-        vm.stopPrank();
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                 TESTS: SUBMIT ATTESTATION (REVERTS)                  ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-    /* TODO(Chi): enable tests once AttestationCollector is updated
-    function test_submitAttestation_revert_notNotary_attacker() public {
-        test_addNotary();
-        createAttestationMock({
-            origin: DOMAIN_LOCAL,
-            destination: DOMAIN_REMOTE,
-            signer: attacker
-        });
-        // Check that attacker (address unknown to AttestationCollector) can't sign the attestation
-        // Some random address should not be considered a Notary for `DOMAIN_LOCAL`
-        attestationCollectorSubmitAttestation({ revertMessage: "Signer is not authorized" });
-    }
-
-    function test_submitAttestation_revert_notNotary_notaryAnotherDomain() public {
-        test_addNotary();
-        createAttestationMock({
-            origin: DOMAIN_LOCAL,
-            destination: DOMAIN_REMOTE,
-            signer: suiteNotary(DOMAIN_LOCAL)
-        });
-        // Check that Notary from another domain can't sign the attestation to `DOMAIN_REMOTE`
-        // Notary from `DOMAIN_LOCAL` should not be considered as a Notary for `DOMAIN_REMOTE`
-        attestationCollectorSubmitAttestation({ revertMessage: "Signer is not authorized" });
-    }
-
-    function test_submitAttestation_revert_zeroNonce() public {
-        test_addNotary();
-        // Create attestation with a zero nonce
-        createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE, nonce: 0 });
-        // When Notary hasn't submitted a single attestation, they should not be able
-        // to submit attestation with `nonce = 0`. It will be marked as "outdated", as it
-        // doesn't bring new information about the Origin merkle state.
-        attestationCollectorSubmitAttestation({ revertMessage: "Outdated attestation" });
-    }
-
-    function test_submitAttestation_revert_sameNonce() public {
-        test_submitAttestation();
-        // When Notary submitted an attestation, they should not be able to submit the
-        // same attestation again.  It will be marked as "outdated", as it
-        // doesn't bring new information about the Origin merkle state.
-        // No need to recreate the attestation, as it is saved after `test_submitAttestation()`
-        attestationCollectorSubmitAttestation({ revertMessage: "Outdated attestation" });
-    }
-
-    function test_submitAttestation_revert_outdatedNonce() public {
-        test_submitAttestation();
-        // Create attestation with a nonce lower than of already submitted attestation
-        createAttestationMock({
-            origin: currentOrigin,
-            destination: currentDestination,
-            nonce: attestationNonce - 1
-        });
-        // When Notary submitted an attestation with, they should not be able to submit the
-        // attestation with a lower nonce.  It will be marked as "outdated", as it
-        // doesn't bring new information about the Origin merkle state.
-        attestationCollectorSubmitAttestation({ revertMessage: "Outdated attestation" });
-    }
-
-    function test_submitAttestation_revert_duplicate() public {
-        test_submitAttestation();
-        // Create attestation for the same merkle state, but signed by another Notary
-        createAttestationMock({
-            origin: currentOrigin,
-            destination: currentDestination,
-            nonce: attestationNonce,
-            notaryIndex: 1,
-            salt: 0
-        });
-        // Attestation that duplicates the already existing one is not accepted, as it
-        // doesn't bring new information about the Origin merkle state.
-        attestationCollectorSubmitAttestation({ revertMessage: "Duplicated attestation" });
-        // TODO: potentially accept duplicated attestations in the future?
-        // Measure "data credibility" as the amount of actors who signed it?
+    function test_addRemoveGuard(address guard) public {
+        collector = new AttestationCollectorHarness();
+        collector.initialize();
+        collector.addGuard(guard);
+        assertTrue(collector.isGuard(guard), "!added");
+        collector.removeGuard(guard);
+        assertFalse(collector.isGuard(guard), "!removed");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      TESTS: SUBMIT ATTESTATION                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-    /* TODO(Chi): enable tests once AttestationCollector is updated
-    function test_submitAttestation() public {
-        test_addNotary();
-        currentOrigin = DOMAIN_LOCAL;
-        currentDestination = DOMAIN_REMOTE;
-        submitTestAttestation({ nonce: NONCE_TEST, notaryIndex: 0, isUnique: true });
-    }
 
-    function test_submitAttestation_anotherNotary_outdatedNonce() public {
-        test_submitAttestation();
-        // ANOTHER notary can sign and submit an attestation with a lower nonce.
-        // Such attestation should be accepted, otherwise a rogue Notary can submit
-        // a fraud attestation with absurdly big nonce to brick the system.
-        submitTestAttestation({ nonce: NONCE_TEST - 1, notaryIndex: 1, isUnique: true });
-    }
-
-    function test_submitAttestation_anotherNotary_sameNonceAnotherRoot() public {
-        test_submitAttestation();
-        // Another notary can sign and submit an attestation with same nonce, but different root.
-        // Meaning one of the two attestations is fraudulent. Such attestation should be accepted,
-        // otherwise "the first submitted" attestation becomes the source of truth
-        submitTestAttestation({ nonce: NONCE_TEST, notaryIndex: 1, isUnique: true });
-    }
-
-    function test_submitAttestations() public {
-        test_addNotary();
-        for (uint256 o = 0; o < DOMAINS; ++o) {
-            currentOrigin = domains[o];
-
-            for (uint256 d = 0; d < DOMAINS; ++d) {
-                if (o == d) continue;
-                currentDestination = domains[d];
-                // Notary[0] submits attestations with nonces: [1, 2, 5]
-                // All thNew nonce: will be accepted (next three)
-                submitTestAttestation({ nonce: 1, notaryIndex: 0, isUnique: true });
-                submitTestAttestation({ nonce: 2, notaryIndex: 0, isUnique: true });
-                submitTestAttestation({ nonce: 5, notaryIndex: 0, isUnique: true });
-
-                // Notary[1] submits attestations with nonces: [1, 3, 6]
-                // The same root as Notary[0]: will not be accepted
-                submitTestAttestation({ nonce: 1, notaryIndex: 1, salt: 0, isUnique: false });
-                // New nonce: will be accepted (next two)
-                submitTestAttestation({ nonce: 3, notaryIndex: 1, isUnique: true });
-                submitTestAttestation({ nonce: 6, notaryIndex: 1, isUnique: true });
-
-                // Notary[2] submits nonces [1, 6, 7]
-                // Root is different from one submitted by Notary[0]: will be accepted
-                submitTestAttestation({ nonce: 1, notaryIndex: 2, isUnique: true });
-                // Root is different from one submitted by Notary[1]: will be accepted
-                submitTestAttestation({ nonce: 6, notaryIndex: 2, isUnique: true });
-                // New nonce: will be accepted
-                submitTestAttestation({ nonce: 7, notaryIndex: 2, isUnique: true });
-
-                // Notary[3] submits all existing duplicate attestations for nonces [1, 6]
-
-                // The same root as Notary[0]: will not be accepted
-                submitTestAttestation({ nonce: 1, notaryIndex: 3, salt: 0, isUnique: false });
-                // The same root as Notary[2]: will not be accepted
-                submitTestAttestation({ nonce: 1, notaryIndex: 3, salt: 2, isUnique: false });
-                // The same root as Notary[1]: will not be accepted
-                submitTestAttestation({ nonce: 6, notaryIndex: 3, salt: 1, isUnique: false });
-                // The same root as Notary[2]: will not be accepted
-                submitTestAttestation({ nonce: 6, notaryIndex: 3, salt: 2, isUnique: false });
-
-                // Submit a few fresh attestations
-                submitTestAttestation({ nonce: 9, notaryIndex: 2, isUnique: true });
-                submitTestAttestation({ nonce: 10, notaryIndex: 0, isUnique: true });
-                // The biggest nonce
-                submitTestAttestation({ nonce: NONCE_TEST, notaryIndex: 3, isUnique: true });
-                submitTestAttestation({ nonce: 8, notaryIndex: 1, isUnique: true });
-            }
-        }
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                        TESTS: VIEWS (REVERTS)                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-    /* TODO(Chi): enable tests once AttestationCollector is updated
-    function test_getAttestation_revert_noSignature() public {
-        test_submitAttestations();
-        // Nonce 6 was submitted only by Notaries 1 and 2
-        attestationCollectorGetAttestationByRoot({
+    // solhint-disable-next-line code-complexity
+    function test_submitAttestation(uint256 guardSigs, uint256 notarySigs) public {
+        guardSigs = guardSigs % GUARDS;
+        notarySigs = notarySigs % NOTARIES_PER_CHAIN;
+        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
+            destination: DOMAIN_REMOTE,
+            guardSigs: guardSigs,
+            notarySigs: notarySigs
+        });
+        createAttestationMock({
             origin: DOMAIN_LOCAL,
             destination: DOMAIN_REMOTE,
-            nonce: 6,
-            root: _createMockRoot(6, 0),
-            revertMessage: "!signature"
+            guardSigners: guardSigners,
+            notarySigners: notarySigners
         });
-    }
-
-    function test_getLatestAttestation_revert_noNotaryAttestations() public {
-        test_submitAttestation();
-        // Attestation was submitted only for (origin, destination):
-        // origin = currentOrigin
-        // destination = currentDestination
-        // Therefore there should be no attestations for the reversed pair
-        attestationCollectorGetLatestNotaryAttestation({
-            origin: currentDestination,
-            destination: currentOrigin,
-            notaryIndex: 0,
-            revertMessage: "No attestations found"
-        });
-    }
-
-    function test_getLatestAttestation_revert_noAttestations() public {
-        test_submitAttestation();
-        // Attestation was submitted only for (origin, destination):
-        // origin = currentOrigin
-        // destination = currentDestination
-        // Therefore there should be no attestations for the reversed pair
-        attestationCollectorGetLatestDomainAttestation({
-            origin: currentDestination,
-            destination: currentOrigin,
-            revertMessage: "No attestations found"
-        });
-    }
-
-    function test_getLatestAttestation_noNotaries() public {
-        // Don't add any Notaries
-        for (uint256 o = 0; o < DOMAINS; ++o) {
-            for (uint256 d = 0; d < DOMAINS; ++d) {
-                attestationCollectorGetLatestDomainAttestation({
-                    origin: domains[o],
-                    destination: domains[d],
-                    revertMessage: "!notaries"
+        bool expectedStored = false;
+        // Expect events re: guard attestation
+        for (uint256 i = 0; i < guardSigs; ++i) {
+            address guard = attestationGuards[i];
+            if (_isFreshAttestation(guard, attestationDomains, attestationNonce)) {
+                expectAttestationSaved({
+                    signatureIndex: savedSignatures,
+                    isGuard: true,
+                    agentIndex: i
                 });
+                ++savedSignatures;
+                ++savedAttestations[attestationDomains][guard];
+                expectedStored = true;
+                latestAgentNonce[attestationDomains][guard] = attestationNonce;
             }
         }
+        // Expect events re: notary attestation
+        for (uint256 i = 0; i < notarySigs; ++i) {
+            address notary = attestationNotaries[i];
+            if (_isFreshAttestation(notary, attestationDomains, attestationNonce)) {
+                expectAttestationSaved({
+                    signatureIndex: savedSignatures,
+                    isGuard: false,
+                    agentIndex: i
+                });
+                ++savedSignatures;
+                ++savedAttestations[attestationDomains][notary];
+                expectedStored = true;
+                latestAgentNonce[attestationDomains][notary] = attestationNonce;
+            }
+        }
+        if (expectedStored) {
+            expectAttestationAccepted();
+        }
+        if (guardSigs + notarySigs == 0) {
+            vm.expectRevert("Not an attestation");
+        }
+        bool stored = collector.submitAttestation(attestationRaw);
+        assertEq(stored, expectedStored, "!returnValue");
+    }
+
+    function test_submitAttestation_sameSigners_rejectsConflicts() public {
+        // Submit a guard-only attestation
+        test_submitAttestation({ guardSigs: 1, notarySigs: 0 });
+        // Create conflict attestation signed by the same guard (no notary sig)
+        createAttestation({
+            origin: attestationOrigin,
+            destination: attestationDestination,
+            nonce: attestationNonce,
+            root: "Conflict root",
+            guardIndex: 0,
+            notaryIndex: NOTARIES_PER_CHAIN
+        });
+        vm.recordLogs();
+        assertFalse(collector.submitAttestation(attestationRaw), "Saved attestation with conflict");
+        assertEq(vm.getRecordedLogs().length, 0, "Emitted logs");
+    }
+
+    function test_submitAttestation_sameSigners_rejectsSameNonce(
+        uint256 guardSigs,
+        uint256 notarySigs
+    ) public {
+        guardSigs = guardSigs % GUARDS;
+        notarySigs = notarySigs % NOTARIES_PER_CHAIN;
+        vm.assume(guardSigs + notarySigs != 0);
+        // Submit attestation with the given agents
+        test_submitAttestation(guardSigs, notarySigs);
+        vm.recordLogs();
+        // Resubmit attestation with the same agents and nonce
+        assertFalse(
+            collector.submitAttestation(attestationRaw),
+            "Saved attestation with same nonce"
+        );
+        assertEq(vm.getRecordedLogs().length, 0, "Emitted logs");
+    }
+
+    function test_submitAttestation_sameSigners_rejectsOlderNonce(
+        uint256 guardSigs,
+        uint256 notarySigs
+    ) public {
+        guardSigs = guardSigs % GUARDS;
+        notarySigs = notarySigs % NOTARIES_PER_CHAIN;
+        vm.assume(guardSigs + notarySigs != 0);
+        // Submit attestation with the given agents
+        test_submitAttestation(guardSigs, notarySigs);
+        // Create attestation with the same agents and lower nonce
+        mockNonce = attestationNonce - 1;
+        createAttestationMock({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            guardSigners: attestationGuards,
+            notarySigners: attestationNotaries
+        });
+        vm.recordLogs();
+        assertFalse(
+            collector.submitAttestation(attestationRaw),
+            "Saved attestation with older nonce"
+        );
+        assertEq(vm.getRecordedLogs().length, 0, "Emitted logs");
+    }
+
+    function test_submitAttestation_otherSigners_rejectsConflicts() public {
+        // Submit a guard-only attestation
+        test_submitAttestation({ guardSigs: 1, notarySigs: 0 });
+        // Create conflict attestation signed by another guard (no notary sig)
+        createAttestation({
+            origin: attestationOrigin,
+            destination: attestationDestination,
+            nonce: attestationNonce,
+            root: "Conflict root",
+            guardIndex: 1,
+            notaryIndex: NOTARIES_PER_CHAIN
+        });
+        vm.recordLogs();
+        assertFalse(collector.submitAttestation(attestationRaw), "Saved attestation with conflict");
+        assertEq(vm.getRecordedLogs().length, 0, "Emitted logs");
+    }
+
+    function test_submitAttestation_otherSigners_acceptsSameNonce() public {
+        // Submit a guard-only attestation
+        test_submitAttestation({ guardSigs: 1, notarySigs: 0 });
+        // Create conflict attestation signed by the same guard and a notary
+        createAttestation({
+            origin: attestationOrigin,
+            destination: attestationDestination,
+            nonce: attestationNonce,
+            root: attestationRoot,
+            guardIndex: 0,
+            notaryIndex: 0
+        });
+        expectAttestationSaved({ signatureIndex: 1, isGuard: false, agentIndex: 0 });
+        expectAttestationAccepted();
+        assertTrue(
+            collector.submitAttestation(attestationRaw),
+            "Did not save another agent attestation: same nonce"
+        );
+    }
+
+    function test_submitAttestation_otherSigners_acceptsOlderNonce() public {
+        // Submit a guard-only attestation
+        test_submitAttestation({ guardSigs: 1, notarySigs: 0 });
+        // Create conflict attestation signed by the same guard and a notary
+        createAttestation({
+            origin: attestationOrigin,
+            destination: attestationDestination,
+            nonce: attestationNonce - 1,
+            root: "Another root",
+            guardIndex: 0,
+            notaryIndex: 0
+        });
+        expectAttestationSaved({ signatureIndex: 1, isGuard: false, agentIndex: 0 });
+        expectAttestationAccepted();
+        assertTrue(
+            collector.submitAttestation(attestationRaw),
+            "Did not save another agent attestation: older nonce"
+        );
+    }
+
+    function test_submitAttestation_revert_zeroRoot() public {
+        createAttestation({
+            origin: DOMAIN_LOCAL,
+            destination: DOMAIN_REMOTE,
+            nonce: 1,
+            root: bytes32(0)
+        });
+        vm.expectRevert("Root is zero");
+        collector.submitAttestation(attestationRaw);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             TESTS: VIEWS                             ║*▕
+    ▏*║                            TESTS: GETTERS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-    /* TODO(Chi): enable tests once AttestationCollector is updated
+
+    function test_agentAttestations_savedAttestations() public {
+        // Step1: Submit an attestation: guard0, notary0
+        test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
+        _checkTotalGetters();
+        // Step2: Submit an attestation: notary0, notary1
+        test_submitAttestation({ guardSigs: 0, notarySigs: 2 });
+        _checkTotalGetters();
+        // Step3: Submit an attestation: guard0, guard1, guard2
+        test_submitAttestation({ guardSigs: 3, notarySigs: 0 });
+        _checkTotalGetters();
+        // Step4: Submit an attestation: all agents
+        test_submitAttestation({ guardSigs: GUARDS, notarySigs: NOTARIES_PER_CHAIN });
+        _checkTotalGetters();
+    }
+
+    function test_getAgentAttestation_getSavedAttestation() public {
+        address guard0 = suiteGuard(0);
+        address guard1 = suiteGuard(1);
+        address notary0 = suiteNotary(DOMAIN_REMOTE, 0);
+        address notary1 = suiteNotary(DOMAIN_REMOTE, 1);
+        // Step1: Submit an attestation: guard0, notary0
+        test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
+        // Reconstruct guard-only attestation
+        bytes memory guard00 = createSameAttestation({ isGuard: true, agent: guard0 });
+        // Reconstruct notary-only attestation
+        bytes memory notary00 = createSameAttestation({ isGuard: false, agent: notary0 });
+        // Step2: Submit an attestation: guard0, guard1
+        test_submitAttestation({ guardSigs: 2, notarySigs: 0 });
+        // Reconstruct guard-only attestations
+        bytes memory guard01 = createSameAttestation({ isGuard: true, agent: guard0 });
+        bytes memory guard10 = createSameAttestation({ isGuard: true, agent: guard1 });
+        // Step3: Submit an attestation: guard0, notary0, notary1
+        test_submitAttestation({ guardSigs: 1, notarySigs: 2 });
+        // Reconstruct guard-only attestation
+        bytes memory guard02 = createSameAttestation({ isGuard: true, agent: guard0 });
+        // Reconstruct notary-only attestations
+        bytes memory notary01 = createSameAttestation({ isGuard: false, agent: notary0 });
+        bytes memory notary10 = createSameAttestation({ isGuard: false, agent: notary1 });
+        // Check: guard0
+        assertEq(
+            collector.getAgentAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard0, 0),
+            guard00,
+            "!guard00"
+        );
+        assertEq(
+            collector.getAgentAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard0, 1),
+            guard01,
+            "!guard01"
+        );
+        assertEq(
+            collector.getAgentAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard0, 2),
+            guard02,
+            "!guard02"
+        );
+        // Check: guard1
+        assertEq(
+            collector.getAgentAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard1, 0),
+            guard10,
+            "!guard10"
+        );
+        // Check: notary0
+        assertEq(
+            collector.getAgentAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, notary0, 0),
+            notary00,
+            "!notary00"
+        );
+        assertEq(
+            collector.getAgentAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, notary0, 1),
+            notary01,
+            "!notary01"
+        );
+        // Check: notary1
+        assertEq(
+            collector.getAgentAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, notary1, 0),
+            notary10,
+            "!notary10"
+        );
+        // Check: step1 (guard0, notary0)
+        assertEq(collector.getSavedAttestation(0), guard00, "!getSavedAttestation(0)");
+        assertEq(collector.getSavedAttestation(1), notary00, "!getSavedAttestation(1)");
+        // Check: step2 (guard0, guard1)
+        assertEq(collector.getSavedAttestation(2), guard01, "!getSavedAttestation(2)");
+        assertEq(collector.getSavedAttestation(3), guard10, "!getSavedAttestation(3)");
+        // Check: step3 (guard0, notary0, notary1)
+        assertEq(collector.getSavedAttestation(4), guard02, "!getSavedAttestation(4)");
+        assertEq(collector.getSavedAttestation(5), notary01, "!getSavedAttestation(5)");
+        assertEq(collector.getSavedAttestation(6), notary10, "!getSavedAttestation(6)");
+    }
+
+    function test_getAgentAttestation_getSavedAttestation_revert_outOfRange() public {
+        // Step1: Submit an attestation: guard0, notary0
+        test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
+        // Step2: Submit an attestation: guard0, guard1
+        test_submitAttestation({ guardSigs: 2, notarySigs: 0 });
+        // Step3: Submit an attestation: guard0, notary0, notary1
+        test_submitAttestation({ guardSigs: 1, notarySigs: 2 });
+        address guard0 = suiteGuard(0);
+        address guard1 = suiteGuard(1);
+        address guard2 = suiteGuard(2);
+        // Attestations for guard0: 3
+        vm.expectRevert("Out of range");
+        collector.getAgentAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard0, 3);
+        // Attestations for guard1: 1
+        vm.expectRevert("Out of range");
+        collector.getAgentAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard1, 1);
+        // Attestations for guard2: 0
+        vm.expectRevert("Out of range");
+        collector.getAgentAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard2, 0);
+        // Saved attestations: 7
+        vm.expectRevert("Out of range");
+        collector.getSavedAttestation(7);
+    }
+
+    function test_getAttestation_guardThenNotary() public {
+        address guard1 = suiteGuard(1);
+        // Step1: Submit an attestation: guard0
+        test_submitAttestation({ guardSigs: 1, notarySigs: 0 });
+        bytes memory expectedAtt = attestationRaw;
+        assertEq(
+            collector.getAttestation({
+                _origin: attestationOrigin,
+                _destination: attestationDestination,
+                _nonce: attestationNonce
+            }),
+            expectedAtt,
+            "!step1"
+        );
+        // Step2: Submit the same data signed by guard1
+        createSameAttestation({ isGuard: true, agent: guard1 });
+        assertTrue(collector.submitAttestation(attestationRaw), "!step2: guard1");
+        // Should return the same guard0 attestation
+        assertEq(
+            collector.getAttestation({
+                _origin: attestationOrigin,
+                _destination: attestationDestination,
+                _nonce: attestationNonce
+            }),
+            expectedAtt,
+            "!step2"
+        );
+        // Step3: Submit the same data signed by notary0, notary1
+        createSameAttestation({ guardSigs: 0, notarySigs: 2 });
+        assertTrue(collector.submitAttestation(attestationRaw), "!step3: notary0+notary1");
+        // Expect to receive attestation signed by guard0 and notary0
+        expectedAtt = createSameAttestation({ guardSigs: 1, notarySigs: 1 });
+        assertEq(
+            collector.getAttestation({
+                _origin: attestationOrigin,
+                _destination: attestationDestination,
+                _nonce: attestationNonce
+            }),
+            expectedAtt,
+            "!step3"
+        );
+    }
+
+    function test_getAttestation_notaryThenGuard() public {
+        // Step1: Submit an attestation: notary0, notary1
+        test_submitAttestation({ guardSigs: 0, notarySigs: 2 });
+        bytes memory expectedAtt = createSameAttestation({ guardSigs: 0, notarySigs: 1 });
+        assertEq(
+            collector.getAttestation({
+                _origin: attestationOrigin,
+                _destination: attestationDestination,
+                _nonce: attestationNonce
+            }),
+            expectedAtt,
+            "!step1"
+        );
+        // Step2: submit an attestation: all notaries
+        createSameAttestation({ guardSigs: 0, notarySigs: 4 });
+        assertTrue(collector.submitAttestation(attestationRaw), "!step2: all notaries");
+        // Should return the same notary0 attestation
+        assertEq(
+            collector.getAttestation({
+                _origin: attestationOrigin,
+                _destination: attestationDestination,
+                _nonce: attestationNonce
+            }),
+            expectedAtt,
+            "!step2"
+        );
+        // Step3: submit an attestation: guard0
+        createSameAttestation({ guardSigs: 1, notarySigs: 0 });
+        assertTrue(collector.submitAttestation(attestationRaw), "!step3: guard0");
+        // Expect to receive attestation signed by guard0 and notary0
+        expectedAtt = createSameAttestation({ guardSigs: 1, notarySigs: 1 });
+        assertEq(
+            collector.getAttestation({
+                _origin: attestationOrigin,
+                _destination: attestationDestination,
+                _nonce: attestationNonce
+            }),
+            expectedAtt,
+            "!step3"
+        );
+    }
+
+    function test_getAttestation_revert_unknownNonce() public {
+        test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
+        vm.expectRevert("Unknown nonce");
+        collector.getAttestation(attestationOrigin, attestationDestination, attestationNonce - 1);
+        vm.expectRevert("Unknown nonce");
+        collector.getAttestation(attestationOrigin, attestationDestination, attestationNonce + 1);
+    }
+
+    function test_getRoot() public {
+        test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
+        uint32 nonce0 = attestationNonce;
+        test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
+        uint32 nonce1 = attestationNonce;
+        test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
+        uint32 nonce2 = attestationNonce;
+        assertEq(
+            collector.getRoot(attestationOrigin, attestationDestination, nonce0),
+            _createMockRoot(nonce0, 0),
+            "!nonce0"
+        );
+        assertEq(
+            collector.getRoot(attestationOrigin, attestationDestination, nonce1),
+            _createMockRoot(nonce1, 0),
+            "!nonce1"
+        );
+        assertEq(
+            collector.getRoot(attestationOrigin, attestationDestination, nonce2),
+            _createMockRoot(nonce2, 0),
+            "!nonce2"
+        );
+    }
+
+    function test_getLatest() public {
+        address guard0 = suiteGuard(0);
+        address guard1 = suiteGuard(1);
+        address notary0 = suiteNotary(DOMAIN_REMOTE, 0);
+        address notary1 = suiteNotary(DOMAIN_REMOTE, 1);
+        // Step1: guard0, notary0
+        test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
+        uint32 nonce0 = attestationNonce;
+        bytes memory notaryLatest0 = createSameAttestation({ isGuard: false, agent: notary0 });
+        // Step1: guard0, guard1
+        test_submitAttestation({ guardSigs: 2, notarySigs: 0 });
+        uint32 nonce1 = attestationNonce;
+        bytes memory guardLatest0 = createSameAttestation({ isGuard: true, agent: guard0 });
+        bytes memory guardLatest1 = createSameAttestation({ isGuard: true, agent: guard1 });
+        // Check guard0
+        assertEq(
+            collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, guard0),
+            nonce1,
+            "!guard0: nonce"
+        );
+        assertEq(
+            collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard0),
+            guardLatest0,
+            "!guard0: attestation"
+        );
+        // Check guard1
+        assertEq(
+            collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, guard1),
+            nonce1,
+            "!guard1: nonce"
+        );
+        assertEq(
+            collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard1),
+            guardLatest1,
+            "!guard1: attestation"
+        );
+        // Check notary0
+        assertEq(
+            collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, notary0),
+            nonce0,
+            "!notary0: nonce"
+        );
+        assertEq(
+            collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, notary0),
+            notaryLatest0,
+            "!notary0: attestation"
+        );
+        // Check notary1
+        assertEq(
+            collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, notary1),
+            0,
+            "!notary1: nonce"
+        );
+        vm.expectRevert("No attestations found");
+        collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, notary1);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           INTERNAL HELPERS                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     // solhint-disable-next-line code-complexity
-    function test_getAttestation_getRoot_rootsAmount() public {
-        // Test for following getters (which are used the same testing conditions):
-        // getAttestation(), getRoot(), rootsAmount()
-        test_submitAttestations();
-        for (uint256 o = 0; o < DOMAINS; ++o) {
-            uint32 origin = domains[o];
-            for (uint256 d = 0; d < DOMAINS; ++d) {
-                if (o == d) continue;
-                uint32 destination = domains[d];
-                for (uint32 nonce = 1; nonce <= NONCE_TEST; ++nonce) {
-                    uint96 _key = Attestation.attestationKey(origin, destination, nonce);
-                    bytes[] memory attestations = keyAttestations[_key];
-                    bytes32[] memory roots = keyRoots[_key];
-                    uint256 amount = roots.length;
+    function _checkTotalGetters() internal {
+        for (uint32 o = 0; o < DOMAINS; ++o) {
+            uint32 _origin = domains[o];
+            for (uint32 d = 0; d < DOMAINS; ++d) {
+                uint32 _destination = domains[d];
+                uint64 attDomains = Attestation.attestationDomains(_origin, _destination);
+                for (uint256 i = 0; i < GUARDS; ++i) {
+                    address guard = suiteGuard(i);
                     assertEq(
-                        attestationCollector.rootsAmount(origin, destination, nonce),
-                        amount,
-                        "!rootsAmount()"
+                        collector.agentAttestations(_origin, _destination, guard),
+                        savedAttestations[attDomains][guard],
+                        "!agentAttestations: guard"
                     );
-                    for (uint256 index = 0; index < amount; ++index) {
-                        bytes memory attestation = attestations[index];
-                        bytes32 root = roots[index];
+                }
+                for (uint256 n = 0; n < DOMAINS; ++n) {
+                    for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
+                        address notary = suiteNotary(domains[n], i);
                         assertEq(
-                            attestationCollector.getAttestation(origin, destination, nonce, index),
-                            attestation,
-                            "!getAttestation(index)"
-                        );
-                        assertEq(
-                            attestationCollector.getAttestation(origin, destination, nonce, root),
-                            attestation,
-                            "!getAttestation(root)"
-                        );
-                        assertEq(
-                            attestationCollector.getRoot(origin, destination, nonce, index),
-                            root,
-                            "!geRoot(index)"
+                            collector.agentAttestations(_origin, _destination, notary),
+                            savedAttestations[attDomains][notary],
+                            "!agentAttestations: notary"
                         );
                     }
-                    // Check for out of range reverts
-                    vm.expectRevert("!index");
-                    attestationCollector.getAttestation({
-                        _origin: origin,
-                        _destination: destination,
-                        _nonce: nonce,
-                        _index: amount
-                    });
-                    vm.expectRevert("!index");
-                    attestationCollector.getRoot({
-                        _origin: origin,
-                        _destination: destination,
-                        _nonce: nonce,
-                        _index: amount
-                    });
                 }
             }
         }
+        assertEq(collector.savedAttestations(), savedSignatures, "!savedAttestations");
     }
-    */
+
+    function _isFreshAttestation(
+        address agent,
+        uint64 attDomains,
+        uint32 nonce
+    ) internal view returns (bool) {
+        return latestAgentNonce[attDomains][agent] < nonce;
+    }
 }
