@@ -7,6 +7,8 @@ import (
 
 const sizeOfUint256 = uint32(32)
 const sizeOfUint32 = uint32(4)
+const sizeOfUint16 = uint32(2)
+const sizeOfUint8 = uint32(1)
 
 const attestationNonceStartingByte = uint32(0)
 const attestationDestinationStartingByte = uint32(4)
@@ -23,6 +25,10 @@ const attestationKeySize = uint32(12)
 const attestedDomainsDestinationStartingByte = uint32(0)
 const attestedDomainsOriginStartingByte = uint32(4)
 const attestedDomainsSize = uint32(8)
+
+const attestationAgentCountsNotaryCountStartingByte = uint32(1)
+const attestationAgentCountsGuardCountStartingByte = uint32(0)
+const attestationAgentCountsSize = uint32(2)
 
 // Attestation is the attestation.
 type Attestation interface {
@@ -65,6 +71,14 @@ type AttestedDomains struct {
 	Destination uint32
 }
 
+// AttestationAgentCounts is the tuple (GuardCount, NotaryCount) so we know how many of each type of signature we have.
+type AttestationAgentCounts struct {
+	// GuardCount is the number of guard signatures collected in the SignedAttestation.
+	GuardCount uint32
+	// NotaryCount is the number of notary signatures collected in the SignedAttestation.
+	NotaryCount uint32
+}
+
 // NewAttestationFromBytes creates a new attesation from raw bytes.
 func NewAttestationFromBytes(rawBytes []byte) Attestation {
 	rootBytes := rawBytes[attestationRootStartingByte:attestationSize]
@@ -88,7 +102,7 @@ func NewAttestationFromBytes(rawBytes []byte) Attestation {
 
 // NewAttestation creates a new attestation.
 func NewAttestation(rawKey *big.Int, root [32]byte) Attestation {
-	key := NewAttestionKey(rawKey)
+	key := NewAttestationKey(rawKey)
 	return attestation{
 		origin:      key.Origin,
 		destination: key.Destination,
@@ -119,21 +133,25 @@ var _ Attestation = attestation{}
 type SignedAttestation interface {
 	// Attestation gets the unsigned attestation
 	Attestation() Attestation
-	// Signature is the signature of the attestation
-	Signature() Signature
+	// GuardSignatures is the guard signatures of the attestation
+	GuardSignatures() []Signature
+	// NotarySignatures is the notary signatures of the attestation
+	NotarySignatures() []Signature
 }
 
 // signedAttestation is a struct that conforms to SignedAttestation.
 type signedAttestation struct {
-	attestation Attestation
-	signature   Signature
+	attestation      Attestation
+	guardSignatures  []Signature
+	notarySignatures []Signature
 }
 
 // NewSignedAttestation creates a new signed attestation.
-func NewSignedAttestation(attestation Attestation, signature Signature) SignedAttestation {
+func NewSignedAttestation(attestation Attestation, guardSignatures []Signature, notarySignatures []Signature) SignedAttestation {
 	return signedAttestation{
-		attestation: attestation,
-		signature:   signature,
+		attestation:      attestation,
+		guardSignatures:  guardSignatures,
+		notarySignatures: notarySignatures,
 	}
 }
 
@@ -141,13 +159,17 @@ func (s signedAttestation) Attestation() Attestation {
 	return s.attestation
 }
 
-func (s signedAttestation) Signature() Signature {
-	return s.signature
+func (s signedAttestation) GuardSignatures() []Signature {
+	return s.guardSignatures
 }
 
-// NewAttestionKey takes the raw AttestationKey serialized as a big endian big.Int
+func (s signedAttestation) NotarySignatures() []Signature {
+	return s.notarySignatures
+}
+
+// NewAttestationKey takes the raw AttestationKey serialized as a big endian big.Int
 // and converts it to AttestationKey which is a tuple of (origin, destination, nonce).
-func NewAttestionKey(rawKey *big.Int) AttestationKey {
+func NewAttestationKey(rawKey *big.Int) AttestationKey {
 	rawBytes := make([]byte, sizeOfUint256)
 	rawKey.FillBytes(rawBytes)
 	originBytes := rawBytes[attestationKeyOriginStartingByte:attestationKeySize]
@@ -210,6 +232,38 @@ func (a AttestedDomains) GetRawDomains() *big.Int {
 	rawDomains := new(big.Int)
 	rawDomains.SetBytes(rawBytes)
 	return rawDomains
+}
+
+// NewAttestationAgentCounts takes the raw AttestationAgentCounts serialized as a big endian big.Int
+// and converts it to AttestationAgentCounts which is a tuple of (GuardCount, NotaryCount).
+func NewAttestationAgentCounts(rawAgentCounts *big.Int) AttestationAgentCounts {
+	rawBytes := make([]byte, sizeOfUint16)
+	rawAgentCounts.FillBytes(rawBytes)
+	guardCountBytes := rawBytes[attestationAgentCountsGuardCountStartingByte:attestationAgentCountsNotaryCountStartingByte]
+	notaryCountBytes := rawBytes[attestationAgentCountsNotaryCountStartingByte:attestationAgentCountsSize]
+
+	guardCount := uint32(guardCountBytes[0])
+	notaryCount := uint32(notaryCountBytes[0])
+
+	return AttestationAgentCounts{
+		GuardCount:  guardCount,
+		NotaryCount: notaryCount,
+	}
+}
+
+// GetRawAgentCounts returns the AttestationAgentCounts which is a tuple of (GuardCount, NotaryCount)
+// as a serialized big.Int.
+func (a AttestationAgentCounts) GetRawAgentCounts() *big.Int {
+	guardCountBytes := make([]byte, sizeOfUint8)
+	guardCountBytes[0] = uint8(a.GuardCount)
+	notaryCountBytes := make([]byte, sizeOfUint8)
+	notaryCountBytes[0] = uint8(a.NotaryCount)
+	rawBytes := make([]byte, sizeOfUint16)
+	copy(rawBytes[attestationAgentCountsGuardCountStartingByte:attestationAgentCountsNotaryCountStartingByte], guardCountBytes)
+	copy(rawBytes[attestationAgentCountsNotaryCountStartingByte:attestationAgentCountsSize], notaryCountBytes)
+	rawAgentCounts := new(big.Int)
+	rawAgentCounts.SetBytes(rawBytes)
+	return rawAgentCounts
 }
 
 var _ SignedAttestation = signedAttestation{}
