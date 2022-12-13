@@ -41,7 +41,7 @@ func (u NotarySuite) TestOriginAttestationVerifier() {
 	signature, err := u.signer.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedUpdate), false)
 	Nil(u.T(), err)
 
-	signedAttestation := types.NewSignedAttestation(unsignedInProgressAttestation.SignedAttestation().Attestation(), signature)
+	signedAttestation := types.NewSignedAttestation(unsignedInProgressAttestation.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
 	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, unsignedInProgressAttestation.OriginDispatchBlockNumber(), nil, 0, 0)
 	err = testDB.UpdateSignature(u.GetTestContext(), signedInProgressAttestation)
 	Nil(u.T(), err)

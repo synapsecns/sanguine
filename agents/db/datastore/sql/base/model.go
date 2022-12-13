@@ -324,19 +324,25 @@ func (t InProgressAttestation) SignedAttestation() types.SignedAttestation {
 	return t
 }
 
-// Signature gets the signature of the in-progress attestation
-// note: this is the only accessor method that can fail on decoding
-func (t InProgressAttestation) Signature() types.Signature {
+// NotarySignatures currently just returns the loan signature.
+// TODO (joe): fix this to return all notary signatures
+func (t InProgressAttestation) NotarySignatures() []types.Signature {
 	if len(t.IPSignature) == 0 {
 		return nil
 	}
 
 	res, err := types.DecodeSignature(t.IPSignature)
 	if err != nil {
-		return types.NewSignature(big.NewInt(0), big.NewInt(0), big.NewInt(0))
+		return []types.Signature{types.NewSignature(big.NewInt(0), big.NewInt(0), big.NewInt(0))}
 	}
 
-	return res
+	return []types.Signature{res}
+}
+
+// GuardSignatures currently just returns an empty array
+// TODO (joe): fix this to return all guard signatures
+func (t InProgressAttestation) GuardSignatures() []types.Signature {
+	return []types.Signature{}
 }
 
 // Origin gets the origin of the in-progress attestation.

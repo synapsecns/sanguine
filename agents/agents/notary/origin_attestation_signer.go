@@ -86,7 +86,7 @@ func (a OriginAttestationSigner) update(ctx context.Context) error {
 		return fmt.Errorf("could not sign message: %w", err)
 	}
 
-	signedAttestation := types.NewSignedAttestation(inProgressAttestationToSign.SignedAttestation().Attestation(), signature)
+	signedAttestation := types.NewSignedAttestation(inProgressAttestationToSign.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
 	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttestationToSign.OriginDispatchBlockNumber(), nil, 0, 0)
 	err = a.db.UpdateSignature(ctx, signedInProgressAttestation)
 	if err != nil {

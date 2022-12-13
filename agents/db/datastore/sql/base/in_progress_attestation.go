@@ -49,10 +49,10 @@ func (s Store) StoreNewInProgressAttestation(ctx context.Context, attestation ty
 
 // UpdateSignature sets the signature of the in-progress Attestation
 func (s Store) UpdateSignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
-	if inProgressAttestation.SignedAttestation().Signature() == nil {
+	if len(inProgressAttestation.SignedAttestation().NotarySignatures()) == 0 {
 		return fmt.Errorf("UpdateSignature called on attestation with a nil signature")
 	}
-	sig, err := types.EncodeSignature(inProgressAttestation.SignedAttestation().Signature())
+	sig, err := types.EncodeSignature(inProgressAttestation.SignedAttestation().NotarySignatures()[0])
 	if err != nil {
 		return fmt.Errorf("could not encode signature: %w", err)
 	}
