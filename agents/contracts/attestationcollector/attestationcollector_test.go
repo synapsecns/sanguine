@@ -56,19 +56,20 @@ func (a AttestationCollectorSuite) TestAttestationCollectorSuite() {
 	guardSignature, err := a.guardSigner.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(a.T(), err)
 
-	notarySignedAttestation := types.NewSignedAttestation(unsignedAttestation, notarySignature)
-	notaryEncodedSig, err := types.EncodeSignature(notarySignedAttestation.Signature())
+	signedAttestation := types.NewSignedAttestation(
+		unsignedAttestation,
+		[]types.Signature{guardSignature},
+		[]types.Signature{notarySignature})
+	encodedGuardSignatures, err := types.EncodeSignatures(signedAttestation.GuardSignatures())
 	Nil(a.T(), err)
-
-	guardSignedAttestation := types.NewSignedAttestation(unsignedAttestation, guardSignature)
-	guardEncodedSig, err := types.EncodeSignature(guardSignedAttestation.Signature())
+	encodedNotarySignatures, err := types.EncodeSignatures(signedAttestation.NotarySignatures())
 	Nil(a.T(), err)
 
 	attestation, err := a.attestationHarness.FormatAttestation(
 		&bind.CallOpts{Context: a.GetTestContext()},
 		encodedAttestation,
-		guardEncodedSig,
-		notaryEncodedSig,
+		encodedGuardSignatures,
+		encodedNotarySignatures,
 	)
 	Nil(a.T(), err)
 

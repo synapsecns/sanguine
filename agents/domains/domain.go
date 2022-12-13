@@ -32,7 +32,7 @@ type OriginContract interface {
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
 	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
 	// ProduceAttestation suggests an update from the origin contract
-	// TODO (joe): this will be changed to "ProduceAttestations" and return an attestion per destination
+	// TODO (joe): this will be changed to "ProduceAttestations" and return an attestation per destination
 	ProduceAttestation(ctx context.Context) (types.Attestation, error)
 }
 
