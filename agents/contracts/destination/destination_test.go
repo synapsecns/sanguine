@@ -54,8 +54,8 @@ func (d DestinationSuite) TestDestinationSuite() {
 	signature, err := d.signer.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(d.T(), err)
 
-	signedAttestation := types.NewSignedAttestation(unsignedAttestation, signature)
-	encodedSig, err := types.EncodeSignature(signedAttestation.Signature())
+	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{signature}, []types.Signature{})
+	encodedSig, err := types.EncodeSignature(signedAttestation.GuardSignatures()[0])
 	Nil(d.T(), err)
 
 	encodedAttestation, err := types.EncodeAttestation(unsignedAttestation)

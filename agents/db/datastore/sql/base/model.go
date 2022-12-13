@@ -252,15 +252,20 @@ func (s SignedAttestation) Attestation() types.Attestation {
 	return s
 }
 
-// Signature gets the signature of the signed attestation
-// note: this is the only accessor method that can fail on decoding
-func (s SignedAttestation) Signature() types.Signature {
+// GuardSignatures gets the guard signatures of the signed attestation
+// note: this can fail on decoding
+func (s SignedAttestation) GuardSignatures() []types.Signature {
 	res, err := types.DecodeSignature(s.SASignature)
 	if err != nil {
-		return types.NewSignature(big.NewInt(0), big.NewInt(0), big.NewInt(0))
+		return nil
 	}
 
-	return res
+	return []types.Signature{res}
+}
+
+// NotarySignatures implements the interface
+func (s SignedAttestation) NotarySignatures() []types.Signature {
+	return []types.Signature{}
 }
 
 // Origin gets the origin of the signed attestation.

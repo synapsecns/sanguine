@@ -1,9 +1,12 @@
 package types
 
 import (
-	"github.com/synapsecns/sanguine/core"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/core"
 )
+
+const SignatureLength = int(65)
 
 // Signature creates a new signature.
 type Signature interface {
