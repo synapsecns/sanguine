@@ -233,6 +233,7 @@ var _ types.CommittedMessage = CommittedMessage{}
 var _ types.Message = CommittedMessage{}
 
 // SignedAttestation stores attestations.
+// TODO (joe): This needs to be updated for the multiple signatures model. Fix coming soon.
 type SignedAttestation struct {
 	gorm.Model
 	// SAOrigin is the origin of the attestation
@@ -252,15 +253,22 @@ func (s SignedAttestation) Attestation() types.Attestation {
 	return s
 }
 
-// Signature gets the signature of the signed attestation
-// note: this is the only accessor method that can fail on decoding
-func (s SignedAttestation) Signature() types.Signature {
+// GuardSignatures gets the guard signatures of the signed attestation
+// note: this can fail on decoding
+// TODO (joe): Fix this. Right now, just returning the single guard signature.
+func (s SignedAttestation) GuardSignatures() []types.Signature {
 	res, err := types.DecodeSignature(s.SASignature)
 	if err != nil {
-		return types.NewSignature(big.NewInt(0), big.NewInt(0), big.NewInt(0))
+		return nil
 	}
 
-	return res
+	return []types.Signature{res}
+}
+
+// NotarySignatures implements the interface.
+// TODO (joe): Fix this.
+func (s SignedAttestation) NotarySignatures() []types.Signature {
+	return []types.Signature{}
 }
 
 // Origin gets the origin of the signed attestation.

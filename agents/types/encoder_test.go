@@ -57,9 +57,30 @@ func TestEncodeDecodeSignedAttestation(t *testing.T) {
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
-	fakeV := new(big.Int).SetUint64(uint64(gofakeit.Uint8()))
-	fakeR := big.NewInt(gofakeit.Int64())
-	fakeS := big.NewInt(gofakeit.Int64())
+	fakeGuardV1 := new(big.Int).SetUint64(uint64(gofakeit.Uint8()))
+	fakeGuardR1 := big.NewInt(gofakeit.Int64())
+	fakeGuardS1 := big.NewInt(gofakeit.Int64())
+	fakeGuardSig1 := types.NewSignature(fakeGuardV1, fakeGuardR1, fakeGuardS1)
+
+	fakeGuardV2 := new(big.Int).SetUint64(uint64(gofakeit.Uint8()))
+	fakeGuardR2 := big.NewInt(gofakeit.Int64())
+	fakeGuardS2 := big.NewInt(gofakeit.Int64())
+	fakeGuardSig2 := types.NewSignature(fakeGuardV2, fakeGuardR2, fakeGuardS2)
+
+	fakeGuardV3 := new(big.Int).SetUint64(uint64(gofakeit.Uint8()))
+	fakeGuardR3 := big.NewInt(gofakeit.Int64())
+	fakeGuardS3 := big.NewInt(gofakeit.Int64())
+	fakeGuardSig3 := types.NewSignature(fakeGuardV3, fakeGuardR3, fakeGuardS3)
+
+	fakeNotaryV1 := new(big.Int).SetUint64(uint64(gofakeit.Uint8()))
+	fakeNotaryR1 := big.NewInt(gofakeit.Int64())
+	fakeNotaryS1 := big.NewInt(gofakeit.Int64())
+	fakeNotarySig1 := types.NewSignature(fakeNotaryV1, fakeNotaryR1, fakeNotaryS1)
+
+	fakeNotaryV2 := new(big.Int).SetUint64(uint64(gofakeit.Uint8()))
+	fakeNotaryR2 := big.NewInt(gofakeit.Int64())
+	fakeNotaryS2 := big.NewInt(gofakeit.Int64())
+	fakeNotarySig2 := types.NewSignature(fakeNotaryV2, fakeNotaryR2, fakeNotaryS2)
 
 	attestKey := types.AttestationKey{
 		Origin:      domain,
@@ -68,7 +89,8 @@ func TestEncodeDecodeSignedAttestation(t *testing.T) {
 	}
 	signedAttestation := types.NewSignedAttestation(
 		types.NewAttestation(attestKey.GetRawKey(), root),
-		types.NewSignature(fakeV, fakeR, fakeS),
+		[]types.Signature{fakeGuardSig1, fakeGuardSig2, fakeGuardSig3},
+		[]types.Signature{fakeNotarySig1, fakeNotarySig2},
 	)
 
 	encoded, err := types.EncodeSignedAttestation(signedAttestation)
@@ -82,9 +104,20 @@ func TestEncodeDecodeSignedAttestation(t *testing.T) {
 	Equal(t, decoded.Attestation().Destination(), signedAttestation.Attestation().Destination())
 	Equal(t, decoded.Attestation().Nonce(), signedAttestation.Attestation().Nonce())
 
-	Equal(t, decoded.Signature().V(), signedAttestation.Signature().V())
-	Equal(t, decoded.Signature().R(), signedAttestation.Signature().R())
-	Equal(t, decoded.Signature().S(), signedAttestation.Signature().S())
+	Equal(t, len(decoded.GuardSignatures()), len(signedAttestation.GuardSignatures()))
+	Equal(t, len(decoded.NotarySignatures()), len(signedAttestation.NotarySignatures()))
+
+	for i := 0; i < len(decoded.GuardSignatures()); i++ {
+		Equal(t, decoded.GuardSignatures()[i].V(), signedAttestation.GuardSignatures()[i].V())
+		Equal(t, decoded.GuardSignatures()[i].R(), signedAttestation.GuardSignatures()[i].R())
+		Equal(t, decoded.GuardSignatures()[i].S(), signedAttestation.GuardSignatures()[i].S())
+	}
+
+	for i := 0; i < len(decoded.NotarySignatures()); i++ {
+		Equal(t, decoded.NotarySignatures()[i].V(), signedAttestation.NotarySignatures()[i].V())
+		Equal(t, decoded.NotarySignatures()[i].R(), signedAttestation.NotarySignatures()[i].R())
+		Equal(t, decoded.NotarySignatures()[i].S(), signedAttestation.NotarySignatures()[i].S())
+	}
 }
 
 func TestEncodeDecodeTips(t *testing.T) {

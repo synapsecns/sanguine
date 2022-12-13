@@ -77,11 +77,6 @@ abstract contract DestinationTools is OriginTools {
     ▏*║                            EXPECT EVENTS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function expectAttestationAccepted() public {
-        vm.expectEmit(true, true, true, true);
-        emit AttestationAccepted(attestationGuards, attestationNotaries, attestationRaw);
-    }
-
     function expectExecuted(uint32 domain, uint256 index) public {
         vm.expectEmit(true, true, true, true);
         emit Executed(domain, messageHashes[index]);
