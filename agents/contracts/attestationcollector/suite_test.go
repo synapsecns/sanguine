@@ -33,6 +33,7 @@ type AttestationCollectorSuite struct {
 	attestationContractMetadata contracts.DeployedContract
 	testBackendOrigin           backends.SimulatedTestBackend
 	testBackendDestination      backends.SimulatedTestBackend
+	testBackendAttestation      backends.SimulatedTestBackend
 	notaryWallet                wallet.Wallet
 	guardWallet                 wallet.Wallet
 	notarySigner                signer.Signer
@@ -47,16 +48,18 @@ func NewAttestationCollectorSuite(tb testing.TB) *AttestationCollectorSuite {
 	}
 }
 
+// SetupTest sets up the test.
 func (a *AttestationCollectorSuite) SetupTest() {
 	a.TestSuite.SetupTest()
 
 	a.testBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
 	a.testBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
+	a.testBackendAttestation = preset.GetMaticMumbai().Geth(a.GetTestContext(), a.T())
 	deployManager := testutil.NewDeployManager(a.T())
 
 	_, a.originContract = deployManager.GetOrigin(a.GetTestContext(), a.testBackendOrigin)
 	_, a.attestationHarness = deployManager.GetAttestationHarness(a.GetTestContext(), a.testBackendOrigin)
-	a.attestationContractMetadata, a.attestationContract = deployManager.GetAttestationCollector(a.GetTestContext(), a.testBackendDestination)
+	a.attestationContractMetadata, a.attestationContract = deployManager.GetAttestationCollector(a.GetTestContext(), a.testBackendAttestation)
 	a.destinationContractMetadata, a.destinationContract = deployManager.GetDestination(a.GetTestContext(), a.testBackendDestination)
 
 	var err error
@@ -72,9 +75,11 @@ func (a *AttestationCollectorSuite) SetupTest() {
 	a.notarySigner = localsigner.NewSigner(a.notaryWallet.PrivateKey())
 	a.testBackendOrigin.FundAccount(a.GetTestContext(), a.notarySigner.Address(), *big.NewInt(params.Ether))
 	a.testBackendDestination.FundAccount(a.GetTestContext(), a.notarySigner.Address(), *big.NewInt(params.Ether))
+	a.testBackendAttestation.FundAccount(a.GetTestContext(), a.notarySigner.Address(), *big.NewInt(params.Ether))
 	a.guardSigner = localsigner.NewSigner(a.guardWallet.PrivateKey())
 	a.testBackendOrigin.FundAccount(a.GetTestContext(), a.guardSigner.Address(), *big.NewInt(params.Ether))
 	a.testBackendDestination.FundAccount(a.GetTestContext(), a.guardSigner.Address(), *big.NewInt(params.Ether))
+	a.testBackendAttestation.FundAccount(a.GetTestContext(), a.guardSigner.Address(), *big.NewInt(params.Ether))
 
 	destOwnerPtr, err := a.destinationContract.DestinationCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
@@ -82,41 +87,50 @@ func (a *AttestationCollectorSuite) SetupTest() {
 	}
 
 	destOwnerAuth := a.testBackendDestination.GetTxContext(a.GetTestContext(), &destOwnerPtr)
-	_, err = a.destinationContract.AddNotary(destOwnerAuth.TransactOpts, uint32(a.testBackendDestination.GetChainID()), a.notarySigner.Address())
+	txDestinationNotaryAdd, err := a.destinationContract.AddNotary(destOwnerAuth.TransactOpts, uint32(a.testBackendDestination.GetChainID()), a.notarySigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
-	_, err = a.destinationContract.AddGuard(destOwnerAuth.TransactOpts, a.guardSigner.Address())
+	a.testBackendDestination.WaitForConfirmation(a.GetTestContext(), txDestinationNotaryAdd)
+	txDestinationGuardAdd, err := a.destinationContract.AddGuard(destOwnerAuth.TransactOpts, a.guardSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
+	a.testBackendDestination.WaitForConfirmation(a.GetTestContext(), txDestinationGuardAdd)
 
 	originOwnerPtr, err := a.originContract.OriginCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
 		a.T().Fatal(err)
 	}
-
 	originOwnerAuth := a.testBackendOrigin.GetTxContext(a.GetTestContext(), &originOwnerPtr)
-	_, err = a.originContract.AddNotary(originOwnerAuth.TransactOpts, uint32(a.testBackendDestination.GetChainID()), a.notarySigner.Address())
+
+	txOriginNotaryAdd, err := a.originContract.AddNotary(originOwnerAuth.TransactOpts, uint32(a.testBackendDestination.GetChainID()), a.notarySigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
-
-	_, err = a.originContract.AddGuard(originOwnerAuth.TransactOpts, a.guardSigner.Address())
+	a.testBackendOrigin.WaitForConfirmation(a.GetTestContext(), txOriginNotaryAdd)
+	txOriginGuardAdd, err := a.originContract.AddGuard(originOwnerAuth.TransactOpts, a.guardSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
+	a.testBackendOrigin.WaitForConfirmation(a.GetTestContext(), txOriginGuardAdd)
 
-	txContextAttestationCollector := a.testBackendDestination.GetTxContext(a.GetTestContext(), a.attestationContractMetadata.OwnerPtr())
-	_, err = a.attestationContract.AddNotary(txContextAttestationCollector.TransactOpts, uint32(a.testBackendDestination.GetChainID()), a.notarySigner.Address())
+	attestOwnerPtr, err := a.attestationContract.AttestationCollectorCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
 		a.T().Fatal(err)
 	}
+	attestOwnerAuth := a.testBackendAttestation.GetTxContext(a.GetTestContext(), &attestOwnerPtr)
 
-	/*_, err = a.attestationContract.AddNotary(originOwnerAuth.TransactOpts, a.guardSigner.Address())
+	txAddNotary, err := a.attestationContract.AddNotary(attestOwnerAuth.TransactOpts, uint32(a.testBackendDestination.GetChainID()), a.notarySigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
-	}*/
+	}
+	a.testBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddNotary)
+	txAddGuard, err := a.attestationContract.AddGuard(attestOwnerAuth.TransactOpts, a.guardSigner.Address())
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.testBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddGuard)
 }
 
 // TestAttestationCollectorSuite runs the integration test suite.
