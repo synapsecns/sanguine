@@ -81,6 +81,18 @@ contract ByteStringHarness {
         return _payload.ref(_type).argumentWords();
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              FORMATTING                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function formatSignature(
+        bytes32 r,
+        bytes32 s,
+        uint8 v
+    ) public pure returns (bytes memory) {
+        return ByteString.formatSignature({ r: r, s: s, v: v });
+    }
+
     function isSignature(bytes memory _payload) public pure returns (bool) {
         return _payload.ref(0).isSignature();
     }

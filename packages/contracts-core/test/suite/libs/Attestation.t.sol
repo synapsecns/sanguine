@@ -72,6 +72,16 @@ contract AttestationLibraryTest is SynapseLibraryTest {
                 guardSignaturesPayload,
                 notarySignaturesPayload
             );
+            // Both formatters should return the same payload
+            assertEq(
+                libHarness.formatAttestationFromViews(
+                    attData,
+                    guardSignaturesPayload,
+                    notarySignaturesPayload
+                ),
+                attestation,
+                "!formatAttestationFromViews"
+            );
         }
         {
             bytes memory allSigs = "";
@@ -93,16 +103,28 @@ contract AttestationLibraryTest is SynapseLibraryTest {
             );
         }
         // Test "id formatters"
-        assertEq(
-            libHarness.attestationDomains(origin, destination),
-            (uint256(origin) << 32) + destination,
-            "!attestationDomains"
-        );
-        assertEq(
-            libHarness.attestationKey(origin, destination, nonce),
-            (uint256(origin) << 64) + (uint256(destination) << 32) + nonce,
-            "!attestationKey"
-        );
+        uint64 attDomains = (uint64(origin) << 32) + destination;
+        {
+            assertEq(
+                libHarness.attestationDomains(origin, destination),
+                attDomains,
+                "!attestationDomains"
+            );
+            (uint32 _origin, uint32 _destination) = libHarness.unpackDomains(attDomains);
+            assertEq(_origin, origin, "!unpackDomains: origin");
+            assertEq(_destination, destination, "!unpackDomains: destination");
+        }
+        {
+            uint96 attKey = (uint96(origin) << 64) + (uint96(destination) << 32) + nonce;
+            assertEq(
+                libHarness.attestationKey(origin, destination, nonce),
+                attKey,
+                "!attestationKey"
+            );
+            (uint64 _attDomains, uint32 _nonce) = libHarness.unpackKey(attKey);
+            assertEq(_attDomains, attDomains, "!unpackKey: attestationDomains");
+            assertEq(_nonce, nonce, "!unpackKey: nonce");
+        }
         // Test formatting checker
         assertTrue(libHarness.isAttestation(attestation), "!isAttestation");
         // Test getters
@@ -235,6 +257,34 @@ contract AttestationLibraryTest is SynapseLibraryTest {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            TESTS: REVERTS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_guardSignature_revert_outOfRange(
+        uint8 guardSigs,
+        uint8 notarySigs,
+        uint256 guardIndex
+    ) public {
+        vm.assume(guardIndex >= guardSigs);
+        bytes memory attestation = createTestPayload(guardSigs, notarySigs);
+        libHarness.setIndex(guardIndex);
+        vm.expectRevert("Out of range");
+        libHarness.guardSignature({ _type: SynapseTypes.ATTESTATION, _payload: attestation });
+    }
+
+    function test_notarySignature_revert_outOfRange(
+        uint8 guardSigs,
+        uint8 notarySigs,
+        uint256 notaryIndex
+    ) public {
+        vm.assume(notaryIndex >= notarySigs);
+        bytes memory attestation = createTestPayload(guardSigs, notarySigs);
+        libHarness.setIndex(notaryIndex);
+        vm.expectRevert("Out of range");
+        libHarness.notarySignature({ _type: SynapseTypes.ATTESTATION, _payload: attestation });
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          TESTS: WRONG TYPE                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -303,8 +353,17 @@ contract AttestationLibraryTest is SynapseLibraryTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function createTestPayload() public pure returns (bytes memory) {
-        bytes memory attData = new bytes(Attestation.ATTESTATION_DATA_LENGTH);
-        bytes memory mockSig = new bytes(ByteString.SIGNATURE_LENGTH);
-        return abi.encodePacked(attData, uint8(1), uint8(1), mockSig, mockSig);
+        return createTestPayload({ guardSigs: 1, notarySigs: 1 });
+    }
+
+    function createTestPayload(uint8 guardSigs, uint8 notarySigs)
+        public
+        pure
+        returns (bytes memory)
+    {
+        bytes memory mockData = new bytes(Attestation.ATTESTATION_DATA_LENGTH);
+        bytes memory mockGuardSigs = new bytes(ByteString.SIGNATURE_LENGTH * guardSigs);
+        bytes memory mockNotarySigs = new bytes(ByteString.SIGNATURE_LENGTH * notarySigs);
+        return abi.encodePacked(mockData, guardSigs, notarySigs, mockGuardSigs, mockNotarySigs);
     }
 }
