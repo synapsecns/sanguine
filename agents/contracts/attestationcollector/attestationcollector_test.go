@@ -62,7 +62,7 @@ func (a AttestationCollectorSuite) TestAttestationCollectorSuite() {
 		[]types.Signature{notarySignature})
 	encodedGuardSignatures, err := types.EncodeSignatures(signedAttestation.GuardSignatures())
 	Nil(a.T(), err)
-	encodedNotarySignatures, err := types.EncodeSignatures(signedAttestation.GuardSignatures())
+	encodedNotarySignatures, err := types.EncodeSignatures(signedAttestation.NotarySignatures())
 	Nil(a.T(), err)
 
 	attestation, err := a.attestationHarness.FormatAttestation(

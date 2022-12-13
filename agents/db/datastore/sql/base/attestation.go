@@ -15,7 +15,7 @@ import (
 
 // StoreSignedAttestations stores signed attestations.
 func (s Store) StoreSignedAttestations(ctx context.Context, attestation types.SignedAttestation) error {
-	// TODO (joe): Fixe this to handle multiple guard and notary sigs??? Or have other type representing single agent signature
+	// TODO (joe): Fix this to handle multiple guard and notary sigs??? Or have other type representing single agent signature.
 	if len(attestation.GuardSignatures()) != 1 {
 		return fmt.Errorf("currently only handle signed attestation with single guard signature. Num guard sigs: %d", len(attestation.GuardSignatures()))
 	}

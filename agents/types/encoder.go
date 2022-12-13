@@ -20,7 +20,7 @@ func EncodeSignedAttestation(signed SignedAttestation) ([]byte, error) {
 
 	encodedAgentSignatures, err := EncodeAgentSignatures(signed.GuardSignatures(), signed.NotarySignatures())
 	if err != nil {
-		return nil, fmt.Errorf("could not encod agent signatures: %w", err)
+		return nil, fmt.Errorf("could not encode agent signatures: %w", err)
 	}
 
 	return append(encodedAttestation, encodedAgentSignatures...), nil
@@ -130,10 +130,10 @@ func DecodeAgentSignatures(toDecode []byte) ([]Signature, []Signature, error) {
 	if toDecodeLen < 2 {
 		return nil, nil, fmt.Errorf("could not decode signatures from raw bytes. Raw bytes size: %d", toDecodeLen)
 	}
-	currOffset := 0
+	// currOffset := 0
 	guardCount := int(toDecode[attestationAgentCountsGuardCountStartingByte])
 	notaryCount := int(toDecode[attestationAgentCountsNotaryCountStartingByte])
-	currOffset = 2
+	currOffset := 2
 
 	guardSignatures, err := DecodeSignatures(toDecode[currOffset : currOffset+guardCount*SignatureLength])
 	if err != nil {

@@ -54,7 +54,9 @@ func (d DestinationSuite) TestDestinationSuite() {
 	signature, err := d.signer.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(d.T(), err)
 
+	// TODO (joe): all this will change when I do the Guard MVP and I update things to have the multiple signatures.
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{signature}, []types.Signature{})
+	// TODO (joe): Just grabbing the guard signature at index 0 until this is fixed.
 	encodedSig, err := types.EncodeSignature(signedAttestation.GuardSignatures()[0])
 	Nil(d.T(), err)
 
