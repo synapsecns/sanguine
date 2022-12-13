@@ -3,50 +3,92 @@ pragma solidity 0.8.17;
 
 import { Attestation } from "./libs/Attestation.sol";
 import { AttestationHub } from "./hubs/AttestationHub.sol";
-import { TypedMemView } from "./libs/TypedMemView.sol";
+import { AttestationCollectorEvents } from "./events/AttestationCollectorEvents.sol";
+
+import { ByteString } from "./libs/Attestation.sol";
 
 import {
     OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract AttestationCollector is AttestationHub, OwnableUpgradeable {
+contract AttestationCollector is AttestationCollectorEvents, AttestationHub, OwnableUpgradeable {
     using Attestation for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using ByteString for bytes;
+    using ByteString for bytes29;
+
+    /**
+     * @notice Contains a merkle root and existing agent signatures for this root.
+     * @dev We are storing indexes for agent signatures. They are stored as
+     * "position of signature in `savedSignatures` array plus 1". The default value of 0
+     * means there is no agent signature for this root.
+     * Enforced invariant: for every saved root, al lest one of the indexes is non-zero,
+     * i.e. any root is saved with at least one agent (Guard/Notary) signature.
+     * Note: "index plus 1" is abstracted away from the off-chain agents.
+     * Events and getters containing `index` variable refer to conventional: 0 <= index < length
+     * @param root              Merkle root for some given `(origin, destination, nonce)`
+     * @param guardSigIndex     Guard signature's index in `savedSignatures` plus 1
+     * @param notarySigIndex    Notary signature's index in `savedSignatures` plus 1
+     */
+    struct SignedRoot {
+        bytes32 root;
+        uint128 guardSigIndex;
+        uint128 notarySigIndex;
+    }
+
+    /**
+     * @notice Contains an agent signature and attestation key if refers to.
+     * @dev We're storing saved merkle roots separately using {SignedRoot} struct.
+     * At the moment, no conflicting roots are saved.
+     * @param r             R-value of the signature payload
+     * @param s             S-value of the signature payload
+     * @param v             V-value of the signature payload
+     * @param isGuard       Whether the signer is Guard or Notary
+     * @param origin        Attestation origin domain
+     * @param destination   Attestation destination domain
+     * @param nonce         Attestation nonce
+     */
+    struct AgentSignature {
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+        bool isGuard;
+        uint32 origin;
+        uint32 destination;
+        uint32 nonce;
+        // 144 bits available
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @dev All submitted Notary Attestations are stored.
-     * As different Notaries might sign attestations with the same nonce,
-     * but different root (meaning one of the attestations is fraudulent),
-     * we need a system so store all such attestations.
+     * @notice Attested root for every (origin, destination, nonce) tuple.
+     * @dev At the moment, we only save one merkle root per (origin, destination, nonce) tuple.
+     * Every conflicting root is discarded.
      *
-     * `attestedRoots`: attested roots for every (origin, destination, nonce) tuple
-     * `signatures`: signatures for every submitted (origin, destination, nonce, root) attestation.
-     * We only store the first submitted signature for such attestation.
-     *
-     * attestationKey = (origin, destination, nonce)
+     * attKey = (origin, destination, nonce)
+     * signedRoots: attKey => (root with signatures)
      */
-    // [attestationKey => [roots]]
-    mapping(uint96 => bytes32[]) internal attestedRoots;
-    // [attestationKey => [root => signature]]
-    mapping(uint96 => mapping(bytes32 => bytes)) internal signatures;
+    mapping(uint96 => SignedRoot) internal signedRoots;
 
-    /// @dev We are also storing last submitted (nonce, root) attestation for every Notary.
-    /// attestationDomains = (origin, destination)
-    // [attestationDomains => [notary => latestNonce]]
-    mapping(uint64 => mapping(address => uint32)) internal latestNonces;
-    // [attestationDomains => [notary => latestRoot]]
-    mapping(uint64 => mapping(address => bytes32)) internal latestRoots;
+    /**
+     * @notice All stored agent signatures.
+     * @dev We save an signature only if the latest saved signature for that agent
+     * precedes the new one, i.e. has a lower nonce.
+     */
+    AgentSignature[] internal savedSignatures;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             UPGRADE GAP                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
+    /**
+     * @notice A list of signature indexes for every (origin, destination, agent) tuple.
+     * @dev signatureIndex is the position of agent signature in `savedSignatures` list plus 1.
+     * The default value of 0 indicates that signature is not in `savedSignatures`.
+     * Invariant: signature indexes in `agentSigIndexes` are non-zero (refer to saved signature).
+     *
+     * attDomains = (origin, destination)
+     * agentSigIndexes: attDomains => (agent => [signature indexes])
+     */
+    mapping(uint64 => mapping(address => uint256[])) internal agentSigIndexes;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕
@@ -57,13 +99,20 @@ contract AttestationCollector is AttestationHub, OwnableUpgradeable {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              OWNER ONLY                              ║*▕
+    ▏*║                        ADDING AGENTS (MOCKS)                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // TODO (Chi): add/remove agents via system calls from local BondingManager
 
-    // TODO: add/remove notaries upon bonding/unbonding
+    function addGuard(address _guard) external onlyOwner returns (bool) {
+        return _addAgent({ _domain: 0, _account: _guard });
+    }
 
     function addNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
         return _addAgent(_domain, _notary);
+    }
+
+    function removeGuard(address _guard) external onlyOwner returns (bool) {
+        return _removeAgent({ _domain: 0, _account: _guard });
     }
 
     function removeNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
@@ -75,138 +124,114 @@ contract AttestationCollector is AttestationHub, OwnableUpgradeable {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Get i-th attestation for given (origin, destination, nonce), if exists.
-     * Assuming no fraud is committed, index = 0 should be used.
-     * If fraud was committed, there might be
-     * more than one attestation for given (origin, destination, nonce).
+     * @notice Get the amount of (origin, destination) attestations saved for a given agent.
      */
-    function getAttestation(
+    function agentAttestations(
         uint32 _origin,
         uint32 _destination,
-        uint32 _nonce,
+        address _agent
+    ) external view returns (uint256) {
+        uint64 attDomains = Attestation.attestationDomains(_origin, _destination);
+        return agentSigIndexes[attDomains][_agent].length;
+    }
+
+    /**
+     * @notice Get the total amount of saved attestations.
+     */
+    function savedAttestations() external view returns (uint256) {
+        return savedSignatures.length;
+    }
+
+    /**
+     * @notice Get i-th (origin, destination) Attestation for a given agent.
+     * Will always contain exactly one agent signature.
+     */
+    function getAgentAttestation(
+        uint32 _origin,
+        uint32 _destination,
+        address _agent,
         uint256 _index
     ) external view returns (bytes memory) {
-        bytes32 root = getRoot(_origin, _destination, _nonce, _index);
-        // signature always exists for a stored root
-        return _formatAttestation(_origin, _destination, _nonce, root);
+        uint64 attDomains = Attestation.attestationDomains(_origin, _destination);
+        require(_index < agentSigIndexes[attDomains][_agent].length, "Out of range");
+        uint256 signatureIndex = agentSigIndexes[attDomains][_agent][_index];
+        return _formatAgentAttestation(signatureIndex);
     }
 
     /**
-     * @notice Get attestation for (origin, destination, nonce), if exists.
-     */
-    function getAttestation(
-        uint32 _origin,
-        uint32 _destination,
-        uint32 _nonce,
-        bytes32 _root
-    ) external view returns (bytes memory) {
-        require(_signatureExists(_origin, _destination, _nonce, _root), "!signature");
-        return _formatAttestation(_origin, _destination, _nonce, _root);
-    }
-
-    /**
-     * @notice Get latest attestation for the (origin, destination).
-     */
-    function getLatestAttestation(uint32 _origin, uint32 _destination)
-        external
-        view
-        returns (bytes memory)
-    {
-        uint256 amount = amountAgents(_destination);
-        require(amount != 0, "!notaries");
-        uint32 latestNonce = 0;
-        bytes32 latestRoot = bytes32(0);
-        uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
-        for (uint256 i = 0; i < amount; ) {
-            address notary = getAgent(_destination, i);
-            uint32 nonce = latestNonces[attestationDomains][notary];
-            // Check latest Notary's nonce against current latest nonce
-            if (nonce > latestNonce) {
-                latestRoot = latestRoots[attestationDomains][notary];
-                latestNonce = nonce;
-            }
-            unchecked {
-                ++i;
-            }
-        }
-        // Check if we found anything
-        require(latestNonce != 0, "No attestations found");
-        return _formatAttestation(_origin, _destination, latestNonce, latestRoot);
-    }
-
-    /**
-     * @notice Get latest nonce for the (origin, destination, notary).
+     * @notice Get the latest known nonce for (origin, destination) signed by the given agent.
+     * @dev Will return 0, if an agent hasn't submitted a single attestation yet.
      */
     function getLatestNonce(
         uint32 _origin,
         uint32 _destination,
-        address _notary
+        address _agent
     ) external view returns (uint32) {
-        uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
-        uint32 latestNonce = latestNonces[attestationDomains][_notary];
-        // Check if we found anything
-        require(latestNonce != 0, "No nonce found");
-        return latestNonce;
+        return _latestAgentNonce(Attestation.attestationDomains(_origin, _destination), _agent);
     }
 
     /**
-     * @notice Get latest root for the (origin, destination, notary).
-     */
-    function getLatestRoot(
-        uint32 _origin,
-        uint32 _destination,
-        address _notary
-    ) external view returns (bytes32) {
-        uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
-        bytes32 latestRoot = latestRoots[attestationDomains][_notary];
-        // Check if we found anything
-        require(latestRoot != 0, "No root found");
-        return latestRoot;
-    }
-
-    /**
-     * @notice Get latest attestation for the domain signed by given Notary.
+     * @notice Get latest attestation for (origin, destination) signed by given agent.
      */
     function getLatestAttestation(
         uint32 _origin,
         uint32 _destination,
-        address _notary
+        address _agent
     ) external view returns (bytes memory) {
-        uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
-        uint32 nonce = latestNonces[attestationDomains][_notary];
-        require(nonce != 0, "No attestations found");
-        bytes32 root = latestRoots[attestationDomains][_notary];
-        return _formatAttestation(_origin, _destination, nonce, root);
+        uint64 attDomains = Attestation.attestationDomains(_origin, _destination);
+        uint256 amount = agentSigIndexes[attDomains][_agent].length;
+        require(amount != 0, "No attestations found");
+        uint256 signatureIndex = agentSigIndexes[attDomains][_agent][amount - 1];
+        return _formatAgentAttestation(signatureIndex);
     }
 
     /**
-     * @notice Get amount of attested roots for given (domain, nonce).
-     * Assuming no fraud is committed, amount <= 1.
-     * If amount > 1, fraud was committed.
+     * @notice Get Attestation for (origin, destination, nonce), if it was previously saved.
+     * Will contain at least one agent signature.
+     * Will contain a single guard signature, if it was previously saved.
+     * Will contain a single notary signature, if it was previously saved.
      */
-    function rootsAmount(
+    function getAttestation(
         uint32 _origin,
         uint32 _destination,
         uint32 _nonce
-    ) external view returns (uint256) {
-        uint96 attestationKey = Attestation.attestationKey(_origin, _destination, _nonce);
-        return attestedRoots[attestationKey].length;
+    ) external view returns (bytes memory) {
+        uint96 attKey = Attestation.attestationKey(_origin, _destination, _nonce);
+        SignedRoot memory signedRoot = signedRoots[attKey];
+        require(signedRoot.root != bytes32(0), "Unknown nonce");
+        bytes memory attData = Attestation.formatAttestationData({
+            _origin: _origin,
+            _destination: _destination,
+            _nonce: _nonce,
+            _root: signedRoot.root
+        });
+        return
+            _formatDualAttestation({
+                _attestationData: attData,
+                _guardSignatureIndex: signedRoot.guardSigIndex,
+                _notarySignatureIndex: signedRoot.notarySigIndex
+            });
     }
 
     /**
-     * @notice Get i-th root for given (domain, nonce), if exists.
-     * Assuming no fraud is committed, index = 0 should be used.
-     * If fraud was committed, there might be more than one root for given (domain, nonce).
+     * @notice Get merkle root for (origin, destination, nonce), if it was previously saved.
      */
     function getRoot(
         uint32 _origin,
         uint32 _destination,
-        uint32 _nonce,
-        uint256 _index
-    ) public view returns (bytes32) {
-        uint96 attestationKey = Attestation.attestationKey(_origin, _destination, _nonce);
-        require(_index < attestedRoots[attestationKey].length, "!index");
-        return attestedRoots[attestationKey][_index];
+        uint32 _nonce
+    ) external view returns (bytes32) {
+        uint96 attKey = Attestation.attestationKey(_origin, _destination, _nonce);
+        return signedRoots[attKey].root;
+    }
+
+    /**
+     * @notice Get i-th saved Attestation from the global list of "all saved agents attestations"
+     * Will always contain exactly one agent signature.
+     */
+    function getSavedAttestation(uint256 _index) external view returns (bytes memory) {
+        require(_index < savedSignatures.length, "Out of range");
+        return _formatAgentAttestation({ _signatureIndex: _index + 1 });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -214,74 +239,244 @@ contract AttestationCollector is AttestationHub, OwnableUpgradeable {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @dev Both Notary and Guard signatures
-     * have been checked at this point (see ReportHub.sol).
+     * @notice Saves the attestation data, if it doesn't contradict the existing data.
+     * Saves all agent signatures that are not outdated.
+     * @dev Guards and Notaries signatures and roles have been checked in AttestationHub.
      *
      * @param _guards           Guard addresses (signatures&roles already verified)
      * @param _notaries         Notary addresses (signatures&roles already verified)
      * @param _attestationView  Memory view over the Attestation for convenience
-     * @param _attestation      Payload with Attestation data and signature
-     * @return TRUE if Attestation was stored.
+     * @return stored   TRUE if Attestation was stored.
      */
     function _handleAttestation(
         address[] memory _guards,
         address[] memory _notaries,
         bytes29 _attestationView,
         bytes memory _attestation
-    ) internal override returns (bool) {
-        /* TODO (Chi): update AttestationCollector to handle the co-signed attestations
-        // Get attestation fields
-        uint32 origin = _attestationView.attestedOrigin();
-        uint32 destination = _attestationView.attestedDestination();
-        uint32 nonce = _attestationView.attestedNonce();
+    ) internal override returns (bool stored) {
+        uint96 attKey = _attestationView.attestedKey();
         bytes32 root = _attestationView.attestedRoot();
-        // Get attestation IDs
-        uint96 attestedKey = _attestationView.attestedKey();
-        uint64 attestedDomains = _attestationView.attestedDomains();
-        // Check if the same Notary have already submitted a more recent attestation
-        require(nonce > latestNonces[attestedDomains][_notary], "Outdated attestation");
-        // Don't store Attestation, if another Notary
-        // have submitted the same (origin, destination, nonce, root) before.
-        require(!_signatureExists(origin, destination, nonce, root), "Duplicated attestation");
-        // Update Notary's "latest attestation" for (origin, destination)
-        latestNonces[attestedDomains][_notary] = nonce;
-        latestRoots[attestedDomains][_notary] = root;
-        // Save signature and root
-        signatures[attestedKey][root] = _attestationView.notarySignature().clone();
-        attestedRoots[attestedKey].push(root);
-        emit AttestationAccepted(_notary, _attestation);
-        return true;
-        */
+        // TODO (Chi): to enforce "non-zero saved root" invariant by
+        // checking if root is non-zero in Attestation.isAttestation()
+        require(root != bytes32(0), "Root is zero");
+        // Check what we have saved for this `attKey` previously
+        SignedRoot memory existingRoot = signedRoots[attKey];
+        if (existingRoot.root == bytes32(0)) {
+            // Case 1: no root was saved for `attKey`.
+            // Meaning no sig indexes were saved as well.
+            // Attestation has at least one signature (enforced in Attestation.isAttestation).
+            existingRoot.root = root;
+        } else if (existingRoot.root != root) {
+            // Case 2: another root was saved for `attKey`.
+            // At the moment we don't do anything here
+            // TODO (Chi): actually do something
+            return false;
+        }
+        // Case 3: the same root was saved for `attKey`.
+        // Need to go through attestation signatures and store the ones we don't have.
+        // Track if at least one new signature was linked to the attested root
+        // Save all new guard signatures
+        bool linked;
+        (stored, linked) = _handleSignatures({
+            _attestationView: _attestationView,
+            _existingRoot: existingRoot,
+            _isGuard: true,
+            _agents: _guards
+        });
+        // Save all new notary signatures
+        (bool _stored, bool _linked) = _handleSignatures({
+            _attestationView: _attestationView,
+            _existingRoot: existingRoot,
+            _isGuard: false,
+            _agents: _notaries
+        });
+        // Check if at least one agent signature was stored / linked
+        stored = stored || _stored;
+        linked = linked || _linked;
+        // Emit event only if at least one signature was stored
+        if (stored) {
+            emit AttestationAccepted(_guards, _notaries, _attestation);
+        }
+        // Update storage records if at least one signature was linked
+        if (linked) {
+            signedRoots[attKey] = existingRoot;
+        }
     }
 
-    function _formatAttestation(
-        uint32 _origin,
-        uint32 _destination,
-        uint32 _nonce,
-        bytes32 _root
-    ) internal view returns (bytes memory) {
-        /* TODO (Chi): update AttestationCollector to handle the co-signed attestations
-        uint96 attestationKey = Attestation.attestationKey(_origin, _destination, _nonce);
+    /**
+     * @notice Saves not-outdated signatures for either all guard or notary signers
+     * form the attestation.
+     * Signature is considered outdated, if the same signer has already submitted
+     * an attestation with an equal or bigger nonce.
+     */
+    function _handleSignatures(
+        bytes29 _attestationView,
+        SignedRoot memory _existingRoot,
+        bool _isGuard,
+        address[] memory _agents
+    ) internal returns (bool signatureStored, bool signatureLinked) {
+        uint256 amount = _agents.length;
+        for (uint256 i = 0; i < amount; ++i) {
+            uint256 savedSigIndex = _insertAttestation({
+                _attestationView: _attestationView,
+                _agentIndex: i,
+                _isGuard: _isGuard,
+                _agent: _agents[i]
+            });
+            // Check if the signature was saved
+            if (savedSigIndex != 0) {
+                signatureStored = true;
+                // TODO (Chi): link every saved signature to have fallback signatures
+                if (_isGuard && _existingRoot.guardSigIndex == 0) {
+                    // Link a guard signature only if no guard signatures have been linked before
+                    _existingRoot.guardSigIndex = uint128(savedSigIndex);
+                    signatureLinked = true;
+                } else if (!_isGuard && _existingRoot.notarySigIndex == 0) {
+                    // Link a notary signature only if no notary signatures have been linked before
+                    _existingRoot.notarySigIndex = uint128(savedSigIndex);
+                    signatureLinked = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * @notice Saves signature of a given attestation signer, if it is not outdated.
+     * Signature is considered outdated, if the same signer has already submitted
+     * an attestation with an equal or bigger nonce.
+     */
+    function _insertAttestation(
+        bytes29 _attestationView,
+        uint256 _agentIndex,
+        bool _isGuard,
+        address _agent
+    ) internal returns (uint256 signatureIndex) {
+        uint64 attDomains = _attestationView.attestedDomains();
+        uint32 nonce = _attestationView.attestedNonce();
+        // Don't store outdated agent attestation
+        if (nonce <= _latestAgentNonce(attDomains, _agent)) return 0;
+        // Get the memory view over the agent's signature
+        bytes29 signature = (
+            _isGuard
+                ? _attestationView.guardSignature(_agentIndex)
+                : _attestationView.notarySignature(_agentIndex)
+        );
+        // Second agent signature will be left empty
+        bytes29 emptySig = bytes("").castToSignature();
+        // Construct the signature struct to save
+        AgentSignature memory agentSig;
+        (agentSig.r, agentSig.s, agentSig.v) = signature.toRSV();
+        agentSig.isGuard = _isGuard;
+        (agentSig.origin, agentSig.destination) = Attestation.unpackDomains(attDomains);
+        agentSig.nonce = nonce;
+        savedSignatures.push(agentSig);
+        // The signature is stored at length-1, but we add 1 to all indexes
+        // and use 0 as a sentinel value
+        signatureIndex = uint128(savedSignatures.length);
+        agentSigIndexes[attDomains][_agent].push(signatureIndex);
+        // Construct attestation with a single signature of a given agent
+        // Here we pass views over the existing byte arrays to reduce amount of copying into memory
+        bytes memory agentAttestation = Attestation.formatAttestation({
+            _dataView: _attestationView.attestationData(),
+            _guardSigsView: _isGuard ? signature : emptySig,
+            _notarySigsView: _isGuard ? emptySig : signature
+        });
+        // Use the actual signature position in `savedSignatures` for the event
+        emit AttestationSaved(signatureIndex - 1, agentAttestation);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL VIEWS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Returns a previously saved attestation.
+     * @dev The default index value of 0 means there is no saved agent signature.
+     * This is abstracted away from the off-chain agents.
+     * @param _signatureIndex   Signature position in `savedSignatures` plus 1
+     */
+    function _getSignature(uint256 _signatureIndex) internal view returns (bytes memory signature) {
+        if (_signatureIndex != 0) {
+            AgentSignature memory agentSig = savedSignatures[_signatureIndex - 1];
+            signature = ByteString.formatSignature({ r: agentSig.r, s: agentSig.s, v: agentSig.v });
+        }
+    }
+
+    /**
+     * @notice Forms a "single-agent" attestation using a previously saved signature.
+     * @param _signatureIndex   Signature position in `savedSignatures` plus 1
+     */
+    function _formatAgentAttestation(uint256 _signatureIndex) internal view returns (bytes memory) {
+        // Invariant: we always save "index in the array plus 1" as `_signatureIndex`
+        assert(_signatureIndex != 0);
+        // Read saved agent signature
+        AgentSignature memory agentSig = savedSignatures[_signatureIndex - 1];
+        uint96 attKey = Attestation.attestationKey({
+            _origin: agentSig.origin,
+            _destination: agentSig.destination,
+            _nonce: agentSig.nonce
+        });
+        bytes32 root = signedRoots[attKey].root;
+        // Invariant: Every saved signature refers to saved root
+        assert(root != bytes32(0));
+        // Reconstruct attestation data
+        bytes memory attData = Attestation.formatAttestationData({
+            _origin: agentSig.origin,
+            _destination: agentSig.destination,
+            _nonce: agentSig.nonce,
+            _root: root
+        });
+        // Reconstruct agent signature on `attData`
+        bytes memory signature = ByteString.formatSignature({
+            r: agentSig.r,
+            s: agentSig.s,
+            v: agentSig.v
+        });
+        // Format attestation using a single signature
         return
-            Attestation.formatAttestation(
-                Attestation.formatAttestationData(_origin, _destination, _nonce, _root),
-                signatures[attestationKey][_root]
-            );
-        */
+            Attestation.formatAttestation({
+                _data: attData,
+                _guardSignatures: agentSig.isGuard ? signature : bytes(""),
+                _notarySignatures: agentSig.isGuard ? bytes("") : signature
+            });
     }
 
-    function _signatureExists(
-        uint32 _origin,
-        uint32 _destination,
-        uint32 _nonce,
-        bytes32 _root
-    ) internal view returns (bool) {
-        uint96 attestationKey = Attestation.attestationKey(_origin, _destination, _nonce);
-        return signatures[attestationKey][_root].length > 0;
+    /**
+     * @notice Forms an attestation with one guard signature (if present)
+     * and one notary signature (if present).
+     */
+    function _formatDualAttestation(
+        bytes memory _attestationData,
+        uint256 _guardSignatureIndex,
+        uint256 _notarySignatureIndex
+    ) internal view returns (bytes memory) {
+        return
+            Attestation.formatAttestation({
+                _data: _attestationData,
+                _guardSignatures: _getSignature(_guardSignatureIndex),
+                _notarySignatures: _getSignature(_notarySignatureIndex)
+            });
     }
 
-    function _isIgnoredAgent(uint32 _domain, address) internal pure override returns (bool) {
-        // AttestationCollector ignores Guards for the time being
-        return _domain == 0;
+    /**
+     * @notice Returns the latest known nonce that was used in an attestation
+     * by a given agent.
+     * @dev Will return 0, if an agent hasn't submitted a single attestation yet.
+     */
+    function _latestAgentNonce(uint64 _attDomains, address _agent)
+        internal
+        view
+        returns (uint32 nonce)
+    {
+        uint256 length = agentSigIndexes[_attDomains][_agent].length;
+        if (length > 0) {
+            uint256 sigIndex = agentSigIndexes[_attDomains][_agent][length - 1];
+            nonce = savedSignatures[sigIndex - 1].nonce;
+        }
+    }
+
+    function _isIgnoredAgent(uint32, address) internal pure override returns (bool) {
+        // AttestationCollector doesn't ignore anything
+        return false;
     }
 }
