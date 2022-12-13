@@ -266,7 +266,7 @@ func (s SignedAttestation) GuardSignatures() []types.Signature {
 }
 
 // NotarySignatures implements the interface.
-// TODO (joe): Fix this
+// TODO (joe): Fix this.
 func (s SignedAttestation) NotarySignatures() []types.Signature {
 	return []types.Signature{}
 }
