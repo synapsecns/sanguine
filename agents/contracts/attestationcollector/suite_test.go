@@ -145,7 +145,6 @@ func (a *AttestationCollectorSuite) SetupTest() {
 	a.SetupOrigin(deployManager)
 	a.SetupDestination(deployManager)
 	a.SetupAttestation(deployManager)
-
 }
 
 // TestAttestationCollectorSuite runs the integration test suite.
