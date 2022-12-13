@@ -77,7 +77,7 @@ func EncodeSignatures(signatures []Signature) ([]byte, error) {
 	return rawBytes, nil
 }
 
-// DecodeSignature decodes signatures.
+// DecodeSignatures decodes signatures.
 func DecodeSignatures(toDecode []byte) ([]Signature, error) {
 	signatures := []Signature{}
 
@@ -94,7 +94,7 @@ func DecodeSignatures(toDecode []byte) ([]Signature, error) {
 			return nil, fmt.Errorf("could not decode signature: %w", err)
 		}
 		signatures = append(signatures, newSignature)
-		currOffset = currOffset + SignatureLength
+		currOffset += SignatureLength
 	}
 
 	return signatures, nil
@@ -124,7 +124,7 @@ func EncodeAgentSignatures(guardSignatures, notarySignatures []Signature) ([]byt
 	return rawBytes, nil
 }
 
-// DecodeAgentSignature decodes agent signatures.
+// DecodeAgentSignatures decodes agent signatures.
 func DecodeAgentSignatures(toDecode []byte) ([]Signature, []Signature, error) {
 	toDecodeLen := len(toDecode)
 	if toDecodeLen < 2 {
@@ -139,7 +139,7 @@ func DecodeAgentSignatures(toDecode []byte) ([]Signature, []Signature, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not decode guard signatures: %w", err)
 	}
-	currOffset = currOffset + guardCount*SignatureLength
+	currOffset += guardCount * SignatureLength
 
 	notarySignatures, err := DecodeSignatures(toDecode[currOffset : currOffset+notaryCount*SignatureLength])
 	if err != nil {

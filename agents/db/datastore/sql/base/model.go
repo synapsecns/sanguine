@@ -263,7 +263,7 @@ func (s SignedAttestation) GuardSignatures() []types.Signature {
 	return []types.Signature{res}
 }
 
-// NotarySignatures implements the interface
+// NotarySignatures implements the interface.
 func (s SignedAttestation) NotarySignatures() []types.Signature {
 	return []types.Signature{}
 }

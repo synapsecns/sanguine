@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/core"
 )
 
+// SignatureLength for ecdsa signature.
 const SignatureLength = int(65)
 
 // Signature creates a new signature.

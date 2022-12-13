@@ -71,11 +71,11 @@ type AttestedDomains struct {
 	Destination uint32
 }
 
-// AttestationAgentCounts is the tuple (GuardCount, NotaryCount) so we know how many of each type of signature we have
+// AttestationAgentCounts is the tuple (GuardCount, NotaryCount) so we know how many of each type of signature we have.
 type AttestationAgentCounts struct {
-	// GuardCount is the number of guard signatures collected in the SignedAttestation
+	// GuardCount is the number of guard signatures collected in the SignedAttestation.
 	GuardCount uint32
-	// NotaryCount is the number of notary signatures collected in the SignedAttestation
+	// NotaryCount is the number of notary signatures collected in the SignedAttestation.
 	NotaryCount uint32
 }
 

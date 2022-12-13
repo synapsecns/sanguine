@@ -17,10 +17,10 @@ import (
 func (s Store) StoreSignedAttestations(ctx context.Context, attestation types.SignedAttestation) error {
 	// TODO (joe): Fixe this to handle multiple guard and notary sigs??? Or have other type representing single agent signature
 	if len(attestation.GuardSignatures()) != 1 {
-		return fmt.Errorf("Currently only handle signed attestation with single guard signature. Num guard sigs: %d", len(attestation.GuardSignatures()))
+		return fmt.Errorf("currently only handle signed attestation with single guard signature. Num guard sigs: %d", len(attestation.GuardSignatures()))
 	}
 	if len(attestation.NotarySignatures()) != 0 {
-		return fmt.Errorf("Currently only handle signed attestation with single guard signature. Num notary sigs: %d", len(attestation.NotarySignatures()))
+		return fmt.Errorf("currently only handle signed attestation with single guard signature. Num notary sigs: %d", len(attestation.NotarySignatures()))
 	}
 	sig, err := types.EncodeSignature(attestation.GuardSignatures()[0])
 	if err != nil {
