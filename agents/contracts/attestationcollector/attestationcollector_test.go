@@ -22,16 +22,16 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	LessOrEqual(a.T(), amountGuards, 1)
 	LessOrEqual(a.T(), amountNotaries, 1)
 
-	txContextAttestationCollector := a.testBackendAttestation.GetTxContext(a.GetTestContext(), a.attestationContractMetadata.OwnerPtr())
+	txContextAttestationCollector := a.TestBackendAttestation.GetTxContext(a.GetTestContext(), a.AttestationContractMetadata.OwnerPtr())
 
 	// Create a channel and subscription to receive AttestationAccepted events as they are emitted.
 	attestationSink := make(chan *attestationcollector.AttestationCollectorAttestationAccepted)
-	subAttestation, err := a.attestationContract.WatchAttestationAccepted(&bind.WatchOpts{Context: a.GetTestContext()}, attestationSink)
+	subAttestation, err := a.AttestationContract.WatchAttestationAccepted(&bind.WatchOpts{Context: a.GetTestContext()}, attestationSink)
 	Nil(a.T(), err)
 
 	// Create an attestation
-	origin := uint32(a.testBackendOrigin.GetBigChainID().Uint64())
-	destination := uint32(a.testBackendDestination.GetChainID())
+	origin := uint32(a.TestBackendOrigin.GetBigChainID().Uint64())
+	destination := uint32(a.TestBackendDestination.GetChainID())
 	// destination := origin + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
@@ -49,13 +49,13 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 
 	notarySignatures := []types.Signature{}
 	if amountNotaries == 1 {
-		notarySignature, err := a.notarySigner.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+		notarySignature, err := a.NotarySigner.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 		Nil(a.T(), err)
 		notarySignatures = append(notarySignatures, notarySignature)
 	}
 	guardSignatures := []types.Signature{}
 	if amountGuards == 1 {
-		guardSignature, err := a.guardSigner.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+		guardSignature, err := a.GuardSigner.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 		Nil(a.T(), err)
 		guardSignatures = append(guardSignatures, guardSignature)
 	}
@@ -68,7 +68,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	encodedNotarySignatures, err := types.EncodeSignatures(signedAttestation.NotarySignatures())
 	Nil(a.T(), err)
 
-	attestation, err := a.attestationHarness.FormatAttestation(
+	attestation, err := a.AttestationHarness.FormatAttestation(
 		&bind.CallOpts{Context: a.GetTestContext()},
 		encodedAttestation,
 		encodedGuardSignatures,
@@ -77,9 +77,9 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	Nil(a.T(), err)
 
 	// Submit the attestation to get an AttestationSubmitted event.
-	txSubmitAttestation, err := a.attestationContract.SubmitAttestation(txContextAttestationCollector.TransactOpts, attestation)
+	txSubmitAttestation, err := a.AttestationContract.SubmitAttestation(txContextAttestationCollector.TransactOpts, attestation)
 	Nil(a.T(), err)
-	a.testBackendAttestation.WaitForConfirmation(a.GetTestContext(), txSubmitAttestation)
+	a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txSubmitAttestation)
 
 	watchCtx, cancel := context.WithTimeout(a.GetTestContext(), time.Second*10)
 	defer cancel()
@@ -92,7 +92,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 		a.T().Error(a.T(), subAttestation.Err())
 	// get AttestationSubmitted event
 	case item := <-attestationSink:
-		parser, err := attestationcollector.NewParser(a.attestationContract.Address())
+		parser, err := attestationcollector.NewParser(a.AttestationContract.Address())
 		Nil(a.T(), err)
 		// Check to see if the event was an AttestationSubmitted event.
 		eventType, ok := parser.EventType(item.Raw)
