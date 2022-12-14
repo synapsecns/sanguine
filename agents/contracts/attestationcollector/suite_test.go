@@ -10,20 +10,20 @@ import (
 
 // AttestationCollectorSuite is the attestation collector test suite.
 type AttestationCollectorSuite struct {
-	*testsuite.SimulatedBackendsSuite
+	*testsuite.SimulatedBackendsTestSuite
 }
 
 // NewAttestationCollectorSuite creates an end-to-end test suite.
 func NewAttestationCollectorSuite(tb testing.TB) *AttestationCollectorSuite {
 	tb.Helper()
 	return &AttestationCollectorSuite{
-		SimulatedBackendsSuite: testsuite.NewSimulatedBackendsSuite(tb),
+		SimulatedBackendsTestSuite: testsuite.NewSimulatedBackendsTestSuite(tb),
 	}
 }
 
 // SetupTest sets up the test.
 func (a *AttestationCollectorSuite) SetupTest() {
-	a.SimulatedBackendsSuite.SetupTest()
+	a.SimulatedBackendsTestSuite.SetupTest()
 }
 
 // TestAttestationCollectorSuite runs the integration test suite.

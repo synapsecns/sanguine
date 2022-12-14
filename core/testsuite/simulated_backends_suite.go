@@ -20,14 +20,14 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
 
-// SimulatedBackendsSuite can be used as the base for any test needing simulated backends
+// SimulatedBackendsTestSuite can be used as the base for any test needing simulated backends
 // that have an origin, destination and attestation collector and a guard and notary
 // added to each.
 // TODO (joe): For tests that do not need all 3 simulated backends, allow them to pass in
 // flags indicating the subset of backends desired. Some tests might only want
 // an attestation collector, others might only want an origin and an attestation collector,
 // others might want just a destination, etc.
-type SimulatedBackendsSuite struct {
+type SimulatedBackendsTestSuite struct {
 	*TestSuite
 	OriginContract              *origin.OriginRef
 	DestinationContract         *destination.DestinationRef
@@ -44,16 +44,16 @@ type SimulatedBackendsSuite struct {
 	GuardSigner                 signer.Signer
 }
 
-// NewSimulatedBackendsSuite creates an end-to-end test suite with simulated
+// NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
 // backends set up.
-func NewSimulatedBackendsSuite(tb testing.TB) *SimulatedBackendsSuite {
+func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 	tb.Helper()
-	return &SimulatedBackendsSuite{
+	return &SimulatedBackendsTestSuite{
 		TestSuite: NewTestSuite(tb),
 	}
 }
 
-func (a *SimulatedBackendsSuite) SetupOrigin(deployManager *testutil.DeployManager) {
+func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *testutil.DeployManager) {
 	_, a.OriginContract = deployManager.GetOrigin(a.GetTestContext(), a.TestBackendOrigin)
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotarySigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.GuardSigner.Address(), *big.NewInt(params.Ether))
@@ -75,7 +75,7 @@ func (a *SimulatedBackendsSuite) SetupOrigin(deployManager *testutil.DeployManag
 	a.TestBackendOrigin.WaitForConfirmation(a.GetTestContext(), txOriginGuardAdd)
 }
 
-func (a *SimulatedBackendsSuite) SetupDestination(deployManager *testutil.DeployManager) {
+func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *testutil.DeployManager) {
 	a.DestinationContractMetadata, a.DestinationContract = deployManager.GetDestination(a.GetTestContext(), a.TestBackendDestination)
 
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotarySigner.Address(), *big.NewInt(params.Ether))
@@ -98,7 +98,7 @@ func (a *SimulatedBackendsSuite) SetupDestination(deployManager *testutil.Deploy
 	a.TestBackendDestination.WaitForConfirmation(a.GetTestContext(), txDestinationGuardAdd)
 }
 
-func (a *SimulatedBackendsSuite) SetupAttestation(deployManager *testutil.DeployManager) {
+func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *testutil.DeployManager) {
 	_, a.AttestationHarness = deployManager.GetAttestationHarness(a.GetTestContext(), a.TestBackendAttestation)
 	a.AttestationContractMetadata, a.AttestationContract = deployManager.GetAttestationCollector(a.GetTestContext(), a.TestBackendAttestation)
 
@@ -124,7 +124,7 @@ func (a *SimulatedBackendsSuite) SetupAttestation(deployManager *testutil.Deploy
 }
 
 // SetupTest sets up the test.
-func (a *SimulatedBackendsSuite) SetupTest() {
+func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.TestSuite.SetupTest()
 
 	a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
