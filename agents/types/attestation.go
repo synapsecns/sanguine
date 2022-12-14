@@ -303,9 +303,7 @@ func (a AttestedDomains) GetRawDomains() *big.Int {
 
 // NewAttestationAgentCounts takes the raw AttestationAgentCounts serialized as a big endian big.Int
 // and converts it to AttestationAgentCounts which is a tuple of (GuardCount, NotaryCount).
-func NewAttestationAgentCounts(rawAgentCounts *big.Int) AttestationAgentCounts {
-	rawBytes := make([]byte, sizeOfUint16)
-	rawAgentCounts.FillBytes(rawBytes)
+func NewAttestationAgentCounts(rawBytes []byte) AttestationAgentCounts {
 	guardCountBytes := rawBytes[attestationAgentCountsGuardCountStartingByte:attestationAgentCountsNotaryCountStartingByte]
 	notaryCountBytes := rawBytes[attestationAgentCountsNotaryCountStartingByte:attestationAgentCountsSize]
 
@@ -320,7 +318,7 @@ func NewAttestationAgentCounts(rawAgentCounts *big.Int) AttestationAgentCounts {
 
 // GetRawAgentCounts returns the AttestationAgentCounts which is a tuple of (GuardCount, NotaryCount)
 // as a serialized big.Int.
-func (a AttestationAgentCounts) GetRawAgentCounts() *big.Int {
+func (a AttestationAgentCounts) GetRawAgentCounts() []byte {
 	guardCountBytes := make([]byte, sizeOfUint8)
 	guardCountBytes[0] = uint8(a.GuardCount)
 	notaryCountBytes := make([]byte, sizeOfUint8)
@@ -328,9 +326,7 @@ func (a AttestationAgentCounts) GetRawAgentCounts() *big.Int {
 	rawBytes := make([]byte, sizeOfUint16)
 	copy(rawBytes[attestationAgentCountsGuardCountStartingByte:attestationAgentCountsNotaryCountStartingByte], guardCountBytes)
 	copy(rawBytes[attestationAgentCountsNotaryCountStartingByte:attestationAgentCountsSize], notaryCountBytes)
-	rawAgentCounts := new(big.Int)
-	rawAgentCounts.SetBytes(rawBytes)
-	return rawAgentCounts
+	return rawBytes
 }
 
 var _ SignedAttestation = signedAttestation{}

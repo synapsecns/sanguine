@@ -14,36 +14,43 @@ import (
 )
 
 func (i ContractSuite) TestSubmitAttestation() {
-	// TODO (joe): Get this test working
-	/*attestationCollector*/
-	_, err := evm.NewAttestationCollectorContract(i.GetTestContext(), i.attestationBackend, i.attestationContract.Address())
+	attestationCollector, err := evm.NewAttestationCollectorContract(i.GetTestContext(), i.attestationBackend, i.attestationContract.Address())
 	Nil(i.T(), err)
+
+	ownerPtr, err := i.attestationContract.AttestationCollectorCaller.Owner(&bind.CallOpts{Context: i.GetTestContext()})
+	Nil(i.T(), err)
+
+	attestationOwnerAuth := i.attestationBackend.GetTxContext(i.GetTestContext(), &ownerPtr)
+	tx, err := i.attestationContract.AddNotary(attestationOwnerAuth.TransactOpts, testDestinationDomain, i.signer.Address())
+	Nil(i.T(), err)
+	i.attestationBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	notaries, err := i.attestationContract.AllAgents(&bind.CallOpts{Context: i.GetTestContext()}, testDestinationDomain)
+	Nil(i.T(), err)
+	Len(i.T(), notaries, 1)
 
 	originDomain, err := i.originContract.Origin.LocalDomain(&bind.CallOpts{Context: i.GetTestContext()})
 	Nil(i.T(), err)
-	localDomain := originDomain
-	destination := testDestinationDomain
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	attestKey := types.AttestationKey{
-		Origin:      localDomain,
-		Destination: destination,
+		Origin:      originDomain,
+		Destination: testDestinationDomain,
 		Nonce:       nonce,
 	}
 	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
 	hashedAttestation, err := notary.HashAttestation(unsignedAttestation)
 	Nil(i.T(), err)
 
-	// TODO (joe): Get this working
-	/*signature*/
-	_, err = i.signer.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	signature, err := i.signer.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(i.T(), err)
 
-	/*signedAttestation := types.NewSignedAttestation(unsignedAttestation, signature)
+	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{}, []types.Signature{signature})
 	err = attestationCollector.SubmitAttestation(i.GetTestContext(), i.signer, signedAttestation)
 	Nil(i.T(), err)
 
-	latestNonce, currBlock, err := attestationCollector.GetLatestNonce(i.GetTestContext(), localDomain, destination, i.signer)
+	latestNonce, currBlock, err := attestationCollector.GetLatestNonce(i.GetTestContext(), originDomain, testDestinationDomain, i.signer)
 	Nil(i.T(), err)
-	Equal(i.T(), nonce, latestNonce)*/
+	Equal(i.T(), nonce, latestNonce)
+	Greater(i.T(), currBlock, 0)
 }

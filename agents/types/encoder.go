@@ -109,7 +109,7 @@ func EncodeAgentSignatures(guardSignatures, notarySignatures []Signature) ([]byt
 		GuardCount:  guardCount,
 		NotaryCount: notaryCount,
 	}
-	rawBytes := agentCounts.GetRawAgentCounts().Bytes()
+	rawBytes := agentCounts.GetRawAgentCounts()
 
 	rawGuardSignatures, err := EncodeSignatures(guardSignatures)
 	if err != nil {
