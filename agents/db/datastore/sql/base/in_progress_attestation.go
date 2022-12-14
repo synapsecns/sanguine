@@ -164,7 +164,7 @@ func (s Store) RetrieveLatestCachedNonce(ctx context.Context, originID, destinat
 	return *nonce.Get(), nil
 }
 
-// RetrieveInProgressAttestation retrieves a in-progress attestation by <origin, destination, nonce>
+// RetrieveInProgressAttestation retrieves a in-progress attestation by <origin, destination, nonce>.
 // This is mainly used for testing.
 func (s Store) RetrieveInProgressAttestation(ctx context.Context, originID, destinationID, nonce uint32) (attestation types.InProgressAttestation, err error) {
 	if originID == uint32(0) {
@@ -190,7 +190,7 @@ func (s Store) RetrieveInProgressAttestation(ctx context.Context, originID, dest
 	return inProgressAttestation, err
 }
 
-// RetrieveOldestUnsignedInProgressAttestation retrieves the oldest in-progress attestation that has not yet been signed
+// RetrieveOldestUnsignedInProgressAttestation retrieves the oldest in-progress attestation that has not yet been signed.
 // TODO (joe): Eventually we will not try to sign ALL the nonces, we really just want the latest one, so we will
 // want to replace this with RetrieveNewestUnsignedInProgressAttestation. For Notary MVP, we want to sign all the nonces though
 // so we will just get the oldest and go in order.
@@ -243,7 +243,7 @@ func (s Store) RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx context.
 	return inProgressAttestation, err
 }
 
-// RetrieveOldestUnconfirmedSubmittedInProgressAttestation retrieves the oldest in-progress attestation that has been signed and submitted but not yet confirmed on the AttestationCollector
+// RetrieveOldestUnconfirmedSubmittedInProgressAttestation retrieves the oldest in-progress attestation that has been signed and submitted but not yet confirmed on the AttestationCollector.
 func (s Store) RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
 	if originID == uint32(0) {
 		return nil, fmt.Errorf("RetrieveOldestUnconfirmedSubmittedInProgressAttestation called with 0 origin")
