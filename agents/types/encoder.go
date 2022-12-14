@@ -176,6 +176,7 @@ func EncodeAttestation(attestation Attestation) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// Hash takes the hash of the encoded attestation.
 func Hash(a Attestation) ([32]byte, error) {
 	encodedAttestation, err := EncodeAttestation(a)
 	if err != nil {

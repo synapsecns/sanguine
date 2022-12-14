@@ -27,7 +27,7 @@ type OriginAttestationVerifier struct {
 	interval time.Duration
 }
 
-// NewOriginAttestationSubmitter creates a new origin attestation verifier.
+// NewOriginAttestationVerifier creates a new origin attestation verifier.
 func NewOriginAttestationVerifier(domain domains.DomainClient, destinationID uint32, db db.SynapseDB, signer signer.Signer, interval time.Duration) OriginAttestationVerifier {
 	return OriginAttestationVerifier{
 		domain:        domain,
@@ -80,6 +80,9 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	// TODO (joe): This will need to be updated. Obviously we want to know when latest nonce was written and then
 	// figure out if confirmation is enough in terms of currBlock - blockNumWhenWritten, etc
 	latestNonce, currBlock, err := a.domain.AttestationCollector().GetLatestNonce(ctx, a.domain.Config().DomainID, a.destinationID, a.signer)
+	if err != nil {
+		return fmt.Errorf("could not find latest nonce: %w", err)
+	}
 
 	if latestNonce >= inProgressAttestationToConfirm.SignedAttestation().Attestation().Nonce() {
 		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime(), currBlock, 0)

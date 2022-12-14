@@ -6,13 +6,18 @@ import (
 	"time"
 )
 
+// AttestationState is the state the attestation is in in terms of being processed by an agent.
 type AttestationState uint32
 
 const (
-	AttestationStateNotaryUnsigned             AttestationState = iota // 0
-	AttestationStateNotarySignedUnsubmitted                            // 1
-	AttestationStateNotarySubmittedUnconfirmed                         // 2
-	AttestationStateNotaryConfirmed                                    // 3
+	// AttestationStateNotaryUnsigned is when attestation has been fetched but not yet signed.
+	AttestationStateNotaryUnsigned AttestationState = iota // 0
+	// AttestationStateNotarySignedUnsubmitted is when attestation has been signed but not yet submitted to the attestation collector.
+	AttestationStateNotarySignedUnsubmitted // 1
+	// AttestationStateNotarySubmittedUnconfirmed is when the attestation was signed and submitted to the attestation collector but not yet confirmed.
+	AttestationStateNotarySubmittedUnconfirmed // 2
+	// AttestationStateNotaryConfirmed is when the attestation was confirmed as posted on the attestation collector.
+	AttestationStateNotaryConfirmed // 3
 )
 
 const sizeOfUint256 = uint32(32)
@@ -234,7 +239,7 @@ func (t inProgressAttestation) AttestationState() AttestationState {
 
 var _ InProgressAttestation = inProgressAttestation{}
 
-// NewAttestionKey takes the raw AttestationKey serialized as a big endian big.Int
+// NewAttestationKey takes the raw AttestationKey serialized as a big endian big.Int
 // and converts it to AttestationKey which is a tuple of (origin, destination, nonce).
 func NewAttestationKey(rawKey *big.Int) AttestationKey {
 	rawBytes := make([]byte, sizeOfUint256)

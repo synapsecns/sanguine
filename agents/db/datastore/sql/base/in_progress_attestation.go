@@ -23,7 +23,7 @@ func getOrderByNonceDesc() string {
 	return fmt.Sprintf("`%s` desc", NonceFieldName)
 }
 
-// StoreNewInProgressAttestation stores in-progress attestation only if it hasn't already been stored
+// StoreNewInProgressAttestation stores in-progress attestation only if it hasn't already been stored.
 func (s Store) StoreNewInProgressAttestation(ctx context.Context, attestation types.Attestation, originDispathBlockNumber uint64) error {
 	if originDispathBlockNumber == uint64(0) {
 		return fmt.Errorf("StoreNewInProgressAttestation called on attestation with a 0 originDispathBlockNumber")
@@ -47,7 +47,7 @@ func (s Store) StoreNewInProgressAttestation(ctx context.Context, attestation ty
 	return nil
 }
 
-// UpdateSignature sets the signature of the in-progress Attestation
+// UpdateSignature sets the signature of the in-progress Attestation.
 func (s Store) UpdateSignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
 	if len(inProgressAttestation.SignedAttestation().NotarySignatures()) == 0 {
 		return fmt.Errorf("UpdateSignature called on attestation with a nil signature")
@@ -77,7 +77,7 @@ func (s Store) UpdateSignature(ctx context.Context, inProgressAttestation types.
 	return nil
 }
 
-// UpdateSubmittedToAttestationCollectorTime sets the time attestation was sent to Attesttion Collector
+// UpdateSubmittedToAttestationCollectorTime sets the time attestation was sent to Attesttion Collector.
 func (s Store) UpdateSubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
 	if inProgressAttestation.SubmittedToAttestationCollectorTime() == nil {
 		return fmt.Errorf("UpdateSubmittedToAttestationCollectorTime called on attestation with a nil time")
@@ -106,7 +106,7 @@ func (s Store) UpdateSubmittedToAttestationCollectorTime(ctx context.Context, in
 	return nil
 }
 
-// UpdateConfirmedOnAttestationCollectorBlockNumber sets the block number we confirmed the attestation on the Attesttion Collector
+// UpdateConfirmedOnAttestationCollectorBlockNumber sets the block number we confirmed the attestation on the Attesttion Collector.
 func (s Store) UpdateConfirmedOnAttestationCollectorBlockNumber(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
 	if inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber() == uint64(0) {
 		return fmt.Errorf("ConfirmedOnAttestationCollectorBlockNumber called on attestation with a 0 ConfirmedOnAttestationCollectorBlockNumber")
@@ -165,7 +165,7 @@ func (s Store) RetrieveLatestCachedNonce(ctx context.Context, originID, destinat
 }
 
 // RetrieveInProgressAttestation retrieves a in-progress attestation by <origin, destination, nonce>
-// This is mainly used for testing
+// This is mainly used for testing.
 func (s Store) RetrieveInProgressAttestation(ctx context.Context, originID, destinationID, nonce uint32) (attestation types.InProgressAttestation, err error) {
 	if originID == uint32(0) {
 		return nil, fmt.Errorf("RetrieveInProgressAttestation called with 0 origin")
@@ -193,7 +193,7 @@ func (s Store) RetrieveInProgressAttestation(ctx context.Context, originID, dest
 // RetrieveOldestUnsignedInProgressAttestation retrieves the oldest in-progress attestation that has not yet been signed
 // TODO (joe): Eventually we will not try to sign ALL the nonces, we really just want the latest one, so we will
 // want to replace this with RetrieveNewestUnsignedInProgressAttestation. For Notary MVP, we want to sign all the nonces though
-// so we will just get the oldest and go in order
+// so we will just get the oldest and go in order.
 func (s Store) RetrieveOldestUnsignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
 	if originID == uint32(0) {
 		return nil, fmt.Errorf("RetrieveOldestUnsignedInProgressAttestation called with 0 origin")
@@ -269,7 +269,7 @@ func (s Store) RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx conte
 	return inProgressAttestation, err
 }
 
-// RetrieveNewestConfirmedInProgressAttestation retrieves the newest in-progress attestation that has been confirmed on the AttestationCollector
+// RetrieveNewestConfirmedInProgressAttestation retrieves the newest in-progress attestation that has been confirmed on the AttestationCollector.
 func (s Store) RetrieveNewestConfirmedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
 	if originID == uint32(0) {
 		return nil, fmt.Errorf("RetrieveNewestConfirmedInProgressAttestation called with 0 origin")
