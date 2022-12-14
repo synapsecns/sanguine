@@ -53,6 +53,7 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 	}
 }
 
+// SetupOrigin sets up the backend that will have the origin contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *testutil.DeployManager) {
 	_, a.OriginContract = deployManager.GetOrigin(a.GetTestContext(), a.TestBackendOrigin)
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotarySigner.Address(), *big.NewInt(params.Ether))
@@ -75,6 +76,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *testutil.DeployM
 	a.TestBackendOrigin.WaitForConfirmation(a.GetTestContext(), txOriginGuardAdd)
 }
 
+// SetupDestination sets up the backend that will have the destination contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *testutil.DeployManager) {
 	a.DestinationContractMetadata, a.DestinationContract = deployManager.GetDestination(a.GetTestContext(), a.TestBackendDestination)
 
@@ -98,6 +100,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *testutil.De
 	a.TestBackendDestination.WaitForConfirmation(a.GetTestContext(), txDestinationGuardAdd)
 }
 
+// SetupAttestation sets up the backend that will have the attestation collector contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *testutil.DeployManager) {
 	_, a.AttestationHarness = deployManager.GetAttestationHarness(a.GetTestContext(), a.TestBackendAttestation)
 	a.AttestationContractMetadata, a.AttestationContract = deployManager.GetAttestationCollector(a.GetTestContext(), a.TestBackendAttestation)
