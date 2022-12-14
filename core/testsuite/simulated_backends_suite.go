@@ -1,13 +1,11 @@
 package testsuite
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
@@ -42,6 +40,12 @@ type SimulatedBackendsTestSuite struct {
 	GuardWallet                 wallet.Wallet
 	NotarySigner                signer.Signer
 	GuardSigner                 signer.Signer
+	OriginWallet                wallet.Wallet
+	DestinationWallet           wallet.Wallet
+	AttestationWallet           wallet.Wallet
+	OriginSigner                signer.Signer
+	DestinationSigner           signer.Signer
+	AttestationSigner           signer.Signer
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -56,8 +60,6 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 // SetupOrigin sets up the backend that will have the origin contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *testutil.DeployManager) {
 	_, a.OriginContract = deployManager.GetOrigin(a.GetTestContext(), a.TestBackendOrigin)
-	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotarySigner.Address(), *big.NewInt(params.Ether))
-	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.GuardSigner.Address(), *big.NewInt(params.Ether))
 	originOwnerPtr, err := a.OriginContract.OriginCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
 		a.T().Fatal(err)
@@ -80,8 +82,6 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *testutil.DeployM
 func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *testutil.DeployManager) {
 	a.DestinationContractMetadata, a.DestinationContract = deployManager.GetDestination(a.GetTestContext(), a.TestBackendDestination)
 
-	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotarySigner.Address(), *big.NewInt(params.Ether))
-	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.GuardSigner.Address(), *big.NewInt(params.Ether))
 	destOwnerPtr, err := a.DestinationContract.DestinationCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
 		a.T().Fatal(err)
@@ -104,9 +104,6 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *testutil.De
 func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *testutil.DeployManager) {
 	_, a.AttestationHarness = deployManager.GetAttestationHarness(a.GetTestContext(), a.TestBackendAttestation)
 	a.AttestationContractMetadata, a.AttestationContract = deployManager.GetAttestationCollector(a.GetTestContext(), a.TestBackendAttestation)
-
-	a.TestBackendAttestation.FundAccount(a.GetTestContext(), a.NotarySigner.Address(), *big.NewInt(params.Ether))
-	a.TestBackendAttestation.FundAccount(a.GetTestContext(), a.GuardSigner.Address(), *big.NewInt(params.Ether))
 
 	attestOwnerPtr, err := a.AttestationContract.AttestationCollectorCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
@@ -143,10 +140,20 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	if err != nil {
 		a.T().Fatal(err)
 	}
+	a.OriginWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.DestinationWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.AttestationWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
 
 	a.NotarySigner = localsigner.NewSigner(a.NotaryWallet.PrivateKey())
-
-	a.TestBackendAttestation.FundAccount(a.GetTestContext(), a.NotarySigner.Address(), *big.NewInt(params.Ether))
 	a.GuardSigner = localsigner.NewSigner(a.GuardWallet.PrivateKey())
 
 	deployManager := testutil.NewDeployManager(a.T())
