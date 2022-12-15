@@ -81,12 +81,8 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     {
         uint32 latestNonce = nonce(_destination);
         uint256 rootDispatchBlockNumber;
-        uint256 currentBlockNumer;
         bytes32 latestRoot;
-        (latestRoot, rootDispatchBlockNumber, currentBlockNumer) = getHistoricalRoot(
-            _destination,
-            latestNonce
-        );
+        (latestRoot, rootDispatchBlockNumber) = getHistoricalRoot(_destination, latestNonce);
 
         return
             Attestation.formatAttestationData({
@@ -110,11 +106,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     function getHistoricalRoot(uint32 _destination, uint32 _nonce)
         public
         view
-        returns (
-            bytes32,
-            uint256,
-            uint256
-        )
+        returns (bytes32, uint256)
     {
         // Check if destination is known
         if (historicalRoots[_destination].length > 0) {
@@ -122,13 +114,12 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
             require(_nonce < historicalRoots[_destination].length, "!nonce: existing destination");
             return (
                 historicalRoots[_destination][_nonce],
-                historicalNonceBlockNumbers[_destination][_nonce],
-                block.number
+                historicalNonceBlockNumbers[_destination][_nonce]
             );
         } else {
             // If destination is unknown, we have the root of an empty merkle tree
             require(_nonce == 0, "!nonce: unknown destination");
-            return (EMPTY_TREE_ROOT, uint256(0), block.number);
+            return (EMPTY_TREE_ROOT, uint256(0));
         }
     }
 

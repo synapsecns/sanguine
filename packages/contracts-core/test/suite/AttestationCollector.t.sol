@@ -497,13 +497,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         bytes memory guardLatest0 = createSameAttestation({ isGuard: true, agent: guard0 });
         bytes memory guardLatest1 = createSameAttestation({ isGuard: true, agent: guard1 });
         // Check guard0
-        uint32 latestNonce;
-        uint256 latestBlockNumber;
-        (latestNonce, latestBlockNumber) = collector.getLatestNonce(
-            DOMAIN_LOCAL,
-            DOMAIN_REMOTE,
-            guard0
-        );
+        uint32 latestNonce = collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, guard0);
         assertEq(latestNonce, nonce1, "!guard0: nonce");
         assertEq(
             collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard0),
@@ -511,11 +505,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
             "!guard0: attestation"
         );
         // Check guard1
-        (latestNonce, latestBlockNumber) = collector.getLatestNonce(
-            DOMAIN_LOCAL,
-            DOMAIN_REMOTE,
-            guard1
-        );
+        latestNonce = collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, guard1);
         assertEq(latestNonce, nonce1, "!guard1: nonce");
         assertEq(
             collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, guard1),
@@ -523,11 +513,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
             "!guard1: attestation"
         );
         // Check notary0
-        (latestNonce, latestBlockNumber) = collector.getLatestNonce(
-            DOMAIN_LOCAL,
-            DOMAIN_REMOTE,
-            notary0
-        );
+        latestNonce = collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, notary0);
         assertEq(latestNonce, nonce0, "!notary0: nonce");
         assertEq(
             collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, notary0),
@@ -535,11 +521,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
             "!notary0: attestation"
         );
         // Check notary1
-        (latestNonce, latestBlockNumber) = collector.getLatestNonce(
-            DOMAIN_LOCAL,
-            DOMAIN_REMOTE,
-            notary1
-        );
+        latestNonce = collector.getLatestNonce(DOMAIN_LOCAL, DOMAIN_REMOTE, notary1);
         assertEq(latestNonce, 0, "!notary1: nonce");
         vm.expectRevert("No attestations found");
         collector.getLatestAttestation(DOMAIN_LOCAL, DOMAIN_REMOTE, notary1);

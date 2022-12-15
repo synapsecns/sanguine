@@ -18,9 +18,8 @@ contract OriginTest is OriginTools {
         origin.initialize();
         assertEq(origin.owner(), owner, "!owner");
         uint256 dispatchBlockNumber;
-        uint256 currBlockNumber;
         bytes32 histRoot;
-        (histRoot, dispatchBlockNumber, currBlockNumber) = origin.getHistoricalRoot(0, 0);
+        (histRoot, dispatchBlockNumber) = origin.getHistoricalRoot(0, 0);
         assertEq(histRoot, origin.root(0), "!historicalRoots(0)");
     }
 
@@ -76,9 +75,8 @@ contract OriginTest is OriginTools {
             }
             // Root of an empty sparse Merkle tree should be stored with nonce=0
             uint256 dispatchBlockNumber;
-            uint256 currBlockNumber;
             bytes32 histRoot;
-            (histRoot, dispatchBlockNumber, currBlockNumber) = origin.getHistoricalRoot(0, 0);
+            (histRoot, dispatchBlockNumber) = origin.getHistoricalRoot(0, 0);
             assertEq(histRoot, origin.root(0), "!historicalRoots(0)");
         }
     }

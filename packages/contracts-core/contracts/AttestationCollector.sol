@@ -166,10 +166,10 @@ contract AttestationCollector is AttestationCollectorEvents, AttestationHub, Own
         uint32 _origin,
         uint32 _destination,
         address _agent
-    ) external view returns (uint32, uint256) {
+    ) external view returns (uint32) {
         uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
         uint32 latestNonce = _latestAgentNonce(attestationDomains, _agent);
-        return (latestNonce, block.number);
+        return latestNonce;
     }
 
     /**
