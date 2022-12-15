@@ -20,6 +20,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"strconv"
+	"time"
 )
 
 // ChainExecutor is a struct that contains the necessary information for each chain level executor.
@@ -50,6 +51,10 @@ type Executor struct {
 	scribeClient client.ScribeClient
 	// attestationCollectorParser is an attestationCollector parser.
 	attestationCollectorParser attestationcollector.Parser
+	// grpcClient is the gRPC client.
+	grpcClient pbscribe.ScribeServiceClient
+	// grpcConn is the gRPC connection.
+	grpcConn *grpc.ClientConn
 	// chainExecutors is a map from chain ID -> chain executor.
 	chainExecutors map[uint32]*ChainExecutor
 }
@@ -65,11 +70,27 @@ const treeDepth uint64 = 32
 const logChanSize = 1000
 
 // NewExecutor creates a new executor agent.
-func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient) (*Executor, error) {
+func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient) (*Executor, error) {
 	chainExecutors := make(map[uint32]*ChainExecutor)
 	attestationCollectorParser, err := attestationcollector.NewParser(common.HexToAddress(config.AttestationCollectorAddress))
 	if err != nil {
 		return nil, fmt.Errorf("could not create attestation collector parser: %w", err)
+	}
+
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, fmt.Errorf("could not dial grpc: %w", err)
+	}
+
+	grpcClient := pbscribe.NewScribeServiceClient(conn)
+
+	// Ensure that gRPC is up and running.
+	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
+	if err != nil {
+		return nil, fmt.Errorf("could not check: %w", err)
+	}
+	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
+		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
 
 	for _, chain := range config.Chains {
@@ -110,36 +131,21 @@ func NewExecutor(config config.Config, executorDB db.ExecutorDB, scribeClient cl
 		executorDB:                 executorDB,
 		scribeClient:               scribeClient,
 		attestationCollectorParser: attestationCollectorParser,
+		grpcConn:                   conn,
+		grpcClient:                 grpcClient,
 		chainExecutors:             chainExecutors,
 	}, nil
 }
 
 // Start starts the executor agent. This uses gRPC to process the logs.
 func (e Executor) Start(ctx context.Context) error {
-	// Consume the logs from gRPC.
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", e.scribeClient.URL, e.scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return fmt.Errorf("could not dial grpc: %w", err)
-	}
-
-	grpcClient := pbscribe.NewScribeServiceClient(conn)
-
-	// Ensure that gRPC is up and running.
-	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
-	if err != nil {
-		return fmt.Errorf("could not check: %w", err)
-	}
-	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
-		return fmt.Errorf("not serving: %s", healthCheck.Status)
-	}
-
 	g, _ := errgroup.WithContext(ctx)
 
 	for _, chain := range e.config.Chains {
 		chain := chain
 
 		g.Go(func() error {
-			return e.streamLogs(ctx, grpcClient, conn, chain, originContract)
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, originContract)
 		})
 	}
 
@@ -271,10 +277,29 @@ func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message 
 	return inTree, nil
 }
 
-//// VerifyOptimisticPeriod verifies that the optimistic period is valid.
-// func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message) (bool, error) {
-//
-//}
+// VerifyOptimisticPeriod verifies that the optimistic period is valid.
+func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message, blockNumber uint64) (bool, error) {
+	blockTime, err := e.grpcClient.GetBlockTime(ctx,
+		&pbscribe.GetBlockTimeRequest{
+			ChainID:     message.OriginDomain(),
+			BlockNumber: blockNumber,
+		})
+	if err != nil {
+		return false, fmt.Errorf("could not get block time: %w", err)
+	}
+
+	currentTime := time.Now().Unix()
+
+	if blockTime.BlockTime > uint64(currentTime) {
+		return false, fmt.Errorf("block time is in the future")
+	}
+
+	if blockTime.BlockTime+uint64(message.OptimisticSeconds()) >= uint64(currentTime) {
+		return false, nil
+	}
+
+	return true, nil
+}
 
 // GetLatestNonceProof returns the merkle proof for a nonce, with a tree where that nonce is the last item added.
 // This is done by copying the current merkle tree's items and generating a new tree with the items from the range
