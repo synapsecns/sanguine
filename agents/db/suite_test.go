@@ -3,24 +3,38 @@ package db_test
 import (
 	"database/sql"
 	"fmt"
+	"os"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
+	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"gorm.io/gorm/schema"
-	"os"
-	"sync"
-	"testing"
-	"time"
 )
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs []db.SynapseDB
+	dbs                       []db.SynapseDB
+	fakeOrigin                uint32
+	fakeDestination           uint32
+	fakeNonces                []uint32
+	fakeRoots                 []common.Hash
+	fakeDispatchBlockNumbers  []uint64
+	fakeSignatures            []types.Signature
+	fakeSumbittedTimes        []time.Time
+	fakeConfirmedBlockNumbers []uint64
+	fakeSigner                *localsigner.Signer
+	numMessages               int
 }
 
 // NewTxQueueSuite creates a new transaction queue suite.

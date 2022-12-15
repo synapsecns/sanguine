@@ -325,7 +325,7 @@ func (t InProgressAttestation) SignedAttestation() types.SignedAttestation {
 }
 
 // NotarySignatures currently just returns the loan signature.
-// TODO (joe): fix this to return all notary signatures
+// TODO (joe): fix this to return all notary signatures.
 func (t InProgressAttestation) NotarySignatures() []types.Signature {
 	if len(t.IPSignature) == 0 {
 		return nil
@@ -339,8 +339,8 @@ func (t InProgressAttestation) NotarySignatures() []types.Signature {
 	return []types.Signature{res}
 }
 
-// GuardSignatures currently just returns an empty array
-// TODO (joe): fix this to return all guard signatures
+// GuardSignatures currently just returns an empty array.
+// TODO (joe): fix this to return all guard signatures.
 func (t InProgressAttestation) GuardSignatures() []types.Signature {
 	return []types.Signature{}
 }
