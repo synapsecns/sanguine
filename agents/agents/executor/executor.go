@@ -183,6 +183,27 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 	}
 }
 
+// Execute executes a message by verifying the message and calling the Execute function in Destination.sol.
+func (e Executor) Execute(ctx context.Context, chainID uint32, destination uint32, message types.Message) (bool, error) {
+	inTree, err := e.VerifyMessageNonce(ctx, message.Nonce(), message, chainID, destination)
+	if err != nil {
+		return false, fmt.Errorf("could not verify message nonce: %w", err)
+	}
+	if !inTree {
+		return false, nil
+	}
+
+	afterOptimisticPeriod, err := e.VerifyOptimisticPeriod(ctx, message)
+	if err != nil {
+		return false, fmt.Errorf("could not verify optimistic period: %w", err)
+	}
+	if !afterOptimisticPeriod {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 // GetRoot returns the merkle root at the given nonce.
 func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, destination uint32) ([32]byte, error) {
 	if nonce == 0 || nonce > uint32(e.chainExecutors[chainID].merkleTrees[destination].NumOfItems()) {
@@ -278,7 +299,17 @@ func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message 
 }
 
 // VerifyOptimisticPeriod verifies that the optimistic period is valid.
-func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message, blockNumber uint64) (bool, error) {
+func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message) (bool, error) {
+	chainID := message.OriginDomain()
+	destination := message.DestinationDomain()
+	nonce := message.Nonce()
+
+	blockNumber, err := e.executorDB.GetBlockNumber(ctx, execTypes.DBMessage{
+		ChainID:     &chainID,
+		Destination: &destination,
+		Nonce:       &nonce,
+	})
+
 	blockTime, err := e.grpcClient.GetBlockTime(ctx,
 		&pbscribe.GetBlockTimeRequest{
 			ChainID:     message.OriginDomain(),

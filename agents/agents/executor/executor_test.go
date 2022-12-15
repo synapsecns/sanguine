@@ -7,7 +7,6 @@ import (
 	"github.com/prysmaticlabs/prysm/shared/trieutil"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
-	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
@@ -650,32 +649,30 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	header := types.NewHeader(chainID, sender.Hash(), nonce, destination, recipient, optimisticSeconds)
 	message := types.NewMessage(header, tips, body)
 
-	continueChan := make(chan bool, 1)
+	//continueChan := make(chan bool, 1)
+	//
+	//// Wait for message to be stored in the database.`
+	//e.Eventually(func() bool {
+	//	blockNum, err = e.testDB.GetBlockNumber(e.GetTestContext(), types2.DBMessage{
+	//		ChainID:     &chainID,
+	//		Destination: &destination,
+	//		Nonce:       &nonce,
+	//	})
+	//	if err == nil {
+	//		continueChan <- true
+	//		return true
+	//	}
+	//	return false
+	//})
+	//
+	//<-continueChan
 
-	var blockNum uint64
-
-	// Wait for message to be stored in the database.`
-	e.Eventually(func() bool {
-		blockNum, err = e.testDB.GetBlockNumber(e.GetTestContext(), types2.DBMessage{
-			ChainID:     &chainID,
-			Destination: &destination,
-			Nonce:       &nonce,
-		})
-		if err == nil {
-			continueChan <- true
-			return true
-		}
-		return false
-	})
-
-	<-continueChan
-
-	verified, err := exec.VerifyOptimisticPeriod(e.GetTestContext(), message, blockNum)
+	verified, err := exec.VerifyOptimisticPeriod(e.GetTestContext(), message)
 	e.Nil(err)
 	e.False(verified)
 
 	e.Eventually(func() bool {
-		verified, err = exec.VerifyOptimisticPeriod(e.GetTestContext(), message, blockNum)
+		verified, err = exec.VerifyOptimisticPeriod(e.GetTestContext(), message)
 		e.Nil(err)
 		return verified
 	})
