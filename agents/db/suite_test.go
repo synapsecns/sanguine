@@ -24,17 +24,16 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs                       []db.SynapseDB
-	fakeOrigin                uint32
-	fakeDestination           uint32
-	fakeNonces                []uint32
-	fakeRoots                 []common.Hash
-	fakeDispatchBlockNumbers  []uint64
-	fakeSignatures            []types.Signature
-	fakeSumbittedTimes        []time.Time
-	fakeConfirmedBlockNumbers []uint64
-	fakeSigner                *localsigner.Signer
-	numMessages               int
+	dbs                      []db.SynapseDB
+	fakeOrigin               uint32
+	fakeDestination          uint32
+	fakeNonces               []uint32
+	fakeRoots                []common.Hash
+	fakeDispatchBlockNumbers []uint64
+	fakeSignatures           []types.Signature
+	fakeSumbittedTimes       []time.Time
+	fakeSigner               *localsigner.Signer
+	numMessages              int
 }
 
 // NewTxQueueSuite creates a new transaction queue suite.
