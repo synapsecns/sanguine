@@ -65,7 +65,7 @@ func (a OriginAttestationVerifier) FindOldestUnconfirmedAttestation(ctx context.
 	return inProgressAttestation, nil
 }
 
-// update runs the job for the verifier
+// update runs the job for the verifier.
 // nolint: cyclop
 func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	// TODO (joe): we want to go through and update attestations for each destination.
