@@ -4,10 +4,10 @@ go 1.19
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
-	github.com/aws/aws-sdk-go-v2 v1.16.5
+	github.com/aws/aws-sdk-go-v2 v1.17.3
 	github.com/aws/aws-sdk-go-v2/config v1.1.1
 	github.com/aws/aws-sdk-go-v2/service/kms v1.17.3
-	github.com/aws/smithy-go v1.13.3
+	github.com/aws/smithy-go v1.13.5
 	github.com/brianvoe/gofakeit/v6 v6.19.0
 	github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1
 	github.com/dgraph-io/ristretto v0.1.0
@@ -130,6 +130,8 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
+	github.com/libs4go/crypto v0.0.1 // indirect
+	github.com/libs4go/errors v0.0.3 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
@@ -174,6 +176,7 @@ require (
 	github.com/status-im/keycard-go v0.0.0-20200402102358-957c09536969 // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/subosito/gotenv v1.4.0 // indirect
+	github.com/synapsecns/sanguine/agents v0.0.52 // indirect
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/tklauser/numcpus v0.4.0 // indirect
 	github.com/urfave/cli/v2 v2.16.3 // indirect
