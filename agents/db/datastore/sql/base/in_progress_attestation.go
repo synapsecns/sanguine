@@ -106,12 +106,8 @@ func (s Store) UpdateSubmittedToAttestationCollectorTime(ctx context.Context, in
 	return nil
 }
 
-// UpdateConfirmedOnAttestationCollectorBlockNumber sets the block number we confirmed the attestation on the Attesttion Collector.
-func (s Store) UpdateConfirmedOnAttestationCollectorBlockNumber(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
-	if inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber() == uint64(0) {
-		return fmt.Errorf("ConfirmedOnAttestationCollectorBlockNumber called on attestation with a 0 ConfirmedOnAttestationCollectorBlockNumber")
-	}
-
+// MarkConfirmedOnAttestationCollector confirms that we posted the signed attestation on the Attesttion Collector.
+func (s Store) MarkConfirmedOnAttestationCollector(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
 		Where(&InProgressAttestation{
 			IPOrigin:      inProgressAttestation.SignedAttestation().Attestation().Origin(),
@@ -121,13 +117,12 @@ func (s Store) UpdateConfirmedOnAttestationCollectorBlockNumber(ctx context.Cont
 		Where("attestation_state", uint32(types.AttestationStateNotarySubmittedUnconfirmed)).
 		Updates(
 			InProgressAttestation{
-				IPConfirmedOnAttestationCollectorBlockNumber: inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber(),
-				IPAttestationState:                           uint32(types.AttestationStateNotaryConfirmed),
+				IPAttestationState: uint32(types.AttestationStateNotaryConfirmed),
 			},
 		)
 
 	if tx.Error != nil {
-		return fmt.Errorf("could not set ConfirmedOnAttestationCollectorBlockNumber for in-progress attestation: %w", tx.Error)
+		return fmt.Errorf("could not execute MarkConfirmedOnAttestationCollector for in-progress attestation: %w", tx.Error)
 	}
 	return nil
 }

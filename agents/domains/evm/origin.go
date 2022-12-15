@@ -101,20 +101,20 @@ func (h originContract) ProduceAttestation(ctx context.Context) (types.Attestati
 	return update, nil*/
 }
 
-func (h originContract) GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, uint64, error) {
-	historicalRoot, dispatchBlockNumber, currBlockNumber, err := h.contract.GetHistoricalRoot(&bind.CallOpts{Context: ctx}, destinationID, nonce)
+func (h originContract) GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, error) {
+	historicalRoot, dispatchBlockNumber, err := h.contract.GetHistoricalRoot(&bind.CallOpts{Context: ctx}, destinationID, nonce)
 	if err != nil {
-		return nil, 0, 0, fmt.Errorf("could get historical root: %w", err)
+		return nil, 0, fmt.Errorf("could get historical root: %w", err)
 	}
 
 	if historicalRoot == [32]byte{} {
-		return nil, 0, 0, domains.ErrNoUpdate
+		return nil, 0, domains.ErrNoUpdate
 	}
 
 	// TODO (joe), this can be cached
 	localDomain, err := h.contract.LocalDomain(&bind.CallOpts{Context: ctx})
 	if err != nil {
-		return nil, 0, 0, fmt.Errorf("could not get local domain: %w", err)
+		return nil, 0, fmt.Errorf("could not get local domain: %w", err)
 	}
 
 	attestationKey := types.AttestationKey{
@@ -125,7 +125,7 @@ func (h originContract) GetHistoricalAttestation(ctx context.Context, destinatio
 
 	historicalAttestation := types.NewAttestation(attestationKey.GetRawKey(), historicalRoot)
 
-	return historicalAttestation, dispatchBlockNumber.Uint64(), currBlockNumber.Uint64(), nil
+	return historicalAttestation, dispatchBlockNumber.Uint64(), nil
 }
 
 var _ domains.OriginContract = &originContract{}

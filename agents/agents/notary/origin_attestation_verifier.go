@@ -79,15 +79,15 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 
 	// TODO (joe): This will need to be updated. Obviously we want to know when latest nonce was written and then
 	// figure out if confirmation is enough in terms of currBlock - blockNumWhenWritten, etc
-	latestNonce, currBlock, err := a.domain.AttestationCollector().GetLatestNonce(ctx, a.domain.Config().DomainID, a.destinationID, a.signer)
+	latestNonce, err := a.domain.AttestationCollector().GetLatestNonce(ctx, a.domain.Config().DomainID, a.destinationID, a.signer)
 	if err != nil {
 		return fmt.Errorf("could not find latest nonce: %w", err)
 	}
 
 	if latestNonce >= inProgressAttestationToConfirm.SignedAttestation().Attestation().Nonce() {
-		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime(), currBlock, 0)
+		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime(), 0)
 
-		err = a.db.UpdateConfirmedOnAttestationCollectorBlockNumber(ctx, confirmedInProgressAttestation)
+		err = a.db.MarkConfirmedOnAttestationCollector(ctx, confirmedInProgressAttestation)
 		if err != nil {
 			return fmt.Errorf("could not store confirmation block number for attestation: %w", err)
 		}
@@ -100,7 +100,7 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 		}
 
 		nowTime := time.Now()
-		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), &nowTime, 0, 0)
+		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), &nowTime, 0)
 		err = a.db.UpdateSubmittedToAttestationCollectorTime(ctx, submittedInProgressAttestation)
 		if err != nil {
 			return fmt.Errorf("could not store submission time for attestation: %w", err)

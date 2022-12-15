@@ -153,8 +153,6 @@ func (t *DBSuite) launchTestStoreNewInProgressAttestations(testDB db.SynapseDB) 
 	t.fakeRoots = []common.Hash{}
 	t.fakeDispatchBlockNumbers = []uint64{}
 
-	t.fakeConfirmedBlockNumbers = []uint64{}
-
 	fakeWallet, err := wallet.FromRandom()
 	Nil(t.T(), err)
 
@@ -208,7 +206,6 @@ func (t *DBSuite) launchTestUpdateSignatures(testDB db.SynapseDB) {
 		Nil(t.T(), err)
 		NotNil(t.T(), inProgressAttestation)
 		Equal(t.T(), fakeDispatchBlockNumber, inProgressAttestation.OriginDispatchBlockNumber())
-		Equal(t.T(), uint64(0), inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber())
 		Nil(t.T(), inProgressAttestation.SubmittedToAttestationCollectorTime())
 		Nil(t.T(), inProgressAttestation.SignedAttestation().NotarySignatures())
 		Equal(t.T(), fakeNonce, inProgressAttestation.SignedAttestation().Attestation().Nonce())
@@ -225,7 +222,7 @@ func (t *DBSuite) launchTestUpdateSignatures(testDB db.SynapseDB) {
 		t.fakeSignatures = append(t.fakeSignatures, signature)
 
 		signedAttestation := types.NewSignedAttestation(inProgressAttestation.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
-		signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttestation.OriginDispatchBlockNumber(), nil, 0, 0)
+		signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttestation.OriginDispatchBlockNumber(), nil, 0)
 		err = testDB.UpdateSignature(t.GetTestContext(), signedInProgressAttestation)
 		Nil(t.T(), err)
 
@@ -261,7 +258,6 @@ func (t *DBSuite) launchTestSubmittedToAttestationCollectorTimes(testDB db.Synap
 		Nil(t.T(), err)
 		NotNil(t.T(), inProgressAttestation)
 		Equal(t.T(), fakeDispatchBlockNumber, inProgressAttestation.OriginDispatchBlockNumber())
-		Equal(t.T(), uint64(0), inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber())
 		Nil(t.T(), inProgressAttestation.SubmittedToAttestationCollectorTime())
 		inProgressSigBytes, err := types.EncodeSignature(inProgressAttestation.SignedAttestation().NotarySignatures()[0])
 		Nil(t.T(), err)
@@ -276,7 +272,7 @@ func (t *DBSuite) launchTestSubmittedToAttestationCollectorTimes(testDB db.Synap
 
 		nowTime := time.Now()
 		t.fakeSumbittedTimes = append(t.fakeSumbittedTimes, nowTime)
-		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestation.SignedAttestation(), inProgressAttestation.OriginDispatchBlockNumber(), &nowTime, 0, 0)
+		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestation.SignedAttestation(), inProgressAttestation.OriginDispatchBlockNumber(), &nowTime, 0)
 		err = testDB.UpdateSubmittedToAttestationCollectorTime(t.GetTestContext(), submittedInProgressAttestation)
 		Nil(t.T(), err)
 
@@ -292,7 +288,6 @@ func (t *DBSuite) launchTestSubmittedToAttestationCollectorTimes(testDB db.Synap
 		Equal(t.T(), fakeSigBytes, retrievedSigBytes)
 		NotNil(t.T(), retrievedAttestation.SubmittedToAttestationCollectorTime())
 		Equal(t.T(), nowTime.Unix(), retrievedAttestation.SubmittedToAttestationCollectorTime().Unix())
-		Equal(t.T(), uint64(0), retrievedAttestation.ConfirmedOnAttestationCollectorBlockNumber())
 		Equal(t.T(), types.AttestationStateNotarySubmittedUnconfirmed, retrievedAttestation.AttestationState())
 	}
 	inProgressAttestation, err := testDB.RetrieveOldestUnsubmittedSignedInProgressAttestation(t.GetTestContext(), t.fakeOrigin, t.fakeDestination)
@@ -300,7 +295,7 @@ func (t *DBSuite) launchTestSubmittedToAttestationCollectorTimes(testDB db.Synap
 	Nil(t.T(), inProgressAttestation)
 }
 
-func (t *DBSuite) launchTestUpdateConfirmedOnAttestationCollectorBlockNumbers(testDB db.SynapseDB) {
+func (t *DBSuite) launchTestMarkConfirmedOnAttestationCollector(testDB db.SynapseDB) {
 	for i := 0; i <= t.numMessages; i++ {
 		fakeNonce := t.fakeNonces[i]
 		fakeRoot := t.fakeRoots[i]
@@ -312,7 +307,6 @@ func (t *DBSuite) launchTestUpdateConfirmedOnAttestationCollectorBlockNumbers(te
 		Nil(t.T(), err)
 		NotNil(t.T(), inProgressAttestation)
 		Equal(t.T(), fakeDispatchBlockNumber, inProgressAttestation.OriginDispatchBlockNumber())
-		Equal(t.T(), uint64(0), inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber())
 		NotNil(t.T(), inProgressAttestation.SubmittedToAttestationCollectorTime())
 		Equal(t.T(), fakeSubmittedTime.Unix(), inProgressAttestation.SubmittedToAttestationCollectorTime().Unix())
 		inProgressSigBytes, err := types.EncodeSignature(inProgressAttestation.SignedAttestation().NotarySignatures()[0])
@@ -326,17 +320,14 @@ func (t *DBSuite) launchTestUpdateConfirmedOnAttestationCollectorBlockNumbers(te
 		Equal(t.T(), t.fakeDestination, inProgressAttestation.SignedAttestation().Attestation().Destination())
 		Equal(t.T(), types.AttestationStateNotarySubmittedUnconfirmed, inProgressAttestation.AttestationState())
 
-		fakeConfirmedBlockNumber := uint64(t.numMessages) + uint64(i)
-		t.fakeConfirmedBlockNumbers = append(t.fakeConfirmedBlockNumbers, fakeConfirmedBlockNumber)
-		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestation.SignedAttestation(), inProgressAttestation.OriginDispatchBlockNumber(), inProgressAttestation.SubmittedToAttestationCollectorTime(), fakeConfirmedBlockNumber, 0)
-		err = testDB.UpdateConfirmedOnAttestationCollectorBlockNumber(t.GetTestContext(), confirmedInProgressAttestation)
+		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestation.SignedAttestation(), inProgressAttestation.OriginDispatchBlockNumber(), inProgressAttestation.SubmittedToAttestationCollectorTime(), 0)
+		err = testDB.MarkConfirmedOnAttestationCollector(t.GetTestContext(), confirmedInProgressAttestation)
 		Nil(t.T(), err)
 
 		retrievedConfirmedInProgressAttestation, err := testDB.RetrieveNewestConfirmedInProgressAttestation(t.GetTestContext(), t.fakeOrigin, t.fakeDestination)
 		Nil(t.T(), err)
 		NotNil(t.T(), retrievedConfirmedInProgressAttestation)
 		Equal(t.T(), fakeDispatchBlockNumber, retrievedConfirmedInProgressAttestation.OriginDispatchBlockNumber())
-		Equal(t.T(), fakeConfirmedBlockNumber, retrievedConfirmedInProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber())
 		Equal(t.T(), fakeSubmittedTime.Unix(), retrievedConfirmedInProgressAttestation.SubmittedToAttestationCollectorTime().Unix())
 		confirmedInProgressSigBytes, err := types.EncodeSignature(retrievedConfirmedInProgressAttestation.SignedAttestation().NotarySignatures()[0])
 		Nil(t.T(), err)
@@ -361,13 +352,11 @@ func (t *DBSuite) launchTestVerifyAllAreConfirmed(testDB db.SynapseDB) {
 		fakeDispatchBlockNumber := t.fakeDispatchBlockNumbers[i]
 		fakeSignature := t.fakeSignatures[i]
 		fakeSubmittedTime := t.fakeSumbittedTimes[i]
-		fakeConfirmedBlockNumber := t.fakeConfirmedBlockNumbers[i]
 
 		inProgressAttestation, err := testDB.RetrieveInProgressAttestation(t.GetTestContext(), t.fakeOrigin, t.fakeDestination, fakeNonce)
 		Nil(t.T(), err)
 		NotNil(t.T(), inProgressAttestation)
 		Equal(t.T(), fakeDispatchBlockNumber, inProgressAttestation.OriginDispatchBlockNumber())
-		Equal(t.T(), fakeConfirmedBlockNumber, inProgressAttestation.ConfirmedOnAttestationCollectorBlockNumber())
 		Equal(t.T(), fakeSubmittedTime.Unix(), inProgressAttestation.SubmittedToAttestationCollectorTime().Unix())
 		inProgressSigBytes, err := types.EncodeSignature(inProgressAttestation.SignedAttestation().NotarySignatures()[0])
 		Nil(t.T(), err)
@@ -387,7 +376,7 @@ func (t *DBSuite) TestNotaryHappyPath() {
 		t.launchTestStoreNewInProgressAttestations(testDB)
 		t.launchTestUpdateSignatures(testDB)
 		t.launchTestSubmittedToAttestationCollectorTimes(testDB)
-		t.launchTestUpdateConfirmedOnAttestationCollectorBlockNumbers(testDB)
+		t.launchTestMarkConfirmedOnAttestationCollector(testDB)
 		t.launchTestVerifyAllAreConfirmed(testDB)
 	})
 }

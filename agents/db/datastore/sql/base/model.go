@@ -308,8 +308,6 @@ type InProgressAttestation struct {
 	IPOriginDispatchBlockNumber uint64 `gorm:"column:origin_dispatch_block_number;<-:create"`
 	// IPSubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
 	IPSubmittedToAttestationCollectorTime sql.NullTime `gorm:"column:submitted_to_attestation_collector_time;type:TIMESTAMP NULL;<-:update"`
-	// IPConfirmedOnAttestationCollectorBlockNumber is block number when we confirmed the attesation posted on AttestationCollector
-	IPConfirmedOnAttestationCollectorBlockNumber uint64 `gorm:"column:confirmed_on_attestation_collector_block_number;default:0;<-:update"`
 	// IPAttestationState is the current state of the attestation
 	IPAttestationState uint32 `gorm:"column:attestation_state;index:idx_origin_destination_state;autoIncrement:false;<-"`
 }
@@ -377,11 +375,6 @@ func (t InProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time 
 	}
 
 	return &t.IPSubmittedToAttestationCollectorTime.Time
-}
-
-// ConfirmedOnAttestationCollectorBlockNumber gets the block number when we confirmed the attestation was posted on AttestationCollector.
-func (t InProgressAttestation) ConfirmedOnAttestationCollectorBlockNumber() uint64 {
-	return t.IPConfirmedOnAttestationCollectorBlockNumber
 }
 
 // AttestationState gets the state of the attestation.

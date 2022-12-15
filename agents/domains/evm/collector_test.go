@@ -49,8 +49,7 @@ func (i ContractSuite) TestSubmitAttestation() {
 	err = attestationCollector.SubmitAttestation(i.GetTestContext(), i.signer, signedAttestation)
 	Nil(i.T(), err)
 
-	latestNonce, currBlock, err := attestationCollector.GetLatestNonce(i.GetTestContext(), originDomain, testDestinationDomain, i.signer)
+	latestNonce, err := attestationCollector.GetLatestNonce(i.GetTestContext(), originDomain, testDestinationDomain, i.signer)
 	Nil(i.T(), err)
 	Equal(i.T(), nonce, latestNonce)
-	Greater(i.T(), currBlock, uint64(0))
 }

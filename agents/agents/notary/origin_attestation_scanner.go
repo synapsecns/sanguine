@@ -73,7 +73,7 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 	}
 
 	nextNonce := latestNonce + 1
-	attestation, dispatchBlockNumber, currBlockNumber, err := a.domain.Origin().GetHistoricalAttestation(ctx, a.destinationID, nextNonce)
+	attestation, dispatchBlockNumber, err := a.domain.Origin().GetHistoricalAttestation(ctx, a.destinationID, nextNonce)
 	if errors.Is(err, domains.ErrNoUpdate) {
 		// no update produced this time
 		return nil
@@ -82,7 +82,7 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 		return fmt.Errorf("could not get historical attesttion: %w", err)
 	}
 
-	if !a.isConfirmed(dispatchBlockNumber, currBlockNumber) {
+	if !a.isConfirmed(dispatchBlockNumber) {
 		// not yet confirmed so skip
 		return nil
 	}
@@ -94,7 +94,7 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 	return nil
 }
 
-func (a OriginAttestationScanner) isConfirmed(txBlockNum, currBlockNum uint64) bool {
+func (a OriginAttestationScanner) isConfirmed(txBlockNum uint64) bool {
 	// TODO (joe): figure this out
 	return true
 }

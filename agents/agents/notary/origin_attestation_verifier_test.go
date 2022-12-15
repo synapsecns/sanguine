@@ -42,7 +42,7 @@ func (u NotarySuite) TestOriginAttestationVerifier() {
 	Nil(u.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedInProgressAttestation.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
-	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, unsignedInProgressAttestation.OriginDispatchBlockNumber(), nil, 0, 0)
+	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, unsignedInProgressAttestation.OriginDispatchBlockNumber(), nil, 0)
 	err = testDB.UpdateSignature(u.GetTestContext(), signedInProgressAttestation)
 	Nil(u.T(), err)
 
@@ -50,7 +50,7 @@ func (u NotarySuite) TestOriginAttestationVerifier() {
 	Nil(u.T(), err)
 
 	nowTime := time.Now()
-	submittedInProgressAttestation := types.NewInProgressAttestation(signedInProgressAttestation.SignedAttestation(), signedInProgressAttestation.OriginDispatchBlockNumber(), &nowTime, 0, 0)
+	submittedInProgressAttestation := types.NewInProgressAttestation(signedInProgressAttestation.SignedAttestation(), signedInProgressAttestation.OriginDispatchBlockNumber(), &nowTime, 0)
 	err = testDB.UpdateSubmittedToAttestationCollectorTime(u.GetTestContext(), submittedInProgressAttestation)
 	Nil(u.T(), err)
 
@@ -69,6 +69,5 @@ func (u NotarySuite) TestOriginAttestationVerifier() {
 	producedAttestation, err := testDB.RetrieveInProgressAttestation(u.GetTestContext(), u.domainClient.Config().DomainID, u.destinationID, fakeNonce)
 	Nil(u.T(), err)
 	Equal(u.T(), fakeNonce, producedAttestation.SignedAttestation().Attestation().Nonce())
-	Greater(u.T(), producedAttestation.ConfirmedOnAttestationCollectorBlockNumber(), uint64(0))
 	Equal(u.T(), types.AttestationStateNotaryConfirmed, producedAttestation.AttestationState())
 }
