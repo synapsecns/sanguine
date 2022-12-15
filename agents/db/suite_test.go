@@ -28,7 +28,7 @@ type DBSuite struct {
 	fakeOrigin               uint32
 	fakeDestination          uint32
 	fakeNonces               []uint32
-	fakeRoots                []common.Hash
+	fakeRoots                []*common.Hash
 	fakeDispatchBlockNumbers []uint64
 	fakeSignatures           []types.Signature
 	fakeSumbittedTimes       []time.Time
