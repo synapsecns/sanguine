@@ -99,7 +99,7 @@ func (s Store) GetRoot(ctx context.Context, messageMask types.DBMessage) (common
 	dbTx := s.DB().WithContext(ctx).
 		Model(&message).
 		Where(&dbMessageMask).
-		Scan(&message)
+		First(&message)
 	if dbTx.Error != nil {
 		return common.Hash{}, fmt.Errorf("failed to get message: %w", dbTx.Error)
 	}
