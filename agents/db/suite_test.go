@@ -22,9 +22,8 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-type DBSuite struct {
-	*testsuite.TestSuite
-	dbs                      []db.SynapseDB
+// DBTestState holds the state of the test
+type DBTestState struct {
 	fakeOrigin               uint32
 	fakeDestination          uint32
 	fakeNonces               []uint32
@@ -34,6 +33,11 @@ type DBSuite struct {
 	fakeSumbittedTimes       []time.Time
 	fakeSigner               *localsigner.Signer
 	numMessages              int
+}
+
+type DBSuite struct {
+	*testsuite.TestSuite
+	dbs []db.SynapseDB
 }
 
 // NewTxQueueSuite creates a new transaction queue suite.
