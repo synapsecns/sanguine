@@ -32,6 +32,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/rpcStatus'
       x-codegen-request-body-name: body
+  /grpc/v1/get_block_time:
+    post:
+      tags:
+      - ScribeService
+      operationId: ScribeService_GetBlockTime
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/v1GetBlockTimeRequest'
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1GetBlockTimeResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/rpcStatus'
+      x-codegen-request-body-name: body
   /grpc/v1/health_check:
     post:
       tags:
@@ -206,6 +231,23 @@ components:
           index: index
           txHash: null
           txIndex: txIndex
+    v1GetBlockTimeRequest:
+      type: object
+      properties:
+        chainID:
+          type: integer
+          format: int64
+        blockNumber:
+          type: string
+          format: uint64
+    v1GetBlockTimeResponse:
+      type: object
+      properties:
+        blockTime:
+          type: string
+          format: uint64
+      example:
+        blockTime: blockTime
     v1Hash:
       type: object
       properties:

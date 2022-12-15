@@ -7,6 +7,7 @@ import (
 	"github.com/prysmaticlabs/prysm/shared/trieutil"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
+	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
@@ -107,7 +108,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		AttestationCollectorChainID: gofakeit.Uint32(),
 	}
 
-	exc, err := executor.NewExecutor(excCfg, e.testDB, scribeClient.ScribeClient)
+	exc, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient)
 	e.Nil(err)
 
 	// Start the executor.
@@ -189,7 +190,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		},
 	}
 
-	exec, err := executor.NewExecutor(excCfg, e.testDB, scribeClient.ScribeClient)
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient)
 	e.Nil(err)
 
 	// Start the exec.
@@ -275,7 +276,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		},
 	}
 
-	exec, err := executor.NewExecutor(excCfg, e.testDB, scribeClient.ScribeClient)
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient)
 	e.Nil(err)
 
 	_, err = exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
@@ -406,4 +407,276 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	e.Equal(testRootB, newRoot)
 	e.Equal(oldTreeItems, newTreeItems)
+}
+
+func (e *ExecutorSuite) TestVerifyMessage() {
+	chainID := gofakeit.Uint32()
+	destination := chainID + 1
+
+	testTree, err := trieutil.NewTrie(32)
+	e.Nil(err)
+
+	excCfg := executorCfg.Config{
+		Chains: []executorCfg.ChainConfig{
+			{
+				ChainID: chainID,
+			},
+			{
+				ChainID: destination,
+			},
+		},
+	}
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+	go func() {
+		scribeErr := scribeClient.Start(e.GetTestContext())
+		e.Nil(scribeErr)
+	}()
+
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient)
+	e.Nil(err)
+
+	nonces := []uint32{1, 2, 3, 4}
+	blockNumbers := []uint64{10, 20, 30, 40}
+	recipients := [][32]byte{
+		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
+		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
+	}
+	senders := [][32]byte{
+		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
+		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
+	}
+	optimisticSeconds := []uint32{
+		gofakeit.Uint32(), gofakeit.Uint32(),
+		gofakeit.Uint32(), gofakeit.Uint32(),
+	}
+	notaryTips := []*big.Int{
+		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
+		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
+	}
+	broadcasterTips := []*big.Int{
+		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
+		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
+	}
+	proverTips := []*big.Int{
+		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
+		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
+	}
+	executorTips := []*big.Int{
+		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
+		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
+	}
+	tips := []types.Tips{
+		types.NewTips(notaryTips[0], broadcasterTips[0], proverTips[0], executorTips[0]),
+		types.NewTips(notaryTips[1], broadcasterTips[1], proverTips[1], executorTips[1]),
+		types.NewTips(notaryTips[2], broadcasterTips[2], proverTips[2], executorTips[2]),
+		types.NewTips(notaryTips[3], broadcasterTips[3], proverTips[3], executorTips[3]),
+	}
+	messageBytes := [][]byte{
+		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
+		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
+	}
+
+	header0 := types.NewHeader(chainID, senders[0], nonces[0], destination, recipients[0], optimisticSeconds[0])
+	header1 := types.NewHeader(chainID, senders[1], nonces[1], destination, recipients[1], optimisticSeconds[1])
+	header2 := types.NewHeader(chainID, senders[2], nonces[2], destination, recipients[2], optimisticSeconds[2])
+	header3 := types.NewHeader(chainID, senders[3], nonces[3], destination, recipients[3], optimisticSeconds[3])
+
+	message0 := types.NewMessage(header0, tips[0], messageBytes[0])
+	message1 := types.NewMessage(header1, tips[1], messageBytes[1])
+	message2 := types.NewMessage(header2, tips[2], messageBytes[2])
+	message3 := types.NewMessage(header3, tips[3], messageBytes[3])
+
+	leaf0, err := message0.ToLeaf()
+	e.Nil(err)
+	leaf1, err := message1.ToLeaf()
+	e.Nil(err)
+	leaf2, err := message2.ToLeaf()
+	e.Nil(err)
+	leaf3, err := message3.ToLeaf()
+	e.Nil(err)
+
+	testTree.Insert(leaf0[:], 0)
+	root0 := testTree.Root()
+	testTree.Insert(leaf1[:], 1)
+	root1 := testTree.Root()
+	testTree.Insert(leaf2[:], 2)
+	root2 := testTree.Root()
+	testTree.Insert(leaf3[:], 3)
+	root3 := testTree.Root()
+
+	// Insert messages into the database.
+	err = e.testDB.StoreMessage(e.GetTestContext(), message0, root0, blockNumbers[0])
+	e.Nil(err)
+	err = e.testDB.StoreMessage(e.GetTestContext(), message1, root1, blockNumbers[1])
+	e.Nil(err)
+	err = e.testDB.StoreMessage(e.GetTestContext(), message2, root2, blockNumbers[2])
+	e.Nil(err)
+
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
+	e.Nil(err)
+
+	inTree0, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[0], message0, chainID, destination)
+	e.Nil(err)
+	e.True(inTree0)
+
+	inTree1, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[1], message1, chainID, destination)
+	e.Nil(err)
+	e.True(inTree1)
+
+	inTree2, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message2, chainID, destination)
+	e.Nil(err)
+	e.True(inTree2)
+
+	inTreeFail, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message1, chainID, destination)
+	e.Nil(err)
+	e.False(inTreeFail)
+
+	err = e.testDB.StoreMessage(e.GetTestContext(), message3, root3, blockNumbers[3])
+	e.Nil(err)
+
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
+	e.Nil(err)
+
+	inTree3, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[3], message3, chainID, destination)
+	e.Nil(err)
+	e.True(inTree3)
+}
+
+func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+	chainID := gofakeit.Uint32()
+	destination := chainID + 1
+	deployManager := testutil.NewDeployManager(e.T())
+	simulatedChain := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
+	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), simulatedChain.RPCAddress())
+	e.Nil(err)
+	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
+	originContract, originRef := deployManager.GetOrigin(e.GetTestContext(), simulatedChain)
+
+	contractConfig := config.ContractConfig{
+		Address:    originContract.Address().String(),
+		StartBlock: 0,
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:               chainID,
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{contractConfig},
+	}
+	scribeConfig := config.Config{
+		Chains: []config.ChainConfig{chainConfig},
+	}
+	clients := map[uint32][]backfill.ScribeBackend{
+		chainID: {simulatedClient, simulatedClient},
+	}
+
+	scribe, err := node.NewScribe(e.scribeTestDB, clients, scribeConfig)
+	e.Nil(err)
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+	go func() {
+		scribeErr := scribeClient.Start(e.GetTestContext())
+		e.Nil(scribeErr)
+	}()
+
+	// Start the Scribe.
+	go func() {
+		_ = scribe.Start(e.GetTestContext())
+	}()
+
+	excCfg := executorCfg.Config{
+		Chains: []executorCfg.ChainConfig{
+			{
+				ChainID:       chainID,
+				OriginAddress: originContract.Address().String(),
+			},
+			{
+				ChainID: destination,
+			},
+		},
+	}
+
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient)
+	e.Nil(err)
+
+	// Start the exec.
+	go func() {
+		execErr := exec.Start(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
+	// Listen with the exec.
+	go func() {
+		execErr := exec.Listen(e.GetTestContext(), chainID)
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
+	tips := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	encodedTips, err := types.EncodeTips(tips)
+	e.Nil(err)
+
+	optimisticSeconds := uint32(10)
+
+	ownerPtr, err := originRef.OriginCaller.Owner(&bind.CallOpts{Context: e.GetTestContext()})
+	e.Nil(err)
+
+	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), &ownerPtr)
+
+	tx, err := originRef.AddNotary(transactOpts.TransactOpts, destination, e.signer.Address())
+	e.Nil(err)
+	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+
+	transactOpts.Value = types.TotalTips(tips)
+
+	recipient := [32]byte{byte(gofakeit.Uint32())}
+	nonce := uint32(1)
+	body := []byte{byte(gofakeit.Uint32())}
+
+	tx, err = originRef.Dispatch(transactOpts.TransactOpts, destination, recipient, optimisticSeconds, encodedTips, body)
+	e.Nil(err)
+
+	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+
+	sender, err := simulatedChain.Signer().Sender(tx)
+	e.Nil(err)
+
+	header := types.NewHeader(chainID, sender.Hash(), nonce, destination, recipient, optimisticSeconds)
+	message := types.NewMessage(header, tips, body)
+
+	continueChan := make(chan bool, 1)
+
+	var blockNum uint64
+
+	// Wait for message to be stored in the database.`
+	e.Eventually(func() bool {
+		blockNum, err = e.testDB.GetBlockNumber(e.GetTestContext(), types2.DBMessage{
+			ChainID:     &chainID,
+			Destination: &destination,
+			Nonce:       &nonce,
+		})
+		if err == nil {
+			continueChan <- true
+			return true
+		}
+		return false
+	})
+
+	<-continueChan
+
+	verified, err := exec.VerifyOptimisticPeriod(e.GetTestContext(), message, blockNum)
+	e.Nil(err)
+	e.False(verified)
+
+	e.Eventually(func() bool {
+		verified, err = exec.VerifyOptimisticPeriod(e.GetTestContext(), message, blockNum)
+		e.Nil(err)
+		return verified
+	})
 }
