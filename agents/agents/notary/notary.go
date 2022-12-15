@@ -16,7 +16,7 @@ import (
 // Notary updates the origin contract.
 // TODO: Note right now, I have threads for each origin-destination pair and do no batching at all
 // in terms of calls to the origin.
-// Right now, for this MVP, this is the simplest path and we can make improvements later
+// Right now, for this MVP, this is the simplest path and we can make improvements later.
 type Notary struct {
 	scanners        map[string]OriginAttestationScanner
 	signers         map[string]OriginAttestationSigner

@@ -53,7 +53,7 @@ func (a OriginAttestationSubmitter) Start(ctx context.Context) error {
 	}
 }
 
-// FindOldestUnsubmittedAttestation fetches the oldest unsubmitted attestation that has been signed
+// FindOldestUnsubmittedAttestation fetches the oldest unsubmitted attestation that has been signed.
 func (a OriginAttestationSubmitter) FindOldestUnsubmittedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
 	inProgressAttestation, err := a.db.RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx, a.domain.Config().DomainID, a.destinationID)
 	if err != nil {
@@ -65,7 +65,7 @@ func (a OriginAttestationSubmitter) FindOldestUnsubmittedAttestation(ctx context
 	return inProgressAttestation, nil
 }
 
-// update runs the job for the submitter
+// update runs the job for the submitter.
 // nolint: cyclop
 func (a OriginAttestationSubmitter) update(ctx context.Context) error {
 	inProgressAttestationToSubmit, err := a.FindOldestUnsubmittedAttestation(ctx)
