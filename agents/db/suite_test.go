@@ -22,7 +22,7 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-// DBTestState holds the state of the test
+// DBTestState holds the state of the test.
 type DBTestState struct {
 	fakeOrigin               uint32
 	fakeDestination          uint32
