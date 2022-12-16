@@ -1,8 +1,9 @@
-package testsuite
+package testutil
 
 import (
 	"testing"
 
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -10,7 +11,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
-	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -26,7 +26,7 @@ import (
 // an attestation collector, others might only want an origin and an attestation collector,
 // others might want just a destination, etc.
 type SimulatedBackendsTestSuite struct {
-	*TestSuite
+	*testsuite.TestSuite
 	OriginContract              *origin.OriginRef
 	DestinationContract         *destination.DestinationRef
 	DestinationContractMetadata contracts.DeployedContract
@@ -53,12 +53,12 @@ type SimulatedBackendsTestSuite struct {
 func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 	tb.Helper()
 	return &SimulatedBackendsTestSuite{
-		TestSuite: NewTestSuite(tb),
+		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 
 // SetupOrigin sets up the backend that will have the origin contract deployed on it.
-func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *testutil.DeployManager) {
+func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 	_, a.OriginContract = deployManager.GetOrigin(a.GetTestContext(), a.TestBackendOrigin)
 	originOwnerPtr, err := a.OriginContract.OriginCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
@@ -79,7 +79,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *testutil.DeployM
 }
 
 // SetupDestination sets up the backend that will have the destination contract deployed on it.
-func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *testutil.DeployManager) {
+func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManager) {
 	a.DestinationContractMetadata, a.DestinationContract = deployManager.GetDestination(a.GetTestContext(), a.TestBackendDestination)
 
 	destOwnerPtr, err := a.DestinationContract.DestinationCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
@@ -101,7 +101,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *testutil.De
 }
 
 // SetupAttestation sets up the backend that will have the attestation collector contract deployed on it.
-func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *testutil.DeployManager) {
+func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *DeployManager) {
 	_, a.AttestationHarness = deployManager.GetAttestationHarness(a.GetTestContext(), a.TestBackendAttestation)
 	a.AttestationContractMetadata, a.AttestationContract = deployManager.GetAttestationCollector(a.GetTestContext(), a.TestBackendAttestation)
 
@@ -156,7 +156,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.NotarySigner = localsigner.NewSigner(a.NotaryWallet.PrivateKey())
 	a.GuardSigner = localsigner.NewSigner(a.GuardWallet.PrivateKey())
 
-	deployManager := testutil.NewDeployManager(a.T())
+	deployManager := NewDeployManager(a.T())
 	a.SetupOrigin(deployManager)
 	a.SetupDestination(deployManager)
 	a.SetupAttestation(deployManager)
