@@ -19,7 +19,7 @@ func (i ContractSuite) TestSubmitAttestation() {
 	_, err := evm.NewAttestationCollectorContract(i.GetTestContext(), i.attestationBackend, i.attestationContract.Address())
 	Nil(i.T(), err)
 
-	originDomain, err := i.originContract.Origin.LocalDomain(&bind.CallOpts{Context: i.GetTestContext()})
+	originDomain, err := i.originContract.OriginHarness.LocalDomain(&bind.CallOpts{Context: i.GetTestContext()})
 	Nil(i.T(), err)
 	localDomain := originDomain
 	destination := testDestinationDomain

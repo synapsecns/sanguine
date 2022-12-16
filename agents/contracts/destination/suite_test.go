@@ -10,9 +10,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/agents/contracts/destination"
-	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"
@@ -24,8 +24,8 @@ import (
 // DestinationSuite is the destination test suite.
 type DestinationSuite struct {
 	*testsuite.TestSuite
-	originContract              *origin.OriginRef
-	destinationContract         *destination.DestinationRef
+	originContract              *originharness.OriginHarnessRef
+	destinationContract         *destinationharness.DestinationHarnessRef
 	destinationContractMetadata contracts.DeployedContract
 	attestationHarness          *attestationharness.AttestationHarnessRef
 	testBackendOrigin           backends.SimulatedTestBackend
@@ -49,9 +49,9 @@ func (d *DestinationSuite) SetupTest() {
 	d.testBackendDestination = preset.GetBSCTestnet().Geth(d.GetTestContext(), d.T())
 	deployManager := testutil.NewDeployManager(d.T())
 
-	_, d.originContract = deployManager.GetOrigin(d.GetTestContext(), d.testBackendOrigin)
+	_, d.originContract = deployManager.GetOriginHarness(d.GetTestContext(), d.testBackendOrigin)
 	_, d.attestationHarness = deployManager.GetAttestationHarness(d.GetTestContext(), d.testBackendOrigin)
-	d.destinationContractMetadata, d.destinationContract = deployManager.GetDestination(d.GetTestContext(), d.testBackendDestination)
+	d.destinationContractMetadata, d.destinationContract = deployManager.GetDestinationHarness(d.GetTestContext(), d.testBackendDestination)
 
 	var err error
 	d.wallet, err = wallet.FromRandom()
@@ -63,13 +63,13 @@ func (d *DestinationSuite) SetupTest() {
 	d.testBackendOrigin.FundAccount(d.GetTestContext(), d.signer.Address(), *big.NewInt(params.Ether))
 	d.testBackendDestination.FundAccount(d.GetTestContext(), d.signer.Address(), *big.NewInt(params.Ether))
 
-	destOwnerPtr, err := d.destinationContract.DestinationCaller.Owner(&bind.CallOpts{Context: d.GetTestContext()})
+	destOwnerPtr, err := d.destinationContract.DestinationHarnessCaller.Owner(&bind.CallOpts{Context: d.GetTestContext()})
 	if err != nil {
 		d.T().Fatal(err)
 	}
 
 	destOwnerAuth := d.testBackendDestination.GetTxContext(d.GetTestContext(), &destOwnerPtr)
-	_, err = d.destinationContract.AddNotary(destOwnerAuth.TransactOpts, uint32(d.testBackendDestination.GetChainID()), d.signer.Address())
+	_, err = d.destinationContract.AddAgent(destOwnerAuth.TransactOpts, uint32(d.testBackendDestination.GetChainID()), d.signer.Address())
 	if err != nil {
 		d.T().Fatal(err)
 	}

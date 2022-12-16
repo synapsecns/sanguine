@@ -1,6 +1,8 @@
 package executor_test
 
 import (
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/params"
@@ -14,7 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/node"
-	"math/big"
 )
 
 func (e *ExecutorSuite) TestExecutor() {
@@ -229,7 +230,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), simulatedChain.RPCAddress())
 	e.Nil(err)
 	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-	originContract, originRef := deployManager.GetOrigin(e.GetTestContext(), simulatedChain)
+	originContract, originRef := deployManager.GetOriginHarness(e.GetTestContext(), simulatedChain)
 
 	contractConfig := config.ContractConfig{
 		Address:    originContract.Address().String(),
@@ -298,12 +299,12 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	messageBytes := []byte{byte(gofakeit.Uint32())}
 
-	ownerPtr, err := originRef.OriginCaller.Owner(&bind.CallOpts{Context: e.GetTestContext()})
+	ownerPtr, err := originRef.OriginHarnessCaller.Owner(&bind.CallOpts{Context: e.GetTestContext()})
 	e.Nil(err)
 
 	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), &ownerPtr)
 
-	tx, err := originRef.AddNotary(transactOpts.TransactOpts, destination, e.signer.Address())
+	tx, err := originRef.AddAgent(transactOpts.TransactOpts, destination, e.signer.Address())
 	e.Nil(err)
 	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 
