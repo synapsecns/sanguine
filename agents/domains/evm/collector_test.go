@@ -21,7 +21,7 @@ func (i ContractSuite) TestSubmitAttestation() {
 	Nil(i.T(), err)
 
 	attestationOwnerAuth := i.attestationBackend.GetTxContext(i.GetTestContext(), &ownerPtr)
-	tx, err := i.attestationContract.AddNotary(attestationOwnerAuth.TransactOpts, testDestinationDomain, i.signer.Address())
+	tx, err := i.attestationContract.AddAgent(attestationOwnerAuth.TransactOpts, testDestinationDomain, i.signer.Address())
 	Nil(i.T(), err)
 	i.attestationBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -29,7 +29,8 @@ func (i ContractSuite) TestSubmitAttestation() {
 	Nil(i.T(), err)
 	Len(i.T(), notaries, 1)
 
-	originDomain, err := i.originContract.Origin.LocalDomain(&bind.CallOpts{Context: i.GetTestContext()})
+	originDomain, err := i.originContract.OriginHarness.LocalDomain(&bind.CallOpts{Context: i.GetTestContext()})
+
 	Nil(i.T(), err)
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))

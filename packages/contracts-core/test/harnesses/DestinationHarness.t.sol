@@ -3,17 +3,24 @@
 pragma solidity 0.8.17;
 
 import { Destination } from "../../contracts/Destination.sol";
+import { DestinationHub } from "../../contracts/hubs/DestinationHub.sol";
 
 import { AgentSet } from "../../contracts/libs/AgentSet.sol";
 import { Tips } from "../../contracts/libs/Tips.sol";
 import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
 
+import { AgentRegistryExtended } from "./system/AgentRegistryExtended.t.sol";
 import { SystemContractHarness } from "./system/SystemContractHarness.t.sol";
 import { DestinationHarnessEvents } from "./events/DestinationHarnessEvents.sol";
 
 import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract DestinationHarness is DestinationHarnessEvents, Destination, SystemContractHarness {
+contract DestinationHarness is
+    DestinationHarnessEvents,
+    Destination,
+    AgentRegistryExtended,
+    SystemContractHarness
+{
     using AgentSet for AgentSet.DomainAddressSet;
     using Tips for bytes29;
 
@@ -43,5 +50,14 @@ contract DestinationHarness is DestinationHarnessEvents, Destination, SystemCont
             _tips.proverTip(),
             _tips.executorTip()
         );
+    }
+
+    function _isIgnoredAgent(uint32 _domain, address _account)
+        internal
+        view
+        override(AgentRegistryExtended, DestinationHub)
+        returns (bool)
+    {
+        return DestinationHub._isIgnoredAgent(_domain, _account);
     }
 }

@@ -20,40 +20,25 @@ contract BondingPrimaryTest is BondingManagerTest {
     ▏*║                  TESTS: ADD/REMOVE AGENTS (REVERTS)                  ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_addNotary_revert_notOwner(address caller) public {
+    function test_addAgent_revert_notOwner(address caller) public {
         vm.assume(caller != owner);
         expectRevertNotOwner();
         vm.prank(caller);
-        _castToPrimary().addNotary(1, address(1));
+        _castToPrimary().addAgent(1, address(1));
     }
 
-    function test_removeNotary_revert_notOwner(address caller) public {
+    function test_removeAgent_revert_notOwner(address caller) public {
         vm.assume(caller != owner);
         expectRevertNotOwner();
         vm.prank(caller);
-        _castToPrimary().removeNotary(1, address(1));
-    }
-
-    function test_addGuard_revert_notOwner(address caller) public {
-        vm.assume(caller != owner);
-        expectRevertNotOwner();
-        vm.prank(caller);
-        _castToPrimary().addGuard(address(1));
-    }
-
-    function test_removeGuard_revert_notOwner(address caller) public {
-        vm.assume(caller != owner);
-        expectRevertNotOwner();
-        vm.prank(caller);
-        _castToPrimary().removeGuard(address(1));
+        _castToPrimary().removeAgent(1, address(1));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       TESTS: ADD/REMOVE AGENTS                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_addNotary(uint32 domain, address notary) public {
-        vm.assume(domain != 0);
+    function test_addAgent(uint32 domain, address notary) public {
         SystemContract.AgentInfo[] memory infos = infoToArray(
             agentInfo({ domain: domain, account: notary, bonded: true })
         );
@@ -64,11 +49,11 @@ contract BondingPrimaryTest is BondingManagerTest {
             emit SyncAgentsCall({ requestID: 1, removeExisting: false, infos: infos });
         }
         vm.prank(owner);
-        _castToPrimary().addNotary(domain, notary);
+        _castToPrimary().addAgent(domain, notary);
     }
 
-    function test_removeNotary(uint32 domain, address notary) public {
-        test_addNotary(domain, notary);
+    function test_removeAgent(uint32 domain, address notary) public {
+        test_addAgent(domain, notary);
         SystemContract.AgentInfo[] memory infos = infoToArray(
             agentInfo({ domain: domain, account: notary, bonded: false })
         );
@@ -79,36 +64,7 @@ contract BondingPrimaryTest is BondingManagerTest {
             emit SyncAgentsCall({ requestID: 2, removeExisting: false, infos: infos });
         }
         vm.prank(owner);
-        _castToPrimary().removeNotary(domain, notary);
-    }
-
-    function test_addGuard(address guard) public {
-        SystemContract.AgentInfo[] memory infos = infoToArray(
-            guardInfo({ guard: guard, bonded: true })
-        );
-        // All system registries should be system called
-        for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
-            // This is the first BondingPrimary request
-            emit SyncAgentsCall({ requestID: 1, removeExisting: false, infos: infos });
-        }
-        vm.prank(owner);
-        _castToPrimary().addGuard(guard);
-    }
-
-    function test_removeGuard(address guard) public {
-        test_addGuard(guard);
-        SystemContract.AgentInfo[] memory infos = infoToArray(
-            guardInfo({ guard: guard, bonded: false })
-        );
-        // All system registries should be system called
-        for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
-            // This is the second BondingPrimary request
-            emit SyncAgentsCall({ requestID: 2, removeExisting: false, infos: infos });
-        }
-        vm.prank(owner);
-        _castToPrimary().removeGuard(guard);
+        _castToPrimary().removeAgent(domain, notary);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

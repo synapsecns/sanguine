@@ -12,24 +12,20 @@ import {
  * @notice Shared utilities between Synapse System Contracts: Origin, Destination, etc.
  */
 abstract contract SystemContract is DomainContext, OwnableUpgradeable {
-    enum Agent {
-        Notary,
-        Guard
-    }
-
     /**
      * @notice Unified struct for off-chain agent storing
-     * @param agent     Type of agent: Notary, Guard
+     * @dev Both Guards and Notaries are stored this way.
+     * `domain == 0` refers to Guards, who are active on every domain
+     * `domain != 0` refers to Notaries, who are active on a single domain
      * @param bonded    Whether agent bonded or unbonded
-     * @param domain    Domain, where agent is active (0 means agent is active everywhere)
+     * @param domain    Domain, where agent is active
      * @param account   Off-chain agent address
      */
     struct AgentInfo {
-        Agent agent;
-        bool bonded;
         uint32 domain;
         address account;
-        // TODO: 48 bits remaining
+        bool bonded;
+        // TODO: 56 bits remaining
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -309,18 +305,6 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
     function _guardInfo(address _guard, bool _bonded) internal pure returns (AgentInfo memory) {
         // We are using domain value of 0 to illustrate the point
         // that Guards are active on all domains
-        return AgentInfo({ agent: Agent.Guard, bonded: _bonded, domain: 0, account: _guard });
-    }
-
-    /**
-     * @notice Constructs a universal "Agent Information" structure for the given Notary.
-     */
-    function _notaryInfo(
-        uint32 _domain,
-        address _notary,
-        bool _bonded
-    ) internal pure returns (AgentInfo memory) {
-        return
-            AgentInfo({ agent: Agent.Notary, bonded: _bonded, domain: _domain, account: _notary });
+        return AgentInfo({ domain: 0, account: _guard, bonded: _bonded });
     }
 }
