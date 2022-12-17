@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - feat/alpine
 
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
