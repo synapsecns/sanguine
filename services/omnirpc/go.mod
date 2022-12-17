@@ -15,7 +15,6 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.19.0
 	github.com/buger/jsonparser v1.1.1
 	github.com/davecgh/go-spew v1.1.1
-	github.com/diamondcdn/fasthttp-http2 v1.0.0
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
@@ -37,6 +36,7 @@ require (
 	github.com/rbretecher/go-postman-collection v0.9.0
 	github.com/richardwilkes/toolbox v1.74.0
 	github.com/stretchr/testify v1.8.0
+	github.com/synapsecns/fasthttp-http2 v1.0.0
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
 	github.com/urfave/cli/v2 v2.16.3

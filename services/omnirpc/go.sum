@@ -252,8 +252,6 @@ github.com/dgrr/http2 v0.3.5 h1:R54Afxa+yX21j64nbh3+qcj8vhvfuCows0NCxk83c54=
 github.com/dgrr/http2 v0.3.5/go.mod h1:ZYb0czp1g5/p7q01JWWKA6qkERz8SScP8KL62ugeqes=
 github.com/dgryski/go-bitstream v0.0.0-20180413035011-3522498ce2c8/go.mod h1:VMaSuZ+SZcx/wljOQKvp5srsbCiKDEb6K2wC4+PiBmQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
-github.com/diamondcdn/fasthttp-http2 v1.0.0 h1:SCf3Kh87e9ARVqyW4jPcqwoW7rv47/38tSEmLoNC3zA=
-github.com/diamondcdn/fasthttp-http2 v1.0.0/go.mod h1:wwNkckAeRo3spfBv/+VJD2nNZUHKNV9mH/bu2/svBIg=
 github.com/dlclark/regexp2 v1.2.0/go.mod h1:2pZnwuY/m+8K6iRw6wQdMtk+rH5tNGR1i55kozfMjCc=
 github.com/docker/docker v1.4.2-0.20180625184442-8e610b2b55bf/go.mod h1:eEKB0N0r5NX/I1kEveEz05bcu8tLC/8azJZsviup8Sk=
 github.com/docker/docker v20.10.7+incompatible h1:Z6O9Nhsjv+ayUEeI1IojKbYcsGdgYSNqxe1s2MYzUhQ=
@@ -998,6 +996,8 @@ github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69
 github.com/subosito/gotenv v1.4.0 h1:yAzM1+SmVcz5R4tXGsNMu1jUl2aOJXoiWUCEwwnGrvs=
 github.com/subosito/gotenv v1.4.0/go.mod h1:mZd6rFysKEcUhUHXJk0C/08wAgyDBFuwEYL7vWWGaGo=
 github.com/summerwind/h2spec v2.2.1+incompatible/go.mod h1:eP7IHGVDEe9cbCxRNtmGfII77lBvLgJLNfJjTaKa9sI=
+github.com/synapsecns/fasthttp-http2 v1.0.0 h1:G1/8AKgAzVImHpGbCGZo8w4c0kUBXb4eRKkMlWUW4eA=
+github.com/synapsecns/fasthttp-http2 v1.0.0/go.mod h1:QM9mQS/FygGB3PdvmW8a0/70FirWmEZVvj6Dlo1pisw=
 github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d/go.mod h1:9OrXJhf154huy1nPWmuSrkgjPUtUNhA+Zmy+6AESzuA=
 github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954/go.mod h1:u2MKkTVTVJWe5D1rCvame8WqhBd88EuIwODJZ1VHCPM=
 github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 h1:epCh84lMvA70Z7CTTCmYQn2CKbY8j86K7/FAIr141uY=
