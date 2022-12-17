@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ImVexed/fasturl"
-	"github.com/dgrr/http2"
+	http2 "github.com/diamondcdn/fasthttp-http2"
 	"github.com/puzpuzpuz/xsync"
 	"github.com/valyala/fasthttp"
 	"sync"
