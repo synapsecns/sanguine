@@ -79,7 +79,7 @@ func (u *NotarySuite) SetupTest() {
 
 	auth := u.testBackend.GetTxContext(u.GetTestContext(), &owner)
 
-	tx, err := u.attestationContract.AddNotary(auth.TransactOpts, u.domainClient.Config().DomainID, u.signer.Address())
+	tx, err := u.attestationContract.AddAgent(auth.TransactOpts, u.domainClient.Config().DomainID, u.signer.Address())
 	Nil(u.T(), err)
 
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)

@@ -199,7 +199,13 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _isIgnoredAgent(uint32 _domain, address) internal view override returns (bool) {
+    function _isIgnoredAgent(uint32 _domain, address)
+        internal
+        view
+        virtual
+        override
+        returns (bool)
+    {
         // Destination only keeps track of local Notaries and Guards
         return _domain != _localDomain() && _domain != 0;
     }

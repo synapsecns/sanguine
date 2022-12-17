@@ -32,12 +32,6 @@ abstract contract SystemContractTools {
         address account,
         bool bonded
     ) public pure returns (SystemContract.AgentInfo memory) {
-        return
-            SystemContract.AgentInfo({
-                agent: domain == 0 ? SystemContract.Agent.Guard : SystemContract.Agent.Notary,
-                bonded: bonded,
-                domain: domain,
-                account: account
-            });
+        return SystemContract.AgentInfo({ bonded: bonded, domain: domain, account: account });
     }
 }

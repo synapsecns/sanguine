@@ -38,8 +38,8 @@ type OriginContract interface {
 
 // AttestationCollectorContract contains the interface for the attestation collector.
 type AttestationCollectorContract interface {
-	// AddNotary adds a notary to the attesation collector
-	AddNotary(transactOpts *bind.TransactOpts, destination uint32, signer signer.Signer) error
+	// AddAgent adds an agent (guard or notary) to the attesation collector
+	AddAgent(transactOpts *bind.TransactOpts, domain uint32, signer signer.Signer) error
 	// SubmitAttestation submits an attestation to the attestation collector.
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// GetLatestNonce gets the latest nonce for the domain on the attestation collector
