@@ -10,8 +10,10 @@ import (
 	gqlClient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	fetcherpkg "github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
+	"github.com/synapsecns/sanguine/services/explorer/static"
 	"golang.org/x/sync/errgroup"
 	"net/http"
 )
@@ -94,20 +96,28 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 	var bridgeParser *parser.BridgeParser
 	var messageBusParser *parser.MessageBusParser
 
+	tokenSymbolToIDs, err := parser.ParseYaml(static.GetTokenSymbolToTokenIDConfig())
+	if err != nil {
+		return nil, fmt.Errorf("could not open yaml file: %w", err)
+	}
+	tokenDataService, err := tokendata.NewTokenDataService(newConfigFetcher, tokenSymbolToIDs)
+	if err != nil {
+		return nil, fmt.Errorf("could not create token data service: %w", err)
+	}
+
 	for i := range chainConfig.Contracts {
 		switch chainConfig.Contracts[i].ContractType {
 		case "bridge":
-			bridgeParser, err = parser.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), newConfigFetcher, fetcher)
+			bridgeParser, err = parser.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), tokenDataService, fetcher)
 			if err != nil || bridgeParser == nil {
 				return nil, fmt.Errorf("could not create bridge parser: %w", err)
 			}
 		case "swap":
-			swapFetcher, err := fetcherpkg.NewSwapFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client)
-			if err != nil || swapFetcher == nil {
-				return nil, fmt.Errorf("could not create swap ScribeFetcher: %w", err)
+			swapService, err := fetcherpkg.NewSwapFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client)
+			if err != nil || swapService == nil {
+				return nil, fmt.Errorf("could not create swapService: %w", err)
 			}
-
-			swapParser, err := parser.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), *swapFetcher, fetcher)
+			swapParser, err := parser.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher, &swapService, tokenDataService)
 			if err != nil || swapParser == nil {
 				return nil, fmt.Errorf("could not create swap parser: %w", err)
 			}

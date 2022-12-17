@@ -183,7 +183,6 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 		}
 		logger.Infof("backfilling contract %s chunk completed, %d to %d", contract.Address, chunkStart, chunkEnd)
 		if c.chainConfig.ChainID == 1 {
-			fmt.Println("fuck")
 			fmt.Println(chunkEnd)
 		}
 		// Store the last block in clickhouse

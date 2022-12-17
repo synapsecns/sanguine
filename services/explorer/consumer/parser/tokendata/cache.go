@@ -18,6 +18,8 @@ import (
 type Service interface {
 	// GetTokenData attempts to get token data from the cache otherwise its fetched from the bridge config
 	GetTokenData(ctx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error)
+	// GetPoolTokenData attempts to get pool token data from the cache otherwise its fetched from the erc20 interface
+	GetPoolTokenData(ctx context.Context, chainID uint32, token common.Address, swapService fetcher.SwapService) (ImmutableTokenData, error)
 }
 
 const cacheSize = 3000
@@ -27,18 +29,21 @@ type tokenDataServiceImpl struct {
 	tokenCache *lru.TwoQueueCache[string, ImmutableTokenData]
 	// fetcher is the fetcher used to fetch data from the bridge config contract
 	service fetcher.Service
+	// tokenSymbolToIDs is a mapping of token symbols to token IDs.
+	tokenSymbolToIDs map[string]string
 }
 
 // NewTokenDataService creates a new token data service.
-func NewTokenDataService(service fetcher.Service) (Service, error) {
+func NewTokenDataService(service fetcher.Service, tokenSymbolToIDs map[string]string) (Service, error) {
 	cache, err := lru.New2Q[string, ImmutableTokenData](cacheSize)
 	if err != nil {
 		return nil, fmt.Errorf("could not create token data cache: %w", err)
 	}
 
 	return &tokenDataServiceImpl{
-		tokenCache: cache,
-		service:    service,
+		tokenCache:       cache,
+		service:          service,
+		tokenSymbolToIDs: tokenSymbolToIDs,
 	}, nil
 }
 
@@ -58,8 +63,21 @@ func (t *tokenDataServiceImpl) GetTokenData(ctx context.Context, chainID uint32,
 	return tokenData, nil
 }
 
-// maxAttemptTime is how many times we will attempt to get the token data.
-var maxAttemptTime = time.Second * 10
+func (t *tokenDataServiceImpl) GetPoolTokenData(ctx context.Context, chainID uint32, token common.Address, swapService fetcher.SwapService) (ImmutableTokenData, error) {
+	key := fmt.Sprintf("token_%d_%s", chainID, token.Hex())
+	if data, ok := t.tokenCache.Get(key); ok {
+		return data, nil
+	}
+
+	tokenData, err := t.retrievePoolTokenData(ctx, token, swapService)
+	if err != nil {
+		return nil, fmt.Errorf("could not get token data: %w", err)
+	}
+
+	t.tokenCache.Add(key, tokenData)
+
+	return tokenData, nil
+}
 
 // retrieveTokenData retrieves the token data from the bridge config contract
 // this will retry for maxAttemptTime.
@@ -103,6 +121,35 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 
 	return res, nil
 }
+
+// retrieveTokenData retrieves the token data from the bridge config contract
+// this will retry for maxAttemptTime.
+func (t *tokenDataServiceImpl) retrievePoolTokenData(parentCtx context.Context, token common.Address, swapService fetcher.SwapService) (ImmutableTokenData, error) {
+	res := immutableTokenImpl{}
+
+	ctx, cancel := context.WithTimeout(parentCtx, maxAttemptTime)
+	defer cancel()
+
+	err := t.retryWithBackoff(ctx, func(ctx context.Context) error {
+		symbol, decimals, err := swapService.GetTokenMetaData(ctx, token)
+		if err != nil {
+			return fmt.Errorf("could not get token data: %w", err)
+		}
+
+		res.tokenID = t.tokenSymbolToIDs[*symbol]
+		res.decimals = *decimals
+
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not get pool token data: %w", err)
+	}
+
+	return res, nil
+}
+
+// maxAttemptTime is how many times we will attempt to get the token data.
+var maxAttemptTime = time.Second * 10
 
 type retryableFunc func(ctx context.Context) error
 

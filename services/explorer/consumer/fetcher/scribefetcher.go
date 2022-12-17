@@ -134,7 +134,7 @@ RETRY:
 }
 
 // FetchTx fetches the transaction of a log.
-func (s ScribeFetcher) FetchTx(ctx context.Context, tx string, chainID int) (*ethTypes.TxData, error) {
+func (s ScribeFetcher) FetchTx(ctx context.Context, tx string, chainID int) (*uint64, *string, error) {
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
@@ -145,8 +145,7 @@ func (s ScribeFetcher) FetchTx(ctx context.Context, tx string, chainID int) (*et
 RETRY:
 	select {
 	case <-ctx.Done():
-
-		return nil, fmt.Errorf("could not get tx for log, context canceled %d: %s", chainID, tx)
+		return nil, nil, fmt.Errorf("could not get tx for log, context canceled %d: %s", chainID, tx)
 	case <-time.After(timeout):
 
 		res, err := s.FetchClient.GetTransactions(ctx, chainID, 1, &tx)
@@ -156,14 +155,14 @@ RETRY:
 			timeout = b.Duration()
 			goto RETRY
 		}
-
-		// TODO check if tx is bad
-		if transaction == nil || transaction.Response == nil {
-			logger.Warnf("could not get tx for log,  invalid blocktime %d: %d", chainID, tx)
-			return nil, fmt.Errorf("could not get timestamp for block, invalid blocktime %d: %d", chainID, tx)
+		if res == nil || res.Response == nil || len(res.Response) == 0 {
+			logger.Warnf("could not get tx for log,  invalid response %d: %s", chainID, tx)
+			return nil, nil, fmt.Errorf("could not get timestamp for block, invalid tx %d: %s", chainID, tx)
 		}
 		resTx := res.Response[0]
-		// TODO make the correct type here
-		return resTx, nil
+		sender := resTx.Sender
+		blocktime := uint64(resTx.Timestamp)
+		fmt.Println("sender", sender, "blocktime", blocktime, resTx.TxHash, chainID)
+		return &blocktime, &sender, nil
 	}
 }
