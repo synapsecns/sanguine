@@ -285,7 +285,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 			if err != nil {
 				logger.Errorf("token with index %d not in pool: %v", tokenIndex, err)
 				continue
-				//return nil, fmt.Errorf("could not get token address: %w", err)
+				// return nil, fmt.Errorf("could not get token address: %w", err)
 			}
 			tokenData, err = p.tokenDataService.GetPoolTokenData(ctx, chainID, *tokenAddress, *p.swapService)
 			if err != nil {
