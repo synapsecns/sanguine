@@ -24,6 +24,7 @@ Class | Method | HTTP request | Description
 *ScribeServiceApi* | [**ScribeServiceCheck**](docs/ScribeServiceApi.md#scribeservicecheck) | **Post** /grpc/v1/health_check | see: https://github.com/grpc/grpc/blob/master/doc/health-checking.md
 *ScribeServiceApi* | [**ScribeServiceFilterLogs**](docs/ScribeServiceApi.md#scribeservicefilterlogs) | **Post** /grpc/v1/filter_logs | 
 *ScribeServiceApi* | [**ScribeServiceGetBlockTime**](docs/ScribeServiceApi.md#scribeservicegetblocktime) | **Post** /grpc/v1/get_block_time | 
+*ScribeServiceApi* | [**ScribeServiceGetLastBlockTime**](docs/ScribeServiceApi.md#scribeservicegetlastblocktime) | **Post** /grpc/v1/get_last_block_time | 
 *ScribeServiceApi* | [**ScribeServiceStreamLogs**](docs/ScribeServiceApi.md#scribeservicestreamlogs) | **Post** /grpc/v1/stream_logs | 
 *ScribeServiceApi* | [**ScribeServiceWatch**](docs/ScribeServiceApi.md#scribeservicewatch) | **Post** /grpc/v1/health_watch | 
 
@@ -39,6 +40,8 @@ Class | Method | HTTP request | Description
  - [V1FilterLogsResponse](docs/V1FilterLogsResponse.md)
  - [V1GetBlockTimeRequest](docs/V1GetBlockTimeRequest.md)
  - [V1GetBlockTimeResponse](docs/V1GetBlockTimeResponse.md)
+ - [V1GetLastBlockTimeRequest](docs/V1GetLastBlockTimeRequest.md)
+ - [V1GetLastBlockTimeResponse](docs/V1GetLastBlockTimeResponse.md)
  - [V1Hash](docs/V1Hash.md)
  - [V1HealthCheckRequest](docs/V1HealthCheckRequest.md)
  - [V1HealthCheckResponse](docs/V1HealthCheckResponse.md)

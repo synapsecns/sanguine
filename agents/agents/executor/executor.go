@@ -288,13 +288,32 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 		return false, fmt.Errorf("could not get block time: %w", err)
 	}
 
+	//lastBlockWithTime, err := e.grpcClient.GetLastBlockTime(ctx,
+	//	&pbscribe.GetLastBlockTimeRequest{
+	//		ChainID: message.OriginDomain(),
+	//	})
+	//if err != nil {
+	//	return false, fmt.Errorf("could not get last block with time: %w", err)
+	//}
+	//
+	//currentTimeResponse, err := e.grpcClient.GetBlockTime(ctx,
+	//	&pbscribe.GetBlockTimeRequest{
+	//		ChainID:     message.OriginDomain(),
+	//		BlockNumber: lastBlockWithTime.BlockNumber,
+	//	})
+	//if err != nil {
+	//	return false, fmt.Errorf("could not get block time: %w", err)
+	//}
+	//
+	//currentTime := currentTimeResponse.BlockTime
+
 	currentTime := time.Now().Unix()
 
 	if blockTime.BlockTime > uint64(currentTime) {
 		return false, fmt.Errorf("block time is in the future")
 	}
 
-	if blockTime.BlockTime+uint64(message.OptimisticSeconds()) >= uint64(currentTime) {
+	if blockTime.BlockTime+uint64(message.OptimisticSeconds()) > uint64(currentTime) {
 		return false, nil
 	}
 

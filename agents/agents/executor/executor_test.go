@@ -636,9 +636,9 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 
 	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), &ownerPtr)
 
-	tx, err := originRef.AddNotary(transactOpts.TransactOpts, destination, e.signer.Address())
-	e.Nil(err)
-	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+	//tx, err := originRef.AddNotary(transactOpts.TransactOpts, destination, e.signer.Address())
+	//e.Nil(err)
+	//simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 
 	transactOpts.Value = types.TotalTips(tips)
 
@@ -646,7 +646,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	nonce := uint32(1)
 	body := []byte{byte(gofakeit.Uint32())}
 
-	tx, err = originRef.Dispatch(transactOpts.TransactOpts, destination, recipient, optimisticSeconds, encodedTips, body)
+	tx, err := originRef.Dispatch(transactOpts.TransactOpts, destination, recipient, optimisticSeconds, encodedTips, body)
 	e.Nil(err)
 
 	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)

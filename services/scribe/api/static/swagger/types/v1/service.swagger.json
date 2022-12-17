@@ -80,6 +80,38 @@
         ]
       }
     },
+    "/grpc/v1/get_last_block_time": {
+      "post": {
+        "operationId": "ScribeService_GetLastBlockTime",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetLastBlockTimeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1GetLastBlockTimeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ScribeService"
+        ]
+      }
+    },
     "/grpc/v1/health_check": {
       "post": {
         "summary": "see: https://github.com/grpc/grpc/blob/master/doc/health-checking.md",
@@ -291,6 +323,24 @@
       "type": "object",
       "properties": {
         "blockTime": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1GetLastBlockTimeRequest": {
+      "type": "object",
+      "properties": {
+        "chainID": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "v1GetLastBlockTimeResponse": {
+      "type": "object",
+      "properties": {
+        "blockNumber": {
           "type": "string",
           "format": "uint64"
         }
