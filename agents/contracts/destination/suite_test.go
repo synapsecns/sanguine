@@ -68,7 +68,8 @@ func (d *DestinationSuite) SetupTest() {
 		d.T().Fatal(err)
 	}
 
-	destOwnerAuth := d.testBackendDestination.GetTxContext(d.GetTestContext(), &destOwnerPtr)
+	testContext := d.GetTestContext()
+	destOwnerAuth := d.testBackendDestination.GetTxContext(testContext, &destOwnerPtr)
 	_, err = d.destinationContract.AddAgent(destOwnerAuth.TransactOpts, uint32(d.testBackendDestination.GetChainID()), d.signer.Address())
 	if err != nil {
 		d.T().Fatal(err)

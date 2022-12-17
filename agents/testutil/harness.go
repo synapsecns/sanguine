@@ -128,7 +128,22 @@ func NewDestinationHarnessDeployer(registry deployer.GetOnlyContractRegistry, ba
 // Deploy deploys the destination harness.
 func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()))
+		//return destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()))
+
+		address, tx, rawHandle, err := destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()))
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
+		}
+		d.Backend().WaitForConfirmation(ctx, tx)
+
+		initializeOpts := d.Backend().GetTxContext(ctx, &transactOps.From)
+		initializeTx, err := rawHandle.Initialize(initializeOpts.TransactOpts)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize destination (%s) on %s: %w", transactOps.From, d.ContractType().ContractName(), err)
+		}
+		d.Backend().WaitForConfirmation(ctx, initializeTx)
+
+		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return destinationharness.NewDestinationHarnessRef(address, backend)
 	})
