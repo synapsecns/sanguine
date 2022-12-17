@@ -128,8 +128,6 @@ func NewDestinationHarnessDeployer(registry deployer.GetOnlyContractRegistry, ba
 // Deploy deploys the destination harness.
 func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		//return destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()))
-
 		address, tx, rawHandle, err := destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()))
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
