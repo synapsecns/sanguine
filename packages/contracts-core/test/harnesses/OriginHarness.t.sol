@@ -2,12 +2,15 @@
 
 pragma solidity 0.8.17;
 
+import { OriginHub } from "../../contracts/hubs/OriginHub.sol";
 import { AgentSet } from "../../contracts/libs/AgentSet.sol";
 import { Message } from "../../contracts/libs/Message.sol";
 import { Origin } from "../../contracts/Origin.sol";
+
+import { AgentRegistryExtended } from "./system/AgentRegistryExtended.t.sol";
 import { SystemContractHarness } from "./system/SystemContractHarness.t.sol";
 
-contract OriginHarness is Origin, SystemContractHarness {
+contract OriginHarness is Origin, AgentRegistryExtended, SystemContractHarness {
     using AgentSet for AgentSet.DomainAddressSet;
 
     //solhint-disable-next-line no-empty-blocks
@@ -51,5 +54,14 @@ contract OriginHarness is Origin, SystemContractHarness {
     {
         latestNonce = nonce(_destination);
         latestRoot = getHistoricalRoot(_destination, latestNonce);
+    }
+
+    function _isIgnoredAgent(uint32 _domain, address _account)
+        internal
+        view
+        override(AgentRegistryExtended, OriginHub)
+        returns (bool)
+    {
+        return OriginHub._isIgnoredAgent(_domain, _account);
     }
 }

@@ -11,7 +11,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
-	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/testutil"
@@ -54,7 +54,7 @@ func TestEVMSuite(t *testing.T) {
 // ContractSuite defines a suite for testing contracts. This uses the simulated backend.
 type ContractSuite struct {
 	*testsuite.TestSuite
-	originContract      *origin.OriginRef
+	originContract      *originharness.OriginHarnessRef
 	attestationContract *attestationcollector.AttestationCollectorRef
 	testBackend         backends.SimulatedTestBackend
 	attestationBackend  backends.SimulatedTestBackend
@@ -78,7 +78,7 @@ func (i *ContractSuite) SetupTest() {
 	i.testBackend = simulated.NewSimulatedBackendWithChainID(i.GetTestContext(), i.T(), big.NewInt(1))
 	i.attestationBackend = simulated.NewSimulatedBackendWithChainID(i.GetTestContext(), i.T(), big.NewInt(2))
 
-	_, i.originContract = deployManager.GetOrigin(i.GetTestContext(), i.testBackend)
+	_, i.originContract = deployManager.GetOriginHarness(i.GetTestContext(), i.testBackend)
 
 	var attestationContract contracts.DeployedContract
 	attestationContract, i.attestationContract = deployManager.GetAttestationCollector(i.GetTestContext(), i.attestationBackend)
@@ -93,9 +93,26 @@ func (i *ContractSuite) SetupTest() {
 	// add the notary to attestation contract
 	auth := i.attestationBackend.GetTxContext(i.GetTestContext(), attestationContract.OwnerPtr())
 
-	tx, err := i.attestationContract.AddNotary(auth.TransactOpts, testDestinationDomain, i.signer.Address())
+	tx, err := i.attestationContract.AddAgent(auth.TransactOpts, testDestinationDomain, i.signer.Address())
 	Nil(i.T(), err)
 	i.attestationBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	ownerPtr, err := i.originContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: i.GetTestContext()})
+	Nil(i.T(), err)
+
+	originOwnerAuth := i.testBackend.GetTxContext(i.GetTestContext(), &ownerPtr)
+
+	notaries, err := i.originContract.AllAgents(&bind.CallOpts{Context: i.GetTestContext()}, destinationID)
+	Nil(i.T(), err)
+	Len(i.T(), notaries, 0)
+
+	tx, err = i.originContract.AddAgent(originOwnerAuth.TransactOpts, destinationID, i.signer.Address())
+	Nil(i.T(), err)
+	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	notaries, err = i.originContract.AllAgents(&bind.CallOpts{Context: i.GetTestContext()}, destinationID)
+	Nil(i.T(), err)
+	Len(i.T(), notaries, 1)
 }
 
 func TestContractSuite(t *testing.T) {
@@ -106,7 +123,7 @@ func TestContractSuite(t *testing.T) {
 type TxQueueSuite struct {
 	*testsuite.TestSuite
 	chn            backends.SimulatedTestBackend
-	originContract *origin.OriginRef
+	originContract *originharness.OriginHarnessRef
 	testTransactor *bind.TransactOpts
 	destinationID  uint32
 }
@@ -129,7 +146,8 @@ func (t *TxQueueSuite) SetupTest() {
 
 	t.destinationID = uint32(1)
 
-	originContract, originContractRef := manager.GetOrigin(t.GetTestContext(), t.chn)
+	/*originContract*/
+	_, originContractRef := manager.GetOriginHarness(t.GetTestContext(), t.chn)
 	t.originContract = originContractRef
 
 	// create a test signer
@@ -147,8 +165,11 @@ func (t *TxQueueSuite) SetupTest() {
 
 	t.chn.FundAccount(t.GetTestContext(), msigner.Address(), *big.NewInt(params.Ether))
 
-	originOwnerAuth := t.chn.GetTxContext(t.GetTestContext(), originContract.OwnerPtr())
-	tx, err := t.originContract.AddNotary(originOwnerAuth.TransactOpts, destinationID, msigner.Address())
+	ownerPtr, err := t.originContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: t.GetTestContext()})
+	Nil(t.T(), err)
+
+	originOwnerAuth := t.chn.GetTxContext(t.GetTestContext(), &ownerPtr)
+	tx, err := t.originContract.AddAgent(originOwnerAuth.TransactOpts, destinationID, msigner.Address())
 	Nil(t.T(), err)
 	t.chn.WaitForConfirmation(t.GetTestContext(), tx)
 

@@ -22,52 +22,6 @@ type IOrigin struct {
 	mock.Mock
 }
 
-// AddGuard provides a mock function with given fields: opts, _guard
-func (_m *IOrigin) AddGuard(opts *bind.TransactOpts, _guard common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, _guard)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, _guard)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
-		r1 = rf(opts, _guard)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// AddNotary provides a mock function with given fields: opts, _domain, _notary
-func (_m *IOrigin) AddNotary(opts *bind.TransactOpts, _domain uint32, _notary common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, _domain, _notary)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, _domain, _notary)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, common.Address) error); ok {
-		r1 = rf(opts, _domain, _notary)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Address provides a mock function with given fields:
 func (_m *IOrigin) Address() common.Address {
 	ret := _m.Called()
@@ -1052,52 +1006,6 @@ func (_m *IOrigin) Parser() origin.Parser {
 	}
 
 	return r0
-}
-
-// RemoveGuard provides a mock function with given fields: opts, _guard
-func (_m *IOrigin) RemoveGuard(opts *bind.TransactOpts, _guard common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, _guard)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, _guard)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
-		r1 = rf(opts, _guard)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// RemoveNotary provides a mock function with given fields: opts, _domain, _notary
-func (_m *IOrigin) RemoveNotary(opts *bind.TransactOpts, _domain uint32, _notary common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, _domain, _notary)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, _domain, _notary)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, common.Address) error); ok {
-		r1 = rf(opts, _domain, _notary)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // RenounceOwnership provides a mock function with given fields: opts
