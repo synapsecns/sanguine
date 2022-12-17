@@ -3,21 +3,21 @@ package attestationcollector_test
 import (
 	"testing"
 
-	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/agents/testutil"
 
 	"github.com/stretchr/testify/suite"
 )
 
 // AttestationCollectorSuite is the attestation collector test suite.
 type AttestationCollectorSuite struct {
-	*testsuite.SimulatedBackendsTestSuite
+	*testutil.SimulatedBackendsTestSuite
 }
 
 // NewAttestationCollectorSuite creates an end-to-end test suite.
 func NewAttestationCollectorSuite(tb testing.TB) *AttestationCollectorSuite {
 	tb.Helper()
 	return &AttestationCollectorSuite{
-		SimulatedBackendsTestSuite: testsuite.NewSimulatedBackendsTestSuite(tb),
+		SimulatedBackendsTestSuite: testutil.NewSimulatedBackendsTestSuite(tb),
 	}
 }
 
