@@ -29,11 +29,8 @@ type ContractBackfiller struct {
 	cache *lru.Cache
 }
 
-// storeConcurrency is the number of goroutines to use when storing logs/receipts/txs.
-const storeConcurrency = 5
-
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
-const retryTolerance = 20
+const retryTolerance = 1
 
 // txNotSupportedError is for handling the legacy Arbitrum tx type.
 const txNotSupportedError = "transaction type not supported"
@@ -98,7 +95,12 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
 				}
-				c.store(storeCtx, log)
+				err := c.store(ctx, log)
+				if err != nil {
+					LogEvent(ErrorLevel, "Could not store log", LogData{"cid": c.chainConfig.ChainID, "ca": c.address, "e": err.Error()})
+
+					return fmt.Errorf("could not store log: %w", err)
+				}
 
 				err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
 				if err != nil {
@@ -192,32 +194,44 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 
 			returnedReceipt = *receipt
 
-			// Store receipt in the EventDB.
-			err = c.eventDB.StoreReceipt(groupCtx, returnedReceipt, c.chainConfig.ChainID)
-			if err != nil {
-				timeout = b.Duration()
-				LogEvent(ErrorLevel, "Could not store receipt, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+			// Parallelize storing logs, receipts, and transactions.
+			gInner, groupInnerCtx := errgroup.WithContext(groupCtx)
+			gInner.Go(func() error {
+				// Store receipt in the EventDB.
+				err = c.eventDB.StoreReceipt(groupInnerCtx, returnedReceipt, c.chainConfig.ChainID)
+				if err != nil {
+					timeout = b.Duration()
+					LogEvent(ErrorLevel, "Could not store receipt, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
-				goto RETRY
-			}
-
+					return fmt.Errorf("could not store receipt: %w", err)
+				}
+				return nil
+			})
 			// Store the logs in the EventDB.
-			for _, log := range returnedReceipt.Logs {
+			for i := range returnedReceipt.Logs {
+				log := returnedReceipt.Logs[i]
 				if log == nil {
 					LogEvent(ErrorLevel, "log is nil", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
 
 					return fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
 				}
+				gInner.Go(func() error {
+					err := c.eventDB.StoreLog(groupCtx, *log, c.chainConfig.ChainID)
+					if err != nil {
+						timeout = b.Duration()
+						LogEvent(ErrorLevel, "Could not store log, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
-				err := c.eventDB.StoreLog(groupCtx, *log, c.chainConfig.ChainID)
-				if err != nil {
-					timeout = b.Duration()
-					LogEvent(ErrorLevel, "Could not store log, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
-
-					goto RETRY
-				}
+						return fmt.Errorf("could not store log: %w", err)
+					}
+					return nil
+				})
 			}
+			err = gInner.Wait()
+			if err != nil {
+				LogEvent(ErrorLevel, "Could not store data", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
+				goto RETRY
+			}
 			return nil
 		}
 	})
