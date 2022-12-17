@@ -87,9 +87,6 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 
 	// Reads from the local logsChan and stores the logs and associated receipts / txs.
 	g.Go(func() error {
-		concurrentCalls := 0
-		gS, storeCtx := errgroup.WithContext(ctx)
-		startTime := time.Now()
 		for {
 			select {
 			case <-groupCtx.Done():
@@ -101,37 +98,19 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
 				}
-				concurrentCalls++
-				gS.Go(func() error {
-					// Stores the log, and it's associated receipt / tx in the EventDB.
-					return c.store(storeCtx, log)
-				})
+				c.store(storeCtx, log)
 
-				// Stop spawning store threads and wait
-				if concurrentCalls == storeConcurrency {
-					if err = gS.Wait(); err != nil {
-						return fmt.Errorf("error waiting for go routines: %w", err)
-					}
+				err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
+				if err != nil {
+					LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
-					// Reset context TODO make this better
-					gS, storeCtx = errgroup.WithContext(ctx)
-					concurrentCalls = 0
-					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
-					if err != nil {
-						LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
-
-						return fmt.Errorf("could not store last indexed block: %w", err)
-					}
-					LogEvent(ErrorLevel, "Time to store 5 logs", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "ts": time.Since(startTime).String()})
-					startTime = time.Now()
+					return fmt.Errorf("could not store last indexed block: %w", err)
 				}
 
 			case doneFlag := <-doneChan:
-				if err = gS.Wait(); err != nil {
-					return fmt.Errorf("error waiting for go routines: %w", err)
-				}
+
 				if doneFlag {
-					LogEvent(InfoLevel, "Received Done Can", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
+					LogEvent(InfoLevel, "Received doneChan", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
 
 					return nil
 				}
