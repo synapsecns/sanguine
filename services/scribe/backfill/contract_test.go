@@ -196,6 +196,10 @@ func (b BackfillSuite) TestContractBackfill() {
 	// Emit events for the backfiller to read.
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
 	Nil(b.T(), err)
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+
+	tx, err = testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	Nil(b.T(), err)
 
 	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
 	tx, err = testRef.EmitEventB(transactOpts.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
@@ -221,14 +225,14 @@ func (b BackfillSuite) TestContractBackfill() {
 	Nil(b.T(), err)
 
 	// Check to see if 3 receipts were collected.
-	Equal(b.T(), 3, len(receipts))
+	Equal(b.T(), 4, len(receipts))
 
 	// Get all logs.
 	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
 	Nil(b.T(), err)
 
 	// Check to see if 4 logs were collected.
-	Equal(b.T(), 4, len(logs))
+	Equal(b.T(), 5, len(logs))
 
 	// Check to see if the last receipt has two logs.
 	Equal(b.T(), 2, len(receipts[0].Logs))
@@ -240,7 +244,8 @@ func (b BackfillSuite) TestContractBackfill() {
 }
 
 // TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
-
+//
+// nolint:dupl
 func (b BackfillSuite) TestTxTypeNotSupported() {
 	if os.Getenv("CI") != "" {
 		b.T().Skip("Network test flake")
@@ -270,21 +275,17 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock)
 	Nil(b.T(), err)
 
-	// Check to see if one log is recorded, one receipt is recorded, but no transactions.
-	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID)
-	Nil(b.T(), err)
-
 	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
 	Nil(b.T(), err)
 	Equal(b.T(), 4, len(logs))
-	Equal(b.T(), contractConfig.StartBlock, lastIndexed)
 	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
 	Nil(b.T(), err)
 	Equal(b.T(), 1, len(receipts))
 }
 
 // TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
-
+//
+// nolint:dupl
 func (b BackfillSuite) TestInvalidTxVRS() {
 	if os.Getenv("CI") != "" {
 		b.T().Skip("Network test flake")
@@ -311,13 +312,9 @@ func (b BackfillSuite) TestInvalidTxVRS() {
 	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
 	chainBackfiller, err := backfill.NewChainBackfiller(1313161554, b.testDB, backendClientArr, chainConfig)
 	Nil(b.T(), err)
+
 	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock)
 	Nil(b.T(), err)
-
-	// Check to see if one log is recorded, one receipt is recorded, but no transactions.
-	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID)
-	Nil(b.T(), err)
-	Equal(b.T(), contractConfig.StartBlock, lastIndexed)
 
 	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
 	Nil(b.T(), err)
@@ -444,6 +441,12 @@ func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
 
 	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
 
+	// Emit two logs in one receipt.
+	tx, err = testRef.EmitEventAandB(transactOpts.TransactOpts, big.NewInt(19), big.NewInt(20), big.NewInt(21))
+	Nil(b.T(), err)
+
+	simulatedChain.WaitForConfirmation(b.GetTestContext(), tx)
+
 	// Get the block that the last transaction was executed in.
 	txBlockNumber, err = b.getTxBlockNumber(simulatedChain, tx)
 	Nil(b.T(), err)
@@ -456,14 +459,14 @@ func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
 	Nil(b.T(), err)
 
 	// Check to see if 3 receipts were collected.
-	Equal(b.T(), 3, len(receipts))
+	Equal(b.T(), 4, len(receipts))
 
 	// Get all logs.
 	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
 	Nil(b.T(), err)
 
 	// Check to see if 4 logs were collected.
-	Equal(b.T(), 4, len(logs))
+	Equal(b.T(), 6, len(logs))
 
 	// Check to see if the last receipt has two logs.
 	Equal(b.T(), 2, len(receipts[0].Logs))
