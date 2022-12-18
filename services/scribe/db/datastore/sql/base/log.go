@@ -146,7 +146,8 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 		}
 		return []*types.Log{}, fmt.Errorf("could not retrieve logs: %w", dbTx.Error)
 	}
-
+	// TODO DELETE
+	logger.Infof("RetrieveLogsWithFilter query: %v, logs: %v", query, dbLogs)
 	return buildLogsFromDBLogs(dbLogs), nil
 }
 
