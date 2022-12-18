@@ -30,7 +30,7 @@ type ContractBackfiller struct {
 }
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
-const retryTolerance = 1
+const retryTolerance = 20
 
 // txNotSupportedError is for handling the legacy Arbitrum tx type.
 const txNotSupportedError = "transaction type not supported"
