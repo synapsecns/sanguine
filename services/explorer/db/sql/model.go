@@ -154,7 +154,7 @@ type SwapEvent struct {
 	// Sender is the address of the sender.
 	Sender string `gorm:"column:sender"`
 
-	// Amount is the amount of tokens..
+	// Amount is the amount of tokens.
 	Amount map[uint8]string `gorm:"column:amount;type:Map(UInt8, String)"`
 	// AmountFee is the amount of fees.
 	AmountFee map[uint8]string `gorm:"column:amount_fee;type:Map(UInt8, String)"`
@@ -214,6 +214,16 @@ type LastBlock struct {
 	BlockNumber uint64 `gorm:"column:block_number"`
 	// ContractAddress is the address of the contract that generated the event.
 	ContractAddress string `gorm:"column:contract_address"`
+}
+
+// TokenIndex stores the data for each token index on each chain.
+type TokenIndex struct {
+	// ChainID is the chain id of the chain.
+	ChainID uint32 `gorm:"column:chain_id"`
+	// TokenIndex is the token index in the pool.
+	TokenIndex uint8 `gorm:"column:token_index"`
+	// TokenAddress is the address of the token.
+	TokenAddress string `gorm:"column:token_address"`
 }
 
 // MessageBusEvent stores data for emitted events from the message bus contract.

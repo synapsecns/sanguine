@@ -396,15 +396,15 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
 	coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
 
-	// Account for improper value from truncation of usdc
-	if (coinGeckoID == "usd-coin" || coinGeckoID == "tether" || coinGeckoID == "dai" || coinGeckoID == "binance-usd") && bridgeEvent.Fee != nil && bridgeEvent.Amount.Cmp(bridgeEvent.Fee) == 1 {
-		bridgeEvent.Amount = iFace.GetAmount().Mul(iFace.GetAmount(), big.NewInt(1000000000000))
-	}
+	//// Account for improper value from truncation of usdc
+	//if (coinGeckoID == "usd-coin" || coinGeckoID == "tether" || coinGeckoID == "dai" || coinGeckoID == "binance-usd") && bridgeEvent.Fee != nil && bridgeEvent.Amount.Cmp(bridgeEvent.Fee) == 1 {
+	//	bridgeEvent.Amount = iFace.GetAmount().Mul(iFace.GetAmount(), big.NewInt(1000000000000))
+	//}
 
 	// Add TokenSymbol to bridgeEvent.
 	bridgeEvent.TokenSymbol = ToNullString(&realID)
 	var tokenPrice *float64
-	if !(coinGeckoID == "xjewel" && *bridgeEvent.TimeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1619827200) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1668646800) {
+	if !(coinGeckoID == "xjewel" && *bridgeEvent.TimeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1668646800) {
 		tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, int(*bridgeEvent.TimeStamp), coinGeckoID)
 	}
 	if tokenPrice != nil {

@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"golang.org/x/sync/errgroup"
 	"math/big"
+	"strings"
 	"time"
 )
 
@@ -118,6 +119,7 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 	if err != nil {
 		return nil, fmt.Errorf("could not get token data: %w", err)
 	}
+	res.tokenAddress = token.String()
 
 	return res, nil
 }
@@ -136,8 +138,37 @@ func (t *tokenDataServiceImpl) retrievePoolTokenData(parentCtx context.Context, 
 			return fmt.Errorf("could not get token data: %w", err)
 		}
 
-		res.tokenID = t.tokenSymbolToIDs[*symbol]
+		if strings.Contains(strings.ToLower(*symbol), "dai") {
+			*symbol = "dai"
+		}
+		if strings.Contains(strings.ToLower(*symbol), "usdc") {
+			*symbol = "usdc"
+		}
+		if strings.Contains(strings.ToLower(*symbol), "nusd") {
+			*symbol = "nusd"
+		}
+		if strings.Contains(strings.ToLower(*symbol), "usdt") {
+			*symbol = "usdt"
+		}
+		if strings.Contains(strings.ToLower(*symbol), "eth") {
+			*symbol = "eth"
+		}
+		if strings.Contains(strings.ToLower(*symbol), "avax") {
+			*symbol = "avax"
+		}
+		if strings.Contains(strings.ToLower(*symbol), "movr") {
+			*symbol = "movr"
+		}
+		if strings.Contains(strings.ToLower(*symbol), "frax") {
+			*symbol = "frax"
+		}
+		if strings.Contains(strings.ToLower(*symbol), "jewel") {
+			*symbol = "jewel"
+		}
+
+		res.tokenID = t.tokenSymbolToIDs[strings.ToLower(*symbol)]
 		res.decimals = *decimals
+		res.tokenAddress = token.String()
 
 		return nil
 	})
@@ -150,6 +181,7 @@ func (t *tokenDataServiceImpl) retrievePoolTokenData(parentCtx context.Context, 
 
 // maxAttemptTime is how many times we will attempt to get the token data.
 var maxAttemptTime = time.Second * 10
+var maxAttempt = 10
 
 type retryableFunc func(ctx context.Context) error
 
@@ -158,13 +190,13 @@ func (t *tokenDataServiceImpl) retryWithBackoff(ctx context.Context, doFunc retr
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    2 * time.Millisecond,
+		Min:    200 * time.Millisecond,
 		Max:    5 * time.Second,
 	}
 
 	timeout := time.Duration(0)
-
-	for {
+	attempts := 0
+	for attempts < maxAttempt {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("%w while retrying", ctx.Err())
@@ -172,9 +204,11 @@ func (t *tokenDataServiceImpl) retryWithBackoff(ctx context.Context, doFunc retr
 			err := doFunc(ctx)
 			if err != nil {
 				timeout = b.Duration()
+				attempts++
 			} else {
 				return nil
 			}
 		}
 	}
+	return fmt.Errorf("max attempts reached")
 }

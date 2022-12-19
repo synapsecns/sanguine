@@ -46,7 +46,7 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, consume
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
 	}
 
-	poolTokenDataService, err := tokenpool.NewPoolTokenDataService(*swapService)
+	poolTokenDataService, err := tokenpool.NewPoolTokenDataService(*swapService, consumerDB)
 	if err != nil {
 		return nil, fmt.Errorf("could not create token data service: %w", err)
 	}
@@ -289,6 +289,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 			}
 			tokenData, err = p.tokenDataService.GetPoolTokenData(ctx, chainID, *tokenAddress, *p.swapService)
 			if err != nil {
+				logger.Errorf("could not get token data: %v", err)
 				return nil, fmt.Errorf("could not get pool token data: %w", err)
 			}
 			tokenSymbols[tokenIndex] = tokenData.TokenID()
@@ -298,12 +299,13 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 				return nil, fmt.Errorf("could not get timestamp: %w", err)
 			}
 			coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
+			if !(coinGeckoID == "xjewel" && *swapEvent.TimeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp.Response < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp.Response < 1668646800) {
 
-			tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
-			if tokenPrice != nil {
-				tokenPrices[tokenIndex] = *tokenPrice
+				tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
+				if tokenPrice != nil {
+					tokenPrices[tokenIndex] = *tokenPrice
+				}
 			}
-
 			swapEvent.TokenPrices = tokenPrices
 			swapEvent.TokenDecimal = tokenDecimals
 			swapEvent.TokenSymbol = tokenSymbols

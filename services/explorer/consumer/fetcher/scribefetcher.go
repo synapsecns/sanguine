@@ -151,18 +151,17 @@ RETRY:
 		res, err := s.FetchClient.GetTransactions(ctx, chainID, 1, &tx)
 
 		if err != nil {
-			logger.Warnf("could not get tx for log, trying again %s: %v", tx, err)
+			logger.Errorf("could not get tx for log, trying again %s: %v", tx, err)
 			timeout = b.Duration()
 			goto RETRY
 		}
 		if res == nil || res.Response == nil || len(res.Response) == 0 {
-			logger.Warnf("could not get tx for log,  invalid response %d: %s", chainID, tx)
+			logger.Errorf("could not get tx for log,  invalid response %d: %s", chainID, tx)
 			return nil, nil, fmt.Errorf("could not get timestamp for block, invalid tx %d: %s", chainID, tx)
 		}
 		resTx := res.Response[0]
 		sender := resTx.Sender
 		blocktime := uint64(resTx.Timestamp)
-		fmt.Println("sender", sender, "blocktime", blocktime, resTx.TxHash, chainID)
 		return &blocktime, &sender, nil
 	}
 }
