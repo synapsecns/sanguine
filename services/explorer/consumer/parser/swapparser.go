@@ -299,7 +299,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 				return nil, fmt.Errorf("could not get timestamp: %w", err)
 			}
 			coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
-			if !(coinGeckoID == "xjewel" && *swapEvent.TimeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp.Response < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp.Response < 1668646800) {
+			if !(coinGeckoID == "xjewel" && *swapEvent.TimeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp.Response < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp.Response < 1668646800) && !(coinGeckoID == "highstreet" && *timeStamp.Response < 1634263200) {
 				tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
 				if tokenPrice != nil {
 					tokenPrices[tokenIndex] = *tokenPrice
