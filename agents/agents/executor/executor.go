@@ -19,8 +19,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
+	"math/big"
 	"strconv"
-	"time"
 )
 
 // ChainExecutor is a struct that contains the necessary information for each chain level executor.
@@ -282,36 +282,29 @@ func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message 
 
 // VerifyOptimisticPeriod verifies that the optimistic period is valid.
 func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message, blockNumber uint64) (bool, error) {
-	blockTime, err := e.grpcClient.GetBlockTime(ctx,
-		&pbscribe.GetBlockTimeRequest{
-			ChainID:     message.OriginDomain(),
-			BlockNumber: blockNumber,
-		})
+	block, err := e.chainExecutors[message.OriginDomain()].client.BlockByNumber(ctx, big.NewInt(int64(blockNumber)))
 	if err != nil {
-		return false, fmt.Errorf("could not get block time: %w", err)
+		return false, fmt.Errorf("could not get block by number: %w", err)
+	}
+	blockTime := block.Time()
+
+	latestBlock, err := e.chainExecutors[message.OriginDomain()].client.BlockNumber(ctx)
+	if err != nil {
+		return false, fmt.Errorf("could not get latest block: %w", err)
 	}
 
-	//latestBlock, err := e.chainExecutors[message.OriginDomain()].client.BlockNumber(ctx)
-	//if err != nil {
-	//	return false, fmt.Errorf("could not get latest block: %w", err)
-	//}
-	//
-	//latestBlockTime, err := e.grpcClient.GetBlockTime(ctx,
-	//	&pbscribe.GetBlockTimeRequest{
-	//		ChainID:     message.OriginDomain(),
-	//		BlockNumber: latestBlock,
-	//	})
-	//if err != nil {
-	//	return false, fmt.Errorf("could not get block time: %w", err)
-	//}
+	latestBlockForTime, err := e.chainExecutors[message.OriginDomain()].client.BlockByNumber(ctx, big.NewInt(int64(latestBlock)))
+	if err != nil {
+		return false, fmt.Errorf("could not get latest block time: %w", err)
+	}
 
-	currentTime := time.Now().Unix()
+	currentTime := latestBlockForTime.Time()
 
-	if blockTime.BlockTime > uint64(currentTime) {
+	if blockTime > currentTime {
 		return false, fmt.Errorf("block time is in the future")
 	}
 
-	if blockTime.BlockTime+uint64(message.OptimisticSeconds()) > uint64(currentTime) {
+	if blockTime+uint64(message.OptimisticSeconds()) > currentTime {
 		return false, nil
 	}
 

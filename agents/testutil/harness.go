@@ -53,7 +53,7 @@ func NewOriginHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend
 // Deploy deploys the origin harness.
 func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, OriginHarnessDomain)
+		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(o.Backend().GetChainID()))
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", o.ContractType().ContractName(), err)
 		}

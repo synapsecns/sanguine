@@ -27,7 +27,6 @@ type ScribeServiceClient interface {
 	Watch(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (ScribeService_WatchClient, error)
 	FilterLogs(ctx context.Context, in *FilterLogsRequest, opts ...grpc.CallOption) (*FilterLogsResponse, error)
 	StreamLogs(ctx context.Context, in *StreamLogsRequest, opts ...grpc.CallOption) (ScribeService_StreamLogsClient, error)
-	GetBlockTime(ctx context.Context, in *GetBlockTimeRequest, opts ...grpc.CallOption) (*GetBlockTimeResponse, error)
 }
 
 type scribeServiceClient struct {
@@ -120,15 +119,6 @@ func (x *scribeServiceStreamLogsClient) Recv() (*StreamLogsResponse, error) {
 	return m, nil
 }
 
-func (c *scribeServiceClient) GetBlockTime(ctx context.Context, in *GetBlockTimeRequest, opts ...grpc.CallOption) (*GetBlockTimeResponse, error) {
-	out := new(GetBlockTimeResponse)
-	err := c.cc.Invoke(ctx, "/types.v1.ScribeService/GetBlockTime", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // ScribeServiceServer is the server API for ScribeService service.
 // All implementations must embed UnimplementedScribeServiceServer
 // for forward compatibility
@@ -138,7 +128,6 @@ type ScribeServiceServer interface {
 	Watch(*HealthCheckRequest, ScribeService_WatchServer) error
 	FilterLogs(context.Context, *FilterLogsRequest) (*FilterLogsResponse, error)
 	StreamLogs(*StreamLogsRequest, ScribeService_StreamLogsServer) error
-	GetBlockTime(context.Context, *GetBlockTimeRequest) (*GetBlockTimeResponse, error)
 	mustEmbedUnimplementedScribeServiceServer()
 }
 
@@ -157,9 +146,6 @@ func (UnimplementedScribeServiceServer) FilterLogs(context.Context, *FilterLogsR
 }
 func (UnimplementedScribeServiceServer) StreamLogs(*StreamLogsRequest, ScribeService_StreamLogsServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamLogs not implemented")
-}
-func (UnimplementedScribeServiceServer) GetBlockTime(context.Context, *GetBlockTimeRequest) (*GetBlockTimeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetBlockTime not implemented")
 }
 func (UnimplementedScribeServiceServer) mustEmbedUnimplementedScribeServiceServer() {}
 
@@ -252,24 +238,6 @@ func (x *scribeServiceStreamLogsServer) Send(m *StreamLogsResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _ScribeService_GetBlockTime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetBlockTimeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ScribeServiceServer).GetBlockTime(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/types.v1.ScribeService/GetBlockTime",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ScribeServiceServer).GetBlockTime(ctx, req.(*GetBlockTimeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // ScribeService_ServiceDesc is the grpc.ServiceDesc for ScribeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -284,10 +252,6 @@ var ScribeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FilterLogs",
 			Handler:    _ScribeService_FilterLogs_Handler,
-		},
-		{
-			MethodName: "GetBlockTime",
-			Handler:    _ScribeService_GetBlockTime_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

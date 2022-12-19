@@ -6,7 +6,6 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**ScribeServiceCheck**](ScribeServiceApi.md#ScribeServiceCheck) | **Post** /grpc/v1/health_check | see: https://github.com/grpc/grpc/blob/master/doc/health-checking.md
 [**ScribeServiceFilterLogs**](ScribeServiceApi.md#ScribeServiceFilterLogs) | **Post** /grpc/v1/filter_logs | 
-[**ScribeServiceGetBlockTime**](ScribeServiceApi.md#ScribeServiceGetBlockTime) | **Post** /grpc/v1/get_block_time | 
 [**ScribeServiceStreamLogs**](ScribeServiceApi.md#ScribeServiceStreamLogs) | **Post** /grpc/v1/stream_logs | 
 [**ScribeServiceWatch**](ScribeServiceApi.md#ScribeServiceWatch) | **Post** /grpc/v1/health_watch | 
 
@@ -50,32 +49,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**V1FilterLogsResponse**](v1FilterLogsResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **ScribeServiceGetBlockTime**
-> V1GetBlockTimeResponse ScribeServiceGetBlockTime(ctx, body)
-
-
-### Required Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**V1GetBlockTimeRequest**](V1GetBlockTimeRequest.md)|  | 
-
-### Return type
-
-[**V1GetBlockTimeResponse**](v1GetBlockTimeResponse.md)
 
 ### Authorization
 

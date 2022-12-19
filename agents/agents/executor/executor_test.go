@@ -21,7 +21,7 @@ import (
 
 func (e *ExecutorSuite) TestExecutor() {
 	// TODO (joe): re-enable this later after scribe is updated with fix
-	//e.T().Skip()
+	e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -148,7 +148,7 @@ func (e *ExecutorSuite) TestExecutor() {
 
 func (e *ExecutorSuite) TestLotsOfLogs() {
 	// TODO (joe): re-enable this later after scribe is updated with fix
-	//e.T().Skip()
+	e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -235,7 +235,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 
 func (e *ExecutorSuite) TestMerkleInsert() {
 	// TODO (joe): re-enable this later after scribe is updated with fix
-	e.T().Skip()
+	//e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -575,7 +575,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 }
 
 func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
-	e.T().Skip()
+	//e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -675,6 +675,8 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 
 	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), &ownerPtr)
 	tx, err := originRef.AddAgent(transactOpts.TransactOpts, destination, e.signer.Address())
+	e.Nil(err)
+	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 
 	//tx, err := originRef.AddNotary(transactOpts.TransactOpts, destination, e.signer.Address())
 	//e.Nil(err)
@@ -724,6 +726,14 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	e.Eventually(func() bool {
 		verified, err = exec.VerifyOptimisticPeriod(e.GetTestContext(), message, blockNum)
 		e.Nil(err)
-		return verified
+		if verified {
+			return true
+		}
+		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
+		// increase the `time`.
+		tx, err = originRef.Dispatch(transactOpts.TransactOpts, gofakeit.Uint32(), recipient, optimisticSeconds, encodedTips, body)
+		e.Nil(err)
+		simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+		return false
 	})
 }

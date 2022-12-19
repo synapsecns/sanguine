@@ -42,15 +42,6 @@ message StreamLogsResponse {
   Log log = 1;
 }
 
-message GetBlockTimeRequest {
-  uint32 chainID = 1;
-  uint64 blockNumber = 2;
-}
-
-message GetBlockTimeResponse {
-  uint64 blockTime = 1;
-}
-
 service ScribeService {
   //see: https://github.com/grpc/grpc/blob/master/doc/health-checking.md
   rpc Check(HealthCheckRequest) returns (HealthCheckResponse) {
@@ -77,13 +68,6 @@ service ScribeService {
   rpc StreamLogs(StreamLogsRequest) returns (stream StreamLogsResponse) {
     option (google.api.http) = {
       post: "/grpc/v1/stream_logs"
-      body: "*"
-    };
-  }
-
-  rpc GetBlockTime(GetBlockTimeRequest) returns (GetBlockTimeResponse) {
-    option (google.api.http) = {
-      post: "/grpc/v1/get_block_time"
       body: "*"
     };
   }
