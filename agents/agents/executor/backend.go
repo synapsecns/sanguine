@@ -10,6 +10,8 @@ import (
 )
 
 // ExecutorBackend is the backend for the executor.
+//
+//nolint:golint,revive
 type ExecutorBackend interface {
 	// BlockNumber gets the latest block number.
 	BlockNumber(ctx context.Context) (uint64, error)

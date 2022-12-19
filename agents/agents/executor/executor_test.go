@@ -20,8 +20,6 @@ import (
 )
 
 func (e *ExecutorSuite) TestExecutor() {
-	// TODO (joe): re-enable this later after scribe is updated with fix
-	e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -147,8 +145,6 @@ func (e *ExecutorSuite) TestExecutor() {
 }
 
 func (e *ExecutorSuite) TestLotsOfLogs() {
-	// TODO (joe): re-enable this later after scribe is updated with fix
-	e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -234,8 +230,6 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 }
 
 func (e *ExecutorSuite) TestMerkleInsert() {
-	// TODO (joe): re-enable this later after scribe is updated with fix
-	//e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -575,7 +569,6 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 }
 
 func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
-	//e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -664,23 +657,10 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	ownerPtr, err := originRef.OriginHarnessCaller.Owner(&bind.CallOpts{Context: e.GetTestContext()})
 	e.Nil(err)
 
-	//_, attestationRef := deployManager.GetAttestationCollector(e.GetTestContext(), simulatedChain)
-	//attestOwnerPtr, err := attestationRef.AttestationCollectorCaller.Owner(&bind.CallOpts{Context: e.GetTestContext()})
-	//e.Nil(err)
-	//attestOwnerAuth := simulatedChain.GetTxContext(e.GetTestContext(), &attestOwnerPtr)
-	//
-	//txAddNotary, err := attestationRef.AddAgent(attestOwnerAuth.TransactOpts, destination, ownerPtr)
-	//e.Nil(txAddNotary)
-	//simulatedChain.WaitForConfirmation(e.GetTestContext(), txAddNotary)
-
 	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), &ownerPtr)
 	tx, err := originRef.AddAgent(transactOpts.TransactOpts, destination, e.signer.Address())
 	e.Nil(err)
 	simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
-
-	//tx, err := originRef.AddNotary(transactOpts.TransactOpts, destination, e.signer.Address())
-	//e.Nil(err)
-	//simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 
 	transactOpts.Value = types.TotalTips(tips)
 
