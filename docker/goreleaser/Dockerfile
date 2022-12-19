@@ -1,7 +1,7 @@
 FROM debian:11
 
-ARG VERSION_ARG=1.10.3
-ARG SHA_ARG=942c2ddc87b589fd73f5b612909c31298b1e8b8a7ee9b6a463dd5038030b1cc2
+ARG VERSION_ARG=1.13.1
+ARG SHA_ARG=136fecfb2e2f3a7965274ad5e2571985d8b2fa724b6536874f082e4b0bb9f344
 ARG FILE_ARG=goreleaser_Linux_x86_64.tar.gz
 ARG DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser/releases/download/v${VERSOIN_ARG}/${FILE_ARG}
 
