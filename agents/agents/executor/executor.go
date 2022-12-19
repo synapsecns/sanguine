@@ -39,6 +39,8 @@ type ChainExecutor struct {
 	logChan chan *ethTypes.Log
 	// merkleTrees is a map from destination chain ID -> merkle tree.
 	merkleTrees map[uint32]*trieutil.SparseMerkleTrie
+	// client is an RPC client.
+	client ExecutorBackend
 }
 
 // Executor is the executor agent.
@@ -70,7 +72,7 @@ const treeDepth uint64 = 32
 const logChanSize = 1000
 
 // NewExecutor creates a new executor agent.
-func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient) (*Executor, error) {
+func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]ExecutorBackend) (*Executor, error) {
 	chainExecutors := make(map[uint32]*ChainExecutor)
 	attestationCollectorParser, err := attestationcollector.NewParser(common.HexToAddress(config.AttestationCollectorAddress))
 	if err != nil {
@@ -110,6 +112,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			originParser:    originParser,
 			logChan:         make(chan *ethTypes.Log, logChanSize),
 			merkleTrees:     make(map[uint32]*trieutil.SparseMerkleTrie),
+			client:          clients[chain.ChainID],
 		}
 
 		for _, destination := range config.Chains {
@@ -189,15 +192,11 @@ func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, des
 		return [32]byte{}, fmt.Errorf("nonce is out of range")
 	}
 
-	fmt.Println("got hereeee!!!")
 	messageMask := execTypes.DBMessage{
 		ChainID:     &chainID,
 		Destination: &destination,
 		Nonce:       &nonce,
 	}
-	fmt.Println("chainID", chainID)
-	fmt.Println("destination", destination)
-	fmt.Println("nonce", nonce)
 	root, err := e.executorDB.GetRoot(ctx, messageMask)
 	if err != nil {
 		return [32]byte{}, fmt.Errorf("could not get message: %w", err)
@@ -292,24 +291,19 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 		return false, fmt.Errorf("could not get block time: %w", err)
 	}
 
-	//lastBlockWithTime, err := e.grpcClient.GetLastBlockTime(ctx,
-	//	&pbscribe.GetLastBlockTimeRequest{
-	//		ChainID: message.OriginDomain(),
-	//	})
+	//latestBlock, err := e.chainExecutors[message.OriginDomain()].client.BlockNumber(ctx)
 	//if err != nil {
-	//	return false, fmt.Errorf("could not get last block with time: %w", err)
+	//	return false, fmt.Errorf("could not get latest block: %w", err)
 	//}
 	//
-	//currentTimeResponse, err := e.grpcClient.GetBlockTime(ctx,
+	//latestBlockTime, err := e.grpcClient.GetBlockTime(ctx,
 	//	&pbscribe.GetBlockTimeRequest{
 	//		ChainID:     message.OriginDomain(),
-	//		BlockNumber: lastBlockWithTime.BlockNumber,
+	//		BlockNumber: latestBlock,
 	//	})
 	//if err != nil {
 	//	return false, fmt.Errorf("could not get block time: %w", err)
 	//}
-	//
-	//currentTime := currentTimeResponse.BlockTime
 
 	currentTime := time.Now().Unix()
 
@@ -423,7 +417,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 // processLog processes the log and updates the merkle tree.
 func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	message, err := e.logToMessage(log, chainID)
-	fmt.Println("hereeeee")
 	if err != nil {
 		return fmt.Errorf("could not convert log to leaf: %w", err)
 	}
@@ -445,7 +438,6 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 
 	e.chainExecutors[chainID].merkleTrees[destination].Insert(leaf[:], merkleIndex)
 	root := e.chainExecutors[chainID].merkleTrees[destination].Root()
-	fmt.Println("origin is ", chainID, (*message).OriginDomain())
 	err = e.executorDB.StoreMessage(ctx, *message, root, log.BlockNumber)
 	if err != nil {
 		return fmt.Errorf("could not store message: %w", err)
@@ -457,14 +449,12 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 // logToMessage converts the log to a leaf data.
 func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message, error) {
 	if eventType, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && eventType == origin.DispatchEvent {
-		fmt.Println("Matched!!!")
 		committedMessage, ok := e.chainExecutors[chainID].originParser.ParseDispatch(log)
 		if !ok {
 			return nil, fmt.Errorf("could not parse committed message")
 		}
 
 		message, err := types.DecodeMessage(committedMessage.Message())
-		fmt.Println("decode da message to get origin domain", message.OriginDomain())
 		if err != nil {
 			return nil, fmt.Errorf("could not decode message: %w", err)
 		}

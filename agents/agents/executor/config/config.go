@@ -18,6 +18,8 @@ type Config struct {
 	AttestationCollectorChainID uint32 `yaml:"attestation_collector_chain_id"`
 	// AttestationCollectorAddress is the address of the Attestation Collector on SYN Chain.
 	AttestationCollectorAddress string `yaml:"attestation_collector_address"`
+	// RPCURL is the url of the omnirpc.
+	RPCURL string `yaml:"rpc_url"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -34,6 +36,10 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 
 	if c.AttestationCollectorAddress == "" {
 		return false, fmt.Errorf("attestation collector address is not set")
+	}
+
+	if c.RPCURL == "" {
+		return false, fmt.Errorf("rpc url cannot be empty")
 	}
 
 	return true, nil

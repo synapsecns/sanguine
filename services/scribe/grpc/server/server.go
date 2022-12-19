@@ -148,17 +148,6 @@ func (s *server) GetBlockTime(ctx context.Context, req *pbscribe.GetBlockTimeReq
 	}, nil
 }
 
-func (s *server) GetLastBlockTime(ctx context.Context, req *pbscribe.GetLastBlockTimeRequest) (*pbscribe.GetLastBlockTimeResponse, error) {
-	lastBlockNumber, err := s.db.RetrieveLastBlockStored(ctx, req.ChainID)
-	if err != nil {
-		return nil, fmt.Errorf("could not get last block stored: %w", err)
-	}
-
-	return &pbscribe.GetLastBlockTimeResponse{
-		BlockNumber: lastBlockNumber,
-	}, nil
-}
-
 func (s *server) Check(context.Context, *pbscribe.HealthCheckRequest) (*pbscribe.HealthCheckResponse, error) {
 	return &pbscribe.HealthCheckResponse{Status: pbscribe.HealthCheckResponse_SERVING}, nil
 }

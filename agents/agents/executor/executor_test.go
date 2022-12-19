@@ -1,7 +1,6 @@
 package executor_test
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -22,7 +21,7 @@ import (
 
 func (e *ExecutorSuite) TestExecutor() {
 	// TODO (joe): re-enable this later after scribe is updated with fix
-	e.T().Skip()
+	//e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -112,7 +111,12 @@ func (e *ExecutorSuite) TestExecutor() {
 		AttestationCollectorChainID: gofakeit.Uint32(),
 	}
 
-	exc, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient)
+	executorClients := map[uint32]executor.ExecutorBackend{
+		chainIDA: simulatedChainA,
+		chainIDB: simulatedChainB,
+	}
+
+	exc, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
 	e.Nil(err)
 
 	// Start the executor.
@@ -144,7 +148,7 @@ func (e *ExecutorSuite) TestExecutor() {
 
 func (e *ExecutorSuite) TestLotsOfLogs() {
 	// TODO (joe): re-enable this later after scribe is updated with fix
-	e.T().Skip()
+	//e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -196,7 +200,11 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		},
 	}
 
-	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient)
+	executorClients := map[uint32]executor.ExecutorBackend{
+		chainID: simulatedChain,
+	}
+
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
 	e.Nil(err)
 
 	// Start the exec.
@@ -227,7 +235,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 
 func (e *ExecutorSuite) TestMerkleInsert() {
 	// TODO (joe): re-enable this later after scribe is updated with fix
-	//e.T().Skip()
+	e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -284,7 +292,12 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		},
 	}
 
-	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient)
+	executorClients := map[uint32]executor.ExecutorBackend{
+		chainID:     simulatedChain,
+		destination: nil,
+	}
+
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
 	e.Nil(err)
 
 	_, err = exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
@@ -361,14 +374,10 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Eventually(func() bool {
 		rootA, err := exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
 		if err != nil {
-			fmt.Println("err is ", err)
 			return false
 		}
 
-		fmt.Println("Root A:", rootA)
-		fmt.Println("Test Root A:", testRootA)
 		if testRootA == rootA {
-			fmt.Println("pooo")
 			waitChan <- true
 			return true
 		}
@@ -450,7 +459,12 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		e.Nil(scribeErr)
 	}()
 
-	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient)
+	executorClients := map[uint32]executor.ExecutorBackend{
+		chainID:     nil,
+		destination: nil,
+	}
+
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
 	e.Nil(err)
 
 	nonces := []uint32{1, 2, 3, 4}
@@ -617,7 +631,12 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		},
 	}
 
-	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient)
+	executorClients := map[uint32]executor.ExecutorBackend{
+		chainID:     simulatedClient,
+		destination: nil,
+	}
+
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
 	e.Nil(err)
 
 	// Start the exec.
