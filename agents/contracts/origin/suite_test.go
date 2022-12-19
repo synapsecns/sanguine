@@ -39,7 +39,7 @@ func (h *OriginSuite) SetupTest() {
 
 	deployManager := testutil.NewDeployManager(h.T())
 
-	h.testBackend = simulated.NewSimulatedBackendWithChainID(h.GetTestContext(), h.T(), big.NewInt(1))
+	h.testBackend = simulated.NewSimulatedBackendWithChainID(h.GetTestContext(), h.T(), big.NewInt(2))
 	_, h.originContract = deployManager.GetOriginHarness(h.GetTestContext(), h.testBackend)
 
 	h.destinationID = uint32(453)
