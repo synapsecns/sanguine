@@ -40,8 +40,8 @@ type attestationCollectorContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a attestationCollectorContract) AddNotary(transactOpts *bind.TransactOpts, destinationID uint32, signer signer.Signer) error {
-	_, err := a.contract.AddNotary(transactOpts, destinationID, signer.Address())
+func (a attestationCollectorContract) AddAgent(transactOpts *bind.TransactOpts, domainID uint32, signer signer.Signer) error {
+	_, err := a.contract.AddAgent(transactOpts, domainID, signer.Address())
 	if err != nil {
 		return fmt.Errorf("could not add notary: %w", err)
 	}

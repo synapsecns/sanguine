@@ -103,20 +103,12 @@ contract AttestationCollector is AttestationCollectorEvents, AttestationHub, Own
     \*╚══════════════════════════════════════════════════════════════════════╝*/
     // TODO (Chi): add/remove agents via system calls from local BondingManager
 
-    function addGuard(address _guard) external onlyOwner returns (bool) {
-        return _addAgent({ _domain: 0, _account: _guard });
+    function addAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
+        return _addAgent(_domain, _account);
     }
 
-    function addNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
-        return _addAgent(_domain, _notary);
-    }
-
-    function removeGuard(address _guard) external onlyOwner returns (bool) {
-        return _removeAgent({ _domain: 0, _account: _guard });
-    }
-
-    function removeNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
-        return _removeAgent(_domain, _notary);
+    function removeAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
+        return _removeAgent(_domain, _account);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

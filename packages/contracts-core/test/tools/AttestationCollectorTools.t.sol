@@ -11,12 +11,12 @@ abstract contract AttestationCollectorTools is AttestationTools {
         collector = new AttestationCollectorHarness();
         collector.initialize();
         for (uint256 i = 0; i < GUARDS; ++i) {
-            collector.addGuard(suiteGuard(i));
+            collector.addAgent({ _domain: 0, _account: suiteGuard(i) });
         }
         for (uint256 d = 0; d < DOMAINS; ++d) {
             uint32 domain = domains[d];
             for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
-                collector.addNotary(domain, suiteNotary({ domain: domain, index: i }));
+                collector.addAgent(domain, suiteNotary({ domain: domain, index: i }));
             }
         }
         collector.transferOwnership(owner);

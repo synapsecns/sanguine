@@ -1,20 +1,29 @@
 package origin_test
 
 import (
+	"math/big"
+	"testing"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/params"
+	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"testing"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
 
 // OriginSuite is the origin test suite.
 type OriginSuite struct {
 	*testsuite.TestSuite
-	originContract *origin.OriginRef
+	originContract *originharness.OriginHarnessRef
 	testBackend    backends.SimulatedTestBackend
+	notarySigner   *localsigner.Signer
+	destinationID  uint32
 }
 
 // NewOriginSuite creates a end-to-end test suite.
@@ -30,8 +39,29 @@ func (h *OriginSuite) SetupTest() {
 
 	deployManager := testutil.NewDeployManager(h.T())
 
-	h.testBackend = simulated.NewSimulatedBackend(h.GetTestContext(), h.T())
-	_, h.originContract = deployManager.GetOrigin(h.GetTestContext(), h.testBackend)
+	h.testBackend = simulated.NewSimulatedBackendWithChainID(h.GetTestContext(), h.T(), big.NewInt(1))
+	_, h.originContract = deployManager.GetOriginHarness(h.GetTestContext(), h.testBackend)
+
+	h.destinationID = uint32(453)
+
+	wllt, err := wallet.FromRandom()
+	Nil(h.T(), err)
+
+	h.testBackend.FundAccount(h.GetTestContext(), wllt.Address(), *big.NewInt(params.Ether))
+
+	h.notarySigner = localsigner.NewSigner(wllt.PrivateKey())
+
+	ownerPtr, err := h.originContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: h.GetTestContext()})
+	Nil(h.T(), err)
+
+	originOwnerAuth := h.testBackend.GetTxContext(h.GetTestContext(), &ownerPtr)
+	tx, err := h.originContract.AddAgent(originOwnerAuth.TransactOpts, h.destinationID, h.notarySigner.Address())
+	Nil(h.T(), err)
+	h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)
+
+	notaries, err := h.originContract.AllAgents(&bind.CallOpts{Context: h.GetTestContext()}, h.destinationID)
+	Nil(h.T(), err)
+	Len(h.T(), notaries, 1)
 }
 
 // TestOriginSuite runs the integration test suite.

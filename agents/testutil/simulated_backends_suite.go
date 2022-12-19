@@ -8,9 +8,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
-	"github.com/synapsecns/sanguine/agents/contracts/destination"
-	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -27,8 +27,8 @@ import (
 // others might want just a destination, etc.
 type SimulatedBackendsTestSuite struct {
 	*testsuite.TestSuite
-	OriginContract              *origin.OriginRef
-	DestinationContract         *destination.DestinationRef
+	OriginContract              *originharness.OriginHarnessRef
+	DestinationContract         *destinationharness.DestinationHarnessRef
 	DestinationContractMetadata contracts.DeployedContract
 	AttestationHarness          *attestationharness.AttestationHarnessRef
 	AttestationContract         *attestationcollector.AttestationCollectorRef
@@ -59,19 +59,19 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 
 // SetupOrigin sets up the backend that will have the origin contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
-	_, a.OriginContract = deployManager.GetOrigin(a.GetTestContext(), a.TestBackendOrigin)
-	originOwnerPtr, err := a.OriginContract.OriginCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
+	_, a.OriginContract = deployManager.GetOriginHarness(a.GetTestContext(), a.TestBackendOrigin)
+	originOwnerPtr, err := a.OriginContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
 		a.T().Fatal(err)
 	}
 	originOwnerAuth := a.TestBackendOrigin.GetTxContext(a.GetTestContext(), &originOwnerPtr)
 
-	txOriginNotaryAdd, err := a.OriginContract.AddNotary(originOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotarySigner.Address())
+	txOriginNotaryAdd, err := a.OriginContract.AddAgent(originOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotarySigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
 	a.TestBackendOrigin.WaitForConfirmation(a.GetTestContext(), txOriginNotaryAdd)
-	txOriginGuardAdd, err := a.OriginContract.AddGuard(originOwnerAuth.TransactOpts, a.GuardSigner.Address())
+	txOriginGuardAdd, err := a.OriginContract.AddAgent(originOwnerAuth.TransactOpts, uint32(0), a.GuardSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -80,20 +80,20 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 
 // SetupDestination sets up the backend that will have the destination contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManager) {
-	a.DestinationContractMetadata, a.DestinationContract = deployManager.GetDestination(a.GetTestContext(), a.TestBackendDestination)
+	a.DestinationContractMetadata, a.DestinationContract = deployManager.GetDestinationHarness(a.GetTestContext(), a.TestBackendDestination)
 
-	destOwnerPtr, err := a.DestinationContract.DestinationCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
+	destOwnerPtr, err := a.DestinationContract.DestinationHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
 		a.T().Fatal(err)
 	}
 
 	destOwnerAuth := a.TestBackendDestination.GetTxContext(a.GetTestContext(), &destOwnerPtr)
-	txDestinationNotaryAdd, err := a.DestinationContract.AddNotary(destOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotarySigner.Address())
+	txDestinationNotaryAdd, err := a.DestinationContract.AddAgent(destOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotarySigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
 	a.TestBackendDestination.WaitForConfirmation(a.GetTestContext(), txDestinationNotaryAdd)
-	txDestinationGuardAdd, err := a.DestinationContract.AddGuard(destOwnerAuth.TransactOpts, a.GuardSigner.Address())
+	txDestinationGuardAdd, err := a.DestinationContract.AddAgent(destOwnerAuth.TransactOpts, uint32(0), a.GuardSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -111,12 +111,12 @@ func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *DeployManag
 	}
 	attestOwnerAuth := a.TestBackendAttestation.GetTxContext(a.GetTestContext(), &attestOwnerPtr)
 
-	txAddNotary, err := a.AttestationContract.AddNotary(attestOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotarySigner.Address())
+	txAddNotary, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotarySigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
 	a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddNotary)
-	txAddGuard, err := a.AttestationContract.AddGuard(attestOwnerAuth.TransactOpts, a.GuardSigner.Address())
+	txAddGuard, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(0), a.GuardSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}

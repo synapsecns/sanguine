@@ -11,27 +11,6 @@ import { SystemContract } from "./SystemContract.sol";
  */
 abstract contract SystemRegistry is AgentRegistry, SystemContract {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                        ADDING AGENTS (MOCKS)                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-    // TODO (Chi): add/remove agents via system calls from local BondingManager
-
-    function addGuard(address _guard) external onlyOwner returns (bool) {
-        return _addAgent({ _domain: 0, _account: _guard });
-    }
-
-    function addNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
-        return _addAgent(_domain, _notary);
-    }
-
-    function removeGuard(address _guard) external onlyOwner returns (bool) {
-        return _removeAgent({ _domain: 0, _account: _guard });
-    }
-
-    function removeNotary(uint32 _domain, address _notary) external onlyOwner returns (bool) {
-        return _removeAgent(_domain, _notary);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 

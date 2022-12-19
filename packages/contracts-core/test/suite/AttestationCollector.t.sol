@@ -41,23 +41,13 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         collector.initialize();
     }
 
-    function test_addRemoveNotary(uint32 domain, address notary) public {
-        vm.assume(domain != 0);
+    function test_addRemoveAgent(uint32 domain, address agent) public {
         collector = new AttestationCollectorHarness();
         collector.initialize();
-        collector.addNotary(domain, notary);
-        assertTrue(collector.isNotary(domain, notary), "!added");
-        collector.removeNotary(domain, notary);
-        assertFalse(collector.isNotary(domain, notary), "!removed");
-    }
-
-    function test_addRemoveGuard(address guard) public {
-        collector = new AttestationCollectorHarness();
-        collector.initialize();
-        collector.addGuard(guard);
-        assertTrue(collector.isGuard(guard), "!added");
-        collector.removeGuard(guard);
-        assertFalse(collector.isGuard(guard), "!removed");
+        collector.addAgent(domain, agent);
+        assertTrue(collector.isActiveAgent(domain, agent), "!added");
+        collector.removeAgent(domain, agent);
+        assertFalse(collector.isActiveAgent(domain, agent), "!removed");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

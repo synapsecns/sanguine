@@ -30,28 +30,16 @@ contract BondingPrimary is LocalDomainContext, AgentRegistry, BondingManager {
     // Mocks for staking and unstaking of agents. Token locking/unlocking is omitted,
     // instead adding and removing agents are done by the contract owner.
 
-    function addNotary(uint32 _domain, address _notary) external onlyOwner {
-        // Add a Notary, break execution if they are already active
-        if (!_addAgent(_domain, _notary)) return;
-        _updateAgentStatus(_notaryInfo({ _domain: _domain, _notary: _notary, _bonded: true }));
+    function addAgent(uint32 _domain, address _account) external onlyOwner {
+        // Add an Agent, break execution if they are already active
+        if (!_addAgent(_domain, _account)) return;
+        _updateAgentStatus({ _domain: _domain, _agent: _account, _bonded: true });
     }
 
-    function removeNotary(uint32 _domain, address _notary) external onlyOwner {
-        // Remove a Notary, break execution if they are not currently active
-        if (!_removeAgent(_domain, _notary)) return;
-        _updateAgentStatus(_notaryInfo({ _domain: _domain, _notary: _notary, _bonded: false }));
-    }
-
-    function addGuard(address _guard) external onlyOwner {
-        // Add a Guard, break execution if they are already active
-        if (!_addAgent({ _domain: 0, _account: _guard })) return;
-        _updateAgentStatus(_guardInfo({ _guard: _guard, _bonded: true }));
-    }
-
-    function removeGuard(address _guard) external onlyOwner {
-        // Remove a Guard, break execution if they are not currently active
-        if (!_removeAgent({ _domain: 0, _account: _guard })) return;
-        _updateAgentStatus(_guardInfo({ _guard: _guard, _bonded: false }));
+    function removeAgent(uint32 _domain, address _account) external onlyOwner {
+        // Remove an Agent, break execution if they are not currently active
+        if (!_removeAgent(_domain, _account)) return;
+        _updateAgentStatus({ _domain: _domain, _agent: _account, _bonded: false });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -88,13 +76,17 @@ contract BondingPrimary is LocalDomainContext, AgentRegistry, BondingManager {
     ▏*║          INTERNAL HELPERS: UPDATE AGENT (BOND/UNBOND/SLASH)          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _updateAgentStatus(AgentInfo memory _info) internal {
+    function _updateAgentStatus(
+        uint32 _domain,
+        address _agent,
+        bool _bonded
+    ) internal {
         // Increase the request counter and use it as the new request ID
         uint256 _requestID = ++requestID;
         // Construct the array with the given agent info
         // TODO: bulk bond/unbond requests in a single message
         AgentInfo[] memory infos = new AgentInfo[](1);
-        infos[0] = _info;
+        infos[0] = AgentInfo(_domain, _agent, _bonded);
         // Pass information about the new agent status to the local registries
         // Forward information about the new agent status to the remote chains (PINGs)
         // Existing agents don't need to be removed on remote chains

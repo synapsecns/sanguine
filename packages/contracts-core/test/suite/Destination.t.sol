@@ -322,7 +322,7 @@ contract DestinationTest is DestinationTools {
         test_submitAttestation();
         // Remove Notary who signed a valid root
         vm.prank(owner);
-        suiteDestination(DOMAIN_LOCAL).removeNotary(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL));
+        suiteDestination(DOMAIN_LOCAL).removeAgent(DOMAIN_LOCAL, suiteNotary(DOMAIN_LOCAL));
         skip(APP_OPTIMISTIC_SECONDS);
         // Previously singed root should become invalid, as Notary is not active anymore
         destinationAcceptableRoot({ domain: DOMAIN_LOCAL, revertMessage: "Inactive notary" });

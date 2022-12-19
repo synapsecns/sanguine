@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "../../contracts/bonding/BondingMVP.sol";
 import "../../contracts/bonding/BondingPrimary.sol";
 import "../../contracts/bonding/BondingSecondary.sol";
 import "../../contracts/libs/SystemCall.sol";
@@ -72,9 +73,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // Deploy messaging contracts
         DestinationHarness destination = new DestinationHarness(domain);
         OriginHarness origin = new OriginHarness(domain);
-        BondingManager bondingManager = domain == DOMAIN_SYNAPSE
-            ? BondingManager(new BondingPrimary(domain))
-            : BondingManager(new BondingSecondary(domain));
+        BondingMVP bondingManager = new BondingMVP(domain);
         SystemRouterHarness systemRouter = new SystemRouterHarness(
             domain,
             address(origin),
@@ -84,31 +83,24 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // Setup destination
         destination.initialize();
         destination.setSystemRouter(systemRouter);
-        // Add local notaries to Destination
-        for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
-            destination.addNotary(domain, suiteNotary(domain, i));
-        }
         // Setup origin
         origin.initialize();
         origin.setSystemRouter(systemRouter);
         // Setup BondingManager
         bondingManager.initialize();
         bondingManager.setSystemRouter(systemRouter);
-        // TODO(Chi): setup Notaries/Guards via BondingManager
-        // Add global notaries
+        // Add global notaries via BondingManager
         for (uint256 i = 0; i < DOMAINS; ++i) {
             uint32 domainToAdd = domains[i];
             // Origin and Destination will filter our agents themselves
             for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
-                destination.addNotary(domainToAdd, suiteNotary(domainToAdd, j));
-                origin.addNotary(domainToAdd, suiteNotary(domainToAdd, j));
+                address notary = suiteNotary(domainToAdd, j);
+                bondingManager.addAgent(domainToAdd, notary);
             }
         }
-        // Add guards
+        // Add guards  via BondingManager
         for (uint256 i = 0; i < GUARDS; ++i) {
-            address guard = guards[i];
-            destination.addGuard(guard);
-            origin.addGuard(guard);
+            bondingManager.addAgent({ _domain: 0, _account: guards[i] });
         }
         // Deploy app
         AppHarness app = new AppHarness(APP_OPTIMISTIC_SECONDS);
