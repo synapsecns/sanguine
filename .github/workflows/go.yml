@@ -101,6 +101,12 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.2.6
+        with:
+          key: docker-${{ runner.os }}-${{ matrix.package }}-${{ hashFiles('**') }}
+          restore-keys: docker-${{ runner.os }}-${{ matrix.package }}
+
       # todo: consider making this a service. You'd need another way to expose the private keys for the test
       - name: Run rinkeby
         if:  ${{ contains( matrix.package, 'ethergo') }}
@@ -271,6 +277,12 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.2.6
+        with:
+          key: docker-${{ runner.os }}-${{ matrix.package }}-${{ hashFiles('**') }}
+          restore-keys: docker-${{ runner.os }}-${{ matrix.package }}
+
       # Setup npm
       - name: Read .nvmrc
         run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
@@ -380,6 +392,13 @@ jobs:
         with:
           fetch-depth: 0
           submodules: 'recursive'
+
+
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.2.6
+        with:
+          key: docker-${{ runner.os }}-${{ matrix.package }}-${{ hashFiles('**') }}
+          restore-keys: docker-${{ runner.os }}-${{ matrix.package }}
 
       # Setup npm
       - name: Read .nvmrc
