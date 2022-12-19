@@ -46,12 +46,13 @@ func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.
 func (d *DeployManager) GetOriginHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *originharness.OriginHarnessRef) {
 	d.T().Helper()
 
-	messageHarnessContract := d.GetContractRegistry(backend).Get(ctx, OriginHarnessType)
+	originHarnessContract := d.GetContractRegistry(backend).Get(ctx, OriginHarnessType)
 
-	messageHarness, ok := messageHarnessContract.ContractHandle().(*originharness.OriginHarnessRef)
+	originHarness, ok := originHarnessContract.ContractHandle().(*originharness.OriginHarnessRef)
+
 	assert.True(d.T(), ok)
 
-	return messageHarnessContract, messageHarness
+	return originHarnessContract, originHarness
 }
 
 // GetAttestationHarness gets the attestation harness.
