@@ -354,7 +354,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	var sender *string
 	var timeStamp *uint64
 	g.Go(func() error {
-		timeStamp, sender, err = p.consumerFetcher.FetchTx(groupCtx, iFace.GetTxHash().String(), int(chainID))
+		timeStamp, sender, err = p.consumerFetcher.FetchTx(groupCtx, iFace.GetTxHash().String(), int(chainID), int(bridgeEvent.BlockNumber))
 		if err != nil {
 			return fmt.Errorf("could not get timestamp, sender on chain %d and tx %s from tx %w", chainID, iFace.GetTxHash().String(), err)
 		}
@@ -397,7 +397,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
 
 	//// Account for improper value from truncation of usdc
-	//if (coinGeckoID == "usd-coin" || coinGeckoID == "tether" || coinGeckoID == "dai" || coinGeckoID == "binance-usd") && bridgeEvent.Fee != nil && bridgeEvent.Amount.Cmp(bridgeEvent.Fee) == 1 {
+	// if (coinGeckoID == "usd-coin" || coinGeckoID == "tether" || coinGeckoID == "dai" || coinGeckoID == "binance-usd") && bridgeEvent.Fee != nil && bridgeEvent.Amount.Cmp(bridgeEvent.Fee) == 1 {
 	//	bridgeEvent.Amount = iFace.GetAmount().Mul(iFace.GetAmount(), big.NewInt(1000000000000))
 	//}
 

@@ -56,7 +56,7 @@ func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, ch
 		var err error
 		tokenAddress, err = t.service.GetTokenAddress(ctx, tokenIndex)
 		if err != nil {
-			return fmt.Errorf("could not get token data for index %d on chain %s: %w", err, chainID, tokenIndex)
+			return fmt.Errorf("could not get token data for index %d on chain %d: %w", chainID, tokenIndex, err)
 		}
 		return nil
 	})
@@ -69,7 +69,6 @@ func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, ch
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not store token index: %w", err)
-
 	}
 	t.poolTokenCache.Add(key, *tokenAddress)
 
@@ -116,5 +115,4 @@ func (t *tokenPoolDataServiceImpl) retryWithBackoff(ctx context.Context, doFunc 
 		}
 	}
 	return fmt.Errorf("max attempts reached")
-
 }

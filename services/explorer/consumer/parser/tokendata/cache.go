@@ -126,6 +126,8 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 
 // retrieveTokenData retrieves the token data from the bridge config contract
 // this will retry for maxAttemptTime.
+//
+// nolint:cyclop
 func (t *tokenDataServiceImpl) retrievePoolTokenData(parentCtx context.Context, token common.Address, swapService fetcher.SwapService) (ImmutableTokenData, error) {
 	res := immutableTokenImpl{}
 

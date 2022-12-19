@@ -29,7 +29,7 @@ func (i immutableTokenImpl) TokenID() string {
 	return i.tokenID
 }
 
-// TokenAddress gets the Token's address
+// TokenAddress gets the Token's address.
 func (i immutableTokenImpl) TokenAddress() string {
 	return i.tokenAddress
 }
