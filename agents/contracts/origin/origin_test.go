@@ -47,6 +47,13 @@ func (h OriginSuite) TestDispatchTopic() {
 		True(h.T(), ok)
 		Equal(h.T(), eventType, origin.DispatchEvent)
 
+		m, ok := parser.ParseDispatch(item.Raw)
+		True(h.T(), ok)
+
+		message, err := types.DecodeMessage(m.Message())
+		Nil(h.T(), err)
+		Equal(h.T(), 2, message.OriginDomain())
+
 		break
 	}
 }

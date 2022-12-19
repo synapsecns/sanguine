@@ -189,11 +189,15 @@ func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, des
 		return [32]byte{}, fmt.Errorf("nonce is out of range")
 	}
 
+	fmt.Println("got hereeee!!!")
 	messageMask := execTypes.DBMessage{
 		ChainID:     &chainID,
 		Destination: &destination,
 		Nonce:       &nonce,
 	}
+	fmt.Println("chainID", chainID)
+	fmt.Println("destination", destination)
+	fmt.Println("nonce", nonce)
 	root, err := e.executorDB.GetRoot(ctx, messageMask)
 	if err != nil {
 		return [32]byte{}, fmt.Errorf("could not get message: %w", err)
@@ -419,6 +423,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 // processLog processes the log and updates the merkle tree.
 func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	message, err := e.logToMessage(log, chainID)
+	fmt.Println("hereeeee")
 	if err != nil {
 		return fmt.Errorf("could not convert log to leaf: %w", err)
 	}
@@ -440,6 +445,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 
 	e.chainExecutors[chainID].merkleTrees[destination].Insert(leaf[:], merkleIndex)
 	root := e.chainExecutors[chainID].merkleTrees[destination].Root()
+	fmt.Println("origin is ", chainID, (*message).OriginDomain())
 	err = e.executorDB.StoreMessage(ctx, *message, root, log.BlockNumber)
 	if err != nil {
 		return fmt.Errorf("could not store message: %w", err)
@@ -451,12 +457,14 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 // logToMessage converts the log to a leaf data.
 func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message, error) {
 	if eventType, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && eventType == origin.DispatchEvent {
+		fmt.Println("Matched!!!")
 		committedMessage, ok := e.chainExecutors[chainID].originParser.ParseDispatch(log)
 		if !ok {
 			return nil, fmt.Errorf("could not parse committed message")
 		}
 
 		message, err := types.DecodeMessage(committedMessage.Message())
+		fmt.Println("decode da message to get origin domain", message.OriginDomain())
 		if err != nil {
 			return nil, fmt.Errorf("could not decode message: %w", err)
 		}
