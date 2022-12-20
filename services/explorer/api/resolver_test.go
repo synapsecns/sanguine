@@ -183,6 +183,9 @@ func (g APISuite) TestBridgeAmountStatistic() {
 	result, err := g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
+	fmt.Println(result)
+	fmt.Println(*result)
+
 	Equal(g.T(), fmt.Sprintf("%f", total), *result.Response.Value)
 
 	statType = model.StatisticTypeCountTransactions

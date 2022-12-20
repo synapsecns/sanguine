@@ -17,6 +17,11 @@ const maxBlockNumberSortingKeys = "event_index, event_type, tx_hash, chain_id, c
 const deDupInQuery = "(" + sortingKeys + ", insert_time) IN (SELECT " + sortingKeys + ", max(insert_time) as insert_time FROM bridge_events GROUP BY " + sortingKeys + ")"
 const deDupInQueryLatest = "(" + maxBlockNumberSortingKeys + ", block_number, insert_time) IN (SELECT " + maxBlockNumberSortingKeys + ", max(block_number) as block_number, max(insert_time) as insert_time FROM bridge_events GROUP BY " + maxBlockNumberSortingKeys + ")"
 
+const joinSwapAmountQuery = "SELECT sumKahan(if(fs.amount_usd[ti.token_index]  > 0, ((toFloat64(fs.amount[ti.token_index])/exp10(fs.bridge_events.token_decimal[ti.token_index])) * fs.amount_usd[ti.token_index]),  bridge_events.amount_usd))  FROM bridge_events LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index) * FROM token_indices) ti ON bridge_events.chain_id = ti.chain_id AND bridge_events.token = ti.token_address LEFT JOIN (SELECT * FROM swap_events)  fs ON bridge_events.tx_hash = fs.tx_hash AND bridge_events.chain_id = fs.chain_id;"
+const joinSwapBaseQuery = "bridge_events LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index) * FROM token_indices) ti ON bridge_events.chain_id = ti.chain_id AND bridge_events.token = ti.token_address LEFT JOIN (SELECT * FROM swap_events)  fs ON bridge_events.tx_hash = fs.tx_hash AND bridge_events.chain_id = fs.chain_id"
+const joinSwapAmountSelectQuery = "if(fs.amount_usd[ti.token_index]  > 0, ((toFloat64(fs.amount[ti.token_index])/exp10(fs.token_decimal[ti.token_index])) * fs.amount_usd[ti.token_index]), bridge_events.amount_usd)"
+const joinSwapSymbolSelectQuery = "(if(fs.token_symbol[ti.token_index] > 0, fs.token_symbol[ti.token_index], bridge_events.token_symbol)) AS token_symbol"
+
 func (r *queryResolver) getDirectionIn(direction *model.Direction) bool {
 	var directionIn bool
 
@@ -75,6 +80,28 @@ func generateAddressSpecifierSQL(address *string, firstFilter *bool, tablePrefix
 	}
 
 	return ""
+}
+
+// generateDirectionSpecifierSQL generates a where function with a string.
+func generateDirectionSpecifierSQL(in bool, firstFilter *bool, tablePrefix string) string {
+	if in {
+		if *firstFilter {
+			*firstFilter = false
+
+			return fmt.Sprintf(" WHERE %s%s > 0", tablePrefix, sql.DestinationChainIDFieldName)
+		}
+
+		return fmt.Sprintf(" AND %s%s > 0", tablePrefix, sql.DestinationChainIDFieldName)
+	} else {
+		if *firstFilter {
+			*firstFilter = false
+
+			return fmt.Sprintf(" WHERE %s%s == 0", tablePrefix, sql.DestinationChainIDFieldName)
+		}
+
+		return fmt.Sprintf(" AND %s%s == 0", tablePrefix, sql.DestinationChainIDFieldName)
+
+	}
 }
 
 // generateSingleSpecifierI32SQL generates a where function with an uint32.
@@ -175,7 +202,7 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 	selectParameters := fmt.Sprintf(
 		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
 		sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
-		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
+		sql.TokenFieldName, joinSwapSymbolSelectQuery, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
 		sql.SenderFieldName, sql.TxHashFieldName, sql.InsertTimeFieldName,
 	)
 	groupByParameters := fmt.Sprintf(
@@ -197,12 +224,12 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 	}
 	query := fmt.Sprintf(
 		`
-		SELECT t1.* FROM bridge_events t1
+		SELECT t2.token_symbol, t1.* FROM bridge_events t1
     	JOIN (
     	SELECT %s AS insert_max_time
-    	FROM bridge_events WHERE %s GROUP BY %s) t2
+    	FROM %s WHERE %s GROUP BY %s) t2
     	    ON (%s) %s `,
-		selectParameters, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
+		selectParameters, joinSwapBaseQuery, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
 
 	return query
 }
@@ -310,7 +337,7 @@ func generateBridgeEventsWithKappaQuery(kappaChainStr string, chainID *int, addr
 	selectParameters := fmt.Sprintf(
 		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
 		sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
-		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
+		sql.TokenFieldName, joinSwapSymbolSelectQuery, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
 		sql.SenderFieldName, sql.TxHashFieldName, sql.InsertTimeFieldName,
 	)
 	groupByParameters := fmt.Sprintf(
@@ -332,12 +359,12 @@ func generateBridgeEventsWithKappaQuery(kappaChainStr string, chainID *int, addr
 	}
 	query := fmt.Sprintf(
 		`
-		SELECT t1.* FROM bridge_events t1
+		SELECT t2.token_symbol, t1.* FROM bridge_events t1
     	JOIN (
     	SELECT %s AS insert_max_time
-    	FROM bridge_events WHERE %s  GROUP BY %s) t2
+    	FROM %s WHERE %s  GROUP BY %s) t2
     	    ON (%s) %s `,
-		selectParameters, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
+		selectParameters, joinSwapBaseQuery, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
 
 	return query
 }
@@ -349,7 +376,7 @@ func generatePartialInfoQueryByChain(limitSize int) string {
 	selectParameters := fmt.Sprintf(
 		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
 		sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
-		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
+		sql.TokenFieldName, joinSwapSymbolSelectQuery, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
 		sql.SenderFieldName, sql.TxHashFieldName, sql.InsertTimeFieldName,
 	)
 	groupByParameters := fmt.Sprintf(
@@ -367,12 +394,12 @@ func generatePartialInfoQueryByChain(limitSize int) string {
 	)
 	query := fmt.Sprintf(
 		`
-		SELECT t1.* FROM bridge_events t1
+		SELECT t2.token_symbol, t1.* FROM bridge_events t1
     	JOIN (
     	SELECT %s AS insert_max_time
-    	FROM bridge_events WHERE %s GROUP BY %s) t2
+    	FROM %s WHERE %s GROUP BY %s) t2
     	    ON (%s) %s`,
-		selectParameters, deDupInQuery, groupByParameters, joinOnParameters, compositeIdentifiers)
+		selectParameters, joinSwapBaseQuery, deDupInQuery, groupByParameters, joinOnParameters, compositeIdentifiers)
 
 	return query
 }

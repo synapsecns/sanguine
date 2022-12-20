@@ -155,7 +155,7 @@ type SwapEvent struct {
 	// Sender is the address of the sender.
 	Sender string `gorm:"column:sender"`
 
-	// Amount is the amount of tokens..
+	// Amount is the amount of tokens.
 	Amount map[uint8]string `gorm:"column:amount;type:Map(UInt8, String)"`
 	// AmountFee is the amount of fees.
 	AmountFee map[uint8]string `gorm:"column:amount_fee;type:Map(UInt8, String)"`

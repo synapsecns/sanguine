@@ -10,6 +10,7 @@ import { LatestBridgeTransactions } from './LatestBridgeTransactions'
 import { Chart, ChartLoading } from '@components/Chart'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { PageLink } from '@components/misc/PageLink'
+import Grid from '@tw/Grid'
 
 import { StandardPageContainer } from '@layouts/StandardPageContainer'
 import {
@@ -19,11 +20,18 @@ import {
 } from 'hooks/getHistoricalStats'
 
 export function Home() {
-  const bridgeVolume = getBridgeVolume({ days: 3000 })
-  const transactions = getTransactions({ days: 3000 })
-  const addresses = getAddresses({ days: 3000 })
+  const bridgeVolume = getBridgeVolume({ days: 30 })
+  const transactions = getTransactions({ days: 30 })
+  const addresses = getAddresses({ days: 30 })
+
+
+  const bridgeAllTimeVolume = getBridgeVolume({ days: 3000 })
+  const transactionsAllTime = getTransactions({ days: 3000 })
+  const addressesAllTime = getAddresses({ days: 3000 })
 
   const [chartType, setChartType] = useState('BRIDGEVOLUME')
+  const [allTime, setAllTime] = useState(0)
+
 
   let data
 
@@ -38,23 +46,39 @@ export function Home() {
   return (
     <StandardPageContainer>
       <Chart data={data} />
-      {bridgeVolume && transactions && addresses ? (
-        <Stats
-          bridgeVolume={bridgeVolume.historicalStatistics.total}
-          transactions={transactions.historicalStatistics.total}
-          addresses={addresses.historicalStatistics.total}
-          setChartType={setChartType}
-        />
-      ) : (
-        <ChartLoading />
-      )}
+      {bridgeVolume && transactions && addresses ?
+        allTime === 0 ?
+          <Stats
+            bridgeVolume={bridgeAllTimeVolume.historicalStatistics.total}
+            transactions={transactionsAllTime.historicalStatistics.total}
+            addresses={addressesAllTime.historicalStatistics.total}
+            setChartType={setChartType}
+            allTime={true}
+          /> :
+          <Stats
+            bridgeVolume={bridgeVolume.historicalStatistics.total}
+            transactions={transactions.historicalStatistics.total}
+            addresses={addresses.historicalStatistics.total}
+            setChartType={setChartType}
+            allTime={false}
+          />
+        : (
+          <ChartLoading />
+        )}
       <HorizontalDivider />
-      <PageLink
-        text={'View all analytics'}
-        url={ANALYTICS_PATH}
-        external={true}
-      />
+      <Grid cols={{ sm: 1, md: 2, lg: 2 }} gap={4} className="my-3">
 
+        <PageLink
+          text={'See more'}
+          url={ANALYTICS_PATH}
+          external={true}
+        />
+          <div className="mt-2 mb-10 text-right">
+        <div  className="text-white text-opacity-50 hover:text-opacity-90 hover:underline cursor-pointer"
+          onClick={() => setAllTime(allTime === 0 ? 1 : 0)}
+        >{allTime === 0?  "View 30-day" : " View all-time"}</div>
+        </div>
+      </Grid>
       <UniversalSearch />
 
       <LatestBridgeTransactions />
