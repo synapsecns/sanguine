@@ -177,7 +177,6 @@ RETRY:
 			}
 			sender := ""
 			blocktime := uint64(*auxiliaryBlocktime)
-			fmt.Println("JIM", blocktime, sender)
 			return &blocktime, &sender, nil
 		}
 		resTx := res.Response[0]
