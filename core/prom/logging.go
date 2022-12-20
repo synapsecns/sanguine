@@ -1,4 +1,4 @@
-package metrics
+package prom
 
 import (
 	"fmt"
@@ -11,29 +11,29 @@ import (
 var logger = log.Logger("synapse-metrics")
 
 // NewPromLogger creates a new prometheus error logger.
-func NewPromLogger(logClient *log.ZapEventLogger) PromErrorLogger {
-	return PromErrorLogger{logClient}
+func NewPromLogger(logClient *log.ZapEventLogger) ErrorLogger {
+	return ErrorLogger{logClient}
 }
 
-// PromErrorLogger is the error logger used for prometheus http.
-type PromErrorLogger struct {
+// ErrorLogger is the error logger used for prometheus http.
+type ErrorLogger struct {
 	*log.ZapEventLogger
 }
 
 // Log prints the output of prom to the logger.
-func (p PromErrorLogger) Log(keyvals ...interface{}) error {
+func (p ErrorLogger) Log(keyvals ...interface{}) error {
 	msg := fmt.Sprintln(keyvals...)
 	p.Debugf(msg[:len(msg)-1])
 	return nil
 }
 
 // Println prints the output of prom to the error logger.
-func (p PromErrorLogger) Println(v ...interface{}) {
+func (p ErrorLogger) Println(v ...interface{}) {
 	msg := fmt.Sprintln(v...)
 	p.Errorf(msg[:len(msg)-1])
 }
 
-var _ promhttp.Logger = PromErrorLogger{}
+var _ promhttp.Logger = ErrorLogger{}
 
 // used for push gateway.
-var _ kitLog.Logger = PromErrorLogger{}
+var _ kitLog.Logger = ErrorLogger{}
