@@ -30,7 +30,7 @@ func (s Store) StoreNewInProgressAttestation(ctx context.Context, attestation ty
 	}
 	// We only want to store if not already stored
 	tx := s.DB().WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "origin"}, {Name: "destination"}, {Name: NonceFieldName}},
+		Columns:   []clause.Column{{Name: OriginFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName}},
 		DoNothing: true,
 	}).Create(&InProgressAttestation{
 		IPOrigin:                    attestation.Origin(),
@@ -63,7 +63,7 @@ func (s Store) UpdateSignature(ctx context.Context, inProgressAttestation types.
 			IPDestination: inProgressAttestation.SignedAttestation().Attestation().Destination(),
 			IPNonce:       inProgressAttestation.SignedAttestation().Attestation().Nonce(),
 		}).
-		Where("attestation_state", uint32(types.AttestationStateNotaryUnsigned)).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateNotaryUnsigned)).
 		Updates(
 			InProgressAttestation{
 				IPSignature:        sig,
@@ -89,7 +89,7 @@ func (s Store) UpdateSubmittedToAttestationCollectorTime(ctx context.Context, in
 			IPDestination: inProgressAttestation.SignedAttestation().Attestation().Destination(),
 			IPNonce:       inProgressAttestation.SignedAttestation().Attestation().Nonce(),
 		}).
-		Where("attestation_state", uint32(types.AttestationStateNotarySignedUnsubmitted)).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateNotarySignedUnsubmitted)).
 		Updates(
 			InProgressAttestation{
 				IPSubmittedToAttestationCollectorTime: sql.NullTime{
@@ -114,7 +114,7 @@ func (s Store) MarkConfirmedOnAttestationCollector(ctx context.Context, inProgre
 			IPDestination: inProgressAttestation.SignedAttestation().Attestation().Destination(),
 			IPNonce:       inProgressAttestation.SignedAttestation().Attestation().Nonce(),
 		}).
-		Where("attestation_state", uint32(types.AttestationStateNotarySubmittedUnconfirmed)).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateNotarySubmittedUnconfirmed)).
 		Updates(
 			InProgressAttestation{
 				IPAttestationState: uint32(types.AttestationStateNotaryConfirmed),
@@ -198,9 +198,9 @@ func (s Store) RetrieveOldestUnsignedInProgressAttestation(ctx context.Context, 
 	}
 	var inProgressAttestation InProgressAttestation
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
-		Where("origin", originID).
-		Where("destination", destinationID).
-		Where("attestation_state", uint32(types.AttestationStateNotaryUnsigned)).
+		Where(OriginFieldName, originID).
+		Where(DestinationFieldName, destinationID).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateNotaryUnsigned)).
 		Order(getOrderByNonceAsc()).
 		First(&inProgressAttestation)
 
@@ -223,9 +223,9 @@ func (s Store) RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx context.
 	}
 	var inProgressAttestation InProgressAttestation
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
-		Where("origin", originID).
-		Where("destination", destinationID).
-		Where("attestation_state", uint32(types.AttestationStateNotarySignedUnsubmitted)).
+		Where(OriginFieldName, originID).
+		Where(DestinationFieldName, destinationID).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateNotarySignedUnsubmitted)).
 		Order(getOrderByNonceAsc()).
 		First(&inProgressAttestation)
 
@@ -249,9 +249,9 @@ func (s Store) RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx conte
 
 	var inProgressAttestation InProgressAttestation
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
-		Where("origin", originID).
-		Where("destination", destinationID).
-		Where("attestation_state", uint32(types.AttestationStateNotarySubmittedUnconfirmed)).
+		Where(OriginFieldName, originID).
+		Where(DestinationFieldName, destinationID).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateNotarySubmittedUnconfirmed)).
 		Order(getOrderByNonceAsc()).
 		First(&inProgressAttestation)
 
@@ -275,9 +275,9 @@ func (s Store) RetrieveNewestConfirmedInProgressAttestation(ctx context.Context,
 
 	var inProgressAttestation InProgressAttestation
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
-		Where("origin", originID).
-		Where("destination", destinationID).
-		Where("attestation_state", uint32(types.AttestationStateNotaryConfirmed)).
+		Where(OriginFieldName, originID).
+		Where(DestinationFieldName, destinationID).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateNotaryConfirmed)).
 		Order(getOrderByNonceDesc()).
 		First(&inProgressAttestation)
 
