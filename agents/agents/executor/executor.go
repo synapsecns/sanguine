@@ -286,6 +286,7 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 	if err != nil {
 		return false, fmt.Errorf("could not get block by number: %w", err)
 	}
+
 	blockTime := block.Time()
 
 	latestBlock, err := e.chainExecutors[message.OriginDomain()].client.BlockNumber(ctx)

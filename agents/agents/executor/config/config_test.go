@@ -25,6 +25,7 @@ func configFixture() config.Config {
 		},
 		AttestationCollectorChainID: gofakeit.Uint32(),
 		AttestationCollectorAddress: gofakeit.Word(),
+		RPCURL:                      gofakeit.URL(),
 	}
 }
 
