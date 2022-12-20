@@ -279,7 +279,15 @@ func GetPartialInfoFromBridgeEventSingle(res sql.BridgeEvent) (*model.PartialInf
 	var tokenSymbol string
 
 	if res.TokenSymbol.Valid && res.TokenSymbol.String != "" {
-		tokenSymbol = res.TokenSymbol.String
+		switch res.TokenSymbol.String {
+		case "nETH":
+			tokenSymbol = "ETH"
+		case "nUSD":
+			tokenSymbol = "USDC"
+		default:
+			tokenSymbol = res.TokenSymbol.String
+		}
+
 	} else {
 		return nil, fmt.Errorf("token symbol is not valid")
 	}

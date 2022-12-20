@@ -28,6 +28,7 @@ export function Home() {
   const bridgeAllTimeVolume = getBridgeVolume({ days: 3000 })
   const transactionsAllTime = getTransactions({ days: 3000 })
   const addressesAllTime = getAddresses({ days: 3000 })
+  console.log(bridgeAllTimeVolume, transactionsAllTime, addressesAllTime)
 
   const [chartType, setChartType] = useState('BRIDGEVOLUME')
   const [allTime, setAllTime] = useState(0)
@@ -54,7 +55,10 @@ export function Home() {
             addresses={addressesAllTime.historicalStatistics.total}
             setChartType={setChartType}
             allTime={true}
-          /> :
+          />
+
+
+          :
           <Stats
             bridgeVolume={bridgeVolume.historicalStatistics.total}
             transactions={transactions.historicalStatistics.total}
