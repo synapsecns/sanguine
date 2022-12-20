@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/prom"
 	"time"
 )
 
@@ -23,7 +23,7 @@ type ConditionCheck func(blockHeight uint64) bool
 //
 //go:generate go run github.com/vektra/mockery/v2 --name BlockHeightWatcher --output ./mocks --case=underscore
 type BlockHeightWatcher interface {
-	metrics.Instrumentable
+	prom.Instrumentable
 	// Subscribe creates a new block height subscriber.
 	Subscribe() <-chan uint64
 	// Unsubscribe removes a block height subscriber.
