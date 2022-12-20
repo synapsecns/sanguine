@@ -3,6 +3,8 @@ package backfill_test
 import (
 	gosql "database/sql"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
+	"github.com/synapsecns/sanguine/services/explorer/static"
 	messageBusTypes "github.com/synapsecns/sanguine/services/explorer/types/messagebus"
 	"math/big"
 
@@ -286,21 +288,27 @@ func (b *BackfillSuite) TestBackfill() {
 	// Set up a ChainBackfiller
 	bcf, err := fetcher.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
-	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), bcf, b.consumerFetcher)
+
+	tokenSymbolToIDs, err := parser.ParseYaml(static.GetTokenSymbolToTokenIDConfig())
 	Nil(b.T(), err)
-	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), bcf, b.consumerFetcher)
+	tokenDataService, err := tokendata.NewTokenDataService(bcf, tokenSymbolToIDs)
+	Nil(b.T(), err)
+
+	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), tokenDataService, b.consumerFetcher)
+	Nil(b.T(), err)
+	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), tokenDataService, b.consumerFetcher)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
 	srA, err := fetcher.NewSwapFetcher(swapContractA.Address(), b.testBackend)
 	Nil(b.T(), err)
-	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), *srA, b.consumerFetcher)
+	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), b.consumerFetcher, &srA, tokenDataService)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
 	srB, err := fetcher.NewSwapFetcher(swapContractB.Address(), b.testBackend)
 	Nil(b.T(), err)
-	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), *srB, b.consumerFetcher)
+	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), b.consumerFetcher, &srB, tokenDataService)
 	Nil(b.T(), err)
 	spMap := map[common.Address]*parser.SwapParser{}
 	spMap[swapContractA.Address()] = spA
