@@ -33,7 +33,7 @@ jobs:
   deploy-explorer:
     needs: changes
     runs-on: ubuntu-latest
-    if: ${{ needs.changes.outputs.folder_count > 0 && contains(needs.changes.outputs.folders, 'explorer-ui') }}
+    if: ${{ needs.changes.outputs.folder_count > 0 && contains(fromJson(needs.changes.outputs.folders), 'explorer-ui') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
