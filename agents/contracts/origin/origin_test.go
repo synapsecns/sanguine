@@ -13,6 +13,12 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 )
 
+func (h OriginSuite) TestLocalDomain() {
+	localDomain, err := h.originContract.LocalDomain(&bind.CallOpts{Context: h.GetTestContext()})
+	Nil(h.T(), err)
+	Equal(h.T(), uint32(h.testBackend.GetBigChainID().Uint64()), localDomain)
+}
+
 func (h OriginSuite) TestDispatchTopic() {
 	// init the dispatch event
 	txContext := h.testBackend.GetTxContext(h.GetTestContext(), nil)

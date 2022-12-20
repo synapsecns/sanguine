@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -91,9 +92,25 @@ func (r *queryResolver) TransactionsRange(ctx context.Context, txHash *string, c
 func (r *queryResolver) BlockTime(ctx context.Context, chainID int, blockNumber int) (*int, error) {
 	blockTime, err := r.DB.RetrieveBlockTime(ctx, uint32(chainID), uint64(blockNumber))
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving block time: %w", err)
-	}
+		blockTimeRaw, err := r.getBlockTime(ctx, uint32(chainID), uint64(blockNumber))
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving block time: %w", err)
+		}
+		blockTime = *blockTimeRaw
 
+		go func() {
+			// we create a new context here to allow async storage and allow for quick returns
+			// TODO: this is a hotfix and should be undone once reindexed
+			storeCtx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+			defer cancel()
+
+			storeErr := r.DB.StoreBlockTime(storeCtx, uint32(chainID), uint64(blockNumber), blockTime)
+
+			if storeErr != nil {
+				logger.Error(storeErr)
+			}
+		}()
+	}
 	blockTimeInt := int(blockTime)
 
 	return &blockTimeInt, nil
