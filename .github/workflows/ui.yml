@@ -22,7 +22,7 @@ jobs:
         with:
           #  make sure to update run-goreleaser when adding a new package here
           filters: |
-            explorer: 'packages/explorer-ui/**'
+            explorer-ui: 'packages/explorer-ui/**'
       - id: length
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
