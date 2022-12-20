@@ -102,11 +102,11 @@ func (a AttestationProducer) update(ctx context.Context) error {
 	}
 
 	// get the update to sign
-	hashedUpdate, err := HashAttestation(suggestedAttestation)
+	hashedAttestation, err := HashAttestation(suggestedAttestation)
 	if err != nil {
 		return fmt.Errorf("could not hash update: %w", err)
 	}
-	signature, err := a.signer.SignMessage(ctx, core.BytesToSlice(hashedUpdate), false)
+	signature, err := a.signer.SignMessage(ctx, core.BytesToSlice(hashedAttestation), false)
 	if err != nil {
 		return fmt.Errorf("could not sign message: %w", err)
 	}

@@ -4,6 +4,7 @@ package evm
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -38,7 +39,7 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		return nil, fmt.Errorf("could not bind origin contract: %w", err)
 	}
 
-	boundCollector, err := NewAttestationCollectorContract(ctx, underlyingClient, common.HexToAddress(domain.AttesationCollectorAddress))
+	boundCollector, err := NewAttestationCollectorContract(ctx, underlyingClient, common.HexToAddress(domain.AttestationCollectorAddress))
 	if err != nil {
 		return nil, fmt.Errorf("could not bind attestation contract: %w", err)
 	}
