@@ -10,7 +10,7 @@ jobs:
     name: Change Detection
     runs-on: ubuntu-latest
     outputs:
-      folders: ${{ steps.filter_go.outputs.changes }}
+      folders: ${{ steps.filter_ui.outputs.changes }}
       folder_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
       - uses: actions/checkout@v2
