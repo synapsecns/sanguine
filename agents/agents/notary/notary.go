@@ -13,7 +13,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// Notary updates the origin contract.
+// Notary in the current version scans the origins for new messages, signs them, and posts to attestation collector.
 // TODO: Note right now, I have threads for each origin-destination pair and do no batching at all
 // in terms of calls to the origin.
 // Right now, for this MVP, this is the simplest path and we can make improvements later.

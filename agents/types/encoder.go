@@ -187,7 +187,7 @@ func Hash(a Attestation) ([32]byte, error) {
 	return HashRawBytes(encodedAttestation)
 }
 
-// HashRawBytes takes the raw bytes and produces a hash
+// HashRawBytes takes the raw bytes and produces a hash.
 func HashRawBytes(rawBytes []byte) (common.Hash, error) {
 	hashedDigest := crypto.Keccak256Hash(rawBytes)
 
