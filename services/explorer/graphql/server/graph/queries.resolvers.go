@@ -74,11 +74,11 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	if *duration == model.DurationPastDay {
 		hours := 24
 		targetTime := r.getTargetTime(&hours)
-		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "bridge_events.")
 	}
-	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "bridge_events")
-	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "bridge_events")
-	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "bridge_events")
+	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "bridge_events.")
+	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "bridge_events.")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "bridge_events.")
 
 	additionalFilters := fmt.Sprintf(
 		`%s%s%s%s`,
@@ -164,15 +164,15 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 
 	startTime := uint64(time.Now().Unix() - int64(*days*86400))
 	firstFilter := true
-	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "bridge_events")
-	timeStampSpecifier := generateTimestampSpecifierSQL(&startTime, sql.TimeStampFieldName, &firstFilter, "bridge_events")
-	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "bridge_events")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "bridge_events.")
+	timeStampSpecifier := generateTimestampSpecifierSQL(&startTime, sql.TimeStampFieldName, &firstFilter, "bridge_events.")
+	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "bridge_events.")
 	filter := fmt.Sprintf("%s%s%s", chainIDSpecifier, timeStampSpecifier, directionSpecifier)
 
 	// Handle the different logic needed for each query type.
 	switch *typeArg {
 	case model.HistoricalResultTypeBridgevolume:
-		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(bridge_events.%s, %s) AS date FROM %s %s AND %s GROUP BY date ORDER BY date ASC", joinSwapAmountSelectQuery, sql.TimeStampFieldName, "'%m/%d/%Y'", joinSwapBaseQuery, filter, deDupInQuery)
+		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(bridge_events.%s, %s) AS date FROM %s %s AND %s GROUP BY date ORDER BY date ASC", joinSwapAmountSelectQuery, sql.TimeStampFieldName, "'%m/%d/%Y'", joinSwapBaseQuery, filter, deDupInQueryPrefix)
 		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 		fmt.Println("JSJS", query, "\n", subQuery)
 	case model.HistoricalResultTypeAddresses:

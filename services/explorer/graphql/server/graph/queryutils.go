@@ -12,15 +12,19 @@ import (
 )
 
 const sortingKeys = "event_index, block_number, event_type, tx_hash, chain_id, contract_address"
+const sortingKeysPrefix = "bridge_events.event_index, bridge_events.block_number, bridge_events.event_type, bridge_events.tx_hash, bridge_events.chain_id, bridge_events.contract_address"
+
 const maxBlockNumberSortingKeys = "event_index, event_type, tx_hash, chain_id, contract_address"
 
+// const allColumns = "bridge_events.event_index, bridge_events.block_number, bridge_events.event_type, bridge_events.tx_hash, bridge_events.chain_id, bridge_events.contract_address, bridge_events.token, bridge_events.amount, bridge_events.event_index, bridge_events.destination_kappa, bridge_events.sender, bridge_events.recipient, bridge_events.recipient_bytes,bridge_events.destination_chain_id, bridge_events.fee, bridge_events.kappa, bridge_events.token_index_from, bridge_events.token_index_to, bridge_events.min_dy, bridge_events.deadline, bridge_events.swap_success, bridge_events.swap_token_index, bridge_events.swap_min_amount, bridge_events.swap_deadline, bridge_events.token_id, bridge_events.amount_usd, bridge_events.fee_amount_usd, bridge_events.token_decimal, bridge_events.timestamp"
 const deDupInQuery = "(" + sortingKeys + ", insert_time) IN (SELECT " + sortingKeys + ", max(insert_time) as insert_time FROM bridge_events GROUP BY " + sortingKeys + ")"
+const deDupInQueryPrefix = "(" + sortingKeysPrefix + ", bridge_events.insert_time AS insert_time) IN (SELECT " + sortingKeysPrefix + ", max(bridge_events.insert_time) as insert_time FROM bridge_events GROUP BY " + sortingKeysPrefix + ")"
+
 const deDupInQueryLatest = "(" + maxBlockNumberSortingKeys + ", block_number, insert_time) IN (SELECT " + maxBlockNumberSortingKeys + ", max(block_number) as block_number, max(insert_time) as insert_time FROM bridge_events GROUP BY " + maxBlockNumberSortingKeys + ")"
 
-const joinSwapAmountQuery = "SELECT sumKahan(if(fs.amount_usd[ti.token_index]  > 0, ((toFloat64(fs.amount[ti.token_index])/exp10(fs.bridge_events.token_decimal[ti.token_index])) * fs.amount_usd[ti.token_index]),  bridge_events.amount_usd))  FROM bridge_events LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index) * FROM token_indices) ti ON bridge_events.chain_id = ti.chain_id AND bridge_events.token = ti.token_address LEFT JOIN (SELECT * FROM swap_events)  fs ON bridge_events.tx_hash = fs.tx_hash AND bridge_events.chain_id = fs.chain_id;"
 const joinSwapBaseQuery = "bridge_events LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index) * FROM token_indices) ti ON bridge_events.chain_id = ti.chain_id AND bridge_events.token = ti.token_address LEFT JOIN (SELECT * FROM swap_events)  fs ON bridge_events.tx_hash = fs.tx_hash AND bridge_events.chain_id = fs.chain_id"
 const joinSwapAmountSelectQuery = "if(fs.amount_usd[ti.token_index]  > 0, ((toFloat64(fs.amount[ti.token_index])/exp10(fs.token_decimal[ti.token_index])) * fs.amount_usd[ti.token_index]), bridge_events.amount_usd)"
-const joinSwapSymbolSelectQuery = "(if(fs.token_symbol[ti.token_index] > 0, fs.token_symbol[ti.token_index], bridge_events.token_symbol)) AS token_symbol"
+const joinSwapFullSymbolQuery = "SELECT (if(fs.token_symbol[ti.token_index] IS NULL, fs.token_symbol[ti.token_index], bridge_events.token_symbol) AS token_symbol),bridge_events.event_index AS event_index, bridge_events.block_number AS block_number, bridge_events.event_type AS event_type,  bridge_events.tx_hash AS tx_hash, bridge_events.chain_id AS chain_id, bridge_events.contract_address AS contract_address, bridge_events.token AS token, bridge_events.amount AS amount, bridge_events.event_index AS event_index, bridge_events.destination_kappa AS destination_kappa, bridge_events.sender AS sender, bridge_events.recipient AS recipient, bridge_events.recipient_bytes AS recipient_bytes, bridge_events.fee AS fee, bridge_events.kappa AS kappa, bridge_events.token_index_from AS token_index_from, bridge_events.token_index_to AS token_index_to, bridge_events.min_dy AS min_dy, bridge_events.deadline AS deadline, bridge_events.swap_success AS swap_success, bridge_events.swap_token_index AS swap_token_index, bridge_events.swap_min_amount AS swap_min_amount, bridge_events.swap_deadline AS swap_deadline, bridge_events.token_id AS token_id, bridge_events.amount_usd AS amount_usd, bridge_events.fee_amount_usd AS fee_amount_usd, bridge_events.token_decimal AS token_decimal, bridge_events.timestamp AS timestamp,bridge_events.destination_chain_id AS destination_chain_id, bridge_events.insert_time AS insert_time FROM bridge_events LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index) * FROM token_indices) ti ON bridge_events.chain_id = ti.chain_id AND bridge_events.token = ti.token_address LEFT JOIN (SELECT * FROM swap_events)  fs ON bridge_events.tx_hash = fs.tx_hash AND bridge_events.chain_id = fs.chain_id"
 
 func (r *queryResolver) getDirectionIn(direction *model.Direction) bool {
 	var directionIn bool
@@ -202,7 +206,7 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 	selectParameters := fmt.Sprintf(
 		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
 		sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
-		sql.TokenFieldName, joinSwapSymbolSelectQuery, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
 		sql.SenderFieldName, sql.TxHashFieldName, sql.InsertTimeFieldName,
 	)
 	groupByParameters := fmt.Sprintf(
@@ -224,12 +228,12 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 	}
 	query := fmt.Sprintf(
 		`
-		SELECT t2.token_symbol, t1.* FROM bridge_events t1
+		SELECT  t1.* FROM (%s) t1
     	JOIN (
     	SELECT %s AS insert_max_time
-    	FROM %s WHERE %s GROUP BY %s) t2
+    	FROM bridge_events WHERE %s GROUP BY %s) t2
     	    ON (%s) %s `,
-		selectParameters, joinSwapBaseQuery, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
+		joinSwapFullSymbolQuery, selectParameters, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
 
 	return query
 }
@@ -337,7 +341,7 @@ func generateBridgeEventsWithKappaQuery(kappaChainStr string, chainID *int, addr
 	selectParameters := fmt.Sprintf(
 		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
 		sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
-		sql.TokenFieldName, joinSwapSymbolSelectQuery, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
 		sql.SenderFieldName, sql.TxHashFieldName, sql.InsertTimeFieldName,
 	)
 	groupByParameters := fmt.Sprintf(
@@ -359,12 +363,12 @@ func generateBridgeEventsWithKappaQuery(kappaChainStr string, chainID *int, addr
 	}
 	query := fmt.Sprintf(
 		`
-		SELECT t2.token_symbol, t1.* FROM bridge_events t1
+		SELECT t1.* FROM (%s) t1
     	JOIN (
     	SELECT %s AS insert_max_time
-    	FROM %s WHERE %s  GROUP BY %s) t2
+    	FROM bridge_events WHERE %s  GROUP BY %s) t2
     	    ON (%s) %s `,
-		selectParameters, joinSwapBaseQuery, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
+		joinSwapFullSymbolQuery, selectParameters, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
 
 	return query
 }
@@ -376,7 +380,7 @@ func generatePartialInfoQueryByChain(limitSize int) string {
 	selectParameters := fmt.Sprintf(
 		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, max(%s)`,
 		sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
-		sql.TokenFieldName, joinSwapSymbolSelectQuery, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
 		sql.SenderFieldName, sql.TxHashFieldName, sql.InsertTimeFieldName,
 	)
 	groupByParameters := fmt.Sprintf(
@@ -394,12 +398,12 @@ func generatePartialInfoQueryByChain(limitSize int) string {
 	)
 	query := fmt.Sprintf(
 		`
-		SELECT t2.token_symbol, t1.* FROM bridge_events t1
+		SELECT t1.* FROM (%s) t1
     	JOIN (
     	SELECT %s AS insert_max_time
-    	FROM %s WHERE %s GROUP BY %s) t2
+    	FROM bridge_events WHERE %s GROUP BY %s) t2
     	    ON (%s) %s`,
-		selectParameters, joinSwapBaseQuery, deDupInQuery, groupByParameters, joinOnParameters, compositeIdentifiers)
+		joinSwapFullSymbolQuery, selectParameters, deDupInQuery, groupByParameters, joinOnParameters, compositeIdentifiers)
 
 	return query
 }

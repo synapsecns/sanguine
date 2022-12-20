@@ -14,7 +14,6 @@ export function Chart({ data }) {
     )
   }
 }
-
 function BarMaker({ value, height, date }) {
   let h = `h-[${height}px]`
   let showValue = numeral(value).format('0,0')
@@ -27,7 +26,7 @@ function BarMaker({ value, height, date }) {
       <div
         className={`relative flex justify-center w-full ${h} bg-gradient-to-b from-[#FF00FF] to-[#AC8FFF] hover:opacity-50`}
       ></div>
-            <span className='-rotate-45 text-white text-[6px] mt-3 l-0 pr-0'>{date.substring(0,date.length - 5)}</span>
+            <span className='-rotate-45 text-white text-[5px] mt-3 l-0 pr-0'>{date.substring(0,date.length - 5)}</span>
 
     </div>
   )
@@ -73,3 +72,4 @@ function normalize(data) {
 
   return newList
 }
+
