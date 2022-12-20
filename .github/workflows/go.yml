@@ -1,0 +1,592 @@
+name: Go Workflows
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - 'gh-pages'
+
+jobs:
+  # changes allows us to only run a job on changed packages
+  changes:
+    name: Change Detection
+    runs-on: ubuntu-latest
+    outputs:
+      # Expose matched filters as job 'packages' output variable
+      packages: ${{ steps.filter_go.outputs.changes }}
+      package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
+      solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
+      all_packages: ${{ steps.all.outputs.ALL }} # list of changed and unchanged packages
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      # For pull requests it's not necessary to checkout the code
+      - uses: dorny/paths-filter@v2
+        name: 'Check for Go Changes'
+        id: filter_go
+        with:
+          #  make sure to update run-goreleaser when adding a new package here
+          filters: |
+            agents: 'agents/**'
+            services/scribe: 'services/scribe/**'
+            services/explorer: 'services/explorer/**'
+            tools: 'tools/**'
+            core: 'core/**'
+            ethergo: 'ethergo/**'
+            services/omnirpc: 'services/omnirpc/**'
+      - name: Check For Solidity Changes
+        id: filter_solidity
+        uses: tj-actions/changed-files@v26.1
+        with:
+          files: |
+            **/*.sol
+      - name: Run step if any of the listed files above change
+        if: steps.filter_solidity.outputs.any_changed == 'true'
+        run: |
+          echo "One or more files listed above has changed."
+
+      - id: length
+        run: |
+          export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
+          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
+        env:
+          FILTERED_PATHS: ${{ steps.filter_go.outputs.changes }}
+
+      # list all packages
+      - id: all
+        run: |
+          export ALL=$(go work edit -json | jq -c -r '[.Use[].DiskPath]')
+          echo "##[set-output name=ALL;]$(echo $ALL)"
+
+
+  test:
+    name: Go Coverage
+    runs-on: ${{ matrix.platform }}
+    needs: changes
+    strategy:
+      matrix:
+        go-version:
+          - 1.19.x
+        platform:
+          - ubuntu-latest
+        # only do on agents for now. Anything that relies on solidity in a package should do this
+        package: ${{ fromJSON(needs.changes.outputs.all_packages) }}
+    services:
+      mariadb:
+        image: mariadb:latest
+        ports:
+          - 3306
+        env:
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: password
+        options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
+    defaults:
+      run:
+        working-directory: ${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.2.6
+        with:
+          key: docker-test-${{ runner.os }}-${{ matrix.package }}
+
+      # todo: consider making this a service. You'd need another way to expose the private keys for the test.
+      - name: Run rinkeby
+        if:  ${{ contains( matrix.package, 'ethergo') }}
+        run: docker run -p 8045:8545 -d -v /tmp/keys/:/tmp/keys/  --name rinkeby --restart always trufflesuite/ganache-cli ganache-cli --accounts 10 --account_keys_path /tmp/keys/rinkeby --chainId 4 # --fork https://rinkeby-light.eth.linkpool.io (no need to actually fork)
+
+      - name: Go modules cache
+        uses: actions/cache@v2
+        with:
+          # see https://github.com/mvdan/github-actions-golang
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          key: ${{ runner.os }}-test-${{matrix.package}}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-test-${{matrix.package}}
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Verify MariaDB connection
+        env:
+          PORT: ${{ job.services.mariadb.ports[3306] }}
+        run: |
+          while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
+          sleep 1
+          done
+
+      - name: Test
+        uses: nick-fields/retry@v2
+        with:
+          command: cd ${{matrix.package}} && go test -coverpkg=./... ./... -coverprofile=profile.cov
+          max_attempts: 6
+          timeout_minutes: 15
+        env:
+          ENABLE_MYSQL_TEST: true
+          MYSQL_HOST: 0.0.0.0
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
+          GOMAXPROCS: 18
+          GANACHE_KEYS: /tmp/keys/rinkeby
+          GANACHE_RPC_URL: http://0.0.0.0:8045
+
+      - name: Generate ignore list
+        # generate a list of files to ignore on goveralls
+        run: |
+          echo "IGNORED=$(find . \( -name "*_generated.go" -o -name "*.abigen.go"  -o -name "*_string.go"   \) -print0 | xargs -0 ls | sed 's/.\/*//' | tr '\n' ',' |  sed 's/,*\r*$//')" >> $GITHUB_ENV
+
+      - uses: codecov/codecov-action@v3
+        name: Send Coverage (Codecov)
+        with:
+          token: ${{ secrets.CODECOV }}
+          files: profile.cov
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
+
+      # We customize the build step because by default
+      # We can not use ** because goveralls uses filepath.Match
+      # to match ignore files and it does not support it.
+      - name: Send coverage (Coveralls)
+        uses: shogo82148/actions-goveralls@v1
+        with:
+          github-token: ${{ secrets.github_token }}
+          # coveralls will not respect default run
+          path-to-profile: ${{matrix.package}}/profile.cov
+          ignore: ${{ env.IGNORED }}
+          flag-name: Go-${{ matrix.go-version }}
+
+  # make sure the build works
+  build:
+    name: Build
+    needs: changes
+    runs-on: ${{ matrix.platform }}
+    if: ${{ needs.changes.outputs.package_count > 0 }}
+    strategy:
+      matrix:
+        go-version:
+          - 1.19.x
+        platform:
+          - ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Go modules cache
+        uses: actions/cache@v2
+        with:
+          # see https://github.com/mvdan/github-actions-golang
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Build
+        # go build all workspaces
+        run: go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
+
+  #note: right now this is not run against all work dirs
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.package_count > 0 }}
+    strategy:
+      matrix:
+        # Parse JSON array containing names of all filters matching any of changed files
+        # e.g. ['package1', 'package2'] if both package folders contains changes
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
+      - name: Setup cache key
+        run: cp ${{matrix.package}}/go.mod go.mod -v
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          working-directory: ${{matrix.package}}/
+          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+          version: v1.48.0
+          # Path to your GolangCI-Lint config within the repo (optional)
+          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
+          # see: https://github.com/golangci/golangci-lint/issues/2654
+          args: --timeout=15m
+        env:
+          # GitHub token for annotations (optional)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # see: https://github.com/golangci/golangci-lint/issues/337#issuecomment-510136513
+          GOGC: 20
+
+  # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
+  # TODO: consolidate w/ go change check. This will run twice on agents
+  check-generation-solidity:
+    name: Go Generate (Solidity Only)
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes }}
+    strategy:
+      matrix:
+        # only do on agents for now. Anything that relies on solidity in a package should do this
+        package: ['agents']
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.2.6
+        with:
+          key: docker-generate-${{ runner.os }}-${{ matrix.package }}
+
+      # Setup npm
+      - name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+        id: nvmrc
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: 'Use NodeJS by nvmrc'
+        uses: actions/setup-node@v2
+        with:
+          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+
+      - name: Initialize Yarn cache
+        uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install Node Dependencies
+        run: yarn install --frozen-lockfile --check-files
+
+      - name: Install dependencies
+        run: |
+          npx lerna bootstrap
+
+      # Generate flattened files
+      - name: Run flattener
+        run: npx lerna exec npm run build:go
+
+      # Setup Go
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Go modules cache
+        uses: actions/cache@v2
+        with:
+          # see https://github.com/mvdan/github-actions-golang
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          # use seperate cache for generate, builds less stuff
+          # TODO: consider scoping to package
+          key: ${{ runner.os }}-go-generate-${{matrix.package}}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-generate-${{matrix.package}}
+
+      # TODO: remove
+      - name: authenticate with github for private go modules
+        if: ${{github.event.repository.private}}
+        uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
+
+      # See if we need to rerun go generate
+      # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
+      - name: Try Go Generate
+        working-directory: ${{matrix.package}}/
+        run: |
+          go generate ./...
+
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@v10.1
+        id: verify-changed-files
+        with:
+          files: |
+            *.go
+
+      - uses: jwalton/gh-find-current-pr@v1
+        id: find_pr
+
+        # Fail if files need regeneration
+      - name: Add Label
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+        with:
+          add-labels: 'needs-go-generate-${{matrix.package}}'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ steps.find_pr.outputs.pr }}
+
+      - name: Remove Label
+        if: steps.verify-changed-files.outputs.files_changed != 'true'
+        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+        with:
+          remove-labels: 'needs-go-generate-${{matrix.package}}'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ steps.find_pr.outputs.pr }}
+
+  check-generation:
+    name: Go Generate (Module Changes)
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.package_count > 0 }}
+    strategy:
+      matrix:
+        # only do on agents for now. Anything that relies on solidity in a package should do this
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.2.6
+        with:
+          key: docker-generate-${{ runner.os }}-${{ matrix.package }}
+
+      # Setup npm
+      - name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+        id: nvmrc
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: 'Use NodeJS by nvmrc'
+        uses: actions/setup-node@v2
+        with:
+          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+
+      - name: Initialize Yarn cache
+        uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install Node Dependencies
+        run: yarn install --frozen-lockfile --check-files
+
+      - name: Install dependencies
+        run: |
+          npx lerna bootstrap
+
+      # Generate flattened files
+      - name: Run flattener
+        run: npx lerna exec npm run build:go
+
+      # Setup Go
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Go modules cache
+        uses: actions/cache@v2
+        with:
+          # see https://github.com/mvdan/github-actions-golang
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          # use seperate cache for generate, builds less stuff
+          # TODO: consider scoping to package
+          key: ${{ runner.os }}-go-generate-${{matrix.package}}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-generate-${{matrix.package}}
+
+
+      - name: Cache Linuxbrew
+        uses: actions/cache@v3
+        if: ${{ contains(matrix.package, 'scribe') }}
+        with:
+          path: |
+            ~/.cache/Homebrew
+            /home/linuxbrew/.linuxbrew/
+          key: ${{ runner.os }}-linuxbrew-${{ hashFiles('**/Makefile') }}
+
+      # TODO: remove
+      - name: authenticate with github for private go modules
+        if: ${{github.event.repository.private}}
+        uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
+
+      - name: setup env
+        run: |
+          echo "::set-env name=GOPATH::$(go env GOPATH)"
+          echo "::add-path::$(go env GOPATH)/bin"
+        shell: bash
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+      - name: Run Make Generate CI Deps (Scribe)
+        working-directory: ${{matrix.package}}/
+        if:  ${{ contains(matrix.package, 'scribe') }}
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          make generate-ci || exit 0
+
+      - name: Run Make Generate CI (Scribe)
+        working-directory: ${{matrix.package}}/
+        if:  ${{ contains(matrix.package, 'scribe') }}
+        run: |
+          make generate-ci
+
+
+      # See if we need to rerun go generate
+      # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
+      # ethergo generation is currently non-deterministic. TODO FIX"
+      - name: Try Go Generate
+        working-directory: ${{matrix.package}}/
+        if:  ${{ !contains('ethergo', matrix.package) }}
+        run: |
+          go generate ./...
+
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@v10.1
+        id: verify-changed-files
+        with:
+          files: |
+            *.go
+
+      - uses: jwalton/gh-find-current-pr@v1
+        id: find_pr
+
+        # Fail if files need regeneration
+      - name: Add Label
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+        with:
+          add-labels: 'needs-go-generate-${{matrix.package}}'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ steps.find_pr.outputs.pr }}
+
+      - name: Remove Label
+        if: steps.verify-changed-files.outputs.files_changed != 'true'
+        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+        with:
+          remove-labels: 'needs-go-generate-${{matrix.package}}'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ steps.find_pr.outputs.pr }}
+
+  # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
+  # the next run since build-goreleaser and run-goreleaser are run concurrently. We expect github actions
+  # to fix this n a future verison
+  build-goreleaser:
+    runs-on: ubuntu-latest
+    outputs:
+      goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # needed if using new-from-rev (see: https://golangci-lint.run/usage/configuration/#issues-configuration)
+          submodules: true
+
+      - uses: dorny/paths-filter@v2
+        name: check if any changes warrant a new build of goreleaser-cgo-cross-compiler
+        id: changes
+        with:
+          token:  ${{ secrets.GITHUB_TOKEN }}
+          filters: |
+            src:
+              - 'docker/goreleaser/**'
+      -
+        name: Set up Docker Buildx
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
+
+      - name: Enviornment variables
+        # TODO: this if block needs to be run on every step now, but should be fixed in a future version: https://github.com/actions/runner/issues/662
+        if: steps.changes.outputs.src == 'true'
+        uses: franzdiebold/github-env-vars-action@v1.0.0
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+      -
+        name: Login to GitHub Container Registry
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_DOCKER }}
+
+      # we do this so we can use it in subseuqnet steps
+      - name: Export latest tag name
+        id: name-export
+        run:
+          echo "##[set-output name=TAG_NAME;]$(echo $LATEST_TAG_NAME)"
+        env:
+          LATEST_TAG_NAME: ghcr.io/synapsecns/sanguine-goreleaser:${{ hashFiles('docker/goreleaser/**') }}
+      -
+        name: Build and push
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          file: ./docker/goreleaser/Dockerfile
+          # TODO this needs to be versioned
+          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.outputs.TAG_NAME }}
+          cache-from: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache
+          cache-to: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache,mode=max
+          build-args: |
+            SHA_ARG=1930375c56b0be0afa50fcb9b98fb7563645b9ffb13a19453bbede8d3f68a2af
+            FILE_ARG=goreleaser-pro_Linux_x86_64.tar.gz
+            DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser-pro/releases/download/v1.10.3-pro/goreleaser-pro_Linux_x86_64.tar.gz
+            VERSION_ARG=1.10.3-pro
