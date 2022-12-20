@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ipfs/go-log"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/db"
@@ -12,6 +13,8 @@ import (
 	"math/big"
 	"time"
 )
+
+var logger = log.Logger("scribe-graph")
 
 func (r Resolver) receiptsToModelReceipts(receipts []types.Receipt, chainID uint32) []*model.Receipt {
 	modelReceipts := make([]*model.Receipt, len(receipts))

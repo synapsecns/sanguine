@@ -37,9 +37,6 @@ func (d MessageHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedC
 	})
 }
 
-// OriginHarnessDomain is the domain used for the origin harness.
-const OriginHarnessDomain = 1
-
 // OriginHarnessDeployer deploys the origin harness for testing.
 type OriginHarnessDeployer struct {
 	*deployer.BaseDeployer
@@ -51,6 +48,7 @@ func NewOriginHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend
 }
 
 // Deploy deploys the origin harness.
+// nolint:dupl
 func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(o.Backend().GetChainID()))
@@ -126,6 +124,7 @@ func NewDestinationHarnessDeployer(registry deployer.GetOnlyContractRegistry, ba
 }
 
 // Deploy deploys the destination harness.
+// nolint:dupl
 func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		address, tx, rawHandle, err := destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()))
