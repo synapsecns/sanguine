@@ -30,7 +30,7 @@ type DBTestState struct {
 	fakeRoots                []*common.Hash
 	fakeDispatchBlockNumbers []uint64
 	fakeSignatures           []types.Signature
-	fakeSumbittedTimes       []time.Time
+	fakeSubmittedTimes       []time.Time
 	fakeSigner               *localsigner.Signer
 	numMessages              int
 }

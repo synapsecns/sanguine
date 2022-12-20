@@ -61,9 +61,9 @@ type InProgressAttestationDB interface {
 	StoreNewInProgressAttestation(ctx context.Context, attestation types.Attestation, originDispathBlockNumber uint64) error
 	// UpdateSignature sets the signature of the in-progress Attestation.
 	UpdateSignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
-	// UpdateSubmittedToAttestationCollectorTime sets the time attestation was sent to Attesttion Collector.
+	// UpdateSubmittedToAttestationCollectorTime sets the time attestation was sent to Attestation Collector.
 	UpdateSubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
-	// MarkConfirmedOnAttestationCollector confirms that we posted the signed attestation on the Attesttion Collector.
+	// MarkConfirmedOnAttestationCollector confirms that we posted the signed attestation on the Attestation Collector.
 	MarkConfirmedOnAttestationCollector(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
 	// RetrieveInProgressAttestation retrieves an in-progress attestation by <origin, destination, nonce>.
 	RetrieveInProgressAttestation(ctx context.Context, originID, destinationID, nonce uint32) (inProgressAttestation types.InProgressAttestation, err error)

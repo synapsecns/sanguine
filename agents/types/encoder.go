@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
@@ -183,7 +184,12 @@ func Hash(a Attestation) ([32]byte, error) {
 		return [32]byte{}, fmt.Errorf("could not encode attestation: %w", err)
 	}
 
-	hashedDigest := crypto.Keccak256Hash(encodedAttestation)
+	return HashRawBytes(encodedAttestation)
+}
+
+// HashRawBytes takes the raw bytes and produces a hash
+func HashRawBytes(rawBytes []byte) (common.Hash, error) {
+	hashedDigest := crypto.Keccak256Hash(rawBytes)
 
 	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
 	return signedHash, nil

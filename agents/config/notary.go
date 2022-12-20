@@ -7,7 +7,7 @@ import (
 
 // NotaryConfig is used for configuring the notary.
 type NotaryConfig struct {
-	// Destination is the destintation domain of this notary is assigned to
+	// Destination is the destination domain of this notary is assigned to
 	DestinationID uint32 `toml:"DestinationID"`
 	// Domains stores all domains
 	Domains DomainConfigs `toml:"Domains"`

@@ -76,7 +76,7 @@ func (a attestationCollectorContract) SubmitAttestation(ctx context.Context, sig
 }
 
 func (a attestationCollectorContract) GetLatestNonce(ctx context.Context, origin uint32, destination uint32, signer signer.Signer) (nonce uint32, err error) {
-	latestNonce, err := a.contract.AttestationCollector.GetLatestNonce(&bind.CallOpts{Context: ctx}, origin, destination, signer.Address())
+	latestNonce, err := a.contract.GetLatestNonce(&bind.CallOpts{Context: ctx}, origin, destination, signer.Address())
 	if err != nil {
 		return 0, fmt.Errorf("could not retrieve latest nonce: %w", err)
 	}

@@ -77,11 +77,11 @@ func (a OriginAttestationSigner) update(ctx context.Context) error {
 		return nil
 	}
 
-	hashedUpdate, err := types.Hash(inProgressAttestationToSign.SignedAttestation().Attestation())
+	hashedAttestation, err := types.Hash(inProgressAttestationToSign.SignedAttestation().Attestation())
 	if err != nil {
 		return fmt.Errorf("could not hash update: %w", err)
 	}
-	signature, err := a.signer.SignMessage(ctx, core.BytesToSlice(hashedUpdate), false)
+	signature, err := a.signer.SignMessage(ctx, core.BytesToSlice(hashedAttestation), false)
 	if err != nil {
 		return fmt.Errorf("could not sign message: %w", err)
 	}

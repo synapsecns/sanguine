@@ -77,7 +77,7 @@ func (s Store) UpdateSignature(ctx context.Context, inProgressAttestation types.
 	return nil
 }
 
-// UpdateSubmittedToAttestationCollectorTime sets the time attestation was sent to Attesttion Collector.
+// UpdateSubmittedToAttestationCollectorTime sets the time attestation was sent to Attestation Collector.
 func (s Store) UpdateSubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
 	if inProgressAttestation.SubmittedToAttestationCollectorTime() == nil {
 		return fmt.Errorf("UpdateSubmittedToAttestationCollectorTime called on attestation with a nil time")
@@ -106,7 +106,7 @@ func (s Store) UpdateSubmittedToAttestationCollectorTime(ctx context.Context, in
 	return nil
 }
 
-// MarkConfirmedOnAttestationCollector confirms that we posted the signed attestation on the Attesttion Collector.
+// MarkConfirmedOnAttestationCollector confirms that we posted the signed attestation on the Attestation Collector.
 func (s Store) MarkConfirmedOnAttestationCollector(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
 		Where(&InProgressAttestation{
@@ -152,7 +152,7 @@ func (s Store) RetrieveLatestCachedNonce(ctx context.Context, originID, destinat
 		return 0, fmt.Errorf("could not get nonce for origin %d and destiniation %d: %w", originID, destinationID, tx.Error)
 	}
 
-	// if no nonces, return the corresponding eror.
+	// if no nonces, return the corresponding error.
 	if nonce.Get() == nil {
 		return 0, db.ErrNoNonceForDomain
 	}

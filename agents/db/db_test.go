@@ -214,10 +214,10 @@ func (t *DBSuite) launchTestUpdateSignatures(testDB db.SynapseDB, testState *DBT
 		Equal(t.T(), testState.fakeDestination, inProgressAttestation.SignedAttestation().Attestation().Destination())
 		Equal(t.T(), types.AttestationStateNotaryUnsigned, inProgressAttestation.AttestationState())
 
-		hashedUpdate, err := types.Hash(inProgressAttestation.SignedAttestation().Attestation())
+		hashedAttestation, err := types.Hash(inProgressAttestation.SignedAttestation().Attestation())
 		Nil(t.T(), err)
 
-		signature, err := testState.fakeSigner.SignMessage(t.GetTestContext(), core.BytesToSlice(hashedUpdate), false)
+		signature, err := testState.fakeSigner.SignMessage(t.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 		Nil(t.T(), err)
 		testState.fakeSignatures = append(testState.fakeSignatures, signature)
 
@@ -247,7 +247,7 @@ func (t *DBSuite) launchTestUpdateSignatures(testDB db.SynapseDB, testState *DBT
 }
 
 func (t *DBSuite) launchTestSubmittedToAttestationCollectorTimes(testDB db.SynapseDB, testState *DBTestState) {
-	testState.fakeSumbittedTimes = []time.Time{}
+	testState.fakeSubmittedTimes = []time.Time{}
 	for i := 0; i <= testState.numMessages; i++ {
 		fakeNonce := testState.fakeNonces[i]
 		fakeRoot := testState.fakeRoots[i]
@@ -271,7 +271,7 @@ func (t *DBSuite) launchTestSubmittedToAttestationCollectorTimes(testDB db.Synap
 		Equal(t.T(), types.AttestationStateNotarySignedUnsubmitted, inProgressAttestation.AttestationState())
 
 		nowTime := time.Now()
-		testState.fakeSumbittedTimes = append(testState.fakeSumbittedTimes, nowTime)
+		testState.fakeSubmittedTimes = append(testState.fakeSubmittedTimes, nowTime)
 		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestation.SignedAttestation(), inProgressAttestation.OriginDispatchBlockNumber(), &nowTime, 0)
 		err = testDB.UpdateSubmittedToAttestationCollectorTime(t.GetTestContext(), submittedInProgressAttestation)
 		Nil(t.T(), err)
@@ -301,7 +301,7 @@ func (t *DBSuite) launchTestMarkConfirmedOnAttestationCollector(testDB db.Synaps
 		fakeRoot := testState.fakeRoots[i]
 		fakeDispatchBlockNumber := testState.fakeDispatchBlockNumbers[i]
 		fakeSignature := testState.fakeSignatures[i]
-		fakeSubmittedTime := testState.fakeSumbittedTimes[i]
+		fakeSubmittedTime := testState.fakeSubmittedTimes[i]
 
 		inProgressAttestation, err := testDB.RetrieveOldestUnconfirmedSubmittedInProgressAttestation(t.GetTestContext(), testState.fakeOrigin, testState.fakeDestination)
 		Nil(t.T(), err)
@@ -351,7 +351,7 @@ func (t *DBSuite) launchTestVerifyAllAreConfirmed(testDB db.SynapseDB, testState
 		fakeRoot := testState.fakeRoots[i]
 		fakeDispatchBlockNumber := testState.fakeDispatchBlockNumbers[i]
 		fakeSignature := testState.fakeSignatures[i]
-		fakeSubmittedTime := testState.fakeSumbittedTimes[i]
+		fakeSubmittedTime := testState.fakeSubmittedTimes[i]
 
 		inProgressAttestation, err := testDB.RetrieveInProgressAttestation(t.GetTestContext(), testState.fakeOrigin, testState.fakeDestination, fakeNonce)
 		Nil(t.T(), err)

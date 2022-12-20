@@ -77,8 +77,7 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 		return nil
 	}
 
-	// TODO (joe): This will need to be updated. Obviously we want to know when latest nonce was written and then
-	// figure out if confirmation is enough in terms of currBlock - blockNumWhenWritten, etc
+	// TODO (joe): This will need to be updated.
 	latestNonce, err := a.domain.AttestationCollector().GetLatestNonce(ctx, a.domain.Config().DomainID, a.destinationID, a.signer)
 	if err != nil {
 		return fmt.Errorf("could not find latest nonce: %w", err)

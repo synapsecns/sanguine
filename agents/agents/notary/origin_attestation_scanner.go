@@ -72,6 +72,8 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 		return fmt.Errorf("could not find latest root: %w", err)
 	}
 
+	// TODO (joe): Currently we are scanning all nonces in order. Later, we really want to get the latest
+	// attestation after the latestNonce if any exists.
 	nextNonce := latestNonce + 1
 	attestation, dispatchBlockNumber, err := a.domain.Origin().GetHistoricalAttestation(ctx, a.destinationID, nextNonce)
 	if errors.Is(err, domains.ErrNoUpdate) {
@@ -79,7 +81,7 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("could not get historical attesttion: %w", err)
+		return fmt.Errorf("could not get historical attestation: %w", err)
 	}
 
 	if !a.isConfirmed(dispatchBlockNumber) {
