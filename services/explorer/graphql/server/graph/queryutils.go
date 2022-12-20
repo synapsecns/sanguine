@@ -16,7 +16,6 @@ const sortingKeysPrefix = "bridge_events.event_index, bridge_events.block_number
 
 const maxBlockNumberSortingKeys = "event_index, event_type, tx_hash, chain_id, contract_address"
 
-// const allColumns = "bridge_events.event_index, bridge_events.block_number, bridge_events.event_type, bridge_events.tx_hash, bridge_events.chain_id, bridge_events.contract_address, bridge_events.token, bridge_events.amount, bridge_events.event_index, bridge_events.destination_kappa, bridge_events.sender, bridge_events.recipient, bridge_events.recipient_bytes,bridge_events.destination_chain_id, bridge_events.fee, bridge_events.kappa, bridge_events.token_index_from, bridge_events.token_index_to, bridge_events.min_dy, bridge_events.deadline, bridge_events.swap_success, bridge_events.swap_token_index, bridge_events.swap_min_amount, bridge_events.swap_deadline, bridge_events.token_id, bridge_events.amount_usd, bridge_events.fee_amount_usd, bridge_events.token_decimal, bridge_events.timestamp"
 const deDupInQuery = "(" + sortingKeys + ", insert_time) IN (SELECT " + sortingKeys + ", max(insert_time) as insert_time FROM bridge_events GROUP BY " + sortingKeys + ")"
 const deDupInQueryPrefix = "(" + sortingKeysPrefix + ", bridge_events.insert_time AS insert_time) IN (SELECT " + sortingKeysPrefix + ", max(bridge_events.insert_time) as insert_time FROM bridge_events GROUP BY " + sortingKeysPrefix + ")"
 
@@ -96,16 +95,14 @@ func generateDirectionSpecifierSQL(in bool, firstFilter *bool, tablePrefix strin
 		}
 
 		return fmt.Sprintf(" AND %s%s > 0", tablePrefix, sql.DestinationChainIDFieldName)
-	} else {
-		if *firstFilter {
-			*firstFilter = false
-
-			return fmt.Sprintf(" WHERE %s%s == 0", tablePrefix, sql.DestinationChainIDFieldName)
-		}
-
-		return fmt.Sprintf(" AND %s%s == 0", tablePrefix, sql.DestinationChainIDFieldName)
-
 	}
+	if *firstFilter {
+		*firstFilter = false
+
+		return fmt.Sprintf(" WHERE %s%s == 0", tablePrefix, sql.DestinationChainIDFieldName)
+	}
+
+	return fmt.Sprintf(" AND %s%s == 0", tablePrefix, sql.DestinationChainIDFieldName)
 }
 
 // generateSingleSpecifierI32SQL generates a where function with an uint32.
