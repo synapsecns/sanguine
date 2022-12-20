@@ -1,6 +1,7 @@
 package base
 
 import (
+	"database/sql"
 	"math/big"
 	"time"
 
@@ -19,6 +20,9 @@ func init() {
 	NonceFieldName = namer.GetConsistentName("Nonce")
 	DomainIDFieldName = namer.GetConsistentName("DomainID")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
+	OriginFieldName = namer.GetConsistentName("IPOrigin")
+	DestinationFieldName = namer.GetConsistentName("IPDestination")
+	AttestationStateFieldName = namer.GetConsistentName("IPAttestationState")
 }
 
 var (
@@ -30,6 +34,12 @@ var (
 	BlockNumberFieldName string
 	// LeafIndexFieldName is the field name of the leaf index.
 	LeafIndexFieldName string
+	// OriginFieldName is the name of the origin field.
+	OriginFieldName string
+	// DestinationFieldName is the name of the destination field.
+	DestinationFieldName string
+	// AttestationStateFieldName is the name of the attestation state field.
+	AttestationStateFieldName string
 )
 
 // RawEthTX contains a raw evm transaction that is unsigned
@@ -291,6 +301,102 @@ func (s SignedAttestation) Root() [32]byte {
 	return common.BytesToHash(s.SARoot)
 }
 
+// InProgressAttestation stores attestations to be processed.
+type InProgressAttestation struct {
+	// IPOrigin is the origin of the attestation
+	IPOrigin uint32 `gorm:"column:origin;primaryKey;index:idx_origin_destination_state;autoIncrement:false;->;<-:create"`
+	// IPDestination is the destination of the attestation
+	IPDestination uint32 `gorm:"column:destination;primaryKey;index:idx_origin_destination_state;autoIncrement:false;->;<-:create"`
+	// IPNonce is the nonce of the attestation
+	IPNonce uint32 `gorm:"column:nonce;primaryKey;autoIncrement:false;->;<-:create"`
+	// IPRoot is the root of the signed attestation
+	IPRoot []byte `gorm:"column:root;not null;->;<-:create"`
+	// IPSignature stores the raw signature
+	IPSignature []byte `gorm:"column:signature;default:NULL;<-:update"`
+	// IPOriginDispatchBlockNumber stores when message was dispatched on origin
+	IPOriginDispatchBlockNumber uint64 `gorm:"column:origin_dispatch_block_number;<-:create"`
+	// IPSubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
+	IPSubmittedToAttestationCollectorTime sql.NullTime `gorm:"column:submitted_to_attestation_collector_time;type:TIMESTAMP NULL;<-:update"`
+	// IPAttestationState is the current state of the attestation
+	IPAttestationState uint32 `gorm:"column:attestation_state;index:idx_origin_destination_state;autoIncrement:false;<-"`
+}
+
+// Attestation gets the attestation.
+func (t InProgressAttestation) Attestation() types.Attestation {
+	return t
+}
+
+// SignedAttestation gets the signed attestation.
+func (t InProgressAttestation) SignedAttestation() types.SignedAttestation {
+	return t
+}
+
+// NotarySignatures currently just returns the loan signature.
+// TODO (joe): fix this to return all notary signatures.
+func (t InProgressAttestation) NotarySignatures() []types.Signature {
+	if len(t.IPSignature) == 0 {
+		return nil
+	}
+
+	res, err := types.DecodeSignature(t.IPSignature)
+	if err != nil {
+		return []types.Signature{types.NewSignature(big.NewInt(0), big.NewInt(0), big.NewInt(0))}
+	}
+
+	return []types.Signature{res}
+}
+
+// GuardSignatures currently just returns an empty array.
+// TODO (joe): fix this to return all guard signatures.
+func (t InProgressAttestation) GuardSignatures() []types.Signature {
+	return []types.Signature{}
+}
+
+// Origin gets the origin of the in-progress attestation.
+func (t InProgressAttestation) Origin() uint32 {
+	return t.IPOrigin
+}
+
+// Destination gets the destination of the in-progress attestation.
+func (t InProgressAttestation) Destination() uint32 {
+	return t.IPDestination
+}
+
+// Nonce gets the nonce of the in-progress attestation.
+func (t InProgressAttestation) Nonce() uint32 {
+	return t.IPNonce
+}
+
+// Root gets the root of the in-progress attestation.
+func (t InProgressAttestation) Root() [32]byte {
+	return common.BytesToHash(t.IPRoot)
+}
+
+// OriginDispatchBlockNumber gets the block number when message was dispatched on origin.
+func (t InProgressAttestation) OriginDispatchBlockNumber() uint64 {
+	return t.IPOriginDispatchBlockNumber
+}
+
+// SubmittedToAttestationCollectorTime gets the time when attestation was sent to AttestationCollector.
+func (t InProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time {
+	if !t.IPSubmittedToAttestationCollectorTime.Valid {
+		return nil
+	}
+
+	return &t.IPSubmittedToAttestationCollectorTime.Time
+}
+
+// AttestationState gets the state of the attestation.
+func (t InProgressAttestation) AttestationState() types.AttestationState {
+	return types.AttestationState(t.IPAttestationState)
+}
+
 var _ types.Attestation = SignedAttestation{}
 
 var _ types.SignedAttestation = SignedAttestation{}
+
+var _ types.Attestation = InProgressAttestation{}
+
+var _ types.SignedAttestation = InProgressAttestation{}
+
+var _ types.InProgressAttestation = InProgressAttestation{}

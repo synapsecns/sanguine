@@ -3,6 +3,21 @@ package types
 import (
 	"encoding/binary"
 	"math/big"
+	"time"
+)
+
+// AttestationState is the state the attestation is in in terms of being processed by an agent.
+type AttestationState uint32
+
+const (
+	// AttestationStateNotaryUnsigned is when attestation has been fetched but not yet signed.
+	AttestationStateNotaryUnsigned AttestationState = iota // 0
+	// AttestationStateNotarySignedUnsubmitted is when attestation has been signed but not yet submitted to the attestation collector.
+	AttestationStateNotarySignedUnsubmitted // 1
+	// AttestationStateNotarySubmittedUnconfirmed is when the attestation was signed and submitted to the attestation collector but not yet confirmed.
+	AttestationStateNotarySubmittedUnconfirmed // 2
+	// AttestationStateNotaryConfirmed is when the attestation was confirmed as posted on the attestation collector.
+	AttestationStateNotaryConfirmed // 3
 )
 
 const sizeOfUint256 = uint32(32)
@@ -82,7 +97,6 @@ type AttestationAgentCounts struct {
 // NewAttestationFromBytes creates a new attesation from raw bytes.
 func NewAttestationFromBytes(rawBytes []byte) Attestation {
 	rootBytes := rawBytes[attestationRootStartingByte:attestationSize]
-
 	rawKeyBytes := rawBytes[attestationRawKeyStartingByte:attestationKeySize]
 	originBytes := rawKeyBytes[attestationOriginStartingByte:attestationRootStartingByte]
 	destinationBytes := rawKeyBytes[attestationDestinationStartingByte:attestationOriginStartingByte]
@@ -166,6 +180,56 @@ func (s signedAttestation) GuardSignatures() []Signature {
 func (s signedAttestation) NotarySignatures() []Signature {
 	return s.notarySignatures
 }
+
+var _ SignedAttestation = signedAttestation{}
+
+// InProgressAttestation is an attestation to be processed by offline agent.
+type InProgressAttestation interface {
+	// SignedAttestation gets the signed attestation
+	SignedAttestation() SignedAttestation
+	// DispatchedBlockNumber when message was dispatched on origin
+	OriginDispatchBlockNumber() uint64
+	// SubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
+	SubmittedToAttestationCollectorTime() *time.Time
+	// AttestationState is the state the in-progress attestation is in right now
+	AttestationState() AttestationState
+}
+
+// inProgressAttestation is a struct that conforms to InProgressAttestation.
+type inProgressAttestation struct {
+	signedAttestation                   SignedAttestation
+	originDispatchBlockNumber           uint64
+	submittedToAttestationCollectorTime *time.Time
+	attestationState                    AttestationState
+}
+
+// NewInProgressAttestation creates a new to process attestation.
+func NewInProgressAttestation(signedAttestation SignedAttestation, originDispatchBlockNumber uint64, submittedToAttestationCollectorTime *time.Time, state AttestationState) InProgressAttestation {
+	return inProgressAttestation{
+		signedAttestation:                   signedAttestation,
+		originDispatchBlockNumber:           originDispatchBlockNumber,
+		submittedToAttestationCollectorTime: submittedToAttestationCollectorTime,
+		attestationState:                    state,
+	}
+}
+
+func (t inProgressAttestation) SignedAttestation() SignedAttestation {
+	return t.signedAttestation
+}
+
+func (t inProgressAttestation) OriginDispatchBlockNumber() uint64 {
+	return t.originDispatchBlockNumber
+}
+
+func (t inProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time {
+	return t.submittedToAttestationCollectorTime
+}
+
+func (t inProgressAttestation) AttestationState() AttestationState {
+	return t.attestationState
+}
+
+var _ InProgressAttestation = inProgressAttestation{}
 
 // NewAttestationKey takes the raw AttestationKey serialized as a big endian big.Int
 // and converts it to AttestationKey which is a tuple of (origin, destination, nonce).
