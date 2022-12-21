@@ -180,10 +180,6 @@ jobs:
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           GOGC: 20
 
-      - name: 🏗 Set up yq
-        if: steps.branch-name.outputs.is_default != 'true'
-        uses: frenck/action-setup-yq@v1
-
       - name: Push Docker Images (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true'
         run: |

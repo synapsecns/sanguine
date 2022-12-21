@@ -67,9 +67,12 @@ LABEL org.opencontainers.image.source="https://github.com/synapsecns/sanguine"
 # see: https://github.com/tendermint/tm-db/blob/8f92601b6539a3611063709f65256150e198cfd9/tools/Dockerfile
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
+# add yq repo
+RUN add-apt-repository ppa:rmescandon/yq
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev \
-    make tar wget
+    make tar wget yq
 
 ARG ROCKSDB=6.24.2
 ENV ROCKSDB_DISABLE_SNAPPY=1
