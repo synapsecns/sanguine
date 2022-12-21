@@ -260,6 +260,8 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 }
 
 // GetPartialInfoFromBridgeEventSingle returns the partial info from bridge event.
+//
+// nolint:cyclop
 func GetPartialInfoFromBridgeEventSingle(res sql.BridgeEvent) (*model.PartialInfo, error) {
 	var partialInfos *model.PartialInfo
 	chainIDInt := int(res.ChainID)
@@ -287,7 +289,6 @@ func GetPartialInfoFromBridgeEventSingle(res sql.BridgeEvent) (*model.PartialInf
 		default:
 			tokenSymbol = res.TokenSymbol.String
 		}
-
 	} else {
 		return nil, fmt.Errorf("token symbol is not valid")
 	}
