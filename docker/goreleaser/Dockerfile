@@ -31,17 +31,17 @@ RUN apt-get update && apt-get install -y build-essential wget git cmake \
 	gcc-aarch64-linux-gnu g++-aarch64-linux-gnu && \
 	apt-get -y autoremove
 
-# Download Docker
-RUN	wget ${DOCKER_DOWNLOAD_URL}; \
-	echo "${DOCKER_SHA} ${DOCKER_DOWNLOAD_FILE}" | sha256sum -c - || exit 1; \
-	tar --extract --file ${DOCKER_DOWNLOAD_FILE} --strip-components 1 --directory /usr/local/bin/; \
-	rm ${DOCKER_DOWNLOAD_FILE}
-
 # Download GoReleaser
 RUN wget ${GORELEASER_DOWNLOAD_URL}; \
 	echo "${GORELEASER_SHA} ${GORELEASER_DOWNLOAD_FILE}" | sha256sum -c - || exit 1; \
 	tar -xzf ${GORELEASER_DOWNLOAD_FILE} -C /usr/bin/ goreleaser; \
 	rm ${GORELEASER_DOWNLOAD_FILE};
+
+# Download Docker
+RUN	wget ${DOCKER_DOWNLOAD_URL}; \
+	echo "${DOCKER_SHA} ${DOCKER_DOWNLOAD_FILE}" | sha256sum -c - || exit 1; \
+	tar --extract --file ${DOCKER_DOWNLOAD_FILE} --strip-components 1 --directory /usr/local/bin/; \
+	rm ${DOCKER_DOWNLOAD_FILE} \
 
 # Download Golang
 RUN wget ${GOLANG_DOWNLOAD_URL}; \
