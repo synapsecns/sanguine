@@ -112,7 +112,6 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 					// Stores the log, and it's associated receipt / tx in the EventDB.
 					return c.store(storeCtx, log)
 				})
-				logger.Errorf("Waiting for %d goroutines to finish %v", concurrentCalls, endHeight-log.BlockNumber, c.chainConfig.StoreConcurrencyThreshold)
 
 				// Stop spawning store threads and wait
 				if concurrentCalls >= c.chainConfig.StoreConcurrency || endHeight-log.BlockNumber < c.chainConfig.StoreConcurrencyThreshold {
