@@ -184,7 +184,7 @@ jobs:
         if: steps.branch-name.outputs.is_default != 'true'
         run: |
           docker_image=$(yq '.dockers | length' dist/config.yaml)
-          image_name=$(yq '.project_name' services/omnirpc/.goreleaser.yml)
+          image_name=$(yq '.project_name' ${{matrix.package}}/.goreleaser.yml)
           if [ "docker_image" -eq 0 ]; then
             echo "No docker images to push"
             exit 0
