@@ -65,6 +65,7 @@ dockers:
     image_templates:
       - 'ghcr.io/synapsecns/sanguine/explorer:latest'
       - 'ghcr.io/synapsecns/sanguine/explorer:{{ .Tag }}'
+      - 'ghcr.io/synapsecns/sanguine/explorer:{{ .FullCommit }}'
     dockerfile: ../../docker/explorer.Dockerfile
     ids:
       - explorer
