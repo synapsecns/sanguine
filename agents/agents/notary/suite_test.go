@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
-	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/testutil"
@@ -30,12 +30,13 @@ type NotarySuite struct {
 	*testsuite.TestSuite
 	testBackend         backends.TestBackend
 	deployManager       *testutil.DeployManager
-	originContract      *origin.OriginRef
+	originContract      *originharness.OriginHarnessRef
 	attestationContract *attestationcollector.AttestationCollectorRef
 	domainClient        domains.DomainClient
 	// wallet is the wallet used for the signer
-	wallet wallet.Wallet
-	signer signer.Signer
+	wallet        wallet.Wallet
+	signer        signer.Signer
+	destinationID uint32
 }
 
 // NewNotarySuite creates a new notary suite.
@@ -54,16 +55,17 @@ func (u *NotarySuite) SetupTest() {
 
 	u.testBackend = preset.GetRinkeby().Geth(u.GetTestContext(), u.T())
 	u.deployManager = testutil.NewDeployManager(u.T())
-	_, u.originContract = u.deployManager.GetOrigin(u.GetTestContext(), u.testBackend)
+	_, u.originContract = u.deployManager.GetOriginHarness(u.GetTestContext(), u.testBackend)
 	_, u.attestationContract = u.deployManager.GetAttestationCollector(u.GetTestContext(), u.testBackend)
 
+	u.destinationID = uint32(u.testBackend.GetBigChainID().Uint64()) + 1
 	var err error
 	u.domainClient, err = evm.NewEVM(u.GetTestContext(), "notary", config.DomainConfig{
-		DomainID:                   uint32(u.testBackend.GetBigChainID().Uint64()),
-		Type:                       types.EVM.String(),
-		OriginAddress:              u.originContract.Address().String(),
-		AttesationCollectorAddress: u.attestationContract.Address().String(),
-		RPCUrl:                     u.testBackend.RPCAddress(),
+		DomainID:                    uint32(u.testBackend.GetBigChainID().Uint64()),
+		Type:                        types.EVM.String(),
+		OriginAddress:               u.originContract.Address().String(),
+		AttestationCollectorAddress: u.attestationContract.Address().String(),
+		RPCUrl:                      u.testBackend.RPCAddress(),
 	})
 	Nil(u.T(), err)
 
@@ -79,10 +81,22 @@ func (u *NotarySuite) SetupTest() {
 
 	auth := u.testBackend.GetTxContext(u.GetTestContext(), &owner)
 
-	tx, err := u.attestationContract.AddAgent(auth.TransactOpts, u.domainClient.Config().DomainID, u.signer.Address())
+	tx, err := u.attestationContract.AddAgent(auth.TransactOpts, u.destinationID, u.signer.Address())
 	Nil(u.T(), err)
 
 	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
+
+	ownerPtr, err := u.originContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: u.GetTestContext()})
+	Nil(u.T(), err)
+
+	originOwnerAuth := u.testBackend.GetTxContext(u.GetTestContext(), &ownerPtr)
+	tx, err = u.originContract.AddAgent(originOwnerAuth.TransactOpts, u.destinationID, u.signer.Address())
+	Nil(u.T(), err)
+	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
+
+	notaries, err := u.originContract.AllAgents(&bind.CallOpts{Context: u.GetTestContext()}, u.destinationID)
+	Nil(u.T(), err)
+	Len(u.T(), notaries, 1)
 }
 
 func TestNotarySuite(t *testing.T) {

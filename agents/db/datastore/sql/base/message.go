@@ -3,6 +3,7 @@ package base
 import (
 	"context"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/agents/db"
 
 	"github.com/Thor-x86/nullable"
@@ -80,7 +81,7 @@ func (s Store) RetrieveLatestCommittedMessageNonce(ctx context.Context, domainID
 		return 0, fmt.Errorf("could not get nonce for chain id: %w", tx.Error)
 	}
 
-	// if no nonces, return the corresponding eror.
+	// if no nonces, return the corresponding error.
 	if nonce.Get() == nil {
 		return 0, db.ErrNoNonceForDomain
 	}
