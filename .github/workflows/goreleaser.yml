@@ -1,8 +1,6 @@
 name: Go Releaser
 on:
   push:
-    branches:
-      - master
 
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
@@ -130,8 +128,13 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v6
+
       - name: Bump version and push tag
         id: tag_version
+        if: steps.branch-name.outputs.is_default == 'true'
         uses: mathieudutour/github-tag-action@v6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -159,10 +162,38 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_DOCKER }}
 
-      - name: Run GoReleaser
+      - name: Run GoReleaser (Release)
+        if: steps.branch-name.outputs.is_default == 'true'
         run: goreleaser --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GONOSUM: '.*'
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           GOGC: 20
+
+      - name: Run GoReleaser (Snapshot)
+        if: steps.branch-name.outputs.is_default != 'true'
+        run: goreleaser --snapshot --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GONOSUM: '.*'
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+          GOGC: 20
+
+      - name: 🏗 Set up yq
+        if: steps.branch-name.outputs.is_default != 'true'
+        uses: frenck/action-setup-yq@v1
+
+      - name: Push Docker Images (Snapshot)
+        if: steps.branch-name.outputs.is_default != 'true'
+        run: |
+          docker_image=$(yq '.dockers | length' dist/config.yaml)
+          image_name=$(yq '.project_name' services/omnirpc/.goreleaser.yml)
+          if [ "docker_image" -eq 0 ]; then
+            echo "No docker images to push"
+            exit 0
+          fi
+          docker tag ghcr.io/synapsecns/sanguine/$image_name:latest ghcr.io/synapsecns/$image_name:$GITHUB_SHA
+          docker push ghcr.io/synapsecns/$image_name:$GITHUB_SHA
+
+
