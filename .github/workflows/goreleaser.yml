@@ -185,7 +185,7 @@ jobs:
         run: |
           docker_image=$(yq '.dockers | length' dist/config.yaml)
           image_name=$(yq '.project_name' ${{matrix.package}}/.goreleaser.yml)
-          if [ "docker_image" == "0" ]; then
+          if [ $docker_image -eq "0" ]; then
             echo "No docker images to push"
             exit 0
           fi
