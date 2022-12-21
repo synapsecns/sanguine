@@ -67,6 +67,8 @@ LABEL org.opencontainers.image.source="https://github.com/synapsecns/sanguine"
 # see: https://github.com/tendermint/tm-db/blob/8f92601b6539a3611063709f65256150e198cfd9/tools/Dockerfile
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
+RUN apt-get update && apt install -y --no-install-recommends software-properties-common
+
 # add yq repo
 RUN add-apt-repository ppa:rmescandon/yq
 
