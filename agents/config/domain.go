@@ -42,6 +42,8 @@ type DomainConfig struct {
 	RequiredConfirmations uint32 `toml:"ConfirmationsThreshold"`
 	// OriginAddress gets origin contract address
 	OriginAddress string `toml:"OriginAddress"`
+	// DestinationAddress gets origin contract address
+	DestinationAddress string `toml:"DestinationAddress"`
 	// AttestationCollectorAddress contains the attestation collector address (if present)
 	AttestationCollectorAddress string `toml:"AttestationCollectorAddress"`
 	// RPCUrl to use for the chain

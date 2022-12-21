@@ -47,14 +47,43 @@ func (s Store) StoreNewInProgressAttestation(ctx context.Context, attestation ty
 	return nil
 }
 
-// UpdateSignature sets the signature of the in-progress Attestation.
-func (s Store) UpdateSignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
+// StoreExistingSignedInProgressAttestation stores signed in-progress attestation only if it hasn't already been stored.
+func (s Store) StoreExistingSignedInProgressAttestation(ctx context.Context, signedAttestation types.SignedAttestation) error {
+	if len(signedAttestation.NotarySignatures()) == 0 {
+		return fmt.Errorf("StoreExistingSignedInProgressAttestation called on signedAttestation with no notary signatures")
+	}
+	sig, err := types.EncodeSignature(signedAttestation.NotarySignatures()[0])
+	if err != nil {
+		return fmt.Errorf("could not encode notary signature: %w", err)
+	}
+
+	// We only want to store if not already stored
+	tx := s.DB().WithContext(ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: OriginFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName}},
+		DoNothing: true,
+	}).Create(&InProgressAttestation{
+		IPOrigin:           signedAttestation.Attestation().Origin(),
+		IPDestination:      signedAttestation.Attestation().Destination(),
+		IPNonce:            signedAttestation.Attestation().Nonce(),
+		IPRoot:             core.BytesToSlice(signedAttestation.Attestation().Root()),
+		IPNotarySignature:  sig,
+		IPAttestationState: uint32(types.AttestationStateGuardUnsigned),
+	})
+
+	if tx.Error != nil {
+		return fmt.Errorf("could not store signed attestations: %w", tx.Error)
+	}
+	return nil
+}
+
+// UpdateNotarySignature sets the notary signature of the in-progress Attestation.
+func (s Store) UpdateNotarySignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
 	if len(inProgressAttestation.SignedAttestation().NotarySignatures()) == 0 {
-		return fmt.Errorf("UpdateSignature called on attestation with a nil signature")
+		return fmt.Errorf("UpdateNotarySignature called on attestation with a nil notary signature")
 	}
 	sig, err := types.EncodeSignature(inProgressAttestation.SignedAttestation().NotarySignatures()[0])
 	if err != nil {
-		return fmt.Errorf("could not encode signature: %w", err)
+		return fmt.Errorf("could not encode notary signature: %w", err)
 	}
 
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
@@ -66,13 +95,13 @@ func (s Store) UpdateSignature(ctx context.Context, inProgressAttestation types.
 		Where(AttestationStateFieldName, uint32(types.AttestationStateNotaryUnsigned)).
 		Updates(
 			InProgressAttestation{
-				IPSignature:        sig,
+				IPNotarySignature:  sig,
 				IPAttestationState: uint32(types.AttestationStateNotarySignedUnsubmitted),
 			},
 		)
 
 	if tx.Error != nil {
-		return fmt.Errorf("could not set signature for in-progress attestations: %w", tx.Error)
+		return fmt.Errorf("could not set notary signature for in-progress attestations: %w", tx.Error)
 	}
 	return nil
 }

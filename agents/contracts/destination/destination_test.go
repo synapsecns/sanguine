@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
 )
@@ -48,7 +47,7 @@ func (d DestinationSuite) TestDestinationSuite() {
 
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	unsignedAttestation := types.NewAttestation(attestationKey.GetRawKey(), root)
-	hashedAttestation, err := notary.HashAttestation(unsignedAttestation)
+	hashedAttestation, err := types.Hash(unsignedAttestation)
 	Nil(d.T(), err)
 
 	signature, err := d.signer.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)

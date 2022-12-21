@@ -43,7 +43,7 @@ func (u NotarySuite) TestOriginAttestationSubmitter() {
 
 	signedAttestation := types.NewSignedAttestation(unsignedInProgressAttestation.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
 	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, unsignedInProgressAttestation.OriginDispatchBlockNumber(), nil, 0)
-	err = testDB.UpdateSignature(u.GetTestContext(), signedInProgressAttestation)
+	err = testDB.UpdateNotarySignature(u.GetTestContext(), signedInProgressAttestation)
 	Nil(u.T(), err)
 
 	// call the update producing function

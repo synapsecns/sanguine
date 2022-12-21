@@ -12,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/types"
 )
@@ -41,7 +40,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 		Nonce:       nonce,
 	}
 	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
-	hashedAttestation, err := notary.HashAttestation(unsignedAttestation)
+	hashedAttestation, err := unsignedAttestation
 	Nil(a.T(), err)
 
 	encodedAttestation, err := types.EncodeAttestation(unsignedAttestation)

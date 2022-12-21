@@ -83,3 +83,17 @@ func (a attestationCollectorContract) GetLatestNonce(ctx context.Context, origin
 
 	return latestNonce, nil
 }
+
+func (a attestationCollectorContract) GetAttestation(ctx context.Context, origin, destination, nonce uint32) (types.SignedAttestation, error) {
+	rawAttestation, err := a.contract.GetAttestation(&bind.CallOpts{Context: ctx}, origin, destination, nonce)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve attestation: %w", err)
+	}
+
+	signedAttestation, err := types.DecodeSignedAttestation(rawAttestation)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode signed attestation: %w", err)
+	}
+
+	return signedAttestation, nil
+}

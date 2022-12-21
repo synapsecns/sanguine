@@ -1,4 +1,4 @@
-package notary_test
+package guard_test
 
 import (
 	"math/big"
@@ -8,7 +8,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/agents/notary"
+	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
@@ -60,7 +60,7 @@ func (u NotarySuite) TestOriginAttestationVerifier() {
 	Equal(u.T(), inProgressAttestationToConfirm.SignedAttestation().Attestation().Nonce(), fakeNonce)
 
 	// call the update producing function
-	originAttestationVerifier := notary.NewOriginAttestationVerifier(u.domainClient, u.destinationID, testDB, u.signer, 1*time.Second)
+	originAttestationVerifier := guard.NewOriginAttestationVerifier(u.domainClient, u.destinationID, testDB, u.signer, 1*time.Second)
 
 	err = originAttestationVerifier.Update(u.GetTestContext())
 	Nil(u.T(), err)

@@ -1,4 +1,4 @@
-package notary_test
+package guard_test
 
 import (
 	"math/big"
@@ -8,13 +8,13 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/agents/notary"
+	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
 )
 
-func (u NotarySuite) TestOriginAttestationVerifier() {
+func (u NotarySuite) TestOriginAttestationSubmitter() {
 	testDB, err := sqlite.NewSqliteStore(u.GetTestContext(), filet.TmpDir(u.T(), ""))
 	Nil(u.T(), err)
 
@@ -46,28 +46,16 @@ func (u NotarySuite) TestOriginAttestationVerifier() {
 	err = testDB.UpdateNotarySignature(u.GetTestContext(), signedInProgressAttestation)
 	Nil(u.T(), err)
 
-	err = u.domainClient.AttestationCollector().SubmitAttestation(u.GetTestContext(), u.signer, signedInProgressAttestation.SignedAttestation())
-	Nil(u.T(), err)
-
-	nowTime := time.Now()
-	submittedInProgressAttestation := types.NewInProgressAttestation(signedInProgressAttestation.SignedAttestation(), signedInProgressAttestation.OriginDispatchBlockNumber(), &nowTime, 0)
-	err = testDB.UpdateSubmittedToAttestationCollectorTime(u.GetTestContext(), submittedInProgressAttestation)
-	Nil(u.T(), err)
-
-	// make sure an update has been produced
-	inProgressAttestationToConfirm, err := testDB.RetrieveOldestUnconfirmedSubmittedInProgressAttestation(u.GetTestContext(), u.domainClient.Config().DomainID, u.destinationID)
-	Nil(u.T(), err)
-	Equal(u.T(), inProgressAttestationToConfirm.SignedAttestation().Attestation().Nonce(), fakeNonce)
-
 	// call the update producing function
-	originAttestationVerifier := notary.NewOriginAttestationVerifier(u.domainClient, u.destinationID, testDB, u.signer, 1*time.Second)
+	originAttestationSubmitter := guard.NewOriginAttestationSubmitter(u.domainClient, u.destinationID, testDB, u.signer, 1*time.Second)
 
-	err = originAttestationVerifier.Update(u.GetTestContext())
+	err = originAttestationSubmitter.Update(u.GetTestContext())
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	producedAttestation, err := testDB.RetrieveInProgressAttestation(u.GetTestContext(), u.domainClient.Config().DomainID, u.destinationID, fakeNonce)
+	producedAttestation, err := testDB.RetrieveOldestUnconfirmedSubmittedInProgressAttestation(u.GetTestContext(), u.domainClient.Config().DomainID, u.destinationID)
 	Nil(u.T(), err)
-	Equal(u.T(), fakeNonce, producedAttestation.SignedAttestation().Attestation().Nonce())
-	Equal(u.T(), types.AttestationStateNotaryConfirmed, producedAttestation.AttestationState())
+	Equal(u.T(), producedAttestation.SignedAttestation().Attestation().Nonce(), fakeNonce)
+	NotNil(u.T(), producedAttestation.SubmittedToAttestationCollectorTime())
+	Equal(u.T(), types.AttestationStateNotarySubmittedUnconfirmed, producedAttestation.AttestationState())
 }
