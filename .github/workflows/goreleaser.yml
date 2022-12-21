@@ -189,8 +189,8 @@ jobs:
             echo "No docker images to push"
             exit 0
           fi
-          echo "ghcr.io/synapsecns/$image_name:$GITHUB_SHA"
-          docker tag ghcr.io/synapsecns/sanguine/$image_name:latest ghcr.io/synapsecns/$image_name:$GITHUB_SHA
-          docker push ghcr.io/synapsecns/$image_name:$GITHUB_SHA
+          echo "ghcr.io/synapsecns/$image_name:${GITHUB_SHA}"
+          docker tag ghcr.io/synapsecns/sanguine/$image_name:latest ghcr.io/synapsecns/$image_name:${GITHUB_SHA}
+          docker push ghcr.io/synapsecns/$image_name:${GITHUB_SHA}
 
 
