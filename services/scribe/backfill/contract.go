@@ -57,6 +57,7 @@ func NewContractBackfiller(chainConfig config.ChainConfig, address string, event
 		eventDB:     eventDB,
 		client:      client,
 		cache:       cache,
+		mux:         mapmutex.NewStringerMapMutex(),
 	}, nil
 }
 
