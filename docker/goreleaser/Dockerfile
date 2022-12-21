@@ -3,7 +3,7 @@ FROM debian:11
 ARG VERSION_ARG=1.13.1
 ARG SHA_ARG=136fecfb2e2f3a7965274ad5e2571985d8b2fa724b6536874f082e4b0bb9f344
 ARG FILE_ARG=goreleaser_Linux_x86_64.tar.gz
-ARG DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser/releases/download/v${VERSOIN_ARG}/${FILE_ARG}
+ARG DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser/releases/download/v${VERSION_ARG}/${FILE_ARG}
 
 # from https://github.com/iotaledger/goreleaser-cgo-cross-compiler
 ENV GORELEASER_VERSION=$VERSION_ARG
@@ -67,6 +67,7 @@ LABEL org.opencontainers.image.source="https://github.com/synapsecns/sanguine"
 # see: https://github.com/tendermint/tm-db/blob/8f92601b6539a3611063709f65256150e198cfd9/tools/Dockerfile
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
+# we need this to install yq
 RUN apt-get update && apt install -y --no-install-recommends software-properties-common
 
 # add yq repo
