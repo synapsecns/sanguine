@@ -47,13 +47,13 @@ func (_m *EventDB) ConfirmEthTxsInRange(ctx context.Context, startBlock uint64, 
 	return r0
 }
 
-// ConfirmLogsForBlockHash provides a mock function with given fields: ctx, blockHash, chainID
-func (_m *EventDB) ConfirmLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
-	ret := _m.Called(ctx, blockHash, chainID)
+// ConfirmLogsForBlockHash provides a mock function with given fields: ctx, chainID, blockHash
+func (_m *EventDB) ConfirmLogsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
+	ret := _m.Called(ctx, chainID, blockHash)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, common.Hash, uint32) error); ok {
-		r0 = rf(ctx, blockHash, chainID)
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, common.Hash) error); ok {
+		r0 = rf(ctx, chainID, blockHash)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -75,13 +75,13 @@ func (_m *EventDB) ConfirmLogsInRange(ctx context.Context, startBlock uint64, en
 	return r0
 }
 
-// ConfirmReceiptsForBlockHash provides a mock function with given fields: ctx, blockHash, chainID
-func (_m *EventDB) ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
-	ret := _m.Called(ctx, blockHash, chainID)
+// ConfirmReceiptsForBlockHash provides a mock function with given fields: ctx, chainID, blockHash
+func (_m *EventDB) ConfirmReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
+	ret := _m.Called(ctx, chainID, blockHash)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, common.Hash, uint32) error); ok {
-		r0 = rf(ctx, blockHash, chainID)
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, common.Hash) error); ok {
+		r0 = rf(ctx, chainID, blockHash)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -131,13 +131,13 @@ func (_m *EventDB) DeleteLogsForBlockHash(ctx context.Context, blockHash common.
 	return r0
 }
 
-// DeleteReceiptsForBlockHash provides a mock function with given fields: ctx, blockHash, chainID
-func (_m *EventDB) DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
-	ret := _m.Called(ctx, blockHash, chainID)
+// DeleteReceiptsForBlockHash provides a mock function with given fields: ctx, chainID, blockHash
+func (_m *EventDB) DeleteReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
+	ret := _m.Called(ctx, chainID, blockHash)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, common.Hash, uint32) error); ok {
-		r0 = rf(ctx, blockHash, chainID)
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, common.Hash) error); ok {
+		r0 = rf(ctx, chainID, blockHash)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -530,13 +530,13 @@ func (_m *EventDB) StoreLastIndexed(ctx context.Context, contractAddress common.
 	return r0
 }
 
-// StoreLog provides a mock function with given fields: ctx, log, chainID
-func (_m *EventDB) StoreLog(ctx context.Context, log types.Log, chainID uint32) error {
-	ret := _m.Called(ctx, log, chainID)
+// StoreLog provides a mock function with given fields: ctx, chainID, log
+func (_m *EventDB) StoreLog(ctx context.Context, chainID uint32, log types.Log) error {
+	ret := _m.Called(ctx, chainID, log)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, types.Log, uint32) error); ok {
-		r0 = rf(ctx, log, chainID)
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, types.Log) error); ok {
+		r0 = rf(ctx, chainID, log)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -544,13 +544,13 @@ func (_m *EventDB) StoreLog(ctx context.Context, log types.Log, chainID uint32) 
 	return r0
 }
 
-// StoreReceipt provides a mock function with given fields: ctx, receipt, chainID
-func (_m *EventDB) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID uint32) error {
-	ret := _m.Called(ctx, receipt, chainID)
+// StoreReceipt provides a mock function with given fields: ctx, chainID, receipt
+func (_m *EventDB) StoreReceipt(ctx context.Context, chainID uint32, receipt types.Receipt) error {
+	ret := _m.Called(ctx, chainID, receipt)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, types.Receipt, uint32) error); ok {
-		r0 = rf(ctx, receipt, chainID)
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, types.Receipt) error); ok {
+		r0 = rf(ctx, chainID, receipt)
 	} else {
 		r0 = ret.Error(0)
 	}

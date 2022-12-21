@@ -25,17 +25,17 @@ func (g APISuite) TestRetrieveData() {
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
 		// create and store logs
 		log = g.buildLog(contractAddressA, uint64(blockNumber))
-		err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+		err = g.db.StoreLog(g.GetTestContext(), chainID, log)
 		Nil(g.T(), err)
 		log = g.buildLog(contractAddressB, uint64(blockNumber))
-		err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+		err = g.db.StoreLog(g.GetTestContext(), chainID, log)
 		Nil(g.T(), err)
 		// create and store receipts
 		receipt = g.buildReceipt(contractAddressA, uint64(blockNumber))
-		err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
+		err = g.db.StoreReceipt(g.GetTestContext(), chainID, receipt)
 		Nil(g.T(), err)
 		receipt = g.buildReceipt(contractAddressB, uint64(blockNumber))
-		err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
+		err = g.db.StoreReceipt(g.GetTestContext(), chainID, receipt)
 		Nil(g.T(), err)
 		// create and store txs
 		tx = g.buildEthTx()
@@ -95,7 +95,7 @@ func (g APISuite) TestLogDataEquality() {
 	log := g.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()))
 
 	// store it
-	err := g.db.StoreLog(g.GetTestContext(), log, chainID)
+	err := g.db.StoreLog(g.GetTestContext(), chainID, log)
 	Nil(g.T(), err)
 
 	// retrieve it using gql
@@ -117,7 +117,7 @@ func (g APISuite) TestReceiptDataEquality() {
 	receipt := g.buildReceipt(address, blockNumber)
 
 	// store it
-	err := g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
+	err := g.db.StoreReceipt(g.GetTestContext(), chainID, receipt)
 	Nil(g.T(), err)
 
 	// retrieve it
@@ -308,11 +308,11 @@ func (g APISuite) TestLogCount() {
 		// create and store logs
 		if blockNumber%2 == 0 {
 			log = g.buildLog(contractAddressA, uint64(blockNumber))
-			err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+			err = g.db.StoreLog(g.GetTestContext(), chainID, log)
 			Nil(g.T(), err)
 		} else {
 			log = g.buildLog(contractAddressB, uint64(blockNumber))
-			err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+			err = g.db.StoreLog(g.GetTestContext(), chainID, log)
 			Nil(g.T(), err)
 		}
 	}
@@ -340,9 +340,9 @@ func (g APISuite) TestReceiptCount() {
 	var err error
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
 		receipt = g.buildReceipt(contractAddress, uint64(blockNumber))
-		err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainIDA)
+		err = g.db.StoreReceipt(g.GetTestContext(), chainIDA, receipt)
 		Nil(g.T(), err)
-		err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainIDB)
+		err = g.db.StoreReceipt(g.GetTestContext(), chainIDB, receipt)
 		Nil(g.T(), err)
 	}
 
@@ -406,7 +406,7 @@ func (g APISuite) TestReceiptEmptyBlock() {
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
 		if blockNumber%2 == 0 {
 			receipt = g.buildReceipt(contractAddress, uint64(blockNumber))
-			err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
+			err = g.db.StoreReceipt(g.GetTestContext(), chainID, receipt)
 			Nil(g.T(), err)
 		}
 	}

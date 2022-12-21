@@ -147,7 +147,7 @@ func (n *NodeSuite) storeTestLog(tx *types.Transaction, chainID uint32, blockNum
 
 	receipt.Logs[0].BlockNumber = blockNumber
 
-	err = n.eventDB.StoreLog(n.GetTestContext(), *receipt.Logs[0], chainID)
+	err = n.eventDB.StoreLog(n.GetTestContext(), chainID, *receipt.Logs[0])
 	if err != nil {
 		return nil, fmt.Errorf("error storing swap log: %w", err)
 	}

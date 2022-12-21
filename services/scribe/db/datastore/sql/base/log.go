@@ -15,7 +15,7 @@ import (
 )
 
 // StoreLog stores a log.
-func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) error {
+func (s Store) StoreLog(ctx context.Context, chainID uint32, log types.Log) error {
 	topics := []sql.NullString{}
 	topicsLength := len(log.Topics)
 	// Ethereum topics are always 3 long, excluding the primary topic.
@@ -67,7 +67,7 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 }
 
 // ConfirmLogsForBlockHash confirms logs for a given block hash.
-func (s Store) ConfirmLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+func (s Store) ConfirmLogsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
 		Where(&Log{BlockHash: blockHash.String(), ChainID: chainID}).

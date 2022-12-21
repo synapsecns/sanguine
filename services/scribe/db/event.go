@@ -12,22 +12,22 @@ import (
 //nolint:interfacebloat
 type EventDBWriter interface {
 	// StoreLog stores a log
-	StoreLog(ctx context.Context, log types.Log, chainID uint32) error
+	StoreLog(ctx context.Context, chainID uint32, log types.Log) error
 	// ConfirmLogsForBlockHash confirms logs for a given block hash.
-	ConfirmLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	ConfirmLogsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
 	// ConfirmLogsInRange confirms logs in a range.
 	ConfirmLogsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error
 	// DeleteLogsForBlockHash deletes logs with a given block hash.
 	DeleteLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 
 	// StoreReceipt stores a receipt
-	StoreReceipt(ctx context.Context, receipt types.Receipt, chainID uint32) error
+	StoreReceipt(ctx context.Context, chainID uint32, receipt types.Receipt) error
 	// ConfirmReceiptsForBlockHash confirms receipts for a given block hash.
-	ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	ConfirmReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
 	// ConfirmReceiptsInRange confirms receipts in a range.
 	ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error
 	// DeleteReceiptsForBlockHash deletes receipts with a given block hash.
-	DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	DeleteReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
 
 	// StoreEthTx stores a processed transaction
 	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error

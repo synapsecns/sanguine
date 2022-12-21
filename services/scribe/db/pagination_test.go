@@ -17,13 +17,13 @@ func (t *DBSuite) TestPagination() {
 		for i := 101; i > 1; i-- {
 			log := t.MakeRandomLog(txHash)
 			log.BlockNumber = uint64(i)
-			err := testDB.StoreLog(t.GetTestContext(), log, 1)
+			err := testDB.StoreLog(t.GetTestContext(), 1, log)
 			Nil(t.T(), err)
 		}
 		// Store another log that should be on the second page.
 		log := t.MakeRandomLog(txHash)
 		log.BlockNumber = 1
-		err := testDB.StoreLog(t.GetTestContext(), log, 1)
+		err := testDB.StoreLog(t.GetTestContext(), 1, log)
 		Nil(t.T(), err)
 
 		// Retrieve the log on the second page.
@@ -51,7 +51,7 @@ func (t *DBSuite) TestPagination() {
 			BlockNumber:       big.NewInt(int64(gofakeit.Uint32())),
 			TransactionIndex:  uint(gofakeit.Uint64()),
 		}
-		err = testDB.StoreReceipt(t.GetTestContext(), receipt, 1)
+		err = testDB.StoreReceipt(t.GetTestContext(), 1, receipt)
 		Nil(t.T(), err)
 		retrievedReceipt, err := testDB.RetrieveReceiptsWithFilter(t.GetTestContext(), db.ReceiptFilter{}, 1)
 		Nil(t.T(), err)
