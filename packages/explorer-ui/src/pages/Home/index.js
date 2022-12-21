@@ -25,10 +25,9 @@ export function Home() {
   const addresses = getAddresses({ days: 30 })
 
 
-  const bridgeAllTimeVolume = getBridgeVolume({ days: 3000 })
-  const transactionsAllTime = getTransactions({ days: 3000 })
-  const addressesAllTime = getAddresses({ days: 3000 })
-  console.log(bridgeAllTimeVolume, transactionsAllTime, addressesAllTime)
+  // const bridgeAllTimeVolume = getBridgeVolume({ days: 3000 })
+  // const transactionsAllTime = getTransactions({ days: 3000 })
+  // const addressesAllTime = getAddresses({ days: 3000 })
 
   const [chartType, setChartType] = useState('BRIDGEVOLUME')
   const [allTime, setAllTime] = useState(0)
@@ -47,17 +46,15 @@ export function Home() {
   return (
     <StandardPageContainer>
       <Chart data={data} />
-      {bridgeVolume && transactions && addresses ?
-        allTime === 0 ?
-          <Stats
-            bridgeVolume={bridgeAllTimeVolume.historicalStatistics.total}
-            transactions={transactionsAllTime.historicalStatistics.total}
-            addresses={addressesAllTime.historicalStatistics.total}
-            setChartType={setChartType}
-            allTime={true}
-          />
-
-
+      {bridgeVolume && transactions && addresses?
+        allTime === 1 ?
+        <Stats
+        bridgeVolume={bridgeVolume.historicalStatistics.total}
+        transactions={transactions.historicalStatistics.total}
+        addresses={addresses.historicalStatistics.total}
+        setChartType={setChartType}
+        allTime={false}
+      />
           :
           <Stats
             bridgeVolume={bridgeVolume.historicalStatistics.total}
@@ -80,7 +77,7 @@ export function Home() {
           <div className="mt-2 mb-10 text-right">
         <div  className="text-white text-opacity-50 hover:text-opacity-90 hover:underline cursor-pointer"
           onClick={() => setAllTime(allTime === 0 ? 1 : 0)}
-        >{allTime === 0?  "View 30-day" : " View all-time"}</div>
+        >{allTime === 1?  "View 30-day" : " View all-time"}</div>
         </div>
       </Grid>
       <UniversalSearch />
