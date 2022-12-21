@@ -185,11 +185,10 @@ jobs:
         run: |
           docker_image=$(yq '.dockers | length' dist/config.yaml)
           image_name=$(yq '.project_name' ${{matrix.package}}/.goreleaser.yml)
-          if [ "docker_image" -eq "0" ]; then
+          if [ "docker_image" == "0" ]; then
             echo "No docker images to push"
             exit 0
           fi
-          echo "ghcr.io/synapsecns/$image_name:${GITHUB_SHA}"
           docker tag ghcr.io/synapsecns/sanguine/$image_name:latest ghcr.io/synapsecns/$image_name:${GITHUB_SHA}
           docker push ghcr.io/synapsecns/sanguine/$image_name:${GITHUB_SHA}
 
