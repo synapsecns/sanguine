@@ -23,6 +23,10 @@ type ChainConfig struct {
 	ContractSubChunkSize int `yaml:"contract_sub_chunk_size"`
 	// ContractChunkSize is the number of blocks to process per chunk while backfilling contracts.
 	ContractChunkSize int `yaml:"contract_chunk_size"`
+	// StoreConcurrency is the number of goroutines to use when storing data.
+	StoreConcurrency int `yaml:"store_concurrency"`
+	// storeConcurrencyThreshold is the max number of block from head in which concurrent store is allowed.
+	StoreConcurrencyThreshold uint64 `yaml:"store_concurrency_threshold"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

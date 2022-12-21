@@ -63,6 +63,13 @@ func NewChainBackfiller(chainID uint32, eventDB db.EventDB, client []ScribeBacke
 		chainConfig.ContractChunkSize = 30000
 	}
 
+	if chainConfig.StoreConcurrency == 0 {
+		chainConfig.StoreConcurrency = 20
+	}
+
+	if chainConfig.StoreConcurrencyThreshold == 0 {
+		chainConfig.StoreConcurrencyThreshold = 500
+	}
 	minBlockHeight := uint64(math.MaxUint64)
 
 	for _, contract := range chainConfig.Contracts {

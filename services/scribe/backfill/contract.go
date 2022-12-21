@@ -27,6 +27,10 @@ type ContractBackfiller struct {
 	client []ScribeBackend
 	// cache is a cache for txHashes.
 	cache *lru.Cache
+	// storeConcurrency is the number of goroutines to use when storing logs/receipts/txs.
+	storeConcurrency int
+	// storeConcurrencyThreshold is the max number of block from head in which concurrent store is allowed.
+	storeConcurrencyThreshold int
 }
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
@@ -84,6 +88,8 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 
 	// Reads from the local logsChan and stores the logs and associated receipts / txs.
 	g.Go(func() error {
+		concurrentCalls := 0
+		gS, storeCtx := errgroup.WithContext(ctx)
 		for {
 			select {
 			case <-groupCtx.Done():
@@ -101,13 +107,37 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 
 					return fmt.Errorf("could not store log: %w", err)
 				}
+				concurrentCalls++
+				gS.Go(func() error {
+					// Stores the log, and it's associated receipt / tx in the EventDB.
+					return c.store(storeCtx, log)
+				})
+				logger.Errorf("Waiting for %d goroutines to finish %v", concurrentCalls, endHeight-log.BlockNumber, c.chainConfig.StoreConcurrencyThreshold)
 
-				err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
-				if err != nil {
-					LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+				// Stop spawning store threads and wait
+				if concurrentCalls >= c.chainConfig.StoreConcurrency || endHeight-log.BlockNumber < c.chainConfig.StoreConcurrencyThreshold {
+					logger.Errorf("Waiting for %d goroutines to finish %v", concurrentCalls, endHeight-log.BlockNumber < c.chainConfig.StoreConcurrencyThreshold)
+					if err = gS.Wait(); err != nil {
+						return fmt.Errorf("error waiting for go routines: %w", err)
+					}
 
-					return fmt.Errorf("could not store last indexed block: %w", err)
+					// Reset context TODO make this better
+					gS, storeCtx = errgroup.WithContext(ctx)
+					concurrentCalls = 0
+					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
+					if err != nil {
+						LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+
+						return fmt.Errorf("could not store last indexed block: %w", err)
+					}
 				}
+
+				// err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, log.BlockNumber)
+				//if err != nil {
+				//	LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
+				//
+				//	return fmt.Errorf("could not store last indexed block: %w", err)
+				//}
 
 			case doneFlag := <-doneChan:
 
