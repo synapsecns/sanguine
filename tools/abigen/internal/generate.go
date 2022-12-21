@@ -5,11 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/compiler"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/tools/abigen/internal/etherscan"
 	"os"
 	"os/exec"
 	"path"
@@ -17,6 +12,12 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/synapsecns/sanguine/tools/abigen/internal/etherscan"
 )
 
 // GenerateABIFromEtherscan generates the abi for an etherscan file.

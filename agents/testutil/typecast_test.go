@@ -23,7 +23,7 @@ func (s SimulatedSuite) TestTypecastOriginHarness() {
 	})
 }
 
-func (s SimulatedSuite) TestTypecastAttesationCollector() {
+func (s SimulatedSuite) TestTypecastAttestationCollector() {
 	NotPanics(s.T(), func() {
 		_, attestationCollector := s.deployManager.GetAttestationCollector(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), attestationCollector)

@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"github.com/libs4go/crypto/ecdsa"
 )
@@ -30,10 +32,10 @@ func EncodeSignedAttestation(signed SignedAttestation) ([]byte, error) {
 func DecodeSignedAttestation(toDecode []byte) (SignedAttestation, error) {
 	var decAttestation attestation
 
-	signedAttesationSize := binary.Size(decAttestation)
+	signedAttestationSize := binary.Size(decAttestation)
 
-	attestationBin := toDecode[0:signedAttesationSize]
-	signBin := toDecode[signedAttesationSize:]
+	attestationBin := toDecode[0:signedAttestationSize]
+	signBin := toDecode[signedAttestationSize:]
 
 	att, err := DecodeAttestation(attestationBin)
 	if err != nil {
@@ -173,6 +175,24 @@ func EncodeAttestation(attestation Attestation) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// Hash takes the hash of the encoded attestation.
+func Hash(a Attestation) ([32]byte, error) {
+	encodedAttestation, err := EncodeAttestation(a)
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("could not encode attestation: %w", err)
+	}
+
+	return HashRawBytes(encodedAttestation)
+}
+
+// HashRawBytes takes the raw bytes and produces a hash.
+func HashRawBytes(rawBytes []byte) (common.Hash, error) {
+	hashedDigest := crypto.Keccak256Hash(rawBytes)
+
+	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
+	return signedHash, nil
 }
 
 // DecodeAttestation decodes an attestation.
