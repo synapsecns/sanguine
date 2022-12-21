@@ -3,6 +3,7 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/mapmutex"
 	"math/big"
 	"time"
 
@@ -27,6 +28,8 @@ type ContractBackfiller struct {
 	client []ScribeBackend
 	// cache is a cache for txHashes.
 	cache *lru.Cache
+	// mux is the mutex used to prevent double inserting logs from the same tx
+	mux mapmutex.StringerMapMutex
 }
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
@@ -93,12 +96,20 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
 			case log := <-logsChan:
-				// Check if the txHash has already been stored in the cache.
-				if _, ok := c.cache.Get(log.TxHash); ok {
-					continue
-				}
 				concurrentCalls++
 				gS.Go(func() error {
+					// another goroutine is already storing this log
+					locker, ok := c.mux.TryLock(log.TxHash)
+					if !ok {
+						return nil
+					}
+					defer locker.Unlock()
+
+					// Check if the txHash has already been stored in the cache.
+					if _, ok := c.cache.Get(log.TxHash); ok {
+						return nil
+					}
+
 					err := c.store(storeCtx, log)
 					if err != nil {
 						LogEvent(ErrorLevel, "Could not store log", LogData{"cid": c.chainConfig.ChainID, "ca": c.address, "e": err.Error()})
