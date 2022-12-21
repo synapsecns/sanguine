@@ -17,6 +17,9 @@ ENV GOLANG_SHA=464b6b66591f6cf055bc5df90a9750bf5fbc9d038722bb84a9d56a2bea974be6
 ENV GOLANG_DOWNLOAD_FILE=go${GOLANG_VERSION}.linux-amd64.tar.gz
 ENV GOLANG_DOWNLOAD_URL=https://dl.google.com/go/${GOLANG_DOWNLOAD_FILE}
 
+ENV SNAP_VERSION=v4.30.6
+ENV SNAP_BINARY=yq_linux_amd64
+
 
 # Docker
 ENV DOCKER_VERSION=20.10.9
@@ -31,23 +34,30 @@ RUN apt-get update && apt-get install -y build-essential wget git cmake \
 	gcc-aarch64-linux-gnu g++-aarch64-linux-gnu && \
 	apt-get -y autoremove
 
-# Download GoReleaser
-RUN wget ${GORELEASER_DOWNLOAD_URL} ; \
-	echo "${GORELEASER_SHA} ${GORELEASER_DOWNLOAD_FILE}" | sha256sum -c - || exit 1; \
-	tar -xzf ${GORELEASER_DOWNLOAD_FILE} -C /usr/bin/ goreleaser; \
-	rm ${GORELEASER_DOWNLOAD_FILE};
+
+# Download yq
+# TODO: sha256sum
+RUN wget https://github.com/mikefarah/yq/releases/download/${SNAP_VERSION}/${SNAP_BINARY} -O /usr/bin/yq \
+    && chmod +x /usr/bin/yq
 
 # Download Docker
 RUN	wget ${DOCKER_DOWNLOAD_URL}; \
 	echo "${DOCKER_SHA} ${DOCKER_DOWNLOAD_FILE}" | sha256sum -c - || exit 1; \
 	tar --extract --file ${DOCKER_DOWNLOAD_FILE} --strip-components 1 --directory /usr/local/bin/; \
-	rm ${DOCKER_DOWNLOAD_FILE} \
+	rm ${DOCKER_DOWNLOAD_FILE}
+
+# Download GoReleaser
+RUN wget ${GORELEASER_DOWNLOAD_URL}; \
+	echo "${GORELEASER_SHA} ${GORELEASER_DOWNLOAD_FILE}" | sha256sum -c - || exit 1; \
+	tar -xzf ${GORELEASER_DOWNLOAD_FILE} -C /usr/bin/ goreleaser; \
+	rm ${GORELEASER_DOWNLOAD_FILE};
 
 # Download Golang
 RUN wget ${GOLANG_DOWNLOAD_URL}; \
 	echo "${GOLANG_SHA} ${GOLANG_DOWNLOAD_FILE}" | sha256sum -c - || exit 1; \
 	tar -xzf ${GOLANG_DOWNLOAD_FILE} -C /usr/local; \
 	rm ${GOLANG_DOWNLOAD_FILE};
+
 
 # Add Golang to PATH
 ENV PATH=${PATH}:/usr/local/go/bin
@@ -67,15 +77,10 @@ LABEL org.opencontainers.image.source="https://github.com/synapsecns/sanguine"
 # see: https://github.com/tendermint/tm-db/blob/8f92601b6539a3611063709f65256150e198cfd9/tools/Dockerfile
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
-# we need this to install yq
-RUN apt-get update && apt install -y --no-install-recommends software-properties-common
-
-# add yq repo
-RUN add-apt-repository ppa:rmescandon/yq
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev \
-    make tar wget yq
+    make tar wget
 
 ARG ROCKSDB=6.24.2
 ENV ROCKSDB_DISABLE_SNAPPY=1
