@@ -79,6 +79,7 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "bridge_events.")
 	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "bridge_events.")
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "bridge_events.")
+	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "bridge_events.")
 
 	additionalFilters := fmt.Sprintf(
 		`%s%s%s%s`,
@@ -90,13 +91,13 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	switch typeArg {
 	case model.StatisticTypeMeanVolumeUsd:
 		operation = fmt.Sprintf("AVG(%s)", joinSwapAmountSelectQuery)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM %s %s", operation, joinSwapBaseQuery, additionalFilters)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM %s %s %s", operation, joinSwapBaseQuery, additionalFilters, directionSpecifier)
 	case model.StatisticTypeMedianVolumeUsd:
 		operation = fmt.Sprintf("median(%s)", joinSwapAmountSelectQuery)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM %s %s", operation, joinSwapBaseQuery, additionalFilters)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM %s %s %s", operation, joinSwapBaseQuery, additionalFilters, directionSpecifier)
 	case model.StatisticTypeTotalVolumeUsd:
 		operation = fmt.Sprintf("sumKahan(%s)", joinSwapAmountSelectQuery)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM %s %s", operation, joinSwapBaseQuery, additionalFilters)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM %s %s %s", operation, joinSwapBaseQuery, additionalFilters, directionSpecifier)
 	case model.StatisticTypeCountTransactions:
 		operation = fmt.Sprintf("COUNT(DISTINCT %s)", sql.TxHashFieldName)
 		finalSQL = fmt.Sprintf("\nSELECT %s FROM bridge_events %s", operation, additionalFilters)
@@ -174,7 +175,7 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	case model.HistoricalResultTypeBridgevolume:
 		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(bridge_events.%s, %s) AS date FROM %s %s AND %s GROUP BY date ORDER BY date ASC", joinSwapAmountSelectQuery, sql.TimeStampFieldName, "'%m/%d/%Y'", joinSwapBaseQuery, filter, deDupInQueryPrefix)
 		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-		fmt.Println("JSJS", query, "\n", subQuery)
+
 	case model.HistoricalResultTypeAddresses:
 		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME( %s, %s) AS date FROM  bridge_events %s AND %s GROUP BY date ORDER BY date ASC", sql.SenderFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", filter, deDupInQuery)
 		query = fmt.Sprintf("SELECT uniqExact(%s) FROM bridge_events %s AND %s", sql.SenderFieldName, filter, deDupInQuery)

@@ -16,7 +16,7 @@ type ConsumerDBWriter interface {
 	// StoreLastBlock stores the last block number that has been backfilled for a given chain.
 	StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error
 	// StoreTokenIndex stores the token index data.
-	StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string) error
+	StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error
 	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
 	//
 	//nolint:golint

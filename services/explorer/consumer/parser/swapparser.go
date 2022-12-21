@@ -281,7 +281,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 		for tokenIndex := range swapEvent.Amount {
 			var tokenData tokendata.ImmutableTokenData
 			// Get token symbol and decimals from the erc20 contract associated to the token.
-			tokenAddress, err := p.poolTokenDataService.GetTokenAddress(ctx, chainID, tokenIndex)
+			tokenAddress, err := p.poolTokenDataService.GetTokenAddress(ctx, chainID, tokenIndex, swapEvent.ContractAddress)
 			if err != nil {
 				logger.Errorf("token with index %d not in pool: %v", tokenIndex, err)
 				continue

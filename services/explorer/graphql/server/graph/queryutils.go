@@ -23,7 +23,7 @@ const deDupInQueryLatest = "(" + maxBlockNumberSortingKeys + ", block_number, in
 
 const joinSwapBaseQuery = "bridge_events LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index) * FROM token_indices) ti ON bridge_events.chain_id = ti.chain_id AND bridge_events.token = ti.token_address LEFT JOIN (SELECT * FROM swap_events)  fs ON bridge_events.tx_hash = fs.tx_hash AND bridge_events.chain_id = fs.chain_id"
 const joinSwapAmountSelectQuery = "if(fs.amount_usd[ti.token_index]  > 0, ((toFloat64(fs.amount[ti.token_index])/exp10(fs.token_decimal[ti.token_index])) * fs.amount_usd[ti.token_index]), bridge_events.amount_usd)"
-const joinSwapFullSymbolQuery = "SELECT (if(fs.token_symbol[ti.token_index] IS NULL, fs.token_symbol[ti.token_index], bridge_events.token_symbol) AS token_symbol),bridge_events.event_index AS event_index, bridge_events.block_number AS block_number, bridge_events.event_type AS event_type,  bridge_events.tx_hash AS tx_hash, bridge_events.chain_id AS chain_id, bridge_events.contract_address AS contract_address, bridge_events.token AS token, bridge_events.amount AS amount, bridge_events.event_index AS event_index, bridge_events.destination_kappa AS destination_kappa, bridge_events.sender AS sender, bridge_events.recipient AS recipient, bridge_events.recipient_bytes AS recipient_bytes, bridge_events.fee AS fee, bridge_events.kappa AS kappa, bridge_events.token_index_from AS token_index_from, bridge_events.token_index_to AS token_index_to, bridge_events.min_dy AS min_dy, bridge_events.deadline AS deadline, bridge_events.swap_success AS swap_success, bridge_events.swap_token_index AS swap_token_index, bridge_events.swap_min_amount AS swap_min_amount, bridge_events.swap_deadline AS swap_deadline, bridge_events.token_id AS token_id, bridge_events.amount_usd AS amount_usd, bridge_events.fee_amount_usd AS fee_amount_usd, bridge_events.token_decimal AS token_decimal, bridge_events.timestamp AS timestamp,bridge_events.destination_chain_id AS destination_chain_id, bridge_events.insert_time AS insert_time FROM bridge_events LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index) * FROM token_indices) ti ON bridge_events.chain_id = ti.chain_id AND bridge_events.token = ti.token_address LEFT JOIN (SELECT * FROM swap_events)  fs ON bridge_events.tx_hash = fs.tx_hash AND bridge_events.chain_id = fs.chain_id"
+const joinSwapFullSymbolQuery = "SELECT (if(sa.token_address = '', bridge_events.token, sa.token_address) AS token),bridge_events.event_index AS event_index, bridge_events.block_number AS block_number, bridge_events.event_type AS event_type, bridge_events.token AS token_raw, bridge_events.tx_hash AS tx_hash, bridge_events.chain_id AS chain_id, bridge_events.contract_address AS contract_address, bridge_events.token_symbol AS token_symbol, bridge_events.amount AS amount, bridge_events.event_index AS event_index, bridge_events.destination_kappa AS destination_kappa, bridge_events.sender AS sender, bridge_events.recipient AS recipient, bridge_events.recipient_bytes AS recipient_bytes, bridge_events.fee AS fee, bridge_events.kappa AS kappa, bridge_events.token_index_from AS token_index_from, bridge_events.token_index_to AS token_index_to, bridge_events.min_dy AS min_dy, bridge_events.deadline AS deadline, bridge_events.swap_success AS swap_success, bridge_events.swap_token_index AS swap_token_index, bridge_events.swap_min_amount AS swap_min_amount, bridge_events.swap_deadline AS swap_deadline, bridge_events.token_id AS token_id, bridge_events.amount_usd AS amount_usd, bridge_events.fee_amount_usd AS fee_amount_usd, bridge_events.token_decimal AS token_decimal, bridge_events.timestamp AS timestamp,bridge_events.destination_chain_id AS destination_chain_id, bridge_events.insert_time AS insert_time FROM bridge_events LEFT JOIN (SELECT * FROM swap_events LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index) * FROM token_indices) token_indices  ON swap_events.chain_id = token_indices.chain_id AND swap_events.sold_id = token_indices.token_index AND swap_events.contract_address = token_indices.contract_address) sa ON bridge_events.tx_hash = sa.tx_hash AND bridge_events.chain_id = sa.chain_id"
 
 func (r *queryResolver) getDirectionIn(direction *model.Direction) bool {
 	var directionIn bool
@@ -212,11 +212,11 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName,
 	)
 	joinOnParameters := fmt.Sprintf(
-		`t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s
+		`t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.token_raw = t2.%s
 		AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = insert_max_time`,
 		sql.TxHashFieldName, sql.TxHashFieldName, sql.ContractAddressFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName,
 		sql.ChainIDFieldName, sql.EventTypeFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName, sql.BlockNumberFieldName,
-		sql.TokenFieldName, sql.TokenFieldName, sql.AmountFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.EventIndexFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.EventIndexFieldName,
 		sql.DestinationKappaFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName, sql.SenderFieldName, sql.InsertTimeFieldName,
 	)
 	deDup := deDupInQuery
@@ -260,6 +260,8 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 }
 
 // GetPartialInfoFromBridgeEventSingle returns the partial info from bridge event.
+//
+// nolint:cyclop
 func GetPartialInfoFromBridgeEventSingle(res sql.BridgeEvent) (*model.PartialInfo, error) {
 	var partialInfos *model.PartialInfo
 	chainIDInt := int(res.ChainID)
@@ -287,7 +289,6 @@ func GetPartialInfoFromBridgeEventSingle(res sql.BridgeEvent) (*model.PartialInf
 		default:
 			tokenSymbol = res.TokenSymbol.String
 		}
-
 	} else {
 		return nil, fmt.Errorf("token symbol is not valid")
 	}
@@ -355,11 +356,11 @@ func generateBridgeEventsWithKappaQuery(kappaChainStr string, chainID *int, addr
 		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName,
 	)
 	joinOnParameters := fmt.Sprintf(
-		`t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s
+		`t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.token_raw = t2.%s
 		AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = insert_max_time`,
 		sql.TxHashFieldName, sql.TxHashFieldName, sql.ContractAddressFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName,
 		sql.ChainIDFieldName, sql.EventTypeFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName, sql.BlockNumberFieldName,
-		sql.TokenFieldName, sql.TokenFieldName, sql.AmountFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.EventIndexFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.EventIndexFieldName,
 		sql.DestinationKappaFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName, sql.SenderFieldName, sql.InsertTimeFieldName,
 	)
 	deDup := deDupInQuery
@@ -394,11 +395,11 @@ func generatePartialInfoQueryByChain(limitSize int) string {
 		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName,
 	)
 	joinOnParameters := fmt.Sprintf(
-		`t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s
+		`t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.token_raw = t2.%s
 		AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = t2.%s AND t1.%s = insert_max_time`,
 		sql.TxHashFieldName, sql.TxHashFieldName, sql.ContractAddressFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName,
 		sql.ChainIDFieldName, sql.EventTypeFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName, sql.BlockNumberFieldName,
-		sql.TokenFieldName, sql.TokenFieldName, sql.AmountFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.EventIndexFieldName,
+		sql.TokenFieldName, sql.AmountFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.EventIndexFieldName,
 		sql.DestinationKappaFieldName, sql.DestinationKappaFieldName, sql.SenderFieldName, sql.SenderFieldName, sql.InsertTimeFieldName,
 	)
 	query := fmt.Sprintf(
