@@ -21,6 +21,11 @@ type datadogHandler struct {
 	buildInfo       config.BuildInfo
 }
 
+// TODO: add datadog transactions
+func (d *datadogHandler) StartTransaction(name string) Transaction {
+	return nullHandler{}.StartTransaction(name)
+}
+
 func (d *datadogHandler) AddGormCallbacks(db *gorm.DB) {
 	// TODO: implement, see:  https://github.com/DataDog/dd-trace-go/blob/main/contrib/jinzhu/gorm/example_test.go
 }

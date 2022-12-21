@@ -20,6 +20,8 @@ type Handler interface {
 	ConfigureHTTPClient(client *http.Client)
 	// AddGormCallbacks adds gorm callbacks for tracing.
 	AddGormCallbacks(db *gorm.DB)
+	// StartTransaction starts a transaction
+	StartTransaction(name string) Transaction
 }
 
 // HandlerType is the handler type to use

@@ -21,6 +21,24 @@ type newRelicHandler struct {
 	buildInfo config.BuildInfo
 }
 
+type newRelicTransaction struct {
+	txn *newrelic.Transaction
+}
+
+func (n newRelicTransaction) End() {
+	n.txn.End()
+}
+
+func (n newRelicTransaction) NewGoroutine() Transaction {
+	newTxn := n.txn.NewGoroutine()
+	return newRelicTransaction{txn: newTxn}
+}
+
+func (n *newRelicHandler) StartTransaction(name string) Transaction {
+	nrTx := n.app.StartTransaction(name)
+	return &newRelicTransaction{txn: nrTx}
+}
+
 // NewRelicMetricsHandler creates a new newrelic metrics handler.
 func NewRelicMetricsHandler(buildInfo config.BuildInfo) Handler {
 	return &newRelicHandler{

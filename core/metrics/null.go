@@ -12,6 +12,10 @@ import (
 type nullHandler struct {
 }
 
+func (n nullHandler) StartTransaction(name string) Transaction {
+	return nullTransaction{}
+}
+
 func (n nullHandler) AddGormCallbacks(db *gorm.DB) {
 	// Do nothing
 }
@@ -36,3 +40,20 @@ func NewNullHandler() Handler {
 }
 
 var _ Handler = &nullHandler{}
+
+type nullTransaction struct {
+}
+
+func (n nullTransaction) NewGoroutine() Transaction {
+	return n
+}
+
+func (n nullTransaction) NewGoRoutine() Transaction {
+	return n
+}
+
+func (n nullTransaction) End() {
+	// do nothing
+}
+
+var _ Transaction = &nullTransaction{}
