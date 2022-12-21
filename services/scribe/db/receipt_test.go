@@ -31,11 +31,11 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 
 		// Store all random logs, since `RetrieveReceipt` needs to query them to build the Receipt.
 		for _, log := range randomLogsA {
-			err := testDB.StoreLog(t.GetTestContext(), chainID, log)
+			err := testDB.StoreLogs(t.GetTestContext(), chainID, log)
 			Nil(t.T(), err)
 		}
 		for _, log := range randomLogsB {
-			err := testDB.StoreLog(t.GetTestContext(), chainID+1, log)
+			err := testDB.StoreLogs(t.GetTestContext(), chainID+1, log)
 			Nil(t.T(), err)
 		}
 

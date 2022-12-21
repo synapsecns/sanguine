@@ -530,13 +530,20 @@ func (_m *EventDB) StoreLastIndexed(ctx context.Context, contractAddress common.
 	return r0
 }
 
-// StoreLog provides a mock function with given fields: ctx, chainID, log
-func (_m *EventDB) StoreLog(ctx context.Context, chainID uint32, log types.Log) error {
-	ret := _m.Called(ctx, chainID, log)
+// StoreLogs provides a mock function with given fields: ctx, chainID, log
+func (_m *EventDB) StoreLogs(ctx context.Context, chainID uint32, log ...types.Log) error {
+	_va := make([]interface{}, len(log))
+	for _i := range log {
+		_va[_i] = log[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, chainID)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint32, types.Log) error); ok {
-		r0 = rf(ctx, chainID, log)
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, ...types.Log) error); ok {
+		r0 = rf(ctx, chainID, log...)
 	} else {
 		r0 = ret.Error(0)
 	}

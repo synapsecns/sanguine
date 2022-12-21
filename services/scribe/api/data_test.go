@@ -25,10 +25,10 @@ func (g APISuite) TestRetrieveData() {
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
 		// create and store logs
 		log = g.buildLog(contractAddressA, uint64(blockNumber))
-		err = g.db.StoreLog(g.GetTestContext(), chainID, log)
+		err = g.db.StoreLogs(g.GetTestContext(), chainID, log)
 		Nil(g.T(), err)
 		log = g.buildLog(contractAddressB, uint64(blockNumber))
-		err = g.db.StoreLog(g.GetTestContext(), chainID, log)
+		err = g.db.StoreLogs(g.GetTestContext(), chainID, log)
 		Nil(g.T(), err)
 		// create and store receipts
 		receipt = g.buildReceipt(contractAddressA, uint64(blockNumber))
@@ -95,7 +95,7 @@ func (g APISuite) TestLogDataEquality() {
 	log := g.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()))
 
 	// store it
-	err := g.db.StoreLog(g.GetTestContext(), chainID, log)
+	err := g.db.StoreLogs(g.GetTestContext(), chainID, log)
 	Nil(g.T(), err)
 
 	// retrieve it using gql
@@ -308,11 +308,11 @@ func (g APISuite) TestLogCount() {
 		// create and store logs
 		if blockNumber%2 == 0 {
 			log = g.buildLog(contractAddressA, uint64(blockNumber))
-			err = g.db.StoreLog(g.GetTestContext(), chainID, log)
+			err = g.db.StoreLogs(g.GetTestContext(), chainID, log)
 			Nil(g.T(), err)
 		} else {
 			log = g.buildLog(contractAddressB, uint64(blockNumber))
-			err = g.db.StoreLog(g.GetTestContext(), chainID, log)
+			err = g.db.StoreLogs(g.GetTestContext(), chainID, log)
 			Nil(g.T(), err)
 		}
 	}

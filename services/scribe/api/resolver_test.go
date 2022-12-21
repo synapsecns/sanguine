@@ -20,7 +20,7 @@ func (g APISuite) TestLogResolvers() {
 	// store a log
 	log := g.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), blockNumber)
 	log.TxHash = tx.Hash()
-	err = g.db.StoreLog(g.GetTestContext(), chainID, log)
+	err = g.db.StoreLogs(g.GetTestContext(), chainID, log)
 	Nil(g.T(), err)
 	// store a receipt
 	receipt := g.buildReceipt(common.BigToAddress(big.NewInt(gofakeit.Int64())), blockNumber)

@@ -20,18 +20,18 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		txHashA := common.BigToHash(big.NewInt(txHashRandom))
 		logA := t.MakeRandomLog(txHashA)
 		logA.BlockNumber = 3
-		err := testDB.StoreLog(t.GetTestContext(), chainID, logA)
+		err := testDB.StoreLogs(t.GetTestContext(), chainID, logA)
 		Nil(t.T(), err)
 
 		logB := t.MakeRandomLog(txHashA)
 		logB.BlockNumber = 2
-		err = testDB.StoreLog(t.GetTestContext(), chainID, logB)
+		err = testDB.StoreLogs(t.GetTestContext(), chainID, logB)
 		Nil(t.T(), err)
 
 		txHashC := common.BigToHash(big.NewInt(txHashRandom + 1))
 		logC := t.MakeRandomLog(txHashC)
 		logC.BlockNumber = 1
-		err = testDB.StoreLog(t.GetTestContext(), chainID+1, logC)
+		err = testDB.StoreLogs(t.GetTestContext(), chainID+1, logC)
 		Nil(t.T(), err)
 
 		// Ensure the logs from the database match the ones stored.
@@ -81,7 +81,7 @@ func (t *DBSuite) TestConfirmLogsInRange() {
 			txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 			log := t.MakeRandomLog(txHash)
 			log.BlockNumber = uint64(i)
-			err := testDB.StoreLog(t.GetTestContext(), chainID, log)
+			err := testDB.StoreLogs(t.GetTestContext(), chainID, log)
 			Nil(t.T(), err)
 		}
 
@@ -110,7 +110,7 @@ func (t *DBSuite) TestDeleteLogsForBlockHash() {
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		log := t.MakeRandomLog(txHash)
 		log.BlockHash = common.BigToHash(big.NewInt(5))
-		err := testDB.StoreLog(t.GetTestContext(), chainID, log)
+		err := testDB.StoreLogs(t.GetTestContext(), chainID, log)
 		Nil(t.T(), err)
 
 		// Ensure the log is in the database.
@@ -146,10 +146,10 @@ func (t *DBSuite) TestLogCount() {
 		for blockNumber := 0; blockNumber < 5; blockNumber++ {
 			// create and store logs
 			log = t.buildLog(contractAddressA, uint64(blockNumber))
-			err = testDB.StoreLog(t.GetTestContext(), chainID, log)
+			err = testDB.StoreLogs(t.GetTestContext(), chainID, log)
 			Nil(t.T(), err)
 			log = t.buildLog(contractAddressB, uint64(blockNumber))
-			err = testDB.StoreLog(t.GetTestContext(), chainID, log)
+			err = testDB.StoreLogs(t.GetTestContext(), chainID, log)
 			Nil(t.T(), err)
 		}
 

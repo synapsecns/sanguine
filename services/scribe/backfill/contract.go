@@ -223,25 +223,20 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 				}
 				return nil
 			})
-			// Store the logs in the EventDB.
-			for i := range returnedReceipt.Logs {
-				log := returnedReceipt.Logs[i]
-				if log == nil {
-					LogEvent(ErrorLevel, "log is nil", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
 
-					return fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+			gInner.Go(func() error {
+				logs, err := c.prunedReceiptLogs(returnedReceipt)
+				if err != nil {
+					return err
 				}
-				gInner.Go(func() error {
-					err := c.eventDB.StoreLog(groupCtx, c.chainConfig.ChainID, *log)
-					if err != nil {
-						timeout = b.Duration()
-						LogEvent(ErrorLevel, "Could not store log, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
-						return fmt.Errorf("could not store log: %w", err)
-					}
-					return nil
-				})
-			}
+				err = c.eventDB.StoreLogs(groupInnerCtx, c.chainConfig.ChainID, logs...)
+				if err != nil {
+					return fmt.Errorf("could not store receipt logs: %w", err)
+				}
+				return nil
+			})
+
 			err = gInner.Wait()
 			if err != nil {
 				LogEvent(ErrorLevel, "Could not store data", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
@@ -382,4 +377,18 @@ func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight 
 		}
 	}()
 	return logsChan, doneChan
+}
+
+// prunedReceiptLogs gets all logs from a receipt and prunes null logs.
+func (c *ContractBackfiller) prunedReceiptLogs(receipt types.Receipt) (logs []types.Log, err error) {
+	for i := range receipt.Logs {
+		log := receipt.Logs[i]
+		if log == nil {
+			LogEvent(ErrorLevel, "log is nil", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+
+			return nil, fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+		}
+		logs = append(logs, *log)
+	}
+	return logs, nil
 }

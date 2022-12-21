@@ -11,8 +11,8 @@ import (
 //
 //nolint:interfacebloat
 type EventDBWriter interface {
-	// StoreLog stores a log
-	StoreLog(ctx context.Context, chainID uint32, log types.Log) error
+	// StoreLogs stores a log
+	StoreLogs(ctx context.Context, chainID uint32, log ...types.Log) error
 	// ConfirmLogsForBlockHash confirms logs for a given block hash.
 	ConfirmLogsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
 	// ConfirmLogsInRange confirms logs in a range.

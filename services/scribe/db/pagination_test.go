@@ -17,13 +17,13 @@ func (t *DBSuite) TestPagination() {
 		for i := 101; i > 1; i-- {
 			log := t.MakeRandomLog(txHash)
 			log.BlockNumber = uint64(i)
-			err := testDB.StoreLog(t.GetTestContext(), 1, log)
+			err := testDB.StoreLogs(t.GetTestContext(), 1, log)
 			Nil(t.T(), err)
 		}
 		// Store another log that should be on the second page.
 		log := t.MakeRandomLog(txHash)
 		log.BlockNumber = 1
-		err := testDB.StoreLog(t.GetTestContext(), 1, log)
+		err := testDB.StoreLogs(t.GetTestContext(), 1, log)
 		Nil(t.T(), err)
 
 		// Retrieve the log on the second page.
