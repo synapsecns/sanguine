@@ -3,7 +3,7 @@ import { useQuery } from '@apollo/client'
 
 import { GET_HISTORICAL_STATS } from '@graphql/queries'
 
-export function getBridgeVolume({ chainId = null, days = 30 }) {
+export function getHistoricalBridgeVolume({ chainId = null, days = 30 }) {
   const { data } = useQuery(GET_HISTORICAL_STATS, {
     variables: {
       chainId,
@@ -15,7 +15,7 @@ export function getBridgeVolume({ chainId = null, days = 30 }) {
   return data
 }
 
-export function getTransactions({ chainId = null, days = 30 }) {
+export function getHistoricalTransactions({ chainId = null, days = 30 }) {
   const { data } = useQuery(GET_HISTORICAL_STATS, {
     variables: {
       chainId,
@@ -27,7 +27,7 @@ export function getTransactions({ chainId = null, days = 30 }) {
   return data
 }
 
-export function getAddresses({ chainId = null, days = 30 }) {
+export function getHistoricalAddresses({ chainId = null, days = 30 }) {
   const { data } = useQuery(GET_HISTORICAL_STATS, {
     variables: {
       chainId,

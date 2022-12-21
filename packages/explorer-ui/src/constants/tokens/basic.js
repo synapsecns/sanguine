@@ -614,6 +614,7 @@ export const MULTIJEWEL = new Token({
 export const JEWEL = new Token({
   addresses: {
     [ChainId.DFK]: '',
+    [ChainId.KLAYTN]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
   },
   decimals: 18,
   symbol: 'JEWEL',
@@ -628,6 +629,7 @@ export const WJEWEL = new Token({
   addresses: {
     [ChainId.DFK]: '0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260', // from actual jewl
     [ChainId.HARMONY]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
+
   },
   decimals: 18,
   symbol: 'JEWEL ', // THE SPACES ARE VERY IMPORTANT
@@ -641,6 +643,7 @@ export const SYNJEWEL = new Token({
   addresses: {
     [ChainId.AVALANCHE]: '0x997Ddaa07d716995DE90577C123Db411584E5E46',
     [ChainId.HARMONY]: '0x28b42698Caf46B4B012CF38b6C75867E0762186D',
+
   },
   decimals: 18,
   symbol: 'JEWEL  ', // THE SPACES ARE VERY IMPORTANT
@@ -893,6 +896,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     KLAYTN_WETH,
     WBTC,
     KLAYTN_oUSDT,
+    JEWEL
   ],
 }
 
