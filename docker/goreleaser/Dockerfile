@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y build-essential wget git cmake \
 	apt-get -y autoremove
 
 # Download GoReleaser
-RUN wget ${GORELEASER_DOWNLOAD_URL}; \
+RUN wget ${GORELEASER_DOWNLOAD_URL} ; \
 	echo "${GORELEASER_SHA} ${GORELEASER_DOWNLOAD_FILE}" | sha256sum -c - || exit 1; \
 	tar -xzf ${GORELEASER_DOWNLOAD_FILE} -C /usr/bin/ goreleaser; \
 	rm ${GORELEASER_DOWNLOAD_FILE};
