@@ -99,7 +99,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 				}
 				concurrentCalls++
 				gS.Go(func() error {
-					err := c.store(ctx, log)
+					err := c.store(storeCtx, log)
 					if err != nil {
 						LogEvent(ErrorLevel, "Could not store log", LogData{"cid": c.chainConfig.ChainID, "ca": c.address, "e": err.Error()})
 
