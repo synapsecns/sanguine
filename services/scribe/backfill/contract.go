@@ -98,7 +98,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 			case log := <-logsChan:
 				concurrentCalls++
 				gS.Go(func() error {
-					// another goroutine is already storing this log
+					// another goroutine is already storing this receipt
 					locker, ok := c.mux.TryLock(log.TxHash)
 					if !ok {
 						return nil
