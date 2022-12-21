@@ -82,7 +82,7 @@ chains:
         start_block: -1
       - contract_type: swap
         address: '0x85662fd123280827e11C59973Ac9fcBE838dC3B4'
-        start_block: 29236172
+        start_block: -1
       - contract_type: swap #ETH Pool
         address: '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1'
         start_block: -1
@@ -95,7 +95,7 @@ chains:
         start_block: -1
       - contract_type: swap
         address: '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e'
-        start_block: 19163634
+        start_block: -1
       - contract_type: messagebus
         address: '0x4F437be4A3448fCf394e513FC1A8EF92E190D1ba'
         start_block: -1
