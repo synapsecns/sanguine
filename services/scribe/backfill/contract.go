@@ -111,7 +111,6 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 
 				// Stop spawning store threads and wait
 				if concurrentCalls >= c.chainConfig.StoreConcurrency || endHeight-log.BlockNumber < c.chainConfig.StoreConcurrencyThreshold {
-					logger.Errorf("Waiting for %d goroutines to finish %v", concurrentCalls, endHeight-log.BlockNumber < c.chainConfig.StoreConcurrencyThreshold)
 					if err = gS.Wait(); err != nil {
 						return fmt.Errorf("error waiting for go routines: %w", err)
 					}
