@@ -97,16 +97,15 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 				if _, ok := c.cache.Get(log.TxHash); ok {
 					continue
 				}
-				err := c.store(ctx, log)
-				if err != nil {
-					LogEvent(ErrorLevel, "Could not store log", LogData{"cid": c.chainConfig.ChainID, "ca": c.address, "e": err.Error()})
-
-					return fmt.Errorf("could not store log: %w", err)
-				}
 				concurrentCalls++
 				gS.Go(func() error {
-					// Stores the log, and it's associated receipt / tx in the EventDB.
-					return c.store(storeCtx, log)
+					err := c.store(ctx, log)
+					if err != nil {
+						LogEvent(ErrorLevel, "Could not store log", LogData{"cid": c.chainConfig.ChainID, "ca": c.address, "e": err.Error()})
+
+						return fmt.Errorf("could not store log: %w", err)
+					}
+					return nil
 				})
 
 				// Stop spawning store threads and wait
