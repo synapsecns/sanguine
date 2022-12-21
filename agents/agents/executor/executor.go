@@ -10,7 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
-	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
+	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -35,12 +35,14 @@ type ChainExecutor struct {
 	stopListenChan chan bool
 	// originParser is the origin parser.
 	originParser origin.Parser
+	// destinationParser is the destination parser.
+	destinationParser destination.Parser
 	// logChan is the log channel.
 	logChan chan *ethTypes.Log
 	// merkleTrees is a map from destination chain ID -> merkle tree.
 	merkleTrees map[uint32]*trieutil.SparseMerkleTrie
 	// client is an RPC client.
-	client ExecutorBackend
+	client Backend
 }
 
 // Executor is the executor agent.
@@ -51,8 +53,6 @@ type Executor struct {
 	executorDB db.ExecutorDB
 	// scribeClient is the client to the Scribe gRPC server.
 	scribeClient client.ScribeClient
-	// attestationCollectorParser is an attestationCollector parser.
-	attestationCollectorParser attestationcollector.Parser
 	// grpcClient is the gRPC client.
 	grpcClient pbscribe.ScribeServiceClient
 	// grpcConn is the gRPC connection.
@@ -72,12 +72,8 @@ const treeDepth uint64 = 32
 const logChanSize = 1000
 
 // NewExecutor creates a new executor agent.
-func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]ExecutorBackend) (*Executor, error) {
+func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
 	chainExecutors := make(map[uint32]*ChainExecutor)
-	attestationCollectorParser, err := attestationcollector.NewParser(common.HexToAddress(config.AttestationCollectorAddress))
-	if err != nil {
-		return nil, fmt.Errorf("could not create attestation collector parser: %w", err)
-	}
 
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -101,18 +97,24 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			return nil, fmt.Errorf("could not create origin parser: %w", err)
 		}
 
+		destinationParser, err := destination.NewParser(common.HexToAddress(chain.DestinationAddress))
+		if err != nil {
+			return nil, fmt.Errorf("could not create destination parser: %w", err)
+		}
+
 		chainExecutors[chain.ChainID] = &ChainExecutor{
 			chainID: chain.ChainID,
 			lastLog: &logOrderInfo{
 				blockNumber: 0,
 				blockIndex:  0,
 			},
-			closeConnection: make(chan bool, 1),
-			stopListenChan:  make(chan bool, 1),
-			originParser:    originParser,
-			logChan:         make(chan *ethTypes.Log, logChanSize),
-			merkleTrees:     make(map[uint32]*trieutil.SparseMerkleTrie),
-			client:          clients[chain.ChainID],
+			closeConnection:   make(chan bool, 1),
+			stopListenChan:    make(chan bool, 1),
+			originParser:      originParser,
+			destinationParser: destinationParser,
+			logChan:           make(chan *ethTypes.Log, logChanSize),
+			merkleTrees:       make(map[uint32]*trieutil.SparseMerkleTrie),
+			client:            clients[chain.ChainID],
 		}
 
 		for _, destination := range config.Chains {
@@ -130,13 +132,12 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 	}
 
 	return &Executor{
-		config:                     config,
-		executorDB:                 executorDB,
-		scribeClient:               scribeClient,
-		attestationCollectorParser: attestationCollectorParser,
-		grpcConn:                   conn,
-		grpcClient:                 grpcClient,
-		chainExecutors:             chainExecutors,
+		config:         config,
+		executorDB:     executorDB,
+		scribeClient:   scribeClient,
+		grpcConn:       conn,
+		grpcClient:     grpcClient,
+		chainExecutors: chainExecutors,
 	}, nil
 }
 
@@ -149,6 +150,10 @@ func (e Executor) Start(ctx context.Context) error {
 
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, originContract)
+		})
+
+		g.Go(func() error {
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, destinationContract)
 		})
 	}
 
@@ -255,7 +260,8 @@ type contractType int
 
 const (
 	originContract contractType = iota
-	attestationcollectorContract
+	destinationContract
+	other
 )
 
 // VerifyMessageNonce verifies a message against the merkle tree at the state of the given nonce.
@@ -281,35 +287,75 @@ func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message 
 }
 
 // VerifyOptimisticPeriod verifies that the optimistic period is valid.
-func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message, blockNumber uint64) (bool, error) {
-	block, err := e.chainExecutors[message.OriginDomain()].client.BlockByNumber(ctx, big.NewInt(int64(blockNumber)))
+func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message) (bool, error) {
+	chainID := message.OriginDomain()
+	destination := message.DestinationDomain()
+	nonce := message.Nonce()
+	attestationMask := execTypes.DBAttestation{
+		ChainID:     &chainID,
+		Destination: &destination,
+		Nonce:       &nonce,
+	}
+
+	attestation, err := e.executorDB.GetAttestation(ctx, attestationMask)
 	if err != nil {
-		return false, fmt.Errorf("could not get block by number: %w", err)
+		return false, fmt.Errorf("could not get attestation: %w", err)
+	}
+	if attestation == nil {
+		return false, fmt.Errorf("attestation is nil")
 	}
 
-	blockTime := block.Time()
+	root := (*attestation).Root()
+	attestationMask.Root = (*common.Hash)(&root)
 
-	latestBlock, err := e.chainExecutors[message.OriginDomain()].client.BlockNumber(ctx)
+	attestationBlockNumber, err := e.executorDB.GetAttestationBlockNumber(ctx, attestationMask)
 	if err != nil {
-		return false, fmt.Errorf("could not get latest block: %w", err)
+		return false, fmt.Errorf("could not get attestation block number: %w", err)
 	}
 
-	latestBlockForTime, err := e.chainExecutors[message.OriginDomain()].client.BlockByNumber(ctx, big.NewInt(int64(latestBlock)))
+	header, err := e.chainExecutors[destination].client.HeaderByNumber(ctx, big.NewInt(int64(attestationBlockNumber)))
 	if err != nil {
-		return false, fmt.Errorf("could not get latest block time: %w", err)
+		return false, fmt.Errorf("could not get header by number: %w", err)
 	}
 
-	currentTime := latestBlockForTime.Time()
+	attestationTimestamp := header.Time
 
-	if blockTime > currentTime {
-		return false, fmt.Errorf("block time is in the future")
+	latestHeader, err := e.chainExecutors[destination].client.HeaderByNumber(ctx, nil)
+	if err != nil {
+		return false, fmt.Errorf("could not get latest header: %w", err)
 	}
 
-	if blockTime+uint64(message.OptimisticSeconds()) > currentTime {
+	currentTime := latestHeader.Time
+
+	if attestationTimestamp+uint64(message.OptimisticSeconds()) > currentTime {
 		return false, nil
 	}
 
 	return true, nil
+
+	//header, err := e.chainExecutors[message.OriginDomain()].client.HeaderByNumber(ctx, big.NewInt(int64(blockNumber)))
+	//if err != nil {
+	//	return false, fmt.Errorf("could not get header by number: %w", err)
+	//}
+	//
+	//blockTime := header.Time
+	//
+	//latestHeader, err := e.chainExecutors[message.OriginDomain()].client.HeaderByNumber(ctx, nil)
+	//if err != nil {
+	//	return false, fmt.Errorf("could not get header block: %w", err)
+	//}
+	//
+	//currentTime := latestHeader.Time
+	//
+	//if blockTime > currentTime {
+	//	return false, fmt.Errorf("block time is in the future")
+	//}
+	//
+	//if blockTime+uint64(message.OptimisticSeconds()) > currentTime {
+	//	return false, nil
+	//}
+	//
+	//return true, nil
 }
 
 // GetLatestNonceProof returns the merkle proof for a nonce, with a tree where that nonce is the last item added.
@@ -343,8 +389,8 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	switch contract {
 	case originContract:
 		address = chain.OriginAddress
-	case attestationcollectorContract:
-		address = e.config.AttestationCollectorAddress
+	case destinationContract:
+		address = chain.DestinationAddress
 	default:
 		return fmt.Errorf("contract type not supported")
 	}
@@ -398,6 +444,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 			if !e.chainExecutors[chain.ChainID].lastLog.verifyAfter(*log) {
 				logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chain.ChainID].lastLog.blockNumber, e.chainExecutors[chain.ChainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+
 				continue
 			}
 
@@ -410,31 +457,51 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 // processLog processes the log and updates the merkle tree.
 func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	message, err := e.logToMessage(log, chainID)
-	if err != nil {
-		return fmt.Errorf("could not convert log to leaf: %w", err)
-	}
-	if message == nil {
-		return nil
-	}
+	logType := e.logType(log, chainID)
 
-	destination := (*message).DestinationDomain()
-	merkleIndex := e.chainExecutors[chainID].merkleTrees[destination].NumOfItems()
-	leaf, err := (*message).ToLeaf()
-	if err != nil {
-		return fmt.Errorf("could not convert message to leaf: %w", err)
-	}
+	switch logType {
+	case originContract:
+		message, err := e.logToMessage(log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not convert log to leaf: %w", err)
+		}
+		if message == nil {
+			return nil
+		}
 
-	// Make sure the nonce of the message is being inserted at the right index.
-	if uint32(merkleIndex)+1 != (*message).Nonce() {
-		return fmt.Errorf("nonce of message is not equal to the merkle index: %d != %d", (*message).Nonce(), merkleIndex+1)
-	}
+		destination := (*message).DestinationDomain()
+		merkleIndex := e.chainExecutors[chainID].merkleTrees[destination].NumOfItems()
+		leaf, err := (*message).ToLeaf()
+		if err != nil {
+			return fmt.Errorf("could not convert message to leaf: %w", err)
+		}
 
-	e.chainExecutors[chainID].merkleTrees[destination].Insert(leaf[:], merkleIndex)
-	root := e.chainExecutors[chainID].merkleTrees[destination].Root()
-	err = e.executorDB.StoreMessage(ctx, *message, root, log.BlockNumber)
-	if err != nil {
-		return fmt.Errorf("could not store message: %w", err)
+		// Make sure the nonce of the message is being inserted at the right index.
+		if uint32(merkleIndex)+1 != (*message).Nonce() {
+			return fmt.Errorf("nonce of message is not equal to the merkle index: %d != %d", (*message).Nonce(), merkleIndex+1)
+		}
+
+		e.chainExecutors[chainID].merkleTrees[destination].Insert(leaf[:], merkleIndex)
+		root := e.chainExecutors[chainID].merkleTrees[destination].Root()
+		err = e.executorDB.StoreMessage(ctx, *message, root, log.BlockNumber)
+		if err != nil {
+			return fmt.Errorf("could not store message: %w", err)
+		}
+	case destinationContract:
+		attestation, err := e.logToAttestation(log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not convert log to attestation: %w", err)
+		}
+		if attestation == nil {
+			return nil
+		}
+
+		err = e.executorDB.StoreAttestation(ctx, *attestation, log.BlockNumber)
+		if err != nil {
+			return fmt.Errorf("could not store attestation: %w", err)
+		}
+	default:
+		logger.Warnf("the log's event type is not supported")
 	}
 
 	return nil
@@ -442,24 +509,42 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 
 // logToMessage converts the log to a leaf data.
 func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message, error) {
-	if eventType, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && eventType == origin.DispatchEvent {
-		committedMessage, ok := e.chainExecutors[chainID].originParser.ParseDispatch(log)
-		if !ok {
-			return nil, fmt.Errorf("could not parse committed message")
-		}
-
-		message, err := types.DecodeMessage(committedMessage.Message())
-		if err != nil {
-			return nil, fmt.Errorf("could not decode message: %w", err)
-		}
-
-		return &message, nil
+	committedMessage, ok := e.chainExecutors[chainID].originParser.ParseDispatch(log)
+	if !ok {
+		return nil, fmt.Errorf("could not parse committed message")
 	}
 
-	logger.Warnf("could not match the log's event type")
+	message, err := types.DecodeMessage(committedMessage.Message())
+	if err != nil {
+		return nil, fmt.Errorf("could not decode message: %w", err)
+	}
 
-	//nolint:nilnil
-	return nil, nil
+	return &message, nil
+}
+
+// logToAttestation converts the log to an attestation.
+func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (*types.Attestation, error) {
+	attestation, ok := e.chainExecutors[chainID].destinationParser.ParseAttestationAccepted(log)
+	if !ok {
+		return nil, fmt.Errorf("could not parse attestation")
+	}
+
+	return &attestation, nil
+}
+
+// logType determines whether a log is a `Dispatch` from Origin.sol or `AttestationAccepted` from Destination.sol.
+func (e Executor) logType(log ethTypes.Log, chainID uint32) contractType {
+	contract := other
+
+	if eventType, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && eventType == origin.DispatchEvent {
+		contract = originContract
+	}
+
+	if eventType, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok && eventType == destination.AttestationAcceptedEvent {
+		contract = destinationContract
+	}
+
+	return contract
 }
 
 func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {

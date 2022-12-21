@@ -28,6 +28,7 @@ import (
 type SimulatedBackendsTestSuite struct {
 	*testsuite.TestSuite
 	OriginContract              *originharness.OriginHarnessRef
+	OriginContractMetadata      contracts.DeployedContract
 	DestinationContract         *destinationharness.DestinationHarnessRef
 	DestinationContractMetadata contracts.DeployedContract
 	AttestationHarness          *attestationharness.AttestationHarnessRef
@@ -59,7 +60,7 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 
 // SetupOrigin sets up the backend that will have the origin contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
-	_, a.OriginContract = deployManager.GetOriginHarness(a.GetTestContext(), a.TestBackendOrigin)
+	a.OriginContractMetadata, a.OriginContract = deployManager.GetOriginHarness(a.GetTestContext(), a.TestBackendOrigin)
 	originOwnerPtr, err := a.OriginContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
 		a.T().Fatal(err)

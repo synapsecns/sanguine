@@ -45,3 +45,17 @@ type Message struct {
 	// BlockNumber is the block number.
 	BlockNumber uint64 `gorm:"column:block_number"`
 }
+
+// Attestation is the information about an attestation parsed by the Executor.
+type Attestation struct {
+	// ChainID is the chain id.
+	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	// Destination is the destination.
+	Destination uint32 `gorm:"column:destination;primaryKey"`
+	// Nonce is the nonce.
+	Nonce uint32 `gorm:"column:nonce;primaryKey"`
+	// Root is the root.
+	Root string `gorm:"column:root;primaryKey"`
+	// BlockNumber is the block number.
+	BlockNumber uint64 `gorm:"column:block_number"`
+}
