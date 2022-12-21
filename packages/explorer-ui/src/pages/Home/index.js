@@ -14,23 +14,30 @@ import Grid from '@tw/Grid'
 
 import { StandardPageContainer } from '@layouts/StandardPageContainer'
 import {
+  getHistoricalAddresses,
+  getHistoricalBridgeVolume,
+  getHistoricalTransactions,
+} from 'hooks/getHistoricalStats'
+
+import {
   getAddresses,
   getBridgeVolume,
   getTransactions,
-} from 'hooks/getHistoricalStats'
+} from 'hooks/getBridgeAmountStats'
+
 
 export function Home() {
-  const bridgeVolume = getBridgeVolume({ days: 30 })
-  const transactions = getTransactions({ days: 30 })
-  const addresses = getAddresses({ days: 30 })
+  const bridgeVolume = getHistoricalAddresses({ days: 30 })
+  const transactions = getHistoricalBridgeVolume({ days: 30 })
+  const addresses = getHistoricalTransactions({ days: 30 })
 
 
-  // const bridgeAllTimeVolume = getBridgeVolume({ days: 3000 })
-  // const transactionsAllTime = getTransactions({ days: 3000 })
-  // const addressesAllTime = getAddresses({ days: 3000 })
+  const bridgeVolumeAllTime = getBridgeVolume({})
+  const transactionsAllTime = getTransactions({})
+  const addressesAllTime = getAddresses({})
 
   const [chartType, setChartType] = useState('BRIDGEVOLUME')
-  const [allTime, setAllTime] = useState(0)
+  const [allTime, setAllTime] = useState(1)
 
 
   let data
@@ -46,15 +53,15 @@ export function Home() {
   return (
     <StandardPageContainer>
       <Chart data={data} />
-      {bridgeVolume && transactions && addresses?
+      {bridgeVolume && transactions && addresses && bridgeVolumeAllTime && transactionsAllTime && addressesAllTime ?
         allTime === 1 ?
-        <Stats
-        bridgeVolume={bridgeVolume.historicalStatistics.total}
-        transactions={transactions.historicalStatistics.total}
-        addresses={addresses.historicalStatistics.total}
-        setChartType={setChartType}
-        allTime={false}
-      />
+          <Stats
+            bridgeVolume={bridgeVolumeAllTime.bridgeAmountStatistic.value}
+            transactions={transactionsAllTime.bridgeAmountStatistic.value}
+            addresses={addressesAllTime.bridgeAmountStatistic.value}
+            setChartType={setChartType}
+            allTime={true}
+          />
           :
           <Stats
             bridgeVolume={bridgeVolume.historicalStatistics.total}
@@ -74,10 +81,10 @@ export function Home() {
           url={ANALYTICS_PATH}
           external={true}
         />
-          <div className="mt-2 mb-10 text-right">
-        <div  className="text-white text-opacity-50 hover:text-opacity-90 hover:underline cursor-pointer"
-          onClick={() => setAllTime(allTime === 0 ? 1 : 0)}
-        >{allTime === 1?  "View 30-day" : " View all-time"}</div>
+        <div className="mt-2 mb-10 text-right">
+          <div className="text-white text-opacity-50 hover:text-opacity-90 hover:underline cursor-pointer"
+            onClick={() => setAllTime(allTime === 0 ? 1 : 0)}
+          >{allTime === 1 ? "View 30-day" : " View all-time"}</div>
         </div>
       </Grid>
       <UniversalSearch />

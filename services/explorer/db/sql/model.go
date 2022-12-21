@@ -225,6 +225,8 @@ type TokenIndex struct {
 	TokenIndex uint8 `gorm:"column:token_index"`
 	// TokenAddress is the address of the token.
 	TokenAddress string `gorm:"column:token_address"`
+	// ContractAddress is the address of the contract that generated the event.
+	ContractAddress string `gorm:"column:contract_address"`
 }
 
 // MessageBusEvent stores data for emitted events from the message bus contract.

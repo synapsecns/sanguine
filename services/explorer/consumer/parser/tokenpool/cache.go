@@ -16,7 +16,7 @@ import (
 // (not the other way around), data is guaranteed to be accurate.
 type Service interface {
 	// GetTokenAddress attempts to get token data from the cache otherwise its fetched from the bridge config
-	GetTokenAddress(ctx context.Context, chainID uint32, tokenIndex uint8) (*common.Address, error)
+	GetTokenAddress(ctx context.Context, chainID uint32, tokenIndex uint8, contractAddress string) (*common.Address, error)
 }
 
 const cacheSize = 3000
@@ -43,7 +43,7 @@ func NewPoolTokenDataService(service fetcher.SwapService, consumerDB db.Consumer
 	}, nil
 }
 
-func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, chainID uint32, tokenIndex uint8) (*common.Address, error) {
+func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, chainID uint32, tokenIndex uint8, contractAddress string) (*common.Address, error) {
 	key := fmt.Sprintf("token_%d_%d", chainID, tokenIndex)
 	if data, ok := t.poolTokenCache.Get(key); ok {
 		return &data, nil
@@ -65,7 +65,7 @@ func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, ch
 	}
 
 	err = t.retryWithBackoff(ctx, func(ctx context.Context) error {
-		return t.storeTokenIndex(ctx, chainID, tokenIndex, tokenAddress)
+		return t.storeTokenIndex(ctx, chainID, tokenIndex, tokenAddress, contractAddress)
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not store token index: %w", err)
@@ -75,8 +75,8 @@ func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, ch
 	return tokenAddress, nil
 }
 
-func (t *tokenPoolDataServiceImpl) storeTokenIndex(parentCtx context.Context, chainID uint32, tokenIndex uint8, tokenAddress *common.Address) error {
-	err := t.consumerDB.StoreTokenIndex(parentCtx, chainID, tokenIndex, tokenAddress.String())
+func (t *tokenPoolDataServiceImpl) storeTokenIndex(parentCtx context.Context, chainID uint32, tokenIndex uint8, tokenAddress *common.Address, contractAddress string) error {
+	err := t.consumerDB.StoreTokenIndex(parentCtx, chainID, tokenIndex, tokenAddress.String(), contractAddress)
 	if err != nil {
 		return fmt.Errorf("could not store token index: %w", err)
 	}
