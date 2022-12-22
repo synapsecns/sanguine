@@ -14,35 +14,32 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// StoreLog stores a log.
-func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) error {
-	topics := []sql.NullString{}
-	topicsLength := len(log.Topics)
-	// Ethereum topics are always 3 long, excluding the primary topic.
-	indexedTopics := 3
-	// Loop through the topics and convert them to nullStrings.
-	// If the topic is empty, we set Valid to false.
-	// If the topic is not empty, provide its string value and set Valid to true.
-	for index := 0; index <= indexedTopics+1; index++ {
-		if index < topicsLength {
-			topics = append(topics, sql.NullString{
-				String: log.Topics[index].String(),
-				Valid:  true,
-			})
-		} else {
-			topics = append(topics, sql.NullString{
-				Valid: false,
-			})
+// StoreLogs stores a log.
+func (s Store) StoreLogs(ctx context.Context, chainID uint32, logs ...types.Log) error {
+	var storeLogs []Log
+	for _, log := range logs {
+		var topics []sql.NullString
+
+		topicsLength := len(log.Topics)
+		// Ethereum topics are always 3 long, excluding the primary topic.
+		indexedTopics := 3
+		// Loop through the topics and convert them to nullStrings.
+		// If the topic is empty, we set Valid to false.
+		// If the topic is not empty, provide its string value and set Valid to true.
+		for index := 0; index <= indexedTopics+1; index++ {
+			if index < topicsLength {
+				topics = append(topics, sql.NullString{
+					String: log.Topics[index].String(),
+					Valid:  true,
+				})
+			} else {
+				topics = append(topics, sql.NullString{
+					Valid: false,
+				})
+			}
 		}
-	}
-	dbTx := s.DB().WithContext(ctx).
-		Clauses(clause.OnConflict{
-			Columns: []clause.Column{
-				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: TxHashFieldName}, {Name: BlockIndexFieldName},
-			},
-			DoNothing: true,
-		}).
-		Create(&Log{
+
+		storeLogs = append(storeLogs, Log{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
 			PrimaryTopic:    topics[0],
@@ -58,6 +55,15 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 			Removed:         log.Removed,
 			Confirmed:       false,
 		})
+	}
+	dbTx := s.DB().WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: TxHashFieldName}, {Name: BlockIndexFieldName},
+			},
+			DoNothing: true,
+		}).
+		Create(&storeLogs)
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store log: %w", dbTx.Error)
@@ -67,7 +73,7 @@ func (s Store) StoreLog(ctx context.Context, log types.Log, chainID uint32) erro
 }
 
 // ConfirmLogsForBlockHash confirms logs for a given block hash.
-func (s Store) ConfirmLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+func (s Store) ConfirmLogsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
 		Where(&Log{BlockHash: blockHash.String(), ChainID: chainID}).

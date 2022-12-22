@@ -3,6 +3,7 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/mapmutex"
 	"math/big"
 	"time"
 
@@ -27,6 +28,8 @@ type ContractBackfiller struct {
 	client []ScribeBackend
 	// cache is a cache for txHashes.
 	cache *lru.Cache
+	// mux is the mutex used to prevent double inserting logs from the same tx
+	mux mapmutex.StringerMapMutex
 }
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
@@ -54,6 +57,7 @@ func NewContractBackfiller(chainConfig config.ChainConfig, address string, event
 		eventDB:     eventDB,
 		client:      client,
 		cache:       cache,
+		mux:         mapmutex.NewStringerMapMutex(),
 	}, nil
 }
 
@@ -93,20 +97,27 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
 			case log := <-logsChan:
-				// Check if the txHash has already been stored in the cache.
-				if _, ok := c.cache.Get(log.TxHash); ok {
-					continue
-				}
-				err := c.store(ctx, log)
-				if err != nil {
-					LogEvent(ErrorLevel, "Could not store log", LogData{"cid": c.chainConfig.ChainID, "ca": c.address, "e": err.Error()})
-
-					return fmt.Errorf("could not store log: %w", err)
-				}
 				concurrentCalls++
 				gS.Go(func() error {
-					// Stores the log, and it's associated receipt / tx in the EventDB.
-					return c.store(storeCtx, log)
+					// another goroutine is already storing this receipt
+					locker, ok := c.mux.TryLock(log.TxHash)
+					if !ok {
+						return nil
+					}
+					defer locker.Unlock()
+
+					// Check if the txHash has already been stored in the cache.
+					if _, ok := c.cache.Get(log.TxHash); ok {
+						return nil
+					}
+
+					err := c.store(storeCtx, log)
+					if err != nil {
+						LogEvent(ErrorLevel, "Could not store log", LogData{"cid": c.chainConfig.ChainID, "ca": c.address, "e": err.Error()})
+
+						return fmt.Errorf("could not store log: %w", err)
+					}
+					return nil
 				})
 
 				// Stop spawning store threads and wait
@@ -215,7 +226,7 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 			gInner, groupInnerCtx := errgroup.WithContext(groupCtx)
 			gInner.Go(func() error {
 				// Store receipt in the EventDB.
-				err = c.eventDB.StoreReceipt(groupInnerCtx, returnedReceipt, c.chainConfig.ChainID)
+				err = c.eventDB.StoreReceipt(groupInnerCtx, c.chainConfig.ChainID, returnedReceipt)
 				if err != nil {
 					timeout = b.Duration()
 					LogEvent(ErrorLevel, "Could not store receipt, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
@@ -224,25 +235,20 @@ func (c *ContractBackfiller) store(ctx context.Context, log types.Log) error {
 				}
 				return nil
 			})
-			// Store the logs in the EventDB.
-			for i := range returnedReceipt.Logs {
-				log := returnedReceipt.Logs[i]
-				if log == nil {
-					LogEvent(ErrorLevel, "log is nil", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
 
-					return fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+			gInner.Go(func() error {
+				logs, err := c.prunedReceiptLogs(returnedReceipt)
+				if err != nil {
+					return err
 				}
-				gInner.Go(func() error {
-					err := c.eventDB.StoreLog(groupCtx, *log, c.chainConfig.ChainID)
-					if err != nil {
-						timeout = b.Duration()
-						LogEvent(ErrorLevel, "Could not store log, retrying", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
 
-						return fmt.Errorf("could not store log: %w", err)
-					}
-					return nil
-				})
-			}
+				err = c.eventDB.StoreLogs(groupInnerCtx, c.chainConfig.ChainID, logs...)
+				if err != nil {
+					return fmt.Errorf("could not store receipt logs: %w", err)
+				}
+				return nil
+			})
+
 			err = gInner.Wait()
 			if err != nil {
 				LogEvent(ErrorLevel, "Could not store data", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address, "e": err.Error()})
@@ -383,4 +389,18 @@ func (c ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight 
 		}
 	}()
 	return logsChan, doneChan
+}
+
+// prunedReceiptLogs gets all logs from a receipt and prunes null logs.
+func (c *ContractBackfiller) prunedReceiptLogs(receipt types.Receipt) (logs []types.Log, err error) {
+	for i := range receipt.Logs {
+		log := receipt.Logs[i]
+		if log == nil {
+			LogEvent(ErrorLevel, "log is nil", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.address})
+
+			return nil, fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", c.chainConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), c.address)
+		}
+		logs = append(logs, *log)
+	}
+	return logs, nil
 }
