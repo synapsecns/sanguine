@@ -14,6 +14,8 @@ import Card from '@components/tailwind/Card'
 import Grid from '@components/tailwind/Grid'
 import Image from 'next/image'
 
+import Link from 'next/link'
+
 import { getNetworkButtonBorderHover } from '@utils/styles/networks'
 
 function Direction({ direction, setDirection }) {
@@ -58,8 +60,11 @@ export function PopularTokens() {
           const { chainName } = CHAIN_INFO_MAP[chainId]
           const displaySymbol = addressToSymbol({ tokenAddress, chainId })
           return (
-            <a
-              href={`${TOKEN_ADDRESSES_PATH}/${tokenAddress}?chainId=${chainId}`}
+            <Link
+              href={{
+                pathname: `${TOKEN_ADDRESSES_PATH}/${tokenAddress}`,
+                query: { chainId: chainId },
+              }}
               key={i}
             >
               <Card
@@ -83,7 +88,7 @@ export function PopularTokens() {
                   on {chainName}
                 </div>
               </Card>
-            </a>
+            </Link>
           )
         })}
       </Grid>

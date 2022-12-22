@@ -16,11 +16,15 @@ import { ChainInfo } from '@components/misc/ChainInfo'
 
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 
-import { Stats } from '@pages/Home/Stats'
+import { Stats } from '@components/pages/Home/Stats'
 import { Chart, ChartLoading } from '@components/Chart'
 
+import { useRouter } from 'next/router'
+import { useSearchParams } from 'next/navigation'
+
 export function Chain() {
-  const { chainId } = useParams()
+  const router = useRouter()
+  const { chainId } = router.query
 
   const { data: bridgeVolume } = useQuery(GET_HISTORICAL_STATS, {
     variables: {
@@ -59,7 +63,7 @@ export function Chain() {
     chartData = addresses && addresses.historicalStatistics.dateResults
   }
 
-  const [search, setSearch] = useSearchParams()
+  const search = useSearchParams()
   const p = Number(search.get('page')) || 1
 
   const [page, setPage] = useState(p)
@@ -102,7 +106,7 @@ export function Chain() {
   const nextPage = () => {
     let newPage = page + 1
     setPage(newPage)
-    setSearch({ page: newPage })
+    // setSearch({ page: newPage })
 
     getBridgeTransactions({
       variables: { chainId: Number(chainId), page: newPage },
@@ -113,7 +117,7 @@ export function Chain() {
     if (page > 1) {
       let newPage = page - 1
       setPage(newPage)
-      setSearch({ page: newPage })
+      // setSearch({ page: newPage })
       getBridgeTransactions({
         variables: { chainId: Number(chainId), page: newPage },
       })
@@ -122,7 +126,7 @@ export function Chain() {
 
   const resetPage = () => {
     setPage(1)
-    setSearch({ page: 1 })
+    // setSearch({ page: 1 })
     getBridgeTransactions({
       variables: { chainId: Number(chainId), page: 1 },
     })

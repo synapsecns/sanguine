@@ -20,16 +20,19 @@ import { mode } from '@utils/math/statistics'
 import { CopyButtonIcon } from '@components/CopyButtonIcon'
 
 import { GetCsvButton } from '@components/GetCsvButton'
+import { useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/router'
 
 export function Address() {
-  const [search, setSearch] = useSearchParams()
+  const router = useRouter()
+  const search = useSearchParams()
   const p = Number(search.get('page')) || 1
 
   const [page, setPage] = useState(p)
   const [transactions, setTransactions] = useState([])
   const [totalCount, setTotalCount] = useState(0)
 
-  let { address } = useParams()
+  const { address } = router.query
 
   const {
     error: totalError,
@@ -83,7 +86,7 @@ export function Address() {
   function nextPage() {
     let newPage = page + 1
     setPage(newPage)
-    setSearch({ page: newPage })
+    // setSearch({ page: newPage })
 
     getBridgeTransactions({
       variables: { address, page: newPage },
@@ -94,7 +97,7 @@ export function Address() {
     if (page > 1) {
       let newPage = page - 1
       setPage(newPage)
-      setSearch({ page: newPage })
+      // setSearch({ page: newPage })
       getBridgeTransactions({
         variables: { address, page: newPage },
       })
@@ -103,7 +106,7 @@ export function Address() {
 
   function resetPage() {
     setPage(1)
-    setSearch({ page: 1 })
+    // setSearch({ page: 1 })
     getBridgeTransactions({
       variables: { address, page: 1 },
     })

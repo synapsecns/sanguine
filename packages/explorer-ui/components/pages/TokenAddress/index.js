@@ -20,16 +20,20 @@ import Grid from '@components/tailwind/Grid'
 
 import { TokenOnChain } from '@components/misc/TokenOnChain'
 
-import { StatCard } from '@pages/Home/Stats'
+import { StatCard } from '@components/pages/Home/Stats'
+
+import { useRouter } from 'next/router'
+import { useSearchParams } from 'next/navigation'
 
 export function TokenAddress() {
-  const [search, setSearch] = useSearchParams()
+  const router = useRouter()
+  const { tokenAddress, chainId } = router.query
+  const search = useSearchParams()
   const p = Number(search.get('page')) || 1
-  const chainId = Number(search.get('chainId'))
+  // const chainId = Number(search.get('chainId'))
 
   const [page, setPage] = useState(p)
   const [transactions, setTransactions] = useState([])
-  const { tokenAddress } = useParams()
 
   const [getBridgeTransactions, { error: pageError, data }] = useLazyQuery(
     GET_BRIDGE_TRANSACTIONS_QUERY
@@ -71,7 +75,7 @@ export function TokenAddress() {
   const nextPage = () => {
     let newPage = page + 1
     setPage(newPage)
-    setSearch({ page: newPage, chainId })
+    // setSearch({ page: newPage, chainId })
 
     getBridgeTransactions({
       variables: {
@@ -86,7 +90,7 @@ export function TokenAddress() {
     if (page > 1) {
       let newPage = page - 1
       setPage(newPage)
-      setSearch({ page: newPage, chainId })
+      // setSearch({ page: newPage, chainId })
       getBridgeTransactions({
         variables: {
           tokenAddress,
@@ -99,7 +103,7 @@ export function TokenAddress() {
 
   const resetPage = () => {
     setPage(1)
-    setSearch({ page: 1, chainId })
+    // setSearch({ page: 1, chainId })
     getBridgeTransactions({
       variables: {
         tokenAddress,
@@ -179,7 +183,7 @@ function getTransactionCount({ chainId, tokenAddress, duration }) {
     variables: {
       chainId: chainId && Number(chainId),
       duration,
-      tokenAddress: getAddress(tokenAddress),
+      tokenAddress: tokenAddress,
       type: 'COUNT_TRANSACTIONS',
     },
   })
@@ -192,7 +196,7 @@ function getBridgeVolume({ chainId, tokenAddress, duration }) {
     variables: {
       chainId: Number(chainId),
       duration,
-      tokenAddress: getAddress(tokenAddress),
+      tokenAddress: tokenAddress,
       type: 'TOTAL_VOLUME_USD',
     },
   })
@@ -205,7 +209,7 @@ function getAddressCount({ chainId, tokenAddress, duration }) {
     variables: {
       chainId: Number(chainId),
       duration,
-      tokenAddress: getAddress(tokenAddress),
+      tokenAddress: tokenAddress,
       type: 'COUNT_ADDRESSES',
     },
   })
