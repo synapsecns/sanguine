@@ -112,5 +112,5 @@ coverage.out
 .gas-snapshot
 profile.cov
 
-
+.next/
 .vscode/launch.json
