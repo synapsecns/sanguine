@@ -60,11 +60,8 @@ export function PopularTokens({ counts }) {
           const { chainName } = CHAIN_INFO_MAP[chainId]
           const displaySymbol = addressToSymbol({ tokenAddress, chainId })
           return (
-            <Link
-              href={{
-                pathname: `${TOKEN_ADDRESSES_PATH}/${tokenAddress}`,
-                query: { chainId: chainId },
-              }}
+            <a
+              href={`${TOKEN_ADDRESSES_PATH}/${tokenAddress}?chainId=${chainId}`}
               key={i}
             >
               <Card
@@ -88,7 +85,7 @@ export function PopularTokens({ counts }) {
                   on {chainName}
                 </div>
               </Card>
-            </Link>
+            </a>
           )
         })}
       </Grid>

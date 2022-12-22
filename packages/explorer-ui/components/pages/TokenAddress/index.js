@@ -25,7 +25,12 @@ import { StatCard } from '@components/pages/Home/Stats'
 import { useRouter } from 'next/router'
 import { useSearchParams } from 'next/navigation'
 
-export function TokenAddress() {
+export function TokenAddress({
+  allTimeBridgeVolume,
+  allTimeTransactionCount,
+  allTimeAddresses,
+  txQueryResult,
+}) {
   const router = useRouter()
   const { tokenAddress } = router.query
   const search = useSearchParams()
@@ -40,9 +45,11 @@ export function TokenAddress() {
     GET_BRIDGE_TRANSACTIONS_QUERY
   )
 
+  let { bridgeTransactions } = txQueryResult
+
   useEffect(() => {
-    if (data) {
-      setTransactions(data.bridgeTransactions, {
+    if (bridgeTransactions) {
+      setTransactions(bridgeTransactions, {
         variables: {
           tokenAddress,
           chainId: Number(chainId),
@@ -54,13 +61,13 @@ export function TokenAddress() {
 
     if (num === 0) {
       setPage(1)
-      getBridgeTransactions({
-        variables: {
-          tokenAddress,
-          chainId: Number(chainId),
-          page: 1,
-        },
-      })
+      // getBridgeTransactions({
+      //   variables: {
+      //     tokenAddress,
+      //     chainId: Number(chainId),
+      //     page: 1,
+      //   },
+      // })
     } else {
       setPage(num)
       getBridgeTransactions({
@@ -116,7 +123,7 @@ export function TokenAddress() {
 
   let content
 
-  if (!data) {
+  if (!bridgeTransactions) {
     content = [...Array(10).keys()].map((i) => (
       <TransactionCardLoader key={i} />
     ))
@@ -141,30 +148,17 @@ export function TokenAddress() {
       <Grid cols={{ sm: 1, md: 3, lg: 3 }} gap={4} className="my-5">
         <StatCard title="Volume" active={true} duration="All-Time">
           <div className="text-4xl font-bold text-white">
-            $
-            {getBridgeVolume({
-              chainId,
-              tokenAddress,
-              duration: 'ALL_TIME',
-            })}
+            ${allTimeBridgeVolume}
           </div>
         </StatCard>
         <StatCard title="Transaction Count" active={true} duration="All-Time">
           <div className="text-4xl font-bold text-white">
-            {getTransactionCount({
-              chainId,
-              tokenAddress,
-              duration: 'ALL_TIME',
-            })}
+            {allTimeTransactionCount}
           </div>
         </StatCard>
         <StatCard title="Addresses" active={true} duration="All-Time">
           <div className="text-4xl font-bold text-white">
-            {getAddressCount({
-              chainId,
-              tokenAddress,
-              duration: 'ALL_TIME',
-            })}
+            {allTimeAddresses}
           </div>
         </StatCard>
       </Grid>
