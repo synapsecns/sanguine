@@ -7,32 +7,32 @@ import {
 } from '@components/TransactionCard'
 import { GET_LATEST_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 
-export function LatestBridgeTransactions() {
-  const { error, data } = useQuery(GET_LATEST_BRIDGE_TRANSACTIONS_QUERY, {
-    variables: { includePending: false, page: 1 },
-  })
+export function LatestBridgeTransactions({ queryResult }) {
+  // const { error, data } = useQuery(GET_LATEST_BRIDGE_TRANSACTIONS_QUERY, {
+  //   variables: { includePending: false, page: 1 },
+  // })
 
   let content
 
-  if (!data) {
-    content = [...Array(5).keys()].map((i) => (
-      <TransactionCardLoader key={i} ordinal={i} />
-    ))
-  } else if (error) {
-    content = 'Error'
-  } else {
-    let { latestBridgeTransactions } = data
+  // if (!queryResult) {
+  //   content = [...Array(5).keys()].map((i) => (
+  //     <TransactionCardLoader key={i} ordinal={i} />
+  //   ))
+  // } else if (queryResult.error) {
+  //   content = 'Error'
+  // } else {
+  let { latestBridgeTransactions } = queryResult
 
-    latestBridgeTransactions = _.orderBy(
-      latestBridgeTransactions,
-      'fromInfo.time',
-      ['desc']
-    ).slice(0, 5)
+  latestBridgeTransactions = _.orderBy(
+    latestBridgeTransactions,
+    'fromInfo.time',
+    ['desc']
+  ).slice(0, 5)
 
-    content = latestBridgeTransactions.map((txn, i) => (
-      <TransactionCard txn={txn} key={i} ordinal={i} />
-    ))
-  }
+  content = latestBridgeTransactions.map((txn, i) => (
+    <TransactionCard txn={txn} key={i} ordinal={i} />
+  ))
+  // }
 
   return <>{content}</>
 }

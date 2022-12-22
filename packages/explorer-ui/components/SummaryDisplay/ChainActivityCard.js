@@ -31,7 +31,7 @@ export function getChainActivity({ chainId, direction }) {
     },
   })
 
-  let { countByChainId } = data ?? {}
+  const { countByChainId } = data ?? {}
 
   return countByChainId
 }

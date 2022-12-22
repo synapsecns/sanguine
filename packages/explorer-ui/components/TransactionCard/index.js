@@ -25,15 +25,6 @@ export function TransactionCard({ txn, ordinal }) {
         chainIdFrom: fromInfo.chainId,
         chainIdTo: toInfo.chainId,
       })}
-      // onClick={() =>
-      //   navigate(
-      //     getBridgeTransactionUrl({
-      //       hash: kappa,
-      //       chainIdFrom: fromInfo.chainId,
-      //       chainIdTo: toInfo.chainId,
-      //     })
-      //   )
-      // }
     >
       <Card
         className={`flex-wrap md:flex lg:flex justify-between mt-2 mb-2 rounded-none ${backgroundColor}`}

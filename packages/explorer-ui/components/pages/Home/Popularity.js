@@ -42,10 +42,10 @@ function Direction({ direction, setDirection }) {
   )
 }
 
-export function PopularTokens() {
+export function PopularTokens({ counts }) {
   const [direction, setDirection] = useState('IN')
 
-  const counts = popularTokens({ direction })
+  // const counts = popularTokens({ direction })
   const topFive = (counts && counts.slice(0, 5)) || []
 
   return (
@@ -96,10 +96,10 @@ export function PopularTokens() {
   )
 }
 
-export function PopularChains() {
+export function PopularChains({ counts }) {
   const [direction, setDirection] = useState('IN')
 
-  const counts = getChainActivity({ direction })
+  // const counts = getChainActivity({ direction })
   const topFive = (counts && counts.slice(0, 5)) || []
 
   return (

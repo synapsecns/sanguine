@@ -25,15 +25,17 @@ import {
   getTransactions,
 } from 'hooks/getBridgeAmountStats'
 
-export function Home() {
-  const bridgeVolume = getHistoricalAddresses({ days: 30 })
-  const transactions = getHistoricalBridgeVolume({ days: 30 })
-  const addresses = getHistoricalTransactions({ days: 30 })
-
-  const bridgeVolumeAllTime = getBridgeVolume({})
-  const transactionsAllTime = getTransactions({})
-  const addressesAllTime = getAddresses({})
-
+export function Home({
+  bridgeVolume,
+  transactions,
+  addresses,
+  bridgeVolumeAllTime,
+  transactionsAllTime,
+  addressesAllTime,
+  latestBridgeTransactions,
+  popularTokens,
+  popularChains,
+}) {
   const [chartType, setChartType] = useState('BRIDGEVOLUME')
   const [allTime, setAllTime] = useState(1)
 
@@ -90,15 +92,15 @@ export function Home() {
       </Grid>
       <UniversalSearch />
 
-      <LatestBridgeTransactions />
+      <LatestBridgeTransactions queryResult={latestBridgeTransactions} />
       <HorizontalDivider />
       <PageLink text="See all transactions" url={TRANSACTIONS_PATH} />
 
-      <PopularTokens />
+      <PopularTokens counts={popularTokens} />
       <HorizontalDivider />
       <PageLink text="View all tokens" url={TRANSACTIONS_PATH} />
 
-      <PopularChains />
+      <PopularChains counts={popularChains} />
       <HorizontalDivider />
       <PageLink text="View all chains" url={TRANSACTIONS_PATH} />
     </StandardPageContainer>
