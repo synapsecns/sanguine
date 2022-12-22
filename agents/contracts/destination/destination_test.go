@@ -90,6 +90,14 @@ func (d DestinationSuite) TestDestinationSuite() {
 		True(d.T(), ok)
 		Equal(d.T(), eventType, destination.AttestationAcceptedEvent)
 
+		emittedSignedAttesation, err := types.DecodeSignedAttestation(item.Attestation)
+		Nil(d.T(), err)
+
+		Equal(d.T(), d.OriginDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Origin())
+		Equal(d.T(), d.DestinationDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Destination())
+		Equal(d.T(), nonce, emittedSignedAttesation.Attestation().Nonce())
+		Equal(d.T(), [32]byte(root), emittedSignedAttesation.Attestation().Root())
+
 		break
 	}
 }
