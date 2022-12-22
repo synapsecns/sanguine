@@ -103,9 +103,13 @@ var backfillCommand = &cli.Command{
 		}
 
 		// TODO delete once livefilling done
-		ctx, cancel := context.WithTimeout(c.Context, time.Minute*12)
+		ctx, cancel := context.WithTimeout(c.Context, time.Hour*2)
 		cancelVar := cancel
 		for {
+			// Create a large heap allocation of 10 GiB
+			// See: https://blog.twitch.tv/en/2019/04/10/go-memory-ballast-how-i-learnt-to-stop-worrying-and-love-the-heap/
+			_ = make([]byte, 10<<30)
+
 			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
 			if err != nil {
 				return fmt.Errorf("could not create scribe backfiller: %w", err)
@@ -114,7 +118,7 @@ var backfillCommand = &cli.Command{
 			err = scribeBackfiller.Backfill(ctx)
 			if err != nil {
 				cancelVar()
-				ctx, cancel = context.WithTimeout(c.Context, time.Minute*5)
+				ctx, cancel = context.WithTimeout(c.Context, time.Hour*2)
 				cancelVar = cancel
 			}
 		}
