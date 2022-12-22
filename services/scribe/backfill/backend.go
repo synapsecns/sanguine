@@ -13,7 +13,6 @@ import (
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/ethergo/util"
-	"golang.org/x/exp/constraints"
 	"math"
 	"math/big"
 )
@@ -111,13 +110,4 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint
 		}
 	}
 	return res.List(), nil
-}
-
-// make range.
-func makeRange[T constraints.Integer](min, max T) []T {
-	a := make([]T, max-min+1)
-	for i := range a {
-		a[i] = min + T(i)
-	}
-	return a
 }

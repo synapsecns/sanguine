@@ -18,16 +18,7 @@ import (
 	"math/big"
 	"net/http"
 	"sync"
-	"testing"
 )
-
-func TestMakeRange(t *testing.T) {
-	testIntRange := backfill.MakeRange(0, 4)
-	Equal(t, []int{0, 1, 2, 3, 4}, testIntRange)
-
-	testUintRange := backfill.MakeRange(uint16(10), uint16(12))
-	Equal(t, testUintRange, []uint16{10, 11, 12})
-}
 
 // startOmnirpcServer boots an omnirpc server for an rpc address.
 // the url for this rpc is returned.
