@@ -255,7 +255,7 @@ OUTER:
 	})
 
 	g.Go(func() error {
-		err := c.eventDB.StoreBlockTime(groupCtx, c.chainConfig.ChainID, tx.blockHeader.Time, tx.blockHeader.Time)
+		err := c.eventDB.StoreBlockTime(groupCtx, c.chainConfig.ChainID, tx.blockHeader.Number.Uint64(), tx.blockHeader.Time)
 		if err != nil {
 			return fmt.Errorf("could not store receipt logs: %w", err)
 		}
