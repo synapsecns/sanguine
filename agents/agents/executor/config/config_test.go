@@ -49,11 +49,7 @@ func (c ConfigSuite) TestInvalidAttestationInfo() {
 	Nil(c.T(), err)
 	True(c.T(), ok)
 
-	ok, err = testConfig.IsValid(c.GetTestContext())
-	False(c.T(), ok)
-	NotNil(c.T(), err)
-
-	testConfig = configFixture()
+	testConfig.RPCURL = ""
 
 	ok, err = testConfig.IsValid(c.GetTestContext())
 	False(c.T(), ok)
