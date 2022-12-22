@@ -31,11 +31,11 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 
 		// Store all random logs, since `RetrieveReceipt` needs to query them to build the Receipt.
 		for _, log := range randomLogsA {
-			err := testDB.StoreLog(t.GetTestContext(), log, chainID)
+			err := testDB.StoreLogs(t.GetTestContext(), chainID, log)
 			Nil(t.T(), err)
 		}
 		for _, log := range randomLogsB {
-			err := testDB.StoreLog(t.GetTestContext(), log, chainID+1)
+			err := testDB.StoreLogs(t.GetTestContext(), chainID+1, log)
 			Nil(t.T(), err)
 		}
 
@@ -56,7 +56,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 			BlockNumber:      big.NewInt(1),
 			TransactionIndex: uint(gofakeit.Uint64()),
 		}
-		err := testDB.StoreReceipt(t.GetTestContext(), receiptA, chainID)
+		err := testDB.StoreReceipt(t.GetTestContext(), chainID, receiptA)
 		Nil(t.T(), err)
 
 		receiptB := types.Receipt{
@@ -75,7 +75,7 @@ func (t *DBSuite) TestStoreRetrieveReceipt() {
 			BlockNumber:      big.NewInt(2),
 			TransactionIndex: uint(gofakeit.Uint64()),
 		}
-		err = testDB.StoreReceipt(t.GetTestContext(), receiptB, chainID+1)
+		err = testDB.StoreReceipt(t.GetTestContext(), chainID+1, receiptB)
 		Nil(t.T(), err)
 
 		// Ensure the receipts from the database match the ones stored.
@@ -120,7 +120,7 @@ func (t *DBSuite) TestConfirmReceiptsInRange() {
 		for i := 4; i >= 0; i-- {
 			receipt := t.MakeRandomReceipt(common.BigToHash(big.NewInt(gofakeit.Int64())))
 			receipt.BlockNumber = big.NewInt(int64(i))
-			err := testDB.StoreReceipt(t.GetTestContext(), receipt, chainID)
+			err := testDB.StoreReceipt(t.GetTestContext(), chainID, receipt)
 			Nil(t.T(), err)
 		}
 
@@ -148,7 +148,7 @@ func (t *DBSuite) TestDeleteReceiptsForBlockHash() {
 		// Store a receipt.
 		receipt := t.MakeRandomReceipt(common.BigToHash(big.NewInt(gofakeit.Int64())))
 		receipt.BlockHash = common.BigToHash(big.NewInt(5))
-		err := testDB.StoreReceipt(t.GetTestContext(), receipt, chainID)
+		err := testDB.StoreReceipt(t.GetTestContext(), chainID, receipt)
 		Nil(t.T(), err)
 
 		// Ensure the receipt is in the database.
@@ -161,7 +161,7 @@ func (t *DBSuite) TestDeleteReceiptsForBlockHash() {
 		Equal(t.T(), 1, len(retrievedReceipts))
 
 		// Delete the receipt.
-		err = testDB.DeleteReceiptsForBlockHash(t.GetTestContext(), receipt.BlockHash, chainID)
+		err = testDB.DeleteReceiptsForBlockHash(t.GetTestContext(), chainID, receipt.BlockHash)
 		Nil(t.T(), err)
 
 		// Ensure the receipt is not in the database.

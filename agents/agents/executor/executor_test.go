@@ -1,7 +1,6 @@
 package executor_test
 
 import (
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/core"
@@ -22,7 +21,6 @@ import (
 )
 
 func (e *ExecutorSuite) TestExecutor() {
-	e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -149,8 +147,6 @@ func (e *ExecutorSuite) TestExecutor() {
 }
 
 func (e *ExecutorSuite) TestLotsOfLogs() {
-	e.T().Skip()
-
 	testDone := false
 	defer func() {
 		testDone = true
@@ -236,8 +232,6 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 }
 
 func (e *ExecutorSuite) TestMerkleInsert() {
-	e.T().Skip()
-
 	testDone := false
 	defer func() {
 		testDone = true
@@ -429,8 +423,6 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 }
 
 func (e *ExecutorSuite) TestVerifyMessage() {
-	e.T().Skip()
-
 	testTree, err := trieutil.NewTrie(32)
 	e.Nil(err)
 
@@ -566,180 +558,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	e.True(inTree3)
 }
 
-//func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
-//	testDone := false
-//	defer func() {
-//		testDone = true
-//	}()
-//
-//	destinationChain := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(e.destination)))
-//	destinationClient, err := backfill.DialBackend(e.GetTestContext(), destinationChain.RPCAddress())
-//	e.Nil(err)
-//
-//	destinationContract, destinationRef := e.deployManager.GetDestination(e.GetTestContext(), destinationChain)
-//	_, passBlockRef := e.deployManager.GetOriginHarness(e.GetTestContext(), destinationChain)
-//
-//	contractConfig := config.ContractConfig{
-//		Address:    e.OriginContract.Address().String(),
-//		StartBlock: 0,
-//	}
-//	chainConfig := config.ChainConfig{
-//		ChainID:               e.chainID,
-//		RequiredConfirmations: 0,
-//		Contracts:             []config.ContractConfig{contractConfig},
-//	}
-//	destinationConfig := config.ContractConfig{
-//		Address:    destinationContract.Address().String(),
-//		StartBlock: 0,
-//	}
-//	destinationChainConfig := config.ChainConfig{
-//		ChainID:               e.destination,
-//		RequiredConfirmations: 0,
-//		Contracts:             []config.ContractConfig{destinationConfig},
-//	}
-//	scribeConfig := config.Config{
-//		Chains: []config.ChainConfig{chainConfig, destinationChainConfig},
-//	}
-//	clients := map[uint32][]backfill.ScribeBackend{
-//		e.chainID:     {e.simulatedClient, e.simulatedClient},
-//		e.destination: {destinationClient, destinationClient},
-//	}
-//
-//	scribe, err := node.NewScribe(e.scribeTestDB, clients, scribeConfig)
-//	e.Nil(err)
-//
-//	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
-//	go func() {
-//		scribeErr := scribeClient.Start(e.GetTestContext())
-//		e.Nil(scribeErr)
-//	}()
-//
-//	// Start the Scribe.
-//	go func() {
-//		_ = scribe.Start(e.GetTestContext())
-//	}()
-//
-//	excCfg := executorCfg.Config{
-//		Chains: []executorCfg.ChainConfig{
-//			{
-//				ChainID:       e.chainID,
-//				OriginAddress: e.originContract.Address().String(),
-//			},
-//			{
-//				ChainID:            e.destination,
-//				DestinationAddress: destinationContract.Address().String(),
-//			},
-//		},
-//	}
-//
-//	executorClients := map[uint32]executor.Backend{
-//		e.chainID:     e.simulatedClient,
-//		e.destination: destinationClient,
-//	}
-//
-//	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
-//	e.Nil(err)
-//
-//	// Start the exec.
-//	go func() {
-//		execErr := exec.Start(e.GetTestContext())
-//		if !testDone {
-//			e.Nil(execErr)
-//		}
-//	}()
-//
-//	// Listen with the exec.
-//	go func() {
-//		execErr := exec.Listen(e.GetTestContext(), e.chainID)
-//		if !testDone {
-//			e.Nil(execErr)
-//		}
-//	}()
-//
-//	tips := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
-//	encodedTips, err := types.EncodeTips(tips)
-//	e.Nil(err)
-//
-//	optimisticSeconds := uint32(10)
-//
-//	ownerPtr, err := e.originRef.OriginHarnessCaller.Owner(&bind.CallOpts{Context: e.GetTestContext()})
-//	e.Nil(err)
-//
-//	transactOpts := e.simulatedChain.GetTxContext(e.GetTestContext(), &ownerPtr)
-//	tx, err := e.originRef.AddAgent(transactOpts.TransactOpts, e.destination, e.signer.Address())
-//	e.Nil(err)
-//	e.simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
-//
-//	transactOpts.Value = types.TotalTips(tips)
-//
-//	recipient := [32]byte{byte(gofakeit.Uint32())}
-//	nonce := uint32(1)
-//	body := []byte{byte(gofakeit.Uint32())}
-//
-//	tx, err = e.originRef.Dispatch(transactOpts.TransactOpts, e.destination, recipient, optimisticSeconds, encodedTips, body)
-//	e.Nil(err)
-//
-//	e.simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
-//
-//	transactOpts.Value = big.NewInt(0)
-//	attestKey := types.AttestationKey{
-//		Origin:      e.chainID,
-//		Destination: e.destination,
-//		Nonce:       nonce,
-//	}
-//	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64())))
-//	hashedAttestation, err := notary.HashAttestation(unsignedAttestation)
-//	e.Nil(err)
-//	encodedAttestation, err := types.EncodeAttestation(unsignedAttestation)
-//	e.Nil(err)
-//	tx, err = destinationRef.SubmitAttestation(transactOpts.TransactOpts)
-//
-//	sender, err := e.simulatedChain.Signer().Sender(tx)
-//	e.Nil(err)
-//
-//	header := types.NewHeader(e.chainID, sender.Hash(), nonce, e.destination, recipient, optimisticSeconds)
-//	message := types.NewMessage(header, tips, body)
-//
-//	continueChan := make(chan bool, 1)
-//
-//	// Wait for message to be stored in the database.
-//	e.Eventually(func() bool {
-//		_, err = e.testDB.GetAttestationBlockNumber(e.GetTestContext(), types2.DBAttestation{
-//			ChainID:     &e.chainID,
-//			Destination: &e.destination,
-//			Nonce:       &nonce,
-//		})
-//		if err == nil {
-//			continueChan <- true
-//			return true
-//		}
-//		return false
-//	})
-//
-//	<-continueChan
-//
-//	verified, err := exec.VerifyOptimisticPeriod(e.GetTestContext(), message)
-//	e.Nil(err)
-//	e.False(verified)
-//
-//	e.Eventually(func() bool {
-//		verified, err = exec.VerifyOptimisticPeriod(e.GetTestContext(), message)
-//		if err != nil {
-//			return false
-//		}
-//		if verified {
-//			return true
-//		}
-//		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
-//		// increase the `time`.
-//		tx, err = passBlockRef.Dispatch(transactOpts.TransactOpts, gofakeit.Uint32(), recipient, optimisticSeconds, encodedTips, body)
-//		e.Nil(err)
-//		destinationChain.WaitForConfirmation(e.GetTestContext(), tx)
-//		return false
-//	})
-//}
-
-func (e *ExecutorSuite) TestOptimisticPeriod() {
+func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	testDone := false
 	defer func() {
 		testDone = true
@@ -863,11 +682,8 @@ func (e *ExecutorSuite) TestOptimisticPeriod() {
 		Destination: uint32(e.TestBackendDestination.GetChainID()),
 		Nonce:       nonce,
 	}
-	fmt.Println("Origin", uint32(e.TestBackendOrigin.GetChainID()))
-	fmt.Println("Now getting from contract", (e.OriginContractMetadata.ChainID().Uint64()))
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
-	fmt.Println("870 chain id", unsignedAttestation.Origin())
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
@@ -878,7 +694,6 @@ func (e *ExecutorSuite) TestOptimisticPeriod() {
 	e.Nil(err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
-	fmt.Println("881 chain id", signedAttestation.Attestation().Origin())
 
 	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
 	e.Nil(err)
@@ -923,45 +738,9 @@ func (e *ExecutorSuite) TestOptimisticPeriod() {
 		}
 		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
 		// increase the `time`.
-		tx, err = passBlockRef.Dispatch(&bind.TransactOpts{Context: e.GetTestContext()}, gofakeit.Uint32(), recipient, optimisticSeconds, encodedTips, body)
+		tx, err = passBlockRef.Dispatch(txContextDestination.TransactOpts, gofakeit.Uint32(), recipient, optimisticSeconds, encodedTips, body)
 		e.Nil(err)
 		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 		return false
 	})
-
-	//encodedAttestation, err := types.EncodeAttestation(unsignedAttestation)
-	//e.Nil(err)
-	//
-	//notarySignatures := []types.Signature{}
-	//notarySignature, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
-	//e.Nil(err)
-	//notarySignatures = append(notarySignatures, notarySignature)
-	//
-	//guardSignatures := []types.Signature{}
-	//guardSignature, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
-	//e.Nil(err)
-	//guardSignatures = append(guardSignatures, guardSignature)
-	//
-	//signedAttestation := types.NewSignedAttestation(
-	//	unsignedAttestation,
-	//	guardSignatures,
-	//	notarySignatures)
-	//encodedGuardSignatures, err := types.EncodeSignatures(signedAttestation.GuardSignatures())
-	//e.Nil(err)
-	//encodedNotarySignatures, err := types.EncodeSignatures(signedAttestation.NotarySignatures())
-	//e.Nil(err)
-	//
-	//attestation, err := e.AttestationHarness.FormatAttestation(
-	//	&bind.CallOpts{Context: e.GetTestContext()},
-	//	encodedAttestation,
-	//	encodedGuardSignatures,
-	//	encodedNotarySignatures,
-	//)
-	//e.Nil(err)
-	//
-	//txContextDestination := e.TestBackendDestination.GetTxContext(e.GetTestContext(), e.DestinationContractMetadata.OwnerPtr())
-	//
-	//tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, attestation)
-	//e.Nil(err)
-	//e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 }

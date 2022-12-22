@@ -32,6 +32,7 @@ func NewSqliteStore(ctx context.Context, dbPath string) (*Store, error) {
 		DisableForeignKeyConstraintWhenMigrating: true,
 		Logger:                                   common_base.GetGormLogger(logger),
 		FullSaveAssociations:                     true,
+		SkipDefaultTransaction:                   true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to db %s: %w", dbPath, err)

@@ -16,7 +16,6 @@ require (
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/jpillora/backoff v1.0.0
 	github.com/libs4go/crypto v0.0.1
-	github.com/lmittmann/w3 v0.10.0
 	github.com/pkg/errors v0.9.1
 	github.com/prysmaticlabs/prysm v1.4.4
 	github.com/richardwilkes/toolbox v1.74.0
@@ -131,6 +130,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.0.4 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/libs4go/errors v0.0.3 // indirect
+	github.com/lmittmann/w3 v0.10.0 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect

@@ -32,7 +32,7 @@ type ExecutorDBReader interface {
 	// GetAttestation gets an attestation from the database.
 	GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error)
 	// GetAttestationBlockNumber gets the block number of an attestation.
-	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (uint64, error)
+	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 }
 
 // ExecutorDB is the interface for the executor database.

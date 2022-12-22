@@ -42,6 +42,7 @@ func (s Store) GetAttestation(ctx context.Context, attestationMask types.DBAttes
 		return nil, fmt.Errorf("failed to get attestation: %w", dbTx.Error)
 	}
 	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -57,19 +58,23 @@ func (s Store) GetAttestation(ctx context.Context, attestationMask types.DBAttes
 }
 
 // GetAttestationBlockNumber gets the block number of an attestation.
-func (s Store) GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (uint64, error) {
+func (s Store) GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error) {
 	var attestation Attestation
 
 	dbAttestationMask := DBAttestationToAttestation(attestationMask)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&attestation).
 		Where(&dbAttestationMask).
-		First(&attestation)
+		Scan(&attestation)
 	if dbTx.Error != nil {
-		return 0, fmt.Errorf("failed to get attestation block number: %w", dbTx.Error)
+		return nil, fmt.Errorf("failed to get attestation block number: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
+		return nil, nil
 	}
 
-	return attestation.BlockNumber, nil
+	return &attestation.BlockNumber, nil
 }
 
 // DBAttestationToAttestation converts a DBAttestation to an Attestation.
@@ -123,7 +128,7 @@ func AgentsTypesAttestationToAttestation(attestation agentsTypes.Attestation, bl
 		ChainID:     attestation.Origin(),
 		Destination: attestation.Destination(),
 		Nonce:       attestation.Nonce(),
-		Root:        common.Bytes2Hex(root[:]),
+		Root:        common.BytesToHash(root[:]).String(),
 		BlockNumber: blockNumber,
 	}
 }

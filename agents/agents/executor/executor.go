@@ -182,7 +182,6 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
-			fmt.Println("got a log for chain ID", chainID)
 			err := e.processLog(ctx, *log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not process log: %w", err)
@@ -301,19 +300,25 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 	if err != nil {
 		return false, fmt.Errorf("could not get attestation: %w", err)
 	}
+
 	if attestation == nil {
-		return false, fmt.Errorf("attestation is nil")
+		return false, nil
 	}
 
 	root := (*attestation).Root()
-	attestationMask.Root = (*common.Hash)(&root)
+	rootToHash := common.BytesToHash(root[:])
+	attestationMask.Root = &rootToHash
 
 	attestationBlockNumber, err := e.executorDB.GetAttestationBlockNumber(ctx, attestationMask)
 	if err != nil {
 		return false, fmt.Errorf("could not get attestation block number: %w", err)
 	}
 
-	header, err := e.chainExecutors[destination].client.HeaderByNumber(ctx, big.NewInt(int64(attestationBlockNumber)))
+	if attestationBlockNumber == nil {
+		return false, nil
+	}
+
+	header, err := e.chainExecutors[destination].client.HeaderByNumber(ctx, big.NewInt(int64(*attestationBlockNumber)))
 	if err != nil {
 		return false, fmt.Errorf("could not get header by number: %w", err)
 	}
@@ -332,30 +337,6 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 	}
 
 	return true, nil
-
-	//header, err := e.chainExecutors[message.OriginDomain()].client.HeaderByNumber(ctx, big.NewInt(int64(blockNumber)))
-	//if err != nil {
-	//	return false, fmt.Errorf("could not get header by number: %w", err)
-	//}
-	//
-	//blockTime := header.Time
-	//
-	//latestHeader, err := e.chainExecutors[message.OriginDomain()].client.HeaderByNumber(ctx, nil)
-	//if err != nil {
-	//	return false, fmt.Errorf("could not get header block: %w", err)
-	//}
-	//
-	//currentTime := latestHeader.Time
-	//
-	//if blockTime > currentTime {
-	//	return false, fmt.Errorf("block time is in the future")
-	//}
-	//
-	//if blockTime+uint64(message.OptimisticSeconds()) > currentTime {
-	//	return false, nil
-	//}
-	//
-	//return true, nil
 }
 
 // GetLatestNonceProof returns the merkle proof for a nonce, with a tree where that nonce is the last item added.
@@ -386,6 +367,7 @@ func (e Executor) GetLatestNonceProof(nonce, chainID, destination uint32) ([][]b
 func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chain config.ChainConfig, contract contractType) error {
 	var address string
 
+	//nolint:exhaustive
 	switch contract {
 	case originContract:
 		address = chain.OriginAddress
@@ -456,6 +438,8 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 }
 
 // processLog processes the log and updates the merkle tree.
+//
+//nolint:cyclop
 func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	logType := e.logType(log, chainID)
 
@@ -489,7 +473,6 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		}
 	case destinationContract:
 		attestation, err := e.logToAttestation(log, chainID)
-		fmt.Println("492 chainID", chainID)
 		if err != nil {
 			return fmt.Errorf("could not convert log to attestation: %w", err)
 		}
@@ -501,8 +484,10 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		if err != nil {
 			return fmt.Errorf("could not store attestation: %w", err)
 		}
-	default:
+	case other:
 		logger.Warnf("the log's event type is not supported")
+	default:
+		return fmt.Errorf("log type not supported")
 	}
 
 	return nil
@@ -529,8 +514,6 @@ func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (*types.Att
 	if !ok {
 		return nil, fmt.Errorf("could not parse attestation")
 	}
-
-	fmt.Println("attestation chainID is", attestation.Origin())
 
 	return &attestation, nil
 }

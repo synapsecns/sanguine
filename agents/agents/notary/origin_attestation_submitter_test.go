@@ -23,8 +23,8 @@ func (u NotarySuite) TestOriginAttestationSubmitter() {
 	fakeDispatchBlockNumber := uint64(1)
 
 	fakeAttestKey := types.AttestationKey{
-		Origin:      u.domainClient.Config().DomainID,
-		Destination: u.destinationID,
+		Origin:      u.OriginDomainClient.Config().DomainID,
+		Destination: u.DestinationDomainClient.Config().DomainID,
 		Nonce:       fakeNonce,
 	}
 	fakeUnsignedAttestation := types.NewAttestation(fakeAttestKey.GetRawKey(), fakeRoot)
@@ -32,13 +32,13 @@ func (u NotarySuite) TestOriginAttestationSubmitter() {
 	err = testDB.StoreNewInProgressAttestation(u.GetTestContext(), fakeUnsignedAttestation, fakeDispatchBlockNumber)
 	Nil(u.T(), err)
 
-	unsignedInProgressAttestation, err := testDB.RetrieveInProgressAttestation(u.GetTestContext(), u.domainClient.Config().DomainID, u.destinationID, fakeNonce)
+	unsignedInProgressAttestation, err := testDB.RetrieveInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, u.DestinationDomainClient.Config().DomainID, fakeNonce)
 	Nil(u.T(), err)
 
 	hashedAttestation, err := types.Hash(unsignedInProgressAttestation.SignedAttestation().Attestation())
 	Nil(u.T(), err)
 
-	signature, err := u.signer.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	signature, err := u.NotarySigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(u.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedInProgressAttestation.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
@@ -47,13 +47,20 @@ func (u NotarySuite) TestOriginAttestationSubmitter() {
 	Nil(u.T(), err)
 
 	// call the update producing function
-	originAttestationSubmitter := notary.NewOriginAttestationSubmitter(u.domainClient, u.destinationID, testDB, u.signer, 1*time.Second)
+	originAttestationSubmitter := notary.NewOriginAttestationSubmitter(
+		u.OriginDomainClient,
+		u.AttestationDomainClient,
+		u.DestinationDomainClient,
+		testDB,
+		u.NotarySigner,
+		u.AttestationSigner,
+		1*time.Second)
 
 	err = originAttestationSubmitter.Update(u.GetTestContext())
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	producedAttestation, err := testDB.RetrieveOldestUnconfirmedSubmittedInProgressAttestation(u.GetTestContext(), u.domainClient.Config().DomainID, u.destinationID)
+	producedAttestation, err := testDB.RetrieveOldestUnconfirmedSubmittedInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, u.DestinationDomainClient.Config().DomainID)
 	Nil(u.T(), err)
 	Equal(u.T(), producedAttestation.SignedAttestation().Attestation().Nonce(), fakeNonce)
 	NotNil(u.T(), producedAttestation.SubmittedToAttestationCollectorTime())

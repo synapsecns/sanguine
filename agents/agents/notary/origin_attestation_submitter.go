@@ -15,26 +15,39 @@ import (
 // OriginAttestationSubmitter submits signed attestations to the attestation collector for particular origin-destination pair.
 // TODO: this needs to become an interface.
 type OriginAttestationSubmitter struct {
-	// domain allows access to the origin contract
-	domain domains.DomainClient
-	// domain of target destination
-	destinationID uint32
+	// originDomain allows access to the origin contract on the origin chain
+	originDomain domains.DomainClient
+	// attestationDomain allows access to the atttestation contract on the SYN chain
+	attestationDomain domains.DomainClient
+	// destinationDomain allows access to the destination contract on the destination chain
+	destinationDomain domains.DomainClient
 	// db is the synapse db
 	db db.SynapseDB
-	// signer is the signer
-	signer signer.Signer
+	// bondedSigner is the attestation signer that must be a bonded agent
+	bondedSigner signer.Signer
+	// unbondedSigner is the signer for submitting transactions
+	unbondedSigner signer.Signer
 	// interval waits for an interval
 	interval time.Duration
 }
 
 // NewOriginAttestationSubmitter creates a new origin attestation submitter.
-func NewOriginAttestationSubmitter(domain domains.DomainClient, destinationID uint32, db db.SynapseDB, signer signer.Signer, interval time.Duration) OriginAttestationSubmitter {
+func NewOriginAttestationSubmitter(
+	originDomain domains.DomainClient,
+	attestationDomain domains.DomainClient,
+	destinationDomain domains.DomainClient,
+	db db.SynapseDB,
+	bondedSigner signer.Signer,
+	unbondedSigner signer.Signer,
+	interval time.Duration) OriginAttestationSubmitter {
 	return OriginAttestationSubmitter{
-		domain:        domain,
-		destinationID: destinationID,
-		db:            db,
-		signer:        signer,
-		interval:      interval,
+		originDomain:      originDomain,
+		attestationDomain: attestationDomain,
+		destinationDomain: destinationDomain,
+		db:                db,
+		bondedSigner:      bondedSigner,
+		unbondedSigner:    unbondedSigner,
+		interval:          interval,
 	}
 }
 
@@ -55,7 +68,7 @@ func (a OriginAttestationSubmitter) Start(ctx context.Context) error {
 
 // FindOldestUnsubmittedAttestation fetches the oldest unsubmitted attestation that has been signed.
 func (a OriginAttestationSubmitter) FindOldestUnsubmittedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx, a.domain.Config().DomainID, a.destinationID)
+	inProgressAttestation, err := a.db.RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoNonceForDomain) {
 			return nil, nil
@@ -76,7 +89,7 @@ func (a OriginAttestationSubmitter) update(ctx context.Context) error {
 		return nil
 	}
 
-	err = a.domain.AttestationCollector().SubmitAttestation(ctx, a.signer, inProgressAttestationToSubmit.SignedAttestation())
+	err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToSubmit.SignedAttestation())
 	if err != nil {
 		return fmt.Errorf("could not find submit attestation: %w", err)
 	}

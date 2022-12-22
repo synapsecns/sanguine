@@ -78,7 +78,6 @@ func (e *ExecutorSuite) SetupTest() {
 	e.simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
 	e.deployManager = agentsTestutil.NewDeployManager(e.T())
 	e.originContract, e.originRef = e.deployManager.GetOriginHarness(e.GetTestContext(), e.simulatedChain)
-
 }
 
 func TestExecutorSuite(t *testing.T) {
