@@ -22,33 +22,38 @@ import { Chart, ChartLoading } from '@components/Chart'
 import { useRouter } from 'next/router'
 import { useSearchParams } from 'next/navigation'
 
-export function Chain() {
+export function Chain({
+  bridgeVolume,
+  transactionsData,
+  addresses,
+  txQueryResult,
+}) {
   const router = useRouter()
   const { chainId } = router.query
 
-  const { data: bridgeVolume } = useQuery(GET_HISTORICAL_STATS, {
-    variables: {
-      type: 'BRIDGEVOLUME',
-      days: 30,
-      chainId: Number(chainId),
-    },
-  })
+  // const { data: bridgeVolume } = useQuery(GET_HISTORICAL_STATS, {
+  //   variables: {
+  //     type: 'BRIDGEVOLUME',
+  //     days: 30,
+  //     chainId: Number(chainId),
+  //   },
+  // })
 
-  const { data: transactionsData } = useQuery(GET_HISTORICAL_STATS, {
-    variables: {
-      type: 'TRANSACTIONS',
-      days: 30,
-      chainId: Number(chainId),
-    },
-  })
+  // const { data: transactionsData } = useQuery(GET_HISTORICAL_STATS, {
+  //   variables: {
+  //     type: 'TRANSACTIONS',
+  //     days: 30,
+  //     chainId: Number(chainId),
+  //   },
+  // })
 
-  const { data: addresses } = useQuery(GET_HISTORICAL_STATS, {
-    variables: {
-      type: 'ADDRESSES',
-      days: 30,
-      chainId: Number(chainId),
-    },
-  })
+  // const { data: addresses } = useQuery(GET_HISTORICAL_STATS, {
+  //   variables: {
+  //     type: 'ADDRESSES',
+  //     days: 30,
+  //     chainId: Number(chainId),
+  //   },
+  // })
 
   const [chartType, setChartType] = useState('BRIDGEVOLUME')
 
@@ -73,9 +78,11 @@ export function Chain() {
     GET_BRIDGE_TRANSACTIONS_QUERY
   )
 
+  let { bridgeTransactions } = txQueryResult
+
   useEffect(() => {
-    if (data) {
-      setTransactions(data.bridgeTransactions, {
+    if (bridgeTransactions) {
+      setTransactions(bridgeTransactions, {
         variables: {
           chainId: Number(chainId),
         },
@@ -86,12 +93,13 @@ export function Chain() {
 
     if (num === 0) {
       setPage(1)
-      getBridgeTransactions({
-        variables: {
-          chainId: Number(chainId),
-          page: 1,
-        },
-      })
+      setTransactions(bridgeTransactions)
+      // getBridgeTransactions({
+      //   variables: {
+      //     chainId: Number(chainId),
+      //     page: 1,
+      //   },
+      // })
     } else {
       setPage(num)
       getBridgeTransactions({
@@ -101,7 +109,7 @@ export function Chain() {
         },
       })
     }
-  }, [data, search, chainId])
+  }, [data, search, bridgeTransactions, chainId])
 
   const nextPage = () => {
     let newPage = page + 1
@@ -134,7 +142,7 @@ export function Chain() {
 
   let content
 
-  if (!data) {
+  if (!bridgeTransactions) {
     content = [...Array(10).keys()].map((i) => (
       <TransactionCardLoader key={i} />
     ))
