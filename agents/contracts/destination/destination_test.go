@@ -1,12 +1,17 @@
 package destination_test
 
 import (
+	"context"
+	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/agents/contracts/destination"
+	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
 )
@@ -16,28 +21,27 @@ func (d DestinationSuite) TestDestinationSuite() {
 	Nil(d.T(), err)
 	// Set up contexts for both Origin and Destination, also getting owner for Destination for reassigning notary role.
 
-	txContextOrigin := d.testBackendOrigin.GetTxContext(d.GetTestContext(), nil)
-	txContextDestination := d.testBackendDestination.GetTxContext(d.GetTestContext(), d.destinationContractMetadata.OwnerPtr())
+	txContextOrigin := d.TestBackendOrigin.GetTxContext(d.GetTestContext(), nil)
+	txContextDestination := d.TestBackendDestination.GetTxContext(d.GetTestContext(), d.DestinationContractMetadata.OwnerPtr())
 
-	// TODO (joe): Get this working again
 	// Create a channel and subscription to receive AttestationAccepted events as they are emitted.
-	/*attestationSink := make(chan *destination.DestinationAttestationAccepted)
-	subAttestation, err := d.destinationContract.WatchAttestationAccepted(&bind.WatchOpts{
+	attestationSink := make(chan *destinationharness.DestinationHarnessAttestationAccepted)
+	subAttestation, err := d.DestinationContract.WatchAttestationAccepted(&bind.WatchOpts{
 		Context: d.GetTestContext()},
 		attestationSink)
-	Nil(d.T(), err)*/
+	Nil(d.T(), err)
 
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(d.T(), err)
 
 	// Dispatch an event from the Origin contract to be accepted on the Destination contract.
-	tx, err := d.originContract.Dispatch(txContextOrigin.TransactOpts, 1, [32]byte{}, 1, encodedTips, nil)
+	tx, err := d.OriginContract.Dispatch(txContextOrigin.TransactOpts, 1, [32]byte{}, 1, encodedTips, nil)
 	Nil(d.T(), err)
-	d.testBackendOrigin.WaitForConfirmation(d.GetTestContext(), tx)
+	d.TestBackendOrigin.WaitForConfirmation(d.GetTestContext(), tx)
 
 	// Create an attestation
-	originDomain := uint32(d.testBackendOrigin.GetBigChainID().Uint64())
-	destinationDomain := uint32(d.testBackendDestination.GetBigChainID().Uint64())
+	originDomain := uint32(d.TestBackendOrigin.GetBigChainID().Uint64())
+	destinationDomain := uint32(d.TestBackendDestination.GetBigChainID().Uint64())
 	nonce := gofakeit.Uint32()
 	attestationKey := types.AttestationKey{
 		Origin:      originDomain,
@@ -50,38 +54,24 @@ func (d DestinationSuite) TestDestinationSuite() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	Nil(d.T(), err)
 
-	signature, err := d.signer.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := d.NotarySigner.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(d.T(), err)
 
-	// TODO (joe): all this will change when I do the Guard MVP and I update things to have the multiple signatures.
-	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{signature}, []types.Signature{})
-	// TODO (joe): Just grabbing the guard signature at index 0 until this is fixed.
-	encodedSig, err := types.EncodeSignature(signedAttestation.GuardSignatures()[0])
+	guardSignature, err := d.GuardSigner.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(d.T(), err)
 
-	encodedAttestation, err := types.EncodeAttestation(unsignedAttestation)
+	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
+
+	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
 	Nil(d.T(), err)
 
-	attestation, err := d.attestationHarness.FormatAttestation(
-		&bind.CallOpts{Context: d.GetTestContext()},
-		encodedAttestation,
-		[]byte{},
-		encodedSig,
-	)
+	tx, err = d.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation)
 	Nil(d.T(), err)
 
-	// Set notary to the testing address so we can submit attestations.
-	tx, err = d.destinationContract.AddAgent(txContextDestination.TransactOpts, uint32(d.testBackendOrigin.GetChainID()), d.signer.Address())
-	Nil(d.T(), err)
-	d.testBackendDestination.WaitForConfirmation(d.GetTestContext(), tx)
-
-	// Submit the attestation to get an AttestationAccepted event.
-	tx, err = d.destinationContract.SubmitAttestation(txContextDestination.TransactOpts, attestation)
-	Nil(d.T(), err)
-	d.testBackendDestination.WaitForConfirmation(d.GetTestContext(), tx)
+	d.TestBackendDestination.WaitForConfirmation(d.GetTestContext(), tx)
 
 	// TODO (joe): Get this working
-	/*watchCtx, cancel := context.WithTimeout(d.GetTestContext(), time.Second*10)
+	watchCtx, cancel := context.WithTimeout(d.GetTestContext(), time.Second*10)
 	defer cancel()
 
 	select {
@@ -92,7 +82,7 @@ func (d DestinationSuite) TestDestinationSuite() {
 		d.T().Error(d.T(), subAttestation.Err())
 	// get attestation accepted event
 	case item := <-attestationSink:
-		parser, err := destination.NewParser(d.destinationContract.Address())
+		parser, err := destination.NewParser(d.DestinationContract.Address())
 		Nil(d.T(), err)
 
 		// Check to see if the event was an AttestationAccepted event.
@@ -100,6 +90,14 @@ func (d DestinationSuite) TestDestinationSuite() {
 		True(d.T(), ok)
 		Equal(d.T(), eventType, destination.AttestationAcceptedEvent)
 
+		emittedSignedAttesation, err := types.DecodeSignedAttestation(item.Attestation)
+		Nil(d.T(), err)
+
+		Equal(d.T(), d.OriginDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Origin())
+		Equal(d.T(), d.DestinationDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Destination())
+		Equal(d.T(), nonce, emittedSignedAttesation.Attestation().Nonce())
+		Equal(d.T(), [32]byte(root), emittedSignedAttesation.Attestation().Root())
+
 		break
-	}*/
+	}
 }
