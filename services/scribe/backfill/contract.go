@@ -196,11 +196,11 @@ OUTER:
 
 			tx, err = c.fetchTx(ctx, log.TxHash, log.BlockNumber)
 			if err != nil {
-				if errors.Is(err, noContinueError) {
+				if errors.Is(err, errNoContinue) {
 					return nil
 				}
 
-				if errors.Is(err, noTxError) {
+				if errors.Is(err, errNoTx) {
 					hasTX = false
 					break OUTER
 				}
@@ -331,12 +331,13 @@ type txData struct {
 	blockHeader types.Header
 }
 
-var noContinueError = errors.New("encountered unreconcilable error, will not attempt to store tx")
+var errNoContinue = errors.New("encountered unreconcilable error, will not attempt to store tx")
 
-// noTxError indicates a tx cannot be parsed, this is only returned when the tx doesn't match our data model
-var noTxError = errors.New("tx is not supported by the client")
+// errNoTx indicates a tx cannot be parsed, this is only returned when the tx doesn't match our data model.
+var errNoTx = errors.New("tx is not supported by the client")
 
 // fetchTx tries to fetch a transaction from the cache, if it's not there it tries to fetch it from the database.
+// nolint: cyclop
 func (c *ContractBackfiller) fetchTx(ctx context.Context, txhash common.Hash, blockNumber uint64) (tx *txData, err error) {
 OUTER:
 	for i := range c.client {
@@ -360,11 +361,16 @@ OUTER:
 		// get the block number
 		calls[headerIndex] = eth.HeaderByNumber(new(big.Int).SetUint64(blockNumber)).Returns(&tx.blockHeader)
 
+		//nolint: nestif
 		if err := c.client[i].Batch(ctx, calls...); err != nil {
-			callErr := err.(w3.CallErrors)
+			//nolint: errorlint
+			callErr, ok := err.(w3.CallErrors)
+			if !ok {
+				return nil, fmt.Errorf("could not parse errors: %w", err)
+			}
+
 			if callErr[receiptIndex] != nil {
-				switch callErr[receiptIndex].Error() {
-				case txNotFoundError:
+				if callErr[receiptIndex].Error() == txNotFoundError {
 					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": c.chainConfig.ChainID, "tx": txhash, "ca": c.address, "e": err.Error()})
 					continue OUTER
 				}
@@ -374,10 +380,10 @@ OUTER:
 				switch callErr[txIndex].Error() {
 				case txNotSupportedError:
 					LogEvent(InfoLevel, "Invalid tx", LogData{"cid": c.chainConfig.ChainID, "tx": txhash, "ca": c.address, "e": err.Error()})
-					return tx, noTxError
+					return tx, errNoTx
 				case invalidTxVRSError:
 					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": c.chainConfig.ChainID, "tx": txhash, "ca": c.address, "e": err.Error()})
-					return tx, noTxError
+					return tx, errNoTx
 				case txNotFoundError:
 					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": c.chainConfig.ChainID, "tx": txhash, "ca": c.address, "e": err.Error()})
 					continue OUTER
