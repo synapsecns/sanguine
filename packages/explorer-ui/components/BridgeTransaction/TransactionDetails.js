@@ -11,27 +11,22 @@ import { getNetworkShadow } from '@utils/styles/networks'
 import { unixTimestampToUTCString } from '@utils/unixTimestampToUTCString'
 import { getNetworkTextHoverColor } from '@utils/styles/networks'
 import { getChainUrl } from '@urls'
+import Link from 'next/link'
 
 export function TransactionDetails({ info, subtitle }) {
   return (
     <div className="items-center">
       <div className="flex items-center mb-2 sm:text-xs md:text-lg ">
-        {info.hash ? (
-          <>
-            <div className="font-mono text-slate-400 ">
-              <StyleHash sourceInfo={info} limiter={12} />
-            </div>
-            <span className="ml-2 sm:mt-1">
-              <CopyButtonIcon
-                text={info.hash}
-                className="text-slate-600 hover:text-slate-300"
-                tooltipText="transaction hash"
-              />
-            </span>
-          </>
-        ) : (
-          <div className="font-mono text-transparent">placeholder</div>
-        )}
+        <div className="font-mono text-slate-400 ">
+          <StyleHash sourceInfo={info} limiter={12} />
+        </div>
+        <span className="ml-2 sm:mt-1">
+          <CopyButtonIcon
+            text={info.hash}
+            className="text-slate-600 hover:text-slate-300"
+            tooltipText="transaction hash"
+          />
+        </span>
       </div>
       <ContainerCard
         className={`shadow-lg ${getNetworkShadow(
@@ -42,7 +37,7 @@ export function TransactionDetails({ info, subtitle }) {
             className={`${getNetworkTextHoverColor(
               info.chainId
             )} hover:underline`}
-            to={getChainUrl({ chainId: info.chainId })}
+            href={getChainUrl({ chainId: info.chainId })}
           >
             <ChainInfo chainId={info.chainId} imgClassName="w-7 h-7" />
           </Link>

@@ -9,6 +9,7 @@ import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { useRouter } from 'next/router'
 import { useSearchParams } from 'next/navigation'
+
 export function BridgeTransaction() {
   const router = useRouter()
   const [transaction, setTransaction] = useState()

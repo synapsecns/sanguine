@@ -7,6 +7,7 @@ import { StyleAddress } from '@components/misc/StyleAddress'
 
 import { timeAgo } from '@utils/timeAgo'
 import { getBridgeTransactionUrl } from '@urls'
+import Link from 'next/link'
 
 export function TransactionCard({ txn, ordinal }) {
   const { kappa, pending, fromInfo, toInfo } = txn
@@ -16,9 +17,14 @@ export function TransactionCard({ txn, ordinal }) {
     ordinal % 2 === 0 ? 'bg-transparent' : 'bg-[#D9D9D9] bg-opacity-5'
 
   return (
-    <div
+    <Link
       className="overflow-visible cursor-pointer"
       role="link"
+      href={getBridgeTransactionUrl({
+        hash: kappa,
+        chainIdFrom: fromInfo.chainId,
+        chainIdTo: toInfo.chainId,
+      })}
       // onClick={() =>
       //   navigate(
       //     getBridgeTransactionUrl({
@@ -87,7 +93,7 @@ export function TransactionCard({ txn, ordinal }) {
           </div>
         </div>
       </Card>
-    </div>
+    </Link>
   )
 }
 

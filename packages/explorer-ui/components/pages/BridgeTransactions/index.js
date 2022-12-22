@@ -3,6 +3,7 @@ import _ from 'lodash'
 import { useLazyQuery } from '@apollo/client'
 import { SearchIcon, XCircleIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 
 import Button from '@components/tailwind/Button'
 
@@ -26,7 +27,7 @@ import { getChainUrl } from '@urls'
 import { nameToChainIds, suggestions } from '@utils/chainAutocomplete'
 
 export function BridgeTransactions() {
-  const [search, setSearch] = useSearchParams()
+  const search = useSearchParams()
   const p = Number(search.get('page')) || 1
 
   const [page, setPage] = useState(p)
@@ -61,7 +62,7 @@ export function BridgeTransactions() {
   const nextPage = () => {
     let newPage = page + 1
     setPage(newPage)
-    setSearch({ page: newPage })
+    // setSearch({ page: newPage })
 
     bridgeTransactions({
       variables: { page: newPage },
@@ -72,7 +73,7 @@ export function BridgeTransactions() {
     if (page > 1) {
       let newPage = page - 1
       setPage(newPage)
-      setSearch({ page: newPage })
+      // setSearch({ page: newPage })
       bridgeTransactions({
         variables: { page: newPage },
       })
@@ -81,7 +82,7 @@ export function BridgeTransactions() {
 
   const resetPage = () => {
     setPage(1)
-    setSearch({ page: 1 })
+    // setSearch({ page: 1 })
     bridgeTransactions({
       variables: { page: 1 },
     })
