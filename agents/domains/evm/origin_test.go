@@ -12,8 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 )
 
-const destinationID = uint32(453)
-
 // TestDispatch is a test dispatch call.
 type TestDispatch struct {
 	// domain we're sending to
@@ -26,7 +24,7 @@ type TestDispatch struct {
 	optimisticSeconds uint32
 }
 
-func NewTestDispatch() TestDispatch {
+func NewTestDispatch(destinationID uint32) TestDispatch {
 	return TestDispatch{
 		domain:            destinationID,
 		recipientAddress:  common.BytesToHash(mocks.MockAddress().Bytes()),
@@ -37,24 +35,24 @@ func NewTestDispatch() TestDispatch {
 
 // Call calls dispatch and returns the block number.
 func (d TestDispatch) Call(i ContractSuite) (blockNumber uint32) {
-	auth := i.testBackend.GetTxContext(i.GetTestContext(), nil)
+	auth := i.TestBackendOrigin.GetTxContext(i.GetTestContext(), nil)
 
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(i.T(), err)
 
-	tx, err := i.originContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, encodedTips, d.message)
+	tx, err := i.OriginContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, encodedTips, d.message)
 	Nil(i.T(), err)
-	i.testBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.TestBackendOrigin.WaitForConfirmation(i.GetTestContext(), tx)
 
-	txReceipt, err := i.testBackend.TransactionReceipt(i.GetTestContext(), tx.Hash())
+	txReceipt, err := i.TestBackendOrigin.TransactionReceipt(i.GetTestContext(), tx.Hash())
 	Nil(i.T(), err)
 
 	return uint32(txReceipt.BlockNumber.Uint64())
 }
 
-func (i ContractSuite) NewTestDispatches(dispatchCount int) (testDispatches []TestDispatch, lastBlock uint32) {
+func (i ContractSuite) NewTestDispatches(dispatchCount int, destinationID uint32) (testDispatches []TestDispatch, lastBlock uint32) {
 	for iter := 0; iter < dispatchCount; iter++ {
-		testDispatch := NewTestDispatch()
+		testDispatch := NewTestDispatch(destinationID)
 		lastBlock = testDispatch.Call(i)
 
 		testDispatches = append(testDispatches, testDispatch)
@@ -64,10 +62,11 @@ func (i ContractSuite) NewTestDispatches(dispatchCount int) (testDispatches []Te
 }
 
 func (i ContractSuite) TestFetchSortedOriginUpdates() {
-	originIndexer, err := evm.NewOriginContract(i.GetTestContext(), i.testBackend, i.originContract.Address())
+	destinationDomain := uint32(i.TestBackendDestination.GetChainID())
+	originIndexer, err := evm.NewOriginContract(i.GetTestContext(), i.TestBackendOrigin, i.OriginContract.Address())
 	Nil(i.T(), err)
 
-	testDispatches, filterTo := i.NewTestDispatches(33)
+	testDispatches, filterTo := i.NewTestDispatches(15, destinationDomain)
 
 	messages, err := originIndexer.FetchSortedMessages(i.GetTestContext(), 0, filterTo)
 	Nil(i.T(), err)
