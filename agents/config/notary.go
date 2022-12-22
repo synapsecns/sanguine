@@ -13,8 +13,6 @@ type NotaryConfig struct {
 	AttestationDomain DomainConfig `toml:"AttestationDomain"`
 	// DestinationDomain stores  the destination domain
 	DestinationDomain DomainConfig `toml:"DestinationDomain"`
-	// AttestationDomains stores all origin domains
-	Domains DomainConfigs `toml:"Domains"`
 	// UnbondedSigner contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
 	UnbondedSigner SignerConfig `toml:"UnbondedSigner"`
@@ -30,17 +28,15 @@ type NotaryConfig struct {
 // submodule. If any method returns an error that is returned here and the entirety
 // of IsValid returns false. Any warnings are logged by the submodules respective loggers.
 func (c *NotaryConfig) IsValid(ctx context.Context) (ok bool, err error) {
-	if ok, err = c.Domains.IsValid(ctx); !ok {
+	if ok, err = c.OriginDomains.IsValid(ctx); !ok {
 		return false, err
 	}
 
-	hasDestinationDomain := false
-	hasOriginDomain := false
 	for _, cfg := range c.OriginDomains {
 		if cfg.DomainID == c.DestinationDomain.DomainID {
 			return false, fmt.Errorf("origin domain id %d is same as Notary's assigned destination id %d: %w", cfg.DomainID, c.DestinationDomain.DomainID, ErrInvalidDomainID)
 		}
 	}
 
-	return hasDestinationDomain && hasOriginDomain, nil
+	return true, nil
 }
