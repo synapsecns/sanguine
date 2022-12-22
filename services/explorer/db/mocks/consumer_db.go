@@ -310,6 +310,20 @@ func (_m *ConsumerDB) StoreLastBlock(ctx context.Context, chainID uint32, blockN
 	return r0
 }
 
+// StoreTokenIndex provides a mock function with given fields: ctx, chainID, tokenIndex, tokenAddress, contractAddress
+func (_m *ConsumerDB) StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error {
+	ret := _m.Called(ctx, chainID, tokenIndex, tokenAddress, contractAddress)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint8, string, string) error); ok {
+		r0 = rf(ctx, chainID, tokenIndex, tokenAddress, contractAddress)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UNSAFE_DB provides a mock function with given fields:
 func (_m *ConsumerDB) UNSAFE_DB() *gorm.DB {
 	ret := _m.Called()

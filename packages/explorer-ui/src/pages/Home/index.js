@@ -27,9 +27,9 @@ import {
 
 
 export function Home() {
-  const bridgeVolume = getHistoricalAddresses({ days: 30 })
-  const transactions = getHistoricalBridgeVolume({ days: 30 })
-  const addresses = getHistoricalTransactions({ days: 30 })
+  const bridgeVolume = getHistoricalBridgeVolume({ days: 30 })
+  const transactions = getHistoricalTransactions({ days: 30 })
+  const addresses = getHistoricalAddresses({ days: 30 })
 
 
   const bridgeVolumeAllTime = getBridgeVolume({})
@@ -53,6 +53,7 @@ export function Home() {
   return (
     <StandardPageContainer>
       <Chart data={data} />
+
       {bridgeVolume && transactions && addresses && bridgeVolumeAllTime && transactionsAllTime && addressesAllTime ?
         allTime === 1 ?
           <Stats

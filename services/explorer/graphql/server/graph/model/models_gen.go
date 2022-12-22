@@ -114,18 +114,20 @@ func (e Direction) MarshalGQL(w io.Writer) {
 type Duration string
 
 const (
-	DurationPastDay Duration = "PAST_DAY"
-	DurationAllTime Duration = "ALL_TIME"
+	DurationPastDay   Duration = "PAST_DAY"
+	DurationPastMonth Duration = "PAST_MONTH"
+	DurationAllTime   Duration = "ALL_TIME"
 )
 
 var AllDuration = []Duration{
 	DurationPastDay,
+	DurationPastMonth,
 	DurationAllTime,
 }
 
 func (e Duration) IsValid() bool {
 	switch e {
-	case DurationPastDay, DurationAllTime:
+	case DurationPastDay, DurationPastMonth, DurationAllTime:
 		return true
 	}
 	return false

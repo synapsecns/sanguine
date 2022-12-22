@@ -614,6 +614,7 @@ type AddressRanking {
 
 enum Duration {
   PAST_DAY
+  PAST_MONTH
   ALL_TIME
 }
 enum Direction {

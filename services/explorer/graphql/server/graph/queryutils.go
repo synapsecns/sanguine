@@ -16,6 +16,10 @@ const sortingKeysPrefix = "bridge_events.event_index, bridge_events.block_number
 
 const maxBlockNumberSortingKeys = "event_index, event_type, tx_hash, chain_id, contract_address"
 
+const deDupKeys = "(chain_id, contract_address, event_type, block_number, event_index, tx_hash, insert_time)"
+const deDupWhere = "(chain_id, contract_address, event_type, block_number, event_index, tx_hash, insert_time) IN (SELECT chain_id, contract_address, event_type, block_number, event_index, tx_hash, max(insert_time) AS insert_time FROM bridge_events"
+const deDupWhereEnd = "GROUP BY chain_id, contract_address, event_type, block_number, event_index, tx_hash"
+
 const deDupInQuery = "(" + sortingKeys + ", insert_time) IN (SELECT " + sortingKeys + ", max(insert_time) as insert_time FROM bridge_events GROUP BY " + sortingKeys + ")"
 const deDupInQueryPrefix = "(" + sortingKeysPrefix + ", bridge_events.insert_time AS insert_time) IN (SELECT " + sortingKeysPrefix + ", max(bridge_events.insert_time) as insert_time FROM bridge_events GROUP BY " + sortingKeysPrefix + ")"
 
@@ -23,7 +27,9 @@ const deDupInQueryLatest = "(" + maxBlockNumberSortingKeys + ", block_number, in
 
 const joinSwapBaseQuery = "bridge_events LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index) * FROM token_indices) ti ON bridge_events.chain_id = ti.chain_id AND bridge_events.token = ti.token_address LEFT JOIN (SELECT * FROM swap_events)  fs ON bridge_events.tx_hash = fs.tx_hash AND bridge_events.chain_id = fs.chain_id"
 const joinSwapAmountSelectQuery = "if(fs.amount_usd[ti.token_index]  > 0, ((toFloat64(fs.amount[ti.token_index])/exp10(fs.token_decimal[ti.token_index])) * fs.amount_usd[ti.token_index]), bridge_events.amount_usd)"
-const joinSwapFullSymbolQuery = "SELECT (if(sa.token_address = '', bridge_events.token, sa.token_address) AS token),bridge_events.event_index AS event_index, bridge_events.block_number AS block_number, bridge_events.event_type AS event_type, bridge_events.token AS token_raw, bridge_events.tx_hash AS tx_hash, bridge_events.chain_id AS chain_id, bridge_events.contract_address AS contract_address, bridge_events.token_symbol AS token_symbol, bridge_events.amount AS amount, bridge_events.event_index AS event_index, bridge_events.destination_kappa AS destination_kappa, bridge_events.sender AS sender, bridge_events.recipient AS recipient, bridge_events.recipient_bytes AS recipient_bytes, bridge_events.fee AS fee, bridge_events.kappa AS kappa, bridge_events.token_index_from AS token_index_from, bridge_events.token_index_to AS token_index_to, bridge_events.min_dy AS min_dy, bridge_events.deadline AS deadline, bridge_events.swap_success AS swap_success, bridge_events.swap_token_index AS swap_token_index, bridge_events.swap_min_amount AS swap_min_amount, bridge_events.swap_deadline AS swap_deadline, bridge_events.token_id AS token_id, bridge_events.amount_usd AS amount_usd, bridge_events.fee_amount_usd AS fee_amount_usd, bridge_events.token_decimal AS token_decimal, bridge_events.timestamp AS timestamp,bridge_events.destination_chain_id AS destination_chain_id, bridge_events.insert_time AS insert_time FROM bridge_events LEFT JOIN (SELECT * FROM swap_events LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index, contract_address) * FROM token_indices) token_indices  ON swap_events.chain_id = token_indices.chain_id AND swap_events.sold_id = token_indices.token_index AND swap_events.contract_address = token_indices.contract_address) sa ON bridge_events.tx_hash = sa.tx_hash AND bridge_events.chain_id = sa.chain_id"
+const joinSwapFullSymbolQuery = "(if(sa.token_address = '', bridge_events.token, sa.token_address) AS token),bridge_events.event_index AS event_index, bridge_events.block_number AS block_number, bridge_events.event_type AS event_type, bridge_events.token AS token_raw, bridge_events.tx_hash AS tx_hash, bridge_events.chain_id AS chain_id, bridge_events.contract_address AS contract_address, bridge_events.token_symbol AS token_symbol, bridge_events.amount AS amount, bridge_events.event_index AS event_index, bridge_events.destination_kappa AS destination_kappa, bridge_events.sender AS sender, bridge_events.recipient AS recipient, bridge_events.recipient_bytes AS recipient_bytes, bridge_events.fee AS fee, bridge_events.kappa AS kappa, bridge_events.token_index_from AS token_index_from, bridge_events.token_index_to AS token_index_to, bridge_events.min_dy AS min_dy, bridge_events.deadline AS deadline, bridge_events.swap_success AS swap_success, bridge_events.swap_token_index AS swap_token_index, bridge_events.swap_min_amount AS swap_min_amount, bridge_events.swap_deadline AS swap_deadline, bridge_events.token_id AS token_id, bridge_events.amount_usd AS amount_usd, bridge_events.fee_amount_usd AS fee_amount_usd, bridge_events.token_decimal AS token_decimal, bridge_events.timestamp AS timestamp,bridge_events.destination_chain_id AS destination_chain_id, bridge_events.insert_time AS insert_time FROM bridge_events LEFT JOIN (SELECT * FROM swap_events LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index, contract_address) * FROM token_indices) token_indices  ON swap_events.chain_id = token_indices.chain_id AND swap_events.sold_id = token_indices.token_index AND swap_events.contract_address = token_indices.contract_address) sa ON bridge_events.tx_hash = sa.tx_hash AND bridge_events.chain_id = sa.chain_id"
+const columnRename = "if(ti.token_address = '', be.token, ti.token_address) AS token, if(se.tokens_bought > 0 , se.tokens_bought, be.amount) AS amount, be.token_symbol AS token_symbol, if(se.amount_usd[ti.token_index] > 0, ((toFloat64(amount)/exp10(be.token_decimal)) * se.amount_usd[ti.token_index]), be.amount_usd) AS amount_usd, be.event_type AS event_type,be.token AS token_raw, be.tx_hash AS tx_hash,be.chain_id AS chain_id,be.contract_address AS contract_address, be.token_symbol AS token_symbol,be.destination_kappa AS destination_kappa,be.sender AS sender, be.recipient AS recipient, be.recipient_bytes AS recipient_bytes,be.fee AS fee, be.kappa AS kappa, be.token_index_from AS token_index_from, be.token_index_to AS token_index_to, be.min_dy AS min_dy, be.deadline AS deadline, be.swap_success AS swap_success, be.swap_token_index AS swap_token_index, be.swap_min_amount AS swap_min_amount, be.swap_deadline AS swap_deadline, be.token_id AS token_id, be.fee_amount_usd AS fee_amount_usd, be.token_decimal AS token_decimal, be.timestamp AS timestamp,be.destination_chain_id AS destination_chain_id, be.insert_time AS insert_time"
+const joins = "SELECT DISTINCT ON (be.chain_id, be.contract_address, be.event_type, be.block_number, be.event_index, be.tx_hash) be.*, se.*, ti.* FROM bridge_events be LEFT JOIN swap_events se ON be.tx_hash = se.tx_hash AND be.chain_id = se.chain_id LEFT JOIN (SELECT DISTINCT ON (chain_id, token_index, contract_address) * FROM token_indices) ti ON se.chain_id = ti.chain_id AND se.contract_address = ti.contract_address AND ti.token_index = se.sold_id"
 
 func (r *queryResolver) getDirectionIn(direction *model.Direction) bool {
 	var directionIn bool
@@ -188,6 +194,8 @@ func generateDestinationChainIDSpecifierSQL(field string, firstFilter *bool, tab
 
 // generatePartialInfoQuery returns the query for making the PartialInfo query.
 func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash *string, page int, latest bool, destination bool) string {
+	Q := generatePartialInfoQuerySimple(chainID, address, tokenAddress, kappa, txHash, page, latest, destination)
+	fmt.Println("YOOOOMMAA", Q)
 	firstFilter := true
 
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "t1.")
@@ -197,6 +205,7 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 	destinationChainIDSpecifier := generateDestinationChainIDSpecifierSQL(sql.DestinationChainIDFieldName, &firstFilter, "t1.", destination)
 	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "t1.")
 	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC, %s DESC LIMIT %d OFFSET %d", sql.BlockNumberFieldName, sql.EventIndexFieldName, sql.PageSize, (page-1)*sql.PageSize)
+	limitSpecifier := fmt.Sprintf(" LIMIT %d OFFSET %d", sql.PageSize, (page-1)*sql.PageSize)
 
 	compositeIdentifiers := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + kappaSpecifier + destinationChainIDSpecifier + txHashSpecifier + pageSpecifier
 
@@ -228,10 +237,27 @@ func generatePartialInfoQuery(chainID *int, address, tokenAddress, kappa, txHash
 		SELECT  t1.* FROM (%s) t1
     	JOIN (
     	SELECT %s AS insert_max_time
-    	FROM bridge_events WHERE %s GROUP BY %s) t2
+    	FROM bridge_events WHERE %s GROUP BY %s %s) t2
     	    ON (%s) %s `,
-		joinSwapFullSymbolQuery, selectParameters, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
+		joinSwapFullSymbolQuery, selectParameters, deDup, groupByParameters, limitSpecifier, joinOnParameters, compositeIdentifiers)
+	fmt.Println("WsWW", query)
 
+	return query
+}
+
+// generatePartialInfoQuery returns the query for making the PartialInfo query.
+func generatePartialInfoQuerySimple(chainID *int, address, tokenAddress, kappa, txHash *string, page int, latest bool, destination bool) string {
+	firstFilter := true
+
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "be.")
+	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "be.")
+	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "be.")
+	kappaSpecifier := generateKappaSpecifierSQL(kappa, sql.KappaFieldName, &firstFilter, "be.")
+	destinationChainIDSpecifier := generateDestinationChainIDSpecifierSQL(sql.DestinationChainIDFieldName, &firstFilter, "be.", destination)
+	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "be.")
+	pageSpecifier := fmt.Sprintf(" ORDER BY be.%s DESC, be.%s DESC LIMIT %d OFFSET %d", sql.BlockNumberFieldName, sql.EventIndexFieldName, sql.PageSize, (page-1)*sql.PageSize)
+	compositeIdentifiers := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + kappaSpecifier + destinationChainIDSpecifier + txHashSpecifier + pageSpecifier
+	query := fmt.Sprintf("SELECT %s FROM (%s %s)  ", columnRename, joins, compositeIdentifiers)
 	return query
 }
 
@@ -337,6 +363,7 @@ func generateBridgeEventsWithKappaQuery(kappaChainStr string, chainID *int, addr
 	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "t1.")
 
 	pageSpecifier := fmt.Sprintf(" ORDER BY %s DESC LIMIT %d OFFSET %d", sql.BlockNumberFieldName, sql.PageSize, (page-1)*sql.PageSize)
+
 	var kappaChainSpecifier string
 	if to {
 		kappaChainSpecifier = fmt.Sprintf("WHERE (%s,%s) IN %s", sql.ChainIDFieldName, sql.KappaFieldName, kappaChainStr)
@@ -372,9 +399,10 @@ func generateBridgeEventsWithKappaQuery(kappaChainStr string, chainID *int, addr
 		SELECT t1.* FROM (%s) t1
     	JOIN (
     	SELECT %s AS insert_max_time
-    	FROM bridge_events WHERE %s  GROUP BY %s) t2
+    	FROM bridge_events WHERE %s GROUP BY %s) t2
     	    ON (%s) %s `,
 		joinSwapFullSymbolQuery, selectParameters, deDup, groupByParameters, joinOnParameters, compositeIdentifiers)
+	fmt.Println("ssWsWW", query)
 
 	return query
 }
@@ -389,6 +417,8 @@ func generatePartialInfoQueryByChain(limitSize int) string {
 		sql.TokenFieldName, sql.AmountFieldName, sql.EventIndexFieldName, sql.DestinationKappaFieldName,
 		sql.SenderFieldName, sql.TxHashFieldName, sql.InsertTimeFieldName,
 	)
+	limitSpecifier := fmt.Sprintf(" LIMIT %d BY %s", limitSize, sql.ChainIDFieldName)
+
 	groupByParameters := fmt.Sprintf(
 		`%s,%s,%s,%s,%s,%s,%s,%s,%s,%s`,
 		sql.TxHashFieldName, sql.ContractAddressFieldName, sql.ChainIDFieldName, sql.EventTypeFieldName, sql.BlockNumberFieldName,
@@ -407,10 +437,10 @@ func generatePartialInfoQueryByChain(limitSize int) string {
 		SELECT t1.* FROM (%s) t1
     	JOIN (
     	SELECT %s AS insert_max_time
-    	FROM bridge_events WHERE %s GROUP BY %s) t2
+    	FROM bridge_events WHERE %s GROUP BY %s %s) t2
     	    ON (%s) %s`,
-		joinSwapFullSymbolQuery, selectParameters, deDupInQuery, groupByParameters, joinOnParameters, compositeIdentifiers)
-
+		joinSwapFullSymbolQuery, selectParameters, deDupInQuery, groupByParameters, limitSpecifier, joinOnParameters, compositeIdentifiers)
+	fmt.Println("WWW", query)
 	return query
 }
 
@@ -422,7 +452,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 	if latest {
 		fromBridgeEvents, err = r.DB.GetBridgeEvents(ctx, generatePartialInfoQueryByChain(100))
 	} else {
-		fromBridgeEvents, err = r.DB.GetBridgeEvents(ctx, generatePartialInfoQuery(chainID, address, tokenAddress, nil, txnHash, page, false, false))
+		fromBridgeEvents, err = r.DB.GetBridgeEvents(ctx, generatePartialInfoQuerySimple(chainID, address, tokenAddress, nil, txnHash, page, false, false))
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get origin bridge events from identifiers: %w", err)
