@@ -69,8 +69,8 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 		return Notary{}, fmt.Errorf("error with attestationClient, could not create notary for: %w", err)
 	}
 
-	for name, domain := range cfg.Domains {
-		originClient, err := evm.NewEVM(ctx, name, domain)
+	for name, originDomain := range cfg.OriginDomains {
+		originClient, err := evm.NewEVM(ctx, name, originDomain)
 		if err != nil {
 			return Notary{}, fmt.Errorf("error with originClient, could not create notary for: %w", err)
 		}
