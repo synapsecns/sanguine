@@ -15,7 +15,7 @@ import (
 )
 
 // StoreReceipt stores a receipt.
-func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID uint32) error {
+func (s Store) StoreReceipt(ctx context.Context, chainID uint32, receipt types.Receipt) error {
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: TxHashFieldName}, {Name: ChainIDFieldName}},
@@ -45,7 +45,7 @@ func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID 
 }
 
 // ConfirmReceiptsForBlockHash confirms receipts for a given block hash.
-func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Receipt{}).
 		Where(&Receipt{
@@ -78,7 +78,7 @@ func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock 
 }
 
 // DeleteReceiptsForBlockHash deletes receipts with a given block hash.
-func (s Store) DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+func (s Store) DeleteReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
 	dbTx := s.DB().WithContext(ctx).
 		Where(&Receipt{
 			ChainID:   chainID,
