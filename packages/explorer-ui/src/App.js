@@ -1,5 +1,3 @@
-import { Routes, Route } from 'react-router-dom'
-
 import { Address } from '@pages/Address'
 import { BridgeTransaction } from '@pages/BridgeTransaction'
 import { BridgeTransactions } from '@pages/BridgeTransactions'
