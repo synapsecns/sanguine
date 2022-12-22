@@ -25,7 +25,7 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 	if ok, err = c.Chains.IsValid(ctx); !ok {
 		return false, err
 	}
-	
+
 	if c.RPCURL == "" {
 		return false, fmt.Errorf("rpc url cannot be empty")
 	}

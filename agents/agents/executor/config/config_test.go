@@ -23,9 +23,7 @@ func configFixture() config.Config {
 				DestinationAddress: gofakeit.Word(),
 			},
 		},
-		AttestationCollectorChainID: gofakeit.Uint32(),
-		AttestationCollectorAddress: gofakeit.Word(),
-		RPCURL:                      gofakeit.URL(),
+		RPCURL: gofakeit.URL(),
 	}
 }
 
@@ -51,14 +49,11 @@ func (c ConfigSuite) TestInvalidAttestationInfo() {
 	Nil(c.T(), err)
 	True(c.T(), ok)
 
-	testConfig.AttestationCollectorChainID = 0
-
 	ok, err = testConfig.IsValid(c.GetTestContext())
 	False(c.T(), ok)
 	NotNil(c.T(), err)
 
 	testConfig = configFixture()
-	testConfig.AttestationCollectorAddress = ""
 
 	ok, err = testConfig.IsValid(c.GetTestContext())
 	False(c.T(), ok)
