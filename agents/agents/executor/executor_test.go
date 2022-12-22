@@ -107,8 +107,6 @@ func (e *ExecutorSuite) TestExecutor() {
 				OriginAddress: testContractB.Address().String(),
 			},
 		},
-		AttestationCollectorChainID: gofakeit.Uint32(),
-		AttestationCollectorAddress: gofakeit.Word(),
 	}
 
 	executorClients := map[uint32]executor.Backend{
