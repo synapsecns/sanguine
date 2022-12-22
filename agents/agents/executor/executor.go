@@ -74,7 +74,6 @@ const logChanSize = 1000
 // NewExecutor creates a new executor agent.
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
 	chainExecutors := make(map[uint32]*ChainExecutor)
-
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("could not dial grpc: %w", err)
@@ -182,6 +181,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
+
 			err := e.processLog(ctx, *log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not process log: %w", err)
@@ -295,7 +295,6 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 		Destination: &destination,
 		Nonce:       &nonce,
 	}
-
 	attestation, err := e.executorDB.GetAttestation(ctx, attestationMask)
 	if err != nil {
 		return false, fmt.Errorf("could not get attestation: %w", err)
@@ -308,7 +307,6 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 	root := (*attestation).Root()
 	rootToHash := common.BytesToHash(root[:])
 	attestationMask.Root = &rootToHash
-
 	attestationBlockNumber, err := e.executorDB.GetAttestationBlockNumber(ctx, attestationMask)
 	if err != nil {
 		return false, fmt.Errorf("could not get attestation block number: %w", err)
@@ -324,14 +322,12 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 	}
 
 	attestationTimestamp := header.Time
-
 	latestHeader, err := e.chainExecutors[destination].client.HeaderByNumber(ctx, nil)
 	if err != nil {
 		return false, fmt.Errorf("could not get latest header: %w", err)
 	}
 
 	currentTime := latestHeader.Time
-
 	if attestationTimestamp+uint64(message.OptimisticSeconds()) > currentTime {
 		return false, nil
 	}
@@ -383,7 +379,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	}
 
 	fromBlock := strconv.FormatUint(lastStoredBlock, 10)
-
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
@@ -449,6 +444,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		if err != nil {
 			return fmt.Errorf("could not convert log to leaf: %w", err)
 		}
+
 		if message == nil {
 			return nil
 		}
@@ -476,6 +472,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		if err != nil {
 			return fmt.Errorf("could not convert log to attestation: %w", err)
 		}
+
 		if attestation == nil {
 			return nil
 		}
