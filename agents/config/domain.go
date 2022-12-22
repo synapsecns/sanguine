@@ -44,6 +44,8 @@ type DomainConfig struct {
 	OriginAddress string `toml:"OriginAddress"`
 	// AttestationCollectorAddress contains the attestation collector address (if present)
 	AttestationCollectorAddress string `toml:"AttestationCollectorAddress"`
+	// DestinationAddress gets destination contract address
+	DestinationAddress string `toml:"DestinationAddress"`
 	// RPCUrl to use for the chain
 	RPCUrl string `toml:"RPCURL"`
 	// Minimum start height
