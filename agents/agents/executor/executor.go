@@ -182,7 +182,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
-
+			fmt.Println("got a log for chain ID", chainID)
 			err := e.processLog(ctx, *log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not process log: %w", err)
@@ -489,6 +489,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		}
 	case destinationContract:
 		attestation, err := e.logToAttestation(log, chainID)
+		fmt.Println("492 chainID", chainID)
 		if err != nil {
 			return fmt.Errorf("could not convert log to attestation: %w", err)
 		}
@@ -528,6 +529,8 @@ func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (*types.Att
 	if !ok {
 		return nil, fmt.Errorf("could not parse attestation")
 	}
+
+	fmt.Println("attestation chainID is", attestation.Origin())
 
 	return &attestation, nil
 }

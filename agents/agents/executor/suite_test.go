@@ -12,7 +12,6 @@ import (
 	agentsTestutil "github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -42,11 +41,6 @@ type ExecutorSuite struct {
 	deployManager   *agentsTestutil.DeployManager
 	originContract  contracts.DeployedContract
 	originRef       *originharness.OriginHarnessRef
-
-	NotaryWallet wallet.Wallet
-	GuardWallet  wallet.Wallet
-	NotarySigner signer.Signer
-	GuardSigner  signer.Signer
 }
 
 // NewExecutorSuite creates a new executor suite.

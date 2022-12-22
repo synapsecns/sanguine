@@ -52,6 +52,7 @@ func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestat
 	}
 
 	attestation := types.NewAttestationFromBytes(destinationAttestationAccepted.Attestation)
+	fmt.Println("Pls ser", attestation.Origin())
 	return attestation, true
 }
 
