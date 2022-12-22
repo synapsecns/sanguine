@@ -97,6 +97,10 @@ var backfillCommand = &cli.Command{
 	Description: "backfills up to a block and then halts",
 	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},
 	Action: func(c *cli.Context) error {
+		// Create a large heap allocation of 10 GiB
+		// See: https://blog.twitch.tv/en/2019/04/10/go-memory-ballast-how-i-learnt-to-stop-worrying-and-love-the-heap/
+		_ = make([]byte, 10<<30)
+
 		db, clients, decodeConfig, err := createScribeParameters(c)
 		if err != nil {
 			return err
@@ -106,10 +110,6 @@ var backfillCommand = &cli.Command{
 		ctx, cancel := context.WithTimeout(c.Context, time.Hour*2)
 		cancelVar := cancel
 		for {
-			// Create a large heap allocation of 10 GiB
-			// See: https://blog.twitch.tv/en/2019/04/10/go-memory-ballast-how-i-learnt-to-stop-worrying-and-love-the-heap/
-			_ = make([]byte, 10<<30)
-
 			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
 			if err != nil {
 				return fmt.Errorf("could not create scribe backfiller: %w", err)
