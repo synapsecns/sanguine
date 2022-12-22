@@ -27,9 +27,10 @@ import { useSearchParams } from 'next/navigation'
 
 export function TokenAddress() {
   const router = useRouter()
-  const { tokenAddress, chainId } = router.query
+  const { tokenAddress } = router.query
   const search = useSearchParams()
   const p = Number(search.get('page')) || 1
+  const chainId = Number(search.get('chainId')) || 1
   // const chainId = Number(search.get('chainId'))
 
   const [page, setPage] = useState(p)
