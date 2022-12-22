@@ -420,7 +420,7 @@ func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, bloc
 		return nil, fmt.Errorf("failed to get receipt for transaction %s: %w", tx.Hash().String(), err)
 	}
 	receipt.Logs[0].BlockNumber = blockNumber
-	err = b.eventDB.StoreLog(b.GetTestContext(), *receipt.Logs[0], chainID)
+	err = b.eventDB.StoreLogs(b.GetTestContext(), chainID, *receipt.Logs[0])
 	if err != nil {
 		return nil, fmt.Errorf("error storing swap log: %w", err)
 	}

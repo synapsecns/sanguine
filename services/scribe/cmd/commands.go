@@ -101,15 +101,16 @@ var backfillCommand = &cli.Command{
 		if err != nil {
 			return err
 		}
-		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
-		if err != nil {
-			return fmt.Errorf("could not create scribe backfiller: %w", err)
-		}
 
 		// TODO delete once livefilling done
 		ctx, cancel := context.WithTimeout(c.Context, time.Minute*12)
 		cancelVar := cancel
 		for {
+			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
+			if err != nil {
+				return fmt.Errorf("could not create scribe backfiller: %w", err)
+			}
+
 			err = scribeBackfiller.Backfill(ctx)
 			if err != nil {
 				cancelVar()
