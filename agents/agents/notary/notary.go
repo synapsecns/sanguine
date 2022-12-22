@@ -22,8 +22,8 @@ type Notary struct {
 	signers         map[string]OriginAttestationSigner
 	submitters      map[string]OriginAttestationSubmitter
 	verifiers       map[string]OriginAttestationVerifier
-	signer          signer.Signer
-	destinationID   uint32
+	bondedSigner    signer.Signer
+	unbondedSigner  signer.Signer
 	refreshInterval time.Duration
 }
 
@@ -38,12 +38,16 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 		submitters:      make(map[string]OriginAttestationSubmitter),
 		verifiers:       make(map[string]OriginAttestationVerifier),
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
-		destinationID:   cfg.DestinationID,
 	}
 
-	notary.signer, err = config.SignerFromConfig(cfg.Signer)
+	notary.bondedSigner, err = config.SignerFromConfig(cfg.BondedSigner)
 	if err != nil {
-		return Notary{}, fmt.Errorf("could not create notary: %w", err)
+		return Notary{}, fmt.Errorf("error with bondedSigner, could not create notary: %w", err)
+	}
+
+	notary.unbondedSigner, err = config.SignerFromConfig(cfg.UnbondedSigner)
+	if err != nil {
+		return Notary{}, fmt.Errorf("error with unbondedSigner, could not create notary: %w", err)
 	}
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
@@ -56,16 +60,25 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 		return Notary{}, fmt.Errorf("could not connect to legacyDB: %w", err)
 	}
 
+	destinationClient, err := evm.NewEVM(ctx, "destination_client", cfg.DestinationDomain)
+	if err != nil {
+		return Notary{}, fmt.Errorf("error with destinationClient, could not create notary for: %w", err)
+	}
+	attestationClient, err := evm.NewEVM(ctx, "attestation_client", cfg.AttestationDomain)
+	if err != nil {
+		return Notary{}, fmt.Errorf("error with attestationClient, could not create notary for: %w", err)
+	}
+
 	for name, domain := range cfg.Domains {
-		domainClient, err := evm.NewEVM(ctx, name, domain)
+		originClient, err := evm.NewEVM(ctx, name, domain)
 		if err != nil {
-			return Notary{}, fmt.Errorf("could not create notary for: %w", err)
+			return Notary{}, fmt.Errorf("error with originClient, could not create notary for: %w", err)
 		}
 
-		notary.scanners[name] = NewOriginAttestationScanner(domainClient, notary.destinationID, dbHandle, notary.signer, notary.refreshInterval)
-		notary.signers[name] = NewOriginAttestationSigner(domainClient, notary.destinationID, dbHandle, notary.signer, notary.refreshInterval)
-		notary.submitters[name] = NewOriginAttestationSubmitter(domainClient, notary.destinationID, dbHandle, notary.signer, notary.refreshInterval)
-		notary.verifiers[name] = NewOriginAttestationVerifier(domainClient, notary.destinationID, dbHandle, notary.signer, notary.refreshInterval)
+		notary.scanners[name] = NewOriginAttestationScanner(originClient, attestationClient, destinationClient, dbHandle, notary.bondedSigner, notary.unbondedSigner, notary.refreshInterval)
+		notary.signers[name] = NewOriginAttestationSigner(originClient, attestationClient, destinationClient, dbHandle, notary.bondedSigner, notary.unbondedSigner, notary.refreshInterval)
+		notary.submitters[name] = NewOriginAttestationSubmitter(originClient, attestationClient, destinationClient, dbHandle, notary.bondedSigner, notary.unbondedSigner, notary.refreshInterval)
+		notary.verifiers[name] = NewOriginAttestationVerifier(originClient, attestationClient, destinationClient, dbHandle, notary.bondedSigner, notary.unbondedSigner, notary.refreshInterval)
 	}
 
 	return notary, nil

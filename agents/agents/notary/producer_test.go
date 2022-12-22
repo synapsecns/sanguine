@@ -10,31 +10,24 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
-	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
 
 func (u NotarySuite) TestUpdateProducer() {
 	testDB, err := sqlite.NewSqliteStore(u.GetTestContext(), filet.TmpDir(u.T(), ""))
 	Nil(u.T(), err)
 
-	testWallet, err := wallet.FromRandom()
-	Nil(u.T(), err)
-
-	signer := localsigner.NewSigner(testWallet.PrivateKey())
-
 	// dispatch a random update
-	auth := u.testBackend.GetTxContext(u.GetTestContext(), nil)
+	auth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
 
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(u.T(), err)
 
-	tx, err := u.originContract.Dispatch(auth.TransactOpts, u.domainClient.Config().DomainID, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
+	tx, err := u.OriginContract.Dispatch(auth.TransactOpts, u.OriginDomainClient.Config().DomainID, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
 	Nil(u.T(), err)
-	u.testBackend.WaitForConfirmation(u.GetTestContext(), tx)
+	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
 	// call the update producing function
-	attestationProducer := notary.NewAttestationProducer(u.domainClient, testDB, signer, 1*time.Second)
+	attestationProducer := notary.NewAttestationProducer(u.OriginDomainClient, testDB, u.NotarySigner, 1*time.Second)
 
 	err = attestationProducer.Update(u.GetTestContext())
 	Nil(u.T(), err)

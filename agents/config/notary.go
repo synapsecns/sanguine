@@ -7,12 +7,19 @@ import (
 
 // NotaryConfig is used for configuring the notary.
 type NotaryConfig struct {
-	// Destination is the destination domain of this notary is assigned to
-	DestinationID uint32 `toml:"DestinationID"`
-	// Domains stores all domains
+	// OriginDomains stores all origin domains
+	OriginDomains DomainConfigs `toml:"OriginDomains"`
+	// AttestationDomain stores the attestaion domain
+	AttestationDomain DomainConfig `toml:"AttestationDomain"`
+	// DestinationDomain stores  the destination domain
+	DestinationDomain DomainConfig `toml:"DestinationDomain"`
+	// AttestationDomains stores all origin domains
 	Domains DomainConfigs `toml:"Domains"`
-	// Signer contains the signer config for agents
-	Signer SignerConfig `toml:"Signer"`
+	// UnbondedSigner contains the unbonded signer config for agents
+	// (this is signer used to submit transactions)
+	UnbondedSigner SignerConfig `toml:"UnbondedSigner"`
+	// BondedSigner contains the bonded signer config for agents
+	BondedSigner SignerConfig `toml:"BondedSigner"`
 	// DbConfig is the database config
 	Database DBConfig `toml:"Database"`
 	// RefreshIntervalInSeconds is how long to wait before refreshing the Notary state
@@ -27,11 +34,13 @@ func (c *NotaryConfig) IsValid(ctx context.Context) (ok bool, err error) {
 		return false, err
 	}
 
-	for _, cfg := range c.Domains {
-		if cfg.DomainID == c.DestinationID {
-			return false, fmt.Errorf("origin domain id %d is same as Notary's assigned destination id %d: %w", cfg.DomainID, c.DestinationID, ErrInvalidDomainID)
+	hasDestinationDomain := false
+	hasOriginDomain := false
+	for _, cfg := range c.OriginDomains {
+		if cfg.DomainID == c.DestinationDomain.DomainID {
+			return false, fmt.Errorf("origin domain id %d is same as Notary's assigned destination id %d: %w", cfg.DomainID, c.DestinationDomain.DomainID, ErrInvalidDomainID)
 		}
 	}
 
-	return true, nil
+	return hasDestinationDomain && hasOriginDomain, nil
 }
