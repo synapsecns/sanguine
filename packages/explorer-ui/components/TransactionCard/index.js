@@ -17,7 +17,7 @@ export function TransactionCard({ txn, ordinal }) {
     ordinal % 2 === 0 ? 'bg-transparent' : 'bg-[#D9D9D9] bg-opacity-5'
 
   return (
-    <Link
+    <a
       className="overflow-visible cursor-pointer"
       role="link"
       href={getBridgeTransactionUrl({
@@ -84,7 +84,7 @@ export function TransactionCard({ txn, ordinal }) {
           </div>
         </div>
       </Card>
-    </Link>
+    </a>
   )
 }
 
