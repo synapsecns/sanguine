@@ -38,6 +38,9 @@ func (b BackfillSuite) TestFailedStore() {
 		// on retrieve last indexed call
 		On("RetrieveLastIndexed", mock.Anything, mock.Anything, mock.Anything).
 		Return(uint64(0), nil)
+
+	mockDB.On("StoreBlockTime", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 	chainID := gofakeit.Uint32()
 
 	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
