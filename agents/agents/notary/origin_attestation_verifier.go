@@ -15,26 +15,39 @@ import (
 // OriginAttestationVerifier verifies that the AttestationCollector in fact posted submitted attestations and if not resubmits.
 // TODO: this needs to become an interface.
 type OriginAttestationVerifier struct {
-	// domain allows access to the origin contract
-	domain domains.DomainClient
-	// domain of target destination
-	destinationID uint32
+	// originDomain allows access to the origin contract on the origin chain
+	originDomain domains.DomainClient
+	// attestationDomain allows access to the atttestation contract on the SYN chain
+	attestationDomain domains.DomainClient
+	// destinationDomain allows access to the destination contract on the destination chain
+	destinationDomain domains.DomainClient
 	// db is the synapse db
 	db db.SynapseDB
-	// signer is the signer
-	signer signer.Signer
+	// bondedSigner is the attestation signer that must be a bonded agent
+	bondedSigner signer.Signer
+	// unbondedSigner is the signer for submitting transactions
+	unbondedSigner signer.Signer
 	// interval waits for an interval
 	interval time.Duration
 }
 
 // NewOriginAttestationVerifier creates a new origin attestation verifier.
-func NewOriginAttestationVerifier(domain domains.DomainClient, destinationID uint32, db db.SynapseDB, signer signer.Signer, interval time.Duration) OriginAttestationVerifier {
+func NewOriginAttestationVerifier(
+	originDomain domains.DomainClient,
+	attestationDomain domains.DomainClient,
+	destinationDomain domains.DomainClient,
+	db db.SynapseDB,
+	bondedSigner signer.Signer,
+	unbondedSigner signer.Signer,
+	interval time.Duration) OriginAttestationVerifier {
 	return OriginAttestationVerifier{
-		domain:        domain,
-		destinationID: destinationID,
-		db:            db,
-		signer:        signer,
-		interval:      interval,
+		originDomain:      originDomain,
+		attestationDomain: attestationDomain,
+		destinationDomain: destinationDomain,
+		db:                db,
+		bondedSigner:      bondedSigner,
+		unbondedSigner:    unbondedSigner,
+		interval:          interval,
 	}
 }
 
@@ -55,7 +68,7 @@ func (a OriginAttestationVerifier) Start(ctx context.Context) error {
 
 // FindOldestUnconfirmedAttestation fetches the oldest attestation that still needs to be confirmed.
 func (a OriginAttestationVerifier) FindOldestUnconfirmedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx, a.domain.Config().DomainID, a.destinationID)
+	inProgressAttestation, err := a.db.RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoNonceForDomain) {
 			return nil, nil
@@ -78,7 +91,7 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	}
 
 	// TODO (joe): This will need to be updated.
-	latestNonce, err := a.domain.AttestationCollector().GetLatestNonce(ctx, a.domain.Config().DomainID, a.destinationID, a.signer)
+	latestNonce, err := a.attestationDomain.AttestationCollector().GetLatestNonce(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID, a.bondedSigner)
 	if err != nil {
 		return fmt.Errorf("could not find latest nonce: %w", err)
 	}
@@ -93,7 +106,7 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	}
 
 	if a.shouldResubmit(inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime()) {
-		err = a.domain.AttestationCollector().SubmitAttestation(ctx, a.signer, inProgressAttestationToConfirm.SignedAttestation())
+		err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToConfirm.SignedAttestation())
 		if err != nil {
 			return fmt.Errorf("could not find submit attestation: %w", err)
 		}
