@@ -3,6 +3,8 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"github.com/lmittmann/w3/module/eth"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 	"math/big"
 	"time"
@@ -403,4 +405,34 @@ func (c *ContractBackfiller) prunedReceiptLogs(receipt types.Receipt) (logs []ty
 		logs = append(logs, *log)
 	}
 	return logs, nil
+}
+
+func (c *ContractBackfiller) fetchTx(ctx context.Context, txhash common.Hash, clientIndex int, blockNumber uint64) error {
+	var receipt types.Receipt
+	var transaction types.Transaction
+	var blockHeader types.Header
+
+	calls := make([]w3types.Caller, 3)
+
+	// setup referencable indexes so we can access errors from the calls
+	const (
+		receiptIndex = 0
+		txIndex      = 1
+		headerIndex  = 2
+	)
+
+	// get the transaction receipt
+	calls[receiptIndex] = eth.TxReceipt(txhash).Returns(&receipt)
+
+	// get the raw transaction
+	calls[txIndex] = eth.Tx(txhash).Returns(&transaction)
+
+	// get the block number
+	calls[headerIndex] = eth.HeaderByNumber(new(big.Int).SetUint64(blockNumber)).Returns(&blockHeader)
+
+	if err := c.client[0].Batch(ctx, calls...); err != nil {
+		return fmt.Errorf("could not get tx receipt: %w", err)
+	}
+
+	return nil
 }
