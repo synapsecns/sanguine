@@ -62,6 +62,7 @@ dockers:
     goarch: amd64
     image_templates:
       - 'ghcr.io/synapsecns/sanguine/scribe:latest'
+      - 'ghcr.io/synapsecns/sanguine/scribe:{{ .FullCommit }}'
       - 'ghcr.io/synapsecns/sanguine/scribe:{{ .Tag }}'
     dockerfile: ../../docker/scribe.Dockerfile
     ids:

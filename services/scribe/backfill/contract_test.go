@@ -32,7 +32,7 @@ func (b BackfillSuite) TestFailedStore() {
 		Return(fmt.Errorf("failed to store transaction"))
 	mockDB.
 		// on a store log call
-		On("StoreLog", mock.Anything, mock.Anything, mock.Anything).
+		On("StoreLogs", mock.Anything, mock.Anything, mock.Anything).
 		Return(fmt.Errorf("failed to store log"))
 	mockDB.
 		// on retrieve last indexed call

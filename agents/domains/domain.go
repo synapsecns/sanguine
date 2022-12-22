@@ -25,6 +25,8 @@ type DomainClient interface {
 	Origin() OriginContract
 	// AttestationCollector is the attestation collector
 	AttestationCollector() AttestationCollectorContract
+	// Destination retrieves a handle for the destination contract
+	Destination() DestinationContract
 }
 
 // OriginContract represents the origin contract on a particular chain.
@@ -45,10 +47,14 @@ type AttestationCollectorContract interface {
 	AddAgent(transactOpts *bind.TransactOpts, domain uint32, signer signer.Signer) error
 	// SubmitAttestation submits an attestation to the attestation collector.
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
-	// GetLatestNonce gets the latest nonce for the domain on the attestation collector
-	GetLatestNonce(ctx context.Context, origin uint32, destination uint32, signer signer.Signer) (nonce uint32, err error)
-	// GetAttestation gets the signed attestation on the attestation collector if found for the <origin, destination, nonce>
-	GetAttestation(ctx context.Context, origin, destination, nonce uint32) (types.SignedAttestation, error)
+	// GetLatestNonce gets the latest nonce signed by the bondedAgentSigner for the domain on the attestation collector
+	GetLatestNonce(ctx context.Context, origin uint32, destination uint32, bondedAgentSigner signer.Signer) (nonce uint32, err error)
+}
+
+// DestinationContract contains the interface for the destination.
+type DestinationContract interface {
+	// SubmitAttestation submits an attestation to the destination.
+	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 }
 
 // ErrNoUpdate indicates no update has been produced.

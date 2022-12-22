@@ -4,14 +4,13 @@ import (
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
 )
 
-func (i ContractSuite) TestSubmitAttestation() {
+func (i ContractSuite) TestDestinationSubmitAttestation() {
 	originDomain := uint32(i.TestBackendOrigin.GetChainID())
 	destinationDomain := uint32(i.TestBackendDestination.GetChainID())
 
@@ -28,19 +27,18 @@ func (i ContractSuite) TestSubmitAttestation() {
 
 	notarySignature, err := i.NotarySigner.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(i.T(), err)
+	guardSignature, err := i.GuardSigner.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	Nil(i.T(), err)
 
-	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{}, []types.Signature{notarySignature})
+	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
+
 	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
 	Nil(i.T(), err)
 
-	auth := i.TestBackendAttestation.GetTxContext(i.GetTestContext(), nil)
+	auth := i.TestBackendDestination.GetTxContext(i.GetTestContext(), nil)
 
-	tx, err := i.AttestationContract.SubmitAttestation(auth.TransactOpts, rawSignedAttestation)
+	tx, err := i.DestinationContract.SubmitAttestation(auth.TransactOpts, rawSignedAttestation)
 	Nil(i.T(), err)
 
-	i.TestBackendAttestation.WaitForConfirmation(i.GetTestContext(), tx)
-
-	latestNonce, err := i.AttestationContract.GetLatestNonce(&bind.CallOpts{Context: i.GetTestContext()}, originDomain, destinationDomain, i.NotarySigner.Address())
-	Nil(i.T(), err)
-	Equal(i.T(), nonce, latestNonce)
+	i.TestBackendDestination.WaitForConfirmation(i.GetTestContext(), tx)
 }

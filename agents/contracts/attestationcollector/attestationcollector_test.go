@@ -40,7 +40,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 		Nonce:       nonce,
 	}
 	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
-	hashedAttestation, err := unsignedAttestation
+	hashedAttestation, err := types.Hash(unsignedAttestation)
 	Nil(a.T(), err)
 
 	encodedAttestation, err := types.EncodeAttestation(unsignedAttestation)
