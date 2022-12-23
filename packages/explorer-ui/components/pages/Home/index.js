@@ -96,13 +96,13 @@ export function Home({
       <HorizontalDivider />
       <PageLink text="See all transactions" url={TRANSACTIONS_PATH} />
 
-      <PopularTokens counts={popularTokens} />
+      {/* <PopularTokens counts={popularTokens} />
       <HorizontalDivider />
       <PageLink text="View all tokens" url={TRANSACTIONS_PATH} />
 
       <PopularChains counts={popularChains} />
       <HorizontalDivider />
-      <PageLink text="View all chains" url={TRANSACTIONS_PATH} />
+      <PageLink text="View all chains" url={TRANSACTIONS_PATH} /> */}
     </StandardPageContainer>
   )
 }

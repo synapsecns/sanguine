@@ -12,6 +12,7 @@ export default function TopBarNavLink({ labelText, to, className }) {
     <div className={`py-2 px-2 ${className}`}>
       <span
         className={`
+        text-gray-300
             transform-gpu transition-all duration-75
             ${
               // !match &&

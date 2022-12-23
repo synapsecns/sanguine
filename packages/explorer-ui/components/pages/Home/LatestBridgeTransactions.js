@@ -27,12 +27,84 @@ export function LatestBridgeTransactions({ queryResult }) {
     latestBridgeTransactions,
     'fromInfo.time',
     ['desc']
-  ).slice(0, 5)
+  ).slice(0, 10)
 
   content = latestBridgeTransactions.map((txn, i) => (
     <TransactionCard txn={txn} key={i} ordinal={i} />
   ))
   // }
 
-  return <>{content}</>
+  // return <>{content}</>
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-8">
+      <div className="mt-8 flex flex-col">
+        <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div className="inline-block min-w-full py-2 align-middle">
+            <div className="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5">
+              <table className="min-w-full">
+                <thead className="">
+                  <tr>
+                    <th
+                      scope="col"
+                      className="px-2 py-2 text-left text-md font-bold text-white"
+                    >
+                      From
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-2 py-2 text-left text-md font-bold text-white"
+                    >
+                      To
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-2 py-2 text-left text-md font-bold text-white"
+                    >
+                      Initial
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-2 py-2 text-left text-md font-bold text-white"
+                    >
+                      Final
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-2 py-2 text-left text-md font-bold text-white"
+                    >
+                      Origin
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-2 py-2 text-left text-md font-bold text-white"
+                    >
+                      Destination
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-2 py-2 text-left text-md font-bold text-white"
+                    >
+                      Date
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-2 py-2 text-left text-md font-bold text-white"
+                    >
+                      Tx ID
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {latestBridgeTransactions.map((txn, i) => (
+                    <TransactionCard txn={txn} key={i} ordinal={i} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

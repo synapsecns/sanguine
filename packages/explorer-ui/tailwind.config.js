@@ -9,6 +9,11 @@ module.exports = {
     extend: {
       backgroundImage: {
         'wavylines-stretch': "url('wavylinesstretch.svg')",
+        'synapse-radial':
+          'radial-gradient(249.66% 351.84% at -119.61% 97.91%, rgba(255, 0, 255, 0.33) 0%, rgba(172, 143, 255, 0.33) 100%)',
+      },
+      colors: {
+        synapse: '#100C13',
       },
     },
   },

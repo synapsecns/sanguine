@@ -1,17 +1,18 @@
 export function SearchBox({ searchField, setSearchField, inputType }) {
   return (
-    <form className="flex items-center mt-5">
+    <form className="flex items-center">
       <div className="relative w-full group ">
         <input
           type="text"
           id="simple-search"
           className={`
-            bg-white bg-opacity-10
-            text-white text-opacity-40 font-medium text-xl
-            rounded-lg
-            border border-white border-opacity-10
+            bg-white bg-opacity-5
+            rounded-md
+            border border-white border-opacity-20
             focus:outline-none focus-within:border-gray-500
-            block w-full pl-5 p-3.5
+            block w-full  px-4 py-2
+            text-white
+            placeholder:text-white placeholder:text-opacity-60
           `}
           placeholder="Search by address or transaction..."
           onChange={(e) => {
