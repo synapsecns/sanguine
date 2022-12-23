@@ -3,6 +3,10 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/assert"
@@ -19,9 +23,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server"
 	"go.uber.org/atomic"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"net/http"
-	"testing"
-	"time"
 )
 
 // NewTestEnvDB sets up the test env with a database.

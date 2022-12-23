@@ -42,6 +42,29 @@ func (_m *ConsumerDB) GetAddressRanking(ctx context.Context, query string) ([]*m
 	return r0, r1
 }
 
+// GetAllBridgeEvents provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetAllBridgeEvents(ctx context.Context, query string) ([]sql.HybridBridgeEvent, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 []sql.HybridBridgeEvent
+	if rf, ok := ret.Get(0).(func(context.Context, string) []sql.HybridBridgeEvent); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]sql.HybridBridgeEvent)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetBridgeEvent provides a mock function with given fields: ctx, query
 func (_m *ConsumerDB) GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error) {
 	ret := _m.Called(ctx, query)

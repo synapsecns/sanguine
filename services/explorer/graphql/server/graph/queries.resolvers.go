@@ -81,6 +81,8 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 		hours := 720
 		targetTime := r.getTargetTime(&hours)
 		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "be.")
+	case model.DurationAllTime:
+		timestampSpecifier = ""
 	}
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "be.")
 	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "be.")
@@ -105,11 +107,11 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 		operation = fmt.Sprintf("sumKahan(%s)", sql.AmountUSDFieldName)
 		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT %s FROM (%s %s))", operation, columnRename, joins, compositeFilters)
 	case model.StatisticTypeCountTransactions:
-		operation = fmt.Sprintf("COUNT(%s) AS res", sql.TxHashFieldName)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT DISTINCT ON (%s, %s) * FROM bridge_events) be %s", operation, sql.ChainIDFieldName, sql.TxHashFieldName, compositeFilters)
+		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (%s) be %s", operation, simpleDeDup, compositeFilters)
 	case model.StatisticTypeCountAddresses:
-		operation = fmt.Sprintf("COUNT(%s) AS res", sql.SenderFieldName)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT DISTINCT ON (%s, %s) * FROM bridge_events) be %s", operation, sql.ChainIDFieldName, sql.SenderFieldName, compositeFilters)
+		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (%s) be %s", operation, simpleDeDup, compositeFilters)
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
@@ -183,15 +185,17 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s %s)) GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", columnRename, joins, compositeFilters)
 		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 	case model.HistoricalResultTypeAddresses:
-		subQuery = fmt.Sprintf("SELECT toFloat64(COUNT(%s)) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT DISTINCT ON (%s, %s) * FROM (SELECT %s FROM (%s %s))) GROUP BY date ORDER BY date ASC", sql.SenderFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", sql.ChainIDFieldName, sql.SenderFieldName, columnRename, joins, compositeFilters)
-		query = fmt.Sprintf("SELECT toFloat64(COUNT(%s)) AS total FROM (SELECT DISTINCT ON (%s, %s) * FROM (SELECT %s FROM (%s %s)))", sql.SenderFieldName, sql.ChainIDFieldName, sql.SenderFieldName, columnRename, joins, compositeFilters)
+		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s %s)) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", columnRename, joins, compositeFilters)
+		query = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total FROM (SELECT %s FROM (%s %s))", sql.ChainIDFieldName, sql.SenderFieldName, columnRename, joins, compositeFilters)
 	case model.HistoricalResultTypeTransactions:
-		subQuery = fmt.Sprintf("SELECT toFloat64(COUNT(%s)) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT DISTINCT ON (%s, %s) * FROM (SELECT %s FROM (%s %s))) GROUP BY date ORDER BY date ASC", sql.TxHashFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", sql.ChainIDFieldName, sql.TxHashFieldName, columnRename, joins, compositeFilters)
+		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s %s)) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", columnRename, joins, compositeFilters)
 		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 
 	default:
 		return nil, fmt.Errorf("invalid type argument")
 	}
+
+	fmt.Println("subQuerysubQuery", subQuery, query)
 	var sum float64
 	var err error
 	var dayByDayData []*model.DateResult
@@ -214,7 +218,7 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	err = g.Wait()
 
 	if err != nil {
-		return nil, fmt.Errorf("could not get historical data: %v", err)
+		return nil, fmt.Errorf("could not get historical data: %w", err)
 	}
 
 	payload := model.HistoricalResult{
