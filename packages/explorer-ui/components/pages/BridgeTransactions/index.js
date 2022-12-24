@@ -25,6 +25,7 @@ import {
 } from '@styles/networks'
 import { getChainUrl } from '@urls'
 import { nameToChainIds, suggestions } from '@utils/chainAutocomplete'
+import { UniversalSearch } from '../home/UniversalSearch'
 
 export function BridgeTransactions() {
   const search = useSearchParams()
@@ -108,20 +109,88 @@ export function BridgeTransactions() {
 
     content = (
       <>
-        <AutoCompleteSearch suggestions={suggestions} />
-        <AllTransactions txns={latestBridgeTransactions} />
-        <Pagination
-          page={page}
-          resetPage={resetPage}
-          prevPage={prevPage}
-          nextPage={nextPage}
-        />
+        <div className="mt-6">
+          <UniversalSearch placeholder="Search all transactions by address or chain" />
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="mt-8 flex flex-col">
+              <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div className="inline-block min-w-full py-2 align-middle">
+                  <div className="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5">
+                    <table className="min-w-full">
+                      <thead className="">
+                        <tr>
+                          <th
+                            scope="col"
+                            className="px-2 py-2 text-left text-md font-bold text-white"
+                          >
+                            From
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-2 py-2 text-left text-md font-bold text-white"
+                          >
+                            To
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-2 py-2 text-left text-md font-bold text-white"
+                          >
+                            Initial
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-2 py-2 text-left text-md font-bold text-white"
+                          >
+                            Final
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-2 py-2 text-left text-md font-bold text-white"
+                          >
+                            Origin
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-2 py-2 text-left text-md font-bold text-white"
+                          >
+                            Destination
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-2 py-2 text-left text-md font-bold text-white"
+                          >
+                            Date
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-2 py-2 text-left text-md font-bold text-white"
+                          >
+                            Tx ID
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <AllTransactions txns={latestBridgeTransactions} />
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <Pagination
+            page={page}
+            resetPage={resetPage}
+            prevPage={prevPage}
+            nextPage={nextPage}
+          />
+        </div>
       </>
     )
   }
 
   return (
-    <StandardPageContainer title="All Bridge Transactions">
+    <StandardPageContainer title="Bridge Transactions">
       {content}
     </StandardPageContainer>
   )
