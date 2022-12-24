@@ -1,27 +1,30 @@
-import {useEffect, useRef, useState} from 'react'
+import { useEffect, useRef, useState } from 'react'
 import _ from 'lodash'
-import {useLazyQuery} from '@apollo/client'
-import {SearchIcon, XCircleIcon} from '@heroicons/react/outline'
+import { useLazyQuery } from '@apollo/client'
+import { SearchIcon, XCircleIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
-import {useSearchParams} from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 import Button from '@components/tailwind/Button'
 
-import {GET_LATEST_BRIDGE_TRANSACTIONS_QUERY} from '@graphql/queries'
+import { GET_LATEST_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 
-import {Error} from '@components/Error'
-import {CHAIN_INFO_MAP} from '@constants/networks'
-import {Pagination} from '@components/Pagination'
-import {AllTransactions, TransactionsLoader,} from '@components/TransactionCard'
-import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
+import { Error } from '@components/Error'
+import { CHAIN_INFO_MAP } from '@constants/networks'
+import { Pagination } from '@components/Pagination'
+import {
+  AllTransactions,
+  TransactionsLoader,
+} from '@components/TransactionCard'
+import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import {
   getNetworkButtonBgClassName,
   getNetworkButtonBgClassNameActive,
   getNetworkButtonBorderActive,
   getNetworkButtonBorderHover,
 } from '@styles/networks'
-import {nameToChainIds, suggestions} from '@utils/chainAutocomplete'
-import {UniversalSearch} from '@components/pages/Home/UniversalSearch'
+import { nameToChainIds, suggestions } from '@utils/chainAutocomplete'
+import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
 
 export function BridgeTransactions() {
   const search = useSearchParams()
@@ -88,8 +91,7 @@ export function BridgeTransactions() {
   if (loading) {
     content = (
       <>
-        <AutoCompleteSearch suggestions={suggestions} />
-        <TransactionsLoader number={50} />
+        <div className="text-white">Loading transactions...</div>
       </>
     )
   } else if (error) {
