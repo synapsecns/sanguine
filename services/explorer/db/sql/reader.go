@@ -18,8 +18,6 @@ func (s *Store) GetUint64(ctx context.Context, query string) (uint64, error) {
 	var res int64
 
 	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
-	fmt.Println("SWSSS64", dbTx.Error)
-
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -31,8 +29,6 @@ func (s *Store) GetUint64(ctx context.Context, query string) (uint64, error) {
 func (s *Store) GetFloat64(ctx context.Context, query string) (float64, error) {
 	var res float64
 	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
-	fmt.Println("SWSSS", dbTx.Error)
-
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -69,10 +65,19 @@ func (s *Store) GetBridgeEvents(ctx context.Context, query string) ([]BridgeEven
 	var res []BridgeEvent
 	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
 	if dbTx.Error != nil {
-		fmt.Println("SWSSS", dbTx.Error)
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
 
+	return res, nil
+}
+
+// GetAllBridgeEvents returns bridge events.
+func (s *Store) GetAllBridgeEvents(ctx context.Context, query string) ([]HybridBridgeEvent, error) {
+	var res []HybridBridgeEvent
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
 	return res, nil
 }
 

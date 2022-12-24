@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	resolvers "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/resolver"
+	"golang.org/x/sync/errgroup"
 )
 
 // BridgeTransactions is the resolver for the bridgeTransactions field.
@@ -71,46 +72,53 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	var timestampSpecifier string
 	firstFilter := true
 
-	if *duration == model.DurationPastDay {
+	switch *duration {
+	case model.DurationPastDay:
 		hours := 24
 		targetTime := r.getTargetTime(&hours)
-		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "bridge_events.")
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "be.")
+	case model.DurationPastMonth:
+		hours := 720
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "be.")
+	case model.DurationAllTime:
+		timestampSpecifier = ""
 	}
-	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "bridge_events.")
-	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "bridge_events.")
-	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "bridge_events.")
-	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "bridge_events.")
+	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "be.")
+	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "be.")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "be.")
+	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "be.")
 
-	additionalFilters := fmt.Sprintf(
-		`%s%s%s%s`,
-		timestampSpecifier, tokenAddressSpecifier, addressSpecifier, chainIDSpecifier,
+	compositeFilters := fmt.Sprintf(
+		`%s%s%s%s%s`,
+		timestampSpecifier, tokenAddressSpecifier, addressSpecifier, chainIDSpecifier, directionSpecifier,
 	)
 
 	var operation string
 	var finalSQL string
 	switch typeArg {
 	case model.StatisticTypeMeanVolumeUsd:
-		operation = fmt.Sprintf("AVG(%s)", joinSwapAmountSelectQuery)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM %s %s %s", operation, joinSwapBaseQuery, additionalFilters, directionSpecifier)
+		operation = fmt.Sprintf("AVG(%s)", sql.AmountUSDFieldName)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT %s FROM (%s %s))", operation, columnRename, joins, compositeFilters)
 	case model.StatisticTypeMedianVolumeUsd:
-		operation = fmt.Sprintf("median(%s)", joinSwapAmountSelectQuery)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM %s %s %s", operation, joinSwapBaseQuery, additionalFilters, directionSpecifier)
+		operation = fmt.Sprintf("median(%s)", sql.AmountUSDFieldName)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT %s FROM (%s %s))", operation, columnRename, joins, compositeFilters)
 	case model.StatisticTypeTotalVolumeUsd:
-		operation = fmt.Sprintf("sumKahan(%s)", joinSwapAmountSelectQuery)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM %s %s %s", operation, joinSwapBaseQuery, additionalFilters, directionSpecifier)
+		operation = fmt.Sprintf("sumKahan(%s)", sql.AmountUSDFieldName)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT %s FROM (%s %s))", operation, columnRename, joins, compositeFilters)
 	case model.StatisticTypeCountTransactions:
-		operation = fmt.Sprintf("COUNT(DISTINCT %s)", sql.TxHashFieldName)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM bridge_events %s", operation, additionalFilters)
+		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (%s) be %s", operation, simpleDeDup, compositeFilters)
 	case model.StatisticTypeCountAddresses:
-		operation = fmt.Sprintf("COUNT(DISTINCT %s)", sql.SenderFieldName)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM bridge_events %s", operation, additionalFilters)
+		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (%s) be %s", operation, simpleDeDup, compositeFilters)
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
 
 	res, err := r.DB.GetFloat64(ctx, finalSQL)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
+		return nil, fmt.Errorf("failed to get amount data stats: %w", err)
 	}
 
 	value := fmt.Sprintf("%f", res)
@@ -149,6 +157,7 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 	targetTime := r.getTargetTime(hours)
 	firstFilter := true
 	timeStampSpecifier := generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+
 	query := fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS count FROM bridge_events %s GROUP BY address ORDER BY count DESC`, sql.TokenFieldName, sql.TxHashFieldName, timeStampSpecifier)
 	res, err := r.DB.GetAddressRanking(ctx, query)
 	if err != nil {
@@ -165,35 +174,51 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 
 	startTime := uint64(time.Now().Unix() - int64(*days*86400))
 	firstFilter := true
-	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "bridge_events.")
-	timeStampSpecifier := generateTimestampSpecifierSQL(&startTime, sql.TimeStampFieldName, &firstFilter, "bridge_events.")
-	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "bridge_events.")
-	filter := fmt.Sprintf("%s%s%s", chainIDSpecifier, timeStampSpecifier, directionSpecifier)
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "be.")
+	timeStampSpecifier := generateTimestampSpecifierSQL(&startTime, sql.TimeStampFieldName, &firstFilter, "be.")
+	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "be.")
+	compositeFilters := fmt.Sprintf("%s%s%s", chainIDSpecifier, timeStampSpecifier, directionSpecifier)
 
 	// Handle the different logic needed for each query type.
 	switch *typeArg {
 	case model.HistoricalResultTypeBridgevolume:
-		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(bridge_events.%s, %s) AS date FROM %s %s AND %s GROUP BY date ORDER BY date ASC", joinSwapAmountSelectQuery, sql.TimeStampFieldName, "'%m/%d/%Y'", joinSwapBaseQuery, filter, deDupInQueryPrefix)
+		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s %s)) GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", columnRename, joins, compositeFilters)
+		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
+	case model.HistoricalResultTypeAddresses:
+		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s %s)) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", columnRename, joins, compositeFilters)
+		query = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total FROM (SELECT %s FROM (%s %s))", sql.ChainIDFieldName, sql.SenderFieldName, columnRename, joins, compositeFilters)
+	case model.HistoricalResultTypeTransactions:
+		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s %s)) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", columnRename, joins, compositeFilters)
 		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 
-	case model.HistoricalResultTypeAddresses:
-		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME( %s, %s) AS date FROM  bridge_events %s AND %s GROUP BY date ORDER BY date ASC", sql.SenderFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", filter, deDupInQuery)
-		query = fmt.Sprintf("SELECT uniqExact(%s) FROM bridge_events %s AND %s", sql.SenderFieldName, filter, deDupInQuery)
-	case model.HistoricalResultTypeTransactions:
-		subQuery = fmt.Sprintf("SELECT uniqExact(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM  bridge_events %s AND %s GROUP BY date ORDER BY date ASC", sql.TxHashFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", filter, deDupInQuery)
-		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 	default:
 		return nil, fmt.Errorf("invalid type argument")
 	}
 
-	dayByDayData, err := r.DB.GetDateResults(ctx, subQuery)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get dateResults: %w", err)
-	}
+	fmt.Println("subQuerysubQuery", subQuery, query)
+	var sum float64
+	var err error
+	var dayByDayData []*model.DateResult
+	g, groupCtx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		dayByDayData, err = r.DB.GetDateResults(groupCtx, subQuery)
+		if err != nil {
+			return fmt.Errorf("failed to get dateResults: %w", err)
+		}
+		return nil
+	})
 
-	sum, err := r.DB.GetFloat64(ctx, query)
+	g.Go(func() error {
+		sum, err = r.DB.GetFloat64(groupCtx, query)
+		if err != nil {
+			return fmt.Errorf("failed to get total sum: %w", err)
+		}
+		return nil
+	})
+	err = g.Wait()
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to get total sum: %w", err)
+		return nil, fmt.Errorf("could not get historical data: %w", err)
 	}
 
 	payload := model.HistoricalResult{
