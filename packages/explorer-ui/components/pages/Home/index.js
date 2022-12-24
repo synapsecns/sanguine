@@ -1,15 +1,15 @@
-import {ANALYTICS_PATH, TRANSACTIONS_PATH} from '@urls'
-import {useState} from 'react'
-import {Stats} from './Stats'
-import {UniversalSearch} from '@components/pages/Home/UniversalSearch'
-import {LatestBridgeTransactions} from './LatestBridgeTransactions'
+import { ANALYTICS_PATH, TRANSACTIONS_PATH } from '@urls'
+import { useState } from 'react'
+import { Stats } from './Stats'
+import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
+import { LatestBridgeTransactions } from './LatestBridgeTransactions'
 
-import {Chart, ChartLoading} from '@components/Chart'
-import {HorizontalDivider} from '@components/misc/HorizontalDivider'
-import {PageLink} from '@components/misc/PageLink'
+import { Chart, ChartLoading } from '@components/Chart'
+import { HorizontalDivider } from '@components/misc/HorizontalDivider'
+import { PageLink } from '@components/misc/PageLink'
 import Grid from '@components/tailwind/Grid'
 
-import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
+import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 
 export function Home({
   bridgeVolume,
@@ -81,14 +81,6 @@ export function Home({
       <LatestBridgeTransactions queryResult={latestBridgeTransactions} />
       <HorizontalDivider />
       <PageLink text="See all transactions" url={TRANSACTIONS_PATH} />
-
-      {/* <PopularTokens counts={popularTokens} />
-      <HorizontalDivider />
-      <PageLink text="View all tokens" url={TRANSACTIONS_PATH} />
-
-      <PopularChains counts={popularChains} />
-      <HorizontalDivider />
-      <PageLink text="View all chains" url={TRANSACTIONS_PATH} /> */}
     </StandardPageContainer>
   )
 }
