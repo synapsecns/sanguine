@@ -30,6 +30,7 @@ func (s *Store) GetFloat64(ctx context.Context, query string) (float64, error) {
 	var res float64
 	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
 	if dbTx.Error != nil {
+		fmt.Println("YUYOUO", dbTx.Error.Error())
 		return 0, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
 

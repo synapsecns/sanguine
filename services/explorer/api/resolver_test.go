@@ -72,6 +72,7 @@ func (g APISuite) TestAddressRanking() {
 			TxHash:             txHash.String(),
 			EventIndex:         gofakeit.Uint64(),
 			Token:              tokenAddr,
+			Sender:             tokenAddr,
 			TimeStamp:          &currentTime,
 		})
 		g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.TokenIndex{
@@ -109,7 +110,7 @@ func (g APISuite) TestAddressRanking() {
 	result, err := g.client.GetAddressRanking(g.GetTestContext(), nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
-
+	fmt.Println("JOE", addressesTried, "MAMA", result.Response)
 	// check if the length of the response is same to the number of unique addresses inserted into test db
 	Equal(g.T(), len(addressesTried), len(result.Response))
 
@@ -292,7 +293,6 @@ func (g APISuite) TestGetCountByChainID() {
 	// The source chain ID should have 10 events out, and the destination chain IDs should have 0 events out.
 	var reached = 0
 	for _, res := range resultOut.Response {
-		fmt.Println("UUUU", res.ChainID)
 		switch *res.ChainID {
 		case int(chainID):
 			fmt.Println("chain1", *res.Count)
@@ -707,6 +707,7 @@ func (g APISuite) TestLatestBridgeTransaction() {
 		Nil(g.T(), err)
 		blockNumber++
 	}
+
 	// Add one more bridge event without a completed destination event to test pending.
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	kappaString := crypto.Keccak256Hash([]byte(txHash.String())).String()[2:]
