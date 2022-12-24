@@ -1,14 +1,14 @@
 import _ from 'lodash'
-import { useState } from 'react'
+import {useState} from 'react'
 
-import { validateAndParseAddress } from '@utils/validateAndParseAddress'
-import { validateAndParseHash } from '@utils/validateAndParseHash'
+import {validateAndParseAddress} from '@utils/validateAndParseAddress'
+import {validateAndParseHash} from '@utils/validateAndParseHash'
 
-import { ChainId } from '@constants/networks'
+import {ChainId} from '@constants/networks'
 
-import { SearchBox } from './SearchBox'
+import {SearchBox} from './SearchBox'
 
-import { SearchResults } from './SearchResults'
+import {SearchResults} from './SearchResults'
 
 export function UniversalSearch({ placeholder }) {
   const [searchField, setSearchField] = useState('')

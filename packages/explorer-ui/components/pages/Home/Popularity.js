@@ -1,22 +1,17 @@
-import { useState } from 'react'
+import {useState} from 'react'
 
-import { CHAINS_PATH, TOKEN_ADDRESSES_PATH } from '@urls'
-
-import { getChainActivity } from '@components/SummaryDisplay/ChainActivityCard'
-import { popularTokens } from '@components/SummaryDisplay/TokenActivityCard'
-import { ContainerCard } from '@components/ContainerCard'
-import { addressToSymbol } from '@utils/addressToSymbol'
-import { AssetImage } from '@components/misc/AssetImage'
-import { ChainImage } from '@components/misc/ChainImage'
-import { CHAIN_INFO_MAP } from '@constants/networks'
+import {CHAINS_PATH, TOKEN_ADDRESSES_PATH} from '@urls'
+import {ContainerCard} from '@components/ContainerCard'
+import {addressToSymbol} from '@utils/addressToSymbol'
+import {AssetImage} from '@components/misc/AssetImage'
+import {ChainImage} from '@components/misc/ChainImage'
+import {CHAIN_INFO_MAP} from '@constants/networks'
 
 import Card from '@components/tailwind/Card'
 import Grid from '@components/tailwind/Grid'
 import Image from 'next/image'
 
-import Link from 'next/link'
-
-import { getNetworkButtonBorderHover } from '@utils/styles/networks'
+import {getNetworkButtonBorderHover} from '@utils/styles/networks'
 
 function Direction({ direction, setDirection }) {
   const activeClass =

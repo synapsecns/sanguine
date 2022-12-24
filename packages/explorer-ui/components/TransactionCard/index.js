@@ -1,14 +1,10 @@
-import Card from '@components/tailwind/Card'
+import {ChainInfo} from '@components/misc/ChainInfo'
+import {IconAndAmount} from '@components/misc/IconAndAmount'
+import {StyleAddress} from '@components/misc/StyleAddress'
 
-import { ChainInfo } from '@components/misc/ChainInfo'
-import { IconAndAmount } from '@components/misc/IconAndAmount'
-import { Indicator } from '@components/misc/StatusIndicators'
-import { StyleAddress } from '@components/misc/StyleAddress'
-
-import { timeAgo } from '@utils/timeAgo'
-import { getBridgeTransactionUrl } from '@urls'
-import Link from 'next/link'
-import { ellipsizeString } from '@utils/ellipsizeString'
+import {timeAgo} from '@utils/timeAgo'
+import {getBridgeTransactionUrl} from '@urls'
+import {ellipsizeString} from '@utils/ellipsizeString'
 
 export function TransactionCard({ txn, ordinal }) {
   const { kappa, pending, fromInfo, toInfo } = txn

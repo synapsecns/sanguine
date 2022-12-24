@@ -25,24 +25,24 @@ import jewelLogo from '@assets/icons/jewel.png'
 
 import wbtcLogo from '@assets/icons/wbtc.svg'
 
-import { ChainId } from '@constants/networks'
+import {ChainId} from '@constants/networks'
 
-import { Token } from '@utils/classes/Token'
+import {Token} from '@utils/classes/Token'
 
 import {
   DOG,
+  GMX,
   GOHM,
+  H2O,
   HIGHSTREET,
   JUMP,
-  NFD,
-  SOLAR,
   NEWO,
+  NFD,
   SDT,
-  USDB,
-  GMX,
-  VSTA,
   SFI,
-  H2O,
+  SOLAR,
+  USDB,
+  VSTA,
 } from '@constants/tokens/mintable'
 
 export const BUSD = new Token({

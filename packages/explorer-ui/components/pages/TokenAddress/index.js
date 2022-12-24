@@ -1,29 +1,22 @@
 import _ from 'lodash'
-import { useState, useEffect } from 'react'
+import {useEffect, useState} from 'react'
 
-import { useLazyQuery, useQuery } from '@apollo/client'
-import { getAddress } from '@ethersproject/address'
+import {useLazyQuery, useQuery} from '@apollo/client'
 import numeral from 'numeral'
 
-import {
-  TransactionCard,
-  TransactionCardLoader,
-} from '@components/TransactionCard'
-import {
-  BRIDGE_AMOUNT_STATISTIC,
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-} from '@graphql/queries'
-import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
-import { Pagination } from '@components/Pagination'
+import {TransactionCard, TransactionCardLoader,} from '@components/TransactionCard'
+import {BRIDGE_AMOUNT_STATISTIC, GET_BRIDGE_TRANSACTIONS_QUERY,} from '@graphql/queries'
+import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
+import {Pagination} from '@components/Pagination'
 
 import Grid from '@components/tailwind/Grid'
 
-import { TokenOnChain } from '@components/misc/TokenOnChain'
+import {TokenOnChain} from '@components/misc/TokenOnChain'
 
-import { StatCard } from '@components/pages/Home/Stats'
+import {StatCard} from '@components/pages/Home/Stats'
 
-import { useRouter } from 'next/router'
-import { useSearchParams } from 'next/navigation'
+import {useRouter} from 'next/router'
+import {useSearchParams} from 'next/navigation'
 
 export function TokenAddress({
   allTimeBridgeVolume,

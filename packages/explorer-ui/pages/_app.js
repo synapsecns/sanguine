@@ -1,6 +1,6 @@
-import { ApolloProvider } from '@apollo/client'
+import {ApolloProvider} from '@apollo/client'
 import client from '../apollo-client'
-import { PageWrapper } from '@components/layouts//MainLayout'
+import {PageWrapper} from '@components/layouts//MainLayout'
 import '../styles/global.css'
 
 function MyApp({ Component, pageProps }) {

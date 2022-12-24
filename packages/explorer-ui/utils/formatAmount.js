@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import numeral from 'numeral'
 
 export function formatAmount(value) {

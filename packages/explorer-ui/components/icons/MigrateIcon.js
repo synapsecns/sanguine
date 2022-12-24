@@ -1,4 +1,4 @@
-import { LibraryIcon } from '@heroicons/react/outline'
+import {LibraryIcon} from '@heroicons/react/outline'
 
 
 export default function MigrateIcon({ className, ...props }) {

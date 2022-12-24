@@ -1,19 +1,19 @@
 import {
-  DOCS_URL,
+  BRIDGE_PATH,
+  CAREERS_URL,
   DISCORD_URL,
+  DOCS_URL,
   FORUM_URL,
-  TWITTER_URL,
   GITHUB_URL,
   MEDIUM_URL,
-  SWAP_PATH,
-  BRIDGE_PATH,
   POOLS_PATH,
   STAKE_PATH,
-  CAREERS_URL,
+  SWAP_PATH,
+  TWITTER_URL,
 } from '@urls'
 
 import Grid from '@components/tailwind/Grid'
-import { SynapseTitleLogo } from '.'
+import {SynapseTitleLogo} from '.'
 
 const functions = [
   {

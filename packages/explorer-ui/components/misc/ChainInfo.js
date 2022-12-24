@@ -1,7 +1,7 @@
-import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
+import {QuestionMarkCircleIcon} from '@heroicons/react/outline'
 
-import { CHAIN_INFO_MAP, CHAIN_EXPLORER_URLS } from '@constants/networks'
-import { getNetworkTextColor } from '@styles/networks'
+import {CHAIN_EXPLORER_URLS, CHAIN_INFO_MAP} from '@constants/networks'
+import {getNetworkTextColor} from '@styles/networks'
 import Image from 'next/image'
 
 export function ChainInfo({

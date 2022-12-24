@@ -1,8 +1,8 @@
-import { ChevronDoubleRightIcon } from '@heroicons/react/outline'
+import {ChevronDoubleRightIcon} from '@heroicons/react/outline'
 
 import Grid from '@components/tailwind/Grid'
 
-import { ContainerCard } from '@components/ContainerCard'
+import {ContainerCard} from '@components/ContainerCard'
 
 export function BridgeTransactionLoader() {
   return (

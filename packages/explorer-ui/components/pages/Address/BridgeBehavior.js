@@ -1,16 +1,12 @@
-import {
-  FireIcon,
-  LightningBoltIcon,
-  LocationMarkerIcon,
-} from '@heroicons/react/outline'
+import {FireIcon, LightningBoltIcon, LocationMarkerIcon,} from '@heroicons/react/outline'
 
 import Grid from '@components/tailwind/Grid'
 
-import { ContainerCard } from '@components/ContainerCard'
-import { GetMostCommonTokens } from './GetMostCommonTokens'
-import { StyledChainAndLink } from '@components/misc/StyledChainAndLink'
-import { InfoBlock } from '@components/misc/InfoBlock'
-import { infoBlockIconClassName } from '@constants'
+import {ContainerCard} from '@components/ContainerCard'
+import {GetMostCommonTokens} from './GetMostCommonTokens'
+import {StyledChainAndLink} from '@components/misc/StyledChainAndLink'
+import {InfoBlock} from '@components/misc/InfoBlock'
+import {infoBlockIconClassName} from '@constants'
 
 export function BridgeBehavior({
   topDestinationChainId,

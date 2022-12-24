@@ -1,18 +1,14 @@
-import { useQuery } from '@apollo/client'
-import {
-  PresentationChartLineIcon,
-  ArrowSmRightIcon,
-  ArrowSmLeftIcon,
-} from '@heroicons/react/outline'
+import {useQuery} from '@apollo/client'
+import {ArrowSmLeftIcon, ArrowSmRightIcon, PresentationChartLineIcon,} from '@heroicons/react/outline'
 import Grid from '@components/tailwind/Grid'
 
-import { COUNT_BY_TOKEN_ADDRESS } from '@graphql/queries'
+import {COUNT_BY_TOKEN_ADDRESS} from '@graphql/queries'
 
-import { MostActive } from '@components/misc/MostActive'
-import { ContainerCard } from '@components/ContainerCard'
-import { InfoDisplay } from './InfoDisplay'
-import { InfoLoader } from './InfoLoader'
-import { infoBlockIconClassName } from '@constants'
+import {MostActive} from '@components/misc/MostActive'
+import {ContainerCard} from '@components/ContainerCard'
+import {InfoDisplay} from './InfoDisplay'
+import {InfoLoader} from './InfoLoader'
+import {infoBlockIconClassName} from '@constants'
 
 export function TokenActivityCard({ chainId }) {
   return (

@@ -1,7 +1,7 @@
-import { useQuery } from '@apollo/client'
+import {useQuery} from '@apollo/client'
 import numeral from 'numeral'
 
-import { BRIDGE_AMOUNT_STATISTIC } from '@graphql/queries'
+import {BRIDGE_AMOUNT_STATISTIC} from '@graphql/queries'
 
 export function GetStatistic({ address, type, prefix, duration = 'ALL_TIME' }) {
   const { data } = useQuery(BRIDGE_AMOUNT_STATISTIC, {

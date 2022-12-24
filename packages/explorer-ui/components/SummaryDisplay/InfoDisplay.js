@@ -1,4 +1,4 @@
-import { InfoBlock } from '@components/misc/InfoBlock'
+import {InfoBlock} from '@components/misc/InfoBlock'
 
 export function InfoDisplay({ arr }) {
   return (

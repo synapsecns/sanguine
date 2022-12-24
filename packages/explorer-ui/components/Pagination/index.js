@@ -1,10 +1,6 @@
-import {
-  ChevronDoubleLeftIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from '@heroicons/react/outline'
+import {ChevronDoubleLeftIcon, ChevronLeftIcon, ChevronRightIcon,} from '@heroicons/react/outline'
 
-import { PAGINATION_COUNT } from '@constants'
+import {PAGINATION_COUNT} from '@constants'
 
 export function Pagination({
   page,

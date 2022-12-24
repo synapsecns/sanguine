@@ -1,5 +1,5 @@
-import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import {QuestionMarkCircleIcon} from '@heroicons/react/outline'
+import {TOKEN_HASH_MAP} from '@constants/tokens/basic'
 import Image from 'next/image'
 
 export function AssetImage({ tokenAddress, chainId, className }) {

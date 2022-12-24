@@ -1,17 +1,17 @@
 import {
-  PresentationChartLineIcon,
   CurrencyDollarIcon,
   FireIcon,
+  PresentationChartLineIcon,
   ScaleIcon,
   VariableIcon,
 } from '@heroicons/react/outline'
 
 import Grid from '@components/tailwind/Grid'
 
-import { ContainerCard } from '@components/ContainerCard'
+import {ContainerCard} from '@components/ContainerCard'
 
-import { BridgeBehavior } from './BridgeBehavior'
-import { StatisticBlock } from './StatisticBlock'
+import {BridgeBehavior} from './BridgeBehavior'
+import {StatisticBlock} from './StatisticBlock'
 
 export function SummaryStats({
   address,

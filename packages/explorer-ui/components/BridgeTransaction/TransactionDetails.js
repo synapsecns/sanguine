@@ -1,16 +1,15 @@
-import { ClockIcon, IdentificationIcon } from '@heroicons/react/outline'
+import {ClockIcon, IdentificationIcon} from '@heroicons/react/outline'
 
-import { CopyButtonIcon } from '@components/CopyButtonIcon'
-import { ContainerCard } from '@components/ContainerCard'
-import { ChainInfo } from '@components/misc/ChainInfo'
-import { IconAndAmount } from '@components/misc/IconAndAmount'
-import { StyleHash } from '@components/misc/StyleHash'
-import { StyleAddress } from '@components/misc/StyleAddress'
+import {CopyButtonIcon} from '@components/CopyButtonIcon'
+import {ContainerCard} from '@components/ContainerCard'
+import {ChainInfo} from '@components/misc/ChainInfo'
+import {IconAndAmount} from '@components/misc/IconAndAmount'
+import {StyleHash} from '@components/misc/StyleHash'
+import {StyleAddress} from '@components/misc/StyleAddress'
 
-import { getNetworkShadow } from '@utils/styles/networks'
-import { unixTimestampToUTCString } from '@utils/unixTimestampToUTCString'
-import { getNetworkTextHoverColor } from '@utils/styles/networks'
-import { getChainUrl } from '@urls'
+import {getNetworkShadow, getNetworkTextHoverColor} from '@utils/styles/networks'
+import {unixTimestampToUTCString} from '@utils/unixTimestampToUTCString'
+import {getChainUrl} from '@urls'
 import Link from 'next/link'
 
 export function TransactionDetails({ info, subtitle }) {

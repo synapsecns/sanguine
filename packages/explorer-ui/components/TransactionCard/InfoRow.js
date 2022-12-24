@@ -1,12 +1,12 @@
-import { ArrowNarrowRightIcon } from '@heroicons/react/outline'
+import {ArrowNarrowRightIcon} from '@heroicons/react/outline'
 
 import Grid from '@components/tailwind/Grid'
 
-import { ChainImage } from '@components/misc/ChainImage'
-import { StyleAddress } from '@components/misc/StyleAddress'
-import { StyleHash } from '@components/misc/StyleHash'
-import { IconAndAmount } from '@components/misc/IconAndAmount'
-import { timeAgo } from '@utils/timeAgo'
+import {ChainImage} from '@components/misc/ChainImage'
+import {StyleAddress} from '@components/misc/StyleAddress'
+import {StyleHash} from '@components/misc/StyleHash'
+import {IconAndAmount} from '@components/misc/IconAndAmount'
+import {timeAgo} from '@utils/timeAgo'
 
 export function InfoRow({ txLabel, addrLabel, info }) {
   const isDestination = txLabel === 'Destination'

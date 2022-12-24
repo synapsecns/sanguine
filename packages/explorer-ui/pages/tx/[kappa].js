@@ -1,24 +1,13 @@
-import { useState, useEffect } from 'react'
-import { useLazyQuery } from '@apollo/client'
+import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
 
-import { BridgeTransactionPageContent } from '@components/BridgeTransaction/BridgeTransactionPageContent'
-import { BridgeTransactionLoader } from '@components/BridgeTransaction/BridgeTransactionLoader'
-import { Error } from '@components/Error'
-import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
-import { useRouter } from 'next/router'
-import { useSearchParams } from 'next/navigation'
-import { getCoinTextColor } from '@utils/styles/coins'
+import {BridgeTransactionPageContent} from '@components/BridgeTransaction/BridgeTransactionPageContent'
+import {Error} from '@components/Error'
+import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
+import {useRouter} from 'next/router'
+import {useSearchParams} from 'next/navigation'
 
-import {
-  GET_LATEST_BRIDGE_TRANSACTIONS_QUERY,
-  BRIDGE_AMOUNT_STATISTIC,
-  GET_HISTORICAL_STATS,
-  COUNT_BY_TOKEN_ADDRESS,
-  COUNT_BY_CHAIN_ID,
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-} from '@graphql/queries'
-import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client'
-import { API_URL } from '@graphql'
+import {GET_BRIDGE_TRANSACTIONS_QUERY,} from '@graphql/queries'
+import {API_URL} from '@graphql'
 
 const link = new HttpLink({
   uri: API_URL,

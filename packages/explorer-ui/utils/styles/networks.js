@@ -1,4 +1,4 @@
-import { ChainId } from '@constants/networks'
+import {ChainId} from '@constants/networks'
 
 const ETH_CURRENCY_TEXT_CLASSNAME = 'text-[#5170ad] dark:text-[#78a5ff]'
 

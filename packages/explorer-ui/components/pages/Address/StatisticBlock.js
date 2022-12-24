@@ -1,4 +1,4 @@
-import { GetStatistic } from './GetStatistic'
+import {GetStatistic} from './GetStatistic'
 
 export function StatisticBlock({
   title,

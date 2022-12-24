@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client'
+import {gql} from '@apollo/client'
 
 const SINGLE_SIDE_INFO_FRAGMENT = gql`
   fragment SingleSideInfo on PartialInfo {

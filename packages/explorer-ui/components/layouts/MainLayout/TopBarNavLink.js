@@ -1,7 +1,3 @@
-import { ExternalLinkIcon } from '@heroicons/react/outline'
-
-import { BASE_PATH } from '@urls'
-
 export default function TopBarNavLink({ labelText, to, className }) {
   // const location = useLocation()
 

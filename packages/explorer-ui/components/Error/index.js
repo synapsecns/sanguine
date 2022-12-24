@@ -1,6 +1,5 @@
-import { ContainerCard } from '@components/ContainerCard'
-import { ExclamationIcon } from '@heroicons/react/outline'
-import { CopyButtonIcon } from '@components/CopyButtonIcon'
+import {ContainerCard} from '@components/ContainerCard'
+import {ExclamationIcon} from '@heroicons/react/outline'
 
 export const Error = ({ text, param, subtitle }) => {
   return (

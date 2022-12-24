@@ -1,21 +1,13 @@
 // TODO: Is there one spot you can register the Chart elements?
-import { useEffect, useState } from 'react'
-import { Bar } from 'react-chartjs-2'
-import { useQuery } from '@apollo/client'
-import { COUNT_BY_TOKEN_ADDRESS } from '@graphql/queries'
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
-import { COIN_COLORS } from '@utils/styles/coins'
-import { directColors, chartOptions } from './constants'
-import { CHAIN_INFO_MAP } from '@constants/networks'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js'
+import {useEffect, useState} from 'react'
+import {Bar} from 'react-chartjs-2'
+import {useQuery} from '@apollo/client'
+import {COUNT_BY_TOKEN_ADDRESS} from '@graphql/queries'
+import {TOKEN_HASH_MAP} from '@constants/tokens/basic'
+import {COIN_COLORS} from '@utils/styles/coins'
+import {chartOptions, directColors} from './constants'
+import {CHAIN_INFO_MAP} from '@constants/networks'
+import {BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip,} from 'chart.js'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 

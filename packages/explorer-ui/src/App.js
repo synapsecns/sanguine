@@ -1,18 +1,12 @@
-import { Address } from '@pages/Address'
-import { BridgeTransaction } from '@pages/BridgeTransaction'
-import { BridgeTransactions } from '@pages/BridgeTransactions'
-import { Chain } from '@pages/Chain'
-import { Home } from '@pages/Home'
-import { Leaderboard } from '@pages/Leaderboard'
-import { TokenAddress } from '@pages/TokenAddress'
+import {Address} from '@pages/Address'
+import {BridgeTransaction} from '@pages/BridgeTransaction'
+import {BridgeTransactions} from '@pages/BridgeTransactions'
+import {Chain} from '@pages/Chain'
+import {Home} from '@pages/Home'
+import {Leaderboard} from '@pages/Leaderboard'
+import {TokenAddress} from '@pages/TokenAddress'
 
-import {
-  TRANSACTIONS_PATH,
-  TRANSACTION_PATH,
-  ACCOUNTS_PATH,
-  CHAINS_PATH,
-  TOKEN_ADDRESSES_PATH,
-} from '@urls'
+import {ACCOUNTS_PATH, CHAINS_PATH, TOKEN_ADDRESSES_PATH, TRANSACTION_PATH, TRANSACTIONS_PATH,} from '@urls'
 
 export default function App() {
   return (

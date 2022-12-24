@@ -1,14 +1,14 @@
 import numeral from 'numeral'
-import { useQuery } from '@apollo/client'
-import { CurrencyDollarIcon, TrendingUpIcon } from '@heroicons/react/outline'
+import {useQuery} from '@apollo/client'
+import {CurrencyDollarIcon, TrendingUpIcon} from '@heroicons/react/outline'
 import Grid from '@components/tailwind/Grid'
 
-import { BRIDGE_AMOUNT_STATISTIC } from '@graphql/queries'
+import {BRIDGE_AMOUNT_STATISTIC} from '@graphql/queries'
 
-import { ContainerCard } from '@components/ContainerCard'
-import { InfoDisplay } from './InfoDisplay'
-import { InfoLoader } from './InfoLoader'
-import { infoBlockIconClassName } from '@constants'
+import {ContainerCard} from '@components/ContainerCard'
+import {InfoDisplay} from './InfoDisplay'
+import {InfoLoader} from './InfoLoader'
+import {infoBlockIconClassName} from '@constants'
 
 export function SummaryMetricsCard({ chainId }) {
   return (

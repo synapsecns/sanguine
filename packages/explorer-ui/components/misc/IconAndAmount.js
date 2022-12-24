@@ -1,8 +1,8 @@
-import { getCoinTextColor } from '@styles/coins'
-import { formatAmount } from '@utils/formatAmount'
-import { AssetImage } from '@components/misc/AssetImage'
-import { addressToSymbol } from '@utils/addressToSymbol'
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import {getCoinTextColor} from '@styles/coins'
+import {formatAmount} from '@utils/formatAmount'
+import {AssetImage} from '@components/misc/AssetImage'
+import {addressToSymbol} from '@utils/addressToSymbol'
+import {TOKEN_HASH_MAP} from '@constants/tokens/basic'
 
 export function IconAndAmount({
   formattedValue,

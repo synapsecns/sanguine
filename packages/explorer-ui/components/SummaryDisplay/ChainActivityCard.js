@@ -1,14 +1,14 @@
-import { useQuery } from '@apollo/client'
-import { FireIcon, LocationMarkerIcon } from '@heroicons/react/outline'
+import {useQuery} from '@apollo/client'
+import {FireIcon, LocationMarkerIcon} from '@heroicons/react/outline'
 
-import { COUNT_BY_CHAIN_ID } from '@graphql/queries'
+import {COUNT_BY_CHAIN_ID} from '@graphql/queries'
 import Grid from '@components/tailwind/Grid'
 
-import { StyledChainAndLink } from '@components/misc/StyledChainAndLink'
-import { ContainerCard } from '@components/ContainerCard'
-import { InfoDisplay } from './InfoDisplay'
-import { InfoLoader } from './InfoLoader'
-import { infoBlockIconClassName } from '@constants'
+import {StyledChainAndLink} from '@components/misc/StyledChainAndLink'
+import {ContainerCard} from '@components/ContainerCard'
+import {InfoDisplay} from './InfoDisplay'
+import {InfoLoader} from './InfoLoader'
+import {infoBlockIconClassName} from '@constants'
 
 export function ChainActivityCard({ chainId }) {
   return (

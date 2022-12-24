@@ -30,7 +30,7 @@ import klaytnImg from '@assets/networks/klaytn.jpeg'
 
 import terraImg from '@assets/networks/terra.png'
 
-import { toHexStr } from '@utils/toHexStr'
+import {toHexStr} from '@utils/toHexStr'
 
 export const NetworkContextName = 'DEFAULT_NETWORK'
 

@@ -1,18 +1,15 @@
-import { ChevronDoubleRightIcon } from '@heroicons/react/outline'
+import {ChevronDoubleRightIcon} from '@heroicons/react/outline'
 
 import Grid from '@components/tailwind/Grid'
 
-import { TransactionDetails } from '@components/BridgeTransaction/TransactionDetails'
-import { Indicator } from '@components/misc/StatusIndicators'
-import { ContainerCard } from '@components/ContainerCard'
-import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-import { UniversalSearch } from '@components/pages/home/UniversalSearch'
-import { IconAndAmount } from '@components/misc/IconAndAmount'
-import {
-  TransactionCard,
-  TransactionCardLoader,
-} from '@components/TransactionCard'
-import { timeAgo } from '@utils/timeAgo'
+import {TransactionDetails} from '@components/BridgeTransaction/TransactionDetails'
+import {Indicator} from '@components/misc/StatusIndicators'
+import {ContainerCard} from '@components/ContainerCard'
+import {HorizontalDivider} from '@components/misc/HorizontalDivider'
+import {UniversalSearch} from '@components/pages/home/UniversalSearch'
+import {IconAndAmount} from '@components/misc/IconAndAmount'
+import {TransactionCard,} from '@components/TransactionCard'
+import {timeAgo} from '@utils/timeAgo'
 
 export function BridgeTransactionPageContent({ txn }) {
   const { pending } = txn

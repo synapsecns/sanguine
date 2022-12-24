@@ -1,5 +1,4 @@
-import { BridgeTransaction } from '@components/pages/BridgeTransaction'
-import { useRouter } from 'next/router'
+import {BridgeTransaction} from '@components/pages/BridgeTransaction'
 
 export default function Kappa() {
   return <BridgeTransaction />

@@ -1,15 +1,8 @@
-import { TokenAddress } from '@components/pages/TokenAddress'
+import {TokenAddress} from '@components/pages/TokenAddress'
 
-import {
-  GET_LATEST_BRIDGE_TRANSACTIONS_QUERY,
-  BRIDGE_AMOUNT_STATISTIC,
-  GET_HISTORICAL_STATS,
-  COUNT_BY_TOKEN_ADDRESS,
-  COUNT_BY_CHAIN_ID,
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-} from '@graphql/queries'
-import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client'
-import { API_URL } from '@graphql'
+import {BRIDGE_AMOUNT_STATISTIC, GET_BRIDGE_TRANSACTIONS_QUERY,} from '@graphql/queries'
+import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
+import {API_URL} from '@graphql'
 import numeral from 'numeral'
 
 const link = new HttpLink({

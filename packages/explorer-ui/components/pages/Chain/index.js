@@ -1,26 +1,20 @@
 import _ from 'lodash'
-import { useState, useEffect } from 'react'
-import { useQuery, useLazyQuery } from '@apollo/client'
+import {useEffect, useState} from 'react'
+import {useLazyQuery} from '@apollo/client'
 
-import {
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-  GET_HISTORICAL_STATS,
-} from '@graphql/queries'
+import {GET_BRIDGE_TRANSACTIONS_QUERY,} from '@graphql/queries'
 
-import {
-  TransactionCard,
-  TransactionCardLoader,
-} from '@components/TransactionCard'
-import { Pagination } from '@components/Pagination'
-import { ChainInfo } from '@components/misc/ChainInfo'
+import {TransactionCard, TransactionCardLoader,} from '@components/TransactionCard'
+import {Pagination} from '@components/Pagination'
+import {ChainInfo} from '@components/misc/ChainInfo'
 
-import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
+import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
 
-import { Stats } from '@components/pages/Home/Stats'
-import { Chart, ChartLoading } from '@components/Chart'
+import {Stats} from '@components/pages/Home/Stats'
+import {Chart, ChartLoading} from '@components/Chart'
 
-import { useRouter } from 'next/router'
-import { useSearchParams } from 'next/navigation'
+import {useRouter} from 'next/router'
+import {useSearchParams} from 'next/navigation'
 
 export function Chain({
   bridgeVolume,

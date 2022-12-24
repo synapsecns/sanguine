@@ -1,4 +1,5 @@
-import { CHAIN_EXPLORER_URLS } from '@constants/networks'
+import {CHAIN_EXPLORER_URLS} from '@constants/networks'
+
 export const BASE_PATH = '/'
 export const ANALYTICS_PATH = 'https://analytics.synapseprotocol.com/'
 export const AIRDROP_PATH = '/claim'

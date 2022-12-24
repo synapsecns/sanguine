@@ -1,11 +1,6 @@
 import _ from 'lodash'
-import { useQuery } from '@apollo/client'
 
-import {
-  TransactionCard,
-  TransactionCardLoader,
-} from '@components/TransactionCard'
-import { GET_LATEST_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
+import {TransactionCard,} from '@components/TransactionCard'
 
 export function LatestBridgeTransactions({ queryResult }) {
   // const { error, data } = useQuery(GET_LATEST_BRIDGE_TRANSACTIONS_QUERY, {

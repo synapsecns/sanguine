@@ -1,11 +1,8 @@
-import { Chain } from '@components/pages/Chain'
+import {Chain} from '@components/pages/Chain'
 
-import {
-  GET_HISTORICAL_STATS,
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-} from '@graphql/queries'
-import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client'
-import { API_URL } from '@graphql'
+import {GET_BRIDGE_TRANSACTIONS_QUERY, GET_HISTORICAL_STATS,} from '@graphql/queries'
+import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
+import {API_URL} from '@graphql'
 
 const link = new HttpLink({
   uri: API_URL,

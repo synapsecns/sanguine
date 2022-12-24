@@ -1,4 +1,4 @@
-import { ChainId } from '@constants/networks'
+import {ChainId} from '@constants/networks'
 
 import ohmLogo from '@assets/icons/ohm.svg'
 import highstreetLogo from '@assets/icons/highstreet.svg'
@@ -14,7 +14,7 @@ import gmxLogo from '@assets/icons/gmx.png'
 import sfiLogo from '@assets/icons/sfi.png'
 import h2oLogo from '@assets/icons/h2o.svg'
 
-import { Token } from '@utils/classes/Token'
+import {Token} from '@utils/classes/Token'
 
 export const GOHM = new Token({
   addresses: {

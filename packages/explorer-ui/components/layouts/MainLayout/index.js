@@ -1,26 +1,24 @@
-import { Fragment } from 'react'
+import {Fragment} from 'react'
 
-import { Transition, Popover } from '@headlessui/react'
+import {Popover, Transition} from '@headlessui/react'
 
-import { DocumentTextIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
+import {DocumentTextIcon, MenuIcon, XIcon} from '@heroicons/react/outline'
 
 // import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
-
 import {
-  SWAP_PATH,
-  POOLS_PATH,
-  BRIDGE_PATH,
-  STAKE_PATH,
-  CONTRACTS_PATH,
-  PORTFOLIO_PATH,
-  DOCS_URL,
-  DISCORD_URL,
-  TELEGRAM_URL,
-  FORUM_URL,
-  TWITTER_URL,
-  getBuySynUrl,
-  LANDING_PATH,
   ANALYTICS_PATH,
+  BRIDGE_PATH,
+  CONTRACTS_PATH,
+  DISCORD_URL,
+  DOCS_URL,
+  FORUM_URL,
+  LANDING_PATH,
+  POOLS_PATH,
+  PORTFOLIO_PATH,
+  STAKE_PATH,
+  SWAP_PATH,
+  TELEGRAM_URL,
+  TWITTER_URL,
 } from '@urls'
 
 import Grid from '@components/tailwind/Grid'
@@ -30,11 +28,11 @@ import TwitterIcon from '@components/icons/TwitterIcon'
 import DiscordIcon from '@components/icons/DiscordIcon'
 import TelegramIcon from '@components/icons/TelegramIcon'
 
-import { SynapseLogoSvg } from './SynapseLogoSvg'
+import {SynapseLogoSvg} from './SynapseLogoSvg'
 import TopBarNavLink from './TopBarNavLink'
 import WalletNetworkSection from './WalletNetworkSection'
 import MoreButton from './MoreButton'
-import { PageFooter } from './PageFooter'
+import {PageFooter} from './PageFooter'
 
 export function PageWrapper({ children }) {
   return (

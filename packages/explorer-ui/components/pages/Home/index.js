@@ -1,29 +1,15 @@
-import _ from 'lodash'
-import { ANALYTICS_PATH, TRANSACTIONS_PATH } from '@urls'
-import { useState } from 'react'
+import {ANALYTICS_PATH, TRANSACTIONS_PATH} from '@urls'
+import {useState} from 'react'
+import {Stats} from './Stats'
+import {UniversalSearch} from '@components/pages/Home/UniversalSearch'
+import {LatestBridgeTransactions} from './LatestBridgeTransactions'
 
-import { PopularChains, PopularTokens } from './Popularity'
-import { Stats } from './Stats'
-import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
-import { LatestBridgeTransactions } from './LatestBridgeTransactions'
-
-import { Chart, ChartLoading } from '@components/Chart'
-import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-import { PageLink } from '@components/misc/PageLink'
+import {Chart, ChartLoading} from '@components/Chart'
+import {HorizontalDivider} from '@components/misc/HorizontalDivider'
+import {PageLink} from '@components/misc/PageLink'
 import Grid from '@components/tailwind/Grid'
 
-import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
-import {
-  getHistoricalAddresses,
-  getHistoricalBridgeVolume,
-  getHistoricalTransactions,
-} from 'hooks/getHistoricalStats'
-
-import {
-  getAddresses,
-  getBridgeVolume,
-  getTransactions,
-} from 'hooks/getBridgeAmountStats'
+import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
 
 export function Home({
   bridgeVolume,

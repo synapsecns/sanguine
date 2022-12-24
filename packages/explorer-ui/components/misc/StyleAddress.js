@@ -1,7 +1,4 @@
-import { getAddressesUrl } from '@urls'
-import { getNetworkTextHoverColor } from '@utils/styles/networks'
-import { ellipsizeString } from '@utils/ellipsizeString'
-import Link from 'next/link'
+import {ellipsizeString} from '@utils/ellipsizeString'
 
 export function StyleAddress({ sourceInfo, limiter = 6 }) {
   if (sourceInfo.address) {

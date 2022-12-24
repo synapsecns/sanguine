@@ -1,8 +1,8 @@
-import { useQuery } from '@apollo/client'
+import {useQuery} from '@apollo/client'
 
-import { COUNT_BY_TOKEN_ADDRESS } from '@graphql/queries'
+import {COUNT_BY_TOKEN_ADDRESS} from '@graphql/queries'
 
-import { MostActive } from '@components/misc/MostActive'
+import {MostActive} from '@components/misc/MostActive'
 
 export function GetMostCommonTokens({ address, hours = 50000 }) {
   const { data } = useQuery(COUNT_BY_TOKEN_ADDRESS, {

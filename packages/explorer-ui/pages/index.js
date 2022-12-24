@@ -1,14 +1,13 @@
-import { Home } from '@components/pages/Home'
-import { useQuery } from '@apollo/client'
+import {Home} from '@components/pages/Home'
+import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
 import {
-  GET_LATEST_BRIDGE_TRANSACTIONS_QUERY,
   BRIDGE_AMOUNT_STATISTIC,
-  GET_HISTORICAL_STATS,
-  COUNT_BY_TOKEN_ADDRESS,
   COUNT_BY_CHAIN_ID,
+  COUNT_BY_TOKEN_ADDRESS,
+  GET_HISTORICAL_STATS,
+  GET_LATEST_BRIDGE_TRANSACTIONS_QUERY,
 } from '@graphql/queries'
-import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client'
-import { API_URL } from '@graphql'
+import {API_URL} from '@graphql'
 
 const link = new HttpLink({
   uri: API_URL,

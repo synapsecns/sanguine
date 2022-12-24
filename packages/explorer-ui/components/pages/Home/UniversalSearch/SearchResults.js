@@ -1,9 +1,9 @@
-import { useQuery } from '@apollo/client'
-import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
+import {useQuery} from '@apollo/client'
+import {GET_BRIDGE_TRANSACTIONS_QUERY} from '@graphql/queries'
 
 import Grid from '@components/tailwind/Grid'
 
-import { TransactionCard } from '@components/TransactionCard'
+import {TransactionCard} from '@components/TransactionCard'
 
 export function SearchResults({ searchField, inputType }) {
   const { error, data } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {

@@ -1,7 +1,7 @@
 import React from 'react';
-import { within, userEvent } from '@storybook/testing-library';
+import {userEvent, within} from '@storybook/testing-library';
 
-import { Page } from './Page';
+import {Page} from './Page';
 
 export default {
   title: 'Example/Page',

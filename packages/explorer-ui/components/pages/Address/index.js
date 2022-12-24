@@ -1,27 +1,21 @@
-import { useState, useEffect } from 'react'
+import {useEffect, useState} from 'react'
 
 import _ from 'lodash'
-import { useQuery, useLazyQuery } from '@apollo/client'
+import {useLazyQuery, useQuery} from '@apollo/client'
 
-import {
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-  BRIDGE_AMOUNT_STATISTIC,
-} from '@graphql/queries'
+import {BRIDGE_AMOUNT_STATISTIC, GET_BRIDGE_TRANSACTIONS_QUERY,} from '@graphql/queries'
 
-import { Error } from '@components/Error'
-import { Pagination } from '@components/Pagination'
-import {
-  AllTransactions,
-  TransactionsLoader,
-} from '@components/TransactionCard'
-import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
-import { SummaryStats } from './SummaryStats'
-import { mode } from '@utils/math/statistics'
-import { CopyButtonIcon } from '@components/CopyButtonIcon'
+import {Error} from '@components/Error'
+import {Pagination} from '@components/Pagination'
+import {AllTransactions, TransactionsLoader,} from '@components/TransactionCard'
+import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
+import {SummaryStats} from './SummaryStats'
+import {mode} from '@utils/math/statistics'
+import {CopyButtonIcon} from '@components/CopyButtonIcon'
 
-import { GetCsvButton } from '@components/GetCsvButton'
-import { useSearchParams } from 'next/navigation'
-import { useRouter } from 'next/router'
+import {GetCsvButton} from '@components/GetCsvButton'
+import {useSearchParams} from 'next/navigation'
+import {useRouter} from 'next/router'
 
 export function Address() {
   const router = useRouter()

@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react'
-import { useLazyQuery } from '@apollo/client'
+import {useEffect, useState} from 'react'
+import {useLazyQuery} from '@apollo/client'
 
-import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
+import {GET_BRIDGE_TRANSACTIONS_QUERY} from '@graphql/queries'
 
-import { BridgeTransactionPageContent } from '@components/BridgeTransaction/BridgeTransactionPageContent'
-import { BridgeTransactionLoader } from '@components/BridgeTransaction/BridgeTransactionLoader'
-import { Error } from '@components/Error'
-import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
-import { useRouter } from 'next/router'
-import { useSearchParams } from 'next/navigation'
+import {BridgeTransactionPageContent} from '@components/BridgeTransaction/BridgeTransactionPageContent'
+import {BridgeTransactionLoader} from '@components/BridgeTransaction/BridgeTransactionLoader'
+import {Error} from '@components/Error'
+import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
+import {useRouter} from 'next/router'
+import {useSearchParams} from 'next/navigation'
+
 export function BridgeTransaction() {
   const router = useRouter()
   const [transaction, setTransaction] = useState()
