@@ -13,7 +13,7 @@ export function TransactionCard({ txn, ordinal }) {
   const backgroundColor =
     ordinal % 2 === 0 ? 'bg-transparent' : 'bg-[#D9D9D9] bg-opacity-5'
 
-  return (
+{}  return (
     <tr key={txn.kappa}>
       {/* <a
                         className="overflow-visible cursor-pointer"
