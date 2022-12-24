@@ -16,12 +16,15 @@ func TestAttestationDBAttestationParity(t *testing.T) {
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	blockNumberDestination := gofakeit.Uint64()
+	destinationBlockTime := gofakeit.Uint64()
+
 	initialDBAttestation := types.DBAttestation{
 		ChainID:                &chainID,
 		Destination:            &destination,
 		Nonce:                  &nonce,
 		Root:                   &root,
 		DestinationBlockNumber: &blockNumberDestination,
+		DestinationBlockTime:   &destinationBlockTime,
 	}
 
 	initialAttestation := base.DBAttestationToAttestation(initialDBAttestation)
