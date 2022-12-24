@@ -47,12 +47,12 @@ export function BridgeTransactions() {
     if (num === 0) {
       setPage(1)
       bridgeTransactions({
-        variables: { page: 1 },
+        variables: { includePending: false, page: 1 },
       })
     } else {
       setPage(num)
       bridgeTransactions({
-        variables: { page: num },
+        variables: { includePending: false, page: num },
       })
     }
   }, [data, search])
@@ -65,7 +65,7 @@ export function BridgeTransactions() {
     // setSearch({ page: newPage })
 
     bridgeTransactions({
-      variables: { page: newPage },
+      variables: { includePending: false, page: newPage },
     })
   }
 
@@ -75,7 +75,7 @@ export function BridgeTransactions() {
       setPage(newPage)
       // setSearch({ page: newPage })
       bridgeTransactions({
-        variables: { page: newPage },
+        variables: { includePending: false, page: newPage },
       })
     }
   }
@@ -84,7 +84,7 @@ export function BridgeTransactions() {
     setPage(1)
     // setSearch({ page: 1 })
     bridgeTransactions({
-      variables: { page: 1 },
+      variables: { includePending: false, page: 1 },
     })
   }
 
