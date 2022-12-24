@@ -110,7 +110,6 @@ func (g APISuite) TestAddressRanking() {
 	result, err := g.client.GetAddressRanking(g.GetTestContext(), nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
-	fmt.Println("JOE", addressesTried, "MAMA", result.Response)
 	// check if the length of the response is same to the number of unique addresses inserted into test db
 	Equal(g.T(), len(addressesTried), len(result.Response))
 
@@ -201,8 +200,6 @@ func (g APISuite) TestBridgeAmountStatistic() {
 	result, err := g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
-	fmt.Println(result)
-	fmt.Println(*result)
 
 	Equal(g.T(), fmt.Sprintf("%f", total), *result.Response.Value)
 
@@ -295,17 +292,12 @@ func (g APISuite) TestGetCountByChainID() {
 	for _, res := range resultOut.Response {
 		switch *res.ChainID {
 		case int(chainID):
-			fmt.Println("chain1", *res.Count)
 			Equal(g.T(), 1, *res.Count)
 			reached++
 		case int(chainID2):
-			fmt.Println("chain2", *res.Count)
-
 			Equal(g.T(), 5, *res.Count)
 			reached++
 		case int(chainID3):
-			fmt.Println("chain3", *res.Count)
-
 			Equal(g.T(), 4, *res.Count)
 			reached++
 		}
