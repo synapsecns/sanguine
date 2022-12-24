@@ -54,11 +54,7 @@ export default function BridgeTransaction({ transaction }) {
     )
   }
 
-  return (
-    <StandardPageContainer title="Bridge Transaction">
-      {content}
-    </StandardPageContainer>
-  )
+  return <StandardPageContainer title="">{content}</StandardPageContainer>
 }
 export async function getServerSideProps(context) {
   const { data: bridgeTransaction } = await client.query({

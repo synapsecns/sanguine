@@ -10,7 +10,7 @@ import { SearchBox } from './SearchBox'
 
 import { SearchResults } from './SearchResults'
 
-export function UniversalSearch() {
+export function UniversalSearch({ placeholder }) {
   const [searchField, setSearchField] = useState('')
   const [showText, setShowText] = useState(false)
 
@@ -74,6 +74,7 @@ export function UniversalSearch() {
               searchField={searchField}
               setSearchField={setSearchField}
               inputType={inputType}
+              placeholder={placeholder}
             />
             <SearchResults searchField={searchField} inputType={inputType} />
           </div>
@@ -133,11 +134,13 @@ export function UniversalSearch() {
               <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                checked
               />
               <h3 className="text-white font-semibold">To</h3>
               <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                checked
               />
               <h3 className="text-white font-semibold">From</h3>
             </div>

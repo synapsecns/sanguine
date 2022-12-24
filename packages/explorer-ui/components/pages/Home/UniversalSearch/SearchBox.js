@@ -1,4 +1,9 @@
-export function SearchBox({ searchField, setSearchField, inputType }) {
+export function SearchBox({
+  searchField,
+  setSearchField,
+  inputType,
+  placeholder,
+}) {
   return (
     <form className="flex items-center">
       <div className="relative w-full group ">
@@ -14,7 +19,7 @@ export function SearchBox({ searchField, setSearchField, inputType }) {
             text-white
             placeholder:text-white placeholder:text-opacity-60
           `}
-          placeholder="Search by address or transaction..."
+          placeholder={placeholder}
           onChange={(e) => {
             setSearchField(e.target.value)
           }}

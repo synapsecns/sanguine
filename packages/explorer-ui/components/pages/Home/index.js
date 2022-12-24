@@ -90,7 +90,7 @@ export function Home({
           </div>
         </div>
       </Grid>
-      <UniversalSearch />
+      <UniversalSearch placeholder="Search by address or transaction" />
 
       <LatestBridgeTransactions queryResult={latestBridgeTransactions} />
       <HorizontalDivider />
