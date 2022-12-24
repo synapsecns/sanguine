@@ -25,7 +25,7 @@ import {
 } from '@styles/networks'
 import { getChainUrl } from '@urls'
 import { nameToChainIds, suggestions } from '@utils/chainAutocomplete'
-import { UniversalSearch } from '../home/UniversalSearch'
+import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
 
 export function BridgeTransactions() {
   const search = useSearchParams()

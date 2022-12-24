@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 import { PopularChains, PopularTokens } from './Popularity'
 import { Stats } from './Stats'
-import { UniversalSearch } from './UniversalSearch'
+import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
 import { LatestBridgeTransactions } from './LatestBridgeTransactions'
 
 import { Chart, ChartLoading } from '@components/Chart'
