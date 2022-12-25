@@ -1291,15 +1291,15 @@ func (_m *IOrigin) TransferOwnership(opts *bind.TransactOpts, newOwner common.Ad
 	return r0, r1
 }
 
-// VERSION provides a mock function with given fields: opts
-func (_m *IOrigin) VERSION(opts *bind.CallOpts) (uint8, error) {
+// Version provides a mock function with given fields: opts
+func (_m *IOrigin) Version(opts *bind.CallOpts) (string, error) {
 	ret := _m.Called(opts)
 
-	var r0 uint8
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint8); ok {
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) string); ok {
 		r0 = rf(opts)
 	} else {
-		r0 = ret.Get(0).(uint8)
+		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
