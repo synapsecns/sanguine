@@ -36,7 +36,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for
 		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
 		// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
-		fromResults, err := r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *page, tokenAddress, *includePending)
+		fromResults, err := r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *page, tokenAddress, *includePending, false)
 		if err != nil {
 			return nil, err
 		}
@@ -57,7 +57,7 @@ func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePen
 	// For each chain ID, get the latest bridge transaction.
 	var results []*model.BridgeTransaction
 	var err error
-	results, err = r.GetBridgeTxsFromOrigin(ctx, nil, nil, nil, *page, nil, *includePending)
+	results, err = r.GetBridgeTxsFromOrigin(ctx, nil, nil, nil, *page, nil, *includePending, true)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
@@ -99,19 +99,19 @@ func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model
 	switch typeArg {
 	case model.StatisticTypeMeanVolumeUsd:
 		operation = fmt.Sprintf("AVG(%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT %s FROM (%s) %s)", operation, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT %s FROM (%s) %s)", operation, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil, false), singleSideJoins)
 	case model.StatisticTypeMedianVolumeUsd:
 		operation = fmt.Sprintf("median(%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT %s FROM (%s) %s)", operation, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT %s FROM (%s) %s)", operation, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil, false), singleSideJoins)
 	case model.StatisticTypeTotalVolumeUsd:
 		operation = fmt.Sprintf("sumKahan(%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT %s FROM (%s) %s)", operation, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins)
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (SELECT %s FROM (%s) %s)", operation, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil, false), singleSideJoins)
 	case model.StatisticTypeCountTransactions:
 		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil))
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil, false))
 	case model.StatisticTypeCountAddresses:
 		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
-		finalSQL = fmt.Sprintf("\nSELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil))
+		finalSQL = fmt.Sprintf("\nSELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil, false))
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
@@ -159,7 +159,7 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 	timeStampSpecifier := generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
 	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "")
 	compositeFilters := fmt.Sprintf("%s%s", timeStampSpecifier, directionSpecifier)
-	query := fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS Count FROM (%s) GROUP BY %s ORDER BY Count Desc`, sql.SenderFieldName, sql.TxHashFieldName, generateDeDepQuery(compositeFilters, nil, nil), sql.SenderFieldName)
+	query := fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS Count FROM (%s) GROUP BY %s ORDER BY Count Desc`, sql.SenderFieldName, sql.TxHashFieldName, generateDeDepQuery(compositeFilters, nil, nil, false), sql.SenderFieldName)
 	res, err := r.DB.GetAddressRanking(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
@@ -183,13 +183,13 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	// Handle the different logic needed for each query type.
 	switch *typeArg {
 	case model.HistoricalResultTypeBridgevolume:
-		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s) %s) GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins)
+		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s) %s) GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, generateDeDepQuery(compositeFilters, nil, nil, false), singleSideJoins)
 		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 	case model.HistoricalResultTypeAddresses:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s) %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins)
-		query = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total FROM (SELECT %s FROM (%s) %s)", sql.ChainIDFieldName, sql.SenderFieldName, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins)
+		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s) %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, generateDeDepQuery(compositeFilters, nil, nil, false), singleSideJoins)
+		query = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total FROM (SELECT %s FROM (%s) %s)", sql.ChainIDFieldName, sql.SenderFieldName, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil, false), singleSideJoins)
 	case model.HistoricalResultTypeTransactions:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s) %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins)
+		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s) %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, generateDeDepQuery(compositeFilters, nil, nil, false), singleSideJoins)
 		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 
 	default:

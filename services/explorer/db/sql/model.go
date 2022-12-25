@@ -276,7 +276,8 @@ type MessageBusEvent struct {
 	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
 
-// TODO Clean
+// TODO clean up the comments in this
+
 // HybridBridgeEvent is the datatype for a returned bridge event.
 type HybridBridgeEvent struct {
 	// FInsertTime is the time the event was inserted into the database.
