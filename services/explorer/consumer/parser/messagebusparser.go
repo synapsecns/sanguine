@@ -57,7 +57,7 @@ func eventToMessageEvent(event messageBusTypes.EventLog, chainID uint32) model.M
 		EventType:       event.GetEventType().Int(),
 		BlockNumber:     event.GetBlockNumber(),
 		TxHash:          event.GetTxHash().String(),
-		EventIndex:      event.GetEventIndex(),
+		EventIndex:      uint32(event.GetEventIndex()),
 		Sender:          "",
 		MessageID:       ToNullString(event.GetMessageID()),
 		SourceChainID:   event.GetSourceChainID(),

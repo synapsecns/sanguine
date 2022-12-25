@@ -118,7 +118,7 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 		EventType:       event.GetEventType().Int(),
 		BlockNumber:     event.GetBlockNumber(),
 		TxHash:          event.GetTxHash().String(),
-		EventIndex:      event.GetEventIndex(),
+		EventIndex:      uint32(event.GetEventIndex()),
 		Sender:          "",
 		Buyer:           buyer,
 		TokensSold:      event.GetTokensSold(),

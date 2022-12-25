@@ -152,7 +152,7 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 		BlockNumber:        event.GetBlockNumber(),
 		TxHash:             event.GetTxHash().String(),
 		Amount:             event.GetAmount(),
-		EventIndex:         event.GetEventIndex(),
+		EventIndex:         uint32(event.GetEventIndex()),
 		DestinationKappa:   destinationKappa,
 		Sender:             "",
 		Recipient:          recipient,

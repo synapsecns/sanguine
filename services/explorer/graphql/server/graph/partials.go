@@ -376,6 +376,8 @@ LEFT JOIN (
     swap_events
 ) se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
+# these are (deposit, redeem, withdraw, mint) all of which do not have a swap event
+AND be.event_type NOT IN (0,1,2, 3)
 LEFT JOIN (
   SELECT
     DISTINCT ON (
@@ -393,8 +395,6 @@ LEFT JOIN (
   from
     bridge_events
   ORDER BY
-    block_number DESC,
-    event_index DESC,
     insert_time DESC
   LIMIT
     1 BY chain_id,
@@ -403,6 +403,7 @@ LEFT JOIN (
     block_number,
     event_index,
     tx_hash
+  LIMIT 20
 ) be ON pre_tchain_id = be.destination_chain_id
 AND pre_tkappa = be.destination_kappa
 LEFT JOIN (
@@ -431,7 +432,7 @@ AND se.swap_address = ti.contract_address
 AND ti.token_index = se.sold_id
 `
 
-const singleSideJoins = `
+var singleSideJoins = `
  be
 LEFT JOIN (
   SELECT
@@ -447,6 +448,8 @@ LEFT JOIN (
     swap_events
 ) se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
+# these are (deposit, redeem, withdraw, mint) all of which do not have a swap event
+AND be.event_type NOT IN (0,1,2, 3)
 LEFT JOIN (
   SELECT
     DISTINCT ON (
@@ -458,6 +461,7 @@ LEFT JOIN (
 AND se.swap_address = ti.contract_address
 AND ti.token_index = be.sold_id
 `
+
 const singleSideCol = `
 (
   if(
