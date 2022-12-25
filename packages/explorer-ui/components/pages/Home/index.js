@@ -10,6 +10,7 @@ import { PageLink } from '@components/misc/PageLink'
 import Grid from '@components/tailwind/Grid'
 
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
+import {BridgeTransactionTable} from "@components/BridgeTransaction/BridgeTransactionTable";
 
 export function Home({
   bridgeVolume,
@@ -78,7 +79,7 @@ export function Home({
       </Grid>
       <UniversalSearch placeholder="Search by address or transaction" />
 
-      <LatestBridgeTransactions queryResult={latestBridgeTransactions} />
+      <BridgeTransactionTable queryResult={latestBridgeTransactions} />
       <HorizontalDivider />
       <PageLink text="See all transactions" url={TRANSACTIONS_PATH} />
     </StandardPageContainer>

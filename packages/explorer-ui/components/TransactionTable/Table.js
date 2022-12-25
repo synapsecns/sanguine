@@ -1,4 +1,7 @@
-export function Table({children}) {
+import { TableHeader} from "@components/TransactionTable/TableHeader";
+import { TableBody} from "@components/TransactionTable/TableBody";
+
+export function Table({header, body}) {
   return (
     <div className="pb-2 px-4 sm:px-6 lg:px-8">
       <div className="mt-8 flex flex-col">
@@ -6,7 +9,8 @@ export function Table({children}) {
           <div className="inline-block min-w-full py-2 align-middle">
             <div className="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5">
               <table className="min-w-full">
-                {children}
+                <TableHeader headers={header} />
+                <TableBody rows={body} />
               </table>
             </div>
           </div>
