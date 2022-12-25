@@ -1,5 +1,5 @@
-import { TableHeader} from "@components/TransactionTable/TableHeader";
-import { TableBody} from "@components/TransactionTable/TableBody";
+import { TableHeader} from "./TableHeader";
+import { TableBody} from "./TableBody";
 
 export function Table({header, body}) {
   return (

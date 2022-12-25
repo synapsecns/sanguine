@@ -8,8 +8,6 @@ import {ChainId} from '@constants/networks'
 
 import {SearchBox} from './SearchBox'
 
-import {SearchResults} from './SearchResults'
-
 export function UniversalSearch({ placeholder }) {
   const [searchField, setSearchField] = useState('')
   const [showText, setShowText] = useState(false)
@@ -76,7 +74,6 @@ export function UniversalSearch({ placeholder }) {
               inputType={inputType}
               placeholder={placeholder}
             />
-            <SearchResults searchField={searchField} inputType={inputType} />
           </div>
           <div className="">
             <button className="font-medium rounded-l-md text-white border  border-[#BE78FF] bg-synapse-radial px-4 py-2">

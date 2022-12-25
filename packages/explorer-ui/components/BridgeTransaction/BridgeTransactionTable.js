@@ -20,17 +20,9 @@ export function BridgeTransactionTable({queryResult}) {
       'Tx ID'
     ]
 
-  let { latestBridgeTransactions } = queryResult
-
-  latestBridgeTransactions = _.orderBy(
-    latestBridgeTransactions,
-    'fromInfo.time',
-    ['desc']
-  ).slice(0, 10)
-
   let tableRows = []
 
-  latestBridgeTransactions.map((txn) => {
+  queryResult.map((txn) => {
     const { kappa, pending, fromInfo, toInfo } = txn
 
       let items = [
@@ -87,7 +79,6 @@ export function BridgeTransactionTable({queryResult}) {
       }
       tableRows.push(row);
     })
-  console.log(tableRows)
   return (
       <Table header={headers} body={tableRows} />
   )

@@ -2,7 +2,6 @@ import { ANALYTICS_PATH, TRANSACTIONS_PATH } from '@urls'
 import { useState } from 'react'
 import { Stats } from './Stats'
 import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
-import { LatestBridgeTransactions } from './LatestBridgeTransactions'
 
 import { Chart, ChartLoading } from '@components/Chart'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
@@ -11,6 +10,7 @@ import Grid from '@components/tailwind/Grid'
 
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import {BridgeTransactionTable} from "@components/BridgeTransaction/BridgeTransactionTable";
+import _ from "lodash";
 
 export function Home({
   bridgeVolume,
@@ -35,6 +35,14 @@ export function Home({
   } else if (chartType === 'ADDRESSES') {
     data = addresses && addresses.historicalStatistics.dateResults
   }
+
+  let { latestBridgeTransactions: bridgeTransactionsTable } = latestBridgeTransactions
+
+  bridgeTransactionsTable = _.orderBy(
+    bridgeTransactionsTable,
+    'fromInfo.time',
+    ['desc']
+  ).slice(0, 10)
 
   return (
     <StandardPageContainer>
@@ -79,7 +87,7 @@ export function Home({
       </Grid>
       <UniversalSearch placeholder="Search by address or transaction" />
 
-      <BridgeTransactionTable queryResult={latestBridgeTransactions} />
+      <BridgeTransactionTable queryResult={bridgeTransactionsTable} />
       <HorizontalDivider />
       <PageLink text="See all transactions" url={TRANSACTIONS_PATH} />
     </StandardPageContainer>
