@@ -174,20 +174,50 @@ AND ti.token_index = be.sold_id
 ) AS f
 LEFT JOIN (
   SELECT
-    *
+      insert_time,
+      contract_address,
+      chain_id,
+      event_type,
+      block_number,
+      tx_hash,
+      argMax(token, insert_time) as token,
+      argMax(amount, insert_time) as amount,
+      event_index,
+      argMax(destination_kappa, insert_time) as destination_kappa,
+      argMax(sender, insert_time) as sender,
+      argMax(recipient, insert_time) as recipient,
+      argMax(recipient_bytes, insert_time) as recipient_bytes,
+      argMax(destination_chain_id, insert_time) as destination_chain_id,
+      argMax(fee, insert_time) as fee,
+      argMax(kappa, insert_time) as kappa,
+      argMax(token_index_from, insert_time) as token_index_from,
+      argMax(token_index_to, insert_time) as token_index_to,
+      argMax(min_dy, insert_time) as min_dy,
+      argMax(deadline, insert_time) as deadline,
+      argMax(swap_success, insert_time) as swap_success,
+      argMax(swap_token_index, insert_time) as swap_token_index,
+      argMax(swap_min_amount, insert_time) as swap_min_amount,
+      argMax(swap_deadline, insert_time) as swap_deadline,
+      argMax(token_id, insert_time) as token_id,
+      argMax(amount_usd, insert_time) as amount_usd,
+      argMax(fee_amount_usd, insert_time) as fee_amount_usd,
+      argMax(token_decimal, insert_time) as token_decimal,
+      argMax(token_symbol, insert_time) as token_symbol,
+      argMax(timestamp, insert_time) as timestamp
   from
     bridge_events
-  ORDER BY
-    block_number DESC,
-    event_index DESC,
-    insert_time DESC
-  LIMIT
-    1 BY chain_id,
+  GROUP BY (
+	chain_id,
     contract_address,
     event_type,
     block_number,
     event_index,
     tx_hash
+    ), insert_time
+  ORDER BY
+    block_number DESC,
+    event_index DESC,
+    insert_time DESC
 ) be ON fdestination_chain_id = be.chain_id
 AND fdestination_kappa = be.kappa
 LEFT JOIN (
