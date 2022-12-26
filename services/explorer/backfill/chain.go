@@ -239,8 +239,8 @@ func (c *ChainBackfiller) storeParsedLogs(ctx context.Context, parsedEvents []in
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    1 * time.Second,
-		Max:    3 * time.Second,
+		Min:    3 * time.Millisecond,
+		Max:    2 * time.Second,
 	}
 	timeout := time.Duration(0)
 
