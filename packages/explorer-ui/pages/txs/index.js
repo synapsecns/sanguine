@@ -77,7 +77,7 @@ export async function getServerSideProps(context) {
       variables: {
         address: context.query.account,
         includePending: false,
-        page: 1,
+        page: context.query.p ?? 1,
       },
     })
     result = data
@@ -87,7 +87,7 @@ export async function getServerSideProps(context) {
       variables: {
         chainId: context.query.chainId,
         includePending: false,
-        page: 1,
+        page: context.query.p ?? 1,
       },
     })
     result = data
@@ -96,7 +96,7 @@ export async function getServerSideProps(context) {
       query: GET_LATEST_BRIDGE_TRANSACTIONS_QUERY,
       variables: {
         includePending: false,
-        page: 1,
+        page: context.query.p ?? 1,
       },
     })
     result = data
