@@ -111,10 +111,10 @@ contract Origin is OriginEvents, OriginHub, LocalDomainContext, Version0_0_1 {
         });
         messageHash = keccak256(message);
         // insert the hashed message into the Merkle tree
-        _insertMessage(_destination, messageNonce, messageHash);
+        bytes32 newRoot = _insertMessage(_destination, messageNonce, messageHash);
         // Emit Dispatch event with message information
         // note: leaf index in the tree is messageNonce - 1, meaning we don't need to emit that
-        emit Dispatch(messageHash, messageNonce, _destination, _tips, message);
+        emit Dispatch(messageHash, messageNonce, _destination, newRoot, _tips, message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
