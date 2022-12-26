@@ -11,6 +11,9 @@ import (
 type ExecutorDBWriter interface {
 	// StoreMessage stores a message in the database.
 	StoreMessage(ctx context.Context, message agentsTypes.Message, root common.Hash, blockNumber uint64) error
+
+	// StoreAttestation stores an attestation.
+	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error
 }
 
 // ExecutorDBReader is the interface for reading from the executor database.
@@ -21,8 +24,17 @@ type ExecutorDBReader interface {
 	GetMessages(ctx context.Context, messageMask types.DBMessage, page int) ([]agentsTypes.Message, error)
 	// GetRoot gets the root of a message from the database.
 	GetRoot(ctx context.Context, messageMask types.DBMessage) (common.Hash, error)
+	// GetBlockNumber gets the block number of a message from the database.
+	GetBlockNumber(ctx context.Context, messageMask types.DBMessage) (uint64, error)
 	// GetLastBlockNumber gets the last block number that had a message in the database.
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
+
+	// GetAttestation gets an attestation from the database.
+	GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error)
+	// GetAttestationBlockNumber gets the block number of an attestation.
+	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
+	// GetAttestationBlockTime gets the block time of an attestation.
+	GetAttestationBlockTime(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 }
 
 // ExecutorDB is the interface for the executor database.
