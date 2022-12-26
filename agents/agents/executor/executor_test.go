@@ -310,19 +310,6 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	messageBytes := []byte{byte(gofakeit.Uint32())}
 
-	// ownerPtr, err := e.originRef.OriginHarnessCaller.Owner(&bind.CallOpts{Context: e.GetTestContext()})
-	//e.Nil(err)
-	//
-	//originOwnerAuth := e.simulatedChain.GetTxContext(e.GetTestContext(), &ownerPtr)
-	//
-	//tx, err := e.originRef.AddAgent(originOwnerAuth.TransactOpts, e.destination, e.signer.Address())
-	//e.Nil(err)
-	//e.simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
-	//
-	//notaries, err := e.originRef.AllAgents(&bind.CallOpts{Context: e.GetTestContext()}, e.destination)
-	//e.Nil(err)
-	//e.Len(notaries, 1)
-
 	transactOpts := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
 	transactOpts.Value = types.TotalTips(tips[0])
 
