@@ -98,7 +98,7 @@ type BridgeEvent struct {
 
 	// Recipient is the address to send the tokens to.
 	// 66 for cosmwasm
-	Recipient sql.NullString `gorm:"column:recipient;column:sender;type:Nullable(FixedString(66))"`
+	Recipient sql.NullString `gorm:"column:recipient;type:Nullable(FixedString(66))"`
 	// RecipientBytes is the recipient address in bytes.
 	RecipientBytes sql.NullString `gorm:"column:recipient_bytes"`
 	// DestinationChainID is the chain id of the chain to send the tokens to.
