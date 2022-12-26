@@ -289,7 +289,7 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	}
 
 	var swapSuccess bool
-	if bridgeEvent.TSwapSuccess.Uint64() == 1 {
+	if bridgeEvent.TSwapSuccess == 1 {
 		swapSuccess = true
 	}
 	if !includePending && pending {

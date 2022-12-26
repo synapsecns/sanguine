@@ -98,7 +98,7 @@ type BridgeEvent struct {
 
 	// Recipient is the address to send the tokens to.
 	// 66 for cosmwasm
-	Recipient sql.NullString `gorm:"column:recipient;type:Nullable(FixedString(66))"`
+	Recipient sql.NullString `gorm:"column:recipient;type:FixedString(66)"`
 	// RecipientBytes is the recipient address in bytes.
 	RecipientBytes sql.NullString `gorm:"column:recipient_bytes"`
 	// DestinationChainID is the chain id of the chain to send the tokens to.
@@ -106,7 +106,7 @@ type BridgeEvent struct {
 	// Fee is the fee.
 	Fee *big.Int `gorm:"column:fee;type:UInt256"`
 	// Kappa is theFee keccak256 hash of the transaction.
-	Kappa sql.NullString `gorm:"column:kappa;type:Nullable(FixedString(66))"`
+	Kappa sql.NullString `gorm:"column:kappa;type:FixedString(66)"`
 	// TokenIndexFrom is the index of the from token in the pool.
 	TokenIndexFrom *big.Int `gorm:"column:token_index_from;type:UInt8"`
 	// TokenIndexTo is the index of the to token in the pool.
@@ -124,7 +124,7 @@ type BridgeEvent struct {
 	// SwapDeadline is the deadline of the swap transaction.
 	SwapDeadline *big.Int `gorm:"column:swap_deadline;type:UInt32"`
 	// TokenID is the token's ID.
-	TokenID sql.NullString `gorm:"column:token_id;type:LowCardinality(Nullable(String))"`
+	TokenID sql.NullString `gorm:"column:token_id;type:LowCardinality(String)"`
 	// AmountUSD is the amount in USD.
 	AmountUSD *float64 `gorm:"column:amount_usd;type:Float64"`
 	// FeeAmountUSD is the fee amount in USD.
@@ -132,7 +132,7 @@ type BridgeEvent struct {
 	// TokenDecimal is the token's decimal.
 	TokenDecimal *uint8 `gorm:"column:token_decimal"`
 	// TokenSymbol is the token's symbol from coin gecko.
-	TokenSymbol sql.NullString `gorm:"column:token_symbol;type:LowCardinality(Nullable(String))"`
+	TokenSymbol sql.NullString `gorm:"column:token_symbol;type:LowCardinality(String)"`
 	// TimeStamp is the timestamp of the block in which the event occurred.
 	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
@@ -163,7 +163,7 @@ type SwapEvent struct {
 	// ProtocolFee is the protocol fee.
 	ProtocolFee *big.Int `gorm:"column:protocol_fee;type:UInt256"`
 	// Buyer is the address of the buyer.
-	Buyer sql.NullString `gorm:"column:buyer;type:Nullable(FixedString(42))"`
+	Buyer sql.NullString `gorm:"column:buyer;type:FixedString(42)"`
 	// TokensSold is the amount of tokens sold.
 	TokensSold *big.Int `gorm:"column:tokens_sold;type:UInt256"`
 	// SoldID is the id of the token sold.
@@ -173,7 +173,7 @@ type SwapEvent struct {
 	// BoughtID is the id of the token bought.
 	BoughtID *big.Int `gorm:"column:bought_id;type:UInt32"`
 	// Provider is the address of the provider.
-	Provider sql.NullString `gorm:"column:provider;type:Nullable(FixedString(42))"`
+	Provider sql.NullString `gorm:"column:provider;type:FixedString(42)"`
 	// Invariant is the invariant of the pool.
 	Invariant *big.Int `gorm:"column:invariant;type:UInt256"`
 	// LPTokenAmount is the amount of LP tokens.
@@ -197,7 +197,7 @@ type SwapEvent struct {
 	// Time is the time.
 	Time *big.Int `gorm:"column:time;type:UInt256"`
 	// Receiver is the address of the receiver.
-	Receiver sql.NullString `gorm:"column:receiver;type:Nullable(FixedString(42))"`
+	Receiver sql.NullString `gorm:"column:receiver;type:FixedString(42)"`
 	// TokenPrices are the prices of each token at the given time.
 	TokenPrices map[uint8]float64 `gorm:"column:amount_usd;type:Map(UInt8, Float64)"`
 	// TokenDecimal is the token's decimal.
@@ -309,27 +309,27 @@ type HybridBridgeEvent struct {
 	// FRecipientBytes is the recipient address in bytes.
 	FRecipientBytes sql.NullString `gorm:"column:frecipient_bytes"`
 	// FDestinationChainID is the chain id of the chain to send the tokens to.
-	FDestinationChainID *big.Int `gorm:"column:fdestination_chain_id;type:UInt256"`
+	FDestinationChainID uint64 `gorm:"column:fdestination_chain_id;type:UInt256"`
 	// FFee is the fee.
 	FFee *big.Int `gorm:"column:ffee;type:UInt256"`
 	// FKappa is theFee keccak256 hash of the transaction.
 	FKappa sql.NullString `gorm:"column:fkappa"`
 	// FTokenIndexFrom is the index of the from token in the pool.
-	FTokenIndexFrom *big.Int `gorm:"column:ftoken_index_from;type:UInt256"`
+	FTokenIndexFrom uint8 `gorm:"column:ftoken_index_from;type:UInt256"`
 	// FTokenIndexTo is the index of the to token in the pool.
-	FTokenIndexTo *big.Int `gorm:"column:ftoken_index_to;type:UInt256"`
+	FTokenIndexTo uint8 `gorm:"column:ftoken_index_to;type:UInt256"`
 	// FMinDy is the minimum amount of tokens to receive.
 	FMinDy *big.Int `gorm:"column:fmin_dy;type:UInt256"`
 	// FDeadline is the deadline of the transaction.
 	FDeadline *big.Int `gorm:"column:fdeadline;type:UInt256"`
 	// FSwapSuccess is whether the swap was successful.
-	FSwapSuccess *big.Int `gorm:"column:fswap_success;type:UInt256"`
+	FSwapSuccess uint8 `gorm:"column:fswap_success;type:UInt256"`
 	// FSwapTokenIndex is the index of the token in the pool.
-	FSwapTokenIndex *big.Int `gorm:"column:fswap_token_index;type:UInt256"`
+	FSwapTokenIndex uint8 `gorm:"column:fswap_token_index;type:UInt256"`
 	// FSwapMinAmount is the minimum amount of tokens to receive.
 	FSwapMinAmount *big.Int `gorm:"column:fswap_min_amount;type:UInt256"`
 	// FSwapDeadline is the deadline of the swap transaction.
-	FSwapDeadline *big.Int `gorm:"column:fswap_deadline;type:UInt256"`
+	FSwapDeadline uint32 `gorm:"column:fswap_deadline;type:UInt256"`
 	// FTokenID is the token's ID.
 	FTokenID sql.NullString `gorm:"column:ftoken_id"`
 	// FAmountUSD is the amount in USD.
@@ -370,27 +370,27 @@ type HybridBridgeEvent struct {
 	// TRecipientBytes is the recipient address in bytes.
 	TRecipientBytes sql.NullString `gorm:"column:trecipient_bytes"`
 	// TDestinationChainID is the chain id of the chain to send the tokens to.
-	TDestinationChainID *big.Int `gorm:"column:tdestination_chain_id;type:UInt256"`
+	TDestinationChainID uint64 `gorm:"column:tdestination_chain_id;type:UInt256"`
 	// TFee is the fee.
 	TFee *big.Int `gorm:"column:tfee;type:UInt256"`
 	// TKappa is theFee keccak256 hash of the transaction.
 	TKappa sql.NullString `gorm:"column:tkappa"`
 	// TTokenIndexFrom is the index of the from token in the pool.
-	TTokenIndexFrom *big.Int `gorm:"column:ttoken_index_from;type:UInt256"`
+	TTokenIndexFrom uint8 `gorm:"column:ttoken_index_from;type:UInt256"`
 	// TTokenIndexTo is the index of the to token in the pool.
-	TTokenIndexTo *big.Int `gorm:"column:ttoken_index_to;type:UInt256"`
+	TTokenIndexTo uint8 `gorm:"column:ttoken_index_to;type:UInt256"`
 	// TMinDy is the minimum amount of tokens to receive.
 	TMinDy *big.Int `gorm:"column:tmin_dy;type:UInt256"`
 	// TDeadline is the deadline of the transaction.
 	TDeadline *big.Int `gorm:"column:tdeadline;type:UInt256"`
 	// TSwapSuccess is whether the swap was successful.
-	TSwapSuccess *big.Int `gorm:"column:tswap_success;type:UInt256"`
+	TSwapSuccess uint8 `gorm:"column:tswap_success;type:UInt256"`
 	// TSwapTokenIndex is the index of the token in the pool.
-	TSwapTokenIndex *big.Int `gorm:"column:tswap_token_index;type:UInt256"`
+	TSwapTokenIndex uint8 `gorm:"column:tswap_token_index;type:UInt256"`
 	// TSwapMinAmount is the minimum amount of tokens to receive.
 	TSwapMinAmount *big.Int `gorm:"column:tswap_min_amount;type:UInt256"`
 	// TSwapDeadline is the deadline of the swap transaction.
-	TSwapDeadline *big.Int `gorm:"column:tswap_deadline;type:UInt256"`
+	TSwapDeadline uint32 `gorm:"column:tswap_deadline;type:UInt256"`
 	// TTokenID is the token's ID.
 	TTokenID sql.NullString `gorm:"column:ttoken_id"`
 	// TAmountUSD is the amount in USD.
