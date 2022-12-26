@@ -1,9 +1,26 @@
-import {TokenAddress} from '@components/pages/TokenAddress'
-
-import {BRIDGE_AMOUNT_STATISTIC, GET_BRIDGE_TRANSACTIONS_QUERY,} from '@graphql/queries'
 import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
 import {API_URL} from '@graphql'
 import numeral from 'numeral'
+import {BridgeTransactionTable} from "@components/BridgeTransaction/BridgeTransactionTable";
+
+import _ from 'lodash'
+import {useEffect, useState} from 'react'
+
+import {useLazyQuery, useQuery} from '@apollo/client'
+
+import {BRIDGE_AMOUNT_STATISTIC, GET_BRIDGE_TRANSACTIONS_QUERY,} from '@graphql/queries'
+import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
+import {Pagination} from '@components/Pagination'
+
+import Grid from '@components/tailwind/Grid'
+
+import {TokenOnChain} from '@components/misc/TokenOnChain'
+
+import {StatCard} from '@components/pages/Home/Stats'
+
+import {useRouter} from 'next/router'
+import {useSearchParams} from 'next/navigation'
+
 
 const link = new HttpLink({
   uri: API_URL,
@@ -25,13 +42,98 @@ export default function tokenAddressRoute({
   allTimeAddresses,
   bridgeTransactions,
 }) {
+  const router = useRouter()
+  const { tokenAddress } = router.query
+  const search = useSearchParams()
+  const p = Number(search.get('page')) || 1
+  const chainId = Number(search.get('chainId')) || 1
+  // const chainId = Number(search.get('chainId'))
+
+  const [page, setPage] = useState(p)
+  const [transactions, setTransactions] = useState([])
+
+  const [getBridgeTransactions, { error: pageError, data }] = useLazyQuery(
+    GET_BRIDGE_TRANSACTIONS_QUERY
+  )
+
+  const nextPage = () => {
+    let newPage = page + 1
+    setPage(newPage)
+    // setSearch({ page: newPage, chainId })
+
+    getBridgeTransactions({
+      variables: {
+        tokenAddress,
+        chainId: Number(chainId),
+        page: newPage,
+      },
+    })
+  }
+
+  const prevPage = () => {
+    if (page > 1) {
+      let newPage = page - 1
+      setPage(newPage)
+      // setSearch({ page: newPage, chainId })
+      getBridgeTransactions({
+        variables: {
+          tokenAddress,
+          chainId: Number(chainId),
+          page: newPage,
+        },
+      })
+    }
+  }
+
+  const resetPage = () => {
+    setPage(1)
+    // setSearch({ page: 1, chainId })
+    getBridgeTransactions({
+      variables: {
+        tokenAddress,
+        chainId: Number(chainId),
+        page: 1,
+      },
+    })
+  }
+
+  let content
+
+    bridgeTransactions = _.orderBy(bridgeTransactions, 'fromInfo.time', [
+      'desc',
+    ]).slice(0, 10)
+
+    content = <BridgeTransactionTable queryResult={bridgeTransactions} />
+
+  let title = <TokenOnChain tokenAddress={tokenAddress} chainId={chainId} />
+
   return (
-    <TokenAddress
-      allTimeBridgeVolume={allTimeBridgeVolume}
-      allTimeTransactionCount={allTimeTransactionCount}
-      allTimeAddresses={allTimeAddresses}
-      txQueryResult={bridgeTransactions}
-    />
+    <StandardPageContainer title={title}>
+      <Grid cols={{ sm: 1, md: 3, lg: 3 }} gap={4} className="my-5">
+        <StatCard title="Volume" active={true} duration="All-Time">
+          <div className="text-4xl font-bold text-white">
+            ${allTimeBridgeVolume}
+          </div>
+        </StatCard>
+        <StatCard title="Transaction Count" active={true} duration="All-Time">
+          <div className="text-4xl font-bold text-white">
+            {allTimeTransactionCount}
+          </div>
+        </StatCard>
+        <StatCard title="Addresses" active={true} duration="All-Time">
+          <div className="text-4xl font-bold text-white">
+            {allTimeAddresses}
+          </div>
+        </StatCard>
+      </Grid>
+      {content}
+      <Pagination
+        page={page}
+        resetPage={resetPage}
+        prevPage={prevPage}
+        nextPage={nextPage}
+      />
+    </StandardPageContainer>
   )
 }
 
