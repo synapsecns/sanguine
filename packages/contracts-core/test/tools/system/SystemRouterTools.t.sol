@@ -353,10 +353,6 @@ abstract contract SystemRouterTools is DestinationTools {
                 systemRouterMultiCall();
             }
         }
-        if (origin != destination) {
-            // Create proofs for later execution
-            proofGen.createTree(messageHashes);
-        }
     }
 
     function triggerTestWrapperMultiCall(

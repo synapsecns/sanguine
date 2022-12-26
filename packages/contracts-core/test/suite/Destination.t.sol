@@ -369,7 +369,7 @@ contract DestinationTest is DestinationTools {
         // Details for executing message with index = 1
         reentrantApp.prepare({
             _message: rawMessages[1],
-            _proof: proofGen.getProof({ _index: 1 }),
+            _proof: proofGen.getLatestProof({ index: 1 }),
             _index: 1
         });
         // This will cause reentrancy
@@ -429,7 +429,12 @@ contract DestinationTest is DestinationTools {
         skip(APP_OPTIMISTIC_SECONDS);
         // Should be able to execute all messages once optimistic period is over
         for (uint32 i = 0; i < MESSAGES; ++i) {
-            checkMessageExecution({ context: userRemoteToLocal, app: app, index: i });
+            checkMessageExecution({
+                context: userRemoteToLocal,
+                app: app,
+                index: i,
+                count: attestationNonce
+            });
         }
     }
 
@@ -439,7 +444,12 @@ contract DestinationTest is DestinationTools {
         skip(APP_OPTIMISTIC_SECONDS);
         // nonce order is not enforced, so this is also possible
         for (uint32 i = MESSAGES - 1; ; --i) {
-            checkMessageExecution({ context: userRemoteToLocal, app: app, index: i });
+            checkMessageExecution({
+                context: userRemoteToLocal,
+                app: app,
+                index: i,
+                count: attestationNonce
+            });
             if (i == 0) break;
         }
     }
