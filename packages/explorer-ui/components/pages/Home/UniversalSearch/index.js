@@ -15,17 +15,21 @@ export function UniversalSearch({ placeholder }) {
   let isValid
   let error
   let inputType
+  let searchLink
   if (!searchField || searchField === '') {
     error = 'Field cannot be empty.'
   } else if (validateAndParseAddress(searchField)) {
     isValid = true
     inputType = 'ADDRESS'
+    searchLink = '/txs?account=' + searchField
   } else if (validateAndParseHash(searchField)) {
     isValid = true
     inputType = 'TRANSACTION'
+    // searchLink = '/tx/' + searchField
   } else if (_.values(ChainId).includes(searchField)) {
     isValid = true
     inputType = 'CHAIN'
+    searchLink = '/txs?chainId=' + searchField
   } else {
     error = 'Not a valid address or transaction hash'
   }
@@ -75,6 +79,11 @@ export function UniversalSearch({ placeholder }) {
               placeholder={placeholder}
             />
           </div>
+          <button className="font-medium rounded-r-md border border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 px-4 py-2">
+            <a href={searchLink}>
+              Search
+            </a>
+          </button>
           <div className="">
             <button className="font-medium rounded-l-md text-white border  border-[#BE78FF] bg-synapse-radial px-4 py-2">
               Confirmed

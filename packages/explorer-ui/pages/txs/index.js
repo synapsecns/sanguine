@@ -6,7 +6,8 @@ import {
   BRIDGE_AMOUNT_STATISTIC, COUNT_BY_CHAIN_ID,
   COUNT_BY_TOKEN_ADDRESS,
   GET_HISTORICAL_STATS,
-  GET_LATEST_BRIDGE_TRANSACTIONS_QUERY
+  GET_LATEST_BRIDGE_TRANSACTIONS_QUERY,
+  GET_BRIDGE_TRANSACTIONS_QUERY
 } from "@graphql/queries";
 import {API_URL} from '@graphql'
 
@@ -30,7 +31,15 @@ const client = new ApolloClient({
 
 
 export default function Txs({queryResult}) {
-  let { latestBridgeTransactions: bridgeTransactionsTable } = queryResult
+  let bridgeTransactionsTable
+  if ('latestBridgeTransactions' in queryResult) {
+    let { latestBridgeTransactions } = queryResult
+    bridgeTransactionsTable = latestBridgeTransactions
+  } else {
+    let { bridgeTransactions } = queryResult
+    bridgeTransactionsTable = bridgeTransactions
+  }
+
 
 
   bridgeTransactionsTable = _.orderBy(
@@ -39,6 +48,7 @@ export default function Txs({queryResult}) {
     ['desc']
   ).slice(0, 25)
 
+  console.log(queryResult)
 
   return (
     <>
@@ -58,18 +68,43 @@ export default function Txs({queryResult}) {
 }
 
 
-export async function getServerSideProps() {
-  const { data } = await client.query({
-    query: GET_LATEST_BRIDGE_TRANSACTIONS_QUERY,
-    variables: {
-      includePending: false,
-      page: 1,
-    },
-  })
+export async function getServerSideProps(context) {
+  let result
+
+  if (context.query.account) {
+    let { data } = await client.query({
+      query: GET_BRIDGE_TRANSACTIONS_QUERY,
+      variables: {
+        address: context.query.account,
+        includePending: false,
+        page: 1,
+      },
+    })
+    result = data
+  } else if (context.query.chainId) {
+    let { data } = await client.query({
+      query: GET_BRIDGE_TRANSACTIONS_QUERY,
+      variables: {
+        chainId: context.query.chainId,
+        includePending: false,
+        page: 1,
+      },
+    })
+    result = data
+  } else {
+    let { data } = await client.query({
+      query: GET_LATEST_BRIDGE_TRANSACTIONS_QUERY,
+      variables: {
+        includePending: false,
+        page: 1,
+      },
+    })
+    result = data
+  }
 
   return {
     props: {
-      queryResult: data,
+      queryResult: result,
     },
   }
 }
