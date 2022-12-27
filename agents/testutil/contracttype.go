@@ -49,25 +49,25 @@ type contractTypeImpl int
 
 const (
 	// OriginType is the type of the origin.
-	OriginType contractTypeImpl = 0 // Origin
+	OriginType contractTypeImpl = iota // Origin
 	// MessageHarnessType is the type of the message harness contract.
-	MessageHarnessType contractTypeImpl = iota // MessageHarness
+	MessageHarnessType // MessageHarness
 	// OriginHarnessType is the origin harness type.
-	OriginHarnessType contractTypeImpl = iota // OriginHarness
+	OriginHarnessType // OriginHarness
 	// AttestationHarnessType is the attestation harness type.
-	AttestationHarnessType contractTypeImpl = iota
+	AttestationHarnessType
 	// TipsHarnessType is the type of the tips harness.
-	TipsHarnessType contractTypeImpl = iota
+	TipsHarnessType
 	// HeaderHarnessType is the type of the header harness.
-	HeaderHarnessType contractTypeImpl = iota
+	HeaderHarnessType
 	// DestinationHarnessType is the destination harness type.
-	DestinationHarnessType contractTypeImpl = iota // DestinationHarness
+	DestinationHarnessType // DestinationHarness
 	// AttestationCollectorType is the type of the attestation collector.
-	AttestationCollectorType contractTypeImpl = iota // AttestationCollector
+	AttestationCollectorType // AttestationCollector
 	// DestinationType is the type of the destination.
-	DestinationType contractTypeImpl = iota // Destination
+	DestinationType // Destination
 	// AgentsTestContractType is the type of the agents test contract.
-	AgentsTestContractType contractTypeImpl = iota // AgentsTestContract
+	AgentsTestContractType // AgentsTestContract
 )
 
 // ID gets the contract type as an id.

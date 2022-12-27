@@ -17,6 +17,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/merkle"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
@@ -68,7 +69,8 @@ type logOrderInfo struct {
 	blockIndex  uint
 }
 
-const TreeDepth uint64 = 32
+// TreeDepth is the depth of the merkle tree.
+const TreeDepth uint64 = uint64(merkle.TreeDepth)
 
 const logChanSize = 1000
 
