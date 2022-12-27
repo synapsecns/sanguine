@@ -60,6 +60,61 @@ func TestMerkleTree(t *testing.T) {
 	}
 }
 
+func TestIncorrectRequests(t *testing.T) {
+	tree := merkle.NewTree()
+	// Generate test leafs.
+	leafs := make([][]byte, leafsAmount)
+	for i := uint32(0); i < leafsAmount; i++ {
+		leafs[i] = fakeLeaf()
+	}
+	// Insert test leafs.
+	for i := uint32(0); i < leafsAmount; i++ {
+		tree.Insert(leafs[i])
+	}
+	// Check Item() with index out of bound.
+	item, err := tree.Item(leafsAmount)
+	Nil(t, item)
+	NotNil(t, err)
+	// Check Root() with count out of bound.
+	root, err := tree.Root(leafsAmount + 1)
+	Nil(t, root)
+	NotNil(t, err)
+	// Check MerkleProof() with count out of bound.
+	proof, err := tree.MerkleProof(0, leafsAmount+1)
+	Nil(t, proof)
+	NotNil(t, err)
+	// Check MerkleProof() with index >= count.
+	proof, err = tree.MerkleProof(10, 10)
+	Nil(t, proof)
+	NotNil(t, err)
+	// Generate a valid proof.
+	proof, err = tree.MerkleProof(0, leafsAmount)
+	NotNil(t, proof)
+	Nil(t, err)
+	// Check BranchRoot() with incorrect proof length.
+	proof = make([][]byte, merkle.TreeDepth+1)
+	branchRoot, err := merkle.BranchRoot(leafs[0], leafsAmount, proof)
+	Nil(t, branchRoot)
+	NotNil(t, err)
+	// Get current and historical root.
+	root, err = tree.Root(leafsAmount)
+	NotNil(t, root)
+	Nil(t, err)
+	histRoot, err := tree.Root(leafsAmount - 1)
+	NotNil(t, histRoot)
+	Nil(t, err)
+	// Generate proofs against current root, they should not work with the historical root.
+	for i := uint32(0); i < leafsAmount; i++ {
+		proof, err = tree.MerkleProof(i, leafsAmount)
+		NotNil(t, proof)
+		Nil(t, err)
+		// Should not be able to prove against the historical root.
+		False(t, merkle.VerifyMerkleProof(histRoot, leafs[i], i, proof))
+		// Should be able to prove against the current root.
+		True(t, merkle.VerifyMerkleProof(root, leafs[i], i, proof))
+	}
+}
+
 func fakeLeaf() []byte {
 	leaf := make([]byte, 32)
 	for i := 0; i < 32; i++ {
