@@ -15,6 +15,14 @@ contract AgentsTestContract {
     uint256 valueC
   );
 
+  event IMessageReceipientHandleEvent(
+    uint32 indexed _origin,
+    uint32 indexed _nonce,
+    bytes32 _sender,
+    uint256 _rootSubmittedAt,
+    bytes _message
+  );
+
   function emitAgentsEventA(
     uint256 valueA,
     uint256 valueB,
@@ -38,5 +46,21 @@ contract AgentsTestContract {
   ) public {
     emitAgentsEventA(valueA, valueB, valueC);
     emitAgentsEventB(abi.encodePacked(valueA), valueB, valueC);
+  }
+
+  function handle(
+    uint32 _origin,
+    uint32 _nonce,
+    bytes32 _sender,
+    uint256 _rootSubmittedAt,
+    bytes memory _message
+  ) external {
+    emit IMessageReceipientHandleEvent(
+      _origin,
+      _nonce,
+      _sender,
+      _rootSubmittedAt,
+      _message
+    );
   }
 }

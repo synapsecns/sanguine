@@ -1,23 +1,26 @@
 package executor_test
 
 import (
+	"context"
+	"fmt"
 	"math/big"
+	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
+	"github.com/synapsecns/sanguine/agents/contracts/destination"
+	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
+	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/core"
-
-	"github.com/ethereum/go-ethereum/common"
-	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
-	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/prysmaticlabs/prysm/shared/trieutil"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -38,6 +41,8 @@ func (e *ExecutorSuite) TestExecutor() {
 	e.Nil(err)
 	simulatedClientB, err := backfill.DialBackend(e.GetTestContext(), simulatedChainB.RPCAddress())
 	e.Nil(err)
+	simulatedChainA.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
+	simulatedChainB.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
 	testContractA, testRefA := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), simulatedChainA)
 	testContractB, testRefB := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), simulatedChainB)
 	transactOptsA := simulatedChainA.GetTxContext(e.GetTestContext(), nil)
@@ -151,13 +156,12 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	defer func() {
 		testDone = true
 	}()
-	chainID := e.OriginDomainClient.Config().DomainID
-	simulatedChain := e.OriginSimulatedChain
-	simulatedClient := e.OriginSimulatedClient
-
-	testContract := e.AgentsTestContractMetadataOnOriginChain
-	testRef := e.AgentsTestContractOnOriginChain
-
+	chainID := gofakeit.Uint32()
+	simulatedChain := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
+	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), simulatedChain.RPCAddress())
+	e.Nil(err)
+	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
+	testContract, testRef := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
 
 	contractConfig := config.ContractConfig{
@@ -238,12 +242,15 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		testDone = true
 	}()
 
+	chainID := uint32(e.TestBackendOrigin.GetChainID())
+	destination := uint32(e.TestBackendDestination.GetChainID())
+
 	contractConfig := config.ContractConfig{
-		Address:    e.originContract.Address().String(),
+		Address:    e.OriginContractMetadata.Address().String(),
 		StartBlock: 0,
 	}
 	chainConfig := config.ChainConfig{
-		ChainID:               e.chainID,
+		ChainID:               chainID,
 		RequiredConfirmations: 0,
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
@@ -253,7 +260,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
 	e.Nil(err)
 	clients := map[uint32][]backfill.ScribeBackend{
-		e.chainID: {e.simulatedClient, e.simulatedClient},
+		chainID: {simulatedClient, simulatedClient},
 	}
 
 	scribe, err := node.NewScribe(e.scribeTestDB, clients, scribeConfig)
@@ -273,24 +280,24 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
 			{
-				ChainID:       e.chainID,
-				OriginAddress: e.originContract.Address().String(),
+				ChainID:       chainID,
+				OriginAddress: e.OriginContractMetadata.Address().String(),
 			},
 			{
-				ChainID: e.destination,
+				ChainID: destination,
 			},
 		},
 	}
 
 	executorClients := map[uint32]executor.Backend{
-		e.chainID:     e.simulatedChain,
-		e.destination: nil,
+		chainID:     e.TestBackendOrigin,
+		destination: nil,
 	}
 
 	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
 	e.Nil(err)
 
-	_, err = exec.GetRoot(e.GetTestContext(), 1, e.chainID, e.destination)
+	_, err = exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
 	e.NotNil(err)
 
 	testTree, err := trieutil.NewTrie(32)
@@ -310,30 +317,17 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	messageBytes := []byte{byte(gofakeit.Uint32())}
 
-	ownerPtr, err := e.originRef.OriginHarnessCaller.Owner(&bind.CallOpts{Context: e.GetTestContext()})
-	e.Nil(err)
-
-	originOwnerAuth := e.simulatedChain.GetTxContext(e.GetTestContext(), &ownerPtr)
-
-	tx, err := e.originRef.AddAgent(originOwnerAuth.TransactOpts, e.destination, e.signer.Address())
-	e.Nil(err)
-	e.simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
-
-	notaries, err := e.originRef.AllAgents(&bind.CallOpts{Context: e.GetTestContext()}, e.destination)
-	e.Nil(err)
-	e.Len(notaries, 1)
-
-	transactOpts := e.simulatedChain.GetTxContext(e.GetTestContext(), nil)
+	transactOpts := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
 	transactOpts.Value = types.TotalTips(tips[0])
 
-	tx, err = e.originRef.Dispatch(transactOpts.TransactOpts, e.destination, recipients[0], optimisticSeconds[0], encodedTips, messageBytes)
+	tx, err := e.OriginContract.Dispatch(transactOpts.TransactOpts, destination, recipients[0], optimisticSeconds[0], encodedTips, messageBytes)
 	e.Nil(err)
-	e.simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
-	sender, err := e.simulatedChain.Signer().Sender(tx)
+	sender, err := e.TestBackendOrigin.Signer().Sender(tx)
 	e.Nil(err)
 
-	header := types.NewHeader(e.chainID, sender.Hash(), 1, e.destination, recipients[0], optimisticSeconds[0])
+	header := types.NewHeader(chainID, sender.Hash(), 1, destination, recipients[0], optimisticSeconds[0])
 
 	message := types.NewMessage(header, tips[0], messageBytes)
 	e.Nil(err)
@@ -353,7 +347,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	// Listen with the exec.
 	go func() {
-		execErr := exec.Listen(e.GetTestContext(), e.chainID)
+		execErr := exec.Listen(e.GetTestContext(), chainID)
 		if !testDone {
 			e.Nil(execErr)
 		}
@@ -362,7 +356,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	waitChan := make(chan bool, 2)
 
 	e.Eventually(func() bool {
-		rootA, err := exec.GetRoot(e.GetTestContext(), 1, e.chainID, e.destination)
+		rootA, err := exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
 		if err != nil {
 			return false
 		}
@@ -379,11 +373,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	transactOpts.Value = types.TotalTips(tips[1])
 
-	tx, err = e.originRef.Dispatch(transactOpts.TransactOpts, e.destination, recipients[1], optimisticSeconds[1], encodedTips, messageBytes)
+	tx, err = e.OriginContract.Dispatch(transactOpts.TransactOpts, destination, recipients[1], optimisticSeconds[1], encodedTips, messageBytes)
 	e.Nil(err)
-	e.simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
-	header = types.NewHeader(e.chainID, sender.Hash(), 2, e.destination, recipients[1], optimisticSeconds[1])
+	header = types.NewHeader(chainID, sender.Hash(), 2, destination, recipients[1], optimisticSeconds[1])
 
 	message = types.NewMessage(header, tips[1], messageBytes)
 	e.Nil(err)
@@ -395,7 +389,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	testRootB := testTree.Root()
 
 	e.Eventually(func() bool {
-		rootB, err := exec.GetRoot(e.GetTestContext(), 2, e.chainID, e.destination)
+		rootB, err := exec.GetRoot(e.GetTestContext(), 2, chainID, destination)
 		if err != nil {
 			return false
 		}
@@ -409,33 +403,35 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	<-waitChan
 	<-waitChan
-	exec.Stop(e.chainID)
+	exec.Stop(chainID)
 
-	oldTreeItems := exec.GetMerkleTree(e.chainID, e.destination).Items()
+	oldTreeItems := exec.GetMerkleTree(chainID, destination).Items()
 
-	err = exec.BuildTreeFromDB(e.GetTestContext(), e.chainID, e.destination)
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	newRoot, err := exec.GetRoot(e.GetTestContext(), 2, e.chainID, e.destination)
+	newRoot, err := exec.GetRoot(e.GetTestContext(), 2, chainID, destination)
 	e.Nil(err)
 
-	newTreeItems := exec.GetMerkleTree(e.chainID, e.destination).Items()
+	newTreeItems := exec.GetMerkleTree(chainID, destination).Items()
 
 	e.Equal(testRootB, newRoot)
 	e.Equal(oldTreeItems, newTreeItems)
 }
 
 func (e *ExecutorSuite) TestVerifyMessage() {
+	chainID := uint32(e.TestBackendOrigin.GetChainID())
+	destination := uint32(e.TestBackendDestination.GetChainID())
 	testTree, err := trieutil.NewTrie(32)
 	e.Nil(err)
 
 	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
 			{
-				ChainID: e.chainID,
+				ChainID: chainID,
 			},
 			{
-				ChainID: e.destination,
+				ChainID: destination,
 			},
 		},
 	}
@@ -447,8 +443,8 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	}()
 
 	executorClients := map[uint32]executor.Backend{
-		e.chainID:     nil,
-		e.destination: nil,
+		chainID:     nil,
+		destination: nil,
 	}
 
 	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
@@ -495,10 +491,10 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
 	}
 
-	header0 := types.NewHeader(e.chainID, senders[0], nonces[0], e.destination, recipients[0], optimisticSeconds[0])
-	header1 := types.NewHeader(e.chainID, senders[1], nonces[1], e.destination, recipients[1], optimisticSeconds[1])
-	header2 := types.NewHeader(e.chainID, senders[2], nonces[2], e.destination, recipients[2], optimisticSeconds[2])
-	header3 := types.NewHeader(e.chainID, senders[3], nonces[3], e.destination, recipients[3], optimisticSeconds[3])
+	header0 := types.NewHeader(chainID, senders[0], nonces[0], destination, recipients[0], optimisticSeconds[0])
+	header1 := types.NewHeader(chainID, senders[1], nonces[1], destination, recipients[1], optimisticSeconds[1])
+	header2 := types.NewHeader(chainID, senders[2], nonces[2], destination, recipients[2], optimisticSeconds[2])
+	header3 := types.NewHeader(chainID, senders[3], nonces[3], destination, recipients[3], optimisticSeconds[3])
 
 	message0 := types.NewMessage(header0, tips[0], messageBytes[0])
 	message1 := types.NewMessage(header1, tips[1], messageBytes[1])
@@ -531,32 +527,32 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = e.testDB.StoreMessage(e.GetTestContext(), message2, root2, blockNumbers[2])
 	e.Nil(err)
 
-	err = exec.BuildTreeFromDB(e.GetTestContext(), e.chainID, e.destination)
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	inTree0, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[0], message0, e.chainID, e.destination)
+	inTree0, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[0], message0, chainID, destination)
 	e.Nil(err)
 	e.True(inTree0)
 
-	inTree1, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[1], message1, e.chainID, e.destination)
+	inTree1, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[1], message1, chainID, destination)
 	e.Nil(err)
 	e.True(inTree1)
 
-	inTree2, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message2, e.chainID, e.destination)
+	inTree2, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message2, chainID, destination)
 	e.Nil(err)
 	e.True(inTree2)
 
-	inTreeFail, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message1, e.chainID, e.destination)
+	inTreeFail, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message1, chainID, destination)
 	e.Nil(err)
 	e.False(inTreeFail)
 
 	err = e.testDB.StoreMessage(e.GetTestContext(), message3, root3, blockNumbers[3])
 	e.Nil(err)
 
-	err = exec.BuildTreeFromDB(e.GetTestContext(), e.chainID, e.destination)
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	inTree3, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[3], message3, e.chainID, e.destination)
+	inTree3, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[3], message3, chainID, destination)
 	e.Nil(err)
 	e.True(inTree3)
 }
@@ -572,8 +568,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
 	e.Nil(err)
 
-	_, passBlockRef := e.deployManager.GetOriginHarness(e.GetTestContext(), e.TestBackendDestination)
-	_ = passBlockRef
+	_, passBlockRef := e.TestDeployManager.GetOriginHarness(e.GetTestContext(), e.TestBackendDestination)
 	originConfig := config.ContractConfig{
 		Address:    e.OriginContract.Address().String(),
 		StartBlock: 0,
@@ -746,4 +741,154 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 		return false
 	})
+}
+
+func (d *ExecutorSuite) TestDestinationExecute() {
+	var err error
+
+	testContractDest, testContractDestRef := d.TestDeployManager.GetAgentsTestContract(d.GetTestContext(), d.TestBackendDestination)
+
+	originDomain := uint32(d.TestBackendOrigin.GetBigChainID().Uint64())
+	destinationDomain := uint32(d.TestBackendDestination.GetBigChainID().Uint64())
+	nonce := uint32(1)
+
+	origins := []uint32{originDomain}
+	nonces := []uint32{nonce}
+
+	// Create a channel and subscription to receive AttestationAccepted events as they are emitted.
+	attestationSink := make(chan *destinationharness.DestinationHarnessAttestationAccepted)
+	subAttestation, err := d.DestinationContract.WatchAttestationAccepted(&bind.WatchOpts{
+		Context: d.GetTestContext()},
+		attestationSink)
+	d.Nil(err)
+
+	// Create a channel and subscription to receive AttestationAccepted events as they are emitted.
+	iMessageHandledSink := make(chan *agentstestcontract.AgentsTestContractIMessageReceipientHandleEvent)
+	subMessageHandled, err := testContractDestRef.WatchIMessageReceipientHandleEvent(&bind.WatchOpts{
+		Context: d.GetTestContext()},
+		iMessageHandledSink, origins, nonces)
+	d.Nil(err)
+
+	txContextOrigin := d.TestBackendOrigin.GetTxContext(d.GetTestContext(), nil)
+	txContextDestination := d.TestBackendDestination.GetTxContext(d.GetTestContext(), d.DestinationContractMetadata.OwnerPtr())
+
+	messageBody := []byte("This is a test message")
+
+	recipient := testContractDest.Address().Hash()
+
+	tips := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	encodedTips, err := types.EncodeTips(tips)
+	d.Nil(err)
+
+	optimisticSeconds := uint32(1)
+	// Dispatch an event from the Origin contract to be accepted on the Destination contract.
+	tx, err := d.OriginContract.Dispatch(txContextOrigin.TransactOpts, destinationDomain, recipient, optimisticSeconds, encodedTips, messageBody)
+	d.Nil(err)
+	d.TestBackendOrigin.WaitForConfirmation(d.GetTestContext(), tx)
+
+	sender, err := d.TestBackendOrigin.Signer().Sender(tx)
+	d.Nil(err)
+
+	header := types.NewHeader(originDomain, sender.Hash(), nonce, destinationDomain, recipient, optimisticSeconds)
+
+	message := types.NewMessage(header, tips, messageBody)
+	d.Nil(err)
+	allMessages := []types.Message{message}
+	rawMessages := make([][]byte, len(allMessages))
+	for i, message := range allMessages {
+		rawMessage, err := message.ToLeaf()
+		d.Nil(err)
+
+		rawMessages[i] = rawMessage[:]
+	}
+
+	merkleTree, err := trieutil.GenerateTrieFromItems(rawMessages, executor.TreeDepth)
+	d.Nil(err)
+	rawProofBranches, err := merkleTree.MerkleProof(0)
+	d.Nil(err)
+	var proofToUse [32][32]byte
+	for i := 0; i < 32; i++ {
+		copy(proofToUse[i][:], rawProofBranches[i])
+	}
+
+	attestationKey := types.AttestationKey{
+		Origin:      originDomain,
+		Destination: destinationDomain,
+		Nonce:       nonce,
+	}
+
+	root := merkleTree.Root()
+	unsignedAttestation := types.NewAttestation(attestationKey.GetRawKey(), root)
+	hashedAttestation, err := types.Hash(unsignedAttestation)
+	d.Nil(err)
+
+	notarySignature, err := d.NotarySigner.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	d.Nil(err)
+
+	guardSignature, err := d.GuardSigner.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	d.Nil(err)
+
+	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
+
+	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
+	d.Nil(err)
+
+	tx, err = d.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation)
+	d.Nil(err)
+
+	d.TestBackendDestination.WaitForConfirmation(d.GetTestContext(), tx)
+
+	watchCtx, cancel := context.WithTimeout(d.GetTestContext(), time.Second*10)
+	defer cancel()
+
+	select {
+	// check for errors and fail
+	case <-watchCtx.Done():
+		d.T().Error(d.T(), fmt.Errorf("test context completed %w", d.GetTestContext().Err()))
+	case <-subAttestation.Err():
+		d.T().Error(d.T(), subAttestation.Err())
+	// get attestation accepted event
+	case item := <-attestationSink:
+		parser, err := destination.NewParser(d.DestinationContract.Address())
+		d.Nil(err)
+
+		// Check to see if the event was an AttestationAccepted event.
+		eventType, ok := parser.EventType(item.Raw)
+		d.True(ok)
+		d.Equal(eventType, destination.AttestationAcceptedEvent)
+
+		emittedSignedAttesation, err := types.DecodeSignedAttestation(item.Attestation)
+		d.Nil(err)
+
+		d.Equal(d.OriginDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Origin())
+		d.Equal(d.DestinationDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Destination())
+		d.Equal(nonce, emittedSignedAttesation.Attestation().Nonce())
+		d.Equal([32]byte(root), emittedSignedAttesation.Attestation().Root())
+
+		// Now sleep for a second before executing
+		time.Sleep(time.Second)
+		index := big.NewInt(int64(0))
+		tx, err = d.DestinationContract.Execute(txContextDestination.TransactOpts, messageBody, proofToUse, index)
+		d.Nil(err)
+
+		d.TestBackendDestination.WaitForConfirmation(d.GetTestContext(), tx)
+
+		break
+	}
+
+	watchHandleCtx, cancel := context.WithTimeout(d.GetTestContext(), time.Second*10)
+	defer cancel()
+
+	select {
+	// check for errors and fail
+	case <-watchHandleCtx.Done():
+		d.T().Error(d.T(), fmt.Errorf("test context completed %w", d.GetTestContext().Err()))
+	case <-subMessageHandled.Err():
+		d.T().Error(d.T(), subAttestation.Err())
+	// get attestation accepted event
+	case item := <-iMessageHandledSink:
+		d.NotNil(item)
+
+		break
+	}
 }

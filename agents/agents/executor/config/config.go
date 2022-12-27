@@ -3,20 +3,19 @@ package config
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
-
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
 	"gopkg.in/yaml.v2"
+	"os"
+	"path/filepath"
 )
 
 // Config is used to configure an Executor agent.
 type Config struct {
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
-	// RPCURL is the url of the omnirpc.
-	RPCURL string `yaml:"rpc_url"`
+	// BaseOmnirpcURL is the base url for omnirpc.
+	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -27,7 +26,7 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 		return false, err
 	}
 
-	if c.RPCURL == "" {
+	if c.BaseOmnirpcURL == "" {
 		return false, fmt.Errorf("rpc url cannot be empty")
 	}
 

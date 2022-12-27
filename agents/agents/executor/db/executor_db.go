@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
@@ -14,7 +13,7 @@ type ExecutorDBWriter interface {
 	StoreMessage(ctx context.Context, message agentsTypes.Message, root common.Hash, blockNumber uint64) error
 
 	// StoreAttestation stores an attestation.
-	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64) error
+	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error
 }
 
 // ExecutorDBReader is the interface for reading from the executor database.
@@ -34,6 +33,8 @@ type ExecutorDBReader interface {
 	GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error)
 	// GetAttestationBlockNumber gets the block number of an attestation.
 	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
+	// GetAttestationBlockTime gets the block time of an attestation.
+	GetAttestationBlockTime(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 }
 
 // ExecutorDB is the interface for the executor database.

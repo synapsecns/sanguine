@@ -12,6 +12,8 @@ type DBAttestation struct {
 	Nonce *uint32
 	// Root is the root of the attestation.
 	Root *common.Hash
-	// BlockNumber is the block number of the attestation.
-	BlockNumber *uint64
+	// DestinationBlockNumber is the block number of the attestation as it was submitted on the destination.
+	DestinationBlockNumber *uint64
+	// DestinationBlockTime is the block time of the attestation as it was submitted on the destination.
+	DestinationBlockTime *uint64
 }

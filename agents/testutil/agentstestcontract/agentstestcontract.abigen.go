@@ -30,13 +30,14 @@ var (
 
 // AgentsTestContractMetaData contains all meta data concerning the AgentsTestContract contract.
 var AgentsTestContractMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"AgentsEventA\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"valueA\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"AgentsEventB\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventAandB\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"valueA\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventB\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"AgentsEventA\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"valueA\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"AgentsEventB\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_rootSubmittedAt\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"IMessageReceipientHandleEvent\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventAandB\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"valueA\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventB\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_rootSubmittedAt\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"handle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"9bfa08a0": "emitAgentsEventA(uint256,uint256,uint256)",
 		"7a8f94ca": "emitAgentsEventAandB(uint256,uint256,uint256)",
 		"9033a74b": "emitAgentsEventB(bytes,uint256,uint256)",
+		"e4d16d62": "handle(uint32,uint32,bytes32,uint256,bytes)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b50610358806100206000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80637a8f94ca146100465780639033a74b1461005b5780639bfa08a01461006e575b600080fd5b61005961005436600461016b565b610081565b005b6100596100693660046101c6565b6100bd565b61005961007c36600461016b565b610114565b61008c838383610114565b6100b8836040516020016100a291815260200190565b60405160208183030381529060405283836100bd565b505050565b3373ffffffffffffffffffffffffffffffffffffffff167f6035db97cdd53d64e2d649d14852dd02182d8df440dc9e9ec01734debbae43ed848484604051610107939291906102a8565b60405180910390a2505050565b81833373ffffffffffffffffffffffffffffffffffffffff167f8304c3213cbf0d9583777ae3722ed0a3f56cf936c28af4984586b61735f284928460405161015e91815260200190565b60405180910390a4505050565b60008060006060848603121561018057600080fd5b505081359360208301359350604090920135919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6000806000606084860312156101db57600080fd5b833567ffffffffffffffff808211156101f357600080fd5b818601915086601f83011261020757600080fd5b81358181111561021957610219610197565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f0116810190838211818310171561025f5761025f610197565b8160405282815289602084870101111561027857600080fd5b82602086016020830137600060208483010152809750505050505060208401359150604084013590509250925092565b606081526000845180606084015260005b818110156102d657602081880181015160808684010152016102b9565b5060006080828501015260807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011684010191505083602083015282604083015294935050505056fea26469706673582212202190fa38d99d15e675b8bbacdbe2ffb2f5a36454ab3b0c3cab8073a8f33da5c764736f6c63430008110033",
+	Bin: "0x608060405234801561001057600080fd5b5061049f806100206000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c80637a8f94ca146100515780639033a74b146100665780639bfa08a014610079578063e4d16d621461008c575b600080fd5b61006461005f3660046101d9565b61009f565b005b6100646100743660046102df565b6100db565b6100646100873660046101d9565b610132565b61006461009a366004610346565b610189565b6100aa838383610132565b6100d6836040516020016100c091815260200190565b60405160208183030381529060405283836100db565b505050565b3373ffffffffffffffffffffffffffffffffffffffff167f6035db97cdd53d64e2d649d14852dd02182d8df440dc9e9ec01734debbae43ed8484846040516101259392919061041c565b60405180910390a2505050565b81833373ffffffffffffffffffffffffffffffffffffffff167f8304c3213cbf0d9583777ae3722ed0a3f56cf936c28af4984586b61735f284928460405161017c91815260200190565b60405180910390a4505050565b8363ffffffff168563ffffffff167f08add9b76c46d1f24d8316c1a0ac8d055490d07289f5ed084ef5022cd81cec818585856040516101ca93929190610441565b60405180910390a35050505050565b6000806000606084860312156101ee57600080fd5b505081359360208301359350604090920135919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261024557600080fd5b813567ffffffffffffffff8082111561026057610260610205565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019082821181831017156102a6576102a6610205565b816040528381528660208588010111156102bf57600080fd5b836020870160208301376000602085830101528094505050505092915050565b6000806000606084860312156102f457600080fd5b833567ffffffffffffffff81111561030b57600080fd5b61031786828701610234565b9660208601359650604090950135949350505050565b803563ffffffff8116811461034157600080fd5b919050565b600080600080600060a0868803121561035e57600080fd5b6103678661032d565b94506103756020870161032d565b93506040860135925060608601359150608086013567ffffffffffffffff81111561039f57600080fd5b6103ab88828901610234565b9150509295509295909350565b6000815180845260005b818110156103de576020818501810151868301820152016103c2565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b60608152600061042f60608301866103b8565b60208301949094525060400152919050565b83815282602082015260606040820152600061046060608301846103b8565b9594505050505056fea2646970667358221220199bfe8f8270b5d62e94ec584ec32dda7014c8a3a08f919d8d0cdbb59b48fe0264736f6c63430008110033",
 }
 
 // AgentsTestContractABI is the input ABI used to generate the binding from.
@@ -271,6 +272,27 @@ func (_AgentsTestContract *AgentsTestContractSession) EmitAgentsEventB(valueA []
 // Solidity: function emitAgentsEventB(bytes valueA, uint256 valueB, uint256 valueC) returns()
 func (_AgentsTestContract *AgentsTestContractTransactorSession) EmitAgentsEventB(valueA []byte, valueB *big.Int, valueC *big.Int) (*types.Transaction, error) {
 	return _AgentsTestContract.Contract.EmitAgentsEventB(&_AgentsTestContract.TransactOpts, valueA, valueB, valueC)
+}
+
+// Handle is a paid mutator transaction binding the contract method 0xe4d16d62.
+//
+// Solidity: function handle(uint32 _origin, uint32 _nonce, bytes32 _sender, uint256 _rootSubmittedAt, bytes _message) returns()
+func (_AgentsTestContract *AgentsTestContractTransactor) Handle(opts *bind.TransactOpts, _origin uint32, _nonce uint32, _sender [32]byte, _rootSubmittedAt *big.Int, _message []byte) (*types.Transaction, error) {
+	return _AgentsTestContract.contract.Transact(opts, "handle", _origin, _nonce, _sender, _rootSubmittedAt, _message)
+}
+
+// Handle is a paid mutator transaction binding the contract method 0xe4d16d62.
+//
+// Solidity: function handle(uint32 _origin, uint32 _nonce, bytes32 _sender, uint256 _rootSubmittedAt, bytes _message) returns()
+func (_AgentsTestContract *AgentsTestContractSession) Handle(_origin uint32, _nonce uint32, _sender [32]byte, _rootSubmittedAt *big.Int, _message []byte) (*types.Transaction, error) {
+	return _AgentsTestContract.Contract.Handle(&_AgentsTestContract.TransactOpts, _origin, _nonce, _sender, _rootSubmittedAt, _message)
+}
+
+// Handle is a paid mutator transaction binding the contract method 0xe4d16d62.
+//
+// Solidity: function handle(uint32 _origin, uint32 _nonce, bytes32 _sender, uint256 _rootSubmittedAt, bytes _message) returns()
+func (_AgentsTestContract *AgentsTestContractTransactorSession) Handle(_origin uint32, _nonce uint32, _sender [32]byte, _rootSubmittedAt *big.Int, _message []byte) (*types.Transaction, error) {
+	return _AgentsTestContract.Contract.Handle(&_AgentsTestContract.TransactOpts, _origin, _nonce, _sender, _rootSubmittedAt, _message)
 }
 
 // AgentsTestContractAgentsEventAIterator is returned from FilterAgentsEventA and is used to iterate over the raw logs and unpacked data for AgentsEventA events raised by the AgentsTestContract contract.
@@ -577,6 +599,162 @@ func (_AgentsTestContract *AgentsTestContractFilterer) WatchAgentsEventB(opts *b
 func (_AgentsTestContract *AgentsTestContractFilterer) ParseAgentsEventB(log types.Log) (*AgentsTestContractAgentsEventB, error) {
 	event := new(AgentsTestContractAgentsEventB)
 	if err := _AgentsTestContract.contract.UnpackLog(event, "AgentsEventB", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// AgentsTestContractIMessageReceipientHandleEventIterator is returned from FilterIMessageReceipientHandleEvent and is used to iterate over the raw logs and unpacked data for IMessageReceipientHandleEvent events raised by the AgentsTestContract contract.
+type AgentsTestContractIMessageReceipientHandleEventIterator struct {
+	Event *AgentsTestContractIMessageReceipientHandleEvent // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *AgentsTestContractIMessageReceipientHandleEventIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(AgentsTestContractIMessageReceipientHandleEvent)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(AgentsTestContractIMessageReceipientHandleEvent)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *AgentsTestContractIMessageReceipientHandleEventIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *AgentsTestContractIMessageReceipientHandleEventIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// AgentsTestContractIMessageReceipientHandleEvent represents a IMessageReceipientHandleEvent event raised by the AgentsTestContract contract.
+type AgentsTestContractIMessageReceipientHandleEvent struct {
+	Origin          uint32
+	Nonce           uint32
+	Sender          [32]byte
+	RootSubmittedAt *big.Int
+	Message         []byte
+	Raw             types.Log // Blockchain specific contextual infos
+}
+
+// FilterIMessageReceipientHandleEvent is a free log retrieval operation binding the contract event 0x08add9b76c46d1f24d8316c1a0ac8d055490d07289f5ed084ef5022cd81cec81.
+//
+// Solidity: event IMessageReceipientHandleEvent(uint32 indexed _origin, uint32 indexed _nonce, bytes32 _sender, uint256 _rootSubmittedAt, bytes _message)
+func (_AgentsTestContract *AgentsTestContractFilterer) FilterIMessageReceipientHandleEvent(opts *bind.FilterOpts, _origin []uint32, _nonce []uint32) (*AgentsTestContractIMessageReceipientHandleEventIterator, error) {
+
+	var _originRule []interface{}
+	for _, _originItem := range _origin {
+		_originRule = append(_originRule, _originItem)
+	}
+	var _nonceRule []interface{}
+	for _, _nonceItem := range _nonce {
+		_nonceRule = append(_nonceRule, _nonceItem)
+	}
+
+	logs, sub, err := _AgentsTestContract.contract.FilterLogs(opts, "IMessageReceipientHandleEvent", _originRule, _nonceRule)
+	if err != nil {
+		return nil, err
+	}
+	return &AgentsTestContractIMessageReceipientHandleEventIterator{contract: _AgentsTestContract.contract, event: "IMessageReceipientHandleEvent", logs: logs, sub: sub}, nil
+}
+
+// WatchIMessageReceipientHandleEvent is a free log subscription operation binding the contract event 0x08add9b76c46d1f24d8316c1a0ac8d055490d07289f5ed084ef5022cd81cec81.
+//
+// Solidity: event IMessageReceipientHandleEvent(uint32 indexed _origin, uint32 indexed _nonce, bytes32 _sender, uint256 _rootSubmittedAt, bytes _message)
+func (_AgentsTestContract *AgentsTestContractFilterer) WatchIMessageReceipientHandleEvent(opts *bind.WatchOpts, sink chan<- *AgentsTestContractIMessageReceipientHandleEvent, _origin []uint32, _nonce []uint32) (event.Subscription, error) {
+
+	var _originRule []interface{}
+	for _, _originItem := range _origin {
+		_originRule = append(_originRule, _originItem)
+	}
+	var _nonceRule []interface{}
+	for _, _nonceItem := range _nonce {
+		_nonceRule = append(_nonceRule, _nonceItem)
+	}
+
+	logs, sub, err := _AgentsTestContract.contract.WatchLogs(opts, "IMessageReceipientHandleEvent", _originRule, _nonceRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(AgentsTestContractIMessageReceipientHandleEvent)
+				if err := _AgentsTestContract.contract.UnpackLog(event, "IMessageReceipientHandleEvent", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseIMessageReceipientHandleEvent is a log parse operation binding the contract event 0x08add9b76c46d1f24d8316c1a0ac8d055490d07289f5ed084ef5022cd81cec81.
+//
+// Solidity: event IMessageReceipientHandleEvent(uint32 indexed _origin, uint32 indexed _nonce, bytes32 _sender, uint256 _rootSubmittedAt, bytes _message)
+func (_AgentsTestContract *AgentsTestContractFilterer) ParseIMessageReceipientHandleEvent(log types.Log) (*AgentsTestContractIMessageReceipientHandleEvent, error) {
+	event := new(AgentsTestContractIMessageReceipientHandleEvent)
+	if err := _AgentsTestContract.contract.UnpackLog(event, "IMessageReceipientHandleEvent", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

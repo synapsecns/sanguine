@@ -68,7 +68,7 @@ type logOrderInfo struct {
 	blockIndex  uint
 }
 
-const treeDepth uint64 = 32
+const TreeDepth uint64 = 32
 
 const logChanSize = 1000
 
@@ -122,7 +122,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 				continue
 			}
 
-			tree, err := trieutil.NewTrie(treeDepth)
+			tree, err := trieutil.NewTrie(TreeDepth)
 			if err != nil {
 				return nil, fmt.Errorf("could not create merkle tree: %w", err)
 			}
@@ -246,7 +246,7 @@ func (e Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destinati
 		rawMessages[i] = rawMessage[:]
 	}
 
-	merkleTree, err := trieutil.GenerateTrieFromItems(rawMessages, treeDepth)
+	merkleTree, err := trieutil.GenerateTrieFromItems(rawMessages, TreeDepth)
 	if err != nil {
 		return fmt.Errorf("could not generate trie from items: %w", err)
 	}
@@ -281,7 +281,7 @@ func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message 
 		return false, fmt.Errorf("could not convert message to leaf: %w", err)
 	}
 
-	inTree := trieutil.VerifyMerkleBranch(root[:], leaf[:], int(nonce-1), proof, treeDepth)
+	inTree := trieutil.VerifyMerkleBranch(root[:], leaf[:], int(nonce-1), proof, TreeDepth)
 
 	return inTree, nil
 }
@@ -308,28 +308,22 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 	root := (*attestation).Root()
 	rootToHash := common.BytesToHash(root[:])
 	attestationMask.Root = &rootToHash
-	attestationBlockNumber, err := e.executorDB.GetAttestationBlockNumber(ctx, attestationMask)
+	attestationTime, err := e.executorDB.GetAttestationBlockTime(ctx, attestationMask)
 	if err != nil {
-		return false, fmt.Errorf("could not get attestation block number: %w", err)
+		return false, fmt.Errorf("could not get attestation block time: %w", err)
 	}
 
-	if attestationBlockNumber == nil {
+	if attestationTime == nil {
 		return false, nil
 	}
 
-	header, err := e.chainExecutors[destination].client.HeaderByNumber(ctx, big.NewInt(int64(*attestationBlockNumber)))
-	if err != nil {
-		return false, fmt.Errorf("could not get header by number: %w", err)
-	}
-
-	attestationTimestamp := header.Time
 	latestHeader, err := e.chainExecutors[destination].client.HeaderByNumber(ctx, nil)
 	if err != nil {
 		return false, fmt.Errorf("could not get latest header: %w", err)
 	}
 
 	currentTime := latestHeader.Time
-	if attestationTimestamp+uint64(message.OptimisticSeconds()) > currentTime {
+	if *attestationTime+uint64(message.OptimisticSeconds()) > currentTime {
 		return false, nil
 	}
 
@@ -345,7 +339,7 @@ func (e Executor) GetLatestNonceProof(nonce, chainID, destination uint32) ([][]b
 	}
 
 	items := e.chainExecutors[chainID].merkleTrees[destination].Items()
-	tree, err := trieutil.GenerateTrieFromItems(items[:nonce], treeDepth)
+	tree, err := trieutil.GenerateTrieFromItems(items[:nonce], TreeDepth)
 	if err != nil {
 		return nil, fmt.Errorf("could not generate trie: %w", err)
 	}
@@ -478,7 +472,12 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			return nil
 		}
 
-		err = e.executorDB.StoreAttestation(ctx, *attestation, log.BlockNumber)
+		logHeader, err := e.chainExecutors[(*attestation).Destination()].client.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
+		if err != nil {
+			return fmt.Errorf("could not get log header: %w", err)
+		}
+
+		err = e.executorDB.StoreAttestation(ctx, *attestation, log.BlockNumber, logHeader.Time)
 		if err != nil {
 			return fmt.Errorf("could not store attestation: %w", err)
 		}
