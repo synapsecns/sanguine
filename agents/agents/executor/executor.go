@@ -192,7 +192,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 
 // Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
-	verified, err := e.VerifyMessageNonce(ctx, message)
+	verified, err := e.VerifyMessageMerkleProof(ctx, message)
 	if err != nil {
 		return false, fmt.Errorf("could not verify message nonce: %w", err)
 	}
@@ -201,7 +201,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	verified, err = e.VerifyOptimisticPeriod(ctx, message)
+	verified, err = e.VerifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
 		return false, fmt.Errorf("could not verify optimistic period: %w", err)
 	}
@@ -288,8 +288,8 @@ const (
 	other
 )
 
-// VerifyMessageNonce verifies a message against the merkle tree at the state of the given nonce.
-func (e Executor) VerifyMessageNonce(ctx context.Context, message types.Message) (bool, error) {
+// VerifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
+func (e Executor) VerifyMessageMerkleProof(ctx context.Context, message types.Message) (bool, error) {
 	root, err := e.GetRoot(ctx, message.Nonce(), message.OriginDomain(), message.DestinationDomain())
 	if err != nil {
 		return false, fmt.Errorf("could not get root: %w", err)
@@ -310,8 +310,8 @@ func (e Executor) VerifyMessageNonce(ctx context.Context, message types.Message)
 	return inTree, nil
 }
 
-// VerifyOptimisticPeriod verifies that the optimistic period is valid.
-func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message) (bool, error) {
+// VerifyMessageOptimisticPeriod verifies that the optimistic period is valid.
+func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (bool, error) {
 	chainID := message.OriginDomain()
 	destination := message.DestinationDomain()
 	nonce := message.Nonce()

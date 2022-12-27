@@ -524,19 +524,19 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	inTree0, err := exec.VerifyMessageNonce(e.GetTestContext(), message0)
+	inTree0, err := exec.VerifyMessageMerkleProof(e.GetTestContext(), message0)
 	e.Nil(err)
 	e.True(inTree0)
 
-	inTree1, err := exec.VerifyMessageNonce(e.GetTestContext(), message1)
+	inTree1, err := exec.VerifyMessageMerkleProof(e.GetTestContext(), message1)
 	e.Nil(err)
 	e.True(inTree1)
 
-	inTree2, err := exec.VerifyMessageNonce(e.GetTestContext(), message2)
+	inTree2, err := exec.VerifyMessageMerkleProof(e.GetTestContext(), message2)
 	e.Nil(err)
 	e.True(inTree2)
 
-	inTreeFail, err := exec.VerifyMessageNonce(e.GetTestContext(), failMessage)
+	inTreeFail, err := exec.VerifyMessageMerkleProof(e.GetTestContext(), failMessage)
 	e.Nil(err)
 	e.False(inTreeFail)
 
@@ -546,7 +546,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	inTree3, err := exec.VerifyMessageNonce(e.GetTestContext(), message3)
+	inTree3, err := exec.VerifyMessageMerkleProof(e.GetTestContext(), message3)
 	e.Nil(err)
 	e.True(inTree3)
 }
@@ -718,12 +718,12 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 
 	<-continueChan
 
-	verified, err := exec.VerifyOptimisticPeriod(e.GetTestContext(), message)
+	verified, err := exec.VerifyMessageOptimisticPeriod(e.GetTestContext(), message)
 	e.Nil(err)
 	e.False(verified)
 
 	e.Eventually(func() bool {
-		verified, err = exec.VerifyOptimisticPeriod(e.GetTestContext(), message)
+		verified, err = exec.VerifyMessageOptimisticPeriod(e.GetTestContext(), message)
 		if err != nil {
 			return false
 		}
