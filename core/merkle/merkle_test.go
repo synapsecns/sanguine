@@ -22,6 +22,7 @@ func TestMerkleTree(t *testing.T) {
 	// Insert test leafs
 	for i := uint32(0); i < leafsAmount; i++ {
 		tree.Insert(leafs[i])
+		Equal(t, tree.NumOfItems(), i+1)
 	}
 	// Check Items()
 	items := tree.Items()
@@ -103,6 +104,8 @@ func TestIncorrectRequests(t *testing.T) {
 	histRoot, err := tree.Root(leafsAmount - 1)
 	NotNil(t, histRoot)
 	Nil(t, err)
+	// Check VerifyMerkleProof() with incorrect proof length.
+	False(t, merkle.VerifyMerkleProof(root, leafs[0], 0, proof))
 	// Generate proofs against current root, they should not work with the historical root.
 	for i := uint32(0); i < leafsAmount; i++ {
 		proof, err = tree.MerkleProof(i, leafsAmount)
