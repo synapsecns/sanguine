@@ -60,8 +60,8 @@ func (s Scribe) Start(ctx context.Context) error {
 			b := &backoff.Backoff{
 				Factor: 2,
 				Jitter: true,
-				Min:    1 * time.Second,
-				Max:    10 * time.Second,
+				Min:    30 * time.Millisecond,
+				Max:    2 * time.Second,
 			}
 
 			timeout := time.Duration(0)
