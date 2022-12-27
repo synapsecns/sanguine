@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "../../contracts/bonding/BondingMVP.sol";
 import "../../contracts/bonding/BondingPrimary.sol";
 import "../../contracts/bonding/BondingSecondary.sol";
 import "../../contracts/libs/SystemCall.sol";
@@ -72,9 +73,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // Deploy messaging contracts
         DestinationHarness destination = new DestinationHarness(domain);
         OriginHarness origin = new OriginHarness(domain);
-        BondingManager bondingManager = domain == DOMAIN_SYNAPSE
-            ? BondingManager(new BondingPrimary(domain))
-            : BondingManager(new BondingSecondary(domain));
+        BondingMVP bondingManager = new BondingMVP(domain);
         SystemRouterHarness systemRouter = new SystemRouterHarness(
             domain,
             address(origin),
@@ -84,31 +83,24 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // Setup destination
         destination.initialize();
         destination.setSystemRouter(systemRouter);
-        // Add local notaries to Destination
-        for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
-            destination.addNotary(domain, suiteNotary(domain, i));
-        }
         // Setup origin
         origin.initialize();
         origin.setSystemRouter(systemRouter);
         // Setup BondingManager
         bondingManager.initialize();
         bondingManager.setSystemRouter(systemRouter);
-        // TODO(Chi): setup Notaries/Guards via BondingManager
-        // Add global notaries
+        // Add global notaries via BondingManager
         for (uint256 i = 0; i < DOMAINS; ++i) {
             uint32 domainToAdd = domains[i];
             // Origin and Destination will filter our agents themselves
             for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
-                destination.addNotary(domainToAdd, suiteNotary(domainToAdd, j));
-                origin.addNotary(domainToAdd, suiteNotary(domainToAdd, j));
+                address notary = suiteNotary(domainToAdd, j);
+                bondingManager.addAgent(domainToAdd, notary);
             }
         }
-        // Add guards
+        // Add guards  via BondingManager
         for (uint256 i = 0; i < GUARDS; ++i) {
-            address guard = guards[i];
-            destination.addGuard(guard);
-            origin.addGuard(guard);
+            bondingManager.addAgent({ _domain: 0, _account: guards[i] });
         }
         // Deploy app
         AppHarness app = new AppHarness(APP_OPTIMISTIC_SECONDS);
@@ -135,43 +127,105 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Attestation signed by the chain's default Notary.
+     * @notice Attestation signed by the default Guard and chain's default Notary.
      */
     function signAttestation(
         uint32 origin,
         uint32 destination,
         uint32 nonce,
         bytes32 root
-    ) public returns (bytes memory attestation, bytes memory signature) {
-        return signAttestation(origin, destination, nonce, root, suiteNotary(origin));
+    )
+        public
+        returns (
+            bytes memory attestation,
+            bytes memory guardSignatures,
+            bytes memory notarySignatures
+        )
+    {
+        return signAttestation(origin, destination, nonce, root, 0, 0);
     }
 
     /**
-     * @notice Attestation signed by a chain's given Notary.
+     * @notice Attestation signed by a given suite Guard and
+     * a given suite Notary for the destination chain.
+     * @dev Use indexes out of bound to not include any of the signers.
      */
     function signAttestation(
         uint32 origin,
         uint32 destination,
         uint32 nonce,
         bytes32 root,
+        uint256 guardIndex,
         uint256 notaryIndex
-    ) public returns (bytes memory attestation, bytes memory signature) {
-        return signAttestation(origin, destination, nonce, root, suiteNotary(origin, notaryIndex));
+    )
+        public
+        returns (
+            bytes memory attestation,
+            bytes memory guardSignatures,
+            bytes memory notarySignatures
+        )
+    {
+        return
+            signAttestation(
+                origin,
+                destination,
+                nonce,
+                root,
+                suiteGuard(guardIndex),
+                suiteNotary(destination, notaryIndex)
+            );
     }
 
     /**
-     * @notice Attestation signed by a given signer.
+     * @notice Attestation signed by a given Guard and Notary.
+     * @dev Use address(0) to not include any of the signers
      */
     function signAttestation(
         uint32 origin,
         uint32 destination,
         uint32 nonce,
         bytes32 root,
-        address signer
-    ) public returns (bytes memory attestation, bytes memory signature) {
+        address guardSigner,
+        address notarySigner
+    )
+        public
+        returns (
+            bytes memory attestation,
+            bytes memory guardSignatures,
+            bytes memory notarySignatures
+        )
+    {
+        // castToArray() will return empty array for address(0)
+        return
+            signAttestation(
+                origin,
+                destination,
+                nonce,
+                root,
+                castToArray(guardSigner),
+                castToArray(notarySigner)
+            );
+    }
+
+    function signAttestation(
+        uint32 origin,
+        uint32 destination,
+        uint32 nonce,
+        bytes32 root,
+        address[] memory guardSigners,
+        address[] memory notarySigners
+    )
+        public
+        returns (
+            bytes memory attestation,
+            bytes memory guardSignatures,
+            bytes memory notarySignatures
+        )
+    {
         bytes memory data = Attestation.formatAttestationData(origin, destination, nonce, root);
-        signature = signMessage(signer, data);
-        attestation = Attestation.formatAttestation(data, signature);
+        guardSignatures = signMessage(guardSigners, data);
+        notarySignatures = signMessage(notarySigners, data);
+        attestation = Attestation.formatAttestation(data, guardSignatures, notarySignatures);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -233,6 +287,26 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         uint256 privKey = privKeys[signer];
         require(privKey != 0, "Unknown account");
         return signMessage(privKey, message);
+    }
+
+    function signMessage(uint256[] memory keys, bytes memory message)
+        public
+        returns (bytes memory signatures)
+    {
+        for (uint256 i = 0; i < keys.length; ++i) {
+            // There probably exists a more efficient way to do this without relying on TypedMemView
+            signatures = bytes.concat(signatures, signMessage(keys[i], message));
+        }
+    }
+
+    function signMessage(address[] memory signers, bytes memory message)
+        public
+        returns (bytes memory signatures)
+    {
+        for (uint256 i = 0; i < signers.length; ++i) {
+            // There probably exists a more efficient way to do this without relying on TypedMemView
+            signatures = bytes.concat(signatures, signMessage(signers[i], message));
+        }
     }
 
     function registerPK(uint256 privKey) public returns (address account) {

@@ -1,32 +1,42 @@
 package metrics
 
 import (
+	"context"
 	"fmt"
-	"strings"
+	"github.com/ImVexed/fasturl"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
+	"net/http"
+	"sync"
 )
 
-// PrometheusDataSourceName is the name of the data source in grafana to use for prometheus.
-const PrometheusDataSourceName = "Prometheus"
+// logOnce ensures that log messages related to unsuppported clients are used only once.
+var logOnce = sync.Once{}
 
-// NodeIDVar is the variable used for node id.
-const NodeIDVar = "node_id"
+const httpScheme = "http"
+const httpsScheme = "https"
 
-// ChainIDVar is the variable used for the chain id.
-const ChainIDVar = "chain_id"
+// EthClient is a wrapper around ethclient.Client that adds metrics/tracing.
+func EthClient(ctx context.Context, metrics Handler, url string) (*ethclient.Client, error) {
+	u, err := fasturl.ParseURL(url)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse url: %w", err)
+	}
 
-// TimeSeriesFormat is the format used for timeseries (in sdk.target).
-const TimeSeriesFormat = "time_series"
-
-// TimeSeriesGraphType is the graph type used for timeseries.
-const TimeSeriesGraphType = "timeseries"
-
-// MetricToTitle formats a metric as a title.
-func MetricToTitle(metric string) string {
-	//nolint: staticcheck
-	return strings.Title(strings.ReplaceAll(metric, "_", " "))
-}
-
-// WrapMetricJobQuery wraps the metric in a query around job.
-func WrapMetricJobQuery(metric string) string {
-	return fmt.Sprintf("%s{%s=~\"^($%s)$\"}", metric, NodeIDVar, NodeIDVar)
+	switch u.Protocol {
+	case httpScheme, httpsScheme:
+		client := new(http.Client)
+		metrics.ConfigureHTTPClient(client)
+		rpcclient, err := rpc.DialHTTPWithClient(url, client)
+		if err != nil {
+			return nil, fmt.Errorf("could not dial http: %w", err)
+		}
+		return ethclient.NewClient(rpcclient), nil
+	default:
+		logOnce.Do(func() {
+			logger.Warnf("unsupported protocol: %s: only %s and %s are supported for metrics, future warnings will be surprssed", u.Protocol, httpScheme, httpsScheme)
+		})
+		//nolint: wrapcheck
+		return ethclient.DialContext(ctx, url)
+	}
 }

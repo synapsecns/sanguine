@@ -11,23 +11,23 @@ import (
 //
 //nolint:interfacebloat
 type EventDBWriter interface {
-	// StoreLog stores a log
-	StoreLog(ctx context.Context, log types.Log, chainID uint32) error
+	// StoreLogs stores a log
+	StoreLogs(ctx context.Context, chainID uint32, log ...types.Log) error
 	// ConfirmLogsForBlockHash confirms logs for a given block hash.
-	ConfirmLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	ConfirmLogsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
 	// ConfirmLogsInRange confirms logs in a range.
 	ConfirmLogsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error
 	// DeleteLogsForBlockHash deletes logs with a given block hash.
 	DeleteLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 
 	// StoreReceipt stores a receipt
-	StoreReceipt(ctx context.Context, receipt types.Receipt, chainID uint32) error
+	StoreReceipt(ctx context.Context, chainID uint32, receipt types.Receipt) error
 	// ConfirmReceiptsForBlockHash confirms receipts for a given block hash.
-	ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	ConfirmReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
 	// ConfirmReceiptsInRange confirms receipts in a range.
 	ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error
 	// DeleteReceiptsForBlockHash deletes receipts with a given block hash.
-	DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
+	DeleteReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
 
 	// StoreEthTx stores a processed transaction
 	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error
@@ -67,9 +67,9 @@ type EventDBReader interface {
 	RetrieveReceiptsInRange(ctx context.Context, receiptFilter ReceiptFilter, startBlock, endBlock uint64, page int) (receipts []types.Receipt, err error)
 
 	// RetrieveEthTxsWithFilter retrieves eth transactions with a filter given a page.
-	RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter EthTxFilter, page int) ([]types.Transaction, error)
+	RetrieveEthTxsWithFilter(ctx context.Context, ethTxFilter EthTxFilter, page int) ([]TxWithBlockNumber, error)
 	// RetrieveEthTxsInRange retrieves eth transactions that match an inputted filter and are within a range given a page.
-	RetrieveEthTxsInRange(ctx context.Context, ethTxFilter EthTxFilter, startBlock, endBlock uint64, page int) ([]types.Transaction, error)
+	RetrieveEthTxsInRange(ctx context.Context, ethTxFilter EthTxFilter, startBlock, endBlock uint64, page int) ([]TxWithBlockNumber, error)
 
 	// RetrieveLastIndexed retrieves the last indexed for a contract address
 	RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32) (uint64, error)
@@ -85,8 +85,8 @@ type EventDBReader interface {
 	RetrieveFirstBlockStored(ctx context.Context, chainID uint32) (uint64, error)
 	// RetrieveLogCountForContract retrieves the number of logs for a contract.
 	RetrieveLogCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error)
-	// RetrieveReceiptCountForContract retrieves the number of receipts for a contract.
-	RetrieveReceiptCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error)
+	// RetrieveReceiptCountForChain retrieves the number of receipts for a chain.
+	RetrieveReceiptCountForChain(ctx context.Context, chainID uint32) (int64, error)
 	// RetrieveBlockTimesCountForChain retrieves the number of block times stored for a chain.
 	RetrieveBlockTimesCountForChain(ctx context.Context, chainID uint32) (int64, error)
 }
@@ -97,4 +97,10 @@ type EventDBReader interface {
 type EventDB interface {
 	EventDBWriter
 	EventDBReader
+}
+
+// TxWithBlockNumber is a transaction with a block number and is used for specifically for batching data in explorer.
+type TxWithBlockNumber struct {
+	Tx          types.Transaction
+	BlockNumber uint64
 }

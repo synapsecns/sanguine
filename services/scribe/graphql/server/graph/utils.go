@@ -1,10 +1,20 @@
 package graph
 
 import (
+	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ipfs/go-log"
+	"github.com/jpillora/backoff"
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
+	"math/big"
+	"time"
 )
+
+var logger = log.Logger("scribe-graph")
 
 func (r Resolver) receiptsToModelReceipts(receipts []types.Receipt, chainID uint32) []*model.Receipt {
 	modelReceipts := make([]*model.Receipt, len(receipts))
@@ -62,11 +72,32 @@ func (r Resolver) logToModelLog(log *types.Log, chainID uint32) *model.Log {
 	}
 }
 
-func (r Resolver) ethTxsToModelTransactions(ethTxs []types.Transaction, chainID uint32) []*model.Transaction {
+func (r Resolver) ethTxsToModelTransactions(ctx context.Context, ethTxs []db.TxWithBlockNumber, chainID uint32) []*model.Transaction {
 	modelTxs := make([]*model.Transaction, len(ethTxs))
 
-	for i, ethTx := range ethTxs {
-		modelTxs[i] = r.ethTxToModelTransaction(ethTx, chainID)
+	for i := range ethTxs {
+		ethTx := ethTxs[i]
+		modelTxs[i] = r.ethTxToModelTransaction(ethTx.Tx, chainID)
+
+		// Return empty sender if that this operation errors (will only occur in tests or invalid txs).
+		msgFrom, _ := ethTx.Tx.AsMessage(types.LatestSignerForChainID(ethTx.Tx.ChainId()), big.NewInt(1))
+		modelTxs[i].Sender = msgFrom.From().String()
+
+		timestamp, err := r.DB.RetrieveBlockTime(ctx, chainID, ethTx.BlockNumber)
+		if err != nil || timestamp == 0 {
+			newBlockTime, err := r.getBlockTime(ctx, chainID, ethTx.BlockNumber)
+			if err != nil {
+				continue
+			}
+
+			timestamp = *newBlockTime
+			err = r.DB.StoreBlockTime(ctx, chainID, ethTx.BlockNumber, *newBlockTime)
+			if err != nil {
+				continue
+			}
+		}
+
+		modelTxs[i].Timestamp = int(timestamp)
 	}
 
 	return modelTxs
@@ -74,7 +105,6 @@ func (r Resolver) ethTxsToModelTransactions(ethTxs []types.Transaction, chainID 
 
 func (r Resolver) ethTxToModelTransaction(ethTx types.Transaction, chainID uint32) *model.Transaction {
 	protected := ethTx.Protected()
-
 	return &model.Transaction{
 		ChainID:   int(chainID),
 		TxHash:    ethTx.Hash().String(),
@@ -88,5 +118,41 @@ func (r Resolver) ethTxToModelTransaction(ethTx types.Transaction, chainID uint3
 		Value:     ethTx.Value().String(),
 		Nonce:     int(ethTx.Nonce()),
 		To:        ethTx.To().String(),
+	}
+}
+
+// getBlockTime retrieves a singular blocktime.
+//
+//nolint:gocognit,cyclop
+func (r Resolver) getBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) (*uint64, error) {
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    30 * time.Millisecond,
+		Max:    3 * time.Second,
+	}
+
+	timeout := time.Duration(0)
+	var backendClient backfill.ScribeBackend
+	backendClient, err := backfill.DialBackend(ctx, fmt.Sprintf("%s/%d", r.OmniRPCURL, chainID))
+	if err != nil {
+		return nil, fmt.Errorf("could not create backend client: %w", err)
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+
+			return nil, fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(timeout):
+			block, err := backendClient.HeaderByNumber(ctx, big.NewInt(int64(blockNumber)))
+
+			if err != nil {
+				timeout = b.Duration()
+				continue
+			}
+			blockTime := block.Time
+			return &blockTime, nil
+		}
 	}
 }

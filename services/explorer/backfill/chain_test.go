@@ -286,9 +286,9 @@ func (b *BackfillSuite) TestBackfill() {
 	// Set up a ChainBackfiller
 	bcf, err := fetcher.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
-	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), *bcf, b.consumerFetcher)
+	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), bcf, b.consumerFetcher)
 	Nil(b.T(), err)
-	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), *bcf, b.consumerFetcher)
+	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), bcf, b.consumerFetcher)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
@@ -420,7 +420,7 @@ func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, bloc
 		return nil, fmt.Errorf("failed to get receipt for transaction %s: %w", tx.Hash().String(), err)
 	}
 	receipt.Logs[0].BlockNumber = blockNumber
-	err = b.eventDB.StoreLog(b.GetTestContext(), *receipt.Logs[0], chainID)
+	err = b.eventDB.StoreLogs(b.GetTestContext(), chainID, *receipt.Logs[0])
 	if err != nil {
 		return nil, fmt.Errorf("error storing swap log: %w", err)
 	}

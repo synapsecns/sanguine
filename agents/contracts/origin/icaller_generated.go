@@ -19,10 +19,6 @@ type IOriginCaller interface {
 	//
 	// Solidity: function SYNAPSE_DOMAIN() view returns(uint32)
 	SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error)
-	// VERSION is a free data retrieval call binding the contract method 0xffa1ad74.
-	//
-	// Solidity: function VERSION() view returns(uint8)
-	VERSION(opts *bind.CallOpts) (uint8, error)
 	// AllAgents is a free data retrieval call binding the contract method 0x64ecb518.
 	//
 	// Solidity: function allAgents(uint32 _domain) view returns(address[])
@@ -49,8 +45,8 @@ type IOriginCaller interface {
 	GetDomain(opts *bind.CallOpts, _domainIndex *big.Int) (uint32, error)
 	// GetHistoricalRoot is a free data retrieval call binding the contract method 0xf94adcb4.
 	//
-	// Solidity: function getHistoricalRoot(uint32 _destination, uint32 _nonce) view returns(bytes32)
-	GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, error)
+	// Solidity: function getHistoricalRoot(uint32 _destination, uint32 _nonce) view returns(bytes32, uint256)
+	GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, *big.Int, error)
 	// IsActiveAgent is a free data retrieval call binding the contract method 0x0958117d.
 	//
 	// Solidity: function isActiveAgent(uint32 _domain, address _account) view returns(bool)
@@ -91,4 +87,8 @@ type IOriginCaller interface {
 	//
 	// Solidity: function systemRouter() view returns(address)
 	SystemRouter(opts *bind.CallOpts) (common.Address, error)
+	// Version is a free data retrieval call binding the contract method 0x54fd4d50.
+	//
+	// Solidity: function version() view returns(string versionString)
+	Version(opts *bind.CallOpts) (string, error)
 }

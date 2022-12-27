@@ -2,9 +2,10 @@ package dbcommon
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/fatih/structtag"
 	"gorm.io/gorm/schema"
-	"reflect"
 )
 
 // getGormFieldName gets a gorm field name by name

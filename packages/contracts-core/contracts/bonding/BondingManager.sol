@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "../Version.sol";
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
 import { SystemContract } from "../system/SystemContract.sol";
 
-abstract contract BondingManager is SystemContract {
+abstract contract BondingManager is SystemContract, Version0_0_1 {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -32,16 +33,16 @@ abstract contract BondingManager is SystemContract {
     ) external override onlySystemRouter {
         bool forwardUpdate;
         if (_callOrigin == _localDomain()) {
-            // Only Origin can slash agents on local domain
-            _assertEntityAllowed(ORIGIN, _caller);
             // Forward information about slashed agent to remote chains
             forwardUpdate = true;
+            // Only Origin can slash agents on local domain
+            _assertEntityAllowed(ORIGIN, _caller);
         } else {
-            // Validate security params for cross-chain slashing
-            _assertCrossChainSlashing(_rootSubmittedAt, _callOrigin, _caller);
             // Forward information about slashed agent to remote chains
             // only if BondingManager is deployed on Synapse Chain
             forwardUpdate = _onSynapseChain();
+            // Validate security params for cross-chain slashing
+            _assertCrossChainSlashing(_rootSubmittedAt, _callOrigin, _caller);
         }
         // Forward information about the slashed agent to local Registries
         // Forward information about slashed agent to remote chains if needed

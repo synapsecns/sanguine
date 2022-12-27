@@ -14,10 +14,8 @@ import (
 type Config struct {
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
-	// AttestationCollectorChainID is the chain ID of the attestation collector.
-	AttestationCollectorChainID uint32 `yaml:"attestation_collector_chain_id"`
-	// AttestationCollectorAddress is the address of the Attestation Collector on SYN Chain.
-	AttestationCollectorAddress string `yaml:"attestation_collector_address"`
+	// BaseOmnirpcURL is the base url for omnirpc.
+	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -28,12 +26,8 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 		return false, err
 	}
 
-	if c.AttestationCollectorChainID == 0 {
-		return false, fmt.Errorf("attestation collector chain ID is not set")
-	}
-
-	if c.AttestationCollectorAddress == "" {
-		return false, fmt.Errorf("attestation collector address is not set")
+	if c.BaseOmnirpcURL == "" {
+		return false, fmt.Errorf("rpc url cannot be empty")
 	}
 
 	return true, nil

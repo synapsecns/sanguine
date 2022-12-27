@@ -3,12 +3,13 @@ package fetcher
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/scribe/graphql"
-	"time"
 )
 
 // ScribeFetcher is the fetcher for the events. It uses GQL.
@@ -125,8 +126,7 @@ RETRY:
 
 		if timeStamp == nil || timeStamp.Response == nil {
 			logger.Warnf("could not get timestamp for block, invalid blocktime %d: %d", chainID, blockNumber)
-			zero := 0
-			return &zero, nil
+			return nil, fmt.Errorf("could not get timestamp for block, invalid blocktime %d: %d", chainID, blockNumber)
 		}
 
 		return timeStamp.Response, nil

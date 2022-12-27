@@ -101,15 +101,16 @@ var backfillCommand = &cli.Command{
 		if err != nil {
 			return err
 		}
-		scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
-		if err != nil {
-			return fmt.Errorf("could not create scribe backfiller: %w", err)
-		}
 
 		// TODO delete once livefilling done
-		ctx, cancel := context.WithTimeout(c.Context, time.Minute*5)
+		ctx, cancel := context.WithTimeout(c.Context, time.Minute*12)
 		cancelVar := cancel
 		for {
+			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
+			if err != nil {
+				return fmt.Errorf("could not create scribe backfiller: %w", err)
+			}
+
 			err = scribeBackfiller.Backfill(ctx)
 			if err != nil {
 				cancelVar()
@@ -144,13 +145,14 @@ var scribeCommand = &cli.Command{
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag},
+	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag},
 	Action: func(c *cli.Context) error {
 		err := api.Start(c.Context, api.Config{
-			HTTPPort: uint16(c.Uint(portFlag.Name)),
-			Database: c.String(dbFlag.Name),
-			Path:     c.String(pathFlag.Name),
-			GRPCPort: uint16(c.Uint(grpcPortFlag.Name)),
+			HTTPPort:   uint16(c.Uint(portFlag.Name)),
+			Database:   c.String(dbFlag.Name),
+			Path:       c.String(pathFlag.Name),
+			GRPCPort:   uint16(c.Uint(grpcPortFlag.Name)),
+			OmniRPCURL: c.String(omniRPCFlag.Name),
 		})
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)

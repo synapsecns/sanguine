@@ -118,23 +118,55 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
-	sig := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	sigGuard1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	encodedGuardSignature1, err := types.EncodeSignature(sigGuard1)
+	Nil(t, err)
+	sigGuard2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	encodedGuardSignature2, err := types.EncodeSignature(sigGuard2)
+	Nil(t, err)
+	sigGuard3 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	encodedGuardSignature3, err := types.EncodeSignature(sigGuard3)
+	Nil(t, err)
+
+	sigNotary1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	encodedNotarySignature1, err := types.EncodeSignature(sigNotary1)
+	Nil(t, err)
+	sigNotary2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	encodedNotarySignature2, err := types.EncodeSignature(sigNotary2)
+	Nil(t, err)
 
 	attestKey := types.AttestationKey{
 		Origin:      origin,
 		Destination: destination,
 		Nonce:       nonce,
 	}
+
+	attestation := types.NewAttestation(attestKey.GetRawKey(), root)
+
+	encodedAttestation, err := types.EncodeAttestation(attestation)
+	Nil(t, err)
+
+	encodedGuardSignatures := []byte{}
+	encodedNotarySignatures := []byte{}
+	encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature1...)
+	encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature2...)
+	encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature3...)
+
+	encodedNotarySignatures = append(encodedNotarySignatures, encodedNotarySignature1...)
+	encodedNotarySignatures = append(encodedNotarySignatures, encodedNotarySignature2...)
+	signedContractAttestation, err := attesationContract.FormatAttestation(
+		&bind.CallOpts{Context: ctx},
+		encodedAttestation,
+		encodedGuardSignatures,
+		encodedNotarySignatures,
+	)
+	Nil(t, err)
+
 	signedAttestation := types.NewSignedAttestation(
 		types.NewAttestation(attestKey.GetRawKey(), root),
-		sig,
+		[]types.Signature{sigGuard1, sigGuard2, sigGuard3},
+		[]types.Signature{sigNotary1, sigNotary2},
 	)
-
-	encodedSignature, err := types.EncodeSignature(sig)
-	Nil(t, err)
-
-	signedContractAttestation, err := attesationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, origin, destination, nonce, root, encodedSignature)
-	Nil(t, err)
 
 	goData, err := types.EncodeSignedAttestation(signedAttestation)
 	Nil(t, err)
@@ -232,7 +264,7 @@ func TestAttestationKey(t *testing.T) {
 		Nonce:       nonce,
 	}
 	rawKey := attestKey.GetRawKey()
-	attestKeyFromRaw := types.NewAttestionKey(rawKey)
+	attestKeyFromRaw := types.NewAttestationKey(rawKey)
 	Equal(t, attestKey.Origin, attestKeyFromRaw.Origin)
 	Equal(t, attestKey.Destination, attestKeyFromRaw.Destination)
 	Equal(t, attestKey.Nonce, attestKeyFromRaw.Nonce)
@@ -249,4 +281,17 @@ func TestAttestedDomains(t *testing.T) {
 	attestDomainsFromRaw := types.NewAttestedDomains(rawDomains)
 	Equal(t, attestDomains.Origin, attestDomainsFromRaw.Origin)
 	Equal(t, attestDomains.Destination, attestDomainsFromRaw.Destination)
+}
+
+func TestAttestedAgentCounts(t *testing.T) {
+	guardCount := uint32(1)
+	notaryCount := uint32(2)
+	attestationAgentCounts := types.AttestationAgentCounts{
+		GuardCount:  guardCount,
+		NotaryCount: notaryCount,
+	}
+	rawDomains := attestationAgentCounts.GetRawAgentCounts()
+	attestationAgentCountsFromRaw := types.NewAttestationAgentCounts(rawDomains)
+	Equal(t, attestationAgentCounts.GuardCount, attestationAgentCountsFromRaw.GuardCount)
+	Equal(t, attestationAgentCounts.NotaryCount, attestationAgentCountsFromRaw.NotaryCount)
 }

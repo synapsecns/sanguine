@@ -31,7 +31,7 @@ func (r *logResolver) Transaction(ctx context.Context, obj *model.Log) (*model.T
 		return nil, fmt.Errorf("multiple transactions found for log")
 	}
 
-	return r.ethTxToModelTransaction(transactions[0], uint32(obj.ChainID)), nil
+	return r.ethTxToModelTransaction(transactions[0].Tx, uint32(obj.ChainID)), nil
 }
 
 // Receipt is the resolver for the receipt field.
@@ -98,7 +98,7 @@ func (r *receiptResolver) Transaction(ctx context.Context, obj *model.Receipt) (
 		return nil, fmt.Errorf("multiple transactions found for receipt")
 	}
 
-	return r.ethTxToModelTransaction(transactions[0], uint32(obj.ChainID)), nil
+	return r.ethTxToModelTransaction(transactions[0].Tx, uint32(obj.ChainID)), nil
 }
 
 // JSON is the resolver for the json field.

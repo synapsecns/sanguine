@@ -1,20 +1,21 @@
 package api_test
 
 import (
-	"github.com/synapsecns/sanguine/services/scribe/graphql"
-	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/graphql"
+	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
 )
 
 func (g APISuite) TestRetrieveData() {
 	contractAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-	chainID := gofakeit.Uint32()
+	chainID := uint32(1)
 
 	// create and store logs, receipts, and txs
 	var log types.Log
@@ -24,17 +25,17 @@ func (g APISuite) TestRetrieveData() {
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
 		// create and store logs
 		log = g.buildLog(contractAddressA, uint64(blockNumber))
-		err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+		err = g.db.StoreLogs(g.GetTestContext(), chainID, log)
 		Nil(g.T(), err)
 		log = g.buildLog(contractAddressB, uint64(blockNumber))
-		err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+		err = g.db.StoreLogs(g.GetTestContext(), chainID, log)
 		Nil(g.T(), err)
 		// create and store receipts
 		receipt = g.buildReceipt(contractAddressA, uint64(blockNumber))
-		err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
+		err = g.db.StoreReceipt(g.GetTestContext(), chainID, receipt)
 		Nil(g.T(), err)
 		receipt = g.buildReceipt(contractAddressB, uint64(blockNumber))
-		err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
+		err = g.db.StoreReceipt(g.GetTestContext(), chainID, receipt)
 		Nil(g.T(), err)
 		// create and store txs
 		tx = g.buildEthTx()
@@ -68,24 +69,24 @@ func (g APISuite) TestRetrieveData() {
 	_ = res.Body.Close()
 
 	// test get receipts and get receipts in a range
-	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1)
+	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1, 8)
 	Nil(g.T(), err)
 	// there were 20 receipts created (2 per loop, in a loop of 10)
-	Equal(g.T(), len(receipts.Response), 20)
+	Equal(g.T(), 2, len(receipts.Response))
 	receiptsRange, err := g.gqlClient.GetReceiptsRange(g.GetTestContext(), int(chainID), 1, 7, 1)
 	Nil(g.T(), err)
 	// from 1-7, there were 14 receipts created (2 per loop, in a range of 7)
-	Equal(g.T(), len(receiptsRange.Response), 14)
+	Equal(g.T(), 14, len(receiptsRange.Response))
 
 	// test get transactions and get transactions in a range
 	txs, err := g.gqlClient.GetTransactions(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	// there were 20 txs created (2 per loop, in a loop of 10)
-	Equal(g.T(), len(txs.Response), 20)
+	Equal(g.T(), 20, len(txs.Response))
 	txsRange, err := g.gqlClient.GetTransactionsRange(g.GetTestContext(), int(chainID), 3, 8, 1)
 	Nil(g.T(), err)
 	// from 3-8, there were 12 txs created (2 per loop, in a range of 6)
-	Equal(g.T(), len(txsRange.Response), 12)
+	Equal(g.T(), 12, len(txsRange.Response))
 }
 
 func (g APISuite) TestLogDataEquality() {
@@ -94,7 +95,7 @@ func (g APISuite) TestLogDataEquality() {
 	log := g.buildLog(common.BigToAddress(big.NewInt(gofakeit.Int64())), uint64(gofakeit.Uint32()))
 
 	// store it
-	err := g.db.StoreLog(g.GetTestContext(), log, chainID)
+	err := g.db.StoreLogs(g.GetTestContext(), chainID, log)
 	Nil(g.T(), err)
 
 	// retrieve it using gql
@@ -112,14 +113,15 @@ func (g APISuite) TestReceiptDataEquality() {
 	// create a receipt
 	chainID := gofakeit.Uint32()
 	address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-	receipt := g.buildReceipt(address, uint64(gofakeit.Uint32()))
+	blockNumber := uint64(gofakeit.Uint32())
+	receipt := g.buildReceipt(address, blockNumber)
 
 	// store it
-	err := g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
+	err := g.db.StoreReceipt(g.GetTestContext(), chainID, receipt)
 	Nil(g.T(), err)
 
 	// retrieve it
-	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1)
+	receipts, err := g.gqlClient.GetReceipts(g.GetTestContext(), int(chainID), 1, int(blockNumber))
 	Nil(g.T(), err)
 	retrievedReceipt := receipts.Response[0]
 
@@ -158,11 +160,15 @@ func (g APISuite) TestReceiptDataEquality() {
 
 func (g APISuite) TestTransactionDataEquality() {
 	// create a transaction
-	chainID := gofakeit.Uint32()
-	blockNumber := uint64(gofakeit.Uint32())
+	chainID := uint32(1)
+	blockNumber := uint64(16131419)
+	time := uint64(1670398823)
+
 	tx := g.buildEthTx()
 
-	// store it
+	// Store the empty sender.
+	msgFrom, _ := tx.AsMessage(types.LatestSignerForChainID(tx.ChainId()), big.NewInt(1))
+	sender := msgFrom.From().String()
 	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), blockNumber, gofakeit.Uint64())
 	Nil(g.T(), err)
 
@@ -172,18 +178,24 @@ func (g APISuite) TestTransactionDataEquality() {
 	retrievedTx := txs.Response[0]
 
 	// check that the data is equal
-	Equal(g.T(), retrievedTx.ChainID, int(chainID))
-	Equal(g.T(), retrievedTx.TxHash, tx.Hash().String())
-	Equal(g.T(), retrievedTx.Protected, tx.Protected())
-	Equal(g.T(), retrievedTx.Type, int(tx.Type()))
-	Equal(g.T(), retrievedTx.Data, common.Bytes2Hex(tx.Data()))
-	Equal(g.T(), retrievedTx.Gas, int(tx.Gas()))
-	Equal(g.T(), retrievedTx.GasPrice, int(tx.GasPrice().Uint64()))
-	Equal(g.T(), retrievedTx.GasTipCap, tx.GasTipCap().String())
-	Equal(g.T(), retrievedTx.GasFeeCap, tx.GasFeeCap().String())
-	Equal(g.T(), retrievedTx.Value, tx.Value().String())
-	Equal(g.T(), retrievedTx.Nonce, int(tx.Nonce()))
-	Equal(g.T(), retrievedTx.To, tx.To().String())
+	Equal(g.T(), int(chainID), retrievedTx.ChainID)
+	Equal(g.T(), tx.Hash().String(), retrievedTx.TxHash)
+	Equal(g.T(), tx.Protected(), retrievedTx.Protected)
+	Equal(g.T(), int(tx.Type()), retrievedTx.Type)
+	Equal(g.T(), common.Bytes2Hex(tx.Data()), retrievedTx.Data)
+	Equal(g.T(), int(tx.Gas()), retrievedTx.Gas)
+	Equal(g.T(), int(tx.GasPrice().Uint64()), retrievedTx.GasPrice)
+	Equal(g.T(), tx.GasTipCap().String(), retrievedTx.GasTipCap)
+	Equal(g.T(), tx.GasFeeCap().String(), retrievedTx.GasFeeCap)
+	Equal(g.T(), tx.Value().String(), retrievedTx.Value)
+	Equal(g.T(), int(time), retrievedTx.Timestamp)
+	Equal(g.T(), sender, retrievedTx.Sender)
+	Equal(g.T(), int(tx.Nonce()), retrievedTx.Nonce)
+	Equal(g.T(), tx.To().String(), retrievedTx.To)
+
+	dbBlocktime, err := g.db.RetrieveBlockTime(g.GetTestContext(), chainID, blockNumber)
+	Nil(g.T(), err)
+	Equal(g.T(), time, dbBlocktime)
 }
 
 func (g APISuite) TestBlockTimeDataEquality() {
@@ -296,11 +308,11 @@ func (g APISuite) TestLogCount() {
 		// create and store logs
 		if blockNumber%2 == 0 {
 			log = g.buildLog(contractAddressA, uint64(blockNumber))
-			err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+			err = g.db.StoreLogs(g.GetTestContext(), chainID, log)
 			Nil(g.T(), err)
 		} else {
 			log = g.buildLog(contractAddressB, uint64(blockNumber))
-			err = g.db.StoreLog(g.GetTestContext(), log, chainID)
+			err = g.db.StoreLogs(g.GetTestContext(), chainID, log)
 			Nil(g.T(), err)
 		}
 	}
@@ -318,34 +330,30 @@ func (g APISuite) TestLogCount() {
 // nolint:dupl
 func (g APISuite) TestReceiptCount() {
 	// create data for storing a block time
-	chainID := gofakeit.Uint32()
-	contractAddressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-	contractAddressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+	chainIDA := gofakeit.Uint32()
+	chainIDB := gofakeit.Uint32()
+
+	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
 	// create and store logs, receipts, and txs
 	var receipt types.Receipt
 	var err error
 	for blockNumber := 0; blockNumber < 10; blockNumber++ {
-		// create and store logs
-		if blockNumber%2 == 0 {
-			receipt = g.buildReceipt(contractAddressA, uint64(blockNumber))
-			err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
-			Nil(g.T(), err)
-		} else {
-			receipt = g.buildReceipt(contractAddressB, uint64(blockNumber))
-			err = g.db.StoreReceipt(g.GetTestContext(), receipt, chainID)
-			Nil(g.T(), err)
-		}
+		receipt = g.buildReceipt(contractAddress, uint64(blockNumber))
+		err = g.db.StoreReceipt(g.GetTestContext(), chainIDA, receipt)
+		Nil(g.T(), err)
+		err = g.db.StoreReceipt(g.GetTestContext(), chainIDB, receipt)
+		Nil(g.T(), err)
 	}
 
 	// test get logs and get logs in a range (Graphql)
-	receiptCountA, err := g.gqlClient.GetReceiptCount(g.GetTestContext(), int(chainID), contractAddressA.String())
+	receiptCountA, err := g.gqlClient.GetReceiptCount(g.GetTestContext(), int(chainIDA))
 	Nil(g.T(), err)
-	Equal(g.T(), 5, *receiptCountA.Response)
+	Equal(g.T(), 10, *receiptCountA.Response)
 	// store last indexed
-	receiptCountB, err := g.gqlClient.GetReceiptCount(g.GetTestContext(), int(chainID), contractAddressB.String())
+	receiptCountB, err := g.gqlClient.GetReceiptCount(g.GetTestContext(), int(chainIDB))
 	Nil(g.T(), err)
-	Equal(g.T(), 5, *receiptCountB.Response)
+	Equal(g.T(), 10, *receiptCountB.Response)
 }
 
 func (g APISuite) TestRetrieveBlockTimesCountForChain() {
@@ -383,4 +391,32 @@ func (g APISuite) TestLastConfirmedBlock() {
 
 	// check that the data is equal
 	Equal(g.T(), *retrievedBlockTime.Response, int(blockNumber))
+}
+
+// nolint:dupl
+func (g APISuite) TestReceiptEmptyBlock() {
+	// create data for storing a block time
+	chainID := gofakeit.Uint32()
+
+	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+	// create and store logs, receipts, and txs
+	var receipt types.Receipt
+	var err error
+	for blockNumber := 0; blockNumber < 10; blockNumber++ {
+		if blockNumber%2 == 0 {
+			receipt = g.buildReceipt(contractAddress, uint64(blockNumber))
+			err = g.db.StoreReceipt(g.GetTestContext(), chainID, receipt)
+			Nil(g.T(), err)
+		}
+	}
+
+	receiptFilter := db.ReceiptFilter{
+		ChainID:     chainID,
+		BlockNumber: 9,
+	}
+
+	receipts, err := g.db.RetrieveReceiptsWithFilter(g.GetTestContext(), receiptFilter, 1)
+	Nil(g.T(), err)
+	Equal(g.T(), 0, len(receipts))
 }

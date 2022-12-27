@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/ginhelper"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
@@ -45,6 +46,7 @@ func (r *RPCProxy) Run(ctx context.Context) {
 	go r.startProxyLoop(ctx)
 
 	router := ginhelper.New(logger)
+	router.Use(metrics.Get().Gin())
 	log.SetAllLoggers(log.LevelDebug)
 
 	router.POST("/rpc/:id", func(c *gin.Context) {

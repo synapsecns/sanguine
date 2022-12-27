@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "../Version.sol";
 import { BasicClient } from "../client/BasicClient.sol";
 import { LocalDomainContext } from "../context/LocalDomainContext.sol";
 import { ByteString } from "../libs/ByteString.sol";
@@ -55,7 +56,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * a "message to System Router". By enforcing a minimum optimistic latency for the recipient this
  * attack can be mitigated, assuming there is at least one honest Guard willing to report the fraud.
  */
-contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter {
+contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version0_0_1 {
     using Address for address;
     using ByteString for bytes;
     using SystemCall for bytes;

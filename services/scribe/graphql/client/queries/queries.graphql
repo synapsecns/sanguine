@@ -60,8 +60,8 @@ query GetLogsResolvers ($chain_id: Int!, $page: Int!) {
     }
 }
 
-query GetReceipts ($chain_id: Int!, $page: Int!) {
-    response: receipts (chain_id: $chain_id, page: $page) {
+query GetReceipts ($chain_id: Int!, $page: Int!, $block_number: Int!) {
+    response: receipts (chain_id: $chain_id, page: $page, block_number: $block_number) {
         chain_id
         type
         post_state
@@ -137,6 +137,8 @@ query GetTransactions ($chain_id: Int!, $page: Int!) {
         value
         nonce
         to
+        timestamp
+        sender
     }
 }
 
@@ -154,6 +156,8 @@ query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int
         value
         nonce
         to
+        timestamp
+        sender
     }
 }
 
@@ -223,8 +227,8 @@ query GetLogCount ($chain_id: Int!, $contract_address: String!) {
   response: logCount (chain_id: $chain_id, contract_address: $contract_address)
 }
 
-query GetReceiptCount ($chain_id: Int!, $contract_address: String!) {
-  response: receiptCount(chain_id: $chain_id, contract_address: $contract_address)
+query GetReceiptCount ($chain_id: Int!) {
+  response: receiptCount(chain_id: $chain_id)
 }
 
 query GetBlockTimeCount ($chain_id: Int!) {

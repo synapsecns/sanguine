@@ -30,8 +30,8 @@ abstract contract ReportTools is AttestationTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function expectLogReport() public {
-        vm.expectEmit(true, true, true, true);
-        emit LogReport(reportGuard, attestationNotary, attestationRaw, reportRaw, reportRaw);
+        // vm.expectEmit(true, true, true, true);
+        // emit LogReport(reportGuard, attestationNotary, attestationRaw, reportRaw, reportRaw);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

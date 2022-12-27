@@ -15,7 +15,7 @@ import (
 )
 
 // StoreReceipt stores a receipt.
-func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID uint32) error {
+func (s Store) StoreReceipt(ctx context.Context, chainID uint32, receipt types.Receipt) error {
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: TxHashFieldName}, {Name: ChainIDFieldName}},
@@ -45,12 +45,12 @@ func (s Store) StoreReceipt(ctx context.Context, receipt types.Receipt, chainID 
 }
 
 // ConfirmReceiptsForBlockHash confirms receipts for a given block hash.
-func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Receipt{}).
 		Where(&Receipt{
-			BlockHash: blockHash.String(),
 			ChainID:   chainID,
+			BlockHash: blockHash.String(),
 		}).
 		Update(ConfirmedFieldName, true)
 
@@ -65,7 +65,7 @@ func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, blockHash common
 func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
-		Model(&Receipt{}).
+		Model(&Receipt{ChainID: chainID}).
 		Order(BlockNumberFieldName+" desc").
 		Where(rangeQuery, startBlock, endBlock).
 		Update(ConfirmedFieldName, true)
@@ -78,11 +78,11 @@ func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock 
 }
 
 // DeleteReceiptsForBlockHash deletes receipts with a given block hash.
-func (s Store) DeleteReceiptsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error {
+func (s Store) DeleteReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
 	dbTx := s.DB().WithContext(ctx).
 		Where(&Receipt{
-			BlockHash: blockHash.String(),
 			ChainID:   chainID,
+			BlockHash: blockHash.String(),
 		}).
 		Delete(&Receipt{})
 
@@ -133,7 +133,7 @@ func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.
 	if err != nil {
 		return []types.Receipt{}, fmt.Errorf("could not build receipts from db receipts: %w", err)
 	}
-
+	logger.Infof("[RECEIPT QUERY] Retrieved %d receipts with filter %+v", len(parsedReceipts), receiptFilter)
 	return parsedReceipts, nil
 }
 
@@ -171,15 +171,18 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 
 func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Receipt, chainID uint32) ([]types.Receipt, error) {
 	receipts := []types.Receipt{}
-	for _, dbReceipt := range dbReceipts {
+	for i := range dbReceipts {
+		dbReceipt := dbReceipts[i]
 		// Retrieve Logs that match the receipt's tx hash in order to add them to the Receipt.
-		logFilter := db.LogFilter{
-			TxHash:  dbReceipt.TxHash,
-			ChainID: chainID,
-		}
+		logFilter := db.LogFilter{}
+		logFilter.TxHash = dbReceipt.TxHash
+		logFilter.ChainID = chainID
+
 		logs := []*types.Log{}
 		page := 1
 		for {
+			// TODO DELETE
+			logger.Infof("[RECEIPT QUERY] logFilter: %v, page: %d", logFilter, page)
 			logGroup, err := s.RetrieveLogsWithFilter(ctx, logFilter, page)
 			if err != nil {
 				return []types.Receipt{}, fmt.Errorf("could not retrieve logs with tx hash %s and chain id %d: %w", dbReceipt.TxHash, chainID, err)
@@ -190,6 +193,7 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 			page++
 			logs = append(logs, logGroup...)
 		}
+		logger.Infof("[RECEIPT QUERY] logs collected: %d, %v, page: %d", len(logs), logFilter, page)
 
 		parsedReceipt := types.Receipt{
 			Type:              dbReceipt.Type,
@@ -205,20 +209,21 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 			BlockNumber:       big.NewInt(int64(dbReceipt.BlockNumber)),
 			TransactionIndex:  uint(dbReceipt.TransactionIndex),
 		}
+		logger.Infof("[RECEIPT QUERY] parsedReceipt:, %v", parsedReceipt)
 
 		receipts = append(receipts, parsedReceipt)
 	}
+	logger.Infof("[RECEIPT QUERY] parsedReceipt: %d", len(receipts))
 
 	return receipts, nil
 }
 
-// RetrieveReceiptCountForContract retrieves the count of receipts per contract.
-func (s Store) RetrieveReceiptCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error) {
+// RetrieveReceiptCountForChain retrieves the count of receipts per chain.
+func (s Store) RetrieveReceiptCountForChain(ctx context.Context, chainID uint32) (int64, error) {
 	var count int64
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Receipt{}).
 		Where(&Receipt{ChainID: chainID}).
-		Where(&Receipt{ContractAddress: contractAddress.String()}).
 		Count(&count)
 
 	if dbTx.Error != nil {
