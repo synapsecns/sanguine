@@ -17,7 +17,7 @@ type ScribeFetcher struct {
 	FetchClient *client.Client
 }
 
-const retryThreshold = 15
+const retryThreshold = 5
 
 // NewFetcher creates a new fetcher.
 func NewFetcher(fetchClient *client.Client) *ScribeFetcher {
@@ -115,8 +115,8 @@ func (s ScribeFetcher) FetchBlockTime(ctx context.Context, chainID int, blockNum
 RETRY:
 	attempts++
 	if attempts > retryThreshold {
-		logger.Errorf("could not get block time for block %d after %d attempts", blockNumber, retryThreshold)
-		return nil, fmt.Errorf("could not get block time for block %d after %d attempts", blockNumber, retryThreshold)
+		logger.Errorf("could not get block time for block %d on chainID %d after %d attempts", blockNumber, chainID, retryThreshold)
+		return nil, fmt.Errorf("could not get block time for block %d on chainID %d after %d attempts", blockNumber, chainID, retryThreshold)
 	}
 	select {
 	case <-ctx.Done():
@@ -173,7 +173,7 @@ RETRY:
 			logger.Errorf("could not get tx for log,  invalid response, trying getting blocktime %d: %s", chainID, tx)
 			auxiliaryBlocktime, err := s.FetchBlockTime(ctx, chainID, blockNumber)
 			if err != nil {
-				return nil, nil, fmt.Errorf("could not get tx for log,  invalid response %d: %s", chainID, tx)
+				return nil, nil, fmt.Errorf("could not get tx for log, after trying to get blocktime, invalid response %d: %s", chainID, tx)
 			}
 			sender := ""
 			blocktime := uint64(*auxiliaryBlocktime)
