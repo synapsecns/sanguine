@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
-	"os"
-
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"os"
 )
 
 // Store is the sqlite store. It extends the base store for sqlite specific queries.
