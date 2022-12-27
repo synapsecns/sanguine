@@ -31,7 +31,8 @@ func TestMerkleTree(t *testing.T) {
 	}
 	// Check Item()
 	for i := uint32(0); i < leafsAmount; i++ {
-		item, _ := tree.Item(i)
+		item, err := tree.Item(i)
+		Nil(t, err)
 		Equal(t, item, leafs[i])
 	}
 	// Check proofs
@@ -39,11 +40,20 @@ func TestMerkleTree(t *testing.T) {
 		// Get root after `count` leafs were inserted
 		root, err := tree.Root(count)
 		Nil(t, err)
+		// Root should be a bytes32 value.
+		Equal(t, len(root), 32)
 		for index := uint32(0); index < count; index++ {
 			proof, err := tree.MerkleProof(index, count)
 			Nil(t, err)
+			// Proof should have length equal to `TreeDepth`.
+			Equal(t, len(proof), int(merkle.TreeDepth))
+			for i := 0; i < len(proof); i++ {
+				// Each element should be a bytes32 value.
+				Equal(t, len(proof[i]), 32)
+			}
 			branchRoot, err := merkle.BranchRoot(leafs[index], index, proof)
 			Nil(t, err)
+			// Should match the correct bytes32 value for the root.
 			Equal(t, root, branchRoot)
 			True(t, merkle.VerifyMerkleProof(root, leafs[index], index, proof))
 		}
