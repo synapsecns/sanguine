@@ -89,6 +89,15 @@ func NewTree() *HistoricalTree {
 	}
 }
 
+// NewTreeFromItems returns a new Merkle Tree from a slice of byte slices.
+func NewTreeFromItems(items [][]byte) *HistoricalTree {
+	tree := NewTree()
+	for _, item := range items {
+		tree.Insert(item)
+	}
+	return tree
+}
+
 // BranchRoot calculates the merkle root given the item and the proof.
 func BranchRoot(item []byte, index uint32, proof [][]byte) ([]byte, error) {
 	if len(proof) != int(TreeDepth) {

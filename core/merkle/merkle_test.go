@@ -118,6 +118,32 @@ func TestIncorrectRequests(t *testing.T) {
 	}
 }
 
+func TestNewTreeFromItems(t *testing.T) {
+	tree := merkle.NewTree()
+	// Generate test leafs
+	leafs := make([][]byte, leafsAmount)
+	for i := uint32(0); i < leafsAmount; i++ {
+		leafs[i] = fakeLeaf()
+		fmt.Printf("%d: %v\n", i, leafs[i])
+	}
+	// Insert test leafs
+	for i := uint32(0); i < leafsAmount; i++ {
+		tree.Insert(leafs[i])
+		Equal(t, tree.NumOfItems(), i+1)
+	}
+	// Get items and generate a new tree from them
+	items := tree.Items()
+	newTree := merkle.NewTreeFromItems(items)
+	// Check that the number of items are the same
+	Equal(t, tree.NumOfItems(), newTree.NumOfItems())
+	// Check that the new tree has the same root
+	root, err := tree.Root(leafsAmount)
+	Nil(t, err)
+	newRoot, err := newTree.Root(leafsAmount)
+	Nil(t, err)
+	Equal(t, root, newRoot)
+}
+
 func fakeLeaf() []byte {
 	leaf := make([]byte, 32)
 	for i := 0; i < 32; i++ {
