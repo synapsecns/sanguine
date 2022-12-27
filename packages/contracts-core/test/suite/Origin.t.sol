@@ -176,7 +176,9 @@ contract OriginTest is OriginTools {
                 _origin: DOMAIN_LOCAL,
                 _destination: DOMAIN_REMOTE,
                 _nonce: uint32(amount),
-                _root: origin.root(DOMAIN_REMOTE)
+                _root: origin.root(DOMAIN_REMOTE),
+                _blockNumber: uint40(block.number),
+                _timestamp: uint40(block.timestamp)
             })
         );
     }

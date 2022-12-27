@@ -17,6 +17,8 @@ abstract contract AttestationTools is SynapseTestSuite {
     uint32 internal attestationDestination;
     uint32 internal attestationNonce;
     bytes32 internal attestationRoot;
+    uint40 internal attestationBlockNumber;
+    uint40 internal attestationTimestamp;
     // Saved attestation ids
     uint64 internal attestationDomains;
     uint96 internal attestationKey;
@@ -100,6 +102,7 @@ abstract contract AttestationTools is SynapseTestSuite {
     ) public {
         saveAttestationData(origin, destination, guardSigners, notarySigners);
         saveMockableAttestationData(nonce, root, salt);
+        saveAttestationMetadata();
         saveAttestationIDs();
         createAttestation();
     }
@@ -111,6 +114,8 @@ abstract contract AttestationTools is SynapseTestSuite {
             attestationDestination,
             attestationNonce,
             attestationRoot,
+            attestationBlockNumber,
+            attestationTimestamp,
             attestationGuards,
             attestationNotaries
         );
@@ -239,6 +244,11 @@ abstract contract AttestationTools is SynapseTestSuite {
         attestationRoot = root == MOCK_ATTESTATION_ROOT
             ? _createMockRoot(attestationNonce, salt)
             : root;
+    }
+
+    function saveAttestationMetadata() public {
+        attestationBlockNumber = uint40(block.number);
+        attestationTimestamp = uint40(block.timestamp);
     }
 
     function saveAttestationIDs() public {

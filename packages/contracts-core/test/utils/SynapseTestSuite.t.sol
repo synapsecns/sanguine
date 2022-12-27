@@ -133,7 +133,9 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         uint32 origin,
         uint32 destination,
         uint32 nonce,
-        bytes32 root
+        bytes32 root,
+        uint40 blockNumber,
+        uint40 timestamp
     )
         public
         returns (
@@ -142,7 +144,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
             bytes memory notarySignatures
         )
     {
-        return signAttestation(origin, destination, nonce, root, 0, 0);
+        return signAttestation(origin, destination, nonce, root, blockNumber, timestamp, 0, 0);
     }
 
     /**
@@ -155,6 +157,8 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         uint32 destination,
         uint32 nonce,
         bytes32 root,
+        uint40 blockNumber,
+        uint40 timestamp,
         uint256 guardIndex,
         uint256 notaryIndex
     )
@@ -171,6 +175,8 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
                 destination,
                 nonce,
                 root,
+                blockNumber,
+                timestamp,
                 suiteGuard(guardIndex),
                 suiteNotary(destination, notaryIndex)
             );
@@ -185,6 +191,8 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         uint32 destination,
         uint32 nonce,
         bytes32 root,
+        uint40 blockNumber,
+        uint40 timestamp,
         address guardSigner,
         address notarySigner
     )
@@ -202,6 +210,8 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
                 destination,
                 nonce,
                 root,
+                blockNumber,
+                timestamp,
                 castToArray(guardSigner),
                 castToArray(notarySigner)
             );
@@ -212,6 +222,8 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         uint32 destination,
         uint32 nonce,
         bytes32 root,
+        uint40 blockNumber,
+        uint40 timestamp,
         address[] memory guardSigners,
         address[] memory notarySigners
     )
@@ -222,7 +234,14 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
             bytes memory notarySignatures
         )
     {
-        bytes memory data = Attestation.formatAttestationData(origin, destination, nonce, root);
+        bytes memory data = Attestation.formatAttestationData(
+            origin,
+            destination,
+            nonce,
+            root,
+            blockNumber,
+            timestamp
+        );
         guardSignatures = signMessage(guardSigners, data);
         notarySignatures = signMessage(notarySigners, data);
         attestation = Attestation.formatAttestation(data, guardSignatures, notarySignatures);

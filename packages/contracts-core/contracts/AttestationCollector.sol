@@ -52,6 +52,8 @@ contract AttestationCollector is
      * @param origin        Attestation origin domain
      * @param destination   Attestation destination domain
      * @param nonce         Attestation nonce
+     * @param blockNumber   Attestation block number
+     * @param timestamp     Attestation block timestamp
      */
     struct AgentSignature {
         bytes32 r;
@@ -61,7 +63,9 @@ contract AttestationCollector is
         uint32 origin;
         uint32 destination;
         uint32 nonce;
-        // 144 bits available
+        uint40 blockNumber;
+        uint40 timestamp;
+        // 64 bits available
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -199,11 +203,23 @@ contract AttestationCollector is
         uint96 attKey = Attestation.attestationKey(_origin, _destination, _nonce);
         SignedRoot memory signedRoot = signedRoots[attKey];
         require(signedRoot.root != bytes32(0), "Unknown nonce");
+        // Find an existing signature for the attestation
+        uint256 agentSigIndex = signedRoot.guardSigIndex != 0
+            ? signedRoot.guardSigIndex
+            : signedRoot.notarySigIndex;
+        // Get block number and timestamp from the signature
+        // TODO: deal with potential conflicts here
+        (uint40 blockNumber, uint40 timestamp) = (
+            savedSignatures[agentSigIndex - 1].blockNumber,
+            savedSignatures[agentSigIndex - 1].timestamp
+        );
         bytes memory attData = Attestation.formatAttestationData({
             _origin: _origin,
             _destination: _destination,
             _nonce: _nonce,
-            _root: signedRoot.root
+            _root: signedRoot.root,
+            _blockNumber: blockNumber,
+            _timestamp: timestamp
         });
         return
             _formatDualAttestation({
@@ -369,6 +385,8 @@ contract AttestationCollector is
         agentSig.isGuard = _isGuard;
         (agentSig.origin, agentSig.destination) = Attestation.unpackDomains(attDomains);
         agentSig.nonce = nonce;
+        agentSig.blockNumber = _attestationView.attestedBlockNumber();
+        agentSig.timestamp = _attestationView.attestedTimestamp();
         savedSignatures.push(agentSig);
         // The signature is stored at length-1, but we add 1 to all indexes
         // and use 0 as a sentinel value
@@ -424,7 +442,9 @@ contract AttestationCollector is
             _origin: agentSig.origin,
             _destination: agentSig.destination,
             _nonce: agentSig.nonce,
-            _root: root
+            _root: root,
+            _blockNumber: agentSig.blockNumber,
+            _timestamp: agentSig.timestamp
         });
         // Reconstruct agent signature on `attData`
         bytes memory signature = ByteString.formatSignature({

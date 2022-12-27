@@ -32,6 +32,8 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         uint32 destination,
         uint32 nonce,
         bytes32 root,
+        uint40 blockNumber,
+        uint40 timestamp,
         uint256 guardSigs,
         uint256 notarySigs
     ) public {
@@ -42,7 +44,14 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         // Should be at least one signer
         vm.assume(agentSigs != 0);
         // Test formatting of attestation data
-        bytes memory attData = libHarness.formatAttestationData(origin, destination, nonce, root);
+        bytes memory attData = libHarness.formatAttestationData(
+            origin,
+            destination,
+            nonce,
+            root,
+            blockNumber,
+            timestamp
+        );
         assertEq(
             attData,
             abi.encodePacked(origin, destination, nonce, root),
@@ -158,6 +167,16 @@ contract AttestationLibraryTest is SynapseLibraryTest {
             root,
             "!attestedRoot"
         );
+        assertEq(
+            libHarness.attestedBlockNumber(SynapseTypes.ATTESTATION, attestation),
+            blockNumber,
+            "!attestedBlockNumber"
+        );
+        assertEq(
+            libHarness.attestedTimestamp(SynapseTypes.ATTESTATION, attestation),
+            timestamp,
+            "!attestedTimestamp"
+        );
         (uint8 _guardSigs, uint8 _notarySigs) = libHarness.agentSignatures(
             SynapseTypes.ATTESTATION,
             attestation
@@ -223,12 +242,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
     }
 
     function test_isAttestation_noSignatures() public {
-        bytes memory attData = libHarness.formatAttestationData(
-            uint32(0),
-            uint32(0),
-            uint32(0),
-            bytes32(0)
-        );
+        bytes memory attData = new bytes(Attestation.ATTESTATION_DATA_LENGTH);
         bytes memory payload = libHarness.formatAttestation(attData, new bytes(0), new bytes(0));
         assertFalse(libHarness.isAttestation(payload), "!isAttestation: no signatures");
     }

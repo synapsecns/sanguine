@@ -24,6 +24,18 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
 
     using MerkleLib for MerkleLib.Tree;
 
+    /**
+     * @notice Additional data stored for every saved merkle root.
+     * @dev uint40 gives us the runway of ~35k years.
+     * @param timestamp     Block timestamp when merkle root was saved
+     * @param blockNumber   Block number when merkle root was saved
+     */
+    struct RootMetadata {
+        uint40 blockNumber;
+        uint40 timestamp;
+        // 176 bits remaining
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -41,10 +53,10 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     // [destination domain] => [Merkle tree roots after inserting a sent message to that domain]
     mapping(uint32 => bytes32[]) internal historicalRoots;
     // [destination domain] => [block numbers for each nonce written so far]
-    mapping(uint32 => uint256[]) internal historicalNonceBlockNumbers;
+    mapping(uint32 => RootMetadata[]) internal historicalMetadata;
 
     // gap for upgrade safety
-    uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
@@ -64,14 +76,11 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     }
 
     /**
-     * @notice Suggest attestation for the off-chain actors to sign for a specific destination.
-     * Note: signing the suggested attestation will will never lead
-     * to slashing of the actor, assuming they have confirmed that the block, where the merkle root
-     * was updated, is not subject to reorganization (which is different for every observed chain).
-     * @dev If no messages have been sent, following values are returned:
-     * - nonce = 0
-     * - root = 0x27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757
-     * Which is the merkle root for an empty merkle tree.
+     * @notice Suggest the latest attestation data to sign for a specific destination.
+     * Note: signing the suggested attestation data will will never lead to slashing of the actor,
+     * assuming they have confirmed that the block, which number is included in the data,
+     * is not subject to reorganization (which is different for every observed chain).
+     * @dev If no messages to a given destination have been sent, the execution will be reverted.
      * @return attestationData Data for the suggested attestation
      */
     function suggestAttestation(uint32 _destination)
@@ -80,17 +89,35 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         returns (bytes memory attestationData)
     {
         uint32 latestNonce = nonce(_destination);
-        uint256 rootDispatchBlockNumber;
-        bytes32 latestRoot;
-        (latestRoot, rootDispatchBlockNumber) = getHistoricalRoot(_destination, latestNonce);
+        require(latestNonce != 0, "No messages to destination");
+        attestationData = suggestHistoricalAttestation(_destination, latestNonce);
+    }
 
-        return
-            Attestation.formatAttestationData({
-                _origin: _localDomain(),
-                _destination: _destination,
-                _nonce: latestNonce,
-                _root: latestRoot
-            });
+    /**
+     * @notice Suggest the attestation data to sign for a specific destination and nonce.
+     * Note: signing the suggested attestation data will will never lead to slashing of the actor,
+     * assuming they have confirmed that the block, which number is included in the data,
+     * is not subject to reorganization (which is different for every observed chain).
+     * @dev If no messages to a given destination have been sent, the execution will be reverted.
+     * @return attestationData Data for the suggested attestation
+     */
+    function suggestHistoricalAttestation(uint32 _destination, uint32 _nonce)
+        public
+        view
+        returns (bytes memory attestationData)
+    {
+        // Check if nonce exists
+        require(_nonce < historicalRoots[_destination].length, "!nonce");
+        bytes32 historicalRoot = historicalRoots[_destination][_nonce];
+        RootMetadata memory metadata = historicalMetadata[_destination][_nonce];
+        attestationData = Attestation.formatAttestationData({
+            _origin: _localDomain(),
+            _destination: _destination,
+            _nonce: _nonce,
+            _root: historicalRoot,
+            _blockNumber: metadata.blockNumber,
+            _timestamp: metadata.timestamp
+        });
     }
 
     /**
@@ -114,7 +141,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
             require(_nonce < historicalRoots[_destination].length, "!nonce: existing destination");
             return (
                 historicalRoots[_destination][_nonce],
-                historicalNonceBlockNumbers[_destination][_nonce]
+                historicalMetadata[_destination][_nonce].blockNumber
             );
         } else {
             // If destination is unknown, we have the root of an empty merkle tree
@@ -290,7 +317,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         // Insert a historical root so nonces start at 1 rather then 0.
         // Here we insert the root of an empty merkle tree
         historicalRoots[_destination].push(EMPTY_TREE_ROOT);
-        historicalNonceBlockNumbers[_destination].push(0);
+        historicalMetadata[_destination].push(RootMetadata(0, 0));
     }
 
     /**
@@ -315,7 +342,9 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         // tree.root() requires current amount of leaves (i.e. tree.count())
         newRoot = trees[_destination].root(_messageNonce);
         historicalRoots[_destination].push(newRoot);
-        historicalNonceBlockNumbers[_destination].push(block.number);
+        historicalMetadata[_destination].push(
+            RootMetadata({ blockNumber: uint40(block.number), timestamp: uint40(block.timestamp) })
+        );
     }
 
     /**

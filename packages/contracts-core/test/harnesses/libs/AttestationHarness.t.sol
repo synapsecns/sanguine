@@ -86,6 +86,14 @@ contract AttestationHarness {
         return _payload.ref(_type).attestedRoot();
     }
 
+    function attestedBlockNumber(uint40 _type, bytes memory _payload) public pure returns (uint40) {
+        return _payload.ref(_type).attestedBlockNumber();
+    }
+
+    function attestedTimestamp(uint40 _type, bytes memory _payload) public pure returns (uint40) {
+        return _payload.ref(_type).attestedTimestamp();
+    }
+
     function agentSignatures(uint40 _type, bytes memory _payload)
         public
         pure
@@ -136,9 +144,19 @@ contract AttestationHarness {
         uint32 _origin,
         uint32 _destination,
         uint32 _nonce,
-        bytes32 _root
+        bytes32 _root,
+        uint40 _blockNumber,
+        uint40 _timestamp
     ) public pure returns (bytes memory) {
-        return Attestation.formatAttestationData(_origin, _destination, _nonce, _root);
+        return
+            Attestation.formatAttestationData(
+                _origin,
+                _destination,
+                _nonce,
+                _root,
+                _blockNumber,
+                _timestamp
+            );
     }
 
     function attestationDomains(uint32 _origin, uint32 _destination) public pure returns (uint64) {

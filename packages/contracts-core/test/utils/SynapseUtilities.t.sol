@@ -9,12 +9,23 @@ contract SynapseUtilities is Test {
         "Initializable: contract is already initialized";
     bytes internal constant REVERT_NOT_OWNER = "Ownable: caller is not the owner";
 
+    uint256 internal constant BLOCK_TIME = 12;
+
     function expectRevertAlreadyInitialized() public {
         vm.expectRevert(REVERT_ALREADY_INITIALIZED);
     }
 
     function expectRevertNotOwner() public {
         vm.expectRevert(REVERT_NOT_OWNER);
+    }
+
+    function skipBlock() public {
+        skipBlocks(1);
+    }
+
+    function skipBlocks(uint256 blocks) public {
+        vm.roll(block.number + blocks);
+        skip(blocks * BLOCK_TIME);
     }
 
     function addressToBytes32(address addr) public pure returns (bytes32) {

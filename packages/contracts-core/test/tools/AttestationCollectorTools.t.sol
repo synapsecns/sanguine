@@ -35,7 +35,9 @@ abstract contract AttestationCollectorTools is AttestationTools {
             attestationOrigin,
             attestationDestination,
             attestationNonce,
-            attestationRoot
+            attestationRoot,
+            attestationBlockNumber,
+            attestationTimestamp
         );
         bytes memory signature = signMessage({
             signer: isGuard ? attestationGuards[agentIndex] : attestationNotaries[agentIndex],
