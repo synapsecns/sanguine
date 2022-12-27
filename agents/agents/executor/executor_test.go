@@ -493,6 +493,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	message1 := types.NewMessage(header1, tips[1], messageBytes[1])
 	message2 := types.NewMessage(header2, tips[2], messageBytes[2])
 	message3 := types.NewMessage(header3, tips[3], messageBytes[3])
+	failMessage := types.NewMessage(header1, tips[3], messageBytes[3])
 
 	leaf0, err := message0.ToLeaf()
 	e.Nil(err)
@@ -523,19 +524,19 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	inTree0, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[0], message0, chainID, destination)
+	inTree0, err := exec.VerifyMessageNonce(e.GetTestContext(), message0)
 	e.Nil(err)
 	e.True(inTree0)
 
-	inTree1, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[1], message1, chainID, destination)
+	inTree1, err := exec.VerifyMessageNonce(e.GetTestContext(), message1)
 	e.Nil(err)
 	e.True(inTree1)
 
-	inTree2, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message2, chainID, destination)
+	inTree2, err := exec.VerifyMessageNonce(e.GetTestContext(), message2)
 	e.Nil(err)
 	e.True(inTree2)
 
-	inTreeFail, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message1, chainID, destination)
+	inTreeFail, err := exec.VerifyMessageNonce(e.GetTestContext(), failMessage)
 	e.Nil(err)
 	e.False(inTreeFail)
 
@@ -545,7 +546,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	inTree3, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[3], message3, chainID, destination)
+	inTree3, err := exec.VerifyMessageNonce(e.GetTestContext(), message3)
 	e.Nil(err)
 	e.True(inTree3)
 }

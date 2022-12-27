@@ -190,6 +190,31 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 	}
 }
 
+// Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
+func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
+	verified, err := e.VerifyMessageNonce(ctx, message)
+	if err != nil {
+		return false, fmt.Errorf("could not verify message nonce: %w", err)
+	}
+
+	if !verified {
+		return false, nil
+	}
+
+	verified, err = e.VerifyOptimisticPeriod(ctx, message)
+	if err != nil {
+		return false, fmt.Errorf("could not verify optimistic period: %w", err)
+	}
+
+	if !verified {
+		return false, nil
+	}
+
+	// execute
+
+	return true, nil
+}
+
 // GetRoot returns the merkle root at the given nonce.
 func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, destination uint32) ([32]byte, error) {
 	if nonce == 0 || nonce > uint32(e.chainExecutors[chainID].merkleTrees[destination].NumOfItems()) {
@@ -264,13 +289,13 @@ const (
 )
 
 // VerifyMessageNonce verifies a message against the merkle tree at the state of the given nonce.
-func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message types.Message, chainID uint32, destination uint32) (bool, error) {
-	root, err := e.GetRoot(ctx, nonce, chainID, destination)
+func (e Executor) VerifyMessageNonce(ctx context.Context, message types.Message) (bool, error) {
+	root, err := e.GetRoot(ctx, message.Nonce(), message.OriginDomain(), message.DestinationDomain())
 	if err != nil {
 		return false, fmt.Errorf("could not get root: %w", err)
 	}
 
-	proof, err := e.GetLatestNonceProof(nonce, chainID, destination)
+	proof, err := e.GetLatestNonceProof(message.Nonce(), message.OriginDomain(), message.DestinationDomain())
 	if err != nil {
 		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
 	}
@@ -280,7 +305,7 @@ func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message 
 		return false, fmt.Errorf("could not convert message to leaf: %w", err)
 	}
 
-	inTree := trieutil.VerifyMerkleBranch(root[:], leaf[:], int(nonce-1), proof, treeDepth)
+	inTree := trieutil.VerifyMerkleBranch(root[:], leaf[:], int(message.Nonce()-1), proof, treeDepth)
 
 	return inTree, nil
 }
