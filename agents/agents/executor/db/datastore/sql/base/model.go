@@ -56,13 +56,6 @@ type Attestation struct {
 	Nonce uint32 `gorm:"column:nonce;primaryKey"`
 	// Root is the root.
 	Root string `gorm:"column:root;primaryKey"`
-<<<<<<< HEAD
 	// BlockNumber is the block number.
 	BlockNumber uint64 `gorm:"column:block_number"`
-=======
-	// DestinationBlockNumber is the block number that the attestation was submitted on the destination.
-	DestinationBlockNumber uint64 `gorm:"column:block_number"`
-	// DestinationBlockTime is the timestamp of the block that the attestation was submitted on the destination.
-	DestinationBlockTime uint64 `gorm:"column:destination_block_time"`
->>>>>>> master
 }

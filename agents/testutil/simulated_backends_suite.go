@@ -37,7 +37,6 @@ import (
 // others might want just a destination, etc.
 type SimulatedBackendsTestSuite struct {
 	*testsuite.TestSuite
-<<<<<<< HEAD
 	OriginContract                               *originharness.OriginHarnessRef
 	OriginContractMetadata                       contracts.DeployedContract
 	OriginOwnerPtr                               common.Address
@@ -78,31 +77,6 @@ type SimulatedBackendsTestSuite struct {
 	AttestationDomainClient                      domains.DomainClient
 	DestinationDomainClient                      domains.DomainClient
 	TestDeployManager                            *DeployManager
-=======
-	OriginContract              *originharness.OriginHarnessRef
-	OriginContractMetadata      contracts.DeployedContract
-	DestinationContract         *destinationharness.DestinationHarnessRef
-	DestinationContractMetadata contracts.DeployedContract
-	AttestationHarness          *attestationharness.AttestationHarnessRef
-	AttestationContract         *attestationcollector.AttestationCollectorRef
-	AttestationContractMetadata contracts.DeployedContract
-	TestBackendOrigin           backends.SimulatedTestBackend
-	TestBackendDestination      backends.SimulatedTestBackend
-	TestBackendAttestation      backends.SimulatedTestBackend
-	NotaryWallet                wallet.Wallet
-	GuardWallet                 wallet.Wallet
-	NotarySigner                signer.Signer
-	GuardSigner                 signer.Signer
-	OriginWallet                wallet.Wallet
-	DestinationWallet           wallet.Wallet
-	AttestationWallet           wallet.Wallet
-	OriginSigner                signer.Signer
-	DestinationSigner           signer.Signer
-	AttestationSigner           signer.Signer
-	OriginDomainClient          domains.DomainClient
-	AttestationDomainClient     domains.DomainClient
-	DestinationDomainClient     domains.DomainClient
->>>>>>> master
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -120,12 +94,8 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 	a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
 	a.OriginContractMetadata, a.OriginContract = deployManager.GetOriginHarness(a.GetTestContext(), a.TestBackendOrigin)
-<<<<<<< HEAD
 	var err error
 	a.OriginOwnerPtr, err = a.OriginContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
-=======
-	originOwnerPtr, err := a.OriginContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
->>>>>>> master
 	if err != nil {
 		a.T().Fatal(err)
 	}

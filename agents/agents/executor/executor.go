@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"math/big"
+	"strconv"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/prysmaticlabs/prysm/shared/trieutil"
@@ -18,9 +22,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"io"
-	"math/big"
-	"strconv"
 )
 
 // ChainExecutor is a struct that contains the necessary information for each chain level executor.
@@ -307,7 +308,6 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 	root := (*attestation).Root()
 	rootToHash := common.BytesToHash(root[:])
 	attestationMask.Root = &rootToHash
-<<<<<<< HEAD
 	attestationBlockNumber, err := e.executorDB.GetAttestationBlockNumber(ctx, attestationMask)
 	if err != nil {
 		return false, fmt.Errorf("could not get attestation block number: %w", err)
@@ -323,28 +323,13 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 	}
 
 	attestationTimestamp := header.Time
-=======
-	attestationTime, err := e.executorDB.GetAttestationBlockTime(ctx, attestationMask)
-	if err != nil {
-		return false, fmt.Errorf("could not get attestation block time: %w", err)
-	}
-
-	if attestationTime == nil {
-		return false, nil
-	}
-
->>>>>>> master
 	latestHeader, err := e.chainExecutors[destination].client.HeaderByNumber(ctx, nil)
 	if err != nil {
 		return false, fmt.Errorf("could not get latest header: %w", err)
 	}
 
 	currentTime := latestHeader.Time
-<<<<<<< HEAD
 	if attestationTimestamp+uint64(message.OptimisticSeconds()) > currentTime {
-=======
-	if *attestationTime+uint64(message.OptimisticSeconds()) > currentTime {
->>>>>>> master
 		return false, nil
 	}
 
@@ -493,16 +478,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			return nil
 		}
 
-<<<<<<< HEAD
 		err = e.executorDB.StoreAttestation(ctx, *attestation, log.BlockNumber)
-=======
-		logHeader, err := e.chainExecutors[(*attestation).Destination()].client.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
-		if err != nil {
-			return fmt.Errorf("could not get log header: %w", err)
-		}
-
-		err = e.executorDB.StoreAttestation(ctx, *attestation, log.BlockNumber, logHeader.Time)
->>>>>>> master
 		if err != nil {
 			return fmt.Errorf("could not store attestation: %w", err)
 		}
