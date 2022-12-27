@@ -96,6 +96,7 @@ func (s Scribe) Start(ctx context.Context) error {
 
 //nolint:gocognit, cyclop
 func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfirmations uint32) error {
+	logger.Infof("[LIVEFILL] start livefilling chain: %d", chainID)
 	newBlock, err := s.clients[chainID][0].BlockNumber(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get current block number: %w", err)
