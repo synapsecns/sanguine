@@ -134,6 +134,8 @@ func TestNewTreeFromItems(t *testing.T) {
 	// Get items and generate a new tree from them
 	items := tree.Items()
 	newTree := merkle.NewTreeFromItems(items)
+	// Check that the number of items are the same
+	Equal(t, tree.NumOfItems(), newTree.NumOfItems())
 	// Check that the new tree has the same root
 	root, err := tree.Root(leafsAmount)
 	Nil(t, err)
