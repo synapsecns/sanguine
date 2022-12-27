@@ -153,10 +153,18 @@ func (s ScribeFetcher) FetchTx(ctx context.Context, tx string, chainID int, bloc
 	timeout := time.Duration(0)
 RETRY:
 	attempts++
+
 	if attempts > retryThreshold {
-		logger.Errorf("could not get tx after %d attempts %s: %d", retryThreshold, tx, chainID)
-		return nil, nil, fmt.Errorf("could not get tx %s: %d", tx, chainID)
+		logger.Errorf("could not get tx after %d attempts for hash %s on chain %d trying blocktime", retryThreshold, tx, chainID)
+		auxiliaryBlocktime, err := s.FetchBlockTime(ctx, chainID, blockNumber)
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not get tx for log, after trying to get blocktime, invalid response %d: %s", chainID, tx)
+		}
+		sender := ""
+		blocktime := uint64(*auxiliaryBlocktime)
+		return &blocktime, &sender, nil
 	}
+
 	select {
 	case <-ctx.Done():
 		return nil, nil, fmt.Errorf("could not get tx for log, context canceled %d: %s", chainID, tx)
@@ -164,21 +172,12 @@ RETRY:
 
 		res, err := s.FetchClient.GetTransactions(ctx, chainID, 1, &tx)
 
-		if err != nil {
+		if err != nil || res == nil || res.Response == nil {
 			logger.Errorf("could not get tx for log, trying again %s, chainID: %d: %v", tx, chainID, err)
 			timeout = b.Duration()
 			goto RETRY
 		}
-		if res == nil || res.Response == nil || len(res.Response) == 0 {
-			logger.Errorf("could not get tx for log,  invalid response, trying getting blocktime %d: %s", chainID, tx)
-			auxiliaryBlocktime, err := s.FetchBlockTime(ctx, chainID, blockNumber)
-			if err != nil {
-				return nil, nil, fmt.Errorf("could not get tx for log, after trying to get blocktime, invalid response %d: %s", chainID, tx)
-			}
-			sender := ""
-			blocktime := uint64(*auxiliaryBlocktime)
-			return &blocktime, &sender, nil
-		}
+
 		resTx := res.Response[0]
 		sender := resTx.Sender
 		blocktime := uint64(resTx.Timestamp)

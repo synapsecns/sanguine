@@ -139,8 +139,8 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 				b := &backoff.Backoff{
 					Factor: 2,
 					Jitter: true,
-					Min:    1 * time.Second,
-					Max:    10 * time.Second,
+					Min:    30 * time.Millisecond,
+					Max:    3 * time.Second,
 				}
 
 				timeout := time.Duration(0)
@@ -184,7 +184,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 		logger.Infof("backfilling contract %s chunk completed, %d to %d", contract.Address, chunkStart, chunkEnd)
 
 		// Store the last block in clickhouse
-		fmt.Println("storing last block", chunkEnd)
+		fmt.Println("storing last block", chunkEnd, c.chainConfig.ChainID)
 		err = c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
 		if err != nil {
 			logger.Errorf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
@@ -203,7 +203,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    1 * time.Second,
+		Min:    30 * time.Millisecond,
 		Max:    3 * time.Second,
 	}
 

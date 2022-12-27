@@ -310,6 +310,5 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 			swapEvent.TokenSymbol = tokenSymbols
 		}
 	}
-
 	return swapEvent, nil
 }
