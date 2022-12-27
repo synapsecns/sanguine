@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/merkle"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
@@ -804,23 +805,14 @@ func (d *ExecutorSuite) TestDestinationExecute() {
 		rawMessages[i] = rawMessage[:]
 	}
 
-	merkleTree, err := trieutil.GenerateTrieFromItems(rawMessages, executor.TreeDepth)
-	d.Nil(err)
-	rawProof, err := merkleTree.MerkleProof(0)
-	fmt.Printf("\nCRONIN len(rawProof)\n %v \nCRONIN\n", len(rawProof))
+	historicalMerkleTree := merkle.NewTreeFromItems(rawMessages)
+
+	rawProof, err := historicalMerkleTree.MerkleProof(0, 1)
 	d.Nil(err)
 	var proofToUse [32][32]byte
-
-	for i := 0; i < 32; i++ {
-		fmt.Printf("\nCRONIN len(rawProof[%d]) = %v and root is: \n %v \nCRONIN\n", i, len(rawProof[i]), rawProof[i])
-		for j := 0; j < 32; j++ {
-			proofToUse[i][j] = rawProof[i+1][j]
-		}
-	}
-	fmt.Printf("\nCRONIN when 32 root: \n %v \nCRONIN\n", rawProof[32])
-	/*for i := 0; i < int(executor.TreeDepth); i++ {
+	for i := 0; i < int(executor.TreeDepth); i++ {
 		copy(proofToUse[i][:], rawProof[i][:32])
-	}*/
+	}
 
 	attestationKey := types.AttestationKey{
 		Origin:      originDomain,
@@ -828,10 +820,10 @@ func (d *ExecutorSuite) TestDestinationExecute() {
 		Nonce:       nonce,
 	}
 
-	root := merkleTree.Root()
-	fmt.Printf("\nCRONIN root from merkleTree.Root()\n %v \nCRONIN\n", root)
-	hashTreeRoot := merkleTree.HashTreeRoot()
-	fmt.Printf("\nCRONIN hashTreeRoot from merkleTree.HashTreeRoot()\n %v \nCRONIN\n", hashTreeRoot)
+	rawRoot, err := historicalMerkleTree.Root(1)
+	d.Nil(err)
+	var root [32]byte
+	copy(root[:], rawRoot[:32])
 
 	unsignedAttestation := types.NewAttestation(attestationKey.GetRawKey(), root)
 	hashedAttestation, err := types.Hash(unsignedAttestation)
@@ -883,19 +875,6 @@ func (d *ExecutorSuite) TestDestinationExecute() {
 		// Now sleep for a second before executing
 		time.Sleep(time.Second)
 		index := big.NewInt(int64(0))
-
-		leaf, err := message.ToLeaf()
-		d.Nil(err)
-
-		fromProofToUse := make([][]byte, 32)
-		for i := 0; i < 32; i++ {
-			fromProofToUse[i] = make([]byte, 32)
-			for j := 0; j < 32; j++ {
-				fromProofToUse[i][j] = proofToUse[i][j]
-			}
-		}
-		inTree := trieutil.VerifyMerkleBranch(root[:], leaf[:], int(nonce-1), rawProof, executor.TreeDepth)
-		d.True(inTree)
 
 		tx, err = d.DestinationContract.Execute(txContextDestination.TransactOpts, encodedMessage, proofToUse, index)
 		d.Nil(err)
