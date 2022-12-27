@@ -77,6 +77,7 @@ type HistoricalTree struct {
  * We're using a map to avoid dealing with dynamic arrays.
  */
 
+// TreeDepth is a depth of the merkle tree that is used in the messaging contracts.
 const TreeDepth uint32 = 32
 
 // NewTree returns an empty Merkle Tree.
