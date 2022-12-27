@@ -3,32 +3,32 @@ package evm_test
 import (
 	"errors"
 	"fmt"
+	"math/big"
+	"os"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
-	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/chain/client/mocks"
 	etherMocks "github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"os"
-	"time"
 )
 
 func (e *RPCSuite) TestGetters() {
+	originDomain := uint32(e.TestBackendOrigin.GetChainID())
+
 	name := "hi"
 
-	_, originContract := e.deployManager.GetOrigin(e.GetTestContext(), e.testBackend)
-
 	testCfg := config.DomainConfig{
-		DomainID:      1,
-		RPCUrl:        e.testBackend.RPCAddress(),
-		OriginAddress: originContract.Address().String(),
+		DomainID:      originDomain,
+		RPCUrl:        e.TestBackendOrigin.RPCAddress(),
+		OriginAddress: e.OriginContract.Address().String(),
 	}
 
 	testEvm, err := evm.NewEVM(e.GetTestContext(), name, testCfg)
@@ -37,7 +37,7 @@ func (e *RPCSuite) TestGetters() {
 	Equal(e.T(), testEvm.Name(), name)
 
 	// get latest block from rpc
-	latestBlock, err := e.testBackend.BlockNumber(e.GetTestContext())
+	latestBlock, err := e.TestBackendOrigin.BlockNumber(e.GetTestContext())
 	Nil(e.T(), err)
 
 	// make sure it's equal to the client backend
@@ -107,30 +107,27 @@ func (e *RPCSuite) TestFilterer() {
 	if os.Getenv("CI") != "" {
 		e.T().Skip("flakes on ci: since this will be replaced by scribe, we can deprecate this")
 	}
-	deployHelper := testutil.NewDeployManager(e.T())
-
-	deployedContract, handle := deployHelper.GetOrigin(e.GetTestContext(), e.testBackend)
 
 	dispatches := GenerateDispatches(10)
 
 	var lastTx *ethTypes.Transaction
 	for _, dispatch := range dispatches {
-		auth := e.testBackend.GetTxContext(e.GetTestContext(), nil)
+		auth := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), nil)
 
 		enodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 		Nil(e.T(), err)
 
-		addedDispatch, err := handle.Dispatch(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, enodedTips, dispatch.messageBody)
+		addedDispatch, err := e.OriginContract.Dispatch(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, enodedTips, dispatch.messageBody)
 		Nil(e.T(), err)
 
-		e.testBackend.WaitForConfirmation(e.GetTestContext(), addedDispatch)
+		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), addedDispatch)
 		lastTx = addedDispatch
 	}
 
-	receipt, err := e.testBackend.TransactionReceipt(e.GetTestContext(), lastTx.Hash())
+	receipt, err := e.TestBackendOrigin.TransactionReceipt(e.GetTestContext(), lastTx.Hash())
 	Nil(e.T(), err)
 
-	rangeFilter := evm.NewRangeFilter(deployedContract.Address(), e.testBackend, big.NewInt(0), receipt.BlockNumber, 1, true)
+	rangeFilter := evm.NewRangeFilter(e.OriginContract.Address(), e.TestBackendOrigin, big.NewInt(0), receipt.BlockNumber, 1, true)
 
 	g, ctx := errgroup.WithContext(e.GetTestContext())
 	g.Go(func() error {

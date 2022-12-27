@@ -4,6 +4,7 @@ package evm
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -20,8 +21,10 @@ type evmClient struct {
 	client chain.Chain
 	// origin contains the origin contract
 	origin domains.OriginContract
-	// attestationCollecotr contains the attestation collector contract
+	// attestationCollector contains the attestation collector contract
 	attestationCollector domains.AttestationCollectorContract
+	// destination contains the destination contract
+	destination domains.DestinationContract
 }
 
 var _ domains.DomainClient = &evmClient{}
@@ -38,9 +41,14 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		return nil, fmt.Errorf("could not bind origin contract: %w", err)
 	}
 
-	boundCollector, err := NewAttestationCollectorContract(ctx, underlyingClient, common.HexToAddress(domain.AttesationCollectorAddress))
+	boundCollector, err := NewAttestationCollectorContract(ctx, underlyingClient, common.HexToAddress(domain.AttestationCollectorAddress))
 	if err != nil {
 		return nil, fmt.Errorf("could not bind attestation contract: %w", err)
+	}
+
+	boundDestination, err := NewDestinationContract(ctx, underlyingClient, common.HexToAddress(domain.DestinationAddress))
+	if err != nil {
+		return nil, fmt.Errorf("could not bind destination contract: %w", err)
 	}
 
 	return evmClient{
@@ -49,6 +57,7 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		client:               underlyingClient,
 		attestationCollector: boundCollector,
 		origin:               boundOrigin,
+		destination:          boundDestination,
 	}, nil
 }
 
@@ -80,4 +89,9 @@ func (e evmClient) Origin() domains.OriginContract {
 // AttestationCollector gets the attestation collector.
 func (e evmClient) AttestationCollector() domains.AttestationCollectorContract {
 	return e.attestationCollector
+}
+
+// Destination gets the destination.
+func (e evmClient) Destination() domains.DestinationContract {
+	return e.destination
 }

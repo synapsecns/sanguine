@@ -497,7 +497,7 @@ func (_m *IOrigin) GetDomain(opts *bind.CallOpts, _domainIndex *big.Int) (uint32
 }
 
 // GetHistoricalRoot provides a mock function with given fields: opts, _destination, _nonce
-func (_m *IOrigin) GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, error) {
+func (_m *IOrigin) GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, *big.Int, error) {
 	ret := _m.Called(opts, _destination, _nonce)
 
 	var r0 [32]byte
@@ -509,14 +509,23 @@ func (_m *IOrigin) GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _
 		}
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32, uint32) error); ok {
+	var r1 *big.Int
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32, uint32) *big.Int); ok {
 		r1 = rf(opts, _destination, _nonce)
 	} else {
-		r1 = ret.Error(1)
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*big.Int)
+		}
 	}
 
-	return r0, r1
+	var r2 error
+	if rf, ok := ret.Get(2).(func(*bind.CallOpts, uint32, uint32) error); ok {
+		r2 = rf(opts, _destination, _nonce)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // Initialize provides a mock function with given fields: opts
@@ -1282,15 +1291,15 @@ func (_m *IOrigin) TransferOwnership(opts *bind.TransactOpts, newOwner common.Ad
 	return r0, r1
 }
 
-// VERSION provides a mock function with given fields: opts
-func (_m *IOrigin) VERSION(opts *bind.CallOpts) (uint8, error) {
+// Version provides a mock function with given fields: opts
+func (_m *IOrigin) Version(opts *bind.CallOpts) (string, error) {
 	ret := _m.Called(opts)
 
-	var r0 uint8
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint8); ok {
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) string); ok {
 		r0 = rf(opts)
 	} else {
-		r0 = ret.Get(0).(uint8)
+		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "./Version.sol";
 import { Attestation } from "./libs/Attestation.sol";
 import { AttestationHub } from "./hubs/AttestationHub.sol";
 import { AttestationCollectorEvents } from "./events/AttestationCollectorEvents.sol";
@@ -11,7 +12,12 @@ import {
     OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract AttestationCollector is AttestationCollectorEvents, AttestationHub, OwnableUpgradeable {
+contract AttestationCollector is
+    AttestationCollectorEvents,
+    AttestationHub,
+    OwnableUpgradeable,
+    Version0_0_1
+{
     using Attestation for bytes29;
     using ByteString for bytes;
     using ByteString for bytes29;
@@ -159,7 +165,9 @@ contract AttestationCollector is AttestationCollectorEvents, AttestationHub, Own
         uint32 _destination,
         address _agent
     ) external view returns (uint32) {
-        return _latestAgentNonce(Attestation.attestationDomains(_origin, _destination), _agent);
+        uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
+        uint32 latestNonce = _latestAgentNonce(attestationDomains, _agent);
+        return latestNonce;
     }
 
     /**

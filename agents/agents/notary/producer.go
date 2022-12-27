@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -102,11 +101,11 @@ func (a AttestationProducer) update(ctx context.Context) error {
 	}
 
 	// get the update to sign
-	hashedUpdate, err := HashAttestation(suggestedAttestation)
+	hashedAttestation, err := types.Hash(suggestedAttestation)
 	if err != nil {
 		return fmt.Errorf("could not hash update: %w", err)
 	}
-	signature, err := a.signer.SignMessage(ctx, core.BytesToSlice(hashedUpdate), false)
+	signature, err := a.signer.SignMessage(ctx, core.BytesToSlice(hashedAttestation), false)
 	if err != nil {
 		return fmt.Errorf("could not sign message: %w", err)
 	}
@@ -117,17 +116,4 @@ func (a AttestationProducer) update(ctx context.Context) error {
 		return fmt.Errorf("could not store signed attestations: %w", err)
 	}
 	return nil
-}
-
-// HashAttestation hashes an attestation.
-func HashAttestation(attestation types.Attestation) ([32]byte, error) {
-	encodedAttestation, err := types.EncodeAttestation(attestation)
-	if err != nil {
-		return [32]byte{}, fmt.Errorf("could not encode attestation: %w", err)
-	}
-
-	hashedDigest := crypto.Keccak256Hash(encodedAttestation)
-
-	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
-	return signedHash, nil
 }

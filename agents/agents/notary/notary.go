@@ -3,39 +3,51 @@ package notary
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
-	"github.com/synapsecns/sanguine/agents/indexer"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"golang.org/x/sync/errgroup"
-	"time"
 )
 
-// Notary updates the origin contract.
+// Notary in the current version scans the origins for new messages, signs them, and posts to attestation collector.
+// TODO: Note right now, I have threads for each origin-destination pair and do no batching at all
+// in terms of calls to the origin.
+// Right now, for this MVP, this is the simplest path and we can make improvements later.
 type Notary struct {
-	indexers   map[string]indexer.DomainIndexer
-	producers  map[string]AttestationProducer
-	submitters map[string]AttestationSubmitter
-	signer     signer.Signer
+	scanners        map[string]OriginAttestationScanner
+	signers         map[string]OriginAttestationSigner
+	submitters      map[string]OriginAttestationSubmitter
+	verifiers       map[string]OriginAttestationVerifier
+	bondedSigner    signer.Signer
+	unbondedSigner  signer.Signer
+	refreshInterval time.Duration
 }
 
-// RefreshInterval is how long to wait before refreshing.
-// TODO: This should be done in config.
-var RefreshInterval = 1 * time.Second
-
 // NewNotary creates a new notary.
-func NewNotary(ctx context.Context, cfg config.Config) (_ Notary, err error) {
+func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err error) {
+	if cfg.RefreshIntervalInSeconds == int64(0) {
+		return Notary{}, fmt.Errorf("cfg.refreshInterval cannot be 0")
+	}
 	notary := Notary{
-		indexers:   make(map[string]indexer.DomainIndexer),
-		producers:  make(map[string]AttestationProducer),
-		submitters: make(map[string]AttestationSubmitter),
+		scanners:        make(map[string]OriginAttestationScanner),
+		signers:         make(map[string]OriginAttestationSigner),
+		submitters:      make(map[string]OriginAttestationSubmitter),
+		verifiers:       make(map[string]OriginAttestationVerifier),
+		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
 	}
 
-	notary.signer, err = config.SignerFromConfig(cfg.Signer)
+	notary.bondedSigner, err = config.SignerFromConfig(cfg.BondedSigner)
 	if err != nil {
-		return Notary{}, fmt.Errorf("could not create notary: %w", err)
+		return Notary{}, fmt.Errorf("error with bondedSigner, could not create notary: %w", err)
+	}
+
+	notary.unbondedSigner, err = config.SignerFromConfig(cfg.UnbondedSigner)
+	if err != nil {
+		return Notary{}, fmt.Errorf("error with unbondedSigner, could not create notary: %w", err)
 	}
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
@@ -48,16 +60,25 @@ func NewNotary(ctx context.Context, cfg config.Config) (_ Notary, err error) {
 		return Notary{}, fmt.Errorf("could not connect to legacyDB: %w", err)
 	}
 
-	for name, domain := range cfg.Domains {
-		domainClient, err := evm.NewEVM(ctx, name, domain)
+	destinationClient, err := evm.NewEVM(ctx, "destination_client", cfg.DestinationDomain)
+	if err != nil {
+		return Notary{}, fmt.Errorf("error with destinationClient, could not create notary for: %w", err)
+	}
+	attestationClient, err := evm.NewEVM(ctx, "attestation_client", cfg.AttestationDomain)
+	if err != nil {
+		return Notary{}, fmt.Errorf("error with attestationClient, could not create notary for: %w", err)
+	}
+
+	for name, originDomain := range cfg.OriginDomains {
+		originClient, err := evm.NewEVM(ctx, name, originDomain)
 		if err != nil {
-			return Notary{}, fmt.Errorf("could not create notary for: %w", err)
+			return Notary{}, fmt.Errorf("error with originClient, could not create notary for: %w", err)
 		}
 
-		notary.indexers[name] = indexer.NewDomainIndexer(dbHandle, domainClient, RefreshInterval)
-		notary.producers[name] = NewAttestationProducer(domainClient, dbHandle, notary.signer, RefreshInterval)
-		// TODO: this needs to be on a separate chain so it'll need to use a different domain client. Config needs to be modified
-		notary.submitters[name] = NewAttestationSubmitter(domainClient, dbHandle, notary.signer, RefreshInterval)
+		notary.scanners[name] = NewOriginAttestationScanner(originClient, attestationClient, destinationClient, dbHandle, notary.bondedSigner, notary.unbondedSigner, notary.refreshInterval)
+		notary.signers[name] = NewOriginAttestationSigner(originClient, attestationClient, destinationClient, dbHandle, notary.bondedSigner, notary.unbondedSigner, notary.refreshInterval)
+		notary.submitters[name] = NewOriginAttestationSubmitter(originClient, attestationClient, destinationClient, dbHandle, notary.bondedSigner, notary.unbondedSigner, notary.refreshInterval)
+		notary.verifiers[name] = NewOriginAttestationVerifier(originClient, attestationClient, destinationClient, dbHandle, notary.bondedSigner, notary.unbondedSigner, notary.refreshInterval)
 	}
 
 	return notary, nil
@@ -66,27 +87,36 @@ func NewNotary(ctx context.Context, cfg config.Config) (_ Notary, err error) {
 // Start starts the notary.{.
 func (u Notary) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
-	for i := range u.indexers {
-		i := i // capture func literal
+
+	for name := range u.scanners {
+		name := name // capture func literal
 		g.Go(func() error {
 			//nolint: wrapcheck
-			return u.indexers[i].SyncMessages(ctx)
+			return u.scanners[name].Start(ctx)
 		})
 	}
 
-	for i := range u.producers {
-		i := i // capture func literal
+	for name := range u.signers {
+		name := name // capture func literal
 		g.Go(func() error {
 			//nolint: wrapcheck
-			return u.producers[i].Start(ctx)
+			return u.signers[name].Start(ctx)
 		})
 	}
 
-	for i := range u.submitters {
-		i := i // capture func literal
+	for name := range u.submitters {
+		name := name // capture func literal
 		g.Go(func() error {
 			//nolint: wrapcheck
-			return u.submitters[i].Start(ctx)
+			return u.submitters[name].Start(ctx)
+		})
+	}
+
+	for name := range u.verifiers {
+		name := name // capture func literal
+		g.Go(func() error {
+			//nolint: wrapcheck
+			return u.verifiers[name].Start(ctx)
 		})
 	}
 

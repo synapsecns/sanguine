@@ -32,15 +32,15 @@ func (t *TxQueueSuite) TestGetNonce() {
 }
 
 func (t *TxQueueSuite) TestGetTransactor() {
+	destinationDomain := uint32(t.TestBackendDestination.GetChainID())
+
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(t.T(), err)
 
-	tx, err := t.originContract.Dispatch(t.testTransactor, destinationID, [32]byte{}, 1, encodedTips, []byte("hello world"))
+	auth := t.TestBackendOrigin.GetTxContext(t.GetTestContext(), nil)
+
+	tx, err := t.OriginContract.Dispatch(auth.TransactOpts, destinationDomain, [32]byte{}, 1, encodedTips, []byte("hello world"))
 	Nil(t.T(), err)
 
-	t.chn.WaitForConfirmation(t.GetTestContext(), tx)
-
-	_, err = t.originContract.Dispatch(t.testTransactor, destinationID, [32]byte{}, 1, encodedTips, []byte("hello world"))
-	Nil(t.T(), err)
-	t.chn.WaitForConfirmation(t.GetTestContext(), tx)
+	t.TestBackendOrigin.WaitForConfirmation(t.GetTestContext(), tx)
 }

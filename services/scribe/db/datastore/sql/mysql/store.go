@@ -30,10 +30,11 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 	logger.Debug("creating mysql store")
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
-		Logger:               common_base.GetGormLogger(logger),
-		FullSaveAssociations: true,
-		NamingStrategy:       NamingStrategy,
-		NowFunc:              time.Now,
+		Logger:                 common_base.GetGormLogger(logger),
+		FullSaveAssociations:   true,
+		NamingStrategy:         NamingStrategy,
+		NowFunc:                time.Now,
+		SkipDefaultTransaction: true,
 	})
 
 	if err != nil {
