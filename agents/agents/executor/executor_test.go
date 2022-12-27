@@ -1,6 +1,10 @@
 package executor_test
 
 import (
+	"github.com/ethereum/go-ethereum/common"
+	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
+	agentsTestutil "github.com/synapsecns/sanguine/agents/testutil"
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -9,7 +13,11 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 
 	"github.com/brianvoe/gofakeit/v6"
+<<<<<<< HEAD
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+=======
+	"github.com/ethereum/go-ethereum/params"
+>>>>>>> master
 	"github.com/prysmaticlabs/prysm/shared/trieutil"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
@@ -233,9 +241,18 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	defer func() {
 		testDone = true
 	}()
+<<<<<<< HEAD
 
 	contractConfig := config.ContractConfig{
 		Address:    e.originContract.Address().String(),
+=======
+
+	chainID := uint32(e.TestBackendOrigin.GetChainID())
+	destination := uint32(e.TestBackendDestination.GetChainID())
+
+	contractConfig := config.ContractConfig{
+		Address:    e.OriginContractMetadata.Address().String(),
+>>>>>>> master
 		StartBlock: 0,
 	}
 	chainConfig := config.ChainConfig{
@@ -246,6 +263,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{chainConfig},
 	}
+	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
+	e.Nil(err)
 	clients := map[uint32][]backfill.ScribeBackend{
 		e.chainID: {e.simulatedClient, e.simulatedClient},
 	}
@@ -267,8 +286,13 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
 			{
+<<<<<<< HEAD
 				ChainID:       e.chainID,
 				OriginAddress: e.originContract.Address().String(),
+=======
+				ChainID:       chainID,
+				OriginAddress: e.OriginContractMetadata.Address().String(),
+>>>>>>> master
 			},
 			{
 				ChainID: e.destination,
@@ -277,8 +301,13 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	}
 
 	executorClients := map[uint32]executor.Backend{
+<<<<<<< HEAD
 		e.chainID:     e.simulatedChain,
 		e.destination: nil,
+=======
+		chainID:     e.TestBackendOrigin,
+		destination: nil,
+>>>>>>> master
 	}
 
 	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
@@ -304,6 +333,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	messageBytes := []byte{byte(gofakeit.Uint32())}
 
+<<<<<<< HEAD
 	ownerPtr, err := e.originRef.OriginHarnessCaller.Owner(&bind.CallOpts{Context: e.GetTestContext()})
 	e.Nil(err)
 
@@ -325,6 +355,16 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 
 	sender, err := e.simulatedChain.Signer().Sender(tx)
+=======
+	transactOpts := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
+	transactOpts.Value = types.TotalTips(tips[0])
+
+	tx, err := e.OriginContract.Dispatch(transactOpts.TransactOpts, destination, recipients[0], optimisticSeconds[0], encodedTips, messageBytes)
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
+	sender, err := e.TestBackendOrigin.Signer().Sender(tx)
+>>>>>>> master
 	e.Nil(err)
 
 	header := types.NewHeader(e.chainID, sender.Hash(), 1, e.destination, recipients[0], optimisticSeconds[0])
@@ -373,9 +413,15 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	transactOpts.Value = types.TotalTips(tips[1])
 
+<<<<<<< HEAD
 	tx, err = e.originRef.Dispatch(transactOpts.TransactOpts, e.destination, recipients[1], optimisticSeconds[1], encodedTips, messageBytes)
 	e.Nil(err)
 	e.simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
+=======
+	tx, err = e.OriginContract.Dispatch(transactOpts.TransactOpts, destination, recipients[1], optimisticSeconds[1], encodedTips, messageBytes)
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+>>>>>>> master
 
 	header = types.NewHeader(e.chainID, sender.Hash(), 2, e.destination, recipients[1], optimisticSeconds[1])
 
@@ -420,16 +466,28 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 }
 
 func (e *ExecutorSuite) TestVerifyMessage() {
+<<<<<<< HEAD
+=======
+	chainID := uint32(e.TestBackendOrigin.GetChainID())
+	destination := uint32(e.TestBackendDestination.GetChainID())
+>>>>>>> master
 	testTree, err := trieutil.NewTrie(32)
 	e.Nil(err)
 
 	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
 			{
+<<<<<<< HEAD
 				ChainID: e.chainID,
 			},
 			{
 				ChainID: e.destination,
+=======
+				ChainID: chainID,
+			},
+			{
+				ChainID: destination,
+>>>>>>> master
 			},
 		},
 	}
@@ -441,8 +499,13 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	}()
 
 	executorClients := map[uint32]executor.Backend{
+<<<<<<< HEAD
 		e.chainID:     nil,
 		e.destination: nil,
+=======
+		chainID:     nil,
+		destination: nil,
+>>>>>>> master
 	}
 
 	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
@@ -489,10 +552,17 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
 	}
 
+<<<<<<< HEAD
 	header0 := types.NewHeader(e.chainID, senders[0], nonces[0], e.destination, recipients[0], optimisticSeconds[0])
 	header1 := types.NewHeader(e.chainID, senders[1], nonces[1], e.destination, recipients[1], optimisticSeconds[1])
 	header2 := types.NewHeader(e.chainID, senders[2], nonces[2], e.destination, recipients[2], optimisticSeconds[2])
 	header3 := types.NewHeader(e.chainID, senders[3], nonces[3], e.destination, recipients[3], optimisticSeconds[3])
+=======
+	header0 := types.NewHeader(chainID, senders[0], nonces[0], destination, recipients[0], optimisticSeconds[0])
+	header1 := types.NewHeader(chainID, senders[1], nonces[1], destination, recipients[1], optimisticSeconds[1])
+	header2 := types.NewHeader(chainID, senders[2], nonces[2], destination, recipients[2], optimisticSeconds[2])
+	header3 := types.NewHeader(chainID, senders[3], nonces[3], destination, recipients[3], optimisticSeconds[3])
+>>>>>>> master
 
 	message0 := types.NewMessage(header0, tips[0], messageBytes[0])
 	message1 := types.NewMessage(header1, tips[1], messageBytes[1])
@@ -525,6 +595,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = e.testDB.StoreMessage(e.GetTestContext(), message2, root2, blockNumbers[2])
 	e.Nil(err)
 
+<<<<<<< HEAD
 	err = exec.BuildTreeFromDB(e.GetTestContext(), e.chainID, e.destination)
 	e.Nil(err)
 
@@ -541,16 +612,41 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	e.True(inTree2)
 
 	inTreeFail, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message1, e.chainID, e.destination)
+=======
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
+	e.Nil(err)
+
+	inTree0, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[0], message0, chainID, destination)
+	e.Nil(err)
+	e.True(inTree0)
+
+	inTree1, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[1], message1, chainID, destination)
+	e.Nil(err)
+	e.True(inTree1)
+
+	inTree2, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message2, chainID, destination)
+	e.Nil(err)
+	e.True(inTree2)
+
+	inTreeFail, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[2], message1, chainID, destination)
+>>>>>>> master
 	e.Nil(err)
 	e.False(inTreeFail)
 
 	err = e.testDB.StoreMessage(e.GetTestContext(), message3, root3, blockNumbers[3])
 	e.Nil(err)
 
+<<<<<<< HEAD
 	err = exec.BuildTreeFromDB(e.GetTestContext(), e.chainID, e.destination)
 	e.Nil(err)
 
 	inTree3, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[3], message3, e.chainID, e.destination)
+=======
+	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
+	e.Nil(err)
+
+	inTree3, err := exec.VerifyMessageNonce(e.GetTestContext(), nonces[3], message3, chainID, destination)
+>>>>>>> master
 	e.Nil(err)
 	e.True(inTree3)
 }
@@ -566,8 +662,14 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
 	e.Nil(err)
 
+<<<<<<< HEAD
 	_, passBlockRef := e.deployManager.GetOriginHarness(e.GetTestContext(), e.TestBackendDestination)
 	_ = passBlockRef
+=======
+	deployManager := agentsTestutil.NewDeployManager(e.T())
+
+	_, passBlockRef := deployManager.GetOriginHarness(e.GetTestContext(), e.TestBackendDestination)
+>>>>>>> master
 	originConfig := config.ContractConfig{
 		Address:    e.OriginContract.Address().String(),
 		StartBlock: 0,

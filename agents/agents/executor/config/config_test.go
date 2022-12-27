@@ -23,7 +23,11 @@ func configFixture() config.Config {
 				DestinationAddress: gofakeit.Word(),
 			},
 		},
+<<<<<<< HEAD
 		RPCURL: gofakeit.URL(),
+=======
+		BaseOmnirpcURL: gofakeit.URL(),
+>>>>>>> master
 	}
 }
 
@@ -49,7 +53,11 @@ func (c ConfigSuite) TestInvalidAttestationInfo() {
 	Nil(c.T(), err)
 	True(c.T(), ok)
 
+<<<<<<< HEAD
 	testConfig.RPCURL = ""
+=======
+	testConfig.BaseOmnirpcURL = ""
+>>>>>>> master
 
 	ok, err = testConfig.IsValid(c.GetTestContext())
 	False(c.T(), ok)

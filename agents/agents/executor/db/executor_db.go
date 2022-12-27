@@ -13,7 +13,11 @@ type ExecutorDBWriter interface {
 	StoreMessage(ctx context.Context, message agentsTypes.Message, root common.Hash, blockNumber uint64) error
 
 	// StoreAttestation stores an attestation.
+<<<<<<< HEAD
 	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64) error
+=======
+	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error
+>>>>>>> master
 }
 
 // ExecutorDBReader is the interface for reading from the executor database.
@@ -33,6 +37,11 @@ type ExecutorDBReader interface {
 	GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error)
 	// GetAttestationBlockNumber gets the block number of an attestation.
 	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
+<<<<<<< HEAD
+=======
+	// GetAttestationBlockTime gets the block time of an attestation.
+	GetAttestationBlockTime(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
+>>>>>>> master
 }
 
 // ExecutorDB is the interface for the executor database.

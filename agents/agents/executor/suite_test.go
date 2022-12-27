@@ -9,10 +9,14 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
+<<<<<<< HEAD
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	agentsTestutil "github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
+=======
+	agentsTestutil "github.com/synapsecns/sanguine/agents/testutil"
+>>>>>>> master
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -25,6 +29,7 @@ import (
 // ExecutorSuite tests the executor agent.
 type ExecutorSuite struct {
 	*agentsTestutil.SimulatedBackendsTestSuite
+<<<<<<< HEAD
 	scribeTestDB    scribedb.EventDB
 	testDB          db.ExecutorDB
 	dbPath          string
@@ -39,6 +44,15 @@ type ExecutorSuite struct {
 	deployManager   *agentsTestutil.DeployManager
 	originContract  contracts.DeployedContract
 	originRef       *originharness.OriginHarnessRef
+=======
+	scribeTestDB scribedb.EventDB
+	testDB       db.ExecutorDB
+	dbPath       string
+	logIndex     atomic.Int64
+	manager      *testutil.DeployManager
+	wallet       wallet.Wallet
+	signer       *localsigner.Signer
+>>>>>>> master
 }
 
 // NewExecutorSuite creates a new executor suite.
