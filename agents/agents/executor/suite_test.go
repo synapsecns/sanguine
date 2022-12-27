@@ -1,9 +1,10 @@
 package executor_test
 
 import (
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
-	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
@@ -19,9 +20,6 @@ import (
 	scribesqlite "github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"go.uber.org/atomic"
-	"math/big"
-	"testing"
-	"time"
 )
 
 // ExecutorSuite tests the executor agent.
@@ -61,23 +59,9 @@ func (e *ExecutorSuite) SetupTest() {
 	Nil(e.T(), err)
 	e.scribeTestDB = scribeSqliteStore
 	e.logIndex.Store(0)
-	e.manager = testutil.NewDeployManager(e.T())
-	e.wallet, err = wallet.FromRandom()
-	Nil(e.T(), err)
-	e.signer = localsigner.NewSigner(e.wallet.PrivateKey())
 	sqliteStore, err := sqlite.NewSqliteStore(e.GetTestContext(), filet.TmpDir(e.T(), ""))
 	Nil(e.T(), err)
 	e.testDB = sqliteStore
-
-	e.chainID = gofakeit.Uint32()
-	e.destination = e.chainID + 1
-	e.simulatedChain = geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(e.chainID)))
-	e.simulatedClient, err = backfill.DialBackend(e.GetTestContext(), e.simulatedChain.RPCAddress())
-	Nil(e.T(), err)
-
-	e.simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-	e.deployManager = agentsTestutil.NewDeployManager(e.T())
-	e.originContract, e.originRef = e.deployManager.GetOriginHarness(e.GetTestContext(), e.simulatedChain)
 }
 
 func TestExecutorSuite(t *testing.T) {

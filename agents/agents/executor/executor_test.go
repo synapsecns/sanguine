@@ -1,19 +1,19 @@
 package executor_test
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/core"
-	"math/big"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/prysmaticlabs/prysm/shared/trieutil"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -34,21 +34,19 @@ func (e *ExecutorSuite) TestExecutor() {
 	e.Nil(err)
 	simulatedClientB, err := backfill.DialBackend(e.GetTestContext(), simulatedChainB.RPCAddress())
 	e.Nil(err)
-	simulatedChainA.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-	simulatedChainB.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-	testContractA, testRefA := e.manager.GetTestContract(e.GetTestContext(), simulatedChainA)
-	testContractB, testRefB := e.manager.GetTestContract(e.GetTestContext(), simulatedChainB)
+	testContractA, testRefA := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), simulatedChainA)
+	testContractB, testRefB := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), simulatedChainB)
 	transactOptsA := simulatedChainA.GetTxContext(e.GetTestContext(), nil)
 	transactOptsB := simulatedChainB.GetTxContext(e.GetTestContext(), nil)
 
 	// Emit two events on each chain.
-	tx, err := testRefA.EmitEventA(transactOptsA.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	tx, err := testRefA.EmitAgentsEventA(transactOptsA.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
 	e.Nil(err)
 	simulatedChainA.WaitForConfirmation(e.GetTestContext(), tx)
-	tx, err = testRefA.EmitEventB(transactOptsA.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
+	tx, err = testRefA.EmitAgentsEventB(transactOptsA.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
 	e.Nil(err)
 	simulatedChainA.WaitForConfirmation(e.GetTestContext(), tx)
-	tx, err = testRefB.EmitEventAandB(transactOptsB.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
+	tx, err = testRefB.EmitAgentsEventAandB(transactOptsB.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
 	e.Nil(err)
 	simulatedChainB.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -149,12 +147,13 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	defer func() {
 		testDone = true
 	}()
-	chainID := gofakeit.Uint32()
-	simulatedChain := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
-	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), simulatedChain.RPCAddress())
-	e.Nil(err)
-	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-	testContract, testRef := e.manager.GetTestContract(e.GetTestContext(), simulatedChain)
+	chainID := e.OriginDomainClient.Config().DomainID
+	simulatedChain := e.OriginSimulatedChain
+	simulatedClient := e.OriginSimulatedClient
+
+	testContract := e.AgentsTestContractMetadataOnOriginChain
+	testRef := e.AgentsTestContractOnOriginChain
+
 	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
 
 	contractConfig := config.ContractConfig{
@@ -214,7 +213,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	// Emit 250 events.
 	go func() {
 		for i := 0; i < 250; i++ {
-			tx, err := testRef.EmitEventB(transactOpts.TransactOpts, []byte{byte(i)}, big.NewInt(int64(i)), big.NewInt(int64(i)))
+			tx, err := testRef.EmitAgentsEventB(transactOpts.TransactOpts, []byte{byte(i)}, big.NewInt(int64(i)), big.NewInt(int64(i)))
 			e.Nil(err)
 			simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 		}

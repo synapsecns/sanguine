@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
+	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 )
 
@@ -65,6 +66,8 @@ const (
 	AttestationCollectorType contractTypeImpl = iota // AttestationCollector
 	// DestinationType is the type of the destination.
 	DestinationType contractTypeImpl = iota // Destination
+	// AgentsTestContractType is the type of the agents test contract.
+	AgentsTestContractType contractTypeImpl = iota // AgentsTestContract
 )
 
 // ID gets the contract type as an id.
@@ -104,6 +107,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return destination.Contracts["solidity/Destination.sol:Destination"]
 	case HeaderHarnessType:
 		return headerharness.Contracts["solidity/HeaderHarness.t.sol:HeaderHarness"]
+	case AgentsTestContractType:
+		return agentstestcontract.Contracts["solidity/AgentsTestContract.sol:AgentsTestContract"]
 	default:
 		panic("not yet implemented")
 	}
