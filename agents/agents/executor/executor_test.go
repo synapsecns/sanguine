@@ -793,6 +793,8 @@ func (d *ExecutorSuite) TestDestinationExecute() {
 
 	message := types.NewMessage(header, tips, messageBody)
 	d.Nil(err)
+	encodedMessage, err := types.EncodeMessage(message)
+	d.Nil(err)
 	allMessages := []types.Message{message}
 	rawMessages := make([][]byte, len(allMessages))
 	for i, message := range allMessages {
@@ -804,12 +806,21 @@ func (d *ExecutorSuite) TestDestinationExecute() {
 
 	merkleTree, err := trieutil.GenerateTrieFromItems(rawMessages, executor.TreeDepth)
 	d.Nil(err)
-	rawProofBranches, err := merkleTree.MerkleProof(0)
+	rawProof, err := merkleTree.MerkleProof(0)
+	fmt.Printf("\nCRONIN len(rawProof)\n %v \nCRONIN\n", len(rawProof))
 	d.Nil(err)
 	var proofToUse [32][32]byte
+
 	for i := 0; i < 32; i++ {
-		copy(proofToUse[i][:], rawProofBranches[i])
+		fmt.Printf("\nCRONIN len(rawProof[%d]) = %v and root is: \n %v \nCRONIN\n", i, len(rawProof[i]), rawProof[i])
+		for j := 0; j < 32; j++ {
+			proofToUse[i][j] = rawProof[i+1][j]
+		}
 	}
+	fmt.Printf("\nCRONIN when 32 root: \n %v \nCRONIN\n", rawProof[32])
+	/*for i := 0; i < int(executor.TreeDepth); i++ {
+		copy(proofToUse[i][:], rawProof[i][:32])
+	}*/
 
 	attestationKey := types.AttestationKey{
 		Origin:      originDomain,
@@ -818,6 +829,10 @@ func (d *ExecutorSuite) TestDestinationExecute() {
 	}
 
 	root := merkleTree.Root()
+	fmt.Printf("\nCRONIN root from merkleTree.Root()\n %v \nCRONIN\n", root)
+	hashTreeRoot := merkleTree.HashTreeRoot()
+	fmt.Printf("\nCRONIN hashTreeRoot from merkleTree.HashTreeRoot()\n %v \nCRONIN\n", hashTreeRoot)
+
 	unsignedAttestation := types.NewAttestation(attestationKey.GetRawKey(), root)
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	d.Nil(err)
@@ -868,26 +883,40 @@ func (d *ExecutorSuite) TestDestinationExecute() {
 		// Now sleep for a second before executing
 		time.Sleep(time.Second)
 		index := big.NewInt(int64(0))
-		tx, err = d.DestinationContract.Execute(txContextDestination.TransactOpts, messageBody, proofToUse, index)
+
+		leaf, err := message.ToLeaf()
+		d.Nil(err)
+
+		fromProofToUse := make([][]byte, 32)
+		for i := 0; i < 32; i++ {
+			fromProofToUse[i] = make([]byte, 32)
+			for j := 0; j < 32; j++ {
+				fromProofToUse[i][j] = proofToUse[i][j]
+			}
+		}
+		inTree := trieutil.VerifyMerkleBranch(root[:], leaf[:], int(nonce-1), rawProof, executor.TreeDepth)
+		d.True(inTree)
+
+		tx, err = d.DestinationContract.Execute(txContextDestination.TransactOpts, encodedMessage, proofToUse, index)
 		d.Nil(err)
 
 		d.TestBackendDestination.WaitForConfirmation(d.GetTestContext(), tx)
 
-		break
-	}
+		watchHandleCtx, cancel := context.WithTimeout(d.GetTestContext(), time.Second*10)
+		defer cancel()
 
-	watchHandleCtx, cancel := context.WithTimeout(d.GetTestContext(), time.Second*10)
-	defer cancel()
+		select {
+		// check for errors and fail
+		case <-watchHandleCtx.Done():
+			d.T().Error(d.T(), fmt.Errorf("test context completed %w", d.GetTestContext().Err()))
+		case <-subMessageHandled.Err():
+			d.T().Error(d.T(), subMessageHandled.Err())
+		// get attestation accepted event
+		case item := <-iMessageHandledSink:
+			d.NotNil(item)
 
-	select {
-	// check for errors and fail
-	case <-watchHandleCtx.Done():
-		d.T().Error(d.T(), fmt.Errorf("test context completed %w", d.GetTestContext().Err()))
-	case <-subMessageHandled.Err():
-		d.T().Error(d.T(), subAttestation.Err())
-	// get attestation accepted event
-	case item := <-iMessageHandledSink:
-		d.NotNil(item)
+			break
+		}
 
 		break
 	}
