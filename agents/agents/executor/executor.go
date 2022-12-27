@@ -10,9 +10,13 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
+	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/domains"
+	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
@@ -41,8 +45,10 @@ type ChainExecutor struct {
 	logChan chan *ethTypes.Log
 	// merkleTrees is a map from destination chain ID -> merkle tree.
 	merkleTrees map[uint32]*trieutil.SparseMerkleTrie
-	// client is an RPC client.
-	client Backend
+	// rpcClient is an RPC client.
+	rpcClient Backend
+	// destinationClient is a map from destination chain ID -> destination client.
+	destinationClient map[uint32]domains.DomainClient
 }
 
 // Executor is the executor agent.
@@ -113,7 +119,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			destinationParser: destinationParser,
 			logChan:           make(chan *ethTypes.Log, logChanSize),
 			merkleTrees:       make(map[uint32]*trieutil.SparseMerkleTrie),
-			client:            clients[chain.ChainID],
+			rpcClient:         clients[chain.ChainID],
 		}
 
 		for _, destination := range config.Chains {
@@ -127,6 +133,13 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			}
 
 			chainExecutors[chain.ChainID].merkleTrees[destination.ChainID] = tree
+
+			destinationClient, err := evm.NewEVM(ctx, "destination_client", agentsConfig.DomainConfig{})
+			if err != nil {
+				return nil, fmt.Errorf("could not create destination client: %w", err)
+			}
+
+			chainExecutors[chain.ChainID].destinationClient[destination.ChainID] = destinationClient
 		}
 	}
 
@@ -210,7 +223,19 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	// execute
+	proof, err := e.GetLatestNonceProof(message.Nonce(), message.OriginDomain(), message.DestinationDomain())
+	if err != nil {
+		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
+	}
+
+	index := big.NewInt(int64(message.Nonce() - 1))
+
+	signer := signer.Signer
+
+	err = e.chainExecutors[message.OriginDomain()].destinationClient[message.DestinationDomain()].Destination().Execute(ctx, message, proof, index)
+	if err != nil {
+		return false, fmt.Errorf("could not execute message: %w", err)
+	}
 
 	return true, nil
 }
@@ -341,7 +366,7 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 		return false, nil
 	}
 
-	latestHeader, err := e.chainExecutors[destination].client.HeaderByNumber(ctx, nil)
+	latestHeader, err := e.chainExecutors[destination].rpcClient.HeaderByNumber(ctx, nil)
 	if err != nil {
 		return false, fmt.Errorf("could not get latest header: %w", err)
 	}
@@ -496,7 +521,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			return nil
 		}
 
-		logHeader, err := e.chainExecutors[(*attestation).Destination()].client.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
+		logHeader, err := e.chainExecutors[(*attestation).Destination()].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
 		if err != nil {
 			return fmt.Errorf("could not get log header: %w", err)
 		}

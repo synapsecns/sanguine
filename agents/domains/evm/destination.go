@@ -3,6 +3,8 @@ package evm
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
@@ -40,17 +42,7 @@ type destinationContract struct {
 }
 
 func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
-	transactor, err := signer.GetTransactor(a.client.GetBigChainID())
-	if err != nil {
-		return fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
+	transactOpts, err := a.transactOptsSetup(ctx, signer)
 
 	encodedAttestation, err := types.EncodeSignedAttestation(attestation)
 	if err != nil {
@@ -63,4 +55,36 @@ func (a destinationContract) SubmitAttestation(ctx context.Context, signer signe
 	}
 
 	return nil
+}
+
+func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error {
+	transactOpts, err := a.transactOptsSetup(ctx, signer)
+
+	encodedMessage, err := types.EncodeMessage(message)
+	if err != nil {
+		return fmt.Errorf("could not encode message: %w", err)
+	}
+
+	_, err = a.contract.Execute(transactOpts, encodedMessage, proof, index)
+	if err != nil {
+		return fmt.Errorf("could not execute message: %w", err)
+	}
+
+	return nil
+}
+
+func (a destinationContract) transactOptsSetup(ctx context.Context, signer signer.Signer) (*bind.TransactOpts, error) {
+	transactor, err := signer.GetTransactor(a.client.GetBigChainID())
+	if err != nil {
+		return nil, fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+
+	return transactOpts, nil
 }
