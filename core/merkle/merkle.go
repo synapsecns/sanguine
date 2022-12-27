@@ -212,14 +212,15 @@ func fetchTreeElementState(m *HistoricalTree, h uint32, x uint32, count uint32) 
 	// We do cast to uint64 here, as (1 << 32) overflows uint32
 	firstChildLeafIndex := uint64(x) << h // x * (2**H)
 	childLeafsAmount := uint64(1) << h    // 2**H
-	if uint64(count) <= firstChildLeafIndex {
+	switch {
+	case uint64(count) <= firstChildLeafIndex:
 		// Stage A: not enough leafs were inserted, element is still zero.
 		return m.zeroHashes[h]
-	} else if uint64(count) <= firstChildLeafIndex+childLeafsAmount {
+	case uint64(count) <= firstChildLeafIndex+childLeafsAmount:
 		// Stage B: tree element was updated after last leaf insertion.
 		key := StateKey{h, x, count}
 		return m.state[key]
-	} else {
+	default:
 		// Stage C: tree element was not updated after last leaf insertion.
 		// Use last saved value.
 		key := StateKey{h, x, uint32(firstChildLeafIndex + childLeafsAmount)}
