@@ -7,16 +7,16 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-// StakeKey implements a key for the historical state map.
+// StateKey implements a key for the historical state map.
 type StateKey struct {
 	h     uint32
 	x     uint32
 	count uint32
 }
 
-// MerkleTree implements a merkle tree with the ability to generate historical
+// HistoricalTree implements a merkle tree with the ability to generate historical
 // state of the tree. This includes historical roots, as well as historical proofs.
-type MerkleTree struct {
+type HistoricalTree struct {
 	// state[stateKey] is the value for a tree element:
 	//   - With [height = stakeKey.h] (increasing from leafs to root)
 	//   - With [x-coord = stateKey.x] (increasing from older leafs to newer)
@@ -80,8 +80,8 @@ type MerkleTree struct {
 const treeDepth uint32 = 32
 
 // NewTree returns an empty Merkle Tree.
-func NewTree() *MerkleTree {
-	return &MerkleTree{
+func NewTree() *HistoricalTree {
+	return &HistoricalTree{
 		state:      make(map[StateKey][]byte),
 		zeroHashes: generateZeroHashes(),
 		treeCount:  0,
@@ -91,7 +91,7 @@ func NewTree() *MerkleTree {
 // BranchRoot calculates the merkle root given the item and the proof.
 func BranchRoot(item []byte, index uint32, proof [][]byte) ([]byte, error) {
 	if len(proof) != int(treeDepth) {
-		return nil, fmt.Errorf("Incorrect proof length: %d; should be: %d", len(proof), treeDepth)
+		return nil, fmt.Errorf("incorrect proof length: %d; should be: %d", len(proof), treeDepth)
 	}
 	node := item
 	for h := uint32(0); h < treeDepth; h++ {
@@ -116,13 +116,13 @@ func VerifyMerkleProof(root, item []byte, index uint32, proof [][]byte) bool {
 }
 
 // Insert inserts a new leaf into the merkle tree. This is done using O(1) time.
-func (m *MerkleTree) Insert(item []byte) {
+func (m *HistoricalTree) Insert(item []byte) {
 	x := m.treeCount
 	newCount := x + 1
 	saveElementState(m, 0, x, newCount, item)
 	for h := uint32(1); h <= treeDepth; h++ {
 		// Traverse to parent
-		x = x >> 1
+		x >>= 1
 		// Children have [height = h - 1]
 		// And X-coordinates [2 * x] and [2 * x + 1]
 		leftChild := fetchTreeElementState(m, h-1, x<<1, newCount)
@@ -134,7 +134,7 @@ func (m *MerkleTree) Insert(item []byte) {
 }
 
 // Items returns the list of items that were inserted in the Merkle tree.
-func (m *MerkleTree) Items() [][]byte {
+func (m *HistoricalTree) Items() [][]byte {
 	items := make([][]byte, m.treeCount)
 	for x := uint32(0); x < m.treeCount; x++ {
 		// H=0 is the leaf level.
@@ -144,14 +144,14 @@ func (m *MerkleTree) Items() [][]byte {
 }
 
 // NumOfItems returns the amount of leafs inserted in the merkle tree.
-func (m *MerkleTree) NumOfItems() uint32 {
+func (m *HistoricalTree) NumOfItems() uint32 {
 	return m.treeCount
 }
 
 // Item returns the inserted item with the given `index`.
-func (m *MerkleTree) Item(index uint32) ([]byte, error) {
+func (m *HistoricalTree) Item(index uint32) ([]byte, error) {
 	if index >= m.treeCount {
-		return nil, fmt.Errorf("Not enough leafs. Inserted: %d, requested index: %d", m.treeCount, index)
+		return nil, fmt.Errorf("not enough leafs; inserted: %d, requested index: %d", m.treeCount, index)
 	}
 	// H=0 is the leaf level.
 	return fetchTreeElementState(m, 0, index, m.treeCount), nil
@@ -159,9 +159,9 @@ func (m *MerkleTree) Item(index uint32) ([]byte, error) {
 
 // Root returns the merkle root of the tree after a certain amount of leafs were inserted.
 // This is done using O(1) time.
-func (m *MerkleTree) Root(count uint32) ([]byte, error) {
+func (m *HistoricalTree) Root(count uint32) ([]byte, error) {
 	if count > m.treeCount {
-		return nil, fmt.Errorf("Not enough leafs. Inserted: %d, requested root for count: %d", m.treeCount, count)
+		return nil, fmt.Errorf("not enough leafs; inserted: %d, requested root for count: %d", m.treeCount, count)
 	}
 	// H=32 is the root level.
 	return fetchTreeElementState(m, treeDepth, 0, count), nil
@@ -172,12 +172,12 @@ func (m *MerkleTree) Root(count uint32) ([]byte, error) {
 //   - At the time when `count` leafs have been inserted
 //
 // This is done using O(1) time.
-func (m *MerkleTree) MerkleProof(index uint32, count uint32) ([][]byte, error) {
+func (m *HistoricalTree) MerkleProof(index uint32, count uint32) ([][]byte, error) {
 	if count > m.treeCount {
-		return nil, fmt.Errorf("Not enough leafs. Inserted: %d, requested proof for count: %d", m.treeCount, count)
+		return nil, fmt.Errorf("not enough leafs; inserted: %d, requested proof for count: %d", m.treeCount, count)
 	}
 	if index >= count {
-		return nil, fmt.Errorf("Merkle index out of range. Count: %d, requested proof for index: %d", count, index)
+		return nil, fmt.Errorf("merkle index out of range; count: %d, requested proof for index: %d", count, index)
 	}
 	proof := make([][]byte, treeDepth)
 	for h := uint32(0); h < treeDepth; h++ {
@@ -186,7 +186,7 @@ func (m *MerkleTree) MerkleProof(index uint32, count uint32) ([][]byte, error) {
 		// Get sibling state at the time when `count` leafs were added
 		proof[h] = fetchTreeElementState(m, h, siblingX, count)
 		// Traverse to parent
-		index = index >> 1
+		index >>= 1
 	}
 	return proof, nil
 }
@@ -208,7 +208,7 @@ func generateZeroHashes() [][]byte {
 //   - With [height = H] (increasing from leafs to root)
 //   - With [x-coord = X] (increasing from older leafs to newer)
 //   - When `count` leafs were inserted in the merkle tree
-func fetchTreeElementState(m *MerkleTree, h uint32, x uint32, count uint32) []byte {
+func fetchTreeElementState(m *HistoricalTree, h uint32, x uint32, count uint32) []byte {
 	// We do cast to uint64 here, as (1 << 32) overflows uint32
 	firstChildLeafIndex := uint64(x) << h // x * (2**H)
 	childLeafsAmount := uint64(1) << h    // 2**H
@@ -233,7 +233,7 @@ func getParent(leftChild []byte, rightChild []byte) []byte {
 }
 
 // saveElementState stores the historical value for a given tree node.
-func saveElementState(m *MerkleTree, h uint32, x uint32, count uint32, item []byte) {
+func saveElementState(m *HistoricalTree, h uint32, x uint32, count uint32, item []byte) {
 	key := StateKey{h, x, count}
 	m.state[key] = item
 }
