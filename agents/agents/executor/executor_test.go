@@ -1,12 +1,19 @@
 package executor_test
 
 import (
+	"context"
+	"fmt"
+	"math/big"
+	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
-	agentsTestutil "github.com/synapsecns/sanguine/agents/testutil"
+	"github.com/synapsecns/sanguine/agents/contracts/destination"
+	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
+	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/merkle"
-	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
@@ -36,19 +43,19 @@ func (e *ExecutorSuite) TestExecutor() {
 	e.Nil(err)
 	simulatedChainA.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
 	simulatedChainB.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-	testContractA, testRefA := e.manager.GetTestContract(e.GetTestContext(), simulatedChainA)
-	testContractB, testRefB := e.manager.GetTestContract(e.GetTestContext(), simulatedChainB)
+	testContractA, testRefA := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), simulatedChainA)
+	testContractB, testRefB := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), simulatedChainB)
 	transactOptsA := simulatedChainA.GetTxContext(e.GetTestContext(), nil)
 	transactOptsB := simulatedChainB.GetTxContext(e.GetTestContext(), nil)
 
 	// Emit two events on each chain.
-	tx, err := testRefA.EmitEventA(transactOptsA.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
+	tx, err := testRefA.EmitAgentsEventA(transactOptsA.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
 	e.Nil(err)
 	simulatedChainA.WaitForConfirmation(e.GetTestContext(), tx)
-	tx, err = testRefA.EmitEventB(transactOptsA.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
+	tx, err = testRefA.EmitAgentsEventB(transactOptsA.TransactOpts, []byte{4}, big.NewInt(5), big.NewInt(6))
 	e.Nil(err)
 	simulatedChainA.WaitForConfirmation(e.GetTestContext(), tx)
-	tx, err = testRefB.EmitEventAandB(transactOptsB.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
+	tx, err = testRefB.EmitAgentsEventAandB(transactOptsB.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
 	e.Nil(err)
 	simulatedChainB.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -154,7 +161,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), simulatedChain.RPCAddress())
 	e.Nil(err)
 	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-	testContract, testRef := e.manager.GetTestContract(e.GetTestContext(), simulatedChain)
+	testContract, testRef := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
 
 	contractConfig := config.ContractConfig{
@@ -214,7 +221,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	// Emit 250 events.
 	go func() {
 		for i := 0; i < 250; i++ {
-			tx, err := testRef.EmitEventB(transactOpts.TransactOpts, []byte{byte(i)}, big.NewInt(int64(i)), big.NewInt(int64(i)))
+			tx, err := testRef.EmitAgentsEventB(transactOpts.TransactOpts, []byte{byte(i)}, big.NewInt(int64(i)), big.NewInt(int64(i)))
 			e.Nil(err)
 			simulatedChain.WaitForConfirmation(e.GetTestContext(), tx)
 		}
@@ -575,9 +582,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
 	e.Nil(err)
 
-	deployManager := agentsTestutil.NewDeployManager(e.T())
-
-	_, passBlockRef := deployManager.GetOriginHarness(e.GetTestContext(), e.TestBackendDestination)
+	_, passBlockRef := e.TestDeployManager.GetOriginHarness(e.GetTestContext(), e.TestBackendDestination)
 	originConfig := config.ContractConfig{
 		Address:    e.OriginContract.Address().String(),
 		StartBlock: 0,
@@ -750,4 +755,161 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 		return false
 	})
+}
+
+func (e *ExecutorSuite) TestDestinationExecute() {
+	var err error
+
+	testContractDest, testContractDestRef := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
+
+	originDomain := uint32(e.TestBackendOrigin.GetBigChainID().Uint64())
+	destinationDomain := uint32(e.TestBackendDestination.GetBigChainID().Uint64())
+	nonce := uint32(1)
+
+	origins := []uint32{originDomain}
+	nonces := []uint32{nonce}
+
+	// Create a channel and subscription to receive AttestationAccepted events as they are emitted.
+	attestationSink := make(chan *destinationharness.DestinationHarnessAttestationAccepted)
+	subAttestation, err := e.DestinationContract.WatchAttestationAccepted(&bind.WatchOpts{
+		Context: e.GetTestContext()},
+		attestationSink)
+	e.Nil(err)
+
+	// Create a channel and subscription to receive AttestationAccepted events as they are emitted.
+	iMessageHandledSink := make(chan *agentstestcontract.AgentsTestContractIMessageReceipientHandleEvent)
+	subMessageHandled, err := testContractDestRef.WatchIMessageReceipientHandleEvent(&bind.WatchOpts{
+		Context: e.GetTestContext()},
+		iMessageHandledSink, origins, nonces)
+	e.Nil(err)
+
+	txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), nil)
+	txContextDestination := e.TestBackendDestination.GetTxContext(e.GetTestContext(), e.DestinationContractMetadata.OwnerPtr())
+
+	messageBody := []byte("This is a test message")
+
+	recipient := testContractDest.Address().Hash()
+
+	tips := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	encodedTips, err := types.EncodeTips(tips)
+	e.Nil(err)
+
+	optimisticSeconds := uint32(1)
+	// Dispatch an event from the Origin contract to be accepted on the Destination contract.
+	tx, err := e.OriginContract.Dispatch(txContextOrigin.TransactOpts, destinationDomain, recipient, optimisticSeconds, encodedTips, messageBody)
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
+	sender, err := e.TestBackendOrigin.Signer().Sender(tx)
+	e.Nil(err)
+
+	header := types.NewHeader(originDomain, sender.Hash(), nonce, destinationDomain, recipient, optimisticSeconds)
+
+	message := types.NewMessage(header, tips, messageBody)
+	e.Nil(err)
+	encodedMessage, err := types.EncodeMessage(message)
+	e.Nil(err)
+	allMessages := []types.Message{message}
+	rawMessages := make([][]byte, len(allMessages))
+	for i, message := range allMessages {
+		rawMessage, err := message.ToLeaf()
+		e.Nil(err)
+
+		rawMessages[i] = rawMessage[:]
+	}
+
+	historicalMerkleTree := merkle.NewTreeFromItems(rawMessages)
+
+	rawProof, err := historicalMerkleTree.MerkleProof(0, 1)
+	e.Nil(err)
+	var proofToUse [32][32]byte
+	for i := 0; i < int(merkle.TreeDepth); i++ {
+		copy(proofToUse[i][:], rawProof[i][:32])
+	}
+
+	attestationKey := types.AttestationKey{
+		Origin:      originDomain,
+		Destination: destinationDomain,
+		Nonce:       nonce,
+	}
+
+	rawRoot, err := historicalMerkleTree.Root(1)
+	e.Nil(err)
+	var root [32]byte
+	copy(root[:], rawRoot[:32])
+
+	unsignedAttestation := types.NewAttestation(attestationKey.GetRawKey(), root)
+	hashedAttestation, err := types.Hash(unsignedAttestation)
+	e.Nil(err)
+
+	notarySignature, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	e.Nil(err)
+
+	guardSignature, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	e.Nil(err)
+
+	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
+
+	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
+	e.Nil(err)
+
+	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation)
+	e.Nil(err)
+
+	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
+
+	watchCtx, cancel := context.WithTimeout(e.GetTestContext(), time.Second*10)
+	defer cancel()
+
+	select {
+	// check for errors and fail
+	case <-watchCtx.Done():
+		e.T().Error(e.T(), fmt.Errorf("test context completed %w", e.GetTestContext().Err()))
+	case <-subAttestation.Err():
+		e.T().Error(e.T(), subAttestation.Err())
+	// get attestation accepted event
+	case item := <-attestationSink:
+		parser, err := destination.NewParser(e.DestinationContract.Address())
+		e.Nil(err)
+
+		// Check to see if the event was an AttestationAccepted event.
+		eventType, ok := parser.EventType(item.Raw)
+		e.True(ok)
+		e.Equal(eventType, destination.AttestationAcceptedEvent)
+
+		emittedSignedAttesation, err := types.DecodeSignedAttestation(item.Attestation)
+		e.Nil(err)
+
+		e.Equal(e.OriginDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Origin())
+		e.Equal(e.DestinationDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Destination())
+		e.Equal(nonce, emittedSignedAttesation.Attestation().Nonce())
+		e.Equal(root, emittedSignedAttesation.Attestation().Root())
+
+		// Now sleep for a second before executing
+		time.Sleep(time.Second)
+		index := big.NewInt(int64(0))
+
+		tx, err = e.DestinationContract.Execute(txContextDestination.TransactOpts, encodedMessage, proofToUse, index)
+		e.Nil(err)
+
+		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
+
+		watchHandleCtx, cancel := context.WithTimeout(e.GetTestContext(), time.Second*10)
+		defer cancel()
+
+		select {
+		// check for errors and fail
+		case <-watchHandleCtx.Done():
+			e.T().Error(e.T(), fmt.Errorf("test context completed %w", e.GetTestContext().Err()))
+		case <-subMessageHandled.Err():
+			e.T().Error(e.T(), subMessageHandled.Err())
+		// get attestation accepted event
+		case item := <-iMessageHandledSink:
+			e.NotNil(item)
+
+			break
+		}
+
+		break
+	}
 }
