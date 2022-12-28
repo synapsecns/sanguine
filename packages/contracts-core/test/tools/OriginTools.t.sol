@@ -299,14 +299,14 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         // Check if every Notary signer was removed
         for (uint256 i = 0; i < attestationNotaries.length; ++i) {
             assertEq(
-                origin.isActiveAgent(attestationDestination, attestationNotaries[i]),
+                origin.isActiveAgent(ra.destination, attestationNotaries[i]),
                 isValidAttestation,
                 "Wrong Notary active status"
             );
         }
         // Check if amount of Notaries changed
         assertEq(
-            origin.amountAgents(attestationDestination),
+            origin.amountAgents(ra.destination),
             notariesAmount - (isValidAttestation ? 0 : attestationNotaries.length),
             "Wrong amount of notaries"
         );
@@ -392,7 +392,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     {
         origin = suiteOrigin(domain);
         guardsAmount = origin.amountAgents({ _domain: 0 });
-        notariesAmount = origin.amountAgents(attestationDestination);
+        notariesAmount = origin.amountAgents(ra.destination);
         // Sanity check: guards were active
         for (uint256 i = 0; i < attestationGuards.length; ++i) {
             require(
@@ -403,7 +403,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         // Sanity check: notaries were active
         for (uint256 i = 0; i < attestationNotaries.length; ++i) {
             require(
-                origin.isActiveAgent(attestationDestination, attestationNotaries[i]),
+                origin.isActiveAgent(ra.destination, attestationNotaries[i]),
                 "Notary wasn't active"
             );
         }

@@ -92,8 +92,8 @@ contract DestinationTest is DestinationTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_setConfirmation() public {
-        attestationOrigin = DOMAIN_REMOTE;
-        attestationRoot = "test root";
+        ra.origin = DOMAIN_REMOTE;
+        ra.root = "test root";
         vm.startPrank(owner);
         // Sanity check
         assertEq(destinationSubmittedAt(DOMAIN_LOCAL), 0, "WTF: test root already known");
@@ -199,10 +199,7 @@ contract DestinationTest is DestinationTools {
         // Create attestation for (LOCAL -> REMOTE) direction
         createAttestationMock({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
         // Destination doesn't track REMOTE Notaries, let's artificially add one
-        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(
-            attestationDestination,
-            attestationNotaries[0]
-        );
+        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(ra.destination, attestationNotaries[0]);
         // Should reject attestations with origin = local domain
         destinationSubmitAttestation(DOMAIN_LOCAL, "!attestationOrigin: local");
     }
@@ -211,10 +208,7 @@ contract DestinationTest is DestinationTools {
         // Create attestation for (SYNAPSE -> REMOTE) direction
         createAttestationMock({ origin: DOMAIN_SYNAPSE, destination: DOMAIN_REMOTE });
         // Destination doesn't track REMOTE Notaries, let's artificially add one
-        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(
-            attestationDestination,
-            attestationNotaries[0]
-        );
+        suiteDestination(DOMAIN_LOCAL).addRemoteNotary(ra.destination, attestationNotaries[0]);
         // Should reject attestations with destination != local domain
         destinationSubmitAttestation(DOMAIN_LOCAL, "!attestationDestination: !local");
     }
@@ -433,7 +427,7 @@ contract DestinationTest is DestinationTools {
                 context: userRemoteToLocal,
                 app: app,
                 index: i,
-                count: attestationNonce
+                count: ra.nonce
             });
         }
     }
@@ -448,7 +442,7 @@ contract DestinationTest is DestinationTools {
                 context: userRemoteToLocal,
                 app: app,
                 index: i,
-                count: attestationNonce
+                count: ra.nonce
             });
             if (i == 0) break;
         }

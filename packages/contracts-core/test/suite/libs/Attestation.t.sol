@@ -28,12 +28,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
 
     // solhint-disable-next-line code-complexity
     function test_formattedCorrectly(
-        uint32 origin,
-        uint32 destination,
-        uint32 nonce,
-        bytes32 root,
-        uint40 blockNumber,
-        uint40 timestamp,
+        RawAttestation memory ra,
         uint256 guardSigs,
         uint256 notarySigs
     ) public {
@@ -45,16 +40,23 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         vm.assume(agentSigs != 0);
         // Test formatting of attestation data
         bytes memory attData = libHarness.formatAttestationData(
-            origin,
-            destination,
-            nonce,
-            root,
-            blockNumber,
-            timestamp
+            ra.origin,
+            ra.destination,
+            ra.nonce,
+            ra.root,
+            ra.blockNumber,
+            ra.timestamp
         );
         assertEq(
             attData,
-            abi.encodePacked(origin, destination, nonce, root),
+            abi.encodePacked(
+                ra.origin,
+                ra.destination,
+                ra.nonce,
+                ra.root,
+                ra.blockNumber,
+                ra.timestamp
+            ),
             "!formatAttestationData"
         );
         // Test formatting of attestation
@@ -112,69 +114,69 @@ contract AttestationLibraryTest is SynapseLibraryTest {
             );
         }
         // Test "id formatters"
-        uint64 attDomains = (uint64(origin) << 32) + destination;
+        uint64 attDomains = (uint64(ra.origin) << 32) + ra.destination;
         {
             assertEq(
-                libHarness.attestationDomains(origin, destination),
+                libHarness.attestationDomains(ra.origin, ra.destination),
                 attDomains,
                 "!attestationDomains"
             );
             (uint32 _origin, uint32 _destination) = libHarness.unpackDomains(attDomains);
-            assertEq(_origin, origin, "!unpackDomains: origin");
-            assertEq(_destination, destination, "!unpackDomains: destination");
+            assertEq(_origin, ra.origin, "!unpackDomains: origin");
+            assertEq(_destination, ra.destination, "!unpackDomains: destination");
         }
         {
-            uint96 attKey = (uint96(origin) << 64) + (uint96(destination) << 32) + nonce;
+            uint96 attKey = (uint96(ra.origin) << 64) + (uint96(ra.destination) << 32) + ra.nonce;
             assertEq(
-                libHarness.attestationKey(origin, destination, nonce),
+                libHarness.attestationKey(ra.origin, ra.destination, ra.nonce),
                 attKey,
                 "!attestationKey"
             );
             (uint64 _attDomains, uint32 _nonce) = libHarness.unpackKey(attKey);
             assertEq(_attDomains, attDomains, "!unpackKey: attestationDomains");
-            assertEq(_nonce, nonce, "!unpackKey: nonce");
+            assertEq(_nonce, ra.nonce, "!unpackKey: nonce");
         }
         // Test formatting checker
         assertTrue(libHarness.isAttestation(attestation), "!isAttestation");
         // Test getters
         assertEq(
             libHarness.attestedOrigin(SynapseTypes.ATTESTATION, attestation),
-            origin,
+            ra.origin,
             "!attestedOrigin"
         );
         assertEq(
             libHarness.attestedDestination(SynapseTypes.ATTESTATION, attestation),
-            destination,
+            ra.destination,
             "!attestedOrigin"
         );
         assertEq(
             libHarness.attestedNonce(SynapseTypes.ATTESTATION, attestation),
-            nonce,
+            ra.nonce,
             "!attestedNonce"
         );
         assertEq(
             libHarness.attestedDomains(SynapseTypes.ATTESTATION, attestation),
-            libHarness.attestationDomains(origin, destination),
+            libHarness.attestationDomains(ra.origin, ra.destination),
             "!attestedDomains"
         );
         assertEq(
             libHarness.attestedKey(SynapseTypes.ATTESTATION, attestation),
-            libHarness.attestationKey(origin, destination, nonce),
+            libHarness.attestationKey(ra.origin, ra.destination, ra.nonce),
             "!attestedKey"
         );
         assertEq(
             libHarness.attestedRoot(SynapseTypes.ATTESTATION, attestation),
-            root,
+            ra.root,
             "!attestedRoot"
         );
         assertEq(
             libHarness.attestedBlockNumber(SynapseTypes.ATTESTATION, attestation),
-            blockNumber,
+            ra.blockNumber,
             "!attestedBlockNumber"
         );
         assertEq(
             libHarness.attestedTimestamp(SynapseTypes.ATTESTATION, attestation),
-            timestamp,
+            ra.timestamp,
             "!attestedTimestamp"
         );
         (uint8 _guardSigs, uint8 _notarySigs) = libHarness.agentSignatures(
