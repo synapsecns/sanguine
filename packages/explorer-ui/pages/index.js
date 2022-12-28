@@ -4,8 +4,8 @@ import {
   BRIDGE_AMOUNT_STATISTIC,
   COUNT_BY_CHAIN_ID,
   COUNT_BY_TOKEN_ADDRESS,
+  GET_BRIDGE_TRANSACTIONS_QUERY,
   GET_HISTORICAL_STATS,
-  GET_LATEST_BRIDGE_TRANSACTIONS_QUERY,
 } from '@graphql/queries'
 import {API_URL} from '@graphql'
 
@@ -104,7 +104,7 @@ export async function getServerSideProps() {
   })
 
   const { data: latestBridgeTransactions } = await client.query({
-    query: GET_LATEST_BRIDGE_TRANSACTIONS_QUERY,
+    query: GET_BRIDGE_TRANSACTIONS_QUERY,
     variables: {
       includePending: false,
       page: 1,
