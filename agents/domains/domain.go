@@ -49,6 +49,10 @@ type AttestationCollectorContract interface {
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// GetLatestNonce gets the latest nonce signed by the bondedAgentSigner for the domain on the attestation collector
 	GetLatestNonce(ctx context.Context, origin uint32, destination uint32, bondedAgentSigner signer.Signer) (nonce uint32, err error)
+	// GetAttestation gets the attestation if any for the given origin, destination and nonce
+	GetAttestation(ctx context.Context, origin, destination, nonce uint32) (types.SignedAttestation, error)
+	// GetRoot gets the root if any for the given origin, destination and nonce
+	GetRoot(ctx context.Context, origin, destination, nonce uint32) ([32]byte, error)
 }
 
 // DestinationContract contains the interface for the destination.
