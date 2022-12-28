@@ -24,7 +24,7 @@ const (
 	AttestationStateGuardSignedUnsubmitted // 5
 	// AttestationStateGuardSignedSubmittedToAttestationCollector is when the attestation was signed by Guard and submitted to the attestation collector but not destination.
 	AttestationStateGuardSignedSubmittedToAttestationCollector // 6
-	// AttestationStateGuardSignedSubmittedToDestination is when the attestation was signed by Guard and submitted to the attestation collector and destination but not yet confirmed.
+	// AttestationStateGuardSignedSubmittedToDestinationUnconfirmed is when the attestation was signed by Guard and submitted to the attestation collector and destination but not yet confirmed.
 	AttestationStateGuardSignedSubmittedToDestinationUnconfirmed // 7
 	// AttestationStateGuardConfirmed is when the attestation was confirmed as posted on the destination.
 	AttestationStateGuardConfirmed // 8
