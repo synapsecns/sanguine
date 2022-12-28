@@ -15,7 +15,7 @@ import (
 
 // Guard in the current version scans the attestation collector for notary signed attestations,
 // signs them, and posts to destination chains.
-// TODO: Note right now, I have threads for each origin-destination pair and do no batching at all
+// TODO: Note right now, I have threads for each origin-destination pair and do no batching at all.
 type Guard struct {
 	scanners        map[string]map[string]AttestationCollectorAttestationScanner
 	bondedSigner    signer.Signer
