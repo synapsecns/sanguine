@@ -56,6 +56,7 @@ type SimulatedBackendsTestSuite struct {
 	OriginDomainClient          domains.DomainClient
 	AttestationDomainClient     domains.DomainClient
 	DestinationDomainClient     domains.DomainClient
+	TestDeployManager           *DeployManager
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -223,8 +224,8 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.SetupGuard()
 	a.SetupNotary()
 
-	deployManager := NewDeployManager(a.T())
-	a.SetupDestination(deployManager)
-	a.SetupOrigin(deployManager)
-	a.SetupAttestation(deployManager)
+	a.TestDeployManager = NewDeployManager(a.T())
+	a.SetupDestination(a.TestDeployManager)
+	a.SetupOrigin(a.TestDeployManager)
+	a.SetupAttestation(a.TestDeployManager)
 }
