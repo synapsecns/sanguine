@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import { TypedMemView } from "./TypedMemView.sol";
 
+type CallData is bytes29;
 type Signature is bytes29;
 
 /**

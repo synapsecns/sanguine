@@ -10,6 +10,7 @@ import "../../../contracts/libs/ByteString.sol";
 contract ByteStringHarness {
     using ByteString for bytes;
     using ByteString for bytes29;
+    using ByteString for CallData;
     using ByteString for Signature;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -34,31 +35,21 @@ contract ByteStringHarness {
         return _sig.unwrap().clone();
     }
 
-    function castToCallPayload(uint40, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
-        bytes29 _view = _payload.castToCallPayload();
-        return (_view.typeOf(), _view.clone());
+    function castToCallData(bytes memory _payload) public view returns (bytes memory) {
+        CallData _callData = _payload.castToCallData();
+        return _callData.unwrap().clone();
     }
 
-    function argumentsPayload(uint40 _type, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
-        bytes29 _view = _payload.ref(_type).argumentsPayload();
-        return (_view.typeOf(), _view.clone());
+    function arguments(bytes memory _payload) public view returns (bytes memory) {
+        return _payload.castToCallData().arguments().clone();
     }
 
-    function callSelector(uint40 _type, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
-        bytes29 _view = _payload.ref(_type).callSelector();
-        return (_view.typeOf(), _view.clone());
+    function callSelector(bytes memory _payload) public view returns (bytes memory) {
+        return _payload.castToCallData().callSelector().clone();
+    }
+
+    function argumentWords(bytes memory _payload) public pure returns (uint256) {
+        return _payload.castToCallData().argumentWords();
     }
 
     function toRSV(bytes memory _payload)
@@ -71,10 +62,6 @@ contract ByteStringHarness {
         )
     {
         return _payload.castToSignature().toRSV();
-    }
-
-    function argumentWords(uint40 _type, bytes memory _payload) public pure returns (uint256) {
-        return _payload.ref(_type).argumentWords();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -93,8 +80,8 @@ contract ByteStringHarness {
         return _payload.ref(0).isSignature();
     }
 
-    function isCallPayload(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isCallPayload();
+    function isCallData(bytes memory _payload) public pure returns (bool) {
+        return _payload.ref(0).isCallData();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

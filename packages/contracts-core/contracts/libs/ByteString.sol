@@ -22,7 +22,7 @@ library ByteString {
     uint256 internal constant OFFSET_V = 64;
 
     /**
-     * @dev Call payload memory layout
+     * @dev Calldata memory layout
      * [000 .. 004) selector    bytes4  4 bytes
      *      Optional: N function arguments
      * [004 .. 036) arg1        bytes32 32 bytes
@@ -96,54 +96,63 @@ library ByteString {
     }
 
     /**
-     * @notice Returns a properly typed bytes29 pointer for a call payload.
+     * @notice Returns a CallData view over for the given payload.
+     * @dev Will revert if the memory view is not over a calldata.
      */
-    function castToCallPayload(bytes memory _payload) internal pure returns (bytes29) {
-        return _payload.ref(SynapseTypes.CALL_PAYLOAD);
+    function castToCallData(bytes memory _payload) internal pure returns (CallData) {
+        return castToCallData(castToRawBytes(_payload));
     }
 
     /**
-     * @notice Checks that a byte string is a call payload, i.e.
+     * @notice Casts a memory view to a CallData view.
+     * @dev Will revert if the memory view is not over a calldata.
+     */
+    function castToCallData(bytes29 _view) internal pure returns (CallData) {
+        require(isCallData(_view), "Not a calldata");
+        return CallData.wrap(_view);
+    }
+
+    /**
+     * @notice Checks that a byte string is a valid calldata, i.e.
      * a function selector, followed by arbitrary amount of arguments.
      */
-    function isCallPayload(bytes29 _view) internal pure returns (bool) {
+    function isCallData(bytes29 _view) internal pure returns (bool) {
         uint256 length = _view.len();
-        // Call payload should at least have a function selector
+        // Calldata should at least have a function selector
         if (length < SELECTOR_LENGTH) return false;
-        // The remainder of the payload should be exactly N words (N >= 0), i.e.
+        // The remainder of the calldata should be exactly N words (N >= 0), i.e.
         // (length - SELECTOR_LENGTH) % 32 == 0
         // We're using logical AND here to speed it up a bit
         return (length - SELECTOR_LENGTH) & 31 == 0;
     }
 
+    /// @notice Convenience shortcut for unwrapping a view.
+    function unwrap(CallData _callData) internal pure returns (bytes29) {
+        return CallData.unwrap(_callData);
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         CALL PAYLOAD SLICING                         ║*▕
+    ▏*║                           CALLDATA SLICING                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Returns amount of memory words (32 byte chunks) the function arguments
-     * occupy in the call payload.
+     * occupy in the calldata.
      * @dev This might differ from amount of arguments supplied, if any of the arguments
      * occupies more than one memory slot. It is true, however, that argument part of the payload
      * occupies exactly N words, even for dynamic types like `bytes`
      */
-    function argumentWords(bytes29 _view)
-        internal
-        pure
-        onlyType(_view, SynapseTypes.CALL_PAYLOAD)
-        returns (uint256)
-    {
+    function argumentWords(CallData _callData) internal pure returns (uint256) {
+        // Get the underlying memory view
+        bytes29 _view = unwrap(_callData);
         // Equivalent of (length - SELECTOR_LENGTH) / 32
         return (_view.len() - SELECTOR_LENGTH) >> 5;
     }
 
-    /// @notice Returns selector for the provided call payload.
-    function callSelector(bytes29 _view)
-        internal
-        pure
-        onlyType(_view, SynapseTypes.CALL_PAYLOAD)
-        returns (bytes29)
-    {
+    /// @notice Returns selector for the provided calldata.
+    function callSelector(CallData _callData) internal pure returns (bytes29) {
+        // Get the underlying memory view
+        bytes29 _view = unwrap(_callData);
         return
             _view.slice({
                 _index: OFFSET_SELECTOR,
@@ -152,13 +161,10 @@ library ByteString {
             });
     }
 
-    /// @notice Returns abi encoded arguments for the provided call payload.
-    function argumentsPayload(bytes29 _view)
-        internal
-        pure
-        onlyType(_view, SynapseTypes.CALL_PAYLOAD)
-        returns (bytes29)
-    {
+    /// @notice Returns abi encoded arguments for the provided calldata.
+    function arguments(CallData _callData) internal pure returns (bytes29) {
+        // Get the underlying memory view
+        bytes29 _view = unwrap(_callData);
         return _view.sliceFrom({ _index: OFFSET_ARGUMENTS, newType: SynapseTypes.RAW_BYTES });
     }
 

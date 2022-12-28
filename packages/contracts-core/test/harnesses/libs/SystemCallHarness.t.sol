@@ -2,6 +2,7 @@
 
 pragma solidity 0.8.17;
 
+import "../../../contracts/libs/ByteString.sol";
 import { SynapseTypes } from "../../../contracts/libs/SynapseTypes.sol";
 import { SystemCall } from "../../../contracts/libs/SystemCall.sol";
 import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
@@ -10,6 +11,7 @@ import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
  * @notice Exposes SystemCall methods for testing against golang.
  */
 contract SystemCallHarness {
+    using ByteString for bytes;
     using SystemCall for bytes;
     using SystemCall for bytes29;
     using TypedMemView for bytes;
@@ -21,26 +23,25 @@ contract SystemCallHarness {
 
     function formatSystemCall(
         uint8 _systemRecipient,
-        uint40 _type,
-        bytes memory _payload,
+        bytes memory _callData,
         bytes memory _prefix
     ) public view returns (bytes memory) {
         return
             SystemCall.formatSystemCall(
                 _systemRecipient,
-                _payload.ref(_type),
+                _callData.castToCallData(),
                 _prefix.ref(SynapseTypes.RAW_BYTES)
             );
     }
 
-    function formatAdjustedCallPayload(
-        uint40 _type,
-        bytes memory _payload,
-        bytes memory _prefix
-    ) public view returns (bytes memory) {
+    function formatAdjustedCallData(bytes memory _callData, bytes memory _prefix)
+        public
+        view
+        returns (bytes memory)
+    {
         return
-            SystemCall.formatAdjustedCallPayload(
-                _payload.ref(_type),
+            SystemCall.formatAdjustedCallData(
+                _callData.castToCallData(),
                 _prefix.ref(SynapseTypes.RAW_BYTES)
             );
     }
@@ -60,13 +61,8 @@ contract SystemCallHarness {
         return (_view.typeOf(), _view.clone());
     }
 
-    function callPayload(uint40 _type, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
-        bytes29 _view = _payload.ref(_type).callPayload();
-        return (_view.typeOf(), _view.clone());
+    function callData(uint40 _type, bytes memory _payload) public view returns (bytes memory) {
+        return CallData.unwrap(_payload.ref(_type).callData()).clone();
     }
 
     function callRecipient(uint40 _type, bytes memory _payload) public pure returns (uint8) {
@@ -85,11 +81,11 @@ contract SystemCallHarness {
         return SystemCall.SYSTEM_ROUTER;
     }
 
-    function offsetCallRecipient() public pure returns (uint256) {
-        return SystemCall.OFFSET_CALL_RECIPIENT;
+    function offsetRecipient() public pure returns (uint256) {
+        return SystemCall.OFFSET_RECIPIENT;
     }
 
-    function offsetCallPayload() public pure returns (uint256) {
-        return SystemCall.OFFSET_CALL_PAYLOAD;
+    function offsetCallData() public pure returns (uint256) {
+        return SystemCall.OFFSET_CALLDATA;
     }
 }

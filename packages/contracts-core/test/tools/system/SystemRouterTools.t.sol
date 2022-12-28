@@ -138,7 +138,7 @@ abstract contract SystemRouterTools is DestinationTools {
             // Save formatted system call
             formattedSystemCalls[i] = SystemCall.formatSystemCall({
                 _systemRecipient: uint8(systemCallRecipients[i]),
-                _payload: systemCallDataArray[i].castToCallPayload(),
+                _callData: systemCallDataArray[i].castToCallData(),
                 _prefix: prefix.castToRawBytes()
             });
         }
@@ -265,7 +265,7 @@ abstract contract SystemRouterTools is DestinationTools {
             _destination: systemCallDestination,
             _optimisticSeconds: systemCallOptimisticSeconds,
             _recipient: systemCallRecipients[index],
-            _data: systemCallDataArray[index]
+            _callData: systemCallDataArray[index]
         });
     }
 
@@ -276,7 +276,7 @@ abstract contract SystemRouterTools is DestinationTools {
             _destination: systemCallDestination,
             _optimisticSeconds: systemCallOptimisticSeconds,
             _recipients: systemCallRecipients,
-            _dataArray: systemCallDataArray
+            _callDataArray: systemCallDataArray
         });
     }
 
@@ -286,7 +286,7 @@ abstract contract SystemRouterTools is DestinationTools {
             _destination: systemCallDestination,
             _optimisticSeconds: systemCallOptimisticSeconds,
             _recipient: systemCallRecipients[0],
-            _dataArray: systemCallDataArray
+            _callDataArray: systemCallDataArray
         });
     }
 
@@ -296,7 +296,7 @@ abstract contract SystemRouterTools is DestinationTools {
             _destination: systemCallDestination,
             _optimisticSeconds: systemCallOptimisticSeconds,
             _recipients: systemCallRecipients,
-            _data: systemCallDataArray[0]
+            _callData: systemCallDataArray[0]
         });
     }
 
