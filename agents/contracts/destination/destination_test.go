@@ -70,7 +70,6 @@ func (d DestinationSuite) TestDestinationSuite() {
 
 	d.TestBackendDestination.WaitForConfirmation(d.GetTestContext(), tx)
 
-	// TODO (joe): Get this working
 	watchCtx, cancel := context.WithTimeout(d.GetTestContext(), time.Second*10)
 	defer cancel()
 
