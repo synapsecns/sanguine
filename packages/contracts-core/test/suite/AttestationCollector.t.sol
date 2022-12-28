@@ -63,6 +63,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
             guardSigs: guardSigs,
             notarySigs: notarySigs
         });
+        saveAttestationMetadata();
         createAttestationMock({
             origin: DOMAIN_LOCAL,
             destination: DOMAIN_REMOTE,

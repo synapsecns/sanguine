@@ -97,7 +97,6 @@ abstract contract AttestationTools is SynapseTestSuite {
     ) public {
         saveAttestationData(origin, destination, guardSigners, notarySigners);
         saveMockableAttestationData(nonce, root, salt);
-        saveAttestationMetadata();
         saveAttestationIDs();
         createAttestation();
     }
@@ -236,8 +235,12 @@ abstract contract AttestationTools is SynapseTestSuite {
     }
 
     function saveAttestationMetadata() public {
-        ra.blockNumber = uint40(block.number);
-        ra.timestamp = uint40(block.timestamp);
+        saveAttestationMetadata(block.number, block.timestamp);
+    }
+
+    function saveAttestationMetadata(uint256 blockNumber, uint256 timestamp) public {
+        ra.blockNumber = uint40(blockNumber);
+        ra.timestamp = uint40(timestamp);
     }
 
     function saveAttestationIDs() public {

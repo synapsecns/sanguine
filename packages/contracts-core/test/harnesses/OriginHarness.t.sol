@@ -50,11 +50,21 @@ contract OriginHarness is Origin, AgentRegistryExtended, SystemContractHarness {
     function suggestNonceRoot(uint32 _destination)
         public
         view
-        returns (uint32 latestNonce, bytes32 latestRoot)
+        returns (
+            uint32 latestNonce,
+            bytes32 latestRoot,
+            uint40 blockNumber,
+            uint40 timestamp
+        )
     {
         latestNonce = nonce(_destination);
-        uint256 rootDispatchBlockNumber;
-        (latestRoot, rootDispatchBlockNumber) = getHistoricalRoot(_destination, latestNonce);
+        if (latestNonce == 0) {
+            latestRoot = EMPTY_TREE_ROOT;
+        } else {
+            latestRoot = historicalRoots[_destination][latestNonce];
+            blockNumber = historicalMetadata[_destination][latestNonce].blockNumber;
+            timestamp = historicalMetadata[_destination][latestNonce].timestamp;
+        }
     }
 
     function _isIgnoredAgent(uint32 _domain, address _account)

@@ -202,7 +202,11 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         uint32 _destination = _attestationView.attestedDestination();
         uint32 _nonce = _attestationView.attestedNonce();
         bytes32 _root = _attestationView.attestedRoot();
-        isValid = _isValidAttestation(_origin, _destination, _nonce, _root);
+        RootMetadata memory metadata = RootMetadata({
+            blockNumber: _attestationView.attestedBlockNumber(),
+            timestamp: _attestationView.attestedTimestamp()
+        });
+        isValid = _isValidAttestation(_origin, _destination, _nonce, _root, metadata);
         if (!isValid) {
             emit FraudAttestation(_guards, _notaries, _attestation);
             // Guard doesn't receive anything, as Agents weren't slashed using the Fraud Report
@@ -406,14 +410,19 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         uint32 _origin,
         uint32 _destination,
         uint32 _nonce,
-        bytes32 _root
+        bytes32 _root,
+        RootMetadata memory metadata
     ) internal view returns (bool) {
         // Attestation with origin domain not matching local domain should be discarded
         require(_origin == _localDomain(), "!attestationOrigin: !local");
         if (_nonce < historicalRoots[_destination].length) {
+            RootMetadata memory histMetadata = historicalMetadata[_destination][_nonce];
             // If a nonce exists for a given destination,
-            // a root should match the historical root
-            return _root == historicalRoots[_destination][_nonce];
+            // a root should match the historical root,
+            // and the metadata should match the historical one.
+            return
+                _root == historicalRoots[_destination][_nonce] &&
+                _isSameMetadata(histMetadata, metadata);
         }
         // If a nonce doesn't exist for a given destination,
         // it should be a zero nonce with a root of an empty merkle tree
@@ -433,5 +442,16 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         if (historicalRoots[_destination].length == 0) return 0;
         // We subtract 1, as the very first inserted root is EMPTY_TREE_ROOT
         return historicalRoots[_destination].length - 1;
+    }
+
+    /**
+     * @notice Returns whether the given metadata structs have the same data.
+     */
+    function _isSameMetadata(RootMetadata memory a, RootMetadata memory b)
+        internal
+        pure
+        returns (bool)
+    {
+        return (a.blockNumber == b.blockNumber && a.timestamp == b.timestamp);
     }
 }
