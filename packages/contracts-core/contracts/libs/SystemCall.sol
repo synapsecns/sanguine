@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import "./ByteString.sol";
 
 library SystemCall {
+    using ByteString for bytes;
     using ByteString for bytes29;
     using ByteString for CallData;
     using TypedMemView for bytes;
@@ -67,13 +68,13 @@ library SystemCall {
         require(arguments.len() >= _prefix.len(), "Payload too short");
         bytes29[] memory views = new bytes29[](4);
         // First byte is encoded system recipient
-        views[0] = abi.encodePacked(_systemRecipient).ref(SynapseTypes.RAW_BYTES);
+        views[0] = abi.encodePacked(_systemRecipient).castToRawBytes();
         // Use payload's function selector
         views[1] = _callData.callSelector();
         // Use prefix as the first arguments
         views[2] = _prefix;
         // Use payload's remaining arguments (following prefix)
-        views[3] = arguments.sliceFrom({ _index: _prefix.len(), newType: SynapseTypes.RAW_BYTES });
+        views[3] = arguments.sliceFrom({ _index: _prefix.len(), newType: 0 });
         return TypedMemView.join(views);
     }
 
@@ -104,7 +105,7 @@ library SystemCall {
         // Use prefix as the first arguments
         views[1] = _prefix;
         // Use payload's remaining arguments (following prefix)
-        views[2] = arguments.sliceFrom({ _index: _prefix.len(), newType: SynapseTypes.RAW_BYTES });
+        views[2] = arguments.sliceFrom({ _index: _prefix.len(), newType: 0 });
         return TypedMemView.join(views);
     }
 

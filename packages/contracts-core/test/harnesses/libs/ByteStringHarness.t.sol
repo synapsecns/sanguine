@@ -19,15 +19,11 @@ contract ByteStringHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToRawBytes(uint40, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
+    function castToRawBytes(bytes memory _payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
         bytes29 _view = ByteString.castToRawBytes(_payload);
-        return (_view.typeOf(), _view.clone());
+        return _view.clone();
     }
 
     function castToSignature(bytes memory _payload) public view returns (bytes memory) {

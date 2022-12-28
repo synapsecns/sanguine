@@ -48,9 +48,8 @@ contract MessageHarness {
     }
 
     /// @notice Returns message's body field as bytes29 pointer.
-    function body(uint40 _type, bytes memory _payload) public view returns (uint40, bytes memory) {
-        bytes29 _view = _payload.ref(_type).body();
-        return (_view.typeOf(), _view.clone());
+    function body(uint40 _type, bytes memory _payload) public view returns (bytes memory) {
+        return _payload.ref(_type).body().clone();
     }
 
     /// @notice Returns message's version field.

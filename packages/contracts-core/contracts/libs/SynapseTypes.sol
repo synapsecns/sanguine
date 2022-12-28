@@ -1,7 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { TypedMemView } from "./TypedMemView.sol";
+/**
+ * @dev
+ * 1. `bytes29` is supposed to be used as a memory view over a generic byte string.
+ * 2. CallData is a memory view over the payload, that is supposed to be used for an external call, i.e.
+ * recipient.call(callData). Its length is always (4 + 32 * N) bytes:
+ * - First 4 bytes represent the function selector.
+ * - 32 * N bytes represent N words that function arguments occupy.
+ * 3. Signature is a memory view over a "65 bytes" string
+ * that is an off-chain agent signature for some data.
+ */
 
 type CallData is bytes29;
 type Signature is bytes29;
@@ -12,27 +21,6 @@ type Signature is bytes29;
  * a misuse of libraries, i.e. using Attestation functions on a Report pointer.
  */
 library SynapseTypes {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          0X00: BYTE STRINGS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * 1. RAW_BYTES refers to a generic byte string, that is not supposed to be parsed
-     * by the messaging contracts. RAW_BYTES is set to uint40(0) so that
-     * the "default zero" type would represent a generic byte string.
-     * 2. SIGNATURE refers to 65 bytes string that is an off-chain agent signature for some data.
-     * 3. CALL_PAYLOAD refers to the payload, that is supposed to be used for an external call, i.e.
-     * recipient.call(CALL_PAYLOAD). Its length is always (4 + 32 * N) bytes:
-     *      - First 4 bytes represent the function selector.
-     *      - 32 * N bytes represent N function arguments.
-     */
-    // prettier-ignore
-    uint40 internal constant RAW_BYTES                  = 0x00_00_00_00_00;
-    // prettier-ignore
-    uint40 internal constant SIGNATURE                  = 0x00_01_00_00_00;
-    // prettier-ignore
-    uint40 internal constant CALL_PAYLOAD               = 0x00_02_00_00_00;
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         0X01: ATTESTATION                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

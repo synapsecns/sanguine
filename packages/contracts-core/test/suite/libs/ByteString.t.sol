@@ -93,15 +93,7 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
 
     function test_formattedCorrectly_rawBytes() public {
         bytes memory payload = "test payload";
-        // Test bytes29 getters
-        checkBytes29Getter({
-            getter: libHarness.castToRawBytes,
-            payloadType: SynapseTypes.RAW_BYTES,
-            payload: payload,
-            expectedType: SynapseTypes.RAW_BYTES,
-            expectedData: payload,
-            revertMessage: "!castToRawBytes"
-        });
+        assertEq(libHarness.castToRawBytes(payload), payload, "!castToRawBytes");
     }
 
     function test_castToSignature_incorrectLength(uint16 length) public {

@@ -33,6 +33,14 @@ library ByteString {
     uint256 internal constant OFFSET_SELECTOR = 0;
     uint256 internal constant OFFSET_ARGUMENTS = SELECTOR_LENGTH;
 
+    /**
+     * @notice Returns a memory view over the given payload, treating it as raw bytes.
+     * @dev Shortcut for .ref(0) - to be deprecated once "uint40 type" is removed from bytes29.
+     */
+    function castToRawBytes(bytes memory _payload) internal pure returns (bytes29) {
+        return _payload.ref({ newType: 0 });
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              SIGNATURE                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -48,13 +56,6 @@ library ByteString {
         uint8 v
     ) internal pure returns (bytes memory) {
         return abi.encodePacked(r, s, v);
-    }
-
-    /**
-     * @notice Returns a memory view over the given payload, treating it as raw bytes.
-     */
-    function castToRawBytes(bytes memory _payload) internal pure returns (bytes29) {
-        return _payload.ref({ newType: 0 });
     }
 
     /**

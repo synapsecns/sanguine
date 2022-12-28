@@ -30,7 +30,7 @@ contract SystemCallHarness {
             SystemCall.formatSystemCall(
                 _systemRecipient,
                 _callData.castToCallData(),
-                _prefix.ref(SynapseTypes.RAW_BYTES)
+                _prefix.castToRawBytes()
             );
     }
 
@@ -40,10 +40,7 @@ contract SystemCallHarness {
         returns (bytes memory)
     {
         return
-            SystemCall.formatAdjustedCallData(
-                _callData.castToCallData(),
-                _prefix.ref(SynapseTypes.RAW_BYTES)
-            );
+            SystemCall.formatAdjustedCallData(_callData.castToCallData(), _prefix.castToRawBytes());
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

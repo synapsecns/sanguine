@@ -84,6 +84,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
             keccak256(message),
             "!messageHash"
         );
+        assertEq(libHarness.body(SynapseTypes.MESSAGE, message), TEST_MESSAGE_BODY, "!body");
         // Test bytes29 getters
         checkBytes29Getter({
             getter: libHarness.castToMessage,
@@ -108,14 +109,6 @@ contract MessageLibraryTest is SynapseLibraryTest {
             expectedType: SynapseTypes.MESSAGE_TIPS,
             expectedData: tips,
             revertMessage: "!tips"
-        });
-        checkBytes29Getter({
-            getter: libHarness.body,
-            payloadType: SynapseTypes.MESSAGE,
-            payload: message,
-            expectedType: SynapseTypes.RAW_BYTES,
-            expectedData: TEST_MESSAGE_BODY,
-            revertMessage: "!body"
         });
     }
 

@@ -197,10 +197,12 @@ library Message {
     /// @notice Returns message's body field as bytes29 pointer.
     function body(bytes29 _view) internal pure onlyMessage(_view) returns (bytes29) {
         return
-            _view.sliceFrom(
-                OFFSET_HEADER + _loadLength(_view, Parts.Header) + _loadLength(_view, Parts.Tips),
-                SynapseTypes.RAW_BYTES
-            );
+            _view.sliceFrom({
+                _index: OFFSET_HEADER +
+                    _loadLength(_view, Parts.Header) +
+                    _loadLength(_view, Parts.Tips),
+                newType: 0
+            });
     }
 
     /// @notice Loads length for a given part of the message
