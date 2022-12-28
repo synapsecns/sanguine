@@ -16,11 +16,6 @@ import (
 
 // BridgeTransactions is the resolver for the bridgeTransactions field.
 func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) ([]*model.BridgeTransaction, error) {
-	// If no search parameters are provided, throw an error.
-	if chainID == nil && address == nil && txnHash == nil && kappa == nil {
-		return nil, fmt.Errorf("must provide at least one of chainID, address, txnHash, or kappa")
-	}
-
 	var err error
 	var results []*model.BridgeTransaction
 
@@ -49,20 +44,6 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
-	return results, nil
-}
-
-// LatestBridgeTransactions is the resolver for the latestBridgeTransactions field.
-func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePending *bool, page *int) ([]*model.BridgeTransaction, error) {
-	// For each chain ID, get the latest bridge transaction.
-	var results []*model.BridgeTransaction
-	var err error
-	results, err = r.GetBridgeTxsFromOrigin(ctx, nil, nil, nil, *page, nil, *includePending, true)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
-	}
-
 	return results, nil
 }
 
@@ -234,3 +215,22 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePending *bool, page *int) ([]*model.BridgeTransaction, error) {
+	// For each chain ID, get the latest bridge transaction.
+	var results []*model.BridgeTransaction
+	var err error
+	results, err = r.GetBridgeTxsFromOrigin(ctx, nil, nil, nil, *page, nil, *includePending, true)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
+	}
+
+	return results, nil
+}
