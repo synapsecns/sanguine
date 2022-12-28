@@ -33,13 +33,10 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	Nil(u.T(), err)
 
-	guardSignature, err := u.GuardSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
-	Nil(u.T(), err)
-
 	notarySignature, err := u.NotarySigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(u.T(), err)
 
-	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
+	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{}, []types.Signature{notarySignature})
 
 	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
 	Nil(u.T(), err)
@@ -50,14 +47,27 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), tx)
 
 	// call the update producing function
-	attestationCollectorAttestationScanner := guard.NewAttestationCollectorAttestationScanner(u.dom, u.destinationID, testDB, u.signer, 1*time.Second)
+	attestationCollectorAttestationScanner := guard.NewAttestationCollectorAttestationScanner(
+		u.AttestationDomainClient,
+		uint32(origin),
+		uint32(destination),
+		testDB,
+		u.AttestationSigner,
+		1*time.Second)
 
-	err = originAttestationScanner.Update(u.GetTestContext())
+	err = attestationCollectorAttestationScanner.Update(u.GetTestContext())
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	producedAttestation, err := testDB.RetrieveOldestUnsignedInProgressAttestation(u.GetTestContext(), u.domainClient.Config().DomainID, u.destinationID)
+	retrievedConfirmedInProgressAttestation, err := testDB.RetrieveInProgressAttestation(
+		u.GetTestContext(),
+		u.OriginDomainClient.Config().DomainID,
+		u.DestinationDomainClient.Config().DomainID,
+		nonce)
 	Nil(u.T(), err)
-	Equal(u.T(), producedAttestation.SignedAttestation().Attestation().Nonce(), uint32(1))
-	Equal(u.T(), types.AttestationStateNotaryUnsigned, producedAttestation.AttestationState())
+	NotNil(u.T(), retrievedConfirmedInProgressAttestation)
+
+	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin())
+	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination())
+	Nil(u.T(), err)
 }

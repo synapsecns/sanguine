@@ -78,9 +78,17 @@ func (a AttestationCollectorAttestationScanner) update(ctx context.Context) erro
 	// TODO (joe): Currently we are scanning all nonces in order. Later, we really want to get the latest
 	// attestation after the latestNonce if any exists.
 	nextNonce := latestNonce + 1
-	signedAttestation, err := a.attestationDomain.AttestationCollector().GetLatestNonce(ctx, a.originID, a.destinationID, nextNonce)
+	root, err := a.attestationDomain.AttestationCollector().GetRoot(ctx, a.originID, a.destinationID, nextNonce)
 	if err != nil {
-		return fmt.Errorf("no attestation found for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nextNonce, err)
+		return fmt.Errorf("erroring getting root for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nextNonce, err)
+	}
+	if root == [32]byte{} {
+		return nil
+	}
+
+	signedAttestation, err := a.attestationDomain.AttestationCollector().GetAttestation(ctx, a.originID, a.destinationID, nextNonce)
+	if err != nil {
+		return fmt.Errorf("erroring getting attestation found for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nextNonce, err)
 	}
 
 	err = a.db.StoreExistingSignedInProgressAttestation(ctx, signedAttestation)
@@ -88,9 +96,4 @@ func (a AttestationCollectorAttestationScanner) update(ctx context.Context) erro
 		return fmt.Errorf("could not store in-progress attestations: %w", err)
 	}
 	return nil
-}
-
-func (a AttestationCollectorAttestationScanner) isConfirmed(txBlockNum uint64) bool {
-	// TODO (joe): figure this out
-	return true
 }

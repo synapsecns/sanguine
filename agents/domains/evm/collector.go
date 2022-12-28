@@ -90,10 +90,19 @@ func (a attestationCollectorContract) GetAttestation(ctx context.Context, origin
 		return nil, fmt.Errorf("could not retrieve attestation: %w", err)
 	}
 
-	signedAttestation, err := types.DecodeSignedAttestation(rawAttestation)
+	signedAttesation, err := types.DecodeSignedAttestation(rawAttestation)
 	if err != nil {
-		return nil, fmt.Errorf("could not decode signed attestation: %w", err)
+		return nil, fmt.Errorf("could not decode attestation: %w", err)
 	}
 
-	return signedAttestation, nil
+	return signedAttesation, nil
+}
+
+func (a attestationCollectorContract) GetRoot(ctx context.Context, origin, destination, nonce uint32) ([32]byte, error) {
+	root, err := a.contract.GetRoot(&bind.CallOpts{Context: ctx}, origin, destination, nonce)
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("could not retrieve root: %w", err)
+	}
+
+	return root, nil
 }

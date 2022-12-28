@@ -13,103 +13,95 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// Notary in the current version scans the origins for new messages, signs them, and posts to attestation collector.
+// Guard in the current version scans the attestation collector for notary signed attestations,
+// signs them, and posts to destination chains.
 // TODO: Note right now, I have threads for each origin-destination pair and do no batching at all
-// in terms of calls to the origin.
-// Right now, for this MVP, this is the simplest path and we can make improvements later.
-type Notary struct {
-	scanners        map[string]OriginAttestationScanner
-	signers         map[string]OriginAttestationSigner
-	submitters      map[string]OriginAttestationSubmitter
-	verifiers       map[string]OriginAttestationVerifier
-	signer          signer.Signer
-	destinationID   uint32
+type Guard struct {
+	scanners        map[string]map[string]AttestationCollectorAttestationScanner
+	bondedSigner    signer.Signer
+	unbondedSigner  signer.Signer
 	refreshInterval time.Duration
 }
 
-// NewNotary creates a new notary.
-func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err error) {
+// NewGuard creates a new guard.
+func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) {
 	if cfg.RefreshIntervalInSeconds == int64(0) {
-		return Notary{}, fmt.Errorf("cfg.refreshInterval cannot be 0")
+		return Guard{}, fmt.Errorf("cfg.refreshInterval cannot be 0")
 	}
-	notary := Notary{
-		scanners:        make(map[string]OriginAttestationScanner),
-		signers:         make(map[string]OriginAttestationSigner),
-		submitters:      make(map[string]OriginAttestationSubmitter),
-		verifiers:       make(map[string]OriginAttestationVerifier),
+	guard := Guard{
+		scanners:        make(map[string]map[string]AttestationCollectorAttestationScanner),
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
-		destinationID:   cfg.DestinationID,
 	}
 
-	notary.signer, err = config.SignerFromConfig(cfg.Signer)
+	guard.bondedSigner, err = config.SignerFromConfig(cfg.BondedSigner)
 	if err != nil {
-		return Notary{}, fmt.Errorf("could not create notary: %w", err)
+		return Guard{}, fmt.Errorf("error with bondedSigner, could not create guard: %w", err)
+	}
+
+	guard.unbondedSigner, err = config.SignerFromConfig(cfg.UnbondedSigner)
+	if err != nil {
+		return Guard{}, fmt.Errorf("error with unbondedSigner, could not create guard: %w", err)
 	}
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
 	if err != nil {
-		return Notary{}, fmt.Errorf("could not get legacyDB type: %w", err)
+		return Guard{}, fmt.Errorf("could not get legacyDB type: %w", err)
 	}
 
 	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString)
 	if err != nil {
-		return Notary{}, fmt.Errorf("could not connect to legacyDB: %w", err)
+		return Guard{}, fmt.Errorf("could not connect to legacyDB: %w", err)
 	}
 
-	for name, domain := range cfg.Domains {
-		domainClient, err := evm.NewEVM(ctx, name, domain)
-		if err != nil {
-			return Notary{}, fmt.Errorf("could not create notary for: %w", err)
+	attestationDomainClient, err := evm.NewEVM(ctx, "attestation_collector", cfg.AttestationDomain)
+	if err != nil {
+		return Guard{}, fmt.Errorf("failing to create evm for attestation collector, could not create guard for B: %w", err)
+	}
+	for originName, originDomain := range cfg.OriginDomains {
+		guard.scanners[originName] = make(map[string]AttestationCollectorAttestationScanner)
+		for destinationName, destinationDomain := range cfg.DestinationDomains {
+			if originDomain.DomainID == destinationDomain.DomainID {
+				continue
+			}
+
+			// TODO (joe): other guard workers will submit to destination but for now
+			// we are commenting this out since we aren't using the destinationDomainClient yet
+			/*destinationDomainClient, err := evm.NewEVM(ctx, destinationName, destinationDomain)
+			if err != nil {
+				return Guard{}, fmt.Errorf("failing to create evm for destination, could not create guard for: %w", err)
+			}*/
+
+			guard.scanners[originName][destinationName] = NewAttestationCollectorAttestationScanner(
+				attestationDomainClient,
+				originDomain.DomainID,
+				destinationDomain.DomainID,
+				dbHandle,
+				guard.unbondedSigner,
+				guard.refreshInterval)
 		}
-
-		notary.scanners[name] = NewOriginAttestationScanner(domainClient, notary.destinationID, dbHandle, notary.signer, notary.refreshInterval)
-		notary.signers[name] = NewOriginAttestationSigner(domainClient, notary.destinationID, dbHandle, notary.signer, notary.refreshInterval)
-		notary.submitters[name] = NewOriginAttestationSubmitter(domainClient, notary.destinationID, dbHandle, notary.signer, notary.refreshInterval)
-		notary.verifiers[name] = NewOriginAttestationVerifier(domainClient, notary.destinationID, dbHandle, notary.signer, notary.refreshInterval)
 	}
 
-	return notary, nil
+	return guard, nil
 }
 
-// Start starts the notary.{.
-func (u Notary) Start(ctx context.Context) error {
+// Start starts the guard.
+func (u Guard) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
-	for name := range u.scanners {
-		name := name // capture func literal
-		g.Go(func() error {
-			//nolint: wrapcheck
-			return u.scanners[name].Start(ctx)
-		})
-	}
-
-	for name := range u.signers {
-		name := name // capture func literal
-		g.Go(func() error {
-			//nolint: wrapcheck
-			return u.signers[name].Start(ctx)
-		})
-	}
-
-	for name := range u.submitters {
-		name := name // capture func literal
-		g.Go(func() error {
-			//nolint: wrapcheck
-			return u.submitters[name].Start(ctx)
-		})
-	}
-
-	for name := range u.verifiers {
-		name := name // capture func literal
-		g.Go(func() error {
-			//nolint: wrapcheck
-			return u.verifiers[name].Start(ctx)
-		})
+	for originName, originScanners := range u.scanners {
+		for destinationName := range originScanners {
+			originName := originName           // capture func literal
+			destinationName := destinationName // capture func literal
+			g.Go(func() error {
+				//nolint: wrapcheck
+				return u.scanners[originName][destinationName].Start(ctx)
+			})
+		}
 	}
 
 	err := g.Wait()
 	if err != nil {
-		return fmt.Errorf("could not start the notary: %w", err)
+		return fmt.Errorf("could not start the guard: %w", err)
 	}
 
 	return nil

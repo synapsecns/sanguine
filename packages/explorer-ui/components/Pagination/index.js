@@ -1,39 +1,37 @@
-import {ChevronDoubleLeftIcon, ChevronLeftIcon, ChevronRightIcon,} from '@heroicons/react/outline'
+import {ChevronDoubleLeftIcon, ChevronDoubleRightIcon, ChevronLeftIcon, ChevronRightIcon,} from '@heroicons/react/outline'
 
-import {PAGINATION_COUNT} from '@constants'
+import {useRouter} from "next/router";
+import Link from 'next/link';
+
 
 export function Pagination({
-  page,
-  resetPage,
-  prevPage,
-  nextPage,
-  totalCount,
 }) {
-  let showNextPage = !totalCount
-    ? true
-    : totalCount - page * PAGINATION_COUNT > 0
+  const router = useRouter()
+  let { p } = router.query
+  p = p ?? 1
 
   return (
     <div className="flex items-center justify-center mt-3 text-sm text-gray-500">
-      <button
-        className={page === 1 ? `pointer-events-none opacity-50` : ''}
-        onClick={resetPage}
-      >
-        <ChevronDoubleLeftIcon className="w-5 h-5" strokeWidth={1} />
-      </button>
-      <button
-        className={page === 1 ? `pointer-events-none opacity-50` : ''}
-        onClick={prevPage}
-      >
+      <Link href={{
+        pathname: router.basePath,
+        query: {...router.query, p: 1}
+      }} scroll={false} className={p === 1 ? `pointer-events-none opacity-50` : ''}>
+          <ChevronDoubleLeftIcon className="w-5 h-5" strokeWidth={1} />
+      </Link>
+      <Link href={{
+        pathname: router.basePath,
+        query: {...router.query, p: p-1}
+      }} scroll={false}
+            className={p === 1 ? `pointer-events-none opacity-50` : ''}>
         <ChevronLeftIcon className="w-5 h-5" strokeWidth={1} />
-      </button>
-      <span className="ml-2 font-light">Page {page}</span>
-      <button
-        onClick={nextPage}
-        className={showNextPage ? '' : 'pointer-events-none opacity-50'}
-      >
+      </Link>
+      <span className="font-light">Page {p}</span>
+      <Link href={{
+        pathname: router.basePath,
+        query: {...router.query, p: Number(p)+1}
+      }} scroll={false} className={``}>
         <ChevronRightIcon className="w-5 h-5" strokeWidth={1} />
-      </button>
+      </Link>
     </div>
   )
 }
