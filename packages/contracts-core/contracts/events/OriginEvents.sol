@@ -4,17 +4,18 @@ pragma solidity 0.8.17;
 abstract contract OriginEvents {
     /**
      * @notice Emitted when a new message is dispatched
-     * @param messageHash Hash of message; the leaf inserted to the Merkle tree
-     *        for the message
-     * @param nonce Nonce of sent message (starts from 1)
-     * @param destination Destination domain
-     * @param tips Tips paid for the remote off-chain agents
-     * @param message Raw bytes of message
+     * @param messageHash   Hash of message; the leaf inserted to the Merkle tree for the message
+     * @param nonce         Nonce of sent message (starts from 1)
+     * @param destination   Destination domain
+     * @param root          Merkle tree root after the new leaf was inserted
+     * @param tips          Tips paid for the remote off-chain agents
+     * @param message       Raw bytes of message
      */
     event Dispatch(
         bytes32 indexed messageHash,
         uint32 indexed nonce,
         uint32 indexed destination,
+        bytes32 root,
         bytes tips,
         bytes message
     );

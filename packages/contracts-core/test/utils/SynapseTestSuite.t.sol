@@ -64,7 +64,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // Create broadcaster
         broadcaster = registerActor("Broadcaster");
         // Deploy proof generator
-        proofGen = new ProofGenerator();
+        clearMerkleTree();
     }
 
     // All contracts are deployed by this contract, the ownership is then transferred to `owner`

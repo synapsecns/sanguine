@@ -304,7 +304,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         uint32 _destination,
         uint32 _messageNonce,
         bytes32 _messageHash
-    ) internal {
+    ) internal returns (bytes32 newRoot) {
         // TODO: when Notary is active on Destination, initialize historical roots
         // upon adding a first Notary for given destination
         if (historicalRoots[_destination].length == 0) _initializeHistoricalRoots(_destination);
@@ -313,7 +313,8 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         trees[_destination].insert(_messageNonce, _messageHash);
         /// @dev leaf is inserted => _messageNonce == tree.count()
         // tree.root() requires current amount of leaves (i.e. tree.count())
-        historicalRoots[_destination].push(trees[_destination].root(_messageNonce));
+        newRoot = trees[_destination].root(_messageNonce);
+        historicalRoots[_destination].push(newRoot);
         historicalNonceBlockNumbers[_destination].push(block.number);
     }
 

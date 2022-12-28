@@ -10,7 +10,7 @@ import "../harnesses/system/SystemRouterHarness.t.sol";
 // ============ Utils ============
 import "./SynapseConstants.t.sol";
 import "./SynapseEvents.t.sol";
-import "./proof/ProofGenerator.t.sol";
+import "./proof/HistoricalProofGenerator.t.sol";
 
 contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     struct Chain {
@@ -63,7 +63,7 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // Merkle proof generator
-    ProofGenerator internal proofGen;
+    HistoricalProofGenerator internal proofGen;
     // Context for tests
     MessageContext internal userLocalToRemote;
     MessageContext internal userRemoteToLocal;
@@ -84,6 +84,14 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
             sender: user,
             destination: DOMAIN_LOCAL
         });
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            MERKLE PROOFS                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function clearMerkleTree() public {
+        proofGen = new HistoricalProofGenerator();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

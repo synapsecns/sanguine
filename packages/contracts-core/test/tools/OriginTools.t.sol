@@ -41,6 +41,9 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
             recipient: recipient,
             optimisticSeconds: optimisticSeconds
         });
+        // Insert the message hash into the local Merkle Tree to predict the next root
+        bytes32 expectedLeaf = keccak256(messageRaw);
+        proofGen.insert(expectedLeaf);
     }
 
     // Chain's default Notary attestation for given domain's Origin: current root and current nonce
@@ -131,8 +134,16 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function expectDispatch() public {
+        bytes32 expectedRoot = proofGen.getRoot(messageNonce);
         vm.expectEmit(true, true, true, true);
-        emit Dispatch(keccak256(messageRaw), messageNonce, messageDestination, tipsRaw, messageRaw);
+        emit Dispatch({
+            messageHash: keccak256(messageRaw),
+            nonce: messageNonce,
+            destination: messageDestination,
+            root: expectedRoot,
+            tips: tipsRaw,
+            message: messageRaw
+        });
     }
 
     // Events when a valid fraud report is presented

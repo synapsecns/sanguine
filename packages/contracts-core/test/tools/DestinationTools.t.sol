@@ -35,8 +35,6 @@ abstract contract DestinationTools is OriginTools {
             // Dispatch message on remote Origin
             originDispatch();
         }
-        // Create merkle proofs for dispatched messages
-        proofGen.createTree(messageHashes);
     }
 
     // Prepare app to receive a message from Destination
@@ -58,7 +56,8 @@ abstract contract DestinationTools is OriginTools {
     function checkMessageExecution(
         MessageContext memory context,
         AppHarness app,
-        uint32 index
+        uint32 index,
+        uint256 count
     ) public {
         uint32 nonce = index + 1;
         // Save mock data in app to check against data passed by Destination
@@ -68,7 +67,7 @@ abstract contract DestinationTools is OriginTools {
         expectLogTips();
         expectExecuted({ domain: context.origin, index: index });
         // Trigger Destination.execute() on destination chain
-        destinationExecute({ domain: context.destination, index: index });
+        destinationExecute({ domain: context.destination, index: index, count: count });
         // Check executed message status
         assertEq(destinationMessageStatus(context, index), attestationRoot, "!messageStatus");
     }
@@ -123,7 +122,18 @@ abstract contract DestinationTools is OriginTools {
         uint256 index,
         bytes memory revertMessage
     ) public {
-        bytes32[TREE_DEPTH] memory proof = proofGen.getProof(index);
+        bytes32[TREE_DEPTH] memory proof = proofGen.getLatestProof(index);
+        destinationExecute(domain, index, proof, revertMessage);
+    }
+
+    // Trigger destination.execute() for given message with saved proof and expect a revert
+    function destinationExecute(
+        uint32 domain,
+        uint256 index,
+        uint256 count,
+        bytes memory revertMessage
+    ) public {
+        bytes32[TREE_DEPTH] memory proof = proofGen.getProof(index, count);
         destinationExecute(domain, index, proof, revertMessage);
     }
 
@@ -183,10 +193,21 @@ abstract contract DestinationTools is OriginTools {
         assertEq(destination.submitReport(reportRaw), returnValue, "!returnValue");
     }
 
-    // Trigger destination.execute() for a saved message
+    // Trigger destination.execute() for a saved message. Use the latest root for proving
     function destinationExecute(uint32 domain, uint256 index) public {
         DestinationHarness destination = suiteDestination(domain);
-        bytes32[TREE_DEPTH] memory proof = proofGen.getProof(index);
+        bytes32[TREE_DEPTH] memory proof = proofGen.getLatestProof(index);
+        _execute(destination, proof, index);
+    }
+
+    // Trigger destination.execute() for a saved message. Use the given root for proving.
+    function destinationExecute(
+        uint32 domain,
+        uint256 index,
+        uint256 count
+    ) public {
+        DestinationHarness destination = suiteDestination(domain);
+        bytes32[TREE_DEPTH] memory proof = proofGen.getProof(index, count);
         _execute(destination, proof, index);
     }
 
