@@ -66,7 +66,7 @@ func (a OriginAttestationSigner) FindOldestUnsignedAttestation(ctx context.Conte
 	return inProgressAttestation, nil
 }
 
-// update runs the job of th signer
+// update runs the job of the signer
 // nolint: cyclop
 func (a OriginAttestationSigner) update(ctx context.Context) error {
 	inProgressAttestationToSign, err := a.FindOldestUnsignedAttestation(ctx)

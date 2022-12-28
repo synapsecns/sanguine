@@ -57,7 +57,7 @@ func (a AttestationCollectorAttestationScanner) Start(ctx context.Context) error
 
 // FindLatestNonce fetches the latest cached nonce for a given chain.
 func (a AttestationCollectorAttestationScanner) FindLatestNonce(ctx context.Context) (nonce uint32, err error) {
-	latestNonce, err := a.db.RetrieveLatestCachedNonce(ctx, a.domain.Config().DomainID, a.destinationID)
+	latestNonce, err := a.db.RetrieveLatestCachedNonce(ctx, a.destinationID, a.destinationID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoNonceForDomain) {
 			return 0, nil
@@ -78,9 +78,9 @@ func (a AttestationCollectorAttestationScanner) update(ctx context.Context) erro
 	// TODO (joe): Currently we are scanning all nonces in order. Later, we really want to get the latest
 	// attestation after the latestNonce if any exists.
 	nextNonce := latestNonce + 1
-	signedAttestation, err := a.domain.AttestationCollector().GetAttestation(ctx, a.domain.Config().DomainID, a.destinationID, nextNonce)
+	signedAttestation, err := a.attestationDomain.AttestationCollector().GetLatestNonce(ctx, a.originID, a.destinationID, nextNonce)
 	if err != nil {
-		return fmt.Errorf("no attestation found for origin %d, destination %d, nonce %d: %w", a.domain.Config().DomainID, a.destinationID, nextNonce, err)
+		return fmt.Errorf("no attestation found for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nextNonce, err)
 	}
 
 	err = a.db.StoreExistingSignedInProgressAttestation(ctx, signedAttestation)
