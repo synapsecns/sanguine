@@ -21,7 +21,7 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 
 	origin := u.TestBackendOrigin.GetChainID()
 	destination := u.TestBackendDestination.GetChainID()
-	nonce := gofakeit.Uint32()
+	nonce := uint32(1)
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
 	attestKey := types.AttestationKey{
@@ -68,6 +68,11 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	NotNil(u.T(), retrievedConfirmedInProgressAttestation)
 
 	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin())
-	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination())
+	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination())
+	Equal(u.T(), root, common.Hash(retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Root()))
+	Len(u.T(), retrievedConfirmedInProgressAttestation.SignedAttestation().NotarySignatures(), 1)
+	Len(u.T(), retrievedConfirmedInProgressAttestation.SignedAttestation().GuardSignatures(), 0)
+	Equal(u.T(), types.AttestationStateGuardUnsigned, retrievedConfirmedInProgressAttestation.AttestationState())
+
 	Nil(u.T(), err)
 }

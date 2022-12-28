@@ -8,6 +8,7 @@ import (
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/config"
@@ -107,6 +108,8 @@ func (u GuardSuite) TestGuardE2E() {
 		_ = guard.Start(u.GetTestContext())
 	}()
 
+	// TODO (joe): This never seems to enter. I can return false and the test still passes.
+	// Figure this out.
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveInProgressAttestation(
@@ -118,7 +121,12 @@ func (u GuardSuite) TestGuardE2E() {
 		NotNil(u.T(), retrievedConfirmedInProgressAttestation)
 
 		Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin())
-		Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination())
+		Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination())
+		Equal(u.T(), historicalRoot, common.Hash(retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Root()))
+
+		Len(u.T(), retrievedConfirmedInProgressAttestation.SignedAttestation().NotarySignatures(), 1)
+		Len(u.T(), retrievedConfirmedInProgressAttestation.SignedAttestation().GuardSignatures(), 0)
+		Equal(u.T(), types.AttestationStateGuardUnsigned, retrievedConfirmedInProgressAttestation.AttestationState())
 
 		return retrievedConfirmedInProgressAttestation != nil &&
 			retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Nonce() != 0

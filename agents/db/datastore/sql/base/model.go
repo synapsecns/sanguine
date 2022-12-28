@@ -312,7 +312,9 @@ type InProgressAttestation struct {
 	// IPRoot is the root of the signed attestation
 	IPRoot []byte `gorm:"column:root;not null;->;<-:create"`
 	// IPNotarySignature stores the raw notary signature
-	IPNotarySignature []byte `gorm:"column:notary_signature;default:NULL;<-:update"`
+	IPNotarySignature []byte `gorm:"column:notary_signature;default:NULL"`
+	// IPGuardSignature stores the raw guard signature
+	IPGuardSignature []byte `gorm:"column:guard_signature;default:NULL"`
 	// IPOriginDispatchBlockNumber stores when message was dispatched on origin
 	IPOriginDispatchBlockNumber uint64 `gorm:"column:origin_dispatch_block_number;<-"`
 	// IPSubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
