@@ -45,6 +45,10 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 		if err != nil {
 			return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
 		}
+		err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=MergeTree ORDER BY (chain_id, token_index, contract_address)").AutoMigrate(&TokenIndex{})
+		if err != nil {
+			return nil, fmt.Errorf("could not migrate token indexes on clickhouse: %w", err)
+		}
 	}
 	db, err := clickhouseDB.DB()
 

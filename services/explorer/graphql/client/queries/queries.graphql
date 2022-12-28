@@ -38,40 +38,6 @@ query GetBridgeTransactions($chainId: Int, $address: String, $txHash: String, $k
   }
 }
 
-query GetLatestBridgeTransactions($includePending: Boolean, $page: Int) {
-  response: latestBridgeTransactions(
-    includePending: $includePending
-    page: $page
-  ) {
-    fromInfo {
-      chainId
-      address
-      txnHash
-      value
-      formattedValue
-      USDValue
-      tokenAddress
-      tokenSymbol
-      blockNumber
-      time
-    }
-    toInfo {
-      chainId
-      address
-      txnHash
-      value
-      formattedValue
-      USDValue
-      tokenAddress
-      tokenSymbol
-      blockNumber
-      time
-    }
-    kappa
-    pending
-    swapSuccess
-  }
-}
 
 query GetBridgeAmountStatistic($type: StatisticType!, $duration: Duration, $chainId: Int, $address: String, $tokenAddress: String) {
   response: bridgeAmountStatistic(
