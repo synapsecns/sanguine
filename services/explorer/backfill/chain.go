@@ -139,8 +139,8 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 				b := &backoff.Backoff{
 					Factor: 2,
 					Jitter: true,
-					Min:    1 * time.Second,
-					Max:    10 * time.Second,
+					Min:    30 * time.Millisecond,
+					Max:    3 * time.Second,
 				}
 
 				timeout := time.Duration(0)
@@ -156,7 +156,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 						logs, err := c.Fetcher.FetchLogsInRange(groupCtx, c.chainConfig.ChainID, chunkVar.StartBlock.Uint64(), rangeEnd, common.HexToAddress(contract.Address))
 						if err != nil {
 							timeout = b.Duration()
-							logger.Warnf("could not fetch logs for chain %d: %s. Retrying in %s", c.chainConfig.ChainID, err, timeout)
+							logger.Warnf("could not fetch logs for chain %d: %v. Retrying in %s", c.chainConfig.ChainID, err, timeout)
 
 							continue
 						}
@@ -167,11 +167,11 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 							logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 							continue
 						}
-
-						g.Go(func() error {
-							return c.storeParsedLogs(groupCtx, parsedLogs)
-						})
-
+						if len(parsedLogs) > 0 {
+							g.Go(func() error {
+								return c.storeParsedLogs(groupCtx, parsedLogs)
+							})
+						}
 						return nil
 					}
 				}
@@ -182,11 +182,9 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 			return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
 		}
 		logger.Infof("backfilling contract %s chunk completed, %d to %d", contract.Address, chunkStart, chunkEnd)
-		if c.chainConfig.ChainID == 1 {
-			fmt.Println("fuck")
-			fmt.Println(chunkEnd)
-		}
+
 		// Store the last block in clickhouse
+		fmt.Println("storing last block", chunkEnd, c.chainConfig.ChainID)
 		err = c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
 		if err != nil {
 			logger.Errorf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
@@ -205,7 +203,7 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    1 * time.Second,
+		Min:    30 * time.Millisecond,
 		Max:    3 * time.Second,
 	}
 
@@ -242,8 +240,8 @@ func (c *ChainBackfiller) storeParsedLogs(ctx context.Context, parsedEvents []in
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    1 * time.Second,
-		Max:    3 * time.Second,
+		Min:    3 * time.Millisecond,
+		Max:    2 * time.Second,
 	}
 	timeout := time.Duration(0)
 

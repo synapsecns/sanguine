@@ -38,6 +38,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Copy nvmrc
+        run: |
+          rm -rf packages/explorer-ui/.nvmrc
+          cp .nvmrc packages/explorer-ui/.nvmrc
+
       - name: Deploy to Vercel Action
         uses: BetaHuhn/deploy-to-vercel-action@v1
         with:

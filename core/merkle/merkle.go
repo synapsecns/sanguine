@@ -178,7 +178,7 @@ func (m *HistoricalTree) Root(count uint32) ([]byte, error) {
 }
 
 // MerkleProof returns the proof of inclusion:
-//   - For leaf with given `index`MerkleProof
+//   - For leaf with given `index` MerkleProof
 //   - At the time when `count` leafs have been inserted
 //
 // This is done using O(1) time.

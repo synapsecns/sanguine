@@ -12,13 +12,7 @@ type Query {
     page:           Int = 1
     tokenAddress:   String
   ): [BridgeTransaction]
-  """
-  Returns the latest bridged transactions across all chains.
-  """
-  latestBridgeTransactions(
-    includePending: Boolean = true
-    page:           Int = 1
-  ): [BridgeTransaction]
+
   """
   Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
   Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.

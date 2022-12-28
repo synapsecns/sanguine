@@ -17,7 +17,6 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/prysmaticlabs/prysm/shared/trieutil"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -301,8 +300,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	_, err = exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
 	e.NotNil(err)
 
-	testTree, err := trieutil.NewTrie(32)
-	e.Nil(err)
+	testTree := merkle.NewTree()
 
 	recipients := [][32]byte{{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())}}
 	optimisticSeconds := []uint32{gofakeit.Uint32(), gofakeit.Uint32()}
@@ -333,10 +331,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	message := types.NewMessage(header, tips[0], messageBytes)
 	e.Nil(err)
 
-	leaf, err := message.ToLeaf()
+	leafA, err := message.ToLeaf()
 	e.Nil(err)
-	testTree.Insert(leaf[:], 0)
-	testRootA := testTree.Root()
+	testTree.Insert(leafA[:])
+	testRootA, err := testTree.Root(1)
+	e.Nil(err)
 
 	// Start the exec.
 	go func() {
@@ -362,7 +361,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 			return false
 		}
 
-		if testRootA == rootA {
+		// convert testRootA to [32]byte
+		var testRootA32 [32]byte
+		copy(testRootA32[:], testRootA)
+
+		if testRootA32 == rootA {
 			waitChan <- true
 			return true
 		}
@@ -383,11 +386,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	message = types.NewMessage(header, tips[1], messageBytes)
 	e.Nil(err)
 
-	leaf, err = message.ToLeaf()
+	leafB, err := message.ToLeaf()
 	e.Nil(err)
-	testTree.Insert(leaf[:], 1)
-
-	testRootB := testTree.Root()
+	testTree.Insert(leafB[:])
+	testRootB, err := testTree.Root(2)
+	e.Nil(err)
 
 	e.Eventually(func() bool {
 		rootB, err := exec.GetRoot(e.GetTestContext(), 2, chainID, destination)
@@ -395,7 +398,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 			return false
 		}
 
-		if testRootB == rootB {
+		// convert testRootB to [32]byte
+		var testRootB32 [32]byte
+		copy(testRootB32[:], testRootB)
+
+		if testRootB32 == rootB {
 			waitChan <- true
 			return true
 		}
@@ -416,15 +423,17 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	newTreeItems := exec.GetMerkleTree(chainID, destination).Items()
 
-	e.Equal(testRootB, newRoot)
 	e.Equal(oldTreeItems, newTreeItems)
+
+	var testRootB32 [32]byte
+	copy(testRootB32[:], testRootB)
+	e.Equal(testRootB32, newRoot)
 }
 
 func (e *ExecutorSuite) TestVerifyMessage() {
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
-	testTree, err := trieutil.NewTrie(32)
-	e.Nil(err)
+	testTree := merkle.NewTree()
 
 	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
@@ -511,21 +520,25 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	leaf3, err := message3.ToLeaf()
 	e.Nil(err)
 
-	testTree.Insert(leaf0[:], 0)
-	root0 := testTree.Root()
-	testTree.Insert(leaf1[:], 1)
-	root1 := testTree.Root()
-	testTree.Insert(leaf2[:], 2)
-	root2 := testTree.Root()
-	testTree.Insert(leaf3[:], 3)
-	root3 := testTree.Root()
+	testTree.Insert(leaf0[:])
+	root0, err := testTree.Root(1)
+	e.Nil(err)
+	testTree.Insert(leaf1[:])
+	root1, err := testTree.Root(2)
+	e.Nil(err)
+	testTree.Insert(leaf2[:])
+	root2, err := testTree.Root(3)
+	e.Nil(err)
+	testTree.Insert(leaf3[:])
+	root3, err := testTree.Root(4)
+	e.Nil(err)
 
 	// Insert messages into the database.
-	err = e.testDB.StoreMessage(e.GetTestContext(), message0, root0, blockNumbers[0])
+	err = e.testDB.StoreMessage(e.GetTestContext(), message0, common.BytesToHash(root0), blockNumbers[0])
 	e.Nil(err)
-	err = e.testDB.StoreMessage(e.GetTestContext(), message1, root1, blockNumbers[1])
+	err = e.testDB.StoreMessage(e.GetTestContext(), message1, common.BytesToHash(root1), blockNumbers[1])
 	e.Nil(err)
-	err = e.testDB.StoreMessage(e.GetTestContext(), message2, root2, blockNumbers[2])
+	err = e.testDB.StoreMessage(e.GetTestContext(), message2, common.BytesToHash(root2), blockNumbers[2])
 	e.Nil(err)
 
 	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
@@ -547,7 +560,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	e.Nil(err)
 	e.False(inTreeFail)
 
-	err = e.testDB.StoreMessage(e.GetTestContext(), message3, root3, blockNumbers[3])
+	err = e.testDB.StoreMessage(e.GetTestContext(), message3, common.BytesToHash(root3), blockNumbers[3])
 	e.Nil(err)
 
 	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
