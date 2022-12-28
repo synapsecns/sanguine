@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	agentsConfig "github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/domains/evm"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"io"
 	"math/big"
 	"strconv"
@@ -18,6 +21,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
+	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
@@ -45,8 +49,8 @@ type ChainExecutor struct {
 	merkleTrees map[uint32]*merkle.HistoricalTree
 	// rpcClient is an RPC client.
 	rpcClient Backend
-	// destinationClient is a map from destination chain ID -> destination client.
-	destinationClient map[uint32]domains.DomainClient
+	// boundDestination is a map from destination chain ID -> bound destination contract.
+	boundDestination map[uint32]domains.DestinationContract
 }
 
 // Executor is the executor agent.
@@ -61,6 +65,8 @@ type Executor struct {
 	grpcClient pbscribe.ScribeServiceClient
 	// grpcConn is the gRPC connection.
 	grpcConn *grpc.ClientConn
+	// signer is the signer.
+	signer signer.Signer
 	// chainExecutors is a map from chain ID -> chain executor.
 	chainExecutors map[uint32]*ChainExecutor
 }
@@ -74,6 +80,8 @@ type logOrderInfo struct {
 const logChanSize = 1000
 
 // NewExecutor creates a new executor agent.
+//
+//nolint:cyclop
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
 	chainExecutors := make(map[uint32]*ChainExecutor)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -90,6 +98,11 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 	}
 	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
 		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
+	}
+
+	signer, err := agentsConfig.SignerFromConfig(config.UnbondedSigner)
+	if err != nil {
+		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
 
 	for _, chain := range config.Chains {
@@ -118,21 +131,25 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			rpcClient:         clients[chain.ChainID],
 		}
 
-		for _, destination := range config.Chains {
-			if destination.ChainID == chain.ChainID {
+		for _, destinationChain := range config.Chains {
+			if destinationChain.ChainID == chain.ChainID {
 				continue
 			}
 
 			tree := merkle.NewTree()
 
-			chainExecutors[chain.ChainID].merkleTrees[destination.ChainID] = tree
+			chainExecutors[chain.ChainID].merkleTrees[destinationChain.ChainID] = tree
 
-			//destinationClient, err := evm.NewEVM(ctx, "destination_client", agentsConfig.DomainConfig{})
-			//if err != nil {
-			//	return nil, fmt.Errorf("could not create destination client: %w", err)
-			//}
-			//
-			//chainExecutors[chain.ChainID].destinationClient[destination.ChainID] = destinationClient
+			underlyingClient, err := ethergoChain.NewFromURL(ctx, config.BaseOmnirpcURL)
+			if err != nil {
+				return nil, fmt.Errorf("could not get evm: %w", err)
+			}
+			boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(destinationChain.DestinationAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not bind destination contract: %w", err)
+			}
+
+			chainExecutors[chain.ChainID].boundDestination[destinationChain.ChainID] = boundDestination
 		}
 	}
 
@@ -142,6 +159,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		scribeClient:   scribeClient,
 		grpcConn:       conn,
 		grpcClient:     grpcClient,
+		signer:         signer,
 		chainExecutors: chainExecutors,
 	}, nil
 }
@@ -216,19 +234,22 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	//proof, err := e.GetLatestNonceProof(message.Nonce(), message.OriginDomain(), message.DestinationDomain())
-	//if err != nil {
-	//	return false, fmt.Errorf("could not get latest nonce proof: %w", err)
-	//}
-	//
-	//index := big.NewInt(int64(message.Nonce() - 1))
+	proof, err := e.GetLatestNonceProof(message.Nonce(), message.OriginDomain(), message.DestinationDomain())
+	if err != nil {
+		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
+	}
 
-	//signer := signer.Signer
+	index := big.NewInt(int64(message.Nonce() - 1))
 
-	//err = e.chainExecutors[message.OriginDomain()].destinationClient[message.DestinationDomain()].Destination().Execute(ctx, message, proof, index)
-	//if err != nil {
-	//	return false, fmt.Errorf("could not execute message: %w", err)
-	//}
+	var proofB32 [32][32]byte
+	for i, p := range proof {
+		copy(proofB32[i][:], p)
+	}
+
+	err = e.chainExecutors[message.OriginDomain()].boundDestination[message.DestinationDomain()].Execute(ctx, e.signer, message, proofB32, index)
+	if err != nil {
+		return false, fmt.Errorf("could not execute message: %w", err)
+	}
 
 	return true, nil
 }
@@ -328,11 +349,11 @@ func (e Executor) VerifyMessageMerkleProof(ctx context.Context, message types.Me
 // VerifyMessageOptimisticPeriod verifies that the optimistic period is valid.
 func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (bool, error) {
 	chainID := message.OriginDomain()
-	destination := message.DestinationDomain()
+	destinationDomain := message.DestinationDomain()
 	nonce := message.Nonce()
 	attestationMask := execTypes.DBAttestation{
 		ChainID:     &chainID,
-		Destination: &destination,
+		Destination: &destinationDomain,
 		Nonce:       &nonce,
 	}
 	attestation, err := e.executorDB.GetAttestation(ctx, attestationMask)
@@ -356,7 +377,7 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 		return false, nil
 	}
 
-	latestHeader, err := e.chainExecutors[destination].rpcClient.HeaderByNumber(ctx, nil)
+	latestHeader, err := e.chainExecutors[destinationDomain].rpcClient.HeaderByNumber(ctx, nil)
 	if err != nil {
 		return false, fmt.Errorf("could not get latest header: %w", err)
 	}

@@ -43,6 +43,9 @@ type destinationContract struct {
 
 func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
+	if err != nil {
+		return fmt.Errorf("could not setup transact opts: %w", err)
+	}
 
 	encodedAttestation, err := types.EncodeSignedAttestation(attestation)
 	if err != nil {
@@ -59,6 +62,9 @@ func (a destinationContract) SubmitAttestation(ctx context.Context, signer signe
 
 func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
+	if err != nil {
+		return fmt.Errorf("could not setup transact opts: %w", err)
+	}
 
 	encodedMessage, err := types.EncodeMessage(message)
 	if err != nil {
