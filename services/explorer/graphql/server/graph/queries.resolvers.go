@@ -34,22 +34,14 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		var wg sync.WaitGroup
 		var err error
 		wg.Add(1)
-		go func() error {
+		go func() {
 			defer wg.Done()
 			fromResults, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *page, tokenAddress, *includePending, false)
-			if err != nil {
-				return err
-			}
-			return nil
 		}()
 		wg.Add(1)
-		go func() error {
+		go func() {
 			defer wg.Done()
 			toResults, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, *page, tokenAddress)
-			if err != nil {
-				return err
-			}
-			return nil
 		}()
 		wg.Wait()
 		if err != nil {
@@ -184,14 +176,14 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	// Handle the different logic needed for each query type.
 	switch *typeArg {
 	case model.HistoricalResultTypeBridgevolume:
-		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s) %s) GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins)
-		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
+		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, "baseQuery", historicalSingleSideJoins)
+		query = fmt.Sprintf("%s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
 	case model.HistoricalResultTypeAddresses:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s) %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins)
-		query = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total FROM (SELECT %s FROM (%s) %s)", sql.ChainIDFieldName, sql.SenderFieldName, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins)
+		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, "baseQuery", historicalSingleSideJoins)
+		query = fmt.Sprintf("%s SELECT toFloat64(uniq(%s, %s )) AS total FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.SenderFieldName, singleSideCol, "baseQuery", historicalSingleSideJoins)
 	case model.HistoricalResultTypeTransactions:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM (%s) %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins)
-		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
+		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, "baseQuery", historicalSingleSideJoins)
+		query = fmt.Sprintf(" %s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
 
 	default:
 		return nil, fmt.Errorf("invalid type argument")
@@ -202,7 +194,7 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	var dayByDayData []*model.DateResult
 	g, groupCtx := errgroup.WithContext(ctx)
 	g.Go(func() error {
-		dayByDayData, err = r.DB.GetDateResults(groupCtx, subQuery)
+		dayByDayData, err = r.DB.GetDateResults(groupCtx, fmt.Sprintf("%s %s", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery))
 		if err != nil {
 			return fmt.Errorf("failed to get dateResults: %w", err)
 		}

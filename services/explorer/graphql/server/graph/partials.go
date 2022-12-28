@@ -1,22 +1,22 @@
 package graph
 
 // TODO make more dynamic.
-//const originCTE = `
-//WITH baseQuery AS (
+// const originCTE = `
+// WITH baseQuery AS (
 //	SELECT * FROM explorer_staging_4.bridge_events
 //	ORDER BY block_number DESC, event_index DESC, insert_time DESC
 //	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
 //	LIMIT 100 OFFSET 0
-//), (SELECT min(timestamp) from baseQuery) AS minTimestamp
+// ), (SELECT min(timestamp) from baseQuery) AS minTimestamp
 //`
 //
-//const destCTE = `
-//WITH baseQuery AS (
+// const destCTE = `
+// WITH baseQuery AS (
 //	SELECT * FROM explorer_staging_4.bridge_events
 //	ORDER BY block_number DESC, event_index DESC, insert_time DESC
 //	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
 //	LIMIT 100 OFFSET 0
-//), (SELECT min(timestamp) from baseQuery) AS minTimestamp
+// ), (SELECT min(timestamp) from baseQuery) AS minTimestamp
 //`
 
 const originToDestCol = `
@@ -462,7 +462,7 @@ LEFT JOIN (
     tx_hash AS swap_tx_hash,
     chain_id AS swap_chain_id
   FROM
-    swap_events WHERE timestamp >= minTimestamp
+    swap_events
 ) se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
 LEFT JOIN (
@@ -525,4 +525,32 @@ be.token_decimal AS token_decimal,
 be.timestamp AS timestamp,
 be.destination_chain_id AS destination_chain_id,
 be.insert_time AS insert_time
+`
+
+const historicalSingleSideJoins = `
+ be
+LEFT JOIN (
+  SELECT
+    amount_usd AS swap_amount_usd,
+    tokens_bought,
+    tokens_sold,
+    sold_id,
+    bought_id,
+    contract_address AS swap_address,
+    tx_hash AS swap_tx_hash,
+    chain_id AS swap_chain_id
+  FROM
+    swap_events WHERE timestamp >= minTimestamp
+) se ON be.tx_hash = se.swap_tx_hash
+AND be.chain_id = se.swap_chain_id
+LEFT JOIN (
+  SELECT
+    DISTINCT ON (
+      chain_id, token_index, contract_address
+    ) *
+  FROM
+    token_indices
+) ti ON be.chain_id = ti.chain_id
+AND se.swap_address = ti.contract_address
+AND ti.token_index = be.sold_id
 `

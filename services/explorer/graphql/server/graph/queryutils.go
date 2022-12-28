@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 )
 
+// nolint:unparam
 func generateDeDepQuery(filter string, page *int, offset *int) string {
 	if page != nil || offset != nil {
 		return fmt.Sprintf("SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d", filter, *page, *offset)
@@ -24,7 +25,10 @@ func generateDeDepQueryCTE(filter string, page *int, offset *int, in bool) strin
 	if in {
 		minTimestamp = " (SELECT min(timestamp) FROM baseQuery) AS minTimestamp"
 	}
-	return fmt.Sprintf("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d), %s", filter, *page, *offset, minTimestamp)
+	if page != nil || offset != nil {
+		return fmt.Sprintf("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d), %s", filter, *page, *offset, minTimestamp)
+	}
+	return fmt.Sprintf("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash), %s", filter, minTimestamp)
 }
 
 func (r *queryResolver) getDirectionIn(direction *model.Direction) bool {
