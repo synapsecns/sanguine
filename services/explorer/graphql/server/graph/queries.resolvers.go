@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -28,17 +29,36 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 			return nil, err
 		}
 	default:
+		var fromResults []*model.BridgeTransaction
+		var toResults []*model.BridgeTransaction
+		var wg sync.WaitGroup
+		var err error
+		wg.Add(1)
+		go func() error {
+			defer wg.Done()
+			fromResults, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *page, tokenAddress, *includePending, false)
+			if err != nil {
+				return err
+			}
+			return nil
+		}()
+		wg.Add(1)
+		go func() error {
+			defer wg.Done()
+			toResults, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, *page, tokenAddress)
+			if err != nil {
+				return err
+			}
+			return nil
+		}()
+		wg.Wait()
+		if err != nil {
+			return nil, err
+		}
 		// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for
 		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
 		// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
-		fromResults, err := r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *page, tokenAddress, *includePending, false)
-		if err != nil {
-			return nil, err
-		}
-		toResults, err := r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, *page, tokenAddress)
-		if err != nil {
-			return nil, err
-		}
+
 		results = r.mergeBridgeTransactions(fromResults, toResults)
 	}
 	if err != nil {
