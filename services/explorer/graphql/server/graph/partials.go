@@ -1,6 +1,24 @@
 package graph
 
 // TODO make more dynamic.
+//const originCTE = `
+//WITH baseQuery AS (
+//	SELECT * FROM explorer_staging_4.bridge_events
+//	ORDER BY block_number DESC, event_index DESC, insert_time DESC
+//	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
+//	LIMIT 100 OFFSET 0
+//), (SELECT min(timestamp) from baseQuery) AS minTimestamp
+//`
+//
+//const destCTE = `
+//WITH baseQuery AS (
+//	SELECT * FROM explorer_staging_4.bridge_events
+//	ORDER BY block_number DESC, event_index DESC, insert_time DESC
+//	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
+//	LIMIT 100 OFFSET 0
+//), (SELECT min(timestamp) from baseQuery) AS minTimestamp
+//`
+
 const originToDestCol = `
 f.pre_ftoken AS ftoken,
 f.pre_famount AS famount,
@@ -158,7 +176,7 @@ LEFT JOIN (
     tx_hash AS swap_tx_hash,
     chain_id AS swap_chain_id
   FROM
-    swap_events
+    swap_events WHERE timestamp >= minTimestamp
 ) se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
 LEFT JOIN (
@@ -176,7 +194,7 @@ LEFT JOIN (
   SELECT
     *
   from
-    bridge_events
+    bridge_events WHERE timestamp >= minTimestamp
   ORDER BY
     block_number DESC,
     event_index DESC,
@@ -201,7 +219,7 @@ LEFT JOIN (
     tx_hash AS swap_tx_hash,
     chain_id AS swap_chain_id
   FROM
-    swap_events
+    swap_events WHERE timestamp >= minTimestamp
 ) se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
 LEFT JOIN (
@@ -373,7 +391,7 @@ LEFT JOIN (
     tx_hash AS swap_tx_hash,
     chain_id AS swap_chain_id
   FROM
-    swap_events
+    swap_events WHERE timestamp >= minTimestamp
 ) se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
 LEFT JOIN (
@@ -391,7 +409,7 @@ LEFT JOIN (
   SELECT
     *
   from
-    bridge_events
+    bridge_events WHERE timestamp >= minTimestamp
   ORDER BY
     block_number DESC,
     event_index DESC,
@@ -416,7 +434,7 @@ LEFT JOIN (
     tx_hash AS swap_tx_hash,
     chain_id AS swap_chain_id
   FROM
-    swap_events
+    swap_events WHERE timestamp >= minTimestamp
 ) se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
 LEFT JOIN (
@@ -444,7 +462,7 @@ LEFT JOIN (
     tx_hash AS swap_tx_hash,
     chain_id AS swap_chain_id
   FROM
-    swap_events
+    swap_events WHERE timestamp >= minTimestamp
 ) se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
 LEFT JOIN (

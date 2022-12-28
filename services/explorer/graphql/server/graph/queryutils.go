@@ -11,15 +11,20 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 )
 
-func generateDeDepQuery(filter string, page *int, offset *int, latest bool) string {
+func generateDeDepQuery(filter string, page *int, offset *int) string {
 	if page != nil || offset != nil {
-		if latest {
-			return fmt.Sprintf("SELECT * FROM (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT %d BY chain_id) LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash", filter, *page/4)
-		}
 		return fmt.Sprintf("SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d", filter, *page, *offset)
 	}
 
 	return fmt.Sprintf("SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash", filter)
+}
+
+func generateDeDepQueryCTE(filter string, page *int, offset *int, in bool) string {
+	minTimestamp := " (SELECT min(timestamp) - 86400 FROM baseQuery) AS minTimestamp"
+	if in {
+		minTimestamp = " (SELECT min(timestamp) FROM baseQuery) AS minTimestamp"
+	}
+	return fmt.Sprintf("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d), %s", filter, *page, *offset, minTimestamp)
 }
 
 func (r *queryResolver) getDirectionIn(direction *model.Direction) bool {
@@ -209,10 +214,10 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 	var query string
 	if isTokenCount {
 		query = fmt.Sprintf(`SELECT %s, %s AS TokenAddress, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM (%s) %s) GROUP BY %s, %s ORDER BY Count Desc`,
-			sql.ChainIDFieldName, sql.TokenFieldName, sql.TxHashFieldName, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil, false), singleSideJoins, sql.TokenFieldName, sql.ChainIDFieldName)
+			sql.ChainIDFieldName, sql.TokenFieldName, sql.TxHashFieldName, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins, sql.TokenFieldName, sql.ChainIDFieldName)
 	} else {
 		query = fmt.Sprintf(`SELECT %s, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM (%s) %s) GROUP BY %s ORDER BY Count Desc`,
-			sql.ChainIDFieldName, sql.TxHashFieldName, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil, false), singleSideJoins, sql.ChainIDFieldName)
+			sql.ChainIDFieldName, sql.TxHashFieldName, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins, sql.ChainIDFieldName)
 	}
 	return query
 }
@@ -310,7 +315,7 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 // generatePartialInfoQuery returns the query for making the PartialInfo query.
 //
 // nolint:dupl
-func generateAllBridgeEventsQueryFromOrigin(chainID *int, address, tokenAddress, txHash *string, page int, in bool, latest bool) string {
+func generateAllBridgeEventsQueryFromOrigin(chainID *int, address, tokenAddress, txHash *string, page int, in bool) string {
 	firstFilter := true
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "")
@@ -320,7 +325,8 @@ func generateAllBridgeEventsQueryFromOrigin(chainID *int, address, tokenAddress,
 	compositeFilters := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + txHashSpecifier + directionSpecifier
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
-	finalQuery := fmt.Sprintf("SELECT %s FROM (%s) %s", originToDestCol, generateDeDepQuery(compositeFilters, &pageValue, &pageOffset, latest), originToDestJoins)
+	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, true), originToDestCol, "baseQuery", originToDestJoins)
+
 	return finalQuery
 }
 
@@ -335,7 +341,7 @@ func generateAllBridgeEventsQueryFromDestination(chainID *int, address, tokenAdd
 	compositeFilters := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + kappaSpecifier + txHashSpecifier + directionSpecifier
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
-	finalQuery := fmt.Sprintf("SELECT %s FROM (%s) %s", destToOriginCol, generateDeDepQuery(compositeFilters, &pageValue, &pageOffset, false), destToOriginJoins)
+	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, false), destToOriginCol, "baseQuery", destToOriginJoins)
 
 	return finalQuery
 }
@@ -371,7 +377,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 	var err error
 	var chainMap = make(map[uint32]bool)
 	var results []*model.BridgeTransaction
-	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, generateAllBridgeEventsQueryFromOrigin(chainID, address, tokenAddress, txHash, page, true, latest))
+	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, generateAllBridgeEventsQueryFromOrigin(chainID, address, tokenAddress, txHash, page, true))
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
