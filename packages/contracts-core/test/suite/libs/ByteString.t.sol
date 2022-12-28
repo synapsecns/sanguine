@@ -54,11 +54,11 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         bytes memory following = createTestArguments(wordsFollowing, "following");
         bytes memory prefixNew = createTestArguments(wordsPrefix, "prefixNew");
         bytes memory callData = bytes.concat(selector, prefixOld, following);
-        bytes memory adjustedCallData = SystemCall.formatAdjustedCallData(
+        bytes memory adjustedCallData = SystemMessageLib.formatAdjustedCallData(
             callData.castToCallData(),
             prefixNew.castToRawBytes()
         );
-        // Correct formatting is checked in SystemCall.t.sol
+        // Correct formatting is checked in SystemMessage.t.sol
         // Test formatting checker
         assertTrue(libHarness.isCallData(adjustedCallData), "!isCallData");
         assertEq(libHarness.castToCallData(adjustedCallData), adjustedCallData, "!castToCallData");

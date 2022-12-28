@@ -15,6 +15,9 @@ pragma solidity 0.8.17;
 type CallData is bytes29;
 type Signature is bytes29;
 
+/// @dev SystemMessage is a memory view over the message with instructions for a system call.
+type SystemMessage is bytes29;
+
 /**
  * @dev The goal of this library is to assign a type for every bytes29 memory pointer
  * and enforce strict type checking for every bytes29 operation. This will prevent
@@ -49,11 +52,4 @@ library SynapseTypes {
     uint40 internal constant MESSAGE_HEADER             = 0x03_01_01_00_00;
     // prettier-ignore
     uint40 internal constant MESSAGE_TIPS               = 0x03_01_02_00_00;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             0X04: SYSTEM                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // prettier-ignore
-    uint40 internal constant SYSTEM_CALL                = 0x04_00_00_00_00;
 }

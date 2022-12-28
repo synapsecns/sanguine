@@ -442,7 +442,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     }
 
     // Returns "sender" field that Origin should be using when constructing a message.
-    // A special value of SYSTEM_ROUTER (see SystemCall.sol) will be used if an only if:
+    // A special value of SYSTEM_ROUTER (see SystemMessage.sol) will be used if an only if:
     // - Message was sent by System Router, specifying SYSTEM_ROUTER as recipient
     // Otherwise, sender address will be used, casted to bytes32, preserving alignment
     function _getSender(MessageContext memory context, bytes32 recipient)
@@ -452,9 +452,9 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     {
         if (
             context.sender == address(suiteSystemRouter({ domain: context.origin })) &&
-            recipient == SystemCall.SYSTEM_ROUTER
+            recipient == SystemMessageLib.SYSTEM_ROUTER
         ) {
-            return SystemCall.SYSTEM_ROUTER;
+            return SystemMessageLib.SYSTEM_ROUTER;
         } else {
             return addressToBytes32(context.sender);
         }

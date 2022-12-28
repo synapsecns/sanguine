@@ -58,7 +58,7 @@ abstract contract SystemRouterTools is DestinationTools {
             context: context,
             mockTips: false,
             body: abi.encode(formattedSystemCalls),
-            recipient: SystemCall.SYSTEM_ROUTER,
+            recipient: SystemMessageLib.SYSTEM_ROUTER,
             optimisticSeconds: 0
         });
         // Save dispatched message for later execution
@@ -136,7 +136,7 @@ abstract contract SystemRouterTools is DestinationTools {
             // Root timestamp, domain of origin chain, and system entity that sent the message
             bytes memory prefix = abi.encode(block.timestamp, systemCallOrigin, systemCallSender);
             // Save formatted system call
-            formattedSystemCalls[i] = SystemCall.formatSystemCall({
+            formattedSystemCalls[i] = SystemMessageLib.formatSystemMessage({
                 _systemRecipient: uint8(systemCallRecipients[i]),
                 _callData: systemCallDataArray[i].castToCallData(),
                 _prefix: prefix.castToRawBytes()

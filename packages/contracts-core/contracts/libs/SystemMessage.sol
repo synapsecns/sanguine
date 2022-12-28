@@ -3,11 +3,10 @@ pragma solidity 0.8.17;
 
 import "./ByteString.sol";
 
-library SystemCall {
+library SystemMessageLib {
     using ByteString for bytes;
     using ByteString for bytes29;
     using ByteString for CallData;
-    using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
     /**
@@ -22,7 +21,7 @@ library SystemCall {
     bytes32 internal constant SYSTEM_ROUTER = bytes32(type(uint256).max << 160);
 
     /**
-     * @dev SystemCall memory layout
+     * @dev SystemMessage memory layout
      * [000 .. 001): recipient      uint8   1 bytes
      * [001 .. END]: calldata       bytes   ? bytes
      */
@@ -38,27 +37,18 @@ library SystemCall {
     uint256 internal constant CALLDATA_MIN_ARGUMENT_WORDS = 3;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    modifier onlyType(bytes29 _view, uint40 _type) {
-        _view.assertType(_type);
-        _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              FORMATTERS                              ║*▕
+    ▏*║                            SYSTEM MESSAGE                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns a formatted SystemCall payload with provided fields.
+     * @notice Returns a formatted SystemMessage payload with provided fields.
      * See: formatAdjustedCallData() for more details.
      * @param _systemRecipient  System Contract to receive message (see ISystemRouter.SystemEntity)
      * @param _callData         Calldata where the first arguments need to be replaced
      * @param _prefix           ABI-encoded arguments to use as the first arguments in the calldata
-     * @return Formatted SystemCall payload.
+     * @return Formatted SystemMessage payload.
      */
-    function formatSystemCall(
+    function formatSystemMessage(
         uint8 _systemRecipient,
         CallData _callData,
         bytes29 _prefix
@@ -110,16 +100,26 @@ library SystemCall {
     }
 
     /**
-     * @notice Returns a properly typed bytes29 pointer for a system call payload.
+     * @notice Returns a SystemMessage view over for the given payload.
+     * @dev Will revert if the payload is not a system message.
      */
-    function castToSystemCall(bytes memory _payload) internal pure returns (bytes29) {
-        return _payload.ref(SynapseTypes.SYSTEM_CALL);
+    function castToSystemMessage(bytes memory _payload) internal pure returns (SystemMessage) {
+        return castToSystemMessage(_payload.castToRawBytes());
     }
 
     /**
-     * @notice Checks that a payload is a formatted System Call.
+     * @notice Casts a memory view to a SystemMessage view.
+     * @dev Will revert if the payload is not a system message.
      */
-    function isSystemCall(bytes29 _view) internal pure returns (bool) {
+    function castToSystemMessage(bytes29 _view) internal pure returns (SystemMessage) {
+        require(isSystemMessage(_view), "Not a system message");
+        return SystemMessage.wrap(_view);
+    }
+
+    /**
+     * @notice Checks that a payload is a formatted System Message.
+     */
+    function isSystemMessage(bytes29 _view) internal pure returns (bool) {
         // Payload needs to exist (system calls are never done via fallback function)
         if (_view.len() < OFFSET_CALLDATA) return false;
         bytes29 _callData = _getCallData(_view);
@@ -129,31 +129,30 @@ library SystemCall {
         return _callData.castToCallData().argumentWords() >= CALLDATA_MIN_ARGUMENT_WORDS;
     }
 
+    /// @notice Convenience shortcut for unwrapping a view.
+    function unwrap(SystemMessage _sm) internal pure returns (bytes29) {
+        return SystemMessage.unwrap(_sm);
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         SYSTEM CALL SLICING                          ║*▕
+    ▏*║                        SYSTEM MESSAGE SLICING                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns int value of System Call's recipient (see ISystemRouter.SystemEntity).
+     * @notice Returns int value of System Message recipient (see ISystemRouter.SystemEntity).
      */
-    function callRecipient(bytes29 _view)
-        internal
-        pure
-        onlyType(_view, SynapseTypes.SYSTEM_CALL)
-        returns (uint8)
-    {
+    function callRecipient(SystemMessage _systemMessage) internal pure returns (uint8) {
+        // Get the underlying memory view
+        bytes29 _view = unwrap(_systemMessage);
         return uint8(_view.indexUint({ _index: OFFSET_RECIPIENT, _bytes: 1 }));
     }
 
     /**
-     * @notice Returns System Call's calldata.
+     * @notice Returns System Message calldata.
      */
-    function callData(bytes29 _view)
-        internal
-        pure
-        onlyType(_view, SynapseTypes.SYSTEM_CALL)
-        returns (CallData)
-    {
+    function callData(SystemMessage _systemMessage) internal pure returns (CallData) {
+        // Get the underlying memory view
+        bytes29 _view = unwrap(_systemMessage);
         return _getCallData(_view).castToCallData();
     }
 
@@ -162,9 +161,8 @@ library SystemCall {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns System Call's calldata WITHOUT checking the view type and
+     * @notice Returns a generic memory view over System Message calldata,
      * without verifying that this is a valid calldata.
-     * To be used in `isSystemCall`, where type check is not necessary.
      */
     function _getCallData(bytes29 _view) private pure returns (bytes29) {
         return _view.sliceFrom({ _index: OFFSET_CALLDATA, newType: 0 });

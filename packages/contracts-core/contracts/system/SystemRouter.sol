@@ -2,10 +2,9 @@
 pragma solidity 0.8.17;
 
 import "../Version.sol";
-import "../libs/ByteString.sol";
+import "../libs/SystemMessage.sol";
 import { BasicClient } from "../client/BasicClient.sol";
 import { LocalDomainContext } from "../context/LocalDomainContext.sol";
-import { SystemCall } from "../libs/SystemCall.sol";
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
 import { Tips } from "../libs/Tips.sol";
 
@@ -59,8 +58,8 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version0_0_1 {
     using Address for address;
     using ByteString for bytes;
-    using SystemCall for bytes;
-    using SystemCall for bytes29;
+    using SystemMessageLib for bytes;
+    using SystemMessageLib for SystemMessage;
 
     /**
      * @dev System entity initiates a system call with given calldata.
@@ -241,7 +240,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
          * Destination is supposed to reject messages
          * from unknown chains, so we can skip origin check here.
          */
-        return SystemCall.SYSTEM_ROUTER;
+        return SystemMessageLib.SYSTEM_ROUTER;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -265,11 +264,9 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
         // Received a message containing a remote system call, use the corresponding prefix
         bytes29 prefix = _prefixReceiveCall(_rootSubmittedAt).castToRawBytes();
         for (uint256 i = 0; i < amount; ++i) {
-            bytes29 _view = systemMessages[i].castToSystemCall();
-            // Check that payload in a properly formatted system call
-            require(_view.isSystemCall(), "Not a system call");
+            SystemMessage _systemMessage = systemMessages[i].castToSystemMessage();
             // Route the system call to specified recipient
-            _localSystemCall(_view.callRecipient(), _view.callData(), prefix);
+            _localSystemCall(_systemMessage.callRecipient(), _systemMessage.callData(), prefix);
         }
     }
 
@@ -300,23 +297,23 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
         address recipient = _getSystemAddress(_recipient);
         require(recipient != address(0), "System Contract not set");
         // recipient.functionCall() calls recipient and bubbles the revert from the external call
-        recipient.functionCall(SystemCall.formatAdjustedCallData(_callData, _prefix));
+        recipient.functionCall(SystemMessageLib.formatAdjustedCallData(_callData, _prefix));
     }
 
     /**
      * @notice Performs the "sending part" of a remote system multicall.
      * @param _destination          Destination domain where system multicall will be performed
      * @param _optimisticSeconds    Optimistic period for the executing the system multicall
-     * @param _systemCalls          List of system calls to perform on destination chain
+     * @param _systemMessages       List of system messages to execute on destination chain
      */
     function _remoteSystemCall(
         uint32 _destination,
         uint32 _optimisticSeconds,
-        bytes[] memory _systemCalls
+        bytes[] memory _systemMessages
     ) internal {
         // TODO: use TypedMemView for encoding/decoding instead
         // Serialize the series of system calls into a byte string
-        bytes memory message = abi.encode(_systemCalls);
+        bytes memory message = abi.encode(_systemMessages);
         /**
          * @dev Origin will use SYSTEM_ROUTER as "sender" field for messages
          * sent by System Router.
@@ -351,15 +348,15 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
             }
         } else {
             // Performing a remote system multicall
-            bytes[] memory systemCalls = new bytes[](amount);
+            bytes[] memory systemMessages = new bytes[](amount);
             for (uint256 i = 0; i < amount; ++i) {
-                systemCalls[i] = SystemCall.formatSystemCall({
+                systemMessages[i] = SystemMessageLib.formatSystemMessage({
                     _systemRecipient: uint8(_recipients[i]),
                     _callData: _callDataArray[i],
                     _prefix: prefix
                 });
             }
-            _remoteSystemCall(_destination, _optimisticSeconds, systemCalls);
+            _remoteSystemCall(_destination, _optimisticSeconds, systemMessages);
         }
     }
 

@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import "./Version.sol";
+import "./libs/SystemMessage.sol";
 import { LocalDomainContext } from "./context/LocalDomainContext.sol";
 import { DestinationHub } from "./hubs/DestinationHub.sol";
 import { DestinationEvents } from "./events/DestinationEvents.sol";
@@ -12,7 +13,6 @@ import { Header } from "./libs/Header.sol";
 import { Tips } from "./libs/Tips.sol";
 import { TypedMemView } from "./libs/TypedMemView.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
-import { SystemCall } from "./libs/SystemCall.sol";
 
 /**
  * @title Destination
@@ -202,7 +202,7 @@ contract Destination is DestinationEvents, DestinationHub, LocalDomainContext, V
 
     function _checkForSystemRouter(bytes32 _recipient) internal view returns (address recipient) {
         // Check if SYSTEM_ROUTER was specified as message recipient
-        if (_recipient == SystemCall.SYSTEM_ROUTER) {
+        if (_recipient == SystemMessageLib.SYSTEM_ROUTER) {
             /**
              * @dev Route message to SystemRouter.
              * Note: Only SystemRouter contract on origin chain can send a message

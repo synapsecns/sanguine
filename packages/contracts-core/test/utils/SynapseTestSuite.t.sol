@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "../../contracts/bonding/BondingMVP.sol";
 import "../../contracts/bonding/BondingPrimary.sol";
 import "../../contracts/bonding/BondingSecondary.sol";
-import "../../contracts/libs/SystemCall.sol";
+import "../../contracts/libs/SystemMessage.sol";
 import "../../contracts/libs/Report.sol";
 import "./SynapseTestStorage.t.sol";
 import "./SynapseUtilities.t.sol";

@@ -2,18 +2,17 @@
 
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/ByteString.sol";
-import { SynapseTypes } from "../../../contracts/libs/SynapseTypes.sol";
-import { SystemCall } from "../../../contracts/libs/SystemCall.sol";
-import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
+import "../../../contracts/libs/SystemMessage.sol";
 
 /**
- * @notice Exposes SystemCall methods for testing against golang.
+ * @notice Exposes SystemMessageLib methods for testing against golang.
  */
-contract SystemCallHarness {
+contract SystemMessageHarness {
     using ByteString for bytes;
-    using SystemCall for bytes;
-    using SystemCall for bytes29;
+    using ByteString for CallData;
+    using SystemMessageLib for bytes;
+    using SystemMessageLib for bytes29;
+    using SystemMessageLib for SystemMessage;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
@@ -21,13 +20,13 @@ contract SystemCallHarness {
     ▏*║                              FORMATTERS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatSystemCall(
+    function formatSystemMessage(
         uint8 _systemRecipient,
         bytes memory _callData,
         bytes memory _prefix
     ) public view returns (bytes memory) {
         return
-            SystemCall.formatSystemCall(
+            SystemMessageLib.formatSystemMessage(
                 _systemRecipient,
                 _callData.castToCallData(),
                 _prefix.castToRawBytes()
@@ -40,34 +39,33 @@ contract SystemCallHarness {
         returns (bytes memory)
     {
         return
-            SystemCall.formatAdjustedCallData(_callData.castToCallData(), _prefix.castToRawBytes());
+            SystemMessageLib.formatAdjustedCallData(
+                _callData.castToCallData(),
+                _prefix.castToRawBytes()
+            );
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToSystemCall(uint40, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
+    function castToSystemMessage(bytes memory _payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        bytes29 _view = SystemCall.castToSystemCall(_payload);
-        return (_view.typeOf(), _view.clone());
+        SystemMessage sm = SystemMessageLib.castToSystemMessage(_payload);
+        return sm.unwrap().clone();
     }
 
-    function callData(uint40 _type, bytes memory _payload) public view returns (bytes memory) {
-        return CallData.unwrap(_payload.ref(_type).callData()).clone();
+    function callData(bytes memory _payload) public view returns (bytes memory) {
+        return _payload.castToSystemMessage().callData().unwrap().clone();
     }
 
-    function callRecipient(uint40 _type, bytes memory _payload) public pure returns (uint8) {
-        return _payload.ref(_type).callRecipient();
+    function callRecipient(bytes memory _payload) public pure returns (uint8) {
+        return _payload.castToSystemMessage().callRecipient();
     }
 
-    function isSystemCall(bytes memory _payload) public pure returns (bool) {
-        return _payload.castToSystemCall().isSystemCall();
+    function isSystemMessage(bytes memory _payload) public pure returns (bool) {
+        return _payload.ref(0).isSystemMessage();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -75,14 +73,14 @@ contract SystemCallHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function systemRouter() public pure returns (bytes32) {
-        return SystemCall.SYSTEM_ROUTER;
+        return SystemMessageLib.SYSTEM_ROUTER;
     }
 
     function offsetRecipient() public pure returns (uint256) {
-        return SystemCall.OFFSET_RECIPIENT;
+        return SystemMessageLib.OFFSET_RECIPIENT;
     }
 
     function offsetCallData() public pure returns (uint256) {
-        return SystemCall.OFFSET_CALLDATA;
+        return SystemMessageLib.OFFSET_CALLDATA;
     }
 }

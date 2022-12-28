@@ -33,7 +33,7 @@ contract SystemRouterTest is SystemRouterTools {
             uint32 domain = domains[d];
             assertEq(
                 suiteSystemRouter(domain).trustedSender(remoteDomain),
-                SystemCall.SYSTEM_ROUTER,
+                SystemMessageLib.SYSTEM_ROUTER,
                 "!trustedSender"
             );
         }
@@ -59,7 +59,7 @@ contract SystemRouterTest is SystemRouterTools {
         suiteSystemRouter(DOMAIN_LOCAL).handle({
             _origin: DOMAIN_REMOTE,
             _nonce: 1,
-            _sender: SystemCall.SYSTEM_ROUTER,
+            _sender: SystemMessageLib.SYSTEM_ROUTER,
             _rootSubmittedAt: block.timestamp,
             _message: abi.encode(formattedSystemCalls)
         });
@@ -85,16 +85,16 @@ contract SystemRouterTest is SystemRouterTools {
         }
     }
 
-    function test_systemCall_revert_notSystemCall() public {
+    function test_systemCall_revert_notSystemMessage() public {
         formattedSystemCalls = new bytes[](1);
-        // Try passing empty payload as "system call"
-        vm.expectRevert("Not a system call");
+        // Try passing empty payload as "system message"
+        vm.expectRevert("Not a system message");
         // Mock executing of the message on Destination
         vm.prank(address(suiteDestination(DOMAIN_LOCAL)));
         suiteSystemRouter(DOMAIN_LOCAL).handle({
             _origin: DOMAIN_REMOTE,
             _nonce: 1,
-            _sender: SystemCall.SYSTEM_ROUTER,
+            _sender: SystemMessageLib.SYSTEM_ROUTER,
             _rootSubmittedAt: block.timestamp,
             _message: abi.encode(formattedSystemCalls)
         });
@@ -124,7 +124,7 @@ contract SystemRouterTest is SystemRouterTools {
         suiteSystemRouter(DOMAIN_LOCAL).handle({
             _origin: DOMAIN_REMOTE,
             _nonce: 1,
-            _sender: SystemCall.SYSTEM_ROUTER,
+            _sender: SystemMessageLib.SYSTEM_ROUTER,
             _rootSubmittedAt: block.timestamp,
             _message: abi.encode(formattedSystemCalls)
         });
