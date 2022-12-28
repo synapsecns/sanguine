@@ -1,44 +1,50 @@
 {
-    "compilerOptions": {
-      "baseUrl": "src",
-      "paths": {
-        "@assets":          ["./assets"],
-        "@assets/*":        ["./assets/*"],
-        "@assets/**/*":     ["./assets/**/*"],
-        "@bignumber":       ["./utils/bignumber"],
-        "@bignumber/*":     ["./utils/bignumber/*"],
-        "@bignumber/**/*":  ["./utils/bignumber/**/*"],
-        "@components":      ["./components"],
-        "@components/*":    ["./components/*"],
-        "@components/**/*": ["./components/**/*"],
-        "@tw":              ["./components/tailwind"],
-        "@tw/*":            ["./components/tailwind/*"],
-        "@tw/**/*":         ["./components/tailwind/**/*"],
-        "@icons":           ["./components/icons"],
-        "@icons/*":         ["./components/icons/*"],
-        "@icons/**/*":      ["./components/icons/**/*"],
-        "@layouts":         ["./components/layouts"],
-        "@layouts/*":       ["./components/layouts/*"],
-        "@layouts/**/*":    ["./components/layouts/**/*"],
-        "@urls":            ["./utils/urls"],
-        "@urls/*":          ["./utils/urls/*"],
-        "@urls/**/*":       ["./urls/**/*"],
-        "@utils":           ["./utils"],
-        "@utils/*":         ["./utils/*"],
-        "@constants":       ["./constants"],
-        "@constants/*":     ["./constants/*"],
-        "@constants/**/*":  ["./constants/**/*"],
-        "@styles":          ["./utils/styles"],
-        "@styles/*":        ["./utils/styles/*"],
-        "@styles/**/*":     ["./utils/styles/**/*"],
-        "@pages":           ["./pages"],
-        "@pages/*":         ["./pages/*"],
-        "@graphql":         ["./graphql"],
-        "@graphql/*":       ["./graphql/*"]
-      }
-    },
-    "exclude": [
-      "node_modules",
-      "**/node_modules/*"
-    ]
-  }
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@assets/":          ["./assets"],
+      "@assets/icons/":    ["./assets/icons"],
+      "@assets/networks/": ["./assets/networks"],
+      "@assets/*":         ["./assets/*"],
+      // "@assets/**/*":     ["./public/assets/**/*"],
+      "@components":      ["./components"],
+      "@components/*":    ["./components/*"],
+      // "@components/**/*": ["./components/**/*"],
+      "@tw":              ["./components/tailwind"],
+      "@tw/*":            ["./components/tailwind/*"],
+      // "@tw/**/*":         ["./components/tailwind/**/*"],
+      "@layouts":         ["./components/layouts"],
+      "@layouts/*":       ["./components/layouts/*"],
+      // "@layouts/**/*":    ["./components/layouts/**/*"],
+      "@icons":           ["./components/icons"],
+      "@icons/*":         ["./components/icons/*"],
+      // "@icons/**/*":      ["./components/icons/**/*"],
+      "@urls":            ["./utils/urls"],
+      "@urls/*":          ["./utils/urls/*"],
+      // "@urls/**/*":       ["./urls/**/*"],
+      "@utils":           ["./utils"],
+      "@utils/*":         ["./utils/*"],
+      "@constants":       ["./constants"],
+      "@constants/*":     ["./constants/*"],
+      "@graphql":         ["./graphql"],
+      "@graphql/*":       ["./graphql/*"],
+      // "@constants/**/*":  ["./constants/**/*"],
+      // "@store":           ["./store"],
+      // "@store/*":         ["./store/*"],
+      "@styles":          ["./utils/styles"],
+      "@styles/*":        ["./utils/styles/*"],
+      // "@styles/**/*":     ["./utils/styles/**/*"],
+      // "@pages":           ["./pages"],
+      // "@pages/*":         ["./pages/*"],
+      // "@providers":       ["./providers"],
+      // "@providers/*":     ["./providers/*"],
+      // "@providers/**/*":  ["./providers/**/*"],
+      // "@graphql":         ["./graphql"],
+      // "@graphql/*":       ["./graphql/*"]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "**/node_modules/*"
+  ]
+}
