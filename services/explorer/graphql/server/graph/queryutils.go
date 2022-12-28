@@ -14,12 +14,12 @@ import (
 func generateDeDepQuery(filter string, page *int, offset *int, latest bool) string {
 	if page != nil || offset != nil {
 		if latest {
-			return fmt.Sprintf("SELECT * FROM (SELECT * FROM bridge_events %s ORDER BY block_number DESC, event_index DESC, insert_time DESC LIMIT %d BY chain_id) LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash", filter, *page/4)
+			return fmt.Sprintf("SELECT * FROM (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT %d BY chain_id) LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash", filter, *page/4)
 		}
-		return fmt.Sprintf("SELECT * FROM bridge_events %s ORDER BY block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d", filter, *page, *offset)
+		return fmt.Sprintf("SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d", filter, *page, *offset)
 	}
 
-	return fmt.Sprintf("SELECT * FROM bridge_events %s ORDER BY block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash", filter)
+	return fmt.Sprintf("SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash", filter)
 }
 
 func (r *queryResolver) getDirectionIn(direction *model.Direction) bool {
