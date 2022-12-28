@@ -17,10 +17,10 @@ contract OriginTest is OriginTools {
         vm.prank(owner);
         origin.initialize();
         assertEq(origin.owner(), owner, "!owner");
-        uint256 dispatchBlockNumber;
-        bytes32 histRoot;
-        (histRoot, dispatchBlockNumber) = origin.getHistoricalRoot(0, 0);
+        (bytes32 histRoot, uint40 blockNumber, uint40 timestamp) = origin.getHistoricalRoot(0, 0);
         assertEq(histRoot, origin.root(0), "!historicalRoots(0)");
+        assertEq(blockNumber, 0, "!blockNumber(0)");
+        assertEq(timestamp, 0, "!timestamp(0)");
     }
 
     // solhint-disable-next-line code-complexity
@@ -74,10 +74,13 @@ contract OriginTest is OriginTools {
                 );
             }
             // Root of an empty sparse Merkle tree should be stored with nonce=0
-            uint256 dispatchBlockNumber;
-            bytes32 histRoot;
-            (histRoot, dispatchBlockNumber) = origin.getHistoricalRoot(0, 0);
+            (bytes32 histRoot, uint40 blockNumber, uint40 timestamp) = origin.getHistoricalRoot(
+                0,
+                0
+            );
             assertEq(histRoot, origin.root(0), "!historicalRoots(0)");
+            assertEq(blockNumber, 0, "!blockNumber(0)");
+            assertEq(timestamp, 0, "!timestamp(0)");
         }
     }
 

@@ -127,26 +127,33 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
      * was updated, is not subject to reorganization (which is different for every observed chain).
      * @param _destination  Destination domain
      * @param _nonce        Historical nonce
-     * @return Root for destination's merkle tree right after message to `_destination`
-     * with `nonce = _nonce` was dispatched.
+     * @return historicalRoot   Root for destination's merkle tree right after
+     *                          message to `_destination` with `nonce = _nonce` was dispatched.
+     * @return blockNumber      Block number when the above message was dispatched.
+     * @return timestamp        Block timestamp when the above message was dispatched.
      */
     function getHistoricalRoot(uint32 _destination, uint32 _nonce)
         public
         view
-        returns (bytes32, uint256)
+        returns (
+            bytes32 historicalRoot,
+            uint40 blockNumber,
+            uint40 timestamp
+        )
     {
         // Check if destination is known
         if (historicalRoots[_destination].length > 0) {
             // Check if nonce exists
             require(_nonce < historicalRoots[_destination].length, "!nonce: existing destination");
-            return (
-                historicalRoots[_destination][_nonce],
-                historicalMetadata[_destination][_nonce].blockNumber
-            );
+            RootMetadata memory metadata = historicalMetadata[_destination][_nonce];
+            historicalRoot = historicalRoots[_destination][_nonce];
+            blockNumber = metadata.blockNumber;
+            timestamp = metadata.timestamp;
         } else {
             // If destination is unknown, we have the root of an empty merkle tree
             require(_nonce == 0, "!nonce: unknown destination");
-            return (EMPTY_TREE_ROOT, uint256(0));
+            historicalRoot = EMPTY_TREE_ROOT;
+            // return (0, 0) for (blockNumber, timestamp)
         }
     }
 
