@@ -28,7 +28,7 @@ func (t *TokenDataSuite) TestTokenDataRetrieve() {
 		TokenDecimals: testTokenDecimals,
 	}, nil).Once()
 
-	tokenService, err := tokendata.NewTokenDataService(testService)
+	tokenService, err := tokendata.NewTokenDataService(testService, nil)
 	Nil(t.T(), err)
 
 	tokenData, err := tokenService.GetTokenData(t.GetTestContext(), 1, common.BigToAddress(big.NewInt(1)))
