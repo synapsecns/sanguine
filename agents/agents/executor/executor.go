@@ -187,7 +187,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 
 // GetRoot returns the merkle root at the given nonce.
 func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, destination uint32) ([32]byte, error) {
-	if nonce == 0 || nonce > uint32(e.chainExecutors[chainID].merkleTrees[destination].NumOfItems()) {
+	if nonce == 0 || nonce > e.chainExecutors[chainID].merkleTrees[destination].NumOfItems() {
 		return [32]byte{}, fmt.Errorf("nonce is out of range")
 	}
 
@@ -325,14 +325,14 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 // This is done by copying the current merkle tree's items and generating a new tree with the items from the range
 // [0, nonce).
 func (e Executor) GetLatestNonceProof(nonce, chainID, destination uint32) ([][]byte, error) {
-	if nonce == 0 || nonce > uint32(e.chainExecutors[chainID].merkleTrees[destination].NumOfItems()) {
+	if nonce == 0 || nonce > e.chainExecutors[chainID].merkleTrees[destination].NumOfItems() {
 		return nil, fmt.Errorf("nonce is out of range")
 	}
 
-	items := e.chainExecutors[chainID].merkleTrees[destination].Items()
-	tree := merkle.NewTreeFromItems(items[:nonce])
+	//items := e.chainExecutors[chainID].merkleTrees[destination].Items()
+	//tree := merkle.NewTreeFromItems(items[:nonce])
 
-	proof, err := tree.MerkleProof(nonce-1, nonce)
+	proof, err := e.chainExecutors[chainID].merkleTrees[destination].MerkleProof(nonce-1, nonce)
 	if err != nil {
 		return nil, fmt.Errorf("could not get merkle proof: %w", err)
 	}

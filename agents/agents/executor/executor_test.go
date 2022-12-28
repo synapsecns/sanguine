@@ -324,10 +324,10 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	message := types.NewMessage(header, tips[0], messageBytes)
 	e.Nil(err)
 
-	leaf, err := message.ToLeaf()
+	leafA, err := message.ToLeaf()
 	e.Nil(err)
-	testTree.Insert(leaf[:])
-	testRootA, err := testTree.Root(0)
+	testTree.Insert(leafA[:])
+	testRootA, err := testTree.Root(1)
 	e.Nil(err)
 
 	// Start the exec.
@@ -379,11 +379,10 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	message = types.NewMessage(header, tips[1], messageBytes)
 	e.Nil(err)
 
-	leaf, err = message.ToLeaf()
+	leafB, err := message.ToLeaf()
 	e.Nil(err)
-	testTree.Insert(leaf[:])
-
-	testRootB, err := testTree.Root(1)
+	testTree.Insert(leafB[:])
+	testRootB, err := testTree.Root(2)
 	e.Nil(err)
 
 	e.Eventually(func() bool {
@@ -394,7 +393,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 		// convert testRootB to [32]byte
 		var testRootB32 [32]byte
-		copy(testRootB32[:], testRootB[:32])
+		copy(testRootB32[:], testRootB[:])
 
 		if testRootB32 == rootB {
 			waitChan <- true
@@ -417,8 +416,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	newTreeItems := exec.GetMerkleTree(chainID, destination).Items()
 
-	e.Equal(testRootB, newRoot)
 	e.Equal(oldTreeItems, newTreeItems)
+
+	var testRootB32 [32]byte
+	copy(testRootB32[:], testRootB[:])
+	e.Equal(testRootB32, newRoot)
 }
 
 func (e *ExecutorSuite) TestVerifyMessage() {
