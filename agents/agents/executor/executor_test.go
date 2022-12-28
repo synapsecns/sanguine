@@ -356,7 +356,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 		// convert testRootA to [32]byte
 		var testRootA32 [32]byte
-		copy(testRootA32[:], testRootA[:])
+		copy(testRootA32[:], testRootA)
 
 		if testRootA32 == rootA {
 			waitChan <- true
@@ -393,7 +393,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 		// convert testRootB to [32]byte
 		var testRootB32 [32]byte
-		copy(testRootB32[:], testRootB[:])
+		copy(testRootB32[:], testRootB)
 
 		if testRootB32 == rootB {
 			waitChan <- true
@@ -419,7 +419,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Equal(oldTreeItems, newTreeItems)
 
 	var testRootB32 [32]byte
-	copy(testRootB32[:], testRootB[:])
+	copy(testRootB32[:], testRootB)
 	e.Equal(testRootB32, newRoot)
 }
 

@@ -329,8 +329,8 @@ func (e Executor) GetLatestNonceProof(nonce, chainID, destination uint32) ([][]b
 		return nil, fmt.Errorf("nonce is out of range")
 	}
 
-	//items := e.chainExecutors[chainID].merkleTrees[destination].Items()
-	//tree := merkle.NewTreeFromItems(items[:nonce])
+	// items := e.chainExecutors[chainID].merkleTrees[destination].Items()
+	// tree := merkle.NewTreeFromItems(items[:nonce])
 
 	proof, err := e.chainExecutors[chainID].merkleTrees[destination].MerkleProof(nonce-1, nonce)
 	if err != nil {
@@ -440,7 +440,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		}
 
 		// Make sure the nonce of the message is being inserted at the right index.
-		if uint32(merkleIndex)+1 != (*message).Nonce() {
+		if merkleIndex+1 != (*message).Nonce() {
 			return fmt.Errorf("nonce of message is not equal to the merkle index: %d != %d", (*message).Nonce(), merkleIndex+1)
 		}
 
