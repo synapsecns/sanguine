@@ -6,6 +6,7 @@ use (
 	./ethergo
 	./services/explorer
 	./services/omnirpc
+	./services/release-monitor
 	./services/scribe
 	./tools
 )
