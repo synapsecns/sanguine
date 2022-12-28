@@ -68,9 +68,6 @@ type logOrderInfo struct {
 	blockIndex  uint
 }
 
-// TreeDepth is the depth of the merkle tree.
-const TreeDepth uint64 = uint64(merkle.TreeDepth)
-
 const logChanSize = 1000
 
 // NewExecutor creates a new executor agent.

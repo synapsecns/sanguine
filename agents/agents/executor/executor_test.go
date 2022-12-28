@@ -823,7 +823,7 @@ func (e *ExecutorSuite) TestDestinationExecute() {
 	rawProof, err := historicalMerkleTree.MerkleProof(0, 1)
 	e.Nil(err)
 	var proofToUse [32][32]byte
-	for i := 0; i < int(executor.TreeDepth); i++ {
+	for i := 0; i < int(merkle.TreeDepth); i++ {
 		copy(proofToUse[i][:], rawProof[i][:32])
 	}
 
