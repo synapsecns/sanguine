@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SynapseTypes } from "./SynapseTypes.sol";
-import { TypedMemView } from "./TypedMemView.sol";
-import { ByteString } from "./ByteString.sol";
+import "./ByteString.sol";
 
 library Attestation {
     using ByteString for bytes;
+    using ByteString for bytes29;
 
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
@@ -319,16 +318,16 @@ library Attestation {
         internal
         pure
         onlyAttestation(_view)
-        returns (bytes29)
+        returns (Signature)
     {
         (uint8 guardSigs, ) = _agentSignatures(_view);
         require(_guardIndex < guardSigs, "Out of range");
+        // Determine the signature position in the payload
+        uint256 sigPosition = OFFSET_FIRST_SIGNATURE + _guardIndex * ByteString.SIGNATURE_LENGTH;
         return
-            _view.slice({
-                _index: OFFSET_FIRST_SIGNATURE + _guardIndex * ByteString.SIGNATURE_LENGTH,
-                _len: ByteString.SIGNATURE_LENGTH,
-                newType: SynapseTypes.SIGNATURE
-            });
+            _view
+                .slice({ _index: sigPosition, _len: ByteString.SIGNATURE_LENGTH, newType: 0 })
+                .castToSignature();
     }
 
     /**
@@ -339,18 +338,17 @@ library Attestation {
         internal
         pure
         onlyAttestation(_view)
-        returns (bytes29)
+        returns (Signature)
     {
         (uint8 guardSigs, uint8 notarySigs) = _agentSignatures(_view);
         require(_notaryIndex < notarySigs, "Out of range");
+        // Determine the signature position in the payload
+        _notaryIndex = _notaryIndex + guardSigs;
+        uint256 sigPosition = OFFSET_FIRST_SIGNATURE + _notaryIndex * ByteString.SIGNATURE_LENGTH;
         return
-            _view.slice({
-                _index: OFFSET_FIRST_SIGNATURE +
-                    (_notaryIndex + guardSigs) *
-                    ByteString.SIGNATURE_LENGTH,
-                _len: ByteString.SIGNATURE_LENGTH,
-                newType: SynapseTypes.SIGNATURE
-            });
+            _view
+                .slice({ _index: sigPosition, _len: ByteString.SIGNATURE_LENGTH, newType: 0 })
+                .castToSignature();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

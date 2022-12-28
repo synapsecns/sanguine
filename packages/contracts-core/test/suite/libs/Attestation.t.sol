@@ -214,25 +214,25 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         });
         for (uint256 i = 0; i < guardSigs; ++i) {
             libHarness.setIndex(i);
-            checkBytes29Getter({
-                getter: libHarness.guardSignature,
-                payloadType: SynapseTypes.ATTESTATION,
-                payload: attestation,
-                expectedType: SynapseTypes.SIGNATURE,
-                expectedData: guardSignatures[i],
-                revertMessage: "!guardSignature"
-            });
+            assertEq(
+                libHarness.guardSignature({
+                    _type: SynapseTypes.ATTESTATION,
+                    _payload: attestation
+                }),
+                guardSignatures[i],
+                "!guardSignature"
+            );
         }
         for (uint256 i = 0; i < notarySigs; ++i) {
             libHarness.setIndex(i);
-            checkBytes29Getter({
-                getter: libHarness.notarySignature,
-                payloadType: SynapseTypes.ATTESTATION,
-                payload: attestation,
-                expectedType: SynapseTypes.SIGNATURE,
-                expectedData: notarySignatures[i],
-                revertMessage: "!notarySignature"
-            });
+            assertEq(
+                libHarness.notarySignature({
+                    _type: SynapseTypes.ATTESTATION,
+                    _payload: attestation
+                }),
+                notarySignatures[i],
+                "!notarySignature"
+            );
         }
     }
 
@@ -256,6 +256,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
 
     function test_isAttestation_shorterLength() public {
         // Check that manually constructed test payload without the last byte
+
         // is not considered formatted
         assertFalse(
             libHarness.isAttestation(cutLastByte(createTestPayload())),

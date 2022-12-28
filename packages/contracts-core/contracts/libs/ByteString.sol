@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SynapseTypes } from "./SynapseTypes.sol";
+import "./SynapseTypes.sol";
 import { TypedMemView } from "./TypedMemView.sol";
 
 library ByteString {
@@ -60,17 +60,27 @@ library ByteString {
     }
 
     /**
-     * @notice Returns a properly typed bytes29 pointer for a raw bytes payload.
+     * @notice Returns a memory view over the given payload, treating it as raw bytes.
      */
     function castToRawBytes(bytes memory _payload) internal pure returns (bytes29) {
         return _payload.ref(SynapseTypes.RAW_BYTES);
     }
 
     /**
-     * @notice Returns a properly typed bytes29 pointer for a signature payload.
+     * @notice Returns a Signature view over for the given payload.
+     * @dev Will revert if the payload is not a signature.
      */
-    function castToSignature(bytes memory _payload) internal pure returns (bytes29) {
-        return _payload.ref(SynapseTypes.SIGNATURE);
+    function castToSignature(bytes memory _payload) internal pure returns (Signature) {
+        return castToSignature(castToRawBytes(_payload));
+    }
+
+    /**
+     * @notice Casts a memory view to a Signature view.
+     * @dev Will revert if the memory view is not over a signature.
+     */
+    function castToSignature(bytes29 _view) internal pure returns (Signature) {
+        require(isSignature(_view), "Not a signature");
+        return Signature.wrap(_view);
     }
 
     /**
@@ -78,6 +88,11 @@ library ByteString {
      */
     function isSignature(bytes29 _view) internal pure returns (bool) {
         return _view.len() == SIGNATURE_LENGTH;
+    }
+
+    /// @notice Convenience shortcut for unwrapping a view.
+    function unwrap(Signature _signature) internal pure returns (bytes29) {
+        return Signature.unwrap(_signature);
     }
 
     /**
@@ -153,16 +168,17 @@ library ByteString {
 
     /// @notice Unpacks signature payload into (r, s, v) parameters.
     /// @dev Make sure to verify signature length with isSignature() beforehand.
-    function toRSV(bytes29 _view)
+    function toRSV(Signature _signature)
         internal
         pure
-        onlyType(_view, SynapseTypes.SIGNATURE)
         returns (
             bytes32 r,
             bytes32 s,
             uint8 v
         )
     {
+        // Get the underlying memory view
+        bytes29 _view = Signature.unwrap(_signature);
         r = _view.index({ _index: OFFSET_R, _bytes: 32 });
         s = _view.index({ _index: OFFSET_S, _bytes: 32 });
         v = uint8(_view.indexUint({ _index: OFFSET_V, _bytes: 1 }));

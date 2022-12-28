@@ -6,7 +6,7 @@ import { Attestation } from "./libs/Attestation.sol";
 import { AttestationHub } from "./hubs/AttestationHub.sol";
 import { AttestationCollectorEvents } from "./events/AttestationCollectorEvents.sol";
 
-import { ByteString } from "./libs/Attestation.sol";
+import "./libs/ByteString.sol";
 
 import {
     OwnableUpgradeable
@@ -20,7 +20,7 @@ contract AttestationCollector is
 {
     using Attestation for bytes29;
     using ByteString for bytes;
-    using ByteString for bytes29;
+    using ByteString for Signature;
 
     /**
      * @notice Contains a merkle root and existing agent signatures for this root.
@@ -372,13 +372,13 @@ contract AttestationCollector is
         // Don't store outdated agent attestation
         if (nonce <= _latestAgentNonce(attDomains, _agent)) return 0;
         // Get the memory view over the agent's signature
-        bytes29 signature = (
+        Signature signature = (
             _isGuard
                 ? _attestationView.guardSignature(_agentIndex)
                 : _attestationView.notarySignature(_agentIndex)
         );
         // Second agent signature will be left empty
-        bytes29 emptySig = bytes("").castToSignature();
+        bytes29 emptySig = bytes("").castToRawBytes();
         // Construct the signature struct to save
         AgentSignature memory agentSig;
         (agentSig.r, agentSig.s, agentSig.v) = signature.toRSV();
@@ -396,8 +396,8 @@ contract AttestationCollector is
         // Here we pass views over the existing byte arrays to reduce amount of copying into memory
         bytes memory agentAttestation = Attestation.formatAttestation({
             _dataView: _attestationView.attestationData(),
-            _guardSigsView: _isGuard ? signature : emptySig,
-            _notarySigsView: _isGuard ? emptySig : signature
+            _guardSigsView: _isGuard ? signature.unwrap() : emptySig,
+            _notarySigsView: _isGuard ? emptySig : signature.unwrap()
         });
         // Use the actual signature position in `savedSignatures` for the event
         emit AttestationSaved(signatureIndex - 1, agentAttestation);

@@ -129,20 +129,8 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         // Test related constants
         assertEq(libHarness.signatureLength(), signature.length, "!signatureLength");
         // Test formatting checker
-        assertTrue(libHarness.isSignature(signature), "!isSignature");
-        // Test bytes29 getters
-        checkBytes29Getter({
-            getter: libHarness.castToSignature,
-            payloadType: SynapseTypes.SIGNATURE,
-            payload: signature,
-            expectedType: SynapseTypes.SIGNATURE,
-            expectedData: signature,
-            revertMessage: "!castToSignature"
-        });
-        (bytes32 r, bytes32 s, uint8 v) = libHarness.toRSV({
-            _type: SynapseTypes.SIGNATURE,
-            _payload: signature
-        });
+        checkCastToSignature({ payload: signature, isSignature: true });
+        (bytes32 r, bytes32 s, uint8 v) = libHarness.toRSV(signature);
         assertEq(abi.encodePacked(r, s, v), signature, "!toRSV");
         assertEq(libHarness.formatSignature(r, s, v), signature, "!formatSignature");
     }
@@ -160,9 +148,10 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         });
     }
 
-    function test_isSignature_incorrectLength(uint16 length) public {
+    function test_castToSignature_incorrectLength(uint16 length) public {
         vm.assume(length != libHarness.signatureLength());
-        assertFalse(libHarness.isSignature(new bytes(length)), "!isSignature: wrong length");
+        bytes memory payload = new bytes(length);
+        checkCastToSignature({ payload: payload, isSignature: false });
     }
 
     function test_isCallPayload_firstElementIncomplete(uint8 payloadLength, bytes32 data) public {
@@ -238,15 +227,20 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         libHarness.argumentsPayload(wrongType, payload);
     }
 
-    function test_wrongTypeRevert_toRSV(uint40 wrongType) public {
-        bytes memory payload = new bytes(ByteString.SIGNATURE_LENGTH);
-        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.SIGNATURE });
-        libHarness.toRSV(wrongType, payload);
-    }
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               HELPERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function checkCastToSignature(bytes memory payload, bool isSignature) public {
+        if (isSignature) {
+            assertTrue(libHarness.isSignature(payload), "!isSignature: when valid");
+            assertEq(libHarness.castToSignature(payload), payload, "!castToSignature: when valid");
+        } else {
+            assertFalse(libHarness.isSignature(payload), "!isSignature: when valid");
+            vm.expectRevert("Not a signature");
+            libHarness.castToSignature(payload);
+        }
+    }
 
     function checkIsCallPayload(bytes memory _payload, string memory _revertMessage) public {
         // Add extra bytes to the call payload

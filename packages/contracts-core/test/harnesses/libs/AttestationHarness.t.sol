@@ -2,8 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { Attestation } from "../../../contracts/libs/Attestation.sol";
-import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
+import "../../../contracts/libs/Attestation.sol";
 
 /**
  * @notice Exposes Attestation methods for testing against golang.
@@ -47,19 +46,17 @@ contract AttestationHarness {
     function guardSignature(uint40 _type, bytes memory _payload)
         public
         view
-        returns (uint40, bytes memory)
+        returns (bytes memory)
     {
-        bytes29 _view = _payload.ref(_type).guardSignature(requestedIndex);
-        return (_view.typeOf(), _view.clone());
+        return Signature.unwrap(_payload.ref(_type).guardSignature(requestedIndex)).clone();
     }
 
     function notarySignature(uint40 _type, bytes memory _payload)
         public
         view
-        returns (uint40, bytes memory)
+        returns (bytes memory)
     {
-        bytes29 _view = _payload.ref(_type).notarySignature(requestedIndex);
-        return (_view.typeOf(), _view.clone());
+        return Signature.unwrap(_payload.ref(_type).notarySignature(requestedIndex)).clone();
     }
 
     function attestedOrigin(uint40 _type, bytes memory _payload) public pure returns (uint32) {

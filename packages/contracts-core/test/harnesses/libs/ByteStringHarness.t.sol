@@ -2,8 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { ByteString } from "../../../contracts/libs/ByteString.sol";
-import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
+import "../../../contracts/libs/ByteString.sol";
 
 /**
  * @notice Exposes ByteString methods for testing against golang.
@@ -11,6 +10,7 @@ import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
 contract ByteStringHarness {
     using ByteString for bytes;
     using ByteString for bytes29;
+    using ByteString for Signature;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
@@ -29,13 +29,9 @@ contract ByteStringHarness {
         return (_view.typeOf(), _view.clone());
     }
 
-    function castToSignature(uint40, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
-        bytes29 _view = _payload.castToSignature();
-        return (_view.typeOf(), _view.clone());
+    function castToSignature(bytes memory _payload) public view returns (bytes memory) {
+        Signature _sig = _payload.castToSignature();
+        return _sig.unwrap().clone();
     }
 
     function castToCallPayload(uint40, bytes memory _payload)
@@ -65,7 +61,7 @@ contract ByteStringHarness {
         return (_view.typeOf(), _view.clone());
     }
 
-    function toRSV(uint40 _type, bytes memory _payload)
+    function toRSV(bytes memory _payload)
         public
         pure
         returns (
@@ -74,7 +70,7 @@ contract ByteStringHarness {
             uint8
         )
     {
-        return _payload.ref(_type).toRSV();
+        return _payload.castToSignature().toRSV();
     }
 
     function argumentWords(uint40 _type, bytes memory _payload) public pure returns (uint256) {

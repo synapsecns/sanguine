@@ -3,6 +3,8 @@ pragma solidity 0.8.17;
 
 import { TypedMemView } from "./TypedMemView.sol";
 
+type Signature is bytes29;
+
 /**
  * @dev The goal of this library is to assign a type for every bytes29 memory pointer
  * and enforce strict type checking for every bytes29 operation. This will prevent

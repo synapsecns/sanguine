@@ -80,7 +80,7 @@ abstract contract AttestationHub is AttestationHubEvents, AgentRegistry {
             guards[i] = _checkAgentAuth({
                 _domain: 0,
                 _digest: digest,
-                _signatureView: _attestationView.guardSignature(i)
+                _signature: _attestationView.guardSignature(i)
             });
         }
         // Check if all Notary signatures are valid. Should be active on destination domain.
@@ -89,7 +89,7 @@ abstract contract AttestationHub is AttestationHubEvents, AgentRegistry {
             notaries[i] = _checkAgentAuth({
                 _domain: destination,
                 _digest: digest,
-                _signatureView: _attestationView.notarySignature(i)
+                _signature: _attestationView.notarySignature(i)
             });
         }
     }
