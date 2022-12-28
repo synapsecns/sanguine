@@ -34,6 +34,7 @@ import (
 type SimulatedBackendsTestSuite struct {
 	*testsuite.TestSuite
 	OriginContract              *originharness.OriginHarnessRef
+	OriginContractMetadata      contracts.DeployedContract
 	DestinationContract         *destinationharness.DestinationHarnessRef
 	DestinationContractMetadata contracts.DeployedContract
 	AttestationHarness          *attestationharness.AttestationHarnessRef
@@ -55,6 +56,7 @@ type SimulatedBackendsTestSuite struct {
 	OriginDomainClient          domains.DomainClient
 	AttestationDomainClient     domains.DomainClient
 	DestinationDomainClient     domains.DomainClient
+	TestDeployManager           *DeployManager
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -67,9 +69,11 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 }
 
 // SetupOrigin sets up the backend that will have the origin contract deployed on it.
+//
+//nolint:dupl
 func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 	a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
-	_, a.OriginContract = deployManager.GetOriginHarness(a.GetTestContext(), a.TestBackendOrigin)
+	a.OriginContractMetadata, a.OriginContract = deployManager.GetOriginHarness(a.GetTestContext(), a.TestBackendOrigin)
 	originOwnerPtr, err := a.OriginContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
 		a.T().Fatal(err)
@@ -108,6 +112,8 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 }
 
 // SetupDestination sets up the backend that will have the destination contract deployed on it.
+//
+//nolint:dupl
 func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManager) {
 	a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
 	a.DestinationContractMetadata, a.DestinationContract = deployManager.GetDestinationHarness(a.GetTestContext(), a.TestBackendDestination)
@@ -218,8 +224,8 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.SetupGuard()
 	a.SetupNotary()
 
-	deployManager := NewDeployManager(a.T())
-	a.SetupDestination(deployManager)
-	a.SetupOrigin(deployManager)
-	a.SetupAttestation(deployManager)
+	a.TestDeployManager = NewDeployManager(a.T())
+	a.SetupDestination(a.TestDeployManager)
+	a.SetupOrigin(a.TestDeployManager)
+	a.SetupAttestation(a.TestDeployManager)
 }

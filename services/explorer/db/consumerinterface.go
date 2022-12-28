@@ -15,6 +15,8 @@ type ConsumerDBWriter interface {
 	StoreEvents(ctx context.Context, events []interface{}) error
 	// StoreLastBlock stores the last block number that has been backfilled for a given chain.
 	StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error
+	// StoreTokenIndex stores the token index data.
+	StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error
 	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
 	//
 	//nolint:golint
@@ -38,6 +40,8 @@ type ConsumerDBReader interface {
 	GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error)
 	// GetBridgeEvents returns a bridge event.
 	GetBridgeEvents(ctx context.Context, query string) ([]sql.BridgeEvent, error)
+	// GetAllBridgeEvents returns a bridge event.
+	GetAllBridgeEvents(ctx context.Context, query string) ([]sql.HybridBridgeEvent, error)
 	// GetDateResults gets day by day data for a given query.
 	GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error)
 	// GetAddressRanking gets AddressRanking for a given query.

@@ -7,6 +7,8 @@ type ImmutableTokenData interface {
 	Decimals() uint8
 	// TokenID gets the tokenID
 	TokenID() string
+	// TokenAddress gets the Token's address
+	TokenAddress() string
 }
 
 type immutableTokenImpl struct {
@@ -14,6 +16,8 @@ type immutableTokenImpl struct {
 	decimals uint8
 	// tokenID is the token ID of the token
 	tokenID string
+	// tokenAddress is the token address of the token
+	tokenAddress string
 }
 
 func (i immutableTokenImpl) Decimals() uint8 {
@@ -23,4 +27,9 @@ func (i immutableTokenImpl) Decimals() uint8 {
 // TokenID gets the tokenID.
 func (i immutableTokenImpl) TokenID() string {
 	return i.tokenID
+}
+
+// TokenAddress gets the Token's address.
+func (i immutableTokenImpl) TokenAddress() string {
+	return i.tokenAddress
 }

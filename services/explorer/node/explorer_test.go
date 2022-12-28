@@ -11,20 +11,23 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/explorer/config"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/node"
-
-	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	"math/big"
+	"os"
 )
 
 var testTokens = make(map[uint32]TestToken)
 
 // TestLive tests live recording of events.
 func (n NodeSuite) TestLive() {
+	if os.Getenv("CI") != "" {
+		n.T().Skip("Network / processing test flake")
+	}
 	chainConfigs := []config.ChainConfig{}
 	backends := make(map[uint32]bind.ContractBackend)
 	// ethclient.DialContext(ctx, chainConfig.RPCURL)
@@ -108,7 +111,7 @@ func (n NodeSuite) TestLive() {
 	explorerBackfiller, err := node.NewExplorerBackfiller(n.db, explorerConfig, backends)
 	n.Nil(err)
 	n.NotNil(explorerBackfiller)
-	err = explorerBackfiller.Backfill(n.GetTestContext())
+	err = explorerBackfiller.Backfill(n.GetTestContext(), false)
 	n.Nil(err)
 	var counttemp int64
 	dd := n.db.UNSAFE_DB().WithContext(n.GetTestContext()).Table("swap_events").Count(&counttemp)
