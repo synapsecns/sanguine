@@ -91,6 +91,7 @@ contract OriginTest is OriginTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_dispatch() public {
+        skipBlock();
         createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
         expectDispatch();
         originDispatch();
@@ -99,6 +100,7 @@ contract OriginTest is OriginTools {
     function test_dispatch_noTips() public {
         // User should be able to send a message w/o any tips
         createEmptyTips();
+        skipBlock();
         createDispatchedMessage({ context: userLocalToRemote, mockTips: false });
         expectDispatch();
         originDispatch();

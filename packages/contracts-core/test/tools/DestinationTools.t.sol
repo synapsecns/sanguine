@@ -21,6 +21,7 @@ abstract contract DestinationTools is OriginTools {
         rawMessages = new bytes[](MESSAGES);
         messageHashes = new bytes32[](MESSAGES);
         for (uint32 index = 0; index < MESSAGES; ++index) {
+            skipBlock();
             // Construct a dispatched message
             createDispatchedMessage({
                 context: context,

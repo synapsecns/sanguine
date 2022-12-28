@@ -31,7 +31,6 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         bytes32 recipient,
         uint32 optimisticSeconds
     ) public {
-        skipBlock();
         createMessage({
             origin: context.origin,
             sender: _getSender(context, recipient),
