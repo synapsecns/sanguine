@@ -16,7 +16,8 @@ import (
 )
 
 // NewDestinationContract returns a bound destination contract.
-// nolint: staticcheck
+//
+//nolint:staticcheck
 func NewDestinationContract(ctx context.Context, client chain.Chain, destinationAddress common.Address) (domains.DestinationContract, error) {
 	boundCountract, err := destination.NewDestinationRef(destinationAddress, client)
 	if err != nil {
