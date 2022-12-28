@@ -3,6 +3,8 @@ package executor_test
 import (
 	"context"
 	"fmt"
+	"github.com/Flaque/filet"
+	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"math/big"
 	"time"
 
@@ -114,6 +116,11 @@ func (e *ExecutorSuite) TestExecutor() {
 				OriginAddress: testContractB.Address().String(),
 			},
 		},
+		BaseOmnirpcURL: simulatedChainA.RPCAddress(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
+		},
 	}
 
 	executorClients := map[uint32]executor.Backend{
@@ -201,6 +208,11 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 				OriginAddress: testContract.Address().String(),
 			},
 		},
+		BaseOmnirpcURL: simulatedChain.RPCAddress(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
+		},
 	}
 
 	executorClients := map[uint32]executor.Backend{
@@ -286,6 +298,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 			{
 				ChainID: destination,
 			},
+		},
+		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -443,6 +460,11 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 			{
 				ChainID: destination,
 			},
+		},
+		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -634,6 +656,11 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 				ChainID:            uint32(e.TestBackendDestination.GetChainID()),
 				DestinationAddress: e.DestinationContract.Address().String(),
 			},
+		},
+		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
 		},
 	}
 

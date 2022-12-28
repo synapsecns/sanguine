@@ -100,7 +100,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
 
-	signer, err := agentsConfig.SignerFromConfig(config.UnbondedSigner)
+	executorSigner, err := agentsConfig.SignerFromConfig(config.UnbondedSigner)
 	if err != nil {
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
@@ -129,6 +129,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			logChan:           make(chan *ethTypes.Log, logChanSize),
 			merkleTrees:       make(map[uint32]*merkle.HistoricalTree),
 			rpcClient:         clients[chain.ChainID],
+			boundDestination:  make(map[uint32]domains.DestinationContract),
 		}
 
 		for _, destinationChain := range config.Chains {
@@ -159,7 +160,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		scribeClient:   scribeClient,
 		grpcConn:       conn,
 		grpcClient:     grpcClient,
-		signer:         signer,
+		signer:         executorSigner,
 		chainExecutors: chainExecutors,
 	}, nil
 }
