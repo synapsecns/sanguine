@@ -49,8 +49,8 @@ type ChainExecutor struct {
 	merkleTrees map[uint32]*merkle.HistoricalTree
 	// rpcClient is an RPC client.
 	rpcClient Backend
-	// boundDestination is a map from destination chain ID -> bound destination contract.
-	boundDestination map[uint32]domains.DestinationContract
+	// boundDestination is a bound destination contract.
+	boundDestination domains.DestinationContract
 }
 
 // Executor is the executor agent.
@@ -105,6 +105,11 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
 
+	underlyingClient, err := ethergoChain.NewFromURL(ctx, config.BaseOmnirpcURL)
+	if err != nil {
+		return nil, fmt.Errorf("could not get evm: %w", err)
+	}
+
 	for _, chain := range config.Chains {
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
@@ -114,6 +119,11 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		destinationParser, err := destination.NewParser(common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
+		}
+
+		boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(chain.DestinationAddress))
+		if err != nil {
+			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
 
 		chainExecutors[chain.ChainID] = &ChainExecutor{
@@ -129,7 +139,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			logChan:           make(chan *ethTypes.Log, logChanSize),
 			merkleTrees:       make(map[uint32]*merkle.HistoricalTree),
 			rpcClient:         clients[chain.ChainID],
-			boundDestination:  make(map[uint32]domains.DestinationContract),
+			boundDestination:  boundDestination,
 		}
 
 		for _, destinationChain := range config.Chains {
@@ -140,17 +150,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			tree := merkle.NewTree()
 
 			chainExecutors[chain.ChainID].merkleTrees[destinationChain.ChainID] = tree
-
-			underlyingClient, err := ethergoChain.NewFromURL(ctx, config.BaseOmnirpcURL)
-			if err != nil {
-				return nil, fmt.Errorf("could not get evm: %w", err)
-			}
-			boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(destinationChain.DestinationAddress))
-			if err != nil {
-				return nil, fmt.Errorf("could not bind destination contract: %w", err)
-			}
-
-			chainExecutors[chain.ChainID].boundDestination[destinationChain.ChainID] = boundDestination
 		}
 	}
 
@@ -247,10 +246,13 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		copy(proofB32[i][:], p)
 	}
 
-	err = e.chainExecutors[message.OriginDomain()].boundDestination[message.DestinationDomain()].Execute(ctx, e.signer, message, proofB32, index)
+	err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
 	if err != nil {
+		fmt.Println("flailing", err)
 		return false, fmt.Errorf("could not execute message: %w", err)
 	}
+
+	fmt.Println("notflailing")
 
 	return true, nil
 }
