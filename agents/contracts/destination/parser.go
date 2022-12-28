@@ -51,8 +51,11 @@ func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestat
 		return nil, false
 	}
 
-	attestation := types.NewAttestationFromBytes(destinationAttestationAccepted.Attestation)
-	return attestation, true
+	attestation, err := types.DecodeSignedAttestation(destinationAttestationAccepted.Attestation)
+	if err != nil {
+		return nil, false
+	}
+	return attestation.Attestation(), true
 }
 
 // EventType is the type of the destination event

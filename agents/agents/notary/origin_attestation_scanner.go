@@ -14,26 +14,39 @@ import (
 // OriginAttestationScanner fetches merkle roots for particular origin-destination pair.
 // TODO: this needs to become an interface.
 type OriginAttestationScanner struct {
-	// domain allows access to the origin contract
-	domain domains.DomainClient
-	// domain of target destination
-	destinationID uint32
+	// originDomain allows access to the origin contract on the origin chain
+	originDomain domains.DomainClient
+	// attestationDomain allows access to the attestation contract on the SYN chain
+	attestationDomain domains.DomainClient
+	// destinationDomain allows access to the destination contract on the destination chain
+	destinationDomain domains.DomainClient
 	// db is the synapse db
 	db db.SynapseDB
-	// signer is the signer
-	signer signer.Signer
+	// bondedSigner is the attestation signer that must be a bonded agent
+	bondedSigner signer.Signer
+	// unbondedSigner is the signer for submitting transactions
+	unbondedSigner signer.Signer
 	// interval waits for an interval
 	interval time.Duration
 }
 
 // NewOriginAttestationScanner creates a new origin attestation scanner.
-func NewOriginAttestationScanner(domain domains.DomainClient, destinationID uint32, db db.SynapseDB, signer signer.Signer, interval time.Duration) OriginAttestationScanner {
+func NewOriginAttestationScanner(
+	originDomain domains.DomainClient,
+	attestationDomain domains.DomainClient,
+	destinationDomain domains.DomainClient,
+	db db.SynapseDB,
+	bondedSigner signer.Signer,
+	unbondedSigner signer.Signer,
+	interval time.Duration) OriginAttestationScanner {
 	return OriginAttestationScanner{
-		domain:        domain,
-		destinationID: destinationID,
-		db:            db,
-		signer:        signer,
-		interval:      interval,
+		originDomain:      originDomain,
+		attestationDomain: attestationDomain,
+		destinationDomain: destinationDomain,
+		db:                db,
+		bondedSigner:      bondedSigner,
+		unbondedSigner:    unbondedSigner,
+		interval:          interval,
 	}
 }
 
@@ -54,7 +67,7 @@ func (a OriginAttestationScanner) Start(ctx context.Context) error {
 
 // FindLatestNonce fetches the latest nonce for a given chain.
 func (a OriginAttestationScanner) FindLatestNonce(ctx context.Context) (nonce uint32, err error) {
-	latestNonce, err := a.db.RetrieveLatestCachedNonce(ctx, a.domain.Config().DomainID, a.destinationID)
+	latestNonce, err := a.db.RetrieveLatestCachedNonce(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoNonceForDomain) {
 			return 0, nil
@@ -75,7 +88,7 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 	// TODO (joe): Currently we are scanning all nonces in order. Later, we really want to get the latest
 	// attestation after the latestNonce if any exists.
 	nextNonce := latestNonce + 1
-	attestation, dispatchBlockNumber, err := a.domain.Origin().GetHistoricalAttestation(ctx, a.destinationID, nextNonce)
+	attestation, dispatchBlockNumber, err := a.originDomain.Origin().GetHistoricalAttestation(ctx, a.destinationDomain.Config().DomainID, nextNonce)
 	if errors.Is(err, domains.ErrNoUpdate) {
 		// no update produced this time
 		return nil

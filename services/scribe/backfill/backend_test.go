@@ -124,7 +124,6 @@ func (b *BackfillSuite) PopuluateWithLogs(ctx context.Context, backend backends.
 
 func (b *BackfillSuite) TestLogsInRange() {
 	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
-
 	// start an omnirpc proxy and run 10 test tranactions so we can batch call blocks
 	//  1-10
 	var wg sync.WaitGroup
@@ -148,7 +147,10 @@ func (b *BackfillSuite) TestLogsInRange() {
 	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host)
 	Nil(b.T(), err)
 
-	res, err := backfill.GetLogsInRange(b.GetTestContext(), scribeBackend, 1, 10, 1, commonAddress)
+	chainID, err := scribeBackend.ChainID(b.GetTestContext())
+	Nil(b.T(), err)
+
+	res, err := backfill.GetLogsInRange(b.GetTestContext(), scribeBackend, 1, 10, 1, commonAddress, chainID.Uint64())
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values

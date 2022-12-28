@@ -99,12 +99,28 @@ func (s Store) GetRoot(ctx context.Context, messageMask types.DBMessage) (common
 	dbTx := s.DB().WithContext(ctx).
 		Model(&message).
 		Where(&dbMessageMask).
-		Scan(&message)
+		First(&message)
 	if dbTx.Error != nil {
 		return common.Hash{}, fmt.Errorf("failed to get message: %w", dbTx.Error)
 	}
 
 	return common.HexToHash(message.Root), nil
+}
+
+// GetBlockNumber gets the block number of a message from the database.
+func (s Store) GetBlockNumber(ctx context.Context, messageMask types.DBMessage) (uint64, error) {
+	var message Message
+
+	dbMessageMask := DBMessageToMessage(messageMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&message).
+		Where(&dbMessageMask).
+		First(&message)
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("failed to get message: %w", dbTx.Error)
+	}
+
+	return message.BlockNumber, nil
 }
 
 // GetLastBlockNumber gets the last block number that had a message in the database.
