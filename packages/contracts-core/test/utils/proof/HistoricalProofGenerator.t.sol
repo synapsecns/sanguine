@@ -100,6 +100,18 @@ contract HistoricalProofGenerator {
 
     /**
      * @notice Generate proof of inclusion for leaf with given `index`,
+     * for the current merkle tree. O(1)
+     */
+    function getLatestProof(uint256 index)
+        external
+        view
+        returns (bytes32[TREE_DEPTH] memory proof)
+    {
+        return this.getProof(index, treeCount);
+    }
+
+    /**
+     * @notice Generate proof of inclusion for leaf with given `index`,
      * at the time when `count` leafs have been inserted. O(1)
      */
     function getProof(uint256 index, uint256 count)
