@@ -2,19 +2,19 @@ package db
 
 // LogFilter is a filter to use when querying the database for logs.
 type LogFilter struct {
-	ContractAddress string
-	ChainID         uint32
-	BlockNumber     uint64
-	TxHash          string
-	TxIndex         uint64
-	BlockHash       string
-	Index           uint64
-	Confirmed       bool
+	ContractAddress *string
+	ChainID         *uint32
+	BlockNumber     *uint64
+	TxHash          *string
+	TxIndex         *uint64
+	BlockHash       *string
+	Index           *uint64
+	Confirmed       *bool
 }
 
 // ReceiptFilter is a filter to use when querying the database for receipts.
 type ReceiptFilter struct {
-	ChainID          uint32
+	ChainID          *uint32
 	TxHash           string
 	ContractAddress  string
 	BlockHash        string
