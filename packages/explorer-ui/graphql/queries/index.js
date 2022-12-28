@@ -54,22 +54,6 @@ export const GET_BRIDGE_TRANSACTIONS_QUERY = gql`
   }
   ${BRIDGE_TRANSACTION_INFO_FRAGMENT}
 `
-
-export const GET_LATEST_BRIDGE_TRANSACTIONS_QUERY = gql`
-  query LatestBridgeTransactions(
-    $page:           Int
-    $includePending: Boolean
-  ) {
-    latestBridgeTransactions(
-      page:           $page
-      includePending: $includePending
-    ) {
-      ...TransactionInfo
-    }
-  }
-  ${BRIDGE_TRANSACTION_INFO_FRAGMENT}
-`
-
 export const COUNT_BY_CHAIN_ID = gql`
   query CountByChainId(
     $chainId:   Int
