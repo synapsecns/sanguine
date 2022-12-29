@@ -229,7 +229,7 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 // GetPartialInfoFromBridgeEventHybrid returns the partial info from bridge event.
 //
 // nolint:cyclop
-func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, includePending bool, test string) (*model.BridgeTransaction, error) {
+func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, includePending bool) (*model.BridgeTransaction, error) {
 	var bridgeTx model.BridgeTransaction
 	fromChainID := int(bridgeEvent.FChainID)
 	fromBlockNumber := int(bridgeEvent.FBlockNumber)
@@ -370,7 +370,7 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID
 
 	// Iterate through all bridge events and return all partials
 	for i := range allBridgeEvents {
-		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], false, "from des")
+		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
 		}
@@ -401,7 +401,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 			continue
 		}
 
-		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], pending, "from origin")
+		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], pending)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
 		}
