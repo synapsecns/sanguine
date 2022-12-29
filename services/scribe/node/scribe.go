@@ -161,7 +161,7 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 		// If the block hash is not the same, then the block is invalid. Otherwise, mark the block as valid.
 		//nolint:nestif
 		if block.Hash() != receipts[0].BlockHash {
-			logger.Errorf(" [LIVEFILL] DELETING  %d chain: %d,  %v", receipts[0].BlockHash, chainID, err)
+			logger.Errorf(" [LIVEFILL] DELETING receipt block hash %s, block hash: %s, chain: %d,  %v", receipts[0].BlockHash, block.Hash(), chainID, err)
 
 			g, groupCtx := errgroup.WithContext(ctx)
 
