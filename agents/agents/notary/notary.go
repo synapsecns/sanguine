@@ -84,7 +84,7 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 	return notary, nil
 }
 
-// Start starts the notary.{.
+// Start starts the notary.
 func (u Notary) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 

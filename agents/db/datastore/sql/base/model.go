@@ -311,12 +311,16 @@ type InProgressAttestation struct {
 	IPNonce uint32 `gorm:"column:nonce;primaryKey;autoIncrement:false;->;<-:create"`
 	// IPRoot is the root of the signed attestation
 	IPRoot []byte `gorm:"column:root;not null;->;<-:create"`
-	// IPSignature stores the raw signature
-	IPSignature []byte `gorm:"column:signature;default:NULL;<-:update"`
+	// IPNotarySignature stores the raw notary signature
+	IPNotarySignature []byte `gorm:"column:notary_signature;default:NULL"`
+	// IPGuardSignature stores the raw guard signature
+	IPGuardSignature []byte `gorm:"column:guard_signature;default:NULL"`
 	// IPOriginDispatchBlockNumber stores when message was dispatched on origin
-	IPOriginDispatchBlockNumber uint64 `gorm:"column:origin_dispatch_block_number;<-:create"`
+	IPOriginDispatchBlockNumber uint64 `gorm:"column:origin_dispatch_block_number;<-"`
 	// IPSubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
 	IPSubmittedToAttestationCollectorTime sql.NullTime `gorm:"column:submitted_to_attestation_collector_time;type:TIMESTAMP NULL;<-:update"`
+	// IPSubmittedToDestinationTime is time when signed attestation was submitted to Destination
+	IPSubmittedToDestinationTime sql.NullTime `gorm:"column:submitted_to_destination_time;type:TIMESTAMP NULL;<-:update"`
 	// IPAttestationState is the current state of the attestation
 	IPAttestationState uint32 `gorm:"column:attestation_state;index:idx_origin_destination_state;autoIncrement:false;<-"`
 }
@@ -334,11 +338,11 @@ func (t InProgressAttestation) SignedAttestation() types.SignedAttestation {
 // NotarySignatures currently just returns the loan signature.
 // TODO (joe): fix this to return all notary signatures.
 func (t InProgressAttestation) NotarySignatures() []types.Signature {
-	if len(t.IPSignature) == 0 {
+	if len(t.IPNotarySignature) == 0 {
 		return nil
 	}
 
-	res, err := types.DecodeSignature(t.IPSignature)
+	res, err := types.DecodeSignature(t.IPNotarySignature)
 	if err != nil {
 		return []types.Signature{types.NewSignature(big.NewInt(0), big.NewInt(0), big.NewInt(0))}
 	}
