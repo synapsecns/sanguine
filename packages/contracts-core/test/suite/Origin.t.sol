@@ -177,7 +177,7 @@ contract OriginTest is OriginTools {
         // Should match latest values
         assertEq(
             data,
-            Attestation.formatAttestationData({
+            AttestationLib.formatAttestationData({
                 _origin: DOMAIN_LOCAL,
                 _destination: DOMAIN_REMOTE,
                 _nonce: uint32(amount),

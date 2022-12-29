@@ -7,12 +7,6 @@ import { ReportHubHarness } from "../../harnesses/hubs/ReportHubHarness.t.sol";
 // TODO(Chi): enable reports tests once Reports are reimplemented
 // solhint-disable func-name-mixedcase
 abstract contract ReportHubTest is ReportTools {
-    using Attestation for bytes;
-    using Attestation for bytes29;
-    using Report for bytes;
-    using Report for bytes29;
-    using TypedMemView for bytes29;
-
     ReportHubHarness internal reportHub;
 
     function setUp() public override {

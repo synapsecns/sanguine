@@ -31,15 +31,15 @@ abstract contract AttestationCollectorTools is AttestationTools {
         bool isGuard,
         uint256 agentIndex
     ) public {
-        bytes memory attData = ra.data;
+        bytes memory attDataPayload = ra.data;
         bytes memory signature = signMessage({
             signer: isGuard ? attestationGuards[agentIndex] : attestationNotaries[agentIndex],
-            message: attData
+            message: attDataPayload
         });
-        bytes memory attestation = Attestation.formatAttestation({
-            _data: attData,
-            _guardSignatures: isGuard ? signature : bytes(""),
-            _notarySignatures: isGuard ? bytes("") : signature
+        bytes memory attestation = AttestationLib.formatAttestation({
+            _dataPayload: attDataPayload,
+            _guardSigsPayload: isGuard ? signature : bytes(""),
+            _notarySigsPayload: isGuard ? bytes("") : signature
         });
         vm.expectEmit(true, true, true, true);
         emit AttestationSaved(signatureIndex, attestation);
