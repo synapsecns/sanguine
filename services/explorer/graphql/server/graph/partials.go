@@ -454,34 +454,6 @@ LEFT JOIN (
 AND se.swap_address = ti.contract_address
 AND ti.token_index = se.sold_id
 `
-
-const singleSideJoins = `
- be
-LEFT JOIN (
-  SELECT
-    amount_usd AS swap_amount_usd,
-    tokens_bought,
-    tokens_sold,
-    sold_id,
-    bought_id,
-    contract_address AS swap_address,
-    tx_hash AS swap_tx_hash,
-    chain_id AS swap_chain_id
-  FROM
-    swap_events
-) se ON be.tx_hash = se.swap_tx_hash
-AND be.chain_id = se.swap_chain_id
-LEFT JOIN (
-  SELECT
-    DISTINCT ON (
-      chain_id, token_index, contract_address
-    ) *
-  FROM
-    token_indices
-) ti ON be.chain_id = ti.chain_id
-AND se.swap_address = ti.contract_address
-AND ti.token_index = be.sold_id
-`
 const singleSideCol = `
 (
   if(

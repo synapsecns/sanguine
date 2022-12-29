@@ -306,10 +306,14 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		// nolint:nilnil
 		return nil, nil
 	}
+	kappa := bridgeEvent.FDestinationKappa
+	if kappa == "" {
+		kappa = bridgeEvent.TKappa.String
+	}
 	bridgeTx = model.BridgeTransaction{
 		FromInfo:    fromInfos,
 		ToInfo:      toInfos,
-		Kappa:       &bridgeEvent.FDestinationKappa,
+		Kappa:       &kappa,
 		Pending:     &pending,
 		SwapSuccess: &swapSuccess,
 	}
