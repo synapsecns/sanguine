@@ -49,6 +49,7 @@ func (i ContractSuite) TestDestinationExecute() {
 	originDomain := uint32(i.TestBackendOrigin.GetChainID())
 	destinationDomain := uint32(i.TestBackendDestination.GetChainID())
 
+	// TODO: maybe
 	recipient := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	optimisticSeconds := uint32(0)
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
@@ -59,6 +60,7 @@ func (i ContractSuite) TestDestinationExecute() {
 	txContextOrigin := i.TestBackendOrigin.GetTxContext(i.GetTestContext(), i.OriginContractMetadata.OwnerPtr())
 
 	tx, err := i.OriginContract.Dispatch(txContextOrigin.TransactOpts, destinationDomain, recipient.Hash(), optimisticSeconds, encodedTips, messageBody)
+	Nil(i.T(), err)
 
 	sender, err := i.TestBackendOrigin.Signer().Sender(tx)
 	Nil(i.T(), err)
@@ -78,7 +80,7 @@ func (i ContractSuite) TestDestinationExecute() {
 	var rootB32 [32]byte
 	copy(rootB32[:], root)
 
-	nonce := gofakeit.Uint32()
+	nonce := uint32(1)
 	attestKey := types.AttestationKey{
 		Origin:      originDomain,
 		Destination: destinationDomain,
@@ -98,27 +100,27 @@ func (i ContractSuite) TestDestinationExecute() {
 	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
 	Nil(i.T(), err)
 
-	auth := i.TestBackendDestination.GetTxContext(i.GetTestContext(), nil)
+	auth := i.TestBackendDestination.GetTxContext(i.GetTestContext(), i.DestinationContractMetadata.OwnerPtr())
 
 	tx, err = i.DestinationContract.SubmitAttestation(auth.TransactOpts, rawSignedAttestation)
 	Nil(i.T(), err)
 
 	i.TestBackendDestination.WaitForConfirmation(i.GetTestContext(), tx)
 
-	//proof, err := tree.MerkleProof(0, 1)
-	//Nil(i.T(), err)
+	// proof, err := tree.MerkleProof(0, 1)
+	// Nil(i.T(), err)
 
 	var proofB32B32 [32][32]byte
 	copy(proofB32B32[0][:], common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes())
 
-	//for i, p := range proof {
+	// for i, p := range proof {
 	//	copy(proofB32B32[i][:], p)
-	//}
+	// }
 
 	encodedMessage, err := types.EncodeMessage(message)
 	Nil(i.T(), err)
 
-	txx, err := i.DestinationContract.Execute(auth.TransactOpts, encodedMessage, proofB32B32, big.NewInt(0))
+	txx, err := i.DestinationContract.Execute(auth.TransactOpts, encodedMessage, proofB32B32, big.NewInt(1))
 	Nil(i.T(), err)
 
 	// this should be failing since the proof is not valid

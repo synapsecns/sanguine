@@ -932,7 +932,7 @@ func (e *ExecutorSuite) TestExecute() {
 	var rootB32 [32]byte
 	copy(rootB32[:], root)
 
-	//root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+	// root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), rootB32)
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
