@@ -1,27 +1,6 @@
 package graph
 
 // TODO make more dynamic.
-// const originCTE = `
-// WITH baseQuery AS (
-//
-//	SELECT * FROM explorer_staging_4.bridge_events
-//	ORDER BY block_number DESC, event_index DESC, insert_time DESC
-//	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
-//	LIMIT 100 OFFSET 0
-//
-// ), (SELECT min(timestamp) from baseQuery) AS minTimestamp
-// `
-//
-// const destCTE = `
-// WITH baseQuery AS (
-//
-//	SELECT * FROM explorer_staging_4.bridge_events
-//	ORDER BY block_number DESC, event_index DESC, insert_time DESC
-//	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
-//	LIMIT 100 OFFSET 0
-//
-// ), (SELECT min(timestamp) from baseQuery) AS minTimestamp
-// `.
 const swapDeDup = `
 swapDeDup AS (
 SELECT
