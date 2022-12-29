@@ -993,6 +993,9 @@ func (e *ExecutorSuite) TestExecute() {
 		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 		return false
 	})
+
+	exec.Stop(uint32(e.TestBackendOrigin.GetChainID()))
+	exec.Stop(uint32(e.TestBackendDestination.GetChainID()))
 }
 
 func (e *ExecutorSuite) TestDestinationExecute() {

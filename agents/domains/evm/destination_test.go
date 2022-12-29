@@ -15,12 +15,12 @@ func (i ContractSuite) TestDestinationSubmitAttestation() {
 	originDomain := uint32(i.TestBackendOrigin.GetChainID())
 	destinationDomain := uint32(i.TestBackendDestination.GetChainID())
 
-	nonce := gofakeit.Uint32()
+	//nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	attestKey := types.AttestationKey{
 		Origin:      originDomain,
 		Destination: destinationDomain,
-		Nonce:       nonce,
+		Nonce:       3,
 	}
 	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
 	hashedAttestation, err := types.Hash(unsignedAttestation)
@@ -59,7 +59,7 @@ func (i ContractSuite) TestDestinationExecute() {
 
 	txContextOrigin := i.TestBackendOrigin.GetTxContext(i.GetTestContext(), i.OriginContractMetadata.OwnerPtr())
 
-	tx, err := i.OriginContract.Dispatch(txContextOrigin.TransactOpts, destinationDomain, recipient.Hash(), optimisticSeconds, encodedTips, messageBody)
+	tx, err := i.OriginContract.Dispatch(txContextOrigin.TransactOpts, destinationDomain, common.BigToHash(big.NewInt(0)), optimisticSeconds, encodedTips, messageBody)
 	Nil(i.T(), err)
 
 	sender, err := i.TestBackendOrigin.Signer().Sender(tx)
@@ -120,7 +120,7 @@ func (i ContractSuite) TestDestinationExecute() {
 	encodedMessage, err := types.EncodeMessage(message)
 	Nil(i.T(), err)
 
-	txx, err := i.DestinationContract.Execute(auth.TransactOpts, encodedMessage, proofB32B32, big.NewInt(1))
+	txx, err := i.DestinationContract.Execute(auth.TransactOpts, encodedMessage, proofB32B32, big.NewInt(0))
 	Nil(i.T(), err)
 
 	// this should be failing since the proof is not valid
