@@ -37,6 +37,8 @@ type Forwarder struct {
 	// resMap is the res map
 	// Note: because we use an array here, this is not thread safe for writes
 	resMap *xsync.MapOf[[]rawResponse]
+	// failedForwards is a map of failed forwards
+	failedForwards *xsync.MapOf[error]
 	// rpcRequest is the parsed rpc request
 	rpcRequest RPCRequests
 	// mux is used to track the release of the forwarder. This should only be used in async methods
@@ -56,6 +58,7 @@ func (f *Forwarder) Reset() {
 	f.requiredConfirmations = 0
 	f.requestID = nil
 	f.resMap = nil
+	f.failedForwards = nil
 	f.rpcRequest = nil
 }
 
@@ -91,6 +94,7 @@ func (r *RPCProxy) Forward(c *gin.Context, chainID uint32, requiredConfirmations
 
 	forwarder.c = c
 	forwarder.resMap = xsync.NewMapOf[[]rawResponse]()
+	forwarder.failedForwards = xsync.NewMapOf[error]()
 	if requiredConfirmationsOverride != nil {
 		forwarder.requiredConfirmations = *requiredConfirmationsOverride
 	}
@@ -110,7 +114,7 @@ func (f *Forwarder) attemptForwardAndValidate() {
 	urlIter := threaditer.ThreadSafe(iter.Slice(f.chain.URLs()))
 
 	// setup the channels we use for confirmation
-	errChan := make(chan error)
+	errChan := make(chan FailedForward)
 	resChan := make(chan rawResponse)
 
 	forwardCtx, cancel := context.WithCancel(f.c)
@@ -144,8 +148,11 @@ func (f *Forwarder) attemptForwardAndValidate() {
 		// request timeout
 		case <-f.c.Done():
 			return
-		case <-errChan:
+		case failedForward := <-errChan:
 			totalResponses++
+
+			f.failedForwards.Store(failedForward.URL, failedForward.Err)
+
 			// if we've checked every url
 			if totalResponses == len(f.chain.URLs()) {
 				if done := f.checkResponses(totalResponses); done {
@@ -181,7 +188,7 @@ const jsonHashHeader = "x-json-hash"
 const forwardedFrom = "x-forwarded-from"
 
 // ErroredRPCResponse contains an errored rpc response
-// thisis mostly used for debugging.
+// this is mostly used for debugging.
 type ErroredRPCResponse struct {
 	Raw json.RawMessage `json:"json_response"`
 	URL string          `json:"url"`
@@ -193,6 +200,16 @@ type ErrorResponse struct {
 	Error  string                          `json:"error"`
 	// ErroredURLS returned no response at all
 	ErroredURLS []string `json:"errored_urls"`
+	// FailedForwards stores lower level json errors where no response could be returned at all
+	FailedForwards map[string]string `json:"failed_forwards"`
+}
+
+// FailedForward contains a failed forward.
+type FailedForward struct {
+	// Err is the error returned
+	Err error
+	// URL is the url of the error
+	URL string
 }
 
 func (f *Forwarder) checkResponses(responseCount int) (done bool) {
@@ -245,6 +262,12 @@ func (f *Forwarder) checkResponses(responseCount int) (done bool) {
 			return true
 		})
 
+		errResponse.FailedForwards = make(map[string]string)
+		f.failedForwards.Range(func(key string, value error) bool {
+			errResponse.FailedForwards[key] = value.Error()
+			return true
+		})
+
 		errResponse.ErroredURLS = erroredUrls.List()
 
 		f.c.JSON(http.StatusBadGateway, errResponse)
@@ -258,7 +281,7 @@ func (f *Forwarder) checkResponses(responseCount int) (done bool) {
 // or context is canceled, done is returned as true
 //
 // otherwise errors are added to an errChan and responses are added to the response chan.
-func (f *Forwarder) attemptForward(ctx context.Context, errChan chan error, resChan chan rawResponse, urlIter iter.Iterator[string]) (done bool) {
+func (f *Forwarder) attemptForward(ctx context.Context, errChan chan FailedForward, resChan chan rawResponse, urlIter iter.Iterator[string]) (done bool) {
 	nextURL := urlIter.Next()
 	if nextURL.IsNone() {
 		return true
@@ -272,7 +295,7 @@ func (f *Forwarder) attemptForward(ctx context.Context, errChan chan error, resC
 		select {
 		case <-ctx.Done():
 			return true
-		case errChan <- err:
+		case errChan <- FailedForward{Err: err, URL: url}:
 			return false
 		}
 	}

@@ -206,12 +206,17 @@ OUTER:
 				}
 
 				if tryCount > retryTolerance {
-					return fmt.Errorf("retry tolerance exceeded")
+					return fmt.Errorf("retry tolerance exceeded: %w", err)
 				}
 
 				timeout = b.Duration()
 				continue
 			}
+
+			if tx.receipt.BlockNumber == nil {
+				fmt.Println("fuck")
+			}
+
 			break OUTER
 		}
 	}
@@ -337,6 +342,7 @@ type txData struct {
 	receipt     types.Receipt
 	transaction types.Transaction
 	blockHeader types.Header
+	success     bool
 }
 
 var errNoContinue = errors.New("encountered unreconcilable error, will not attempt to store tx")
@@ -348,7 +354,8 @@ var errNoTx = errors.New("tx is not supported by the client")
 // nolint: cyclop
 func (c *ContractBackfiller) fetchTx(ctx context.Context, txhash common.Hash, blockNumber uint64) (tx *txData, err error) {
 OUTER:
-	for i := range c.client {
+	// increasing this across more clients puts too much load on the server, results in failed requests. TODO investigate
+	for i := range c.client[0:1] {
 		tx = &txData{}
 
 		calls := make([]w3types.Caller, 3)
@@ -400,9 +407,11 @@ OUTER:
 
 			return nil, fmt.Errorf("could not get tx receipt: %w", err)
 		}
+
+		tx.success = true
 	}
 
-	if tx == nil {
+	if tx == nil || !tx.success {
 		return nil, fmt.Errorf("could not get tx data: %w", err)
 	}
 

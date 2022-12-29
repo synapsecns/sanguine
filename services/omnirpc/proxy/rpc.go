@@ -43,9 +43,19 @@ func (r RPCRequests) isConfirmable() (_ bool, errs error) {
 	return !unconfirmable, nil
 }
 
+// ByID will get an rpc requet by the id.
+func (r RPCRequests) ByID(id int) *RPCRequest {
+	for _, req := range r {
+		if req.ID == id {
+			return &req
+		}
+	}
+	return nil
+}
+
 // RPCRequest is a raw rpc request format.
 type RPCRequest struct {
-	ID     json.RawMessage   `json:"id"`
+	ID     int               `json:"id"`
 	Method string            `json:"method"`
 	Params []json.RawMessage `json:"params"`
 }
