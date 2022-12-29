@@ -3,21 +3,42 @@ package graph
 // TODO make more dynamic.
 // const originCTE = `
 // WITH baseQuery AS (
+//
 //	SELECT * FROM explorer_staging_4.bridge_events
 //	ORDER BY block_number DESC, event_index DESC, insert_time DESC
 //	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
 //	LIMIT 100 OFFSET 0
+//
 // ), (SELECT min(timestamp) from baseQuery) AS minTimestamp
-//`
+// `
 //
 // const destCTE = `
 // WITH baseQuery AS (
+//
 //	SELECT * FROM explorer_staging_4.bridge_events
 //	ORDER BY block_number DESC, event_index DESC, insert_time DESC
 //	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
 //	LIMIT 100 OFFSET 0
+//
 // ), (SELECT min(timestamp) from baseQuery) AS minTimestamp
-//`
+// `.
+const swapDeDup = `
+swapDeDup AS (
+SELECT
+amount_usd AS swap_amount_usd,
+tokens_bought,
+tokens_sold,
+sold_id,
+bought_id,
+token_decimal,
+contract_address AS swap_address,
+tx_hash AS swap_tx_hash,
+chain_id AS swap_chain_id
+FROM swap_events
+	WHERE timestamp >= minTimestamp
+	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
+)
+`
 
 const originToDestCol = `
 f.pre_ftoken AS ftoken,
@@ -39,6 +60,7 @@ f.pre_ftoken_index_from AS ftoken_index_from,
 f.pre_ftoken_index_to AS ftoken_index_to,
 f.pre_fmin_dy AS fmin_dy,
 f.pre_fdeadline AS fdeadline,
+f.pre_fblock_number AS fblock_number,
 f.pre_fswap_success AS fswap_success,
 f.pre_fswap_token_index AS fswap_token_index,
 f.pre_fswap_min_amount AS fswap_min_amount,
@@ -56,10 +78,15 @@ f.pre_finsert_time AS finsert_time,
 ) AS ttoken,
 toUInt256(
   IF(
-    se.tokens_sold > 0, se.tokens_sold,
+    se.tokens_bought > 0, se.tokens_bought,
     be.amount
   )
 ) AS tamount,
+if(
+	se.tokens_bought > 0, se.token_decimal[se.bought_id],
+	be.token_decimal
+)
+AS ttoken_decimal,
 (
   IF(
     se.swap_amount_usd[ti.token_index] > 0,
@@ -68,11 +95,14 @@ toUInt256(
         toFloat64(
           (
             IF(
-              se.tokens_sold > 0, se.tokens_sold,
+              se.tokens_bought > 0, se.tokens_bought,
               be.amount
             )
           )
-        )/ exp10(be.token_decimal)
+        )/ exp10(if(
+	se.tokens_bought > 0, se.token_decimal[se.bought_id],
+	be.token_decimal
+))
       ) * se.swap_amount_usd[ti.token_index]
     ),
     be.amount_usd
@@ -99,8 +129,8 @@ be.swap_token_index AS tswap_token_index,
 be.swap_min_amount AS tswap_min_amount,
 be.swap_deadline AS tswap_deadline,
 be.token_id AS ttoken_id,
+be.block_number AS tblock_number,
 be.fee_amount_usd AS tfee_amount_usd,
-be.token_decimal AS ttoken_decimal,
 be.timestamp AS ttimestamp,
 be.destination_chain_id AS tdestination_chain_id,
 be.insert_time AS tinsert_time
@@ -114,10 +144,15 @@ FROM
       ) AS pre_ftoken,
       toUInt256(
         IF(
-          se.tokens_bought > 0, se.tokens_bought,
+          se.tokens_sold > 0, se.tokens_sold,
           be.amount
         )
       ) AS pre_famount,
+		if(
+			se.tokens_sold > 0, se.token_decimal[se.sold_id],
+			be.token_decimal
+		)
+		AS pre_ftoken_decimal,
       (
         IF(
           se.swap_amount_usd[ti.token_index] > 0,
@@ -126,11 +161,14 @@ FROM
               toFloat64(
                 (
                   IF(
-                    se.tokens_bought > 0, se.tokens_bought,
+                    se.tokens_sold > 0, se.tokens_sold,
                     be.amount
                   )
                 )
-              )/ exp10(be.token_decimal)
+              )/ exp10(		if(
+			se.tokens_sold > 0, se.token_decimal[se.sold_id],
+			be.token_decimal
+		))
             ) * se.swap_amount_usd[ti.token_index]
           ),
           be.amount_usd
@@ -140,6 +178,7 @@ FROM
       be.token AS pre_ftoken_raw,
       be.tx_hash AS pre_ftx_hash,
       be.chain_id AS pre_fchain_id,
+      be.block_number AS pre_fblock_number,
       be.contract_address AS pre_fcontract_address,
       be.token_symbol AS pre_ftoken_symbol,
       be.destination_kappa AS pre_fdestination_kappa,
@@ -158,26 +197,13 @@ FROM
       be.swap_deadline AS pre_fswap_deadline,
       be.token_id AS pre_ftoken_id,
       be.fee_amount_usd AS pre_ffee_amount_usd,
-      be.token_decimal AS pre_ftoken_decimal,
       be.timestamp AS pre_ftimestamp,
       be.destination_chain_id AS pre_fdestination_chain_id,
       be.insert_time AS pre_finsert_time
 `
 const originToDestJoins = `
 be
-LEFT JOIN (
-  SELECT
-    amount_usd AS swap_amount_usd,
-    tokens_bought,
-    tokens_sold,
-    sold_id,
-    bought_id,
-    contract_address AS swap_address,
-    tx_hash AS swap_tx_hash,
-    chain_id AS swap_chain_id
-  FROM
-    swap_events WHERE timestamp >= minTimestamp
-) se ON be.tx_hash = se.swap_tx_hash
+LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
 LEFT JOIN (
   SELECT
@@ -208,19 +234,7 @@ LEFT JOIN (
     tx_hash
 ) be ON fdestination_chain_id = be.chain_id
 AND fdestination_kappa = be.kappa
-LEFT JOIN (
-  SELECT
-    amount_usd AS swap_amount_usd,
-    tokens_bought,
-    tokens_sold,
-    sold_id,
-    bought_id,
-    contract_address AS swap_address,
-    tx_hash AS swap_tx_hash,
-    chain_id AS swap_chain_id
-  FROM
-    swap_events WHERE timestamp >= minTimestamp
-) se ON be.tx_hash = se.swap_tx_hash
+LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
 LEFT JOIN (
   SELECT
@@ -253,6 +267,7 @@ t.pre_tkappa AS tkappa,
 t.pre_ttoken_index_from AS ttoken_index_from,
 t.pre_ttoken_index_to AS ttoken_index_to,
 t.pre_tmin_dy AS tmin_dy,
+t.pre_tblock_number AS tblock_number,
 t.pre_tdeadline AS tdeadline,
 t.pre_tswap_success AS tswap_success,
 t.pre_tswap_token_index AS tswap_token_index,
@@ -275,6 +290,11 @@ toUInt256(
     be.amount
   )
 ) AS famount,
+if(
+	se.tokens_sold > 0, se.token_decimal[se.sold_id],
+	be.token_decimal
+)
+AS ftoken_decimal,
 (
   if(
     se.swap_amount_usd[ti.token_index] > 0,
@@ -287,7 +307,10 @@ toUInt256(
               be.amount
             )
           )
-        )/ exp10(be.token_decimal)
+        )/ exp10(if(
+	se.tokens_sold > 0, se.token_decimal[se.sold_id],
+	be.token_decimal
+))
       ) * se.swap_amount_usd[ti.token_index]
     ),
     be.amount_usd
@@ -314,8 +337,8 @@ be.swap_token_index AS fswap_token_index,
 be.swap_min_amount AS fswap_min_amount,
 be.swap_deadline AS fswap_deadline,
 be.token_id AS ftoken_id,
+be.block_number AS fblock_number,
 be.fee_amount_usd AS ffee_amount_usd,
-be.token_decimal AS ftoken_decimal,
 be.timestamp AS ftimestamp,
 be.destination_chain_id AS fdestination_chain_id,
 be.insert_time AS finsert_time
@@ -333,6 +356,10 @@ FROM
           be.amount
         )
       ) AS pre_tamount,
+		if(
+			se.tokens_bought > 0, se.token_decimal[se.bought_id],
+			be.token_decimal
+		) AS pre_ttoken_decimal,
       (
         if(
           se.swap_amount_usd[ti.token_index] > 0,
@@ -345,7 +372,10 @@ FROM
                     be.amount
                   )
                 )
-              )/ exp10(be.token_decimal)
+              )/ exp10(if(
+	se.tokens_bought > 0, se.token_decimal[se.bought_id],
+	be.token_decimal
+))
             ) * se.swap_amount_usd[ti.token_index]
           ),
           be.amount_usd
@@ -367,32 +397,20 @@ FROM
       be.token_index_to AS pre_ttoken_index_to,
       be.min_dy AS pre_tmin_dy,
       be.deadline AS pre_tdeadline,
+      be.block_number AS pre_tblock_number,
       be.swap_success AS pre_tswap_success,
       be.swap_token_index AS pre_tswap_token_index,
       be.swap_min_amount AS pre_tswap_min_amount,
       be.swap_deadline AS pre_tswap_deadline,
       be.token_id AS pre_ttoken_id,
       be.fee_amount_usd AS pre_tfee_amount_usd,
-      be.token_decimal AS pre_ttoken_decimal,
       be.timestamp AS pre_ttimestamp,
       be.destination_chain_id AS pre_tdestination_chain_id,
       be.insert_time AS pre_tinsert_time
 `
 const destToOriginJoins = `
 be
-LEFT JOIN (
-  SELECT
-    amount_usd AS swap_amount_usd,
-    tokens_bought,
-    tokens_sold,
-    sold_id,
-    bought_id,
-    contract_address AS swap_address,
-    tx_hash AS swap_tx_hash,
-    chain_id AS swap_chain_id
-  FROM
-    swap_events WHERE timestamp >= minTimestamp
-) se ON be.tx_hash = se.swap_tx_hash
+LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
 LEFT JOIN (
   SELECT
@@ -423,19 +441,7 @@ LEFT JOIN (
     tx_hash
 ) be ON pre_tchain_id = be.destination_chain_id
 AND pre_tkappa = be.destination_kappa
-LEFT JOIN (
-  SELECT
-    amount_usd AS swap_amount_usd,
-    tokens_bought,
-    tokens_sold,
-    sold_id,
-    bought_id,
-    contract_address AS swap_address,
-    tx_hash AS swap_tx_hash,
-    chain_id AS swap_chain_id
-  FROM
-    swap_events WHERE timestamp >= minTimestamp
-) se ON be.tx_hash = se.swap_tx_hash
+LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
 LEFT JOIN (
   SELECT
@@ -527,21 +533,9 @@ be.destination_chain_id AS destination_chain_id,
 be.insert_time AS insert_time
 `
 
-const historicalSingleSideJoins = `
+const singleSideJoinsCTE = `
  be
-LEFT JOIN (
-  SELECT
-    amount_usd AS swap_amount_usd,
-    tokens_bought,
-    tokens_sold,
-    sold_id,
-    bought_id,
-    contract_address AS swap_address,
-    tx_hash AS swap_tx_hash,
-    chain_id AS swap_chain_id
-  FROM
-    swap_events WHERE timestamp >= minTimestamp
-) se ON be.tx_hash = se.swap_tx_hash
+LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
 AND be.chain_id = se.swap_chain_id
 LEFT JOIN (
   SELECT

@@ -26,9 +26,9 @@ func generateDeDepQueryCTE(filter string, page *int, offset *int, in bool) strin
 		minTimestamp = " (SELECT min(timestamp) FROM baseQuery) AS minTimestamp"
 	}
 	if page != nil || offset != nil {
-		return fmt.Sprintf("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d), %s", filter, *page, *offset, minTimestamp)
+		return fmt.Sprintf("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d), %s, %s", filter, *page, *offset, minTimestamp, swapDeDup)
 	}
-	return fmt.Sprintf("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash), %s", filter, minTimestamp)
+	return fmt.Sprintf("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash), %s, %s", filter, minTimestamp, swapDeDup)
 }
 
 func (r *queryResolver) getDirectionIn(direction *model.Direction) bool {
@@ -217,11 +217,11 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 	)
 	var query string
 	if isTokenCount {
-		query = fmt.Sprintf(`SELECT %s, %s AS TokenAddress, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM (%s) %s) GROUP BY %s, %s ORDER BY Count Desc`,
-			sql.ChainIDFieldName, sql.TokenFieldName, sql.TxHashFieldName, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins, sql.TokenFieldName, sql.ChainIDFieldName)
+		query = fmt.Sprintf(`%s SELECT %s, %s AS TokenAddress, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM %s %s) GROUP BY %s, %s ORDER BY Count Desc`,
+			generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.TokenFieldName, sql.TxHashFieldName, singleSideCol, "baseQuery", singleSideJoinsCTE, sql.TokenFieldName, sql.ChainIDFieldName)
 	} else {
-		query = fmt.Sprintf(`SELECT %s, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM (%s) %s) GROUP BY %s ORDER BY Count Desc`,
-			sql.ChainIDFieldName, sql.TxHashFieldName, singleSideCol, generateDeDepQuery(compositeFilters, nil, nil), singleSideJoins, sql.ChainIDFieldName)
+		query = fmt.Sprintf(`%s SELECT %s, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM %s %s) GROUP BY %s ORDER BY Count Desc`,
+			generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.TxHashFieldName, singleSideCol, "baseQuery", singleSideJoinsCTE, sql.ChainIDFieldName)
 	}
 	return query
 }
@@ -229,11 +229,12 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 // GetPartialInfoFromBridgeEventHybrid returns the partial info from bridge event.
 //
 // nolint:cyclop
-func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, includePending bool) (*model.BridgeTransaction, error) {
+func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, includePending bool, test string) (*model.BridgeTransaction, error) {
 	var bridgeTx model.BridgeTransaction
 	fromChainID := int(bridgeEvent.FChainID)
 	fromBlockNumber := int(bridgeEvent.FBlockNumber)
 	fromValue := bridgeEvent.FAmount.String()
+	fmt.Println("fromValue", bridgeEvent.FBlockNumber, bridgeEvent.TBlockNumber)
 	var fromTimestamp int
 	var fromFormattedValue *float64
 	if bridgeEvent.FTokenDecimal != nil {
@@ -259,7 +260,7 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		BlockNumber:    &fromBlockNumber,
 		Time:           &fromTimestamp,
 	}
-
+	fmt.Println(test, "from", bridgeEvent.FTxHash, "to", bridgeEvent.TTxHash, bridgeEvent.TKappa, bridgeEvent.TChainID, bridgeEvent.TDestinationChainID, bridgeEvent.TAmount)
 	// If not pending, return a destination partial, otherwise toInfos will be null.
 	var pending bool
 	var toInfos *model.PartialInfo
@@ -270,6 +271,8 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		toValue := bridgeEvent.TAmount.String()
 		var toTimestamp int
 		var toFormattedValue *float64
+		fmt.Println("token decimal", bridgeEvent.TAmount, *bridgeEvent.TTokenDecimal)
+
 		if bridgeEvent.TTokenDecimal != nil {
 			toFormattedValue = getAdjustedValue(bridgeEvent.TAmount, *bridgeEvent.TTokenDecimal)
 		} else {
@@ -346,7 +349,7 @@ func generateAllBridgeEventsQueryFromDestination(chainID *int, address, tokenAdd
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, false), destToOriginCol, "baseQuery", destToOriginJoins)
-
+	fmt.Println(finalQuery)
 	return finalQuery
 }
 
@@ -363,9 +366,10 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID
 		return nil, nil
 	}
 
+	fmt.Println("1LENN", len(allBridgeEvents))
 	// Iterate through all bridge events and return all partials
 	for i := range allBridgeEvents {
-		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], false)
+		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], false, "from des")
 		if err != nil {
 			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
 		}
@@ -390,12 +394,15 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 		return nil, nil
 	}
 
+	fmt.Println("2LENN", len(allBridgeEvents))
+
 	// Iterate through all bridge events and return all partials
 	for i := range allBridgeEvents {
 		if latest && chainMap[allBridgeEvents[i].FChainID] {
 			continue
 		}
-		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], pending)
+
+		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], pending, "from origin")
 		if err != nil {
 			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
 		}
