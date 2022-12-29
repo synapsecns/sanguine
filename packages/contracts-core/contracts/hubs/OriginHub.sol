@@ -18,7 +18,6 @@ import { MerkleLib } from "../libs/Merkle.sol";
 abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     using AttestationLib for Attestation;
     using AttestationLib for AttestationData;
-    using Report for bytes29;
 
     using MerkleLib for MerkleLib.Tree;
 

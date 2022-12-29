@@ -23,21 +23,17 @@ type Attestation is bytes29;
 /// @dev AttestationData is a memory view over a formatted attestation data.
 type AttestationData is bytes29;
 
+/// @dev Report is a memory view over a formatted report payload.
+type Report is bytes29;
+/// @dev ReportData is a memory view over a formatted report data.
+type ReportData is bytes29;
+
 /**
  * @dev The goal of this library is to assign a type for every bytes29 memory pointer
  * and enforce strict type checking for every bytes29 operation. This will prevent
  * a misuse of libraries, i.e. using Attestation functions on a Report pointer.
  */
 library SynapseTypes {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         0X02: REPORT                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // prettier-ignore
-    uint40 internal constant REPORT                     = 0x02_01_00_00_00;
-    // prettier-ignore
-    uint40 internal constant REPORT_DATA                = 0x02_01_01_00_00;
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         0X03: MESSAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

@@ -11,17 +11,17 @@ abstract contract ReportTools is AttestationTools {
     bytes internal signatureGuard;
 
     // Default Guard's Report with the given flag
-    function createReport(Report.Flag flag) public {
+    function createReport(ReportLib.Flag flag) public {
         _createReport(flag, suiteGuard());
     }
 
     // Given Guards's Report with the given flag
-    function createReport(Report.Flag flag, uint256 guardIndex) public {
+    function createReport(ReportLib.Flag flag, uint256 guardIndex) public {
         _createReport(flag, suiteGuard(guardIndex));
     }
 
     // Signer's Report with the given flag
-    function createReport(Report.Flag flag, address signer) public {
+    function createReport(ReportLib.Flag flag, address signer) public {
         _createReport(flag, signer);
     }
 
@@ -39,7 +39,7 @@ abstract contract ReportTools is AttestationTools {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // Create report using a given flag and saved data
-    function _createReport(Report.Flag flag, address signer) internal {
+    function _createReport(ReportLib.Flag flag, address signer) internal {
         reportGuard = signer;
         (reportRaw, signatureGuard) = signReport(flag, attestationRaw, signer);
     }

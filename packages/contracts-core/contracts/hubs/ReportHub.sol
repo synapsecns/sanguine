@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "../libs/Report.sol";
 import { Auth } from "../libs/Auth.sol";
 import { AttestationHub } from "./AttestationHub.sol";
-import { Report } from "../libs/Report.sol";
 
 /**
  * @notice Keeps track of the agents and verifies signed reports.
  */
 abstract contract ReportHub is AttestationHub {
-    using Report for bytes;
-    using Report for bytes29;
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

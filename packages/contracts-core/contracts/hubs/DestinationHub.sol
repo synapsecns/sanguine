@@ -13,7 +13,6 @@ import { SystemRegistry } from "../system/SystemRegistry.sol";
 abstract contract DestinationHub is SystemRegistry, ReportHub {
     using AttestationLib for Attestation;
     using AttestationLib for AttestationData;
-    using Report for bytes29;
 
     /**
      * @notice Information stored for every submitted merkle root.

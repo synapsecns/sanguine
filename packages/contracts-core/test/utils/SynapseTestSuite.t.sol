@@ -217,7 +217,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     /**
      * @notice Report signed by the default Guard.
      */
-    function signReport(Report.Flag flag, bytes memory attestation)
+    function signReport(ReportLib.Flag flag, bytes memory attestation)
         public
         returns (bytes memory report, bytes memory signature)
     {
@@ -228,7 +228,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
      * @notice Report signed by a given Guard.
      */
     function signReport(
-        Report.Flag flag,
+        ReportLib.Flag flag,
         bytes memory attestation,
         uint256 guardIndex
     ) public returns (bytes memory report, bytes memory signature) {
@@ -239,13 +239,13 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
      * @notice Report signed by a given signer.
      */
     function signReport(
-        Report.Flag flag,
+        ReportLib.Flag flag,
         bytes memory attestation,
         address signer
     ) public returns (bytes memory report, bytes memory signature) {
-        bytes memory data = Report.formatReportData(flag, attestation);
+        bytes memory data = ReportLib.formatReportData(flag, attestation);
         signature = signMessage(signer, data);
-        report = Report.formatReport(flag, attestation, signature);
+        report = ReportLib.formatReport(flag, attestation, signature);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
