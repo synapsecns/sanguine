@@ -234,7 +234,6 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	fromChainID := int(bridgeEvent.FChainID)
 	fromBlockNumber := int(bridgeEvent.FBlockNumber)
 	fromValue := bridgeEvent.FAmount.String()
-	fmt.Println("fromValue", bridgeEvent.FBlockNumber, bridgeEvent.TBlockNumber)
 	var fromTimestamp int
 	var fromFormattedValue *float64
 	if bridgeEvent.FTokenDecimal != nil {
@@ -260,7 +259,7 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		BlockNumber:    &fromBlockNumber,
 		Time:           &fromTimestamp,
 	}
-	fmt.Println(test, "from", bridgeEvent.FTxHash, "to", bridgeEvent.TTxHash, bridgeEvent.TKappa, bridgeEvent.TChainID, bridgeEvent.TDestinationChainID, bridgeEvent.TAmount)
+
 	// If not pending, return a destination partial, otherwise toInfos will be null.
 	var pending bool
 	var toInfos *model.PartialInfo
@@ -271,7 +270,6 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		toValue := bridgeEvent.TAmount.String()
 		var toTimestamp int
 		var toFormattedValue *float64
-		fmt.Println("token decimal", bridgeEvent.TAmount, *bridgeEvent.TTokenDecimal)
 
 		if bridgeEvent.TTokenDecimal != nil {
 			toFormattedValue = getAdjustedValue(bridgeEvent.TAmount, *bridgeEvent.TTokenDecimal)
@@ -349,7 +347,7 @@ func generateAllBridgeEventsQueryFromDestination(chainID *int, address, tokenAdd
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, false), destToOriginCol, "baseQuery", destToOriginJoins)
-	fmt.Println(finalQuery)
+
 	return finalQuery
 }
 
@@ -366,7 +364,6 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID
 		return nil, nil
 	}
 
-	fmt.Println("1LENN", len(allBridgeEvents))
 	// Iterate through all bridge events and return all partials
 	for i := range allBridgeEvents {
 		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], false, "from des")
@@ -393,8 +390,6 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 	if len(allBridgeEvents) == 0 {
 		return nil, nil
 	}
-
-	fmt.Println("2LENN", len(allBridgeEvents))
 
 	// Iterate through all bridge events and return all partials
 	for i := range allBridgeEvents {
