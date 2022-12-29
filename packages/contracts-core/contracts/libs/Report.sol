@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { TypedMemView } from "./TypedMemView.sol";
-import { ByteString } from "./ByteString.sol";
-import { Attestation } from "./Attestation.sol";
-import { SynapseTypes } from "./SynapseTypes.sol";
+import "./Attestation.sol";
 
 /**
  * @notice Library for formatting the Guard Reports.
@@ -19,8 +16,10 @@ import { SynapseTypes } from "./SynapseTypes.sol";
  * - Guard signature on Report data.
  */
 library Report {
-    using Attestation for bytes;
-    using Attestation for bytes29;
+    using AttestationLib for bytes;
+    using AttestationLib for bytes29;
+    using AttestationLib for Attestation;
+    using AttestationLib for AttestationData;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
@@ -89,18 +88,18 @@ library Report {
     /**
      * @notice Returns formatted report data with provided fields
      * @param _flag         Flag indicating whether attestation is fraudulent
-     * @param _attestation  Formatted attestation (see Attestation.sol)
+     * @param _attPayload   Formatted attestation (see Attestation.sol)
      * @return Formatted report data
      **/
-    function formatReportData(Flag _flag, bytes memory _attestation)
+    function formatReportData(Flag _flag, bytes memory _attPayload)
         internal
         view
         returns (bytes memory)
     {
         // Extract attestation data from payload
-        bytes memory attestationData = _attestation.castToAttestation().attestationData().clone();
+        AttestationData attData = _attPayload.castToAttestation().data();
         // Construct report data
-        return abi.encodePacked(uint8(_flag), attestationData);
+        return abi.encodePacked(uint8(_flag), attData.unwrap().clone());
     }
 
     /**

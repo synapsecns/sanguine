@@ -197,7 +197,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
             bytes memory notarySignatures
         )
     {
-        attData = Attestation.formatAttestationData(
+        attData = AttestationLib.formatAttestationData(
             ra.origin,
             ra.destination,
             ra.nonce,
@@ -207,7 +207,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         );
         guardSignatures = signMessage(guardSigners, attData);
         notarySignatures = signMessage(notarySigners, attData);
-        attestation = Attestation.formatAttestation(attData, guardSignatures, notarySignatures);
+        attestation = AttestationLib.formatAttestation(attData, guardSignatures, notarySignatures);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
