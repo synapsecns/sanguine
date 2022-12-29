@@ -1063,7 +1063,6 @@ func (e *ExecutorSuite) TestDestinationBadProofExecute() {
 			didFailAsExpected = true
 		case <-subMessageHandled.Err():
 			e.FailNow("Should not be here")
-			//e.T().Error(e.T(), subMessageHandled.Err())
 		// get attestation accepted event
 		case <-iMessageHandledSink:
 			e.FailNow("Should not be here")
