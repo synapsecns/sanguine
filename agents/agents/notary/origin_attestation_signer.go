@@ -101,7 +101,7 @@ func (a OriginAttestationSigner) update(ctx context.Context) error {
 
 	signedAttestation := types.NewSignedAttestation(inProgressAttestationToSign.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
 	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttestationToSign.OriginDispatchBlockNumber(), nil, 0)
-	err = a.db.UpdateSignature(ctx, signedInProgressAttestation)
+	err = a.db.UpdateNotarySignature(ctx, signedInProgressAttestation)
 	if err != nil {
 		return fmt.Errorf("could not store signature for attestation: %w", err)
 	}

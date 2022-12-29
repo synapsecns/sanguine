@@ -10,7 +10,7 @@ import (
 type AttestationState uint32
 
 const (
-	// AttestationStateNotaryUnsigned is when attestation has been fetched but not yet signed.
+	// AttestationStateNotaryUnsigned is when attestation has been fetched from origin but not yet signed.
 	AttestationStateNotaryUnsigned AttestationState = iota // 0
 	// AttestationStateNotarySignedUnsubmitted is when attestation has been signed but not yet submitted to the attestation collector.
 	AttestationStateNotarySignedUnsubmitted // 1
@@ -18,6 +18,16 @@ const (
 	AttestationStateNotarySubmittedUnconfirmed // 2
 	// AttestationStateNotaryConfirmed is when the attestation was confirmed as posted on the attestation collector.
 	AttestationStateNotaryConfirmed // 3
+	// AttestationStateGuardUnsigned is when the attestation was signed by Notary but not yet by the Guard.
+	AttestationStateGuardUnsigned // 4
+	// AttestationStateGuardSignedUnsubmitted is when the attestation was signed by Guard (and Notary) but not yet submitted.
+	AttestationStateGuardSignedUnsubmitted // 5
+	// AttestationStateGuardSignedSubmittedToAttestationCollector is when the attestation was signed by Guard and submitted to the attestation collector but not destination.
+	AttestationStateGuardSignedSubmittedToAttestationCollector // 6
+	// AttestationStateGuardSignedSubmittedToDestinationUnconfirmed is when the attestation was signed by Guard and submitted to the attestation collector and destination but not yet confirmed.
+	AttestationStateGuardSignedSubmittedToDestinationUnconfirmed // 7
+	// AttestationStateGuardConfirmed is when the attestation was confirmed as posted on the destination.
+	AttestationStateGuardConfirmed // 8
 )
 
 const sizeOfUint256 = uint32(32)

@@ -2,4 +2,4 @@ package notary
 
 import "github.com/ipfs/go-log"
 
-var logger = log.Logger("indexer-logger")
+var logger = log.Logger("notary-logger")
