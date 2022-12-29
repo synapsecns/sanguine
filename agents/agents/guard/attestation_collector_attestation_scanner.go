@@ -56,8 +56,10 @@ func (a AttestationCollectorAttestationScanner) Start(ctx context.Context) error
 }
 
 // FindLatestNonce fetches the latest cached nonce for a given chain.
+// TODO (joe): there was a bug in this code not covered by current tests.
+// Make sure to add a test that covers when latestNonce is not zero.
 func (a AttestationCollectorAttestationScanner) FindLatestNonce(ctx context.Context) (nonce uint32, err error) {
-	latestNonce, err := a.db.RetrieveLatestCachedNonce(ctx, a.destinationID, a.destinationID)
+	latestNonce, err := a.db.RetrieveLatestCachedNonce(ctx, a.originID, a.destinationID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoNonceForDomain) {
 			return 0, nil
@@ -91,6 +93,8 @@ func (a AttestationCollectorAttestationScanner) update(ctx context.Context) erro
 		return fmt.Errorf("erroring getting attestation found for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nextNonce, err)
 	}
 
+	// TODO (joe): Check if attestation is valid on Origin before saving it to the DB.
+	// Either do this here or in the next worker.
 	err = a.db.StoreExistingSignedInProgressAttestation(ctx, signedAttestation)
 	if err != nil {
 		return fmt.Errorf("could not store in-progress attestations: %w", err)

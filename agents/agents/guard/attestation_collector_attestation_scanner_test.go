@@ -64,14 +64,16 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 		u.OriginDomainClient.Config().DomainID,
 		u.DestinationDomainClient.Config().DomainID,
 		nonce)
+
 	Nil(u.T(), err)
 	NotNil(u.T(), retrievedConfirmedInProgressAttestation)
 
-	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin())
-	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination())
-	Equal(u.T(), root, common.Hash(retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Root()))
-	Len(u.T(), retrievedConfirmedInProgressAttestation.SignedAttestation().NotarySignatures(), 1)
-	Len(u.T(), retrievedConfirmedInProgressAttestation.SignedAttestation().GuardSignatures(), 0)
+	retrievedSignedAttestation := retrievedConfirmedInProgressAttestation.SignedAttestation()
+	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedSignedAttestation.Attestation().Origin())
+	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedSignedAttestation.Attestation().Destination())
+	Equal(u.T(), root, common.Hash(retrievedSignedAttestation.Attestation().Root()))
+	Len(u.T(), retrievedSignedAttestation.NotarySignatures(), 1)
+	Len(u.T(), retrievedSignedAttestation.GuardSignatures(), 0)
 	Equal(u.T(), types.AttestationStateGuardUnsigned, retrievedConfirmedInProgressAttestation.AttestationState())
 
 	Nil(u.T(), err)
