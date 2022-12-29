@@ -791,6 +791,8 @@ func (e *ExecutorSuite) TestExecute() {
 		testDone = true
 	}()
 
+	testContractDest, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
+
 	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
 	e.Nil(err)
 	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
@@ -855,6 +857,9 @@ func (e *ExecutorSuite) TestExecute() {
 		},
 	}
 
+	e.TestBackendOrigin.FundAccount(e.GetTestContext(), e.DestinationSigner.Address(), *big.NewInt(params.Ether))
+	e.TestBackendDestination.FundAccount(e.GetTestContext(), e.DestinationSigner.Address(), *big.NewInt(params.Ether))
+
 	executorClients := map[uint32]executor.Backend{
 		uint32(e.TestBackendOrigin.GetChainID()):      e.TestBackendOrigin,
 		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination,
@@ -891,7 +896,7 @@ func (e *ExecutorSuite) TestExecute() {
 
 	optimisticSeconds := uint32(10)
 
-	recipient := [32]byte{byte(gofakeit.Uint32())}
+	recipient := testContractDest.Address().Hash()
 	nonce := uint32(1)
 	body := []byte{byte(gofakeit.Uint32())}
 
@@ -913,8 +918,22 @@ func (e *ExecutorSuite) TestExecute() {
 		Destination: uint32(e.TestBackendDestination.GetChainID()),
 		Nonce:       nonce,
 	}
-	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
+
+	tree := merkle.NewTree()
+
+	leaf, err := message.ToLeaf()
+	e.Nil(err)
+
+	tree.Insert(leaf[:])
+
+	root, err := tree.Root(1)
+	e.Nil(err)
+
+	var rootB32 [32]byte
+	copy(rootB32[:], root)
+
+	//root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), rootB32)
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 

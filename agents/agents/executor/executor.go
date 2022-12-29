@@ -248,11 +248,8 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 
 	err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
 	if err != nil {
-		fmt.Println("flailing", err)
 		return false, fmt.Errorf("could not execute message: %w", err)
 	}
-
-	fmt.Println("notflailing")
 
 	return true, nil
 }
