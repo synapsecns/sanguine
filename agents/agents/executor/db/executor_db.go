@@ -22,8 +22,6 @@ type ExecutorDBReader interface {
 	GetMessage(ctx context.Context, messageMask types.DBMessage) (*agentsTypes.Message, error)
 	// GetMessages gets messages from the database, paginated and ordered in ascending order by nonce.
 	GetMessages(ctx context.Context, messageMask types.DBMessage, page int) ([]agentsTypes.Message, error)
-	// GetRoot gets the root of a message from the database.
-	GetRoot(ctx context.Context, messageMask types.DBMessage) (common.Hash, error)
 	// GetBlockNumber gets the block number of a message from the database.
 	GetBlockNumber(ctx context.Context, messageMask types.DBMessage) (uint64, error)
 	// GetLastBlockNumber gets the last block number that had a message in the database.
