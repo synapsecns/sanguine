@@ -30,6 +30,8 @@ func (e Executor) GetMerkleTree(chainID uint32, domain uint32) *merkle.Historica
 }
 
 // NewExecutorInjectedBackend creates a new Executor suitable for testing since it does not need a valid omnirpcURL.
+//
+//nolint:cyclop
 func NewExecutorInjectedBackend(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, urls map[uint32]string) (*Executor, error) {
 	chainExecutors := make(map[uint32]*ChainExecutor)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
