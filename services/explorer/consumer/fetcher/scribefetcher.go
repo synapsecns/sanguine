@@ -172,7 +172,7 @@ RETRY:
 
 		res, err := s.FetchClient.GetTransactions(ctx, chainID, 1, &tx)
 
-		if err != nil || res == nil || res.Response == nil {
+		if err != nil || res == nil || res.Response == nil || len(res.Response) == 0 {
 			logger.Errorf("could not get tx for log, trying again %s, chainID: %d: %v", tx, chainID, err)
 			timeout = b.Duration()
 			goto RETRY

@@ -184,7 +184,6 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 		logger.Infof("backfilling contract %s chunk completed, %d to %d", contract.Address, chunkStart, chunkEnd)
 
 		// Store the last block in clickhouse
-		fmt.Println("storing last block", chunkEnd, c.chainConfig.ChainID)
 		err = c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
 		if err != nil {
 			logger.Errorf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
