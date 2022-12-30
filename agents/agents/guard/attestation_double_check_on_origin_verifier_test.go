@@ -38,8 +38,8 @@ func (u GuardSuite) TestAttestationDoubleCheckOnOriginVerifier() {
 	Greater(u.T(), dispatchBlockNumber.Uint64(), uint64(0))
 
 	attestKey := types.AttestationKey{
-		Origin:      uint32(origin),
-		Destination: uint32(destination),
+		Origin:      origin,
+		Destination: destination,
 		Nonce:       nonce,
 	}
 	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
