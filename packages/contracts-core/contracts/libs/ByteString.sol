@@ -34,16 +34,7 @@ library ByteString {
     uint256 internal constant OFFSET_ARGUMENTS = SELECTOR_LENGTH;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    modifier onlyType(bytes29 _view, uint40 _type) {
-        _view.assertType(_type);
-        _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              FORMATTERS                              ║*▕
+    ▏*║                              SIGNATURE                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
@@ -63,7 +54,7 @@ library ByteString {
      * @notice Returns a memory view over the given payload, treating it as raw bytes.
      */
     function castToRawBytes(bytes memory _payload) internal pure returns (bytes29) {
-        return _payload.ref(SynapseTypes.RAW_BYTES);
+        return _payload.ref({ newType: 0 });
     }
 
     /**
@@ -94,6 +85,32 @@ library ByteString {
     function unwrap(Signature _signature) internal pure returns (bytes29) {
         return Signature.unwrap(_signature);
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SIGNATURE SLICING                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Unpacks signature payload into (r, s, v) parameters.
+    /// @dev Make sure to verify signature length with isSignature() beforehand.
+    function toRSV(Signature _signature)
+        internal
+        pure
+        returns (
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        )
+    {
+        // Get the underlying memory view
+        bytes29 _view = unwrap(_signature);
+        r = _view.index({ _index: OFFSET_R, _bytes: 32 });
+        s = _view.index({ _index: OFFSET_S, _bytes: 32 });
+        v = uint8(_view.indexUint({ _index: OFFSET_V, _bytes: 1 }));
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               CALLDATA                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Returns a CallData view over for the given payload.
@@ -153,40 +170,13 @@ library ByteString {
     function callSelector(CallData _callData) internal pure returns (bytes29) {
         // Get the underlying memory view
         bytes29 _view = unwrap(_callData);
-        return
-            _view.slice({
-                _index: OFFSET_SELECTOR,
-                _len: SELECTOR_LENGTH,
-                newType: SynapseTypes.RAW_BYTES
-            });
+        return _view.slice({ _index: OFFSET_SELECTOR, _len: SELECTOR_LENGTH, newType: 0 });
     }
 
     /// @notice Returns abi encoded arguments for the provided calldata.
     function arguments(CallData _callData) internal pure returns (bytes29) {
         // Get the underlying memory view
         bytes29 _view = unwrap(_callData);
-        return _view.sliceFrom({ _index: OFFSET_ARGUMENTS, newType: SynapseTypes.RAW_BYTES });
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SIGNATURE SLICING                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @notice Unpacks signature payload into (r, s, v) parameters.
-    /// @dev Make sure to verify signature length with isSignature() beforehand.
-    function toRSV(Signature _signature)
-        internal
-        pure
-        returns (
-            bytes32 r,
-            bytes32 s,
-            uint8 v
-        )
-    {
-        // Get the underlying memory view
-        bytes29 _view = Signature.unwrap(_signature);
-        r = _view.index({ _index: OFFSET_R, _bytes: 32 });
-        s = _view.index({ _index: OFFSET_S, _bytes: 32 });
-        v = uint8(_view.indexUint({ _index: OFFSET_V, _bytes: 1 }));
+        return _view.sliceFrom({ _index: OFFSET_ARGUMENTS, newType: 0 });
     }
 }
