@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// AttestationState is the state the attestation is in in terms of being processed by an agent.
+// AttestationState is the state the attestation is in, in terms of being processed by an agent.
 type AttestationState uint32
 
 const (
@@ -20,7 +20,7 @@ const (
 	AttestationStateNotaryConfirmed // 3
 	// AttestationStateGuardUnsignedAndUnverified is when the attestation was signed by Notary but not yet by the Guard.
 	AttestationStateGuardUnsignedAndUnverified // 4
-	// AttestationStateGuardUnsignedAndVerified is when the attestation was signed by Notary but not yet by the Guard, but Guard verified it on origin
+	// AttestationStateGuardUnsignedAndVerified is when the attestation was signed by Notary but not yet by the Guard, but Guard verified it on origin.
 	AttestationStateGuardUnsignedAndVerified // 5
 	// AttestationStateGuardSignedUnsubmitted is when the attestation was signed by Guard (and Notary) but not yet submitted.
 	AttestationStateGuardSignedUnsubmitted // 6
