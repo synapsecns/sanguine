@@ -128,7 +128,12 @@ func (e *ExecutorSuite) TestExecutor() {
 		chainIDB: simulatedChainB,
 	}
 
-	exc, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
+	urls := map[uint32]string{
+		chainIDA: simulatedChainA.RPCAddress(),
+		chainIDB: simulatedChainB.RPCAddress(),
+	}
+
+	exc, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the executor.
@@ -219,7 +224,11 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		chainID: simulatedChain,
 	}
 
-	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
+	urls := map[uint32]string{
+		chainID: simulatedChain.RPCAddress(),
+	}
+
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the exec.
@@ -311,7 +320,12 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		destination: nil,
 	}
 
-	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
+	urls := map[uint32]string{
+		chainID:     e.TestBackendOrigin.RPCAddress(),
+		destination: e.TestBackendDestination.RPCAddress(),
+	}
+
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	_, err = exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
@@ -479,7 +493,12 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		destination: nil,
 	}
 
-	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
+	urls := map[uint32]string{
+		chainID:     e.TestBackendOrigin.RPCAddress(),
+		destination: e.TestBackendDestination.RPCAddress(),
+	}
+
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	nonces := []uint32{1, 2, 3, 4}
@@ -669,7 +688,12 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination,
 	}
 
-	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
+	urls := map[uint32]string{
+		uint32(e.TestBackendOrigin.GetChainID()):      e.TestBackendOrigin.RPCAddress(),
+		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination.RPCAddress(),
+	}
+
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the exec.
@@ -850,7 +874,7 @@ func (e *ExecutorSuite) TestExecute() {
 				DestinationAddress: e.DestinationContract.Address().String(),
 			},
 		},
-		BaseOmnirpcURL: e.TestBackendDestination.RPCAddress(),
+		BaseOmnirpcURL: gofakeit.URL(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
 			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
@@ -865,7 +889,12 @@ func (e *ExecutorSuite) TestExecute() {
 		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination,
 	}
 
-	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients)
+	urls := map[uint32]string{
+		uint32(e.TestBackendOrigin.GetChainID()):      e.TestBackendOrigin.RPCAddress(),
+		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination.RPCAddress(),
+	}
+
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the exec.

@@ -105,11 +105,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
 
-	underlyingClient, err := ethergoChain.NewFromURL(ctx, config.BaseOmnirpcURL)
-	if err != nil {
-		return nil, fmt.Errorf("could not get evm: %w", err)
-	}
-
 	for _, chain := range config.Chains {
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
@@ -119,6 +114,13 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		destinationParser, err := destination.NewParser(common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
+		}
+
+		chainRPCURL := fmt.Sprintf("%s/%d", config.BaseOmnirpcURL, chain.ChainID)
+
+		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
+		if err != nil {
+			return nil, fmt.Errorf("could not get evm: %w", err)
 		}
 
 		boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(chain.DestinationAddress))
