@@ -95,7 +95,7 @@ chains:
         start_block: -1
       - contract_type: swap
         address: '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e'
-        start_block: 19163634
+        start_block: -1
       - contract_type: messagebus
         address: '0x4F437be4A3448fCf394e513FC1A8EF92E190D1ba'
         start_block: -1
