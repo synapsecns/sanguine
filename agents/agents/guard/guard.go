@@ -17,10 +17,11 @@ import (
 // signs them, and posts to destination chains.
 // TODO: Note right now, I have threads for each origin-destination pair and do no batching at all.
 type Guard struct {
-	scanners        map[string]map[string]AttestationCollectorAttestationScanner
-	bondedSigner    signer.Signer
-	unbondedSigner  signer.Signer
-	refreshInterval time.Duration
+	scanners             map[string]map[string]AttestationCollectorAttestationScanner
+	originDoubleCheckers map[string]map[string]AttestationDoubleCheckOnOriginVerifier
+	bondedSigner         signer.Signer
+	unbondedSigner       signer.Signer
+	refreshInterval      time.Duration
 }
 
 // NewGuard creates a new guard.
@@ -29,8 +30,9 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		return Guard{}, fmt.Errorf("cfg.refreshInterval cannot be 0")
 	}
 	guard := Guard{
-		scanners:        make(map[string]map[string]AttestationCollectorAttestationScanner),
-		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
+		scanners:             make(map[string]map[string]AttestationCollectorAttestationScanner),
+		originDoubleCheckers: make(map[string]map[string]AttestationDoubleCheckOnOriginVerifier),
+		refreshInterval:      time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
 	}
 
 	guard.bondedSigner, err = config.SignerFromConfig(cfg.BondedSigner)
@@ -58,7 +60,12 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		return Guard{}, fmt.Errorf("failing to create evm for attestation collector, could not create guard for B: %w", err)
 	}
 	for originName, originDomain := range cfg.OriginDomains {
+		originDomainClient, err := evm.NewEVM(ctx, originName, originDomain)
+		if err != nil {
+			return Guard{}, fmt.Errorf("failing to create evm for origiin, could not create guard for: %w", err)
+		}
 		guard.scanners[originName] = make(map[string]AttestationCollectorAttestationScanner)
+		guard.originDoubleCheckers[originName] = make(map[string]AttestationDoubleCheckOnOriginVerifier)
 		for destinationName, destinationDomain := range cfg.DestinationDomains {
 			if originDomain.DomainID == destinationDomain.DomainID {
 				continue
@@ -66,16 +73,25 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 
 			// TODO (joe): other guard workers will submit to destination but for now
 			// we are commenting this out since we aren't using the destinationDomainClient yet
-			/*destinationDomainClient, err := evm.NewEVM(ctx, destinationName, destinationDomain)
+			destinationDomainClient, err := evm.NewEVM(ctx, destinationName, destinationDomain)
 			if err != nil {
 				return Guard{}, fmt.Errorf("failing to create evm for destination, could not create guard for: %w", err)
-			}*/
+			}
 
 			guard.scanners[originName][destinationName] = NewAttestationCollectorAttestationScanner(
 				attestationDomainClient,
 				originDomain.DomainID,
 				destinationDomain.DomainID,
 				dbHandle,
+				guard.unbondedSigner,
+				guard.refreshInterval)
+
+			guard.originDoubleCheckers[originName][destinationName] = NewAttestationDoubleCheckOnOriginVerifier(
+				originDomainClient,
+				attestationDomainClient,
+				destinationDomainClient,
+				dbHandle,
+				guard.bondedSigner,
 				guard.unbondedSigner,
 				guard.refreshInterval)
 		}
@@ -95,6 +111,17 @@ func (u Guard) Start(ctx context.Context) error {
 			g.Go(func() error {
 				//nolint: wrapcheck
 				return u.scanners[originName][destinationName].Start(ctx)
+			})
+		}
+	}
+
+	for originName, originToAllDestinationsDoubleCheckers := range u.originDoubleCheckers {
+		for destinationName := range originToAllDestinationsDoubleCheckers {
+			originName := originName           // capture func literal
+			destinationName := destinationName // capture func literal
+			g.Go(func() error {
+				//nolint: wrapcheck
+				return u.originDoubleCheckers[originName][destinationName].Start(ctx)
 			})
 		}
 	}

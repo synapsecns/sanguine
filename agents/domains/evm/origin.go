@@ -104,6 +104,10 @@ func (h originContract) ProduceAttestation(ctx context.Context) (types.Attestati
 func (h originContract) GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, error) {
 	historicalRoot, dispatchBlockNumber, err := h.contract.GetHistoricalRoot(&bind.CallOpts{Context: ctx}, destinationID, nonce)
 	if err != nil {
+		if err.Error() == "execution reverted: !nonce: existing destination" {
+			return nil, 0, domains.ErrNoUpdate
+		}
+
 		return nil, 0, fmt.Errorf("could get historical root: %w", err)
 	}
 
