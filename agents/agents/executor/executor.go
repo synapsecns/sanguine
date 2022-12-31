@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	agentsConfig "github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/domains/evm"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"io"
 	"math/big"
 	"strconv"
@@ -15,8 +18,10 @@ import (
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
+	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
@@ -42,8 +47,10 @@ type ChainExecutor struct {
 	logChan chan *ethTypes.Log
 	// merkleTrees is a map from destination chain ID -> merkle tree.
 	merkleTrees map[uint32]*merkle.HistoricalTree
-	// client is an RPC client.
-	client Backend
+	// rpcClient is an RPC client.
+	rpcClient Backend
+	// boundDestination is a bound destination contract.
+	boundDestination domains.DestinationContract
 }
 
 // Executor is the executor agent.
@@ -58,6 +65,8 @@ type Executor struct {
 	grpcClient pbscribe.ScribeServiceClient
 	// grpcConn is the gRPC connection.
 	grpcConn *grpc.ClientConn
+	// signer is the signer.
+	signer signer.Signer
 	// chainExecutors is a map from chain ID -> chain executor.
 	chainExecutors map[uint32]*ChainExecutor
 }
@@ -71,6 +80,8 @@ type logOrderInfo struct {
 const logChanSize = 1000
 
 // NewExecutor creates a new executor agent.
+//
+//nolint:cyclop
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
 	chainExecutors := make(map[uint32]*ChainExecutor)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -89,6 +100,11 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
 
+	executorSigner, err := agentsConfig.SignerFromConfig(config.UnbondedSigner)
+	if err != nil {
+		return nil, fmt.Errorf("could not create signer: %w", err)
+	}
+
 	for _, chain := range config.Chains {
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
@@ -98,6 +114,18 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		destinationParser, err := destination.NewParser(common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
+		}
+
+		chainRPCURL := fmt.Sprintf("%s/%d", config.BaseOmnirpcURL, chain.ChainID)
+
+		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
+		if err != nil {
+			return nil, fmt.Errorf("could not get evm: %w", err)
+		}
+
+		boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(chain.DestinationAddress))
+		if err != nil {
+			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
 
 		chainExecutors[chain.ChainID] = &ChainExecutor{
@@ -112,17 +140,18 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			destinationParser: destinationParser,
 			logChan:           make(chan *ethTypes.Log, logChanSize),
 			merkleTrees:       make(map[uint32]*merkle.HistoricalTree),
-			client:            clients[chain.ChainID],
+			rpcClient:         clients[chain.ChainID],
+			boundDestination:  boundDestination,
 		}
 
-		for _, destination := range config.Chains {
-			if destination.ChainID == chain.ChainID {
+		for _, destinationChain := range config.Chains {
+			if destinationChain.ChainID == chain.ChainID {
 				continue
 			}
 
 			tree := merkle.NewTree()
 
-			chainExecutors[chain.ChainID].merkleTrees[destination.ChainID] = tree
+			chainExecutors[chain.ChainID].merkleTrees[destinationChain.ChainID] = tree
 		}
 	}
 
@@ -132,6 +161,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		scribeClient:   scribeClient,
 		grpcConn:       conn,
 		grpcClient:     grpcClient,
+		signer:         executorSigner,
 		chainExecutors: chainExecutors,
 	}, nil
 }
@@ -184,6 +214,46 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 			}
 		}
 	}
+}
+
+// Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
+func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
+	nonce, err := e.VerifyMessageOptimisticPeriod(ctx, message)
+	if err != nil {
+		return false, fmt.Errorf("could not verify optimistic period: %w", err)
+	}
+
+	if nonce == nil {
+		return false, nil
+	}
+
+	proof, err := e.GetLatestNonceProof(*nonce, message.OriginDomain(), message.DestinationDomain())
+	if err != nil {
+		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
+	}
+
+	verified, err := e.VerifyMessageMerkleProof(ctx, message)
+	if err != nil {
+		return false, fmt.Errorf("could not verify merkle proof: %w", err)
+	}
+
+	if !verified {
+		return false, nil
+	}
+
+	index := big.NewInt(int64(*nonce - 1))
+
+	var proofB32 [32][32]byte
+	for i, p := range proof {
+		copy(proofB32[i][:], p)
+	}
+
+	err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
+	if err != nil {
+		return false, fmt.Errorf("could not execute message: %w", err)
+	}
+
+	return true, nil
 }
 
 // GetRoot returns the merkle root at the given nonce.
@@ -256,14 +326,14 @@ const (
 	other
 )
 
-// VerifyMessageNonce verifies a message against the merkle tree at the state of the given nonce.
-func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message types.Message, chainID uint32, destination uint32) (bool, error) {
-	root, err := e.GetRoot(ctx, nonce, chainID, destination)
+// VerifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
+func (e Executor) VerifyMessageMerkleProof(ctx context.Context, message types.Message) (bool, error) {
+	root, err := e.GetRoot(ctx, message.Nonce(), message.OriginDomain(), message.DestinationDomain())
 	if err != nil {
 		return false, fmt.Errorf("could not get root: %w", err)
 	}
 
-	proof, err := e.GetLatestNonceProof(nonce, chainID, destination)
+	proof, err := e.GetLatestNonceProof(message.Nonce(), message.OriginDomain(), message.DestinationDomain())
 	if err != nil {
 		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
 	}
@@ -273,28 +343,29 @@ func (e Executor) VerifyMessageNonce(ctx context.Context, nonce uint32, message 
 		return false, fmt.Errorf("could not convert message to leaf: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof(root[:], leaf[:], nonce-1, proof)
+	inTree := merkle.VerifyMerkleProof(root[:], leaf[:], message.Nonce()-1, proof)
 
 	return inTree, nil
 }
 
-// VerifyOptimisticPeriod verifies that the optimistic period is valid.
-func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Message) (bool, error) {
+// VerifyMessageOptimisticPeriod verifies that the optimistic period is valid.
+func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
 	chainID := message.OriginDomain()
-	destination := message.DestinationDomain()
+	destinationDomain := message.DestinationDomain()
 	nonce := message.Nonce()
 	attestationMask := execTypes.DBAttestation{
 		ChainID:     &chainID,
-		Destination: &destination,
+		Destination: &destinationDomain,
 		Nonce:       &nonce,
 	}
 	attestation, err := e.executorDB.GetAttestation(ctx, attestationMask)
 	if err != nil {
-		return false, fmt.Errorf("could not get attestation: %w", err)
+		return nil, fmt.Errorf("could not get attestation: %w", err)
 	}
 
 	if attestation == nil {
-		return false, nil
+		//nolint:nilnil
+		return nil, nil
 	}
 
 	root := (*attestation).Root()
@@ -302,24 +373,26 @@ func (e Executor) VerifyOptimisticPeriod(ctx context.Context, message types.Mess
 	attestationMask.Root = &rootToHash
 	attestationTime, err := e.executorDB.GetAttestationBlockTime(ctx, attestationMask)
 	if err != nil {
-		return false, fmt.Errorf("could not get attestation block time: %w", err)
+		return nil, fmt.Errorf("could not get attestation block time: %w", err)
 	}
 
 	if attestationTime == nil {
-		return false, nil
+		//nolint:nilnil
+		return nil, nil
 	}
 
-	latestHeader, err := e.chainExecutors[destination].client.HeaderByNumber(ctx, nil)
+	latestHeader, err := e.chainExecutors[destinationDomain].rpcClient.HeaderByNumber(ctx, nil)
 	if err != nil {
-		return false, fmt.Errorf("could not get latest header: %w", err)
+		return nil, fmt.Errorf("could not get latest header: %w", err)
 	}
 
 	currentTime := latestHeader.Time
 	if *attestationTime+uint64(message.OptimisticSeconds()) > currentTime {
-		return false, nil
+		//nolint:nilnil
+		return nil, nil
 	}
 
-	return true, nil
+	return &nonce, nil
 }
 
 // GetLatestNonceProof returns the merkle proof for a nonce, with a tree where that nonce is the last item added.
@@ -465,7 +538,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			return nil
 		}
 
-		logHeader, err := e.chainExecutors[(*attestation).Destination()].client.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
+		logHeader, err := e.chainExecutors[(*attestation).Destination()].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
 		if err != nil {
 			return fmt.Errorf("could not get log header: %w", err)
 		}
