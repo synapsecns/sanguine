@@ -77,6 +77,8 @@ func (s Store) StoreExistingSignedInProgressAttestation(ctx context.Context, sig
 }
 
 // UpdateNotarySignature sets the notary signature of the in-progress Attestation.
+//
+//nolint:dupl
 func (s Store) UpdateNotarySignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
 	if len(inProgressAttestation.SignedAttestation().NotarySignatures()) == 0 {
 		return fmt.Errorf("UpdateNotarySignature called on attestation with a nil notary signature")
@@ -178,6 +180,8 @@ func (s Store) MarkVerifiedOnOrigin(ctx context.Context, inProgressAttestation t
 }
 
 // UpdateGuardSignature sets the guard signature of the in-progress Attestation.
+//
+//nolint:dupl
 func (s Store) UpdateGuardSignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
 	if len(inProgressAttestation.SignedAttestation().GuardSignatures()) == 0 {
 		return fmt.Errorf("UpdateGuardSignature called on attestation with a nil guard signature")
