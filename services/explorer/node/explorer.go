@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
 	"github.com/synapsecns/sanguine/services/explorer/config"
 	gqlClient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
@@ -17,7 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	"golang.org/x/sync/errgroup"
 	"net/http"
-	"time"
 )
 
 // ExplorerBackfiller is a backfiller that aggregates all backfilling from ChainBackfillers.
@@ -72,66 +70,25 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context, livefill bool) error {
 	}
 
 	g, groupCtx := errgroup.WithContext(ctx)
-	if !livefill {
-		for i := range e.config.Chains {
-			chainConfig := e.config.Chains[i]
-			chainBackfiller := e.ChainBackfillers[chainConfig.ChainID]
-			g.Go(func() error {
-				err := chainBackfiller.Backfill(groupCtx)
-				if err != nil {
-					return fmt.Errorf("could not backfill chain %d: %w", chainConfig.ChainID, err)
-				}
-				return nil
-			})
-		}
-		if err := g.Wait(); err != nil {
-			logger.Errorf("livefill compelted: %v", err)
-
-			return fmt.Errorf("could not backfill explorer: %w", err)
-		}
-		logger.Errorf("livefill compelted")
-
-		return nil
-	}
-
 	for i := range e.config.Chains {
 		chainConfig := e.config.Chains[i]
 		chainBackfiller := e.ChainBackfillers[chainConfig.ChainID]
-
 		g.Go(func() error {
-			b := &backoff.Backoff{
-				Factor: 2,
-				Jitter: true,
-				Min:    1 * time.Second,
-				Max:    3 * time.Second,
+			err := chainBackfiller.Backfill(groupCtx, livefill, refreshRate)
+			if err != nil {
+				return fmt.Errorf("could not backfill chain %d: %w", chainConfig.ChainID, err)
 			}
-			timeout := time.Duration(0)
-
-			for {
-				select {
-				case <-groupCtx.Done():
-					logger.Errorf("livefill of chain %d failed: %v", chainConfig.ChainID, groupCtx.Err())
-
-					return fmt.Errorf("livefill of chain %d failed: %w", chainConfig.ChainID, groupCtx.Err())
-				case <-time.After(timeout):
-					err := chainBackfiller.Backfill(groupCtx)
-					if err != nil {
-						timeout = b.Duration()
-						logger.Warnf("could not livefill chain, retrying %d: %v", chainConfig.ChainID, err)
-
-						continue
-					}
-
-					b.Reset()
-					timeout = time.Duration(refreshRate) * time.Second
-					logger.Errorf("processed range for chain %d, continuing to livefill", chainConfig.ChainID)
-				}
-			}
+			return nil
 		})
 	}
-	err := g.Wait()
-	logger.Errorf("livefill compelted: %v", err)
-	return fmt.Errorf("livefill compelted: %w", err)
+	if err := g.Wait(); err != nil {
+		logger.Errorf("backfill completed: %v", err)
+
+		return fmt.Errorf("could not backfill explorer: %w", err)
+	}
+	logger.Errorf("backfill completed with no errors")
+
+	return nil
 }
 
 // nolint gocognit,cyclop

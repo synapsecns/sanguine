@@ -55,19 +55,52 @@ func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgePar
 
 // Backfill fetches logs from the GraphQL database, parses them, and stores them in the consumer database.
 // nolint:cyclop,gocognit
-func (c *ChainBackfiller) Backfill(ctx context.Context) (err error) {
+func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRate uint) (err error) {
 	chainCtx := context.WithValue(ctx, chainKey, fmt.Sprintf("%d", c.chainConfig.ChainID))
 	contractsGroup, contractCtx := errgroup.WithContext(chainCtx)
+	if !livefill {
+		for i := range c.chainConfig.Contracts {
+			contract := c.chainConfig.Contracts[i]
+			contractsGroup.Go(func() error {
+				err := c.backfillContractLogs(contractCtx, contract)
+				if err != nil {
+					return fmt.Errorf("could not backfill contract logs: %w", err)
+				}
+				return nil
+			})
+		}
+	} else {
+		for i := range c.chainConfig.Contracts {
+			contract := c.chainConfig.Contracts[i]
+			contractsGroup.Go(func() error {
+				b := &backoff.Backoff{
+					Factor: 2,
+					Jitter: true,
+					Min:    1 * time.Second,
+					Max:    3 * time.Second,
+				}
+				timeout := time.Duration(0)
+				for {
+					select {
+					case <-chainCtx.Done():
+						logger.Errorf("livefill of contract %s on chain %d failed: %v", contract.Address, c.chainConfig.ChainID, chainCtx.Err())
 
-	for i := range c.chainConfig.Contracts {
-		contract := c.chainConfig.Contracts[i]
-		contractsGroup.Go(func() error {
-			err := c.backfillContractLogs(contractCtx, contract)
-			if err != nil {
-				return fmt.Errorf("could not backfill contract logs: %w", err)
-			}
-			return nil
-		})
+						return fmt.Errorf("livefill of contract %s on chain %dfailed: %w", contract.Address, c.chainConfig.ChainID, chainCtx.Err())
+					case <-time.After(timeout):
+						err := c.backfillContractLogs(contractCtx, contract)
+						if err != nil {
+							timeout = b.Duration()
+							logger.Warnf("could not livefill contract %s on chain %d, retrying %v", contract.Address, c.chainConfig.ChainID, err)
+
+							continue
+						}
+						b.Reset()
+						timeout = time.Duration(refreshRate) * time.Second
+						logger.Errorf("processed range for contract %s on chain %d, continuing to livefill", contract.Address, c.chainConfig.ChainID)
+					}
+				}
+			})
+		}
 	}
 	if err := contractsGroup.Wait(); err != nil {
 		return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)

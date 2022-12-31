@@ -326,7 +326,7 @@ func (b *BackfillSuite) TestBackfill() {
 	// Backfill the blocks
 	// TODO: store the latest block number to query to in scribe db
 	var count int64
-	err = chainBackfiller.Backfill(b.GetTestContext())
+	err = chainBackfiller.Backfill(b.GetTestContext(), false, 1)
 	Nil(b.T(), err)
 	swapEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
 	Nil(b.T(), swapEvents.Error)
@@ -391,7 +391,7 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// Test bridge v1 parity
-	err = chainBackfillerV1.Backfill(b.GetTestContext())
+	err = chainBackfillerV1.Backfill(b.GetTestContext(), false, 1)
 	Nil(b.T(), err)
 
 	err = b.depositParity(depositV1Log, bpv1, uint32(testChainID.Uint64()), true)
