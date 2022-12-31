@@ -75,8 +75,16 @@ type InProgressAttestationDB interface {
 	RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
 	// RetrieveNewestConfirmedInProgressAttestation retrieves the newest in-progress attestation that has been confirmed on the AttestationCollector.
 	RetrieveNewestConfirmedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
+	// RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation retrieves the oldest in-progress attestation that has been signed by a notary but not a guard
+	// and it has not been verified on the origin.
+	RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
+	// RetrieveOldestGuardUnsignedAndVerifiedInProgressAttestation retrieves the oldest in-progress attestation that has been signed by a notary but not a guard
+	// but it has  been verified on the origin.
+	RetrieveOldestGuardUnsignedAndVerifiedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
 	// StoreExistingSignedInProgressAttestation stores a signed in-progress attestation only if it hasn't already been stored
 	StoreExistingSignedInProgressAttestation(ctx context.Context, signedAttestation types.SignedAttestation) error
+	// MarkVerifiedOnOrigin marks the attestation as having been verified on origin.
+	MarkVerifiedOnOrigin(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
 }
 
 // SynapseDB combines db types.
