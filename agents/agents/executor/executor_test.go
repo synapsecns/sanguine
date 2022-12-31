@@ -788,16 +788,16 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 
 	<-continueChan
 
-	verified, err := exec.VerifyMessageOptimisticPeriod(e.GetTestContext(), message)
+	returnedNonce, err := exec.VerifyMessageOptimisticPeriod(e.GetTestContext(), message)
 	e.Nil(err)
-	e.False(verified)
+	e.Nil(returnedNonce)
 
 	e.Eventually(func() bool {
-		verified, err = exec.VerifyMessageOptimisticPeriod(e.GetTestContext(), message)
+		returnedNonce, err = exec.VerifyMessageOptimisticPeriod(e.GetTestContext(), message)
 		if err != nil {
 			return false
 		}
-		if verified {
+		if returnedNonce != nil {
 			return true
 		}
 		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore

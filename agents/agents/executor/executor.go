@@ -218,30 +218,30 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 
 // Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
-	verified, err := e.VerifyMessageMerkleProof(ctx, message)
-	if err != nil {
-		return false, fmt.Errorf("could not verify message nonce: %w", err)
-	}
-
-	if !verified {
-		return false, nil
-	}
-
-	verified, err = e.VerifyMessageOptimisticPeriod(ctx, message)
+	nonce, err := e.VerifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
 		return false, fmt.Errorf("could not verify optimistic period: %w", err)
 	}
 
-	if !verified {
+	if nonce == nil {
 		return false, nil
 	}
 
-	proof, err := e.GetLatestNonceProof(message.Nonce(), message.OriginDomain(), message.DestinationDomain())
+	proof, err := e.GetLatestNonceProof(*nonce, message.OriginDomain(), message.DestinationDomain())
 	if err != nil {
 		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
 	}
 
-	index := big.NewInt(int64(message.Nonce() - 1))
+	verified, err := e.VerifyMessageMerkleProof(ctx, message)
+	if err != nil {
+		return false, fmt.Errorf("could not verify merkle proof: %w", err)
+	}
+
+	if !verified {
+		return false, nil
+	}
+
+	index := big.NewInt(int64(*nonce - 1))
 
 	var proofB32 [32][32]byte
 	for i, p := range proof {
@@ -349,7 +349,7 @@ func (e Executor) VerifyMessageMerkleProof(ctx context.Context, message types.Me
 }
 
 // VerifyMessageOptimisticPeriod verifies that the optimistic period is valid.
-func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (bool, error) {
+func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
 	chainID := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	nonce := message.Nonce()
@@ -360,11 +360,12 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 	}
 	attestation, err := e.executorDB.GetAttestation(ctx, attestationMask)
 	if err != nil {
-		return false, fmt.Errorf("could not get attestation: %w", err)
+		return nil, fmt.Errorf("could not get attestation: %w", err)
 	}
 
 	if attestation == nil {
-		return false, nil
+		//nolint:nilnil
+		return nil, nil
 	}
 
 	root := (*attestation).Root()
@@ -372,24 +373,26 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 	attestationMask.Root = &rootToHash
 	attestationTime, err := e.executorDB.GetAttestationBlockTime(ctx, attestationMask)
 	if err != nil {
-		return false, fmt.Errorf("could not get attestation block time: %w", err)
+		return nil, fmt.Errorf("could not get attestation block time: %w", err)
 	}
 
 	if attestationTime == nil {
-		return false, nil
+		//nolint:nilnil
+		return nil, nil
 	}
 
 	latestHeader, err := e.chainExecutors[destinationDomain].rpcClient.HeaderByNumber(ctx, nil)
 	if err != nil {
-		return false, fmt.Errorf("could not get latest header: %w", err)
+		return nil, fmt.Errorf("could not get latest header: %w", err)
 	}
 
 	currentTime := latestHeader.Time
 	if *attestationTime+uint64(message.OptimisticSeconds()) > currentTime {
-		return false, nil
+		//nolint:nilnil
+		return nil, nil
 	}
 
-	return true, nil
+	return &nonce, nil
 }
 
 // GetLatestNonceProof returns the merkle proof for a nonce, with a tree where that nonce is the last item added.
