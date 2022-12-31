@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
+	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"
@@ -16,6 +17,9 @@ type Config struct {
 	Chains ChainConfigs `yaml:"chains"`
 	// BaseOmnirpcURL is the base url for omnirpc.
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
+	// UnbondedSigner contains the unbonded signer config for agents
+	// (this is signer used to submit transactions)
+	UnbondedSigner agentsConfig.SignerConfig `toml:"UnbondedSigner"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
