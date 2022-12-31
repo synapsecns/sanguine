@@ -4,18 +4,26 @@ package graph
 const swapDeDup = `
 swapDeDup AS (
 SELECT
-amount_usd AS swap_amount_usd,
-tokens_bought,
-tokens_sold,
-sold_id,
-bought_id,
-token_decimal,
-contract_address AS swap_address,
-tx_hash AS swap_tx_hash,
-chain_id AS swap_chain_id
-FROM swap_events
-	WHERE timestamp >= minTimestamp
-	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
+        if(amount_id >= 0 and tokens_sold = 0, toUInt256(amount_id), sold_id)     AS sold_id,
+        if(amount_id >= 0 and tokens_sold = 0, toUInt256(amount[toUInt256(amount_id)]), tokens_sold)     AS tokens_sold,
+        if(amount_id >= 0 and tokens_bought = 0, toUInt256(amount_id), bought_id) AS bought_id,
+        if(amount_id >= 0 and tokens_bought = 0, toUInt256(amount[toUInt256(amount_id)]), tokens_bought)     AS tokens_bought,
+       *
+FROM (
+         SELECT amount_usd                                    AS swap_amount_usd,
+                tokens_bought,
+                tokens_sold,
+                sold_id,
+                bought_id,
+                token_decimal,
+                amount,
+                contract_address                              AS swap_address,
+                tx_hash                                       AS swap_tx_hash,
+                chain_id                                      AS swap_chain_id,
+                if(notEmpty(amount.keys), amount.keys[1], -1) AS amount_id
+
+         FROM explorer_staging_4.swap_events WHERE timestamp >= minTimestamp
+         LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)
 )
 `
 
