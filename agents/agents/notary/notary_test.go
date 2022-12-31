@@ -16,7 +16,6 @@ import (
 )
 
 func (u NotarySuite) TestNotaryE2E() {
-	u.T().Skip()
 	testConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -61,19 +60,15 @@ func (u NotarySuite) TestNotaryE2E() {
 		_ = ud.Start(u.GetTestContext())
 	}()
 
-	// TODO (joe): This never seems to enter. I can return false and the test still passes.
-	// Figure this out.
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveNewestConfirmedInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, testConfig.DestinationDomain.DomainID)
-		Nil(u.T(), err)
-		NotNil(u.T(), retrievedConfirmedInProgressAttestation)
 
-		Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin())
-		Equal(u.T(), testConfig.DestinationDomain.DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination())
-		Equal(u.T(), types.AttestationStateNotaryConfirmed, retrievedConfirmedInProgressAttestation.AttestationState())
-
-		return retrievedConfirmedInProgressAttestation != nil &&
+		return err == nil &&
+			retrievedConfirmedInProgressAttestation != nil &&
+			u.OriginDomainClient.Config().DomainID == retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin() &&
+			testConfig.DestinationDomain.DomainID == retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination() &&
+			types.AttestationStateNotaryConfirmed == retrievedConfirmedInProgressAttestation.AttestationState() &&
 			retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Nonce() != 0
 	})
 }

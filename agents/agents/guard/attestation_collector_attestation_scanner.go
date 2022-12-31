@@ -82,7 +82,7 @@ func (a AttestationCollectorAttestationScanner) update(ctx context.Context) erro
 	nextNonce := latestNonce + 1
 	root, err := a.attestationDomain.AttestationCollector().GetRoot(ctx, a.originID, a.destinationID, nextNonce)
 	if err != nil {
-		return fmt.Errorf("erroring getting root for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nextNonce, err)
+		return fmt.Errorf("error getting root for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nextNonce, err)
 	}
 	if root == [32]byte{} {
 		return nil

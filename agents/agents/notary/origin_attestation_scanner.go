@@ -93,6 +93,7 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 		// no update produced this time
 		return nil
 	}
+
 	if err != nil {
 		return fmt.Errorf("could not get historical attestation: %w", err)
 	}
@@ -106,6 +107,7 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not store in-progress attestations: %w", err)
 	}
+
 	return nil
 }
 

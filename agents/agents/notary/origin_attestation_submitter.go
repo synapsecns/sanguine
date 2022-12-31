@@ -70,7 +70,7 @@ func (a OriginAttestationSubmitter) Start(ctx context.Context) error {
 func (a OriginAttestationSubmitter) FindOldestUnsubmittedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
 	inProgressAttestation, err := a.db.RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
-		if errors.Is(err, db.ErrNoNonceForDomain) {
+		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("could not find oldest unsubmitted signed attestation: %w", err)

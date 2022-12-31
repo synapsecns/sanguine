@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// AttestationState is the state the attestation is in in terms of being processed by an agent.
+// AttestationState is the state the attestation is in, in terms of being processed by an agent.
 type AttestationState uint32
 
 const (
@@ -18,16 +18,18 @@ const (
 	AttestationStateNotarySubmittedUnconfirmed // 2
 	// AttestationStateNotaryConfirmed is when the attestation was confirmed as posted on the attestation collector.
 	AttestationStateNotaryConfirmed // 3
-	// AttestationStateGuardUnsigned is when the attestation was signed by Notary but not yet by the Guard.
-	AttestationStateGuardUnsigned // 4
+	// AttestationStateGuardUnsignedAndUnverified is when the attestation was signed by Notary but not yet by the Guard.
+	AttestationStateGuardUnsignedAndUnverified // 4
+	// AttestationStateGuardUnsignedAndVerified is when the attestation was signed by Notary but not yet by the Guard, but Guard verified it on origin.
+	AttestationStateGuardUnsignedAndVerified // 5
 	// AttestationStateGuardSignedUnsubmitted is when the attestation was signed by Guard (and Notary) but not yet submitted.
-	AttestationStateGuardSignedUnsubmitted // 5
+	AttestationStateGuardSignedUnsubmitted // 6
 	// AttestationStateGuardSignedSubmittedToAttestationCollector is when the attestation was signed by Guard and submitted to the attestation collector but not destination.
-	AttestationStateGuardSignedSubmittedToAttestationCollector // 6
+	AttestationStateGuardSignedSubmittedToAttestationCollector // 7
 	// AttestationStateGuardSignedSubmittedToDestinationUnconfirmed is when the attestation was signed by Guard and submitted to the attestation collector and destination but not yet confirmed.
-	AttestationStateGuardSignedSubmittedToDestinationUnconfirmed // 7
+	AttestationStateGuardSignedSubmittedToDestinationUnconfirmed // 8
 	// AttestationStateGuardConfirmed is when the attestation was confirmed as posted on the destination.
-	AttestationStateGuardConfirmed // 8
+	AttestationStateGuardConfirmed // 9
 )
 
 const sizeOfUint256 = uint32(32)
