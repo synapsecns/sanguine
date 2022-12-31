@@ -177,6 +177,36 @@ func (s Store) MarkVerifiedOnOrigin(ctx context.Context, inProgressAttestation t
 	return nil
 }
 
+// UpdateGuardSignature sets the guard signature of the in-progress Attestation.
+func (s Store) UpdateGuardSignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
+	if len(inProgressAttestation.SignedAttestation().GuardSignatures()) == 0 {
+		return fmt.Errorf("UpdateGuardSignature called on attestation with a nil guard signature")
+	}
+	sig, err := types.EncodeSignature(inProgressAttestation.SignedAttestation().GuardSignatures()[0])
+	if err != nil {
+		return fmt.Errorf("could not encode guard signature: %w", err)
+	}
+
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(&InProgressAttestation{
+			IPOrigin:      inProgressAttestation.SignedAttestation().Attestation().Origin(),
+			IPDestination: inProgressAttestation.SignedAttestation().Attestation().Destination(),
+			IPNonce:       inProgressAttestation.SignedAttestation().Attestation().Nonce(),
+		}).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardUnsignedAndVerified)).
+		Updates(
+			InProgressAttestation{
+				IPGuardSignature:   sig,
+				IPAttestationState: uint32(types.AttestationStateGuardSignedUnsubmitted),
+			},
+		)
+
+	if tx.Error != nil {
+		return fmt.Errorf("could not set guard signature for in-progress attestations: %w", tx.Error)
+	}
+	return nil
+}
+
 // RetrieveLatestCachedNonce retrieves the latest nonce cached for given origin-destination pair.
 // TODO (joe): Currently, we are grabbing ALL the nonces rather than just asking the origin for the
 // most recent one. We are calling getHistoricalRoot with the next nonce that we haven't seen.
@@ -380,6 +410,31 @@ func (s Store) RetrieveOldestGuardUnsignedAndVerifiedInProgressAttestation(ctx c
 		Where(OriginFieldName, originID).
 		Where(DestinationFieldName, destinationID).
 		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardUnsignedAndVerified)).
+		Order(getOrderByNonceAsc()).
+		First(&inProgressAttestation)
+
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			return nil, db.ErrNotFound
+		}
+		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
+	}
+	return inProgressAttestation, err
+}
+
+// RetrieveOldestGuardUnsubmittedSignedInProgressAttestation retrieves the oldest in-progress attestation that has been signed by both the guard and notary but not yet submitted.
+func (s Store) RetrieveOldestGuardUnsubmittedSignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
+	if originID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestGuardUnsubmittedSignedInProgressAttestation called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestGuardUnsubmittedSignedInProgressAttestation called with 0 destination")
+	}
+	var inProgressAttestation InProgressAttestation
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(OriginFieldName, originID).
+		Where(DestinationFieldName, destinationID).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardSignedUnsubmitted)).
 		Order(getOrderByNonceAsc()).
 		First(&inProgressAttestation)
 

@@ -73,7 +73,7 @@ func (a AttestationDoubleCheckOnOriginVerifier) FindOldestGuardUnsignedAndUnveri
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not oldest unsigned attestation: %w", err)
+		return nil, fmt.Errorf("could not find oldest unsigned and unverified attestation: %w", err)
 	}
 	return inProgressAttestation, nil
 }
@@ -83,7 +83,7 @@ func (a AttestationDoubleCheckOnOriginVerifier) FindOldestGuardUnsignedAndUnveri
 func (a AttestationDoubleCheckOnOriginVerifier) update(ctx context.Context) error {
 	inProgressAttestationToVerify, err := a.FindOldestGuardUnsignedAndUnverifiedAttestation(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find oldest unsigned and unverified attestation: %w", err)
+		return fmt.Errorf("could not retrieve oldest unsigned and unverified attestation: %w", err)
 	}
 	if inProgressAttestationToVerify == nil {
 		return nil
@@ -117,12 +117,12 @@ func (a AttestationDoubleCheckOnOriginVerifier) update(ctx context.Context) erro
 	}
 
 	nowTime := time.Now()
-	submittedInProgressAttestation := types.NewInProgressAttestation(
+	inProgressAttestationToMarkVerified := types.NewInProgressAttestation(
 		inProgressAttestationToVerify.SignedAttestation(),
 		inProgressAttestationToVerify.OriginDispatchBlockNumber(),
 		&nowTime,
 		0)
-	err = a.db.MarkVerifiedOnOrigin(ctx, submittedInProgressAttestation)
+	err = a.db.MarkVerifiedOnOrigin(ctx, inProgressAttestationToMarkVerified)
 	if err != nil {
 		return fmt.Errorf("could not store submission time for attestation: %w", err)
 	}
