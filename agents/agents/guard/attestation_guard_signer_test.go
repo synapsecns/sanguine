@@ -108,7 +108,7 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedAttestation.Attestation().Destination())
 	Equal(u.T(), root, retrievedAttestation.Attestation().Root())
 	Len(u.T(), retrievedAttestation.NotarySignatures(), 1)
-	Len(u.T(), retrievedAttestation.GuardSignatures(), 0)
+	Len(u.T(), retrievedAttestation.GuardSignatures(), 1)
 	Equal(u.T(), types.AttestationStateGuardSignedUnsubmitted, retrievedOldestGuardUnsubmittedSignedInProgressAttestation.AttestationState())
 
 	Nil(u.T(), err)
