@@ -91,12 +91,12 @@ func (a OriginAttestationSubmitter) update(ctx context.Context) error {
 
 	err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToSubmit.SignedAttestation())
 	if err != nil {
-		return fmt.Errorf("could not find submit attestation: %w", err)
+		return fmt.Errorf("could not submit attestation: %w", err)
 	}
 
 	nowTime := time.Now()
 	submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToSubmit.SignedAttestation(), inProgressAttestationToSubmit.OriginDispatchBlockNumber(), &nowTime, 0)
-	err = a.db.UpdateSubmittedToAttestationCollectorTime(ctx, submittedInProgressAttestation)
+	err = a.db.UpdateNotarySubmittedToAttestationCollectorTime(ctx, submittedInProgressAttestation)
 	if err != nil {
 		return fmt.Errorf("could not store submission time for attestation: %w", err)
 	}

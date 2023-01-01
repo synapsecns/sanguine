@@ -22,7 +22,11 @@ func (s Store) StoreSignedAttestations(ctx context.Context, attestation types.Si
 	if len(attestation.NotarySignatures()) != 1 {
 		return fmt.Errorf("currently only handle signed attestation with single notary signature. Num notary sigs: %d", len(attestation.NotarySignatures()))
 	}
-	sig, err := types.EncodeSignature(attestation.GuardSignatures()[0])
+	guardSig, err := types.EncodeSignature(attestation.GuardSignatures()[0])
+	if err != nil {
+		return fmt.Errorf("could not encode signature: %w", err)
+	}
+	notarySig, err := types.EncodeSignature(attestation.NotarySignatures()[0])
 	if err != nil {
 		return fmt.Errorf("could not encode signature: %w", err)
 	}
@@ -31,11 +35,12 @@ func (s Store) StoreSignedAttestations(ctx context.Context, attestation types.Si
 		Columns:   []clause.Column{{Name: DomainIDFieldName}, {Name: NonceFieldName}},
 		DoNothing: true,
 	}).Create(&SignedAttestation{
-		SAOrigin:      attestation.Attestation().Origin(),
-		SADestination: attestation.Attestation().Destination(),
-		SANonce:       attestation.Attestation().Nonce(),
-		SARoot:        core.BytesToSlice(attestation.Attestation().Root()),
-		SASignature:   sig,
+		SAOrigin:          attestation.Attestation().Origin(),
+		SADestination:     attestation.Attestation().Destination(),
+		SANonce:           attestation.Attestation().Nonce(),
+		SARoot:            core.BytesToSlice(attestation.Attestation().Root()),
+		SAGuardSignature:  guardSig,
+		SANotarySignature: notarySig,
 	})
 
 	if tx.Error != nil {

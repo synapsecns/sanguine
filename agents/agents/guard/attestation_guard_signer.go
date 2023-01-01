@@ -13,7 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
-// AttestationGuardSigner double signs the attestation after it has been verified on origin.
+// AttestationGuardSigner signs the attestation after it has been verified on origin.
 // TODO: this needs to become an interface.
 type AttestationGuardSigner struct {
 	// originDomain allows access to the origin contract on the origin chain

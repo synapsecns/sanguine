@@ -1,6 +1,7 @@
 package guard_test
 
 import (
+	"fmt"
 	"math/big"
 	"time"
 
@@ -28,7 +29,7 @@ func (u GuardSuite) TestGuardE2E() {
 		},
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.NotaryWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.GuardWallet.PrivateKeyHex()).Name(),
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
@@ -108,7 +109,7 @@ func (u GuardSuite) TestGuardE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedInProgressAttestation, err := dbHandle.RetrieveOldestGuardUnsubmittedSignedInProgressAttestation(
+		retrievedInProgressAttestation, err := dbHandle.RetrieveOldestGuardSubmittedToCollectorUnconfirmed(
 			u.GetTestContext(),
 			u.OriginDomainClient.Config().DomainID,
 			u.DestinationDomainClient.Config().DomainID)
@@ -121,7 +122,11 @@ func (u GuardSuite) TestGuardE2E() {
 			historicalRoot == retrievedInProgressAttestation.SignedAttestation().Attestation().Root() &&
 			len(retrievedInProgressAttestation.SignedAttestation().NotarySignatures()) == 1 &&
 			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
-			retrievedInProgressAttestation.AttestationState() == types.AttestationStateGuardSignedUnsubmitted
+			retrievedInProgressAttestation.AttestationState() == types.AttestationStateGuardSubmittedToCollectorUnconfirmed
+
+		if retrievedInProgressAttestation != nil {
+			fmt.Printf("\nCRONIN\n")
+		}
 
 		return isTrue
 	})

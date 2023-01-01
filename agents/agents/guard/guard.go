@@ -17,12 +17,13 @@ import (
 // signs them, and posts to destination chains.
 // TODO: Note right now, I have threads for each origin-destination pair and do no batching at all.
 type Guard struct {
-	scanners             map[string]map[string]AttestationCollectorAttestationScanner
-	originDoubleCheckers map[string]map[string]AttestationDoubleCheckOnOriginVerifier
-	guardSigners         map[string]map[string]AttestationGuardSigner
-	bondedSigner         signer.Signer
-	unbondedSigner       signer.Signer
-	refreshInterval      time.Duration
+	scanners                 map[string]map[string]AttestationCollectorAttestationScanner
+	originDoubleCheckers     map[string]map[string]AttestationDoubleCheckOnOriginVerifier
+	guardSigners             map[string]map[string]AttestationGuardSigner
+	guardCollectorSubmitters map[string]map[string]AttestationGuardCollectorSubmitter
+	bondedSigner             signer.Signer
+	unbondedSigner           signer.Signer
+	refreshInterval          time.Duration
 }
 
 // NewGuard creates a new guard.
@@ -33,10 +34,11 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		return Guard{}, fmt.Errorf("cfg.refreshInterval cannot be 0")
 	}
 	guard := Guard{
-		scanners:             make(map[string]map[string]AttestationCollectorAttestationScanner),
-		originDoubleCheckers: make(map[string]map[string]AttestationDoubleCheckOnOriginVerifier),
-		guardSigners:         make(map[string]map[string]AttestationGuardSigner),
-		refreshInterval:      time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
+		scanners:                 make(map[string]map[string]AttestationCollectorAttestationScanner),
+		originDoubleCheckers:     make(map[string]map[string]AttestationDoubleCheckOnOriginVerifier),
+		guardSigners:             make(map[string]map[string]AttestationGuardSigner),
+		guardCollectorSubmitters: make(map[string]map[string]AttestationGuardCollectorSubmitter),
+		refreshInterval:          time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
 	}
 
 	guard.bondedSigner, err = config.SignerFromConfig(cfg.BondedSigner)
@@ -71,6 +73,7 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		guard.scanners[originName] = make(map[string]AttestationCollectorAttestationScanner)
 		guard.originDoubleCheckers[originName] = make(map[string]AttestationDoubleCheckOnOriginVerifier)
 		guard.guardSigners[originName] = make(map[string]AttestationGuardSigner)
+		guard.guardCollectorSubmitters[originName] = make(map[string]AttestationGuardCollectorSubmitter)
 		for destinationName, destinationDomain := range cfg.DestinationDomains {
 			if originDomain.DomainID == destinationDomain.DomainID {
 				continue
@@ -101,6 +104,15 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 				guard.refreshInterval)
 
 			guard.guardSigners[originName][destinationName] = NewAttestationGuardSigner(
+				originDomainClient,
+				attestationDomainClient,
+				destinationDomainClient,
+				dbHandle,
+				guard.bondedSigner,
+				guard.unbondedSigner,
+				guard.refreshInterval)
+
+			guard.guardCollectorSubmitters[originName][destinationName] = NewAttestationGuardCollectorSubmitter(
 				originDomainClient,
 				attestationDomainClient,
 				destinationDomainClient,
@@ -147,6 +159,17 @@ func (u Guard) Start(ctx context.Context) error {
 			g.Go(func() error {
 				//nolint: wrapcheck
 				return u.guardSigners[originName][destinationName].Start(ctx)
+			})
+		}
+	}
+
+	for originName, allDestinationGuardCollectorSubmitters := range u.guardCollectorSubmitters {
+		for destinationName := range allDestinationGuardCollectorSubmitters {
+			originName := originName           // capture func literal
+			destinationName := destinationName // capture func literal
+			g.Go(func() error {
+				//nolint: wrapcheck
+				return u.guardCollectorSubmitters[originName][destinationName].Start(ctx)
 			})
 		}
 	}
