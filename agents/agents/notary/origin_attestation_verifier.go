@@ -108,7 +108,7 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	if a.shouldResubmit(inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime()) {
 		err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToConfirm.SignedAttestation())
 		if err != nil {
-			return fmt.Errorf("could not find submit attestation: %w", err)
+			return fmt.Errorf("could not submit attestation: %w", err)
 		}
 
 		nowTime := time.Now()
