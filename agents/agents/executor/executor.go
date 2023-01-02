@@ -29,8 +29,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// ChainExecutor is a struct that contains the necessary information for each chain level executor.
-type ChainExecutor struct {
+// chainExecutor is a struct that contains the necessary information for each chain level executor.
+type chainExecutor struct {
 	// chainID is the chain ID of the chain that this executor is responsible for.
 	chainID uint32
 	// lastLog is the last log that was processed.
@@ -68,7 +68,7 @@ type Executor struct {
 	// signer is the signer.
 	signer signer.Signer
 	// chainExecutors is a map from chain ID -> chain executor.
-	chainExecutors map[uint32]*ChainExecutor
+	chainExecutors map[uint32]*chainExecutor
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -83,7 +83,7 @@ const logChanSize = 1000
 //
 //nolint:cyclop
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
-	chainExecutors := make(map[uint32]*ChainExecutor)
+	chainExecutors := make(map[uint32]*chainExecutor)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("could not dial grpc: %w", err)
@@ -128,7 +128,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
 
-		chainExecutors[chain.ChainID] = &ChainExecutor{
+		chainExecutors[chain.ChainID] = &chainExecutor{
 			chainID: chain.ChainID,
 			lastLog: &logOrderInfo{
 				blockNumber: 0,
@@ -218,7 +218,7 @@ func (e Executor) Listen(ctx context.Context, chainID uint32) error {
 
 // Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
-	nonce, err := e.VerifyMessageOptimisticPeriod(ctx, message)
+	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
 		return false, fmt.Errorf("could not verify optimistic period: %w", err)
 	}
@@ -232,7 +232,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
-	verified, err := e.VerifyMessageMerkleProof(message)
+	verified, err := e.verifyMessageMerkleProof(message)
 	if err != nil {
 		return false, fmt.Errorf("could not verify merkle proof: %w", err)
 	}
@@ -307,8 +307,8 @@ const (
 	other
 )
 
-// VerifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
-func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) {
+// verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
+func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) {
 	root, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].Root(message.Nonce())
 	if err != nil {
 		return false, fmt.Errorf("could not get root: %w", err)
@@ -329,8 +329,8 @@ func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) 
 	return inTree, nil
 }
 
-// VerifyMessageOptimisticPeriod verifies that the optimistic period is valid.
-func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
+// verifyMessageOptimisticPeriod verifies that the optimistic period is valid.
+func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
 	chainID := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	nonce := message.Nonce()
