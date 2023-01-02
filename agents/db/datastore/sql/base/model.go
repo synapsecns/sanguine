@@ -254,8 +254,10 @@ type SignedAttestation struct {
 	SANonce uint32 `gorm:"column:nonce;uniqueIndex:sa_idx_id"`
 	// SARoot is the root of the signed attestation
 	SARoot []byte `gorm:"column:root"`
-	// SASignature stores the raw signature
-	SASignature []byte `gorm:"column:signature"`
+	// SANotarySignature stores the raw notary signature
+	SANotarySignature []byte `gorm:"column:notary_signature"`
+	// SAGuardSignature stores the raw guard signature
+	SAGuardSignature []byte `gorm:"column:guard_signature"`
 }
 
 // Attestation gets the attestation.
@@ -267,7 +269,7 @@ func (s SignedAttestation) Attestation() types.Attestation {
 // note: this can fail on decoding
 // TODO (joe): Fix this. Right now, just returning the single guard signature.
 func (s SignedAttestation) GuardSignatures() []types.Signature {
-	res, err := types.DecodeSignature(s.SASignature)
+	res, err := types.DecodeSignature(s.SAGuardSignature)
 	if err != nil {
 		return nil
 	}
@@ -275,10 +277,16 @@ func (s SignedAttestation) GuardSignatures() []types.Signature {
 	return []types.Signature{res}
 }
 
-// NotarySignatures implements the interface.
-// TODO (joe): Fix this.
+// NotarySignatures gets the notary signatures of the signed attestation
+// note: this can fail on decoding
+// TODO (joe): Fix this. Right now, just returning the single guard signature.
 func (s SignedAttestation) NotarySignatures() []types.Signature {
-	return []types.Signature{}
+	res, err := types.DecodeSignature(s.SANotarySignature)
+	if err != nil {
+		return nil
+	}
+
+	return []types.Signature{res}
 }
 
 // Origin gets the origin of the signed attestation.
