@@ -122,7 +122,7 @@ func (u GuardSuite) TestAttestationGuardCollectorVerifier() {
 	err = testDB.UpdateGuardSubmittedToAttestationCollectorTime(u.GetTestContext(), inProgressAttestationToSubmit)
 	Nil(u.T(), err)
 
-	// Now call ghe guard verifier
+	// Now call the guard verifier
 	attestationGuardCollectorVerifier := guard.NewAttestationGuardCollectorVerifier(
 		u.OriginDomainClient,
 		u.AttestationDomainClient,

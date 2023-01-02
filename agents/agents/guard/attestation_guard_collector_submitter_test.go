@@ -96,7 +96,7 @@ func (u GuardSuite) TestAttestationGuardCollectorSubmitter() {
 	err = testDB.UpdateGuardSignature(u.GetTestContext(), signedInProgressAttestation)
 	Nil(u.T(), err)
 
-	// Now call ghe guard submitter
+	// Now call the guard submitter
 	attestationGuardCollectorSubmitter := guard.NewAttestationGuardCollectorSubmitter(
 		u.OriginDomainClient,
 		u.AttestationDomainClient,
