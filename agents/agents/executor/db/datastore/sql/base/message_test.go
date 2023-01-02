@@ -14,14 +14,12 @@ func TestMessageDBMessageParity(t *testing.T) {
 	chainID := gofakeit.Uint32()
 	destination := gofakeit.Uint32()
 	nonce := gofakeit.Uint32()
-	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 	blockNumber := gofakeit.Uint64()
 	initialDBMessage := types.DBMessage{
 		ChainID:     &chainID,
 		Destination: &destination,
 		Nonce:       &nonce,
-		Root:        &root,
 		Message:     &message,
 		BlockNumber: &blockNumber,
 	}

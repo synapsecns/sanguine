@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 )
@@ -10,7 +9,7 @@ import (
 // ExecutorDBWriter is the interface for writing to the executor database.
 type ExecutorDBWriter interface {
 	// StoreMessage stores a message in the database.
-	StoreMessage(ctx context.Context, message agentsTypes.Message, root common.Hash, blockNumber uint64) error
+	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64) error
 
 	// StoreAttestation stores an attestation.
 	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error

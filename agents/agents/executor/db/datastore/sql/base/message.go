@@ -18,7 +18,7 @@ func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, bl
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: ChainIDFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName}, {Name: RootFieldName},
+				{Name: ChainIDFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName},
 			},
 			DoNothing: true,
 		}).

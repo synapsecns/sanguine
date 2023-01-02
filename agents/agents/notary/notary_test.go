@@ -61,6 +61,8 @@ func (u NotarySuite) TestNotaryE2E() {
 		_ = ud.Start(u.GetTestContext())
 	}()
 
+	// TODO (joe): This never seems to enter. I can return false and the test still passes.
+	// Figure this out.
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveNewestConfirmedInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, testConfig.DestinationDomain.DomainID)
