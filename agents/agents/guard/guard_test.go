@@ -28,7 +28,7 @@ func (u GuardSuite) TestGuardE2E() {
 		},
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.NotaryWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.GuardWallet.PrivateKeyHex()).Name(),
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
@@ -108,19 +108,21 @@ func (u GuardSuite) TestGuardE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedInProgressAttestation, err := dbHandle.RetrieveOldestGuardUnsignedAndVerifiedInProgressAttestation(
+		retrievedInProgressAttestation, err := dbHandle.RetrieveOldestGuardUnsubmittedSignedInProgressAttestation(
 			u.GetTestContext(),
 			u.OriginDomainClient.Config().DomainID,
 			u.DestinationDomainClient.Config().DomainID)
 
-		return err == nil &&
+		isTrue := err == nil &&
 			retrievedInProgressAttestation != nil &&
 			retrievedInProgressAttestation.SignedAttestation().Attestation().Nonce() == nonce &&
 			u.OriginDomainClient.Config().DomainID == retrievedInProgressAttestation.SignedAttestation().Attestation().Origin() &&
 			u.DestinationDomainClient.Config().DomainID == retrievedInProgressAttestation.SignedAttestation().Attestation().Destination() &&
 			historicalRoot == retrievedInProgressAttestation.SignedAttestation().Attestation().Root() &&
 			len(retrievedInProgressAttestation.SignedAttestation().NotarySignatures()) == 1 &&
-			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 0 &&
-			retrievedInProgressAttestation.AttestationState() == types.AttestationStateGuardUnsignedAndVerified
+			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
+			retrievedInProgressAttestation.AttestationState() == types.AttestationStateGuardSignedUnsubmitted
+
+		return isTrue
 	})
 }

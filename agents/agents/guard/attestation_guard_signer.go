@@ -1,4 +1,4 @@
-package notary
+package guard
 
 import (
 	"context"
@@ -13,12 +13,12 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
-// OriginAttestationSigner signs unsigned attestations that have been fetched for particular origin-destination pair.
+// AttestationGuardSigner signs the attestation after it has been verified on origin.
 // TODO: this needs to become an interface.
-type OriginAttestationSigner struct {
+type AttestationGuardSigner struct {
 	// originDomain allows access to the origin contract on the origin chain
 	originDomain domains.DomainClient
-	// attestationDomain allows access to the atttestation contract on the SYN chain
+	// attestationDomain allows access to the attestation contract on the SYN chain
 	attestationDomain domains.DomainClient
 	// destinationDomain allows access to the destination contract on the destination chain
 	destinationDomain domains.DomainClient
@@ -32,16 +32,16 @@ type OriginAttestationSigner struct {
 	interval time.Duration
 }
 
-// NewOriginAttestationSigner creates a new origin attestation signer.
-func NewOriginAttestationSigner(
+// NewAttestationGuardSigner creates a new attestation guard signer.
+func NewAttestationGuardSigner(
 	originDomain domains.DomainClient,
 	attestationDomain domains.DomainClient,
 	destinationDomain domains.DomainClient,
 	db db.SynapseDB,
 	bondedSigner signer.Signer,
 	unbondedSigner signer.Signer,
-	interval time.Duration) OriginAttestationSigner {
-	return OriginAttestationSigner{
+	interval time.Duration) AttestationGuardSigner {
+	return AttestationGuardSigner{
 		originDomain:      originDomain,
 		attestationDomain: attestationDomain,
 		destinationDomain: destinationDomain,
@@ -52,8 +52,8 @@ func NewOriginAttestationSigner(
 	}
 }
 
-// Start starts the OriginAttestationSigner.
-func (a OriginAttestationSigner) Start(ctx context.Context) error {
+// Start starts the AttestationGuardSigner.
+func (a AttestationGuardSigner) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -67,27 +67,26 @@ func (a OriginAttestationSigner) Start(ctx context.Context) error {
 	}
 }
 
-// FindOldestUnsignedAttestation fetches the oldest attestation that still needs to be signed.
-func (a OriginAttestationSigner) FindOldestUnsignedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestUnsignedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+// FindOldestGuardUnsignedAndVerifiedAttestation fetches the oldest attestation that still needs to be signed by the guard but has been verified on origin.
+func (a AttestationGuardSigner) FindOldestGuardUnsignedAndVerifiedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
+	inProgressAttestation, err := a.db.RetrieveOldestGuardUnsignedAndVerifiedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not oldest unsigned attestation: %w", err)
+		return nil, fmt.Errorf("could not retrieve oldest unsigned and verified attestation: %w", err)
 	}
 	return inProgressAttestation, nil
 }
 
-// update runs the job of th signer
+// update runs the job of the signer
 //
 //nolint:cyclop
-func (a OriginAttestationSigner) update(ctx context.Context) error {
-	inProgressAttestationToSign, err := a.FindOldestUnsignedAttestation(ctx)
+func (a AttestationGuardSigner) update(ctx context.Context) error {
+	inProgressAttestationToSign, err := a.FindOldestGuardUnsignedAndVerifiedAttestation(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find oldest unsigned attestation: %w", err)
+		return fmt.Errorf("could not find oldest unsigned and verified attestation: %w", err)
 	}
-
 	if inProgressAttestationToSign == nil {
 		return nil
 	}
@@ -97,16 +96,16 @@ func (a OriginAttestationSigner) update(ctx context.Context) error {
 		return fmt.Errorf("could not hash update: %w", err)
 	}
 
-	signature, err := a.bondedSigner.SignMessage(ctx, core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := a.bondedSigner.SignMessage(ctx, core.BytesToSlice(hashedAttestation), false)
 	if err != nil {
 		return fmt.Errorf("could not sign message: %w", err)
 	}
 
-	signedAttestation := types.NewSignedAttestation(inProgressAttestationToSign.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
+	signedAttestation := types.NewSignedAttestation(inProgressAttestationToSign.SignedAttestation().Attestation(), []types.Signature{guardSignature}, []types.Signature{})
 	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttestationToSign.OriginDispatchBlockNumber(), nil, 0)
-	err = a.db.UpdateNotarySignature(ctx, signedInProgressAttestation)
+	err = a.db.UpdateGuardSignature(ctx, signedInProgressAttestation)
 	if err != nil {
-		return fmt.Errorf("could not store notary signature for attestation: %w", err)
+		return fmt.Errorf("could not store guard signature for attestation: %w", err)
 	}
 
 	return nil

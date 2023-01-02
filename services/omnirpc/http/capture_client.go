@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+
 	"github.com/synapsecns/sanguine/core/bytemap"
 )
 
@@ -41,7 +42,7 @@ type CapturedRequest struct {
 	// Body is the request body
 	Body []byte
 	// Context is the request set by the client
-	// nolint: containedctx
+	//nolint:containedctx
 	Context context.Context
 	// StringHeaders are headers set by SetHeader. Notably, this will not
 	// include headers set by SetHeaderBytes

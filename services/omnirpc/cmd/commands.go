@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
 	rpcConfig "github.com/synapsecns/sanguine/services/omnirpc/config"
@@ -10,8 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
 	"github.com/urfave/cli/v2"
-	"os"
-	"time"
 )
 
 var latencyCommand = &cli.Command{
@@ -148,7 +149,7 @@ var debugResponse = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("could not read file: %w", err)
 		}
-		// nolint: wrapcheck
+		//nolint:wrapcheck
 		return debug.HashDiff(diffFile)
 	},
 }

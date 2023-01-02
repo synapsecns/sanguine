@@ -335,7 +335,7 @@ func (t InProgressAttestation) SignedAttestation() types.SignedAttestation {
 	return t
 }
 
-// NotarySignatures currently just returns the loan signature.
+// NotarySignatures currently just returns the lone notary signature.
 // TODO (joe): fix this to return all notary signatures.
 func (t InProgressAttestation) NotarySignatures() []types.Signature {
 	if len(t.IPNotarySignature) == 0 {
@@ -350,10 +350,19 @@ func (t InProgressAttestation) NotarySignatures() []types.Signature {
 	return []types.Signature{res}
 }
 
-// GuardSignatures currently just returns an empty array.
+// GuardSignatures currently just returns the lone guard signature.
 // TODO (joe): fix this to return all guard signatures.
 func (t InProgressAttestation) GuardSignatures() []types.Signature {
-	return []types.Signature{}
+	if len(t.IPGuardSignature) == 0 {
+		return nil
+	}
+
+	res, err := types.DecodeSignature(t.IPGuardSignature)
+	if err != nil {
+		return []types.Signature{types.NewSignature(big.NewInt(0), big.NewInt(0), big.NewInt(0))}
+	}
+
+	return []types.Signature{res}
 }
 
 // Origin gets the origin of the in-progress attestation.

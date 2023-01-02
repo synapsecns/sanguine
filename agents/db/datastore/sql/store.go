@@ -3,6 +3,7 @@ package sql
 import (
 	"context"
 	"errors"
+
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
@@ -10,7 +11,8 @@ import (
 )
 
 // NewStoreFromConfig creates a new datastore from a config file.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func NewStoreFromConfig(ctx context.Context, dbType dbcommon.DBType, connString string) (db.SynapseDB, error) {
 	switch dbType {
 	case dbcommon.Mysql:

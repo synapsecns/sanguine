@@ -11,3 +11,8 @@ func (a AttestationCollectorAttestationScanner) Update(ctx context.Context) erro
 func (a AttestationDoubleCheckOnOriginVerifier) Update(ctx context.Context) error {
 	return a.update(ctx)
 }
+
+// Update wraps update for the AttestationGuardSigner.
+func (a AttestationGuardSigner) Update(ctx context.Context) error {
+	return a.update(ctx)
+}

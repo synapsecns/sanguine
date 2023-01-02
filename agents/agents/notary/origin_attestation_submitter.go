@@ -57,7 +57,7 @@ func (a OriginAttestationSubmitter) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(a.interval): // TODO: a.interval
+		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
 				return err
@@ -79,7 +79,8 @@ func (a OriginAttestationSubmitter) FindOldestUnsubmittedAttestation(ctx context
 }
 
 // update runs the job for the submitter.
-// nolint: cyclop
+//
+//nolint:cyclop
 func (a OriginAttestationSubmitter) update(ctx context.Context) error {
 	inProgressAttestationToSubmit, err := a.FindOldestUnsubmittedAttestation(ctx)
 	if err != nil {
@@ -91,7 +92,7 @@ func (a OriginAttestationSubmitter) update(ctx context.Context) error {
 
 	err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToSubmit.SignedAttestation())
 	if err != nil {
-		return fmt.Errorf("could not find submit attestation: %w", err)
+		return fmt.Errorf("could not submit attestation: %w", err)
 	}
 
 	nowTime := time.Now()
