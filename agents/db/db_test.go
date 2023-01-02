@@ -273,7 +273,7 @@ func (t *DBSuite) launchTestSubmittedToAttestationCollectorTimes(testDB db.Synap
 		nowTime := time.Now()
 		testState.fakeSubmittedTimes = append(testState.fakeSubmittedTimes, nowTime)
 		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestation.SignedAttestation(), inProgressAttestation.OriginDispatchBlockNumber(), &nowTime, 0)
-		err = testDB.UpdateSubmittedToAttestationCollectorTime(t.GetTestContext(), submittedInProgressAttestation)
+		err = testDB.UpdateNotarySubmittedToAttestationCollectorTime(t.GetTestContext(), submittedInProgressAttestation)
 		Nil(t.T(), err)
 
 		retrievedAttestation, err := testDB.RetrieveInProgressAttestation(t.GetTestContext(), testState.fakeOrigin, testState.fakeDestination, fakeNonce)

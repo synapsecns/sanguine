@@ -108,7 +108,7 @@ func (u GuardSuite) TestGuardE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedInProgressAttestation, err := dbHandle.RetrieveOldestGuardUnsubmittedSignedInProgressAttestation(
+		retrievedInProgressAttestation, err := dbHandle.RetrieveOldestGuardSubmittedToCollectorUnconfirmed(
 			u.GetTestContext(),
 			u.OriginDomainClient.Config().DomainID,
 			u.DestinationDomainClient.Config().DomainID)
@@ -121,7 +121,7 @@ func (u GuardSuite) TestGuardE2E() {
 			historicalRoot == retrievedInProgressAttestation.SignedAttestation().Attestation().Root() &&
 			len(retrievedInProgressAttestation.SignedAttestation().NotarySignatures()) == 1 &&
 			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
-			retrievedInProgressAttestation.AttestationState() == types.AttestationStateGuardSignedUnsubmitted
+			retrievedInProgressAttestation.AttestationState() == types.AttestationStateGuardSubmittedToCollectorUnconfirmed
 
 		return isTrue
 	})

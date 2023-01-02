@@ -24,8 +24,9 @@ const (
 	AttestationStateGuardUnsignedAndVerified // 5
 	// AttestationStateGuardSignedUnsubmitted is when the attestation was signed by Guard (and Notary) but not yet submitted.
 	AttestationStateGuardSignedUnsubmitted // 6
-	// AttestationStateGuardSignedSubmittedToAttestationCollector is when the attestation was signed by Guard and submitted to the attestation collector but not destination.
-	AttestationStateGuardSignedSubmittedToAttestationCollector // 7
+	// AttestationStateGuardSubmittedToCollectorUnconfirmed is when the attestation was signed by Guard and Notary and submitted to the attestation collector but not destination,
+	// but we have yet to confirm it on the AttestationCollector.
+	AttestationStateGuardSubmittedToCollectorUnconfirmed // 7
 	// AttestationStateGuardSignedSubmittedToDestinationUnconfirmed is when the attestation was signed by Guard and submitted to the attestation collector and destination but not yet confirmed.
 	AttestationStateGuardSignedSubmittedToDestinationUnconfirmed // 8
 	// AttestationStateGuardConfirmed is when the attestation was confirmed as posted on the destination.

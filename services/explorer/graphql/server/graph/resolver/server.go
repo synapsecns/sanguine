@@ -461,7 +461,6 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
 	{Name: "../schema/queries.graphql", Input: `type Query {
   """
   Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
-  At least 1 search parameter is required, which is one of chain id, address, txn hash or kappa.
   """
   bridgeTransactions(
     chainId:        Int
