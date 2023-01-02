@@ -5,9 +5,29 @@ import "forge-std/Test.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract SynapseUtilities is Test {
+    struct RawAttestation {
+        uint32 origin;
+        uint32 destination;
+        uint32 nonce;
+        bytes32 root;
+        uint40 blockNumber;
+        uint40 timestamp;
+        bytes data;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              CONSTANTS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     bytes internal constant REVERT_ALREADY_INITIALIZED =
         "Initializable: contract is already initialized";
     bytes internal constant REVERT_NOT_OWNER = "Ownable: caller is not the owner";
+
+    uint256 internal constant BLOCK_TIME = 12;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                UTILS                                 ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function expectRevertAlreadyInitialized() public {
         vm.expectRevert(REVERT_ALREADY_INITIALIZED);
@@ -15,6 +35,15 @@ contract SynapseUtilities is Test {
 
     function expectRevertNotOwner() public {
         vm.expectRevert(REVERT_NOT_OWNER);
+    }
+
+    function skipBlock() public {
+        skipBlocks(1);
+    }
+
+    function skipBlocks(uint256 blocks) public {
+        vm.roll(block.number + blocks);
+        skip(blocks * BLOCK_TIME);
     }
 
     function addressToBytes32(address addr) public pure returns (bytes32) {

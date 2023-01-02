@@ -31,12 +31,7 @@ abstract contract AttestationCollectorTools is AttestationTools {
         bool isGuard,
         uint256 agentIndex
     ) public {
-        bytes memory attData = Attestation.formatAttestationData(
-            attestationOrigin,
-            attestationDestination,
-            attestationNonce,
-            attestationRoot
-        );
+        bytes memory attData = ra.data;
         bytes memory signature = signMessage({
             signer: isGuard ? attestationGuards[agentIndex] : attestationNotaries[agentIndex],
             message: attData

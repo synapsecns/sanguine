@@ -129,20 +129,16 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     /**
      * @notice Attestation signed by the default Guard and chain's default Notary.
      */
-    function signAttestation(
-        uint32 origin,
-        uint32 destination,
-        uint32 nonce,
-        bytes32 root
-    )
+    function signAttestation(RawAttestation memory ra)
         public
         returns (
+            bytes memory attData,
             bytes memory attestation,
             bytes memory guardSignatures,
             bytes memory notarySignatures
         )
     {
-        return signAttestation(origin, destination, nonce, root, 0, 0);
+        return signAttestation(ra, 0, 0);
     }
 
     /**
@@ -151,29 +147,20 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
      * @dev Use indexes out of bound to not include any of the signers.
      */
     function signAttestation(
-        uint32 origin,
-        uint32 destination,
-        uint32 nonce,
-        bytes32 root,
+        RawAttestation memory ra,
         uint256 guardIndex,
         uint256 notaryIndex
     )
         public
         returns (
+            bytes memory attData,
             bytes memory attestation,
             bytes memory guardSignatures,
             bytes memory notarySignatures
         )
     {
         return
-            signAttestation(
-                origin,
-                destination,
-                nonce,
-                root,
-                suiteGuard(guardIndex),
-                suiteNotary(destination, notaryIndex)
-            );
+            signAttestation(ra, suiteGuard(guardIndex), suiteNotary(ra.destination, notaryIndex));
     }
 
     /**
@@ -181,51 +168,46 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
      * @dev Use address(0) to not include any of the signers
      */
     function signAttestation(
-        uint32 origin,
-        uint32 destination,
-        uint32 nonce,
-        bytes32 root,
+        RawAttestation memory ra,
         address guardSigner,
         address notarySigner
     )
         public
         returns (
+            bytes memory attData,
             bytes memory attestation,
             bytes memory guardSignatures,
             bytes memory notarySignatures
         )
     {
         // castToArray() will return empty array for address(0)
-        return
-            signAttestation(
-                origin,
-                destination,
-                nonce,
-                root,
-                castToArray(guardSigner),
-                castToArray(notarySigner)
-            );
+        return signAttestation(ra, castToArray(guardSigner), castToArray(notarySigner));
     }
 
     function signAttestation(
-        uint32 origin,
-        uint32 destination,
-        uint32 nonce,
-        bytes32 root,
+        RawAttestation memory ra,
         address[] memory guardSigners,
         address[] memory notarySigners
     )
         public
         returns (
+            bytes memory attData,
             bytes memory attestation,
             bytes memory guardSignatures,
             bytes memory notarySignatures
         )
     {
-        bytes memory data = Attestation.formatAttestationData(origin, destination, nonce, root);
-        guardSignatures = signMessage(guardSigners, data);
-        notarySignatures = signMessage(notarySigners, data);
-        attestation = Attestation.formatAttestation(data, guardSignatures, notarySignatures);
+        attData = Attestation.formatAttestationData(
+            ra.origin,
+            ra.destination,
+            ra.nonce,
+            ra.root,
+            ra.blockNumber,
+            ra.timestamp
+        );
+        guardSignatures = signMessage(guardSigners, attData);
+        notarySignatures = signMessage(notarySigners, attData);
+        attestation = Attestation.formatAttestation(attData, guardSignatures, notarySignatures);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

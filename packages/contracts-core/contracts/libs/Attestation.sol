@@ -17,6 +17,8 @@ library Attestation {
      * [004 .. 008): destination    uint32   4 bytes
      * [008 .. 012): nonce          uint32   4 bytes
      * [012 .. 044): root           bytes32 32 bytes
+     * [044 .. 049): blockNumber    uint40   5 bytes
+     * [049 .. 054): timestamp      uint40   5 bytes
      *
      *      Attestation memory layout
      * [000 .. 044): attData        bytes   44 bytes (see above)
@@ -34,7 +36,9 @@ library Attestation {
     uint256 internal constant OFFSET_DESTINATION = 4;
     uint256 internal constant OFFSET_NONCE = 8;
     uint256 internal constant OFFSET_ROOT = 12;
-    uint256 internal constant ATTESTATION_DATA_LENGTH = 44;
+    uint256 internal constant OFFSET_BLOCK_NUMBER = 44;
+    uint256 internal constant OFFSET_TIMESTAMP = 49;
+    uint256 internal constant ATTESTATION_DATA_LENGTH = 54;
 
     uint256 internal constant OFFSET_AGENT_SIGS = ATTESTATION_DATA_LENGTH;
     uint256 internal constant OFFSET_FIRST_SIGNATURE = OFFSET_AGENT_SIGS + 2;
@@ -98,15 +102,19 @@ library Attestation {
      * @param _destination  Domain of Destination's chain
      * @param _root         New merkle root
      * @param _nonce        Nonce of the merkle root
+     * @param _blockNumber  Block number when root was saved in Origin
+     * @param _timestamp    Block timestamp when root was saved in Origin
      * @return Formatted attestation data
      **/
     function formatAttestationData(
         uint32 _origin,
         uint32 _destination,
         uint32 _nonce,
-        bytes32 _root
+        bytes32 _root,
+        uint40 _blockNumber,
+        uint40 _timestamp
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(_origin, _destination, _nonce, _root);
+        return abi.encodePacked(_origin, _destination, _nonce, _root, _blockNumber, _timestamp);
     }
 
     /**
@@ -228,6 +236,31 @@ library Attestation {
      */
     function attestedRoot(bytes29 _view) internal pure onlyAttestation(_view) returns (bytes32) {
         return _view.index({ _index: OFFSET_ROOT, _bytes: 32 });
+    }
+
+    /**
+     * @notice Returns a block number when `root` was saved in Origin.
+     */
+    function attestedBlockNumber(bytes29 _view)
+        internal
+        pure
+        onlyAttestation(_view)
+        returns (uint40)
+    {
+        return uint40(_view.indexUint({ _index: OFFSET_BLOCK_NUMBER, _bytes: 5 }));
+    }
+
+    /**
+     * @notice Returns a block timestamp when `root` was saved in Origin.
+     * @dev This is the timestamp according to the origin chain.
+     */
+    function attestedTimestamp(bytes29 _view)
+        internal
+        pure
+        onlyAttestation(_view)
+        returns (uint40)
+    {
+        return uint40(_view.indexUint({ _index: OFFSET_TIMESTAMP, _bytes: 5 }));
     }
 
     /**

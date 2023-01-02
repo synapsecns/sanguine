@@ -48,7 +48,9 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
 
     // Chain's default Notary attestation for given domain's Origin: current root and current nonce
     function createSuggestedAttestation(uint32 origin, uint32 destination) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
+        (uint32 nonce, bytes32 root, uint40 blockNumber, uint40 timestamp) = suiteOrigin(origin)
+            .suggestNonceRoot(destination);
+        saveAttestationMetadata(blockNumber, timestamp);
         createAttestation(origin, destination, nonce, root);
     }
 
@@ -58,7 +60,9 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         uint32 destination,
         uint256 notaryIndex
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
+        (uint32 nonce, bytes32 root, uint40 blockNumber, uint40 timestamp) = suiteOrigin(origin)
+            .suggestNonceRoot(destination);
+        saveAttestationMetadata(blockNumber, timestamp);
         createAttestation({
             origin: origin,
             destination: destination,
@@ -75,7 +79,9 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         uint32 destination,
         uint32 fakeNonce
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
+        (uint32 nonce, bytes32 root, uint40 blockNumber, uint40 timestamp) = suiteOrigin(origin)
+            .suggestNonceRoot(destination);
+        saveAttestationMetadata(blockNumber, timestamp);
         require(nonce != fakeNonce, "Failed to provide wrong nonce");
         createAttestation(origin, destination, fakeNonce, root);
     }
@@ -87,7 +93,9 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         uint32 fakeNonce,
         uint256 notaryIndex
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
+        (uint32 nonce, bytes32 root, uint40 blockNumber, uint40 timestamp) = suiteOrigin(origin)
+            .suggestNonceRoot(destination);
+        saveAttestationMetadata(blockNumber, timestamp);
         require(nonce != fakeNonce, "Failed to provide wrong nonce");
         createAttestation({
             origin: origin,
@@ -105,7 +113,9 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         uint32 destination,
         bytes32 fakeRoot
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
+        (uint32 nonce, bytes32 root, uint40 blockNumber, uint40 timestamp) = suiteOrigin(origin)
+            .suggestNonceRoot(destination);
+        saveAttestationMetadata(blockNumber, timestamp);
         require(root != fakeRoot, "Failed to provide wrong nonce");
         createAttestation(origin, destination, nonce, fakeRoot);
     }
@@ -117,7 +127,9 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         bytes32 fakeRoot,
         uint256 notaryIndex
     ) public {
-        (uint32 nonce, bytes32 root) = suiteOrigin(origin).suggestNonceRoot(destination);
+        (uint32 nonce, bytes32 root, uint40 blockNumber, uint40 timestamp) = suiteOrigin(origin)
+            .suggestNonceRoot(destination);
+        saveAttestationMetadata(blockNumber, timestamp);
         require(root != fakeRoot, "Failed to provide wrong nonce");
         createAttestation({
             origin: origin,
@@ -298,14 +310,14 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         // Check if every Notary signer was removed
         for (uint256 i = 0; i < attestationNotaries.length; ++i) {
             assertEq(
-                origin.isActiveAgent(attestationDestination, attestationNotaries[i]),
+                origin.isActiveAgent(ra.destination, attestationNotaries[i]),
                 isValidAttestation,
                 "Wrong Notary active status"
             );
         }
         // Check if amount of Notaries changed
         assertEq(
-            origin.amountAgents(attestationDestination),
+            origin.amountAgents(ra.destination),
             notariesAmount - (isValidAttestation ? 0 : attestationNotaries.length),
             "Wrong amount of notaries"
         );
@@ -391,7 +403,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
     {
         origin = suiteOrigin(domain);
         guardsAmount = origin.amountAgents({ _domain: 0 });
-        notariesAmount = origin.amountAgents(attestationDestination);
+        notariesAmount = origin.amountAgents(ra.destination);
         // Sanity check: guards were active
         for (uint256 i = 0; i < attestationGuards.length; ++i) {
             require(
@@ -402,7 +414,7 @@ abstract contract OriginTools is MessageTools, SynapseTestSuite, ReportTools {
         // Sanity check: notaries were active
         for (uint256 i = 0; i < attestationNotaries.length; ++i) {
             require(
-                origin.isActiveAgent(attestationDestination, attestationNotaries[i]),
+                origin.isActiveAgent(ra.destination, attestationNotaries[i]),
                 "Notary wasn't active"
             );
         }
