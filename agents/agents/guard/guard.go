@@ -139,6 +139,8 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 }
 
 // Start starts the guard.
+//
+//nolint:cyclop
 func (u Guard) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
