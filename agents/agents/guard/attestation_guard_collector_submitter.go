@@ -81,7 +81,8 @@ func (a AttestationGuardCollectorSubmitter) FindOldestGuardUnsubmittedSignedInPr
 }
 
 // update runs the job of the collector submitter
-// nolint: cyclop
+//
+//nolint:cyclop
 func (a AttestationGuardCollectorSubmitter) update(ctx context.Context) error {
 	inProgressAttestationToSubmitToCollector, err := a.FindOldestGuardUnsubmittedSignedInProgressAttestation(ctx)
 	if err != nil {
