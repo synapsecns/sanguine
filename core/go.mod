@@ -6,7 +6,7 @@ replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alp
 
 require (
 	github.com/BurntSushi/toml v1.2.0
-	github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e
+	github.com/ImVexed/fasturl v0.0.0-20221228215349-ba15095d6ebd
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54
 	github.com/Soft/iter v0.1.0
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
