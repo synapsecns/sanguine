@@ -58,7 +58,7 @@ func (a AttestationGuardCollectorSubmitter) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(a.interval): // TODO: a.interval
+		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
 				return err
