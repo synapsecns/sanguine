@@ -4,6 +4,9 @@ pragma solidity 0.8.17;
 import "./Header.sol";
 import "./Tips.sol";
 
+/// @dev Message is a memory over over a formatted message payload.
+type Message is bytes29;
+
 /**
  * @notice  Library for versioned formatting the messages used by Origin and Destination.
  */

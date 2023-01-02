@@ -3,6 +3,11 @@ pragma solidity 0.8.17;
 
 import "./Attestation.sol";
 
+/// @dev Report is a memory view over a formatted report payload.
+type Report is bytes29;
+/// @dev ReportData is a memory view over a formatted report data.
+type ReportData is bytes29;
+
 /**
  * @notice Library for formatting the Guard Reports.
  * Reports are submitted to Origin contracts in order to slash a fraudulent Notary.

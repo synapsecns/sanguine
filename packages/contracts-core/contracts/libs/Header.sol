@@ -4,6 +4,9 @@ pragma solidity 0.8.17;
 import "./ByteString.sol";
 import { TypeCasts } from "./TypeCasts.sol";
 
+/// @dev Header is a memory over over a formatted message header payload.
+type Header is bytes29;
+
 /**
  * @notice Library for versioned formatting [the header part]
  * of [the messages used by Origin and Destination].

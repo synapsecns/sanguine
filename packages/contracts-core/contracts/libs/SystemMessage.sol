@@ -3,6 +3,9 @@ pragma solidity 0.8.17;
 
 import "./ByteString.sol";
 
+/// @dev SystemMessage is a memory view over the message with instructions for a system call.
+type SystemMessage is bytes29;
+
 library SystemMessageLib {
     using ByteString for bytes;
     using ByteString for bytes29;

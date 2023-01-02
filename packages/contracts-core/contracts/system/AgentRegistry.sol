@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { AgentRegistryEvents } from "../events/AgentRegistryEvents.sol";
 import { AgentSet } from "../libs/AgentSet.sol";
 import { Auth } from "../libs/Auth.sol";
-import "../libs/SynapseTypes.sol";
+import "../libs/ByteString.sol";
 
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";

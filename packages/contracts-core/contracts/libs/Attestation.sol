@@ -3,7 +3,23 @@ pragma solidity 0.8.17;
 
 import "./ByteString.sol";
 
+/// @dev Attestation is a memory view over a formatted attestation payload.
+type Attestation is bytes29;
+/// @dev AttestationData is a memory view over a formatted attestation data.
+type AttestationData is bytes29;
+
 library AttestationLib {
+    // The goal of having custom types is to assign a type for every generic memory view (bytes29)
+    // and enforce compile-time strict type checking for every operation with the memory views.
+    // This will prevent a misuse of libraries, i.e. using Attestation functions on a Report view.
+    // Every type is supposed to define a method to wrap a generic memory view into a given type,
+    // while checking that the view is over a properly formatted payload: `castToAttestation()`.
+    // Different types may define methods with the same name without any issues:
+    //      Message msg;
+    //      msg.nonce();    // gets a message nonce
+    //      AttestationData data;
+    //      data.nonce();   // gets an attestation nonce
+
     using ByteString for bytes;
     using ByteString for bytes29;
 

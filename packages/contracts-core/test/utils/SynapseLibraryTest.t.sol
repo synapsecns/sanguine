@@ -2,7 +2,6 @@
 pragma solidity 0.8.17;
 
 import "../utils/SynapseTestSuite.t.sol";
-import "../../contracts/libs/SynapseTypes.sol";
 
 abstract contract SynapseLibraryTest is SynapseTestSuite {
     using TypedMemView for bytes;

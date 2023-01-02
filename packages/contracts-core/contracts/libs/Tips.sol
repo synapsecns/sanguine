@@ -3,6 +3,9 @@ pragma solidity 0.8.17;
 
 import "./ByteString.sol";
 
+/// @dev Tips is a memory over over a formatted message tips payload.
+type Tips is bytes29;
+
 /**
  * @notice Library for versioned formatting [the tips part]
  * of [the messages used by Origin and Destination].
