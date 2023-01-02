@@ -321,6 +321,7 @@ abstract contract SystemRouterTools is DestinationTools {
             // Context for a on-chain call
             MessageContext memory contextLocal = MessageContext(origin, sender, destination);
             deleteSystemCalls();
+            skipBlock();
             for (uint256 r = 0; r < amount; (++r, ++index)) {
                 createSystemCall({
                     context: contextLocal,
@@ -339,6 +340,7 @@ abstract contract SystemRouterTools is DestinationTools {
                         expectDispatch();
                     }
                     systemRouterCall({ index: 0 });
+                    skipBlock();
                 }
             }
             if (isMultiCall) {

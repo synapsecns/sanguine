@@ -21,6 +21,7 @@ abstract contract DestinationTools is OriginTools {
         rawMessages = new bytes[](MESSAGES);
         messageHashes = new bytes32[](MESSAGES);
         for (uint32 index = 0; index < MESSAGES; ++index) {
+            skipBlock();
             // Construct a dispatched message
             createDispatchedMessage({
                 context: context,
@@ -69,7 +70,7 @@ abstract contract DestinationTools is OriginTools {
         // Trigger Destination.execute() on destination chain
         destinationExecute({ domain: context.destination, index: index, count: count });
         // Check executed message status
-        assertEq(destinationMessageStatus(context, index), attestationRoot, "!messageStatus");
+        assertEq(destinationMessageStatus(context, index), ra.root, "!messageStatus");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -93,7 +94,7 @@ abstract contract DestinationTools is OriginTools {
 
     function expectSetConfirmation(uint256 prevConfirmAt, uint256 newConfirmAt) public {
         vm.expectEmit(true, true, true, true);
-        emit SetConfirmation(attestationOrigin, attestationRoot, prevConfirmAt, newConfirmAt);
+        emit SetConfirmation(ra.origin, ra.root, prevConfirmAt, newConfirmAt);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -156,7 +157,7 @@ abstract contract DestinationTools is OriginTools {
     // Trigger destination.setConfirmation() with given and saved data
     function destinationSetConfirmAt(uint32 domain, uint256 newConfirmAt) public {
         DestinationHarness destination = suiteDestination(domain);
-        destination.setConfirmation(attestationOrigin, attestationRoot, newConfirmAt);
+        destination.setConfirmation(ra.origin, ra.root, newConfirmAt);
     }
 
     // Trigger destination.submitAttestation() with saved data and check the return value
@@ -227,7 +228,7 @@ abstract contract DestinationTools is OriginTools {
     function destinationAcceptableRoot(uint32 domain, bytes memory revertMessage) public {
         DestinationHarness destination = suiteDestination(domain);
         vm.expectRevert(revertMessage);
-        destination.acceptableRoot(attestationOrigin, APP_OPTIMISTIC_SECONDS, attestationRoot);
+        destination.acceptableRoot(ra.origin, APP_OPTIMISTIC_SECONDS, ra.root);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -236,12 +237,7 @@ abstract contract DestinationTools is OriginTools {
 
     // Trigger destination.acceptableRoot() for saved data and pass over its return value
     function destinationAcceptableRoot(uint32 domain) public view returns (bool) {
-        return
-            suiteDestination(domain).acceptableRoot(
-                attestationOrigin,
-                APP_OPTIMISTIC_SECONDS,
-                attestationRoot
-            );
+        return suiteDestination(domain).acceptableRoot(ra.origin, APP_OPTIMISTIC_SECONDS, ra.root);
     }
 
     // Trigger destination.messageStatus() for given root and pass over its return value
@@ -259,7 +255,7 @@ abstract contract DestinationTools is OriginTools {
 
     // Trigger destination.submittedAt() for saved data and pass over its return value
     function destinationSubmittedAt(uint32 domain) public view returns (uint256) {
-        return suiteDestination(domain).submittedAt(attestationOrigin, attestationRoot);
+        return suiteDestination(domain).submittedAt(ra.origin, ra.root);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

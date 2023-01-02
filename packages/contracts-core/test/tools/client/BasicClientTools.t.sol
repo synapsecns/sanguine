@@ -48,6 +48,7 @@ abstract contract BasicClientTools is DestinationTools {
 
     // Creates a test message sent by BasicClient to another chain
     function createClientSentMessage(MessageContext memory context, bool mockTips) public {
+        skipBlock();
         createDispatchedMessage({
             context: context,
             mockTips: mockTips,

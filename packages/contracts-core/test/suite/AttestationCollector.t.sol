@@ -63,6 +63,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
             guardSigs: guardSigs,
             notarySigs: notarySigs
         });
+        saveAttestationMetadata();
         createAttestationMock({
             origin: DOMAIN_LOCAL,
             destination: DOMAIN_REMOTE,
@@ -73,7 +74,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         // Expect events re: guard attestation
         for (uint256 i = 0; i < guardSigs; ++i) {
             address guard = attestationGuards[i];
-            if (_isFreshAttestation(guard, attestationDomains, attestationNonce)) {
+            if (_isFreshAttestation(guard, attestationDomains, ra.nonce)) {
                 expectAttestationSaved({
                     signatureIndex: savedSignatures,
                     isGuard: true,
@@ -82,13 +83,13 @@ contract AttestationCollectorTest is AttestationCollectorTools {
                 ++savedSignatures;
                 ++savedAttestations[attestationDomains][guard];
                 expectedStored = true;
-                latestAgentNonce[attestationDomains][guard] = attestationNonce;
+                latestAgentNonce[attestationDomains][guard] = ra.nonce;
             }
         }
         // Expect events re: notary attestation
         for (uint256 i = 0; i < notarySigs; ++i) {
             address notary = attestationNotaries[i];
-            if (_isFreshAttestation(notary, attestationDomains, attestationNonce)) {
+            if (_isFreshAttestation(notary, attestationDomains, ra.nonce)) {
                 expectAttestationSaved({
                     signatureIndex: savedSignatures,
                     isGuard: false,
@@ -97,7 +98,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
                 ++savedSignatures;
                 ++savedAttestations[attestationDomains][notary];
                 expectedStored = true;
-                latestAgentNonce[attestationDomains][notary] = attestationNonce;
+                latestAgentNonce[attestationDomains][notary] = ra.nonce;
             }
         }
         if (expectedStored) {
@@ -115,9 +116,9 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         test_submitAttestation({ guardSigs: 1, notarySigs: 0 });
         // Create conflict attestation signed by the same guard (no notary sig)
         createAttestation({
-            origin: attestationOrigin,
-            destination: attestationDestination,
-            nonce: attestationNonce,
+            origin: ra.origin,
+            destination: ra.destination,
+            nonce: ra.nonce,
             root: "Conflict root",
             guardIndex: 0,
             notaryIndex: NOTARIES_PER_CHAIN
@@ -155,7 +156,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         // Submit attestation with the given agents
         test_submitAttestation(guardSigs, notarySigs);
         // Create attestation with the same agents and lower nonce
-        mockNonce = attestationNonce - 1;
+        mockNonce = ra.nonce - 1;
         createAttestationMock({
             origin: DOMAIN_LOCAL,
             destination: DOMAIN_REMOTE,
@@ -175,9 +176,9 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         test_submitAttestation({ guardSigs: 1, notarySigs: 0 });
         // Create conflict attestation signed by another guard (no notary sig)
         createAttestation({
-            origin: attestationOrigin,
-            destination: attestationDestination,
-            nonce: attestationNonce,
+            origin: ra.origin,
+            destination: ra.destination,
+            nonce: ra.nonce,
             root: "Conflict root",
             guardIndex: 1,
             notaryIndex: NOTARIES_PER_CHAIN
@@ -192,10 +193,10 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         test_submitAttestation({ guardSigs: 1, notarySigs: 0 });
         // Create conflict attestation signed by the same guard and a notary
         createAttestation({
-            origin: attestationOrigin,
-            destination: attestationDestination,
-            nonce: attestationNonce,
-            root: attestationRoot,
+            origin: ra.origin,
+            destination: ra.destination,
+            nonce: ra.nonce,
+            root: ra.root,
             guardIndex: 0,
             notaryIndex: 0
         });
@@ -212,9 +213,9 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         test_submitAttestation({ guardSigs: 1, notarySigs: 0 });
         // Create conflict attestation signed by the same guard and a notary
         createAttestation({
-            origin: attestationOrigin,
-            destination: attestationDestination,
-            nonce: attestationNonce - 1,
+            origin: ra.origin,
+            destination: ra.destination,
+            nonce: ra.nonce - 1,
             root: "Another root",
             guardIndex: 0,
             notaryIndex: 0
@@ -362,9 +363,9 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         bytes memory expectedAtt = attestationRaw;
         assertEq(
             collector.getAttestation({
-                _origin: attestationOrigin,
-                _destination: attestationDestination,
-                _nonce: attestationNonce
+                _origin: ra.origin,
+                _destination: ra.destination,
+                _nonce: ra.nonce
             }),
             expectedAtt,
             "!step1"
@@ -375,9 +376,9 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         // Should return the same guard0 attestation
         assertEq(
             collector.getAttestation({
-                _origin: attestationOrigin,
-                _destination: attestationDestination,
-                _nonce: attestationNonce
+                _origin: ra.origin,
+                _destination: ra.destination,
+                _nonce: ra.nonce
             }),
             expectedAtt,
             "!step2"
@@ -389,9 +390,9 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         expectedAtt = createSameAttestation({ guardSigs: 1, notarySigs: 1 });
         assertEq(
             collector.getAttestation({
-                _origin: attestationOrigin,
-                _destination: attestationDestination,
-                _nonce: attestationNonce
+                _origin: ra.origin,
+                _destination: ra.destination,
+                _nonce: ra.nonce
             }),
             expectedAtt,
             "!step3"
@@ -404,9 +405,9 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         bytes memory expectedAtt = createSameAttestation({ guardSigs: 0, notarySigs: 1 });
         assertEq(
             collector.getAttestation({
-                _origin: attestationOrigin,
-                _destination: attestationDestination,
-                _nonce: attestationNonce
+                _origin: ra.origin,
+                _destination: ra.destination,
+                _nonce: ra.nonce
             }),
             expectedAtt,
             "!step1"
@@ -417,9 +418,9 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         // Should return the same notary0 attestation
         assertEq(
             collector.getAttestation({
-                _origin: attestationOrigin,
-                _destination: attestationDestination,
-                _nonce: attestationNonce
+                _origin: ra.origin,
+                _destination: ra.destination,
+                _nonce: ra.nonce
             }),
             expectedAtt,
             "!step2"
@@ -431,9 +432,9 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         expectedAtt = createSameAttestation({ guardSigs: 1, notarySigs: 1 });
         assertEq(
             collector.getAttestation({
-                _origin: attestationOrigin,
-                _destination: attestationDestination,
-                _nonce: attestationNonce
+                _origin: ra.origin,
+                _destination: ra.destination,
+                _nonce: ra.nonce
             }),
             expectedAtt,
             "!step3"
@@ -443,30 +444,30 @@ contract AttestationCollectorTest is AttestationCollectorTools {
     function test_getAttestation_revert_unknownNonce() public {
         test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
         vm.expectRevert("Unknown nonce");
-        collector.getAttestation(attestationOrigin, attestationDestination, attestationNonce - 1);
+        collector.getAttestation(ra.origin, ra.destination, ra.nonce - 1);
         vm.expectRevert("Unknown nonce");
-        collector.getAttestation(attestationOrigin, attestationDestination, attestationNonce + 1);
+        collector.getAttestation(ra.origin, ra.destination, ra.nonce + 1);
     }
 
     function test_getRoot() public {
         test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
-        uint32 nonce0 = attestationNonce;
+        uint32 nonce0 = ra.nonce;
         test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
-        uint32 nonce1 = attestationNonce;
+        uint32 nonce1 = ra.nonce;
         test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
-        uint32 nonce2 = attestationNonce;
+        uint32 nonce2 = ra.nonce;
         assertEq(
-            collector.getRoot(attestationOrigin, attestationDestination, nonce0),
+            collector.getRoot(ra.origin, ra.destination, nonce0),
             _createMockRoot(nonce0, 0),
             "!nonce0"
         );
         assertEq(
-            collector.getRoot(attestationOrigin, attestationDestination, nonce1),
+            collector.getRoot(ra.origin, ra.destination, nonce1),
             _createMockRoot(nonce1, 0),
             "!nonce1"
         );
         assertEq(
-            collector.getRoot(attestationOrigin, attestationDestination, nonce2),
+            collector.getRoot(ra.origin, ra.destination, nonce2),
             _createMockRoot(nonce2, 0),
             "!nonce2"
         );
@@ -479,11 +480,11 @@ contract AttestationCollectorTest is AttestationCollectorTools {
         address notary1 = suiteNotary(DOMAIN_REMOTE, 1);
         // Step1: guard0, notary0
         test_submitAttestation({ guardSigs: 1, notarySigs: 1 });
-        uint32 nonce0 = attestationNonce;
+        uint32 nonce0 = ra.nonce;
         bytes memory notaryLatest0 = createSameAttestation({ isGuard: false, agent: notary0 });
         // Step1: guard0, guard1
         test_submitAttestation({ guardSigs: 2, notarySigs: 0 });
-        uint32 nonce1 = attestationNonce;
+        uint32 nonce1 = ra.nonce;
         bytes memory guardLatest0 = createSameAttestation({ isGuard: true, agent: guard0 });
         bytes memory guardLatest1 = createSameAttestation({ isGuard: true, agent: guard1 });
         // Check guard0

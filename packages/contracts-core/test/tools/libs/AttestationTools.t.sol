@@ -13,10 +13,7 @@ abstract contract AttestationTools is SynapseTestSuite {
     // Saved attestation data
     address[] internal attestationGuards;
     address[] internal attestationNotaries;
-    uint32 internal attestationOrigin;
-    uint32 internal attestationDestination;
-    uint32 internal attestationNonce;
-    bytes32 internal attestationRoot;
+    RawAttestation internal ra;
     // Saved attestation ids
     uint64 internal attestationDomains;
     uint96 internal attestationKey;
@@ -106,11 +103,9 @@ abstract contract AttestationTools is SynapseTestSuite {
 
     // Create attestation using all the saved data
     function createAttestation() public {
-        (attestationRaw, signaturesGuard, signaturesNotary) = signAttestation(
-            attestationOrigin,
-            attestationDestination,
-            attestationNonce,
-            attestationRoot,
+        // This will also save the attestation data into ra.data
+        (ra.data, attestationRaw, signaturesGuard, signaturesNotary) = signAttestation(
+            ra,
             attestationGuards,
             attestationNotaries
         );
@@ -142,7 +137,7 @@ abstract contract AttestationTools is SynapseTestSuite {
         returns (bytes memory)
     {
         (attestationGuards, attestationNotaries) = _createSigners(
-            attestationDestination,
+            ra.destination,
             guardSigs,
             notarySigs
         );
@@ -222,8 +217,8 @@ abstract contract AttestationTools is SynapseTestSuite {
         address[] memory guardSigners,
         address[] memory notarySigners
     ) public {
-        attestationOrigin = origin;
-        attestationDestination = destination;
+        ra.origin = origin;
+        ra.destination = destination;
         attestationGuards = guardSigners;
         attestationNotaries = notarySigners;
     }
@@ -234,23 +229,23 @@ abstract contract AttestationTools is SynapseTestSuite {
         uint256 salt
     ) public {
         // For mocking: use the mock value and increase it for later use
-        attestationNonce = nonce == MOCK_ATTESTATION_NONCE ? _createMockNonce() : nonce;
+        ra.nonce = nonce == MOCK_ATTESTATION_NONCE ? _createMockNonce() : nonce;
         // For mocking: use saved nonce and salt to create a mocked root
-        attestationRoot = root == MOCK_ATTESTATION_ROOT
-            ? _createMockRoot(attestationNonce, salt)
-            : root;
+        ra.root = root == MOCK_ATTESTATION_ROOT ? _createMockRoot(ra.nonce, salt) : root;
+    }
+
+    function saveAttestationMetadata() public {
+        saveAttestationMetadata(block.number, block.timestamp);
+    }
+
+    function saveAttestationMetadata(uint256 blockNumber, uint256 timestamp) public {
+        ra.blockNumber = uint40(blockNumber);
+        ra.timestamp = uint40(timestamp);
     }
 
     function saveAttestationIDs() public {
-        attestationDomains = Attestation.attestationDomains(
-            attestationOrigin,
-            attestationDestination
-        );
-        attestationKey = Attestation.attestationKey(
-            attestationOrigin,
-            attestationDestination,
-            attestationNonce
-        );
+        attestationDomains = Attestation.attestationDomains(ra.origin, ra.destination);
+        attestationKey = Attestation.attestationKey(ra.origin, ra.destination, ra.nonce);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
