@@ -15,7 +15,8 @@ import (
 )
 
 // NewOriginContract returns a new bound origin contract.
-// nolint: staticcheck
+//
+//nolint:staticcheck
 func NewOriginContract(ctx context.Context, client chain.Chain, originAddress common.Address) (domains.OriginContract, error) {
 	boundContract, err := origin.NewOriginRef(originAddress, client)
 	if err != nil {

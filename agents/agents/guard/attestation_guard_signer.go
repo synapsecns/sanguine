@@ -58,7 +58,7 @@ func (a AttestationGuardSigner) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(a.interval): // TODO: a.interval
+		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
 				return err
@@ -80,7 +80,8 @@ func (a AttestationGuardSigner) FindOldestGuardUnsignedAndVerifiedAttestation(ct
 }
 
 // update runs the job of the signer
-// nolint: cyclop
+//
+//nolint:cyclop
 func (a AttestationGuardSigner) update(ctx context.Context) error {
 	inProgressAttestationToSign, err := a.FindOldestGuardUnsignedAndVerifiedAttestation(ctx)
 	if err != nil {

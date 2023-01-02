@@ -3,15 +3,14 @@ package base
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"gorm.io/gorm/clause"
 )
 
 // StoreMessage stores a message in the database.
-func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, root common.Hash, blockNumber uint64) error {
-	dbMessage, err := AgentsTypesMessageToMessage(message, root, blockNumber)
+func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64) error {
+	dbMessage, err := AgentsTypesMessageToMessage(message, blockNumber)
 	if err != nil {
 		return fmt.Errorf("failed to convert message: %w", err)
 	}
@@ -19,7 +18,7 @@ func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, ro
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: ChainIDFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName}, {Name: RootFieldName},
+				{Name: ChainIDFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName},
 			},
 			DoNothing: true,
 		}).
@@ -91,22 +90,6 @@ func (s Store) GetMessages(ctx context.Context, messageMask types.DBMessage, pag
 	return decodedMessages, nil
 }
 
-// GetRoot gets the root of a message from the database.
-func (s Store) GetRoot(ctx context.Context, messageMask types.DBMessage) (common.Hash, error) {
-	var message Message
-
-	dbMessageMask := DBMessageToMessage(messageMask)
-	dbTx := s.DB().WithContext(ctx).
-		Model(&message).
-		Where(&dbMessageMask).
-		First(&message)
-	if dbTx.Error != nil {
-		return common.Hash{}, fmt.Errorf("failed to get message: %w", dbTx.Error)
-	}
-
-	return common.HexToHash(message.Root), nil
-}
-
 // GetBlockNumber gets the block number of a message from the database.
 func (s Store) GetBlockNumber(ctx context.Context, messageMask types.DBMessage) (uint64, error) {
 	var message Message
@@ -169,10 +152,6 @@ func DBMessageToMessage(dbMessage types.DBMessage) Message {
 		message.Nonce = *dbMessage.Nonce
 	}
 
-	if dbMessage.Root != nil {
-		message.Root = dbMessage.Root.String()
-	}
-
 	if dbMessage.Message != nil {
 		message.Message = *dbMessage.Message
 	}
@@ -189,7 +168,6 @@ func MessageToDBMessage(message Message) types.DBMessage {
 	chainID := message.ChainID
 	destination := message.Destination
 	nonce := message.Nonce
-	root := common.HexToHash(message.Root)
 	messageBytes := message.Message
 	blockNumber := message.BlockNumber
 
@@ -197,14 +175,13 @@ func MessageToDBMessage(message Message) types.DBMessage {
 		ChainID:     &chainID,
 		Destination: &destination,
 		Nonce:       &nonce,
-		Root:        &root,
 		Message:     &messageBytes,
 		BlockNumber: &blockNumber,
 	}
 }
 
 // AgentsTypesMessageToMessage converts an agentsTypes.Message to a Message.
-func AgentsTypesMessageToMessage(message agentsTypes.Message, root common.Hash, blockNumber uint64) (Message, error) {
+func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64) (Message, error) {
 	rawMessage, err := agentsTypes.EncodeMessage(message)
 	if err != nil {
 		return Message{}, fmt.Errorf("failed to encode message: %w", err)
@@ -213,7 +190,6 @@ func AgentsTypesMessageToMessage(message agentsTypes.Message, root common.Hash, 
 		ChainID:     message.OriginDomain(),
 		Destination: message.DestinationDomain(),
 		Nonce:       message.Nonce(),
-		Root:        root.String(),
 		Message:     rawMessage,
 		BlockNumber: blockNumber,
 	}, nil

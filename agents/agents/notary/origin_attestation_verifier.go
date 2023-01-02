@@ -57,7 +57,7 @@ func (a OriginAttestationVerifier) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(a.interval): // TODO: a.interval
+		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
 				return err
@@ -79,7 +79,8 @@ func (a OriginAttestationVerifier) FindOldestUnconfirmedAttestation(ctx context.
 }
 
 // update runs the job for the verifier.
-// nolint: cyclop
+//
+//nolint:cyclop
 func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	// TODO (joe): we want to go through and update attestations for each destination.
 	inProgressAttestationToConfirm, err := a.FindOldestUnconfirmedAttestation(ctx)
