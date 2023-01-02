@@ -480,7 +480,6 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 func (e *ExecutorSuite) TestVerifyMessage() {
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
-	// testTree := merkle.NewTree()
 
 	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
@@ -568,28 +567,6 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	message2 := types.NewMessage(header2, tips[2], messageBytes[2])
 	message3 := types.NewMessage(header3, tips[3], messageBytes[3])
 	failMessage := types.NewMessage(header1, tips[3], messageBytes[3])
-
-	// leaf0, err := message0.ToLeaf()
-	// e.Nil(err)
-	// leaf1, err := message1.ToLeaf()
-	// e.Nil(err)
-	//leaf2, err := message2.ToLeaf()
-	//e.Nil(err)
-	//leaf3, err := message3.ToLeaf()
-	//e.Nil(err)
-
-	// testTree.Insert(leaf0[:])
-	// root0, err := testTree.Root(1)
-	// e.Nil(err)
-	// testTree.Insert(leaf1[:])
-	//root1, err := testTree.Root(2)
-	//e.Nil(err)
-	//testTree.Insert(leaf2[:])
-	//root2, err := testTree.Root(3)
-	//e.Nil(err)
-	//testTree.Insert(leaf3[:])
-	//root3, err := testTree.Root(4)
-	//e.Nil(err)
 
 	// Insert messages into the database.
 	err = e.testDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0])
