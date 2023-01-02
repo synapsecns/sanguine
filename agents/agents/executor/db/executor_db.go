@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 )
@@ -10,7 +9,7 @@ import (
 // ExecutorDBWriter is the interface for writing to the executor database.
 type ExecutorDBWriter interface {
 	// StoreMessage stores a message in the database.
-	StoreMessage(ctx context.Context, message agentsTypes.Message, root common.Hash, blockNumber uint64) error
+	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64) error
 
 	// StoreAttestation stores an attestation.
 	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error
@@ -22,8 +21,6 @@ type ExecutorDBReader interface {
 	GetMessage(ctx context.Context, messageMask types.DBMessage) (*agentsTypes.Message, error)
 	// GetMessages gets messages from the database, paginated and ordered in ascending order by nonce.
 	GetMessages(ctx context.Context, messageMask types.DBMessage, page int) ([]agentsTypes.Message, error)
-	// GetRoot gets the root of a message from the database.
-	GetRoot(ctx context.Context, messageMask types.DBMessage) (common.Hash, error)
 	// GetBlockNumber gets the block number of a message from the database.
 	GetBlockNumber(ctx context.Context, messageMask types.DBMessage) (uint64, error)
 	// GetLastBlockNumber gets the last block number that had a message in the database.

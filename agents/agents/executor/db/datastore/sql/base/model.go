@@ -38,8 +38,6 @@ type Message struct {
 	Destination uint32 `gorm:"column:destination;primaryKey"`
 	// Nonce is the nonce.
 	Nonce uint32 `gorm:"column:nonce;primaryKey"`
-	// Root is the root.
-	Root string `gorm:"column:root;primaryKey"`
 	// Message is the message.
 	Message []byte `gorm:"column:message"`
 	// BlockNumber is the block number.
