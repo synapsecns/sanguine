@@ -3,10 +3,10 @@ pragma solidity 0.8.17;
 
 import "../Version.sol";
 import "../libs/SystemMessage.sol";
+import "../libs/Tips.sol";
 import { BasicClient } from "../client/BasicClient.sol";
 import { LocalDomainContext } from "../context/LocalDomainContext.sol";
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
-import { Tips } from "../libs/Tips.sol";
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
@@ -318,7 +318,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
          * @dev Origin will use SYSTEM_ROUTER as "sender" field for messages
          * sent by System Router.
          */
-        _send(_destination, _optimisticSeconds, Tips.emptyTips(), message);
+        _send(_destination, _optimisticSeconds, TipsLib.emptyTips(), message);
     }
 
     /**

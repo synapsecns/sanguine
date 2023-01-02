@@ -6,7 +6,7 @@ import { Destination } from "../../contracts/Destination.sol";
 import { DestinationHub } from "../../contracts/hubs/DestinationHub.sol";
 
 import { AgentSet } from "../../contracts/libs/AgentSet.sol";
-import { Tips } from "../../contracts/libs/Tips.sol";
+import "../../contracts/libs/Tips.sol";
 import { ISystemRouter } from "../../contracts/interfaces/ISystemRouter.sol";
 
 import { AgentRegistryExtended } from "./system/AgentRegistryExtended.t.sol";
@@ -22,7 +22,7 @@ contract DestinationHarness is
     SystemContractHarness
 {
     using AgentSet for AgentSet.DomainAddressSet;
-    using Tips for bytes29;
+    using TipsLib for Tips;
 
     //solhint-disable-next-line no-empty-blocks
     constructor(uint32 _domain) Destination(_domain) {}
@@ -43,7 +43,7 @@ contract DestinationHarness is
         messageStatus[_originDomain][_messageHash] = _status;
     }
 
-    function _storeTips(bytes29 _tips) internal override {
+    function _storeTips(Tips _tips) internal override {
         emit LogTips(
             _tips.notaryTip(),
             _tips.broadcasterTip(),

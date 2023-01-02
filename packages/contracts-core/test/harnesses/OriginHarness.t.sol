@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 
 import { OriginHub } from "../../contracts/hubs/OriginHub.sol";
 import { AgentSet } from "../../contracts/libs/AgentSet.sol";
-import { Message } from "../../contracts/libs/Message.sol";
+import "../../contracts/libs/Message.sol";
 import { Origin } from "../../contracts/Origin.sol";
 
 import { AgentRegistryExtended } from "./system/AgentRegistryExtended.t.sol";
@@ -35,7 +35,7 @@ contract OriginHarness is Origin, AgentRegistryExtended, SystemContractHarness {
         bytes memory _tips,
         bytes memory _messageBody
     ) public view returns (bytes memory message) {
-        message = Message.formatMessage(
+        message = MessageLib.formatMessage(
             _localDomain(),
             _checkForSystemRouter(_recipientAddress),
             nonce(_destination) + 1,
