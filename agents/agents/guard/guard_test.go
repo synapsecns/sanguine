@@ -1,7 +1,6 @@
 package guard_test
 
 import (
-	"fmt"
 	"math/big"
 	"time"
 
@@ -123,10 +122,6 @@ func (u GuardSuite) TestGuardE2E() {
 			len(retrievedInProgressAttestation.SignedAttestation().NotarySignatures()) == 1 &&
 			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
 			retrievedInProgressAttestation.AttestationState() == types.AttestationStateGuardSubmittedToCollectorUnconfirmed
-
-		if retrievedInProgressAttestation != nil {
-			fmt.Printf("\nCRONIN\n")
-		}
 
 		return isTrue
 	})
