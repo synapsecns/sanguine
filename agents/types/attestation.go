@@ -27,10 +27,13 @@ const (
 	// AttestationStateGuardSubmittedToCollectorUnconfirmed is when the attestation was signed by Guard and Notary and submitted to the attestation collector but not destination,
 	// but we have yet to confirm it on the AttestationCollector.
 	AttestationStateGuardSubmittedToCollectorUnconfirmed // 7
+	// AttestationStateGuardConfirmedOnCollector is when the attestation was signed by Guard and Notary and submitted to the attestation collector but not destination,
+	// and we have confirmed it on the AttestationCollector.
+	AttestationStateGuardConfirmedOnCollector // 8
 	// AttestationStateGuardSignedSubmittedToDestinationUnconfirmed is when the attestation was signed by Guard and submitted to the attestation collector and destination but not yet confirmed.
-	AttestationStateGuardSignedSubmittedToDestinationUnconfirmed // 8
+	AttestationStateGuardSignedSubmittedToDestinationUnconfirmed // 9
 	// AttestationStateGuardConfirmed is when the attestation was confirmed as posted on the destination.
-	AttestationStateGuardConfirmed // 9
+	AttestationStateGuardConfirmed // 10
 )
 
 const sizeOfUint256 = uint32(32)

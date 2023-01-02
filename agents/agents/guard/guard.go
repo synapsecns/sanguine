@@ -21,6 +21,7 @@ type Guard struct {
 	originDoubleCheckers     map[string]map[string]AttestationDoubleCheckOnOriginVerifier
 	guardSigners             map[string]map[string]AttestationGuardSigner
 	guardCollectorSubmitters map[string]map[string]AttestationGuardCollectorSubmitter
+	guardCollectorVerifiers  map[string]map[string]AttestationGuardCollectorVerifier
 	bondedSigner             signer.Signer
 	unbondedSigner           signer.Signer
 	refreshInterval          time.Duration
@@ -38,6 +39,7 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		originDoubleCheckers:     make(map[string]map[string]AttestationDoubleCheckOnOriginVerifier),
 		guardSigners:             make(map[string]map[string]AttestationGuardSigner),
 		guardCollectorSubmitters: make(map[string]map[string]AttestationGuardCollectorSubmitter),
+		guardCollectorVerifiers:  make(map[string]map[string]AttestationGuardCollectorVerifier),
 		refreshInterval:          time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
 	}
 
@@ -74,6 +76,7 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		guard.originDoubleCheckers[originName] = make(map[string]AttestationDoubleCheckOnOriginVerifier)
 		guard.guardSigners[originName] = make(map[string]AttestationGuardSigner)
 		guard.guardCollectorSubmitters[originName] = make(map[string]AttestationGuardCollectorSubmitter)
+		guard.guardCollectorVerifiers[originName] = make(map[string]AttestationGuardCollectorVerifier)
 		for destinationName, destinationDomain := range cfg.DestinationDomains {
 			if originDomain.DomainID == destinationDomain.DomainID {
 				continue
@@ -113,6 +116,15 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 				guard.refreshInterval)
 
 			guard.guardCollectorSubmitters[originName][destinationName] = NewAttestationGuardCollectorSubmitter(
+				originDomainClient,
+				attestationDomainClient,
+				destinationDomainClient,
+				dbHandle,
+				guard.bondedSigner,
+				guard.unbondedSigner,
+				guard.refreshInterval)
+
+			guard.guardCollectorVerifiers[originName][destinationName] = NewAttestationGuardCollectorVerifier(
 				originDomainClient,
 				attestationDomainClient,
 				destinationDomainClient,
@@ -170,6 +182,17 @@ func (u Guard) Start(ctx context.Context) error {
 			g.Go(func() error {
 				//nolint: wrapcheck
 				return u.guardCollectorSubmitters[originName][destinationName].Start(ctx)
+			})
+		}
+	}
+
+	for originName, allDestinationGuardCollectorVerifiers := range u.guardCollectorVerifiers {
+		for destinationName := range allDestinationGuardCollectorVerifiers {
+			originName := originName           // capture func literal
+			destinationName := destinationName // capture func literal
+			g.Go(func() error {
+				//nolint: wrapcheck
+				return u.guardCollectorVerifiers[originName][destinationName].Start(ctx)
 			})
 		}
 	}

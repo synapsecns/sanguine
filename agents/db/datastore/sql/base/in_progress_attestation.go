@@ -137,8 +137,36 @@ func (s Store) UpdateNotarySubmittedToAttestationCollectorTime(ctx context.Conte
 	return nil
 }
 
-// MarkConfirmedOnAttestationCollector confirms that we posted the signed attestation on the Attestation Collector.
-func (s Store) MarkConfirmedOnAttestationCollector(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
+// ReUpdateNotarySubmittedToAttestationCollectorTime sets the time attestation was sent to Attestation Collector by the Notary when resubmitting.
+func (s Store) ReUpdateNotarySubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
+	if inProgressAttestation.SubmittedToAttestationCollectorTime() == nil {
+		return fmt.Errorf("UpdateNotarySubmittedToAttestationCollectorTime called on attestation with a nil time")
+	}
+
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(&InProgressAttestation{
+			IPOrigin:      inProgressAttestation.SignedAttestation().Attestation().Origin(),
+			IPDestination: inProgressAttestation.SignedAttestation().Attestation().Destination(),
+			IPNonce:       inProgressAttestation.SignedAttestation().Attestation().Nonce(),
+		}).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateNotarySubmittedUnconfirmed)).
+		Updates(
+			InProgressAttestation{
+				IPSubmittedToAttestationCollectorTime: sql.NullTime{
+					Time:  *inProgressAttestation.SubmittedToAttestationCollectorTime(),
+					Valid: true,
+				},
+			},
+		)
+
+	if tx.Error != nil {
+		return fmt.Errorf("could not update SubmittedToAttestationCollectorTime for in-progress attestations: %w", tx.Error)
+	}
+	return nil
+}
+
+// MarkNotaryConfirmedOnAttestationCollector confirms that the Notary posted the signed attestation on the Attestation Collector.
+func (s Store) MarkNotaryConfirmedOnAttestationCollector(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
 	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
 		Where(&InProgressAttestation{
 			IPOrigin:      inProgressAttestation.SignedAttestation().Attestation().Origin(),
@@ -153,7 +181,7 @@ func (s Store) MarkConfirmedOnAttestationCollector(ctx context.Context, inProgre
 		)
 
 	if tx.Error != nil {
-		return fmt.Errorf("could not execute MarkConfirmedOnAttestationCollector for in-progress attestation: %w", tx.Error)
+		return fmt.Errorf("could not execute MarkNotaryConfirmedOnAttestationCollector for in-progress attestation: %w", tx.Error)
 	}
 	return nil
 }
@@ -480,6 +508,34 @@ func (s Store) UpdateGuardSubmittedToAttestationCollectorTime(ctx context.Contex
 	return nil
 }
 
+// ReUpdateGuardSubmittedToAttestationCollectorTime sets the time the attestation was sent to Attestation Collector by the Guard when resubmitting.
+func (s Store) ReUpdateGuardSubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
+	if inProgressAttestation.SubmittedToAttestationCollectorTime() == nil {
+		return fmt.Errorf("UpdateGuardSubmittedToAttestationCollectorTime called on attestation with a nil time")
+	}
+
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(&InProgressAttestation{
+			IPOrigin:      inProgressAttestation.SignedAttestation().Attestation().Origin(),
+			IPDestination: inProgressAttestation.SignedAttestation().Attestation().Destination(),
+			IPNonce:       inProgressAttestation.SignedAttestation().Attestation().Nonce(),
+		}).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardSubmittedToCollectorUnconfirmed)).
+		Updates(
+			InProgressAttestation{
+				IPSubmittedToAttestationCollectorTime: sql.NullTime{
+					Time:  *inProgressAttestation.SubmittedToAttestationCollectorTime(),
+					Valid: true,
+				},
+			},
+		)
+
+	if tx.Error != nil {
+		return fmt.Errorf("could not update SubmittedToAttestationCollectorTime for in-progress attestations: %w", tx.Error)
+	}
+	return nil
+}
+
 // RetrieveOldestGuardSubmittedToCollectorUnconfirmed retrieves the oldest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector,
 // but not yet confirmed.
 func (s Store) RetrieveOldestGuardSubmittedToCollectorUnconfirmed(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
@@ -494,6 +550,53 @@ func (s Store) RetrieveOldestGuardSubmittedToCollectorUnconfirmed(ctx context.Co
 		Where(OriginFieldName, originID).
 		Where(DestinationFieldName, destinationID).
 		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardSubmittedToCollectorUnconfirmed)).
+		Order(getOrderByNonceAsc()).
+		First(&inProgressAttestation)
+
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			return nil, db.ErrNotFound
+		}
+		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
+	}
+	return inProgressAttestation, err
+}
+
+// MarkGuardConfirmedOnAttestationCollector confirms that the Guard posted the signed attestation on the Attestation Collector.
+func (s Store) MarkGuardConfirmedOnAttestationCollector(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(&InProgressAttestation{
+			IPOrigin:      inProgressAttestation.SignedAttestation().Attestation().Origin(),
+			IPDestination: inProgressAttestation.SignedAttestation().Attestation().Destination(),
+			IPNonce:       inProgressAttestation.SignedAttestation().Attestation().Nonce(),
+		}).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardSubmittedToCollectorUnconfirmed)).
+		Updates(
+			InProgressAttestation{
+				IPAttestationState: uint32(types.AttestationStateGuardConfirmedOnCollector),
+			},
+		)
+
+	if tx.Error != nil {
+		return fmt.Errorf("could not execute MarkGuardConfirmedOnAttestationCollector for in-progress attestation: %w", tx.Error)
+	}
+	return nil
+}
+
+// RetrieveOldestGuardConfirmedOnCollector retrieves the oldest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector,
+// and confirmed on the Attestation Collector.
+func (s Store) RetrieveOldestGuardConfirmedOnCollector(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
+	if originID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestGuardSubmittedToCollectorUnconfirmed called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestGuardSubmittedToCollectorUnconfirmed called with 0 destination")
+	}
+	var inProgressAttestation InProgressAttestation
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(OriginFieldName, originID).
+		Where(DestinationFieldName, destinationID).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardConfirmedOnCollector)).
 		Order(getOrderByNonceAsc()).
 		First(&inProgressAttestation)
 

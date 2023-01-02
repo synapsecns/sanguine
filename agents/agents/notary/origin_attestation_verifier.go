@@ -100,7 +100,7 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	if latestNonce >= inProgressAttestationToConfirm.SignedAttestation().Attestation().Nonce() {
 		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime(), 0)
 
-		err = a.db.MarkConfirmedOnAttestationCollector(ctx, confirmedInProgressAttestation)
+		err = a.db.MarkNotaryConfirmedOnAttestationCollector(ctx, confirmedInProgressAttestation)
 		if err != nil {
 			return fmt.Errorf("could not store confirmation block number for attestation: %w", err)
 		}
@@ -114,7 +114,7 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 
 		nowTime := time.Now()
 		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), &nowTime, 0)
-		err = a.db.UpdateNotarySubmittedToAttestationCollectorTime(ctx, submittedInProgressAttestation)
+		err = a.db.ReUpdateNotarySubmittedToAttestationCollectorTime(ctx, submittedInProgressAttestation)
 		if err != nil {
 			return fmt.Errorf("could not store submission time for attestation: %w", err)
 		}
