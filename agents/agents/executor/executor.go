@@ -227,12 +227,12 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	proof, err := e.GetLatestNonceProof(*nonce, message.OriginDomain(), message.DestinationDomain())
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *nonce)
 	if err != nil {
-		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
+		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
-	verified, err := e.VerifyMessageMerkleProof(ctx, message)
+	verified, err := e.VerifyMessageMerkleProof(message)
 	if err != nil {
 		return false, fmt.Errorf("could not verify merkle proof: %w", err)
 	}
@@ -254,25 +254,6 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	}
 
 	return true, nil
-}
-
-// GetRoot returns the merkle root at the given nonce.
-func (e Executor) GetRoot(ctx context.Context, nonce uint32, chainID uint32, destination uint32) ([32]byte, error) {
-	if nonce == 0 || nonce > e.chainExecutors[chainID].merkleTrees[destination].NumOfItems() {
-		return [32]byte{}, fmt.Errorf("nonce is out of range")
-	}
-
-	messageMask := execTypes.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-		Nonce:       &nonce,
-	}
-	root, err := e.executorDB.GetRoot(ctx, messageMask)
-	if err != nil {
-		return [32]byte{}, fmt.Errorf("could not get message: %w", err)
-	}
-
-	return root, nil
 }
 
 // BuildTreeFromDB builds the merkle tree from the database's messages. This function will
@@ -327,15 +308,15 @@ const (
 )
 
 // VerifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
-func (e Executor) VerifyMessageMerkleProof(ctx context.Context, message types.Message) (bool, error) {
-	root, err := e.GetRoot(ctx, message.Nonce(), message.OriginDomain(), message.DestinationDomain())
+func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) {
+	root, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].Root(message.Nonce())
 	if err != nil {
 		return false, fmt.Errorf("could not get root: %w", err)
 	}
 
-	proof, err := e.GetLatestNonceProof(message.Nonce(), message.OriginDomain(), message.DestinationDomain())
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(message.Nonce()-1, message.Nonce())
 	if err != nil {
-		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
+		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
 	leaf, err := message.ToLeaf()
@@ -343,7 +324,7 @@ func (e Executor) VerifyMessageMerkleProof(ctx context.Context, message types.Me
 		return false, fmt.Errorf("could not convert message to leaf: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof(root[:], leaf[:], message.Nonce()-1, proof)
+	inTree := merkle.VerifyMerkleProof(root, leaf[:], message.Nonce()-1, proof)
 
 	return inTree, nil
 }
@@ -393,25 +374,6 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 	}
 
 	return &nonce, nil
-}
-
-// GetLatestNonceProof returns the merkle proof for a nonce, with a tree where that nonce is the last item added.
-// This is done by copying the current merkle tree's items and generating a new tree with the items from the range
-// [0, nonce).
-func (e Executor) GetLatestNonceProof(nonce, chainID, destination uint32) ([][]byte, error) {
-	if nonce == 0 || nonce > e.chainExecutors[chainID].merkleTrees[destination].NumOfItems() {
-		return nil, fmt.Errorf("nonce is out of range")
-	}
-
-	// items := e.chainExecutors[chainID].merkleTrees[destination].Items()
-	// tree := merkle.NewTreeFromItems(items[:nonce])
-
-	proof, err := e.chainExecutors[chainID].merkleTrees[destination].MerkleProof(nonce-1, nonce)
-	if err != nil {
-		return nil, fmt.Errorf("could not get merkle proof: %w", err)
-	}
-
-	return proof, nil
 }
 
 // streamLogs uses gRPC to stream logs into a channel.
@@ -519,12 +481,8 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		}
 
 		e.chainExecutors[chainID].merkleTrees[destination].Insert(leaf[:])
-		root, err := e.chainExecutors[chainID].merkleTrees[destination].Root((*message).Nonce())
-		if err != nil {
-			return fmt.Errorf("could not get root: %w", err)
-		}
 
-		err = e.executorDB.StoreMessage(ctx, *message, common.BytesToHash(root), log.BlockNumber)
+		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber)
 		if err != nil {
 			return fmt.Errorf("could not store message: %w", err)
 		}

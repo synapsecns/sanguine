@@ -328,7 +328,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
-	_, err = exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
+	_, err = exec.GetMerkleTree(chainID, destination).Root(1)
 	e.NotNil(err)
 
 	testTree := merkle.NewTree()
@@ -387,7 +387,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	waitChan := make(chan bool, 2)
 
 	e.Eventually(func() bool {
-		rootA, err := exec.GetRoot(e.GetTestContext(), 1, chainID, destination)
+		rootA, err := exec.GetMerkleTree(chainID, destination).Root(1)
 		if err != nil {
 			return false
 		}
@@ -396,7 +396,10 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		var testRootA32 [32]byte
 		copy(testRootA32[:], testRootA)
 
-		if testRootA32 == rootA {
+		var rootA32 [32]byte
+		copy(rootA32[:], rootA)
+
+		if testRootA32 == rootA32 {
 			waitChan <- true
 			return true
 		}
@@ -424,7 +427,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 
 	e.Eventually(func() bool {
-		rootB, err := exec.GetRoot(e.GetTestContext(), 2, chainID, destination)
+		rootB, err := exec.GetMerkleTree(chainID, destination).Root(2)
 		if err != nil {
 			return false
 		}
@@ -433,7 +436,10 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		var testRootB32 [32]byte
 		copy(testRootB32[:], testRootB)
 
-		if testRootB32 == rootB {
+		var rootB32 [32]byte
+		copy(rootB32[:], rootB)
+
+		if testRootB32 == rootB32 {
 			waitChan <- true
 			return true
 		}
@@ -449,7 +455,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	newRoot, err := exec.GetRoot(e.GetTestContext(), 2, chainID, destination)
+	newRoot, err := exec.GetMerkleTree(chainID, destination).Root(2)
 	e.Nil(err)
 
 	newTreeItems := exec.GetMerkleTree(chainID, destination).Items()
@@ -458,13 +464,16 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	var testRootB32 [32]byte
 	copy(testRootB32[:], testRootB)
-	e.Equal(testRootB32, newRoot)
+
+	var newRoot32 [32]byte
+	copy(newRoot32[:], newRoot)
+
+	e.Equal(testRootB32, newRoot32)
 }
 
 func (e *ExecutorSuite) TestVerifyMessage() {
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
-	testTree := merkle.NewTree()
 
 	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
@@ -553,62 +562,40 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	message3 := types.NewMessage(header3, tips[3], messageBytes[3])
 	failMessage := types.NewMessage(header1, tips[3], messageBytes[3])
 
-	leaf0, err := message0.ToLeaf()
-	e.Nil(err)
-	leaf1, err := message1.ToLeaf()
-	e.Nil(err)
-	leaf2, err := message2.ToLeaf()
-	e.Nil(err)
-	leaf3, err := message3.ToLeaf()
-	e.Nil(err)
-
-	testTree.Insert(leaf0[:])
-	root0, err := testTree.Root(1)
-	e.Nil(err)
-	testTree.Insert(leaf1[:])
-	root1, err := testTree.Root(2)
-	e.Nil(err)
-	testTree.Insert(leaf2[:])
-	root2, err := testTree.Root(3)
-	e.Nil(err)
-	testTree.Insert(leaf3[:])
-	root3, err := testTree.Root(4)
-	e.Nil(err)
-
 	// Insert messages into the database.
-	err = e.testDB.StoreMessage(e.GetTestContext(), message0, common.BytesToHash(root0), blockNumbers[0])
+	err = e.testDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0])
 	e.Nil(err)
-	err = e.testDB.StoreMessage(e.GetTestContext(), message1, common.BytesToHash(root1), blockNumbers[1])
+	err = e.testDB.StoreMessage(e.GetTestContext(), message1, blockNumbers[1])
 	e.Nil(err)
-	err = e.testDB.StoreMessage(e.GetTestContext(), message2, common.BytesToHash(root2), blockNumbers[2])
+	err = e.testDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2])
 	e.Nil(err)
 
 	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	inTree0, err := exec.VerifyMessageMerkleProof(e.GetTestContext(), message0)
+	inTree0, err := exec.VerifyMessageMerkleProof(message0)
 	e.Nil(err)
 	e.True(inTree0)
 
-	inTree1, err := exec.VerifyMessageMerkleProof(e.GetTestContext(), message1)
+	inTree1, err := exec.VerifyMessageMerkleProof(message1)
 	e.Nil(err)
 	e.True(inTree1)
 
-	inTree2, err := exec.VerifyMessageMerkleProof(e.GetTestContext(), message2)
+	inTree2, err := exec.VerifyMessageMerkleProof(message2)
 	e.Nil(err)
 	e.True(inTree2)
 
-	inTreeFail, err := exec.VerifyMessageMerkleProof(e.GetTestContext(), failMessage)
+	inTreeFail, err := exec.VerifyMessageMerkleProof(failMessage)
 	e.Nil(err)
 	e.False(inTreeFail)
 
-	err = e.testDB.StoreMessage(e.GetTestContext(), message3, common.BytesToHash(root3), blockNumbers[3])
+	err = e.testDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3])
 	e.Nil(err)
 
 	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
 	e.Nil(err)
 
-	inTree3, err := exec.VerifyMessageMerkleProof(e.GetTestContext(), message3)
+	inTree3, err := exec.VerifyMessageMerkleProof(message3)
 	e.Nil(err)
 	e.True(inTree3)
 }
