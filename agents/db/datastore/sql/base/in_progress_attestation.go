@@ -67,7 +67,7 @@ func (s Store) StoreExistingSignedInProgressAttestation(ctx context.Context, sig
 		IPNonce:            signedAttestation.Attestation().Nonce(),
 		IPRoot:             core.BytesToSlice(signedAttestation.Attestation().Root()),
 		IPNotarySignature:  sig,
-		IPAttestationState: uint32(types.AttestationStateGuardUnsigned),
+		IPAttestationState: uint32(types.AttestationStateGuardUnsignedAndUnverified),
 	})
 
 	if tx.Error != nil {
@@ -156,6 +156,27 @@ func (s Store) MarkConfirmedOnAttestationCollector(ctx context.Context, inProgre
 	return nil
 }
 
+// MarkVerifiedOnOrigin marks the attestation as having been verified on origin.
+func (s Store) MarkVerifiedOnOrigin(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(&InProgressAttestation{
+			IPOrigin:      inProgressAttestation.SignedAttestation().Attestation().Origin(),
+			IPDestination: inProgressAttestation.SignedAttestation().Attestation().Destination(),
+			IPNonce:       inProgressAttestation.SignedAttestation().Attestation().Nonce(),
+		}).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardUnsignedAndUnverified)).
+		Updates(
+			InProgressAttestation{
+				IPAttestationState: uint32(types.AttestationStateGuardUnsignedAndVerified),
+			},
+		)
+
+	if tx.Error != nil {
+		return fmt.Errorf("could not execute MarkVerifiedOnOrigin for in-progress attestation: %w", tx.Error)
+	}
+	return nil
+}
+
 // RetrieveLatestCachedNonce retrieves the latest nonce cached for given origin-destination pair.
 // TODO (joe): Currently, we are grabbing ALL the nonces rather than just asking the origin for the
 // most recent one. We are calling getHistoricalRoot with the next nonce that we haven't seen.
@@ -207,7 +228,7 @@ func (s Store) RetrieveInProgressAttestation(ctx context.Context, originID, dest
 
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("could not find attestation with nonce %d and origin %d and destination %d: %w", nonce, originID, destinationID, db.ErrNotFound)
+			return nil, db.ErrNotFound
 		}
 		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
 	}
@@ -235,7 +256,7 @@ func (s Store) RetrieveOldestUnsignedInProgressAttestation(ctx context.Context, 
 
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("could not find unsigned attestation with origin %d and destination %d: %w", originID, destinationID, db.ErrNotFound)
+			return nil, db.ErrNotFound
 		}
 		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
 	}
@@ -260,7 +281,7 @@ func (s Store) RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx context.
 
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("could not find signed attestation waiting to be submitted with origin %d and destination %d: %w", originID, destinationID, db.ErrNotFound)
+			return nil, db.ErrNotFound
 		}
 		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
 	}
@@ -286,7 +307,7 @@ func (s Store) RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx conte
 
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("could not find submitted attestation waiting to be confirmed with origin %d and destination %d: %w", originID, destinationID, db.ErrNotFound)
+			return nil, db.ErrNotFound
 		}
 		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
 	}
@@ -312,7 +333,59 @@ func (s Store) RetrieveNewestConfirmedInProgressAttestation(ctx context.Context,
 
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("could not find confirmed attestation with origin %d and destination %d: %w", originID, destinationID, db.ErrNotFound)
+			return nil, db.ErrNotFound
+		}
+		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
+	}
+	return inProgressAttestation, err
+}
+
+// RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation retrieves the oldest in-progress attestation that has been signed by a notary but not a guard
+// and it has not been verified on the origin.
+func (s Store) RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
+	if originID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation called with 0 destination")
+	}
+	var inProgressAttestation InProgressAttestation
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(OriginFieldName, originID).
+		Where(DestinationFieldName, destinationID).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardUnsignedAndUnverified)).
+		Order(getOrderByNonceAsc()).
+		First(&inProgressAttestation)
+
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			return nil, db.ErrNotFound
+		}
+		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
+	}
+	return inProgressAttestation, err
+}
+
+// RetrieveOldestGuardUnsignedAndVerifiedInProgressAttestation retrieves the oldest in-progress attestation that has been signed by a notary but not a guard
+// and it has been verified on the origin.
+func (s Store) RetrieveOldestGuardUnsignedAndVerifiedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
+	if originID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation called with 0 destination")
+	}
+	var inProgressAttestation InProgressAttestation
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(OriginFieldName, originID).
+		Where(DestinationFieldName, destinationID).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardUnsignedAndVerified)).
+		Order(getOrderByNonceAsc()).
+		First(&inProgressAttestation)
+
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			return nil, db.ErrNotFound
 		}
 		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
 	}
