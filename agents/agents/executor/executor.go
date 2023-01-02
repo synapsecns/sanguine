@@ -256,23 +256,6 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	return true, nil
 }
 
-// GetRoot returns the merkle root at the given nonce.
-func (e Executor) GetRoot(nonce uint32, chainID uint32, destination uint32) ([32]byte, error) {
-	if nonce == 0 || nonce > e.chainExecutors[chainID].merkleTrees[destination].NumOfItems() {
-		return [32]byte{}, fmt.Errorf("nonce is out of range")
-	}
-
-	root, err := e.chainExecutors[chainID].merkleTrees[destination].Root(nonce)
-	if err != nil {
-		return [32]byte{}, fmt.Errorf("could not get message: %w", err)
-	}
-
-	var rootB32 [32]byte
-	copy(rootB32[:], root)
-
-	return rootB32, nil
-}
-
 // BuildTreeFromDB builds the merkle tree from the database's messages. This function will
 // reset the current merkle tree and replace it with the one built from the database.
 // This function should also not be called while Start or Listen are running.
