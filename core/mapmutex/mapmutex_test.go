@@ -1,15 +1,16 @@
 package mapmutex_test
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/core/mapmutex"
 	"math/rand"
 	"strconv"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/mapmutex"
 )
 
 // ExampleMapMutex provides an example implementation of a map mutex.
@@ -52,7 +53,7 @@ func (s MapMutexSuite) TestExampleMapMutex() {
 }
 
 func (s MapMutexSuite) TestMapMutex() {
-	// nolint: gosec
+	//nolint:gosec
 	r := rand.New(rand.NewSource(42))
 
 	m := mapmutex.NewTestMapMutex(s.T())

@@ -7,7 +7,8 @@ import (
 )
 
 // AgentsTestContractRef is a bound agents test contract that returns the address of the agents test contract.
-// nolint: golint, revive
+//
+//nolint:golint,revive
 type AgentsTestContractRef struct {
 	*AgentsTestContract
 	address common.Address

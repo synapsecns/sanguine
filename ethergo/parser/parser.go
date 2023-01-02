@@ -3,13 +3,14 @@ package parser
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/tenderly/tenderly-cli/hardhat"
-	"github.com/tenderly/tenderly-cli/providers"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/tenderly/tenderly-cli/hardhat"
+	"github.com/tenderly/tenderly-cli/providers"
 )
 
 // copied from hardhat provider because it's unexported.
@@ -58,7 +59,8 @@ func getNetworks(contract hardhat.HardhatContract, filePath string) (map[string]
 }
 
 // GetDeployments parses all contract deployments from a directory.
-// nolint: gocognit, cyclop
+//
+//nolint:gocognit,cyclop
 func GetDeployments(deploymentDir string) (contracts []providers.Contract, err error) {
 	var files []os.DirEntry
 

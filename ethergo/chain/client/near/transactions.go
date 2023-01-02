@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -62,10 +63,10 @@ type txExtraInfo struct {
 	From        *common.Address `json:"from,omitempty"`
 }
 
-// nolint: wrapcheck
+//nolint:wrapcheck
 func (tx *rpcTransaction) UnmarshalJSON(msg []byte) error {
 	if err := json.Unmarshal(msg, &tx.tx); err != nil {
-		// nolint: wrapcheck
+		//nolint:wrapcheck
 		return err
 	}
 	return json.Unmarshal(msg, &tx.txExtraInfo)

@@ -70,7 +70,8 @@ func (a AttestationCollectorAttestationScanner) FindLatestNonce(ctx context.Cont
 }
 
 // update runs the job of the scanner
-// nolint: cyclop
+//
+//nolint:cyclop
 func (a AttestationCollectorAttestationScanner) update(ctx context.Context) error {
 	latestNonce, err := a.FindLatestNonce(ctx)
 	if err != nil {
