@@ -7,7 +7,8 @@ import (
 )
 
 // DestinationRef is a bound destination contract that returns the address of the destination contract.
-// nolint: golint
+//
+//nolint:golint
 type DestinationRef struct {
 	*Destination
 	address common.Address

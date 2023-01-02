@@ -3,6 +3,10 @@ package client_test
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"reflect"
+	"time"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -14,9 +18,6 @@ import (
 	clientMocks "github.com/synapsecns/sanguine/ethergo/chain/client/mocks"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/viant/toolbox"
-	"math/big"
-	"reflect"
-	"time"
 )
 
 // TestLifecycleClient makes sure all methods properly call acquire and release permit. Because this method uses reflect everywhere it requires some clever
@@ -87,7 +88,8 @@ func shouldSkip(name string) bool {
 
 // createMockInputArgs creates mock input arguments for a given func
 // for an explanation of why we can't use reflect.new or reflect.zero,  see: https://stackoverflow.com/a/26321245/1011803
-// nolint: cyclop
+//
+//nolint:cyclop
 func (c ClientSuite) createMockInputArgs(p reflect.Method) (res []reflect.Value) {
 	for i := 0; i < p.Type.NumIn(); i++ {
 		// ignore the lifecycle client

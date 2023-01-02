@@ -19,6 +19,7 @@ import (
 type Guard struct {
 	scanners             map[string]map[string]AttestationCollectorAttestationScanner
 	originDoubleCheckers map[string]map[string]AttestationDoubleCheckOnOriginVerifier
+	guardSigners         map[string]map[string]AttestationGuardSigner
 	bondedSigner         signer.Signer
 	unbondedSigner       signer.Signer
 	refreshInterval      time.Duration
@@ -34,6 +35,7 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 	guard := Guard{
 		scanners:             make(map[string]map[string]AttestationCollectorAttestationScanner),
 		originDoubleCheckers: make(map[string]map[string]AttestationDoubleCheckOnOriginVerifier),
+		guardSigners:         make(map[string]map[string]AttestationGuardSigner),
 		refreshInterval:      time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
 	}
 
@@ -68,6 +70,7 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		}
 		guard.scanners[originName] = make(map[string]AttestationCollectorAttestationScanner)
 		guard.originDoubleCheckers[originName] = make(map[string]AttestationDoubleCheckOnOriginVerifier)
+		guard.guardSigners[originName] = make(map[string]AttestationGuardSigner)
 		for destinationName, destinationDomain := range cfg.DestinationDomains {
 			if originDomain.DomainID == destinationDomain.DomainID {
 				continue
@@ -89,6 +92,15 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 				guard.refreshInterval)
 
 			guard.originDoubleCheckers[originName][destinationName] = NewAttestationDoubleCheckOnOriginVerifier(
+				originDomainClient,
+				attestationDomainClient,
+				destinationDomainClient,
+				dbHandle,
+				guard.bondedSigner,
+				guard.unbondedSigner,
+				guard.refreshInterval)
+
+			guard.guardSigners[originName][destinationName] = NewAttestationGuardSigner(
 				originDomainClient,
 				attestationDomainClient,
 				destinationDomainClient,
@@ -124,6 +136,17 @@ func (u Guard) Start(ctx context.Context) error {
 			g.Go(func() error {
 				//nolint: wrapcheck
 				return u.originDoubleCheckers[originName][destinationName].Start(ctx)
+			})
+		}
+	}
+
+	for originName, allDestinationGuardSigners := range u.guardSigners {
+		for destinationName := range allDestinationGuardSigners {
+			originName := originName           // capture func literal
+			destinationName := destinationName // capture func literal
+			g.Go(func() error {
+				//nolint: wrapcheck
+				return u.guardSigners[originName][destinationName].Start(ctx)
 			})
 		}
 	}

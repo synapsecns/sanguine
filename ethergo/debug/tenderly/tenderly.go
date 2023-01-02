@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"strconv"
+	"sync"
+
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/chain"
@@ -18,9 +22,6 @@ import (
 	"github.com/tenderly/tenderly-cli/rest/call"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/userError"
-	"math/big"
-	"strconv"
-	"sync"
 )
 
 func init() {
@@ -104,7 +105,8 @@ func NewTenderly(ctx context.Context) (_ *Tenderly, err error) {
 }
 
 // StartListener starts listening for events on all chains and exports them to tenderly.
-// nolint: staticcheck
+//
+//nolint:staticcheck
 func (t *Tenderly) StartListener(chn chain.Chain) error {
 	watcher := chn.GetHeightWatcher()
 	heightSubscription := watcher.Subscribe()
@@ -170,7 +172,8 @@ func (t *Tenderly) getCompilerConfig(tx tenderlyTypes.Transaction) *payloads.Con
 }
 
 // processBlock uploads all txes in a block to tenderly.
-// nolint: staticcheck
+//
+//nolint:staticcheck
 func (t *Tenderly) processBlock(chn chain.Chain, height uint64, client *ethereum.Client, chainConfig *params.ChainConfig) {
 	// get the block
 	blockData, err := chn.BlockByNumber(t.ctx, big.NewInt(int64(height)))

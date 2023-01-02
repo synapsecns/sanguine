@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -102,7 +103,8 @@ type feeHistoryResultMarshaling struct {
 }
 
 // StandardizeResponse produces a standardized json response for hashing (strips extra fields)
-// nolint: gocognit, cyclop
+//
+//nolint:gocognit,cyclop
 func standardizeResponse(ctx context.Context, req *RPCRequest, rpcMessage JSONRPCMessage) (out []byte, err error) {
 	// TODO: use a sync.pool for acquiring/releasing these structs
 	method := req.Method
