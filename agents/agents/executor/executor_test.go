@@ -571,7 +571,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 
 	// leaf0, err := message0.ToLeaf()
 	// e.Nil(err)
-	//leaf1, err := message1.ToLeaf()
+	// leaf1, err := message1.ToLeaf()
 	//e.Nil(err)
 	//leaf2, err := message2.ToLeaf()
 	//e.Nil(err)
@@ -580,7 +580,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 
 	// testTree.Insert(leaf0[:])
 	// root0, err := testTree.Root(1)
-	//e.Nil(err)
+	// e.Nil(err)
 	//testTree.Insert(leaf1[:])
 	//root1, err := testTree.Root(2)
 	//e.Nil(err)

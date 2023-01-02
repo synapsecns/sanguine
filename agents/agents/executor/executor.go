@@ -227,9 +227,9 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	proof, err := e.GetLatestNonceProof(*nonce, message.OriginDomain(), message.DestinationDomain())
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *nonce)
 	if err != nil {
-		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
+		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
 	verified, err := e.VerifyMessageMerkleProof(message)
@@ -331,9 +331,9 @@ func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) 
 		return false, fmt.Errorf("could not get root: %w", err)
 	}
 
-	proof, err := e.GetLatestNonceProof(message.Nonce(), message.OriginDomain(), message.DestinationDomain())
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(message.Nonce()-1, message.Nonce())
 	if err != nil {
-		return false, fmt.Errorf("could not get latest nonce proof: %w", err)
+		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
 	leaf, err := message.ToLeaf()
@@ -391,25 +391,6 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 	}
 
 	return &nonce, nil
-}
-
-// GetLatestNonceProof returns the merkle proof for a nonce, with a tree where that nonce is the last item added.
-// This is done by copying the current merkle tree's items and generating a new tree with the items from the range
-// [0, nonce).
-func (e Executor) GetLatestNonceProof(nonce, chainID, destination uint32) ([][]byte, error) {
-	if nonce == 0 || nonce > e.chainExecutors[chainID].merkleTrees[destination].NumOfItems() {
-		return nil, fmt.Errorf("nonce is out of range")
-	}
-
-	// items := e.chainExecutors[chainID].merkleTrees[destination].Items()
-	// tree := merkle.NewTreeFromItems(items[:nonce])
-
-	proof, err := e.chainExecutors[chainID].merkleTrees[destination].MerkleProof(nonce-1, nonce)
-	if err != nil {
-		return nil, fmt.Errorf("could not get merkle proof: %w", err)
-	}
-
-	return proof, nil
 }
 
 // streamLogs uses gRPC to stream logs into a channel.
