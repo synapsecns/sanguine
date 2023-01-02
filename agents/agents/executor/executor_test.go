@@ -399,9 +399,6 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		var rootA32 [32]byte
 		copy(rootA32[:], rootA)
 
-		fmt.Println("testRootA32", testRootA32)
-		fmt.Println("rootA32", rootA32)
-
 		if testRootA32 == rootA32 {
 			waitChan <- true
 			return true
@@ -441,9 +438,6 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 		var rootB32 [32]byte
 		copy(rootB32[:], rootB)
-
-		fmt.Println("testRootB32", testRootB32)
-		fmt.Println("rootB32", rootB32)
 
 		if testRootB32 == rootB32 {
 			waitChan <- true
