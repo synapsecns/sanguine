@@ -9,7 +9,7 @@ replace (
 )
 
 require (
-	github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e
+	github.com/ImVexed/fasturl v0.0.0-20221228215349-ba15095d6ebd
 	github.com/Soft/iter v0.1.0
 	github.com/benbjohnson/immutable v0.4.0
 	github.com/brianvoe/gofakeit/v6 v6.19.0
