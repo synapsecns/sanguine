@@ -17,14 +17,15 @@ import (
 // signs them, and posts to destination chains.
 // TODO: Note right now, I have threads for each origin-destination pair and do no batching at all.
 type Guard struct {
-	scanners                 map[string]map[string]AttestationCollectorAttestationScanner
-	originDoubleCheckers     map[string]map[string]AttestationDoubleCheckOnOriginVerifier
-	guardSigners             map[string]map[string]AttestationGuardSigner
-	guardCollectorSubmitters map[string]map[string]AttestationGuardCollectorSubmitter
-	guardCollectorVerifiers  map[string]map[string]AttestationGuardCollectorVerifier
-	bondedSigner             signer.Signer
-	unbondedSigner           signer.Signer
-	refreshInterval          time.Duration
+	scanners                   map[string]map[string]AttestationCollectorAttestationScanner
+	originDoubleCheckers       map[string]map[string]AttestationDoubleCheckOnOriginVerifier
+	guardSigners               map[string]map[string]AttestationGuardSigner
+	guardCollectorSubmitters   map[string]map[string]AttestationGuardCollectorSubmitter
+	guardCollectorVerifiers    map[string]map[string]AttestationGuardCollectorVerifier
+	guardDestinationSubmitters map[string]map[string]AttestationGuardDestinationSubmitter
+	bondedSigner               signer.Signer
+	unbondedSigner             signer.Signer
+	refreshInterval            time.Duration
 }
 
 // NewGuard creates a new guard.
@@ -35,12 +36,13 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		return Guard{}, fmt.Errorf("cfg.refreshInterval cannot be 0")
 	}
 	guard := Guard{
-		scanners:                 make(map[string]map[string]AttestationCollectorAttestationScanner),
-		originDoubleCheckers:     make(map[string]map[string]AttestationDoubleCheckOnOriginVerifier),
-		guardSigners:             make(map[string]map[string]AttestationGuardSigner),
-		guardCollectorSubmitters: make(map[string]map[string]AttestationGuardCollectorSubmitter),
-		guardCollectorVerifiers:  make(map[string]map[string]AttestationGuardCollectorVerifier),
-		refreshInterval:          time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
+		scanners:                   make(map[string]map[string]AttestationCollectorAttestationScanner),
+		originDoubleCheckers:       make(map[string]map[string]AttestationDoubleCheckOnOriginVerifier),
+		guardSigners:               make(map[string]map[string]AttestationGuardSigner),
+		guardCollectorSubmitters:   make(map[string]map[string]AttestationGuardCollectorSubmitter),
+		guardCollectorVerifiers:    make(map[string]map[string]AttestationGuardCollectorVerifier),
+		guardDestinationSubmitters: make(map[string]map[string]AttestationGuardDestinationSubmitter),
+		refreshInterval:            time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
 	}
 
 	guard.bondedSigner, err = config.SignerFromConfig(cfg.BondedSigner)
@@ -77,6 +79,7 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		guard.guardSigners[originName] = make(map[string]AttestationGuardSigner)
 		guard.guardCollectorSubmitters[originName] = make(map[string]AttestationGuardCollectorSubmitter)
 		guard.guardCollectorVerifiers[originName] = make(map[string]AttestationGuardCollectorVerifier)
+		guard.guardDestinationSubmitters[originName] = make(map[string]AttestationGuardDestinationSubmitter)
 		for destinationName, destinationDomain := range cfg.DestinationDomains {
 			if originDomain.DomainID == destinationDomain.DomainID {
 				continue
@@ -125,6 +128,15 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 				guard.refreshInterval)
 
 			guard.guardCollectorVerifiers[originName][destinationName] = NewAttestationGuardCollectorVerifier(
+				originDomainClient,
+				attestationDomainClient,
+				destinationDomainClient,
+				dbHandle,
+				guard.bondedSigner,
+				guard.unbondedSigner,
+				guard.refreshInterval)
+
+			guard.guardDestinationSubmitters[originName][destinationName] = NewAttestationGuardDestinationSubmitter(
 				originDomainClient,
 				attestationDomainClient,
 				destinationDomainClient,
@@ -195,6 +207,17 @@ func (u Guard) Start(ctx context.Context) error {
 			g.Go(func() error {
 				//nolint: wrapcheck
 				return u.guardCollectorVerifiers[originName][destinationName].Start(ctx)
+			})
+		}
+	}
+
+	for originName, allDestinationGuardDestinationSubmitters := range u.guardDestinationSubmitters {
+		for destinationName := range allDestinationGuardDestinationSubmitters {
+			originName := originName           // capture func literal
+			destinationName := destinationName // capture func literal
+			g.Go(func() error {
+				//nolint: wrapcheck
+				return u.guardDestinationSubmitters[originName][destinationName].Start(ctx)
 			})
 		}
 	}

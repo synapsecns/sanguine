@@ -76,7 +76,7 @@ func (u GuardSuite) TestAttestationDoubleCheckOnOriginVerifier() {
 		u.DestinationDomainClient,
 		testDB,
 		u.GuardSigner,
-		u.AttestationSigner,
+		u.UnbondedSigner,
 		1*time.Second)
 
 	err = attestationDoubleCheckOnOriginVerifier.Update(u.GetTestContext())

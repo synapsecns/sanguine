@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/Thor-x86/nullable"
 	"github.com/synapsecns/sanguine/agents/db"
@@ -597,6 +598,58 @@ func (s Store) RetrieveOldestGuardConfirmedOnCollector(ctx context.Context, orig
 		Where(OriginFieldName, originID).
 		Where(DestinationFieldName, destinationID).
 		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardConfirmedOnCollector)).
+		Order(getOrderByNonceAsc()).
+		First(&inProgressAttestation)
+
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			return nil, db.ErrNotFound
+		}
+		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
+	}
+	return inProgressAttestation, err
+}
+
+// UpdateSubmittedToDestinationTime sets the time the attestation was sent to the Destination.
+func (s Store) UpdateSubmittedToDestinationTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
+	nowTime := time.Now()
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(&InProgressAttestation{
+			IPOrigin:      inProgressAttestation.SignedAttestation().Attestation().Origin(),
+			IPDestination: inProgressAttestation.SignedAttestation().Attestation().Destination(),
+			IPNonce:       inProgressAttestation.SignedAttestation().Attestation().Nonce(),
+		}).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardConfirmedOnCollector)).
+		Updates(
+			InProgressAttestation{
+				IPSubmittedToDestinationTime: sql.NullTime{
+					Time:  nowTime,
+					Valid: true,
+				},
+				IPAttestationState: uint32(types.AttestationStateSubmittedToDestinationUnconfirmed),
+			},
+		)
+
+	if tx.Error != nil {
+		return fmt.Errorf("could not update SubmittedToDestinationTime for in-progress attestations: %w", tx.Error)
+	}
+	return nil
+}
+
+// RetrieveOldestSubmittedToDestinationUnconfirmed retrieves the oldest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector,
+// and also the destination but not yet confirmed on the destination.
+func (s Store) RetrieveOldestSubmittedToDestinationUnconfirmed(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
+	if originID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestSubmittedToDestinationUnconfirmed called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveOldestSubmittedToDestinationUnconfirmed called with 0 destination")
+	}
+	var inProgressAttestation InProgressAttestation
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(OriginFieldName, originID).
+		Where(DestinationFieldName, destinationID).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateSubmittedToDestinationUnconfirmed)).
 		Order(getOrderByNonceAsc()).
 		First(&inProgressAttestation)
 

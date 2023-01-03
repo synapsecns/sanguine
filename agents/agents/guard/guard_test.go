@@ -32,7 +32,7 @@ func (u GuardSuite) TestGuardE2E() {
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.AttestationWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.UnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		Database: config.DBConfig{
 			Type:       dbcommon.Sqlite.String(),
@@ -108,7 +108,7 @@ func (u GuardSuite) TestGuardE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedInProgressAttestation, err := dbHandle.RetrieveOldestGuardConfirmedOnCollector(
+		retrievedInProgressAttestation, err := dbHandle.RetrieveOldestSubmittedToDestinationUnconfirmed(
 			u.GetTestContext(),
 			u.OriginDomainClient.Config().DomainID,
 			u.DestinationDomainClient.Config().DomainID)
@@ -121,7 +121,7 @@ func (u GuardSuite) TestGuardE2E() {
 			historicalRoot == retrievedInProgressAttestation.SignedAttestation().Attestation().Root() &&
 			len(retrievedInProgressAttestation.SignedAttestation().NotarySignatures()) == 1 &&
 			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
-			retrievedInProgressAttestation.AttestationState() == types.AttestationStateGuardConfirmedOnCollector
+			retrievedInProgressAttestation.AttestationState() == types.AttestationStateSubmittedToDestinationUnconfirmed
 
 		return isTrue
 	})

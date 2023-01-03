@@ -407,6 +407,15 @@ func (t InProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time 
 	return &t.IPSubmittedToAttestationCollectorTime.Time
 }
 
+// SubmittedToDestinationTime gets the time when attestation was sent to the Destination.
+func (t InProgressAttestation) SubmittedToDestinationTime() *time.Time {
+	if !t.IPSubmittedToDestinationTime.Valid {
+		return nil
+	}
+
+	return &t.IPSubmittedToAttestationCollectorTime.Time
+}
+
 // AttestationState gets the state of the attestation.
 func (t InProgressAttestation) AttestationState() types.AttestationState {
 	return types.AttestationState(t.IPAttestationState)

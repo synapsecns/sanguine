@@ -129,13 +129,13 @@ func (u GuardSuite) TestAttestationGuardCollectorVerifier() {
 		u.DestinationDomainClient,
 		testDB,
 		u.GuardSigner,
-		u.AttestationSigner,
+		u.UnbondedSigner,
 		1*time.Second)
 
 	err = attestationGuardCollectorVerifier.Update(u.GetTestContext())
 	Nil(u.T(), err)
 
-	// make sure the attesation has been verifier
+	// make sure the attesation has been verified
 	retrievedOldestGuardConfirmedOnCollector, err := testDB.RetrieveOldestGuardConfirmedOnCollector(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,

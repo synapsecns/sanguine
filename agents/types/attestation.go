@@ -30,8 +30,8 @@ const (
 	// AttestationStateGuardConfirmedOnCollector is when the attestation was signed by Guard and Notary and submitted to the attestation collector but not destination,
 	// and we have confirmed it on the AttestationCollector.
 	AttestationStateGuardConfirmedOnCollector // 8
-	// AttestationStateGuardSignedSubmittedToDestinationUnconfirmed is when the attestation was signed by Guard and submitted to the attestation collector and destination but not yet confirmed.
-	AttestationStateGuardSignedSubmittedToDestinationUnconfirmed // 9
+	// AttestationStateSubmittedToDestinationUnconfirmed is when the attestation was signed by Guard and Notary and submitted to the attestation collector and destination but not yet confirmed on destination.
+	AttestationStateSubmittedToDestinationUnconfirmed // 9
 	// AttestationStateGuardConfirmed is when the attestation was confirmed as posted on the destination.
 	AttestationStateGuardConfirmed // 10
 )
@@ -207,6 +207,8 @@ type InProgressAttestation interface {
 	OriginDispatchBlockNumber() uint64
 	// SubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
 	SubmittedToAttestationCollectorTime() *time.Time
+	// SubmittedToDestinationTime is time when signed attestation was submitted to the Destination
+	SubmittedToDestinationTime() *time.Time
 	// AttestationState is the state the in-progress attestation is in right now
 	AttestationState() AttestationState
 }
@@ -216,6 +218,7 @@ type inProgressAttestation struct {
 	signedAttestation                   SignedAttestation
 	originDispatchBlockNumber           uint64
 	submittedToAttestationCollectorTime *time.Time
+	submittedToDestinationTime          *time.Time
 	attestationState                    AttestationState
 }
 
@@ -239,6 +242,10 @@ func (t inProgressAttestation) OriginDispatchBlockNumber() uint64 {
 
 func (t inProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time {
 	return t.submittedToAttestationCollectorTime
+}
+
+func (t inProgressAttestation) SubmittedToDestinationTime() *time.Time {
+	return t.submittedToDestinationTime
 }
 
 func (t inProgressAttestation) AttestationState() AttestationState {
