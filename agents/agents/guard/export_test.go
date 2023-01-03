@@ -31,3 +31,8 @@ func (a AttestationGuardCollectorVerifier) Update(ctx context.Context) error {
 func (a AttestationGuardDestinationSubmitter) Update(ctx context.Context) error {
 	return a.update(ctx)
 }
+
+// Update wraps update for the AttestationGuardDestinationVerifier.
+func (a AttestationGuardDestinationVerifier) Update(ctx context.Context) error {
+	return a.update(ctx)
+}
