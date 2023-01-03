@@ -256,10 +256,10 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	return true, nil
 }
 
-// BuildTreeFromDB builds the merkle tree from the database's messages. This function will
+// buildTreeFromDB builds the merkle tree from the database's messages. This function will
 // reset the current merkle tree and replace it with the one built from the database.
 // This function should also not be called while Start or Listen are running.
-func (e Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
+func (e Executor) buildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
 	var allMessages []types.Message
 
 	messageMask := execTypes.DBMessage{

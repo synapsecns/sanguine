@@ -38,6 +38,10 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 	return e.verifyMessageOptimisticPeriod(ctx, message)
 }
 
+func (e Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
+	return e.buildTreeFromDB(ctx, chainID, destination)
+}
+
 // NewExecutorInjectedBackend creates a new Executor suitable for testing since it does not need a valid omnirpcURL.
 //
 //nolint:cyclop
