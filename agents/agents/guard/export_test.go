@@ -21,3 +21,8 @@ func (a AttestationGuardSigner) Update(ctx context.Context) error {
 func (a AttestationGuardCollectorSubmitter) Update(ctx context.Context) error {
 	return a.update(ctx)
 }
+
+// Update wraps update for the AttestationGuardColletorVerifier.
+func (a AttestationGuardCollectorVerifier) Update(ctx context.Context) error {
+	return a.update(ctx)
+}

@@ -81,7 +81,7 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	err = testDB.MarkVerifiedOnOrigin(u.GetTestContext(), submittedInProgressAttestation)
 	Nil(u.T(), err)
 
-	// Now call ghe guard signer
+	// Now call the guard signer
 	attestationGuardSigner := guard.NewAttestationGuardSigner(
 		u.OriginDomainClient,
 		u.AttestationDomainClient,
