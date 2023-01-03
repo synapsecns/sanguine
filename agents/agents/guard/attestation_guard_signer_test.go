@@ -14,7 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/core"
 )
 
-func (u GuardSuite) TestAttestationDoubleCheckOnOriginVerifier() {
+func (u GuardSuite) TestAttestationGuardSigner() {
 	destination := uint32(u.TestBackendDestination.GetChainID())
 	origin := uint32(u.TestBackendOrigin.GetChainID())
 	nonce := uint32(1)
@@ -69,8 +69,20 @@ func (u GuardSuite) TestAttestationDoubleCheckOnOriginVerifier() {
 	err = testDB.StoreExistingSignedInProgressAttestation(u.GetTestContext(), signedAttestationFromCollector)
 	Nil(u.T(), err)
 
-	// call the update producing function
-	attestationDoubleCheckOnOriginVerifier := guard.NewAttestationDoubleCheckOnOriginVerifier(
+	inProgressAttestationToMarkVerified, err := testDB.RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation(u.GetTestContext(), origin, destination)
+	Nil(u.T(), err)
+
+	nowTime := time.Now()
+	submittedInProgressAttestation := types.NewInProgressAttestation(
+		signedAttestationFromCollector,
+		inProgressAttestationToMarkVerified.OriginDispatchBlockNumber(),
+		&nowTime,
+		0)
+	err = testDB.MarkVerifiedOnOrigin(u.GetTestContext(), submittedInProgressAttestation)
+	Nil(u.T(), err)
+
+	// Now call the guard signer
+	attestationGuardSigner := guard.NewAttestationGuardSigner(
 		u.OriginDomainClient,
 		u.AttestationDomainClient,
 		u.DestinationDomainClient,
@@ -79,25 +91,25 @@ func (u GuardSuite) TestAttestationDoubleCheckOnOriginVerifier() {
 		u.UnbondedSigner,
 		1*time.Second)
 
-	err = attestationDoubleCheckOnOriginVerifier.Update(u.GetTestContext())
+	err = attestationGuardSigner.Update(u.GetTestContext())
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	retrievedSignedAndVerifiedInProgressAttestation, err := testDB.RetrieveOldestGuardUnsignedAndVerifiedInProgressAttestation(
+	retrievedOldestGuardUnsubmittedSignedInProgressAttestation, err := testDB.RetrieveOldestGuardUnsubmittedSignedInProgressAttestation(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
 		u.DestinationDomainClient.Config().DomainID)
 
 	Nil(u.T(), err)
-	NotNil(u.T(), retrievedSignedAndVerifiedInProgressAttestation)
+	NotNil(u.T(), retrievedOldestGuardUnsubmittedSignedInProgressAttestation)
 
-	retrievedAttestation := retrievedSignedAndVerifiedInProgressAttestation.SignedAttestation()
+	retrievedAttestation := retrievedOldestGuardUnsubmittedSignedInProgressAttestation.SignedAttestation()
 	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedAttestation.Attestation().Origin())
 	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedAttestation.Attestation().Destination())
 	Equal(u.T(), root, retrievedAttestation.Attestation().Root())
 	Len(u.T(), retrievedAttestation.NotarySignatures(), 1)
-	Len(u.T(), retrievedAttestation.GuardSignatures(), 0)
-	Equal(u.T(), types.AttestationStateGuardUnsignedAndVerified, retrievedSignedAndVerifiedInProgressAttestation.AttestationState())
+	Len(u.T(), retrievedAttestation.GuardSignatures(), 1)
+	Equal(u.T(), types.AttestationStateGuardSignedUnsubmitted, retrievedOldestGuardUnsubmittedSignedInProgressAttestation.AttestationState())
 
 	Nil(u.T(), err)
 }

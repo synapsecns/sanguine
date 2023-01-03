@@ -254,8 +254,10 @@ type SignedAttestation struct {
 	SANonce uint32 `gorm:"column:nonce;uniqueIndex:sa_idx_id"`
 	// SARoot is the root of the signed attestation
 	SARoot []byte `gorm:"column:root"`
-	// SASignature stores the raw signature
-	SASignature []byte `gorm:"column:signature"`
+	// SANotarySignature stores the raw notary signature
+	SANotarySignature []byte `gorm:"column:notary_signature"`
+	// SAGuardSignature stores the raw guard signature
+	SAGuardSignature []byte `gorm:"column:guard_signature"`
 }
 
 // Attestation gets the attestation.
@@ -267,7 +269,7 @@ func (s SignedAttestation) Attestation() types.Attestation {
 // note: this can fail on decoding
 // TODO (joe): Fix this. Right now, just returning the single guard signature.
 func (s SignedAttestation) GuardSignatures() []types.Signature {
-	res, err := types.DecodeSignature(s.SASignature)
+	res, err := types.DecodeSignature(s.SAGuardSignature)
 	if err != nil {
 		return nil
 	}
@@ -275,10 +277,16 @@ func (s SignedAttestation) GuardSignatures() []types.Signature {
 	return []types.Signature{res}
 }
 
-// NotarySignatures implements the interface.
-// TODO (joe): Fix this.
+// NotarySignatures gets the notary signatures of the signed attestation
+// note: this can fail on decoding
+// TODO (joe): Fix this. Right now, just returning the single guard signature.
 func (s SignedAttestation) NotarySignatures() []types.Signature {
-	return []types.Signature{}
+	res, err := types.DecodeSignature(s.SANotarySignature)
+	if err != nil {
+		return nil
+	}
+
+	return []types.Signature{res}
 }
 
 // Origin gets the origin of the signed attestation.
@@ -335,7 +343,7 @@ func (t InProgressAttestation) SignedAttestation() types.SignedAttestation {
 	return t
 }
 
-// NotarySignatures currently just returns the loan signature.
+// NotarySignatures currently just returns the lone notary signature.
 // TODO (joe): fix this to return all notary signatures.
 func (t InProgressAttestation) NotarySignatures() []types.Signature {
 	if len(t.IPNotarySignature) == 0 {
@@ -350,10 +358,19 @@ func (t InProgressAttestation) NotarySignatures() []types.Signature {
 	return []types.Signature{res}
 }
 
-// GuardSignatures currently just returns an empty array.
+// GuardSignatures currently just returns the lone guard signature.
 // TODO (joe): fix this to return all guard signatures.
 func (t InProgressAttestation) GuardSignatures() []types.Signature {
-	return []types.Signature{}
+	if len(t.IPGuardSignature) == 0 {
+		return nil
+	}
+
+	res, err := types.DecodeSignature(t.IPGuardSignature)
+	if err != nil {
+		return []types.Signature{types.NewSignature(big.NewInt(0), big.NewInt(0), big.NewInt(0))}
+	}
+
+	return []types.Signature{res}
 }
 
 // Origin gets the origin of the in-progress attestation.
@@ -384,6 +401,15 @@ func (t InProgressAttestation) OriginDispatchBlockNumber() uint64 {
 // SubmittedToAttestationCollectorTime gets the time when attestation was sent to AttestationCollector.
 func (t InProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time {
 	if !t.IPSubmittedToAttestationCollectorTime.Valid {
+		return nil
+	}
+
+	return &t.IPSubmittedToAttestationCollectorTime.Time
+}
+
+// SubmittedToDestinationTime gets the time when attestation was sent to the Destination.
+func (t InProgressAttestation) SubmittedToDestinationTime() *time.Time {
+	if !t.IPSubmittedToDestinationTime.Valid {
 		return nil
 	}
 

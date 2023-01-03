@@ -3,6 +3,9 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"math"
+	"math/big"
+
 	"github.com/benbjohnson/immutable"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,8 +17,6 @@ import (
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"golang.org/x/exp/constraints"
-	"math"
-	"math/big"
 )
 
 // ScribeBackend is the set of functions that the scribe needs from a client.
@@ -51,7 +52,7 @@ type ScribeBackend interface {
 func DialBackend(ctx context.Context, url string) (ScribeBackend, error) {
 	c, err := rpc.DialContext(ctx, url)
 	if err != nil {
-		// nolint: wrapcheck
+		//nolint:wrapcheck
 		return nil, err
 	}
 

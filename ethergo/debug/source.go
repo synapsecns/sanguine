@@ -5,15 +5,16 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/stacktrace"
-	"strconv"
-	"sync"
-	"time"
 )
 
 // ContractSource is a contract source for tenderly to pull from.
@@ -39,7 +40,8 @@ type MappedContract struct {
 }
 
 // AddContract adds a contract to the deploy.
-// nolint: staticcheck
+//
+//nolint:staticcheck
 func (c *ContractSource) AddContract(ctx context.Context, chn chain.Chain, contractType contracts.ContractType, contract contracts.DeployedContract) (resultingContract *providers.Contract, err error) {
 	if contract.DeployTx() == nil {
 		return nil, fmt.Errorf("deploy tx missing for contract %s (owner: %s)", contract.DeployTx().Hash().String(), contract.Owner().String())
@@ -52,7 +54,7 @@ func (c *ContractSource) AddContract(ctx context.Context, chn chain.Chain, contr
 
 	contractInfo := contractType.ContractInfo()
 
-	// nolint: forcetypeassert
+	//nolint:forcetypeassert
 	resultingContract = &providers.Contract{
 		// TODO this should be derived from the type constant
 		Name:     contractType.ContractName(),

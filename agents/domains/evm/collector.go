@@ -15,7 +15,8 @@ import (
 )
 
 // NewAttestationCollectorContract returns a bound attestation collector contract.
-// nolint: staticcheck
+//
+//nolint:staticcheck
 func NewAttestationCollectorContract(ctx context.Context, client chain.Chain, attestationAddress common.Address) (domains.AttestationCollectorContract, error) {
 	boundCountract, err := attestationcollector.NewAttestationCollectorRef(attestationAddress, client)
 	if err != nil {

@@ -3,12 +3,13 @@ package wallet
 import (
 	"crypto/ecdsa"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/crypto"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"github.com/tyler-smith/go-bip39"
-	"os"
-	"strings"
 )
 
 // FromPrivateKey creates a new wallet from a private key.
@@ -39,7 +40,7 @@ func FromPrivateKey(privKey *ecdsa.PrivateKey) (Wallet, error) {
 // and most wallets. It gets the first wallet in this derivation path.
 // TODO: support json files.
 func FromKeyFile(keyFile string) (Wallet, error) {
-	// nolint: gosec
+	//nolint:gosec
 	rawKey, err := os.ReadFile(keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not get seed phrase: %w", err)
