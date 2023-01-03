@@ -77,7 +77,7 @@ func (u NotarySuite) TestOriginAttestationVerifier() {
 		u.DestinationDomainClient,
 		testDB,
 		u.NotarySigner,
-		u.AttestationSigner,
+		u.UnbondedSigner,
 		1*time.Second)
 
 	err = originAttestationVerifier.Update(u.GetTestContext())

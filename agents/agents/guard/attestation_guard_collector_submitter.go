@@ -98,7 +98,7 @@ func (a AttestationGuardCollectorSubmitter) update(ctx context.Context) error {
 		[]types.Signature{})
 	err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, guardOnlySignedAttestation)
 	if err != nil {
-		return fmt.Errorf("could not submit attestation: %w", err)
+		return fmt.Errorf("could not submit attestation to attestation collector: %w", err)
 	}
 
 	nowTime := time.Now()

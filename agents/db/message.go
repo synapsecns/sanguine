@@ -103,6 +103,11 @@ type InProgressAttestationDB interface {
 	// RetrieveOldestGuardConfirmedOnCollector retrieves the oldest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector,
 	// and confirmed on the Attestation Collector.
 	RetrieveOldestGuardConfirmedOnCollector(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error)
+	// UpdateSubmittedToDestinationTime sets the time the attestation was sent to the Destination.
+	UpdateSubmittedToDestinationTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
+	// RetrieveOldestSubmittedToDestinationUnconfirmed retrieves the oldest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector and destination,
+	// but not yet confirmed on the destination.
+	RetrieveOldestSubmittedToDestinationUnconfirmed(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error)
 }
 
 // SynapseDB combines db types.
