@@ -92,6 +92,8 @@ func (a AttestationGuardDestinationSubmitter) update(ctx context.Context) error 
 		return nil
 	}
 
+	// TODO (joe): Double check that attestation has both guard and notary signatures.
+
 	err = a.destinationDomain.Destination().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToSubmitToDestination.SignedAttestation())
 	if err != nil {
 		return fmt.Errorf("could not submit attestation to destination: %w", err)
