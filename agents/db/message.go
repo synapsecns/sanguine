@@ -63,8 +63,10 @@ type InProgressAttestationDB interface {
 	UpdateNotarySignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
 	// UpdateNotarySubmittedToAttestationCollectorTime sets the time the attestation was sent to Attestation Collector by the Notary.
 	UpdateNotarySubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
-	// MarkConfirmedOnAttestationCollector confirms that we posted the signed attestation on the Attestation Collector.
-	MarkConfirmedOnAttestationCollector(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
+	// ReUpdateNotarySubmittedToAttestationCollectorTime sets the time the attestation was sent to Attestation Collector by the Notary when resubmitting.
+	ReUpdateNotarySubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
+	// MarkNotaryConfirmedOnAttestationCollector confirms that the notary posted the signed attestation on the Attestation Collector.
+	MarkNotaryConfirmedOnAttestationCollector(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
 	// RetrieveInProgressAttestation retrieves an in-progress attestation by <origin, destination, nonce>.
 	RetrieveInProgressAttestation(ctx context.Context, originID, destinationID, nonce uint32) (inProgressAttestation types.InProgressAttestation, err error)
 	// RetrieveOldestUnsignedInProgressAttestation retrieves the oldest in-progress attestation that has not yet been signed.
@@ -91,9 +93,16 @@ type InProgressAttestationDB interface {
 	RetrieveOldestGuardUnsubmittedSignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
 	// UpdateGuardSubmittedToAttestationCollectorTime sets the time the attestation was sent to Attestation Collector by the Guard.
 	UpdateGuardSubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
+	// ReUpdateGuardSubmittedToAttestationCollectorTime sets the time the attestation was sent to Attestation Collector by the Guard when resubmitting.
+	ReUpdateGuardSubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
 	// RetrieveOldestGuardSubmittedToCollectorUnconfirmed retrieves the oldest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector,
 	// but not yet confirmed.
 	RetrieveOldestGuardSubmittedToCollectorUnconfirmed(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error)
+	// MarkGuardConfirmedOnAttestationCollector confirms that the guard posted the signed attestation on the Attestation Collector.
+	MarkGuardConfirmedOnAttestationCollector(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
+	// RetrieveOldestGuardConfirmedOnCollector retrieves the oldest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector,
+	// and confirmed on the Attestation Collector.
+	RetrieveOldestGuardConfirmedOnCollector(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error)
 }
 
 // SynapseDB combines db types.
