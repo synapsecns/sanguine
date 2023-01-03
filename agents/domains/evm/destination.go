@@ -105,6 +105,7 @@ func (a destinationContract) SubmittedAt(ctx context.Context, originID uint32, r
 	}
 
 	if submittedAtBigInt == nil || submittedAtBigInt.Int64() == int64(0) {
+		//nolint:nilnil
 		return nil, nil
 	}
 
