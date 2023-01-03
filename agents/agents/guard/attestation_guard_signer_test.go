@@ -88,7 +88,7 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 		u.DestinationDomainClient,
 		testDB,
 		u.GuardSigner,
-		u.AttestationSigner,
+		u.UnbondedSigner,
 		1*time.Second)
 
 	err = attestationGuardSigner.Update(u.GetTestContext())

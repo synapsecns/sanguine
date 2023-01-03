@@ -3,10 +3,11 @@ package executor_test
 import (
 	"context"
 	"fmt"
-	"github.com/Flaque/filet"
-	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"math/big"
 	"time"
+
+	"github.com/Flaque/filet"
+	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -119,7 +120,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		BaseOmnirpcURL: simulatedChainA.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -216,7 +217,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		BaseOmnirpcURL: simulatedChain.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -311,7 +312,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -487,7 +488,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -666,7 +667,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -864,12 +865,12 @@ func (e *ExecutorSuite) TestExecute() {
 		BaseOmnirpcURL: gofakeit.URL(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.DestinationWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
-	e.TestBackendOrigin.FundAccount(e.GetTestContext(), e.DestinationSigner.Address(), *big.NewInt(params.Ether))
-	e.TestBackendDestination.FundAccount(e.GetTestContext(), e.DestinationSigner.Address(), *big.NewInt(params.Ether))
+	e.TestBackendOrigin.FundAccount(e.GetTestContext(), e.UnbondedSigner.Address(), *big.NewInt(params.Ether))
+	e.TestBackendDestination.FundAccount(e.GetTestContext(), e.UnbondedSigner.Address(), *big.NewInt(params.Ether))
 
 	executorClients := map[uint32]executor.Backend{
 		uint32(e.TestBackendOrigin.GetChainID()):      e.TestBackendOrigin,

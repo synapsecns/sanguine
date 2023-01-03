@@ -14,7 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/core"
 )
 
-func (u GuardSuite) TestAttestationGuardCollectorSubmitter() {
+func (u GuardSuite) TestAttestationGuardDestinationSubmitter() {
 	destination := uint32(u.TestBackendDestination.GetChainID())
 	origin := uint32(u.TestBackendOrigin.GetChainID())
 	nonce := uint32(1)
@@ -60,6 +60,10 @@ func (u GuardSuite) TestAttestationGuardCollectorSubmitter() {
 
 	u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), tx)
 
+	latestNonce, err := u.AttestationDomainClient.AttestationCollector().GetLatestNonce(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, u.DestinationDomainClient.Config().DomainID, u.NotarySigner)
+	Nil(u.T(), err)
+	Equal(u.T(), nonce, latestNonce)
+
 	rawSignedAttestationFromCollector, err := u.AttestationContract.GetAttestation(&bind.CallOpts{Context: u.GetTestContext()}, origin, destination, nonce)
 	Nil(u.T(), err)
 
@@ -96,8 +100,33 @@ func (u GuardSuite) TestAttestationGuardCollectorSubmitter() {
 	err = testDB.UpdateGuardSignature(u.GetTestContext(), signedInProgressAttestation)
 	Nil(u.T(), err)
 
-	// Now call the guard submitter
-	attestationGuardCollectorSubmitter := guard.NewAttestationGuardCollectorSubmitter(
+	guardOnlySignedAttestation := types.NewSignedAttestation(
+		guardSignedAttestation.Attestation(),
+		guardSignedAttestation.GuardSignatures(),
+		[]types.Signature{})
+
+	rawSignedGuardOnlyAttestation, err := types.EncodeSignedAttestation(guardOnlySignedAttestation)
+	Nil(u.T(), err)
+
+	tx, err = u.AttestationContract.SubmitAttestation(attestationAuth.TransactOpts, rawSignedGuardOnlyAttestation)
+	Nil(u.T(), err)
+
+	u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), tx)
+
+	inProgressAttestationToSubmit := types.NewInProgressAttestation(
+		inProgressAttestationToMarkVerified.SignedAttestation(),
+		inProgressAttestationToMarkVerified.OriginDispatchBlockNumber(),
+		&nowTime,
+		0)
+
+	err = testDB.UpdateGuardSubmittedToAttestationCollectorTime(u.GetTestContext(), inProgressAttestationToSubmit)
+	Nil(u.T(), err)
+
+	err = testDB.MarkGuardConfirmedOnAttestationCollector(u.GetTestContext(), inProgressAttestationToSubmit)
+	Nil(u.T(), err)
+
+	// Now call the guard destination submitter
+	attestationGuardDestinationSubmitter := guard.NewAttestationGuardDestinationSubmitter(
 		u.OriginDomainClient,
 		u.AttestationDomainClient,
 		u.DestinationDomainClient,
@@ -106,26 +135,26 @@ func (u GuardSuite) TestAttestationGuardCollectorSubmitter() {
 		u.UnbondedSigner,
 		1*time.Second)
 
-	err = attestationGuardCollectorSubmitter.Update(u.GetTestContext())
+	err = attestationGuardDestinationSubmitter.Update(u.GetTestContext())
 	Nil(u.T(), err)
 
 	// make sure the attesation has been submitted
-	retrievedOldestGuardSubmittedToCollectorUnconfirmed, err := testDB.RetrieveOldestGuardSubmittedToCollectorUnconfirmed(
+	retrievedOldestGuardConfirmedOnCollector, err := testDB.RetrieveOldestSubmittedToDestinationUnconfirmed(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
 		u.DestinationDomainClient.Config().DomainID)
 
 	Nil(u.T(), err)
-	NotNil(u.T(), retrievedOldestGuardSubmittedToCollectorUnconfirmed)
+	NotNil(u.T(), retrievedOldestGuardConfirmedOnCollector)
 
-	retrievedAttestation := retrievedOldestGuardSubmittedToCollectorUnconfirmed.SignedAttestation()
+	retrievedAttestation := retrievedOldestGuardConfirmedOnCollector.SignedAttestation()
 	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedAttestation.Attestation().Origin())
 	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedAttestation.Attestation().Destination())
 	Equal(u.T(), root, retrievedAttestation.Attestation().Root())
 	Len(u.T(), retrievedAttestation.NotarySignatures(), 1)
 	Len(u.T(), retrievedAttestation.GuardSignatures(), 1)
-	Greater(u.T(), retrievedOldestGuardSubmittedToCollectorUnconfirmed.SubmittedToAttestationCollectorTime().Unix(), int64(0))
-	Equal(u.T(), types.AttestationStateGuardSubmittedToCollectorUnconfirmed, retrievedOldestGuardSubmittedToCollectorUnconfirmed.AttestationState())
+	Greater(u.T(), retrievedOldestGuardConfirmedOnCollector.SubmittedToAttestationCollectorTime().Unix(), int64(0))
+	Equal(u.T(), types.AttestationStateSubmittedToDestinationUnconfirmed, retrievedOldestGuardConfirmedOnCollector.AttestationState())
 
 	Nil(u.T(), err)
 }
