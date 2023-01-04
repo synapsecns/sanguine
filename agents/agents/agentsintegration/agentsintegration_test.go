@@ -17,6 +17,10 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
+// TestGuardAndNotaryOnlyIntegrationE2E is an integration involving just a guard and notary
+// submitting a single message to the destination.
+//
+//nolint:dupl
 func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 	notaryTestConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
@@ -120,6 +124,10 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 	})
 }
 
+// TestGuardAndNotaryOnlyMultipleMessagesIntegrationE2E is an integration involving just a guard and notary
+// submitting multiple messages to the destination.
+//
+//nolint:dupl,gocognit
 func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegrationE2E() {
 	numMessages := 5
 

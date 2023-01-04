@@ -28,6 +28,8 @@ type Notary struct {
 }
 
 // NewNotary creates a new notary.
+//
+//nolint:cyclop
 func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err error) {
 	if cfg.RefreshIntervalInSeconds == int64(0) {
 		return Notary{}, fmt.Errorf("cfg.refreshInterval cannot be 0")
