@@ -69,6 +69,16 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 		return Notary{}, fmt.Errorf("error with attestationClient, could not create notary for: %w", err)
 	}
 
+	err = attestationClient.AttestationCollector().PrimeNonce(ctx, notary.unbondedSigner)
+	if err != nil {
+		return Notary{}, fmt.Errorf("error trying to PrimeNonce for attestationClient, could not create notary for: %w", err)
+	}
+
+	err = destinationClient.Destination().PrimeNonce(ctx, notary.unbondedSigner)
+	if err != nil {
+		return Notary{}, fmt.Errorf("error trying to PrimeNonce for destinationClient, could not create notary for: %w", err)
+	}
+
 	for name, originDomain := range cfg.OriginDomains {
 		originClient, err := evm.NewEVM(ctx, name, originDomain)
 		if err != nil {
@@ -122,8 +132,10 @@ func (u Notary) Start(ctx context.Context) error {
 
 	err := g.Wait()
 	if err != nil {
+		logger.Errorf("Notary exiting with error: %v", err)
 		return fmt.Errorf("could not start the notary: %w", err)
 	}
 
+	logger.Info("Notary exiting without error")
 	return nil
 }

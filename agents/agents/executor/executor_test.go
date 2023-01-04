@@ -120,7 +120,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		BaseOmnirpcURL: simulatedChainA.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -217,7 +217,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		BaseOmnirpcURL: simulatedChain.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -312,7 +312,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -488,7 +488,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -667,7 +667,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -739,10 +739,10 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	guardSignature, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	notarySignature, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
@@ -865,12 +865,12 @@ func (e *ExecutorSuite) TestExecute() {
 		BaseOmnirpcURL: gofakeit.URL(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
-	e.TestBackendOrigin.FundAccount(e.GetTestContext(), e.UnbondedSigner.Address(), *big.NewInt(params.Ether))
-	e.TestBackendDestination.FundAccount(e.GetTestContext(), e.UnbondedSigner.Address(), *big.NewInt(params.Ether))
+	e.TestBackendOrigin.FundAccount(e.GetTestContext(), e.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	e.TestBackendDestination.FundAccount(e.GetTestContext(), e.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 
 	executorClients := map[uint32]executor.Backend{
 		uint32(e.TestBackendOrigin.GetChainID()):      e.TestBackendOrigin,
@@ -954,10 +954,10 @@ func (e *ExecutorSuite) TestExecute() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	guardSignature, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	notarySignature, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
@@ -1100,10 +1100,10 @@ func (e *ExecutorSuite) TestDestinationExecute() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	notarySignature, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	guardSignature, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
@@ -1259,10 +1259,10 @@ func (e *ExecutorSuite) TestDestinationBadProofExecute() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	notarySignature, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	guardSignature, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})

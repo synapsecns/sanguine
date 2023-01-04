@@ -43,12 +43,16 @@ type SimulatedBackendsTestSuite struct {
 	TestBackendOrigin           backends.SimulatedTestBackend
 	TestBackendDestination      backends.SimulatedTestBackend
 	TestBackendAttestation      backends.SimulatedTestBackend
-	NotaryWallet                wallet.Wallet
-	GuardWallet                 wallet.Wallet
-	NotarySigner                signer.Signer
-	GuardSigner                 signer.Signer
-	UnbondedWallet              wallet.Wallet
-	UnbondedSigner              signer.Signer
+	NotaryBondedWallet          wallet.Wallet
+	GuardBondedWallet           wallet.Wallet
+	NotaryBondedSigner          signer.Signer
+	GuardBondedSigner           signer.Signer
+	NotaryUnbondedWallet        wallet.Wallet
+	NotaryUnbondedSigner        signer.Signer
+	GuardUnbondedWallet         wallet.Wallet
+	GuardUnbondedSigner         signer.Signer
+	ExecutorUnbondedWallet      wallet.Wallet
+	ExecutorUnbondedSigner      signer.Signer
 	OriginDomainClient          domains.DomainClient
 	AttestationDomainClient     domains.DomainClient
 	DestinationDomainClient     domains.DomainClient
@@ -76,12 +80,12 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 	}
 	originOwnerAuth := a.TestBackendOrigin.GetTxContext(a.GetTestContext(), &originOwnerPtr)
 
-	txOriginNotaryAdd, err := a.OriginContract.AddAgent(originOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotarySigner.Address())
+	txOriginNotaryAdd, err := a.OriginContract.AddAgent(originOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotaryBondedSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
 	a.TestBackendOrigin.WaitForConfirmation(a.GetTestContext(), txOriginNotaryAdd)
-	txOriginGuardAdd, err := a.OriginContract.AddAgent(originOwnerAuth.TransactOpts, uint32(0), a.GuardSigner.Address())
+	txOriginGuardAdd, err := a.OriginContract.AddAgent(originOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -97,7 +101,9 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 		a.T().Fatal(err)
 	}
 
-	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.UnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
 
 // SetupDestination sets up the backend that will have the destination contract deployed on it.
@@ -113,12 +119,12 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	}
 
 	destOwnerAuth := a.TestBackendDestination.GetTxContext(a.GetTestContext(), &destOwnerPtr)
-	txDestinationNotaryAdd, err := a.DestinationContract.AddAgent(destOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotarySigner.Address())
+	txDestinationNotaryAdd, err := a.DestinationContract.AddAgent(destOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotaryBondedSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
 	a.TestBackendDestination.WaitForConfirmation(a.GetTestContext(), txDestinationNotaryAdd)
-	txDestinationGuardAdd, err := a.DestinationContract.AddAgent(destOwnerAuth.TransactOpts, uint32(0), a.GuardSigner.Address())
+	txDestinationGuardAdd, err := a.DestinationContract.AddAgent(destOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -134,7 +140,9 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 		a.T().Fatal(err)
 	}
 
-	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.UnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
 
 // SetupAttestation sets up the backend that will have the attestation collector contract deployed on it.
@@ -149,12 +157,12 @@ func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *DeployManag
 	}
 	attestOwnerAuth := a.TestBackendAttestation.GetTxContext(a.GetTestContext(), &attestOwnerPtr)
 
-	txAddNotary, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotarySigner.Address())
+	txAddNotary, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotaryBondedSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
 	a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddNotary)
-	txAddGuard, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(0), a.GuardSigner.Address())
+	txAddGuard, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -170,27 +178,29 @@ func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *DeployManag
 		a.T().Fatal(err)
 	}
 
-	a.TestBackendAttestation.FundAccount(a.GetTestContext(), a.UnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendAttestation.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendAttestation.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendAttestation.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
 
 // SetupGuard sets up the Guard agent.
 func (a *SimulatedBackendsTestSuite) SetupGuard() {
 	var err error
-	a.GuardWallet, err = wallet.FromRandom()
+	a.GuardBondedWallet, err = wallet.FromRandom()
 	if err != nil {
 		a.T().Fatal(err)
 	}
-	a.GuardSigner = localsigner.NewSigner(a.GuardWallet.PrivateKey())
+	a.GuardBondedSigner = localsigner.NewSigner(a.GuardBondedWallet.PrivateKey())
 }
 
 // SetupNotary sets up the Notary agent.
 func (a *SimulatedBackendsTestSuite) SetupNotary() {
 	var err error
-	a.NotaryWallet, err = wallet.FromRandom()
+	a.NotaryBondedWallet, err = wallet.FromRandom()
 	if err != nil {
 		a.T().Fatal(err)
 	}
-	a.NotarySigner = localsigner.NewSigner(a.NotaryWallet.PrivateKey())
+	a.NotaryBondedSigner = localsigner.NewSigner(a.NotaryBondedWallet.PrivateKey())
 }
 
 // SetupTest sets up the test.
@@ -203,11 +213,23 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.TestDeployManager = NewDeployManager(a.T())
 
 	var err error
-	a.UnbondedWallet, err = wallet.FromRandom()
+	a.NotaryUnbondedWallet, err = wallet.FromRandom()
 	if err != nil {
 		a.T().Fatal(err)
 	}
-	a.UnbondedSigner = localsigner.NewSigner(a.UnbondedWallet.PrivateKey())
+	a.NotaryUnbondedSigner = localsigner.NewSigner(a.NotaryUnbondedWallet.PrivateKey())
+
+	a.GuardUnbondedWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.GuardUnbondedSigner = localsigner.NewSigner(a.GuardUnbondedWallet.PrivateKey())
+
+	a.ExecutorUnbondedWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.ExecutorUnbondedSigner = localsigner.NewSigner(a.GuardUnbondedWallet.PrivateKey())
 
 	a.SetupDestination(a.TestDeployManager)
 	a.SetupOrigin(a.TestDeployManager)

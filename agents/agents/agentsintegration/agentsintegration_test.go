@@ -1,7 +1,6 @@
 package agentsintegration_test
 
 import (
-	"fmt"
 	"math/big"
 	"time"
 
@@ -27,11 +26,11 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 		},
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.NotaryWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		Database: config.DBConfig{
 			Type:       dbcommon.Sqlite.String(),
@@ -50,11 +49,11 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 		},
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.GuardWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		Database: config.DBConfig{
 			Type:       dbcommon.Sqlite.String(),
@@ -132,11 +131,11 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 		},
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.NotaryWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		Database: config.DBConfig{
 			Type:       dbcommon.Sqlite.String(),
@@ -155,11 +154,11 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 		},
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.GuardWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		Database: config.DBConfig{
 			Type:       dbcommon.Sqlite.String(),
@@ -178,12 +177,6 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 	Nil(u.T(), err)
 
 	guardDBHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), guardDBType, guardTestConfig.Database.ConnString)
-	Nil(u.T(), err)
-
-	notaryDBType, err := dbcommon.DBTypeFromString(notaryTestConfig.Database.Type)
-	Nil(u.T(), err)
-
-	notaryDBHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), notaryDBType, notaryTestConfig.Database.ConnString)
 	Nil(u.T(), err)
 
 	originAuth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
@@ -205,7 +198,6 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 		Nil(u.T(), err)
 		Greater(u.T(), currDispatchBlockNumber.Uint64(), uint64(0))
 		NotEqual(u.T(), [32]byte{}, currRoot)
-		fmt.Printf("\nCRONIN when nonce is %d, currRoot is %v, and curr dispatch block number %d\n", i+1, currRoot, currDispatchBlockNumber)
 	}
 
 	go func() {
@@ -225,11 +217,6 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 			u.OriginDomainClient.Config().DomainID,
 			u.DestinationDomainClient.Config().DomainID)
 
-		if retrievedInProgressAttestation != nil {
-			fmt.Printf("\nCRONIN\n")
-			fmt.Printf("\nCRONIN retrievedInProgressAttestation.SignedAttestation().Attestation().Nonce() = %v\n", retrievedInProgressAttestation.SignedAttestation().Attestation().Nonce())
-		}
-
 		isTrue := err == nil &&
 			retrievedInProgressAttestation != nil &&
 			retrievedInProgressAttestation.SignedAttestation().Attestation().Nonce() == uint32(numMessages) &&
@@ -240,40 +227,22 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
 			retrievedInProgressAttestation.AttestationState() == types.AttestationStateConfirmedOnDestination
 
-			//if isTrue {
-		for i := 0; i < numMessages; i++ {
-			currNonce := uint32(i + 1)
-			currInProgressAttestation, err := guardDBHandle.RetrieveInProgressAttestation(
-				u.GetTestContext(),
-				u.OriginDomainClient.Config().DomainID,
-				u.DestinationDomainClient.Config().DomainID,
-				currNonce)
-			/*if err != nil {
-				return false
-			}
-			if currInProgressAttestation.AttestationState() != types.AttestationStateConfirmedOnDestination {
-				return false
-			}*/
-			if err == nil && currInProgressAttestation != nil {
-				fmt.Printf("\nCRONIN RetrieveInProgressAttestation with nonce %d is %d and state is %v\n",
-					currNonce,
-					currInProgressAttestation.SignedAttestation().Attestation().Nonce(),
-					currInProgressAttestation.AttestationState())
-			} else {
-				currInProgressAttestationFromNotary, err := notaryDBHandle.RetrieveInProgressAttestation(
+		if isTrue {
+			for i := 0; i < numMessages; i++ {
+				currNonce := uint32(i + 1)
+				currInProgressAttestation, err := guardDBHandle.RetrieveInProgressAttestation(
 					u.GetTestContext(),
 					u.OriginDomainClient.Config().DomainID,
 					u.DestinationDomainClient.Config().DomainID,
 					currNonce)
-				if err == nil && currInProgressAttestationFromNotary != nil {
-					fmt.Printf("\nCRONIN RetrieveInProgressAttestation from notary with nonce %d is %d and state is %v\n",
-						currNonce,
-						currInProgressAttestationFromNotary.SignedAttestation().Attestation().Nonce(),
-						currInProgressAttestationFromNotary.AttestationState())
+				if err != nil {
+					return false
+				}
+				if currInProgressAttestation.AttestationState() != types.AttestationStateConfirmedOnDestination {
+					return false
 				}
 			}
 		}
-		//}
 
 		return isTrue
 	})

@@ -55,10 +55,12 @@ func (a OriginAttestationScanner) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
+			logger.Info("Notary OriginAttestationScanner exiting without error")
 			return nil
 		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
+				logger.Errorf("Notary OriginAttestationScanner exiting with error: %v", err)
 				return err
 			}
 		}
@@ -70,13 +72,10 @@ func (a OriginAttestationScanner) FindLatestNonce(ctx context.Context) (nonce ui
 	latestNonce, err := a.db.RetrieveLatestCachedNonce(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoNonceForDomain) {
-			fmt.Printf("\nCRONIN OriginAttestationScanner.FindLatestNonce db.ErrNoNonceForDomain\n")
 			return 0, nil
 		}
-		fmt.Printf("\nCRONIN OriginAttestationScanner.FindLatestNonce err: %v\n", err)
 		return 0, fmt.Errorf("could not find latest root: %w", err)
 	}
-	fmt.Printf("\nCRONIN OriginAttestationScanner.FindLatestNonce latestNonce %d\n", latestNonce)
 	return latestNonce, nil
 }
 
@@ -94,13 +93,11 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 	nextNonce := latestNonce + 1
 	attestation, dispatchBlockNumber, err := a.originDomain.Origin().GetHistoricalAttestation(ctx, a.destinationDomain.Config().DomainID, nextNonce)
 	if errors.Is(err, domains.ErrNoUpdate) {
-		fmt.Printf("\nCRONIN a.originDomain.Origin().GetHistoricalAttestation with nextNonce %d returned domains.ErrNoUpdate\n", nextNonce)
 		// no update produced this time
 		return nil
 	}
 
 	if err != nil {
-		fmt.Printf("\nCRONIN a.originDomain.Origin().GetHistoricalAttestation with nextNonce %d returned unexpected error %v\n", nextNonce, err)
 		return fmt.Errorf("could not get historical attestation: %w", err)
 	}
 

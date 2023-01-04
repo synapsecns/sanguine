@@ -46,7 +46,7 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	Nil(u.T(), err)
 
-	notarySignature, err := u.NotarySigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(u.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{}, []types.Signature{notarySignature})
@@ -87,8 +87,8 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 		u.AttestationDomainClient,
 		u.DestinationDomainClient,
 		testDB,
-		u.GuardSigner,
-		u.UnbondedSigner,
+		u.GuardBondedSigner,
+		u.GuardUnbondedSigner,
 		1*time.Second)
 
 	err = attestationGuardSigner.Update(u.GetTestContext())

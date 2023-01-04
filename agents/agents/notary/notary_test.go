@@ -24,11 +24,11 @@ func (u NotarySuite) TestNotaryE2E() {
 		},
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.NotaryWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		Database: config.DBConfig{
 			Type:       dbcommon.Sqlite.String(),
