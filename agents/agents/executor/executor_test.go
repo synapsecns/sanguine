@@ -379,7 +379,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	// Listen with the exec.
 	go func() {
-		execErr := exec.Listen(e.GetTestContext(), chainID)
+		execErr := exec.Listen(e.GetTestContext())
 		if !testDone {
 			e.Nil(execErr)
 		}
@@ -703,13 +703,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 
 	// Listen with the exec.
 	go func() {
-		execErr := exec.Listen(e.GetTestContext(), uint32(e.TestBackendOrigin.GetChainID()))
-		if !testDone {
-			e.Nil(execErr)
-		}
-	}()
-	go func() {
-		execErr := exec.Listen(e.GetTestContext(), uint32(e.TestBackendDestination.GetChainID()))
+		execErr := exec.Listen(e.GetTestContext())
 		if !testDone {
 			e.Nil(execErr)
 		}
@@ -905,13 +899,7 @@ func (e *ExecutorSuite) TestExecute() {
 
 	// Listen with the exec.
 	go func() {
-		execErr := exec.Listen(e.GetTestContext(), uint32(e.TestBackendOrigin.GetChainID()))
-		if !testDone {
-			e.Nil(execErr)
-		}
-	}()
-	go func() {
-		execErr := exec.Listen(e.GetTestContext(), uint32(e.TestBackendDestination.GetChainID()))
+		execErr := exec.Listen(e.GetTestContext())
 		if !testDone {
 			e.Nil(execErr)
 		}

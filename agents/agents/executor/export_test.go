@@ -16,6 +16,7 @@ import (
 	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -40,6 +41,47 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 
 func (e Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
 	return e.buildTreeFromDB(ctx, chainID, destination)
+}
+
+func (e Executor) Start(ctx context.Context) error {
+	g, _ := errgroup.WithContext(ctx)
+
+	for _, chain := range e.config.Chains {
+		chain := chain
+
+		g.Go(func() error {
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, originContract)
+		})
+
+		g.Go(func() error {
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, destinationContract)
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("error when streaming logs: %w", err)
+	}
+
+	return nil
+}
+
+func (e Executor) Listen(ctx context.Context) error {
+	g, _ := errgroup.WithContext(ctx)
+
+	for _, chain := range e.config.Chains {
+		chain := chain
+
+		g.Go(func() error {
+			return e.receiveLogs(ctx, chain.ChainID)
+		})
+
+	}
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("error when receiving logs: %w", err)
+	}
+
+	return nil
 }
 
 // NewExecutorInjectedBackend creates a new Executor suitable for testing since it does not need a valid omnirpcURL.

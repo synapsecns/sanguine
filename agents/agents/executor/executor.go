@@ -166,8 +166,8 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 	}, nil
 }
 
-// Start starts the executor agent. This uses gRPC to process the logs.
-func (e Executor) Start(ctx context.Context) error {
+// Run starts the executor agent. It calls `Start` and `Listen`.
+func (e Executor) Run(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
 	for _, chain := range e.config.Chains {
@@ -180,10 +180,14 @@ func (e Executor) Start(ctx context.Context) error {
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, destinationContract)
 		})
+
+		g.Go(func() error {
+			return e.receiveLogs(ctx, chain.ChainID)
+		})
 	}
 
 	if err := g.Wait(); err != nil {
-		return fmt.Errorf("error when streaming logs: %w", err)
+		return fmt.Errorf("error in executor agent: %w", err)
 	}
 
 	return nil
@@ -193,27 +197,6 @@ func (e Executor) Start(ctx context.Context) error {
 func (e Executor) Stop(chainID uint32) {
 	e.chainExecutors[chainID].closeConnection <- true
 	e.chainExecutors[chainID].stopListenChan <- true
-}
-
-// Listen listens to the log channel and processes the logs. Requires Start to be called first.
-func (e Executor) Listen(ctx context.Context, chainID uint32) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-e.chainExecutors[chainID].stopListenChan:
-			return nil
-		case log := <-e.chainExecutors[chainID].logChan:
-			if log == nil {
-				return fmt.Errorf("log is nil")
-			}
-
-			err := e.processLog(ctx, *log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not process log: %w", err)
-			}
-		}
-	}
 }
 
 // Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
@@ -512,6 +495,27 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 	}
 
 	return nil
+}
+
+// receiveLogs receives logs from the log channel and processes them.
+func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-e.chainExecutors[chainID].stopListenChan:
+			return nil
+		case log := <-e.chainExecutors[chainID].logChan:
+			if log == nil {
+				return fmt.Errorf("log is nil")
+			}
+
+			err := e.processLog(ctx, *log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not process log: %w", err)
+			}
+		}
+	}
 }
 
 // logToMessage converts the log to a leaf data.
