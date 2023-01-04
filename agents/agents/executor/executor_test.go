@@ -379,7 +379,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	// Listen with the exec.
 	go func() {
-		execErr := exec.Listen(e.GetTestContext(), chainID)
+		execErr := exec.Listen(e.GetTestContext())
 		if !testDone {
 			e.Nil(execErr)
 		}
@@ -453,11 +453,22 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	oldTreeItems := exec.GetMerkleTree(chainID, destination).Items()
 
-	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
-	e.Nil(err)
+	var newRoot []byte
+	e.Eventually(func() bool {
+		dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.testDB)
+		e.Nil(err)
 
-	newRoot, err := exec.GetMerkleTree(chainID, destination).Root(2)
-	e.Nil(err)
+		exec.OverrideMerkleTree(chainID, destination, dbTree)
+
+		newRoot, err = exec.GetMerkleTree(chainID, destination).Root(2)
+		if err != nil {
+			return false
+		}
+
+		waitChan <- true
+		return true
+	})
+	<-waitChan
 
 	newTreeItems := exec.GetMerkleTree(chainID, destination).Items()
 
@@ -571,8 +582,10 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = e.testDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2])
 	e.Nil(err)
 
-	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
+	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.testDB)
 	e.Nil(err)
+
+	exec.OverrideMerkleTree(chainID, destination, dbTree)
 
 	inTree0, err := exec.VerifyMessageMerkleProof(message0)
 	e.Nil(err)
@@ -593,8 +606,10 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = e.testDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3])
 	e.Nil(err)
 
-	err = exec.BuildTreeFromDB(e.GetTestContext(), chainID, destination)
+	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.testDB)
 	e.Nil(err)
+
+	exec.OverrideMerkleTree(chainID, destination, dbTree)
 
 	inTree3, err := exec.VerifyMessageMerkleProof(message3)
 	e.Nil(err)
@@ -694,13 +709,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 
 	// Listen with the exec.
 	go func() {
-		execErr := exec.Listen(e.GetTestContext(), uint32(e.TestBackendOrigin.GetChainID()))
-		if !testDone {
-			e.Nil(execErr)
-		}
-	}()
-	go func() {
-		execErr := exec.Listen(e.GetTestContext(), uint32(e.TestBackendDestination.GetChainID()))
+		execErr := exec.Listen(e.GetTestContext())
 		if !testDone {
 			e.Nil(execErr)
 		}
@@ -797,6 +806,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	})
 }
 
+//nolint:maintidx
 func (e *ExecutorSuite) TestExecute() {
 	testDone := false
 	defer func() {
@@ -895,13 +905,7 @@ func (e *ExecutorSuite) TestExecute() {
 
 	// Listen with the exec.
 	go func() {
-		execErr := exec.Listen(e.GetTestContext(), uint32(e.TestBackendOrigin.GetChainID()))
-		if !testDone {
-			e.Nil(execErr)
-		}
-	}()
-	go func() {
-		execErr := exec.Listen(e.GetTestContext(), uint32(e.TestBackendDestination.GetChainID()))
+		execErr := exec.Listen(e.GetTestContext())
 		if !testDone {
 			e.Nil(execErr)
 		}
@@ -949,7 +953,6 @@ func (e *ExecutorSuite) TestExecute() {
 	var rootB32 [32]byte
 	copy(rootB32[:], root)
 
-	// root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), rootB32)
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
@@ -971,7 +974,7 @@ func (e *ExecutorSuite) TestExecute() {
 	e.Nil(err)
 	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 
-	continueChan := make(chan bool, 1)
+	continueChan := make(chan bool, 2)
 
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
@@ -997,6 +1000,95 @@ func (e *ExecutorSuite) TestExecute() {
 
 	e.Eventually(func() bool {
 		executed, err = exec.Execute(e.GetTestContext(), message)
+		if err != nil {
+			return false
+		}
+		if executed {
+			return true
+		}
+		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
+		// increase the `time`.
+		tx, err = passBlockRef.Dispatch(txContextDestination.TransactOpts, gofakeit.Uint32(), recipient, optimisticSeconds, encodedTips, body)
+		e.Nil(err)
+		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
+		return false
+	})
+
+	tips2 := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	encodedTips2, err := types.EncodeTips(tips2)
+	e.Nil(err)
+
+	optimisticSeconds2 := uint32(5)
+
+	nonce2 := uint32(2)
+	body2 := []byte{byte(gofakeit.Uint32())}
+
+	txContextOrigin.Value = types.TotalTips(tips2)
+
+	tx, err = e.OriginContract.Dispatch(txContextOrigin.TransactOpts, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds2, encodedTips2, body2)
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
+	header2 := types.NewHeader(uint32(e.TestBackendOrigin.GetChainID()), sender.Hash(), nonce2, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds2)
+	message2 := types.NewMessage(header2, tips2, body2)
+
+	attestKey2 := types.AttestationKey{
+		Origin:      uint32(e.TestBackendOrigin.GetChainID()),
+		Destination: uint32(e.TestBackendDestination.GetChainID()),
+		Nonce:       nonce2,
+	}
+
+	leaf2, err := message2.ToLeaf()
+	e.Nil(err)
+
+	tree.Insert(leaf2[:])
+
+	root2, err := tree.Root(2)
+	e.Nil(err)
+
+	var root2B32 [32]byte
+	copy(root2B32[:], root2)
+
+	unsignedAttestation2 := types.NewAttestation(attestKey2.GetRawKey(), root2B32)
+	hashedAttestation2, err := types.Hash(unsignedAttestation2)
+	e.Nil(err)
+
+	guardSignature2, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation2), false)
+	e.Nil(err)
+
+	notarySignature2, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation2), false)
+	e.Nil(err)
+
+	signedAttestation2 := types.NewSignedAttestation(unsignedAttestation2, []types.Signature{guardSignature2}, []types.Signature{notarySignature2})
+
+	rawSignedAttestation2, err := types.EncodeSignedAttestation(signedAttestation2)
+	e.Nil(err)
+
+	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation2)
+	e.Nil(err)
+	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
+
+	e.Eventually(func() bool {
+		_, err = e.testDB.GetAttestationBlockNumber(e.GetTestContext(), types2.DBAttestation{
+			ChainID:     &chainID,
+			Destination: &destination,
+			Nonce:       &nonce2,
+		})
+		if err == nil {
+			continueChan <- true
+			return true
+		}
+		return false
+	})
+
+	<-continueChan
+
+	executed, err = exec.Execute(e.GetTestContext(), message2)
+	e.Nil(err)
+	e.False(executed)
+
+	e.Eventually(func() bool {
+		executed, err = exec.Execute(e.GetTestContext(), message2)
 		if err != nil {
 			return false
 		}

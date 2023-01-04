@@ -29,8 +29,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// ChainExecutor is a struct that contains the necessary information for each chain level executor.
-type ChainExecutor struct {
+// chainExecutor is a struct that contains the necessary information for each chain level executor.
+type chainExecutor struct {
 	// chainID is the chain ID of the chain that this executor is responsible for.
 	chainID uint32
 	// lastLog is the last log that was processed.
@@ -68,7 +68,7 @@ type Executor struct {
 	// signer is the signer.
 	signer signer.Signer
 	// chainExecutors is a map from chain ID -> chain executor.
-	chainExecutors map[uint32]*ChainExecutor
+	chainExecutors map[uint32]*chainExecutor
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -83,7 +83,7 @@ const logChanSize = 1000
 //
 //nolint:cyclop
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
-	chainExecutors := make(map[uint32]*ChainExecutor)
+	chainExecutors := make(map[uint32]*chainExecutor)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("could not dial grpc: %w", err)
@@ -128,7 +128,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
 
-		chainExecutors[chain.ChainID] = &ChainExecutor{
+		chainExecutors[chain.ChainID] = &chainExecutor{
 			chainID: chain.ChainID,
 			lastLog: &logOrderInfo{
 				blockNumber: 0,
@@ -149,7 +149,10 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 				continue
 			}
 
-			tree := merkle.NewTree()
+			tree, err := newTreeFromDB(ctx, chain.ChainID, destinationChain.ChainID, executorDB)
+			if err != nil {
+				return nil, fmt.Errorf("could not get tree from db: %w", err)
+			}
 
 			chainExecutors[chain.ChainID].merkleTrees[destinationChain.ChainID] = tree
 		}
@@ -166,8 +169,8 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 	}, nil
 }
 
-// Start starts the executor agent. This uses gRPC to process the logs.
-func (e Executor) Start(ctx context.Context) error {
+// Run starts the executor agent. It calls `Start` and `Listen`.
+func (e Executor) Run(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
 	for _, chain := range e.config.Chains {
@@ -180,10 +183,14 @@ func (e Executor) Start(ctx context.Context) error {
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, destinationContract)
 		})
+
+		g.Go(func() error {
+			return e.receiveLogs(ctx, chain.ChainID)
+		})
 	}
 
 	if err := g.Wait(); err != nil {
-		return fmt.Errorf("error when streaming logs: %w", err)
+		return fmt.Errorf("error in executor agent: %w", err)
 	}
 
 	return nil
@@ -195,30 +202,9 @@ func (e Executor) Stop(chainID uint32) {
 	e.chainExecutors[chainID].stopListenChan <- true
 }
 
-// Listen listens to the log channel and processes the logs. Requires Start to be called first.
-func (e Executor) Listen(ctx context.Context, chainID uint32) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-e.chainExecutors[chainID].stopListenChan:
-			return nil
-		case log := <-e.chainExecutors[chainID].logChan:
-			if log == nil {
-				return fmt.Errorf("log is nil")
-			}
-
-			err := e.processLog(ctx, *log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not process log: %w", err)
-			}
-		}
-	}
-}
-
 // Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
-	nonce, err := e.VerifyMessageOptimisticPeriod(ctx, message)
+	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
 		return false, fmt.Errorf("could not verify optimistic period: %w", err)
 	}
@@ -232,7 +218,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
-	verified, err := e.VerifyMessageMerkleProof(message)
+	verified, err := e.verifyMessageMerkleProof(message)
 	if err != nil {
 		return false, fmt.Errorf("could not verify merkle proof: %w", err)
 	}
@@ -256,49 +242,6 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	return true, nil
 }
 
-// BuildTreeFromDB builds the merkle tree from the database's messages. This function will
-// reset the current merkle tree and replace it with the one built from the database.
-// This function should also not be called while Start or Listen are running.
-func (e Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
-	var allMessages []types.Message
-
-	messageMask := execTypes.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-	}
-	page := 1
-
-	for {
-		messages, err := e.executorDB.GetMessages(ctx, messageMask, page)
-		if err != nil {
-			return fmt.Errorf("could not get messages: %w", err)
-		}
-		if len(messages) == 0 {
-			break
-		}
-
-		allMessages = append(allMessages, messages...)
-		page++
-	}
-
-	rawMessages := make([][]byte, len(allMessages))
-
-	for i, message := range allMessages {
-		rawMessage, err := message.ToLeaf()
-		if err != nil {
-			return fmt.Errorf("could not convert message to leaf: %w", err)
-		}
-
-		rawMessages[i] = rawMessage[:]
-	}
-
-	merkleTree := merkle.NewTreeFromItems(rawMessages)
-
-	e.chainExecutors[chainID].merkleTrees[destination] = merkleTree
-
-	return nil
-}
-
 type contractType int
 
 const (
@@ -307,8 +250,8 @@ const (
 	other
 )
 
-// VerifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
-func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) {
+// verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
+func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) {
 	root, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].Root(message.Nonce())
 	if err != nil {
 		return false, fmt.Errorf("could not get root: %w", err)
@@ -329,8 +272,8 @@ func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) 
 	return inTree, nil
 }
 
-// VerifyMessageOptimisticPeriod verifies that the optimistic period is valid.
-func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
+// verifyMessageOptimisticPeriod verifies that the optimistic period is valid.
+func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
 	chainID := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	nonce := message.Nonce()
@@ -374,6 +317,45 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 	}
 
 	return &nonce, nil
+}
+
+// newTreeFromDB creates a new merkle tree from the database's messages.
+func newTreeFromDB(ctx context.Context, chainID uint32, destination uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
+	var allMessages []types.Message
+
+	messageMask := execTypes.DBMessage{
+		ChainID:     &chainID,
+		Destination: &destination,
+	}
+	page := 1
+
+	for {
+		messages, err := executorDB.GetMessages(ctx, messageMask, page)
+		if err != nil {
+			return nil, fmt.Errorf("could not get messages: %w", err)
+		}
+		if len(messages) == 0 {
+			break
+		}
+
+		allMessages = append(allMessages, messages...)
+		page++
+	}
+
+	rawMessages := make([][]byte, len(allMessages))
+
+	for i, message := range allMessages {
+		rawMessage, err := message.ToLeaf()
+		if err != nil {
+			return nil, fmt.Errorf("could not convert message to leaf: %w", err)
+		}
+
+		rawMessages[i] = rawMessage[:]
+	}
+
+	merkleTree := merkle.NewTreeFromItems(rawMessages)
+
+	return merkleTree, nil
 }
 
 // streamLogs uses gRPC to stream logs into a channel.
@@ -512,6 +494,27 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 	}
 
 	return nil
+}
+
+// receiveLogs receives logs from the log channel and processes them.
+func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-e.chainExecutors[chainID].stopListenChan:
+			return nil
+		case log := <-e.chainExecutors[chainID].logChan:
+			if log == nil {
+				return fmt.Errorf("log is nil")
+			}
+
+			err := e.processLog(ctx, *log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not process log: %w", err)
+			}
+		}
+	}
 }
 
 // logToMessage converts the log to a leaf data.
