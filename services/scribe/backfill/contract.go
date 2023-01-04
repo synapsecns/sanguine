@@ -213,10 +213,6 @@ OUTER:
 				continue
 			}
 
-			if tx.receipt.BlockNumber == nil {
-				fmt.Println("fuck")
-			}
-
 			break OUTER
 		}
 	}
@@ -239,7 +235,7 @@ OUTER:
 		g.Go(func() error {
 			err = c.eventDB.StoreEthTx(groupCtx, &tx.transaction, c.chainConfig.ChainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
 			if err != nil {
-				return fmt.Errorf("could not store store tx: %w", err)
+				return fmt.Errorf("could not store tx: %w", err)
 			}
 			return nil
 		})
