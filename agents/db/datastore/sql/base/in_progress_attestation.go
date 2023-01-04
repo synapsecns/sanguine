@@ -661,3 +661,50 @@ func (s Store) RetrieveOldestSubmittedToDestinationUnconfirmed(ctx context.Conte
 	}
 	return inProgressAttestation, err
 }
+
+// MarkConfirmedOnDestination confirms that we posted the signed attestation on the Destination.
+func (s Store) MarkConfirmedOnDestination(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(&InProgressAttestation{
+			IPOrigin:      inProgressAttestation.SignedAttestation().Attestation().Origin(),
+			IPDestination: inProgressAttestation.SignedAttestation().Attestation().Destination(),
+			IPNonce:       inProgressAttestation.SignedAttestation().Attestation().Nonce(),
+		}).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateSubmittedToDestinationUnconfirmed)).
+		Updates(
+			InProgressAttestation{
+				IPAttestationState: uint32(types.AttestationStateConfirmedOnDestination),
+			},
+		)
+
+	if tx.Error != nil {
+		return fmt.Errorf("could not execute MarkConfirmedOnDestination for in-progress attestation: %w", tx.Error)
+	}
+	return nil
+}
+
+// RetrieveNewestConfirmedOnDestination retrieves the newest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector,
+// and also the destination and has been confirmed on the destination.
+func (s Store) RetrieveNewestConfirmedOnDestination(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error) {
+	if originID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveNewestConfirmedOnDestination called with 0 origin")
+	}
+	if destinationID == uint32(0) {
+		return nil, fmt.Errorf("RetrieveNewestConfirmedOnDestination called with 0 destination")
+	}
+	var inProgressAttestation InProgressAttestation
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(OriginFieldName, originID).
+		Where(DestinationFieldName, destinationID).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateConfirmedOnDestination)).
+		Order(getOrderByNonceDesc()).
+		First(&inProgressAttestation)
+
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			return nil, db.ErrNotFound
+		}
+		return nil, fmt.Errorf("could not retrieve attestation: %w", tx.Error)
+	}
+	return inProgressAttestation, err
+}

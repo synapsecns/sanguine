@@ -86,7 +86,7 @@ func (a AttestationGuardCollectorVerifier) FindOldestGuardSubmittedToCollectorIn
 func (a AttestationGuardCollectorVerifier) update(ctx context.Context) error {
 	inProgressAttestationToVerifyOnCollector, err := a.FindOldestGuardSubmittedToCollectorInProgressAttestation(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find oldest signed and unsubmitted attestation: %w", err)
+		return fmt.Errorf("could not find oldest submitted-to-collector attestation: %w", err)
 	}
 	if inProgressAttestationToVerifyOnCollector == nil {
 		return nil

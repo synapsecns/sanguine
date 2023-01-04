@@ -108,6 +108,11 @@ type InProgressAttestationDB interface {
 	// RetrieveOldestSubmittedToDestinationUnconfirmed retrieves the oldest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector and destination,
 	// but not yet confirmed on the destination.
 	RetrieveOldestSubmittedToDestinationUnconfirmed(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error)
+	// MarkConfirmedOnDestination confirms that we posted the signed attestation on the Destination.
+	MarkConfirmedOnDestination(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
+	// RetrieveNewestConfirmedOnDestination retrieves the newest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector and destination,
+	// and has been confirmed on the destination.
+	RetrieveNewestConfirmedOnDestination(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error)
 }
 
 // SynapseDB combines db types.

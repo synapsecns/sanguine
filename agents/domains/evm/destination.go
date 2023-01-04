@@ -3,8 +3,10 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"math/big"
+	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
@@ -94,4 +96,20 @@ func (a destinationContract) transactOptsSetup(ctx context.Context, signer signe
 	transactOpts.Context = ctx
 
 	return transactOpts, nil
+}
+
+func (a destinationContract) SubmittedAt(ctx context.Context, originID uint32, root [32]byte) (*time.Time, error) {
+	submittedAtBigInt, err := a.contract.SubmittedAt(&bind.CallOpts{Context: ctx}, originID, root)
+	if err != nil {
+		return nil, fmt.Errorf("could get submitted at for origin and root: %w", err)
+	}
+
+	if submittedAtBigInt == nil || submittedAtBigInt.Int64() == int64(0) {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	submittedAtTime := time.Unix(submittedAtBigInt.Int64(), 0)
+
+	return &submittedAtTime, nil
 }
