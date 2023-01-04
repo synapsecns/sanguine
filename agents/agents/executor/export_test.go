@@ -155,7 +155,10 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 				continue
 			}
 
-			tree := merkle.NewTree()
+			tree, err := newTreeFromDB(ctx, chain.ChainID, destinationChain.ChainID, executorDB)
+			if err != nil {
+				return nil, fmt.Errorf("could not get tree from db: %w", err)
+			}
 
 			chainExecutors[chain.ChainID].merkleTrees[destinationChain.ChainID] = tree
 		}
