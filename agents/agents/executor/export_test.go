@@ -74,7 +74,6 @@ func (e Executor) Listen(ctx context.Context) error {
 		g.Go(func() error {
 			return e.receiveLogs(ctx, chain.ChainID)
 		})
-
 	}
 
 	if err := g.Wait(); err != nil {
