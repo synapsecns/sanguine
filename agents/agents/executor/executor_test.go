@@ -1015,6 +1015,7 @@ func (e *ExecutorSuite) TestExecute() {
 	exec.Stop(uint32(e.TestBackendDestination.GetChainID()))
 }
 
+// TestDestinationExecute test executing on destination.
 func (e *ExecutorSuite) TestDestinationExecute() {
 	var err error
 
@@ -1100,13 +1101,13 @@ func (e *ExecutorSuite) TestDestinationExecute() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySig, err := e.SimulatedBackendsTestSuite.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSig, err := e.SimulatedBackendsTestSuite.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
+	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSig}, []types.Signature{notarySig})
 
 	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
 	e.Nil(err)
@@ -1259,10 +1260,10 @@ func (e *ExecutorSuite) TestDestinationBadProofExecute() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := e.SimulatedBackendsTestSuite.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := e.SimulatedBackendsTestSuite.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
