@@ -149,7 +149,10 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 				continue
 			}
 
-			tree := merkle.NewTree()
+			tree, err := newTreeFromDB(ctx, chain.ChainID, destinationChain.ChainID, executorDB)
+			if err != nil {
+				return nil, fmt.Errorf("could not get tree from db: %w", err)
+			}
 
 			chainExecutors[chain.ChainID].merkleTrees[destinationChain.ChainID] = tree
 		}
@@ -239,49 +242,6 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	return true, nil
 }
 
-// buildTreeFromDB builds the merkle tree from the database's messages. This function will
-// reset the current merkle tree and replace it with the one built from the database.
-// This function should also not be called while Start or Listen are running.
-func (e Executor) buildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
-	var allMessages []types.Message
-
-	messageMask := execTypes.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-	}
-	page := 1
-
-	for {
-		messages, err := e.executorDB.GetMessages(ctx, messageMask, page)
-		if err != nil {
-			return fmt.Errorf("could not get messages: %w", err)
-		}
-		if len(messages) == 0 {
-			break
-		}
-
-		allMessages = append(allMessages, messages...)
-		page++
-	}
-
-	rawMessages := make([][]byte, len(allMessages))
-
-	for i, message := range allMessages {
-		rawMessage, err := message.ToLeaf()
-		if err != nil {
-			return fmt.Errorf("could not convert message to leaf: %w", err)
-		}
-
-		rawMessages[i] = rawMessage[:]
-	}
-
-	merkleTree := merkle.NewTreeFromItems(rawMessages)
-
-	e.chainExecutors[chainID].merkleTrees[destination] = merkleTree
-
-	return nil
-}
-
 type contractType int
 
 const (
@@ -357,6 +317,45 @@ func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message typ
 	}
 
 	return &nonce, nil
+}
+
+// newTreeFromDB creates a new merkle tree from the database's messages.
+func newTreeFromDB(ctx context.Context, chainID uint32, destination uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
+	var allMessages []types.Message
+
+	messageMask := execTypes.DBMessage{
+		ChainID:     &chainID,
+		Destination: &destination,
+	}
+	page := 1
+
+	for {
+		messages, err := executorDB.GetMessages(ctx, messageMask, page)
+		if err != nil {
+			return nil, fmt.Errorf("could not get messages: %w", err)
+		}
+		if len(messages) == 0 {
+			break
+		}
+
+		allMessages = append(allMessages, messages...)
+		page++
+	}
+
+	rawMessages := make([][]byte, len(allMessages))
+
+	for i, message := range allMessages {
+		rawMessage, err := message.ToLeaf()
+		if err != nil {
+			return nil, fmt.Errorf("could not convert message to leaf: %w", err)
+		}
+
+		rawMessages[i] = rawMessage[:]
+	}
+
+	merkleTree := merkle.NewTreeFromItems(rawMessages)
+
+	return merkleTree, nil
 }
 
 // streamLogs uses gRPC to stream logs into a channel.

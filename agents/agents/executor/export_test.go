@@ -39,8 +39,12 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 	return e.verifyMessageOptimisticPeriod(ctx, message)
 }
 
-func (e Executor) BuildTreeFromDB(ctx context.Context, chainID uint32, destination uint32) error {
-	return e.buildTreeFromDB(ctx, chainID, destination)
+func NewTreeFromDB(ctx context.Context, chainID uint32, domain uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
+	return newTreeFromDB(ctx, chainID, domain, executorDB)
+}
+
+func (e Executor) OverrideMerkleTree(chainID uint32, domain uint32, tree *merkle.HistoricalTree) {
+	e.chainExecutors[chainID].merkleTrees[domain] = tree
 }
 
 func (e Executor) Start(ctx context.Context) error {

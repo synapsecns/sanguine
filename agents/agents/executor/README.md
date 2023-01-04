@@ -3,10 +3,10 @@ The Executor is an agent responsible for executing messages on the `Destination.
 
 ## Components
 The Executor operates with two main components:
-### Start/Listen
-`Start` is the data-getter for the Executor. It works by instantiating a gRPC connection to Scribe, and streams logs for the origin and destination contracts on each chain in the config. From here, it verifies the logs' order since the order of logs are very important for merkle tree construction.
+### Run
+`streamLogs` is the data-getter for the Executor. It works by instantiating a gRPC connection to Scribe, and puts logs in a channel for the origin and destination contracts on each chain in the config. From here, it verifies the logs' order since the order of logs are very important for merkle tree construction.
 <br /> Additionally, if the Executor unexpectedly stops in the middle of streaming logs, it will use the current database state to reconstruct the tree up to where the last log was, then continue to use gRPC.
-<br /> <br > `Listen` is the data-processor for the Executor. It works by taking the logs streamed from `Start` and parsing the logs into either a `Message` on the `Origin.sol` contract, or a `Attestation` on the `Destination.sol` contract. It then stores the data into the Executor's database and builds the tree accordingly.
+<br /> <br > `receiveLogs` is the data-processor for the Executor. It works by taking the logs streamed from `streamLogs` and parsing the logs into either a `Message` on the `Origin.sol` contract, or a `Attestation` on the `Destination.sol` contract. It then stores the data into the Executor's database and builds the tree accordingly.
 
 ### Execute
 `Execute` works in 3 parts.
