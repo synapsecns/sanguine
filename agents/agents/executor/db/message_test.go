@@ -15,7 +15,6 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		chainIDA := gofakeit.Uint32()
 		destinationA := gofakeit.Uint32()
 		nonceA := gofakeit.Uint32()
-		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageA := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		blockNumberA := gofakeit.Uint64()
 
@@ -23,13 +22,12 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		tipsA := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 		typesMessageA := agentsTypes.NewMessage(headerA, tipsA, messageA)
 
-		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, rootA, blockNumberA)
+		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, blockNumberA)
 		Nil(t.T(), err)
 
 		chainIDB := gofakeit.Uint32()
 		destinationB := gofakeit.Uint32()
 		nonceB := gofakeit.Uint32()
-		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageB := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		blockNumberB := gofakeit.Uint64()
 
@@ -37,7 +35,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		tipsB := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 		typesMessageB := agentsTypes.NewMessage(headerB, tipsB, messageB)
 
-		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, rootB, blockNumberB)
+		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, blockNumberB)
 		Nil(t.T(), err)
 
 		messageAMask := types.DBMessage{
@@ -57,7 +55,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		Equal(t.T(), encodeTypesMessageA, encodeRetrievedMessageA)
 
 		messageBMask := types.DBMessage{
-			Root: &rootB,
+			Nonce: &nonceB,
 		}
 		retrievedMessageB, err := testDB.GetMessage(t.GetTestContext(), messageBMask)
 		Nil(t.T(), err)
@@ -78,8 +76,6 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 		destinationB := destinationA + 1
 		nonceA := gofakeit.Uint32()
 		nonceB := nonceA + 1
-		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		messageA := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		messageB := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		blockNumberA := gofakeit.Uint64()
@@ -89,14 +85,14 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 		tipsA := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 		typesMessageA := agentsTypes.NewMessage(headerA, tipsA, messageA)
 
-		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, rootA, blockNumberA)
+		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, blockNumberA)
 		Nil(t.T(), err)
 
 		headerB := agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonceB, destinationB, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
 		tipsB := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 		typesMessageB := agentsTypes.NewMessage(headerB, tipsB, messageB)
 
-		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, rootB, blockNumberB)
+		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, blockNumberB)
 		Nil(t.T(), err)
 
 		lastBlockNumber, err := testDB.GetLastBlockNumber(t.GetTestContext(), chainID)

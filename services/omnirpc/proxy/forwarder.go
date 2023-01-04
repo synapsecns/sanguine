@@ -3,6 +3,12 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+	"strings"
+	"sync"
+
 	"github.com/Soft/iter"
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
@@ -10,12 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/core/threaditer"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
-	"io"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"net/http"
-	"strconv"
-	"strings"
-	"sync"
 )
 
 // Forwarder creates a request forwarder.
@@ -109,7 +110,8 @@ func (r *RPCProxy) Forward(c *gin.Context, chainID uint32, requiredConfirmations
 // attemptForwardAndValidate attempts to forward the request and
 // makes sure it is valid
 // TODO: maybe the context shouldn't be used from a struct here?
-// nolint: gocognit, cyclop
+//
+//nolint:gocognit,cyclop
 func (f *Forwarder) attemptForwardAndValidate() {
 	urlIter := threaditer.ThreadSafe(iter.Slice(f.chain.URLs()))
 

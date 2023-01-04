@@ -7,7 +7,8 @@ import (
 )
 
 // TestSwapRef is a bound synapse swap contract that returns the address of that contract
-// nolint: golint
+//
+//nolint:golint
 type TestSwapRef struct {
 	*TestSwapFlashLoan
 	address common.Address
@@ -19,7 +20,8 @@ func (s TestSwapRef) Address() common.Address {
 }
 
 // NewTestSwapRef gets a bound swap config contract that returns the address of the contract
-// nolint: golint
+//
+//nolint:golint
 func NewTestSwapRef(address common.Address, backend bind.ContractBackend) (*TestSwapRef, error) {
 	swap, err := NewTestSwapFlashLoan(address, backend)
 	if err != nil {

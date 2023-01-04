@@ -1,18 +1,19 @@
 package config
 
 import (
-	"bitbucket.org/tentontrain/math"
 	"context"
 	"fmt"
+	"os"
+	"strconv"
+	"time"
+
+	"bitbucket.org/tentontrain/math"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/synapsecns/sanguine/ethergo/parser"
 	"golang.org/x/exp/slices"
-	"os"
-	"strconv"
-	"time"
 )
 
 // ClientGenerator generates an ethclient from a context and a url, this is used so we can override
@@ -51,7 +52,8 @@ func (c configList) ContractsForChain(chainID int) (configs []ContractConfig) {
 
 // GenerateConfig generates a config using a hardhat deployment and scribe.
 // this requires scribe to be live.
-// nolint: cyclop
+//
+//nolint:cyclop
 func GenerateConfig(ctx context.Context, omniRPCUrl, deployPath string, requiredConfirmations uint32, outputPath string, skippedChainIDS []int, cg ClientGenerator) error {
 	contracts, err := parser.GetDeployments(deployPath)
 	if err != nil {

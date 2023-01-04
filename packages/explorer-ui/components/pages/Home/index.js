@@ -36,7 +36,7 @@ export function Home({
     data = addresses && addresses.historicalStatistics.dateResults
   }
 
-  let { latestBridgeTransactions: bridgeTransactionsTable } = latestBridgeTransactions
+  let { bridgeTransactions: bridgeTransactionsTable } = latestBridgeTransactions
 
   bridgeTransactionsTable = _.orderBy(
     bridgeTransactionsTable,

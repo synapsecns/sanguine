@@ -3,6 +3,11 @@ package watcher
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"sync"
+	"sync/atomic"
+	"time"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,10 +19,6 @@ import (
 	"github.com/synapsecns/sanguine/core/prom"
 	"github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
 	"github.com/teivah/onecontext"
-	"math/big"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 // ContractFilterer is the filterer object.
@@ -98,7 +99,7 @@ func (c *contractWatcherImpl) createProducerIfNotExists(ctx context.Context, con
 
 	err := c.addProducer(ctx, contractAddress, producedEvents)
 	// subscription already exists
-	// nolint: nilerr
+	//nolint:nilerr
 	if err != nil {
 		cancel()
 		return nil

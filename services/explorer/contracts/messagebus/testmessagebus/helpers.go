@@ -7,7 +7,8 @@ import (
 )
 
 // TestMessageBusRef is a bound Messaging Bus Upgradeable contract and the address of the contract
-// nolint: golint
+//
+//nolint:golint
 type TestMessageBusRef struct {
 	*TestMessageBusUpgradeable
 	address common.Address
@@ -19,7 +20,8 @@ func (s TestMessageBusRef) Address() common.Address {
 }
 
 // NewTestMessageBusRef gets a bound Messaging Bus Upgradeable contract and the address of the contract
-// nolint: golint
+//
+//nolint:golint
 func NewTestMessageBusRef(address common.Address, backend bind.ContractBackend) (*TestMessageBusRef, error) {
 	messageBusUpgradeable, err := NewTestMessageBusUpgradeable(address, backend)
 	if err != nil {

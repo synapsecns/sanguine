@@ -2,6 +2,8 @@ package proxy
 
 import (
 	"fmt"
+	"math/big"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/ethereum/go-ethereum/eth/filters"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -10,7 +12,6 @@ import (
 	"github.com/hedzr/cmdr/tool"
 	"github.com/invopop/jsonschema"
 	"golang.org/x/exp/slices"
-	"math/big"
 )
 
 // Confirmable returns the confirmability of an interface.
@@ -36,7 +37,7 @@ func (r RPCRequests) isConfirmable() (_ bool, errs error) {
 	}
 
 	if errs != nil {
-		// nolint: wrapcheck
+		//nolint:wrapcheck
 		return false, errs
 	}
 
