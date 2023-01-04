@@ -1053,10 +1053,10 @@ func (e *ExecutorSuite) TestExecute() {
 	hashedAttestation2, err := types.Hash(unsignedAttestation2)
 	e.Nil(err)
 
-	guardSignature2, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation2), false)
+	guardSignature2, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation2), false)
 	e.Nil(err)
 
-	notarySignature2, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation2), false)
+	notarySignature2, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation2), false)
 	e.Nil(err)
 
 	signedAttestation2 := types.NewSignedAttestation(unsignedAttestation2, []types.Signature{guardSignature2}, []types.Signature{notarySignature2})
@@ -1193,13 +1193,13 @@ func (e *ExecutorSuite) TestDestinationExecute() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	notarySig, err := e.SimulatedBackendsTestSuite.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	guardSig, err := e.SimulatedBackendsTestSuite.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSig}, []types.Signature{notarySig})
+	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
 
 	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
 	e.Nil(err)
@@ -1352,10 +1352,10 @@ func (e *ExecutorSuite) TestDestinationBadProofExecute() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	notarySignature, err := e.SimulatedBackendsTestSuite.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	guardSignature, err := e.SimulatedBackendsTestSuite.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
