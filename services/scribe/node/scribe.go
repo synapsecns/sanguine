@@ -72,8 +72,8 @@ func (s Scribe) Start(ctx context.Context) error {
 			b := &backoff.Backoff{
 				Factor: 2,
 				Jitter: true,
-				Min:    1 * time.Second,
-				Max:    3 * time.Second,
+				Min:    30 * time.Millisecond,
+				Max:    2 * time.Second,
 			}
 			timeout := confirmationRefreshRateTime
 			for {
@@ -107,6 +107,7 @@ func (s Scribe) Start(ctx context.Context) error {
 
 //nolint:gocognit, cyclop
 func (s Scribe) confirmBlocks(ctx context.Context, chainID uint32, requiredConfirmations uint32) error {
+	logger.Infof("[LIVEFILL] start livefilling chain: %d", chainID)
 	newBlock, err := s.clients[chainID][0].BlockNumber(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get current block number: %w", err)
@@ -166,7 +167,6 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainID uint32, requiredConfi
 		//nolint:nestif
 		if block.Hash() != receipts[0].BlockHash {
 			logger.Errorf(" [LIVEFILL] incorrect blockhash, deleting blockhash %s on chain %d. correct block hash: %s", receipts[0].BlockHash.String(), chainID, block.Hash().String())
-
 			g, groupCtx := errgroup.WithContext(ctx)
 
 			g.Go(func() error {
