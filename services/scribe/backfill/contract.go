@@ -121,7 +121,6 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 
 						return fmt.Errorf("could not store log: %w", err)
 					}
-					LogEvent(ErrorLevel, "stororororor", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
 
 					return nil
 				})
