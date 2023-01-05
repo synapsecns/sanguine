@@ -2047,7 +2047,7 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
   address payable public WETH_ADDRESS;
 
   receive() external payable {}
-  
+
   function initialize() external initializer {
     startBlockNumber = block.number;
     _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -2256,7 +2256,7 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
   }
 
   /**
-   * @notice Relays to nodes to both transfer an ERC20 token cross-chain, and then have the nodes execute a swap through a liquidity pool on behalf of the user.
+   * @notice Relays to nodes to both transfer an ERC20 token cross-chain, and then have the nodes executor a swap through a liquidity pool on behalf of the user.
    * @param to address on other chain to bridge assets to
    * @param chainId which chain to bridge assets onto
    * @param token ERC20 compatible token to deposit into the bridge
@@ -2330,7 +2330,7 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
    * @param token ERC20 compatible token to deposit into the bridge
    * @param amount Amount in native token decimals to transfer cross-chain pre-fees
    * @param swapTokenIndex Specifies which of the underlying LP assets the nodes should attempt to redeem for
-   * @param swapMinAmount Specifies the minimum amount of the underlying asset needed for the nodes to execute the redeem/swap
+   * @param swapMinAmount Specifies the minimum amount of the underlying asset needed for the nodes to executor the redeem/swap
    * @param swapDeadline Specificies the deadline that the nodes are allowed to try to redeem/swap the LP token
    **/
   function redeemAndRemove(
@@ -2437,7 +2437,7 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
    * @param fee Amount in native token decimals to save to the contract as fees
    * @param pool Destination chain's pool to use to swap SynERC20 -> Asset. The nodes determine this by using PoolConfig.sol.
    * @param swapTokenIndex Specifies which of the underlying LP assets the nodes should attempt to redeem for
-   * @param swapMinAmount Specifies the minimum amount of the underlying asset needed for the nodes to execute the redeem/swap
+   * @param swapMinAmount Specifies the minimum amount of the underlying asset needed for the nodes to executor the redeem/swap
    * @param swapDeadline Specificies the deadline that the nodes are allowed to try to redeem/swap the LP token
    * @param kappa kappa
    **/

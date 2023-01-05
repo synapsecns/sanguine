@@ -47,7 +47,7 @@ const (
 	MaxPriorityMethod RPCMethod = "eth_maxPriorityFeePerGas"
 	// FeeHistoryMethod gets the fee history.
 	FeeHistoryMethod RPCMethod = "eth_feeHistory"
-	// EstimateGasMethod tries to estimate the gas needed to execute a specific transaction.
+	// EstimateGasMethod tries to estimate the gas needed to executor a specific transaction.
 	EstimateGasMethod RPCMethod = "eth_estimateGas"
 	// PendingTransactionCountMethod gets the pending transaction count.
 	PendingTransactionCountMethod RPCMethod = "eth_getBlockTransactionCountByNumber"

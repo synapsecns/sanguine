@@ -180,7 +180,7 @@ function test_execute() public {
   AppHarness app = suiteApp(DOMAIN_LOCAL);
   test_submitAttestation();
   skip(APP_OPTIMISTIC_SECONDS);
-  // Should be able to execute all messages once optimistic period is over
+  // Should be able to executor all messages once optimistic period is over
   for (uint32 i = 0; i < MESSAGES; ++i) {
     checkMessageExecution({ context: userRemoteToLocal, app: app, index: i });
   }
@@ -218,7 +218,7 @@ function checkMessageExecution(
   createMockTips(nonce);
   expectLogTips();
   expectExecuted({ domain: context.origin, index: index });
-  // Trigger Destination.execute() on destination chain
+  // Trigger Destination.executor() on destination chain
   destinationExecute({ domain: context.destination, index: index });
   // Check executed message status
   assertEq(

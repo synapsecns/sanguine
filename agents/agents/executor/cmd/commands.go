@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"context"
+	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/synapsecns/sanguine/agents/agents/executor"
+	"github.com/jftuga/termsize"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/agents/agents/executor/executor"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 
 	// used to embed markdown.
@@ -21,6 +23,16 @@ import (
 
 //go:embed cmd.md
 var help string
+
+// infoCommand gets info about using the executor agent.
+var infoCommand = &cli.Command{
+	Name:        "info",
+	Description: "learn how to use executor cli",
+	Action: func(c *cli.Context) error {
+		fmt.Println(string(markdown.Render(help, termsize.Width(), 6)))
+		return nil
+	},
+}
 
 var configFlag = &cli.StringFlag{
 	Name:      "config",
@@ -94,7 +106,12 @@ var runCommand = &cli.Command{
 			return fmt.Errorf("failed to create executor: %w", err)
 		}
 
-		return executor.Run(c.Context)
+		err = executor.Run(c.Context)
+		if err != nil {
+			return fmt.Errorf("failed to run executor: %w", err)
+		}
+
+		return nil
 	},
 }
 

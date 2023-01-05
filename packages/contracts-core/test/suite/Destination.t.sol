@@ -391,7 +391,7 @@ contract DestinationTest is DestinationTools {
         test_submitAttestation();
         skip(APP_OPTIMISTIC_SECONDS - 1);
         for (uint32 i = 0; i < MESSAGES; ++i) {
-            // Should not execute if root optimistic period is not over
+            // Should not executor if root optimistic period is not over
             destinationExecute({
                 domain: DOMAIN_LOCAL,
                 index: i,
@@ -427,7 +427,7 @@ contract DestinationTest is DestinationTools {
         AppHarness app = suiteApp(DOMAIN_LOCAL);
         test_submitAttestation();
         skip(APP_OPTIMISTIC_SECONDS);
-        // Should be able to execute all messages once optimistic period is over
+        // Should be able to executor all messages once optimistic period is over
         for (uint32 i = 0; i < MESSAGES; ++i) {
             checkMessageExecution({ context: userRemoteToLocal, app: app, index: i });
         }

@@ -76,7 +76,7 @@ func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, 
 
 	_, err = a.contract.Execute(transactOpts, encodedMessage, proof, index)
 	if err != nil {
-		return fmt.Errorf("could not execute message: %w", err)
+		return fmt.Errorf("could not executor message: %w", err)
 	}
 
 	return nil

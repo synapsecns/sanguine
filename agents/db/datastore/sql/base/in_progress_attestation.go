@@ -182,7 +182,7 @@ func (s Store) MarkNotaryConfirmedOnAttestationCollector(ctx context.Context, in
 		)
 
 	if tx.Error != nil {
-		return fmt.Errorf("could not execute MarkNotaryConfirmedOnAttestationCollector for in-progress attestation: %w", tx.Error)
+		return fmt.Errorf("could not executor MarkNotaryConfirmedOnAttestationCollector for in-progress attestation: %w", tx.Error)
 	}
 	return nil
 }
@@ -203,7 +203,7 @@ func (s Store) MarkVerifiedOnOrigin(ctx context.Context, inProgressAttestation t
 		)
 
 	if tx.Error != nil {
-		return fmt.Errorf("could not execute MarkVerifiedOnOrigin for in-progress attestation: %w", tx.Error)
+		return fmt.Errorf("could not executor MarkVerifiedOnOrigin for in-progress attestation: %w", tx.Error)
 	}
 	return nil
 }
@@ -579,7 +579,7 @@ func (s Store) MarkGuardConfirmedOnAttestationCollector(ctx context.Context, inP
 		)
 
 	if tx.Error != nil {
-		return fmt.Errorf("could not execute MarkGuardConfirmedOnAttestationCollector for in-progress attestation: %w", tx.Error)
+		return fmt.Errorf("could not executor MarkGuardConfirmedOnAttestationCollector for in-progress attestation: %w", tx.Error)
 	}
 	return nil
 }
@@ -678,7 +678,7 @@ func (s Store) MarkConfirmedOnDestination(ctx context.Context, inProgressAttesta
 		)
 
 	if tx.Error != nil {
-		return fmt.Errorf("could not execute MarkConfirmedOnDestination for in-progress attestation: %w", tx.Error)
+		return fmt.Errorf("could not executor MarkConfirmedOnDestination for in-progress attestation: %w", tx.Error)
 	}
 	return nil
 }

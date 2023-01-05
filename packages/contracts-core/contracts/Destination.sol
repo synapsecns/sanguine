@@ -45,7 +45,7 @@ contract Destination is DestinationEvents, DestinationHub, LocalDomainContext, V
     // We're using uint256 instead of bool/uint8 here, because reading/writing is
     // cheaper for the types that are using a full word of storage
     uint256 internal constant NOT_ENTERED = 1;
-    // TODO: set up execute() tests with message recipients actually spending some gas
+    // TODO: set up executor() tests with message recipients actually spending some gas
     // to determine if ENTERED = 0 or ENTERED = 2 leads to lower median gas usage
     uint256 internal constant ENTERED = 0;
 
