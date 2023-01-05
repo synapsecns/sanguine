@@ -914,7 +914,7 @@ func (e *ExecutorSuite) TestExecute() {
 	encodedTips, err := types.EncodeTips(tips)
 	e.Nil(err)
 
-	optimisticSeconds := uint32(1)
+	optimisticSeconds := uint32(10)
 
 	recipient := testContractDest.Address().Hash()
 	nonce := uint32(1)
