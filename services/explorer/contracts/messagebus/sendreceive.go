@@ -9,7 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/types/messagebus"
 )
 
-// GetEventType gets the executor event type.
+// GetEventType gets the execute event type.
 func (m MessageBusUpgradeableExecuted) GetEventType() messagebus.EventType {
 	return messagebus.ExecutedEvent
 }
@@ -104,7 +104,7 @@ func (m MessageBusUpgradeableExecuted) GetRevertReason() *string {
 
 var _ messagebus.EventLog = &MessageBusUpgradeableExecuted{}
 
-// GetEventType gets the executor event type.
+// GetEventType gets the execute event type.
 func (m MessageBusUpgradeableMessageSent) GetEventType() messagebus.EventType {
 	return messagebus.MessageSentEvent
 }
@@ -201,7 +201,7 @@ func (m MessageBusUpgradeableMessageSent) GetRevertReason() *string {
 
 var _ messagebus.EventLog = &MessageBusUpgradeableMessageSent{}
 
-// GetEventType gets the executor event type.
+// GetEventType gets the execute event type.
 func (m MessageBusUpgradeableCallReverted) GetEventType() messagebus.EventType {
 	return messagebus.CallRevertedEvent
 }

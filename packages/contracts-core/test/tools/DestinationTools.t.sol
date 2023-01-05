@@ -67,7 +67,7 @@ abstract contract DestinationTools is OriginTools {
         createMockTips(nonce);
         expectLogTips();
         expectExecuted({ domain: context.origin, index: index });
-        // Trigger Destination.executor() on destination chain
+        // Trigger Destination.execute() on destination chain
         destinationExecute({ domain: context.destination, index: index });
         // Check executed message status
         assertEq(destinationMessageStatus(context, index), attestationRoot, "!messageStatus");
@@ -117,7 +117,7 @@ abstract contract DestinationTools is OriginTools {
         destination.submitReport(reportRaw);
     }
 
-    // Trigger destination.executor() for given message with saved proof and expect a revert
+    // Trigger destination.execute() for given message with saved proof and expect a revert
     function destinationExecute(
         uint32 domain,
         uint256 index,
@@ -127,7 +127,7 @@ abstract contract DestinationTools is OriginTools {
         destinationExecute(domain, index, proof, revertMessage);
     }
 
-    // Trigger destination.executor() for given message with given proof and expect a revert
+    // Trigger destination.execute() for given message with given proof and expect a revert
     function destinationExecute(
         uint32 domain,
         uint256 index,
@@ -183,14 +183,14 @@ abstract contract DestinationTools is OriginTools {
         assertEq(destination.submitReport(reportRaw), returnValue, "!returnValue");
     }
 
-    // Trigger destination.executor() for a saved message
+    // Trigger destination.execute() for a saved message
     function destinationExecute(uint32 domain, uint256 index) public {
         DestinationHarness destination = suiteDestination(domain);
         bytes32[TREE_DEPTH] memory proof = proofGen.getProof(index);
         _execute(destination, proof, index);
     }
 
-    // Trigger destination.executor() for all saved messages
+    // Trigger destination.execute() for all saved messages
     function destinationExecuteAll(uint32 domain) public {
         uint256 messages = rawMessages.length;
         for (uint256 index = 0; index < messages; ++index) {
@@ -245,7 +245,7 @@ abstract contract DestinationTools is OriginTools {
     ▏*║                      INTERNAL HELPERS: TRIGGERS                      ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // Trigger destination.executor() for given message and proof, using Broadcaster as msg.sender
+    // Trigger destination.execute() for given message and proof, using Broadcaster as msg.sender
     function _execute(
         DestinationHarness destination,
         bytes32[TREE_DEPTH] memory proof,

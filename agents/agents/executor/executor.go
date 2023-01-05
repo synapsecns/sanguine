@@ -202,7 +202,7 @@ func (e Executor) Stop(chainID uint32) {
 	e.chainExecutors[chainID].stopListenChan <- true
 }
 
-// Execute calls executor on `destination.sol` on the destination chain, after verifying the message.
+// Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
 	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
@@ -236,7 +236,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 
 	err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
 	if err != nil {
-		return false, fmt.Errorf("could not executor message: %w", err)
+		return false, fmt.Errorf("could not execute message: %w", err)
 	}
 
 	return true, nil

@@ -52,7 +52,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * 2. Guard such function with `onlySystemRouter` modifier to prevent unauthorized direct calls.
  * Guard function with additional modifiers based on `rootSubmittedAt`, `origin` and `caller`.
  * `rootSubmittedAt` based modifier is a must for receiving cross-chain system calls. Any Notary
- * can potentially commit fraud, and try to executor an arbitrary message, including
+ * can potentially commit fraud, and try to execute an arbitrary message, including
  * a "message to System Router". By enforcing a minimum optimistic latency for the recipient this
  * attack can be mitigated, assuming there is at least one honest Guard willing to report the fraud.
  */

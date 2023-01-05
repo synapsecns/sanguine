@@ -16,7 +16,7 @@ type Store struct {
 	*base.Store
 }
 
-// MaxIdleConns is exported here for testing. Tests executor too slowly with a reconnect each time.
+// MaxIdleConns is exported here for testing. Tests execute too slowly with a reconnect each time.
 var MaxIdleConns = 10
 
 // NewMysqlStore creates a new mysql store for a given data store.
