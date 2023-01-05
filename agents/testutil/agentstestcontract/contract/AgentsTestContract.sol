@@ -2,6 +2,8 @@
 pragma solidity 0.8.17;
 
 contract AgentsTestContract {
+  int256 internal count = 0;
+
   event AgentsEventA(
     address indexed sender,
     uint256 indexed valueA,
@@ -62,5 +64,17 @@ contract AgentsTestContract {
       _rootSubmittedAt,
       _message
     );
+  }
+
+  function incrementCounter() public {
+    count += 1;
+  }
+
+  function decrementCounter() public {
+    count -= 1;
+  }
+
+  function getCount() external view returns (int256) {
+    return count;
   }
 }

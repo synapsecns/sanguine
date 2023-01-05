@@ -71,6 +71,11 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 	if err != nil {
 		return Guard{}, fmt.Errorf("failing to create evm for attestation collector, could not create guard for B: %w", err)
 	}
+	err = attestationDomainClient.AttestationCollector().PrimeNonce(ctx, guard.unbondedSigner)
+	if err != nil {
+		return Guard{}, fmt.Errorf("error trying to PrimeNonce for attestationClient, could not create notary for: %w", err)
+	}
+
 	for originName, originDomain := range cfg.OriginDomains {
 		originDomainClient, err := evm.NewEVM(ctx, originName, originDomain)
 		if err != nil {
@@ -93,6 +98,10 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 			destinationDomainClient, err := evm.NewEVM(ctx, destinationName, destinationDomain)
 			if err != nil {
 				return Guard{}, fmt.Errorf("failing to create evm for destination, could not create guard for: %w", err)
+			}
+			err = destinationDomainClient.Destination().PrimeNonce(ctx, guard.unbondedSigner)
+			if err != nil {
+				return Guard{}, fmt.Errorf("error trying to PrimeNonce for destinationClient, could not create guard for: %w", err)
 			}
 
 			guard.scanners[originName][destinationName] = NewAttestationCollectorAttestationScanner(
@@ -247,8 +256,10 @@ func (u Guard) Start(ctx context.Context) error {
 
 	err := g.Wait()
 	if err != nil {
+		logger.Errorf("Guard exiting with error: %v", err)
 		return fmt.Errorf("could not start the guard: %w", err)
 	}
 
+	logger.Info("Guard exiting without error")
 	return nil
 }

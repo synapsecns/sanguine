@@ -27,7 +27,7 @@ func (u NotarySuite) TestUpdateProducer() {
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
 	// call the update producing function
-	attestationProducer := notary.NewAttestationProducer(u.OriginDomainClient, testDB, u.NotarySigner, 1*time.Second)
+	attestationProducer := notary.NewAttestationProducer(u.OriginDomainClient, testDB, u.NotaryBondedSigner, 1*time.Second)
 
 	err = attestationProducer.Update(u.GetTestContext())
 	Nil(u.T(), err)
