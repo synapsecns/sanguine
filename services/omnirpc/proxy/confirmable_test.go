@@ -1,6 +1,11 @@
 package proxy_test
 
 import (
+	"io"
+	"math/big"
+	"net/http"
+	"net/http/httptest"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -8,10 +13,6 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
-	"io"
-	"math/big"
-	"net/http"
-	"net/http/httptest"
 )
 
 // checkRequest is a helper method for checking requests.
@@ -41,7 +42,8 @@ func (p *ProxySuite) checkRequest(makeReq func(client client.EVMClient), checkRe
 }
 
 // Test parsing.
-// nolint: maintidx
+//
+//nolint:maintidx
 func (p *ProxySuite) TestParseRPCPayload() {
 	/*
 	  CHECK BLOCKS

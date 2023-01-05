@@ -3,9 +3,10 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/assets"
 	"os"
 	"path/filepath"
+
+	"github.com/synapsecns/sanguine/core/assets"
 )
 
 // logoFileName is the name of the logo file.
@@ -18,7 +19,8 @@ var nameSuffix string
 // GetLogoPath fetches the logo path from the config and writes it to the global config if it doesn't exist
 // TODO this should be more generalized to work across static assets when we have more.
 // returns an empty string if not present.
-// nolint: nestif
+//
+//nolint:nestif
 func GetLogoPath() (_ string, err error) {
 	configDir, err := GetConfigDir()
 	if err != nil {

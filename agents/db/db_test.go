@@ -195,7 +195,7 @@ func (t *DBSuite) launchTestStoreNewInProgressAttestations(testDB db.SynapseDB, 
 	}
 }
 
-func (t *DBSuite) launchTestUpdateSignatures(testDB db.SynapseDB, testState *DBTestState) {
+func (t *DBSuite) launchTestUpdateNotarySignatures(testDB db.SynapseDB, testState *DBTestState) {
 	testState.fakeSignatures = []types.Signature{}
 	for i := 0; i <= testState.numMessages; i++ {
 		fakeNonce := testState.fakeNonces[i]
@@ -223,7 +223,7 @@ func (t *DBSuite) launchTestUpdateSignatures(testDB db.SynapseDB, testState *DBT
 
 		signedAttestation := types.NewSignedAttestation(inProgressAttestation.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
 		signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttestation.OriginDispatchBlockNumber(), nil, 0)
-		err = testDB.UpdateSignature(t.GetTestContext(), signedInProgressAttestation)
+		err = testDB.UpdateNotarySignature(t.GetTestContext(), signedInProgressAttestation)
 		Nil(t.T(), err)
 
 		retrievedAttestation, err := testDB.RetrieveInProgressAttestation(t.GetTestContext(), testState.fakeOrigin, testState.fakeDestination, fakeNonce)
@@ -273,7 +273,7 @@ func (t *DBSuite) launchTestSubmittedToAttestationCollectorTimes(testDB db.Synap
 		nowTime := time.Now()
 		testState.fakeSubmittedTimes = append(testState.fakeSubmittedTimes, nowTime)
 		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestation.SignedAttestation(), inProgressAttestation.OriginDispatchBlockNumber(), &nowTime, 0)
-		err = testDB.UpdateSubmittedToAttestationCollectorTime(t.GetTestContext(), submittedInProgressAttestation)
+		err = testDB.UpdateNotarySubmittedToAttestationCollectorTime(t.GetTestContext(), submittedInProgressAttestation)
 		Nil(t.T(), err)
 
 		retrievedAttestation, err := testDB.RetrieveInProgressAttestation(t.GetTestContext(), testState.fakeOrigin, testState.fakeDestination, fakeNonce)
@@ -295,7 +295,7 @@ func (t *DBSuite) launchTestSubmittedToAttestationCollectorTimes(testDB db.Synap
 	Nil(t.T(), inProgressAttestation)
 }
 
-func (t *DBSuite) launchTestMarkConfirmedOnAttestationCollector(testDB db.SynapseDB, testState *DBTestState) {
+func (t *DBSuite) launchTestMarkNotaryConfirmedOnAttestationCollector(testDB db.SynapseDB, testState *DBTestState) {
 	for i := 0; i <= testState.numMessages; i++ {
 		fakeNonce := testState.fakeNonces[i]
 		fakeRoot := testState.fakeRoots[i]
@@ -321,7 +321,7 @@ func (t *DBSuite) launchTestMarkConfirmedOnAttestationCollector(testDB db.Synaps
 		Equal(t.T(), types.AttestationStateNotarySubmittedUnconfirmed, inProgressAttestation.AttestationState())
 
 		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestation.SignedAttestation(), inProgressAttestation.OriginDispatchBlockNumber(), inProgressAttestation.SubmittedToAttestationCollectorTime(), 0)
-		err = testDB.MarkConfirmedOnAttestationCollector(t.GetTestContext(), confirmedInProgressAttestation)
+		err = testDB.MarkNotaryConfirmedOnAttestationCollector(t.GetTestContext(), confirmedInProgressAttestation)
 		Nil(t.T(), err)
 
 		retrievedConfirmedInProgressAttestation, err := testDB.RetrieveNewestConfirmedInProgressAttestation(t.GetTestContext(), testState.fakeOrigin, testState.fakeDestination)
@@ -375,9 +375,9 @@ func (t *DBSuite) TestNotaryHappyPath() {
 	t.RunOnAllDBs(func(testDB db.SynapseDB) {
 		testState := DBTestState{}
 		t.launchTestStoreNewInProgressAttestations(testDB, &testState)
-		t.launchTestUpdateSignatures(testDB, &testState)
+		t.launchTestUpdateNotarySignatures(testDB, &testState)
 		t.launchTestSubmittedToAttestationCollectorTimes(testDB, &testState)
-		t.launchTestMarkConfirmedOnAttestationCollector(testDB, &testState)
+		t.launchTestMarkNotaryConfirmedOnAttestationCollector(testDB, &testState)
 		t.launchTestVerifyAllAreConfirmed(testDB, &testState)
 	})
 }

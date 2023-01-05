@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	contracts "github.com/synapsecns/sanguine/ethergo/contracts"
@@ -13,7 +14,8 @@ import (
 )
 
 // VerifyContract verifies a contract on tenderly.
-// nolint: staticcheck
+//
+//nolint:staticcheck
 func (t *Tenderly) VerifyContract(ctx context.Context, chn chain.Chain, contractType contracts.ContractType, contract contracts.DeployedContract) error {
 	resultingContract, err := t.AddContract(ctx, chn, contractType, contract)
 	if err != nil {
