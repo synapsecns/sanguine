@@ -46,7 +46,7 @@ func (u GuardSuite) TestAttestationGuardDestinationSubmitter() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	Nil(u.T(), err)
 
-	notarySignature, err := u.NotarySigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(u.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{}, []types.Signature{notarySignature})
@@ -60,7 +60,7 @@ func (u GuardSuite) TestAttestationGuardDestinationSubmitter() {
 
 	u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), tx)
 
-	latestNonce, err := u.AttestationDomainClient.AttestationCollector().GetLatestNonce(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, u.DestinationDomainClient.Config().DomainID, u.NotarySigner)
+	latestNonce, err := u.AttestationDomainClient.AttestationCollector().GetLatestNonce(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, u.DestinationDomainClient.Config().DomainID, u.NotaryBondedSigner)
 	Nil(u.T(), err)
 	Equal(u.T(), nonce, latestNonce)
 
@@ -85,7 +85,7 @@ func (u GuardSuite) TestAttestationGuardDestinationSubmitter() {
 	err = testDB.MarkVerifiedOnOrigin(u.GetTestContext(), submittedInProgressAttestation)
 	Nil(u.T(), err)
 
-	guardSignature, err := u.GuardSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := u.GuardBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(u.T(), err)
 
 	guardSignedAttestation := types.NewSignedAttestation(
@@ -131,8 +131,8 @@ func (u GuardSuite) TestAttestationGuardDestinationSubmitter() {
 		u.AttestationDomainClient,
 		u.DestinationDomainClient,
 		testDB,
-		u.GuardSigner,
-		u.UnbondedSigner,
+		u.GuardBondedSigner,
+		u.GuardUnbondedSigner,
 		1*time.Second)
 
 	err = attestationGuardDestinationSubmitter.Update(u.GetTestContext())

@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	agentsConfig "github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/domains/evm"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"io"
 	"math/big"
 	"strconv"
+
+	agentsConfig "github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/domains/evm"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -236,6 +237,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 
 	err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
 	if err != nil {
+		logger.Errorf("Error trying to execute message on destination: %v", err)
 		return false, fmt.Errorf("could not execute message: %w", err)
 	}
 

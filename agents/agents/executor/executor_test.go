@@ -120,7 +120,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		BaseOmnirpcURL: simulatedChainA.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -217,7 +217,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		BaseOmnirpcURL: simulatedChain.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -312,7 +312,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -499,7 +499,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -627,7 +627,9 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
 	e.Nil(err)
 
-	_, passBlockRef := e.TestDeployManager.GetOriginHarness(e.GetTestContext(), e.TestBackendDestination)
+	_, testContractRef := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
+	testTransactOpts := e.TestBackendDestination.GetTxContext(e.GetTestContext(), nil)
+
 	originConfig := config.ContractConfig{
 		Address:    e.OriginContract.Address().String(),
 		StartBlock: 0,
@@ -682,7 +684,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
 
@@ -748,10 +750,10 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	guardSignature, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	notarySignature, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
@@ -799,9 +801,9 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		}
 		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
 		// increase the `time`.
-		tx, err = passBlockRef.Dispatch(txContextDestination.TransactOpts, gofakeit.Uint32(), recipient, optimisticSeconds, encodedTips, body)
+		testTx, err := testContractRef.IncrementCounter(testTransactOpts.TransactOpts)
 		e.Nil(err)
-		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
+		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), testTx)
 		return false
 	})
 }
@@ -813,14 +815,14 @@ func (e *ExecutorSuite) TestExecute() {
 		testDone = true
 	}()
 
-	testContractDest, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
+	testContractDest, testContractRef := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
+	testTransactOpts := e.TestBackendDestination.GetTxContext(e.GetTestContext(), nil)
 
 	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
 	e.Nil(err)
 	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
 	e.Nil(err)
 
-	_, passBlockRef := e.TestDeployManager.GetOriginHarness(e.GetTestContext(), e.TestBackendDestination)
 	originConfig := config.ContractConfig{
 		Address:    e.OriginContract.Address().String(),
 		StartBlock: 0,
@@ -875,12 +877,9 @@ func (e *ExecutorSuite) TestExecute() {
 		BaseOmnirpcURL: gofakeit.URL(),
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
-
-	e.TestBackendOrigin.FundAccount(e.GetTestContext(), e.UnbondedSigner.Address(), *big.NewInt(params.Ether))
-	e.TestBackendDestination.FundAccount(e.GetTestContext(), e.UnbondedSigner.Address(), *big.NewInt(params.Ether))
 
 	executorClients := map[uint32]executor.Backend{
 		uint32(e.TestBackendOrigin.GetChainID()):      e.TestBackendOrigin,
@@ -957,10 +956,10 @@ func (e *ExecutorSuite) TestExecute() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	guardSignature, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	notarySignature, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
@@ -999,7 +998,7 @@ func (e *ExecutorSuite) TestExecute() {
 	e.False(executed)
 
 	e.Eventually(func() bool {
-		executed, err = exec.Execute(e.GetTestContext(), message)
+		executed, err := exec.Execute(e.GetTestContext(), message)
 		if err != nil {
 			return false
 		}
@@ -1008,9 +1007,14 @@ func (e *ExecutorSuite) TestExecute() {
 		}
 		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
 		// increase the `time`.
-		tx, err = passBlockRef.Dispatch(txContextDestination.TransactOpts, gofakeit.Uint32(), recipient, optimisticSeconds, encodedTips, body)
+		countBeforeIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: e.GetTestContext()})
 		e.Nil(err)
-		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
+		testTx, err := testContractRef.IncrementCounter(testTransactOpts.TransactOpts)
+		e.Nil(err)
+		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), testTx)
+		countAfterIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: e.GetTestContext()})
+		e.Nil(err)
+		e.Greater(countAfterIncrement.Uint64(), countBeforeIncrement.Uint64())
 		return false
 	})
 
@@ -1053,10 +1057,10 @@ func (e *ExecutorSuite) TestExecute() {
 	hashedAttestation2, err := types.Hash(unsignedAttestation2)
 	e.Nil(err)
 
-	guardSignature2, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation2), false)
+	guardSignature2, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation2), false)
 	e.Nil(err)
 
-	notarySignature2, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation2), false)
+	notarySignature2, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation2), false)
 	e.Nil(err)
 
 	signedAttestation2 := types.NewSignedAttestation(unsignedAttestation2, []types.Signature{guardSignature2}, []types.Signature{notarySignature2})
@@ -1097,9 +1101,9 @@ func (e *ExecutorSuite) TestExecute() {
 		}
 		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
 		// increase the `time`.
-		tx, err = passBlockRef.Dispatch(txContextDestination.TransactOpts, gofakeit.Uint32(), recipient, optimisticSeconds, encodedTips, body)
+		testTx, err := testContractRef.IncrementCounter(testTransactOpts.TransactOpts)
 		e.Nil(err)
-		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
+		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), testTx)
 		return false
 	})
 
@@ -1107,6 +1111,7 @@ func (e *ExecutorSuite) TestExecute() {
 	exec.Stop(uint32(e.TestBackendDestination.GetChainID()))
 }
 
+// TestDestinationExecute test executing on destination.
 func (e *ExecutorSuite) TestDestinationExecute() {
 	var err error
 
@@ -1192,10 +1197,10 @@ func (e *ExecutorSuite) TestDestinationExecute() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	notarySignature, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	guardSignature, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
@@ -1351,10 +1356,10 @@ func (e *ExecutorSuite) TestDestinationBadProofExecute() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	e.Nil(err)
 
-	notarySignature, err := e.NotarySigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
-	guardSignature, err := e.GuardSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	e.Nil(err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})

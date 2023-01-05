@@ -33,7 +33,7 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	Nil(u.T(), err)
 
-	notarySignature, err := u.NotarySigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(u.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{}, []types.Signature{notarySignature})
@@ -52,7 +52,7 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 		uint32(origin),
 		uint32(destination),
 		testDB,
-		u.UnbondedSigner,
+		u.GuardUnbondedSigner,
 		1*time.Second)
 
 	err = attestationCollectorAttestationScanner.Update(u.GetTestContext())
