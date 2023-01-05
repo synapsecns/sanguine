@@ -30,14 +30,17 @@ var (
 
 // AgentsTestContractMetaData contains all meta data concerning the AgentsTestContract contract.
 var AgentsTestContractMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"AgentsEventA\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"valueA\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"AgentsEventB\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_rootSubmittedAt\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"IMessageReceipientHandleEvent\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventAandB\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"valueA\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventB\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_rootSubmittedAt\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"handle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"AgentsEventA\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"valueA\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"AgentsEventB\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_rootSubmittedAt\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"IMessageReceipientHandleEvent\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"decrementCounter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"valueA\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventAandB\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"valueA\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"valueB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"valueC\",\"type\":\"uint256\"}],\"name\":\"emitAgentsEventB\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCount\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_rootSubmittedAt\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\"}],\"name\":\"handle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"incrementCounter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
+		"f5c5ad83": "decrementCounter()",
 		"9bfa08a0": "emitAgentsEventA(uint256,uint256,uint256)",
 		"7a8f94ca": "emitAgentsEventAandB(uint256,uint256,uint256)",
 		"9033a74b": "emitAgentsEventB(bytes,uint256,uint256)",
+		"a87d942c": "getCount()",
 		"e4d16d62": "handle(uint32,uint32,bytes32,uint256,bytes)",
+		"5b34b966": "incrementCounter()",
 	},
-	Bin: "0x608060405234801561001057600080fd5b5061049f806100206000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c80637a8f94ca146100515780639033a74b146100665780639bfa08a014610079578063e4d16d621461008c575b600080fd5b61006461005f3660046101d9565b61009f565b005b6100646100743660046102df565b6100db565b6100646100873660046101d9565b610132565b61006461009a366004610346565b610189565b6100aa838383610132565b6100d6836040516020016100c091815260200190565b60405160208183030381529060405283836100db565b505050565b3373ffffffffffffffffffffffffffffffffffffffff167f6035db97cdd53d64e2d649d14852dd02182d8df440dc9e9ec01734debbae43ed8484846040516101259392919061041c565b60405180910390a2505050565b81833373ffffffffffffffffffffffffffffffffffffffff167f8304c3213cbf0d9583777ae3722ed0a3f56cf936c28af4984586b61735f284928460405161017c91815260200190565b60405180910390a4505050565b8363ffffffff168563ffffffff167f08add9b76c46d1f24d8316c1a0ac8d055490d07289f5ed084ef5022cd81cec818585856040516101ca93929190610441565b60405180910390a35050505050565b6000806000606084860312156101ee57600080fd5b505081359360208301359350604090920135919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261024557600080fd5b813567ffffffffffffffff8082111561026057610260610205565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019082821181831017156102a6576102a6610205565b816040528381528660208588010111156102bf57600080fd5b836020870160208301376000602085830101528094505050505092915050565b6000806000606084860312156102f457600080fd5b833567ffffffffffffffff81111561030b57600080fd5b61031786828701610234565b9660208601359650604090950135949350505050565b803563ffffffff8116811461034157600080fd5b919050565b600080600080600060a0868803121561035e57600080fd5b6103678661032d565b94506103756020870161032d565b93506040860135925060608601359150608086013567ffffffffffffffff81111561039f57600080fd5b6103ab88828901610234565b9150509295509295909350565b6000815180845260005b818110156103de576020818501810151868301820152016103c2565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b60608152600061042f60608301866103b8565b60208301949094525060400152919050565b83815282602082015260606040820152600061046060608301846103b8565b9594505050505056fea2646970667358221220199bfe8f8270b5d62e94ec584ec32dda7014c8a3a08f919d8d0cdbb59b48fe0264736f6c63430008110033",
+	Bin: "0x60806040526000805534801561001457600080fd5b5061059e806100246000396000f3fe608060405234801561001057600080fd5b506004361061007d5760003560e01c80639bfa08a01161005b5780639bfa08a0146100b2578063a87d942c146100c5578063e4d16d62146100da578063f5c5ad83146100ed57600080fd5b80635b34b966146100825780637a8f94ca1461008c5780639033a74b1461009f575b600080fd5b61008a6100f5565b005b61008a61009a36600461025a565b61010e565b61008a6100ad366004610360565b61014a565b61008a6100c036600461025a565b6101a1565b60005460405190815260200160405180910390f35b61008a6100e83660046103c7565b6101f8565b61008a610248565b60016000808282546101079190610468565b9091555050565b6101198383836101a1565b6101458360405160200161012f91815260200190565b604051602081830303815290604052838361014a565b505050565b3373ffffffffffffffffffffffffffffffffffffffff167f6035db97cdd53d64e2d649d14852dd02182d8df440dc9e9ec01734debbae43ed848484604051610194939291906104f4565b60405180910390a2505050565b81833373ffffffffffffffffffffffffffffffffffffffff167f8304c3213cbf0d9583777ae3722ed0a3f56cf936c28af4984586b61735f28492846040516101eb91815260200190565b60405180910390a4505050565b8363ffffffff168563ffffffff167f08add9b76c46d1f24d8316c1a0ac8d055490d07289f5ed084ef5022cd81cec8185858560405161023993929190610519565b60405180910390a35050505050565b60016000808282546101079190610541565b60008060006060848603121561026f57600080fd5b505081359360208301359350604090920135919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f8301126102c657600080fd5b813567ffffffffffffffff808211156102e1576102e1610286565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f0116810190828211818310171561032757610327610286565b8160405283815286602085880101111561034057600080fd5b836020870160208301376000602085830101528094505050505092915050565b60008060006060848603121561037557600080fd5b833567ffffffffffffffff81111561038c57600080fd5b610398868287016102b5565b9660208601359650604090950135949350505050565b803563ffffffff811681146103c257600080fd5b919050565b600080600080600060a086880312156103df57600080fd5b6103e8866103ae565b94506103f6602087016103ae565b93506040860135925060608601359150608086013567ffffffffffffffff81111561042057600080fd5b61042c888289016102b5565b9150509295509295909350565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b808201828112600083128015821682158216171561048857610488610439565b505092915050565b6000815180845260005b818110156104b65760208185018101518683018201520161049a565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b6060815260006105076060830186610490565b60208301949094525060400152919050565b8381528260208201526060604082015260006105386060830184610490565b95945050505050565b818103600083128015838313168383128216171561056157610561610439565b509291505056fea2646970667358221220e12ea28fac342a78b1a72277b7233f13f301ce96ea06b1075e229359e3a8a70564736f6c63430008110033",
 }
 
 // AgentsTestContractABI is the input ABI used to generate the binding from.
@@ -211,6 +214,58 @@ func (_AgentsTestContract *AgentsTestContractTransactorRaw) Transact(opts *bind.
 	return _AgentsTestContract.Contract.contract.Transact(opts, method, params...)
 }
 
+// GetCount is a free data retrieval call binding the contract method 0xa87d942c.
+//
+// Solidity: function getCount() view returns(int256)
+func (_AgentsTestContract *AgentsTestContractCaller) GetCount(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _AgentsTestContract.contract.Call(opts, &out, "getCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetCount is a free data retrieval call binding the contract method 0xa87d942c.
+//
+// Solidity: function getCount() view returns(int256)
+func (_AgentsTestContract *AgentsTestContractSession) GetCount() (*big.Int, error) {
+	return _AgentsTestContract.Contract.GetCount(&_AgentsTestContract.CallOpts)
+}
+
+// GetCount is a free data retrieval call binding the contract method 0xa87d942c.
+//
+// Solidity: function getCount() view returns(int256)
+func (_AgentsTestContract *AgentsTestContractCallerSession) GetCount() (*big.Int, error) {
+	return _AgentsTestContract.Contract.GetCount(&_AgentsTestContract.CallOpts)
+}
+
+// DecrementCounter is a paid mutator transaction binding the contract method 0xf5c5ad83.
+//
+// Solidity: function decrementCounter() returns()
+func (_AgentsTestContract *AgentsTestContractTransactor) DecrementCounter(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _AgentsTestContract.contract.Transact(opts, "decrementCounter")
+}
+
+// DecrementCounter is a paid mutator transaction binding the contract method 0xf5c5ad83.
+//
+// Solidity: function decrementCounter() returns()
+func (_AgentsTestContract *AgentsTestContractSession) DecrementCounter() (*types.Transaction, error) {
+	return _AgentsTestContract.Contract.DecrementCounter(&_AgentsTestContract.TransactOpts)
+}
+
+// DecrementCounter is a paid mutator transaction binding the contract method 0xf5c5ad83.
+//
+// Solidity: function decrementCounter() returns()
+func (_AgentsTestContract *AgentsTestContractTransactorSession) DecrementCounter() (*types.Transaction, error) {
+	return _AgentsTestContract.Contract.DecrementCounter(&_AgentsTestContract.TransactOpts)
+}
+
 // EmitAgentsEventA is a paid mutator transaction binding the contract method 0x9bfa08a0.
 //
 // Solidity: function emitAgentsEventA(uint256 valueA, uint256 valueB, uint256 valueC) returns()
@@ -293,6 +348,27 @@ func (_AgentsTestContract *AgentsTestContractSession) Handle(_origin uint32, _no
 // Solidity: function handle(uint32 _origin, uint32 _nonce, bytes32 _sender, uint256 _rootSubmittedAt, bytes _message) returns()
 func (_AgentsTestContract *AgentsTestContractTransactorSession) Handle(_origin uint32, _nonce uint32, _sender [32]byte, _rootSubmittedAt *big.Int, _message []byte) (*types.Transaction, error) {
 	return _AgentsTestContract.Contract.Handle(&_AgentsTestContract.TransactOpts, _origin, _nonce, _sender, _rootSubmittedAt, _message)
+}
+
+// IncrementCounter is a paid mutator transaction binding the contract method 0x5b34b966.
+//
+// Solidity: function incrementCounter() returns()
+func (_AgentsTestContract *AgentsTestContractTransactor) IncrementCounter(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _AgentsTestContract.contract.Transact(opts, "incrementCounter")
+}
+
+// IncrementCounter is a paid mutator transaction binding the contract method 0x5b34b966.
+//
+// Solidity: function incrementCounter() returns()
+func (_AgentsTestContract *AgentsTestContractSession) IncrementCounter() (*types.Transaction, error) {
+	return _AgentsTestContract.Contract.IncrementCounter(&_AgentsTestContract.TransactOpts)
+}
+
+// IncrementCounter is a paid mutator transaction binding the contract method 0x5b34b966.
+//
+// Solidity: function incrementCounter() returns()
+func (_AgentsTestContract *AgentsTestContractTransactorSession) IncrementCounter() (*types.Transaction, error) {
+	return _AgentsTestContract.Contract.IncrementCounter(&_AgentsTestContract.TransactOpts)
 }
 
 // AgentsTestContractAgentsEventAIterator is returned from FilterAgentsEventA and is used to iterate over the raw logs and unpacked data for AgentsEventA events raised by the AgentsTestContract contract.

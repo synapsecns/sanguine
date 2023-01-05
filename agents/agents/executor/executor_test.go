@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/Flaque/filet"
@@ -813,14 +814,15 @@ func (e *ExecutorSuite) TestExecute() {
 		testDone = true
 	}()
 
-	testContractDest, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
+	testContractDest, testContractRef := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
+	testTransactOpts := e.TestBackendDestination.GetTxContext(e.GetTestContext(), nil)
 
 	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
 	e.Nil(err)
 	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
 	e.Nil(err)
 
-	_, passBlockRef := e.TestDeployManager.GetOriginHarness(e.GetTestContext(), e.TestBackendDestination)
+	//_, passBlockRef := e.TestDeployManager.GetOriginHarness(e.GetTestContext(), e.TestBackendOrigin)
 	originConfig := config.ContractConfig{
 		Address:    e.OriginContract.Address().String(),
 		StartBlock: 0,
@@ -915,7 +917,7 @@ func (e *ExecutorSuite) TestExecute() {
 	encodedTips, err := types.EncodeTips(tips)
 	e.Nil(err)
 
-	optimisticSeconds := uint32(10)
+	optimisticSeconds := uint32(1)
 
 	recipient := testContractDest.Address().Hash()
 	nonce := uint32(1)
@@ -986,6 +988,7 @@ func (e *ExecutorSuite) TestExecute() {
 			Nonce:       &nonce,
 		})
 		if err == nil {
+			fmt.Printf("\nCRONIN eventually true 0\n")
 			continueChan <- true
 			return true
 		}
@@ -994,25 +997,47 @@ func (e *ExecutorSuite) TestExecute() {
 
 	<-continueChan
 
+	fmt.Printf("\nCRONIN about to call exec.Execute\n")
 	executed, err := exec.Execute(e.GetTestContext(), message)
 	e.Nil(err)
 	e.False(executed)
+	fmt.Printf("\nCRONIN done calling exec.Execute\n")
 
+	currCount := 0
 	e.Eventually(func() bool {
-		executed, err = exec.Execute(e.GetTestContext(), message)
+		if currCount == 10 {
+			fmt.Printf("\nCRONIN this is a good place to break\n")
+		}
+		executed, err := exec.Execute(e.GetTestContext(), message)
 		if err != nil {
+			if strings.Contains(err.Error(), "insufficient funds for transfer") {
+				fmt.Printf("\nCRONIN ^^^^^^^^^^^^^^^^^^ &4& \n")
+				e.True(false)
+			} else {
+				fmt.Printf("\nCRONIN NOT^^^^^^^^^^^^^^^^^^ %s &4&\n", err.Error())
+			}
+			e.NotContains(err.Error(), "insufficient funds for transfer")
+			fmt.Printf("\nCRONIN ######### err %v\n", err)
 			return false
 		}
 		if executed {
+			fmt.Printf("\nCRONIN eventually true 1\n")
 			return true
 		}
 		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
 		// increase the `time`.
-		tx, err = passBlockRef.Dispatch(txContextDestination.TransactOpts, gofakeit.Uint32(), recipient, optimisticSeconds, encodedTips, body)
+		countBeforeIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: e.GetTestContext()})
 		e.Nil(err)
-		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
+		testTx, err := testContractRef.IncrementCounter(testTransactOpts.TransactOpts)
+		e.Nil(err)
+		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), testTx)
+		countAfterIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: e.GetTestContext()})
+		e.Nil(err)
+		e.Greater(countAfterIncrement.Uint64(), countBeforeIncrement.Uint64())
+		currCount = int(countAfterIncrement.Uint64())
 		return false
 	})
+	fmt.Printf("\nCRONIN after eventually 1\n")
 
 	tips2 := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 	encodedTips2, err := types.EncodeTips(tips2)
@@ -1075,6 +1100,7 @@ func (e *ExecutorSuite) TestExecute() {
 			Nonce:       &nonce2,
 		})
 		if err == nil {
+			fmt.Printf("\nCRONIN eventually true 2\n")
 			continueChan <- true
 			return true
 		}
@@ -1093,16 +1119,18 @@ func (e *ExecutorSuite) TestExecute() {
 			return false
 		}
 		if executed {
+			fmt.Printf("\nCRONIN eventually true 3\n")
 			return true
 		}
 		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
 		// increase the `time`.
-		tx, err = passBlockRef.Dispatch(txContextDestination.TransactOpts, gofakeit.Uint32(), recipient, optimisticSeconds, encodedTips, body)
+		testTx, err := testContractRef.IncrementCounter(testTransactOpts.TransactOpts)
 		e.Nil(err)
-		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
+		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), testTx)
 		return false
 	})
 
+	fmt.Printf("\nCRONIN about to stop execs...\n")
 	exec.Stop(uint32(e.TestBackendOrigin.GetChainID()))
 	exec.Stop(uint32(e.TestBackendDestination.GetChainID()))
 }

@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	agentsConfig "github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/domains/evm"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"io"
 	"math/big"
 	"strconv"
+
+	agentsConfig "github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/domains/evm"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -227,6 +228,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
+	logger.Info("CRONIN I got here with verified = true...")
 	index := big.NewInt(int64(*nonce - 1))
 
 	var proofB32 [32][32]byte
@@ -234,10 +236,13 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		copy(proofB32[i][:], p)
 	}
 
+	logger.Info("CRONIN about to call e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)")
 	err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
 	if err != nil {
+		logger.Error("Error trying to execute message on destination: %v", err)
 		return false, fmt.Errorf("could not execute message: %w", err)
 	}
+	logger.Info("CRONIN about to return true from executor.Execute without an error.")
 
 	return true, nil
 }
@@ -254,21 +259,25 @@ const (
 func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) {
 	root, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].Root(message.Nonce())
 	if err != nil {
+		logger.Info("\nCRONIN I got here 0\n")
 		return false, fmt.Errorf("could not get root: %w", err)
 	}
 
 	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(message.Nonce()-1, message.Nonce())
 	if err != nil {
+		logger.Info("\nCRONIN I got here 1\n")
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
 	leaf, err := message.ToLeaf()
 	if err != nil {
+		logger.Info("\nCRONIN I got here 2\n")
 		return false, fmt.Errorf("could not convert message to leaf: %w", err)
 	}
 
 	inTree := merkle.VerifyMerkleProof(root, leaf[:], message.Nonce()-1, proof)
 
+	logger.Info("\nCRONIN I got here after merkle.VerifyMerkleProof--> inTree %v \n", inTree)
 	return inTree, nil
 }
 
