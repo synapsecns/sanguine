@@ -1,4 +1,4 @@
-package executor
+package src
 
 import "github.com/ipfs/go-log"
 
