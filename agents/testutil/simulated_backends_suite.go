@@ -191,6 +191,12 @@ func (a *SimulatedBackendsTestSuite) SetupGuard() {
 		a.T().Fatal(err)
 	}
 	a.GuardBondedSigner = localsigner.NewSigner(a.GuardBondedWallet.PrivateKey())
+
+	a.GuardUnbondedWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.GuardUnbondedSigner = localsigner.NewSigner(a.GuardUnbondedWallet.PrivateKey())
 }
 
 // SetupNotary sets up the Notary agent.
@@ -201,6 +207,22 @@ func (a *SimulatedBackendsTestSuite) SetupNotary() {
 		a.T().Fatal(err)
 	}
 	a.NotaryBondedSigner = localsigner.NewSigner(a.NotaryBondedWallet.PrivateKey())
+
+	a.NotaryUnbondedWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.NotaryUnbondedSigner = localsigner.NewSigner(a.NotaryUnbondedWallet.PrivateKey())
+}
+
+// SetupExecutor sets up the Executor agent.
+func (a *SimulatedBackendsTestSuite) SetupExecutor() {
+	var err error
+	a.ExecutorUnbondedWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.ExecutorUnbondedSigner = localsigner.NewSigner(a.ExecutorUnbondedWallet.PrivateKey())
 }
 
 // SetupTest sets up the test.
@@ -209,27 +231,9 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 
 	a.SetupGuard()
 	a.SetupNotary()
+	a.SetupExecutor()
 
 	a.TestDeployManager = NewDeployManager(a.T())
-
-	var err error
-	a.NotaryUnbondedWallet, err = wallet.FromRandom()
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.NotaryUnbondedSigner = localsigner.NewSigner(a.NotaryUnbondedWallet.PrivateKey())
-
-	a.GuardUnbondedWallet, err = wallet.FromRandom()
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.GuardUnbondedSigner = localsigner.NewSigner(a.GuardUnbondedWallet.PrivateKey())
-
-	a.ExecutorUnbondedWallet, err = wallet.FromRandom()
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.ExecutorUnbondedSigner = localsigner.NewSigner(a.GuardUnbondedWallet.PrivateKey())
 
 	a.SetupDestination(a.TestDeployManager)
 	a.SetupOrigin(a.TestDeployManager)
