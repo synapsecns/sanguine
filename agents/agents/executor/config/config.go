@@ -19,7 +19,7 @@ type Config struct {
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
 	// UnbondedSigner contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
-	UnbondedSigner agentsConfig.SignerConfig `toml:"UnbondedSigner"`
+	UnbondedSigner agentsConfig.SignerConfig `yaml:"UnbondedSigner"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
