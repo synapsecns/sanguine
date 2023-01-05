@@ -273,9 +273,9 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
 	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
-	chainBackfiller, err := backfill.NewChainBackfiller(42161, b.testDB, backendClientArr, chainConfig)
+	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1)
 	Nil(b.T(), err)
-	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock)
+	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock, false)
 	Nil(b.T(), err)
 
 	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
@@ -313,10 +313,10 @@ func (b BackfillSuite) TestInvalidTxVRS() {
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
 	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
-	chainBackfiller, err := backfill.NewChainBackfiller(1313161554, b.testDB, backendClientArr, chainConfig)
+	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1)
 	Nil(b.T(), err)
 
-	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock)
+	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock, false)
 	Nil(b.T(), err)
 
 	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
