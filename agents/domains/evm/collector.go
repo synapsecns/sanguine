@@ -107,3 +107,11 @@ func (a attestationCollectorContract) GetRoot(ctx context.Context, origin, desti
 
 	return root, nil
 }
+
+func (a attestationCollectorContract) PrimeNonce(ctx context.Context, signer signer.Signer) error {
+	_, err := a.nonceManager.GetNextNonce(signer.Address())
+	if err != nil {
+		return fmt.Errorf("could not prime nonce for signer on collector: %w", err)
+	}
+	return nil
+}

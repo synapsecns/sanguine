@@ -4,6 +4,9 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"math/big"
+	"sync"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -11,8 +14,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
-	"math/big"
-	"sync"
 )
 
 // Manager is a singleton used to generate a nonce.
@@ -26,8 +27,10 @@ type Manager interface {
 	// right now, this only works if all txes are sent out (a safe assumption in test mode)
 	// this can be obviated by signing at send time or loop + retrying on failure
 	NewKeyedTransactor(realSigner *bind.TransactOpts) (*bind.TransactOpts, error)
-	// NewKeyedTransactorFromKey creates a new keyed transactor from a private key
+	// NewKeyedTransactorFromKey creates a new keyed transactor from a private key.
 	NewKeyedTransactorFromKey(key *ecdsa.PrivateKey) (*bind.TransactOpts, error)
+	// GetNextNonce gets the next nonce for the address.
+	GetNextNonce(address common.Address) (*big.Int, error)
 }
 
 // ChainQuery is a chain used to generate a nonce.
@@ -69,8 +72,8 @@ func NewNonceManager(ctx context.Context, chain ChainQuery, chainID *big.Int) Ma
 	}
 }
 
-// getNextNonce gets the next nonce for the account.
-func (n *nonceManagerImp) getNextNonce(address common.Address) (*big.Int, error) {
+// GetNextNonce gets the next nonce for the account.
+func (n *nonceManagerImp) GetNextNonce(address common.Address) (*big.Int, error) {
 	// get the next nonce for the account
 	n.nonceMapLock.Lock()
 	currentNonce := n.nonceMap[address]
@@ -95,7 +98,7 @@ func (n *nonceManagerImp) getNextNonce(address common.Address) (*big.Int, error)
 
 // incrementNonce increments the nonce for an account. This should be called from within a accountMutex.
 func (n *nonceManagerImp) incrementNonce(address common.Address) error {
-	currentNonce, err := n.getNextNonce(address)
+	currentNonce, err := n.GetNextNonce(address)
 	if err != nil {
 		return fmt.Errorf("could not get current nonce: %w", err)
 	}
@@ -130,7 +133,7 @@ func (n *nonceManagerImp) NewKeyedTransactor(realSigner *bind.TransactOpts) (*bi
 			defer acctMutex.Unlock()
 
 			// get the next nonce for the account
-			nonce, err := n.getNextNonce(realSigner.From)
+			nonce, err := n.GetNextNonce(realSigner.From)
 			if err != nil {
 				return nil, fmt.Errorf("could not get next nonce: %w", err)
 			}
@@ -202,7 +205,7 @@ func (n *nonceManagerImp) SignTx(ogTx *types.Transaction, signer types.Signer, p
 	addressLock := n.accountMutex.Lock(address)
 	defer addressLock.Unlock()
 
-	nonce, err := n.getNextNonce(address)
+	nonce, err := n.GetNextNonce(address)
 	if err != nil {
 		return nil, fmt.Errorf("could not get nonce: %w", err)
 	}

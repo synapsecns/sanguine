@@ -38,7 +38,7 @@ func (u NotarySuite) TestOriginAttestationSubmitter() {
 	hashedAttestation, err := types.Hash(unsignedInProgressAttestation.SignedAttestation().Attestation())
 	Nil(u.T(), err)
 
-	signature, err := u.NotarySigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	signature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(u.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedInProgressAttestation.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
@@ -52,8 +52,8 @@ func (u NotarySuite) TestOriginAttestationSubmitter() {
 		u.AttestationDomainClient,
 		u.DestinationDomainClient,
 		testDB,
-		u.NotarySigner,
-		u.UnbondedSigner,
+		u.NotaryBondedSigner,
+		u.NotaryUnbondedSigner,
 		1*time.Second)
 
 	err = originAttestationSubmitter.Update(u.GetTestContext())
