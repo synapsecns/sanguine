@@ -237,7 +237,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 
 	err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
 	if err != nil {
-		logger.Error("Error trying to execute message on destination: %v", err)
+		logger.Errorf("Error trying to execute message on destination: %v", err)
 		return false, fmt.Errorf("could not execute message: %w", err)
 	}
 
