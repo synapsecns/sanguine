@@ -19,7 +19,6 @@ import (
 	"github.com/synapsecns/sanguine/core/merkle"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -44,8 +43,6 @@ func (e *ExecutorSuite) TestExecutor() {
 	e.Nil(err)
 	simulatedClientB, err := backfill.DialBackend(e.GetTestContext(), simulatedChainB.RPCAddress())
 	e.Nil(err)
-	simulatedChainA.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
-	simulatedChainB.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
 	testContractA, testRefA := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), simulatedChainA)
 	testContractB, testRefB := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), simulatedChainB)
 	transactOptsA := simulatedChainA.GetTxContext(e.GetTestContext(), nil)
@@ -90,10 +87,10 @@ func (e *ExecutorSuite) TestExecutor() {
 		chainIDB: {simulatedClientB, simulatedClientB},
 	}
 
-	scribe, err := node.NewScribe(e.scribeTestDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
 	e.Nil(err)
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
 
 	go func() {
 		scribeErr := scribeClient.Start(e.GetSuiteContext())
@@ -134,7 +131,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		chainIDB: simulatedChainB.RPCAddress(),
 	}
 
-	exc, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
+	exc, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the executor.
@@ -173,7 +170,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 	simulatedChain := geth.NewEmbeddedBackendForChainID(e.GetTestContext(), e.T(), big.NewInt(int64(chainID)))
 	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), simulatedChain.RPCAddress())
 	e.Nil(err)
-	simulatedChain.FundAccount(e.GetTestContext(), e.wallet.Address(), *big.NewInt(params.Ether))
+
 	testContract, testRef := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), simulatedChain)
 	transactOpts := simulatedChain.GetTxContext(e.GetTestContext(), nil)
 
@@ -193,10 +190,10 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		chainID: {simulatedClient, simulatedClient},
 	}
 
-	scribe, err := node.NewScribe(e.scribeTestDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
 	e.Nil(err)
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -229,7 +226,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		chainID: simulatedChain.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the exec.
@@ -285,10 +282,10 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		chainID: {simulatedClient, simulatedClient},
 	}
 
-	scribe, err := node.NewScribe(e.scribeTestDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
 	e.Nil(err)
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -326,7 +323,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	_, err = exec.GetMerkleTree(chainID, destination).Root(1)
@@ -455,7 +452,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	var newRoot []byte
 	e.Eventually(func() bool {
-		dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.testDB)
+		dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
 		e.Nil(err)
 
 		exec.OverrideMerkleTree(chainID, destination, dbTree)
@@ -503,7 +500,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		},
 	}
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -519,7 +516,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	nonces := []uint32{1, 2, 3, 4}
@@ -575,14 +572,14 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	failMessage := types.NewMessage(header1, tips[3], messageBytes[3])
 
 	// Insert messages into the database.
-	err = e.testDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0])
 	e.Nil(err)
-	err = e.testDB.StoreMessage(e.GetTestContext(), message1, blockNumbers[1])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message1, blockNumbers[1])
 	e.Nil(err)
-	err = e.testDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2])
 	e.Nil(err)
 
-	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.testDB)
+	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
 	e.Nil(err)
 
 	exec.OverrideMerkleTree(chainID, destination, dbTree)
@@ -603,10 +600,10 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	e.Nil(err)
 	e.False(inTreeFail)
 
-	err = e.testDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3])
 	e.Nil(err)
 
-	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.testDB)
+	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
 	e.Nil(err)
 
 	exec.OverrideMerkleTree(chainID, destination, dbTree)
@@ -656,10 +653,10 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		uint32(e.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
 	}
 
-	scribe, err := node.NewScribe(e.scribeTestDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
 	e.Nil(err)
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -698,7 +695,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the exec.
@@ -773,7 +770,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	destination := uint32(e.TestBackendDestination.GetChainID())
 	// Wait for message to be stored in the database.
 	e.Eventually(func() bool {
-		_, err = e.testDB.GetAttestationBlockNumber(e.GetTestContext(), types2.DBAttestation{
+		_, err = e.ExecutorTestDB.GetAttestationBlockNumber(e.GetTestContext(), types2.DBAttestation{
 			ChainID:     &chainID,
 			Destination: &destination,
 			Nonce:       &nonce,
@@ -849,10 +846,10 @@ func (e *ExecutorSuite) TestExecute() {
 		uint32(e.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
 	}
 
-	scribe, err := node.NewScribe(e.scribeTestDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
 	e.Nil(err)
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.dbPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -891,7 +888,7 @@ func (e *ExecutorSuite) TestExecute() {
 		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.testDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the exec.
@@ -979,7 +976,7 @@ func (e *ExecutorSuite) TestExecute() {
 	destination := uint32(e.TestBackendDestination.GetChainID())
 	// Wait for message to be stored in the database.
 	e.Eventually(func() bool {
-		_, err = e.testDB.GetAttestationBlockNumber(e.GetTestContext(), types2.DBAttestation{
+		_, err = e.ExecutorTestDB.GetAttestationBlockNumber(e.GetTestContext(), types2.DBAttestation{
 			ChainID:     &chainID,
 			Destination: &destination,
 			Nonce:       &nonce,
@@ -1073,7 +1070,7 @@ func (e *ExecutorSuite) TestExecute() {
 	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 
 	e.Eventually(func() bool {
-		_, err = e.testDB.GetAttestationBlockNumber(e.GetTestContext(), types2.DBAttestation{
+		_, err = e.ExecutorTestDB.GetAttestationBlockNumber(e.GetTestContext(), types2.DBAttestation{
 			ChainID:     &chainID,
 			Destination: &destination,
 			Nonce:       &nonce2,
