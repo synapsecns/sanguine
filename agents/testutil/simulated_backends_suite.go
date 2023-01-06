@@ -4,11 +4,14 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/Flaque/filet"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db"
+	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
@@ -22,6 +25,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
+	scribesqlite "github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
 )
 
 // SimulatedBackendsTestSuite can be used as the base for any test needing simulated backends
@@ -57,6 +62,9 @@ type SimulatedBackendsTestSuite struct {
 	AttestationDomainClient     domains.DomainClient
 	DestinationDomainClient     domains.DomainClient
 	TestDeployManager           *DeployManager
+	ScribeTestDB                scribedb.EventDB
+	DBPath                      string
+	ExecutorTestDB              db.ExecutorDB
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -228,6 +236,7 @@ func (a *SimulatedBackendsTestSuite) SetupExecutor() {
 // SetupTest sets up the test.
 func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.TestSuite.SetupTest()
+	a.TestSuite.DeferAfterSuite(a.CleanAfterTestSuite)
 
 	a.SetupGuard()
 	a.SetupNotary()
@@ -238,4 +247,20 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.SetupDestination(a.TestDeployManager)
 	a.SetupOrigin(a.TestDeployManager)
 	a.SetupAttestation(a.TestDeployManager)
+
+	a.DBPath = filet.TmpDir(a.T(), "")
+	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath)
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.ScribeTestDB = scribeSqliteStore
+	sqliteStore, err := executorsqllite.NewSqliteStore(a.GetTestContext(), a.DBPath)
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.ExecutorTestDB = sqliteStore
+}
+
+func (a *SimulatedBackendsTestSuite) CleanAfterTestSuite() {
+	filet.CleanUp(a.T())
 }
