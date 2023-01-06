@@ -236,7 +236,7 @@ func (a *SimulatedBackendsTestSuite) SetupExecutor() {
 // SetupTest sets up the test.
 func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.TestSuite.SetupTest()
-	a.TestSuite.DeferAfterSuite(a.CleanAfterTestSuite)
+	a.TestSuite.DeferAfterSuite(a.cleanAfterTestSuite)
 
 	a.SetupGuard()
 	a.SetupNotary()
@@ -261,6 +261,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.ExecutorTestDB = sqliteStore
 }
 
-func (a *SimulatedBackendsTestSuite) CleanAfterTestSuite() {
+// cleanAfterTestSuite does cleanup after test suite is finished.
+func (a *SimulatedBackendsTestSuite) cleanAfterTestSuite() {
 	filet.CleanUp(a.T())
 }
