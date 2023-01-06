@@ -268,7 +268,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 // TestAllAgentsSingleMessageIntegrationE2E is an integration involving just a guard, notary
 // and executor executing a single message to the destination.
 //
-//nolint:dupl
+//nolint:dupl,cyclop,maintidx
 func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 	notaryTestConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
