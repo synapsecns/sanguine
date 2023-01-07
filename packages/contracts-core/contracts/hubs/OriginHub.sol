@@ -24,6 +24,30 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
 
     using MerkleLib for MerkleLib.Tree;
 
+    /**
+     * @notice Information about what the latest nonce seen for a given destination.
+     * @param destination	The destination domain id.
+     * @param latestNonce	The latest nonce that has been stored for the destination.
+     */
+    struct DestinationLatestNonce {
+        uint32 destination;
+        uint32 latestNonce;
+    }
+
+    /**
+     * @notice Information about what the latest nonce and root seen for a given destination.
+     * @param destination	        The destination domain id.
+     * @param latestNonce	        The latest nonce that has been stored for the destination.
+     * @param root	                The merkle root corresponding to the latest nonce.
+     * @param dispatchBlockNumber	The block number when the message with that nonce was written to the origin.
+     */
+    struct DestinationLatestNonceAndRoot {
+        uint32 destination;
+        uint32 latestNonce;
+        uint32 root;
+        uint256 dispatchBlockNumber;
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -106,7 +130,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     function getHistoricalRoot(uint32 _destination, uint32 _nonce)
         public
         view
-        returns (bytes32, uint256)
+        returns (DestinationLatestNonceAndRoot[] memory)
     {
         // Check if destination is known
         if (historicalRoots[_destination].length > 0) {
@@ -121,6 +145,47 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
             require(_nonce == 0, "!nonce: unknown destination");
             return (EMPTY_TREE_ROOT, uint256(0));
         }
+    }
+
+    /**
+     * @notice Returns latest historical merkle roots for the given destinations.
+     * Note: signing the attestation with the given historical root will never lead
+     * to slashing of the actor, assuming they have confirmed that the block, where the merkle root
+     * was updated, is not subject to reorganization (which is different for every observed chain).
+     * @param _destinationLatestNonces  Array of desired destinations that we want to be updated about, along
+     * with the latest nonce that we have seen. Only return info for destinations with nonces higher than the
+     * latest nonce.
+     * @return Root for destination's merkle tree right after message to `_destination`
+     * with `nonce = _nonce` was dispatched.
+     */
+    function getLatestRoots(DestinationLatestNonce[] memory _latestNonces)
+        public
+        view
+        returns (DestinationLatestNonceAndRoot[] memory)
+    {
+        DestinationLatestNonceAndRoot[] destinationsLatestNoncesAndRoots;
+        // payments.push(Payment(address, amt));
+
+        for (uint256 i = 0; i < _latestNonces.length; i++) {
+            uint32 currDest = _latestNonces[i].destination;
+            uint32 currNonceFromClient = _latestNonces[i].latestNonce;
+            currLatestNonceOnOrigin = historicalRoots[currDest].length;
+            if (currLatestNonceOnOrigin > currNonceFromClient) {
+                currLatestRootOnOrigin = historicalRoots[currDest][currLatestNonceOnOrigin];
+                currLatestDispatchBlockNumberOnOrigin = historicalNonceBlockNumbers[currDest][
+                    currLatestNonceOnOrigin
+                ];
+                destinationsLatestNoncesAndRoots.push(
+                    DestinationLatestNonceAndRoot(
+                        currDest,
+                        currLatestNonceOnOrigin,
+                        currLatestRootOnOrigin,
+                        currLatestDispatchBlockNumberOnOrigin
+                    )
+                );
+            }
+        }
+        return destinationsLatestNoncesAndRoots;
     }
 
     /**
