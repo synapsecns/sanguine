@@ -3,6 +3,7 @@ package executor
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
@@ -31,22 +32,27 @@ func (e Executor) GetMerkleTree(chainID uint32, domain uint32) *merkle.Historica
 	return e.chainExecutors[chainID].merkleTrees[domain]
 }
 
+// VerifyMessageMerkleProof verifies message merkle proof.
 func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) {
 	return e.verifyMessageMerkleProof(message)
 }
 
+// VerifyMessageOptimisticPeriod verifies message optimistic period.
 func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
 	return e.verifyMessageOptimisticPeriod(ctx, message)
 }
 
+// NewTreeFromDB builds a merkle tree from the db.
 func NewTreeFromDB(ctx context.Context, chainID uint32, domain uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
 	return newTreeFromDB(ctx, chainID, domain, executorDB)
 }
 
+// OverrideMerkleTree overrides the merkle tree for the chainID and domain.
 func (e Executor) OverrideMerkleTree(chainID uint32, domain uint32, tree *merkle.HistoricalTree) {
 	e.chainExecutors[chainID].merkleTrees[domain] = tree
 }
 
+// Start runs the executor.
 func (e Executor) Start(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
@@ -69,6 +75,7 @@ func (e Executor) Start(ctx context.Context) error {
 	return nil
 }
 
+// Listen scans for emitted logs from the various chains.
 func (e Executor) Listen(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
