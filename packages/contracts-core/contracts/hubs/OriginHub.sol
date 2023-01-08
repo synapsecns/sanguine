@@ -182,14 +182,12 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         for (uint256 i = 0; i < _destinationLatestNonces.length; i++) {
             uint32 currDest = _destinationLatestNonces[i].destination;
             uint32 currNonceFromClient = _destinationLatestNonces[i].latestNonce;
-            uint32 currLatestNonceOnOrigin = uint32(historicalRoots[currDest].length);
+            uint32 currLatestNonceOnOrigin = uint32(historicalRoots[currDest].length) - 1;
             if (currLatestNonceOnOrigin > currNonceFromClient) {
-                bytes32 currLatestRootOnOrigin = historicalRoots[currDest][
-                    currLatestNonceOnOrigin - 1
-                ];
+                bytes32 currLatestRootOnOrigin = historicalRoots[currDest][currLatestNonceOnOrigin];
                 uint256 currLatestDispatchBlockNumberOnOrigin = historicalNonceBlockNumbers[
                     currDest
-                ][currLatestNonceOnOrigin - 1];
+                ][currLatestNonceOnOrigin];
                 destinationsLatestNoncesAndRoots[outIndex++] = DestinationLatestNonceAndRoot(
                     currDest,
                     currLatestNonceOnOrigin,

@@ -133,4 +133,30 @@ func (h originContract) GetHistoricalAttestation(ctx context.Context, destinatio
 	return historicalAttestation, dispatchBlockNumber.Uint64(), nil
 }
 
+func (h originContract) GetLatestAttestations(ctx context.Context, originDomain uint32, destinationsToLatestNonces map[uint32]uint32) (map[uint32]types.AttestationWithDispatchedBlockNumber, error) {
+	destinationLatestNonces := []origin.OriginHubDestinationLatestNonce{}
+	for destination, nonce := range destinationsToLatestNonces {
+		destinationLatestNonces = append(destinationLatestNonces, origin.OriginHubDestinationLatestNonce{
+			Destination: destination,
+			LatestNonce: nonce,
+		})
+	}
+	latestNoncesAndRoots, err := h.contract.GetLatestRoots(&bind.CallOpts{Context: ctx}, destinationLatestNonces)
+	if err != nil {
+		return nil, fmt.Errorf("could get latest roots: %w", err)
+	}
+
+	destinationsToUpdatedAttestations := make(map[uint32]types.AttestationWithDispatchedBlockNumber)
+
+	for _, latestNonceAndRoot := range latestNoncesAndRoots {
+		dispatchBlockNumber := latestNonceAndRoot.DispatchBlockNumber.Uint64()
+		destinationsToUpdatedAttestations[latestNonceAndRoot.Destination] = types.NewAttestationWithDispatchBlockNumber(
+			types.NewAttestationFromParms(originDomain, latestNonceAndRoot.Destination, latestNonceAndRoot.LatestNonce, latestNonceAndRoot.Root),
+			dispatchBlockNumber,
+		)
+	}
+
+	return destinationsToUpdatedAttestations, nil
+}
+
 var _ domains.OriginContract = &originContract{}

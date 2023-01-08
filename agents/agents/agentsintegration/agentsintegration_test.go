@@ -16,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/config"
 	agentsConfig "github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -201,6 +202,8 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(u.T(), err)
 
+	lastRoot := [32]byte{}
+	lastDispatchBlockNumber := uint64(0)
 	for i := 0; i < numMessages; i++ {
 		tx, err := u.OriginContract.Dispatch(
 			originAuth.TransactOpts,
@@ -215,7 +218,25 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 		Nil(u.T(), err)
 		Greater(u.T(), currDispatchBlockNumber.Uint64(), uint64(0))
 		NotEqual(u.T(), [32]byte{}, currRoot)
+
+		if i == numMessages-1 {
+			lastRoot = currRoot
+			lastDispatchBlockNumber = currDispatchBlockNumber.Uint64()
+		}
 	}
+
+	destinationLatestNonces := []originharness.OriginHubDestinationLatestNonce{}
+	destinationLatestNonces = append(destinationLatestNonces, originharness.OriginHubDestinationLatestNonce{
+		Destination: u.DestinationDomainClient.Config().DomainID,
+		LatestNonce: uint32(0),
+	})
+	latestRoots, err := u.OriginContract.GetLatestRoots(&bind.CallOpts{Context: u.GetTestContext()}, destinationLatestNonces)
+	Nil(u.T(), err)
+	Len(u.T(), latestRoots, 1)
+	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, latestRoots[0].Destination)
+	Equal(u.T(), uint32(numMessages), latestRoots[0].LatestNonce)
+	Equal(u.T(), lastRoot, latestRoots[0].Root)
+	Equal(u.T(), lastDispatchBlockNumber, latestRoots[0].DispatchBlockNumber.Uint64())
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test

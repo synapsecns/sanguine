@@ -47,6 +47,10 @@ type IOriginCaller interface {
 	//
 	// Solidity: function getHistoricalRoot(uint32 _destination, uint32 _nonce) view returns(bytes32, uint256)
 	GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, *big.Int, error)
+	// GetLatestRoots is a free data retrieval call binding the contract method 0x301bf01a.
+	//
+	// Solidity: function getLatestRoots((uint32,uint32)[] _destinationLatestNonces) view returns((uint32,uint32,bytes32,uint256)[])
+	GetLatestRoots(opts *bind.CallOpts, _destinationLatestNonces []OriginHubDestinationLatestNonce) ([]OriginHubDestinationLatestNonceAndRoot, error)
 	// IsActiveAgent is a free data retrieval call binding the contract method 0x0958117d.
 	//
 	// Solidity: function isActiveAgent(uint32 _domain, address _account) view returns(bool)

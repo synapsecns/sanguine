@@ -73,6 +73,14 @@ type Attestation interface {
 	Root() [32]byte
 }
 
+// AttestationWithDispatchedBlockNumber is the attestation.
+type AttestationWithDispatchedBlockNumber interface {
+	// Attestation is the wrapped Attestation.
+	Attestation() Attestation
+	// DispatchBlockNumber is the block number the message was dispatched on origin.
+	DispatchBlockNumber() uint64
+}
+
 type attestation struct {
 	// origin of the attestation
 	origin uint32
@@ -82,6 +90,13 @@ type attestation struct {
 	nonce uint32
 	// root - the merkle root
 	root [32]byte
+}
+
+type attestationWithDispatchBlockNumber struct {
+	// attestation is the wrapped attestation.
+	attestation
+	// dispatchBlockNumber is the block number the message was dispatched on origin.
+	dispatchBlockNumber uint64
 }
 
 // AttestationKey is the tuple (origin, destination, nonce).
@@ -141,6 +156,29 @@ func NewAttestation(rawKey *big.Int, root [32]byte) Attestation {
 	}
 }
 
+// NewAttestationFromParms is another way to create an Attestation.
+func NewAttestationFromParms(origin, destination, nonce uint32, root [32]byte) Attestation {
+	return attestation{
+		origin:      origin,
+		destination: destination,
+		nonce:       nonce,
+		root:        root,
+	}
+}
+
+// NewAttestationWithDispatchBlockNumber creates a new attestation.
+func NewAttestationWithDispatchBlockNumber(att Attestation, dispatchBlockNumber uint64) AttestationWithDispatchedBlockNumber {
+	return attestationWithDispatchBlockNumber{
+		attestation: attestation{
+			origin:      att.Origin(),
+			destination: att.Destination(),
+			nonce:       att.Nonce(),
+			root:        att.Root(),
+		},
+		dispatchBlockNumber: dispatchBlockNumber,
+	}
+}
+
 func (a attestation) Origin() uint32 {
 	return a.origin
 }
@@ -158,6 +196,37 @@ func (a attestation) Root() [32]byte {
 }
 
 var _ Attestation = attestation{}
+
+func (a attestationWithDispatchBlockNumber) Origin() uint32 {
+	return a.origin
+}
+
+func (a attestationWithDispatchBlockNumber) Destination() uint32 {
+	return a.destination
+}
+
+func (a attestationWithDispatchBlockNumber) Nonce() uint32 {
+	return a.nonce
+}
+
+func (a attestationWithDispatchBlockNumber) Root() [32]byte {
+	return a.root
+}
+
+func (a attestationWithDispatchBlockNumber) Attestation() Attestation {
+	return attestation{
+		origin:      a.origin,
+		destination: a.destination,
+		nonce:       a.nonce,
+		root:        a.root,
+	}
+}
+
+func (a attestationWithDispatchBlockNumber) DispatchBlockNumber() uint64 {
+	return a.dispatchBlockNumber
+}
+
+var _ AttestationWithDispatchedBlockNumber = attestationWithDispatchBlockNumber{}
 
 // SignedAttestation is a signed attestation.
 type SignedAttestation interface {

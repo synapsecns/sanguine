@@ -41,6 +41,10 @@ type OriginContract interface {
 	// GetHistoricalAttestation gets the root corresponding to destination and nonce,
 	// as well as the block number the message was dispatched and the current block number
 	GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, error)
+	// GetLatestAttestations takes a map of destinations to the latest nonce seen from the origin to that destination
+	// and returns a map of destination to attestations that have a later nonce than the ones provided. Only updated
+	// attestations are returned.
+	GetLatestAttestations(ctx context.Context, originDomain uint32, destinationsToLatestNonces map[uint32]uint32) (map[uint32]types.AttestationWithDispatchedBlockNumber, error)
 }
 
 // AttestationCollectorContract contains the interface for the attestation collector.

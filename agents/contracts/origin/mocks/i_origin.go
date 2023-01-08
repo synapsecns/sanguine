@@ -528,6 +528,29 @@ func (_m *IOrigin) GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _
 	return r0, r1, r2
 }
 
+// GetLatestRoots provides a mock function with given fields: opts, _destinationLatestNonces
+func (_m *IOrigin) GetLatestRoots(opts *bind.CallOpts, _destinationLatestNonces []origin.OriginHubDestinationLatestNonce) ([]origin.OriginHubDestinationLatestNonceAndRoot, error) {
+	ret := _m.Called(opts, _destinationLatestNonces)
+
+	var r0 []origin.OriginHubDestinationLatestNonceAndRoot
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, []origin.OriginHubDestinationLatestNonce) []origin.OriginHubDestinationLatestNonceAndRoot); ok {
+		r0 = rf(opts, _destinationLatestNonces)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]origin.OriginHubDestinationLatestNonceAndRoot)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, []origin.OriginHubDestinationLatestNonce) error); ok {
+		r1 = rf(opts, _destinationLatestNonces)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Initialize provides a mock function with given fields: opts
 func (_m *IOrigin) Initialize(opts *bind.TransactOpts) (*types.Transaction, error) {
 	ret := _m.Called(opts)
