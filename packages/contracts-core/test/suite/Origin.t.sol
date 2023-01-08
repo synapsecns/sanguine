@@ -94,6 +94,13 @@ contract OriginTest is OriginTools {
         createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
         expectDispatch();
         originDispatch();
+        OriginHub.DestinationLatestNonceAndRoot[]
+            memory destinationLatestNoncesAndRoots = suiteOrigin(userLocalToRemote.origin)
+                .suggestLatestNonceRoots(userLocalToRemote.destination);
+        require(
+            destinationLatestNoncesAndRoots.length == 1,
+            "Failed to fetch latest nonces and roots"
+        );
     }
 
     function test_dispatch_noTips() public {

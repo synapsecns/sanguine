@@ -57,6 +57,19 @@ contract OriginHarness is Origin, AgentRegistryExtended, SystemContractHarness {
         (latestRoot, rootDispatchBlockNumber) = getHistoricalRoot(_destination, latestNonce);
     }
 
+    function suggestLatestNonceRoots(uint32 _destination)
+        public
+        view
+        returns (OriginHub.DestinationLatestNonceAndRoot[] memory)
+    {
+        OriginHub.DestinationLatestNonce[]
+            memory destinationLatestNonces = new OriginHub.DestinationLatestNonce[](1);
+        destinationLatestNonces[0] = DestinationLatestNonce(_destination, 0);
+        OriginHub.DestinationLatestNonceAndRoot[]
+            memory destinationLatestNoncesAndRoots = getLatestRoots(destinationLatestNonces);
+        return destinationLatestNoncesAndRoots;
+    }
+
     function _isIgnoredAgent(uint32 _domain, address _account)
         internal
         view

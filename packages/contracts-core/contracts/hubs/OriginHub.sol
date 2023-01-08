@@ -44,7 +44,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     struct DestinationLatestNonceAndRoot {
         uint32 destination;
         uint32 latestNonce;
-        uint32 root;
+        bytes32 root;
         uint256 dispatchBlockNumber;
     }
 
@@ -130,7 +130,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     function getHistoricalRoot(uint32 _destination, uint32 _nonce)
         public
         view
-        returns (DestinationLatestNonceAndRoot[] memory)
+        returns (bytes32, uint256)
     {
         // Check if destination is known
         if (historicalRoots[_destination].length > 0) {
@@ -158,33 +158,47 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
      * @return Root for destination's merkle tree right after message to `_destination`
      * with `nonce = _nonce` was dispatched.
      */
-    function getLatestRoots(DestinationLatestNonce[] memory _latestNonces)
+    function getLatestRoots(DestinationLatestNonce[] memory _destinationLatestNonces)
         public
         view
         returns (DestinationLatestNonceAndRoot[] memory)
     {
-        DestinationLatestNonceAndRoot[] destinationsLatestNoncesAndRoots;
-        // payments.push(Payment(address, amt));
-
-        for (uint256 i = 0; i < _latestNonces.length; i++) {
-            uint32 currDest = _latestNonces[i].destination;
-            uint32 currNonceFromClient = _latestNonces[i].latestNonce;
-            currLatestNonceOnOrigin = historicalRoots[currDest].length;
+        uint256 updatedCount = 0;
+        for (uint256 i = 0; i < _destinationLatestNonces.length; i++) {
+            uint32 currDest = _destinationLatestNonces[i].destination;
+            uint32 currNonceFromClient = _destinationLatestNonces[i].latestNonce;
+            uint32 currLatestNonceOnOrigin = uint32(historicalRoots[currDest].length);
             if (currLatestNonceOnOrigin > currNonceFromClient) {
-                currLatestRootOnOrigin = historicalRoots[currDest][currLatestNonceOnOrigin];
-                currLatestDispatchBlockNumberOnOrigin = historicalNonceBlockNumbers[currDest][
-                    currLatestNonceOnOrigin
+                updatedCount++;
+            }
+        }
+
+        DestinationLatestNonceAndRoot[]
+            memory destinationsLatestNoncesAndRoots = new DestinationLatestNonceAndRoot[](
+                updatedCount
+            );
+
+        uint256 outIndex = 0;
+        for (uint256 i = 0; i < _destinationLatestNonces.length; i++) {
+            uint32 currDest = _destinationLatestNonces[i].destination;
+            uint32 currNonceFromClient = _destinationLatestNonces[i].latestNonce;
+            uint32 currLatestNonceOnOrigin = uint32(historicalRoots[currDest].length);
+            if (currLatestNonceOnOrigin > currNonceFromClient) {
+                bytes32 currLatestRootOnOrigin = historicalRoots[currDest][
+                    currLatestNonceOnOrigin - 1
                 ];
-                destinationsLatestNoncesAndRoots.push(
-                    DestinationLatestNonceAndRoot(
-                        currDest,
-                        currLatestNonceOnOrigin,
-                        currLatestRootOnOrigin,
-                        currLatestDispatchBlockNumberOnOrigin
-                    )
+                uint256 currLatestDispatchBlockNumberOnOrigin = historicalNonceBlockNumbers[
+                    currDest
+                ][currLatestNonceOnOrigin - 1];
+                destinationsLatestNoncesAndRoots[outIndex++] = DestinationLatestNonceAndRoot(
+                    currDest,
+                    currLatestNonceOnOrigin,
+                    currLatestRootOnOrigin,
+                    currLatestDispatchBlockNumberOnOrigin
                 );
             }
         }
+
         return destinationsLatestNoncesAndRoots;
     }
 
