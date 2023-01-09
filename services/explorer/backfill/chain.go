@@ -55,7 +55,7 @@ func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgePar
 
 // Backfill fetches logs from the GraphQL database, parses them, and stores them in the consumer database.
 // nolint:cyclop,gocognit
-func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRate uint) (err error) {
+func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRate int) (err error) {
 	chainCtx := context.WithValue(ctx, chainKey, fmt.Sprintf("%d", c.chainConfig.ChainID))
 	contractsGroup, contractCtx := errgroup.WithContext(chainCtx)
 	if !livefill {
@@ -85,7 +85,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRa
 					case <-chainCtx.Done():
 						logger.Errorf("livefill of contract %s on chain %d failed: %v", contract.Address, c.chainConfig.ChainID, chainCtx.Err())
 
-						return fmt.Errorf("livefill of contract %s on chain %dfailed: %w", contract.Address, c.chainConfig.ChainID, chainCtx.Err())
+						return fmt.Errorf("livefill of contract %s on chain %d failed: %w", contract.Address, c.chainConfig.ChainID, chainCtx.Err())
 					case <-time.After(timeout):
 						err := c.backfillContractLogs(contractCtx, contract)
 						if err != nil {
@@ -96,7 +96,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRa
 						}
 						b.Reset()
 						timeout = time.Duration(refreshRate) * time.Second
-						logger.Errorf("processed range for contract %s on chain %d, continuing to livefill", contract.Address, c.chainConfig.ChainID)
+						logger.Errorf("processed range for contract %s on chain %d, continuing to livefill in %d seconds - refresh rate %d ", contract.Address, c.chainConfig.ChainID, timeout, refreshRate)
 					}
 				}
 			})
