@@ -38,7 +38,7 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 	}
 
 	if ok, err = c.UnbondedSigner.IsValid(ctx); !ok {
-		return false, err
+		return false, fmt.Errorf("unbonded signer is invalid: %w", err)
 	}
 
 	return true, nil
