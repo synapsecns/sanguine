@@ -5,7 +5,7 @@ import (
 	"github.com/synapsecns/sanguine/core/config"
 	"os"
 
-	"github.com/synapsecns/sanguine/services/scribe/cmd"
+	"github.com/synapsecns/sanguine/agents/agents/executor/cmd"
 )
 
 var (

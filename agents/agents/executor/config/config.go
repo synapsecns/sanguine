@@ -23,7 +23,9 @@ type Config struct {
 	// UnbondedSigner contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
 	UnbondedSigner agentsConfig.SignerConfig `yaml:"unbonded_signer"`
-	// EmbeddedScribeConfig is the config for the embedded scribe.
+	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be
+	// included if an embedded Scribe is being used. If a remote Scribe is being used,
+	// this can be left empty.
 	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
 }
 
