@@ -60,12 +60,12 @@ func (r *queryResolver) mergeBridgeTransactions(origin []*model.BridgeTransactio
 	uniqueBridgeTransactions := make(map[string]*model.BridgeTransaction)
 
 	for _, originTx := range origin {
-		key := keyGen(fmt.Sprintf("%d", originTx.FromInfo.ChainID), *originTx.Kappa)
+		key := keyGen(fmt.Sprintf("%d", *originTx.FromInfo.ChainID), *originTx.Kappa)
 		uniqueBridgeTransactions[key] = originTx
 	}
 
 	for _, destinationTx := range destination {
-		key := keyGen(fmt.Sprintf("%d", destinationTx.FromInfo.ChainID), *destinationTx.Kappa)
+		key := keyGen(fmt.Sprintf("%d", *destinationTx.FromInfo.ChainID), *destinationTx.Kappa)
 		uniqueBridgeTransactions[key] = destinationTx
 	}
 
