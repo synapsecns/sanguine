@@ -1,7 +1,7 @@
 package agentsintegration_test
 
 import (
-	"github.com/synapsecns/sanguine/agents/agents/executor/src"
+	executor "github.com/synapsecns/sanguine/agents/agents/executor/src"
 	"math/big"
 	"time"
 
@@ -10,7 +10,6 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
@@ -456,7 +455,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 		uint32(u.TestBackendDestination.GetChainID()): u.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := src.NewExecutorInjectedBackend(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	u.Nil(err)
 
 	// Start the exec.
