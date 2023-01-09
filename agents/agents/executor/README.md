@@ -14,16 +14,50 @@ The Executor operates with two main components:
 2. Verify that the message is in the merkle tree.
 3. Call the `Execute` function on the `Destination.sol` contract.
 
-## Directory Structure
+## Usage
 
-TODO: fill this out
+Navigate to `sanguine/agents/agents/executor/cmd/cmd.md` and then run the following command to start the Executor:
+
+```bash
+$ go run main.go
+```
+Then the Executor command line will be exposed. The Executor requires a gRPC connection to a Scribe instance to stream logs. This can be done with either a remote Scribe or an embedded Scribe.
+
+From the CLI, you specify whether you want to use a `remote` or `embedded` scribe via the `--scribe-type` flag. If using `remote`, you need to use the `--scribe-port`, `--scribe-grpc-port` and `--scribe-url` flags. If using `embedded`, you need to use the `--scribe-db` and `--scribe-path` flags.
+
+### Remote Scribe
+
+Run the following command to start the Executor with a remote Scribe:
+
+```bash
+# Start the Executor
+$ run --config </Users/synapsecns/config.yaml> --db <sqlite> or <mysql>\
+ --path <path/to/database> or <database url> --scribe-type remote\
+ --scribe-port <port> --scribe-grpc-port <port> --scribe-url <url>
+```
+
+### Embedded Scribe
+
+When using an embedded Scribe, a Scribe config must be included in the Executor config.
+
+Run the following command to start the Executor with an embedded Scribe:
+
+```bash
+# Start the Executor and an embedded Scribe
+$ run --config </Users/synapsecns/config.yaml> --db <sqlite> or <mysql>\
+ --path <path/to/database> or <database url> --scribe-type embedded\
+ --scribe-db <sqlite> or <mysql> --scribe-path <path/to/database> or <database url>
+```
+
+
+## Directory Structure
 
 <pre>
 Executor
-├── <a href="./config">config</a>
-├── <a href="./db">db</a>
-│   ├── <a href="./db/datastore/sql">sql</a>
-├── <a href="./types">types</a>
-├── <a href="./config">config</a>
-└── <a href="./consumer">consumer</a>
+├── <a href="./cmd">cmd</a>: CLI commands
+├── <a href="./config">config</a>: Configuration files
+├── <a href="./db">db</a>: Database interface
+│   ├── <a href="./db/datastore/sql">sql</a>: Database writer, reader, and migrations
+├── <a href="./src">src</a>: Executor's logic and source code
+└── <a href="./types">types</a>: Executor types
 </pre>
