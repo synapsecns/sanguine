@@ -85,7 +85,6 @@ const logChanSize = 1000
 //nolint:cyclop
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
-	// TODO: set confirmations?
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("could not dial grpc: %w", err)
@@ -118,7 +117,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
 		}
 
-		chainRPCURL := fmt.Sprintf("%s/%d", config.BaseOmnirpcURL, chain.ChainID)
+		chainRPCURL := fmt.Sprintf("%s/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
 		if err != nil {
