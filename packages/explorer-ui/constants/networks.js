@@ -10,6 +10,7 @@ import optimismLogo from '@assets/icons/optimism.svg'
 import bobaLogo from '@assets/icons/boba.svg'
 import cronosLogo from '@assets/icons/cronos.svg'
 import metisLogo from '@assets/icons/metis.svg'
+import cantoLogo from '@assets/icons/canto.svg'
 
 import ethImg from '@assets/networks/eth.jpg'
 import bscImg from '@assets/networks/bsc.jpg'
@@ -27,6 +28,7 @@ import moonriverImg from '@assets/networks/moonriver.jpeg'
 import cronosImg from '@assets/networks/cronos.png'
 import metisImg from '@assets/networks/metis.png'
 import klaytnImg from '@assets/networks/klaytn.jpeg'
+import cantoImg from '@assets/networks/canto.png'
 
 import terraImg from '@assets/networks/terra.png'
 
@@ -56,6 +58,7 @@ export const ChainId = {
   DFK: 53935,
   AURORA: 1313161554,
   HARMONY: 1666600000,
+  CANTO: 7700,
 
   TERRA: 121014925, //"columbus-5", the day columbus reportedly landed in america followed by 5
 }
@@ -193,6 +196,14 @@ export const CHAIN_INFO_MAP = {
     chainLogo: harmonyLogo,
     chainImg: klaytnImg,
     layer: 1,
+  },
+  [ChainId.CANTO]: {
+    chainId: ChainId.CANTO,
+    chainSymbol: 'CANTO',
+    chainName: 'Canto',
+    chainLogo: cantoLogo,
+    chainImg: cantoImg,
+    layer: 2,
   },
   // NON_EVM
   [ChainId.TERRA]: {

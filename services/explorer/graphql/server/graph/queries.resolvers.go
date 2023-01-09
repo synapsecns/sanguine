@@ -38,11 +38,13 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 			defer wg.Done()
 			fromResults, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *page, tokenAddress, *includePending, false)
 		}()
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			toResults, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, *page, tokenAddress)
-		}()
+		if !*includePending {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				toResults, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, *page, tokenAddress)
+			}()
+		}
 		wg.Wait()
 		if err != nil {
 			return nil, err
@@ -227,22 +229,3 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *queryResolver) LatestBridgeTransactions(ctx context.Context, includePending *bool, page *int) ([]*model.BridgeTransaction, error) {
-	// For each chain ID, get the latest bridge transaction.
-	var results []*model.BridgeTransaction
-	var err error
-	results, err = r.GetBridgeTxsFromOrigin(ctx, nil, nil, nil, *page, nil, *includePending, true)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
-	}
-
-	return results, nil
-}

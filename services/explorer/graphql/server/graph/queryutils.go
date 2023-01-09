@@ -230,6 +230,10 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 //
 // nolint:cyclop
 func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, includePending bool) (*model.BridgeTransaction, error) {
+	if includePending && bridgeEvent.TTxHash != "" {
+		// nolint:nilnil
+		return nil, nil
+	}
 	var bridgeTx model.BridgeTransaction
 	fromChainID := int(bridgeEvent.FChainID)
 	fromBlockNumber := int(bridgeEvent.FBlockNumber)
