@@ -6,6 +6,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
 	agentsConfig "github.com/synapsecns/sanguine/agents/config"
+	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"
@@ -19,7 +20,9 @@ type Config struct {
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
 	// UnbondedSigner contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
-	UnbondedSigner agentsConfig.SignerConfig `yaml:"UnbondedSigner"`
+	UnbondedSigner agentsConfig.SignerConfig `yaml:"unbonded_signer"`
+	// EmbeddedScribeConfig is the config for the embedded scribe.
+	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

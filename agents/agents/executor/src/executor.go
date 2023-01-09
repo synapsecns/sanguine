@@ -85,6 +85,7 @@ const logChanSize = 1000
 //nolint:cyclop
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
+	// TODO: set confirmations?
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("could not dial grpc: %w", err)
