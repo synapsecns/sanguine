@@ -60,12 +60,6 @@ var pathFlag = &cli.StringFlag{
 	Required: true,
 }
 
-var scribePortFlag = &cli.UintFlag{
-	Name:  "scribe-port",
-	Usage: "--scribe-port 5121",
-	Value: 0,
-}
-
 var scribeTypeFlag = &cli.StringFlag{
 	Name:     "scribe-type",
 	Usage:    "--scribe-type <embedded> or <remote>",
@@ -82,9 +76,15 @@ var scribePathFlag = &cli.StringFlag{
 	Usage: "--scribe-path <path/to/database> or <database url>",
 }
 
+var scribePortFlag = &cli.UintFlag{
+	Name:  "scribe-port",
+	Usage: "--scribe-port <port>",
+	Value: 0,
+}
+
 var scribeGrpcPortFlag = &cli.UintFlag{
 	Name:  "scribe-grpc-port",
-	Usage: "--scribe-grpc-port 5121",
+	Usage: "--scribe-grpc-port <port>",
 }
 
 var scribeURL = &cli.StringFlag{
