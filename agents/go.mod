@@ -30,7 +30,6 @@ require (
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/vburenin/ifacemaker v1.2.0
 	github.com/vektra/mockery/v2 v2.14.0
-	go.uber.org/atomic v1.10.0
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	google.golang.org/grpc v1.49.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -211,6 +210,7 @@ require (
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect

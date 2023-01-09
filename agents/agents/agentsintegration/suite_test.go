@@ -27,6 +27,7 @@ func (u *AgentsIntegrationSuite) SetupTest() {
 	chainwatcher.PollInterval = time.Second
 
 	u.SimulatedBackendsTestSuite.SetupTest()
+	u.SetTestTimeout(time.Minute * 3)
 }
 
 func TestAgentsIntegrationSuite(t *testing.T) {
