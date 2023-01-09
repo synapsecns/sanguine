@@ -179,3 +179,13 @@ chains:
       - contract_type: messagebus
         address: '0xaEe80e4B92Ba497aF1378Bc799687FBF816Ab87b'
         start_block: -1
+  - chain_id: 7700
+    fetch_block_increment: 200
+    max_goroutines: 2
+    contracts:
+      - contract_type: bridge
+        address: '0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0'
+        start_block: 1060203
+      - contract_type: swap
+        address: '0x432036208d2717394d2614d6697c46DF3Ed69540'
+        start_block: 1060157
