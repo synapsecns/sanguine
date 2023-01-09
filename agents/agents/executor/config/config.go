@@ -37,6 +37,10 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 		return false, fmt.Errorf("rpc url cannot be empty")
 	}
 
+	if ok, err = c.UnbondedSigner.IsValid(ctx); !ok {
+		return false, err
+	}
+
 	return true, nil
 }
 
