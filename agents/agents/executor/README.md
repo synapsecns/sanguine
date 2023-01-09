@@ -16,7 +16,7 @@ The Executor operates with two main components:
 
 ## Usage
 
-Navigate to `sanguine/agents/agents/executor/cmd/cmd.md` and then run the following command to start the Executor:
+Navigate to `sanguine/agents/agents/executor/` and then run the following command to start the Executor:
 
 ```bash
 $ go run main.go
@@ -57,7 +57,7 @@ Executor
 ├── <a href="./cmd">cmd</a>: CLI commands
 ├── <a href="./config">config</a>: Configuration files
 ├── <a href="./db">db</a>: Database interface
-│   ├── <a href="./db/datastore/sql">sql</a>: Database writer, reader, and migrations
+│   └── <a href="./db/datastore/sql">sql</a>: Database writer, reader, and migrations
 ├── <a href="./src">src</a>: Executor's logic and source code
 └── <a href="./types">types</a>: Executor types
 </pre>
