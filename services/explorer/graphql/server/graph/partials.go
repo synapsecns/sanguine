@@ -415,18 +415,6 @@ AND se.swap_address = ti.contract_address
 AND ti.token_index = se.sold_id
 `
 
-const singleSideJoins = `
-be
-LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
-AND be.chain_id = se.swap_chain_id
-LEFT JOIN (SELECT DISTINCT ON(
-chain_id, token_index, contract_address
-) *
-FROM
-token_indices) ti ON be.chain_id = ti.chain_id
-AND se.swap_address = ti.contract_address
-AND ti.token_index = be.sold_id
-`
 const singleSideCol = `
 IF(
    ti.token_address = '', be.token, ti.token_address

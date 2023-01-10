@@ -467,7 +467,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     address:        String
     txnHash:        String
     kappa:          String
-    includePending: Boolean = true
+    includePending: Boolean = false
     page:           Int = 1
     tokenAddress:   String
   ): [BridgeTransaction]
