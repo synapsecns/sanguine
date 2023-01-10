@@ -97,6 +97,31 @@ func (s Store) GetAttestationBlockTime(ctx context.Context, attestationMask type
 	return &attestation.DestinationBlockTime, nil
 }
 
+// GetAttestationForNonceOrGreater gets the lowest nonce attestation that is greater than or equal to the given nonce.
+func (s Store) GetAttestationForNonceOrGreater(ctx context.Context, attestationMask types.DBAttestation) (nonce *uint32, blockTime *uint64, err error) {
+	var attestation Attestation
+
+	dbAttestationMask := DBAttestationToAttestation(attestationMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&attestation).
+		Where(&dbAttestationMask).
+		Where("nonce >= ?", attestationMask.Nonce).
+		Order("nonce ASC").
+		Limit(1).
+		Scan(&attestation)
+	if dbTx.Error != nil {
+		return nil, nil, fmt.Errorf("failed to get attestation for nonce or greater: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		return nil, nil, nil
+	}
+
+	nonce = &attestation.Nonce
+	blockTime = &attestation.DestinationBlockTime
+
+	return nonce, blockTime, nil
+}
+
 // DBAttestationToAttestation converts a DBAttestation to an Attestation.
 func DBAttestationToAttestation(dbAttestation types.DBAttestation) Attestation {
 	var attestation Attestation

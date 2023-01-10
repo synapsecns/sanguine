@@ -9,8 +9,8 @@ import (
 )
 
 // StoreMessage stores a message in the database.
-func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64) error {
-	dbMessage, err := AgentsTypesMessageToMessage(message, blockNumber)
+func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error {
+	dbMessage, err := agentsTypesMessageToMessage(message, blockNumber, minimumTimeSet, minimumTime)
 	if err != nil {
 		return fmt.Errorf("failed to convert message: %w", err)
 	}
@@ -160,6 +160,18 @@ func DBMessageToMessage(dbMessage types.DBMessage) Message {
 		message.BlockNumber = *dbMessage.BlockNumber
 	}
 
+	if dbMessage.Executed != nil {
+		message.Executed = *dbMessage.Executed
+	}
+
+	if dbMessage.MinimumTimeSet != nil {
+		message.MinimumTimeSet = *dbMessage.MinimumTimeSet
+	}
+
+	if dbMessage.MinimumTime != nil {
+		message.MinimumTime = *dbMessage.MinimumTime
+	}
+
 	return message
 }
 
@@ -170,27 +182,36 @@ func MessageToDBMessage(message Message) types.DBMessage {
 	nonce := message.Nonce
 	messageBytes := message.Message
 	blockNumber := message.BlockNumber
+	executed := message.Executed
+	minimumTimeSet := message.MinimumTimeSet
+	minimumTime := message.MinimumTime
 
 	return types.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-		Nonce:       &nonce,
-		Message:     &messageBytes,
-		BlockNumber: &blockNumber,
+		ChainID:        &chainID,
+		Destination:    &destination,
+		Nonce:          &nonce,
+		Message:        &messageBytes,
+		BlockNumber:    &blockNumber,
+		Executed:       &executed,
+		MinimumTimeSet: &minimumTimeSet,
+		MinimumTime:    &minimumTime,
 	}
 }
 
-// AgentsTypesMessageToMessage converts an agentsTypes.Message to a Message.
-func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64) (Message, error) {
+// agentsTypesMessageToMessage converts an agentsTypes.Message to a Message.
+func agentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) (Message, error) {
 	rawMessage, err := agentsTypes.EncodeMessage(message)
 	if err != nil {
 		return Message{}, fmt.Errorf("failed to encode message: %w", err)
 	}
 	return Message{
-		ChainID:     message.OriginDomain(),
-		Destination: message.DestinationDomain(),
-		Nonce:       message.Nonce(),
-		Message:     rawMessage,
-		BlockNumber: blockNumber,
+		ChainID:        message.OriginDomain(),
+		Destination:    message.DestinationDomain(),
+		Nonce:          message.Nonce(),
+		Message:        rawMessage,
+		BlockNumber:    blockNumber,
+		Executed:       false,
+		MinimumTimeSet: minimumTimeSet,
+		MinimumTime:    minimumTime,
 	}, nil
 }

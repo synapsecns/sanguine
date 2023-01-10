@@ -12,4 +12,10 @@ type DBMessage struct {
 	Message *[]byte
 	// BlockNumber is the block number of the message.
 	BlockNumber *uint64
+	// Executed is if the message has been executed.
+	Executed *bool
+	// MinimumTimeSet is if the MinimumTime field has been set from an Attestation.
+	MinimumTimeSet *bool
+	// MinimumTime is the minimum time that the message can be executed.
+	MinimumTime *uint64
 }

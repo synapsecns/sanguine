@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"math/big"
 	"strconv"
 
@@ -466,7 +467,25 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 
 		e.chainExecutors[chainID].merkleTrees[destination].Insert(leaf[:])
 
-		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber)
+		messageNonce := (*message).Nonce()
+		attestationMask := execTypes.DBAttestation{
+			ChainID:     &chainID,
+			Destination: &destination,
+			Nonce:       &messageNonce,
+		}
+		nonce, blockTime, err := e.executorDB.GetAttestationForNonceOrGreater(ctx, attestationMask)
+		if err != nil {
+			return fmt.Errorf("could not get attestation for nonce or greater: %w", err)
+		}
+
+		if nonce == nil || blockTime == nil {
+			err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, false, math.MaxUint64)
+			if err != nil {
+				return fmt.Errorf("could not store message: %w", err)
+			}
+		}
+
+		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, true, *blockTime+uint64((*message).OptimisticSeconds()))
 		if err != nil {
 			return fmt.Errorf("could not store message: %w", err)
 		}
@@ -518,6 +537,8 @@ func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
 		}
 	}
 }
+
+// setMinimumTimes sets the minimum times for the messages when an attestation is received.
 
 // logToMessage converts the log to a leaf data.
 func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message, error) {
