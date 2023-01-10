@@ -8,6 +8,7 @@ import (
 	"math"
 	"math/big"
 	"strconv"
+	"time"
 
 	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
@@ -105,6 +106,10 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 	executorSigner, err := agentsConfig.SignerFromConfig(config.UnbondedSigner)
 	if err != nil {
 		return nil, fmt.Errorf("could not create signer: %w", err)
+	}
+
+	if config.ExecuteInterval == 0 {
+		config.ExecuteInterval = 3
 	}
 
 	for _, chain := range config.Chains {
@@ -538,7 +543,69 @@ func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
 	}
 }
 
-// setMinimumTimes sets the minimum times for the messages when an attestation is received.
+// executeExecutable executes executable messages in the database.
+func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(time.Duration(e.config.ExecuteInterval)):
+			page := 1
+			currentTime := uint64(time.Now().Unix())
+			messageMask := execTypes.DBMessage{
+				ChainID: &chainID,
+			}
+
+			for {
+				messages, err := e.executorDB.GetExecutableMessages(ctx, messageMask, currentTime, page)
+				if err != nil {
+					return fmt.Errorf("could not get executable messages: %w", err)
+				}
+
+				if len(messages) == 0 {
+					break
+				}
+
+				for _, message := range messages {
+					executed, err := e.Execute(ctx, message)
+					if err != nil {
+						return fmt.Errorf("could not execute message: %w", err)
+					}
+
+					if !executed {
+						continue
+					}
+
+					destinationDomain := message.DestinationDomain()
+					nonce := message.Nonce()
+					executedMessageMask := execTypes.DBMessage{
+						ChainID:     &chainID,
+						Destination: &destinationDomain,
+						Nonce:       &nonce,
+					}
+					err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
+					if err != nil {
+						return fmt.Errorf("could not execute message: %w", err)
+					}
+				}
+
+				page++
+			}
+		}
+	}
+}
+
+//// setMinimumTimes sets the minimum times for the messages when an attestation is received.
+//func (e Executor) setMinimumTimes(ctx context.Context, chainID uint32) error {
+//	for {
+//		select {
+//		case <-ctx.Done():
+//			return fmt.Errorf("context canceled: %w", ctx.Err())
+//		case <-time.After(e.executeInterval):
+//
+//		}
+//	}
+//}
 
 // logToMessage converts the log to a leaf data.
 func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message, error) {

@@ -10,6 +10,8 @@ import (
 type ExecutorDBWriter interface {
 	// StoreMessage stores a message in the database.
 	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error
+	// ExecuteMessage marks a message as executed in the database.
+	ExecuteMessage(ctx context.Context, messageMask types.DBMessage) error
 
 	// StoreAttestation stores an attestation.
 	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error
@@ -25,6 +27,8 @@ type ExecutorDBReader interface {
 	GetBlockNumber(ctx context.Context, messageMask types.DBMessage) (uint64, error)
 	// GetLastBlockNumber gets the last block number that had a message in the database.
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
+	// GetExecutableMessages gets executable messages from the database.
+	GetExecutableMessages(ctx context.Context, messageMask types.DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error)
 
 	// GetAttestation gets an attestation from the database.
 	GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error)

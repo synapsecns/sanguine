@@ -20,6 +20,9 @@ type Config struct {
 	// UnbondedSigner contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
 	UnbondedSigner agentsConfig.SignerConfig `toml:"UnbondedSigner"`
+	// ExecuteInterval is the interval at which the executor agent will
+	// check if messages in the database are ready to be executed.
+	ExecuteInterval uint32 `yaml:"execute_interval"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

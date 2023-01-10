@@ -10,7 +10,7 @@ import (
 
 // StoreMessage stores a message in the database.
 func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error {
-	dbMessage, err := agentsTypesMessageToMessage(message, blockNumber, minimumTimeSet, minimumTime)
+	dbMessage, err := AgentsTypesMessageToMessage(message, blockNumber, minimumTimeSet, minimumTime)
 	if err != nil {
 		return fmt.Errorf("failed to convert message: %w", err)
 	}
@@ -26,6 +26,20 @@ func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, bl
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("failed to store message: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// ExecuteMessage marks a message as executed in the database.
+func (s Store) ExecuteMessage(ctx context.Context, messageMask types.DBMessage) error {
+	dbMessageMask := DBMessageToMessage(messageMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Message{}).
+		Where(&dbMessageMask).
+		Update(ExecutedFieldName, true)
+	if dbTx.Error != nil {
+		return fmt.Errorf("failed to execute message: %w", dbTx.Error)
 	}
 
 	return nil
@@ -136,6 +150,45 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, 
 	return lastBlockNumber, nil
 }
 
+// GetExecutableMessages gets executable messages from the database.
+func (s Store) GetExecutableMessages(ctx context.Context, messageMask types.DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error) {
+	if page < 1 {
+		page = 1
+	}
+
+	var messages []Message
+
+	dbMessageMask := DBMessageToMessage(messageMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&messages).
+		Where(&dbMessageMask).
+		Where(fmt.Sprintf("%s <= ?", MinimumTimeFieldName), currentTime).
+		Where(fmt.Sprintf("%s = ?", MinimumTimeSetFieldName), true).
+		Where(fmt.Sprintf("%s = ?", ExecutedFieldName), false).
+		Order(fmt.Sprintf("%s ASC", MinimumTimeFieldName)).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
+		Scan(&messages)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get messages: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	decodedMessages := make([]agentsTypes.Message, len(messages))
+	for i, message := range messages {
+		decodedMessage, err := agentsTypes.DecodeMessage(message.Message)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode message: %w", err)
+		}
+		decodedMessages[i] = decodedMessage
+	}
+
+	return decodedMessages, nil
+}
+
 // DBMessageToMessage converts a DBMessage to a Message.
 func DBMessageToMessage(dbMessage types.DBMessage) Message {
 	var message Message
@@ -198,8 +251,8 @@ func MessageToDBMessage(message Message) types.DBMessage {
 	}
 }
 
-// agentsTypesMessageToMessage converts an agentsTypes.Message to a Message.
-func agentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) (Message, error) {
+// AgentsTypesMessageToMessage converts an agentsTypes.Message to a Message.
+func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) (Message, error) {
 	rawMessage, err := agentsTypes.EncodeMessage(message)
 	if err != nil {
 		return Message{}, fmt.Errorf("failed to encode message: %w", err)
