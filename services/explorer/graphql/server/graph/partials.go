@@ -58,42 +58,36 @@ f.pre_ftoken_decimal AS ftoken_decimal,
 f.pre_ftimestamp AS ftimestamp,
 f.pre_fdestination_chain_id AS fdestination_chain_id,
 f.pre_finsert_time AS finsert_time,
-(
-  IF(
-    ti.token_address = '', be.token, ti.token_address
-  )
-) AS ttoken,
-toUInt256(
-  IF(
-    se.tokens_bought > 0, se.tokens_bought,
-    be.amount
-  )
-) AS tamount,
-if(
-	se.tokens_bought > 0, se.token_decimal[se.bought_id],
-	be.token_decimal
-)
-AS ttoken_decimal,
-(
-  IF(
-    se.swap_amount_usd[ti.token_index] > 0,
-    (
-      (
-        toFloat64(
-          (
-            IF(
-              se.tokens_bought > 0, se.tokens_bought,
-              be.amount
-            )
-          )
-        )/ exp10(if(
-	se.tokens_bought > 0, se.token_decimal[se.bought_id],
-	be.token_decimal
-))
-      ) * se.swap_amount_usd[ti.token_index]
-    ),
-    be.amount_usd
-  )
+ IF(
+			 ti.token_address = '', be.token, ti.token_address
+	 )                       AS ttoken,
+ IF(
+			 se.amount[se.bought_id] != '', toUInt256(se.amount[se.bought_id]),
+			 be.amount
+	 )                       AS tamount,
+ IF(
+			 se.amount[se.bought_id] != '', se.token_decimal[se.bought_id],
+			 be.token_decimal
+	 )                       AS ttoken_decimal,
+ IF(
+	 se.amount[se.bought_id] != '' > 0,
+	 (
+		 (
+			 (
+				 IF(
+					 se.amount[se.bought_id] != '',
+					 toFloat64(se.amount[se.bought_id]),
+					 toFloat64(be.amount)
+					 )
+				 ) / exp10(
+							if(
+							 se.amount[se.bought_id] != '', se.token_decimal[se.bought_id],
+							 be.token_decimal
+			 				)
+							)
+					) * se.swap_amount_usd[se.bought_id]
+		 ),
+	 be.amount_usd
 ) AS tamount_usd,
 be.event_type AS tevent_type,
 be.token AS ttoken_raw,
@@ -124,43 +118,35 @@ be.insert_time AS tinsert_time
 FROM
   (
     SELECT
-      (
-        IF(
-          ti.token_address = '', be.token, ti.token_address
-        )
-      ) AS pre_ftoken,
-      toUInt256(
-        IF(
-          se.tokens_sold > 0, se.tokens_sold,
-          be.amount
-        )
-      ) AS pre_famount,
-		if(
-			se.tokens_sold > 0, se.token_decimal[se.sold_id],
-			be.token_decimal
-		)
-		AS pre_ftoken_decimal,
-      (
-        IF(
-          se.swap_amount_usd[ti.token_index] > 0,
-          (
-            (
-              toFloat64(
-                (
-                  IF(
-                    se.tokens_sold > 0, se.tokens_sold,
-                    be.amount
-                  )
-                )
-              )/ exp10(		if(
-			se.tokens_sold > 0, se.token_decimal[se.sold_id],
-			be.token_decimal
-		))
-            ) * se.swap_amount_usd[ti.token_index]
-          ),
-          be.amount_usd
-        )
-      ) AS pre_famount_usd,
+IF(
+		   ti.token_address = '', be.token, ti.token_address
+   )                   AS pre_ftoken,
+IF(
+		   se.amount[se.sold_id] != '', toUInt256(se.amount[se.sold_id]),
+		   be.amount
+   )                   AS pre_famount,
+IF(
+		   se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
+		   be.token_decimal
+   )                   AS pre_ftoken_decimal,
+IF(
+			   se.amount[se.sold_id] != '' > 0,
+			   (
+					   (
+							   (
+								   IF(
+											   se.amount[se.sold_id] != '',
+											   toFloat64(se.amount[se.sold_id]),
+											   toFloat64(be.amount)
+									   )
+								   ) / exp10(if(
+									   se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
+									   be.token_decimal
+							   ))
+						   ) * se.swap_amount_usd[se.sold_id]
+				   ),
+			   be.amount_usd
+   )                   AS pre_famount_usd,
       be.event_type AS pre_fevent_type,
       be.token AS pre_ftoken_raw,
       be.tx_hash AS pre_ftx_hash,
@@ -266,42 +252,36 @@ t.pre_ttoken_decimal AS ttoken_decimal,
 t.pre_ttimestamp AS ttimestamp,
 t.pre_tdestination_chain_id AS tdestination_chain_id,
 t.pre_tinsert_time AS tinsert_time,
-(
-  if(
-    ti.token_address = '', be.token, ti.token_address
-  )
-) AS ftoken,
-toUInt256(
-  if(
-    se.tokens_sold > 0, se.tokens_sold,
-    be.amount
-  )
-) AS famount,
-if(
-	se.tokens_sold > 0, se.token_decimal[se.sold_id],
-	be.token_decimal
-)
-AS ftoken_decimal,
-(
-  if(
-    se.swap_amount_usd[ti.token_index] > 0,
-    (
-      (
-        toFloat64(
-          (
-            if(
-              se.tokens_sold > 0, se.tokens_sold,
-              be.amount
-            )
-          )
-        )/ exp10(if(
-	se.tokens_sold > 0, se.token_decimal[se.sold_id],
-	be.token_decimal
-))
-      ) * se.swap_amount_usd[ti.token_index]
-    ),
-    be.amount_usd
-  )
+IF(
+		 ti.token_address = '', be.token, ti.token_address
+ )                       AS ftoken,
+IF(
+		 se.amount[se.sold_id] != '', toUInt256(se.amount[se.sold_id]),
+		 be.amount
+ )                       AS famount,
+IF(
+		 se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
+		 be.token_decimal
+ )                       AS ftoken_decimal,
+IF(
+ se.amount[se.sold_id] != '' > 0,
+ (
+	 (
+		 (
+			 IF(
+				 se.amount[se.sold_id] != '',
+				 toFloat64(se.amount[se.sold_id]),
+				 toFloat64(be.amount)
+				 )
+			 ) / exp10(
+						if(
+						 se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
+						 be.token_decimal
+						)
+						)
+				) * se.swap_amount_usd[se.sold_id]
+	 ),
+ be.amount_usd
 ) AS famount_usd,
 be.event_type AS fevent_type,
 be.token AS ftoken_raw,
@@ -332,42 +312,35 @@ be.insert_time AS finsert_time
 FROM
   (
     SELECT
-      (
-        if(
-          ti.token_address = '', be.token, ti.token_address
-        )
-      ) AS pre_ttoken,
-      toUInt256(
-        if(
-          se.tokens_bought > 0, se.tokens_bought,
-          be.amount
-        )
-      ) AS pre_tamount,
-		if(
-			se.tokens_bought > 0, se.token_decimal[se.bought_id],
-			be.token_decimal
-		) AS pre_ttoken_decimal,
-      (
-        if(
-          se.swap_amount_usd[ti.token_index] > 0,
-          (
-            (
-              toFloat64(
-                (
-                  if(
-                    se.tokens_bought > 0, se.tokens_bought,
-                    be.amount
-                  )
-                )
-              )/ exp10(if(
-	se.tokens_bought > 0, se.token_decimal[se.bought_id],
-	be.token_decimal
-))
-            ) * se.swap_amount_usd[ti.token_index]
-          ),
-          be.amount_usd
-        )
-      ) AS pre_tamount_usd,
+IF(
+		   ti.token_address = '', be.token, ti.token_address
+   )                   AS pre_ttoken,
+IF(
+		   se.amount[se.sold_id] != '', toUInt256(se.amount[se.sold_id]),
+		   be.amount
+   )                   AS pre_tamount,
+IF(
+		   se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
+		   be.token_decimal
+   )                   AS pre_ttoken_decimal,
+IF(
+			   se.amount[se.sold_id] != '' > 0,
+			   (
+					   (
+							   (
+								   IF(
+											   se.amount[se.sold_id] != '',
+											   toFloat64(se.amount[se.sold_id]),
+											   toFloat64(be.amount)
+									   )
+								   ) / exp10(if(
+									   se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
+									   be.token_decimal
+							   ))
+						   ) * se.swap_amount_usd[se.sold_id]
+				   ),
+			   be.amount_usd
+   )                   AS pre_tamount_usd,
       be.event_type AS pre_tevent_type,
       be.token AS pre_ttoken_raw,
       be.tx_hash AS pre_ttx_hash,
@@ -441,28 +414,48 @@ LEFT JOIN (
 AND se.swap_address = ti.contract_address
 AND ti.token_index = se.sold_id
 `
+
+const singleSideJoins = `
+be
+LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
+AND be.chain_id = se.swap_chain_id
+LEFT JOIN (SELECT DISTINCT ON(
+chain_id, token_index, contract_address
+) *
+FROM
+token_indices) ti ON be.chain_id = ti.chain_id
+AND se.swap_address = ti.contract_address
+AND ti.token_index = be.sold_id
+`
 const singleSideCol = `
-(
-  if(
-    ti.token_address = '', be.token, ti.token_address
-  )
-) AS token,
-(
-  if(
-    se.tokens_bought > 0, se.tokens_bought,
-    be.amount
-  )
-) AS amount,
-(
-  if(
-    se.swap_amount_usd[ti.token_index] > 0,
-    (
-      (
-        toFloat64(amount)/ exp10(be.token_decimal)
-      ) * se.swap_amount_usd[ti.token_index]
-    ),
-    be.amount_usd
-  )
+IF(
+   ti.token_address = '', be.token, ti.token_address
+)                   AS token,
+IF(
+   se.amount[se.sold_id] != '', toUInt256(se.amount[se.sold_id]),
+   be.amount
+)                   AS amount,
+IF(
+   se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
+   be.token_decimal
+)                   AS token_decimal,
+IF(
+	   se.amount[se.sold_id] != '' > 0,
+	   (
+			   (
+					   (
+						   IF(
+									   se.amount[se.sold_id] != '',
+									   toFloat64(se.amount[se.sold_id]),
+									   toFloat64(be.amount)
+							   )
+						   ) / exp10(if(
+							   se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
+							   be.token_decimal
+					   ))
+				   ) * se.swap_amount_usd[se.sold_id]
+		   ),
+	   be.amount_usd
 ) AS amount_usd,
 be.event_type AS event_type,
 be.token AS token_raw,
@@ -486,7 +479,6 @@ be.swap_min_amount AS swap_min_amount,
 be.swap_deadline AS swap_deadline,
 be.token_id AS token_id,
 be.fee_amount_usd AS fee_amount_usd,
-be.token_decimal AS token_decimal,
 be.timestamp AS timestamp,
 be.destination_chain_id AS destination_chain_id,
 be.insert_time AS insert_time
