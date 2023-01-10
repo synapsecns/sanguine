@@ -189,3 +189,7 @@ chains:
       - contract_type: swap
         address: '0x432036208d2717394d2614d6697c46DF3Ed69540'
         start_block: -1
+      - contract_type: swap #Swap wrapper
+        address: '0x0271984e4cfA2A0f02664baACD551CcFCC9920E8'
+        start_block: 1861449
+
