@@ -59,7 +59,6 @@ function normalize(data) {
 
   let max = 0
   data.map((entry) => (entry.total > max)? max = entry.total : null)
-  console.log(max)
 
   let newList = data.map((day) => {
     let n = (day.total / max) * maxHeight
