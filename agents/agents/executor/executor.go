@@ -548,7 +548,7 @@ func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
 
 // executeExecutable executes executable messages in the database.
 //
-//nolint:gocognit
+//nolint:gocognit,cyclop,unused
 func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 	for {
 		select {
@@ -602,7 +602,7 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 
 // setMinimumTime sets the minimum time for the message to be executed by checking for associated attestations.
 //
-//nolint:gocognit
+//nolint:gocognit,cyclop,unused
 func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 	for {
 		select {
@@ -638,7 +638,6 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 
 			page = 1
 			minNonce := unsetMessages[0].Nonce()
-			maxNonce := unsetMessages[len(unsetMessages)-1].Nonce()
 			attestationMask := execTypes.DBAttestation{
 				ChainID: &chainID,
 			}
@@ -647,7 +646,7 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 
 			// Get all attestations for the unset messages.
 			for {
-				atts, err := e.executorDB.GetAttestationsInNonceRange(ctx, attestationMask, minNonce, maxNonce, page)
+				atts, err := e.executorDB.GetAttestationsInNonceRange(ctx, attestationMask, minNonce, page)
 				if err != nil {
 					return fmt.Errorf("could not get attestations: %w", err)
 				}

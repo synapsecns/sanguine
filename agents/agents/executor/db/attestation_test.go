@@ -126,7 +126,7 @@ func (t *DBSuite) TestAttestationBlockNumberBlockTime() {
 func (t *DBSuite) TestGetAttestationsInNonceRange() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainID := gofakeit.Uint32()
-		for i := uint32(5); i < 50; i += 5 {
+		for i := uint32(5); i <= 50; i += 5 {
 			destination := gofakeit.Uint32()
 			nonce := i
 			number := gofakeit.Uint64()
@@ -147,15 +147,15 @@ func (t *DBSuite) TestGetAttestationsInNonceRange() {
 		mask := types.DBAttestation{
 			ChainID: &chainID,
 		}
-		attestations, err := testDB.GetAttestationsInNonceRange(t.GetTestContext(), mask, 6, 34, 1)
+		attestations, err := testDB.GetAttestationsInNonceRange(t.GetTestContext(), mask, 6, 1)
 		Nil(t.T(), err)
-		Equal(t.T(), 6, len(attestations))
+		Equal(t.T(), 9, len(attestations))
 
-		attestations, err = testDB.GetAttestationsInNonceRange(t.GetTestContext(), mask, 6, 6, 1)
+		attestations, err = testDB.GetAttestationsInNonceRange(t.GetTestContext(), mask, 5, 1)
 		Nil(t.T(), err)
-		Equal(t.T(), 1, len(attestations))
+		Equal(t.T(), 10, len(attestations))
 
-		attestations, err = testDB.GetAttestationsInNonceRange(t.GetTestContext(), mask, 100, 105, 1)
+		attestations, err = testDB.GetAttestationsInNonceRange(t.GetTestContext(), mask, 100, 1)
 		Nil(t.T(), err)
 		Equal(t.T(), 0, len(attestations))
 	})

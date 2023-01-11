@@ -123,7 +123,7 @@ func (s Store) GetAttestationForNonceOrGreater(ctx context.Context, attestationM
 }
 
 // GetAttestationsInNonceRange gets attestations in a nonce range.
-func (s Store) GetAttestationsInNonceRange(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, maxNonce uint32, page int) ([]types.DBAttestation, error) {
+func (s Store) GetAttestationsInNonceRange(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, page int) ([]types.DBAttestation, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -135,31 +135,12 @@ func (s Store) GetAttestationsInNonceRange(ctx context.Context, attestationMask 
 		Model(&attestations).
 		Where(&dbAttestationMask).
 		Where(fmt.Sprintf("%s >= ?", NonceFieldName), minNonce).
-		Where(fmt.Sprintf("%s <= ?", NonceFieldName), maxNonce).
 		Order(fmt.Sprintf("%s ASC", NonceFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Scan(&attestations)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get attestations in nonce range: %w", dbTx.Error)
-	}
-
-	var fencepostAttestation Attestation
-
-	if len(attestations) < PageSize && ((len(attestations) > 0 && attestations[len(attestations)-1].Nonce < maxNonce) || len(attestations) == 0) {
-		dbTx = s.DB().WithContext(ctx).
-			Model(&fencepostAttestation).
-			Where(&dbAttestationMask).
-			Where(fmt.Sprintf("%s > ?", NonceFieldName), maxNonce).
-			Order(fmt.Sprintf("%s ASC", NonceFieldName)).
-			Limit(1).
-			Scan(&fencepostAttestation)
-		if dbTx.Error != nil {
-			return nil, fmt.Errorf("failed to get attestation for nonce or greater: %w", dbTx.Error)
-		}
-		if dbTx.RowsAffected == 1 {
-			attestations = append(attestations, fencepostAttestation)
-		}
 	}
 
 	dbAttestations := make([]types.DBAttestation, len(attestations))
