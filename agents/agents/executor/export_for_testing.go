@@ -3,6 +3,7 @@ package executor
 import (
 	"context"
 	"fmt"
+	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -21,6 +22,15 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
+
+// -------- [ UTILS ] -------- \\
+
+// BinarySearchAttestationsForNonce binary searches attestations for a given nonce.
+func BinarySearchAttestationsForNonce(attestations []execTypes.DBAttestation, nonce uint32) *execTypes.DBAttestation {
+	return binarySearchAttestationsForNonce(attestations, nonce)
+}
+
+// -------- [ EXECUTOR ] -------- \\
 
 // GetLogChan gets a log channel.
 func (e Executor) GetLogChan(chainID uint32) chan *ethTypes.Log {

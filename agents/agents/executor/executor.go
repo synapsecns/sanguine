@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"math/big"
 	"strconv"
 	"time"
@@ -109,7 +108,11 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 	}
 
 	if config.ExecuteInterval == 0 {
-		config.ExecuteInterval = 3
+		config.ExecuteInterval = 2
+	}
+
+	if config.SetMinimumTimeInterval == 0 {
+		config.SetMinimumTimeInterval = 2
 	}
 
 	for _, chain := range config.Chains {
@@ -483,16 +486,16 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			return fmt.Errorf("could not get attestation for nonce or greater: %w", err)
 		}
 
-		if nonce == nil || blockTime == nil {
-			err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, false, math.MaxUint64)
+		if nonce != nil && blockTime != nil {
+			err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, true, *blockTime+uint64((*message).OptimisticSeconds()))
 			if err != nil {
 				return fmt.Errorf("could not store message: %w", err)
 			}
-		}
-
-		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, true, *blockTime+uint64((*message).OptimisticSeconds()))
-		if err != nil {
-			return fmt.Errorf("could not store message: %w", err)
+		} else {
+			err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, false, 0)
+			if err != nil {
+				return fmt.Errorf("could not store message: %w", err)
+			}
 		}
 	case destinationContract:
 		attestation, err := e.logToAttestation(log, chainID)
@@ -544,6 +547,8 @@ func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
 }
 
 // executeExecutable executes executable messages in the database.
+//
+//nolint:gocognit
 func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 	for {
 		select {
@@ -595,66 +600,89 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 	}
 }
 
-//// setMinimumTimes sets the minimum times for the messages when an attestation is received.
-//func (e Executor) setMinimumTimes(ctx context.Context, chainID uint32) error {
-//	for {
-//		select {
-//		case <-ctx.Done():
-//			return fmt.Errorf("context canceled: %w", ctx.Err())
-//		case <-time.After(e.executeInterval):
+// setMinimumTime sets the minimum time for the message to be executed by checking for associated attestations.
 //
-//		}
-//	}
-//}
+//nolint:gocognit
+func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval)):
+			page := 1
+			messageMask := execTypes.DBMessage{
+				ChainID: &chainID,
+			}
 
-// logToMessage converts the log to a leaf data.
-func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message, error) {
-	committedMessage, ok := e.chainExecutors[chainID].originParser.ParseDispatch(log)
-	if !ok {
-		return nil, fmt.Errorf("could not parse committed message")
+			var unsetMessages []types.Message
+
+			// Get all unset messages.
+			for {
+				messages, err := e.executorDB.GetUnsetMinimumTimeMessages(ctx, messageMask, page)
+				if err != nil {
+					return fmt.Errorf("could not get messages without minimum time: %w", err)
+				}
+
+				if len(messages) == 0 {
+					break
+				}
+
+				unsetMessages = append(unsetMessages, messages...)
+
+				page++
+			}
+
+			if len(unsetMessages) == 0 {
+				continue
+			}
+
+			page = 1
+			minNonce := unsetMessages[0].Nonce()
+			maxNonce := unsetMessages[len(unsetMessages)-1].Nonce()
+			attestationMask := execTypes.DBAttestation{
+				ChainID: &chainID,
+			}
+
+			var attestations []execTypes.DBAttestation
+
+			// Get all attestations for the unset messages.
+			for {
+				atts, err := e.executorDB.GetAttestationsInNonceRange(ctx, attestationMask, minNonce, maxNonce, page)
+				if err != nil {
+					return fmt.Errorf("could not get attestations: %w", err)
+				}
+
+				if len(atts) == 0 {
+					break
+				}
+
+				attestations = append(attestations, atts...)
+
+				page++
+			}
+
+			// Match each message to its attestation (if one exists) and set the minimum time.
+			for _, message := range unsetMessages {
+				attestation := binarySearchAttestationsForNonce(attestations, message.Nonce())
+				if attestation == nil {
+					continue
+				}
+
+				minimumTime := *attestation.DestinationBlockTime + uint64(message.OptimisticSeconds())
+				originDomain := message.OriginDomain()
+				destinationDomain := message.DestinationDomain()
+				nonce := message.Nonce()
+				messageMask = execTypes.DBMessage{
+					ChainID:     &originDomain,
+					Destination: &destinationDomain,
+					Nonce:       &nonce,
+				}
+
+				err := e.executorDB.SetMinimumTime(ctx, messageMask, minimumTime)
+				if err != nil {
+					return fmt.Errorf("could not set minimum time: %w", err)
+				}
+			}
+		}
 	}
-
-	message, err := types.DecodeMessage(committedMessage.Message())
-	if err != nil {
-		return nil, fmt.Errorf("could not decode message: %w", err)
-	}
-
-	return &message, nil
-}
-
-// logToAttestation converts the log to an attestation.
-func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (*types.Attestation, error) {
-	attestation, ok := e.chainExecutors[chainID].destinationParser.ParseAttestationAccepted(log)
-	if !ok {
-		return nil, fmt.Errorf("could not parse attestation")
-	}
-
-	return &attestation, nil
-}
-
-// logType determines whether a log is a `Dispatch` from Origin.sol or `AttestationAccepted` from Destination.sol.
-func (e Executor) logType(log ethTypes.Log, chainID uint32) contractType {
-	contract := other
-
-	if eventType, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && eventType == origin.DispatchEvent {
-		contract = originContract
-	}
-
-	if eventType, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok && eventType == destination.AttestationAcceptedEvent {
-		contract = destinationContract
-	}
-
-	return contract
-}
-
-func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
-	if log.BlockNumber < l.blockNumber {
-		return false
-	}
-
-	if log.BlockNumber == l.blockNumber {
-		return log.Index > l.blockIndex
-	}
-
-	return true
 }

@@ -572,11 +572,11 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	failMessage := types.NewMessage(header1, tips[3], messageBytes[3])
 
 	// Insert messages into the database.
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0], false, 0)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message1, blockNumbers[1])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message1, blockNumbers[1], false, 0)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2], false, 0)
 	e.Nil(err)
 
 	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
@@ -600,7 +600,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	e.Nil(err)
 	e.False(inTreeFail)
 
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3], false, 0)
 	e.Nil(err)
 
 	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)

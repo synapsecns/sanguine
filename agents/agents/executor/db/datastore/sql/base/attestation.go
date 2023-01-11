@@ -105,8 +105,8 @@ func (s Store) GetAttestationForNonceOrGreater(ctx context.Context, attestationM
 	dbTx := s.DB().WithContext(ctx).
 		Model(&attestation).
 		Where(&dbAttestationMask).
-		Where("nonce >= ?", attestationMask.Nonce).
-		Order("nonce ASC").
+		Where(fmt.Sprintf("%s >= ?", NonceFieldName), attestationMask.Nonce).
+		Order(fmt.Sprintf("%s ASC", NonceFieldName)).
 		Limit(1).
 		Scan(&attestation)
 	if dbTx.Error != nil {
@@ -120,6 +120,54 @@ func (s Store) GetAttestationForNonceOrGreater(ctx context.Context, attestationM
 	blockTime = &attestation.DestinationBlockTime
 
 	return nonce, blockTime, nil
+}
+
+// GetAttestationsInNonceRange gets attestations in a nonce range.
+func (s Store) GetAttestationsInNonceRange(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, maxNonce uint32, page int) ([]types.DBAttestation, error) {
+	if page < 1 {
+		page = 1
+	}
+
+	var attestations []Attestation
+
+	dbAttestationMask := DBAttestationToAttestation(attestationMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&attestations).
+		Where(&dbAttestationMask).
+		Where(fmt.Sprintf("%s >= ?", NonceFieldName), minNonce).
+		Where(fmt.Sprintf("%s <= ?", NonceFieldName), maxNonce).
+		Order(fmt.Sprintf("%s ASC", NonceFieldName)).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
+		Scan(&attestations)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get attestations in nonce range: %w", dbTx.Error)
+	}
+
+	var fencepostAttestation Attestation
+
+	if len(attestations) < PageSize && ((len(attestations) > 0 && attestations[len(attestations)-1].Nonce < maxNonce) || len(attestations) == 0) {
+		dbTx = s.DB().WithContext(ctx).
+			Model(&fencepostAttestation).
+			Where(&dbAttestationMask).
+			Where(fmt.Sprintf("%s > ?", NonceFieldName), maxNonce).
+			Order(fmt.Sprintf("%s ASC", NonceFieldName)).
+			Limit(1).
+			Scan(&fencepostAttestation)
+		if dbTx.Error != nil {
+			return nil, fmt.Errorf("failed to get attestation for nonce or greater: %w", dbTx.Error)
+		}
+		if dbTx.RowsAffected == 1 {
+			attestations = append(attestations, fencepostAttestation)
+		}
+	}
+
+	dbAttestations := make([]types.DBAttestation, len(attestations))
+	for i := range attestations {
+		dbAttestations[i] = AttestationToDBAttestation(attestations[i])
+	}
+
+	return dbAttestations, nil
 }
 
 // DBAttestationToAttestation converts a DBAttestation to an Attestation.

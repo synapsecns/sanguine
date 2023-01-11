@@ -45,6 +45,21 @@ func (s Store) ExecuteMessage(ctx context.Context, messageMask types.DBMessage) 
 	return nil
 }
 
+// SetMinimumTime sets the minimum time of a message.
+func (s Store) SetMinimumTime(ctx context.Context, messageMask types.DBMessage, minimumTime uint64) error {
+	dbMessageMask := DBMessageToMessage(messageMask)
+	updateStruct := Message{MinimumTime: minimumTime, MinimumTimeSet: true}
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Message{}).
+		Where(&dbMessageMask).
+		Updates(updateStruct)
+	if dbTx.Error != nil {
+		return fmt.Errorf("failed to set minimum time: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
 // GetMessage gets a message from the database.
 func (s Store) GetMessage(ctx context.Context, messageMask types.DBMessage) (*agentsTypes.Message, error) {
 	var message Message
@@ -166,6 +181,43 @@ func (s Store) GetExecutableMessages(ctx context.Context, messageMask types.DBMe
 		Where(fmt.Sprintf("%s = ?", MinimumTimeSetFieldName), true).
 		Where(fmt.Sprintf("%s = ?", ExecutedFieldName), false).
 		Order(fmt.Sprintf("%s ASC", MinimumTimeFieldName)).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
+		Scan(&messages)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get messages: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	decodedMessages := make([]agentsTypes.Message, len(messages))
+	for i, message := range messages {
+		decodedMessage, err := agentsTypes.DecodeMessage(message.Message)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode message: %w", err)
+		}
+		decodedMessages[i] = decodedMessage
+	}
+
+	return decodedMessages, nil
+}
+
+// GetUnsetMinimumTimeMessages gets messages from the database that have not had their minimum time set.
+func (s Store) GetUnsetMinimumTimeMessages(ctx context.Context, messageMask types.DBMessage, page int) ([]agentsTypes.Message, error) {
+	if page < 1 {
+		page = 1
+	}
+
+	var messages []Message
+
+	dbMessageMask := DBMessageToMessage(messageMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&messages).
+		Where(&dbMessageMask).
+		Where(fmt.Sprintf("%s = ?", MinimumTimeSetFieldName), false).
+		Order(fmt.Sprintf("%s ASC", NonceFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Scan(&messages)

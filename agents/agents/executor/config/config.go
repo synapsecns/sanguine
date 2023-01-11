@@ -23,6 +23,9 @@ type Config struct {
 	// ExecuteInterval is the interval at which the executor agent will
 	// check if messages in the database are ready to be executed.
 	ExecuteInterval uint32 `yaml:"execute_interval"`
+	// SetMinimumTimeInterval is the interval at which the executor agent will
+	// check messages to set their minimum times from attestations.
+	SetMinimumTimeInterval uint32 `yaml:"set_minimum_time_interval"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

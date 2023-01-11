@@ -12,12 +12,16 @@ type ExecutorDBWriter interface {
 	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error
 	// ExecuteMessage marks a message as executed in the database.
 	ExecuteMessage(ctx context.Context, messageMask types.DBMessage) error
+	// SetMinimumTime sets the minimum time of a message.
+	SetMinimumTime(ctx context.Context, messageMask types.DBMessage, minimumTime uint64) error
 
 	// StoreAttestation stores an attestation.
 	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error
 }
 
 // ExecutorDBReader is the interface for reading from the executor database.
+//
+//nolint:interfacebloat
 type ExecutorDBReader interface {
 	// GetMessage gets a message from the database.
 	GetMessage(ctx context.Context, messageMask types.DBMessage) (*agentsTypes.Message, error)
@@ -29,6 +33,8 @@ type ExecutorDBReader interface {
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
 	// GetExecutableMessages gets executable messages from the database.
 	GetExecutableMessages(ctx context.Context, messageMask types.DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error)
+	// GetUnsetMinimumTimeMessages gets messages from the database that have not had their minimum time set.
+	GetUnsetMinimumTimeMessages(ctx context.Context, messageMask types.DBMessage, page int) ([]agentsTypes.Message, error)
 
 	// GetAttestation gets an attestation from the database.
 	GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error)
@@ -38,6 +44,8 @@ type ExecutorDBReader interface {
 	GetAttestationBlockTime(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 	// GetAttestationForNonceOrGreater gets the lowest nonce attestation that is greater than or equal to the given nonce.
 	GetAttestationForNonceOrGreater(ctx context.Context, attestationMask types.DBAttestation) (nonce *uint32, blockTime *uint64, err error)
+	// GetAttestationsInNonceRange gets attestations in a nonce range.
+	GetAttestationsInNonceRange(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, maxNonce uint32, page int) ([]types.DBAttestation, error)
 }
 
 // ExecutorDB is the interface for the executor database.
