@@ -3,6 +3,12 @@ package config
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/jftuga/ellipsis"
+	"gopkg.in/yaml.v2"
 )
 
 // NotaryConfig is used for configuring the notary.
@@ -39,4 +45,26 @@ func (c *NotaryConfig) IsValid(ctx context.Context) (ok bool, err error) {
 	}
 
 	return true, nil
+}
+
+// Encode gets the encoded config.yaml file.
+func (c NotaryConfig) Encode() ([]byte, error) {
+	output, err := yaml.Marshal(&c)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(spew.Sdump(c), 20), err)
+	}
+	return output, nil
+}
+
+// DecodeConfig parses in a config from a file.
+func DecodeConfig(filePath string) (cfg NotaryConfig, err error) {
+	input, err := os.ReadFile(filepath.Clean(filePath))
+	if err != nil {
+		return NotaryConfig{}, fmt.Errorf("failed to read file: %w", err)
+	}
+	err = yaml.Unmarshal(input, &cfg)
+	if err != nil {
+		return NotaryConfig{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
+	}
+	return cfg, nil
 }
