@@ -15,7 +15,6 @@ Run the following command to start the Notary:
 
 ```bash
 # Start the Notary
-$ run --config </Users/synapsecns/notary_config.yaml> --db <sqlite> or <mysql>\
- --path <path/to/database> or <database url>
+$ run --config </Users/synapsecns/notary_config.yaml>
 ```
 

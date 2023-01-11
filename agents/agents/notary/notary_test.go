@@ -2,6 +2,7 @@ package notary_test
 
 import (
 	"math/big"
+	"os"
 	"time"
 
 	"github.com/Flaque/filet"
@@ -37,6 +38,25 @@ func (u NotarySuite) TestNotaryE2E() {
 		},
 		RefreshIntervalInSeconds: 1,
 	}
+	encodedTestConfig, err := testConfig.Encode()
+	Nil(u.T(), err)
+
+	tempConfigFile, err := os.CreateTemp("", "notary_temp_config.yaml")
+	Nil(u.T(), err)
+	defer os.Remove(tempConfigFile.Name())
+
+	numBytesWritten, err := tempConfigFile.Write(encodedTestConfig)
+	Nil(u.T(), err)
+	Positive(u.T(), numBytesWritten)
+
+	decodedNotaryConfig, err := config.DecodeConfig(tempConfigFile.Name())
+	Nil(u.T(), err)
+
+	decodedNotaryConfigBackToEncodedBytes, err := decodedNotaryConfig.Encode()
+	Nil(u.T(), err)
+
+	Equal(u.T(), encodedTestConfig, decodedNotaryConfigBackToEncodedBytes)
+
 	notary, err := notary.NewNotary(u.GetTestContext(), testConfig)
 	Nil(u.T(), err)
 

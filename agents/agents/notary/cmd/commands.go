@@ -35,24 +35,10 @@ var configFlag = &cli.StringFlag{
 	Required:  true,
 }
 
-var dbFlag = &cli.StringFlag{
-	Name:     "db",
-	Usage:    "--db <sqlite> or <mysql>",
-	Value:    "sqlite",
-	Required: true,
-}
-
-var pathFlag = &cli.StringFlag{
-	Name:     "path",
-	Usage:    "--path <path/to/database> or <database url>",
-	Value:    "",
-	Required: true,
-}
-
 var runCommand = &cli.Command{
 	Name:        "run",
-	Description: "runs the executor service",
-	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},
+	Description: "runs the notary service",
+	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
 		notaryConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
