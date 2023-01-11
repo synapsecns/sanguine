@@ -385,6 +385,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	bridgeEvent.Sender = *sender
 
 	if tokenData.TokenID() == fetcher.NoTokenID {
+		logger.Errorf("could not get token data token id chain: %d address %s", chainID, log.Address.Hex())
 		// handle an inauthentic token.
 		return &bridgeEvent, nil
 	}
