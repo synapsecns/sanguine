@@ -197,6 +197,14 @@ func (e Executor) Run(ctx context.Context) error {
 		g.Go(func() error {
 			return e.receiveLogs(ctx, chain.ChainID)
 		})
+
+		g.Go(func() error {
+			return e.setMinimumTime(ctx, chain.ChainID)
+		})
+
+		g.Go(func() error {
+			return e.executeExecutable(ctx, chain.ChainID)
+		})
 	}
 
 	if err := g.Wait(); err != nil {
@@ -535,7 +543,7 @@ func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
 
 // executeExecutable executes executable messages in the database.
 //
-//nolint:gocognit,cyclop,unused
+//nolint:gocognit,cyclop
 func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 	for {
 		select {
@@ -589,7 +597,7 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 
 // setMinimumTime sets the minimum time for the message to be executed by checking for associated attestations.
 //
-//nolint:gocognit,cyclop,unused
+//nolint:gocognit,cyclop
 func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 	for {
 		select {
