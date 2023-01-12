@@ -17,7 +17,7 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
-func RemoveFile(t *testing.T, fileName string) {
+func RemoveNotaryTempFile(t *testing.T, fileName string) {
 	t.Helper()
 	err := os.Remove(fileName)
 	Nil(t, err)
@@ -50,7 +50,7 @@ func (u NotarySuite) TestNotaryE2E() {
 
 	tempConfigFile, err := os.CreateTemp("", "notary_temp_config.yaml")
 	Nil(u.T(), err)
-	defer RemoveFile(u.T(), tempConfigFile.Name())
+	defer RemoveNotaryTempFile(u.T(), tempConfigFile.Name())
 
 	numBytesWritten, err := tempConfigFile.Write(encodedTestConfig)
 	Nil(u.T(), err)
