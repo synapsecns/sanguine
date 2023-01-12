@@ -40,7 +40,7 @@ var runCommand = &cli.Command{
 	Description: "runs the notary service",
 	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
-		notaryConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		notaryConfig, err := config.DecodeNotaryConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("failed to decode config: %w", err)
 		}

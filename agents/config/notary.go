@@ -56,8 +56,8 @@ func (c NotaryConfig) Encode() ([]byte, error) {
 	return output, nil
 }
 
-// DecodeConfig parses in a config from a file.
-func DecodeConfig(filePath string) (cfg NotaryConfig, err error) {
+// DecodeNotaryConfig parses in a notary config from a file.
+func DecodeNotaryConfig(filePath string) (cfg NotaryConfig, err error) {
 	input, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		return NotaryConfig{}, fmt.Errorf("failed to read file: %w", err)

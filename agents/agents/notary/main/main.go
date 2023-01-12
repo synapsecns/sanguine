@@ -1,4 +1,4 @@
-// Package main provides the main entry point for the executor.
+// Package main provides the main entry point for the notary.
 package main
 
 import (

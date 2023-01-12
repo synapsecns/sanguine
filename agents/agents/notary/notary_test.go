@@ -56,7 +56,7 @@ func (u NotarySuite) TestNotaryE2E() {
 	Nil(u.T(), err)
 	Positive(u.T(), numBytesWritten)
 
-	decodedNotaryConfig, err := config.DecodeConfig(tempConfigFile.Name())
+	decodedNotaryConfig, err := config.DecodeNotaryConfig(tempConfigFile.Name())
 	Nil(u.T(), err)
 
 	decodedNotaryConfigBackToEncodedBytes, err := decodedNotaryConfig.Encode()
