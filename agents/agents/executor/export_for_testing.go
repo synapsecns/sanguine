@@ -104,6 +104,25 @@ func (e Executor) Listen(ctx context.Context) error {
 	return nil
 }
 
+// SetMinimumTime sets the minimum times.
+func (e Executor) SetMinimumTime(ctx context.Context) error {
+	g, _ := errgroup.WithContext(ctx)
+
+	for _, chain := range e.config.Chains {
+		chain := chain
+
+		g.Go(func() error {
+			return e.setMinimumTime(ctx, chain.ChainID)
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("error when setting minimum time: %w", err)
+	}
+
+	return nil
+}
+
 // NewExecutorInjectedBackend creates a new Executor suitable for testing since it does not need a valid omnirpcURL.
 //
 //nolint:cyclop
@@ -128,6 +147,14 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 	executorSigner, err := agentsConfig.SignerFromConfig(config.UnbondedSigner)
 	if err != nil {
 		return nil, fmt.Errorf("could not create signer: %w", err)
+	}
+
+	if config.ExecuteInterval == 0 {
+		config.ExecuteInterval = 2
+	}
+
+	if config.SetMinimumTimeInterval == 0 {
+		config.SetMinimumTimeInterval = 2
 	}
 
 	for _, chain := range config.Chains {

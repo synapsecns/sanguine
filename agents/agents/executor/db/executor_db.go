@@ -44,8 +44,8 @@ type ExecutorDBReader interface {
 	GetAttestationBlockTime(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 	// GetAttestationForNonceOrGreater gets the lowest nonce attestation that is greater than or equal to the given nonce.
 	GetAttestationForNonceOrGreater(ctx context.Context, attestationMask types.DBAttestation) (nonce *uint32, blockTime *uint64, err error)
-	// GetAttestationsInNonceRange gets attestations in a nonce range.
-	GetAttestationsInNonceRange(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, page int) ([]types.DBAttestation, error)
+	// GetAttestationsAboveOrEqualNonce gets attestations in a nonce range.
+	GetAttestationsAboveOrEqualNonce(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, page int) ([]types.DBAttestation, error)
 }
 
 // ExecutorDB is the interface for the executor database.

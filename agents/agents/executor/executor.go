@@ -646,7 +646,7 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 
 			// Get all attestations for the unset messages.
 			for {
-				atts, err := e.executorDB.GetAttestationsInNonceRange(ctx, attestationMask, minNonce, page)
+				atts, err := e.executorDB.GetAttestationsAboveOrEqualNonce(ctx, attestationMask, minNonce, page)
 				if err != nil {
 					return fmt.Errorf("could not get attestations: %w", err)
 				}
