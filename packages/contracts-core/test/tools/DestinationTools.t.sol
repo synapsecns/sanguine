@@ -7,6 +7,8 @@ import { OriginTools } from "./OriginTools.t.sol";
 import { ReentrantApp } from "../harnesses/client/ReentrantApp.t.sol";
 
 abstract contract DestinationTools is OriginTools {
+    using Attestation for bytes29;
+
     uint32 internal constant MESSAGES = 5;
 
     bytes[] internal rawMessages;
@@ -153,9 +155,30 @@ abstract contract DestinationTools is OriginTools {
     function destinationSubmitAttestation(uint32 domain, bool returnValue) public {
         DestinationHarness destination = suiteDestination(domain);
         vm.prank(broadcaster);
+        uint32 idxBefore = destination.bufferedAttestationIndices(attestationOrigin);
+        assertEq(idxBefore, 0, "idxBefore != 0");
         assertEq(destination.submitAttestation(attestationRaw), returnValue, "!returnValue");
         if (returnValue) {
             rootSubmittedAt = block.timestamp;
+            uint32 idxAfter = destination.bufferedAttestationIndices(attestationOrigin);
+            assertEq(idxAfter, 1, "idxAfter != 1");
+            bytes32 rawAttestationHash = keccak256(attestationRaw);
+            bool didFind = false;
+            for (uint32 i = 0; i < 100; i++) {
+                bytes memory currAttestationRaw = destination.bufferedAttestations(
+                    attestationOrigin,
+                    i
+                );
+                if (currAttestationRaw.length == 0) {
+                    continue;
+                }
+
+                if (rawAttestationHash == keccak256(currAttestationRaw)) {
+                    didFind = true;
+                    break;
+                }
+            }
+            assert(didFind);
         }
     }
 

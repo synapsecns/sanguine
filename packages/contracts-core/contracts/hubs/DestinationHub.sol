@@ -15,6 +15,8 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
     using Attestation for bytes29;
     using Report for bytes29;
 
+    uint32 public constant ATTESTATION_BUFFER_SIZE = 100;
+
     /**
      * @notice Information stored for every submitted merkle root.
      * Optimized to fit into one word of storage.
@@ -47,6 +49,12 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
 
     // domain => mirror
     mapping(uint32 => Mirror) public mirrors;
+
+    // domain => attestation index
+    mapping(uint32 => uint32) public bufferedAttestationIndices;
+
+    // domain => attestations
+    mapping(uint32 => bytes[ATTESTATION_BUFFER_SIZE]) public bufferedAttestations;
 
     // gap for upgrade safety
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -124,6 +132,12 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
         // TODO: Use more than one notary here?
         address notary = _notaries[0];
         _updateMirror(notary, origin, nonce, root);
+        // Now update the circular buffer of stored attestations
+        uint32 currAttestationIndex = (bufferedAttestationIndices[origin] + 1) %
+            ATTESTATION_BUFFER_SIZE;
+        bufferedAttestations[origin][currAttestationIndex] = _attestation;
+        bufferedAttestationIndices[origin] = currAttestationIndex;
+
         emit AttestationAccepted(_guards, _notaries, _attestation);
         return true;
     }
