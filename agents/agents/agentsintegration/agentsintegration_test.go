@@ -474,6 +474,13 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 		}
 	}()
 
+	go func() {
+		execErr := exec.SetMinimumTime(u.GetTestContext())
+		if !testDone {
+			u.Nil(execErr)
+		}
+	}()
+
 	sender, err := u.TestBackendOrigin.Signer().Sender(tx)
 	u.Nil(err)
 
